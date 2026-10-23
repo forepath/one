@@ -34,6 +34,7 @@ import { AgentMessagesRepository } from '../repositories/agent-messages.reposito
 import { AgentsRepository } from '../repositories/agents.repository';
 import { DeploymentConfigurationsRepository } from '../repositories/deployment-configurations.repository';
 import { DeploymentRunsRepository } from '../repositories/deployment-runs.repository';
+import { AgentRuntime } from '../runtime/agent-runtime';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
@@ -138,6 +139,13 @@ describe('AgentsModule', () => {
 
     expect(service).toBeDefined();
     expect(service).toBeInstanceOf(DockerService);
+  });
+
+  it('should provide the Docker host runtime as AgentRuntime', () => {
+    const runtime = module.get(AgentRuntime);
+
+    expect(runtime).toBeInstanceOf(DockerService);
+    expect(runtime).toBe(module.get(DockerService));
   });
 
   it('should provide AgentGitCredentialsService', () => {

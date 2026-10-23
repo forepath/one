@@ -74,4 +74,14 @@ describe('changelog-scope.parser', () => {
     expect(scoped.product).toHaveLength(1);
     expect(scoped.shared).toHaveLength(1);
   });
+
+  it('scopes Loadweaver entries like the other products', () => {
+    const entries = parseChangelogMarkdown(
+      '* feat(loadweaver): update rollout\n* loadweaver console updates\n* feat(agenstra): x',
+    );
+
+    expect(entries.map((e) => e.product)).toEqual(['loadweaver', 'loadweaver', 'agenstra']);
+    expect(scopeChangelogEntries(entries, 'loadweaver').product).toHaveLength(2);
+    expect(filterChangelogForProduct(entries, 'agenstra').product).toHaveLength(1);
+  });
 });

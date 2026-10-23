@@ -1,0 +1,336 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="current() ? title + ' · ' + current()!.resource : title" icon="safe">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="secondary"
+      size="sm"
+      iconOnly
+      routerLink="/backups"
+      [ariaLabel]="backLabel"
+      [title]="backLabel"
+    >
+      <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    </fpc-button>
+    @if (current() && available()) {
+      <fpc-button
+        fpcPageHeaderActions
+        variant="secondary"
+        size="sm"
+        iconOnly
+        [ariaLabel]="compareLabel"
+        [title]="compareLabel"
+        [disabled]="others().length === 0"
+        (clicked)="openDiff()"
+        data-testid="backup-compare"
+      >
+        <i class="bi bi-file-diff" aria-hidden="true"></i>
+      </fpc-button>
+    }
+    @if (current() && available() && mayOperate()) {
+      <fpc-button
+        fpcPageHeaderActions
+        variant="secondary"
+        size="sm"
+        iconOnly
+        [ariaLabel]="testNowLabel"
+        [title]="testNowLabel"
+        [loading]="testing().includes(current()!.id)"
+        [disabled]="current()!.restoreTest?.status === 'running'"
+        (clicked)="testNow()"
+        data-testid="backup-test"
+      >
+        <i class="bi bi-clipboard-check" aria-hidden="true"></i>
+      </fpc-button>
+    }
+    @if (current() && available() && mayRestore()) {
+      <fpc-button
+        fpcPageHeaderActions
+        variant="primary"
+        size="sm"
+        iconOnly
+        [ariaLabel]="restoreBackupLabel"
+        [title]="restoreBackupLabel"
+        (clicked)="openRestore(null)"
+        data-testid="backup-restore"
+      >
+        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+      </fpc-button>
+    }
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (current(); as b) {
+    <fpc-summary-bar [columns]="4">
+      <fpc-summary-card
+        [label]="statusTitle"
+        [value]="statusLabel(b.status)"
+        [tone]="b.status === 'failed' ? 'danger' : b.status === 'running' ? 'info' : 'success'"
+      />
+      <fpc-summary-card [label]="sizeTitle" [value]="bytes(b.bytes)" />
+      <fpc-summary-card [label]="addedTitle" [value]="bytes(b.uploadedBytes)" />
+      <fpc-summary-card [label]="filesTitle" [value]="'' + b.files" />
+    </fpc-summary-bar>
+  }
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    @if (loading() && !current()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (current(); as b) {
+      @if (b.error) {
+        <fpc-alert class="m-3" variant="danger" [message]="b.error" />
+      }
+      @if (b.deletedAt) {
+        <fpc-alert class="m-3" variant="secondary">
+          <span i18n="@@lwConsoleBackupDetail-deletedAt">This backup was deleted on</span>
+          {{ b.deletedAt | date: 'medium' }}.
+        </fpc-alert>
+      }
+
+      <fpc-panel-grid [columns]="1" fill>
+        <fpc-panel [title]="detailsTitle">
+          <dl class="row small mb-0" data-testid="backup-details">
+            <dt class="col-sm-3" i18n="@@lwConsoleBackupDetail-volume">Volume</dt>
+            <dd class="col-sm-9 font-monospace">{{ b.resource }}</dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleBackupDetail-repository">Repository</dt>
+            <dd class="col-sm-9">{{ scope(b.scope) }}</dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleBackupDetail-time">Started / finished</dt>
+            <dd class="col-sm-9">
+              {{ b.startedAt | date: 'medium' }}
+              @if (b.finishedAt) {
+                – {{ b.finishedAt | date: 'mediumTime' }}
+              }
+            </dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleBackupDetail-policy">Policy</dt>
+            <dd class="col-sm-9">{{ b.policy ?? '–' }}</dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleBackupDetail-node">Node</dt>
+            <dd class="col-sm-9">{{ b.node ?? '–' }}</dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleBackupDetail-encryption">Encryption</dt>
+            <dd class="col-sm-9">
+              <i class="bi bi-shield-lock me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleBackupDetail-encrypted">Encrypted with backup key generation</span>
+              {{ b.keyGeneration }}
+            </dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleBackupDetail-hooks">App-consistent hooks</dt>
+            <dd class="col-sm-9">
+              @if (b.hooks) {
+                <span i18n="@@lwConsoleBackupDetail-hooksYes">Ran around the snapshot</span>
+              } @else {
+                <span i18n="@@lwConsoleBackupDetail-hooksNo">None (crash-consistent)</span>
+              }
+            </dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleBackupDetail-keep">Kept as</dt>
+            <dd class="col-sm-9">
+              @for (k of b.keep; track k) {
+                <fpc-badge class="me-1" color="light" size="sm">{{ keepLabel(k) }}</fpc-badge>
+              } @empty {
+                –
+              }
+            </dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleBackupDetail-restoreTest">Restore test</dt>
+            <dd class="col-sm-9">
+              @if (b.restoreTest; as t) {
+                <fpc-badge [color]="testTone[t.status]" size="sm">{{ testLabel(t.status) }}</fpc-badge>
+                @if (t.finishedAt) {
+                  <span class="ms-1 text-body-secondary">{{ t.finishedAt | date: 'short' }}</span>
+                }
+              } @else {
+                –
+              }
+            </dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleBackupDetail-immutable">Immutable until</dt>
+            <dd class="col-sm-9">
+              @if (b.lockedUntil) {
+                <i
+                  class="bi me-1"
+                  [ngClass]="locked(b.lockedUntil) ? 'bi-lock-fill text-success' : 'bi-unlock'"
+                  aria-hidden="true"
+                ></i
+                >{{ b.lockedUntil | date: 'medium' }}
+              } @else {
+                <span i18n="@@lwConsoleBackupDetail-notLocked">No object lock</span>
+              }
+            </dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleBackupDetail-targets">Copies</dt>
+            <dd class="col-sm-9">
+              @for (t of b.targets; track t.target) {
+                <div>
+                  <span class="font-monospace">{{ t.target }}</span>
+                  <span class="text-body-secondary"> · {{ t.copiedAt | date: 'short' }}</span>
+                  @if (t.lockedUntil) {
+                    <span class="text-body-secondary">
+                      · <i class="bi bi-lock me-1" aria-hidden="true"></i>{{ t.lockedUntil | date: 'shortDate' }}</span
+                    >
+                  }
+                </div>
+              } @empty {
+                –
+              }
+            </dd>
+          </dl>
+        </fpc-panel>
+
+        @if (available()) {
+          <fpc-panel [title]="browserTitle" [flush]="true">
+            <div class="d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom">
+              <nav aria-label="breadcrumb" class="small">
+                <ol class="breadcrumb mb-0 font-monospace" data-testid="backup-crumbs">
+                  @for (crumb of crumbs(); track crumb.path; let last = $last) {
+                    <li class="breadcrumb-item" [class.active]="last">
+                      @if (last) {
+                        {{ crumb.label }}
+                      } @else {
+                        <a href="" (click)="$event.preventDefault(); go(crumb.path)">{{ crumb.label }}</a>
+                      }
+                    </li>
+                  }
+                </ol>
+              </nav>
+              @if (path() && mayRestore()) {
+                <fpc-button
+                  class="ms-auto"
+                  variant="link"
+                  size="sm"
+                  (clicked)="openRestore(path())"
+                  data-testid="backup-restore-directory"
+                >
+                  <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i
+                  ><span i18n="@@lwConsoleBackupDetail-restoreDirectory">Restore this directory</span>
+                </fpc-button>
+              }
+            </div>
+
+            @if (downloadError(); as message) {
+              <fpc-alert class="m-3" variant="danger" [message]="message" />
+            }
+
+            @if (filesError(); as message) {
+              <fpc-alert class="m-3" variant="danger" [message]="message" />
+            } @else if (filesLoading() && entries().length === 0) {
+              <div class="d-flex justify-content-center p-4"><fpc-spinner /></div>
+            } @else if (entries().length === 0) {
+              <fpc-empty-state
+                icon="folder"
+                size="sm"
+                i18n-title="@@lwConsoleBackupDetail-emptyDirectory"
+                title="This directory is empty"
+              />
+            } @else {
+              <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle small mb-0" data-testid="backup-files">
+                  <thead>
+                    <tr>
+                      <th scope="col" i18n="@@lwConsoleBackupDetail-colName">Name</th>
+                      <th scope="col" class="text-end" i18n="@@lwConsoleBackupDetail-colSize">Size</th>
+                      <th scope="col" i18n="@@lwConsoleBackupDetail-colModified">Modified</th>
+                      <th scope="col" i18n="@@lwConsoleBackupDetail-colMode">Mode</th>
+                      <th scope="col">
+                        <span class="visually-hidden" i18n="@@lwConsoleBackupDetail-colActions">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (entry of entries(); track entry.name) {
+                      <tr>
+                        <td>
+                          <a
+                            href=""
+                            class="text-decoration-none font-monospace text-break"
+                            (click)="$event.preventDefault(); activate(entry)"
+                          >
+                            <i
+                              class="bi me-1"
+                              [ngClass]="entry.directory ? 'bi-folder' : 'bi-file-earmark'"
+                              aria-hidden="true"
+                            ></i
+                            >{{ entry.name }}
+                          </a>
+                        </td>
+                        <td class="text-end text-nowrap">{{ entry.directory ? '' : bytes(entry.size) }}</td>
+                        <td class="text-nowrap text-body-secondary">{{ entry.modified }}</td>
+                        <td class="font-monospace text-body-secondary">{{ entry.mode }}</td>
+                        <td class="text-end text-nowrap">
+                          @if (!entry.directory) {
+                            <button
+                              type="button"
+                              class="btn btn-link btn-sm p-0 me-2"
+                              [attr.aria-label]="downloadLabel"
+                              [title]="downloadLabel"
+                              [disabled]="downloading() !== null"
+                              (click)="download(entry)"
+                              [attr.data-testid]="'backup-download-' + entry.name"
+                            >
+                              <i class="bi bi-download" aria-hidden="true"></i>
+                            </button>
+                          }
+                          @if (mayRestore()) {
+                            <button
+                              type="button"
+                              class="btn btn-link btn-sm p-0"
+                              [attr.aria-label]="restoreLabel"
+                              [title]="restoreLabel"
+                              (click)="restoreEntry(entry)"
+                              [attr.data-testid]="'backup-restore-' + entry.name"
+                            >
+                              <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                            </button>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+    }
+  </div>
+</div>
+
+<loadweaver-backup-restore-modal
+  [(open)]="restoreOpen"
+  [backup]="current()"
+  [candidates]="volumeBackups()"
+  [path]="restorePath()"
+  [volumes]="liveVolumes()"
+/>
+
+<fpc-modal [open]="diffOpen()" (openChange)="diffOpen.set($event)" [title]="diffTitle">
+  <fpc-form-field
+    forId="lw-backup-diff-other"
+    i18n-label="@@lwConsoleBackupDetail-diffOther"
+    label="Other backup of the volume"
+  >
+    <fpc-form-control controlType="select" controlId="lw-backup-diff-other" size="sm" [(ngModel)]="diffOther">
+      @for (o of others(); track o.id) {
+        <option [value]="o.id">{{ o.startedAt | date: 'medium' }} · {{ bytes(o.bytes) }}</option>
+      }
+    </fpc-form-control>
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="secondary" (clicked)="diffOpen.set(false)">
+      <span i18n="@@lwConsoleBackupDetail-diffCancel">Cancel</span>
+    </fpc-button>
+    <fpc-button variant="primary" [disabled]="!diffOther" (clicked)="compare()" data-testid="backup-diff-open">
+      <span i18n="@@lwConsoleBackupDetail-diffOpen">Compare</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

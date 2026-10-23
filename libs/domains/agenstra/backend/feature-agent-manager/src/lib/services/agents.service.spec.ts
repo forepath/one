@@ -17,7 +17,7 @@ import { AgentChatSessionsService } from './agent-chat-sessions.service';
 import { AgentGitCredentialsService } from './agent-git-credentials.service';
 import { AgentsService } from './agents.service';
 import { DeploymentsService } from './deployments.service';
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 import { EnvironmentProgressService } from './environment-progress.service';
 import { WorkspaceInotifySupervisor } from './workspace-inotify-supervisor.service';
 
@@ -25,7 +25,7 @@ describe('AgentsService', () => {
   let service: AgentsService;
   let repository: jest.Mocked<AgentsRepository>;
   let passwordService: jest.Mocked<PasswordService>;
-  let dockerService: jest.Mocked<DockerService>;
+  let dockerService: jest.Mocked<AgentRuntime>;
   let agentProviderFactory: jest.Mocked<AgentProviderFactory>;
   let deploymentsService: jest.Mocked<DeploymentsService>;
   const mockPrimaryChatSession = {
@@ -157,7 +157,7 @@ describe('AgentsService', () => {
           useValue: mockPasswordService,
         },
         {
-          provide: DockerService,
+          provide: AgentRuntime,
           useValue: mockDockerService,
         },
         {
@@ -190,7 +190,7 @@ describe('AgentsService', () => {
     service = module.get<AgentsService>(AgentsService);
     repository = module.get(AgentsRepository);
     passwordService = module.get(PasswordService);
-    dockerService = module.get(DockerService);
+    dockerService = module.get(AgentRuntime);
     agentProviderFactory = module.get(AgentProviderFactory);
     deploymentsService = module.get(DeploymentsService);
   });
@@ -231,12 +231,12 @@ describe('AgentsService', () => {
 
         const serviceWithProgress = new AgentsService(
           mockRepository as unknown as AgentsRepository,
-          mockDockerService as unknown as DockerService,
+          mockDockerService as unknown as AgentRuntime,
           mockPasswordService as unknown as PasswordService,
           mockAgentProviderFactory as unknown as AgentProviderFactory,
           mockAgentChatSessionsService as unknown as AgentChatSessionsService,
           mockOpenCodeClientFactory as unknown as OpenCodeClientFactory,
-          new AgentGitCredentialsService(mockDockerService as unknown as DockerService),
+          new AgentGitCredentialsService(mockDockerService as unknown as AgentRuntime),
           mockDeploymentsService as unknown as DeploymentsService,
           undefined,
           progressService,
@@ -1852,7 +1852,7 @@ describe('AgentsService', () => {
             useValue: mockPasswordService,
           },
           {
-            provide: DockerService,
+            provide: AgentRuntime,
             useValue: mockDockerService,
           },
           {
@@ -2786,12 +2786,12 @@ describe('AgentsService', () => {
       };
       guardedService = new AgentsService(
         mockRepository as unknown as AgentsRepository,
-        mockDockerService as unknown as DockerService,
+        mockDockerService as unknown as AgentRuntime,
         mockPasswordService as unknown as PasswordService,
         mockAgentProviderFactory as unknown as AgentProviderFactory,
         mockAgentChatSessionsService as unknown as AgentChatSessionsService,
         mockOpenCodeClientFactory as unknown as OpenCodeClientFactory,
-        new AgentGitCredentialsService(mockDockerService as unknown as DockerService),
+        new AgentGitCredentialsService(mockDockerService as unknown as AgentRuntime),
         mockDeploymentsService as unknown as DeploymentsService,
         undefined,
         undefined,

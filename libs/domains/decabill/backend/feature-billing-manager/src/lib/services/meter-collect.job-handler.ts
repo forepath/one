@@ -368,17 +368,46 @@ export class MeterCollectJobHandler {
         continue;
       }
 
-      await this.usageService.createUsage({
-        subscriptionId: params.subscriptionId,
-        periodStart: due.periodStart,
-        periodEnd: due.periodEnd,
-        usageSource: METER_COLLECT_USAGE_SOURCE,
-        usagePayload: sample.usagePayload ?? {},
-        meterId: due.meterId,
-        value: sample.value,
-        attachmentType: params.attachmentType,
-        addonId: params.addonId,
-      });
+      const idempotencyKey = sample.idempotencyKey?.trim().slice(0, 512) || undefined;
+
+      if (
+        idempotencyKey &&
+        (await this.usageRecordsRepository.existsByIdempotencyKey({
+          subscriptionId: params.subscriptionId,
+          meterId: due.meterId,
+          idempotencyKey,
+        }))
+      ) {
+        continue;
+      }
+
+      try {
+        await this.usageService.createUsage({
+          subscriptionId: params.subscriptionId,
+          periodStart: due.periodStart,
+          periodEnd: due.periodEnd,
+          usageSource: METER_COLLECT_USAGE_SOURCE,
+          usagePayload: { ...(sample.usagePayload ?? {}), ...(idempotencyKey ? { idempotencyKey } : {}) },
+          meterId: due.meterId,
+          value: sample.value,
+          attachmentType: params.attachmentType,
+          addonId: params.addonId,
+        });
+      } catch (error) {
+        // A concurrent collector recorded the same key first (unique index): already billed, skip.
+        if (idempotencyKey && isUniqueViolation(error)) {
+          continue;
+        }
+
+        throw error;
+      }
     }
   }
+}
+
+/** Postgres unique violation (SQLSTATE 23505), as raised through TypeORM's QueryFailedError. */
+function isUniqueViolation(error: unknown): boolean {
+  const e = error as { code?: string; driverError?: { code?: string } } | null;
+
+  return e?.code === '23505' || e?.driverError?.code === '23505';
 }

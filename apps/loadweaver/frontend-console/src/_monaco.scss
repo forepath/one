@@ -1,0 +1,173 @@
+// Monaco injects a large --vscode-* block on `.monaco-editor` at runtime. We override only tokens
+// that still read as stock VS (near-white #fffffe, #616161 neutrals, #007acc chrome) so the editor
+// matches Bootstrap / Decabill in both color modes. Values use `var(--bs-*)` where possible so
+// `[data-bs-theme="dark"]` needs no duplicate rules.
+
+$_bs-body-color-muted: rgba(var(--bs-body-color-rgb), 0.45);
+$_bs-body-color-subtle: rgba(var(--bs-body-color-rgb), 0.55);
+$_bs-scrollbar: rgba(var(--bs-body-color-rgb), 0.28);
+$_bs-scrollbar-hover: rgba(var(--bs-body-color-rgb), 0.45);
+$_bs-scrollbar-active: rgba(var(--bs-body-color-rgb), 0.55);
+$_bs-selection: rgba(var(--bs-primary-rgb), 0.22);
+$_bs-selection-inactive: rgba(var(--bs-primary-rgb), 0.12);
+$_bs-hover-highlight: rgba(var(--bs-primary-rgb), 0.12);
+$_bs-find-highlight: rgba(var(--bs-primary-rgb), 0.28);
+$_bs-widget-shadow: rgba(var(--bs-body-color-rgb), 0.12);
+
+.monaco-editor,
+.monaco-diff-editor,
+.monaco-component {
+  // --- Core editor canvas ---
+  --vscode-editor-background: var(--bs-body-bg) !important;
+  --vscode-editor-foreground: var(--bs-body-color) !important;
+  --vscode-editorGutter-background: var(--bs-body-bg) !important;
+  --vscode-editorStickyScroll-background: var(--bs-body-bg) !important;
+  --vscode-editorStickyScrollGutter-background: var(--bs-body-bg) !important;
+  --vscode-editorStickyScrollHover-background: var(--bs-tertiary-bg) !important;
+  --vscode-editorStickyScroll-shadow: var(--bs-border-color) !important;
+  --vscode-editorLineNumber-foreground: var(--bs-secondary-color) !important;
+  --vscode-editorLineNumber-activeForeground: var(--bs-body-color) !important;
+  --vscode-editorActiveLineNumber-foreground: var(--bs-body-color) !important;
+  --vscode-editor-lineHighlightBorder: var(--bs-border-color) !important;
+  --vscode-editorWhitespace-foreground: rgba(var(--bs-body-color-rgb), 0.22) !important;
+  --vscode-editorIndentGuide-background1: var(--bs-border-color) !important;
+  --vscode-editorIndentGuide-activeBackground1: rgba(var(--bs-body-color-rgb), 0.35) !important;
+  --vscode-editorRuler-foreground: var(--bs-border-color) !important;
+  --vscode-editorCursor-foreground: var(--bs-body-color) !important;
+  --vscode-editorMultiCursor-primary-foreground: var(--bs-body-color) !important;
+  --vscode-editorMultiCursor-secondary-foreground: var(--bs-body-color) !important;
+
+  // --- Global workbench chrome inside the editor host ---
+  --vscode-foreground: var(--bs-body-color) !important;
+  --vscode-descriptionForeground: var(--bs-secondary-color) !important;
+  --vscode-disabledForeground: #{$_bs-body-color-muted} !important;
+  --vscode-icon-foreground: var(--bs-body-color) !important;
+  --vscode-errorForeground: var(--bs-danger) !important;
+  --vscode-focusBorder: var(--bs-primary) !important;
+  --vscode-textLink-foreground: var(--bs-link-color) !important;
+  --vscode-textLink-activeForeground: var(--bs-link-hover-color) !important;
+  --vscode-textSeparator-foreground: var(--bs-border-color-translucent) !important;
+  --vscode-sash-hoverBorder: var(--bs-primary) !important;
+  --vscode-scrollbar-shadow: var(--bs-border-color) !important;
+  --vscode-scrollbarSlider-background: #{$_bs-scrollbar} !important;
+  --vscode-scrollbarSlider-hoverBackground: #{$_bs-scrollbar-hover} !important;
+  --vscode-scrollbarSlider-activeBackground: #{$_bs-scrollbar-active} !important;
+  --vscode-widget-shadow: #{$_bs-widget-shadow} !important;
+
+  // --- Widgets, hovers, suggest (stock #f3f3f3 / #c8c8c8) ---
+  --vscode-editorWidget-background: var(--bs-secondary-bg) !important;
+  --vscode-editorWidget-foreground: var(--bs-body-color) !important;
+  --vscode-editorWidget-border: var(--bs-border-color) !important;
+  --vscode-editorHoverWidget-background: var(--bs-secondary-bg) !important;
+  --vscode-editorHoverWidget-foreground: var(--bs-body-color) !important;
+  --vscode-editorHoverWidget-border: var(--bs-border-color) !important;
+  --vscode-editorHoverWidget-statusBarBackground: var(--bs-tertiary-bg) !important;
+  --vscode-editorHoverWidget-highlightForeground: var(--bs-link-color) !important;
+  --vscode-editorSuggestWidget-background: var(--bs-secondary-bg) !important;
+  --vscode-editorSuggestWidget-border: var(--bs-border-color) !important;
+  --vscode-editorSuggestWidget-foreground: var(--bs-body-color) !important;
+  --vscode-editorSuggestWidget-selectedBackground: var(--bs-primary) !important;
+  --vscode-editorSuggestWidget-selectedForeground: var(--bs-white) !important;
+  --vscode-editorSuggestWidget-highlightForeground: var(--bs-link-color) !important;
+  --vscode-editorSuggestWidget-focusHighlightForeground: rgba(255, 255, 255, 0.92) !important;
+  --vscode-editorSuggestWidgetStatus-foreground: var(--bs-secondary-color) !important;
+  --vscode-editorActionList-background: var(--bs-secondary-bg) !important;
+  --vscode-editorActionList-foreground: var(--bs-body-color) !important;
+  --vscode-editorActionList-focusBackground: var(--bs-primary) !important;
+  --vscode-editorActionList-focusForeground: var(--bs-white) !important;
+
+  // --- Selection & search highlights (stock blue tints) ---
+  --vscode-editor-selectionBackground: #{$_bs-selection} !important;
+  --vscode-editor-inactiveSelectionBackground: #{$_bs-selection-inactive} !important;
+  --vscode-editor-hoverHighlightBackground: #{$_bs-hover-highlight} !important;
+  --vscode-editor-findMatchHighlightBackground: #{$_bs-find-highlight} !important;
+  --vscode-editor-findRangeHighlightBackground: rgba(var(--bs-body-color-rgb), 0.12) !important;
+  --vscode-list-filterMatchBackground: #{$_bs-find-highlight} !important;
+  --vscode-searchEditor-findMatchBackground: rgba(var(--bs-primary-rgb), 0.18) !important;
+
+  // --- Inline diagnostics (stock reds/ambers/blues) ---
+  --vscode-editorError-foreground: var(--bs-danger) !important;
+  --vscode-editorWarning-foreground: var(--bs-warning) !important;
+  --vscode-editorInfo-foreground: var(--bs-info) !important;
+  --vscode-editorHint-foreground: var(--bs-secondary-color) !important;
+  --vscode-editorLink-activeForeground: var(--bs-link-hover-color) !important;
+  --vscode-problemsErrorIcon-foreground: var(--bs-danger) !important;
+  --vscode-problemsWarningIcon-foreground: var(--bs-warning) !important;
+  --vscode-problemsInfoIcon-foreground: var(--bs-info) !important;
+
+  // --- Lists & menus (find widget, quick pick, context menu) ---
+  --vscode-list-hoverBackground: var(--bs-tertiary-bg) !important;
+  --vscode-list-inactiveSelectionBackground: var(--bs-secondary-bg) !important;
+  --vscode-list-activeSelectionBackground: var(--bs-primary) !important;
+  --vscode-list-activeSelectionForeground: var(--bs-white) !important;
+  --vscode-list-focusOutline: var(--bs-primary) !important;
+  --vscode-list-highlightForeground: var(--bs-link-color) !important;
+  --vscode-list-focusHighlightForeground: rgba(255, 255, 255, 0.92) !important;
+  --vscode-listFilterWidget-background: var(--bs-secondary-bg) !important;
+  --vscode-listFilterWidget-shadow: #{$_bs-widget-shadow} !important;
+  --vscode-menu-background: var(--bs-body-bg) !important;
+  --vscode-menu-foreground: var(--bs-body-color) !important;
+  --vscode-menu-separatorBackground: var(--bs-border-color) !important;
+  --vscode-menu-selectionBackground: var(--bs-primary) !important;
+  --vscode-menu-selectionForeground: var(--bs-white) !important;
+  --vscode-quickInput-background: var(--bs-secondary-bg) !important;
+  --vscode-quickInput-foreground: var(--bs-body-color) !important;
+  --vscode-quickInputTitle-background: rgba(var(--bs-body-color-rgb), 0.06) !important;
+  --vscode-quickInputList-focusBackground: var(--bs-primary) !important;
+  --vscode-quickInputList-focusForeground: var(--bs-white) !important;
+  --vscode-pickerGroup-foreground: var(--bs-link-color) !important;
+  --vscode-pickerGroup-border: var(--bs-border-color) !important;
+
+  // --- Form controls in Monaco overlays ---
+  --vscode-input-background: var(--bs-body-bg) !important;
+  --vscode-input-foreground: var(--bs-body-color) !important;
+  --vscode-input-placeholderForeground: #{$_bs-body-color-subtle} !important;
+  --vscode-inputOption-activeBorder: var(--bs-primary) !important;
+  --vscode-inputOption-activeBackground: rgba(var(--bs-primary-rgb), 0.18) !important;
+  --vscode-inputOption-activeForeground: var(--bs-body-color) !important;
+  --vscode-inputOption-hoverBackground: var(--bs-tertiary-bg) !important;
+  --vscode-dropdown-background: var(--bs-body-bg) !important;
+  --vscode-dropdown-foreground: var(--bs-body-color) !important;
+  --vscode-dropdown-border: var(--bs-border-color) !important;
+  --vscode-checkbox-background: var(--bs-body-bg) !important;
+  --vscode-checkbox-selectBackground: var(--bs-secondary-bg) !important;
+  --vscode-checkbox-foreground: var(--bs-body-color) !important;
+  --vscode-checkbox-border: var(--bs-border-color) !important;
+  --vscode-checkbox-selectBorder: var(--bs-body-color) !important;
+
+  // --- Buttons (stock VS blue) ---
+  --vscode-button-background: var(--bs-primary) !important;
+  --vscode-button-foreground: var(--bs-white) !important;
+  --vscode-button-hoverBackground: color-mix(in srgb, var(--bs-primary), #000 14%) !important;
+  --vscode-button-secondaryBackground: var(--bs-secondary) !important;
+  --vscode-button-secondaryForeground: var(--bs-white) !important;
+  --vscode-button-secondaryHoverBackground: color-mix(in srgb, var(--bs-secondary), #000 12%) !important;
+
+  // --- Breadcrumb & diff chrome ---
+  --vscode-breadcrumb-background: var(--bs-body-bg) !important;
+  --vscode-breadcrumb-foreground: var(--bs-secondary-color) !important;
+  --vscode-breadcrumb-focusForeground: var(--bs-body-color) !important;
+  --vscode-breadcrumb-activeSelectionForeground: var(--bs-body-color) !important;
+  --vscode-breadcrumbPicker-background: var(--bs-secondary-bg) !important;
+  --vscode-multiDiffEditor-background: var(--bs-body-bg) !important;
+  --vscode-multiDiffEditor-border: var(--bs-border-color) !important;
+  --vscode-editorMarkerNavigation-background: var(--bs-body-bg) !important;
+
+  // --- Peek view shell ---
+  --vscode-peekViewTitle-background: var(--bs-secondary-bg) !important;
+  --vscode-peekViewTitleLabel-foreground: var(--bs-body-color) !important;
+  --vscode-peekViewTitleDescription-foreground: var(--bs-secondary-color) !important;
+  --vscode-peekView-border: var(--bs-primary) !important;
+  --vscode-peekViewResult-background: var(--bs-secondary-bg) !important;
+  --vscode-peekViewResult-lineForeground: var(--bs-secondary-color) !important;
+  --vscode-peekViewResult-fileForeground: var(--bs-body-color) !important;
+  --vscode-peekViewEditor-background: var(--bs-body-bg-alt, var(--bs-tertiary-bg)) !important;
+  --vscode-peekViewEditorGutter-background: var(--bs-body-bg-alt, var(--bs-tertiary-bg)) !important;
+  --vscode-peekViewEditorStickyScroll-background: var(--bs-body-bg-alt, var(--bs-tertiary-bg)) !important;
+  --vscode-peekViewEditorStickyScrollGutter-background: var(--bs-body-bg-alt, var(--bs-tertiary-bg)) !important;
+
+  // --- Toolbar / progress ---
+  --vscode-toolbar-hoverBackground: var(--bs-tertiary-bg) !important;
+  --vscode-toolbar-activeBackground: rgba(var(--bs-body-color-rgb), 0.12) !important;
+  --vscode-progressBar-background: var(--bs-primary) !important;
+}

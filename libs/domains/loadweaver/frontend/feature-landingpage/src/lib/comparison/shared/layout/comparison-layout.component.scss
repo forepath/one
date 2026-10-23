@@ -1,0 +1,47 @@
+@import '../../../page.component.scss';
+
+.comparison-vendor-icon {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.comparison-vendor-icon--muted {
+  background: rgba(98, 108, 113, 0.12);
+  color: var(--bs-secondary-color);
+}
+
+.comparison-vendor-icon--primary {
+  background: none;
+  color: var(--bs-primary);
+}
+
+// Primary box like Agenstra's; gold is a light fill, so it carries dark ink (11.8:1 with #0f0f11).
+.comparison-fit-main {
+  color: var(--bs-dark);
+}
+
+.comparison-fit-lead {
+  color: rgb(15 15 17 / 0.9);
+}
+
+.comparison-more-panel {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.comparison-more-link {
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.35rem 0;
+  transition:
+    color 0.2s ease,
+    padding-left 0.2s ease;
+
+  &:hover {
+    color: var(--bs-primary);
+    padding-left: 0.25rem;
+  }
+}

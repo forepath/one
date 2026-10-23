@@ -1,0 +1,152 @@
+@if (!token()) {
+  <div class="kiosk__notice" data-testid="kiosk-no-token">
+    <i class="bi bi-display display-1 text-body-secondary" aria-hidden="true"></i>
+    <h1 class="h2 mt-3" i18n="@@lwConsoleKiosk-noTokenTitle">No wallboard token</h1>
+    <p class="text-body-secondary" i18n="@@lwConsoleKiosk-noTokenHint">
+      Open the kiosk URL shown when the wallboard was created (it ends with #lw_wb_…).
+    </p>
+  </div>
+} @else if (unauthorized()) {
+  <div class="kiosk__notice" data-testid="kiosk-unauthorized">
+    <i class="bi bi-shield-x display-1 text-danger" aria-hidden="true"></i>
+    <h1 class="h2 mt-3" i18n="@@lwConsoleKiosk-invalidTitle">This wallboard token is not valid</h1>
+    <p class="text-body-secondary" i18n="@@lwConsoleKiosk-invalidHint">
+      It has expired or was revoked, or whoever created it may no longer manage its scope. Create a new wallboard in the
+      console.
+    </p>
+  </div>
+} @else if (section(); as s) {
+  <div class="kiosk__bar">
+    <span class="kiosk__scope" data-testid="kiosk-scope">{{ s.scope }}</span>
+    <span class="text-body-secondary">{{ view()?.name }}</span>
+    <span class="flex-grow-1"></span>
+    @if (sections().length > 1) {
+      <span class="kiosk__dots" aria-hidden="true">
+        @for (x of sections(); track $index) {
+          <span class="kiosk__dot" [class.kiosk__dot--active]="$index === index() % sections().length"></span>
+        }
+      </span>
+    }
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-secondary"
+      [attr.aria-label]="toggleThemeLabel"
+      [title]="toggleThemeLabel"
+      (click)="theme.toggleTheme()"
+    >
+      <i class="bi {{ theme.isDarkMode() ? 'bi-sun' : 'bi-moon' }}" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="kiosk__headline" data-testid="kiosk-headline">
+    <span class="kiosk__state-icon text-bg-{{ tone(s.headline.state) }}">
+      <i class="bi {{ healthIcon[s.headline.state] }}" aria-hidden="true"></i>
+    </span>
+    <div>
+      <div class="kiosk__state text-{{ tone(s.headline.state) }}-emphasis">{{ healthLabel(s.headline.state) }}</div>
+      <div class="kiosk__message">{{ s.headline.message }}</div>
+    </div>
+  </div>
+
+  <div class="kiosk__summary" data-testid="kiosk-summary">
+    @if (s.summary.nodes.total > 0) {
+      <div class="kiosk__tile">
+        <div class="kiosk__tile-label" i18n="@@lwConsoleKiosk-nodes">Nodes up</div>
+        <div class="kiosk__tile-value" [class.text-warning-emphasis]="s.summary.nodes.up < s.summary.nodes.total">
+          {{ s.summary.nodes.up }} / {{ s.summary.nodes.total }}
+        </div>
+      </div>
+    }
+    <div class="kiosk__tile">
+      <div class="kiosk__tile-label" i18n="@@lwConsoleKiosk-deployments">Deployments</div>
+      <div class="kiosk__tile-value">{{ s.summary.deployments }}</div>
+    </div>
+    <div class="kiosk__tile">
+      <div class="kiosk__tile-label" i18n="@@lwConsoleKiosk-alerts">Alerts firing</div>
+      <div class="kiosk__tile-value" [class.text-danger-emphasis]="s.summary.alertsFiring > 0">
+        {{ s.summary.alertsFiring }}
+      </div>
+    </div>
+    @if (s.summary.slos.total > 0) {
+      <div class="kiosk__tile">
+        <div class="kiosk__tile-label" i18n="@@lwConsoleKiosk-slos">SLOs burning</div>
+        <div
+          class="kiosk__tile-value"
+          [class.text-warning-emphasis]="s.summary.slos.burning + s.summary.slos.exhausted > 0"
+        >
+          {{ s.summary.slos.burning + s.summary.slos.exhausted }} / {{ s.summary.slos.total }}
+        </div>
+      </div>
+    }
+    @if (s.summary.capacity; as capacity) {
+      <div class="kiosk__tile">
+        <div class="kiosk__tile-label" i18n="@@lwConsoleKiosk-memory">Memory in use</div>
+        <div class="kiosk__tile-value">
+          {{ formatShare(capacity.memoryBytes.used, capacity.memoryBytes.total) }}
+        </div>
+      </div>
+    }
+    @if (s.summary.requestsPerSecond !== null) {
+      <div class="kiosk__tile">
+        <div class="kiosk__tile-label" i18n="@@lwConsoleKiosk-rps">Requests / s</div>
+        <div class="kiosk__tile-value">{{ s.summary.requestsPerSecond | number: '1.0-1' }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="kiosk__inbox" data-testid="kiosk-inbox">
+    <h2 class="h4" i18n="@@lwConsoleKiosk-inbox">Needs attention</h2>
+    @for (item of s.inbox.slice(0, inboxLimit); track $index) {
+      <div class="kiosk__item">
+        <i
+          class="bi {{ severityIcon[item.severity] }}"
+          [class.text-danger]="item.severity === 'critical'"
+          [class.text-warning]="item.severity === 'warning'"
+          [class.text-info]="item.severity === 'info'"
+          aria-hidden="true"
+        ></i>
+        <span class="flex-grow-1">{{ item.title }}</span>
+        @if (item.project) {
+          <span class="text-body-secondary">{{ item.project }}</span>
+        }
+        @if (item.since) {
+          <span class="text-body-secondary small">{{ item.since | date: 'short' }}</span>
+        }
+      </div>
+    } @empty {
+      <div class="kiosk__item text-success-emphasis">
+        <i class="bi bi-check2-circle" aria-hidden="true"></i>
+        <span i18n="@@lwConsoleKiosk-inboxEmpty">Nothing needs attention</span>
+      </div>
+    }
+    @if (s.inbox.length > inboxLimit) {
+      <div class="text-body-secondary mt-2">+ {{ s.inbox.length - inboxLimit }}</div>
+    }
+  </div>
+
+  <div class="kiosk__footer">
+    <span>
+      @if (updatedAt(); as at) {
+        <span i18n="@@lwConsoleKiosk-updated">Updated</span> {{ at | date: 'mediumTime' }}
+      }
+    </span>
+    @if (error(); as message) {
+      <span class="text-warning-emphasis" data-testid="kiosk-stale"
+        ><i class="bi bi-wifi-off me-1" aria-hidden="true"></i>{{ message }}</span
+      >
+    }
+  </div>
+} @else if (error(); as message) {
+  <div class="kiosk__notice" data-testid="kiosk-error">
+    <i class="bi bi-wifi-off display-1 text-warning" aria-hidden="true"></i>
+    <h1 class="h2 mt-3" i18n="@@lwConsoleKiosk-errorTitle">The wallboard can't be loaded</h1>
+    <p class="text-body-secondary">{{ message }}</p>
+    <p class="text-body-secondary small" i18n="@@lwConsoleKiosk-retry">Retrying every 30 seconds.</p>
+  </div>
+} @else if (view()) {
+  <div class="kiosk__notice">
+    <h1 class="h2" i18n="@@lwConsoleKiosk-empty">Nothing to show</h1>
+  </div>
+} @else {
+  <div class="kiosk__notice"><fpc-spinner /></div>
+}

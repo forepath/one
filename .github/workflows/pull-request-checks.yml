@@ -243,6 +243,10 @@ jobs:
           marker: '<!-- nx-test-report -->'
           body-path: pr-tests.md
 
+      # Integration suites start their own throwaway containers (Docker is available on the runner).
+      - name: Run integration tests
+        run: npx nx affected --target=integration-test --parallel=1
+
       - name: Run end-to-end tests
         if: needs.detect-affected.outputs.has_e2e == 'true'
         run: npx nx affected --target=e2e --parallel=3
@@ -404,6 +408,9 @@ jobs:
       - name: Build Worker container images
         run: |
           npx nx affected --target=worker-container-image --configuration=test --parallel=3
+          # Shared microVM launcher (registry.forenet.internal/forepath/microvm-launcher:test) + its smoke test;
+          # the Agenstra microVM worker image is built FROM it.
+          npx nx affected --target=container-image-test --parallel=1
           npx nx affected --target=worker-microvm-container-image --configuration=test --parallel=1
           npx nx affected --target=egress-guard-container-image --configuration=test --parallel=3
 

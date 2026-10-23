@@ -39,7 +39,12 @@
             </span>
           </fpc-summary-card>
           <fpc-summary-card [label]="latestVersionLabel">
-            <span fpcSummaryCardValue>{{ formatVersion(state.latestVersion) }}</span>
+            <span fpcSummaryCardValue>
+              {{ formatVersion(state.latestVersion) }}
+              @if (state.release?.prerelease) {
+                <fpc-badge color="warning" size="sm" data-testid="updates-prerelease">{{ betaLabel }}</fpc-badge>
+              }
+            </span>
             @if (state.release?.htmlUrl; as releaseUrl) {
               <fpc-button
                 fpcSummaryCardActions
@@ -72,6 +77,11 @@
               }
             </span>
           </fpc-summary-card>
+          @if (state.channel) {
+            <fpc-summary-card [label]="channelLabel">
+              <span fpcSummaryCardValue data-testid="updates-channel">{{ channelName(state.channel) }}</span>
+            </fpc-summary-card>
+          }
           @if (environment.frontendVersion) {
             <fpc-summary-card [label]="frontendVersionLabel">
               <span fpcSummaryCardValue>{{ formatVersion(environment.frontendVersion) }}</span>

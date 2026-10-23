@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db
+  replicas: 3
+  mode: 0644
+  octal: 0o17
+  hex: 0x1F
+  bin: 0b101
+  big: 1_000
+  ratio: 1.50
+  exp: 1e3
+  inf: .inf
+  enabled: True
+  created: 2024-01-02T03:04:05Z
+  date: 2024-01-02
+  quoted: '42'
+  folded: >
+    a folded
+    text
+data:
+  password: hunter2
+  port: 5432
+stringData:
+  token: abc

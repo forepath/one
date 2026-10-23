@@ -1,0 +1,155 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="heading()" [icon]="kindIcon(key()?.kind ?? '').slice(3)">
+    <ng-container ngProjectAs="[fpcPageHeaderActions]">
+      <fpc-button
+        fpcPageHeaderActions
+        variant="secondary"
+        size="sm"
+        [iconOnly]="true"
+        [ariaLabel]="backLabel"
+        [title]="backLabel"
+        routerLink="/resources"
+      >
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+      </fpc-button>
+      @if (onMap()) {
+        <fpc-button
+          fpcPageHeaderActions
+          variant="secondary"
+          size="sm"
+          [iconOnly]="true"
+          [ariaLabel]="mapLabel"
+          [title]="mapLabel"
+          routerLink="/topology"
+          data-testid="resource-map"
+        >
+          <i class="bi bi-diagram-3" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      @if (healthUrl(); as url) {
+        <fpc-button
+          fpcPageHeaderActions
+          variant="secondary"
+          size="sm"
+          [iconOnly]="true"
+          [ariaLabel]="healthLabel"
+          [title]="healthLabel"
+          [routerLink]="url"
+          data-testid="resource-health"
+        >
+          <i class="bi bi-heart-pulse" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      @if (resource() && key(); as k) {
+        <fpc-button
+          fpcPageHeaderActions
+          variant="danger"
+          size="sm"
+          [iconOnly]="true"
+          [ariaLabel]="deleteLabel"
+          [title]="deleteLabel"
+          (clicked)="deleteOpen.set(true)"
+          data-testid="resource-delete"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          fpcPageHeaderActions
+          variant="primary"
+          size="sm"
+          [iconOnly]="true"
+          [ariaLabel]="editLabel"
+          [title]="editLabel"
+          [routerLink]="editLink(k)"
+          [queryParams]="projectParams(k.project)"
+          data-testid="resource-edit"
+        >
+          <i class="bi bi-pencil" aria-hidden="true"></i>
+        </fpc-button>
+      }
+    </ng-container>
+  </fpc-page-header>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (planError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" [dismissible]="true" (closed)="dismissPlanError()" />
+    }
+
+    @if (resource(); as r) {
+      <fpc-panel-grid [columns]="3">
+        <fpc-panel [title]="metadataTitle">
+          <dl class="row small mb-0" data-testid="resource-metadata">
+            <dt class="col-4" i18n="@@lwConsoleResourceDetail-kind">Kind</dt>
+            <dd class="col-8">{{ r.kind }}</dd>
+            <dt class="col-4" i18n="@@lwConsoleResourceDetail-name">Name</dt>
+            <dd class="col-8 font-monospace">{{ r.metadata.name }}</dd>
+            <dt class="col-4" i18n="@@lwConsoleResourceDetail-project">Project</dt>
+            <dd class="col-8">
+              @if (r.metadata.project) {
+                {{ r.metadata.project }}
+              } @else {
+                <span i18n="@@lwConsoleResourceDetail-clusterLevel">Cluster-level</span>
+              }
+            </dd>
+            @if (description(); as d) {
+              <dt class="col-4" i18n="@@lwConsoleResourceDetail-description">Description</dt>
+              <dd class="col-8">{{ d }}</dd>
+            }
+            <dt class="col-4" i18n="@@lwConsoleResourceDetail-labels">Labels</dt>
+            <dd class="col-8 d-flex flex-wrap gap-1">
+              @for (label of r.metadata.labels ?? {} | keyvalue; track label.key) {
+                <fpc-badge color="light" size="sm">{{ label.key }}={{ label.value }}</fpc-badge>
+              } @empty {
+                –
+              }
+            </dd>
+            @for (annotation of r.metadata.annotations ?? {} | keyvalue; track annotation.key) {
+              <dt class="col-4 text-truncate font-monospace small">{{ annotation.key }}</dt>
+              <dd class="col-8 text-break">{{ annotation.value }}</dd>
+            }
+          </dl>
+          <p class="small text-body-secondary mt-3 mb-0" i18n="@@lwConsoleResourceDetail-planHint">
+            Changes go through a plan: edit or delete creates a plan to review, approve and apply.
+          </p>
+        </fpc-panel>
+        @if (compose() !== null) {
+          <fpc-panel [span]="2" flush>
+            <fpc-tab-group class="flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="activeTab.set($event)">
+              <fpc-tab id="yaml" [label]="yamlTab" icon="file-earmark-code" />
+              <fpc-tab id="compose" [label]="composeTab" icon="box-seam" />
+            </fpc-tab-group>
+            @if (activeTab() === 'compose') {
+              <fpc-code-editor [value]="compose() ?? ''" language="yaml" [readOnly]="true" height="32rem" />
+            } @else {
+              <fpc-code-editor [value]="yaml()" language="yaml" [readOnly]="true" height="32rem" />
+            }
+          </fpc-panel>
+        } @else {
+          <fpc-panel [span]="2" flush [title]="yamlTab">
+            <fpc-code-editor [value]="yaml()" language="yaml" [readOnly]="true" height="32rem" />
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+      @if (r.kind === 'Deployment' && r.metadata.project) {
+        <loadweaver-autoscaling-panel [project]="r.metadata.project" [deployment]="r.metadata.name" />
+      }
+    } @else if (loading()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    }
+  </div>
+</div>
+
+<fpc-confirm-dialog
+  [open]="deleteOpen()"
+  (openChange)="deleteOpen.set($event)"
+  [title]="deleteTitle"
+  [message]="deleteMessage"
+  [confirmLabel]="deleteConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  [busy]="planning()"
+  (confirmed)="confirmDelete()"
+/>

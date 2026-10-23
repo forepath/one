@@ -1,0 +1,179 @@
+<fpc-top-bar brandSrc="assets/images/icon_light.svg" [brandAlt]="productName">
+  @if (fleetMode && showChrome() && (isAuthenticated$ | async)) {
+    <!-- Fleet mode (3.24): the cluster the cluster views work on, through the fleet's relay. -->
+    <label class="visually-hidden" for="lw-console-cluster-switcher">{{ clusterSwitcherLabel }}</label>
+    <fpc-form-control
+      class="fpc-top-bar__action"
+      controlType="select"
+      controlId="lw-console-cluster-switcher"
+      size="sm"
+      data-bs-theme="dark"
+      [ngModel]="activeClusterId() ?? ''"
+      (ngModelChange)="onClusterSwitch($event)"
+      data-testid="console-cluster-switcher"
+    >
+      <option value="">{{ fleetLevelLabel }}</option>
+      @for (c of switchableClusters(); track c.id) {
+        <option [value]="c.id">{{ c.name }}</option>
+      }
+    </fpc-form-control>
+  }
+  @if (showChrome() && (isAuthenticated$ | async)) {
+    <!-- Global search and command palette (3.25); Ctrl / Cmd + K opens it too. -->
+    <fpc-button
+      variant="link"
+      size="sm"
+      iconOnly
+      class="fpc-top-bar__action"
+      i18n-title="@@lwConsoleContainer-searchTitle"
+      title="Search (Ctrl / ⌘ + K)"
+      i18n-ariaLabel="@@lwConsoleContainer-search"
+      ariaLabel="Search"
+      (clicked)="searchPalette.show()"
+      data-testid="console-search"
+    >
+      <i class="bi bi-search" aria-hidden="true"></i>
+    </fpc-button>
+  }
+  @if (isUsersAuth && (isAuthenticated$ | async)) {
+    <fpc-button
+      routerLink="/settings/security"
+      routerLinkActive="active"
+      variant="link"
+      size="sm"
+      iconOnly
+      class="fpc-top-bar__action position-relative"
+      i18n-title="@@lwConsoleContainer-securityTitle"
+      title="Security"
+      i18n-ariaLabel="@@lwConsoleContainer-security"
+      ariaLabel="Security"
+    >
+      <i class="bi bi-shield-lock" aria-hidden="true"></i>
+      @if (showSecurityAuthenticatorBadge$ | async) {
+        <fpc-notification-indicator kind="security-warning" placement="absolute" />
+        <span class="visually-hidden" i18n="@@lwConsoleContainer-securityAuthenticatorSuggested"
+          >Authenticator app is not enabled</span
+        >
+      }
+    </fpc-button>
+  }
+  <fpc-language-switcher
+    data-bs-theme="dark"
+    [locales]="localeService.getAvailableLocales()"
+    [locale]="localeService.getCurrentLocale()"
+    [ariaLabel]="languageSwitcherAriaLabel"
+    (localeChange)="onLocaleChange($event)"
+  />
+  <fpc-theme-switcher
+    [dark]="themeService.isDarkMode()"
+    [ariaLabel]="toggleDarkModeTitle"
+    (darkChange)="themeService.toggleTheme()"
+  />
+  @if (isAuthenticated$ | async) {
+    <fpc-button variant="primary" size="sm" (clicked)="onLogoutClick()" i18n="@@lwConsoleContainer-logout"
+      >Logout</fpc-button
+    >
+  }
+</fpc-top-bar>
+<div class="d-flex justify-content-end flex-grow-1 overflow-hidden" [class.border-top]="!showChrome()">
+  @if (showChrome() && (isAuthenticated$ | async)) {
+    <fpc-sidebar [ariaLabel]="sidebarAriaLabel">
+      <!-- Ordered by process (setup to daily use); groups open as popovers, one at a time. -->
+      @for (view of nav(); track view.key) {
+        @if (view.kind === 'link') {
+          <ng-container *ngTemplateOutlet="navLink; context: { $implicit: view.item, popover: false }" />
+        } @else {
+          <fpc-sidebar-popover
+            [open]="openPopover() === view.group.id"
+            (openChange)="onPopoverOpenChange(view.group.id, $event)"
+            [ariaLabel]="view.group.title"
+            [attr.data-testid]="'console-nav-group-' + view.group.id"
+          >
+            <span
+              fpcSidebarPopoverTrigger
+              class="sidebar__item position-relative"
+              [class.active]="isGroupActive(view)"
+              tabindex="0"
+              role="button"
+              aria-haspopup="dialog"
+              [attr.aria-expanded]="openPopover() === view.group.id"
+              [title]="view.group.title"
+              [attr.aria-label]="view.group.title"
+              (keydown.enter)="onPopoverTriggerKey(view.group.id, $event)"
+              (keydown.space)="onPopoverTriggerKey(view.group.id, $event)"
+            >
+              <i class="bi {{ view.group.icon }} me-1" aria-hidden="true"></i>
+              <span class="small">{{ view.group.label }}</span>
+            </span>
+            @for (item of view.items; track item.path) {
+              <ng-container *ngTemplateOutlet="navLink; context: { $implicit: item, popover: true }" />
+            }
+          </fpc-sidebar-popover>
+        }
+      }
+      @if (adminNavItems().length > 0) {
+        <div fpcSidebarFooter>
+          <fpc-sidebar-popover
+            [open]="openPopover() === 'admin'"
+            (openChange)="onPopoverOpenChange('admin', $event)"
+            [ariaLabel]="adminPopoverAriaLabel"
+            data-testid="console-nav-group-admin"
+          >
+            <span
+              fpcSidebarPopoverTrigger
+              class="sidebar__item border-top position-relative"
+              [class.active]="isAdminRouteActive()"
+              tabindex="0"
+              role="button"
+              aria-haspopup="dialog"
+              [attr.aria-expanded]="openPopover() === 'admin'"
+              i18n-title="@@lwConsoleContainer-adminTitle"
+              title="Admin"
+              i18n-aria-label="@@lwConsoleContainer-adminTitle"
+              aria-label="Admin"
+              (keydown.enter)="onPopoverTriggerKey('admin', $event)"
+              (keydown.space)="onPopoverTriggerKey('admin', $event)"
+            >
+              <i class="bi bi-gear me-1" aria-hidden="true"></i>
+              <span class="small" i18n="@@lwConsoleContainer-admin">Admin</span>
+              @if (updatesAttentionBadge$ | async) {
+                <fpc-notification-indicator placement="absolute" />
+                <span class="visually-hidden" i18n="@@lwConsoleContainer-updatesAttention">Updates need attention</span>
+              }
+            </span>
+            @for (item of adminNavItems(); track item.path) {
+              <ng-container *ngTemplateOutlet="navLink; context: { $implicit: item, popover: true }" />
+            }
+          </fpc-sidebar-popover>
+        </div>
+      }
+    </fpc-sidebar>
+  }
+  <fpc-section-container>
+    <router-outlet></router-outlet>
+  </fpc-section-container>
+</div>
+
+<ng-template #navLink let-item let-popover="popover">
+  <a
+    [routerLink]="item.path"
+    class="sidebar__item position-relative"
+    [class.active]="item.path === activePath()"
+    [attr.aria-current]="item.path === activePath() ? 'page' : null"
+    [title]="item.title"
+    [attr.aria-label]="item.title"
+    [attr.data-testid]="item.testId ?? null"
+    (click)="popover && closePopover()"
+  >
+    <i class="bi {{ item.icon }} me-1" aria-hidden="true"></i>
+    <span class="small">{{ item.label }}</span>
+    @if (item.badge === 'updates' && (updatesAttentionBadge$ | async)) {
+      <fpc-notification-indicator placement="absolute" />
+      <span class="visually-hidden" i18n="@@lwConsoleContainer-updatesAttention">Updates need attention</span>
+    }
+  </a>
+</ng-template>
+
+<identity-logout-confirm-modal (confirmed)="onLogoutConfirmed($event)" />
+
+<loadweaver-search-palette #searchPalette [enabled]="showChrome() && !!(isAuthenticated$ | async)" />

@@ -2,16 +2,16 @@ import type { ChangelogEntry, ProductScope, ScopedChangelog } from '../interface
 
 const BULLET_LINE_PATTERN = /^\s*(?:[-*]|\d+\.)\s+(.+)$/;
 
-const CONVENTIONAL_SCOPE_PATTERN = /(?:^|\s)(?:\w+)?\((agenstra|decabill)\)/i;
+const CONVENTIONAL_SCOPE_PATTERN = /(?:^|\s)(?:\w+)?\((agenstra|decabill|loadweaver)\)/i;
 
-const LEADING_PRODUCT_PATTERN = /^(agenstra|decabill)\b/i;
+const LEADING_PRODUCT_PATTERN = /^(agenstra|decabill|loadweaver)\b/i;
 
 const SECTION_HEADER_PATTERN = /^#{1,6}\s+(.+)$/;
 
 function normalizeProduct(value: string): ProductScope | undefined {
   const normalized = value.trim().toLowerCase();
 
-  if (normalized === 'agenstra' || normalized === 'decabill') {
+  if (normalized === 'agenstra' || normalized === 'decabill' || normalized === 'loadweaver') {
     return normalized;
   }
 

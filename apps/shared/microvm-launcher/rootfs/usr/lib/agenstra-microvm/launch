@@ -1,0 +1,288 @@
+#!/bin/bash
+# Agenstra microVM launcher (container entrypoint of the agenstra-manager-worker-microvm image, under tini).
+#
+# Boots the worker filesystem below /guest as a KVM microVM through libvirt (session mode) and keeps the
+# container contract intact: `docker logs` (workload output), `docker exec` (via vm-exec), `docker cp` and
+# volumes below /guest (virtio-fs), published ports (bridge forwarders) and the egress guard (QEMU user
+# networking turns guest traffic into ordinary sockets in this container's network namespace).
+#
+# The container root is the launcher's own Debian tree and is never shared with the guest: nothing the guest
+# writes can change what this launcher executes on the next start.
+#
+# Privileges: this script and virtiofsd run as container root with the reduced capability set the agent manager
+# grants (no NET_ADMIN, no SYS_ADMIN); virtiofsd additionally confines itself to /guest (chroot sandbox). libvirtd, QEMU and the bridge daemon run as the unprivileged
+# agenstra-vmm user with the kvm group and no capabilities.
+#
+# Configuration (image ENV, overridable by the agent manager):
+#   AGENSTRA_MICROVM_ENTRYPOINT      workload entrypoint inside the guest (container command is appended)
+#   AGENSTRA_MICROVM_USER            workload user inside the guest (empty: root)
+#   AGENSTRA_MICROVM_FORWARD_PORTS   container TCP ports tunnelled into the guest (e.g. 4096,6080)
+#   AGENSTRA_MICROVM_LOOPBACK_PORTS  guest loopback ports relayed to the container loopback (e.g. 3128)
+#   AGENSTRA_MICROVM_MEMORY_MB       guest memory (default: container memory limit minus launcher overhead)
+#   AGENSTRA_MICROVM_VCPUS           guest vCPUs (default: container CPU quota, else all host CPUs)
+#   AGENSTRA_MICROVM_STOP_GRACE      seconds the workload gets after SIGTERM before SIGKILL (default 8)
+#
+# Live migration (Loadweaver only, M7 F5; the agent manager never sets these, so Agenstra's Docker hosts boot exactly as
+# before):
+#   AGENSTRA_MICROVM_MIGRATION       1: migratable devices (virtiofsd --migration-mode=find-paths, vhost-user-fs
+#                                    migration=internal) so the Loadweaver node agent can live-migrate the guest
+#                                    (vm-ctl qmp-migrate, as for generic microVMs); /run/loadweaver/vm/migration may
+#                                    then be mounted (the agent's relay socket `peer.sock`, the marker `incoming`)
+#   AGENSTRA_MICROVM_INCOMING_WAIT   seconds an incoming launcher waits for the migration (default 3600)
+# With the marker /run/loadweaver/vm/migration/incoming the launcher is a migration target: the domain is created
+# paused with `-incoming defer`, QEMU waits on its incoming socket (the node agent relays the source's stream to it),
+# the agent resumes the guest once the migration completed, and only then the bridge daemon attaches (--resync: the
+# guest re-attaches instead of booting the workload again). Guest networking stays QEMU user-mode: its connection
+# state lives in the source's QEMU, so the guest's open TCP connections are reset by a migration (processes, memory
+# and files survive).
+set -euo pipefail
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
+readonly INSTALL_DIR=/usr/lib/agenstra-microvm
+readonly RUN_DIR=/dev/shm/agenstra-microvm
+readonly VMM_DIR="${RUN_DIR}/vmm"
+readonly FS_DIR="${RUN_DIR}/fs"
+readonly VMM_USER=agenstra-vmm
+readonly DOMAIN=agenstra-worker
+readonly GUEST_ROOT=/guest
+readonly LAUNCHER_OVERHEAD_MB=384
+readonly EXIT_LAUNCH_FAILED=125
+
+log() { printf 'agenstra-microvm: %s\n' "$*" >&2; }
+die() {
+  log "$*"
+  exit "${EXIT_LAUNCH_FAILED}"
+}
+
+[ "$(id -u)" = 0 ] || die "the launcher must start as root inside the container (do not set a container user)"
+[ -c /dev/kvm ] || die "E_KVM_UNAVAILABLE: /dev/kvm is not available in the container"
+[ -r /dev/kvm ] && [ -w /dev/kvm ] || die "E_KVM_UNAVAILABLE: /dev/kvm is not accessible"
+
+workload_entrypoint="${AGENSTRA_MICROVM_ENTRYPOINT:-}"
+[ -n "${workload_entrypoint}" ] || die "AGENSTRA_MICROVM_ENTRYPOINT is not set"
+forward_ports="${AGENSTRA_MICROVM_FORWARD_PORTS:-}"
+loopback_ports="${AGENSTRA_MICROVM_LOOPBACK_PORTS:-}"
+stop_grace="${AGENSTRA_MICROVM_STOP_GRACE:-8}"
+for value in "${forward_ports}" "${loopback_ports}"; do
+  [[ -z "${value}" || "${value}" =~ ^[0-9]{1,5}(,[0-9]{1,5})*$ ]] || die "invalid port list: ${value}"
+done
+[[ "${stop_grace}" =~ ^[0-9]{1,4}$ ]] || die "invalid AGENSTRA_MICROVM_STOP_GRACE"
+migration="${AGENSTRA_MICROVM_MIGRATION:-}"
+[[ -z "${migration}" || "${migration}" = 1 ]] || die "invalid AGENSTRA_MICROVM_MIGRATION"
+readonly MIGRATION_DIR=/run/loadweaver/vm/migration
+incoming=0
+if [ "${migration}" = 1 ] && [ -e "${MIGRATION_DIR}/incoming" ]; then
+  incoming=1
+fi
+
+kvm_gid=$(stat -c %g /dev/kvm)
+vmm_uid=$(id -u "${VMM_USER}")
+vmm_gid=$(id -g "${VMM_USER}")
+
+as_vmm() {
+  setpriv --reuid="${vmm_uid}" --regid="${vmm_gid}" --groups="${kvm_gid}" --inh-caps=-all --bounding-set=-all -- \
+    env HOME="${VMM_DIR}" XDG_RUNTIME_DIR="${VMM_DIR}/run" XDG_CONFIG_HOME="${VMM_DIR}/config" \
+    XDG_CACHE_HOME="${VMM_DIR}/cache" XDG_DATA_HOME="${VMM_DIR}/data" "$@"
+}
+
+virsh_vmm() { as_vmm virsh -q -c qemu:///session "$@"; }
+
+rm -rf "${RUN_DIR}"
+install -d -m 0755 -o root -g root "${RUN_DIR}"
+install -d -m 0750 -o root -g "${vmm_gid}" "${FS_DIR}"
+install -d -m 0700 -o "${vmm_uid}" -g "${vmm_gid}" "${VMM_DIR}" "${VMM_DIR}/run"
+
+# Snapshot the container's view (environment, working directory, hostname, command) for the guest workload.
+[ -d "${GUEST_ROOT}/usr" ] || die "no guest filesystem below ${GUEST_ROOT}"
+/usr/bin/node "${INSTALL_DIR}/bridge-host.cjs" boot-config --out "${VMM_DIR}/boot.json" \
+  --worker-env "${INSTALL_DIR}/worker.env" --worker-workdir "${INSTALL_DIR}/worker.workdir" \
+  --user "${AGENSTRA_MICROVM_USER:-}" --loopback-ports "${loopback_ports}" -- "${workload_entrypoint}" "$@"
+chown "${vmm_uid}:${vmm_gid}" "${VMM_DIR}/boot.json"
+
+# --- Guest filesystem: /guest, shared through one virtio-fs device ------------------------------------------
+readonly PSEUDO_FS='^(proc|sysfs|devpts|devtmpfs|mqueue|cgroup|cgroup2|securityfs|debugfs|tracefs|bpf|fusectl|configfs|pstore|efivarfs|binfmt_misc|hugetlbfs|nsfs|autofs|rpc_pipefs|selinuxfs)$'
+
+# Kernel filesystems mounted below /guest would hand the guest a view into this container. Every other mount
+# (volumes, binds of the environment) must be below /guest: Docker resolves mount targets inside the container's
+# root, so a guest that replaced a directory of /guest with a symlink could otherwise redirect a mount into the
+# launcher tree on the next start.
+while read -r _ _ _ _ mount_point _ rest; do
+  fstype=$(printf '%s' "${rest}" | awk '{for (i = 1; i <= NF; i++) if ($i == "-") { print $(i + 1); exit }}')
+  case "${mount_point}" in
+    "${GUEST_ROOT}" | "${GUEST_ROOT}"/*)
+      if [[ "${fstype}" =~ ${PSEUDO_FS} ]]; then
+        die "refusing to share ${mount_point} (${fstype}) with the microVM"
+      fi
+      ;;
+    / | /etc/hosts | /etc/hostname | /etc/resolv.conf) ;;
+    "${MIGRATION_DIR}")
+      # The node agent's migration directory (relay socket, incoming marker): only in Loadweaver's migration mode.
+      [ "${migration}" = 1 ] || die "refusing to start: ${mount_point} is mounted outside ${GUEST_ROOT}"
+      ;;
+    /proc | /proc/* | /sys | /sys/* | /dev | /dev/*)
+      # Docker's own kernel / tmpfs mounts (and masked paths); a redirected volume would be a disk filesystem.
+      [[ "${fstype}" =~ ${PSEUDO_FS} || "${fstype}" =~ ^(tmpfs|devtmpfs|devpts|mqueue|ramfs)$ ]] ||
+        die "refusing to start: ${mount_point} (${fstype}) is mounted outside ${GUEST_ROOT}"
+      ;;
+    *) die "refusing to start: ${mount_point} is mounted outside ${GUEST_ROOT}" ;;
+  esac
+done </proc/self/mountinfo
+
+# Migration mode: inodes the guest knows are found by path on the target (virtiofsd >= 1.13); paths are re-checked
+# right before the switch-over (the node agent's file access writes into /guest).
+virtiofsd_migration=()
+if [ "${migration}" = 1 ]; then
+  virtiofsd_migration=(--migration-mode=find-paths --migration-on-error=abort --migration-confirm-paths)
+fi
+/usr/libexec/virtiofsd --shared-dir="${GUEST_ROOT}" --socket-path="${FS_DIR}/root.sock" --socket-group="${VMM_USER}" \
+  --sandbox=chroot --cache=auto --modcaps=-setfcap --log-level=error "${virtiofsd_migration[@]}" &
+virtiofsd_pid=$!
+
+# --- Guest resources ----------------------------------------------------------------------------------------
+host_cpus=$(nproc --all)
+vcpus="${AGENSTRA_MICROVM_VCPUS:-}"
+if [ -z "${vcpus}" ]; then
+  read -r quota period </sys/fs/cgroup/cpu.max 2>/dev/null || quota=max
+  if [ "${quota:-max}" != max ] && [ "${period:-0}" -gt 0 ]; then
+    vcpus=$(((quota + period - 1) / period))
+  else
+    vcpus="${host_cpus}"
+  fi
+fi
+[[ "${vcpus}" =~ ^[0-9]+$ ]] && [ "${vcpus}" -ge 1 ] || die "invalid vCPU count ${vcpus}"
+[ "${vcpus}" -le "${host_cpus}" ] || vcpus="${host_cpus}"
+
+memory_mb="${AGENSTRA_MICROVM_MEMORY_MB:-}"
+if [ -z "${memory_mb}" ]; then
+  limit=$(cat /sys/fs/cgroup/memory.max 2>/dev/null || echo max)
+  if [ "${limit}" != max ]; then
+    memory_mb=$((limit / 1048576 - LAUNCHER_OVERHEAD_MB))
+  else
+    memory_mb=2048
+  fi
+fi
+[[ "${memory_mb}" =~ ^[0-9]+$ ]] && [ "${memory_mb}" -ge 256 ] || die "not enough memory for the microVM (${memory_mb} MiB)"
+
+# --- Domain -------------------------------------------------------------------------------------------------
+case "$(uname -m)" in
+  x86_64) arch=x86_64 machine=q35 console=ttyS0 ;;
+  aarch64) arch=aarch64 machine=virt console=ttyAMA0 ;;
+  *) die "unsupported architecture $(uname -m)" ;;
+esac
+kernel=$(ls /boot/vmlinuz-* | sort -V | tail -n1)
+[ -r "${kernel}" ] || die "no guest kernel in /boot"
+cmdline="console=${console} quiet loglevel=3 panic=-1 rdinit=/init"
+
+# Migration mode: the vhost-user-fs device migrates its state (QEMU >= 10.0); a target waits for the incoming stream.
+domain_attributes=""
+root_alias=""
+qemu_settings=""
+if [ "${migration}" = 1 ]; then
+  domain_attributes=" xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'"
+  root_alias="<alias name='ua-guestroot'/>"
+  qemu_settings="<qemu:override><qemu:device alias='ua-guestroot'><qemu:frontend><qemu:property name='migration' type='string' value='internal'/></qemu:frontend></qemu:device></qemu:override>"
+  if [ "${incoming}" = 1 ]; then
+    qemu_settings="<qemu:commandline><qemu:arg value='-incoming'/><qemu:arg value='defer'/></qemu:commandline>${qemu_settings}"
+  fi
+fi
+
+cat >"${VMM_DIR}/domain.xml" <<XML
+<domain type='kvm'${domain_attributes}>
+  <name>${DOMAIN}</name>
+  <memory unit='MiB'>${memory_mb}</memory>
+  <vcpu>${vcpus}</vcpu>
+  <os>
+    <type arch='${arch}' machine='${machine}'>hvm</type>
+    <kernel>${kernel}</kernel>
+    <initrd>${INSTALL_DIR}/initramfs.img</initrd>
+    <cmdline>${cmdline}</cmdline>
+  </os>
+  <features><acpi/></features>
+  <cpu mode='host-passthrough'/>
+  <memoryBacking><source type='memfd'/><access mode='shared'/></memoryBacking>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>destroy</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+    <emulator>/usr/bin/qemu-system-${arch}</emulator>
+    <filesystem type='mount'><driver type='virtiofs' queue='1024'/><source socket='${FS_DIR}/root.sock'/><target dir='guestroot'/>${root_alias}</filesystem>
+    <interface type='user'><model type='virtio'/><ip family='ipv4' address='10.0.2.15' prefix='24'/></interface>
+    <serial type='unix'><source mode='bind' path='${VMM_DIR}/console.sock'/><target port='0'/></serial>
+    <channel type='unix'><source mode='bind' path='${VMM_DIR}/bridge.sock'/><target type='virtio' name='io.agenstra.bridge'/></channel>
+    <memballoon model='none'/>
+    <rng model='virtio'><backend model='random'>/dev/urandom</backend></rng>
+  </devices>
+  ${qemu_settings}
+</domain>
+XML
+chown "${vmm_uid}:${vmm_gid}" "${VMM_DIR}/domain.xml"
+# vm-ctl (the node agent's migration commands) acts on the domain named here.
+[ "${migration}" != 1 ] || printf '%s\n' "${DOMAIN}" >"${VMM_DIR}/domain.name"
+
+daemon_pid=""
+
+cleanup() {
+  trap - EXIT TERM INT
+  virsh_vmm destroy "${DOMAIN}" >/dev/null 2>&1 || true
+  [ -z "${daemon_pid}" ] || kill "${daemon_pid}" 2>/dev/null || true
+  kill "${virtiofsd_pid}" 2>/dev/null || true
+  pkill -u "${vmm_uid}" -x libvirtd 2>/dev/null || true
+}
+trap cleanup EXIT
+
+daemon_args=()
+if [ "${incoming}" = 1 ]; then
+  # Live migration target: paused, waiting for the source's state on the incoming socket (the node agent relays the
+  # source's connection to it). The agent resumes the guest once the migration completed; a restart while the marker
+  # exists waits again, it never boots a guest that may still run on the source.
+  incoming_wait="${AGENSTRA_MICROVM_INCOMING_WAIT:-3600}"
+  [[ "${incoming_wait}" =~ ^[0-9]{1,5}$ ]] || die "invalid AGENSTRA_MICROVM_INCOMING_WAIT"
+  rm -f "${VMM_DIR}/incoming.sock"
+  virsh_vmm create --paused "${VMM_DIR}/domain.xml" >/dev/null ||
+    die "E_MICROVM_BOOT_FAILED: libvirt could not start the incoming microVM"
+  virsh_vmm qemu-monitor-command "${DOMAIN}" \
+    "{\"execute\":\"migrate-incoming\",\"arguments\":{\"uri\":\"unix:${VMM_DIR}/incoming.sock\"}}" >/dev/null ||
+    die "E_MICROVM_BOOT_FAILED: QEMU does not accept an incoming migration"
+  log "waiting for an incoming live migration"
+  trap 'exit 0' TERM INT
+  deadline=$((SECONDS + incoming_wait))
+  until [ "$(virsh_vmm domstate "${DOMAIN}" 2>/dev/null)" = running ]; do
+    virsh_vmm domstate "${DOMAIN}" >/dev/null 2>&1 || die "E_MICROVM_MIGRATION_FAILED: the incoming microVM is gone"
+    [ "${SECONDS}" -lt "${deadline}" ] ||
+      die "E_MICROVM_MIGRATION_TIMEOUT: no incoming migration within ${incoming_wait} s"
+    sleep 0.2 &
+    wait $! || true
+  done
+  trap - TERM INT
+  daemon_args=(--resync)
+  log "microVM migrated in (${vcpus} vCPU, ${memory_mb} MiB)"
+else
+  started=$(date +%s%N)
+  virsh_vmm create "${VMM_DIR}/domain.xml" >/dev/null || die "E_MICROVM_BOOT_FAILED: libvirt could not start the microVM"
+  log "microVM started (${vcpus} vCPU, ${memory_mb} MiB, $(((($(date +%s%N) - started)) / 1000000)) ms)"
+fi
+
+# The daemon relays the workload's output and the guest console (kernel and init messages, stderr).
+as_vmm /usr/bin/node "${INSTALL_DIR}/bridge-host.cjs" daemon --guest-socket "${VMM_DIR}/bridge.sock" \
+  --exec-socket "${VMM_DIR}/exec.sock" --boot-file "${VMM_DIR}/boot.json" --forward-ports "${forward_ports}" \
+  --console-socket "${VMM_DIR}/console.sock" --stop-grace "${stop_grace}" "${daemon_args[@]}" &
+daemon_pid=$!
+
+stop() {
+  log "stopping the microVM"
+  kill -TERM "${daemon_pid}" 2>/dev/null || true
+  (
+    sleep $((stop_grace + 5))
+    virsh_vmm destroy "${DOMAIN}" >/dev/null 2>&1 || true
+  ) &
+}
+trap stop TERM INT
+
+while kill -0 "${daemon_pid}" 2>/dev/null; do
+  # `wait` also returns when a trapped signal arrives; loop until the daemon really exited.
+  wait "${daemon_pid}" || true
+done
+# Bash keeps the status of the reaped daemon, also when it exited between the loop's checks.
+wait "${daemon_pid}" && status=0 || status=$?
+log "microVM stopped (status ${status})"
+exit "${status}"

@@ -1,0 +1,146 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="alert()?.title ?? title" icon="bell">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="secondary"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="backLabel"
+      [title]="backLabel"
+      routerLink="/alerts"
+    >
+      <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    </fpc-button>
+    @if (alert(); as a) {
+      @if (a.state !== 'resolved') {
+        <fpc-button
+          fpcPageHeaderActions
+          variant="secondary"
+          size="sm"
+          [iconOnly]="true"
+          [ariaLabel]="silenceLabel"
+          [title]="silenceLabel"
+          (clicked)="silenceOpen.set(true)"
+          data-testid="alert-silence"
+        >
+          <i class="bi bi-volume-mute" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      @if (mayAcknowledge(a)) {
+        <fpc-button
+          fpcPageHeaderActions
+          variant="primary"
+          size="sm"
+          [iconOnly]="true"
+          [ariaLabel]="acknowledgeLabel"
+          [title]="acknowledgeLabel"
+          [loading]="acknowledging() === a.id"
+          (clicked)="acknowledge()"
+          data-testid="alert-acknowledge"
+        >
+          <i class="bi bi-check2" aria-hidden="true"></i>
+        </fpc-button>
+      }
+    }
+  </fpc-page-header>
+
+  @if (alert(); as a) {
+    <div class="flex-shrink-0 d-flex align-items-center gap-3 px-3 py-2 border-bottom" data-testid="alert-header">
+      <fpc-status-badge [tone]="stateTone[a.state]" size="lg" [ariaLabel]="stateLabel(a.state)">
+        <i class="bi {{ stateIcon[a.state] }}" aria-hidden="true"></i>
+      </fpc-status-badge>
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="fw-semibold">{{ stateLabel(a.state) }}</span>
+          <fpc-badge [color]="severityTone[a.severity]" size="sm">{{ severityLabel(a.severity) }}</fpc-badge>
+          @if (a.silenced) {
+            <fpc-badge color="secondary" size="sm" i18n="@@lwConsoleAlertDetail-silenced">Silenced</fpc-badge>
+          }
+        </div>
+        <div class="text-body-secondary small">{{ a.message }}</div>
+      </div>
+    </div>
+  }
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert
+        class="m-3"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="dismissActionError()"
+      />
+    }
+
+    @if (alert(); as a) {
+      <fpc-panel-grid [columns]="2">
+        <fpc-panel [title]="detailsTitle">
+          <dl class="row small mb-0">
+            <dt class="col-4" i18n="@@lwConsoleAlertDetail-rule">Rule</dt>
+            <dd class="col-8 font-monospace">{{ a.rule }}</dd>
+            <dt class="col-4" i18n="@@lwConsoleAlertDetail-key">Key</dt>
+            <dd class="col-8 font-monospace">
+              @if (isHealthKey(a.key)) {
+                <a [routerLink]="healthLink(a.key)">{{ a.key }}</a>
+              } @else {
+                {{ a.key }}
+              }
+            </dd>
+            <dt class="col-4" i18n="@@lwConsoleAlertDetail-project">Project</dt>
+            <dd class="col-8">{{ a.project ?? '–' }}</dd>
+            <dt class="col-4" i18n="@@lwConsoleAlertDetail-value">Value</dt>
+            <dd class="col-8">{{ a.value ?? '–' }}</dd>
+            <dt class="col-4" i18n="@@lwConsoleAlertDetail-acknowledged">Acknowledged</dt>
+            <dd class="col-8" data-testid="alert-acknowledged">
+              @if (a.acknowledgedBy) {
+                {{ a.acknowledgedBy }} · {{ a.acknowledgedAt | date: 'medium' }}
+              } @else {
+                –
+              }
+            </dd>
+          </dl>
+        </fpc-panel>
+        <fpc-panel [title]="timelineTitle">
+          <ul class="list-unstyled small mb-0">
+            <li class="py-1">
+              <i class="bi bi-hourglass-split me-2" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleAlertDetail-started">Condition met</span> {{ a.startedAt | date: 'medium' }}
+            </li>
+            @if (a.firedAt) {
+              <li class="py-1">
+                <i class="bi bi-bell-fill me-2 text-danger" aria-hidden="true"></i
+                ><span i18n="@@lwConsoleAlertDetail-fired">Fired</span> {{ a.firedAt | date: 'medium' }}
+              </li>
+            }
+            @if (a.acknowledgedAt) {
+              <li class="py-1">
+                <i class="bi bi-person-check me-2" aria-hidden="true"></i
+                ><span i18n="@@lwConsoleAlertDetail-acknowledgedAt">Acknowledged</span>
+                {{ a.acknowledgedAt | date: 'medium' }}
+              </li>
+            }
+            @if (a.resolvedAt) {
+              <li class="py-1">
+                <i class="bi bi-check-lg me-2 text-success" aria-hidden="true"></i
+                ><span i18n="@@lwConsoleAlertDetail-resolved">Resolved</span> {{ a.resolvedAt | date: 'medium' }}
+              </li>
+            }
+          </ul>
+        </fpc-panel>
+      </fpc-panel-grid>
+    } @else if (loading()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    }
+  </div>
+</div>
+
+<loadweaver-alert-silence-modal
+  [open]="silenceOpen()"
+  (openChange)="silenceOpen.set($event)"
+  [projects]="projects()"
+  [prefill]="prefill()"
+/>

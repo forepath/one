@@ -1,0 +1,313 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="bell">
+    @if (activeTab() === 'silences') {
+      <fpc-button
+        fpcPageHeaderActions
+        variant="primary"
+        size="sm"
+        [iconOnly]="true"
+        [ariaLabel]="newSilenceLabel"
+        [title]="newSilenceLabel"
+        (clicked)="silenceOpen.set(true)"
+        data-testid="silence-new"
+      >
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+      </fpc-button>
+    }
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="exportCsvLabel"
+      [title]="exportCsvLabel"
+      [loading]="exporting()"
+      (clicked)="export('csv')"
+      data-testid="alerts-export-csv"
+    >
+      <i class="bi bi-filetype-csv" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="exportJsonLabel"
+      [title]="exportJsonLabel"
+      [loading]="exporting()"
+      (clicked)="export('json')"
+    >
+      <i class="bi bi-filetype-json" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="load()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <fpc-tab-group class="flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="activeTab.set($event)">
+    <fpc-tab id="alerts" [label]="tabAlerts" icon="bell" />
+    <fpc-tab id="silences" [label]="tabSilences" icon="volume-mute" />
+  </fpc-tab-group>
+
+  @if (activeTab() === 'silences') {
+    <fpc-collapsible-filter-panel
+      class="flex-shrink-0"
+      [(open)]="silenceFiltersOpen"
+      [title]="filtersLabel"
+      [activeCount]="silencesExpired() ? 1 : 0"
+      (cleared)="onExpiredChange(false)"
+    >
+      <div class="row g-3 mb-0 w-100">
+        <div class="col-12">
+          <fpc-form-switch
+            switchId="lw-silences-expired"
+            [ngModel]="silencesExpired()"
+            (ngModelChange)="onExpiredChange($event)"
+          >
+            <label class="form-check-label small" for="lw-silences-expired" i18n="@@lwConsoleAlerts-includeEnded"
+              >Include ended silences</label
+            >
+          </fpc-form-switch>
+        </div>
+      </div>
+    </fpc-collapsible-filter-panel>
+  } @else {
+    <fpc-collapsible-filter-panel
+      class="flex-shrink-0"
+      [(open)]="filtersOpen"
+      [title]="filtersLabel"
+      [activeCount]="activeFilterCount()"
+      (cleared)="clearFilters()"
+    >
+      <div class="row g-3 mb-0 w-100">
+        <div class="col-12 col-md-4">
+          <fpc-form-field forId="lw-alerts-state" [label]="stateFilterLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-alerts-state"
+              size="sm"
+              [ngModel]="stateFilter()"
+              (ngModelChange)="onStateChange($event)"
+            >
+              @for (s of states; track s) {
+                <option [value]="s">{{ stateName(s) }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-4">
+          <fpc-form-field forId="lw-alerts-severity" [label]="severityFilterLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-alerts-severity"
+              size="sm"
+              [ngModel]="severity()"
+              (ngModelChange)="severity.set($event)"
+            >
+              <option value="" i18n="@@lwConsoleAlerts-allSeverities">All severities</option>
+              @for (s of severities; track s) {
+                <option [value]="s">{{ severityLabel(s) }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        @if (projects().length > 0) {
+          <div class="col-12 col-md-4">
+            <fpc-form-field forId="lw-alerts-project" [label]="projectFilterLabel">
+              <fpc-form-control
+                controlType="select"
+                controlId="lw-alerts-project"
+                size="sm"
+                [ngModel]="project()"
+                (ngModelChange)="onProjectChange($event)"
+              >
+                <option value="" i18n="@@lwConsoleAlerts-allProjects">All projects</option>
+                @for (p of projects(); track p) {
+                  <option [value]="p">{{ p }}</option>
+                }
+              </fpc-form-control>
+            </fpc-form-field>
+          </div>
+        }
+      </div>
+    </fpc-collapsible-filter-panel>
+  }
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (actionError(); as message) {
+      <fpc-alert
+        class="m-3"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="dismissActionError()"
+      />
+    }
+    @if (exportError(); as message) {
+      <fpc-alert
+        class="m-3"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="exportError.set(null)"
+      />
+    }
+
+    @if (activeTab() === 'silences') {
+      @if (silencesError(); as message) {
+        <fpc-alert class="m-3" variant="danger" [message]="message" />
+      }
+
+      @if (silencesLoading() && silences().length === 0) {
+        <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+      } @else if (silences().length === 0) {
+        <fpc-empty-state icon="volume-mute" i18n-title="@@lwConsoleAlerts-noSilences" title="No silences" />
+      } @else {
+        <fpc-list [flush]="true" data-testid="silences-list">
+          @for (silence of silences(); track silence.id) {
+            <fpc-list-item>
+              <div fpcListItemTitle class="d-flex align-items-center gap-2 flex-wrap">
+                <fpc-badge
+                  size="sm"
+                  [color]="
+                    silenceStatus(silence) === 'active'
+                      ? 'success'
+                      : silenceStatus(silence) === 'upcoming'
+                        ? 'info'
+                        : 'secondary'
+                  "
+                  >{{ silenceStatusLabel(silenceStatus(silence)) }}</fpc-badge
+                >
+                <span class="fw-semibold">{{ silence.reason }}</span>
+              </div>
+              <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+                @if (silence.rule) {
+                  <span class="font-monospace">{{ silence.rule }}</span>
+                }
+                @if (silence.project) {
+                  <span><i class="bi bi-folder me-1" aria-hidden="true"></i>{{ silence.project }}</span>
+                }
+                @if (silence.key) {
+                  <span class="font-monospace">{{ silence.key }}</span>
+                }
+                <span
+                  ><i class="bi bi-calendar-range me-1" aria-hidden="true"></i>{{ silence.startsAt | date: 'short' }} –
+                  {{ silence.endsAt | date: 'short' }}</span
+                >
+                @if (silence.createdBy) {
+                  <span><i class="bi bi-person me-1" aria-hidden="true"></i>{{ silence.createdBy }}</span>
+                }
+              </div>
+              @if (silenceStatus(silence) !== 'ended') {
+                <div fpcListItemActions>
+                  <fpc-button
+                    variant="danger"
+                    size="sm"
+                    [iconOnly]="true"
+                    [ariaLabel]="endLabel"
+                    [title]="endLabel"
+                    [loading]="endingSilence() === silence.id"
+                    (clicked)="silenceToEnd.set(silence)"
+                  >
+                    <i class="bi bi-stop-circle" aria-hidden="true"></i>
+                  </fpc-button>
+                </div>
+              }
+            </fpc-list-item>
+          }
+        </fpc-list>
+      }
+    } @else {
+      @if (error(); as message) {
+        <fpc-alert class="m-3" variant="danger" [message]="message" />
+      }
+
+      @if (loading() && alerts().length === 0) {
+        <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+      } @else if (filtered().length === 0) {
+        <fpc-empty-state icon="bell-slash" i18n-title="@@lwConsoleAlerts-empty" title="No alerts" />
+      } @else {
+        <fpc-list [flush]="true" data-testid="alerts-list">
+          @for (alert of filtered(); track alert.id) {
+            <fpc-list-item [clickable]="true" (selected)="open(alert)">
+              <div fpcListItemTitle class="d-flex align-items-center gap-2 min-w-0">
+                <fpc-status-badge [tone]="stateTone[alert.state]" size="sm" [ariaLabel]="stateLabel(alert.state)">
+                  <i class="bi {{ stateIcon[alert.state] }}" aria-hidden="true"></i>
+                </fpc-status-badge>
+                <span class="fw-semibold text-truncate">{{ alert.title }}</span>
+                <fpc-badge [color]="severityTone[alert.severity]" size="sm">{{
+                  severityLabel(alert.severity)
+                }}</fpc-badge>
+                @if (alert.silenced) {
+                  <fpc-badge color="secondary" size="sm"
+                    ><i class="bi bi-volume-mute me-1" aria-hidden="true"></i
+                    ><span i18n="@@lwConsoleAlerts-silenced">Silenced</span></fpc-badge
+                  >
+                }
+              </div>
+              <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+                <span>{{ stateLabel(alert.state) }}</span>
+                <span class="font-monospace">{{ alert.rule }}</span>
+                <span class="font-monospace">{{ alert.key }}</span>
+                @if (alert.project) {
+                  <span><i class="bi bi-folder me-1" aria-hidden="true"></i>{{ alert.project }}</span>
+                }
+                <span><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ alert.startedAt | date: 'short' }}</span>
+                @if (alert.resolvedAt) {
+                  <span
+                    ><i class="bi bi-check2 me-1" aria-hidden="true"></i>{{ alert.resolvedAt | date: 'short' }}</span
+                  >
+                }
+                @if (alert.acknowledgedBy) {
+                  <span><i class="bi bi-person-check me-1" aria-hidden="true"></i>{{ alert.acknowledgedBy }}</span>
+                }
+              </div>
+              @if (mayAcknowledge(alert)) {
+                <div fpcListItemActions>
+                  <fpc-button
+                    variant="secondary"
+                    size="sm"
+                    [iconOnly]="true"
+                    [ariaLabel]="acknowledgeLabel"
+                    [title]="acknowledgeLabel"
+                    [loading]="acknowledging() === alert.id"
+                    (clicked)="acknowledge(alert, $event)"
+                    data-testid="alert-acknowledge"
+                  >
+                    <i class="bi bi-check2-square" aria-hidden="true"></i>
+                  </fpc-button>
+                </div>
+              }
+            </fpc-list-item>
+          }
+        </fpc-list>
+      }
+    }
+  </div>
+</div>
+
+<loadweaver-alert-silence-modal
+  [open]="silenceOpen()"
+  (openChange)="silenceOpen.set($event)"
+  [projects]="projects()"
+  [prefill]="project() ? { project: project() } : null"
+/>
+
+<fpc-confirm-dialog
+  [open]="silenceToEnd() !== null"
+  (openChange)="onEndDialogChange($event)"
+  [title]="endSilenceTitle"
+  [message]="endSilenceMessage"
+  [confirmLabel]="endSilenceConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="confirmEndSilence()"
+/>

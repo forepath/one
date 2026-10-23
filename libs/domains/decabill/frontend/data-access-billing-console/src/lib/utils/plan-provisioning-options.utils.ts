@@ -1,11 +1,16 @@
 import type { PlanProvisioningOption } from '../types/billing.types';
 
-export type IntegratedProvisioningService = 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing';
+export type IntegratedProvisioningService =
+  | 'agenstra-controller'
+  | 'agenstra-manager'
+  | 'decabill-billing'
+  | 'loadweaver';
 
 const INTEGRATED_SERVICES = new Set<IntegratedProvisioningService>([
   'agenstra-controller',
   'agenstra-manager',
   'decabill-billing',
+  'loadweaver',
 ]);
 
 const LEGACY_INTEGRATED_SERVICE_ALIASES: Record<string, IntegratedProvisioningService> = {
@@ -23,6 +28,7 @@ export const DEFAULT_INTEGRATED_PROVISIONING_OPTION_KEYS = [
 export const INTEGRATED_CONTROLLER_SERVICE_LABEL = 'Agenstra Controller';
 export const INTEGRATED_MANAGER_SERVICE_LABEL = 'Agenstra Manager';
 export const INTEGRATED_DECABILL_BILLING_SERVICE_LABEL = 'Decabill Billing';
+export const INTEGRATED_LOADWEAVER_SERVICE_LABEL = 'Loadweaver';
 
 export function canonicalizeIntegratedProvisioningService(value: string): IntegratedProvisioningService | null {
   const trimmed = value?.trim();
@@ -44,6 +50,8 @@ export function integratedProvisioningServiceLabel(service: IntegratedProvisioni
       return INTEGRATED_MANAGER_SERVICE_LABEL;
     case 'decabill-billing':
       return INTEGRATED_DECABILL_BILLING_SERVICE_LABEL;
+    case 'loadweaver':
+      return INTEGRATED_LOADWEAVER_SERVICE_LABEL;
     default:
       return INTEGRATED_CONTROLLER_SERVICE_LABEL;
   }

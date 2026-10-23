@@ -19,7 +19,7 @@ import { AgentSessionHydrationService } from '../services/agent-session-hydratio
 import { AgentsService } from '../services/agents.service';
 import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
 import { OpenCodeConfigSyncService } from '../providers/opencode/opencode-config-sync.service';
-import { DockerService } from '../services/docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 
 import { AgentsGateway } from './agents.gateway';
@@ -39,7 +39,7 @@ describe('AgentsGateway', () => {
   let gateway: AgentsGateway;
   let agentsService: jest.Mocked<AgentsService>;
   let agentsRepository: jest.Mocked<AgentsRepository>;
-  let dockerService: jest.Mocked<DockerService>;
+  let dockerService: jest.Mocked<AgentRuntime>;
   let agentMessagesService: jest.Mocked<AgentMessagesService>;
   let agentProviderFactory: jest.Mocked<AgentProviderFactory>;
   let chatFilterFactory: jest.Mocked<ChatFilterFactory>;
@@ -88,7 +88,7 @@ describe('AgentsGateway', () => {
   };
   const mockDockerService = {
     sendCommandToContainer: jest.fn(),
-  } as unknown as jest.Mocked<DockerService>;
+  } as unknown as jest.Mocked<AgentRuntime>;
   const mockOpenCodePtyService = {
     open: jest.fn().mockResolvedValue(undefined),
     write: jest.fn().mockResolvedValue(undefined),
@@ -175,7 +175,7 @@ describe('AgentsGateway', () => {
           useValue: mockAgentsRepository,
         },
         {
-          provide: DockerService,
+          provide: AgentRuntime,
           useValue: mockDockerService,
         },
         {
@@ -240,7 +240,7 @@ describe('AgentsGateway', () => {
     gateway.onModuleInit();
     agentsService = module.get(AgentsService);
     agentsRepository = module.get(AgentsRepository);
-    dockerService = module.get(DockerService);
+    dockerService = module.get(AgentRuntime);
     agentMessagesService = module.get(AgentMessagesService);
     agentProviderFactory = module.get(AgentProviderFactory);
     chatFilterFactory = module.get(ChatFilterFactory);

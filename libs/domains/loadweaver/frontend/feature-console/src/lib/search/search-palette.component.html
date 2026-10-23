@@ -1,0 +1,71 @@
+<fpc-modal [open]="open()" (openChange)="open.set($event)" [title]="title" size="lg" [centered]="false" scrollable>
+  <div class="mb-3">
+    <label class="visually-hidden" for="lw-search-palette-input">{{ inputLabel }}</label>
+    <div class="input-group">
+      <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+      <input
+        #searchInput
+        id="lw-search-palette-input"
+        type="search"
+        class="form-control"
+        autocomplete="off"
+        role="combobox"
+        aria-autocomplete="list"
+        [attr.aria-expanded]="entries().length > 0"
+        [placeholder]="placeholder"
+        [value]="query()"
+        (input)="onQueryChange($any($event.target).value)"
+        (keydown)="onInputKeydown($event)"
+        data-testid="search-palette-input"
+      />
+      @if (loading()) {
+        <span class="input-group-text"><fpc-spinner size="sm" /></span>
+      }
+    </div>
+  </div>
+
+  @if (error(); as message) {
+    <fpc-alert variant="danger" [message]="message" />
+  }
+
+  @if (entries().length > 0) {
+    <loadweaver-search-results
+      [sections]="sections()"
+      [activeId]="activeEntry()?.id ?? null"
+      idPrefix="lw-palette-entry"
+      (picked)="pick($event)"
+      (starred)="star($event)"
+    />
+  } @else if (query().trim() && !loading()) {
+    <p class="text-body-secondary small px-2" i18n="@@lwConsoleSearch-noResults">Nothing found.</p>
+  } @else if (!query().trim()) {
+    <p class="text-body-secondary small px-2" i18n="@@lwConsoleSearch-hint">
+      Type to search everything you may see. Star results to keep them at the top.
+    </p>
+  }
+
+  <div class="d-flex justify-content-between align-items-center small text-body-secondary border-top pt-2">
+    <span i18n="@@lwConsoleSearch-keys">↑ ↓ to move, Enter to open, Ctrl / ⌘ + K to close</span>
+    @if (query().trim()) {
+      <button type="button" class="btn btn-link btn-sm p-0" (click)="showAll()" data-testid="search-show-all">
+        <span i18n="@@lwConsoleSearch-showAll">All results</span>
+        <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+      </button>
+    }
+  </div>
+</fpc-modal>
+
+<loadweaver-search-action-confirm [action]="pendingAction()" (actionChange)="pendingAction.set($event)" />
+
+@if (actionResult(); as result) {
+  <fpc-toast-container>
+    <fpc-toast
+      [variant]="result.ok ? 'success' : 'danger'"
+      [title]="result.ok ? actionDone : actionFailed"
+      [message]="result.error ? result.title + ': ' + result.error : result.title"
+      [delay]="result.ok ? 5000 : 0"
+      (closed)="dismissActionResult()"
+      data-testid="search-action-result"
+    />
+  </fpc-toast-container>
+}

@@ -1,0 +1,28 @@
+{
+  "name": "loadweaver-backend-util-terraform-protocol",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/loadweaver/backend/util-terraform-protocol/src",
+  "projectType": "library",
+  "tags": ["domain:loadweaver", "scope:backend", "type:util"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/domains/loadweaver/backend/util-terraform-protocol",
+        "main": "libs/domains/loadweaver/backend/util-terraform-protocol/src/index.ts",
+        "tsConfig": "libs/domains/loadweaver/backend/util-terraform-protocol/tsconfig.lib.json",
+        "assets": [
+          "libs/domains/loadweaver/backend/util-terraform-protocol/*.md"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/loadweaver/backend/util-terraform-protocol/jest.config.cts"
+      }
+    }
+  }
+}

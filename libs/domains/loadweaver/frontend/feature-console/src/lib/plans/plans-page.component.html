@@ -1,0 +1,135 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="file-diff">
+    <fpc-badge
+      fpcPageHeaderActions
+      [color]="live() ? 'success' : 'secondary'"
+      size="sm"
+      [pill]="true"
+      data-testid="plans-live"
+    >
+      @if (live()) {
+        <span i18n="@@lwConsolePlans-live">Live</span>
+      } @else {
+        <span i18n="@@lwConsolePlans-offline">Not live</span>
+      }
+    </fpc-badge>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <fpc-collapsible-filter-panel
+    class="flex-shrink-0"
+    [(open)]="filtersOpen"
+    [title]="filtersLabel"
+    [activeCount]="activeFilterCount()"
+    (cleared)="clearFilters()"
+  >
+    <div class="row g-3 mb-0 w-100">
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-plans-status" [label]="statusFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-plans-status"
+            size="sm"
+            [ngModel]="status()"
+            (ngModelChange)="setStatus($event)"
+          >
+            <option value="" i18n="@@lwConsolePlans-allStatuses">All statuses</option>
+            @for (s of statuses; track s) {
+              <option [value]="s">{{ statusLabel(s) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      @if (projects().length > 0) {
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-plans-project" [label]="projectFilterLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-plans-project"
+              size="sm"
+              [ngModel]="project()"
+              (ngModelChange)="setProject($event)"
+            >
+              <option value="" i18n="@@lwConsolePlans-allProjects">All projects</option>
+              @for (p of projects(); track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+      }
+    </div>
+  </fpc-collapsible-filter-panel>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    @if (loading() && plans().length === 0) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (filtered().length === 0) {
+      <fpc-empty-state icon="file-diff" i18n-title="@@lwConsolePlans-empty" title="No plans" />
+    } @else {
+      <fpc-list [flush]="true" data-testid="plans-list">
+        @for (plan of filtered(); track plan.id) {
+          <fpc-list-item [clickable]="true" (selected)="open(plan)">
+            <div fpcListItemTitle class="d-flex align-items-center gap-2 min-w-0">
+              <fpc-status-badge [tone]="statusTone[plan.status]" size="sm" [ariaLabel]="statusLabel(plan.status)">
+                <i class="bi {{ statusIcon[plan.status] }}" aria-hidden="true"></i>
+              </fpc-status-badge>
+              <span class="fw-semibold text-truncate">{{ summary(plan) }}</span>
+            </div>
+            <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap align-items-center gap-3">
+              <span>{{ statusLabel(plan.status) }}</span>
+              <span class="font-monospace">{{ shortId(plan.id) }}</span>
+              <span
+                ><i class="bi bi-pencil-square me-1" aria-hidden="true"></i>{{ touchedCount(plan) }}
+                <span i18n="@@lwConsolePlans-changesCount">changes</span></span
+              >
+              @if (plan.createdBy) {
+                <span><i class="bi bi-person me-1" aria-hidden="true"></i>{{ plan.createdBy }}</span>
+              }
+              @if (plan.source) {
+                <loadweaver-plan-source [plan]="plan" [compact]="true" />
+              }
+              <span><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ plan.createdAt | date: 'short' }}</span>
+              @for (p of projectsOf(plan); track p) {
+                <fpc-badge color="light" size="sm">{{ p }}</fpc-badge>
+              }
+              @if (plan.resolves) {
+                <span
+                  ><i class="bi bi-bandaid me-1" aria-hidden="true"></i
+                  ><span i18n="@@lwConsolePlans-fixForward">Fix-forward</span></span
+                >
+              }
+              @if (plan.progress && (plan.status === 'applying' || plan.status === 'rolling-back')) {
+                <span class="d-flex align-items-center gap-2 w-100">
+                  <fpc-progress
+                    class="flex-grow-1"
+                    [value]="plan.progress.percent"
+                    [variant]="plan.progress.phase === 'rollback' ? 'warning' : 'primary'"
+                    [striped]="true"
+                    [animated]="true"
+                    height="0.5rem"
+                  />
+                  <span>{{ plan.progress.percent }} %</span>
+                </span>
+              }
+            </div>
+          </fpc-list-item>
+        }
+      </fpc-list>
+    }
+  </div>
+</div>

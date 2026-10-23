@@ -19,7 +19,7 @@ import { AgentDirectoryIndexService } from './agent-directory-index.service';
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 import { AgentsService } from './agents.service';
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 
 type SendCommandArgs = [string, string | string[], string | undefined, boolean | undefined, { user?: string }?];
 type FsCommandHandler = (
@@ -37,7 +37,7 @@ describe('AgentFileSystemService', () => {
   let service: AgentFileSystemService;
   let agentsService: jest.Mocked<AgentsService>;
   let agentsRepository: jest.Mocked<AgentsRepository>;
-  let dockerService: jest.Mocked<DockerService>;
+  let dockerService: jest.Mocked<AgentRuntime>;
   let agentProviderFactory: jest.Mocked<AgentProviderFactory>;
   let workspaceChangeNotifier: { notifyPathChanges: jest.Mock; notifyDirectoryTreeChanged: jest.Mock };
   const mockAgentId = 'test-agent-uuid';
@@ -232,7 +232,7 @@ describe('AgentFileSystemService', () => {
           useValue: mockAgentsRepository,
         },
         {
-          provide: DockerService,
+          provide: AgentRuntime,
           useValue: mockDockerService,
         },
         {
@@ -258,7 +258,7 @@ describe('AgentFileSystemService', () => {
     service = module.get<AgentFileSystemService>(AgentFileSystemService);
     agentsService = module.get(AgentsService);
     agentsRepository = module.get(AgentsRepository);
-    dockerService = module.get(DockerService);
+    dockerService = module.get(AgentRuntime);
     agentProviderFactory = module.get(AgentProviderFactory);
 
     agentsService.findOne.mockResolvedValue(mockAgentResponse);
@@ -457,7 +457,7 @@ describe('AgentFileSystemService', () => {
         '/app/a.txt',
         expect.objectContaining({ user: 'agenstra' }),
       );
-      expect(dockerService.copyFileFromContainer).not.toHaveBeenCalled();
+      expect(mockDockerService.copyFileFromContainer).not.toHaveBeenCalled();
     });
   });
 
@@ -485,7 +485,7 @@ describe('AgentFileSystemService', () => {
       expect(result.size).toBe(21641254);
       expect(result.fileType).toBe('pdf');
       expect(result.contentType).toBe('application/pdf');
-      expect(dockerService.copyFileFromContainer).not.toHaveBeenCalled();
+      expect(mockDockerService.copyFileFromContainer).not.toHaveBeenCalled();
       expect(dockerService.readFileBytesFromContainer).not.toHaveBeenCalled();
       expect(containmentCalls()).toHaveLength(1);
       expect(fsCalls()).toHaveLength(3);
@@ -1185,7 +1185,7 @@ file|Copy (1).md|20|1704067200`;
       );
 
       expect(dockerService.readFileBytesFromContainer).not.toHaveBeenCalled();
-      expect(dockerService.copyFileFromContainer).not.toHaveBeenCalled();
+      expect(mockDockerService.copyFileFromContainer).not.toHaveBeenCalled();
       expect(dockerService.sendCommandToContainer).not.toHaveBeenCalled();
     });
 

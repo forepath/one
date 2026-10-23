@@ -1,0 +1,24 @@
+.lw-topology__loading {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 1;
+}
+
+// The details / trace column keeps a fixed width next to the canvas.
+.lw-topology__side {
+  flex: 0 0 22rem;
+  max-width: 40%;
+}
+
+@media (max-width: 767.98px) {
+  .lw-topology {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  .lw-topology__side {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+}

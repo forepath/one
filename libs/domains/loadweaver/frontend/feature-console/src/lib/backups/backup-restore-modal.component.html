@@ -1,0 +1,259 @@
+<fpc-modal [open]="open()" (openChange)="open.set($event)" [title]="title" size="lg">
+  <p class="small text-body-secondary" i18n="@@lwConsoleBackupRestore-hint">
+    A restore is a plan: it creates a Restore resource of the project, so the project's approvals apply. It runs once
+    the plan is applied; its progress is shown under Restores.
+  </p>
+
+  <ol class="list-inline small mb-3" data-testid="restore-steps">
+    <li class="list-inline-item" [class.fw-semibold]="step() === 1">
+      <span class="badge rounded-pill me-1" [ngClass]="step() === 1 ? 'text-bg-primary' : 'text-bg-secondary'">1</span
+      ><span i18n="@@lwConsoleBackupRestore-stepWhat">What</span>
+    </li>
+    <li class="list-inline-item" [class.fw-semibold]="step() === 2">
+      <span class="badge rounded-pill me-1" [ngClass]="step() === 2 ? 'text-bg-primary' : 'text-bg-secondary'">2</span
+      ><span i18n="@@lwConsoleBackupRestore-stepWhere">Where</span>
+    </li>
+  </ol>
+
+  @if (step() === 1) {
+    <fpc-form-field forId="lw-restore-backup" i18n-label="@@lwConsoleBackupRestore-backup" label="Backup">
+      <fpc-form-control
+        controlType="select"
+        controlId="lw-restore-backup"
+        size="sm"
+        [ngModel]="backupId()"
+        (ngModelChange)="backupId.set($event)"
+        data-testid="restore-backup"
+      >
+        @for (b of choices(); track b.id) {
+          <option [value]="b.id">{{ b.startedAt | date: 'medium' }} · {{ bytes(b.bytes) }}</option>
+        }
+      </fpc-form-control>
+      @if (selected(); as b) {
+        <span fpcFormFieldHint class="font-monospace">{{ b.resource }}</span>
+      }
+    </fpc-form-field>
+
+    <div class="mb-3">
+      <fpc-form-check
+        type="radio"
+        name="lw-restore-scope"
+        checkId="lw-restore-scope-volume"
+        value="volume"
+        [checked]="scope() === 'volume'"
+        (valueSelect)="setScope('volume')"
+        i18n-label="@@lwConsoleBackupRestore-scopeVolume"
+        label="The whole volume"
+      />
+      <fpc-form-check
+        type="radio"
+        name="lw-restore-scope"
+        checkId="lw-restore-scope-path"
+        value="path"
+        [checked]="scope() === 'path'"
+        (valueSelect)="setScope('path')"
+        i18n-label="@@lwConsoleBackupRestore-scopePath"
+        label="One file or directory"
+      />
+    </div>
+
+    @if (scope() === 'path') {
+      <fpc-form-field forId="lw-restore-path" i18n-label="@@lwConsoleBackupRestore-path" label="Path in the backup">
+        <fpc-form-control
+          controlId="lw-restore-path"
+          size="sm"
+          controlClass="font-monospace"
+          [invalid]="sourcePath() !== '' && !sourcePathValid()"
+          [ngModel]="sourcePath()"
+          (ngModelChange)="sourcePath.set($event)"
+          placeholder="uploads/2026"
+          data-testid="restore-path"
+        />
+        <span fpcFormFieldHint i18n="@@lwConsoleBackupRestore-pathHint"
+          >Relative to the volume root, without "..". Browse the backup to pick a file or directory.</span
+        >
+      </fpc-form-field>
+    }
+  } @else {
+    <div class="mb-3">
+      <fpc-form-check
+        type="radio"
+        name="lw-restore-target"
+        checkId="lw-restore-target-same"
+        value="same"
+        [checked]="target() === 'same'"
+        (valueSelect)="target.set('same')"
+        i18n-label="@@lwConsoleBackupRestore-targetSame"
+        label="Into the backed-up volume itself"
+      />
+      <fpc-form-check
+        type="radio"
+        name="lw-restore-target"
+        checkId="lw-restore-target-other"
+        value="other"
+        [checked]="target() === 'other'"
+        (valueSelect)="target.set('other')"
+        i18n-label="@@lwConsoleBackupRestore-targetOther"
+        label="Side by side, into another volume of the project"
+      />
+      <div class="form-text font-monospace">
+        {{ selected()?.project }}/{{ targetDeployment() || '…' }}/{{ targetVolume() || '…' }}
+      </div>
+    </div>
+
+    @if (target() === 'other') {
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <fpc-form-field
+            forId="lw-restore-deployment"
+            i18n-label="@@lwConsoleBackupRestore-deployment"
+            label="Deployment"
+          >
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-restore-deployment"
+              size="sm"
+              [ngModel]="deployment()"
+              (ngModelChange)="deployment.set($event)"
+              data-testid="restore-deployment"
+            >
+              @for (d of deployments(); track d) {
+                <option [value]="d">{{ d }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-restore-volume" i18n-label="@@lwConsoleBackupRestore-volume" label="Volume">
+            <input
+              id="lw-restore-volume"
+              class="form-control form-control-sm font-monospace"
+              list="lw-restore-volume-options"
+              [class.is-invalid]="!targetValid()"
+              [ngModel]="volume()"
+              (ngModelChange)="volume.set($event)"
+              data-testid="restore-volume"
+            />
+            <datalist id="lw-restore-volume-options">
+              @for (v of deploymentVolumes(); track v) {
+                <option [value]="v"></option>
+              }
+            </datalist>
+          </fpc-form-field>
+        </div>
+      </div>
+      @if (targetValid() && !targetExists()) {
+        <fpc-alert class="d-block mb-3" variant="info" data-testid="restore-new-volume">
+          <span i18n="@@lwConsoleBackupRestore-newVolume"
+            >This volume doesn't exist yet. Add it to the deployment in the same plan (resources editor) before
+            applying; the restore waits up to an hour for it to be placed.</span
+          >
+        </fpc-alert>
+      }
+    }
+
+    <fpc-form-field forId="lw-restore-mode" i18n-label="@@lwConsoleBackupRestore-mode" label="Mode">
+      <fpc-form-control
+        controlType="select"
+        controlId="lw-restore-mode"
+        size="sm"
+        [ngModel]="mode()"
+        (ngModelChange)="mode.set($event)"
+        data-testid="restore-mode"
+      >
+        <option value="replace" i18n="@@lwConsoleBackupRestore-modeReplace">
+          Replace: empty the target first, then restore
+        </option>
+        <option value="merge" i18n="@@lwConsoleBackupRestore-modeMerge">
+          Merge: restore over what is there, keep other files
+        </option>
+      </fpc-form-control>
+    </fpc-form-field>
+
+    @if (scope() === 'path') {
+      <fpc-form-field
+        forId="lw-restore-target-path"
+        i18n-label="@@lwConsoleBackupRestore-targetPath"
+        label="Target path in the volume"
+      >
+        <fpc-form-control
+          controlId="lw-restore-target-path"
+          size="sm"
+          controlClass="font-monospace"
+          [invalid]="!targetPathValid()"
+          [ngModel]="targetPath()"
+          (ngModelChange)="targetPath.set($event)"
+          [placeholder]="sourcePath()"
+          data-testid="restore-target-path"
+        />
+        <span fpcFormFieldHint i18n="@@lwConsoleBackupRestore-targetPathHint">Empty: the same path.</span>
+      </fpc-form-field>
+      <fpc-form-check
+        class="d-block mb-3"
+        checkId="lw-restore-overwrite"
+        [checked]="overwrite()"
+        (checkedChange)="overwrite.set($event)"
+        i18n-label="@@lwConsoleBackupRestore-overwrite"
+        label="Overwrite existing files (otherwise existing files are kept)"
+      />
+    }
+
+    @if (scope() === 'volume' && targetExists()) {
+      <fpc-alert class="d-block mb-3" variant="warning" data-testid="restore-stop-warning">
+        @if (mode() === 'replace') {
+          <span i18n="@@lwConsoleBackupRestore-replaceWarning"
+            >The volume's current content is replaced by the backup. Containers using the volume are stopped during the
+            restore and started again afterwards.</span
+          >
+        } @else {
+          <span i18n="@@lwConsoleBackupRestore-mergeWarning"
+            >Files from the backup are written over the volume's content, other files stay. Containers using the volume
+            are stopped during the restore and started again afterwards.</span
+          >
+        }
+      </fpc-alert>
+    }
+
+    <fpc-form-field
+      forId="lw-restore-description"
+      i18n-label="@@lwConsoleBackupRestore-description"
+      label="Description (optional)"
+    >
+      <fpc-form-control
+        controlId="lw-restore-description"
+        size="sm"
+        maxLength="1024"
+        [ngModel]="description()"
+        (ngModelChange)="description.set($event)"
+      />
+    </fpc-form-field>
+  }
+
+  @if (planError(); as message) {
+    <fpc-alert variant="danger" [message]="message" data-testid="restore-error" />
+  }
+
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="secondary" (clicked)="open.set(false)">
+      <span i18n="@@lwConsoleBackupRestore-cancel">Cancel</span>
+    </fpc-button>
+    @if (step() === 1) {
+      <fpc-button variant="primary" [disabled]="!stepOneValid()" (clicked)="next()" data-testid="restore-next">
+        <span i18n="@@lwConsoleBackupRestore-next">Next</span>
+      </fpc-button>
+    } @else {
+      <fpc-button variant="secondary" (clicked)="back()">
+        <span i18n="@@lwConsoleBackupRestore-back">Back</span>
+      </fpc-button>
+      <fpc-button
+        variant="primary"
+        [disabled]="!valid()"
+        [loading]="planning()"
+        (clicked)="submit()"
+        data-testid="restore-create"
+      >
+        <span i18n="@@lwConsoleBackupRestore-create">Create plan</span>
+      </fpc-button>
+    }
+  </div>
+</fpc-modal>

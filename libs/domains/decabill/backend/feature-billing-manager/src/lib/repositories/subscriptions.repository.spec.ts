@@ -161,6 +161,88 @@ describe('SubscriptionsRepository', () => {
     expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('subscription.cancelEffectiveAt <= :now', { now });
   });
 
+  it('filters subscriptions still in a teardown grace period out of the cancellation batch', async () => {
+    type Row = { id: string; status: string; cancelEffectiveAt: Date; teardownNotBefore: Date | null };
+    const now = new Date('2026-10-20T12:00:00Z');
+    const day = 24 * 60 * 60 * 1000;
+    const batchSize = 5;
+    // More grace-period Loadweaver subscriptions than the batch holds, all with an earlier effective date ...
+    const rows: Row[] = Array.from({ length: batchSize + 3 }, (_, i) => ({
+      id: `grace-${i}`,
+      status: 'pending_cancel',
+      cancelEffectiveAt: new Date(now.getTime() - (10 - i) * 60_000 - day),
+      teardownNotBefore: new Date(now.getTime() + 6 * day),
+    }));
+
+    // ... plus a due Loadweaver subscription (grace over) and a due plain one.
+    rows.push(
+      {
+        id: 'due-loadweaver',
+        status: 'pending_cancel',
+        cancelEffectiveAt: new Date(now.getTime() - 8 * day),
+        teardownNotBefore: new Date(now.getTime() - day),
+      },
+      {
+        id: 'due-plain',
+        status: 'pending_cancel',
+        cancelEffectiveAt: new Date(now.getTime() - 1000),
+        teardownNotBefore: null,
+      },
+      {
+        id: 'future',
+        status: 'pending_cancel',
+        cancelEffectiveAt: new Date(now.getTime() + day),
+        teardownNotBefore: null,
+      },
+    );
+
+    // Minimal evaluator for exactly the conditions the repository builds (unknown conditions fail the test).
+    const predicates: Record<string, (row: Row, p: Record<string, unknown>) => boolean> = {
+      'subscription.status = :status': (row, p) => row.status === p['status'],
+      'subscription.cancelEffectiveAt <= :now': (row, p) => row.cancelEffectiveAt <= (p['now'] as Date),
+      'COALESCE(subscription.teardownNotBefore, subscription.cancelEffectiveAt) <= :now': (row, p) =>
+        (row.teardownNotBefore ?? row.cancelEffectiveAt) <= (p['now'] as Date),
+    };
+    const conditions: Array<[string, Record<string, unknown>]> = [];
+    let limit = Infinity;
+
+    mockQueryBuilder.where.mockImplementation((c: string, p: Record<string, unknown>) => {
+      conditions.push([c, p]);
+
+      return mockQueryBuilder;
+    });
+    mockQueryBuilder.andWhere.mockImplementation((c: string | object, p: Record<string, unknown>) => {
+      if (typeof c === 'string' && !c.includes('tenant')) conditions.push([c, p]);
+
+      return mockQueryBuilder;
+    });
+    mockQueryBuilder.take.mockImplementation((n: number) => {
+      limit = n;
+
+      return mockQueryBuilder;
+    });
+    mockQueryBuilder.getMany.mockImplementation(async () =>
+      rows
+        .filter((row) =>
+          conditions.every(([c, p]) => {
+            const predicate = predicates[c];
+
+            if (!predicate) throw new Error(`unexpected condition ${c}`);
+
+            return predicate(row, p);
+          }),
+        )
+        .sort((a, b) => a.cancelEffectiveAt.getTime() - b.cancelEffectiveAt.getTime())
+        .slice(0, limit),
+    );
+
+    const result = await repository.findDueForCancellation(now, batchSize);
+
+    expect(result.map((row) => row.id)).toEqual(['due-loadweaver', 'due-plain']);
+    expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith('subscription.cancelEffectiveAt', 'ASC');
+    expect(limit).toBe(batchSize);
+  });
+
   it('finds subscriptions due for withdrawal', async () => {
     const subscriptions = [{ id: 'sub-1', status: SubscriptionStatus.PENDING_WITHDRAWAL }];
 

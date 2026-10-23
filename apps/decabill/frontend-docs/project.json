@@ -202,7 +202,7 @@
     "postbuild": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cp dist/apps/decabill/frontend-docs-delegating-server/server/delegating-server.js dist/apps/decabill/frontend-docs/server/server.mjs && cp -r dist/apps/decabill/frontend-docs/browser dist/apps/decabill/frontend-docs/server/browser"
+        "command": "cp dist/apps/decabill/frontend-docs-delegating-server/server/delegating-server.js dist/apps/decabill/frontend-docs/server/server.mjs && rm -rf dist/apps/decabill/frontend-docs/server/browser && cp -r dist/apps/decabill/frontend-docs/browser dist/apps/decabill/frontend-docs/server/browser"
       },
       "dependsOn": ["build", "build-delegating-server"]
     },

@@ -7,6 +7,7 @@ import { ContainerManagerContributorModule } from './contributors/container-mana
 import { DecabillBillingContributorModule } from './contributors/decabill-billing/decabill-billing.contributor.module';
 import { DigitalOceanContributorModule } from './contributors/digital-ocean/digital-ocean.contributor.module';
 import { HetznerContributorModule } from './contributors/hetzner/hetzner.contributor.module';
+import { LoadweaverUsageContributorModule } from './contributors/loadweaver-usage/loadweaver-usage.contributor.module';
 import { resolveContributorNestImports } from './utils/contributor-nest-registration';
 
 @Module({})
@@ -24,6 +25,7 @@ describe('resolveContributorNestImports', () => {
         AgenstraControllerContributorModule,
         AgenstraManagerContributorModule,
         DecabillBillingContributorModule,
+        LoadweaverUsageContributorModule,
         CONTAINER_MANAGER_NEST_REGISTRATION.nestModule,
       ]),
     );

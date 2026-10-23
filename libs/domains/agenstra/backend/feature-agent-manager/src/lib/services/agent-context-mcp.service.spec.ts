@@ -3,7 +3,7 @@ import { AgentsRepository } from '../repositories/agents.repository';
 import { deriveAgentContextToken } from '../utils/agent-context-token.utils';
 
 import { AGENT_CONTEXT_MCP_IMAGE_LABEL, AgentContextMcpService } from './agent-context-mcp.service';
-import { DockerService } from './docker.service';
+import type { AgentRuntime } from '../runtime/agent-runtime';
 
 describe('AgentContextMcpService', () => {
   const originalEnv = process.env;
@@ -32,7 +32,7 @@ describe('AgentContextMcpService', () => {
     global.fetch = fetchMock as unknown as typeof fetch;
     service = new AgentContextMcpService(
       agentsRepository as unknown as AgentsRepository,
-      dockerService as unknown as DockerService,
+      dockerService as unknown as AgentRuntime,
       clientFactory as unknown as OpenCodeClientFactory,
     );
   });

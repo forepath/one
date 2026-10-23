@@ -1,0 +1,88 @@
+<fpc-panel class="h-100 border rounded overflow-hidden" [title]="widget().title">
+  @if (state()?.loading) {
+    <fpc-spinner fpcPanelActions size="sm" />
+  }
+  <div class="h-100 overflow-auto">
+    @if (state()?.error; as message) {
+      <fpc-alert variant="danger" [message]="message" />
+    } @else if (!result()) {
+      <div class="d-flex justify-content-center p-3"><fpc-spinner size="sm" /></div>
+    } @else if (empty()) {
+      <fpc-empty-state icon="inbox" size="sm" i18n-title="@@lwConsoleDashboards-noData" title="No data in this range" />
+    } @else {
+      @switch (widget().type) {
+        @case ('stat') {
+          <div class="d-flex h-100 align-items-center justify-content-center" data-testid="widget-stat">
+            <span class="display-6 fw-semibold">{{ formatValue(stat(), unit()) }}</span>
+          </div>
+        }
+        @case ('table') {
+          @if (result()?.kind === 'flows') {
+            <table class="table table-sm table-striped small mb-0" data-testid="widget-flows">
+              <thead>
+                <tr>
+                  <th scope="col" i18n="@@lwConsoleDashboards-colSource">Source</th>
+                  <th scope="col" i18n="@@lwConsoleDashboards-colDestination">Destination</th>
+                  <th scope="col" i18n="@@lwConsoleDashboards-colPort">Port</th>
+                  <th scope="col" i18n="@@lwConsoleDashboards-colDecision">Decision</th>
+                  <th scope="col" class="text-end" i18n="@@lwConsoleDashboards-colPackets">Packets</th>
+                  <th scope="col" class="text-end" i18n="@@lwConsoleDashboards-colBytes">Bytes</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of rows(); track $index) {
+                  <tr>
+                    <td class="font-monospace">{{ row.src }}</td>
+                    <td class="font-monospace">{{ row.dst }}</td>
+                    <td class="font-monospace">{{ row.protocol }}/{{ row.port }}</td>
+                    <td>
+                      <fpc-badge
+                        size="sm"
+                        [color]="
+                          row.decision === 'denied' ? 'danger' : row.decision === 'observed' ? 'warning' : 'success'
+                        "
+                        >{{ row.decision }}</fpc-badge
+                      >
+                      @if (row.policy) {
+                        <span class="text-body-secondary ms-1">{{ row.policy }}</span>
+                      }
+                    </td>
+                    <td class="text-end">{{ row.packets | number: '1.0-0' }}</td>
+                    <td class="text-end">{{ formatBytes(row.bytes) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <table class="table table-sm table-striped small mb-0" data-testid="widget-latest">
+              <tbody>
+                @for (row of latest(); track row.key) {
+                  <tr>
+                    <td class="font-monospace">{{ row.key }}</td>
+                    <td class="text-end">{{ formatValue(row.value, unit()) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        }
+        @case ('logs') {
+          <ul class="list-unstyled small mb-0" data-testid="widget-logs">
+            @for (line of lines(); track line.id) {
+              <li class="py-1 border-bottom">
+                <span class="text-body-secondary font-monospace">{{ line.at | date: 'MMM d, HH:mm:ss' }}</span>
+                <fpc-badge size="sm" class="mx-1" [color]="levelTone[line.level]">{{ line.level }}</fpc-badge>
+                <span class="font-monospace text-break">{{ line.message }}</span>
+              </li>
+            }
+          </ul>
+        }
+        @default {
+          @if (chartType(); as type) {
+            <loadweaver-metric-chart [type]="type" [series]="series()" [unit]="unit()" [height]="chartHeight()" />
+          }
+        }
+      }
+    }
+  </div>
+</fpc-panel>

@@ -1,0 +1,289 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="globe2">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      [loading]="cardsLoading()"
+      (clicked)="refresh()"
+      data-testid="fleet-overview-refresh"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (cards().length > 0) {
+    <fpc-summary-bar class="flex-shrink-0" [columns]="6" data-testid="fleet-summary">
+      <fpc-summary-card
+        i18n-label="@@lwConsoleFleetOverview-sumClusters"
+        label="Clusters"
+        [value]="summary().healthy + ' / ' + summary().clusters"
+        [tone]="summary().unhealthy > 0 ? 'warning' : 'success'"
+      />
+      <fpc-summary-card
+        i18n-label="@@lwConsoleFleetOverview-sumAttention"
+        label="Needs attention"
+        [value]="'' + summary().attention"
+        [tone]="summary().critical > 0 ? 'danger' : 'default'"
+      />
+      <fpc-summary-card
+        i18n-label="@@lwConsoleFleetOverview-sumAlerts"
+        label="Open alerts"
+        [value]="'' + summary().openAlerts"
+      />
+      <fpc-summary-card
+        i18n-label="@@lwConsoleFleetOverview-sumPlans"
+        label="Pending plans"
+        [value]="'' + summary().pendingPlans"
+      />
+      <fpc-summary-card
+        i18n-label="@@lwConsoleFleetOverview-sumUpgrades"
+        label="Upgrades available"
+        [value]="'' + summary().upgrades"
+        [tone]="summary().upgrades > 0 ? 'info' : 'default'"
+      />
+      <fpc-summary-card
+        i18n-label="@@lwConsoleFleetOverview-sumTeardown"
+        label="In teardown"
+        [value]="'' + summary().teardown"
+        [tone]="summary().teardown > 0 ? 'warning' : 'default'"
+      />
+    </fpc-summary-bar>
+  }
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (cardsError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    @if (cardsLoading() && cards().length === 0) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (cards().length === 0) {
+      @if (!cardsError()) {
+        <fpc-empty-state
+          icon="globe2"
+          i18n-title="@@lwConsoleFleetOverview-empty"
+          title="No clusters in the fleet yet"
+          i18n-message="@@lwConsoleFleetOverview-emptyHint"
+          message="Fleet admins register clusters under Clusters; others see the clusters they have a grant on."
+        />
+      }
+    } @else {
+      <fpc-panel-grid [columns]="3" data-testid="fleet-cards">
+        @for (card of cards(); track card.id) {
+          <fpc-panel [title]="card.name" [attr.data-testid]="'fleet-card-' + card.name">
+            <fpc-button
+              fpcPanelActions
+              variant="primary"
+              size="sm"
+              (clicked)="open(card)"
+              [disabled]="card.state === 'retired'"
+              [attr.data-testid]="'fleet-card-open-' + card.name"
+            >
+              <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleFleetOverview-open">Open</span>
+            </fpc-button>
+
+            <div class="d-flex align-items-start gap-2 mb-2">
+              <fpc-status-badge
+                [tone]="connectionTone(card.connection.state)"
+                size="sm"
+                [ariaLabel]="connectionLabel(card.connection.state)"
+              >
+                <i class="bi {{ connectionIcon(card.connection.state) }}" aria-hidden="true"></i>
+              </fpc-status-badge>
+              <div class="min-w-0">
+                <div class="small fw-semibold">{{ connectionLabel(card.connection.state) }}</div>
+                @if (card.health; as h) {
+                  <div class="small text-body-secondary text-break">
+                    <fpc-badge size="sm" [color]="healthTone(card)">{{ h.state }}</fpc-badge>
+                    {{ h.message }}
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-1 mb-2">
+              @if (card.state === 'teardown') {
+                <fpc-badge size="sm" color="warning" data-testid="fleet-card-teardown">
+                  <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
+                  ><span i18n="@@lwConsoleFleetOverview-teardown">Teardown: read-only until</span>
+                  {{ card.readOnlyUntil | date: 'mediumDate' }}
+                </fpc-badge>
+              }
+              @if (card.state === 'retired') {
+                <fpc-badge size="sm" color="secondary" i18n="@@lwConsoleFleetOverview-retired">Retired</fpc-badge>
+              }
+              @if (card.reference) {
+                <fpc-badge size="sm" color="light" i18n="@@lwConsoleFleetOverview-cloud">Loadweaver Cloud</fpc-badge>
+              }
+              @if (card.limited) {
+                <fpc-badge size="sm" color="light" i18n="@@lwConsoleFleetOverview-limited">Project access</fpc-badge>
+              }
+              @if (card.activeRollout) {
+                <fpc-badge size="sm" color="info" i18n="@@lwConsoleFleetOverview-rollout">Update running</fpc-badge>
+              }
+            </div>
+
+            <dl class="row small mb-0">
+              <dt class="col-6 fw-normal text-body-secondary" i18n="@@lwConsoleFleetOverview-version">Version</dt>
+              <dd class="col-6 mb-1 font-monospace">
+                {{ card.version ?? '–' }}
+                @if (card.upgradeAvailable) {
+                  <fpc-badge size="sm" color="info" [title]="card.latestAvailable ?? ''">
+                    → {{ card.latestAvailable }}
+                  </fpc-badge>
+                }
+              </dd>
+              @if (!card.limited) {
+                <dt class="col-6 fw-normal text-body-secondary" i18n="@@lwConsoleFleetOverview-sites">Sites</dt>
+                <dd class="col-6 mb-1">{{ card.sites ?? '–' }}</dd>
+                <dt class="col-6 fw-normal text-body-secondary" i18n="@@lwConsoleFleetOverview-nodes">Nodes up</dt>
+                <dd class="col-6 mb-1">
+                  @if (card.nodes; as n) {
+                    {{ n.up }} / {{ n.total }}
+                  } @else {
+                    –
+                  }
+                </dd>
+              }
+              <dt class="col-6 fw-normal text-body-secondary" i18n="@@lwConsoleFleetOverview-alerts">Open alerts</dt>
+              <dd class="col-6 mb-1">{{ card.openAlerts ?? '–' }}</dd>
+              <dt class="col-6 fw-normal text-body-secondary" i18n="@@lwConsoleFleetOverview-plans">Pending plans</dt>
+              <dd class="col-6 mb-1">{{ card.pendingPlans ?? '–' }}</dd>
+              <dt class="col-6 fw-normal text-body-secondary" i18n="@@lwConsoleFleetOverview-inbox">Inbox</dt>
+              <dd class="col-6 mb-1">
+                <span class="text-danger">{{ card.inbox.critical }}</span> ·
+                <span class="text-warning">{{ card.inbox.warning }}</span> ·
+                <span class="text-body-secondary">{{ card.inbox.info }}</span>
+              </dd>
+            </dl>
+
+            @if (capacityPercent(card.capacity, 'cpu'); as cpu) {
+              <div class="small text-body-secondary mt-2">
+                <span i18n="@@lwConsoleFleetOverview-cpu">CPU</span> {{ cpu }}%
+              </div>
+              <fpc-progress [value]="cpu" height="0.4rem" [variant]="capacityVariant(cpu)" />
+            }
+            @if (capacityPercent(card.capacity, 'memory'); as memory) {
+              <div class="small text-body-secondary mt-1">
+                <span i18n="@@lwConsoleFleetOverview-memory">Memory</span> {{ memory }}%
+              </div>
+              <fpc-progress [value]="memory" height="0.4rem" [variant]="capacityVariant(memory)" />
+            }
+
+            @for (e of card.errors; track e) {
+              <div class="small text-danger mt-1 text-break">{{ e }}</div>
+            }
+
+            <div fpcPanelFooter class="d-flex justify-content-between align-items-center w-100 small">
+              <a [routerLink]="['/fleet/clusters', card.id]" i18n="@@lwConsoleFleetOverview-details"
+                >Connection & grants</a
+              >
+              @if (card.fetchedAt) {
+                <span class="text-body-secondary">{{ card.fetchedAt | date: 'shortTime' }}</span>
+              }
+            </div>
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+
+      <fpc-panel-grid [columns]="2" fill>
+        <fpc-panel i18n-title="@@lwConsoleFleetOverview-inboxTitle" title="Needs attention" [flush]="true">
+          @if (inboxError(); as message) {
+            <fpc-alert class="m-3" variant="danger" [message]="message" />
+          } @else if (inbox().length === 0) {
+            <fpc-empty-state
+              icon="check2-circle"
+              size="sm"
+              i18n-title="@@lwConsoleFleetOverview-inboxEmpty"
+              title="Nothing needs attention"
+            />
+          } @else {
+            <fpc-list [flush]="true" data-testid="fleet-inbox">
+              @for (item of inbox(); track item.clusterId + item.link + item.title) {
+                <fpc-list-item [clickable]="true" (selected)="openItem(item)">
+                  <div fpcListItemTitle class="d-flex align-items-start gap-2 min-w-0">
+                    <fpc-status-badge [tone]="severityTone(item)" size="sm">
+                      <i class="bi {{ severityIcon(item) }}" aria-hidden="true"></i>
+                    </fpc-status-badge>
+                    <div class="flex-grow-1 min-w-0">
+                      <div class="small text-body-secondary">{{ item.clusterName }}</div>
+                      <div class="text-break">{{ item.title }}</div>
+                      @if (item.nativeUrl) {
+                        <!-- Approvals stay native: resolved in the cluster's own console, not through the fleet. -->
+                        <a
+                          class="small"
+                          [href]="item.nativeUrl"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          (click)="$event.stopPropagation()"
+                          data-testid="fleet-inbox-native"
+                        >
+                          <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>
+                          @if (isApproval(item)) {
+                            <span i18n="@@lwConsoleFleetOverview-approveNative">Approve in the cluster's console</span>
+                          } @else {
+                            <span i18n="@@lwConsoleFleetOverview-openNative">Open in the cluster's console</span>
+                          }
+                        </a>
+                      }
+                    </div>
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary">
+                    @if (item.project) {
+                      <span>{{ item.project }}</span>
+                    }
+                    @if (item.since) {
+                      <span class="ms-2">{{ item.since | date: 'short' }}</span>
+                    }
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+
+        <fpc-panel i18n-title="@@lwConsoleFleetOverview-sitesTitle" title="Sites">
+          @if (sitesError(); as message) {
+            <fpc-alert variant="danger" [message]="message" />
+          } @else if (located().length === 0) {
+            <fpc-empty-state
+              icon="geo-alt"
+              size="sm"
+              i18n-title="@@lwConsoleFleetOverview-noLocations"
+              title="No site locations known"
+              i18n-message="@@lwConsoleFleetOverview-noLocationsHint"
+              message="Set spec.location (latitude / longitude) on the Site resources to see them on the map."
+            />
+          } @else {
+            <loadweaver-fleet-world-map [sites]="located()" [ariaLabel]="mapLabel" (siteSelected)="openSite($event)" />
+            <div class="small mt-2" data-testid="fleet-sites-list">
+              @for (group of sitesByCluster(); track group.clusterId) {
+                <div>
+                  <span class="fw-semibold">{{ group.clusterName }}</span
+                  >:
+                  @for (site of group.sites; track site.site; let last = $last) {
+                    <span>{{ site.label ?? site.site }}</span>
+                    @if (!last) {
+                      ,
+                    }
+                  }
+                </div>
+              }
+            </div>
+          }
+          @if ((sites()?.withoutLocation ?? 0) > 0) {
+            <div class="small text-body-secondary mt-2">
+              <span i18n="@@lwConsoleFleetOverview-withoutLocation">Sites without a location</span>:
+              {{ sites()?.withoutLocation }}
+            </div>
+          }
+        </fpc-panel>
+      </fpc-panel-grid>
+    }
+  </div>
+</div>

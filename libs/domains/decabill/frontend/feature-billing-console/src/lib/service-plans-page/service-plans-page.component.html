@@ -767,6 +767,24 @@
               label="Decabill Billing"
             />
           }
+          @if (
+            serviceEnumIncludes(
+              data.serviceTypes,
+              data.providerDetails,
+              createForm.serviceTypeId,
+              'loadweaver',
+              'create'
+            )
+          ) {
+            <fpc-form-check
+              class="mb-2"
+              checkId="createProvisioningLoadweaver"
+              [checked]="isProvisioningOptionSelected('create', 'integrated:loadweaver')"
+              (checkedChange)="toggleProvisioningOption('create', 'integrated:loadweaver', $event)"
+              [disabled]="(creating$ | async) === true"
+              label="Loadweaver"
+            />
+          }
           @for (cfg of cloudInitConfigs$ | async; track cfg.id) {
             <fpc-form-check
               class="mb-2"
@@ -1742,6 +1760,24 @@
               (checkedChange)="toggleProvisioningOption('edit', 'integrated:decabill-billing', $event)"
               [disabled]="(updating$ | async) === true"
               label="Decabill Billing"
+            />
+          }
+          @if (
+            serviceEnumIncludes(
+              data.serviceTypes,
+              data.providerDetails,
+              editingPlan.serviceTypeId,
+              'loadweaver',
+              'edit'
+            )
+          ) {
+            <fpc-form-check
+              class="mb-2"
+              checkId="editProvisioningLoadweaver"
+              [checked]="isProvisioningOptionSelected('edit', 'integrated:loadweaver')"
+              (checkedChange)="toggleProvisioningOption('edit', 'integrated:loadweaver', $event)"
+              [disabled]="(updating$ | async) === true"
+              label="Loadweaver"
             />
           }
           @for (cfg of cloudInitConfigs$ | async; track cfg.id) {

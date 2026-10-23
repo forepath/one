@@ -63,6 +63,13 @@ in band and is never cached.
   - **Selected options:** `-cpu host` exposes nested virtualization; `exposeVirtualization: false` (`host,-vmx,-svm`) simulates an ordinary cloud VM.
 - **Manager services:** the specs use the agent manager's `DockerService`, bound to a local unix socket. Each connection to it is bridged to `docker system dial-stdio` in the guest over SSH. The egress guard image is built from `apps/agenstra/backend-agent-manager/Dockerfile.egress-guard` and loaded into the guest.
 - **Cleanup:** everything carries the label `io.agenstra.isolation-lab` (`run`, `golden`, `image`).
+- **Shared harness (M7.6):** process helpers, the QEMU / golden image builders, the VM itself (`startUserNetVm`), the
+  Docker socket tunnel and the cleanup script come from the shared VM-lab harness
+  [`libs/domains/shared/backend/util-vm-lab`](../../../shared/backend/util-vm-lab/README.md), which Loadweaver's VM lab
+  uses too. The lab's pins, cloud-init, QEMU arguments and names stay here (same golden / image names as before). A
+  lab run takes the machine's heavy lock (`/tmp/lw-3a.lock`) and the VM-lab lock (`/tmp/lw-vmlab.lock`), checks the
+  host's available memory, keeps all VMs of the process within 7 GiB, and removes its containers on exit
+  (also on Ctrl+C).
 
 ## Notes
 

@@ -1,0 +1,845 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="database-check">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <loadweaver-backups-nav active="platform" [platform]="true" [keys]="isClusterAdmin()" />
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" data-testid="platform-action-error" />
+    }
+
+    @if (loading() && !loaded()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (status(); as s) {
+      @for (pin of s.pins; track pin) {
+        <fpc-alert class="m-3" variant="danger" [showIcon]="true" data-testid="platform-pin">
+          <span class="fw-semibold" i18n="@@lwConsolePlatformBackups-pin">Pin:</span> {{ pin }}
+        </fpc-alert>
+      }
+      @if (!s.enabled) {
+        <fpc-alert class="m-3" variant="warning" [showIcon]="true" data-testid="platform-disabled">
+          <span i18n="@@lwConsolePlatformBackups-disabled"
+            >Control-plane backups are disabled in the cluster settings. Without them the cluster can't be rebuilt after
+            losing its nodes.</span
+          >
+        </fpc-alert>
+      }
+
+      <fpc-alert class="m-3" variant="info" [showIcon]="true">
+        <span i18n="@@lwConsolePlatformBackups-explain"
+          >The control plane backs up its own state: the Postgres database (continuously, for point-in-time recovery),
+          OpenSearch (logs, audit, search) and etcd. Backups on the cluster's own storage don't survive the loss of the
+          cluster; the external copy to off-cluster targets does.</span
+        >
+        <span class="ms-1"
+          ><span i18n="@@lwConsolePlatformBackups-timeZone">Schedules in time zone</span>
+          <span class="font-monospace">{{ s.settings.timeZone }}</span></span
+        >
+      </fpc-alert>
+
+      <fpc-panel-grid [columns]="2" fill>
+        <!-- Per kind: schedule, retention, last run, back up now, recent backups. -->
+        @for (k of kinds(); track k.kind) {
+          <fpc-panel
+            [span]="2"
+            [title]="kindLabel(k.kind)"
+            [flush]="true"
+            [attr.data-testid]="'platform-kind-' + k.kind"
+          >
+            @if (isClusterAdmin()) {
+              <fpc-button
+                fpcPanelActions
+                variant="primary"
+                size="sm"
+                [loading]="isActing('run:' + k.kind)"
+                [disabled]="acting() !== null || k.running"
+                (clicked)="runNow(k)"
+                [attr.data-testid]="'platform-run-' + k.kind"
+              >
+                <i class="bi bi-play-fill me-1" aria-hidden="true"></i
+                ><span i18n="@@lwConsolePlatformBackups-runNow">Back up now</span>
+              </fpc-button>
+            }
+            <div class="d-flex flex-wrap align-items-center gap-2 px-3 py-2 small">
+              @if (k.enabled) {
+                <fpc-badge color="success" size="sm" i18n="@@lwConsolePlatformBackups-enabled">Enabled</fpc-badge>
+              } @else {
+                <fpc-badge color="secondary" size="sm" i18n="@@lwConsolePlatformBackups-disabledBadge"
+                  >Disabled</fpc-badge
+                >
+              }
+              @if (k.running) {
+                <fpc-badge color="primary" size="sm" [attr.data-testid]="'platform-running-' + k.kind">
+                  <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span
+                  ><span i18n="@@lwConsolePlatformBackups-running">Running</span>
+                </fpc-badge>
+              }
+              <span
+                ><span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-schedule">Schedule</span>
+                <span class="font-monospace ms-1">{{ k.schedule }}</span></span
+              >
+              <span
+                ><span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-keep">Keep</span>
+                {{ k.effectiveKeep }}</span
+              >
+            </div>
+
+            @if (retentionPending(k)) {
+              <fpc-alert
+                class="m-3"
+                variant="warning"
+                [showIcon]="true"
+                [attr.data-testid]="'platform-retention-' + k.kind"
+              >
+                <span i18n="@@lwConsolePlatformBackups-retentionPending"
+                  >A shorter retention waits for a second admin and the deletion delay. Declared:</span
+                >
+                {{ k.keep }} ·
+                <span i18n="@@lwConsolePlatformBackups-retentionEffective">kept until then:</span>
+                {{ k.effectiveKeep }}
+                @if (k.retentionRequest; as r) {
+                  <div class="small mt-1">
+                    <span class="fw-semibold">{{ r.state }}</span> ·
+                    <span i18n="@@lwConsolePlatformBackups-requestedBy">requested by</span> {{ r.requestedBy }}
+                    @if (r.approvedBy) {
+                      · <span i18n="@@lwConsolePlatformBackups-approvedBy">approved by</span> {{ r.approvedBy }}
+                    }
+                    · <span i18n="@@lwConsolePlatformBackups-notBefore">not before</span>
+                    {{ r.notBefore | date: 'short' }}
+                  </div>
+                }
+                <a
+                  class="d-inline-block mt-1"
+                  routerLink="/backups/deletions"
+                  i18n="@@lwConsolePlatformBackups-approveLink"
+                  >Approve or cancel under deletion requests</a
+                >
+              </fpc-alert>
+            }
+
+            <div class="small px-3 pb-2" [attr.data-testid]="'platform-last-' + k.kind">
+              <span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-lastRun">Last run</span>
+              <fpc-status-badge class="ms-1" [tone]="runTone(k.lastStatus)" size="sm">{{
+                runLabel(k.lastStatus)
+              }}</fpc-status-badge>
+              @if (k.lastStartedAt) {
+                <span class="ms-1">{{ k.lastStartedAt | date: 'short' }}</span>
+              }
+              @if (k.lastFinishedAt) {
+                → {{ k.lastFinishedAt | date: 'short' }}
+              }
+              @if (k.lastBackup) {
+                · <span class="font-monospace">{{ k.lastBackup }}</span>
+              }
+              @if (k.lastError) {
+                <div class="text-danger text-break">{{ k.lastError }}</div>
+              }
+            </div>
+
+            @if (runResults()[k.kind]; as r) {
+              <fpc-alert
+                class="m-3"
+                [variant]="r.status === 'succeeded' ? 'success' : r.status === 'failed' ? 'danger' : 'warning'"
+                [attr.data-testid]="'platform-run-result-' + k.kind"
+              >
+                <span i18n="@@lwConsolePlatformBackups-runResult">Back up now:</span> {{ runLabel(r.status) }}
+                @if (r.backup) {
+                  · <span class="font-monospace">{{ r.backup }}</span> ({{ bytes(r.bytes) }})
+                }
+                @if (r.deleted.length > 0) {
+                  · <span i18n="@@lwConsolePlatformBackups-runPruned">pruned</span> {{ r.deleted.length }}
+                }
+                @if (r.error) {
+                  <div class="text-break">{{ r.error }}</div>
+                }
+              </fpc-alert>
+            }
+
+            @if (k.backups.length > 0) {
+              <div class="table-responsive">
+                <table
+                  class="table table-striped table-hover small align-middle mb-0"
+                  [attr.data-testid]="'platform-backups-' + k.kind"
+                >
+                  <thead>
+                    <tr>
+                      <th i18n="@@lwConsolePlatformBackups-colName">Backup</th>
+                      <th i18n="@@lwConsolePlatformBackups-colStatus">Status</th>
+                      <th i18n="@@lwConsolePlatformBackups-colSize">Size</th>
+                      <th i18n="@@lwConsolePlatformBackups-colStarted">Started</th>
+                      <th i18n="@@lwConsolePlatformBackups-colFinished">Finished</th>
+                      <th i18n="@@lwConsolePlatformBackups-colTargets">External copies</th>
+                      @if (k.kind === 'etcd') {
+                        <th>
+                          <span class="visually-hidden" i18n="@@lwConsolePlatformBackups-colActions">Actions</span>
+                        </th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (b of k.backups; track b.id) {
+                      <tr>
+                        <td class="font-monospace text-break">{{ b.name ?? b.id }}</td>
+                        <td>
+                          <fpc-status-badge [tone]="runTone(b.status)" size="sm">{{
+                            runLabel(b.status)
+                          }}</fpc-status-badge>
+                        </td>
+                        <td>{{ bytes(b.bytes) }}</td>
+                        <td>{{ b.startedAt | date: 'short' }}</td>
+                        <td>{{ b.finishedAt ? (b.finishedAt | date: 'short') : '–' }}</td>
+                        <td>
+                          @for (t of b.targets; track t.target) {
+                            <div>
+                              {{ t.target }}
+                              @if (locked(t.lockedUntil)) {
+                                <i class="bi bi-lock-fill text-success ms-1" aria-hidden="true"></i>
+                                <span i18n="@@lwConsolePlatformBackups-lockedUntil">locked until</span>
+                                {{ t.lockedUntil | date: 'short' }}
+                              }
+                            </div>
+                          } @empty {
+                            <span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-noCopy"
+                              >only on the cluster</span
+                            >
+                          }
+                        </td>
+                        @if (k.kind === 'etcd') {
+                          <td class="text-end">
+                            @if (b.name && b.status === 'succeeded') {
+                              <fpc-button
+                                variant="link"
+                                size="sm"
+                                [loading]="isActing('etcd:' + b.name)"
+                                [disabled]="acting() !== null"
+                                (clicked)="downloadEtcd(b.name)"
+                              >
+                                <i class="bi bi-download me-1" aria-hidden="true"></i
+                                ><span i18n="@@lwConsolePlatformBackups-download">Download</span>
+                              </fpc-button>
+                            }
+                          </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <div class="small text-body-secondary px-3 pb-2" i18n="@@lwConsolePlatformBackups-noBackups">
+                No backups yet.
+              </div>
+            }
+          </fpc-panel>
+        }
+
+        <!-- Point-in-time recovery of the control-plane database. -->
+        <fpc-panel [span]="2" [title]="pitrTitle" [flush]="true" data-testid="platform-pitr">
+          @if (isClusterAdmin()) {
+            <fpc-button
+              fpcPanelActions
+              variant="primary"
+              size="sm"
+              [disabled]="acting() !== null || !s.postgresWindow"
+              (clicked)="openRestore()"
+              data-testid="platform-restore-open"
+            >
+              <i class="bi bi-clock-history me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsolePlatformBackups-restoreOpen">Restore to a point in time</span>
+            </fpc-button>
+          }
+          <p class="small text-body-secondary px-3 pt-2" i18n="@@lwConsolePlatformBackups-pitrExplain">
+            A restore brings the database back into its own scope next to the live one, which stays untouched. Inspect
+            it, then switch the control plane to it (a second cluster admin approves) or discard it.
+          </p>
+          <div class="small px-3 pb-2" data-testid="platform-window">
+            <span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-window">Recovery window</span>
+            @if (s.postgresWindow; as w) {
+              <span class="ms-1">{{ w.from ? (w.from | date: 'medium') : '–' }} → {{ w.to | date: 'medium' }}</span>
+            } @else {
+              <span class="ms-1 text-warning" i18n="@@lwConsolePlatformBackups-noWindow"
+                >none yet (no base backup)</span
+              >
+            }
+            · <span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-scope">Database scope</span>
+            <span class="font-monospace ms-1">{{ s.postgresScope }}</span>
+          </div>
+
+          @if (restores().length > 0) {
+            <div class="table-responsive">
+              <table class="table table-striped table-hover small align-middle mb-0" data-testid="platform-restores">
+                <thead>
+                  <tr>
+                    <th i18n="@@lwConsolePlatformBackups-colState">State</th>
+                    <th i18n="@@lwConsolePlatformBackups-colTargetTime">Target time</th>
+                    <th i18n="@@lwConsolePlatformBackups-colNode">Node</th>
+                    <th i18n="@@lwConsolePlatformBackups-colScope">Scope</th>
+                    <th i18n="@@lwConsolePlatformBackups-colReady">Ready</th>
+                    <th i18n="@@lwConsolePlatformBackups-colEndpoint">Endpoint</th>
+                    <th><span class="visually-hidden" i18n="@@lwConsolePlatformBackups-colActions">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (r of restores(); track r.id) {
+                    <tr [attr.data-testid]="'platform-restore-' + r.id">
+                      <td>
+                        <fpc-status-badge [tone]="restoreTone[r.state]" size="sm">{{
+                          restoreLabel(r.state)
+                        }}</fpc-status-badge>
+                        @if (r.error) {
+                          <div class="text-danger text-break">{{ r.error }}</div>
+                        }
+                      </td>
+                      <td>
+                        @if (r.targetTime) {
+                          {{ r.targetTime | date: 'medium' }}
+                        } @else {
+                          <span i18n="@@lwConsolePlatformBackups-latest">latest</span>
+                        }
+                      </td>
+                      <td>{{ r.node }}</td>
+                      <td class="font-monospace">
+                        {{ r.scope }} <span class="text-body-secondary">← {{ r.sourceScope }}</span>
+                      </td>
+                      <td>{{ r.readyAt ? (r.readyAt | date: 'short') : '–' }}</td>
+                      <td class="font-monospace">
+                        @if (r.endpoint.host) {
+                          {{ r.endpoint.host }}:{{ r.endpoint.port }}
+                        } @else {
+                          –
+                        }
+                      </td>
+                      <td class="text-end text-nowrap">
+                        @if (isClusterAdmin()) {
+                          @if (r.state === 'ready' && !cutoverFor(r)) {
+                            <fpc-button
+                              variant="danger"
+                              size="sm"
+                              [loading]="isActing('plan:' + r.id)"
+                              [disabled]="acting() !== null || openCutovers().length > 0"
+                              (clicked)="askPlan(r)"
+                              [attr.data-testid]="'platform-plan-' + r.id"
+                            >
+                              <i class="bi bi-shuffle me-1" aria-hidden="true"></i
+                              ><span i18n="@@lwConsolePlatformBackups-plan"
+                                >Switch control-plane database to this restore</span
+                              >
+                            </fpc-button>
+                          }
+                          @if (
+                            r.state === 'requested' ||
+                            r.state === 'restoring' ||
+                            r.state === 'ready' ||
+                            r.state === 'failed'
+                          ) {
+                            <fpc-button
+                              class="ms-1"
+                              variant="link"
+                              size="sm"
+                              [loading]="isActing('discard:' + r.id)"
+                              [disabled]="acting() !== null || !!cutoverFor(r)"
+                              (clicked)="askDiscard(r)"
+                              [attr.data-testid]="'platform-discard-' + r.id"
+                            >
+                              <span i18n="@@lwConsolePlatformBackups-discard">Discard</span>
+                            </fpc-button>
+                          }
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="small text-body-secondary px-3 pb-2" i18n="@@lwConsolePlatformBackups-noRestores">
+              No restores.
+            </div>
+          }
+        </fpc-panel>
+
+        <!-- Cut-overs: the switch of the control-plane database to a restore. -->
+        @for (c of openCutovers(); track c.id) {
+          <fpc-panel [span]="2" [title]="cutoverTitle" [attr.data-testid]="'platform-cutover-' + c.id">
+            @if (isClusterAdmin() && !fleetMode && c.state === 'planned') {
+              <fpc-button
+                fpcPanelActions
+                variant="danger"
+                size="sm"
+                [loading]="isActing('approve:' + c.id)"
+                [disabled]="acting() !== null"
+                (clicked)="askApprove(c)"
+                [attr.data-testid]="'platform-approve-' + c.id"
+              >
+                <i class="bi bi-check2 me-1" aria-hidden="true"></i
+                ><span i18n="@@lwConsolePlatformBackups-approve">Approve</span>
+              </fpc-button>
+            }
+            @if (isClusterAdmin() && canCancel(c)) {
+              <fpc-button
+                fpcPanelActions
+                variant="secondary"
+                size="sm"
+                [loading]="isActing('cancel:' + c.id)"
+                [disabled]="acting() !== null"
+                (clicked)="askCancelCutover(c)"
+                [attr.data-testid]="'platform-cancel-' + c.id"
+              >
+                {{ cancelLabel }}
+              </fpc-button>
+            }
+            <div class="mb-2">
+              <fpc-status-badge [tone]="cutoverTone[c.state]" size="sm">{{ cutoverLabel(c.state) }}</fpc-status-badge>
+            </div>
+
+            <fpc-alert variant="danger" [showIcon]="true" [attr.data-testid]="'platform-cutover-warnings-' + c.id">
+              <div class="fw-semibold">
+                <span i18n="@@lwConsolePlatformBackups-dataLoss">Data written after this point is lost:</span>
+                {{ c.plan.dataLossAfter | date: 'medium' }}
+              </div>
+              <div class="small" i18n="@@lwConsolePlatformBackups-finalBackupKept">
+                A final base backup of the current database is taken and kept before switching.
+              </div>
+              @if (c.plan.warnings.length > 0) {
+                <ul class="mb-0 mt-1 small">
+                  @for (w of c.plan.warnings; track $index) {
+                    <li>{{ w }}</li>
+                  }
+                </ul>
+              }
+            </fpc-alert>
+
+            @if (c.state === 'planned' && requestedByMe(c)) {
+              <div class="small text-body-secondary mt-2" i18n="@@lwConsolePlatformBackups-secondAdmin">
+                You requested this cut-over: a second cluster admin has to approve it.
+              </div>
+            }
+
+            <div class="small mt-2">
+              <span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-requestedBy">requested by</span>
+              {{ c.requestedBy }} · {{ c.createdAt | date: 'short' }}
+              @if (c.approvedBy) {
+                · <span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-approvedBy">approved by</span>
+                {{ c.approvedBy }}
+                @if (c.approvedAt) {
+                  {{ c.approvedAt | date: 'short' }}
+                }
+              }
+              · <span class="font-monospace">{{ c.previousScope }} → {{ c.scope }}</span> · {{ c.node }}
+            </div>
+
+            @if (c.plan.steps.length > 0) {
+              <div class="small mt-2">
+                <div class="fw-semibold" i18n="@@lwConsolePlatformBackups-steps">Steps</div>
+                <ol class="mb-0">
+                  @for (step of c.plan.steps; track $index) {
+                    <li>{{ step }}</li>
+                  }
+                </ol>
+              </div>
+            }
+            @if (c.plan.members.length > 0) {
+              <div class="small mt-2">
+                <span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-members">Members</span>
+                {{ c.plan.members.join(', ') }}
+              </div>
+            }
+            @if (c.error) {
+              <div class="small text-danger text-break mt-2">{{ c.error }}</div>
+            }
+          </fpc-panel>
+        }
+
+        @if (pastCutovers().length > 0) {
+          <fpc-panel [span]="2" [title]="cutoverHistoryTitle" [flush]="true" data-testid="platform-cutover-history">
+            <fpc-list [flush]="true">
+              @for (c of pastCutovers(); track c.id) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2 small">
+                    <fpc-status-badge [tone]="cutoverTone[c.state]" size="sm">{{
+                      cutoverLabel(c.state)
+                    }}</fpc-status-badge>
+                    <span class="font-monospace">{{ c.previousScope }} → {{ c.scope }}</span>
+                    <span class="text-body-secondary">{{ c.createdAt | date: 'short' }}</span>
+                    <span
+                      ><span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-requestedBy"
+                        >requested by</span
+                      >
+                      {{ c.requestedBy }}</span
+                    >
+                    @if (c.approvedBy) {
+                      <span
+                        ><span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-approvedBy"
+                          >approved by</span
+                        >
+                        {{ c.approvedBy }}</span
+                      >
+                    }
+                    @if (c.finalBackup) {
+                      <span
+                        ><span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-finalBackup"
+                          >final backup</span
+                        >
+                        <span class="font-monospace ms-1">{{ c.finalBackup }}</span></span
+                      >
+                    }
+                  </div>
+                  @if (c.error) {
+                    <div fpcListItemMeta class="small text-danger text-break">{{ c.error }}</div>
+                  }
+                </fpc-list-item>
+              }
+            </fpc-list>
+          </fpc-panel>
+        }
+
+        <!-- External copy to off-cluster targets. -->
+        <fpc-panel [title]="copiesTitle" [flush]="true" data-testid="platform-copies">
+          @if (isClusterAdmin()) {
+            <fpc-button
+              fpcPanelActions
+              variant="primary"
+              size="sm"
+              [loading]="isActing('copies')"
+              [disabled]="acting() !== null || s.copies.length === 0"
+              (clicked)="runCopies()"
+              data-testid="platform-copies-run"
+            >
+              <i class="bi bi-cloud-upload me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsolePlatformBackups-copyNow">Copy now</span>
+            </fpc-button>
+          }
+          @if (copyResults(); as results) {
+            <fpc-list [flush]="true" class="border-bottom" data-testid="platform-copy-results">
+              @for (r of results; track r.target) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2 small">
+                    <fpc-status-badge [tone]="runTone(r.status)" size="sm">{{ runLabel(r.status) }}</fpc-status-badge>
+                    <span class="fw-semibold">{{ r.target }}</span>
+                    <span><span i18n="@@lwConsolePlatformBackups-copied">copied</span> {{ r.copied }}</span>
+                    <span><span i18n="@@lwConsolePlatformBackups-pruned">pruned</span> {{ r.pruned }}</span>
+                  </div>
+                  @if (r.error) {
+                    <div fpcListItemMeta class="small text-danger text-break">{{ r.error }}</div>
+                  }
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+
+          @if (s.copies.length === 0) {
+            <fpc-empty-state
+              icon="cloud-slash"
+              i18n-title="@@lwConsolePlatformBackups-noTargets"
+              title="No external backup target"
+              i18n-message="@@lwConsolePlatformBackups-noTargetsHint"
+              message="Declare an S3 or SFTP target for control-plane backups, otherwise they don't survive the loss of the cluster."
+            />
+          } @else {
+            <fpc-list [flush]="true">
+              @for (t of s.copies; track t.target) {
+                <fpc-list-item [attr.data-testid]="'platform-copy-' + t.target">
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2 small">
+                    <span class="fw-semibold">{{ t.target }}</span>
+                    @if (t.type) {
+                      <fpc-badge color="light" size="sm">{{ t.type }}</fpc-badge>
+                    }
+                    @if (!t.declared) {
+                      <fpc-badge color="warning" size="sm" i18n="@@lwConsolePlatformBackups-undeclared"
+                        >Not declared</fpc-badge
+                      >
+                    }
+                    @if (t.objectLock; as lock) {
+                      <fpc-badge color="success" size="sm"
+                        ><i class="bi bi-lock-fill me-1" aria-hidden="true"></i
+                        ><span i18n="@@lwConsolePlatformBackups-objectLock">Object lock</span> {{ lock.mode }} ·
+                        {{ lock.days }} d</fpc-badge
+                      >
+                    }
+                    <fpc-status-badge class="ms-auto" [tone]="runTone(t.lastStatus)" size="sm">{{
+                      runLabel(t.lastStatus)
+                    }}</fpc-status-badge>
+                  </div>
+                  <div fpcListItemMeta class="small">
+                    <div class="text-body-secondary">
+                      @if (t.lastStartedAt) {
+                        <span i18n="@@lwConsolePlatformBackups-lastCopy">Last copy</span>
+                        {{ t.lastStartedAt | date: 'short' }}
+                        @if (t.lastFinishedAt) {
+                          → {{ t.lastFinishedAt | date: 'short' }}
+                        }
+                        ·
+                      }
+                      {{ t.objects }} <span i18n="@@lwConsolePlatformBackups-objects">objects</span> ·
+                      {{ bytes(t.bytes) }}
+                    </div>
+                    @if (t.verifiedEnvelope) {
+                      <div class="text-success mt-1" [attr.data-testid]="'platform-verified-' + t.target">
+                        <i class="bi bi-patch-check me-1" aria-hidden="true"></i
+                        ><span i18n="@@lwConsolePlatformBackups-verified"
+                          >Newest DR envelope read back and decrypted:</span
+                        >
+                        <span class="font-monospace ms-1">{{ t.verifiedEnvelope }}</span>
+                        @if (t.verifiedAt) {
+                          ({{ t.verifiedAt | date: 'short' }})
+                        }
+                      </div>
+                    } @else {
+                      <div class="text-warning mt-1" i18n="@@lwConsolePlatformBackups-notVerified">
+                        No DR envelope verified on this target yet.
+                      </div>
+                    }
+                    @if (t.lastError) {
+                      <div class="text-danger text-break mt-1">{{ t.lastError }}</div>
+                    }
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+
+        <!-- Disaster recovery: what a fresh node needs. -->
+        <fpc-panel [title]="drTitle" data-testid="platform-dr">
+          <fpc-button
+            fpcPanelActions
+            variant="primary"
+            size="sm"
+            [loading]="isActing('dr-info')"
+            [disabled]="acting() !== null"
+            (clicked)="downloadDrInfo()"
+            data-testid="platform-dr-info"
+          >
+            <i class="bi bi-download me-1" aria-hidden="true"></i
+            ><span i18n="@@lwConsolePlatformBackups-drInfo">Download DR info</span>
+          </fpc-button>
+          <p class="small text-body-secondary" i18n="@@lwConsolePlatformBackups-drExplain">
+            If the whole cluster is lost, a fresh node rebuilds the control plane from the external copy. It needs the
+            DR info file (target locations and key generations, no secrets), the access keys of the target and enough
+            shares of the recovery kit (or the KMS the key is escrowed in). Keep the DR info file with the kit, outside
+            the cluster, together with this release's agent binary (or the node installer, which takes --restore).
+          </p>
+          <div class="small mb-2" data-testid="platform-dr-kit">
+            <span class="text-body-secondary" i18n="@@lwConsolePlatformBackups-kit">Recovery kit</span>
+            @if (keys(); as k) {
+              @if (k.kitConfirmed) {
+                <fpc-badge class="ms-1" color="success" size="sm" i18n="@@lwConsolePlatformBackups-kitConfirmed"
+                  >Kit confirmed</fpc-badge
+                >
+              } @else {
+                <fpc-badge class="ms-1" color="danger" size="sm" i18n="@@lwConsolePlatformBackups-kitUnconfirmed"
+                  >Kit not confirmed</fpc-badge
+                >
+              }
+              @if (k.escrowed) {
+                <fpc-badge class="ms-1" color="info" size="sm" i18n="@@lwConsolePlatformBackups-escrowed"
+                  >Escrowed in KMS</fpc-badge
+                >
+              }
+              @if (k.generation !== null) {
+                <span class="ms-1">G{{ k.generation }}</span>
+              }
+            } @else {
+              <span class="ms-1">–</span>
+            }
+            @if (isClusterAdmin()) {
+              <a class="ms-2" routerLink="/backups/keys" i18n="@@lwConsolePlatformBackups-kitLink"
+                >Open the recovery kit</a
+              >
+            }
+          </div>
+          <fpc-form-field
+            forId="lw-dr-command"
+            i18n-label="@@lwConsolePlatformBackups-commandLabel"
+            label="Restore on a fresh node"
+          >
+            <fpc-input-group size="sm">
+              <fpc-form-control
+                controlType="textarea"
+                controlId="lw-dr-command"
+                size="sm"
+                controlClass="font-monospace"
+                [rows]="3"
+                readOnly
+                [value]="restoreCommand()"
+                data-testid="platform-dr-command"
+              />
+              <fpc-button
+                fpcInputGroupSuffix
+                variant="secondary"
+                size="sm"
+                iconOnly
+                [ariaLabel]="copyLabel"
+                [title]="copyLabel"
+                (clicked)="copyCommand()"
+                data-testid="platform-dr-copy"
+              >
+                <i
+                  class="bi"
+                  [ngClass]="commandCopied() ? 'bi-clipboard-check' : 'bi-clipboard'"
+                  aria-hidden="true"
+                ></i>
+              </fpc-button>
+            </fpc-input-group>
+          </fpc-form-field>
+        </fpc-panel>
+      </fpc-panel-grid>
+    }
+  </div>
+</div>
+
+<fpc-modal [open]="restoreOpen()" (openChange)="onRestoreOpenChange($event)" [title]="restoreTitle">
+  <p class="small" i18n="@@lwConsolePlatformBackups-restoreHint">
+    The database is restored into a new scope; the live database keeps running. Leave the time empty for the newest
+    state.
+  </p>
+  @if (status()?.postgresWindow; as w) {
+    <p class="small text-body-secondary">
+      <span i18n="@@lwConsolePlatformBackups-window">Recovery window</span>
+      {{ w.from ? (w.from | date: 'medium') : '–' }} → {{ w.to | date: 'medium' }}
+    </p>
+  }
+  <fpc-form-field
+    forId="lw-pitr-time"
+    i18n-label="@@lwConsolePlatformBackups-targetTimeLabel"
+    label="Target time (your local time)"
+  >
+    <fpc-form-control
+      controlId="lw-pitr-time"
+      inputType="datetime-local"
+      step="1"
+      size="sm"
+      [(ngModel)]="restoreTargetTime"
+      data-testid="platform-restore-time"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="lw-pitr-node" i18n-label="@@lwConsolePlatformBackups-nodeLabel" label="Node (optional)">
+    <fpc-form-control
+      controlId="lw-pitr-node"
+      size="sm"
+      [(ngModel)]="restoreNode"
+      data-testid="platform-restore-node"
+    />
+  </fpc-form-field>
+  @if (actionError(); as message) {
+    <fpc-alert variant="danger" [message]="message" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="secondary" (clicked)="restoreOpen.set(false)">{{ cancelLabel }}</fpc-button>
+    <fpc-button
+      variant="primary"
+      [loading]="isActing('restore')"
+      [disabled]="acting() !== null"
+      (clicked)="requestRestore()"
+      data-testid="platform-restore-submit"
+    >
+      <span i18n="@@lwConsolePlatformBackups-restoreSubmit">Restore</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="planFor() !== null"
+  (openChange)="onPlanOpenChange($event)"
+  [title]="planTitle"
+  [confirmLabel]="planConfirm"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="plan()"
+>
+  @if (planFor(); as r) {
+    <div class="text-danger" data-testid="platform-plan-warning">
+      <p class="fw-semibold mb-1">
+        <span i18n="@@lwConsolePlatformBackups-planDataLoss"
+          >Everything written to the control-plane database after the restore's point in time is lost:</span
+        >
+        {{ r.targetTime ? (r.targetTime | date: 'medium') : (r.readyAt | date: 'medium') }}
+      </p>
+    </div>
+    <p class="small mb-0" i18n="@@lwConsolePlatformBackups-planHint">
+      This only plans the cut-over: a second cluster admin approves it, then the control plane switches to the restored
+      database. A final base backup of the current database is kept.
+    </p>
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [open]="approveFor() !== null"
+  (openChange)="onApproveOpenChange($event)"
+  [title]="approveTitle"
+  [confirmLabel]="approveConfirm"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="approve()"
+>
+  @if (approveFor(); as c) {
+    <div class="text-danger" data-testid="platform-approve-warning">
+      <p class="fw-semibold mb-1">
+        <span i18n="@@lwConsolePlatformBackups-dataLoss">Data written after this point is lost:</span>
+        {{ c.plan.dataLossAfter | date: 'medium' }}
+      </p>
+      @if (c.plan.warnings.length > 0) {
+        <ul class="small">
+          @for (w of c.plan.warnings; track $index) {
+            <li>{{ w }}</li>
+          }
+        </ul>
+      }
+    </div>
+    <p class="small mb-0" i18n="@@lwConsolePlatformBackups-approveHint">
+      The control plane switches to the restored database right away; services reconnect. A final base backup of the
+      current database is kept.
+    </p>
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [open]="discardFor() !== null"
+  (openChange)="onDiscardOpenChange($event)"
+  [title]="discardTitle"
+  [confirmLabel]="discardConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="discard()"
+>
+  @if (discardFor(); as r) {
+    <p class="mb-0" data-testid="platform-discard-warning">
+      <span i18n="@@lwConsolePlatformBackups-discardWarning"
+        >The restored database is removed; a new point-in-time restore starts from scratch:</span
+      >
+      {{ r.targetTime ? (r.targetTime | date: 'medium') : (r.readyAt | date: 'medium') }}
+    </p>
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [open]="cancelFor() !== null"
+  (openChange)="onCancelCutoverOpenChange($event)"
+  [title]="cancelCutoverTitle"
+  [confirmLabel]="cancelCutoverConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="cancelCutover()"
+>
+  @if (cancelFor()) {
+    <p class="mb-0" data-testid="platform-cancel-warning" i18n="@@lwConsolePlatformBackups-cancelCutoverWarning">
+      The cut-over stops here; the control plane keeps its current database and the restore stays available for a new
+      plan.
+    </p>
+  }
+</fpc-confirm-dialog>

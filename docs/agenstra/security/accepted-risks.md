@@ -8,23 +8,36 @@ This register records **explicit risk acceptance** for product and deployment co
 
 ## AR-001 (Desktop app: no OS-trusted code signing / no in-app auto-update)
 
-| Field                                  | Recorded value                                                                                                                                                                                                                               |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ID**                                 | AR-001                                                                                                                                                                                                                                       |
-| **Area**                               | **`native-agent-console`** (Electron Forge pipeline, `apps/agenstra/native-agent-console/forge.config.js`)                                                                                                                                   |
-| **Configuration**                      | **No** OS-trusted **code signing** and **no** **in-app auto-update** channel in the documented release pipeline.                                                                                                                             |
-| **Residual risk**                      | Users rely on **manual checksum verification** and a trusted download channel rather than OS trust stores or automatic security updates from the application.                                                                                |
-| **Mitigations in scope of this repo**  | Release artifacts include **`SHA256SUMS`** and **`integrity-manifest.json`** produced by the **`release-integrity`** Nx project (`tools/release-integrity` in the repository). CI and release pipelines generate and verify these manifests. |
-| **Compensating controls (user / org)** | Verify checksums after download. Prefer the **web browser** as the primary client. Treat **`STATIC_API_KEY`** and other secrets per **[Environment configuration](../deployment/environment-configuration.md)**.                             |
-| **Risk owner**                         | Maintaining party for this repository and product security documentation (Forepath).                                                                                                                                                         |
-| **Acceptor**                           | Repository maintainer (acceptance recorded in project documentation).                                                                                                                                                                        |
-| **Acceptance date**                    | **2026-05-06**                                                                                                                                                                                                                               |
-| **Next review date**                   | **2027-05-06**                                                                                                                                                                                                                               |
-| **Rationale (business / technical)**   | The product is **primarily** used via the **web browser**. The native build is a **secondary** distribution channel.                                                                                                                         |
+| Field                                  | Recorded value                                                                                                                                                                                                                                                                  |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ID**                                 | AR-001                                                                                                                                                                                                                                                                          |
+| **Status**                             | **Retired once the signing secrets are configured (2026-10-20).** Replaced by the shared desktop release pipeline (`tools/desktop-release`) and in-app auto-update; see _Retirement_ below. Until the secrets exist, this acceptance stays in force for the unsigned artifacts. |
+| **Area**                               | **`native-agent-console`** (Electron Forge pipeline, `apps/agenstra/native-agent-console/forge.config.js`)                                                                                                                                                                      |
+| **Configuration**                      | **No** OS-trusted **code signing** and **no** **in-app auto-update** channel in the documented release pipeline.                                                                                                                                                                |
+| **Residual risk**                      | Users rely on **manual checksum verification** and a trusted download channel rather than OS trust stores or automatic security updates from the application.                                                                                                                   |
+| **Mitigations in scope of this repo**  | Release artifacts include **`SHA256SUMS`** and **`integrity-manifest.json`** produced by the **`release-integrity`** Nx project (`tools/release-integrity` in the repository). CI and release pipelines generate and verify these manifests.                                    |
+| **Compensating controls (user / org)** | Verify checksums after download. Prefer the **web browser** as the primary client. Treat **`STATIC_API_KEY`** and other secrets per **[Environment configuration](../deployment/environment-configuration.md)**.                                                                |
+| **Risk owner**                         | Maintaining party for this repository and product security documentation (Forepath).                                                                                                                                                                                            |
+| **Acceptor**                           | Repository maintainer (acceptance recorded in project documentation).                                                                                                                                                                                                           |
+| **Acceptance date**                    | **2026-05-06**                                                                                                                                                                                                                                                                  |
+| **Next review date**                   | **2027-05-06**                                                                                                                                                                                                                                                                  |
+| **Rationale (business / technical)**   | The product is **primarily** used via the **web browser**. The native build is a **secondary** distribution channel.                                                                                                                                                            |
+
+#### Retirement (AR-001)
+
+What replaces the accepted risk (Loadweaver plan 3.32, implemented 2026-10-20):
+
+- **macOS**: Apple **Developer ID** signing with hardened runtime, **notarization** and stapling.
+- **Windows**: **Authenticode** signatures (SHA-256, RFC 3161 timestamp) on the app binaries and the NSIS installer.
+- **Linux**: rpm packages signed with the **ForePath GPG key** and **signed apt / rpm repositories** (updates through the package manager); zip archives keep their checksums.
+- **In-app auto-update** (stable / beta channels): every update is verified against the **signed Agenstra release manifest** (ECDSA, keys compiled into the app; product, version, channel, SHA-256 and size of the file) before it is installed, and never downgrades. macOS additionally enforces the Developer ID signature (Squirrel.Mac), Windows the Authenticode publisher.
+- `SHA256SUMS` / `integrity-manifest.json` and the signed release manifest stay on top.
+
+**Condition**: the certificates and keys are release secrets of ForePath (`DESKTOP_MACOS_*` / `DESKTOP_APPLE_*`, `DESKTOP_WINDOWS_*`, `DESKTOP_LINUX_GPG_*`, plus `AGENSTRA_RELEASE_SIGNING_KEY` for the manifest; setup in `tools/desktop-release/README.md`). AR-001 is retired for every release built with them. While a secret is missing, the pipeline **skips that signing step with a warning** (like the Loadweaver bundle signing) and publishes the artifact as before: for those artifacts the acceptance above still applies, and the release workflow's warnings show which platforms were affected. The entry is closed for good once the first release with all secrets configured has shipped; until then it stays in the register with this status.
 
 #### Operator summary (AR-001)
 
-**OS-trusted code signing** and **in-app auto-update** are **not** provided. Verify artifacts using **`SHA256SUMS`** / **`integrity-manifest.json`**. Details: **[Desktop release integrity](./vulnerability-reporting-and-artifacts.md#desktop-release-integrity)**.
+Releases built with the signing secrets are **OS-signed** (Developer ID + notarization, Authenticode, GPG-signed packages and repositories) and **update in-app** after verifying the signed release manifest; see **[Agenstra Desktop](../applications/native-agent-console.md)**. For releases without them, verify artifacts using **`SHA256SUMS`** / **`integrity-manifest.json`** or the signed release manifest. Details: **[Desktop release integrity](./vulnerability-reporting-and-artifacts.md#desktop-release-integrity)**.
 
 ---
 
@@ -118,7 +131,7 @@ New windows are **allowed** by design. Risk is **lower** than in a general-purpo
 
 ## Hardening paths (if an acceptance is withdrawn)
 
-- **AR-001:** Add OS-trusted signing and/or Electron auto-update when native distribution requirements justify the operational cost.
+- **AR-001:** Implemented (shared desktop release pipeline, see _Retirement (AR-001)_); remaining step is configuring the signing secrets in the release environment.
 - **AR-002:** Tighten CSP after automated and manual verification so core UI (including Monaco) still functions.
 - **AR-003:** Require **`AUTHENTICATION_METHOD`** in all environments if auditors demand explicit configuration, or add startup validation that fails when **`STATIC_API_KEY`** is set without an explicit mode.
 - **AR-004:** Tighten **`setWindowOpenHandler`** (for example URL allowlist or **`action: 'deny'`**) if the product loads untrusted origins or adds browser-like navigation.

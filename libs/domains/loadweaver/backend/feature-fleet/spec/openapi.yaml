@@ -1,0 +1,797 @@
+openapi: 3.1.0
+info:
+  title: Loadweaver Fleet API
+  version: 1.0.0
+  description: |
+    HTTP API of the Loadweaver fleet service (3.24): the backend of the multi-cluster console. It stores one
+    connection per cluster (API endpoint, optional CA, a cluster-issued service credential encrypted at rest), users
+    sign in once here, and requests are relayed to the clusters after the caller's per-cluster / per-project grant
+    (viewer / operator / admin) was checked against a method / path allow-list. Relayed requests carry the cluster's
+    service credential and the acting fleet user in `X-Loadweaver-On-Behalf-Of`. Clusters keep no dependency on the
+    fleet.
+
+    PAT scopes: `fleet:read` (views, read-only relay), `fleet:relay` (changing relay calls), `fleet:restore`
+    (cross-cluster restore / clone), `fleet:admin` (connections, grants, audit), `cloud:register` and
+    `cloud:teardown` (Loadweaver Cloud hooks). Scopes only narrow; grants still apply. Live namespaces are relayed by
+    the Socket.IO namespace `socket/fleet` (see `asyncapi.yaml`).
+  contact:
+    name: ForePath
+    email: hi@forepath.io
+    url: https://loadweaver.com
+servers:
+  - url: http://localhost:3500/api
+    description: HTTP API (global prefix `/api`). Listen port from env `PORT` (default 3500).
+security:
+  - bearerAuth: []
+paths:
+  /clusters:
+    get:
+      summary: Clusters the caller can see
+      description: Fleet admins see every connection; other users the clusters they hold a grant on. Scope `fleet:read`.
+      operationId: listFleetClusters
+      responses:
+        '200':
+          description: Connections (never the credential)
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/FleetCluster' },
+                }
+    post:
+      summary: Register a cluster
+      description: |
+        Fleet admins (scope `fleet:admin`). The endpoint must be HTTPS and pass the SSRF guardrails
+        (`FLEET_CLUSTER_ENDPOINT_*`); the connection is tested with the credential first (`GET /api/cluster`) unless
+        `test` is false. Audited as `cluster.registered`.
+      operationId: createFleetCluster
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCluster' }
+      responses:
+        '201':
+          description: Registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FleetCluster' }
+        '400':
+          description: Invalid endpoint / CA, or the connection test failed
+        '409':
+          description: Name or reference already in use
+  /clusters/test:
+    post:
+      summary: Test an endpoint and credential without saving
+      operationId: testFleetClusterConnection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint, credential]
+              properties:
+                endpoint: { type: string }
+                credential: { type: string, minLength: 16 }
+                caCertificate: { type: string }
+      responses:
+        '200':
+          description: Health record of the probe
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ClusterHealth' }
+  /clusters/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ClusterId'
+    get:
+      summary: One cluster
+      operationId: getFleetCluster
+      responses:
+        '200':
+          description: Connection
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FleetCluster' }
+        '404':
+          description: Unknown, or no grant
+    patch:
+      summary: Change description, endpoint, CA or rotate the credential
+      operationId: updateFleetCluster
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description: { type: string }
+                endpoint:
+                  {
+                    type: string,
+                    description: A changed endpoint requires `credential` in the same request,
+                  }
+                credential: { type: string, minLength: 16 }
+                caCertificate:
+                  {
+                    type: string,
+                    description: Empty string removes a custom CA; a changed CA requires `credential` in the same request,
+                  }
+      responses:
+        '200':
+          description: Changed (re-probed when the connection changed)
+        '400':
+          description: Invalid endpoint / CA, or endpoint / CA changed without re-entering the service credential
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FleetCluster' }
+    delete:
+      summary: Remove a connection (and its grants)
+      operationId: deleteFleetCluster
+      responses:
+        '204':
+          description: Removed
+  /clusters/{id}/test:
+    parameters:
+      - $ref: '#/components/parameters/ClusterId'
+    post:
+      summary: Health poll now (otherwise every minute)
+      operationId: pollFleetCluster
+      responses:
+        '200':
+          description: Health record
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ClusterHealth' }
+  /clusters/{id}/grants:
+    parameters:
+      - $ref: '#/components/parameters/ClusterId'
+    get:
+      summary: Grants on a cluster (fleet admins)
+      operationId: listFleetGrants
+      responses:
+        '200':
+          description: Grants
+          content:
+            application/json:
+              schema:
+                { type: array, items: { $ref: '#/components/schemas/Grant' } }
+    put:
+      summary: Create or change a user's grant (cluster-wide or one project)
+      operationId: putFleetGrant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, role]
+              properties:
+                userId: { type: string, format: uuid }
+                role: { $ref: '#/components/schemas/FleetRole' }
+                project:
+                  {
+                    type: string,
+                    description: Limits the grant to this project,
+                  }
+      responses:
+        '200':
+          description: Grant
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Grant' }
+  /clusters/{id}/grants/{grantId}:
+    parameters:
+      - $ref: '#/components/parameters/ClusterId'
+      - in: path
+        name: grantId
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      summary: Remove a grant
+      operationId: deleteFleetGrant
+      responses:
+        '204':
+          description: Removed
+  /clusters/{id}/api/{path}:
+    parameters:
+      - $ref: '#/components/parameters/ClusterId'
+      - in: path
+        name: path
+        required: true
+        description: Path of the cluster's REST API after `/api/` (may contain slashes)
+        schema: { type: string }
+    get:
+      summary: Relay a read to the cluster
+      description: |
+        Allowed when the path is on the relay allow-list and the caller's grant reaches the rule's role (project
+        routes and routes filtered by `?project=` honour project grants). The response is streamed back with a
+        filtered header set; `FLEET_RELAY_TIMEOUT_MS` / `FLEET_RELAY_MAX_RESPONSE_BYTES` bound it. Scope `fleet:read`.
+
+        The query string is parsed like the cluster parses it (`node:querystring`): at most 100 parameters / 8 KiB,
+        plain parameter names, no repeated `project`; `?project=`-filtered lists accept only their own parameters.
+        The forwarded query is re-serialised from the validated parameters. Replica files (`live/files…`) and backup
+        contents (`backups/{id}/download|archive`) need the admin grant. Approvals / acceptances, join tokens,
+        installers and secrets are never relayed (four-eyes decisions stay in the cluster's own console).
+      operationId: relayGet
+      responses:
+        '200':
+          description: The cluster's response
+        '400':
+          description: Unsafe path (encoded characters, `..`, empty segments) or query (too many / ambiguous parameters, parameter not relayed)
+        '403':
+          description: Grant too low, project grant on a cluster-wide route, or read-only grace
+        '404':
+          description: Not relayed (secrets, personal endpoints of the service user, joining / join tokens / installer, approvals / acceptances, ...)
+        '502':
+          description: The cluster refused the fleet's service credential (cluster 401 / 403; `message`, `clusterStatus`)
+    post:
+      summary: Relay a change to the cluster
+      description: Scope `fleet:relay`; bodies up to `FLEET_RELAY_MAX_REQUEST_BYTES`. Audited as `relay.request`.
+      operationId: relayPost
+      responses:
+        '200':
+          description: The cluster's response
+        '413':
+          description: Request body too large
+        '502':
+          description: The cluster refused the fleet's service credential (cluster 401 / 403)
+    put:
+      summary: Relay a change to the cluster
+      operationId: relayPut
+      responses:
+        '200':
+          description: The cluster's response
+    patch:
+      summary: Relay a change to the cluster
+      operationId: relayPatch
+      responses:
+        '200':
+          description: The cluster's response
+    delete:
+      summary: Relay a change to the cluster
+      operationId: relayDelete
+      responses:
+        '200':
+          description: The cluster's response
+  /fleet/cards:
+    get:
+      summary: One card per cluster
+      description: |
+        Health, sites, nodes, capacity, version / available upgrade, open alerts, pending plans and inbox counts from
+        the cluster's own endpoints (cached `FLEET_CACHE_TTL_MS`). Project-only grants get a limited card.
+      operationId: fleetCards
+      responses:
+        '200':
+          description: Cards
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/FleetCard' },
+                }
+  /fleet/inbox:
+    get:
+      summary: Merged needs-attention inbox
+      description: Every visible cluster's inbox (cluster-wide grants), unreachable clusters as critical items; critical first, oldest first.
+      operationId: fleetInbox
+      responses:
+        '200':
+          description: Items with the cluster and a console link inside it
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/InboxItem' },
+                }
+  /fleet/sites:
+    get:
+      summary: Sites with a location for the world map
+      operationId: fleetSites
+      responses:
+        '200':
+          description: Sites (from `Site.spec.location`) and the number of sites without a location
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  withoutLocation: { type: integer }
+                  sites:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        clusterId: { type: string, format: uuid }
+                        clusterName: { type: string }
+                        site: { type: string }
+                        latitude: { type: number }
+                        longitude: { type: number }
+                        label: { type: [string, 'null'] }
+  /fleet/compare:
+    get:
+      summary: Side-by-side comparison of 2 to 8 clusters
+      description: Versions, capacity and the policy drift summary (Policy, ImagePolicy, BackupPolicy, MaintenanceWindow, AlertRule by kind / project / name and spec hash). Needs cluster-wide grants on every cluster.
+      operationId: fleetCompare
+      parameters:
+        - in: query
+          name: clusters
+          required: true
+          description: Comma-separated cluster ids
+          schema: { type: string }
+      responses:
+        '200':
+          description: Comparison
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comparison' }
+  /operations:
+    get:
+      summary: Fleet operations of visible clusters
+      operationId: listFleetOperations
+      parameters:
+        - { in: query, name: cluster, schema: { type: string, format: uuid } }
+        - {
+            in: query,
+            name: limit,
+            schema: { type: integer, minimum: 1, maximum: 200 },
+          }
+      responses:
+        '200':
+          description: Operations
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/Operation' },
+                }
+    post:
+      summary: Start a cross-cluster restore or clone (3.20)
+      description: |
+        Scope `fleet:restore`. The caller must be operator of every backup's project on the source cluster, of the
+        cloned project (clone) and of the target project on the target cluster. Steps: validate → (clone:
+        deployment plan → apply) → transfer (source `GET /backups/{id}/archive` streamed into target
+        `POST /backups/imports`) → restore plan (`Restore` resources) → apply (only with `apply`, the target's
+        approvals still apply) → wait for the restores. Each step is a queue job, audited at the fleet; the clusters
+        audit their side with the acting user as on-behalf-of.
+      operationId: createFleetOperation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                [kind, sourceClusterId, targetClusterId, backups, target]
+              properties:
+                kind: { type: string, enum: [cross-cluster-restore, clone] }
+                sourceClusterId: { type: string, format: uuid }
+                targetClusterId: { type: string, format: uuid }
+                backups:
+                  type: array
+                  minItems: 1
+                  maxItems: 16
+                  items:
+                    type: object
+                    required: [backupId, volume]
+                    properties:
+                      backupId: { type: string, format: uuid }
+                      volume: { type: string, description: Target volume name }
+                target:
+                  type: object
+                  required: [project, deployment]
+                  properties:
+                    project: { type: string }
+                    deployment: { type: string }
+                clone:
+                  type: object
+                  description: Clone only — the source deployment copied to the target first
+                  properties:
+                    project: { type: string }
+                    deployment: { type: string }
+                mode: { type: string, enum: [replace, merge], default: replace }
+                apply: { type: boolean, default: false }
+      responses:
+        '201':
+          description: Started
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Operation' }
+        '403':
+          description: Not an operator of the involved projects
+  /operations/{id}:
+    get:
+      summary: One operation with its steps
+      operationId: getFleetOperation
+      parameters:
+        - {
+            in: path,
+            name: id,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      responses:
+        '200':
+          description: Operation
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Operation' }
+  /operations/{id}/cancel:
+    post:
+      summary: Stop an operation at the fleet
+      description: What the clusters already did (imports, plans) stays and is visible there.
+      operationId: cancelFleetOperation
+      parameters:
+        - {
+            in: path,
+            name: id,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      responses:
+        '200':
+          description: Cancelled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Operation' }
+  /cloud/clusters:
+    post:
+      summary: Register a Loadweaver Cloud cluster
+      description: Fleet admins with scope `cloud:register`. Like `POST /clusters` plus the `reference` (`decabill:<subscription>:<item>`) and optional initial grants.
+      operationId: registerCloudCluster
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CreateCluster'
+                - type: object
+                  required: [reference]
+                  properties:
+                    reference:
+                      {
+                        type: string,
+                        pattern: '^[a-z][a-z0-9-]{0,31}:[A-Za-z0-9:._-]{1,200}$',
+                      }
+                    grants:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          userId: { type: string, format: uuid }
+                          role: { $ref: '#/components/schemas/FleetRole' }
+                          project: { type: string }
+      responses:
+        '201':
+          description: Registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FleetCluster' }
+  /cloud/clusters/{reference}:
+    get:
+      summary: State of a Cloud cluster and its latest final backup
+      operationId: cloudClusterStatus
+      parameters:
+        - $ref: '#/components/parameters/Reference'
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CloudStatus' }
+        '404':
+          description: Not registered
+  /cloud/clusters/{reference}/teardown:
+    parameters:
+      - $ref: '#/components/parameters/Reference'
+    put:
+      summary: Announce a teardown (final backup + read-only grace)
+      description: |
+        Idempotent (Decabill repeats it while the grace lasts): sets the cluster to `teardown`, caps every grant at
+        viewer until `readOnlyUntil` (then the connection is retired) and starts the final backup once per teardown
+        (platform backups, `POST /backups/now/all`, wait, copies to external targets). Scope `cloud:teardown`.
+      operationId: cloudTeardown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [readOnlyUntil]
+              properties:
+                readOnlyUntil: { type: string, format: date-time }
+                reason: { type: string, maxLength: 255 }
+                finalBackup: { type: boolean, default: true }
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CloudStatus' }
+        '404':
+          description: Not registered (Decabill skips the cluster)
+    delete:
+      summary: Cancel a teardown (subscription resumed)
+      operationId: cloudCancelTeardown
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CloudStatus' }
+  /audit:
+    get:
+      summary: The fleet's audit log (fleet admins)
+      operationId: fleetAudit
+      parameters:
+        - { in: query, name: cluster, schema: { type: string, format: uuid } }
+        - { in: query, name: action, schema: { type: string } }
+        - { in: query, name: before, schema: { type: string } }
+        - {
+            in: query,
+            name: limit,
+            schema: { type: integer, minimum: 1, maximum: 500 },
+          }
+      responses:
+        '200':
+          description: Entries, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    seq: { type: string }
+                    at: { type: string, format: date-time }
+                    actorType: { type: string, enum: [user, api-key, system] }
+                    actorId: { type: [string, 'null'] }
+                    action: { type: string }
+                    clusterId: { type: [string, 'null'] }
+                    target: { type: string }
+                    details: { type: object }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    ClusterId:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, format: uuid }
+    Reference:
+      in: path
+      name: reference
+      required: true
+      description: URL-encoded `decabill:<subscription>:<item>`
+      schema: { type: string }
+  schemas:
+    FleetRole:
+      type: string
+      enum: [viewer, operator, admin]
+    ClusterHealth:
+      type: object
+      properties:
+        state:
+          {
+            type: string,
+            enum:
+              [unknown, healthy, degraded, unreachable, credential-rejected],
+          }
+        checkedAt: { type: [string, 'null'], format: date-time }
+        latencyMs: { type: [integer, 'null'] }
+        version: { type: [string, 'null'] }
+        clusterId: { type: [string, 'null'] }
+        error: { type: [string, 'null'] }
+    CreateCluster:
+      type: object
+      required: [name, endpoint, credential]
+      properties:
+        name: { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+        description: { type: string }
+        endpoint:
+          {
+            type: string,
+            description: 'HTTPS URL of the control plane, without /api',
+          }
+        credential:
+          {
+            type: string,
+            minLength: 16,
+            description: PAT of the cluster's fleet service user,
+          }
+        caCertificate:
+          { type: string, description: PEM CA bundle for a private CA }
+        test: { type: boolean, default: true }
+    FleetCluster:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        endpoint: { type: string }
+        hasCustomCa: { type: boolean }
+        credentialHint: { type: string, description: Last four characters only }
+        reference: { type: [string, 'null'] }
+        state: { type: string, enum: [active, teardown, retired] }
+        readOnlyUntil: { type: [string, 'null'], format: date-time }
+        readOnlyReason: { type: [string, 'null'] }
+        health: { $ref: '#/components/schemas/ClusterHealth' }
+        access:
+          type: object
+          properties:
+            clusterRole:
+              {
+                oneOf:
+                  [
+                    { $ref: '#/components/schemas/FleetRole' },
+                    { type: 'null' },
+                  ],
+              }
+            projects:
+              {
+                type: object,
+                additionalProperties:
+                  { $ref: '#/components/schemas/FleetRole' },
+              }
+            readOnly: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    Grant:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        clusterId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        role: { $ref: '#/components/schemas/FleetRole' }
+        project: { type: [string, 'null'] }
+        createdBy: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+    FleetCard:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        reference: { type: [string, 'null'] }
+        state: { type: string }
+        readOnlyUntil: { type: [string, 'null'] }
+        connection: { $ref: '#/components/schemas/ClusterHealth' }
+        health:
+          {
+            type: [object, 'null'],
+            properties: { state: { type: string }, message: { type: string } },
+          }
+        sites: { type: [integer, 'null'] }
+        nodes:
+          {
+            type: [object, 'null'],
+            properties: { total: { type: integer }, up: { type: integer } },
+          }
+        deployments: { type: [integer, 'null'] }
+        capacity: { type: [object, 'null'] }
+        version: { type: [string, 'null'] }
+        latestAvailable: { type: [string, 'null'] }
+        upgradeAvailable: { type: boolean }
+        activeRollout: { type: [string, 'null'] }
+        openAlerts: { type: [integer, 'null'] }
+        pendingPlans: { type: [integer, 'null'] }
+        inbox:
+          {
+            type: object,
+            properties:
+              {
+                critical: { type: integer },
+                warning: { type: integer },
+                info: { type: integer },
+              },
+          }
+        link:
+          {
+            type: string,
+            description: 'Console route: /clusters/{id}/overview',
+          }
+        limited: { type: boolean }
+        errors: { type: array, items: { type: string } }
+        fetchedAt: { type: [string, 'null'] }
+    InboxItem:
+      type: object
+      properties:
+        clusterId: { type: string, format: uuid }
+        clusterName: { type: string }
+        kind: { type: string }
+        severity: { type: string, enum: [critical, warning, info] }
+        title: { type: string }
+        link: { type: string }
+        nativeUrl:
+          {
+            type: [string, 'null'],
+            description: The same page in the cluster's own console (approvals are acted on there),
+          }
+        project: { type: [string, 'null'] }
+        since: { type: [string, 'null'] }
+    Comparison:
+      type: object
+      properties:
+        clusters:
+          {
+            type: array,
+            items:
+              {
+                type: object,
+                properties: { id: { type: string }, name: { type: string } },
+              },
+          }
+        versions: { type: array, items: { type: object } }
+        sameVersion: { type: boolean }
+        capacity: { type: array, items: { type: object } }
+        policyDrift:
+          type: object
+          properties:
+            kinds: { type: array, items: { type: string } }
+            identical: { type: integer }
+            missing: { type: integer }
+            different: { type: integer }
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  kind: { type: string }
+                  project: { type: [string, 'null'] }
+                  name: { type: string }
+                  clusters:
+                    {
+                      type: object,
+                      additionalProperties: { type: [string, 'null'] },
+                    }
+                  state: { type: string, enum: [missing, different] }
+    Operation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        kind:
+          { type: string, enum: [cross-cluster-restore, clone, final-backup] }
+        status:
+          {
+            type: string,
+            enum: [running, waiting, succeeded, failed, cancelled],
+          }
+        sourceClusterId: { type: [string, 'null'] }
+        targetClusterId: { type: string }
+        params: { type: object }
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              status:
+                {
+                  type: string,
+                  enum: [pending, running, waiting, succeeded, failed, skipped],
+                }
+              startedAt: { type: [string, 'null'] }
+              finishedAt: { type: [string, 'null'] }
+              detail: { type: object }
+              error: { type: [string, 'null'] }
+              attempts: { type: integer }
+        error: { type: [string, 'null'] }
+        createdBy: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CloudStatus:
+      type: object
+      properties:
+        cluster: { $ref: '#/components/schemas/FleetCluster' }
+        finalBackup:
+          {
+            oneOf:
+              [{ $ref: '#/components/schemas/Operation' }, { type: 'null' }],
+          }

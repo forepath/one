@@ -7,6 +7,7 @@ import {
   type ChangelogEntry,
   type DependencyHealthStatus,
   type ServiceInstanceRecord,
+  type UpdateChannel,
   type UpdateState,
 } from '@forepath/shared/frontend/data-access-updates';
 import {
@@ -82,6 +83,8 @@ export class UpdatesManagerComponent implements OnInit {
   readonly latestVersionLabel = $localize`:@@featureUpdates-latestVersion:Latest version`;
   readonly lastCheckLabel = $localize`:@@featureUpdates-lastCheck:Last check`;
   readonly frontendVersionLabel = $localize`:@@featureUpdates-frontendVersion:Frontend version`;
+  readonly channelLabel = $localize`:@@featureUpdates-channel:Channel`;
+  readonly betaLabel = $localize`:@@featureUpdates-channelBeta:Beta`;
   readonly searchInstancesPlaceholder = $localize`:@@featureUpdates-searchInstancesPlaceholder:Search instances`;
   readonly searchProductChangelogPlaceholder = $localize`:@@featureUpdates-searchProductChangelogPlaceholder:Search product changelog`;
   readonly searchSharedChangelogPlaceholder = $localize`:@@featureUpdates-searchSharedChangelogPlaceholder:Search shared changelog`;
@@ -129,7 +132,9 @@ export class UpdatesManagerComponent implements OnInit {
   readonly filteredSharedChangelog = toSignal(this.filteredSharedChangelog$, {
     initialValue: [] as ChangelogEntry[],
   });
-  readonly summaryCardCount = computed(() => (this.environment.frontendVersion ? 4 : 3));
+  readonly summaryCardCount = computed(
+    () => 3 + (this.environment.frontendVersion ? 1 : 0) + (this.fullState()?.channel ? 1 : 0),
+  );
 
   ngOnInit(): void {
     this.facade.loadFull();
@@ -169,6 +174,11 @@ export class UpdatesManagerComponent implements OnInit {
       const haystack = `${entry.category ?? ''} ${entry.text}`.toLowerCase();
       return haystack.includes(term);
     });
+  }
+
+  /** The release channel products with channels follow (`beta` includes prereleases). */
+  channelName(channel: UpdateChannel | undefined): string {
+    return channel === 'beta' ? this.betaLabel : $localize`:@@featureUpdates-channelStable:Stable`;
   }
 
   updateStateLabel(state: UpdateState | undefined): string {

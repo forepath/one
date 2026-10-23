@@ -1,0 +1,212 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="laptop">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (mayManageAll()) {
+    <fpc-tab-group
+      class="flex-shrink-0"
+      data-testid="devices-scope"
+      [activeId]="all() ? 'all' : 'mine'"
+      (activeIdChange)="showAll($event === 'all')"
+    >
+      <fpc-tab id="mine" [label]="mineTitle" icon="person" />
+      <fpc-tab id="all" [label]="allTitle" icon="people" />
+    </fpc-tab-group>
+  }
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (revokeError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (restrictedCount() > 0) {
+      <fpc-alert
+        class="m-3"
+        variant="warning"
+        [message]="restrictedCount() + ' ' + restrictedLabel"
+        data-testid="devices-restricted"
+      />
+    }
+
+    <fpc-panel-grid [columns]="1" fill>
+      <fpc-panel [title]="(all() ? allTitle : mineTitle) + ' (' + devices().length + ')'" [flush]="true">
+        @if (loading() && devices().length === 0) {
+          <div class="d-flex justify-content-center p-4"><fpc-spinner /></div>
+        } @else if (devices().length === 0) {
+          <fpc-empty-state icon="laptop" size="sm" i18n-title="@@lwConsoleDevices-empty" title="No devices enrolled" />
+        } @else {
+          <fpc-list [flush]="true" data-testid="devices-list">
+            @for (d of devices(); track d.id) {
+              <fpc-list-item>
+                <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                  <i class="bi {{ d.kind === 'machine' ? 'bi-hdd-rack' : 'bi-laptop' }}" aria-hidden="true"></i>
+                  <span class="fw-semibold">{{ d.name }}</span>
+                  <fpc-badge [color]="statusTone(d.status)" size="sm">{{ statusLabel(d.status) }}</fpc-badge>
+                  @if (d.kind === 'machine') {
+                    <fpc-badge color="info" size="sm" i18n="@@lwConsoleDevices-machine">Machine</fpc-badge>
+                  }
+                  @if (d.status === 'active') {
+                    @if (restricted(d)) {
+                      <fpc-badge color="warning" size="sm" i18n="@@lwConsoleDevices-postureRestricted"
+                        >Restricted by posture</fpc-badge
+                      >
+                    } @else {
+                      <fpc-badge color="success" size="sm" i18n="@@lwConsoleDevices-postureOk">Posture OK</fpc-badge>
+                    }
+                    @if (connected(d)) {
+                      <fpc-badge color="primary" size="sm" i18n="@@lwConsoleDevices-connected">Connected</fpc-badge>
+                    }
+                  }
+                </div>
+                <div fpcListItemMeta class="small text-body-secondary d-flex flex-column gap-1">
+                  <div class="d-flex flex-wrap gap-3">
+                    @if (all()) {
+                      <span><i class="bi bi-person me-1" aria-hidden="true"></i>{{ d.owner }}</span>
+                    }
+                    <span class="font-monospace">{{ d.address }}</span>
+                    @if (d.subnets.length > 0) {
+                      <span class="font-monospace">{{ d.subnets.join(', ') }}</span>
+                    }
+                    <span
+                      ><span i18n="@@lwConsoleDevices-groups">Groups</span>:
+                      {{ d.effectiveGroups.join(', ') || '–' }}</span
+                    >
+                    @if (d.status === 'revoked' && d.revokedAt) {
+                      <span
+                        ><span i18n="@@lwConsoleDevices-revokedAt">Revoked</span>
+                        {{ d.revokedAt | date: 'short' }}</span
+                      >
+                    } @else {
+                      <span
+                        ><span i18n="@@lwConsoleDevices-expires">Expires</span> {{ d.expiresAt | date: 'short' }}</span
+                      >
+                    }
+                    @if (d.lastHandshakeAt) {
+                      <span
+                        ><span i18n="@@lwConsoleDevices-lastHandshake">Last handshake</span>
+                        {{ d.lastHandshakeAt | date: 'short' }}
+                        @if (d.lastEndpoint) {
+                          <span class="font-monospace">({{ d.lastEndpoint }})</span>
+                        }
+                      </span>
+                    }
+                  </div>
+                  @if (d.posture; as p) {
+                    <div
+                      class="d-flex flex-wrap align-items-center gap-2"
+                      [attr.data-testid]="'devices-posture-' + d.name"
+                    >
+                      @if (reportSummary(p); as summary) {
+                        <span
+                          ><i class="bi bi-clipboard-check me-1" aria-hidden="true"></i>{{ summary }}
+                          @if (p.reportedAt) {
+                            <span>({{ p.reportedAt | date: 'short' }})</span>
+                          }
+                        </span>
+                      } @else {
+                        <span i18n="@@lwConsoleDevices-noReport">No posture report yet</span>
+                      }
+                      @for (fact of p.integrations; track fact.integration) {
+                        <fpc-badge [color]="factTone(fact)" size="sm" [title]="fact.reasons.join(', ')">{{
+                          factLabel(fact)
+                        }}</fpc-badge>
+                      }
+                      <fpc-badge
+                        [color]="certificateTone(p.certificate)"
+                        size="sm"
+                        [title]="p.certificate?.reasons?.join(', ') ?? ''"
+                        >{{ certificateLabel(p.certificate) }}</fpc-badge
+                      >
+                    </div>
+                  }
+                  @for (line of restrictionLines(d); track line) {
+                    <div class="text-warning-emphasis">
+                      <i class="bi bi-shield-exclamation me-1" aria-hidden="true"></i>{{ line }}
+                    </div>
+                  }
+                </div>
+                @if (d.status !== 'revoked') {
+                  <div fpcListItemActions>
+                    <fpc-button
+                      variant="danger"
+                      size="sm"
+                      [loading]="revoking() === d.id"
+                      (clicked)="revokeFor.set(d)"
+                      [attr.data-testid]="'devices-revoke-' + d.name"
+                    >
+                      <span i18n="@@lwConsoleDevices-revoke">Revoke</span>
+                    </fpc-button>
+                  </div>
+                }
+              </fpc-list-item>
+            }
+          </fpc-list>
+        }
+      </fpc-panel>
+
+      <fpc-panel [title]="enrollTitle" data-testid="devices-enroll">
+        <p class="small text-body-secondary" i18n="@@lwConsoleDevices-enrollHint">
+          Run the CLI on the device you want to connect. It generates the WireGuard key pair locally, writes the private
+          key only into its wg-quick file and sends just the public key — no private key passes through the browser.
+          Enrolling needs an interactive login (not an access token) and membership in a client group.
+        </p>
+        <div class="row g-3 mb-0">
+          <div class="col-md-4">
+            <fpc-form-field forId="lw-devices-name" i18n-label="@@lwConsoleDevices-name" label="Device name">
+              <fpc-form-control
+                controlId="lw-devices-name"
+                size="sm"
+                controlClass="font-monospace"
+                placeholder="laptop"
+                [ngModel]="deviceName()"
+                (ngModelChange)="deviceName.set($event)"
+              />
+            </fpc-form-field>
+          </div>
+          <div class="col-md-8">
+            <fpc-form-field forId="lw-devices-command" i18n-label="@@lwConsoleDevices-command" label="Command">
+              <fpc-input-group size="sm">
+                <fpc-form-control
+                  controlId="lw-devices-command"
+                  size="sm"
+                  controlClass="font-monospace"
+                  readOnly
+                  [value]="command()"
+                  data-testid="devices-command"
+                />
+                <fpc-button fpcInputGroupSuffix variant="secondary" size="sm" (clicked)="copy(command())">
+                  <i class="bi bi-clipboard me-1" aria-hidden="true"></i
+                  ><span i18n="@@lwConsoleDevices-copy">Copy</span>
+                </fpc-button>
+              </fpc-input-group>
+            </fpc-form-field>
+          </div>
+        </div>
+      </fpc-panel>
+    </fpc-panel-grid>
+  </div>
+</div>
+
+<fpc-confirm-dialog
+  [open]="revokeFor() !== null"
+  (openChange)="onRevokeOpenChange($event)"
+  [title]="revokeTitle"
+  [message]="revokeMessage()"
+  [confirmLabel]="revokeConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="confirmRevoke()"
+/>

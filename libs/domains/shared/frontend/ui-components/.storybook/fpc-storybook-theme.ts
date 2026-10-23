@@ -6,6 +6,7 @@ export const FPC_BRAND_PRIMARY: Record<string, string> = {
   decabill: '#32a852',
   agenstra: '#7a3fff',
   forepath: '#ff6b35',
+  loadweaver: '#ffc21a',
 };
 
 export function fpcBrandPrimary(colorSet: unknown): string {

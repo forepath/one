@@ -1609,6 +1609,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: First account without a valid admin claim token (only when the claim is configured)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many failed admin claim attempts from this client
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '503':
           description: Signup disabled
           content:
@@ -2296,7 +2308,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubscriptionResponse'
         '400':
-          description: Resume not permitted
+          description: >-
+            Resume not permitted: not pending cancel, or `SUBSCRIPTION_CANCELLATION_EFFECTIVE` when
+            `cancelEffectiveAt` has already passed (e.g. a Loadweaver subscription in its data grace period).
           content:
             application/json:
               schema:
@@ -2663,6 +2677,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/items/{itemId}/loadweaver/cluster:
+    get:
+      summary: Loadweaver cluster of a subscription item
+      operationId: getLoadweaverCluster
+      description: |
+        Endpoint, health (public probes of `GET /api/health` and the console), deep links for the steps before a
+        cancellation and the teardown schedule of a Decabill-provisioned Loadweaver cluster (service kind
+        `loadweaver`). User must own the subscription. Requires `subscriptions:read`.
+      parameters:
+        - {
+            name: subscriptionId,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+        - {
+            name: itemId,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      responses:
+        '200':
+          description: Cluster information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadweaverClusterInfo'
+        '404':
+          description: Not found, not owned, or not a Loadweaver item
+  /admin/billing/subscriptions/{subscriptionId}/items/{itemId}/loadweaver/cluster:
+    get:
+      tags: [Admin Billing]
+      summary: Loadweaver cluster of a subscription item (admin only)
+      operationId: adminGetLoadweaverCluster
+      parameters:
+        - {
+            name: subscriptionId,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+        - {
+            name: itemId,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      responses:
+        '200':
+          description: Cluster information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadweaverClusterInfo'
+        '403':
+          description: Admin access required
+        '404':
+          description: Not found or not a Loadweaver item
   /subscriptions/{subscriptionId}/items/{itemId}/container-manager/containers:
     get:
       summary: List Docker containers for Container Manager
@@ -4576,7 +4649,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/AdminSubscriptionListItem'
         '400':
-          description: Resume not permitted
+          description: >-
+            Resume not permitted: not pending cancel, or `SUBSCRIPTION_CANCELLATION_EFFECTIVE` when
+            `cancelEffectiveAt` has already passed (e.g. a Loadweaver subscription in its data grace period).
         '401':
           description: Unauthorized
         '403':
@@ -7553,6 +7628,13 @@ components:
         password:
           type: string
           format: password
+        adminClaimToken:
+          type: string
+          maxLength: 256
+          description: >-
+            One-time admin claim token. Only checked for the first account and only when the deployment sets
+            `ADMIN_CLAIM_TOKEN_SHA256` (e.g. Loadweaver Cloud); ignored otherwise. With that setting, registration is
+            closed once the first account exists (503, as with `DISABLE_SIGNUP`).
     RegisterResponse:
       type: object
       properties:
@@ -8448,12 +8530,22 @@ components:
         reason:
           type: string
           maxLength: 500
+        confirmDataTeardown:
+          type: boolean
+          description: >-
+            Confirms that ending the subscription deletes provisioned data. Required when the subscription runs a
+            Loadweaver cluster (400 `LOADWEAVER_TEARDOWN_CONFIRMATION_REQUIRED` otherwise).
     InstantCancelSubscriptionDto:
       type: object
       properties:
         reason:
           type: string
           maxLength: 500
+        confirmDataTeardown:
+          type: boolean
+          description: >-
+            Confirms that ending the subscription deletes provisioned data. Required when the subscription runs a
+            Loadweaver cluster (400 `LOADWEAVER_TEARDOWN_CONFIRMATION_REQUIRED` otherwise).
     WithdrawalPolicy:
       type: object
       required:
@@ -8493,10 +8585,88 @@ components:
         paymentRefundStatus:
           type: string
           enum: [not_applicable, pending, succeeded, failed]
+    LoadweaverClusterInfo:
+      type: object
+      required:
+        [
+          itemId,
+          consoleUrl,
+          apiUrl,
+          installerUrl,
+          health,
+          checkedAt,
+          initialVersion,
+          links,
+          adminClaim,
+          teardown,
+        ]
+      properties:
+        itemId: { type: string, format: uuid }
+        consoleUrl:
+          {
+            type: string,
+            nullable: true,
+            description: 'https://<fqdn>: console on /, API on /api',
+          }
+        apiUrl: { type: string, nullable: true }
+        installerUrl:
+          {
+            type: string,
+            nullable: true,
+            description: One-line node installer (needs a join token),
+          }
+        health:
+          type: string
+          enum:
+            [
+              provisioning,
+              starting,
+              healthy,
+              degraded,
+              unreachable,
+              failed,
+              removed,
+            ]
+        checkedAt: { type: string, format: date-time }
+        initialVersion:
+          {
+            type: string,
+            nullable: true,
+            description: Release the cluster was provisioned with,
+          }
+        links:
+          type: object
+          properties:
+            platformBackups: { type: string, nullable: true }
+            recoveryKit: { type: string, nullable: true }
+            nodes: { type: string, nullable: true }
+        adminClaim:
+          type: object
+          description: >-
+            One-time admin claim of the fresh cluster (public probe `GET /api/install/claim-status`). The token is
+            stored encrypted in the item config, returned only to the owning customer (never in the admin variant)
+            and wiped only once the cluster reports `claimConfigured: true` with `claimRequired: false`; a cluster
+            that doesn't report `claimConfigured` (older release) keeps the token shown with status `unknown`.
+          required: [status, token]
+          properties:
+            status: { type: string, enum: [pending, claimed, unknown] }
+            token: { type: string, nullable: true }
+        teardown:
+          type: object
+          properties:
+            graceDays:
+              { type: integer, description: LOADWEAVER_TEARDOWN_GRACE_DAYS }
+            deletionNotBefore:
+              { type: string, format: date-time, nullable: true }
     CancelSubscriptionDto:
       type: object
       properties:
         reason: { type: string }
+        confirmDataTeardown:
+          type: boolean
+          description: >-
+            Confirms that ending the subscription deletes provisioned data. Required when the subscription runs a
+            Loadweaver cluster (400 `LOADWEAVER_TEARDOWN_CONFIRMATION_REQUIRED` otherwise).
     ResumeSubscriptionDto:
       type: object
       properties:
@@ -8663,7 +8833,13 @@ components:
           {
             type: string,
             enum:
-              [agenstra-controller, agenstra-manager, decabill-billing, custom],
+              [
+                agenstra-controller,
+                agenstra-manager,
+                decabill-billing,
+                loadweaver,
+                custom,
+              ],
             description: Product service from config snapshot; agenstra-controller (full stack),
             agenstra-manager (agent manager only),
             decabill-billing (Decabill billing stack),

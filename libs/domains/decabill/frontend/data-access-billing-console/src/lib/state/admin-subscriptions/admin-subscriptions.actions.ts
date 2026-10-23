@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 
-import type { AdminSubscriptionListItem } from '../../types/billing.types';
+import type { AdminSubscriptionListItem, AdminSubscriptionTeardownOptions } from '../../types/billing.types';
 
 export const loadAdminSubscriptions = createAction(
   '[AdminSubscriptions] Load Subscriptions',
@@ -30,7 +30,7 @@ export const loadMoreAdminSubscriptionsFailure = createAction(
 
 export const adminCancelSubscription = createAction(
   '[AdminSubscriptions] Cancel Subscription',
-  props<{ id: string }>(),
+  props<{ id: string; options?: AdminSubscriptionTeardownOptions }>(),
 );
 export const adminCancelSubscriptionSuccess = createAction(
   '[AdminSubscriptions] Cancel Subscription Success',
@@ -43,7 +43,7 @@ export const adminCancelSubscriptionFailure = createAction(
 
 export const adminWithdrawSubscription = createAction(
   '[AdminSubscriptions] Withdraw Subscription',
-  props<{ id: string }>(),
+  props<{ id: string; options?: AdminSubscriptionTeardownOptions }>(),
 );
 export const adminWithdrawSubscriptionSuccess = createAction(
   '[AdminSubscriptions] Withdraw Subscription Success',
@@ -56,7 +56,7 @@ export const adminWithdrawSubscriptionFailure = createAction(
 
 export const adminInstantCancelSubscription = createAction(
   '[AdminSubscriptions] Instant Cancel Subscription',
-  props<{ id: string }>(),
+  props<{ id: string; options?: AdminSubscriptionTeardownOptions }>(),
 );
 export const adminInstantCancelSubscriptionSuccess = createAction(
   '[AdminSubscriptions] Instant Cancel Subscription Success',

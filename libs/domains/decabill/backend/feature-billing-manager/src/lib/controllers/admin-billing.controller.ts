@@ -152,27 +152,33 @@ export class AdminBillingController {
   @Post('subscriptions/:id/cancel')
   async cancelSubscription(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body() _dto: CancelSubscriptionDto,
+    @Body() dto: CancelSubscriptionDto,
   ): Promise<AdminSubscriptionListItemDto> {
-    return await this.billingAdminService.cancelSubscriptionForAdmin(id);
+    return await this.billingAdminService.cancelSubscriptionForAdmin(id, {
+      confirmDataTeardown: dto?.confirmDataTeardown,
+    });
   }
 
   @RequireScopes('billing_admin:write')
   @Post('subscriptions/:id/withdraw')
   async withdrawSubscription(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body() _dto: WithdrawSubscriptionDto,
+    @Body() dto: WithdrawSubscriptionDto,
   ): Promise<AdminSubscriptionListItemDto> {
-    return await this.billingAdminService.withdrawSubscriptionForAdmin(id);
+    return await this.billingAdminService.withdrawSubscriptionForAdmin(id, {
+      confirmDataTeardown: dto?.confirmDataTeardown,
+    });
   }
 
   @RequireScopes('billing_admin:write')
   @Post('subscriptions/:id/instant-cancel')
   async instantCancelSubscription(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body() _dto: InstantCancelSubscriptionDto,
+    @Body() dto: InstantCancelSubscriptionDto,
   ): Promise<AdminSubscriptionListItemDto> {
-    return await this.billingAdminService.instantCancelSubscriptionForAdmin(id);
+    return await this.billingAdminService.instantCancelSubscriptionForAdmin(id, {
+      confirmDataTeardown: dto?.confirmDataTeardown,
+    });
   }
 
   @RequireScopes('billing_admin:write')

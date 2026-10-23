@@ -1,0 +1,55 @@
+@if (error(); as message) {
+  <fpc-alert class="m-3" variant="danger" [message]="message" />
+} @else if (services().length > 0) {
+  <fpc-panel-grid [columns]="1">
+    <fpc-panel [title]="title" [flush]="true" data-testid="autoscaling-panel">
+      <fpc-list [flush]="true">
+        @for (s of services(); track s.id) {
+          <fpc-list-item [attr.data-testid]="'autoscaling-' + s.service">
+            <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2 small">
+              <span class="fw-semibold font-monospace">{{ s.service }}</span>
+              <fpc-badge size="sm" [color]="tone(s)">{{ actionLabel(s) }}</fpc-badge>
+            </div>
+            <div fpcListItemActions class="small" i18n="@@lwConsoleAutoscaling-replicas">
+              {{ s.replicas }} replicas ({{ s.min }}..{{ s.max }})
+            </div>
+            <dl class="row small mb-0 mt-1">
+              <dt class="col-4 fw-normal text-body-secondary" i18n="@@lwConsoleAutoscaling-metric">Metric</dt>
+              <dd class="col-8 mb-0">
+                <span class="font-monospace">{{ metricName(s) }}</span> {{ value(s) }}
+                <span class="text-body-secondary" i18n="@@lwConsoleAutoscaling-target">target {{ target(s) }}</span>
+              </dd>
+              @if (s.status; as st) {
+                <dt class="col-4 fw-normal text-body-secondary" i18n="@@lwConsoleAutoscaling-lastEvaluation">
+                  Last evaluation
+                </dt>
+                <dd class="col-8 mb-0">
+                  {{ st.reason }}
+                  <span class="text-body-secondary">({{ st.evaluatedAt | date: 'short' }})</span>
+                </dd>
+              }
+              <dt class="col-4 fw-normal text-body-secondary" i18n="@@lwConsoleAutoscaling-lastScale">Last scaling</dt>
+              <dd class="col-8 mb-0">
+                @if (s.lastScaleAt) {
+                  {{ s.lastScaleAt | date: 'short' }} · {{ s.lastReason }}
+                } @else {
+                  <span i18n="@@lwConsoleAutoscaling-never">never</span>
+                }
+              </dd>
+            </dl>
+            @if (s.status?.blocked; as blocked) {
+              <fpc-alert class="mt-2 small" variant="warning" data-testid="autoscaling-blocked">
+                <span i18n="@@lwConsoleAutoscaling-blockedReason">Scale-up blocked: {{ blocked }}</span>
+              </fpc-alert>
+            }
+          </fpc-list-item>
+        }
+      </fpc-list>
+      <p fpcPanelFooter class="small text-body-secondary mb-0" i18n="@@lwConsoleAutoscaling-hint">
+        Scaling is automatic and audited; min, max and the metric change through a plan.
+      </p>
+    </fpc-panel>
+  </fpc-panel-grid>
+} @else if (loading()) {
+  <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+}

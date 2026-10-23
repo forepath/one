@@ -1,0 +1,24 @@
+{
+  "application": {
+    "production": true
+  },
+  "cookieConsent": {
+    "domain": ".loadweaver.com",
+    "urls": {
+      "privacyPolicy": "https://loadweaver.com/legal/privacy"
+    }
+  },
+  "landing": {
+    "tenantId": "loadweaver",
+    "urls": {
+      "restApi": "https://backend.forepath.io/api",
+      "portal": "https://portal.loadweaver.com"
+    }
+  },
+  "communication": {
+    "urls": {
+      "restApi": "https://communication.forepath.io/api"
+    },
+    "turnstileSiteKey": "0x4AAAAAADvf6PCeLddoJ7Ur"
+  }
+}

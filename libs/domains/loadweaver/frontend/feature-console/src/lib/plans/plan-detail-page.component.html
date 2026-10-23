@@ -1,0 +1,743 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="plan() ? title + ' ' + shortId(plan()!.id) : title" icon="file-diff">
+    <ng-container ngProjectAs="[fpcPageHeaderActions]">
+      <fpc-button
+        fpcPageHeaderActions
+        variant="secondary"
+        size="sm"
+        [iconOnly]="true"
+        [ariaLabel]="backLabel"
+        [title]="backLabel"
+        routerLink="/plans"
+      >
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+      </fpc-button>
+      @if (plan(); as p) {
+        @if (p.status === 'pending') {
+          @if (canApprove()) {
+            <fpc-button
+              fpcPageHeaderActions
+              variant="success"
+              size="sm"
+              [iconOnly]="true"
+              [ariaLabel]="approveLabel"
+              [title]="approveLabel"
+              [loading]="acting() === 'approve'"
+              [disabled]="acting() !== null"
+              (clicked)="approve()"
+              data-testid="plan-approve"
+            >
+              <i class="bi bi-check2-circle" aria-hidden="true"></i>
+            </fpc-button>
+          }
+          @if (canChange()) {
+            <fpc-button
+              fpcPageHeaderActions
+              variant="secondary"
+              size="sm"
+              [iconOnly]="true"
+              [ariaLabel]="discardLabel"
+              [title]="discardLabel"
+              [disabled]="acting() !== null"
+              (clicked)="discardOpen.set(true)"
+              data-testid="plan-discard"
+            >
+              <i class="bi bi-trash" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              fpcPageHeaderActions
+              variant="primary"
+              size="sm"
+              [iconOnly]="true"
+              [ariaLabel]="applyLabel"
+              [title]="gitBlockers().length > 0 ? gitBlockedTitle : applyLabel"
+              [loading]="acting() === 'apply'"
+              [disabled]="acting() !== null || gitBlockers().length > 0"
+              (clicked)="openApply()"
+              data-testid="plan-apply"
+            >
+              <i class="bi bi-play-fill" aria-hidden="true"></i>
+            </fpc-button>
+          }
+        }
+        @if (p.status === 'applying' && canChange()) {
+          <fpc-button
+            fpcPageHeaderActions
+            variant="danger"
+            size="sm"
+            [iconOnly]="true"
+            [ariaLabel]="cancelApplyLabel"
+            [title]="cancelApplyLabel"
+            [loading]="acting() === 'cancel'"
+            [disabled]="acting() !== null"
+            (clicked)="cancelOpen.set(true)"
+            data-testid="plan-cancel"
+          >
+            <i class="bi bi-stop-fill" aria-hidden="true"></i>
+          </fpc-button>
+        }
+      }
+    </ng-container>
+  </fpc-page-header>
+
+  @if (fleetMode && plan()?.status === 'pending') {
+    <fpc-alert class="flex-shrink-0" [flush]="true" variant="info" data-testid="plan-fleet-approval">
+      <span class="small" i18n="@@lwConsoleFleet-approvalNative"
+        >Approvals are not available through the fleet: approve this plan in the cluster's own console.</span
+      >
+    </fpc-alert>
+  }
+
+  @if (plan(); as p) {
+    <div
+      class="flex-shrink-0 d-flex flex-wrap align-items-center gap-3 px-3 py-2 border-bottom small"
+      data-testid="plan-header"
+    >
+      <span class="d-inline-flex align-items-center gap-2">
+        <fpc-status-badge [tone]="statusTone[p.status]" [ariaLabel]="statusLabel(p.status)">
+          <i class="bi {{ statusIcon[p.status] }}" aria-hidden="true"></i>
+        </fpc-status-badge>
+        <span class="fw-semibold">{{ statusLabel(p.status) }}</span>
+      </span>
+      @if (p.createdBy) {
+        <span><i class="bi bi-person me-1" aria-hidden="true"></i>{{ p.createdBy }}</span>
+      }
+      @if (p.source) {
+        <loadweaver-plan-source [plan]="p" [connections]="gitConnections()" />
+      }
+      <span
+        ><i class="bi bi-clock me-1" aria-hidden="true"></i><span i18n="@@lwConsolePlanDetail-created">Created</span>
+        {{ p.createdAt | date: 'medium' }}</span
+      >
+      @if (p.appliedAt) {
+        <span
+          ><i class="bi bi-check2 me-1" aria-hidden="true"></i
+          ><span i18n="@@lwConsolePlanDetail-applied">Applied</span> {{ p.appliedAt | date: 'medium' }}</span
+        >
+      }
+      @for (project of projects(); track project) {
+        <fpc-badge color="light" size="sm">{{ project }}</fpc-badge>
+      }
+      @if (p.resolves) {
+        <span
+          ><i class="bi bi-bandaid me-1" aria-hidden="true"></i
+          ><span i18n="@@lwConsolePlanDetail-resolves">Fix-forward for</span>
+          <a [routerLink]="['/plans', p.resolves]" class="font-monospace">{{ shortId(p.resolves) }}</a></span
+        >
+      }
+      <span class="ms-auto">
+        <fpc-badge [color]="live() ? 'success' : 'secondary'" size="sm" [pill]="true">
+          @if (live()) {
+            <span i18n="@@lwConsolePlanDetail-live">Live</span>
+          } @else {
+            <span i18n="@@lwConsolePlanDetail-offline">Not live</span>
+          }
+        </fpc-badge>
+      </span>
+    </div>
+
+    <fpc-tab-group class="flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="activeTab.set($event)">
+      <fpc-tab
+        id="changes"
+        [label]="tabChanges + ' (' + (p.changes.length - unchangedCount()) + ')'"
+        icon="pencil-square"
+      />
+      <fpc-tab id="network" [label]="tabNetwork + ' (' + p.networkChanges.length + ')'" icon="diagram-3" />
+      <fpc-tab id="workload" [label]="tabWorkload" icon="boxes" />
+      <fpc-tab id="warnings" [label]="tabWarnings + ' (' + p.warnings.length + ')'" icon="exclamation-triangle" />
+      <fpc-tab id="approvals" [label]="tabApprovals + ' (' + p.approvals.length + ')'" icon="person-check" />
+    </fpc-tab-group>
+  }
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert
+        class="m-3"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="dismissActionError()"
+        data-testid="plan-action-error"
+      />
+    }
+
+    @if (plan(); as p) {
+      @if (p.error) {
+        <fpc-alert class="m-3" variant="danger" [message]="p.error" />
+      }
+
+      @if (gitBlockers().length > 0) {
+        <fpc-alert
+          class="m-3 d-block"
+          variant="info"
+          icon="git"
+          i18n-heading="@@lwConsoleGitPlan-blockedHeading"
+          heading="Git is authoritative: merge the pull request"
+          data-testid="plan-git-blocked"
+        >
+          <p class="small mb-2" i18n="@@lwConsoleGitPlan-blockedMessage">
+            This plan changes a scope that is managed in Git, so it can't be applied here. Loadweaver turned it into a
+            pull request in the scope's repository: review and merge it there. The merge commit creates the plan that is
+            then approved and applied.
+          </p>
+          <ul class="small mb-0">
+            @for (b of gitBlockers(); track b.connectionId) {
+              <li>
+                @if (b.connection) {
+                  <a [routerLink]="['/git', b.connectionId]" class="fw-semibold">{{
+                    scopeLabel(b.connection.project)
+                  }}</a
+                  >:
+                }
+                @if (b.pullRequest?.url) {
+                  <a [href]="b.pullRequest!.url" target="_blank" rel="noopener noreferrer" data-testid="plan-git-pr"
+                    ><i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
+                    ><span i18n="@@lwConsoleGitPlan-openPr">Open the pull request</span>
+                    @if (b.pullRequest!.number) {
+                      #{{ b.pullRequest!.number }}
+                    }
+                  </a>
+                } @else if (b.pullRequest?.pending) {
+                  <span data-testid="plan-git-pr-pending"
+                    ><fpc-spinner size="sm" />
+                    <span i18n="@@lwConsoleGitPlan-prOpening">Pull request is being opened…</span>
+                    @if (prPollTimedOut()) {
+                      <span class="text-body-secondary" i18n="@@lwConsoleGitPlan-prOpeningSlow"
+                        >This takes longer than usual; reload the page later.</span
+                      >
+                    }
+                  </span>
+                } @else if (b.pullRequest?.error) {
+                  <span class="text-danger-emphasis"
+                    ><span i18n="@@lwConsoleGitPlan-prFailed">The pull request couldn't be opened:</span>
+                    {{ b.pullRequest!.error }}</span
+                  >
+                } @else if (b.pullRequest) {
+                  <span
+                    ><span i18n="@@lwConsoleGitPlan-branchPushed">Pushed to branch</span>
+                    <span class="font-monospace">{{ b.pullRequest.branch }}</span></span
+                  >
+                } @else {
+                  <span i18n="@@lwConsoleGitPlan-prPending">The pull request is being opened.</span>
+                }
+              </li>
+            }
+          </ul>
+        </fpc-alert>
+      }
+
+      @if (conflicts().length > 0) {
+        <fpc-alert
+          class="m-3 d-block"
+          variant="warning"
+          i18n-heading="@@lwConsoleGitPlan-conflictsHeading"
+          heading="Changed outside Git: applying overwrites these changes"
+          data-testid="plan-git-conflicts"
+        >
+          <p class="small mb-2" i18n="@@lwConsoleGitPlan-conflictsMessage">
+            These resources were changed in the console or the API since the last sync. The plan shows the Git version;
+            applying it is a decision, nothing is overwritten silently.
+          </p>
+          <ul class="small mb-0">
+            @for (c of conflicts(); track $index) {
+              <li>{{ c.message ?? issueText(c) }}</li>
+            }
+          </ul>
+        </fpc-alert>
+      }
+
+      @if (p.progress; as progress) {
+        <fpc-panel-grid [columns]="1">
+          <fpc-panel
+            flush
+            [title]="progress.phase === 'rollback' ? rollbackProgressLabel : applyProgressLabel"
+            data-testid="plan-progress"
+          >
+            <div class="px-3 py-2">
+              <div class="d-flex align-items-center gap-3 mb-2">
+                <fpc-progress
+                  class="flex-grow-1"
+                  [value]="progress.percent"
+                  [variant]="progress.failure ? 'danger' : progress.phase === 'rollback' ? 'warning' : 'primary'"
+                  [striped]="running()"
+                  [animated]="running()"
+                  [showLabel]="true"
+                />
+                <span class="small text-nowrap">{{ progress.startedAt | date: 'mediumTime' }}</span>
+              </div>
+              <div class="small mb-2">{{ progress.step }}</div>
+              @if (progress.cause) {
+                <div class="small text-warning-emphasis mb-1">
+                  <span i18n="@@lwConsolePlanDetail-cause">Rolled back because:</span> {{ progress.cause }}
+                </div>
+              }
+              @if (progress.failure) {
+                <div class="small text-danger-emphasis mb-1">
+                  <span i18n="@@lwConsolePlanDetail-failure">Failure:</span> {{ progress.failure }}
+                </div>
+              }
+            </div>
+            @if (progressNodes().length > 0) {
+              <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle small mb-0 border-top">
+                  <thead>
+                    <tr>
+                      <th scope="col" i18n="@@lwConsolePlanDetail-node">Node</th>
+                      <th scope="col" i18n="@@lwConsolePlanDetail-nodeState">State</th>
+                      <th scope="col" i18n="@@lwConsolePlanDetail-layers">Layers</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (node of progressNodes(); track node.node) {
+                      <tr>
+                        <td class="font-monospace">{{ node.node }}</td>
+                        <td>
+                          <fpc-badge [color]="nodeTone[node.state]" size="sm">{{ nodeLabel(node.state) }}</fpc-badge>
+                          @if (node.error) {
+                            <div class="small text-danger-emphasis">{{ node.error }}</div>
+                          }
+                        </td>
+                        <td>
+                          <div class="d-flex flex-wrap gap-1">
+                            @for (step of node.steps ?? []; track step.layer) {
+                              <fpc-badge
+                                size="sm"
+                                [color]="
+                                  step.status === 'failed'
+                                    ? 'danger'
+                                    : step.status === 'applied' || step.status === 'ok'
+                                      ? 'success'
+                                      : 'secondary'
+                                "
+                                >{{ layerLabel(step.layer) }}: {{ step.status }}</fpc-badge
+                              >
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </fpc-panel>
+        </fpc-panel-grid>
+      }
+
+      @switch (activeTab()) {
+        @case ('changes') {
+          <fpc-panel-grid [columns]="1" fill>
+            <fpc-panel flush [title]="tabChanges">
+              @if (unchangedCount() > 0) {
+                <fpc-form-switch
+                  fpcPanelActions
+                  switchId="lw-plan-unchanged"
+                  [ngModel]="showUnchanged()"
+                  (ngModelChange)="showUnchanged.set($event)"
+                >
+                  <label
+                    class="form-check-label small"
+                    for="lw-plan-unchanged"
+                    i18n="@@lwConsolePlanDetail-showUnchanged"
+                    >Show {{ unchangedCount() }} unchanged resources</label
+                  >
+                </fpc-form-switch>
+              }
+              @if (changes().length === 0) {
+                <fpc-empty-state
+                  icon="check2"
+                  size="sm"
+                  i18n-title="@@lwConsolePlanDetail-noChanges"
+                  title="No changes"
+                />
+              } @else {
+                <fpc-list [flush]="true" data-testid="plan-changes">
+                  @for (change of changes(); track changeKey(change)) {
+                    <fpc-list-item [clickable]="change.action !== 'unchanged'" (selected)="toggle(change)">
+                      <div fpcListItemTitle class="d-flex align-items-center gap-2">
+                        <fpc-badge [color]="actionTone[change.action]" size="sm">{{
+                          actionLabel(change.action)
+                        }}</fpc-badge>
+                        <span class="fw-semibold">{{ change.kind }}</span>
+                        <span class="font-monospace"
+                          >{{ change.project ? change.project + '/' : '' }}{{ change.name }}</span
+                        >
+                      </div>
+                      <div fpcListItemMeta class="small text-body-secondary">
+                        <span i18n="@@lwConsolePlanDetail-baseGeneration">Planned against generation</span>
+                        {{ change.baseGeneration }}
+                      </div>
+                      <div fpcListItemActions>
+                        @if (change.action !== 'unchanged') {
+                          <i
+                            class="bi"
+                            [class.bi-chevron-down]="!isExpanded(change)"
+                            [class.bi-chevron-up]="isExpanded(change)"
+                            aria-hidden="true"
+                          ></i>
+                        }
+                      </div>
+                      @if (isExpanded(change)) {
+                        <pre
+                          class="small border rounded mt-2 mb-0 p-2 overflow-auto"
+                          data-testid="plan-diff"
+                        ><code>@for (line of diff(change); track $index) {<span class="d-block" [ngClass]="diffClass(line)">{{ diffPrefix(line) }}{{ line.text }}</span>}</code></pre>
+                      }
+                    </fpc-list-item>
+                  }
+                </fpc-list>
+              }
+            </fpc-panel>
+          </fpc-panel-grid>
+        }
+        @case ('network') {
+          <fpc-panel-grid [columns]="1" fill>
+            @if (layers().length === 0) {
+              <fpc-panel>
+                <fpc-empty-state
+                  icon="diagram-3"
+                  size="sm"
+                  i18n-title="@@lwConsolePlanDetail-noNetwork"
+                  title="No network, policy or DNS changes"
+                />
+              </fpc-panel>
+            } @else {
+              @for (group of layers(); track group.layer) {
+                <fpc-panel flush [title]="layerLabel(group.layer)">
+                  <fpc-list [flush]="true" [attr.data-testid]="'plan-layer-' + group.layer">
+                    @for (change of group.changes; track $index) {
+                      <fpc-list-item>
+                        <div fpcListItemTitle class="d-flex align-items-start gap-2 small">
+                          <fpc-badge
+                            size="sm"
+                            [color]="
+                              change.action === 'add' || change.action === 'create'
+                                ? 'success'
+                                : change.action === 'remove' || change.action === 'delete'
+                                  ? 'danger'
+                                  : 'info'
+                            "
+                            >{{ change.action }}</fpc-badge
+                          >
+                          <span>{{ change.summary }}</span>
+                        </div>
+                        <div fpcListItemMeta class="small text-body-secondary">
+                          <span class="font-monospace">{{ change.node }}</span>
+                          @if (change.policies?.length) {
+                            · <span i18n="@@lwConsolePlanDetail-policies">Policies:</span>
+                            {{ change.policies!.join(', ') }}
+                          }
+                        </div>
+                      </fpc-list-item>
+                    }
+                  </fpc-list>
+                </fpc-panel>
+              }
+            }
+            @if (p.diagnostics.length > 0) {
+              <fpc-panel flush i18n-title="@@lwConsolePlanDetail-diagnostics" title="Compiler diagnostics">
+                <fpc-list [flush]="true">
+                  @for (d of p.diagnostics; track $index) {
+                    <fpc-list-item>
+                      <div fpcListItemTitle class="small">
+                        <fpc-badge size="sm" [color]="issueTone(d)">{{ d.level ?? 'info' }}</fpc-badge>
+                        {{ issueText(d) }}
+                      </div>
+                    </fpc-list-item>
+                  }
+                </fpc-list>
+              </fpc-panel>
+            }
+          </fpc-panel-grid>
+        }
+        @case ('workload') {
+          <fpc-panel-grid [columns]="2">
+            <fpc-panel
+              [span]="2"
+              [flush]="p.workloadChanges.length > 0"
+              i18n-title="@@lwConsolePlanDetail-workloadChanges"
+              title="Replica starts, stops and moves"
+            >
+              @if (p.workloadChanges.length === 0) {
+                <p class="small text-body-secondary mb-0" i18n="@@lwConsolePlanDetail-noWorkload">No replicas move.</p>
+              } @else {
+                <fpc-list [flush]="true" data-testid="plan-workload">
+                  @for (w of p.workloadChanges; track $index) {
+                    @if (w.action === 'copy') {
+                      <fpc-list-item data-testid="plan-volume-copy">
+                        <div fpcListItemTitle class="small">
+                          <fpc-badge size="sm" color="info" i18n="@@lwConsolePlanDetail-volumeCopy"
+                            >volume copy</fpc-badge
+                          >
+                          <span class="ms-1" i18n="@@lwConsolePlanDetail-volumeCopyAdded"
+                            ><span class="font-monospace">{{ w.volume }}</span
+                            >: copy added on <span class="font-monospace">{{ w.to }}</span></span
+                          >
+                        </div>
+                      </fpc-list-item>
+                    } @else {
+                      <fpc-list-item>
+                        <div fpcListItemTitle class="small font-monospace">{{ workloadText(w) }}</div>
+                      </fpc-list-item>
+                    }
+                  }
+                </fpc-list>
+              }
+            </fpc-panel>
+
+            <fpc-panel flush i18n-title="@@lwConsolePlanDetail-failureAnalysis" title="Failure analysis">
+              @if (p.failureAnalysis; as analysis) {
+                <div class="px-3 py-2 small">
+                  @if (analysis.nPlusOne) {
+                    <fpc-badge color="success" size="sm" i18n="@@lwConsolePlanDetail-nPlusOne">N+1</fpc-badge>
+                    <span class="ms-1" i18n="@@lwConsolePlanDetail-nPlusOneYes"
+                      >Every single node loss can be absorbed by the remaining nodes.</span
+                    >
+                  } @else {
+                    <fpc-badge color="warning" size="sm" i18n="@@lwConsolePlanDetail-notNPlusOne">Not N+1</fpc-badge>
+                    <span class="ms-1" i18n="@@lwConsolePlanDetail-nPlusOneNo"
+                      >Losing a node can leave replicas without capacity.</span
+                    >
+                  }
+                </div>
+                @if (analysis.findings.length === 0) {
+                  <p class="small text-body-secondary px-3 pb-2 mb-0" i18n="@@lwConsolePlanDetail-noSpof">
+                    No single points of failure.
+                  </p>
+                } @else {
+                  <fpc-list [flush]="true" data-testid="plan-findings">
+                    @for (f of analysis.findings; track $index) {
+                      <fpc-list-item>
+                        <div fpcListItemTitle class="small">
+                          <fpc-badge color="warning" size="sm">{{ f.kind }}</fpc-badge>
+                          <span class="ms-1"
+                            ><span class="fw-semibold">{{ f.subject }}</span> — {{ f.scope.kind }}
+                            <span class="font-monospace">{{ f.scope.name }}</span
+                            >: {{ f.reason }}</span
+                          >
+                        </div>
+                      </fpc-list-item>
+                    }
+                  </fpc-list>
+                }
+              } @else {
+                <p class="small text-body-secondary px-3 py-2 mb-0" i18n="@@lwConsolePlanDetail-noAnalysis">
+                  The plan doesn't change workloads.
+                </p>
+              }
+            </fpc-panel>
+
+            <fpc-panel i18n-title="@@lwConsolePlanDetail-pins" title="Pinned images and secret versions">
+              @if (deploymentStates().length === 0) {
+                <p class="small text-body-secondary mb-0" i18n="@@lwConsolePlanDetail-noPins">
+                  No deployment states pinned.
+                </p>
+              } @else {
+                @for (entry of deploymentStates(); track entry[0]) {
+                  <div class="small mb-2">
+                    <div class="fw-semibold font-monospace">{{ entry[0] }}</div>
+                    <ul class="mb-0">
+                      @for (image of objectEntries(entry[1].images); track image[0]) {
+                        <li>
+                          <span class="font-monospace">{{ image[0] }}</span
+                          >:
+                          <span class="font-monospace text-break">{{ image[1] }}</span>
+                        </li>
+                      }
+                      @for (secret of objectEntries(entry[1].secretVersions); track secret[0]) {
+                        <li>
+                          <i class="bi bi-key me-1" aria-hidden="true"></i
+                          ><span class="font-monospace">{{ secret[0] }}</span> v{{ secret[1] }}
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+              }
+            </fpc-panel>
+          </fpc-panel-grid>
+        }
+        @case ('warnings') {
+          @if (pins().length > 0) {
+            <fpc-alert
+              [flush]="true"
+              variant="warning"
+              i18n-heading="@@lwConsolePlanDetail-pinsHeading"
+              heading="Unacknowledged pins: apply has to confirm them"
+            >
+              <ul class="mb-0 small" data-testid="plan-pins">
+                @for (w of pins(); track $index) {
+                  <li>{{ issueText(w) }}</li>
+                }
+              </ul>
+            </fpc-alert>
+          }
+          @if (otherWarnings().length === 0 && pins().length === 0 && conflicts().length === 0) {
+            <fpc-empty-state
+              icon="check2"
+              size="sm"
+              i18n-title="@@lwConsolePlanDetail-noWarnings"
+              title="No warnings"
+            />
+          } @else if (conflicts().length > 0 || otherWarnings().length > 0) {
+            <fpc-panel-grid [columns]="1">
+              @if (conflicts().length > 0) {
+                <fpc-panel flush i18n-title="@@lwConsoleGitPlan-conflictsTitle" title="Changed outside Git">
+                  <fpc-list [flush]="true">
+                    @for (c of conflicts(); track $index) {
+                      <fpc-list-item>
+                        <div fpcListItemTitle class="small">
+                          <fpc-badge size="sm" color="warning">git-conflict</fpc-badge>
+                          {{ c.message ?? issueText(c) }}
+                        </div>
+                      </fpc-list-item>
+                    }
+                  </fpc-list>
+                </fpc-panel>
+              }
+              @if (otherWarnings().length > 0) {
+                <fpc-panel flush [title]="tabWarnings">
+                  <fpc-list [flush]="true">
+                    @for (w of otherWarnings(); track $index) {
+                      <fpc-list-item>
+                        <div fpcListItemTitle class="small">
+                          <fpc-badge size="sm" [color]="issueTone(w)">{{ w.level ?? 'warning' }}</fpc-badge>
+                          {{ issueText(w) }}
+                        </div>
+                      </fpc-list-item>
+                    }
+                  </fpc-list>
+                </fpc-panel>
+              }
+            </fpc-panel-grid>
+          }
+        }
+        @case ('approvals') {
+          <fpc-panel-grid [columns]="2">
+            <fpc-panel [span]="2" [flush]="p.approvals.length > 0" [title]="tabApprovals">
+              @if (p.approvals.length === 0) {
+                <p class="small text-body-secondary mb-0" i18n="@@lwConsolePlanDetail-noApprovals">No approvals yet.</p>
+              } @else {
+                <fpc-list [flush]="true" data-testid="plan-approvals">
+                  @for (a of p.approvals; track a.project + a.userId) {
+                    <fpc-list-item>
+                      <div fpcListItemTitle class="small d-flex gap-2">
+                        <i class="bi bi-person-check text-success" aria-hidden="true"></i>
+                        <span class="fw-semibold">{{ a.project }}</span>
+                        <span>{{ a.userId }}</span>
+                      </div>
+                      <div fpcListItemActions class="small text-body-secondary">{{ a.createdAt | date: 'short' }}</div>
+                    </fpc-list-item>
+                  }
+                </fpc-list>
+              }
+            </fpc-panel>
+            @if (objectEntries(p.risk).length > 0) {
+              <fpc-panel i18n-title="@@lwConsolePlanDetail-risk" title="Why approval may be needed">
+                <ul class="small mb-0">
+                  @for (r of objectEntries(p.risk); track r[0]) {
+                    <li>
+                      <span class="fw-semibold">{{ r[0] }}</span
+                      >: {{ $any(r[1]).join('; ') }}
+                    </li>
+                  }
+                </ul>
+              </fpc-panel>
+            }
+            @if (objectEntries(p.creatorRoles).length > 0) {
+              <fpc-panel i18n-title="@@lwConsolePlanDetail-creatorRoles" title="Author's role when planned">
+                <ul class="small mb-0">
+                  @for (r of objectEntries(p.creatorRoles); track r[0]) {
+                    <li>
+                      <span class="fw-semibold">{{ r[0] }}</span
+                      >: {{ r[1] }}
+                    </li>
+                  }
+                </ul>
+              </fpc-panel>
+            }
+          </fpc-panel-grid>
+        }
+      }
+    } @else if (loading()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    }
+  </div>
+</div>
+
+<fpc-modal [open]="applyOpen()" (openChange)="applyOpen.set($event)" [title]="applyTitle" size="lg">
+  @if (plan(); as p) {
+    <p class="small" i18n="@@lwConsolePlanDetail-applyMessage">
+      The resources this plan changes are locked and the nodes pick up the new desired state. A failure or a cancel
+      rolls it back automatically.
+    </p>
+    @if (pins().length > 0) {
+      <fpc-alert
+        variant="warning"
+        i18n-heading="@@lwConsolePlanDetail-applyPinsHeading"
+        heading="This plan contains unacknowledged pins"
+      >
+        <ul class="mb-0 small">
+          @for (w of pins(); track $index) {
+            <li>{{ issueText(w) }}</li>
+          }
+        </ul>
+      </fpc-alert>
+      <fpc-form-check
+        checkId="lw-plan-confirm-pins"
+        i18n-label="@@lwConsolePlanDetail-confirmPins"
+        label="I reviewed the pinned images and secret versions and apply them as they are."
+        [ngModel]="pinsConfirmed()"
+        (ngModelChange)="pinsConfirmed.set($event)"
+        data-testid="plan-confirm-pins"
+      />
+    }
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="secondary" (clicked)="applyOpen.set(false)">{{ keepLabel }}</fpc-button>
+    <fpc-button
+      variant="primary"
+      [disabled]="pins().length > 0 && !pinsConfirmed()"
+      (clicked)="confirmApply()"
+      data-testid="plan-apply-confirm"
+    >
+      <span i18n="@@lwConsolePlanDetail-applyConfirm">Apply</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="approveOpen()"
+  (openChange)="approveOpen.set($event)"
+  [title]="approveTitle"
+  [message]="approveMessage"
+  [confirmLabel]="approveConfirm"
+  [cancelLabel]="approveCancel"
+  (confirmed)="confirmApprove()"
+  data-testid="plan-approve-confirm"
+/>
+
+<fpc-confirm-dialog
+  [open]="cancelOpen()"
+  (openChange)="cancelOpen.set($event)"
+  [title]="cancelTitle"
+  [message]="cancelMessage"
+  [confirmLabel]="cancelConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="confirmCancel()"
+/>
+
+<fpc-confirm-dialog
+  [open]="discardOpen()"
+  (openChange)="discardOpen.set($event)"
+  [title]="discardTitle"
+  [message]="discardMessage"
+  [confirmLabel]="discardConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="confirmDiscard()"
+/>

@@ -4744,6 +4744,22 @@
         <source> Passwords do not match. </source>
         <target> Passwörter stimmen nicht überein. </target>
       </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenLabel" datatype="html">
+        <source>Admin claim token</source>
+        <target>Admin-Claim-Token</target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenPlaceholder" datatype="html">
+        <source>Paste the admin claim token</source>
+        <target>Admin-Claim-Token einfügen</target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenHint" datatype="html">
+        <source> This installation has no account yet. The first account becomes the administrator and needs the one-time admin claim token from your provider (for Loadweaver Cloud: the Cluster tab of your service). </source>
+        <target> Diese Installation hat noch kein Konto. Das erste Konto wird Administrator und benötigt das einmalige Admin-Claim-Token Ihres Anbieters (bei Loadweaver Cloud: der Tab „Cluster“ Ihres Service). </target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenRequired" datatype="html">
+        <source> The admin claim token is required. </source>
+        <target> Das Admin-Claim-Token ist erforderlich. </target>
+      </trans-unit>
       <trans-unit id="featureRegister-legalHintPrefix" datatype="html">
         <source>By registering, you acknowledge our</source>
         <target>Mit Ihrer Registrierung erkennen Sie unsere</target>
@@ -5308,6 +5324,10 @@
         <source>Search Documentation</source>
         <target>Dokumentation durchsuchen</target>
       </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackLoadweaver" datatype="html">
+        <source>Official Loadweaver documentation: install, deploy, secure, and operate resilient multi-site clusters, the encrypted network between sites, storage, ingress, policies, and the cluster console.</source>
+        <target>Offizielle Loadweaver-Dokumentation: Installation, Deployment, Sicherheit und Betrieb ausfallsicherer Multi-Site-Cluster, des verschlüsselten Netzwerks zwischen Standorten, von Storage, Ingress, Policies und der Cluster-Konsole.</target>
+      </trans-unit>
       <trans-unit id="featureDocsPage-metaDescriptionFallbackDecabill" datatype="html">
         <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
         <target>Offizielle Decabill-Dokumentation: Installation, Deployment, Sicherheit und Betrieb von Billing-APIs, Abonnements, Zahlungsanbietern und der Billing-Konsole für Plattformteams.</target>
@@ -5315,6 +5335,10 @@
       <trans-unit id="featureDocsPage-metaDescriptionFallback" datatype="html">
         <source>Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.</source>
         <target>Offizielle Agenstra-Dokumentation: Installation, Deployment, Sicherheit und Betrieb von Agent-Hosts, Workspaces, Tickets, APIs und Integrationen für Plattformteams.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsLoadweaver" datatype="html">
+        <source>Loadweaver, cluster, multi-site, WireGuard, BGP, network policies, replicated storage, ingress failover, self-hosted, control plane</source>
+        <target>Loadweaver, Cluster, Multi-Site, WireGuard, BGP, Netzwerk-Policies, replizierter Storage, Ingress-Failover, Self-Hosted, Control Plane</target>
       </trans-unit>
       <trans-unit id="featureDocsPage-metaKeywordsDecabill" datatype="html">
         <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
@@ -5324,6 +5348,10 @@
         <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
         <target>Agenstra, KI-Agents, Agent-Verwaltung, verteilte Systeme, KI-Agent-Infrastruktur, Agent-Plattform, KI-Agent-Konsole, Container-Verwaltung, WebSocket-Agents, Docker-Agents</target>
       </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionLoadweaver" datatype="html">
+        <source>Search Loadweaver docs for setup guides, API references, security hardening, network and policy configuration, deployment patterns, and troubleshooting.</source>
+        <target>Durchsuchen Sie die Loadweaver-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Netzwerk- und Policy-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
+      </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaDescriptionDecabill" datatype="html">
         <source>Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.</source>
         <target>Durchsuchen Sie die Decabill-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Billing-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
@@ -5331,6 +5359,62 @@
       <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
         <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
         <target>Durchsuchen Sie die Agenstra-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Agent-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-role" datatype="html">
+        <source>Founder and CEO</source>
+        <target>Gründer und CEO</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-photoAlt" datatype="html">
+        <source>Portrait of Marcel Menk</source>
+        <target>Porträt von Marcel Menk</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-linkedInLabel" datatype="html">
+        <source>Marcel Menk on LinkedIn</source>
+        <target>Marcel Menk auf LinkedIn</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageForepath" datatype="html">
+        <source>We work with AI every day, because it makes us faster and our results better.</source>
+        <target>Wir arbeiten jeden Tag mit KI, weil sie uns schneller und unsere Ergebnisse besser macht.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageAgenstra" datatype="html">
+        <source>We build Agenstra with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Agenstra jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageDecabill" datatype="html">
+        <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Decabill jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageLoadweaver" datatype="html">
+        <source>We build Loadweaver with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Loadweaver jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaRole" datatype="html">
+        <source>Virtual Customer Success</source>
+        <target>Virtuelle Support-Agentin</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaPhotoAlt" datatype="html">
+        <source>AI-generated portrait of Maya Keller, our virtual team member</source>
+        <target>KI-generiertes Porträt von Maya Keller, unserem virtuellen Teammitglied</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageForepath" datatype="html">
+        <source>I am part of that, but your message still reaches real people on our team, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen in unserem Team, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageAgenstra" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Agenstra, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Agenstra kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Decabill kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageLoadweaver" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Loadweaver, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Loadweaver kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
+        <source>AI</source>
+        <target>KI</target>
       </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>
@@ -7909,6 +7993,18 @@
       <trans-unit id="featureChat-handoffOpenSourceTaskRun" datatype="html">
         <source>Open task run</source>
         <target>Aufgabenlauf öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-channel" datatype="html">
+        <source>Channel</source>
+        <target>Kanal</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-channelBeta" datatype="html">
+        <source>Beta</source>
+        <target>Beta</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-channelStable" datatype="html">
+        <source>Stable</source>
+        <target>Stabil</target>
       </trans-unit>
     </body>
   </file>

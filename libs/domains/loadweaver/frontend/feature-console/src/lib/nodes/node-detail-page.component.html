@@ -1,0 +1,173 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="name() ?? title" icon="hdd">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="secondary"
+      size="sm"
+      iconOnly
+      routerLink="/nodes"
+      [ariaLabel]="backLabel"
+      [title]="backLabel"
+    >
+      <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    </fpc-button>
+    @if (name(); as n) {
+      <fpc-button
+        fpcPageHeaderActions
+        variant="secondary"
+        size="sm"
+        iconOnly
+        [routerLink]="healthLink('node/' + n)"
+        [ariaLabel]="healthLabel"
+        [title]="healthLabel"
+        data-testid="node-health"
+      >
+        <i class="bi bi-heart-pulse" aria-hidden="true"></i>
+      </fpc-button>
+    }
+    @for (action of actions(); track action) {
+      <fpc-button
+        fpcPageHeaderActions
+        [variant]="dangerous(action) ? 'danger' : 'primary'"
+        size="sm"
+        iconOnly
+        [ariaLabel]="actionLabel(action)"
+        [title]="actionLabel(action)"
+        [loading]="acting()?.action === action"
+        [disabled]="acting() !== null"
+        (clicked)="ask(action)"
+        [attr.data-testid]="'node-action-' + action"
+      >
+        <i class="bi {{ actionIcon(action) }}" aria-hidden="true"></i>
+      </fpc-button>
+    }
+  </fpc-page-header>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert
+        class="m-3"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="dismissActionError()"
+      />
+    }
+
+    @if (node(); as n) {
+      <div class="d-flex align-items-center gap-3 px-3 py-2 border-bottom" data-testid="node-header">
+        <fpc-status-badge [tone]="tone(n)" size="lg" [ariaLabel]="lifecycleLabel(n.lifecycle)">
+          <i class="bi {{ icon(n) }}" aria-hidden="true"></i>
+        </fpc-status-badge>
+        <div>
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="fw-semibold">{{ lifecycleLabel(n.lifecycle) }}</span>
+            @if (n.connected) {
+              <fpc-badge color="success" size="sm" i18n="@@lwConsoleNodeDetail-connected">Connected</fpc-badge>
+            } @else if (n.lifecycle !== 'left') {
+              <fpc-badge color="danger" size="sm" i18n="@@lwConsoleNodeDetail-disconnected">Disconnected</fpc-badge>
+            }
+            @if (n.controlPlane) {
+              <fpc-badge color="primary" size="sm" i18n="@@lwConsoleNodeDetail-controlPlane">Control plane</fpc-badge>
+            }
+            @if (n.witness) {
+              <fpc-badge color="info" size="sm" i18n="@@lwConsoleNodeDetail-witness">Witness</fpc-badge>
+            }
+          </div>
+          <div class="text-body-secondary small">
+            <span i18n="@@lwConsoleNodeDetail-site">Site</span> {{ n.site }} ·
+            <span i18n="@@lwConsoleNodeDetail-joined">joined</span> {{ n.joinedAt | date: 'mediumDate' }}
+          </div>
+        </div>
+      </div>
+
+      <fpc-panel-grid [columns]="2">
+        <fpc-panel [title]="statusTitle">
+          <dl class="row small mb-0" data-testid="node-status">
+            <dt class="col-5" i18n="@@lwConsoleNodeDetail-lastSeen">Last seen</dt>
+            <dd class="col-7">{{ n.lastSeenAt ? (n.lastSeenAt | date: 'medium') : '–' }}</dd>
+            <dt class="col-5" i18n="@@lwConsoleNodeDetail-applied">Applied revision</dt>
+            <dd class="col-7">
+              {{ n.appliedRevision }}
+              @if (n.applyStatus === 'failed') {
+                <fpc-badge color="danger" size="sm" i18n="@@lwConsoleNodeDetail-applyFailed">Failed</fpc-badge>
+              } @else if (n.applyStatus === 'rolled-back') {
+                <fpc-badge color="warning" size="sm" i18n="@@lwConsoleNodeDetail-rolledBack">Rolled back</fpc-badge>
+              }
+            </dd>
+            @if (n.applyError) {
+              <dt class="col-5" i18n="@@lwConsoleNodeDetail-applyError">Apply error</dt>
+              <dd class="col-7 text-danger text-break">{{ n.applyError }}</dd>
+            }
+            <dt class="col-5" i18n="@@lwConsoleNodeDetail-certificate">Certificate valid until</dt>
+            <dd class="col-7">{{ n.certificateNotAfter ? (n.certificateNotAfter | date: 'mediumDate') : '–' }}</dd>
+            <dt class="col-5" i18n="@@lwConsoleNodeDetail-labels">Labels</dt>
+            <dd class="col-7 d-flex flex-wrap gap-1">
+              @for (label of n.labels | keyvalue; track label.key) {
+                <fpc-badge color="light" size="sm">{{ label.key }}={{ label.value }}</fpc-badge>
+              } @empty {
+                –
+              }
+            </dd>
+          </dl>
+        </fpc-panel>
+        <fpc-panel [title]="capacityTitle">
+          @for (r of resources(); track r.id) {
+            <div class="small mb-2" [attr.data-testid]="'node-capacity-' + r.id">
+              <div class="d-flex justify-content-between">
+                <span>{{ r.label }}</span
+                ><span class="text-body-secondary">{{ r.text }}</span>
+              </div>
+              <fpc-progress
+                [value]="r.percent ?? 0"
+                [variant]="(r.percent ?? 0) >= 90 ? 'danger' : (r.percent ?? 0) >= 75 ? 'warning' : 'primary'"
+                height="0.5rem"
+              />
+            </div>
+          } @empty {
+            <span class="small text-body-secondary" i18n="@@lwConsoleNodeDetail-noCapacity">Not reported yet</span>
+          }
+        </fpc-panel>
+        <fpc-panel [title]="networkTitle">
+          <dl class="row small mb-0" data-testid="node-network">
+            <dt class="col-5" i18n="@@lwConsoleNodeDetail-endpoint">Endpoint</dt>
+            <dd class="col-7 font-monospace">{{ n.endpointHost ?? '–' }}</dd>
+            <dt class="col-5" i18n="@@lwConsoleNodeDetail-overlay">Overlay</dt>
+            <dd class="col-7 font-monospace">{{ n.overlayV4 ?? '' }} {{ n.overlayV6 ?? '' }}</dd>
+            <dt class="col-5" i18n="@@lwConsoleNodeDetail-podSubnets">Pod subnets</dt>
+            <dd class="col-7 font-monospace">{{ n.podSubnetV4 ?? '' }} {{ n.podSubnetV6 ?? '' }}</dd>
+          </dl>
+        </fpc-panel>
+        <fpc-panel [title]="systemTitle">
+          <dl class="row small mb-0">
+            <dt class="col-5" i18n="@@lwConsoleNodeDetail-agent">Agent</dt>
+            <dd class="col-7">{{ n.agentVersion ?? '–' }}</dd>
+            @if (n.os; as os) {
+              <dt class="col-5" i18n="@@lwConsoleNodeDetail-os">Operating system</dt>
+              <dd class="col-7">{{ os.id }} {{ os.versionId }} ({{ os.arch }})</dd>
+              <dt class="col-5" i18n="@@lwConsoleNodeDetail-kernel">Kernel</dt>
+              <dd class="col-7 font-monospace">{{ os.kernel }}</dd>
+            }
+          </dl>
+        </fpc-panel>
+      </fpc-panel-grid>
+    } @else if (loading()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    }
+  </div>
+</div>
+
+<fpc-confirm-dialog
+  [open]="pending() !== null"
+  (openChange)="onConfirmOpenChange($event)"
+  [title]="confirmTitle()"
+  [message]="confirmMessage()"
+  [confirmLabel]="confirmLabel()"
+  [cancelLabel]="cancelLabel"
+  [danger]="confirmDanger()"
+  [warning]="true"
+  (confirmed)="confirm()"
+/>

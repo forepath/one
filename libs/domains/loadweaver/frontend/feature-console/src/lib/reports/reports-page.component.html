@@ -1,0 +1,331 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="file-earmark-bar-graph">
+    @if (scopes().length > 0) {
+      <fpc-button
+        fpcPageHeaderActions
+        variant="primary"
+        size="sm"
+        iconOnly
+        [ariaLabel]="runLabel"
+        [title]="runLabel"
+        (clicked)="openRun()"
+        data-testid="report-run-open"
+      >
+        <i class="bi bi-play-fill" aria-hidden="true"></i>
+      </fpc-button>
+    }
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <fpc-tab-group class="flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="activeTab.set($event)">
+    <fpc-tab id="runs" [label]="tabRuns" icon="clock-history" />
+    <fpc-tab id="files" [label]="tabFiles" icon="folder2-open" />
+  </fpc-tab-group>
+
+  @if (activeTab() === 'files') {
+    <div class="flex-shrink-0 d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom">
+      <fpc-button
+        variant="secondary"
+        size="sm"
+        iconOnly
+        [disabled]="!path()"
+        [ariaLabel]="upLabel"
+        [title]="upLabel"
+        (clicked)="up()"
+      >
+        <i class="bi bi-arrow-up" aria-hidden="true"></i>
+      </fpc-button>
+      <nav [attr.aria-label]="breadcrumbsLabel" class="small">
+        <ol class="breadcrumb mb-0 font-monospace" data-testid="report-breadcrumbs">
+          <li class="breadcrumb-item" [class.active]="!path()">
+            @if (path()) {
+              <button type="button" class="btn btn-link btn-sm p-0 align-baseline" (click)="openFolder('')">
+                {{ rootLabel }}
+              </button>
+            } @else {
+              {{ rootLabel }}
+            }
+          </li>
+          @for (crumb of crumbs(); track crumb.path; let last = $last) {
+            <li class="breadcrumb-item" [class.active]="last" [attr.aria-current]="last ? 'page' : null">
+              @if (last) {
+                {{ crumb.label }}
+              } @else {
+                <button type="button" class="btn btn-link btn-sm p-0 align-baseline" (click)="openFolder(crumb.path)">
+                  {{ crumb.label }}
+                </button>
+              }
+            </li>
+          }
+        </ol>
+      </nav>
+      @if (path()) {
+        <fpc-button
+          class="ms-auto"
+          variant="dark"
+          size="sm"
+          iconOnly
+          [ariaLabel]="archiveLabel"
+          [title]="archiveLabel"
+          [loading]="busyPath() === path()"
+          (clicked)="downloadFolder(path())"
+          data-testid="report-archive-current"
+        >
+          <i class="bi bi-file-earmark-zip" aria-hidden="true"></i>
+        </fpc-button>
+      }
+    </div>
+  }
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (fileError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" [dismissible]="true" (closed)="fileError.set(null)" />
+    }
+
+    @if (activeTab() === 'files') {
+      @if (entriesError(); as message) {
+        <fpc-alert class="m-3" variant="danger" [message]="message" />
+      }
+
+      @if (entriesLoading() && entries().length === 0) {
+        <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+      } @else if (entries().length === 0) {
+        <fpc-empty-state icon="folder" i18n-title="@@lwConsoleReports-emptyFolder" title="Nothing here" />
+      } @else {
+        <fpc-list [flush]="true" data-testid="report-entries">
+          @for (entry of entries(); track entry.path) {
+            <fpc-list-item [clickable]="true" (selected)="openEntry(entry)">
+              <div fpcListItemTitle class="d-flex align-items-center gap-2">
+                <i
+                  class="bi"
+                  [class.bi-folder-fill]="entry.type === 'folder'"
+                  [class.text-warning]="entry.type === 'folder'"
+                  [class.bi-filetype-html]="entry.type === 'file' && entry.name.endsWith('.html')"
+                  [class.bi-filetype-json]="entry.type === 'file' && entry.name.endsWith('.json')"
+                  [class.bi-file-earmark]="
+                    entry.type === 'file' && !entry.name.endsWith('.html') && !entry.name.endsWith('.json')
+                  "
+                  aria-hidden="true"
+                ></i>
+                <span class="font-monospace">{{ entry.name }}</span>
+              </div>
+              <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+                @if (entry.bytes !== undefined) {
+                  <span>{{ bytes(entry.bytes) }}</span>
+                }
+                @if (entry.updatedAt) {
+                  <span>{{ entry.updatedAt | date: 'short' }}</span>
+                }
+              </div>
+              <div fpcListItemActions class="d-flex gap-2">
+                @if (entry.type === 'folder') {
+                  <fpc-button
+                    variant="secondary"
+                    size="sm"
+                    iconOnly
+                    [loading]="busyPath() === entry.path"
+                    [ariaLabel]="archiveLabel"
+                    [title]="archiveLabel"
+                    (clicked)="downloadFolder(entry.path, $event)"
+                    data-testid="report-archive"
+                  >
+                    <i class="bi bi-file-earmark-zip" aria-hidden="true"></i>
+                  </fpc-button>
+                } @else {
+                  @if (entry.name === 'report.html') {
+                    <fpc-button
+                      variant="primary"
+                      size="sm"
+                      iconOnly
+                      [ariaLabel]="openLabel"
+                      [title]="openLabel"
+                      (clicked)="$event.stopPropagation(); openReport(entry.path)"
+                    >
+                      <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                    </fpc-button>
+                  }
+                  <fpc-button
+                    variant="secondary"
+                    size="sm"
+                    iconOnly
+                    [loading]="busyPath() === entry.path"
+                    [ariaLabel]="downloadLabel"
+                    [title]="downloadLabel"
+                    (clicked)="downloadFile(entry.path, entry.name, $event)"
+                    data-testid="report-download"
+                  >
+                    <i class="bi bi-download" aria-hidden="true"></i>
+                  </fpc-button>
+                }
+              </div>
+            </fpc-list-item>
+          }
+        </fpc-list>
+      }
+    } @else {
+      @if (queued()) {
+        <fpc-alert
+          class="m-3"
+          variant="success"
+          [message]="queuedMessage"
+          [dismissible]="true"
+          (closed)="dismissRunResult()"
+        />
+      }
+      @if (!runOpen() && runError(); as message) {
+        <fpc-alert
+          class="m-3"
+          variant="danger"
+          [message]="message"
+          [dismissible]="true"
+          (closed)="dismissRunResult()"
+        />
+      }
+      @if (error(); as message) {
+        <fpc-alert class="m-3" variant="danger" [message]="message" />
+      }
+
+      @if (loading() && reports().length === 0) {
+        <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+      } @else if (reports().length === 0) {
+        <fpc-empty-state
+          icon="file-earmark-bar-graph"
+          i18n-title="@@lwConsoleReports-empty"
+          title="No reports yet"
+          i18n-message="@@lwConsoleReports-emptyMessage"
+          message="Reports are written on the 1st of every month for the month that ended."
+        />
+      } @else {
+        <fpc-list [flush]="true" data-testid="reports-list">
+          @for (report of reports(); track report.id) {
+            <fpc-list-item>
+              <div fpcListItemTitle class="d-flex align-items-center gap-2 flex-wrap">
+                <i
+                  class="bi"
+                  [class.bi-diagram-3]="report.scope === 'cluster'"
+                  [class.bi-folder]="report.scope !== 'cluster'"
+                  aria-hidden="true"
+                ></i>
+                <span class="fw-semibold">{{ report.scope }}</span>
+                <span class="font-monospace">{{ monthValue(report.year, report.month) }}</span>
+                <fpc-badge [color]="statusTone[report.status]" size="sm">{{ statusLabel(report.status) }}</fpc-badge>
+              </div>
+              <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+                @if (report.completedAt) {
+                  <span
+                    ><i class="bi bi-check2 me-1" aria-hidden="true"></i>{{ report.completedAt | date: 'short' }}</span
+                  >
+                }
+                @if (report.files.length > 0) {
+                  <span
+                    ><i class="bi bi-files me-1" aria-hidden="true"></i>{{ report.files.length }}
+                    <span i18n="@@lwConsoleReports-files">files</span></span
+                  >
+                }
+                @if (report.error) {
+                  <span class="text-danger"
+                    ><i class="bi bi-x-octagon me-1" aria-hidden="true"></i>{{ report.error }}</span
+                  >
+                }
+              </div>
+              @if (report.status === 'completed') {
+                <div fpcListItemActions class="d-flex gap-2">
+                  @if (htmlOf(report); as html) {
+                    <fpc-button
+                      variant="primary"
+                      size="sm"
+                      [loading]="busyPath() === html"
+                      (clicked)="openReport(html)"
+                      data-testid="report-open"
+                    >
+                      <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>{{ openLabel }}
+                    </fpc-button>
+                  }
+                  @if (folderOf(report)) {
+                    <fpc-button
+                      variant="secondary"
+                      size="sm"
+                      iconOnly
+                      [ariaLabel]="folderLabel"
+                      [title]="folderLabel"
+                      (clicked)="showFiles(report)"
+                      data-testid="report-files"
+                    >
+                      <i class="bi bi-folder2-open" aria-hidden="true"></i>
+                    </fpc-button>
+                  }
+                </div>
+              }
+            </fpc-list-item>
+          }
+        </fpc-list>
+      }
+    }
+  </div>
+</div>
+
+<fpc-modal [(open)]="runOpen" [title]="runLabel">
+  <form (ngSubmit)="run()" data-testid="report-run-form">
+    @if (runError(); as message) {
+      <fpc-alert variant="danger" [message]="message" />
+    }
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-report-scope" i18n-label="@@lwConsoleReports-scope" label="Scope">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-report-scope"
+            name="scope"
+            size="sm"
+            [ngModel]="scope()"
+            (ngModelChange)="scope.set($event)"
+          >
+            @for (s of scopes(); track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-report-month" i18n-label="@@lwConsoleReports-month" label="Month">
+          <fpc-form-control
+            controlId="lw-report-month"
+            name="month"
+            inputType="month"
+            size="sm"
+            min="2020-01"
+            [max]="maxMonth"
+            [invalid]="!monthValid()"
+            [ngModel]="month()"
+            (ngModelChange)="month.set($event)"
+          />
+        </fpc-form-field>
+      </div>
+    </div>
+    <p class="small text-body-secondary mb-0" i18n="@@lwConsoleReports-runHint">
+      Replaces the files of a report that already exists.
+    </p>
+  </form>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="secondary" (clicked)="runOpen.set(false)">{{ cancelLabel }}</fpc-button>
+    <fpc-button
+      variant="primary"
+      [loading]="running()"
+      [disabled]="!monthValid() || !scope()"
+      (clicked)="run()"
+      data-testid="report-run"
+    >
+      <i class="bi bi-play-fill me-1" aria-hidden="true"></i><span i18n="@@lwConsoleReports-run">Run report</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

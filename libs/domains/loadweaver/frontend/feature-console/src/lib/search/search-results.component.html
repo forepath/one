@@ -1,0 +1,86 @@
+@for (section of sections(); track section.id) {
+  <div [class.mb-3]="!flush()" [attr.data-testid]="'search-section-' + section.id">
+    <div
+      class="small text-body-secondary text-uppercase fw-semibold"
+      [class.px-2]="!flush()"
+      [class.mb-1]="!flush()"
+      [class.px-3]="flush()"
+      [class.py-2]="flush()"
+      [class.border-bottom]="flush()"
+      [class.bg-body-tertiary]="flush()"
+    >
+      <i class="bi {{ section.icon }} me-1" aria-hidden="true"></i>{{ section.label }}
+    </div>
+    <div class="list-group" [class.list-group-flush]="flush()" role="listbox" [attr.aria-label]="section.label">
+      @for (entry of section.entries; track entry.id) {
+        <div
+          class="list-group-item list-group-item-action d-flex align-items-center gap-2 py-1"
+          [class.px-2]="!flush()"
+          [class.px-3]="flush()"
+          role="option"
+          [id]="domId(entry)"
+          [class.active]="activeId() === entry.id"
+          [attr.aria-selected]="activeId() === entry.id"
+          data-testid="search-entry"
+        >
+          <button
+            type="button"
+            class="btn btn-link text-reset text-decoration-none text-start flex-grow-1 min-w-0 d-flex align-items-center gap-2 p-1"
+            (click)="picked.emit(entry)"
+          >
+            @switch (entry.type) {
+              @case ('action') {
+                <i
+                  class="bi"
+                  [class.bi-lightning-charge]="entry.action.kind === 'api'"
+                  [class.bi-arrow-right-circle]="entry.action.kind !== 'api'"
+                  aria-hidden="true"
+                ></i>
+                <span class="text-truncate">{{ entry.action.title }}</span>
+                @if (entry.action.kind === 'api') {
+                  <code class="small ms-auto text-nowrap">{{ actionRequest(entry.action) }}</code>
+                }
+              }
+              @case ('result') {
+                <i class="bi {{ kindIcon(entry.result.kind) }}" aria-hidden="true"></i>
+                <span class="text-truncate">{{ entry.result.title }}</span>
+                @if (entry.result.project) {
+                  <span class="small text-body-secondary ms-auto text-nowrap"
+                    ><i class="bi bi-folder me-1" aria-hidden="true"></i>{{ entry.result.project }}</span
+                  >
+                }
+              }
+              @case ('favourite') {
+                <i class="bi {{ kindIcon(splitItem(entry.item).kind) }}" aria-hidden="true"></i>
+                <span class="text-truncate"
+                  >{{ splitItem(entry.item).kind }}
+                  <span class="font-monospace">{{ splitItem(entry.item).key }}</span></span
+                >
+              }
+            }
+          </button>
+          @if (entry.type === 'result') {
+            <button
+              type="button"
+              class="btn btn-sm btn-link p-1"
+              [class.text-warning]="entry.result.favourite"
+              [class.text-body-secondary]="!entry.result.favourite"
+              [attr.aria-label]="entry.result.favourite ? unstarLabel : starLabel"
+              [title]="entry.result.favourite ? unstarLabel : starLabel"
+              [attr.aria-pressed]="entry.result.favourite"
+              (click)="star(entry.result, $event)"
+              data-testid="search-star"
+            >
+              <i
+                class="bi"
+                [class.bi-star-fill]="entry.result.favourite"
+                [class.bi-star]="!entry.result.favourite"
+                aria-hidden="true"
+              ></i>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}

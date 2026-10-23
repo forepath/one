@@ -5,6 +5,8 @@
   "type": "commonjs",
   "main": "./dist/src/index.js",
   "dependencies": {
+    "@forepath/shared/shared/util-release-keys": "0.0.1",
+    "@forepath/shared/shared/util-release-signing": "0.0.1",
     "tslib": "2.8.1"
   }
 }

@@ -1,0 +1,371 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="pc-display">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="newLabel"
+      [title]="newLabel"
+      (clicked)="create()"
+      data-testid="vms-new"
+    >
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    </fpc-button>
+    @if (importProjects().length > 0) {
+      <fpc-button
+        fpcPageHeaderActions
+        variant="secondary"
+        size="sm"
+        [iconOnly]="true"
+        [ariaLabel]="importLabel"
+        [title]="importLabel"
+        (clicked)="openImport()"
+        data-testid="vms-import"
+      >
+        <i class="bi bi-cloud-arrow-down" aria-hidden="true"></i>
+      </fpc-button>
+    }
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <fpc-search-field
+    class="flex-shrink-0 border-bottom"
+    inputId="lw-vms-search"
+    [bordered]="false"
+    [placeholder]="searchLabel"
+    [ariaLabel]="searchLabel"
+    [value]="search()"
+    (valueChange)="search.set($event)"
+  />
+
+  <fpc-collapsible-filter-panel
+    class="flex-shrink-0"
+    [(open)]="filtersOpen"
+    [title]="filtersLabel"
+    [activeCount]="activeFilterCount()"
+    (cleared)="clearFilters()"
+  >
+    <div class="row g-3 mb-0 w-100">
+      <div class="col-12 col-md-4">
+        <fpc-form-field forId="lw-vms-project" [label]="projectFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-vms-project"
+            size="sm"
+            [ngModel]="project()"
+            (ngModelChange)="project.set($event)"
+          >
+            <option value="" i18n="@@lwConsoleVms-allProjects">All projects</option>
+            @for (p of projects(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-4">
+        <fpc-form-field forId="lw-vms-phase" [label]="phaseFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-vms-phase"
+            size="sm"
+            [ngModel]="phase()"
+            (ngModelChange)="phase.set($event)"
+          >
+            <option value="" i18n="@@lwConsoleVms-allPhases">All phases</option>
+            @for (p of phases; track p) {
+              <option [value]="p">{{ phaseLabel(p) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-4">
+        <fpc-form-field forId="lw-vms-strategy" [label]="strategyFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-vms-strategy"
+            size="sm"
+            [ngModel]="strategy()"
+            (ngModelChange)="strategy.set($event)"
+          >
+            <option value="" i18n="@@lwConsoleVms-allStrategies">All run strategies</option>
+            @for (s of strategies; track s) {
+              <option [value]="s">{{ strategyLabel(s) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+    </div>
+  </fpc-collapsible-filter-panel>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    @if (loading() && vms().length === 0) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else {
+      <fpc-panel-grid [columns]="1" fill>
+        <fpc-panel
+          [title]="vmsTitle + ' (' + running() + ' / ' + filtered().length + ')'"
+          [flush]="true"
+          data-testid="vms-panel"
+        >
+          @if (filtered().length === 0) {
+            <fpc-empty-state
+              icon="pc-display"
+              size="sm"
+              i18n-title="@@lwConsoleVms-empty"
+              title="No virtual machines"
+              i18n-message="@@lwConsoleVms-emptyHint"
+              message="Create a VirtualMachine resource (YAML, applied through a plan) to run a full VM."
+            />
+          } @else {
+            <fpc-list [flush]="true" data-testid="vms-list">
+              @for (vm of filtered(); track vm.project + '/' + vm.name) {
+                <fpc-list-item [clickable]="true" (selected)="open(vm)">
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2 min-w-0">
+                    <fpc-status-badge [tone]="phaseTone(vm.phase)" size="sm" [ariaLabel]="phaseLabel(vm.phase)">
+                      <i class="bi {{ phaseIcon(vm.phase) }}" aria-hidden="true"></i>
+                    </fpc-status-badge>
+                    <span class="fw-semibold text-truncate">{{ vm.name }}</span>
+                    <fpc-badge color="light" size="sm">{{ vm.project }}</fpc-badge>
+                    <fpc-badge color="secondary" size="sm">{{ phaseLabel(vm.phase) }}</fpc-badge>
+                    @if (vm.runStrategy !== 'Always') {
+                      <fpc-badge color="info" size="sm">{{ strategyLabel(vm.runStrategy) }}</fpc-badge>
+                    }
+                    @if (vm.invalid) {
+                      <fpc-badge color="danger" size="sm" i18n="@@lwConsoleVms-invalid">Invalid spec</fpc-badge>
+                    }
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap align-items-center gap-3">
+                    <span
+                      ><i class="bi bi-cpu me-1" aria-hidden="true"></i>{{ vm.vcpus }}
+                      <span i18n="@@lwConsoleVms-vcpus">vCPUs</span></span
+                    >
+                    <span><i class="bi bi-memory me-1" aria-hidden="true"></i>{{ bytes(vm.memoryBytes) }}</span>
+                    <span
+                      ><i class="bi bi-device-hdd me-1" aria-hidden="true"></i>{{ vm.disks }} ·
+                      {{ bytes(vm.diskBytes) }}</span
+                    >
+                    @if (vm.node) {
+                      <span><i class="bi bi-hdd me-1" aria-hidden="true"></i>{{ vm.node }}</span>
+                    }
+                    @if (vm.addresses.length > 0) {
+                      <span class="font-monospace">{{ vm.addresses.join(', ') }}</span>
+                    }
+                    <span class="font-monospace text-truncate">{{ vm.image }}</span>
+                    @if (vm.importProgress; as progress) {
+                      <loadweaver-vm-import-progress class="w-100" [progress]="progress" />
+                    }
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+
+        @if (project()) {
+          <fpc-panel [title]="importsTitle + ' (' + imports().length + ')'" [flush]="true" data-testid="vms-imports">
+            @if (importsError(); as message) {
+              <fpc-alert class="d-block m-3" variant="danger" [message]="message" />
+            }
+            @if (importsLoading() && imports().length === 0) {
+              <div class="d-flex justify-content-center p-3"><fpc-spinner variant="primary" size="sm" /></div>
+            } @else if (imports().length === 0) {
+              <fpc-empty-state
+                icon="cloud-arrow-down"
+                size="sm"
+                i18n-title="@@lwConsoleVms-noImports"
+                title="No VM image imports in this project"
+              />
+            } @else {
+              <fpc-list [flush]="true">
+                @for (i of imports(); track i.id) {
+                  <fpc-list-item>
+                    <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2 min-w-0">
+                      <fpc-status-badge [tone]="importTone(i.status)" size="sm" [ariaLabel]="i.status">
+                        <i class="bi {{ importIcon(i.status) }}" aria-hidden="true"></i>
+                      </fpc-status-badge>
+                      <span class="font-monospace text-truncate">{{ i.reference }}</span>
+                      @if (i.format) {
+                        <fpc-badge color="light" size="sm">{{ i.format }}</fpc-badge>
+                      }
+                      @if (i.containerDisk) {
+                        <fpc-badge color="info" size="sm" i18n="@@lwConsoleVms-containerDisk">containerDisk</fpc-badge>
+                      }
+                      @if (i.step) {
+                        <fpc-badge color="secondary" size="sm">{{ i.step }}</fpc-badge>
+                      }
+                    </div>
+                    <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+                      <span>{{ i.arch }} · {{ i.firmware.join(', ') }}</span>
+                      @if (i.downloadedBytes > 0) {
+                        <span
+                          ><i class="bi bi-download me-1" aria-hidden="true"></i>{{ bytes(i.downloadedBytes) }}</span
+                        >
+                      }
+                      @if (i.virtualSize) {
+                        <span
+                          ><span i18n="@@lwConsoleVms-virtualSize">Virtual size</span> {{ bytes(i.virtualSize) }}</span
+                        >
+                      }
+                      <span class="text-truncate">{{ i.url }}</span>
+                      <span>{{ i.createdAt | date: 'short' }}</span>
+                      @if (i.error) {
+                        <span class="text-danger text-break">{{ i.error }}</span>
+                      }
+                    </div>
+                  </fpc-list-item>
+                }
+              </fpc-list>
+            }
+          </fpc-panel>
+        }
+        @if (project()) {
+          <fpc-panel
+            [title]="registryTitle + ' (' + registryImages().length + ')'"
+            [flush]="true"
+            data-testid="vms-registry-images"
+          >
+            @if (registryImagesError(); as message) {
+              <fpc-alert class="d-block m-3" variant="danger" [message]="message" />
+            }
+            @if (registryImagesLoading() && registryImages().length === 0) {
+              <div class="d-flex justify-content-center p-3"><fpc-spinner variant="primary" size="sm" /></div>
+            } @else if (registryImages().length === 0) {
+              <fpc-empty-state
+                icon="hdd-stack"
+                size="sm"
+                i18n-title="@@lwConsoleVms-noRegistryImages"
+                title="No VM images in this project's registry"
+                i18n-message="@@lwConsoleVms-noRegistryImagesHint"
+                message="Push one with loadweaver vm-image push or import one."
+              />
+            } @else {
+              <fpc-list [flush]="true">
+                @for (image of registryImages(); track image.reference) {
+                  <fpc-list-item>
+                    <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2 min-w-0">
+                      <span class="font-monospace text-truncate">{{ image.repository }}:{{ image.tag }}</span>
+                      @for (v of image.variants; track v.arch) {
+                        <fpc-badge color="light" size="sm">{{ v.arch }} · {{ v.format }}</fpc-badge>
+                      }
+                      @if (hasGuestAgent(image)) {
+                        <fpc-badge color="info" size="sm" i18n="@@lwConsoleVms-guestAgent">guest agent</fpc-badge>
+                      }
+                    </div>
+                    <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+                      @if (image.variants[0]; as v) {
+                        <span
+                          ><span i18n="@@lwConsoleVms-virtualSize">Virtual size</span> {{ bytes(v.virtualSize) }}</span
+                        >
+                        <span>{{ v.firmware.join(', ') }}</span>
+                      }
+                      <span class="font-monospace text-truncate" [title]="image.reference">{{ image.digest }}</span>
+                    </div>
+                  </fpc-list-item>
+                }
+              </fpc-list>
+            }
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+    }
+  </div>
+</div>
+
+<fpc-modal [open]="importOpen()" (openChange)="onImportOpenChange($event)" [title]="importTitle">
+  <p class="small" i18n="@@lwConsoleVms-importHint">
+    The control plane downloads the disk image (qcow2, raw, or a KubeVirt containerDisk archive), checks its SHA-256 and
+    stores it as a VM image in the project's registry. Use the reference in a virtual machine's image.
+  </p>
+  <fpc-form-field forId="lw-vm-import-project" i18n-label="@@lwConsoleVms-importProject" label="Project">
+    <fpc-form-control controlType="select" controlId="lw-vm-import-project" size="sm" [(ngModel)]="importProject">
+      @for (p of importProjects(); track p) {
+        <option [value]="p">{{ p }}</option>
+      }
+    </fpc-form-control>
+  </fpc-form-field>
+  <fpc-form-field forId="lw-vm-import-url" i18n-label="@@lwConsoleVms-importUrl" label="Download URL (HTTPS)">
+    <fpc-form-control
+      controlId="lw-vm-import-url"
+      size="sm"
+      controlClass="font-monospace"
+      [ngModel]="importUrl"
+      (ngModelChange)="onImportUrlChange($event)"
+      data-testid="vms-import-url"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="lw-vm-import-sha" i18n-label="@@lwConsoleVms-importSha" label="SHA-256 of the file">
+    <fpc-form-control
+      controlId="lw-vm-import-sha"
+      size="sm"
+      controlClass="font-monospace"
+      [(ngModel)]="importSha256"
+      data-testid="vms-import-sha"
+    />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="lw-vm-import-ref"
+    i18n-label="@@lwConsoleVms-importRef"
+    label="Image name and tag (repository:tag)"
+  >
+    <fpc-form-control
+      controlId="lw-vm-import-ref"
+      size="sm"
+      controlClass="font-monospace"
+      [(ngModel)]="importRef"
+      data-testid="vms-import-ref"
+    />
+  </fpc-form-field>
+  <div class="row g-3">
+    <div class="col-12 col-md-4">
+      <fpc-form-field forId="lw-vm-import-arch" i18n-label="@@lwConsoleVms-importArch" label="Architecture">
+        <fpc-form-control controlType="select" controlId="lw-vm-import-arch" size="sm" [(ngModel)]="importArch">
+          <option value="amd64">amd64</option>
+          <option value="arm64">arm64</option>
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-12 col-md-8 d-flex flex-wrap align-items-center gap-3">
+      <fpc-form-check checkId="lw-vm-import-uefi" label="UEFI" [(ngModel)]="importUefi" />
+      <fpc-form-check checkId="lw-vm-import-bios" label="BIOS" [(ngModel)]="importBios" />
+      <fpc-form-check
+        checkId="lw-vm-import-agent"
+        i18n-label="@@lwConsoleVms-importGuestAgent"
+        label="Guest agent installed"
+        [(ngModel)]="importGuestAgent"
+      />
+    </div>
+  </div>
+  @if (importInvalid()) {
+    <fpc-alert
+      variant="warning"
+      i18n-message="@@lwConsoleVms-importInvalid"
+      message="Enter an HTTPS URL, the 64-digit SHA-256, a lowercase repository:tag and at least one firmware (BIOS is amd64 only)."
+    />
+  }
+  @if (importError(); as message) {
+    <fpc-alert variant="danger" [message]="message" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="secondary" (clicked)="onImportOpenChange(false)">
+      <span i18n="@@lwConsoleVms-cancel">Cancel</span>
+    </fpc-button>
+    <fpc-button variant="primary" [loading]="importing()" (clicked)="submitImport()" data-testid="vms-import-submit">
+      <span i18n="@@lwConsoleVms-startImport">Start import</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

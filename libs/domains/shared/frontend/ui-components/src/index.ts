@@ -25,6 +25,18 @@ export {
 } from './lib/chart-theme/chart-theme';
 export type { FpcChartType } from './lib/chart-theme/chart-theme';
 
+// Brand tokens (resolved `--bs-*` colours for canvas / third-party renderers)
+export {
+  FPC_BRAND_ATTRIBUTES,
+  fpcIsDarkTheme,
+  fpcObserveBrandChanges,
+  fpcReadBrandPalette,
+  fpcReadCssColor,
+  fpcToHexColor,
+  fpcWithAlpha,
+} from './lib/brand-tokens/brand-tokens';
+export type { FpcBrandPalette } from './lib/brand-tokens/brand-tokens';
+
 // Data display
 export { FpcAccordionComponent } from './lib/accordion/accordion.component';
 export { FPC_ACCORDION_HOST, FpcAccordionItemComponent } from './lib/accordion-item/accordion-item.component';
@@ -33,6 +45,19 @@ export { FpcAvatarComponent } from './lib/avatar/avatar.component';
 export type { FpcAvatarSize } from './lib/avatar/avatar.component';
 export { FpcBadgeComponent } from './lib/badge/badge.component';
 export type { FpcBadgeColor, FpcBadgeSize, FpcBadgeVariant } from './lib/badge/badge.component';
+export { FpcGraphCanvasComponent, fpcGraphEdgeId, fpcGraphEdgeWidth } from './lib/graph-canvas/graph-canvas.component';
+export type {
+  FpcGraphEdge,
+  FpcGraphEdgeKind,
+  FpcGraphEdgeSelectEvent,
+  FpcGraphElement,
+  FpcGraphElementKind,
+  FpcGraphElementSelectEvent,
+  FpcGraphHiddenKinds,
+  FpcGraphHighlight,
+  FpcGraphHighlightMap,
+  FpcGraphLayout,
+} from './lib/graph-canvas/graph-canvas.types';
 export { FpcIconComponent } from './lib/icon/icon.component';
 export type { FpcIconSize } from './lib/icon/icon.component';
 export { FpcInfiniteScrollDirective } from './lib/infinite-scroll/infinite-scroll.directive';
@@ -47,8 +72,30 @@ export { FpcSummaryBarComponent } from './lib/summary-bar/summary-bar.component'
 export { FpcSummaryCardComponent } from './lib/summary-card/summary-card.component';
 export { FpcSummaryCardValueDirective } from './lib/summary-card/summary-card-value.directive';
 export type { FpcSummaryCardTone } from './lib/summary-card/summary-card.component';
+export { FpcTerminalComponent, fpcTerminalGrid, fpcTerminalTheme } from './lib/terminal/terminal.component';
+export type { FpcTerminalSize } from './lib/terminal/terminal.component';
+export { FpcVncViewerComponent, FPC_VNC_RFB_LOADER } from './lib/vnc-viewer/vnc-viewer.component';
+export type { FpcRfbConstructor, FpcRfbInstance, FpcVncState } from './lib/vnc-viewer/vnc-viewer.component';
+export { FpcVncChannelAdapter } from './lib/vnc-viewer/vnc-channel';
+export type { FpcVncChannel, FpcVncReadyState, FpcVncTransport } from './lib/vnc-viewer/vnc-channel';
 
 // Forms
+export {
+  FPC_MONACO_THEME_DARK,
+  FPC_MONACO_THEME_LIGHT,
+  FpcCodeEditorComponent,
+  fpcApplyMonacoTheme,
+  fpcMonacoTheme,
+} from './lib/code-editor/code-editor.component';
+export type { FpcCodeEditorLanguage } from './lib/code-editor/code-editor.component';
+export { fpcJsonValidator, fpcYamlValidator } from './lib/code-editor/code-editor.validators';
+export type {
+  FpcCodeDiagnostic,
+  FpcCodeDiagnosticSeverity,
+  FpcCodeEditorValidator,
+  FpcDocumentIssue,
+  FpcDocumentValidator,
+} from './lib/code-editor/code-editor.validators';
 export { FpcFormControlComponent } from './lib/form-control/form-control.component';
 export type { FpcFormControlSize, FpcFormControlType } from './lib/form-control/form-control.component';
 export { FpcFormFieldComponent } from './lib/form-field/form-field.component';
@@ -81,6 +128,8 @@ export type {
 } from './lib/notification-indicator/notification-indicator.component';
 export { FpcProgressComponent } from './lib/progress/progress.component';
 export type { FpcProgressSegment, FpcProgressVariant } from './lib/progress/progress.component';
+export { FpcProgressRingComponent } from './lib/progress-ring/progress-ring.component';
+export type { FpcProgressRingTone } from './lib/progress-ring/progress-ring.component';
 export { FpcSpinnerComponent } from './lib/spinner/spinner.component';
 export type { FpcSpinnerSize, FpcSpinnerType } from './lib/spinner/spinner.component';
 export { FpcToastComponent } from './lib/toast/toast.component';
@@ -118,6 +167,8 @@ export type {
 } from './lib/language-switcher/language-switcher.component';
 export { FpcPaginationComponent } from './lib/pagination/pagination.component';
 export type { FpcPaginationSize } from './lib/pagination/pagination.component';
+export { FpcPagerComponent } from './lib/pager/pager.component';
+export type { FpcPagerSize } from './lib/pager/pager.component';
 export { FpcSidebarComponent } from './lib/sidebar/sidebar.component';
 export { FpcSidebarNavItemComponent } from './lib/sidebar-nav-item/sidebar-nav-item.component';
 export { FpcSidebarPopoverComponent } from './lib/sidebar-popover/sidebar-popover.component';

@@ -8,7 +8,7 @@ import {
 import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentsService } from './agents.service';
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 
 const MAX_CMD_LEN = 2048;
 const MAX_OUTPUT = 256_000;
@@ -20,7 +20,7 @@ export class AgentsVerificationService {
   constructor(
     private readonly agentsService: AgentsService,
     private readonly agentsRepository: AgentsRepository,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
   ) {}
 
   private assertSafeCommand(cmd: string): void {
@@ -88,7 +88,7 @@ export class AgentsVerificationService {
 
       try {
         const raw = await Promise.race([
-          this.dockerService.sendCommandToContainer(containerId, `sh -c "${wrapper}"`),
+          this.runtime.sendCommandToContainer(containerId, `sh -c "${wrapper}"`),
           new Promise<string>((_, reject) =>
             setTimeout(() => reject(new BadRequestException('Verifier command timed out')), timeoutMs),
           ),

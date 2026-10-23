@@ -1,0 +1,316 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="globe2">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="newRecordLabel"
+      [title]="newRecordLabel"
+      (clicked)="newRecord()"
+      data-testid="dns-new-record"
+    >
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (overview()) {
+    <fpc-tab-group class="flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="activeTab.set($event)">
+      <fpc-tab id="records" [label]="recordsTab + ' (' + records().length + ')'" icon="signpost" />
+      @if (infrastructure()) {
+        <fpc-tab id="zones" [label]="zonesTab + ' (' + zoneRows().length + ')'" icon="globe2" />
+        <fpc-tab id="dnssec" [label]="dnssecTab" icon="shield-lock" />
+        <fpc-tab id="failover" [label]="failoverTab" icon="sign-turn-right" />
+      }
+    </fpc-tab-group>
+  }
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @for (message of errors(); track message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert
+        class="m-3"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="dismissActionError()"
+      />
+    }
+
+    @if (!overview() && loading()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (overview(); as o) {
+      @switch (infrastructure() ? activeTab() : 'records') {
+        @case ('zones') {
+          <fpc-panel-grid [columns]="1" fill>
+            @for (z of zoneRows(); track z.zone) {
+              <fpc-panel [title]="(domainOf(z.zone) ?? z.zone) + ' · ' + z.zone" [flush]="true">
+                <div class="d-flex flex-wrap gap-2 px-3 pt-2 small" [attr.data-testid]="'dns-zone-' + z.zone">
+                  @if (z.dnssec) {
+                    <fpc-badge color="success" size="sm">DNSSEC</fpc-badge>
+                  }
+                  @if (z.failing) {
+                    <fpc-badge color="danger" size="sm" i18n="@@lwConsoleDns-zoneFailing">Sync failing</fpc-badge>
+                  }
+                  @if (z.conflicts > 0) {
+                    <fpc-badge color="warning" size="sm"
+                      >{{ z.conflicts }} <span i18n="@@lwConsoleDns-conflicts">foreign names</span></fpc-badge
+                    >
+                  }
+                </div>
+                <fpc-list [flush]="true">
+                  @for (s of z.statuses; track s.provider) {
+                    <fpc-list-item>
+                      <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="fw-semibold">{{ s.provider }}</span>
+                        @if (providerTypes().get(s.provider); as type) {
+                          <span class="text-body-secondary small">{{ type }}</span>
+                        }
+                        @if (s.provider === z.primary) {
+                          <fpc-badge color="primary" size="sm" i18n="@@lwConsoleDns-primary">Primary</fpc-badge>
+                        } @else {
+                          <fpc-badge color="light" size="sm" i18n="@@lwConsoleDns-secondary">Secondary</fpc-badge>
+                        }
+                        @if (s.error) {
+                          <fpc-badge color="danger" size="sm" i18n="@@lwConsoleDns-error">Error</fpc-badge>
+                        }
+                      </div>
+                      <div fpcListItemMeta class="small text-body-secondary d-flex flex-column gap-1">
+                        <span>
+                          @if (s.syncedAt) {
+                            <span i18n="@@lwConsoleDns-lastSync">Last sync</span> {{ s.syncedAt | date: 'short' }} ·
+                            {{ s.changes }} <span i18n="@@lwConsoleDns-changes">changes</span>
+                          } @else {
+                            <span i18n="@@lwConsoleDns-neverSynced">Not synced yet</span>
+                          }
+                        </span>
+                        @if (s.error) {
+                          <span class="text-danger text-break">{{ s.error }}</span>
+                        }
+                        @if (s.drift) {
+                          <span class="text-warning">{{ s.drift }}</span>
+                        }
+                        @if (s.conflicts.length > 0) {
+                          <span>
+                            <span i18n="@@lwConsoleDns-conflictNames">Not owned by Loadweaver (left untouched):</span>
+                            <span class="font-monospace ms-1">{{ s.conflicts.join(', ') }}</span>
+                          </span>
+                        }
+                      </div>
+                    </fpc-list-item>
+                  } @empty {
+                    <fpc-list-item>
+                      <div fpcListItemTitle class="small text-body-secondary" i18n="@@lwConsoleDns-noStatus">
+                        No sync yet
+                      </div>
+                    </fpc-list-item>
+                  }
+                </fpc-list>
+              </fpc-panel>
+            } @empty {
+              <fpc-empty-state icon="globe2" i18n-title="@@lwConsoleDns-noZones" title="No managed zones" />
+            }
+
+            @if ((o.providers ?? []).length > 0) {
+              <fpc-panel [title]="providersTitle" [flush]="true">
+                <fpc-list [flush]="true" data-testid="dns-providers">
+                  @for (p of o.providers ?? []; track p.metadata.name) {
+                    <fpc-list-item>
+                      <div fpcListItemTitle class="d-flex align-items-center gap-2">
+                        <span class="fw-semibold">{{ p.metadata.name }}</span>
+                        <fpc-badge color="secondary" size="sm">{{ p.spec.type }}</fpc-badge>
+                      </div>
+                      @if (p.spec.nodeGroup) {
+                        <div fpcListItemMeta class="small text-body-secondary">
+                          <span i18n="@@lwConsoleDns-nodeGroup">Node group</span> {{ p.spec.nodeGroup }}
+                        </div>
+                      }
+                    </fpc-list-item>
+                  }
+                </fpc-list>
+              </fpc-panel>
+            }
+          </fpc-panel-grid>
+        }
+        @case ('dnssec') {
+          <fpc-panel-grid [columns]="(o.dnssec ?? []).length > 0 ? 2 : 1" fill data-testid="dns-dnssec">
+            @for (d of o.dnssec ?? []; track d.name) {
+              <fpc-panel [title]="d.zone">
+                <div class="small d-flex flex-wrap gap-3 mb-2">
+                  @if (d.mode === 'signed') {
+                    <fpc-badge color="success" size="sm" i18n="@@lwConsoleDns-signed">Signed</fpc-badge>
+                  } @else if (d.mode === 'insecure') {
+                    <fpc-badge color="warning" size="sm" i18n="@@lwConsoleDns-insecure">Going insecure</fpc-badge>
+                  } @else {
+                    <fpc-badge color="secondary" size="sm" i18n="@@lwConsoleDns-notSigned">Not signed yet</fpc-badge>
+                  }
+                  <span><span i18n="@@lwConsoleDns-registrar">Registrar</span>: {{ d.registrar ?? '–' }}</span>
+                  @if (d.nextRolloverAt) {
+                    <span
+                      ><span i18n="@@lwConsoleDns-nextRollover">Next rollover</span>
+                      {{ d.nextRolloverAt | date: 'mediumDate' }}</span
+                    >
+                  }
+                </div>
+                <ul class="list-unstyled small mb-2">
+                  @for (k of d.keys; track k.keyTag) {
+                    <li class="py-1 d-flex flex-wrap align-items-center gap-2">
+                      <span class="font-monospace">{{ k.keyTag }}</span>
+                      <fpc-badge [color]="k.state === 'active' ? 'success' : 'secondary'" size="sm">{{
+                        k.state
+                      }}</fpc-badge>
+                      @if (k.dsAtParent) {
+                        <fpc-badge color="success" size="sm" i18n="@@lwConsoleDns-dsAtParent">DS at parent</fpc-badge>
+                      } @else {
+                        <fpc-badge color="warning" size="sm" i18n="@@lwConsoleDns-dsMissing"
+                          >DS not at parent</fpc-badge
+                        >
+                      }
+                      @if (k.dsCheckedAt) {
+                        <span class="text-body-secondary"
+                          ><span i18n="@@lwConsoleDns-checked">checked</span> {{ k.dsCheckedAt | date: 'short' }}</span
+                        >
+                      }
+                    </li>
+                  }
+                </ul>
+                @if (d.expectedDs.length > 0) {
+                  <div class="small text-body-secondary" i18n="@@lwConsoleDns-expectedDs">
+                    DS records the parent should publish:
+                  </div>
+                  @for (ds of d.expectedDs; track ds) {
+                    <div class="small font-monospace text-break">{{ ds }}</div>
+                  }
+                }
+              </fpc-panel>
+            } @empty {
+              <fpc-empty-state icon="shield-lock" i18n-title="@@lwConsoleDns-noDnssec" title="No signed zones" />
+            }
+          </fpc-panel-grid>
+        }
+        @case ('failover') {
+          <fpc-panel-grid [columns]="(o.failovers ?? []).length > 0 ? 2 : 1" fill data-testid="dns-failovers">
+            @for (f of o.failovers ?? []; track f.name) {
+              <fpc-panel [title]="f.name">
+                <div class="small d-flex flex-wrap align-items-center gap-3 mb-2">
+                  <span
+                    ><span i18n="@@lwConsoleDns-answering">Answering</span>:
+                    <span class="font-monospace">{{ f.state.active.join(', ') || '–' }}</span></span
+                  >
+                  @if (f.switchedAt) {
+                    <span><span i18n="@@lwConsoleDns-switched">Switched</span> {{ f.switchedAt | date: 'short' }}</span>
+                  }
+                  @if (f.propagation; as p) {
+                    @if (p.done) {
+                      <fpc-badge color="success" size="sm" i18n="@@lwConsoleDns-propagated">Propagated</fpc-badge>
+                    } @else {
+                      <fpc-badge color="warning" size="sm"
+                        ><span i18n="@@lwConsoleDns-lagging">Lagging</span>: {{ p.lagging.join(', ') }}</fpc-badge
+                      >
+                    }
+                  }
+                  @if (f.state.failbackPending && mayOperate()) {
+                    <fpc-button
+                      variant="primary"
+                      size="sm"
+                      [loading]="confirming() === f.name"
+                      (clicked)="failbackFor.set(f)"
+                      [attr.data-testid]="'dns-failback-' + f.name"
+                    >
+                      <span i18n="@@lwConsoleDns-failback">Confirm fail-back</span>
+                    </fpc-button>
+                  } @else if (f.state.failbackPending) {
+                    <fpc-badge color="info" size="sm" i18n="@@lwConsoleDns-failbackPending"
+                      >Fail-back pending</fpc-badge
+                    >
+                  }
+                </div>
+                <ul class="list-unstyled small mb-0">
+                  @for (e of endpoints(f); track e.name) {
+                    <li class="py-1 d-flex align-items-center gap-2">
+                      <i
+                        class="bi"
+                        [class.bi-check-circle-fill]="e.healthy"
+                        [class.text-success]="e.healthy"
+                        [class.bi-x-circle-fill]="!e.healthy"
+                        [class.text-danger]="!e.healthy"
+                        aria-hidden="true"
+                      ></i>
+                      <span class="font-monospace">{{ e.name }}</span>
+                      <span class="text-body-secondary"
+                        ><span i18n="@@lwConsoleDns-since">since</span> {{ e.since | date: 'short' }}</span
+                      >
+                    </li>
+                  }
+                </ul>
+              </fpc-panel>
+            } @empty {
+              <fpc-empty-state
+                icon="sign-turn-right"
+                i18n-title="@@lwConsoleDns-noFailovers"
+                title="No DNS failovers"
+              />
+            }
+          </fpc-panel-grid>
+        }
+        @default {
+          <p class="small text-body-secondary px-3 py-2 mb-0 border-bottom" i18n="@@lwConsoleDns-recordsIntro">
+            Declared records. Ingress hostnames create their records on their own (see the plan of the deployment).
+            Loadweaver marks the names it owns and never changes records it doesn't own.
+          </p>
+          @if (records().length === 0) {
+            <fpc-empty-state icon="signpost" i18n-title="@@lwConsoleDns-noRecords" title="No declared records" />
+          } @else {
+            <fpc-list [flush]="true" data-testid="dns-records">
+              @for (row of records(); track (row.record.metadata.project ?? '') + '/' + row.record.metadata.name) {
+                <fpc-list-item [clickable]="true" (selected)="openRecord(row)">
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="fw-semibold font-monospace">{{ row.fqdn }}</span>
+                    <fpc-badge color="secondary" size="sm">{{ row.record.spec.type }}</fpc-badge>
+                    <fpc-badge [color]="syncTone[row.sync]" size="sm">{{ syncLabel(row.sync) }}</fpc-badge>
+                    @if (row.record.metadata.project) {
+                      <fpc-badge color="light" size="sm">{{ row.record.metadata.project }}</fpc-badge>
+                    }
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+                    <span class="font-monospace text-break">{{ row.record.spec.values.join(', ') }}</span>
+                    @if (row.record.spec.ttl) {
+                      <span>TTL {{ row.record.spec.ttl }}</span>
+                    }
+                    @if (row.record.spec.priority !== undefined) {
+                      <span><span i18n="@@lwConsoleDns-priority">Priority</span> {{ row.record.spec.priority }}</span>
+                    }
+                    <span class="font-monospace">{{ row.record.metadata.name }}</span>
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        }
+      }
+    }
+  </div>
+</div>
+
+<fpc-confirm-dialog
+  [open]="failbackFor() !== null"
+  (openChange)="onFailbackOpenChange($event)"
+  [title]="failbackTitle"
+  [message]="failbackMessage"
+  [confirmLabel]="failbackConfirm"
+  [cancelLabel]="cancelLabel"
+  (confirmed)="confirmFailback()"
+/>

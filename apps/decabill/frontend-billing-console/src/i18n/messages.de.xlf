@@ -3594,6 +3594,22 @@
         <source> Passwords do not match. </source>
         <target> Passwörter stimmen nicht überein. </target>
       </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenLabel" datatype="html">
+        <source>Admin claim token</source>
+        <target>Admin-Claim-Token</target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenPlaceholder" datatype="html">
+        <source>Paste the admin claim token</source>
+        <target>Admin-Claim-Token einfügen</target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenHint" datatype="html">
+        <source> This installation has no account yet. The first account becomes the administrator and needs the one-time admin claim token from your provider (for Loadweaver Cloud: the Cluster tab of your service). </source>
+        <target> Diese Installation hat noch kein Konto. Das erste Konto wird Administrator und benötigt das einmalige Admin-Claim-Token Ihres Anbieters (bei Loadweaver Cloud: der Tab „Cluster“ Ihres Service). </target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenRequired" datatype="html">
+        <source> The admin claim token is required. </source>
+        <target> Das Admin-Claim-Token ist erforderlich. </target>
+      </trans-unit>
       <trans-unit id="featureRegister-legalHintPrefix" datatype="html">
         <source>By registering, you acknowledge our</source>
         <target>Mit Ihrer Registrierung erkennen Sie unsere</target>
@@ -4154,6 +4170,10 @@
         <source>Search Documentation</source>
         <target>Dokumentation durchsuchen</target>
       </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackLoadweaver" datatype="html">
+        <source>Official Loadweaver documentation: install, deploy, secure, and operate resilient multi-site clusters, the encrypted network between sites, storage, ingress, policies, and the cluster console.</source>
+        <target>Offizielle Loadweaver-Dokumentation: Installation, Deployment, Sicherheit und Betrieb ausfallsicherer Multi-Site-Cluster, des verschlüsselten Netzwerks zwischen Standorten, von Storage, Ingress, Policies und der Cluster-Konsole.</target>
+      </trans-unit>
       <trans-unit id="featureDocsPage-metaDescriptionFallbackDecabill" datatype="html">
         <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
         <target>Offizielle Decabill-Dokumentation: Installation, Deployment, Sicherheit und Betrieb von Billing-APIs, Abonnements, Zahlungsanbietern und der Billing-Konsole für Plattformteams.</target>
@@ -4161,6 +4181,10 @@
       <trans-unit id="featureDocsPage-metaDescriptionFallback" datatype="html">
         <source>Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.</source>
         <target>Offizielle Agenstra-Dokumentation: Installation, Deployment, Sicherheit und Betrieb von Agent-Hosts, Workspaces, Tickets, APIs und Integrationen für Plattformteams.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsLoadweaver" datatype="html">
+        <source>Loadweaver, cluster, multi-site, WireGuard, BGP, network policies, replicated storage, ingress failover, self-hosted, control plane</source>
+        <target>Loadweaver, Cluster, Multi-Site, WireGuard, BGP, Netzwerk-Policies, replizierter Storage, Ingress-Failover, Self-Hosted, Control Plane</target>
       </trans-unit>
       <trans-unit id="featureDocsPage-metaKeywordsDecabill" datatype="html">
         <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
@@ -4170,6 +4194,10 @@
         <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
         <target>Agenstra, KI-Agents, Agent-Verwaltung, verteilte Systeme, KI-Agent-Infrastruktur, Agent-Plattform, KI-Agent-Konsole, Container-Verwaltung, WebSocket-Agents, Docker-Agents</target>
       </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionLoadweaver" datatype="html">
+        <source>Search Loadweaver docs for setup guides, API references, security hardening, network and policy configuration, deployment patterns, and troubleshooting.</source>
+        <target>Durchsuchen Sie die Loadweaver-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Netzwerk- und Policy-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
+      </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaDescriptionDecabill" datatype="html">
         <source>Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.</source>
         <target>Durchsuchen Sie die Decabill-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Billing-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
@@ -4177,6 +4205,62 @@
       <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
         <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
         <target>Durchsuchen Sie die Agenstra-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Agent-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-role" datatype="html">
+        <source>Founder and CEO</source>
+        <target>Gründer und CEO</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-photoAlt" datatype="html">
+        <source>Portrait of Marcel Menk</source>
+        <target>Porträt von Marcel Menk</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-linkedInLabel" datatype="html">
+        <source>Marcel Menk on LinkedIn</source>
+        <target>Marcel Menk auf LinkedIn</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageForepath" datatype="html">
+        <source>We work with AI every day, because it makes us faster and our results better.</source>
+        <target>Wir arbeiten jeden Tag mit KI, weil sie uns schneller und unsere Ergebnisse besser macht.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageAgenstra" datatype="html">
+        <source>We build Agenstra with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Agenstra jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageDecabill" datatype="html">
+        <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Decabill jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageLoadweaver" datatype="html">
+        <source>We build Loadweaver with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Loadweaver jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaRole" datatype="html">
+        <source>Virtual Customer Success</source>
+        <target>Virtuelle Support-Agentin</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaPhotoAlt" datatype="html">
+        <source>AI-generated portrait of Maya Keller, our virtual team member</source>
+        <target>KI-generiertes Porträt von Maya Keller, unserem virtuellen Teammitglied</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageForepath" datatype="html">
+        <source>I am part of that, but your message still reaches real people on our team, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen in unserem Team, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageAgenstra" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Agenstra, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Agenstra kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Decabill kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageLoadweaver" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Loadweaver, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Loadweaver kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
+        <source>AI</source>
+        <target>KI</target>
       </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>
@@ -7681,6 +7765,230 @@
       <trans-unit id="featureProjectBoard-subtaskProgressAria" datatype="html">
         <source>Subtask progress</source>
         <target>Fortschritt bei Unteraufgaben</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-channel" datatype="html">
+        <source>Channel</source>
+        <target>Kanal</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-channelBeta" datatype="html">
+        <source>Beta</source>
+        <target>Beta</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-channelStable" datatype="html">
+        <source>Stable</source>
+        <target>Stabil</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-confirmLoadweaverTeardown" datatype="html">
+        <source> Delete Loadweaver cluster data: required when this subscription runs a Loadweaver cluster. Its server, volumes, backups and secrets are deleted. </source>
+        <target> Loadweaver-Clusterdaten löschen: erforderlich, wenn dieses Abonnement einen Loadweaver-Cluster betreibt. Server, Volumes, Backups und Secrets werden gelöscht. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-addNodesIntro" datatype="html">
+        <source> This subscription includes the first node with control plane and console. Further nodes run on your own servers or provider accounts: you pay the provider directly, they are not provisioned or billed here. </source>
+        <target> Dieses Abonnement umfasst den ersten Node mit Control Plane und Konsole. Weitere Nodes laufen auf Ihren eigenen Servern oder Provider-Konten: Sie bezahlen den Provider direkt, sie werden hier weder bereitgestellt noch abgerechnet. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-addNodesStep1" datatype="html">
+        <source>Create a join token in the console (Nodes, Add node).</source>
+        <target>Erstellen Sie in der Konsole ein Join-Token (Nodes, Node hinzufügen).</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-addNodesStep2" datatype="html">
+        <source> Run the installer on the new server (Debian 12 / 13, Ubuntu 22.04 / 24.04): </source>
+        <target> Führen Sie den Installer auf dem neuen Server aus (Debian 12 / 13, Ubuntu 22.04 / 24.04): </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-addNodesTitle" datatype="html">
+        <source>Add nodes</source>
+        <target>Nodes hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-api" datatype="html">
+        <source>API</source>
+        <target>API</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-beforeCancelIntro" datatype="html">
+        <source> Cancelling deletes this server, its addresses and DNS records together with all cluster data on it. Nodes in your own provider accounts are not deleted. </source>
+        <target> Eine Kündigung löscht diesen Server, seine Adressen und DNS-Einträge zusammen mit allen Clusterdaten darauf. Nodes in Ihren eigenen Provider-Konten werden nicht gelöscht. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-beforeCancelStep1" datatype="html">
+        <source> Run a final platform backup and copy it to your external target. </source>
+        <target> Führen Sie ein letztes Plattform-Backup aus und kopieren Sie es auf Ihr externes Ziel. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-beforeCancelStep2" datatype="html">
+        <source> Save the recovery kit and the disaster-recovery info file (Backups, Keys and Platform). </source>
+        <target> Sichern Sie das Recovery-Kit und die Disaster-Recovery-Infodatei (Backups, Schlüssel und Plattform). </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-beforeCancelStep3" datatype="html">
+        <source>Drain and remove or keep your own nodes.</source>
+        <target>Leeren und entfernen oder behalten Sie Ihre eigenen Nodes.</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-beforeCancelTitle" datatype="html">
+        <source>Before you cancel</source>
+        <target>Vor der Kündigung</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-checkedAt" datatype="html">
+        <source>Checked</source>
+        <target>Geprüft</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-console" datatype="html">
+        <source>Console</source>
+        <target>Konsole</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-endpointTitle" datatype="html">
+        <source>Endpoint</source>
+        <target>Endpunkt</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-firstAccountHint" datatype="html">
+        <source> The first account registered in the console becomes the cluster administrator; it needs the one-time admin claim token. Loadweaver updates itself through its own rollout (Updates in the console). </source>
+        <target> Das erste in der Konsole registrierte Konto wird Cluster-Administrator; dafür ist das einmalige Admin-Claim-Token nötig. Loadweaver aktualisiert sich über seinen eigenen Rollout (Updates in der Konsole). </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-claimHeading" datatype="html">
+        <source>Claim your cluster</source>
+        <target>Cluster übernehmen</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-claimIntro" datatype="html">
+        <source> Register the first console account now: it becomes the cluster administrator. The registration asks for this one-time admin claim token; without it nobody can register until the first account exists. </source>
+        <target> Registrieren Sie jetzt das erste Konsolen-Konto: Es wird Cluster-Administrator. Die Registrierung fragt nach diesem einmaligen Admin-Claim-Token; ohne es kann sich niemand registrieren, bis das erste Konto existiert. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-claimTokenLabel" datatype="html">
+        <source>Admin claim token</source>
+        <target>Admin-Claim-Token</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-claimKeepSecret" datatype="html">
+        <source> Keep the token secret. It is removed from here once the cluster reports its first account. </source>
+        <target> Halten Sie das Token geheim. Es wird hier entfernt, sobald der Cluster sein erstes Konto meldet. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-claimPendingAdmin" datatype="html">
+        <source> The cluster has no account yet. The customer registers the first account with the admin claim token from this tab. </source>
+        <target> Der Cluster hat noch kein Konto. Der Kunde registriert das erste Konto mit dem Admin-Claim-Token aus diesem Tab. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-graceHint" datatype="html">
+        <source> After the cancellation takes effect the cluster keeps running for <x id="INTERPOLATION" equiv-text="{{ c.teardown.graceDays }}"/> more days (not billed) before the server is deleted. </source>
+        <target> Nach Wirksamwerden der Kündigung läuft der Cluster noch <x id="INTERPOLATION" equiv-text="{{ c.teardown.graceDays }}"/> Tage weiter (nicht abgerechnet), bevor der Server gelöscht wird. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthDegraded" datatype="html">
+        <source>Console unavailable</source>
+        <target>Konsole nicht erreichbar</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthFailed" datatype="html">
+        <source>Provisioning failed</source>
+        <target>Bereitstellung fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthHealthy" datatype="html">
+        <source>Healthy</source>
+        <target>Gesund</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthProvisioning" datatype="html">
+        <source>Provisioning</source>
+        <target>Wird bereitgestellt</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthRemoved" datatype="html">
+        <source>Removed</source>
+        <target>Entfernt</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthStarting" datatype="html">
+        <source>Starting</source>
+        <target>Startet</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthUnreachable" datatype="html">
+        <source>Unreachable</source>
+        <target>Nicht erreichbar</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-initialVersion" datatype="html">
+        <source>Provisioned release</source>
+        <target>Bereitgestelltes Release</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-loadError" datatype="html">
+        <source>The cluster status could not be loaded.</source>
+        <target>Der Clusterstatus konnte nicht geladen werden.</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-loading" datatype="html">
+        <source>Loading cluster status...</source>
+        <target>Clusterstatus wird geladen...</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-noEndpoint" datatype="html">
+        <source> The endpoint is available once provisioning has finished. </source>
+        <target> Der Endpunkt ist verfügbar, sobald die Bereitstellung abgeschlossen ist. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-openNodes" datatype="html">
+        <source> Open nodes </source>
+        <target> Nodes öffnen </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-openPlatformBackups" datatype="html">
+        <source> Platform backups </source>
+        <target> Plattform-Backups </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-openRecoveryKit" datatype="html">
+        <source> Recovery kit </source>
+        <target> Recovery-Kit </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-refresh" datatype="html">
+        <source> Refresh </source>
+        <target> Aktualisieren </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-teardownScheduled" datatype="html">
+        <source> This subscription is cancelled. The server and all cluster data are deleted on or after <x id="INTERPOLATION" equiv-text="{{ deletion | date: &apos;medium&apos; }}"/>. Run a final backup to your external target and save the recovery kit before then. </source>
+        <target> Dieses Abonnement ist gekündigt. Der Server und alle Clusterdaten werden am oder nach dem <x id="INTERPOLATION" equiv-text="{{ deletion | date: &apos;medium&apos; }}"/> gelöscht. Führen Sie vorher ein letztes Backup auf Ihr externes Ziel aus und sichern Sie das Recovery-Kit. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-teardownScheduledHeading" datatype="html">
+        <source>Cluster deletion scheduled</source>
+        <target>Löschung des Clusters geplant</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-title" datatype="html">
+        <source>Loadweaver cluster</source>
+        <target>Loadweaver-Cluster</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverOrderHeading" datatype="html">
+        <source>Single-node Loadweaver cluster</source>
+        <target>Loadweaver-Cluster mit einem Node</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverOrderInfo" datatype="html">
+        <source> The server becomes a complete Loadweaver cluster with control plane and console. Its secrets are generated on the server; the first account you register in the console becomes the administrator. Further nodes run on your own servers or provider accounts and are not billed here. </source>
+        <target> Der Server wird ein vollständiger Loadweaver-Cluster mit Control Plane und Konsole. Seine Secrets werden auf dem Server erzeugt; das erste Konto, das Sie in der Konsole registrieren, wird Administrator. Weitere Nodes laufen auf Ihren eigenen Servern oder Provider-Konten und werden hier nicht abgerechnet. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownCancel" datatype="html">
+        <source> The cluster keeps running until the end of the period and for a short grace period afterwards (not billed). Then the server with the control plane and console, its addresses and DNS records are deleted, together with every volume, backup and secret stored on it. </source>
+        <target> Der Cluster läuft bis zum Ende des Zeitraums und eine kurze Kulanzfrist darüber hinaus (nicht abgerechnet). Danach werden der Server mit Control Plane und Konsole, seine Adressen und DNS-Einträge gelöscht, zusammen mit allen darauf gespeicherten Volumes, Backups und Secrets. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownCheckbox" datatype="html">
+        <source> I have saved what I need. I understand that the cluster data on this server is deleted and cannot be recovered by the provider. </source>
+        <target> Ich habe gesichert, was ich benötige. Mir ist bewusst, dass die Clusterdaten auf diesem Server gelöscht werden und vom Anbieter nicht wiederhergestellt werden können. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownConfirmCancel" datatype="html">
+        <source>Cancel and delete</source>
+        <target>Kündigen und löschen</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownConfirmWithdraw" datatype="html">
+        <source>Withdraw and delete</source>
+        <target>Widerrufen und löschen</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownHeading" datatype="html">
+        <source>All cluster data on this server will be deleted</source>
+        <target>Alle Clusterdaten auf diesem Server werden gelöscht</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownKeep" datatype="html">
+        <source> Keep the cluster </source>
+        <target> Cluster behalten </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownStep1" datatype="html">
+        <source> Run a final platform backup and copy it to your external target (Backups, Platform). </source>
+        <target> Führen Sie ein letztes Plattform-Backup aus und kopieren Sie es auf Ihr externes Ziel (Backups, Plattform). </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownStep2" datatype="html">
+        <source> Save the recovery kit and the disaster-recovery info file: without them the backups cannot be restored. </source>
+        <target> Sichern Sie das Recovery-Kit und die Disaster-Recovery-Infodatei: ohne sie lassen sich die Backups nicht wiederherstellen. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownStep3" datatype="html">
+        <source> Drain and remove, or keep, the nodes in your own provider accounts. They are not deleted here. </source>
+        <target> Leeren und entfernen oder behalten Sie die Nodes in Ihren eigenen Provider-Konten. Sie werden hier nicht gelöscht. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownStepsIntro" datatype="html">
+        <source> Before you continue, in the Loadweaver console: </source>
+        <target>Bevor Sie fortfahren, in der Loadweaver-Konsole:</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownTitle" datatype="html">
+        <source>Delete the Loadweaver cluster?</source>
+        <target>Loadweaver-Cluster löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownWithdraw" datatype="html">
+        <source> Withdrawing ends the subscription immediately. The server with the control plane and console, its addresses and DNS records are deleted right away, together with every volume, backup and secret stored on it. </source>
+        <target> Mit dem Widerruf endet das Abonnement sofort. Der Server mit Control Plane und Konsole, seine Adressen und DNS-Einträge werden umgehend gelöscht, zusammen mit allen darauf gespeicherten Volumes, Backups und Secrets. </target>
       </trans-unit>
     </body>
   </file>

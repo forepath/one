@@ -1,0 +1,46 @@
+# Features
+
+What Loadweaver does, one page per capability. Every change described here goes through plan and apply; see [Getting Started](../getting-started.md) for a first cluster.
+
+- [Nodes and joining](./nodes-and-joining.md) Join tokens, the one-line installer, control-plane growth, cordon / drain / leave
+- [Importing Docker hosts and former nodes](./import.md) Read-only discovery (`--discover`), the import wizard, one join plan with rsync pre-copy / final pass and port handover, former-node rejoin
+- [Groups and policies](./groups-and-policies.md) Node and workload groups, allow-only policies and what they compile to
+- [Plan and apply](./plan-and-apply.md) Declarative YAML, plans, locks, tracked applies, rollback, drift
+- [GitOps](./gitops.md) Configuration in Git per scope: sync, commit statuses, secret scanning, SOPS, pull requests or commit-back, export, memberships
+- [Plan bot](./plan-bot.md) GitHub App and GitLab: pull requests planned with locks and one sticky comment, `loadweaver apply` / `plan` / `approve` / `unlock` / `drift`, merge after apply, account linking
+- [Projects and access](./projects-and-access.md) Cluster and project roles, approvals, cross-project policies, quotas, access as YAML
+- [Deployments and jobs](./deployments-and-jobs.md) Compose deployments, migration, drain and failover, one-off and cron jobs
+- [Isolation levels and microVMs](./isolation-levels.md) `runc`, gVisor (`sandboxed`), gVisor on KVM (`sandboxed-kvm`) and QEMU microVMs (`microvm`): exact levels, node probes, "at least" selectors, KVM opt-out, `/dev/kvm` devices, guest root, networking, exec and metrics
+- [Virtual machines](./virtual-machines.md) Full VMs (`VirtualMachine`): VM images in the registry (CLI push, URL import, KubeVirt containerDisks), replicated block disks, several NICs with their own groups and policies, cloud-init with secret references, run strategies and power actions, serial and VNC consoles, snapshots and disk restores, HA, QEMU live migration, quotas
+- [Autoscaling](./autoscaling.md) Horizontal autoscaling on CPU, memory, requests or custom metrics, within quota, capacity and the N+1 reserve
+- [Migration](./migration.md) Live migration with CRIU / gVisor, eligibility per service, phases, automatic fallback, kept addresses, history
+- [Backups](./backups.md) Volume backups with Kopia (schedules, retention, hooks, restore tests), recovery kit and backup key, external targets with object lock, deletion with a second admin and delay, catalog / diff / file restore, restores as plans; control-plane data with PITR, cut-over and an encrypted external copy
+- [Disaster recovery](./disaster-recovery.md) Whole-cluster restore on a fresh node (`loadweaver-agent bootstrap --restore`): what to prepare, the phases, manual steps
+- [Updates](./updates.md) Signed release bundles, update plans, rollout with health gates and rollback, maintenance windows, OS / kernel rolling upgrades, agent self-update
+- [Volumes](./volumes.md) Replicated, always encrypted volumes
+- [Secrets and encryption](./secrets-and-encryption.md) Envelope-encrypted secrets, the master key, external KMS / Vault
+- [Built-in registry](./built-in-registry.md) Pull-through cache, private images, the object store
+- [Ingress](./ingress.md) Hostnames and port forwards, ACME and uploaded certificates, rate limits, WAF
+- [Public addresses](./public-addresses.md) IP pools, VRRP / BGP / provider failover, egress from own prefixes, reverse DNS
+- [DNS](./dns.md) Records as desired state, Cloudflare, hosted bind9, AXFR secondaries, DNSSEC
+- [DNS failover](./dns-failover.md) Probes with quorum, fail-back, weighted / geo / latency steering
+- [External BGP](./external-bgp.md) Own ASN and prefixes, peers, announcements, RPKI, graceful shutdown
+- [Service mesh](./service-mesh.md) East-west traffic through the node proxies, mTLS with workload identities, L7 rules
+- [Egress filtering](./egress-filtering.md) Hostname allow / deny lists for web egress, monitor / enforce / offline
+- [Image policies](./image-policies.md) cosign signatures, Trivy vulnerability scans, enforcement at plan and on the node
+- [Remote access](./remote-access.md) WireGuard for people, machines and offices, split tunnel and DNS, posture
+- [Device posture](./device-posture.md) MDM / EDR integrations, device certificates, posture conditions and restricted groups
+- [Terminals, files and tunnels](./terminals-files-and-tunnels.md) Terminals in replicas and node shells with recording, the file browser API over containers and volumes, debug tunnels
+- [Logs](./logs.md) Container, platform, firewall, tunnel and BGP logs, labelled and access-scoped, query / live tail / export, retention
+- [Metrics](./metrics.md) Node, replica, network, WireGuard and ingress metrics every 10 s, flows per policy edge, roll-ups, TimescaleDB or plain Postgres
+- [Alerting](./alerting.md) Built-in alerts and `AlertRule` policies, pending / firing / resolved, silences, acknowledgement, escalation, webhooks and email
+- [Audit log](./audit-log.md) Hash-chained, append-only record of every change
+- [Audit and export](./audit-and-export.md) Audit search and export, chain anchoring, SIEM forwarding (syslog / OTLP / webhook), Prometheus and OpenTelemetry, CSV exports
+- [Dashboards](./dashboards.md) `Dashboard` resources with widgets on a 12-column grid, the query builder, Grafana data source
+- [Overview and health](./overview-and-health.md) Explained health tree with roll-up rules and history, overview headline, needs-attention inbox and summary
+- [Topology map](./topology-map.md) Sites, nodes, replicas, groups and policy edges, tunnels, volumes, hostnames and addresses; live and historical flows, plan overlay, path trace
+- [SLOs and status pages](./slos-and-status-pages.md) Availability and latency SLOs at the ingress, error budget and burn rate, public `StatusPage`s and incident notes
+- [Search and wallboard](./search-and-wallboard.md) Global search with favourites and command palette, read-only wallboard tokens for the kiosk view
+- [Periodic reports](./periodic-reports.md) Monthly cluster and project reports (HTML / JSON) in the object store, file tree, downloads and ZIP archives
+- [Usage metering](./usage-metering.md) Hourly CPU, memory, storage, traffic and public-IP usage per project, CSV export, billing through Decabill's usage meters
+- [Fleet service](./fleet.md) Multi-cluster console backend: encrypted cluster connections, per-cluster / per-project grants, REST and socket relay with on-behalf-of audit, fleet cards / inbox / world map / comparison, cross-cluster restore and cloning, Loadweaver Cloud final backup and read-only grace

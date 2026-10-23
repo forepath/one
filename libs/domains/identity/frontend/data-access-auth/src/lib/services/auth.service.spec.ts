@@ -66,6 +66,36 @@ describe('AuthService', () => {
     req.flush({ message: 'ok' });
   });
 
+  it('register sends the admin claim token only when given', (done) => {
+    service.register('a@b.com', 'secret', 'lwc_token').subscribe(() => done());
+
+    const req = httpMock.expectOne(`${apiUrl}/auth/register`);
+
+    expect(req.request.body).toEqual({ email: 'a@b.com', password: 'secret', adminClaimToken: 'lwc_token' });
+    req.flush({ message: 'ok' });
+  });
+
+  it('register without a claim token sends only the credentials', (done) => {
+    service.register('a@b.com', 'secret').subscribe(() => done());
+
+    const req = httpMock.expectOne(`${apiUrl}/auth/register`);
+
+    expect(req.request.body).toEqual({ email: 'a@b.com', password: 'secret' });
+    req.flush({ message: 'ok' });
+  });
+
+  it('getAdminClaimStatus reads the configured endpoint', (done) => {
+    service.getAdminClaimStatus('https://lw.example.com/api/install/claim-status').subscribe((status) => {
+      expect(status).toEqual({ claimRequired: true });
+      done();
+    });
+
+    const req = httpMock.expectOne('https://lw.example.com/api/install/claim-status');
+
+    expect(req.request.method).toBe('GET');
+    req.flush({ claimRequired: true });
+  });
+
   it('confirmEmail posts email and code', (done) => {
     service.confirmEmail('a@b.com', '123456').subscribe(() => done());
 

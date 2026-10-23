@@ -1,0 +1,21 @@
+services:
+  frontend-console-server:
+    image: ${CONSOLE_SERVER_IMAGE:-ghcr.io/forepath/loadweaver-console-server:latest}
+    pull_policy: never
+    container_name: ${CONSOLE_SERVER_CONTAINER_NAME:-loadweaver-console-server}
+    environment:
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-4602}
+      NODE_ENV: ${NODE_ENV:-production}
+      DEFAULT_LOCALE: ${DEFAULT_LOCALE:-en}
+      CSP_ENFORCE: ${CSP_ENFORCE:-true}
+      CSP_CONNECT_SRC_EXTRA: ${CSP_CONNECT_SRC_EXTRA:-http://host.docker.internal:3200}
+    ports:
+      - '${PORT:-4602}:${PORT:-4602}'
+    networks:
+      - loadweaver-console-network
+    restart: unless-stopped
+
+networks:
+  loadweaver-console-network:
+    driver: bridge

@@ -1,0 +1,265 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="shuffle">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    @if (report(); as r) {
+      <p class="small text-body-secondary px-3 py-2 mb-0 border-bottom" i18n="@@lwConsoleDrift-intro">
+        What Loadweaver owns heals by itself. What was changed outside Loadweaver is reported here, never overwritten or
+        adopted silently.
+      </p>
+      <fpc-panel-grid [columns]="2" fill>
+        @if (gitAhead().length > 0) {
+          <fpc-panel [span]="2" [title]="gitAheadTitle + ' (' + gitAhead().length + ')'" [flush]="true">
+            <p class="small text-body-secondary px-3 py-2 mb-0 border-bottom" i18n="@@lwConsoleGitDrift-aheadHint">
+              The branch head is what should run. These scopes have a head commit whose plan isn't applied, or whose
+              push was rejected. It clears once the head's plan is applied or a later commit matches the cluster.
+            </p>
+            <fpc-list [flush]="true" data-testid="drift-git-ahead">
+              @for (entry of gitAhead(); track entry.connection) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <fpc-badge [color]="stateTone[entry.state]" size="sm">{{ stateLabel(entry.state) }}</fpc-badge>
+                    <a [routerLink]="['/git', entry.connection]" class="fw-semibold">{{ scopeLabel(entry.scope) }}</a>
+                    <span class="small">
+                      <span i18n="@@lwConsoleGitDrift-commit">Commit</span>
+                      @if (commitUrl(entry); as url) {
+                        <a class="font-monospace ms-1" [href]="url" target="_blank" rel="noopener noreferrer">{{
+                          shortSha(entry.commit)
+                        }}</a>
+                      } @else {
+                        <span class="font-monospace ms-1">{{ shortSha(entry.commit) }}</span>
+                      }
+                    </span>
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+                    @if (entry.reason) {
+                      <span
+                        class="text-break"
+                        [class.text-danger-emphasis]="entry.state === 'rejected'"
+                        data-testid="drift-git-reason"
+                        >{{ entry.reason }}</span
+                      >
+                    }
+                    <span><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ entry.since | date: 'short' }}</span>
+                  </div>
+                  <div fpcListItemActions class="d-flex gap-2">
+                    @if (entry.planId) {
+                      <a
+                        class="btn btn-sm btn-primary"
+                        [routerLink]="['/plans', entry.planId]"
+                        data-testid="drift-git-plan"
+                        ><i class="bi bi-file-diff me-1" aria-hidden="true"></i
+                        ><span i18n="@@lwConsoleGitDrift-openPlan">Open plan</span></a
+                      >
+                    }
+                    <a class="btn btn-sm btn-secondary" [routerLink]="['/git', entry.connection]"
+                      ><i class="bi bi-git me-1" aria-hidden="true"></i
+                      ><span i18n="@@lwConsoleGitDrift-openConnection">Connection</span></a
+                    >
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          </fpc-panel>
+        }
+        <fpc-panel [title]="inconsistentTitle + ' (' + r.inconsistent.length + ')'" [flush]="true">
+          @if (r.inconsistent.length === 0) {
+            <fpc-empty-state
+              icon="check2-circle"
+              size="sm"
+              i18n-title="@@lwConsoleDrift-noInconsistent"
+              title="No failed rollbacks"
+            />
+          } @else {
+            <fpc-list [flush]="true" data-testid="drift-inconsistent">
+              @for (item of r.inconsistent; track item.planId) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex align-items-center gap-2">
+                    <fpc-badge color="danger" size="sm" i18n="@@lwConsoleDrift-rollbackFailed"
+                      >Rollback failed</fpc-badge
+                    >
+                    <a [routerLink]="['/plans', item.planId]" class="font-monospace">{{ item.planId.slice(0, 8) }}</a>
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary">
+                    @if (item.error) {
+                      <div>{{ item.error }}</div>
+                    }
+                    @if (item.fixForward) {
+                      <span i18n="@@lwConsoleDrift-fixForward">Fix-forward plan:</span>
+                      <a [routerLink]="['/plans', item.fixForward]" class="font-monospace ms-1">{{
+                        item.fixForward.slice(0, 8)
+                      }}</a>
+                    } @else {
+                      <span i18n="@@lwConsoleDrift-noFixForward">No fix-forward plan pending</span>
+                    }
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+
+        <fpc-panel [title]="containersTitle + ' (' + r.containers.length + ')'" [flush]="true">
+          @if (r.containers.length === 0) {
+            <fpc-empty-state
+              icon="check2-circle"
+              size="sm"
+              i18n-title="@@lwConsoleDrift-noContainers"
+              title="No foreign containers"
+            />
+          } @else {
+            <fpc-list [flush]="true" data-testid="drift-containers">
+              @for (c of r.containers; track c.node + c.id) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="fw-semibold">{{ c.name }}</span>
+                    <fpc-badge [color]="c.state === 'running' ? 'success' : 'secondary'" size="sm">{{
+                      c.state
+                    }}</fpc-badge>
+                    <span class="font-monospace small text-body-secondary">{{ c.image }}</span>
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+                    <span><i class="bi bi-hdd-rack me-1" aria-hidden="true"></i>{{ c.node }}</span>
+                    <span class="font-monospace">{{ shortId(c.id) }}</span>
+                    @for (port of c.ports; track port) {
+                      <span class="font-monospace">{{ port }}</span>
+                    }
+                    <span><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ c.reportedAt | date: 'short' }}</span>
+                  </div>
+                  <div fpcListItemActions>
+                    <fpc-button
+                      variant="secondary"
+                      size="sm"
+                      [iconOnly]="true"
+                      [ariaLabel]="proposeLabel"
+                      [title]="proposeLabel"
+                      (clicked)="openPropose(c)"
+                      data-testid="drift-propose"
+                    >
+                      <i class="bi bi-file-earmark-plus" aria-hidden="true"></i>
+                    </fpc-button>
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+
+        @if ((r.delegated ?? []).length > 0) {
+          <fpc-panel [span]="2" [title]="delegatedTitle + ' (' + (r.delegated ?? []).length + ')'" [flush]="true">
+            <p class="small text-body-secondary px-3 py-2 mb-0 border-bottom" i18n="@@lwConsoleDrift-delegatedHint">
+              Started by a workload that controls the node's Docker (an acknowledged pin), for example Agenstra's agent
+              manager and its environments. Owned by that workload, not drift.
+            </p>
+            <fpc-list [flush]="true" data-testid="drift-delegated">
+              @for (c of r.delegated ?? []; track c.node + c.id) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="fw-semibold">{{ c.name }}</span>
+                    <fpc-badge color="info" size="sm" i18n="@@lwConsoleDrift-delegated">Delegated</fpc-badge>
+                    <fpc-badge [color]="c.state === 'running' ? 'success' : 'secondary'" size="sm">{{
+                      c.state
+                    }}</fpc-badge>
+                    <span class="font-monospace small text-body-secondary">{{ c.image }}</span>
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+                    <span><i class="bi bi-hdd-rack me-1" aria-hidden="true"></i>{{ c.node }}</span>
+                    <span
+                      ><i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i
+                      ><span class="font-monospace">{{ c.delegatedTo }}</span></span
+                    >
+                    <span class="font-monospace">{{ shortId(c.id) }}</span>
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+    } @else if (loading()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    }
+  </div>
+</div>
+
+<fpc-modal [open]="proposeFor() !== null" (openChange)="onProposeOpenChange($event)" [title]="proposeTitle">
+  @if (proposeFor(); as c) {
+    <p class="small" i18n="@@lwConsoleDrift-proposeHint">
+      The plan adds a Deployment with the same image and published ports. Environment and volumes are not copied; add
+      what is missing before applying. The foreign container is never removed by Loadweaver.
+    </p>
+    <p class="small text-body-secondary" i18n="@@lwConsoleGitDrift-proposeGit">
+      In a scope managed in Git (authoritative), the proposal becomes a pull request in its repository instead.
+    </p>
+    <div class="small mb-3 font-monospace">{{ c.node }} · {{ c.name }} · {{ c.image }}</div>
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-drift-project" i18n-label="@@lwConsoleDrift-project" label="Project">
+          <fpc-typeahead-select
+            inputId="lw-drift-project"
+            listboxId="lw-drift-projects"
+            size="sm"
+            [placeholder]="null"
+            [query]="project"
+            (queryChange)="project = $event"
+            [(open)]="projectSuggestionsOpen"
+          >
+            <div fpcTypeaheadSuggestions>
+              @for (p of projectSuggestions(); track p) {
+                <button type="button" class="dropdown-item small" (mousedown)="pickProject(p, $event)">
+                  {{ p }}
+                </button>
+              }
+            </div>
+          </fpc-typeahead-select>
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-drift-deployment" i18n-label="@@lwConsoleDrift-deployment" label="Deployment">
+          <fpc-form-control
+            controlId="lw-drift-deployment"
+            name="deployment"
+            size="sm"
+            controlClass="font-monospace"
+            [(ngModel)]="deployment"
+          />
+        </fpc-form-field>
+      </div>
+    </div>
+    @if (invalid()) {
+      <fpc-alert
+        class="mt-3"
+        variant="warning"
+        i18n-message="@@lwConsoleDrift-invalidName"
+        message="Project and deployment need lowercase names (letters, digits, dashes)."
+      />
+    }
+    @if (proposeError(); as message) {
+      <fpc-alert class="mt-3" variant="danger" [message]="message" />
+    }
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="secondary" (clicked)="proposeFor.set(null)">
+      <span i18n="@@lwConsoleDrift-cancel">Cancel</span>
+    </fpc-button>
+    <fpc-button variant="primary" [loading]="proposing()" (clicked)="propose()" data-testid="drift-propose-submit">
+      <span i18n="@@lwConsoleDrift-proposeSubmit">Propose plan</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

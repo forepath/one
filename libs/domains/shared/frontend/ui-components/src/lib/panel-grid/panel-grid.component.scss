@@ -14,6 +14,19 @@
   border-bottom: var(--bs-border-width) solid var(--bs-border-color);
 }
 
+// `fill`: take the remaining height of a flex column parent (never shrink below the content) and let
+// the rows share it, so panels (and empty states inside them) reach the bottom of the page.
+:host(.fpc-panel-grid--fill) {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+
+:host(.fpc-panel-grid--fill) .fpc-panel-grid__grid {
+  flex: 1 0 auto;
+  grid-auto-rows: minmax(min-content, 1fr);
+}
+
 .fpc-panel-grid__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
