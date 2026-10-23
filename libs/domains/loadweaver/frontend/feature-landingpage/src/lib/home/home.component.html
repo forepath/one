@@ -628,10 +628,12 @@
       <div class="col-md-4">
         <article class="card border rounded-3 shadow-sm p-4 h-100">
           <i class="bi bi-box-seam text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHome-composeTile4Title">Runtimes per node</h3>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHome-composeTile4Title">
+            From containers to full VMs
+          </h3>
           <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-composeTile4Desc">
-            Loadweaver manages the container runtimes on each node, including gVisor next to runc for workloads that
-            need a sandbox.
+            Each service picks its isolation level, up to a microVM booted from the same image. Full virtual machines
+            with replicated disks and live migration run alongside, planned like everything else.
           </p>
         </article>
       </div>
@@ -768,8 +770,8 @@
                     A home for Agenstra agents
                   </h4>
                   <p class="small text-muted mb-3" i18n="@@featureLoadweaverHome-ecosystemAgenstraDesc">
-                    Agenstra's agent manager runs as a Compose deployment on Loadweaver, and nodes with gVisor are valid
-                    Agenstra hosts.
+                    Agenstra's agent manager runs as a Compose deployment on Loadweaver, and its environments keep their
+                    isolation level, from gVisor to microVMs.
                   </p>
                   <a
                     href="https://agenstra.com"

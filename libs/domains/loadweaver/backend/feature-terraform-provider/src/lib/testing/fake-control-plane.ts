@@ -3,6 +3,7 @@ import { createServer, type Server } from 'node:http';
 
 import {
   parseResourceDocuments,
+  parseVmQuantity,
   resourceRefKey,
   type Resource,
   type ResourceRef,
@@ -163,7 +164,54 @@ export class FakeControlPlane {
       });
     }
 
+    if ((m = path.match(/^\/projects\/([^/]+)\/virtual-machines\/([^/]+)$/)) && exchange.method === 'GET') {
+      const [project, name] = [decodeURIComponent(m[1]), decodeURIComponent(m[2])];
+      const vm = this.resources.get(resourceRefKey({ kind: 'VirtualMachine', name, project }));
+
+      if (!vm) return json(404, { statusCode: 404, message: 'Not found' });
+
+      return json(200, this.virtualMachineView(vm));
+    }
+
     return json(404, { message: `no route ${exchange.method} ${path}` });
+  }
+
+  /** A running VM's status as `GET /projects/:p/virtual-machines/:name` reports it (one address per NIC). */
+  private virtualMachineView(vm: Resource) {
+    const spec = vm.spec as {
+      image: string;
+      runStrategy?: string;
+      disks: { name: string; size: string | number; source?: string }[];
+      nics: { name: string }[];
+    };
+    const project = vm.metadata.project ?? '';
+    const running = spec.runStrategy !== 'Halted';
+    const nicStatus = spec.nics.map((nic, i) => ({
+      name: nic.name,
+      index: i,
+      primary: i === 0,
+      mac: `52:54:00:00:00:${String(i + 1).padStart(2, '0')}`,
+      addresses: [`10.64.1.${10 + i}`],
+    }));
+
+    return {
+      project,
+      name: vm.metadata.name,
+      phase: running ? 'Running' : 'Stopped',
+      power: running ? 'running' : 'stopped',
+      node: running ? 'node-1' : null,
+      image: spec.image,
+      pinnedImage: `${spec.image.split('@')[0]}@sha256:${'ab'.repeat(32)}`,
+      addresses: nicStatus.flatMap((n) => n.addresses),
+      nicStatus,
+      diskStatus: spec.disks.map((d) => ({
+        name: d.name,
+        volume: `${project}/lw-vm/${vm.metadata.name}.${d.name}`,
+        boot: d.source === 'image',
+        sizeBytes: parseVmQuantity(d.size) ?? 0,
+        primaryNode: 'node-1',
+      })),
+    };
   }
 
   private createPlan(body: Record<string, unknown>) {
@@ -241,8 +289,12 @@ export class FakeControlPlane {
         .filter((c) => c.kind === 'Policy')
         .map((c) => ({ layer: 'filtering', action: c.action, node: 'node-1', summary: `policy ${c.name}` })),
       workloadChanges: touched
-        .filter((c) => c.kind === 'Deployment' && c.action === 'create')
-        .map((c) => ({ action: 'start', replica: `${c.project}/${c.name}/web/0`, to: 'node-1' })),
+        .filter((c) => (c.kind === 'Deployment' || c.kind === 'VirtualMachine') && c.action === 'create')
+        .map((c) => ({
+          action: 'start',
+          replica: c.kind === 'VirtualMachine' ? `${c.project}/lw-vm/${c.name}/0` : `${c.project}/${c.name}/web/0`,
+          to: 'node-1',
+        })),
       warnings: this.pins
         ? [{ level: 'warning', path: 'backups', message: 'no external backup target', pin: true }]
         : [],

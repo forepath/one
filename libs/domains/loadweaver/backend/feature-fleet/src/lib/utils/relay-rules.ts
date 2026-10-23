@@ -103,6 +103,10 @@ export const RELAY_RULES: readonly RelayRule[] = [
   rule(GET, 'access/me', 'viewer'),
   rule(GET, `${PROJECT}/(?:usage(?:/export)?|members|settings|requests|cron-runs|incidents)`, 'viewer', 'path'),
   rule(GET, `${PROJECT}/deployments/${NAME}/status`, 'viewer', 'path'),
+  // Virtual machines (3.35): list / status / snapshots / image imports.
+  rule(GET, 'virtual-machines', 'viewer', 'query', ['project']),
+  rule(GET, `${PROJECT}/virtual-machines(?:/${NAME}(?:/snapshots)?)?`, 'viewer', 'path'),
+  rule(GET, `${PROJECT}/vm-images(?:/imports(?:/${UUID})?)?`, 'viewer', 'path'),
 
   // ---------------------------------------------------------------------------------------- operator (change)
   rule(POST, 'plans', 'operator'),
@@ -118,6 +122,14 @@ export const RELAY_RULES: readonly RelayRule[] = [
   rule(POST, `dns/failover/[a-z0-9.-]{1,253}/failback`, 'operator'),
   rule(GET, 'live/(?:sessions|tunnels)', 'operator'),
   rule(POST, `${PROJECT}/incidents`, 'operator', 'path'),
+  // VM power, re-imaging and snapshots (3.35); the cluster still checks the project role (developers need exec).
+  rule(
+    POST,
+    `${PROJECT}/virtual-machines/${NAME}/(?:start|stop|force-off|shutdown|reboot|reset|reimage|snapshots)`,
+    'operator',
+    'path',
+  ),
+  rule(POST, `${PROJECT}/vm-images/import`, 'operator', 'path'),
   rule(['PUT'], `${PROJECT}/incidents/${UUID}`, 'operator', 'path'),
 
   // ------------------------------------------------------------------------------------------ admin (cluster)
@@ -241,6 +253,8 @@ export const SOCKET_RELAY_NAMESPACES: Readonly<Record<string, FleetRole>> = {
   topology: 'viewer',
   logs: 'viewer',
   terminals: 'operator',
+  // VM serial / VNC consoles (3.35): like terminals.
+  consoles: 'operator',
 };
 
 export function authorizeSocketNamespace(

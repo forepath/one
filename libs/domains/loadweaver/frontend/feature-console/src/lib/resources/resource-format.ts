@@ -10,6 +10,7 @@ const KIND_ICONS: Record<string, string> = {
   Policy: 'bi-shield-check',
   Project: 'bi-folder',
   Deployment: 'bi-box-seam',
+  VirtualMachine: 'bi-pc-display',
   DnsProvider: 'bi-server',
   DnsZone: 'bi-globe2',
   DnsRecord: 'bi-signpost',

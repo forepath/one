@@ -1,4 +1,4 @@
-import { blockType, toProtoSchema, type BlockSchema } from './schema';
+import { blockType, nestedAttribute, toProtoSchema, type BlockSchema } from './schema';
 import { protocolRoot, roundTrip, serviceDefinition } from './protos';
 
 const BLOCK: BlockSchema = {
@@ -47,6 +47,56 @@ describe('schema conversion', () => {
         attributes: [{ name: 'x', type: 'string', required: true, optional: true, description: '' }],
       }),
     ).toThrow('exactly one');
+  });
+});
+
+describe('nested attributes', () => {
+  const disks = nestedAttribute({ name: 'disks', required: true, description: 'Disks' }, 'list', [
+    { name: 'name', type: 'string', required: true, description: 'Name' },
+    { name: 'replicas', type: 'number', optional: true, description: 'Copies' },
+  ]);
+  const cloudInit = nestedAttribute({ name: 'cloud_init', optional: true, description: 'Seed' }, 'single', [
+    { name: 'keys', type: ['list', 'string'], optional: true, description: 'Keys' },
+  ]);
+
+  it('derive their value type (list of objects / object)', () => {
+    expect(disks.type).toEqual(['list', ['object', { name: 'string', replicas: 'number' }]]);
+    expect(blockType({ ...BLOCK, attributes: [disks, cloudInit] })).toEqual([
+      'object',
+      {
+        disks: ['list', ['object', { name: 'string', replicas: 'number' }]],
+        cloud_init: ['object', { keys: ['list', 'string'] }],
+      },
+    ]);
+  });
+
+  it('become nested_type attributes that survive the protobuf encoding', () => {
+    const decoded = roundTrip('tfplugin6.Schema', toProtoSchema({ ...BLOCK, attributes: [disks, cloudInit] })) as {
+      block: { attributes: Record<string, unknown>[] };
+    };
+    const [list, single] = decoded.block.attributes;
+
+    expect(list['type']).toBeUndefined();
+    expect(list).toMatchObject({ name: 'disks', required: true, nested_type: { nesting: 2 } });
+    expect((list['nested_type'] as { attributes: Record<string, unknown>[] }).attributes).toMatchObject([
+      { name: 'name', required: true },
+      { name: 'replicas', optional: true },
+    ]);
+    expect(single).toMatchObject({ name: 'cloud_init', optional: true, nested_type: { nesting: 1 } });
+  });
+
+  it('refuse a type that does not match and invalid modes inside', () => {
+    expect(() => toProtoSchema({ ...BLOCK, attributes: [{ ...disks, type: 'string' }] })).toThrow('does not match');
+    expect(() =>
+      toProtoSchema({
+        ...BLOCK,
+        attributes: [
+          nestedAttribute({ name: 'n', optional: true, description: '' }, 'single', [
+            { name: 'x', type: 'string', description: '' },
+          ]),
+        ],
+      }),
+    ).toThrow('n.x: exactly one');
   });
 });
 

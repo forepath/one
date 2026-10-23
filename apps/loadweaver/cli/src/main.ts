@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
 
-import { apply, login, plan, portForward, updates, version, vpnEnroll, watch, whoami } from './lib/commands';
+import { apply, client, login, plan, portForward, updates, version, vpnEnroll, watch, whoami } from './lib/commands';
+import { pushVmImage } from './lib/vm-image';
 import { VERSION } from './lib/version';
 
 const USAGE = `loadweaver — the Loadweaver CLI
@@ -16,6 +17,8 @@ const USAGE = `loadweaver — the Loadweaver CLI
   loadweaver updates status | releases | download <version> | upload <bundle.tar | parts…>
   loadweaver updates plan [<version>] [--host] [--os-upgrade] | show <id> | watch <id>
   loadweaver updates approve <id> [--emergency] | pause <id> | resume <id> | rollback <id> | cancel <id>
+  loadweaver vm-image push <disk.qcow2 | disk.img | containerdisk.tar[.gz]> [registry.lw/]<project>/<repository>[:<tag>]
+             [--arch amd64|arm64] [--firmware uefi[,bios]] [--guest-agent] [--format qcow2|raw]
   loadweaver version
 
 Environment: LOADWEAVER_URL, LOADWEAVER_TOKEN (override the stored login; \`login\` stores LOADWEAVER_TOKEN
@@ -41,6 +44,10 @@ export async function main(argv: string[], out: (line: string) => void = (l) => 
       host: { type: 'boolean' },
       'os-upgrade': { type: 'boolean' },
       emergency: { type: 'boolean' },
+      arch: { type: 'string' },
+      firmware: { type: 'string' },
+      'guest-agent': { type: 'boolean' },
+      format: { type: 'string' },
     },
   });
 
@@ -82,6 +89,24 @@ export async function main(argv: string[], out: (line: string) => void = (l) => 
         },
         out,
       );
+    case 'vm-image':
+      if (positionals[0] !== 'push' || positionals.length !== 3)
+        throw new Error('vm-image push <disk file> [registry.lw/]<project>/<repository>[:<tag>]');
+
+      await pushVmImage(
+        await client(),
+        {
+          file: positionals[1],
+          reference: positionals[2],
+          ...(values.arch ? { arch: values.arch } : {}),
+          ...(values.firmware ? { firmware: values.firmware } : {}),
+          ...(values['guest-agent'] ? { guestAgent: true } : {}),
+          ...(values.format ? { format: values.format } : {}),
+        },
+        out,
+      );
+
+      return;
     case 'version':
       return await version(out, VERSION);
     default:

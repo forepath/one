@@ -41,6 +41,10 @@ export class PortalHomeComponent implements OnInit {
   db:
     image: postgres:17
     volumes: [db-data:/var/lib/postgresql/data]
+  builds:
+    image: ghcr.io/acme/builder:7
+    x-loadweaver:
+      runtime: microvm
 
 volumes:
   db-data:
@@ -52,8 +56,8 @@ volumes:
   ngOnInit(): void {
     this.setPageMeta({
       title: $localize`:@@featureLoadweaverHome-metaTitle:Resilient clusters from a handful of servers :: Loadweaver`,
-      description: $localize`:@@featureLoadweaverHome-metaDescription:Loadweaver turns a handful of servers into a resilient multi-site cluster: encrypted network between sites, shared storage on every node, ingress that fails over on its own, and Docker Compose deployments that go through plan and apply.`,
-      keywords: $localize`:@@featureLoadweaverHome-metaKeywords:Loadweaver, high availability, Docker Compose cluster, multi-site cluster, WireGuard, replicated storage, IP failover, self-hosted, Kubernetes alternative`,
+      description: $localize`:@@featureLoadweaverHome-metaDescription:Loadweaver turns a handful of servers into a resilient multi-site cluster: encrypted network between sites, shared storage on every node, ingress that fails over on its own, and Docker Compose deployments and virtual machines that go through plan and apply.`,
+      keywords: $localize`:@@featureLoadweaverHome-metaKeywords:Loadweaver, high availability, Docker Compose cluster, multi-site cluster, WireGuard, replicated storage, IP failover, gVisor, microVM, virtual machines, KVM, self-hosted, Kubernetes alternative`,
       path: '',
     });
   }

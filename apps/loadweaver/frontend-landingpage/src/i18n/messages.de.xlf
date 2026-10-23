@@ -1295,12 +1295,12 @@
         <target state="translated"> Alles funktioniert in der UI. Verbinden Sie ein Repository, und Pushes erzeugen Pläne, mit einem Plan-Bot für Pull Requests in GitHub und GitLab. </target>
       </trans-unit>
       <trans-unit id="featureLoadweaverHome-composeTile4Title" datatype="html">
-        <source>Runtimes per node</source>
-        <target state="translated">Runtimes pro Node</target>
+        <source> From containers to full VMs </source>
+        <target state="translated"> Von Containern bis zu vollständigen VMs </target>
       </trans-unit>
       <trans-unit id="featureLoadweaverHome-composeTile4Desc" datatype="html">
-        <source> Loadweaver manages the container runtimes on each node, including gVisor next to runc for workloads that need a sandbox. </source>
-        <target state="translated"> Loadweaver verwaltet die Container-Runtimes auf jedem Node, einschließlich gVisor neben runc für Workloads, die eine Sandbox benötigen. </target>
+        <source> Each service picks its isolation level, up to a microVM booted from the same image. Full virtual machines with replicated disks and live migration run alongside, planned like everything else. </source>
+        <target state="translated"> Jeder Service wählt seine Isolationsstufe, bis zur MicroVM, gebootet aus demselben Image. Vollständige virtuelle Maschinen mit replizierten Disks und Live-Migration laufen daneben, geplant wie alles andere. </target>
       </trans-unit>
       <trans-unit id="featureLoadweaverHome-composeTile5Title" datatype="html">
         <source>Capacity kept honest</source>
@@ -1385,8 +1385,8 @@
         <target state="translated"> Ein Zuhause für Agenstra-Agenten </target>
       </trans-unit>
       <trans-unit id="featureLoadweaverHome-ecosystemAgenstraDesc" datatype="html">
-        <source> Agenstra&apos;s agent manager runs as a Compose deployment on Loadweaver, and nodes with gVisor are valid Agenstra hosts. </source>
-        <target state="translated"> Der Agent Manager von Agenstra läuft als Compose-Deployment auf Loadweaver, und Nodes mit gVisor sind gültige Agenstra-Hosts. </target>
+        <source> Agenstra&apos;s agent manager runs as a Compose deployment on Loadweaver, and its environments keep their isolation level, from gVisor to microVMs. </source>
+        <target state="translated"> Der Agent Manager von Agenstra läuft als Compose-Deployment auf Loadweaver, und seine Umgebungen behalten ihre Isolationsstufe, von gVisor bis zur MicroVM. </target>
       </trans-unit>
       <trans-unit id="featureLoadweaverHome-ecosystemAgenstraCta" datatype="html">
         <source>Visit agenstra.com <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-box-arrow-up-right&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
@@ -1431,12 +1431,12 @@
         <target state="translated">Resiliente Cluster aus einer Handvoll Server :: Loadweaver</target>
       </trans-unit>
       <trans-unit id="featureLoadweaverHome-metaDescription" datatype="html">
-        <source>Loadweaver turns a handful of servers into a resilient multi-site cluster: encrypted network between sites, shared storage on every node, ingress that fails over on its own, and Docker Compose deployments that go through plan and apply.</source>
-        <target state="translated">Loadweaver macht aus einer Handvoll Server einen resilienten Multi-Site-Cluster: verschlüsseltes Netzwerk zwischen Standorten, gemeinsamer Storage auf jedem Node, Ingress mit automatischem Failover und Docker-Compose-Deployments, die über Plan und Apply laufen.</target>
+        <source>Loadweaver turns a handful of servers into a resilient multi-site cluster: encrypted network between sites, shared storage on every node, ingress that fails over on its own, and Docker Compose deployments and virtual machines that go through plan and apply.</source>
+        <target state="translated">Loadweaver macht aus einer Handvoll Server einen resilienten Multi-Site-Cluster: verschlüsseltes Netzwerk zwischen Standorten, gemeinsamer Storage auf jedem Node, Ingress mit automatischem Failover und Docker-Compose-Deployments und virtuelle Maschinen, die über Plan und Apply laufen.</target>
       </trans-unit>
       <trans-unit id="featureLoadweaverHome-metaKeywords" datatype="html">
-        <source>Loadweaver, high availability, Docker Compose cluster, multi-site cluster, WireGuard, replicated storage, IP failover, self-hosted, Kubernetes alternative</source>
-        <target state="translated">Loadweaver, Hochverfügbarkeit, Docker Compose Cluster, Multi-Site-Cluster, WireGuard, replizierter Storage, IP-Failover, Self-Hosted, Kubernetes-Alternative</target>
+        <source>Loadweaver, high availability, Docker Compose cluster, multi-site cluster, WireGuard, replicated storage, IP failover, gVisor, microVM, virtual machines, KVM, self-hosted, Kubernetes alternative</source>
+        <target state="translated">Loadweaver, Hochverfügbarkeit, Docker Compose Cluster, Multi-Site-Cluster, WireGuard, replizierter Storage, IP-Failover, gVisor, MicroVM, virtuelle Maschinen, KVM, Self-Hosted, Kubernetes-Alternative</target>
       </trans-unit>
       <trans-unit id="featureLoadweaverHowItWorks-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>How Loadweaver works<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/>, from the first policy to the next failover </source>
@@ -1654,6 +1654,218 @@
         <source> A failover IP that only one node may hold, or a policy whose only allowed path runs via one node. </source>
         <target state="translated"> Eine Failover-IP, die nur ein Node halten darf, oder eine Policy, deren einziger erlaubter Pfad über einen Node führt. </target>
       </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationTitle" datatype="html">
+        <source> Four isolation levels, from containers to microVMs </source>
+        <target state="translated"> Vier Isolationsstufen, vom Container bis zur MicroVM </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationLead" datatype="html">
+        <source> A regular container shares the host kernel with everything else on the node. For code you trust less, one line in the Compose file puts a second kernel in between: gVisor, gVisor on KVM, or a whole virtual machine built from the same image. </source>
+        <target state="translated"> Ein normaler Container teilt sich den Host-Kernel mit allem anderen auf dem Node. Für Code, dem Sie weniger vertrauen, setzt eine Zeile in der Compose-Datei einen zweiten Kernel dazwischen: gVisor, gVisor auf KVM oder eine ganze virtuelle Maschine, gebaut aus demselben Image. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationFact1Title" datatype="html">
+        <source> Probed on every node </source>
+        <target state="translated"> Auf jedem Node geprüft </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationFact1Desc" datatype="html">
+        <source> Each node proves with real test containers and a test microVM which levels it can run: at startup, every six hours, after updates and on demand. </source>
+        <target state="translated"> Jeder Node weist mit echten Testcontainern und einer Test-MicroVM nach, welche Stufen er ausführen kann: beim Start, alle sechs Stunden, nach Updates und auf Anforderung. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationFact2Title" datatype="html">
+        <source> Exactly the level you declare </source>
+        <target state="translated"> Genau die Stufe, die Sie angeben </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationFact2Desc" datatype="html">
+        <source> A service never runs on a weaker level, and never on a stronger one by accident. If no node offers its level, the plan says which nodes are missing what. </source>
+        <target state="translated"> Ein Service läuft nie auf einer schwächeren Stufe und auch nicht versehentlich auf einer stärkeren. Bietet kein Node seine Stufe an, sagt der Plan, welchem Node was fehlt. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationFact3Title" datatype="html">
+        <source> MicroVMs from any image </source>
+        <target state="translated"> MicroVMs aus jedem Image </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationFact3Desc" datatype="html">
+        <source> The container image becomes the guest, unpacked once per node and shared by every replica. No VM images to build; signatures and scans still apply to your image. </source>
+        <target state="translated"> Das Container-Image wird zum Gast, einmal pro Node entpackt und von allen Replikaten geteilt. Keine VM-Images zu bauen; Signaturen und Scans gelten weiterhin für Ihr Image. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationBadge" datatype="html">
+        <source>Where a system call ends up</source>
+        <target state="translated">Wo ein Systemaufruf landet</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-runcTitle" datatype="html">
+        <source>Standard</source>
+        <target state="translated">Standard</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerService" datatype="html">
+        <source>Your service</source>
+        <target state="translated">Ihr Service</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerHostKernel" datatype="html">
+        <source>Host kernel</source>
+        <target state="translated">Host-Kernel</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerHostKernelRunc" datatype="html">
+        <source>namespaces, cgroups, seccomp</source>
+        <target state="translated">Namespaces, cgroups, seccomp</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-runcDesc" datatype="html">
+        <source> Docker&apos;s default, on every node. The only level that may use /dev/kvm itself, for CI runners and emulators, with the project&apos;s permission. </source>
+        <target state="translated"> Dockers Standard, auf jedem Node. Die einzige Stufe, die /dev/kvm selbst nutzen darf, für CI-Runner und Emulatoren, mit Erlaubnis des Projekts. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-sandboxedTitle" datatype="html">
+        <source> Sandboxed </source>
+        <target state="translated"> Sandboxed </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerSentry" datatype="html">
+        <source>gVisor Sentry</source>
+        <target state="translated">gVisor Sentry</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerSentryDesc" datatype="html">
+        <source>Linux implemented in user space</source>
+        <target state="translated">Linux, im User Space implementiert</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerHostKernelSandboxed" datatype="html">
+        <source>small, filtered set of calls</source>
+        <target state="translated">kleine, gefilterte Menge an Aufrufen</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-sandboxedDesc" datatype="html">
+        <source> Runs on ordinary cloud VMs, no KVM needed. Moves between nodes with its memory and connections. </source>
+        <target state="translated"> Läuft auf gewöhnlichen Cloud-VMs, ohne KVM. Wechselt den Node mitsamt Arbeitsspeicher und Verbindungen. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-sandboxedKvmTitle" datatype="html">
+        <source> Sandboxed + KVM </source>
+        <target state="translated"> Sandboxed + KVM </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerSentryKvmDesc" datatype="html">
+        <source>in a hardware-virtualized address space</source>
+        <target state="translated">in einem hardwarevirtualisierten Adressraum</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-sandboxedKvmDesc" datatype="html">
+        <source> On nodes with KVM. System calls trap into the Sentry through the CPU&apos;s virtualization extensions instead of seccomp. </source>
+        <target state="translated"> Auf Nodes mit KVM. Systemaufrufe gelangen über die Virtualisierungserweiterungen der CPU statt über seccomp in den Sentry. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-microvmTitle" datatype="html">
+        <source> MicroVM </source>
+        <target state="translated"> MicroVM </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerGuestKernel" datatype="html">
+        <source>Guest kernel</source>
+        <target state="translated">Gast-Kernel</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerGuestKernelDesc" datatype="html">
+        <source>its own Linux, inside the VM</source>
+        <target state="translated">ein eigenes Linux, in der VM</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerHypervisor" datatype="html">
+        <source>Hypervisor</source>
+        <target state="translated">Hypervisor</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerHypervisorDesc" datatype="html">
+        <source>KVM, in a locked-down container</source>
+        <target state="translated">KVM, in einem abgeschotteten Container</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerHostKernelMicrovm" datatype="html">
+        <source>only the VM&apos;s virtual hardware</source>
+        <target state="translated">nur die virtuelle Hardware der VM</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-microvmDesc" datatype="html">
+        <source> On nodes with KVM. The guest owns the workload&apos;s IP, so policies, ingress and failover work unchanged, and terminals and files open inside the VM. </source>
+        <target state="translated"> Auf Nodes mit KVM. Der Gast besitzt die IP-Adresse des Workloads, sodass Policies, Ingress und Failover unverändert funktionieren und Terminals und Dateien sich innerhalb der VM öffnen. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationComposeCaption" datatype="html">
+        <source>One line per service</source>
+        <target state="translated">Eine Zeile pro Service</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationSelectorsTitle" datatype="html">
+        <source> Select nodes by level </source>
+        <target state="translated"> Nodes nach Stufe auswählen </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationSelectorsDesc" datatype="html">
+        <source> Every node carries labels for the levels it passed, so selectors and node groups can ask for nodes that offer at least sandboxed-kvm. </source>
+        <target state="translated"> Jeder Node trägt Labels für die Stufen, deren Prüfung er bestanden hat, sodass Selektoren und Node-Gruppen nach Nodes fragen können, die mindestens sandboxed-kvm bieten. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationKvmTitle" datatype="html">
+        <source> KVM prepared, or switched off per node </source>
+        <target state="translated"> KVM vorbereitet, oder pro Node abgeschaltet </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationKvmDesc" datatype="html">
+        <source> The installer and the rolling host updates keep KVM in step with each kernel. One setting in the node spec keeps a node out of KVM entirely. </source>
+        <target state="translated"> Der Installer und die rollierenden Host-Updates halten KVM mit jedem Kernel auf Stand. Eine Einstellung in der Node-Spezifikation hält einen Node ganz aus KVM heraus. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationAgenstraTitle" datatype="html">
+        <source> The same names as Agenstra </source>
+        <target state="translated"> Dieselben Namen wie Agenstra </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-isolationAgenstraDesc" datatype="html">
+        <source> Agenstra&apos;s four isolation levels map one to one, so agent environments keep their level when they run on Loadweaver. </source>
+        <target state="translated"> Die vier Isolationsstufen von Agenstra werden eins zu eins abgebildet, sodass Agent-Umgebungen ihre Stufe behalten, wenn sie auf Loadweaver laufen. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmTitle" datatype="html">
+        <source> Full virtual machines, next to your containers </source>
+        <target state="translated"> Vollständige virtuelle Maschinen, direkt neben Ihren Containern </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmLead" datatype="html">
+        <source> Some workloads need their own operating system: an appliance, a legacy server, a test machine with its own kernel. A VirtualMachine resource runs it on the same nodes, the same network and the same plan and apply as everything else. </source>
+        <target state="translated"> Manche Workloads brauchen ihr eigenes Betriebssystem: eine Appliance, einen Legacy-Server, eine Testmaschine mit eigenem Kernel. Eine VirtualMachine-Ressource betreibt sie auf denselben Nodes, im selben Netzwerk und mit demselben Plan und Apply wie alles andere. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmFact1Title" datatype="html">
+        <source> Disks replicated like volumes </source>
+        <target state="translated"> Disks repliziert wie Volumes </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmFact1Desc" datatype="html">
+        <source> Every disk is an encrypted, replicated block device. The boot disk is written once from the image; when a node fails, the VM boots from a copy on another node. </source>
+        <target state="translated"> Jede Disk ist ein verschlüsseltes, repliziertes Block-Device. Die Boot-Disk wird einmal aus dem Image geschrieben; fällt ein Node aus, bootet die VM von einer Kopie auf einem anderen Node. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmFact2Title" datatype="html">
+        <source>One or more networks</source>
+        <target state="translated">Ein oder mehrere Netzwerke</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmFact2Desc" datatype="html">
+        <source> Each interface gets its own addresses and joins its own groups, so policies decide per interface what may reach the VM. </source>
+        <target state="translated"> Jedes Interface erhält eigene Adressen und tritt eigenen Gruppen bei, sodass Policies pro Interface entscheiden, was die VM erreichen darf. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmFact3Title" datatype="html">
+        <source>Moves while it runs</source>
+        <target state="translated">Umzug im laufenden Betrieb</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmFact3Desc" datatype="html">
+        <source> Draining a node live-migrates its VMs: memory is copied while the guest keeps running, the disks are already there, open connections survive. </source>
+        <target state="translated"> Wird ein Node geleert, migrieren seine VMs live: Der Speicher wird kopiert, während der Gast weiterläuft, die Disks sind schon da, offene Verbindungen bleiben bestehen. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmSampleCaption" datatype="html">
+        <source>A VM is a resource like any other</source>
+        <target state="translated">Eine VM ist eine Ressource wie jede andere</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmImagesTitle" datatype="html">
+        <source> Images in your own registry </source>
+        <target state="translated"> Images in Ihrer eigenen Registry </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmImagesDesc" datatype="html">
+        <source> Push a qcow2 or raw image with the CLI, or import a cloud image from a URL. KubeVirt containerDisks work too, and image signatures are checked like for containers. </source>
+        <target state="translated"> Laden Sie ein qcow2- oder Raw-Image mit der CLI hoch oder importieren Sie ein Cloud-Image von einer URL. KubeVirt-containerDisks funktionieren auch, und Image-Signaturen werden wie bei Containern geprüft. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmConsolesTitle" datatype="html">
+        <source> Serial and graphical console in the browser </source>
+        <target state="translated"> Serielle und grafische Konsole im Browser </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmConsolesDesc" datatype="html">
+        <source> Both go through the same audited path as terminals, with the same roles. Start, stop, reboot and reset are a click away. </source>
+        <target state="translated"> Beide laufen über denselben auditierten Weg wie Terminals, mit denselben Rollen. Starten, Stoppen, Neustarten und Zurücksetzen sind einen Klick entfernt. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmSnapshotsTitle" datatype="html">
+        <source> Snapshots and backups </source>
+        <target state="translated"> Snapshots und Backups </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmSnapshotsDesc" datatype="html">
+        <source> Disks are backed up by the same policies as volumes, with the guest&apos;s file systems frozen for a moment when it runs the guest agent. Restores are plans. </source>
+        <target state="translated"> Disks werden von denselben Policies gesichert wie Volumes, mit kurz eingefrorenen Dateisystemen des Gasts, wenn er den Guest Agent ausführt. Wiederherstellungen sind Pläne. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmCloudInitTitle" datatype="html">
+        <source> First boot with cloud-init </source>
+        <target state="translated"> Erster Start mit cloud-init </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-vmCloudInitDesc" datatype="html">
+        <source> Network settings, SSH keys and your user data, with secret references resolved on the node and never written to disk. </source>
+        <target state="translated"> Netzwerkeinstellungen, SSH-Schlüssel und Ihre User-Data, mit Secret-Referenzen, die auf dem Node aufgelöst und nie auf Disk geschrieben werden. </target>
+      </trans-unit>
       <trans-unit id="featureLoadweaverHowItWorks-failoverTitle" datatype="html">
         <source> Ingress that fails over on its own </source>
         <target state="translated"> Ingress mit selbstständigem Failover </target>
@@ -1791,12 +2003,12 @@
         <target state="translated">So funktioniert Loadweaver: Policies, Plan und Apply, Ausfallanalyse und Failover :: Loadweaver</target>
       </trans-unit>
       <trans-unit id="featureLoadweaverHowItWorks-metaDescription" datatype="html">
-        <source>A technical look at Loadweaver: groups and allow-only policies compiled into every network layer, plan and apply with locks and rollback, failure analysis and pinning, IP and DNS failover, and configuration in Git with a plan bot.</source>
-        <target state="translated">Ein technischer Blick auf Loadweaver: Gruppen und Allow-only-Policies, kompiliert in jede Netzwerkschicht, Plan und Apply mit Locks und Rollback, Ausfallanalyse und Pinning, IP- und DNS-Failover sowie Konfiguration in Git mit einem Plan-Bot.</target>
+        <source>A technical look at Loadweaver: groups and allow-only policies compiled into every network layer, plan and apply with locks and rollback, failure analysis and pinning, four isolation levels up to microVMs, full virtual machines with replicated disks and live migration, IP and DNS failover, and configuration in Git with a plan bot.</source>
+        <target state="translated">Ein technischer Blick auf Loadweaver: Gruppen und Allow-only-Policies, kompiliert in jede Netzwerkschicht, Plan und Apply mit Locks und Rollback, Ausfallanalyse und Pinning, vier Isolationsstufen bis zur MicroVM, vollständige virtuelle Maschinen mit replizierten Disks und Live-Migration, IP- und DNS-Failover sowie Konfiguration in Git mit einem Plan-Bot.</target>
       </trans-unit>
       <trans-unit id="featureLoadweaverHowItWorks-metaKeywords" datatype="html">
-        <source>Loadweaver architecture, policy model, security groups, WireGuard, BIRD, nftables, Envoy, plan and apply, failure analysis, IP failover, DNS failover, GitOps, plan bot</source>
-        <target state="translated">Loadweaver Architektur, Policy-Modell, Security Groups, WireGuard, BIRD, nftables, Envoy, Plan und Apply, Ausfallanalyse, IP-Failover, DNS-Failover, GitOps, Plan-Bot</target>
+        <source>Loadweaver architecture, policy model, security groups, WireGuard, BIRD, nftables, Envoy, plan and apply, failure analysis, gVisor, KVM, microVM, isolation levels, virtual machines, QEMU, live migration, IP failover, DNS failover, GitOps, plan bot</source>
+        <target state="translated">Loadweaver Architektur, Policy-Modell, Security Groups, WireGuard, BIRD, nftables, Envoy, Plan und Apply, Ausfallanalyse, gVisor, KVM, MicroVM, Isolationsstufen, virtuelle Maschinen, QEMU, Live-Migration, IP-Failover, DNS-Failover, GitOps, Plan-Bot</target>
       </trans-unit>
       <trans-unit id="featureLoadweaverLegalDisclosure-title" datatype="html">
         <source> Legal Disclosure </source>

@@ -35,6 +35,10 @@ describe('resource YAML', () => {
 
     expect(policy).toMatchObject({ kind: 'WorkloadGroup', metadata: { name: 'new-workload-group', project: 'shop' } });
     expect(site).toEqual({ apiVersion: 'loadweaver.com/v1', kind: 'Site', metadata: { name: 'new-site' }, spec: {} });
+    expect(parse(resourceTemplate('VirtualMachine', 'shop'))).toMatchObject({
+      metadata: { name: 'new-virtual-machine', project: 'shop' },
+      spec: { image: 'registry.lw/shop/debian-13:latest', disks: [{ source: 'image' }], nics: [{ name: 'eth0' }] },
+    });
   });
 
   it('reads and replaces the compose file of a deployment, keeping comments', () => {

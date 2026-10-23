@@ -24,6 +24,7 @@ import { deploymentSpecSchema, projectSpecSchema } from './resources/workloads';
 import { maintenanceWindowSpecSchema } from './resources/updates';
 import { backupPolicySpecSchema, backupTargetSpecSchema, restoreSpecSchema } from './resources/backups';
 import { nodeImportSpecSchema } from './resources/node-import';
+import { virtualMachineSpecSchema } from './resources/virtual-machines';
 
 /** Where a resource lives (3.17): cluster-level resources sit above projects. */
 /** `any`: allowed in both, e.g. cluster-wide policies by infra operators next to project policies. */
@@ -153,6 +154,11 @@ export const RESOURCE_KINDS = {
     nodeImportSpecSchema,
     'cluster',
     'Join plan of a pending node: installs the node components, imports or migrates what runs there, hands its ports over to the ingress (3.21).',
+  ),
+  VirtualMachine: kind(
+    virtualMachineSpecSchema,
+    'project',
+    'A full virtual machine (3.35): OCI VM image, vCPUs / memory, DRBD block disks, one or more NICs with their own groups, cloud-init, placement, HA and live migration.',
   ),
 } as const;
 

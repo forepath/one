@@ -151,6 +151,35 @@ describe('relay allow-list (3.24)', () => {
     expect(RELAY_RULES.some((r) => r.path.test('projects/shop/secrets'))).toBe(false);
   });
 
+  it('relays virtual machines: reads for viewers, power / snapshots / imports for operators (3.35)', () => {
+    expect(
+      authorizeRelay('GET', 'virtual-machines', { project: 'shop' }, access(null, { shop: 'viewer' })).allowed,
+    ).toBe(true);
+    expect(
+      authorizeRelay('GET', 'projects/shop/virtual-machines/db1', {}, access(null, { shop: 'viewer' })).allowed,
+    ).toBe(true);
+    expect(authorizeRelay('GET', 'projects/shop/virtual-machines/db1/snapshots', {}, access('viewer')).allowed).toBe(
+      true,
+    );
+    expect(authorizeRelay('POST', 'projects/shop/virtual-machines/db1/reboot', {}, access('viewer')).allowed).toBe(
+      false,
+    );
+    expect(
+      authorizeRelay('POST', 'projects/shop/virtual-machines/db1/reboot', {}, access(null, { shop: 'operator' }))
+        .allowed,
+    ).toBe(true);
+    expect(authorizeRelay('POST', 'projects/shop/virtual-machines/db1/snapshots', {}, access('operator')).allowed).toBe(
+      true,
+    );
+    expect(authorizeRelay('POST', 'projects/shop/virtual-machines/db1/explode', {}, access('admin')).allowed).toBe(
+      false,
+    );
+    expect(authorizeRelay('POST', 'projects/shop/vm-images/import', {}, access('operator')).allowed).toBe(true);
+    expect(authorizeRelay('GET', 'projects/shop/vm-images', {}, access('viewer')).allowed).toBe(true);
+    expect(authorizeSocketNamespace('consoles', access('viewer')).allowed).toBe(false);
+    expect(authorizeSocketNamespace('consoles', access('operator')).allowed).toBe(true);
+  });
+
   it('opens socket namespaces for cluster-wide grants only', () => {
     expect(authorizeSocketNamespace('plans', access('viewer')).allowed).toBe(true);
     expect(authorizeSocketNamespace('terminals', access('viewer')).allowed).toBe(false);

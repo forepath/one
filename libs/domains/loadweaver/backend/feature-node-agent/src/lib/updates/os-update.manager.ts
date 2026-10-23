@@ -6,6 +6,7 @@ import {
   GVISOR_ARCH,
   GVISOR_PIN,
   packagePins,
+  REQUIRED_HOST_PACKAGES,
   type KernelModuleComponent,
   type ReleaseManifest,
   type TarballComponent,
@@ -32,7 +33,7 @@ export async function installedGvisor(): Promise<string | null> {
 
 /**
  * OS, kernel, gVisor and DRBD updates of a node (3.26: drain → update → reboot → rejoin, orchestrated by the control
- * plane). Packages come only from the cluster-local apt snapshot; everything downloaded is checked against the signed
+ * plane). Packages come only from the cluster-local apt snapshot (required host packages missing on the node too); everything downloaded is checked against the signed
  * manifest. The work runs as a transient systemd unit (it needs to write /usr and must survive an agent restart); its
  * result file tells a restarted agent how it ended. Reboots happen only when the control plane sends a reboot token.
  */
@@ -57,13 +58,17 @@ export class OsUpdateManager {
     return (await readFile(join(this.dir, 'host-snapshot'), 'utf8').catch(() => '')).trim() || undefined;
   }
 
-  /** Runs a host update once per id; returns when it finished (or immediately if it ran / is running). */
+  /**
+   * Runs a host update once per id; returns when it finished (or immediately if it ran / is running). `kvm` (3.1): the
+   * node spec's opt-out and whether the node uses KVM (or its CPU could) — then the KVM modules follow the kernel.
+   */
   async run(
     host: HostUpdate,
     manifest: ReleaseManifest,
     controlPlaneUrl: string,
     artifactBase: string,
     os: { id: string; versionId: string; arch: string },
+    kvm: { optOut: boolean; capable: boolean } = { optOut: false, capable: false },
   ): Promise<void> {
     const previous = await this.actions.get(host.id);
 
@@ -93,7 +98,7 @@ export class OsUpdateManager {
       await writeFile(join(this.aptDir, 'preferences'), aptPreferences(install), { mode: 0o644 });
 
       const base = `${controlPlaneUrl.replace(/\/+$/, '')}${artifactBase}`;
-      const gvisor = await this.prepareGvisor(manifest, os.arch, base);
+      const gvisor = await this.prepareGvisor(manifest, os.arch, base, kvm.optOut);
       const drbd = await this.prepareDrbd(manifest, os.arch, base);
       const script = join(this.dir, `host-${host.id}.sh`);
 
@@ -104,8 +109,12 @@ export class OsUpdateManager {
           apt: { dir: this.aptDir },
           upgrade: host.upgrade,
           install,
+          // Missing required host packages from the snapshot (at the release's pin when it pins one), no reboot.
+          requiredPackages: REQUIRED_HOST_PACKAGES.map((pkg) => (pins[pkg] ? `${pkg}=${pins[pkg]}` : pkg)),
           birdGracefulRestart: !!install['bird2'] && installed['bird2'] !== install['bird2'],
           ...(gvisor ? { gvisor } : {}),
+          // The KVM modules come with the kernel from the snapshot (Ubuntu; Debian has KVM in linux-image-*).
+          ...(os.id === 'ubuntu' && kvm.capable && !kvm.optOut ? { kvmModules: true } : {}),
           // SPAAS only for online clusters (the control plane decides; air-gapped ones build offline or refuse).
           ...(drbd ? { drbd: { ...drbd, spaas: host.spaas === true } } : {}),
           resultFile: this.resultFile(host.id),
@@ -205,7 +214,8 @@ export class OsUpdateManager {
     manifest: ReleaseManifest,
     arch: string,
     base: string,
-  ): Promise<{ release: string; tarball: string; script: string } | undefined> {
+    kvmOptOut = false,
+  ): Promise<{ release: string; tarball: string; script: string; kvm?: boolean } | undefined> {
     const gvisor = manifest.components['gvisor'] as TarballComponent | undefined;
 
     if (!gvisor || gvisor.kind !== 'tarball' || (await installedGvisor()) === gvisor.version) return undefined;
@@ -236,11 +246,15 @@ export class OsUpdateManager {
       buildGvisorHostScript({
         release: gvisor.version,
         sha512: { x86_64: gvisor.sha512.amd64 ?? '', aarch64: gvisor.sha512.arm64 ?? '' },
+        // KVM host preparation (3.1) unless the node spec opts out; the extra kernel modules come from the
+        // release's snapshot with the kernel (host-commands `kvmModules`), never from an upstream apt install.
+        kvm: !kvmOptOut,
+        kvmApt: false,
       }),
       { mode: 0o700 },
     );
 
-    return { release: gvisor.version, tarball, script };
+    return { release: gvisor.version, tarball, script, ...(kvmOptOut ? { kvm: false } : {}) };
   }
 
   private async prepareDrbd(

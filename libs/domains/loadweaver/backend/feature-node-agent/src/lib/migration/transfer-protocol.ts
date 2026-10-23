@@ -16,6 +16,10 @@ import type { Writable } from 'node:stream';
  *
  * File contents are streamed with backpressure on both ends (bounded memory); every file is verified by its SHA-256
  * before it is renamed into place.
+ *
+ * Relay connections (QEMU live migration, 3.35 / M7.4): `hello { relay: true, batch: 'relay', … }`, answered with
+ * `result { ok }`; after that the connection carries raw bytes in both directions between the source launcher's
+ * libvirt (through a local unix socket on the source) and the target launcher's libvirt session socket.
  */
 
 export const TRANSFER_PROTOCOL_VERSION = 1;
@@ -33,6 +37,8 @@ export interface TransferHello {
   attempt: number;
   /** Batch name (e.g. `p1`, `final`), for logs and the receiver's bookkeeping. */
   batch: string;
+  /** A relay connection (raw bytes after the handshake) instead of a batch. */
+  relay?: boolean;
 }
 
 export type TransferEntry =
@@ -163,6 +169,24 @@ export class FrameReader {
     this.pending = this.pending.subarray(4 + length);
 
     return JSON.parse(json) as T;
+  }
+
+  /** Everything after the frames read so far (buffered bytes first), as it arrives (relay connections). */
+  async *remaining(): AsyncGenerator<Buffer> {
+    if (this.pending.length > 0) {
+      const buffered = this.pending;
+
+      this.pending = Buffer.alloc(0);
+      yield buffered;
+    }
+
+    for (;;) {
+      const next = await this.iterator.next();
+
+      if (next.done) return;
+
+      yield next.value;
+    }
   }
 
   /** Yields exactly `count` bytes in chunks as they arrive. */

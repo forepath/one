@@ -7,10 +7,12 @@ import {
   type NodeOs,
   type ResourceAmounts,
 } from '@forepath/loadweaver/shared/util-agent-protocol';
-import { Injectable } from '@nestjs/common';
+import { GVISOR_RUNTIMES, parseGvisorRuntimeArgs } from '@forepath/shared/backend/util-container-runtime';
+import { Injectable, Optional } from '@nestjs/common';
 
 import { sandboxRuntimeOf } from '../workloads/restored-runtime';
 import { CommandRunner } from './command-runner';
+import { IsolationProbeService, sandboxProbeOf } from './isolation-probe.service';
 
 /** Parses `/etc/os-release` (KEY=value, optionally quoted). */
 export function parseOsRelease(text: string): Record<string, string> {
@@ -72,16 +74,24 @@ async function cgroupV2(): Promise<boolean> {
 
 interface DockerInfo {
   ServerVersion?: string;
-  Runtimes?: Record<string, unknown>;
 }
 
 /**
- * Inventory reported in `hello`: OS, capacity and capabilities. The scheduler only places `sandboxed`
- * workloads on nodes whose gVisor probe passed (3.1).
+ * Inventory reported in `hello`: OS, capacity and capabilities. Isolation levels come from the per-level probes
+ * (`IsolationProbeService`, 3.1): `runtimes` lists only the levels whose probe passed, `isolation` every level's state
+ * and reason, `kvm` the KVM facts with the node spec's opt-out. The scheduler places a workload only on nodes where its
+ * exact level is ready.
  */
 @Injectable()
 export class HostInfoService {
-  constructor(private readonly commands: CommandRunner) {}
+  private readonly isolation: IsolationProbeService;
+
+  constructor(
+    private readonly commands: CommandRunner,
+    @Optional() isolation?: IsolationProbeService,
+  ) {
+    this.isolation = isolation ?? new IsolationProbeService(commands);
+  }
 
   async os(): Promise<NodeOs> {
     const fields = parseOsRelease(await readFile('/etc/os-release', 'utf8').catch(() => ''));
@@ -136,11 +146,14 @@ export class HostInfoService {
    * Live migration (3.10): CRIU usable through runc (`criu check` passes and runc runs) and gVisor's own checkpoint /
    * restore: the sandbox runtime registered with Docker uses gVisor's network stack (a restored sandbox copies the
    * placeholder's interfaces; `--network=host` / `none` runtimes don't qualify), its binary runs, and the host has
-   * cgroup v2 (restored replicas run in a child of their placeholder's cgroup).
+   * cgroup v2 (restored replicas run in a child of their placeholder's cgroup). `runscKvm` (only when the gVisor KVM
+   * runtime is registered): that runtime runs on the KVM platform with gVisor's network stack, its binary runs, cgroup
+   * v2, and the sandboxed-kvm level is ready (`kvmReady`) — restores must use the same platform.
    */
   async checkpoint(
-    runtimes: Record<string, { path?: string; runtimeArgs?: string[] }>,
+    runtimes: Record<string, { path?: string; runtimeArgs?: string[] } | undefined>,
     cgroup2?: boolean,
+    kvmReady = true,
   ): Promise<NonNullable<NodeCapabilities['checkpoint']>> {
     const [criuCheck, criuVersion, runc] = await Promise.all([
       this.commands.run('criu', ['check'], { timeoutMs: 20_000 }).then(
@@ -154,10 +167,24 @@ export class HostInfoService {
       this.commands.available('runc', ['--version']),
     ]);
     const sandbox = sandboxRuntimeOf(runtimes);
-    const runsc =
-      !!sandbox && (cgroup2 ?? (await cgroupV2())) && (await this.commands.available(sandbox.binary, ['--version']));
+    const v2 = cgroup2 ?? (await cgroupV2());
+    const runsc = !!sandbox && v2 && (await this.commands.available(sandbox.binary, ['--version']));
+    const kvm = runtimes[GVISOR_RUNTIMES.kvm.runtime];
+    const kvmArgs = parseGvisorRuntimeArgs(kvm?.runtimeArgs);
+    const runscKvm = kvm
+      ? kvmReady &&
+        kvmArgs.platform === 'kvm' &&
+        kvmArgs.network === null &&
+        v2 &&
+        (await this.commands.available(kvm.path ?? 'runsc', ['--version']))
+      : undefined;
 
-    return { runc: criuCheck && runc, runsc, ...(criuVersion ? { criuVersion } : {}) };
+    return {
+      runc: criuCheck && runc,
+      runsc,
+      ...(criuVersion ? { criuVersion } : {}),
+      ...(runscKvm !== undefined ? { runscKvm } : {}),
+    };
   }
 
   /**
@@ -181,6 +208,14 @@ export class HostInfoService {
     return Number.isSafeInteger(mbps) && mbps > 0 ? mbps * 1_000_000 : undefined;
   }
 
+  /**
+   * Called whenever the capabilities changed (a probe changed the isolation result, 3.1): the stream reports them
+   * (`capabilitiesUpdate`, or a fresh hello for control planes without `capability-updates`).
+   */
+  onChange(listener: () => void): void {
+    this.isolation.onChange(() => listener());
+  }
+
   async capabilities(): Promise<NodeCapabilities> {
     const [wireguard, nftables, bird, drbd, criu, drbd9] = await Promise.all([
       this.commands.available('wg', ['--version']),
@@ -200,12 +235,24 @@ export class HostInfoService {
       docker = {};
     }
 
-    const runtimes = Object.keys(docker.Runtimes ?? {});
-    const sandboxed = runtimes.some((r) => r.startsWith('runsc'));
+    const isolation = await this.isolation.current();
 
     return {
-      runtimes: sandboxed ? ['runc', 'sandboxed'] : ['runc'],
-      sandboxProbe: sandboxed ? 'ready' : 'missing',
+      runtimes: isolation.runtimes,
+      // Protocol v1 control planes read the sandboxed level from here.
+      sandboxProbe: sandboxProbeOf(isolation.levels.sandboxed),
+      isolation: isolation.levels,
+      ...(isolation.kvm ? { kvm: isolation.kvm } : {}),
+      ...(isolation.cpuFlagsHash ? { cpuFlagsHash: isolation.cpuFlagsHash } : {}),
+      ...(isolation.microvm ? { microvm: isolation.microvm } : {}),
+      // Live migration of generic microVMs (M7 W10b): a ready microVM level whose launcher has virtio-fs state
+      // migration (QEMU / virtiofsd versions from its labels); the control plane needs it on both nodes.
+      microvmMigration: isolation.levels.microvm?.state === 'ready' && !!isolation.microvm?.migration?.generic,
+      // Bundled microVMs (M7 F5) bring their own launcher (its labels vouch for QEMU / virtiofsd): this agent drives
+      // their migration wherever the microVM level is ready.
+      microvmBundledMigration: isolation.levels.microvm?.state === 'ready',
+      // Full VMs (3.35): the microVM level is ready (KVM, launcher with its UEFI firmware) and DRBD 9 holds the disks.
+      virtualMachines: isolation.levels.microvm?.state === 'ready' && !!isolation.microvm && drbd9,
       wireguard,
       nftables,
       bird,
@@ -214,7 +261,9 @@ export class HostInfoService {
       criu,
       dockerVersion: docker.ServerVersion,
       checkpoint: await this.checkpoint(
-        (docker.Runtimes ?? {}) as Record<string, { path?: string; runtimeArgs?: string[] }>,
+        isolation.dockerRuntimes,
+        undefined,
+        isolation.levels['sandboxed-kvm']?.state === 'ready',
       ),
       ...(await this.transferBitsPerSecond().then((bps) => (bps ? { transferBitsPerSecond: bps } : {}))),
     };

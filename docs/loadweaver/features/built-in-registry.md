@@ -19,6 +19,10 @@ Docker requires HTTPS for registries other than `localhost`, so push through the
 
 In compose, reference it as `registry.lw/acme/api:1.4`. Repositories live under existing project names; a deployment can only use private images of its own project. Pull needs the PAT scope `registry:pull`, push `registry:push` and deploy rights.
 
+## VM images
+
+The registry also stores the disk images of [virtual machines](./virtual-machines.md#images) as OCI artifacts (`artifactType: application/vnd.loadweaver.vm-image.v1`, one qcow2 or zstd-compressed raw disk layer) in the same private repositories: `registry.lw/<project>/<repository>:<tag>`. Push them with `loadweaver vm-image push <file> registry.lw/<project>/<repository>:<tag>` or import them from a URL (`POST /api/projects/<project>/vm-images/import`); KubeVirt containerDisk images pushed with Docker work as well. Nodes pull them through the same router when a VM's boot disk is written, verify the digest and keep them in their VM image cache.
+
 ## How nodes pull
 
 Each node runs a small pull router on `127.0.0.1:7479`. Images of mirrored registries and of the private registry are pulled through it; the router forwards to the members over the encrypted overlay and fails over between them. A node can pull private images only for workloads it runs itself, with a short-lived token from the control plane. If the cluster registry can't deliver a public image, the node pulls it from upstream directly.

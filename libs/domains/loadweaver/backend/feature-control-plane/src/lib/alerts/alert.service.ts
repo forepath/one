@@ -252,6 +252,8 @@ export class AlertService implements OnApplicationBootstrap, OnModuleDestroy {
     const evaluated = new Set<string>();
     const sources: [string, () => Promise<AlertFinding[]>][] = [
       ['builtin:node-down', () => this.nodeDown(now)],
+      // A desired state the session refused to send (M7 0.1): fields the node's agent doesn't support.
+      ['builtin:node-protocol-refused', () => this.protocolRefused()],
       ['builtin:replica-lost', () => this.replicaLost()],
       ['builtin:failover', () => this.failovers(now)],
       ['builtin:capacity', () => this.capacity()],
@@ -521,6 +523,31 @@ export class AlertService implements OnApplicationBootstrap, OnModuleDestroy {
         repeatMs: 0,
         notify: { emails: [], webhooks: true },
       }));
+  }
+
+  /**
+   * Messages a control-plane replica refused to send to a node in the last 15 minutes (`node-protocol-refused`
+   * events, M7 0.1): the node keeps its previous desired state until its agent is updated or the workload moves.
+   */
+  private async protocolRefused(): Promise<AlertFinding[]> {
+    const rows: { entity: string; count: string; message: string }[] = await this.dataSource.query(
+      `SELECT entity, count(*) AS count, (array_agg(message ORDER BY "time" DESC))[1] AS message FROM lw_events
+        WHERE kind = 'node-protocol-refused' AND "time" >= now() - INTERVAL '15 minutes'
+        GROUP BY entity`,
+    );
+
+    return rows.map((r) => ({
+      rule: 'builtin:node-protocol-refused',
+      key: r.entity,
+      node: r.entity,
+      severity: 'critical' as const,
+      title: `Node ${r.entity} can't receive its desired state`,
+      message: `${r.message}. The node keeps its previous desired state; update its agent or move the workload away.`,
+      value: Number(r.count),
+      forMs: 0,
+      repeatMs: 0,
+      notify: { emails: [], webhooks: true },
+    }));
   }
 
   /** Replicas that died or failed (jobs that exited cleanly and cron runs are fine) on nodes that are up. */

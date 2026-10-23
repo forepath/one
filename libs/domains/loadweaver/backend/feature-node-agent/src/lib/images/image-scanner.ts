@@ -14,7 +14,8 @@ import type Docker from 'dockerode';
 import { COMPONENT_IMAGES } from '@forepath/loadweaver/shared/util-release';
 
 import { DOCKER } from '../host/docker.provider';
-import { ManagedContainers } from '../host/managed-containers';
+import { ManagedContainers, PROBE_LABEL } from '../host/managed-containers';
+import { extractExportedTree, normalizeEntryPath } from '../microvm/rootfs-unpack';
 import { AgentStateStore } from '../state/agent-state.store';
 import { componentImage } from '../updates/release-images';
 
@@ -76,6 +77,36 @@ export function summarizeTrivy(report: TrivyReport): Pick<ImageScan, 'counts' | 
   );
 
   return { counts, findings: findings.slice(0, MAX_FINDINGS) };
+}
+
+/**
+ * Label of images that carry a second root file system below a path (3.35): Agenstra's microVM worker images and
+ * the shared launcher keep the guest at `/guest`. Their scan covers the image and, separately, that nested root.
+ */
+export const NESTED_ROOTFS_LABEL = 'io.forepath.scan.nested-rootfs';
+
+/** The nested root of an image's labels, if it is a plain absolute path (anything else is ignored). */
+export function nestedRootfs(labels: Record<string, string> | undefined): string | null {
+  const value = labels?.[NESTED_ROOTFS_LABEL];
+
+  if (!value || !/^\/[A-Za-z0-9._/-]{1,200}$/.test(value)) return null;
+
+  const normalized = normalizeEntryPathSafe(value.slice(1));
+
+  return normalized ? `/${normalized}` : null;
+}
+
+function normalizeEntryPathSafe(path: string): string | null {
+  try {
+    return normalizeEntryPath(path);
+  } catch {
+    return null;
+  }
+}
+
+/** The part of an exported container file system below `nested`, extracted into `target` for scanning. */
+export function extractNestedRootfs(exported: AsyncIterable<Buffer>, nested: string, target: string): Promise<number> {
+  return extractExportedTree(exported, nested, target);
 }
 
 /** Findings an image policy blocks (fixable only, unless unfixed ones count too). */
@@ -173,6 +204,65 @@ export class ImageScanner {
     return (await pending) ?? cached;
   }
 
+  /**
+   * The nested root of images labelled {@link NESTED_ROOTFS_LABEL} (3.35): the image's file system exported from a
+   * created (never started) container, the nested part extracted into the scan's scratch directory, `trivy rootfs`
+   * on it. Null when the image has no nested root.
+   */
+  private async scanNested(image: string, work: string, cache: string): Promise<TrivyReport | null> {
+    const labels = ((await this.docker.getImage(image).inspect()) as { Config?: { Labels?: Record<string, string> } })
+      .Config?.Labels;
+    const nested = nestedRootfs(labels);
+
+    if (!nested) return null;
+
+    const rootfs = join(work, 'rootfs');
+
+    await mkdir(rootfs, { mode: 0o700 });
+
+    const container = await this.docker.createContainer({
+      Image: image,
+      Entrypoint: ['/nonexistent'],
+      Cmd: [],
+      NetworkDisabled: true,
+      // Short-lived: neither a workload nor drift, removed below (leftovers at the agent's start).
+      Labels: { [PROBE_LABEL]: '1' },
+      HostConfig: { NetworkMode: 'none' },
+    });
+
+    try {
+      await extractNestedRootfs((await container.export()) as unknown as AsyncIterable<Buffer>, nested, rootfs);
+    } finally {
+      await container.remove({ force: true }).catch(() => undefined);
+    }
+
+    const result = await this.containers.runOnce(
+      componentImage('trivy'),
+      [
+        'trivy',
+        'rootfs',
+        '--format',
+        'json',
+        '--output',
+        '/out/nested.json',
+        '--quiet',
+        '--scanners',
+        'vuln',
+        '--cache-dir',
+        '/cache',
+        '--timeout',
+        '15m',
+        '/rootfs',
+      ],
+      [`${rootfs}:/rootfs:ro`, `${join(work, 'out')}:/out`, `${cache}:/cache`],
+      { network: 'bridge', memoryBytes: 2 * 1024 ** 3, user: String(process.getuid?.() ?? 0) },
+    );
+
+    if (result.exitCode !== 0) throw new Error(`nested root ${nested}: ${result.output.trim().slice(-500)}`);
+
+    return JSON.parse(await readFile(join(work, 'out', 'nested.json'), 'utf8')) as TrivyReport;
+  }
+
   private async scanNow(image: string, digest: string): Promise<ImageScan | null> {
     const work = join(this.dir, 'work', digest.replace(':', '-'));
     const cache = join(this.dir, 'cache');
@@ -224,7 +314,13 @@ export class ImageScanner {
       if (result.exitCode !== 0) throw new Error(result.output.trim().slice(-500));
 
       const report = JSON.parse(await readFile(join(work, 'out', 'report.json'), 'utf8')) as TrivyReport;
-      const scan: ImageScan = { image, digest, scanner: SCANNER, ...summarizeTrivy(report) };
+      const nested = await this.scanNested(image, work, cache);
+      const scan: ImageScan = {
+        image,
+        digest,
+        scanner: SCANNER,
+        ...summarizeTrivy({ Results: [...(report.Results ?? []), ...(nested?.Results ?? [])] }),
+      };
 
       // Atomically, so a full disk can't leave a half-written entry behind.
       const target = join(this.dir, `${digest.replace(':', '-')}.json`);

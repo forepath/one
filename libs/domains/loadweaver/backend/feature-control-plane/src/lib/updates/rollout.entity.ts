@@ -152,6 +152,8 @@ export interface StepData {
   drained?: boolean;
   /** The host update was handed to the node (packages may have changed from here on). */
   hostApplied?: boolean;
+  /** The node used KVM when the host step started (3.1): the KVM gate checks it is still usable after the reboot. */
+  kvmBefore?: boolean;
   previousLifecycle?: string;
   settledSince?: string;
   /** Last gate evaluation, for the console. */

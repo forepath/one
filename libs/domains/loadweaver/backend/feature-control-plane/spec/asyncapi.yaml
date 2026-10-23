@@ -1,6 +1,6 @@
 asyncapi: 3.0.0
 info:
-  title: Loadweaver control plane WebSocket (plans, logs, terminals, machine exec, tunnels, topology)
+  title: Loadweaver control plane WebSocket (plans, logs, terminals, machine exec, tunnels, VM consoles, topology)
   version: 1.0.0
   description: |
     Socket.IO events of the Loadweaver control plane on the shared HTTP `PORT` (default 3400). Engine.IO path is
@@ -14,7 +14,9 @@ info:
     **socket/topology** (env `LOADWEAVER_TOPOLOGY_WEBSOCKET_NAMESPACE`, default "socket/topology") sends live
     traffic for the topology map (3.9). Namespace **socket/exec** (env `LOADWEAVER_EXEC_WEBSOCKET_NAMESPACE`, default
     "socket/exec") runs non-interactive commands in replicas for machines (3.19 machine exec, Agenstra on
-    Loadweaver): no TTY, binary stdin / stdout / stderr, exit code.
+    Loadweaver): no TTY, binary stdin / stdout / stderr, exit code. Namespace **socket/consoles** (env
+    `LOADWEAVER_CONSOLES_WEBSOCKET_NAMESPACE`, default "socket/consoles") opens the serial console (text, like a
+    terminal, boot log first) and the graphical console (binary RFB for noVNC) of a virtual machine (3.35).
     Connections authenticate with the `Authorization` header in the handshake (`Bearer <token>`: static API key,
     users-mode JWT or Keycloak token), or `handshake.auth.Authorization` for browser WebSockets. Personal access
     tokens (machine sessions) are refused on every namespace except **socket/exec**, which accepts them with the
@@ -31,7 +33,9 @@ info:
     control plane → node `execOpen` {target: {kind: replica, replica} | {kind: node}, command?, cols, rows, tty?,
     user?, workingDir?, env?}, `execInput` {data, eof?}, `execResize` {cols, rows}, `execClose` {}, `fileRequest` {op: list | stat | read | write |
     mkdir | delete | move | copy, target: {kind: replica, replica} | {kind: volume, volume}, path, …},
-    `tunnelOpen` {replica, port}, `tunnelData` {data}, `tunnelClose` {reason?}; node → control plane
+    `tunnelOpen` {replica, port}, `tunnelData` {data}, `tunnelClose` {reason?}, `consoleOpen` {target: {kind:
+    replica, replica}, kind: serial | vnc, cols?, rows?} (protocol feature `vm-consoles`, then `execInput` /
+    `execClose` on its channel); node → control plane
     `execOutput` {data, stream?}, `execExit` {code, error?}, `fileResponse` {ok, error?, entries?, entry?, data?},
     `tunnelData` {data}, `tunnelClose` {reason?}. `data` is base64, at most 256 KiB per message. The desired state
     carries `liveAccess.nodeShell` (the Cluster's `nodeShellEnabled`); the node refuses node shells without it.
@@ -46,7 +50,7 @@ servers:
       Namespaces **socket/plans** (LOADWEAVER_PLANS_WEBSOCKET_NAMESPACE), **socket/logs**
       (LOADWEAVER_LOGS_WEBSOCKET_NAMESPACE), **socket/terminals** (LOADWEAVER_TERMINALS_WEBSOCKET_NAMESPACE),
       **socket/tunnels** (LOADWEAVER_TUNNELS_WEBSOCKET_NAMESPACE), **socket/exec**
-      (LOADWEAVER_EXEC_WEBSOCKET_NAMESPACE) and **socket/topology** (LOADWEAVER_TOPOLOGY_WEBSOCKET_NAMESPACE). CORS via WEBSOCKET_CORS_ORIGIN
+      (LOADWEAVER_EXEC_WEBSOCKET_NAMESPACE), **socket/consoles** (LOADWEAVER_CONSOLES_WEBSOCKET_NAMESPACE) and **socket/topology** (LOADWEAVER_TOPOLOGY_WEBSOCKET_NAMESPACE). CORS via WEBSOCKET_CORS_ORIGIN
       (falls back to CORS_ORIGIN).
       Pass Authorization header in handshake (or handshake.auth.Authorization for browser WebSockets).
 channels:
@@ -251,6 +255,71 @@ channels:
       tunnelErrorEvent:
         $ref: '#/components/messages/TunnelError'
     description: Unicast to the socket whose `openTunnel` was refused.
+  consoles/openConsole:
+    address: consoles/openConsole
+    messages:
+      openConsoleCommand:
+        $ref: '#/components/messages/OpenConsole'
+    description: |
+      Client → server on **socket/consoles**: open the serial (`serial`) or graphical (`vnc`) console of a virtual
+      machine (its replica `<project>/lw-vm/<name>/0`). Roles as terminals: the project's operators and admins,
+      developers when the project allows exec; `vnc` only when the VM has a graphical console. Needs a node agent with
+      the protocol feature `vm-consoles`. At most 4 per socket and 8 per user, one new console per second per user
+      (bursts of 5). Listed with the terminal sessions (target `virtual-machine/<project>/<name>/console/<kind>`) and
+      audited as `vm.console.open`; serial consoles are recorded (asciicast) like terminals when the cluster / project
+      records terminals, VNC sessions keep metadata and duration only.
+  consoles/consoleOpened:
+    address: consoles/consoleOpened
+    messages:
+      consoleOpenedEvent:
+        $ref: '#/components/messages/ConsoleOpened'
+    description: Unicast to the socket once the node was asked to attach; input may be sent from now on.
+  consoles/consoleInput:
+    address: consoles/consoleInput
+    messages:
+      consoleInputCommand:
+        $ref: '#/components/messages/ConsoleInput'
+    description: |
+      Client → server on **socket/consoles**: serial consoles take UTF-8 text (at most 256 KiB/s, bursts of 1 MiB),
+      VNC consoles binary RFB from noVNC (Socket.IO binary attachment, at most 2 MiB/s, bursts of 8 MiB). At most
+      256 KiB per message. Input keeps the session from idling out (30 minutes).
+  consoles/consoleResize:
+    address: consoles/consoleResize
+    messages:
+      consoleResizeCommand:
+        $ref: '#/components/messages/TerminalResize'
+    description: |
+      Client → server on **socket/consoles** (serial): the viewer's size. The guest owns the serial line's size
+      (`stty` in the guest); only the recording follows.
+  consoles/consoleOutput:
+    address: consoles/consoleOutput
+    messages:
+      consoleOutputEvent:
+        $ref: '#/components/messages/ConsoleOutput'
+    description: |
+      Unicast: serial consoles send UTF-8 text, starting with the VM's boot log (the last MiB of serial output the node
+      kept since the VM's container started); VNC consoles binary RFB for noVNC.
+  consoles/closeConsole:
+    address: consoles/closeConsole
+    messages:
+      closeConsoleCommand:
+        $ref: '#/components/messages/CloseConsole'
+    description: 'Client → server on **socket/consoles**: close a console of this socket (the VM keeps running).'
+  consoles/consoleClosed:
+    address: consoles/consoleClosed
+    messages:
+      consoleClosedEvent:
+        $ref: '#/components/messages/ConsoleClosed'
+    description: |
+      Unicast to the owning socket when the console ended: closed, `idle`, `disconnected`, `access revoked`, `client
+      too slow`, or by the node (e.g. `the virtual machine stopped`). Audited as `vm.console.close` (kind, duration,
+      bytes).
+  consoles/error:
+    address: consoles/error
+    messages:
+      consoleErrorEvent:
+        $ref: '#/components/messages/ConsoleError'
+    description: Unicast to the socket whose console request was refused.
   topology/subscribe:
     address: topology/subscribe
     messages:
@@ -397,6 +466,38 @@ operations:
     action: receive
     channel:
       $ref: '#/channels/tunnels~1tunnelError'
+  consolesClientSendsOpenConsole:
+    action: send
+    channel:
+      $ref: '#/channels/consoles~1openConsole'
+  consolesServerEmitsConsoleOpened:
+    action: receive
+    channel:
+      $ref: '#/channels/consoles~1consoleOpened'
+  consolesClientSendsConsoleInput:
+    action: send
+    channel:
+      $ref: '#/channels/consoles~1consoleInput'
+  consolesClientSendsConsoleResize:
+    action: send
+    channel:
+      $ref: '#/channels/consoles~1consoleResize'
+  consolesServerEmitsConsoleOutput:
+    action: receive
+    channel:
+      $ref: '#/channels/consoles~1consoleOutput'
+  consolesClientSendsCloseConsole:
+    action: send
+    channel:
+      $ref: '#/channels/consoles~1closeConsole'
+  consolesServerEmitsConsoleClosed:
+    action: receive
+    channel:
+      $ref: '#/channels/consoles~1consoleClosed'
+  consolesServerEmitsError:
+    action: receive
+    channel:
+      $ref: '#/channels/consoles~1error'
   topologyClientSendsSubscribe:
     action: send
     channel:
@@ -813,6 +914,113 @@ components:
           message:
             type: string
             description: '`invalid payload`, `too many tunnels or duplicate id`, `replica not found`, `operator role required`, …'
+    OpenConsole:
+      name: OpenConsole
+      title: Open a VM console
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        required: [replica, kind]
+        properties:
+          sessionId:
+            type: string
+            pattern: '^[A-Za-z0-9_-]{1,64}$'
+            description: Chosen by the client (unique per socket); generated when absent
+          replica:
+            type: string
+            pattern: '^[a-z0-9-]{1,63}/lw-vm/[a-z0-9_.-]{1,63}/0$'
+            description: The virtual machine's replica, `<project>/lw-vm/<name>/0`
+          kind: { type: string, enum: [serial, vnc] }
+          cols: { type: integer, minimum: 1, maximum: 1000, default: 80 }
+          rows: { type: integer, minimum: 1, maximum: 1000, default: 24 }
+    ConsoleOpened:
+      name: ConsoleOpened
+      title: Console opened
+      contentType: application/json
+      payload:
+        type: object
+        required: [sessionId, kind, recorded]
+        properties:
+          sessionId: { type: string }
+          kind: { type: string, enum: [serial, vnc] }
+          recorded:
+            {
+              type: boolean,
+              description: 'Serial output is recorded (show a banner); always false for VNC',
+            }
+    ConsoleInput:
+      name: ConsoleInput
+      title: Console input
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        required: [sessionId, data]
+        properties:
+          sessionId: { type: string, pattern: '^[A-Za-z0-9_-]{1,64}$' }
+          data:
+            oneOf:
+              - {
+                  type: string,
+                  maxLength: 65536,
+                  description: 'Serial: UTF-8 text',
+                }
+              - {
+                  type: string,
+                  format: binary,
+                  description: 'VNC: RFB bytes, Socket.IO binary attachment',
+                }
+    ConsoleOutput:
+      name: ConsoleOutput
+      title: Console output
+      contentType: application/json
+      payload:
+        type: object
+        required: [sessionId, data]
+        properties:
+          sessionId: { type: string }
+          data:
+            oneOf:
+              - { type: string, description: 'Serial: UTF-8 text' }
+              - {
+                  type: string,
+                  format: binary,
+                  description: 'VNC: RFB bytes, Socket.IO binary attachment',
+                }
+    CloseConsole:
+      name: CloseConsole
+      title: Close a console
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        required: [sessionId]
+        properties:
+          sessionId: { type: string, pattern: '^[A-Za-z0-9_-]{1,64}$' }
+    ConsoleClosed:
+      name: ConsoleClosed
+      title: Console closed
+      contentType: application/json
+      payload:
+        type: object
+        required: [sessionId, exitCode]
+        properties:
+          sessionId: { type: string }
+          exitCode: { type: [integer, 'null'] }
+          error: { type: string }
+    ConsoleError:
+      name: ConsoleError
+      title: Console request refused
+      contentType: application/json
+      payload:
+        type: object
+        required: [message]
+        properties:
+          sessionId: { type: string }
+          message:
+            type: string
+            description: '`invalid payload`, `unknown session`, `too many consoles`, `rate limit exceeded`, `input rate limit exceeded`, `virtual machine not found`, `exec not allowed`, `the virtual machine has no graphical console`, `the agent on node … does not support VM consoles`, …'
     TopologySubscribe:
       name: TopologySubscribe
       title: Start live flows

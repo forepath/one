@@ -32,6 +32,7 @@ const FILES = {
   seal: 'seal.key',
   applied: 'applied-state.json',
   publicAddresses: 'public-addresses.json',
+  isolation: 'isolation.json',
 } as const;
 
 export function stateDir(env: NodeJS.ProcessEnv = process.env): string {
@@ -160,6 +161,17 @@ export class AgentStateStore {
     }
 
     return target;
+  }
+
+  /** Isolation probes (3.1): the last result (per boot) and the host settings last received (KVM opt-out, nonce). */
+  async isolationState(): Promise<unknown> {
+    const raw = await this.read('isolation');
+
+    return raw ? (JSON.parse(raw) as unknown) : null;
+  }
+
+  async saveIsolationState(state: unknown): Promise<void> {
+    await this.write('isolation', JSON.stringify(state));
   }
 
   async saveBoundPublicAddresses(bound: { address: string; dev: string }[]): Promise<void> {

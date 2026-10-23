@@ -2,6 +2,7 @@ import { once } from 'node:events';
 import { access, mkdtemp, mkdir, readFile, readlink, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createConnection as createUnixConnection, createServer as createUnixServer } from 'node:net';
 import { PassThrough } from 'node:stream';
 import { connect } from 'node:tls';
 
@@ -24,7 +25,9 @@ import {
   type TransferEntry,
 } from './transfer-protocol';
 import {
+  connectRelay,
   isNodeCertificate,
+  listenRelay,
   nodeIdentityUri,
   sendCheckpointBatch,
   TransferService,
@@ -225,6 +228,157 @@ describe('transfer endpoint (mutual TLS + single-use token)', () => {
     expect(server.received(MIGRATION, 1)).toBeNull();
     await server.onModuleDestroy();
   });
+  it('relays raw bytes between the source launcher and the target libvirt socket (M7.4)', async () => {
+    const server = new TransferService();
+    const dir = join(root, 'relay');
+    const libvirt = join(root, 'libvirt.sock');
+    const echo = createUnixServer((c) => c.on('data', (d: Buffer) => c.write(d.toString().toUpperCase())));
+    const onConnect = jest.fn(async () => undefined);
+
+    await new Promise<void>((resolve) => echo.listen(libvirt, resolve));
+
+    const endpoint = await server.open(
+      {
+        migration: MIGRATION,
+        attempt: 1,
+        token: TOKEN,
+        peer: 'n1',
+        dir,
+        expiresInSeconds: 60,
+        address: '127.0.0.1',
+        credentials: creds['n2'],
+      },
+      { socketPath: async () => libvirt, onConnect },
+    );
+    const request = { endpoint, peer: 'n2', token: TOKEN, migration: MIGRATION, attempt: 1 };
+    const relay = await listenRelay({ ...request, credentials: creds['n1'], socketPath: join(root, 'peer.sock') });
+
+    try {
+      const client = createUnixConnection(join(root, 'peer.sock'));
+      const answer = once(client, 'data');
+
+      client.write('qemu rpc');
+      expect(String((await answer)[0])).toBe('QEMU RPC');
+      expect(onConnect).toHaveBeenCalledTimes(1);
+      expect(relay.connections()).toBe(1);
+
+      // Wrong node or token: refused like batches; the attempt's end closes open relays.
+      await expect(connectRelay({ ...request, credentials: creds['n3'] })).rejects.toThrow();
+      await expect(connectRelay({ ...request, credentials: creds['n1'], token: 'B'.repeat(43) })).rejects.toThrow(
+        'target refused the relay',
+      );
+
+      const closed = once(client, 'close');
+
+      server.close(MIGRATION, 1);
+      await closed;
+    } finally {
+      await relay.close();
+      echo.close();
+      await server.onModuleDestroy();
+    }
+  });
+
+  it('holds a microVM migration stream at the gate, delivers it whole, and applies batches before answering (W10b)', async () => {
+    const server = new TransferService();
+    const incoming = join(root, 'incoming.sock');
+    const received: Buffer[] = [];
+    let ended: () => void = () => undefined;
+    const done = new Promise<void>((resolve) => (ended = resolve));
+    // QEMU's incoming side: reads until the source closes (no return path).
+    const qemu = createUnixServer((c) => {
+      c.on('data', (d: Buffer) => received.push(d));
+      c.on('end', () => ended());
+    });
+    const applied: string[] = [];
+
+    await new Promise<void>((resolve) => qemu.listen(incoming, resolve));
+
+    const endpoint = await server.open(
+      {
+        migration: MIGRATION,
+        attempt: 3,
+        token: TOKEN,
+        peer: 'n1',
+        dir: join(root, 'gated'),
+        expiresInSeconds: 60,
+        address: '127.0.0.1',
+        credentials: creds['n2'],
+      },
+      {
+        socketPath: async () => incoming,
+        onBatch: async (batch) => {
+          if (batch === 'handover-fails') throw new Error('mount failed');
+
+          applied.push(batch);
+        },
+      },
+    );
+    const request = { endpoint, peer: 'n2', token: TOKEN, migration: MIGRATION, attempt: 3 };
+    const relay = await listenRelay({ ...request, credentials: creds['n1'], socketPath: join(root, 'gate.sock') });
+
+    try {
+      // A batch is applied before the source gets its answer; a failing apply is the batch's error.
+      await sendCheckpointBatch({ ...request, credentials: creds['n1'], batch: 'handover', root, paths: [] });
+      expect(applied).toEqual(['handover']);
+      await expect(
+        sendCheckpointBatch({ ...request, credentials: creds['n1'], batch: 'handover-fails', root, paths: [] }),
+      ).rejects.toThrow('mount failed');
+
+      const source = createUnixConnection(join(root, 'gate.sock'));
+
+      await once(source, 'connect');
+      source.write('ram-');
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(Buffer.concat(received).toString()).toBe('ram-');
+
+      // Gated: QEMU's last data waits here (it may even finish and close) until the gate opens.
+      relay.gate(1024);
+      source.end('device-state');
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(Buffer.concat(received).toString()).toBe('ram-');
+      expect(relay.held()).toBe('device-state'.length);
+
+      relay.release();
+      await done;
+      expect(Buffer.concat(received).toString()).toBe('ram-device-state');
+      expect(relay.held()).toBe(0);
+    } finally {
+      await relay.close();
+      qemu.close();
+      await server.onModuleDestroy();
+    }
+  });
+
+  it('refuses relays for attempts opened without one', async () => {
+    const server = new TransferService();
+    const endpoint = await server.open({
+      migration: MIGRATION,
+      attempt: 2,
+      token: TOKEN,
+      peer: 'n1',
+      dir: join(root, 'no-relay'),
+      expiresInSeconds: 60,
+      address: '127.0.0.1',
+      credentials: creds['n2'],
+    });
+
+    try {
+      await expect(
+        connectRelay({
+          endpoint,
+          credentials: creds['n1'],
+          peer: 'n2',
+          token: TOKEN,
+          migration: MIGRATION,
+          attempt: 2,
+        }),
+      ).rejects.toThrow('target refused the relay: not authorized');
+    } finally {
+      await server.onModuleDestroy();
+    }
+  });
+
   it('refuses links outside CRIU parent links and anything written through a received link (M6 review M2)', async () => {
     const server = new TransferService();
     const base = join(root, 'escape');

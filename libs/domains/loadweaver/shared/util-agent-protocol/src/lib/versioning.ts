@@ -13,7 +13,9 @@ import { CONTROL_PLANE_TO_AGENT, type AgentHello, type ControlPlaneMessageType }
  * Rules for changing the protocol:
  * - Control plane → agent: new fields are optional and listed in `CONTROL_PLANE_FIELD_GATES` behind a feature in
  *   `PROTOCOL_FEATURES`; new message types are listed in `CONTROL_PLANE_MESSAGE_GATES` and never sent to a node
- *   without the feature. Agents advertise a feature once they implement it (`agent: true`). No new enum values, no
+ *   without the feature. A gate either strips the field for nodes without the feature (default) or, where stripping
+ *   would silently change what runs (an isolation level, a VM, a device, a block disk), refuses to send the message
+ *   at all (`onMissing: 'refuse'`, `GatedFieldRefused`). Agents advertise a feature once they implement it (`agent: true`). No new enum values, no
  *   fields that become required, no removed fields while an N-1 agent may still rely on them.
  * - Agent → control plane: new fields are optional (an N-1 agent doesn't send them); fields are never removed from
  *   the control plane's schema while an N-1 agent may still send them.
@@ -103,6 +105,54 @@ export const PROTOCOL_FEATURES = {
       "Host update steps of online clusters may build DRBD with LINBIT's SPAAS for kernels the release ships no compat patch / prebuilt module for (desiredState.components.host.spaas)",
     agent: true,
   },
+  // M7 (3.1, 3.35): registered by the types / protocol step; each becomes `agent: true` once the node agent
+  // implements it. Until then no node advertises them, so the control plane never sends their fields or messages.
+  'isolation-ladder': {
+    since: 2,
+    description:
+      'Isolation levels above the Docker family (workloads[].isolation: sandboxed-kvm, microvm; refused, never stripped), the host settings (desiredState.host: KVM opt-out, probe nonce) and gVisor-KVM checkpoint / restore on the same platform',
+    agent: true,
+  },
+  'workload-devices': {
+    since: 2,
+    description: 'Allow-listed host devices for workloads (workloads[].devices: /dev/kvm; refused, never stripped)',
+    agent: true,
+  },
+  microvm: {
+    since: 2,
+    description:
+      'MicroVM workloads in the shared launcher (workloads[].microvm: bundled / generic mode, guest image layers and process, guest sizing, tap networking; refused, never stripped)',
+    agent: true,
+  },
+  'virtual-machines': {
+    since: 2,
+    description:
+      'Full virtual machines (workloads[].vm: firmware, CPU, disks, one or more NICs, image, cloud-init, power; refused, never stripped) and the messages vmPower / vmImageImport',
+    agent: true,
+  },
+  'vm-block-volumes': {
+    since: 2,
+    description:
+      'DRBD volumes in block mode as VM disks (volumes[].mode = block, volumes[].initializeFrom; refused, never stripped)',
+    agent: true,
+  },
+  'vm-consoles': {
+    since: 2,
+    description: 'Serial and VNC consoles of VMs over live sessions (consoleOpen, then the exec data messages)',
+    agent: true,
+  },
+  'vm-migration': {
+    since: 2,
+    description:
+      'QEMU live migration of VMs and generic microVMs (vmMigrationPrepare / Start / Switchover with the migration progress, commit and abort messages)',
+    agent: true,
+  },
+  'capability-updates': {
+    since: 2,
+    description:
+      'Capability changes on the open stream (capabilitiesUpdate, agent → control plane) instead of a fresh hello on a second stream, which would end open live sessions; the control plane announces its features in helloAck',
+    agent: true,
+  },
 } as const satisfies Record<string, ProtocolFeatureInfo>;
 
 export interface ProtocolFeatureInfo {
@@ -155,10 +205,33 @@ export function negotiate(
  * A control-plane → agent field only sent to nodes with `feature`. `path` is dot-separated from the payload root;
  * `name[]` descends into every element of an array, `*` into every value of a record
  * (e.g. `workloads[].migration`, `ingress.routes[].mirror`). The gated field must be optional in the schema.
+ *
+ * `onMissing` decides what happens for a node without the feature when the field is present:
+ * - `strip` (default): the field is removed and the rest of the message is sent;
+ * - `refuse`: the message is not sent at all (`forNode` / `envelopeForNode` throw `GatedFieldRefused`). For fields
+ *   whose removal would silently change what runs: an isolation level (a downgrade), a VM, a device, a block disk
+ *   (which would become a formatted filesystem). The scheduler keeps such workloads away from these nodes
+ *   (`requiredFeatures`), so a refusal is a safety net that must never fire; the session logs it and raises an alert.
  */
 export interface FieldGate<F extends string = string> {
   path: string;
   feature: F;
+  onMissing?: 'strip' | 'refuse';
+}
+
+/**
+ * A refuse-gated field (`onMissing: 'refuse'`) is present in a message for a node without its feature: the message
+ * must not be sent (stripping would downgrade the workload).
+ */
+export class GatedFieldRefused extends Error {
+  constructor(
+    readonly type: string,
+    readonly path: string,
+    readonly feature: string,
+  ) {
+    super(`refusing to send ${type}: ${path} needs the protocol feature ${feature}, which the node doesn't advertise`);
+    this.name = 'GatedFieldRefused';
+  }
 }
 
 export type FieldGates<F extends string = string> = {
@@ -184,6 +257,21 @@ export const CONTROL_PLANE_FIELD_GATES: FieldGates<ProtocolFeature> = {
     { path: 'network.egressFilter.sources[].logAllowed', feature: 'egress-policies' },
     { path: 'network.egressFilter.sources[].denyUrlRegexes', feature: 'egress-policies' },
     { path: 'network.egressFilter.sources[].denyCidrs', feature: 'egress-policies' },
+    // M7 (3.1, 3.35): stripping these would downgrade a workload or format a VM disk, so they are refused.
+    { path: 'workloads[].isolation', feature: 'isolation-ladder', onMissing: 'refuse' },
+    { path: 'workloads[].devices', feature: 'workload-devices', onMissing: 'refuse' },
+    { path: 'workloads[].microvm', feature: 'microvm', onMissing: 'refuse' },
+    { path: 'workloads[].vm', feature: 'virtual-machines', onMissing: 'refuse' },
+    { path: 'volumes[].mode', feature: 'vm-block-volumes', onMissing: 'refuse' },
+    { path: 'volumes[].initializeFrom', feature: 'vm-block-volumes', onMissing: 'refuse' },
+    // Host settings (KVM opt-out, probe nonce): an older agent prepares no KVM anyway, so they are stripped.
+    { path: 'host', feature: 'isolation-ladder' },
+  ],
+  migrationPrepare: [
+    { path: 'spec.isolation', feature: 'isolation-ladder', onMissing: 'refuse' },
+    { path: 'spec.devices', feature: 'workload-devices', onMissing: 'refuse' },
+    { path: 'spec.microvm', feature: 'microvm', onMissing: 'refuse' },
+    { path: 'spec.vm', feature: 'virtual-machines', onMissing: 'refuse' },
   ],
   execOpen: [
     { path: 'tty', feature: 'exec-stdio' },
@@ -211,6 +299,13 @@ export const CONTROL_PLANE_MESSAGE_GATES: MessageGates<ProtocolFeature> = {
   restoreRun: 'backups',
   discoveryRequest: 'node-import',
   importStep: 'node-import',
+  consoleOpen: 'vm-consoles',
+  vmPower: 'virtual-machines',
+  vmImageImport: 'virtual-machines',
+  vmMigrationPrepare: 'vm-migration',
+  vmMigrationStart: 'vm-migration',
+  vmMigrationSwitchover: 'vm-migration',
+  helloAck: 'capability-updates',
 };
 
 /** Whether a node may receive a message type at all (its feature, if the type is gated, was advertised). */
@@ -249,6 +344,23 @@ export function parseGatePath(path: string): Segment[] {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** Whether a (non-undefined) value exists at `segments` in any array element / record value on the way. */
+function present(value: unknown, segments: Segment[]): boolean {
+  const [head, ...rest] = segments;
+
+  if (head.key === '*') return isRecord(value) && Object.values(value).some((v) => present(v, rest));
+
+  if (!isRecord(value) || !Object.prototype.hasOwnProperty.call(value, head.key)) return false;
+
+  const child = value[head.key];
+
+  if (rest.length === 0) return child !== undefined;
+
+  if (head.each === 'array') return Array.isArray(child) && child.some((element) => present(element, rest));
+
+  return present(child, rest);
 }
 
 /** Removes the field at `segments` (copy on write: untouched branches keep their identity). */
@@ -326,7 +438,8 @@ function unmetGates(type: string, negotiated: NegotiatedProtocol, gates: FieldGa
 
 /**
  * A control-plane → agent message as the node may receive it: every field gated by a feature the node didn't
- * advertise is removed. The payload is never mutated.
+ * advertise is removed. The payload is never mutated. Throws `GatedFieldRefused` when a refuse-gated field
+ * (`onMissing: 'refuse'`) the node lacks the feature for is present.
  */
 export function forNode<T extends ControlPlaneMessageType>(
   message: { type: T; payload: z.input<(typeof CONTROL_PLANE_TO_AGENT)[T]> },
@@ -338,7 +451,14 @@ export function forNode<T extends ControlPlaneMessageType>(
 
   for (const downgrade of unmetDowngrades(message.type, negotiated, downgrades)) payload = downgrade.apply(payload);
 
-  for (const gate of unmetGates(message.type, negotiated, gates)) payload = strip(payload, parseGatePath(gate.path));
+  for (const gate of unmetGates(message.type, negotiated, gates)) {
+    const segments = parseGatePath(gate.path);
+
+    if (gate.onMissing === 'refuse' && present(payload, segments))
+      throw new GatedFieldRefused(message.type, gate.path, gate.feature);
+
+    payload = strip(payload, segments);
+  }
 
   return payload === message.payload
     ? message
@@ -349,7 +469,9 @@ export function forNode<T extends ControlPlaneMessageType>(
  * `forNode` on an encoded control-plane → agent envelope, for the one place every message to a node passes
  * (the session's `send`). Envelopes without unmet gates are returned as they are (no re-encoding); otherwise the
  * stripped payload is validated again and re-encoded under the same id, correlation id and channel. Returns `null`
- * for a message type the node must not receive (`CONTROL_PLANE_MESSAGE_GATES`): the caller drops it.
+ * for a message type the node must not receive (`CONTROL_PLANE_MESSAGE_GATES`): the caller drops it. Throws
+ * `GatedFieldRefused` when the payload carries a refuse-gated field the node lacks the feature for: the caller must
+ * not send the message (and must not fall back to a stripped copy).
  */
 export function envelopeForNode(
   envelope: Envelope,

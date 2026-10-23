@@ -31,6 +31,8 @@ export const LOADWEAVER_EGRESS_NETWORK_LABEL = 'agenstra.io/egress-network';
 export const LOADWEAVER_ROLE_LABEL = 'agenstra.io/role';
 /** OpenCode server and VNC websockify inside an environment. */
 export const LOADWEAVER_ENVIRONMENT_PORTS = [4096, 6080] as const;
+/** Default port of the agent manager's API (its compose `PORT`), used by the agent context MCP. */
+export const LOADWEAVER_MANAGER_API_PORT = 3000;
 
 export type LoadweaverEgressNetwork = 'open' | 'filtered';
 
@@ -96,7 +98,16 @@ function splitHosts(
  */
 export function compileEgressPolicyForLoadweaver(
   policy: EffectiveEgressPolicy,
-  target: { project: string; deployment: string },
+  target: {
+    project: string;
+    deployment: string;
+    /**
+     * Manager API ports the environment must reach whatever its egress mode (the agent context MCP; the guard's
+     * platform allows): an in-cluster allow to the manager (`agenstra.io/role: manager`), which Loadweaver's
+     * `offline` mode doesn't affect (it only stops traffic leaving the cluster).
+     */
+    managerPorts?: readonly number[];
+  },
 ): LoadweaverEgressCompilation {
   const issues: string[] = [];
   const prefix = `${target.deployment}-egress`;
@@ -116,6 +127,18 @@ export function compileEgressPolicyForLoadweaver(
       logAllowed: policy.logAllowed,
     }),
   ];
+
+  const managerPorts = [...new Set(target.managerPorts ?? [])]
+    .filter((port) => Number.isInteger(port) && port >= 1 && port <= 65535)
+    .sort((a, b) => a - b);
+
+  if (managerPorts.length > 0)
+    documents.push(
+      doc(`${prefix}-platform`, {
+        to: [{ selector: { matchLabels: { [LOADWEAVER_ROLE_LABEL]: 'manager' } } }],
+        rules: [{ protocol: 'tcp', ports: managerPorts }],
+      }),
+    );
 
   // Without filtering nothing else matters (and nothing is recorded), like an agent without a guard.
   if (policy.mode !== 'off') {
@@ -167,9 +190,13 @@ export function compileEgressPolicyForLoadweaver(
 
 /**
  * The standing policies of a workspace project (applied once by an admin, see the Agenstra-on-Loadweaver guide):
- * the manager reaches its environments' OpenCode and VNC ports, and environments reach the internet by egress class.
+ * the manager reaches its environments' OpenCode and VNC ports, environments reach the manager's API (agent context
+ * MCP; in-cluster, so valid in every egress mode incl. `offline`), and environments reach the internet by egress class.
  */
-export function loadweaverWorkspacePolicies(project: string): LoadweaverResourceDocument[] {
+export function loadweaverWorkspacePolicies(
+  project: string,
+  options: { managerApiPort?: number } = {},
+): LoadweaverResourceDocument[] {
   const role = (value: string) => ({ selector: { matchLabels: { [LOADWEAVER_ROLE_LABEL]: value } } });
   const network = (value: LoadweaverEgressNetwork) => ({
     selector: { matchLabels: { [LOADWEAVER_ROLE_LABEL]: 'environment', [LOADWEAVER_EGRESS_NETWORK_LABEL]: value } },
@@ -187,6 +214,15 @@ export function loadweaverWorkspacePolicies(project: string): LoadweaverResource
       to: [role('environment')],
       rules: [{ protocol: 'tcp', ports: [...LOADWEAVER_ENVIRONMENT_PORTS] }],
     }),
+    doc(
+      'agenstra-environments-manager',
+      'Agenstra: environments reach the agent manager API (agent context MCP) in every egress mode',
+      {
+        from: [role('environment')],
+        to: [role('manager')],
+        rules: [{ protocol: 'tcp', ports: [options.managerApiPort ?? LOADWEAVER_MANAGER_API_PORT] }],
+      },
+    ),
     doc('agenstra-environments-open', 'Agenstra: environments without filtering (off / monitor) reach the internet', {
       from: [network('open')],
       to: [{ builtin: 'internet' }],

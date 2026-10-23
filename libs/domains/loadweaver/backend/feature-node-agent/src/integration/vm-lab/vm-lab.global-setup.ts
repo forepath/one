@@ -3,9 +3,12 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
 
+import { ensureLabLocks } from '@forepath/shared/backend/util-vm-lab';
+
+import { LAB_LABEL } from './docker';
 import { ensureGolden } from './golden';
 
-const WORKSPACE = resolve(__dirname, '../../../../../../../..');
+export const WORKSPACE = resolve(__dirname, '../../../../../../../..');
 
 /** Bundled volume driver (real node-agent classes, see volume-driver.entry.ts) copied into the VMs. */
 export const VOLUME_DRIVER_BUNDLE = join(tmpdir(), 'lw-vmlab', 'volume-driver.js');
@@ -29,6 +32,8 @@ export const APT_SOURCE_BUNDLE = join(tmpdir(), 'lw-vmlab', 'apt-source.js');
 export default async function globalSetup(): Promise<void> {
   const log = (line: string) => process.stderr.write(`[vm-lab] ${line}\n`);
 
+  // One heavy command / one VM lab at a time on this machine (shared harness locks, released at teardown / exit).
+  await ensureLabLocks({ label: LAB_LABEL, log });
   await ensureGolden(log);
   for (const [entry, outfile] of [
     ['volume-driver.entry.ts', VOLUME_DRIVER_BUNDLE],
@@ -38,30 +43,35 @@ export default async function globalSetup(): Promise<void> {
     ['backup-agent.entry.ts', BACKUP_AGENT_BUNDLE],
     ['import-agent.entry.ts', IMPORT_AGENT_BUNDLE],
   ])
-    execFileSync(
-      join(WORKSPACE, 'node_modules/.bin/esbuild'),
-      [
-        join(__dirname, entry),
-        '--bundle',
-        '--platform=node',
-        '--target=node24',
-        `--tsconfig=${join(WORKSPACE, 'tsconfig.base.json')}`,
-        `--outfile=${outfile}`,
-        // dockerode → ssh2's optional native helper (unused: Docker is reached over its unix socket).
-        '--external:cpu-features',
-        '--external:*.node',
-        // NestJS' optional transports the agent never loads (as in the agent's webpack build).
-        '--external:@nestjs/microservices',
-        '--external:@nestjs/websockets',
-        '--external:@nestjs/platform-express',
-        '--external:class-transformer',
-        '--external:class-validator',
-        '--log-level=error',
-      ],
-      { stdio: ['ignore', 'inherit', 'inherit'] },
-    );
+    bundleEntry(join(__dirname, entry), outfile);
 
   bundleWithDecoratorMetadata(join(__dirname, 'dr-agent.entry.ts'), DR_AGENT_BUNDLE);
+}
+
+/** Bundles a lab entry (and the node-agent code it imports) for the guests' Node.js with esbuild. */
+export function bundleEntry(entry: string, outfile: string): void {
+  execFileSync(
+    join(WORKSPACE, 'node_modules/.bin/esbuild'),
+    [
+      entry,
+      '--bundle',
+      '--platform=node',
+      '--target=node24',
+      `--tsconfig=${join(WORKSPACE, 'tsconfig.base.json')}`,
+      `--outfile=${outfile}`,
+      // dockerode → ssh2's optional native helper (unused: Docker is reached over its unix socket).
+      '--external:cpu-features',
+      '--external:*.node',
+      // NestJS' optional transports the agent never loads (as in the agent's webpack build).
+      '--external:@nestjs/microservices',
+      '--external:@nestjs/websockets',
+      '--external:@nestjs/platform-express',
+      '--external:class-transformer',
+      '--external:class-validator',
+      '--log-level=error',
+    ],
+    { stdio: ['ignore', 'inherit', 'inherit'] },
+  );
 }
 
 /**
@@ -69,8 +79,13 @@ export default async function globalSetup(): Promise<void> {
  * emit: tsc compiles the entry and everything it imports first (CommonJS, metadata), esbuild then bundles that output
  * with the workspace's path aliases pointed at it.
  */
-function bundleWithDecoratorMetadata(entry: string, outfile: string): void {
-  const work = join(tmpdir(), 'lw-vmlab', 'tsc');
+export function bundleWithDecoratorMetadata(entry: string, outfile: string, workName = 'tsc'): void {
+  bundlesWithDecoratorMetadata([[entry, outfile]], workName);
+}
+
+/** As {@link bundleWithDecoratorMetadata} for several entries with one tsc run (the agent is compiled once). */
+export function bundlesWithDecoratorMetadata(entries: readonly (readonly [string, string])[], workName = 'tsc'): void {
+  const work = join(tmpdir(), 'lw-vmlab', workName);
   const out = join(work, 'out');
   const base = JSON.parse(readFileSync(join(WORKSPACE, 'tsconfig.base.json'), 'utf8')) as {
     compilerOptions: { paths: Record<string, string[]> };
@@ -98,7 +113,7 @@ function bundleWithDecoratorMetadata(entry: string, outfile: string): void {
         esModuleInterop: true,
         noCheck: true,
       },
-      files: [entry],
+      files: entries.map(([entry]) => entry),
     }),
   );
   execFileSync(join(WORKSPACE, 'node_modules/.bin/tsc'), ['-p', join(work, 'tsconfig.json')], {
@@ -118,25 +133,26 @@ function bundleWithDecoratorMetadata(entry: string, outfile: string): void {
       },
     }),
   );
-  execFileSync(
-    join(WORKSPACE, 'node_modules/.bin/esbuild'),
-    [
-      join(out, relative(WORKSPACE, entry)).replace(/\.ts$/, '.js'),
-      '--bundle',
-      '--platform=node',
-      '--target=node24',
-      `--tsconfig=${join(work, 'paths.json')}`,
-      `--outfile=${outfile}`,
-      '--external:cpu-features',
-      '--external:*.node',
-      '--external:@nestjs/microservices',
-      '--external:@nestjs/websockets',
-      '--external:@nestjs/platform-express',
-      '--external:class-transformer',
-      '--external:class-validator',
-      '--log-level=error',
-    ],
-    // The compiled files live outside the workspace: packages resolve from its node_modules.
-    { stdio: ['ignore', 'inherit', 'inherit'], env: { ...process.env, NODE_PATH: join(WORKSPACE, 'node_modules') } },
-  );
+  for (const [entry, outfile] of entries)
+    execFileSync(
+      join(WORKSPACE, 'node_modules/.bin/esbuild'),
+      [
+        join(out, relative(WORKSPACE, entry)).replace(/\.ts$/, '.js'),
+        '--bundle',
+        '--platform=node',
+        '--target=node24',
+        `--tsconfig=${join(work, 'paths.json')}`,
+        `--outfile=${outfile}`,
+        '--external:cpu-features',
+        '--external:*.node',
+        '--external:@nestjs/microservices',
+        '--external:@nestjs/websockets',
+        '--external:@nestjs/platform-express',
+        '--external:class-transformer',
+        '--external:class-validator',
+        '--log-level=error',
+      ],
+      // The compiled files live outside the workspace: packages resolve from its node_modules.
+      { stdio: ['ignore', 'inherit', 'inherit'], env: { ...process.env, NODE_PATH: join(WORKSPACE, 'node_modules') } },
+    );
 }

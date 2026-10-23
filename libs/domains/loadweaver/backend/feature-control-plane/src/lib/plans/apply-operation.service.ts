@@ -401,7 +401,15 @@ export class ApplyOperationService implements OnApplicationBootstrap, OnModuleDe
 
         const current = await states.findOne({ where: { id } });
 
-        await states.save(states.create({ id, ...previous, generation: (current?.generation ?? 0) + 1 }));
+        // The inspections belong to the pinned images: restored with them (3.35).
+        await states.save(
+          states.create({
+            id,
+            ...previous,
+            imageConfigs: previous.imageConfigs ?? {},
+            generation: (current?.generation ?? 0) + 1,
+          }),
+        );
       }
 
       const resources = await manager.getRepository(ResourceEntity).find();

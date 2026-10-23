@@ -1,5 +1,14 @@
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
+import type { ImageInspection } from '../utils/microvm-planning.utils';
+
+/** A deployment's pins (3.22): image digests, secret versions and, for microVMs / VMs, the inspected images (3.35). */
+export interface PinnedDeploymentState {
+  images: Record<string, string>;
+  secretVersions: Record<string, number>;
+  imageConfigs?: Record<string, ImageInspection>;
+}
+
 /**
  * `applying` until every connected node reported the revision (3.19); a failure or cancel rolls back
  * (`rolling-back` → `rolled-back`), and a failed rollback stays `rollback-failed` with its locks until a fix-forward
@@ -36,7 +45,7 @@ export interface PlanProgress {
 
 /** What a rollback restores besides the resources' previous specs. */
 export interface PlanRollback {
-  deploymentStates: Record<string, { images: Record<string, string>; secretVersions: Record<string, number> } | null>;
+  deploymentStates: Record<string, PinnedDeploymentState | null>;
 }
 
 export interface PlanResourceChange {
@@ -121,7 +130,7 @@ export class PlanEntity {
 
   /** Pinned images and secret versions per deployment this plan applies (3.22). */
   @Column({ type: 'jsonb', name: 'deployment_states', default: () => "'{}'" })
-  deploymentStates!: Record<string, { images: Record<string, string>; secretVersions: Record<string, number> }>;
+  deploymentStates!: Record<string, PinnedDeploymentState>;
 
   /** Compose warnings, unacknowledged pins and services on project defaults. */
   @Column({ type: 'jsonb', name: 'warnings', default: () => "'[]'" })

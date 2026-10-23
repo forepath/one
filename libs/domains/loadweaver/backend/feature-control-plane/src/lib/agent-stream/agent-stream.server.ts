@@ -4,10 +4,13 @@ import {
   controlPlaneMessage,
   decodeAgentMessage,
   envelopeForNode,
+  GatedFieldRefused,
+  KNOWN_PROTOCOL_FEATURES,
   LEGACY_PROTOCOL,
   MAX_ENVELOPE_BYTES,
   negotiate,
   NODE_AGENT_SERVICE,
+  PROTOCOL_VERSION,
   type DesiredState,
   type Envelope,
   type FieldGates,
@@ -54,6 +57,8 @@ const MAX_MESSAGES_PER_WINDOW = 200;
 const RATE_WINDOW_MS = 10_000;
 const RECONCILE_INTERVAL_MS = 15_000;
 const LISTEN_RETRY_MS = 5_000;
+/** At most one refusal event per node, message type and field per minute. */
+const REFUSAL_EVENT_INTERVAL_MS = 60_000;
 
 export function readGrpcConfig(env: NodeJS.ProcessEnv = process.env): {
   enabled: boolean;
@@ -151,11 +156,35 @@ export interface AgentSessionStream {
 }
 
 /**
- * A node's session on this replica. Every message to the node passes its `send`, which strips the fields the
- * node's negotiated protocol doesn't have (3.26): legacy until the hello, then what the hello advertised.
- * `gates` is for tests.
+ * A message the session refused to send (M7 0.1): it carried a refuse-gated field (`isolation`, `devices`, `microvm`,
+ * `vm`, block volumes) for a node whose agent lacks the feature. Stripping would silently downgrade the workload, so
+ * the whole envelope is dropped; the scheduler keeps such workloads away, so this is a safety net that must not fire.
  */
-export function createAgentSession(nodeName: string, stream: AgentSessionStream, gates?: FieldGates): AgentSession {
+export interface ProtocolRefusal {
+  node: string;
+  type: string;
+  path: string;
+  feature: string;
+  at: Date;
+}
+
+/** Alert / event kind of a refusal (3.18). */
+export const NODE_PROTOCOL_REFUSED = 'node-protocol-refused';
+
+const refusalLogger = new Logger('AgentSession');
+
+/**
+ * A node's session on this replica. Every message to the node passes its `send`, which strips the fields the
+ * node's negotiated protocol doesn't have (3.26): legacy until the hello, then what the hello advertised. A message
+ * with a refuse-gated field the node lacks is logged, reported through `onRefused` and dropped — never sent as a
+ * stripped copy. `gates` is for tests.
+ */
+export function createAgentSession(
+  nodeName: string,
+  stream: AgentSessionStream,
+  gates?: FieldGates,
+  onRefused?: (refusal: ProtocolRefusal) => void,
+): AgentSession {
   const session: AgentSession = {
     nodeName,
     sessionId: randomUUID(),
@@ -165,8 +194,19 @@ export function createAgentSession(nodeName: string, stream: AgentSessionStream,
     send: (envelope) => {
       if (stream.writableEnded) return;
 
-      // `null`: a message type the node didn't advertise (e.g. live migration): never sent (3.26).
-      const gated = envelopeForNode(envelope, session.protocol, gates);
+      let gated: Envelope | null;
+
+      try {
+        // `null`: a message type the node didn't advertise (e.g. live migration): never sent (3.26).
+        gated = envelopeForNode(envelope, session.protocol, gates);
+      } catch (error) {
+        if (!(error instanceof GatedFieldRefused)) throw error;
+
+        refusalLogger.error(`Agent ${nodeName}: ${error.message}; message dropped (${NODE_PROTOCOL_REFUSED})`);
+        onRefused?.({ node: nodeName, type: error.type, path: error.path, feature: error.feature, at: new Date() });
+
+        return;
+      }
 
       if (gated) stream.write(gated);
     },
@@ -188,6 +228,8 @@ export class AgentStreamServer implements OnApplicationBootstrap, OnModuleDestro
   private reconcileTimer: NodeJS.Timeout | null = null;
   private releaseListener: (() => void) | null = null;
   private stopped = false;
+  /** Last recorded refusal per node, message type and path: the desired state is re-sent every reconcile. */
+  private readonly refusals = new Map<string, number>();
 
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
@@ -294,7 +336,7 @@ export class AgentStreamServer implements OnApplicationBootstrap, OnModuleDestro
     const name = nodeName;
     let window = { start: Date.now(), count: 0 };
     let queue: Promise<void> = Promise.resolve();
-    const session = createAgentSession(name, call);
+    const session = createAgentSession(name, call, undefined, (refusal) => this.protocolRefused(refusal));
 
     this.registry.register(session);
     // Live sessions for this node are relayed to this replica (3.19).
@@ -341,6 +383,23 @@ export class AgentStreamServer implements OnApplicationBootstrap, OnModuleDestro
     call.on('close', cleanup);
   }
 
+  /** A refused message (M7 0.1) becomes an event the `node-protocol-refused` alert fires on (all replicas see it). */
+  private protocolRefused(refusal: ProtocolRefusal): void {
+    const key = `${refusal.node}\0${refusal.type}\0${refusal.path}`;
+    const last = this.refusals.get(key) ?? 0;
+
+    if (refusal.at.getTime() - last < REFUSAL_EVENT_INTERVAL_MS) return;
+
+    this.refusals.set(key, refusal.at.getTime());
+    void this.metrics
+      .event(
+        NODE_PROTOCOL_REFUSED,
+        `${refusal.type} to ${refusal.node} not sent: ${refusal.path} needs the agent feature ${refusal.feature}`,
+        { entity: refusal.node, data: { type: refusal.type, path: refusal.path, feature: refusal.feature } },
+      )
+      .catch(() => undefined);
+  }
+
   private async dispatch(session: AgentSession, envelope: Envelope): Promise<void> {
     const decoded = decodeAgentMessage(envelope);
 
@@ -378,8 +437,21 @@ export class AgentStreamServer implements OnApplicationBootstrap, OnModuleDestro
           );
         }
 
+        // What this control plane speaks (feature `capability-updates`; dropped for agents without it): the agent
+        // then reports changed capabilities on this stream instead of a fresh hello on a second one.
+        session.send(
+          controlPlaneMessage(
+            'helloAck',
+            { protocolVersion: PROTOCOL_VERSION, features: [...KNOWN_PROTOCOL_FEATURES] },
+            { correlationId: message.id },
+          ),
+        );
         session.sentRevision = -1;
         await this.pushDesiredState(session);
+        break;
+      // Changed isolation probes (M7): the node's capabilities, without replacing the session (live sessions stay).
+      case 'capabilitiesUpdate':
+        await this.agents.handleCapabilitiesUpdate(session.nodeName, message.payload);
         break;
       case 'heartbeat':
         await this.agents.handleHeartbeat(session.nodeName, message.payload);

@@ -77,10 +77,25 @@ export interface HostScriptInput {
   upgrade: boolean;
   /** Pinned packages to install / hold at their versions (only those present on the host, plus required ones). */
   install: Record<string, string>;
+  /**
+   * Required host packages (util-release `REQUIRED_HOST_PACKAGES`, `name` or `name=version` when the release pins it):
+   * the ones not installed on the node are installed from the snapshot (nodes installed before a package became
+   * required); installed ones stay untouched. A package missing from the snapshot fails the update with its reason.
+   */
+  requiredPackages?: readonly string[];
   /** bird2 changes: BIRD stops with graceful restart first (peers keep its routes, 3.26). */
   birdGracefulRestart: boolean;
-  /** gVisor: the downloaded release tarball and the generated install script (util-container-runtime). */
-  gvisor?: { release: string; tarball: string; script: string };
+  /**
+   * gVisor: the downloaded release tarball and the generated install script (util-container-runtime). `kvm: false`:
+   * the node spec opts out of KVM (3.1) — no KVM preparation, no KVM runtimes (removed if registered).
+   */
+  gvisor?: { release: string; tarball: string; script: string; kvm?: boolean };
+  /**
+   * KVM modules follow the kernel (3.1, Ubuntu): `linux-modules-extra-<k>` at exactly the kernel package's version, from
+   * the snapshot, for the running kernel and the one the next boot runs — set when the node uses KVM (or its CPU
+   * could) and isn't opted out. A missing package is reported, never fatal (the probe after the reboot decides).
+   */
+  kvmModules?: boolean;
   /**
    * DRBD 9 module for the newest installed kernel: prebuilt per kernel, or built from the source tarball with the
    * release's pre-generated compat patches for that kernel (`compat`: kernel → entry files + their `compat.h` MD5; one
@@ -186,6 +201,41 @@ export function hostUpdateScript(input: HostScriptInput): string {
 
   if (input.birdGracefulRestart) lines.push('systemctl start bird || true');
 
+  const required = (input.requiredPackages ?? []).map((spec) => {
+    const [pkg, version] = spec.split('=', 2);
+
+    return quote(
+      version === undefined ? check(pkg, 'package') : `${check(pkg, 'package')}=${check(version, 'version')}`,
+    );
+  });
+
+  if (required.length)
+    lines.push(
+      '# Required host packages missing on this node (installed before they were required): from the snapshot only.',
+      'lw_missing=()',
+      `for spec in ${required.join(' ')}; do`,
+      `  if [ "$(dpkg-query -W -f='\${db:Status-Status}' "\${spec%%=*}" 2>/dev/null || true)" != installed ]; then lw_missing+=("$spec"); fi`,
+      'done',
+      'if [ ${#lw_missing[@]} -gt 0 ]; then',
+      '  echo "Required host packages from the snapshot: ${lw_missing[*]}" >&2',
+      `  ${apt} -y --no-install-recommends install "\${lw_missing[@]}" || lw_fail "required host packages \${lw_missing[*]}: not installable from the release's apt snapshot"`,
+      'fi',
+    );
+
+  if (input.kvmModules)
+    lines.push(
+      '# KVM modules (3.1): linux-modules-extra of the running kernel and the one the next boot runs, at exactly the',
+      "# kernel package's version, from the snapshot (Ubuntu ships kvm_intel / kvm_amd there for some flavours).",
+      'lw_kvm_module=kvm',
+      'if grep -qw vmx /proc/cpuinfo; then lw_kvm_module=kvm_intel; elif grep -qw svm /proc/cpuinfo; then lw_kvm_module=kvm_amd; fi',
+      'for KVER in $(printf \'%s\\n\' "$(uname -r)" "$(ls /lib/modules | sort -V | tail -1)" | sort -u); do',
+      '  if modinfo -k "$KVER" "$lw_kvm_module" >/dev/null 2>&1; then continue; fi',
+      '  v=$(dpkg-query -W -f=\'${Version}\' "linux-image-$KVER" 2>/dev/null || dpkg-query -W -f=\'${Version}\' "linux-image-unsigned-$KVER" 2>/dev/null || true)',
+      '  if [ -z "$v" ]; then echo "KVM modules: no kernel package for $KVER" >&2; continue; fi',
+      `  ${apt} -y --no-install-recommends install "linux-modules-extra-$KVER=$v" || echo "KVM modules: linux-modules-extra-$KVER=$v is not in the release's apt snapshot; KVM may be unavailable after the next boot" >&2`,
+      'done',
+    );
+
   if (input.gvisor) {
     const target = `/usr/local/lib/agenstra-gvisor/${check(input.gvisor.release, 'gVisor release')}`;
 
@@ -198,7 +248,8 @@ export function hostUpdateScript(input: HostScriptInput): string {
       '  chown -R root:root "$staging"; chmod -R go-w "$staging"; chmod 755 "$staging"',
       `  mv "$staging" ${quote(target)}`,
       'fi',
-      `bash ${quote(input.gvisor.script)} install`,
+      // Packages come only from the snapshot (AGENSTRA_KVM_APT=0); the node spec's KVM opt-out skips KVM entirely.
+      `${input.gvisor.kvm === false ? 'GVISOR_KVM=0 AGENSTRA_KVM=0 ' : ''}AGENSTRA_KVM_APT=0 bash ${quote(input.gvisor.script)} install`,
     );
   }
 

@@ -47,6 +47,20 @@ describe('checkpoint capability (3.10)', () => {
     ).toMatchObject({ runsc: true });
   });
 
+  it('reports gVisor-KVM checkpoints only for a KVM-platform runtime with its own network stack and a ready level', async () => {
+    const kvm = { 'runsc-kvm': { path: '/usr/local/bin/runsc', runtimeArgs: ['--platform=kvm'] } };
+
+    expect(await host([]).checkpoint(kvm, true)).toMatchObject({ runscKvm: true });
+    expect(await host([]).checkpoint(kvm, true, false)).toMatchObject({ runscKvm: false });
+    expect(await host([]).checkpoint(kvm, false)).toMatchObject({ runscKvm: false });
+    expect(await host(['/usr/local/bin/runsc']).checkpoint(kvm, true)).toMatchObject({ runscKvm: false });
+    expect(await host([]).checkpoint({ 'runsc-kvm': { runtimeArgs: ['--platform=systrap'] } }, true)).toMatchObject({
+      runscKvm: false,
+    });
+    // Not registered: not reported (older control planes see the same capability as before).
+    expect(await host([]).checkpoint({}, true)).not.toHaveProperty('runscKvm');
+  });
+
   it('takes the configured transfer rate, else nothing for unknown link speeds', async () => {
     expect(await host([]).transferBitsPerSecond({ LOADWEAVER_TRANSFER_BPS: '10000000000' })).toBe(1e10);
     // A default route's device without a readable link speed (virtual NICs): unknown.

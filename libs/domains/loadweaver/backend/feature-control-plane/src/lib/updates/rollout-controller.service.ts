@@ -23,6 +23,7 @@ import { nodeWindowState, type NamedWindow } from './maintenance-window.utils';
 import { ReleaseEntity } from './release.entity';
 import { ACTIVE_ROLLOUT_STATUSES, RolloutEntity, RolloutStepEntity, type StepTarget } from './rollout.entity';
 import { evaluateGates, gateBaseline, type GateInput } from './rollout-gates.utils';
+import { kvmInUse } from './rollout-planner.utils';
 import {
   advanceStep,
   startRollback,
@@ -270,6 +271,7 @@ export class RolloutControllerService implements OnApplicationBootstrap, OnModul
         startedAt: step.startedAt?.getTime() ?? null,
         ...(release ? { revision: desired && desired.release === release ? desired.revision : null } : {}),
         ...(info && Object.keys(info.images).length ? { images: info.images } : {}),
+        ...(step.data.kvmBefore ? { kvmBefore: true } : {}),
       },
       node: {
         connected: !!node?.connected,
@@ -279,6 +281,7 @@ export class RolloutControllerService implements OnApplicationBootstrap, OnModul
         appliedRevision: node?.appliedRevision ?? 0,
         reportRevision: node?.lastReportRevision ?? null,
         reportSteps: node?.lastReportSteps ?? null,
+        kvmUsable: kvmInUse(node?.capabilities),
       },
       health: ctx.tree,
       slos: ctx.slos,
@@ -373,7 +376,14 @@ export class RolloutControllerService implements OnApplicationBootstrap, OnModul
     const beforeInfo = await this.releaseInfo(step.before?.release ?? null, ctx);
     const gates = evaluateGates(this.gateInput(step, node, ctx, now, step.target.release, info));
     const rollbackInput = this.gateInput(step, node, ctx, now, step.before?.release ?? null, beforeInfo);
-    const rollbackGates = evaluateGates({ ...rollbackInput, health: [], slos: [], replication: [] });
+    const rollbackGates = evaluateGates({
+      ...rollbackInput,
+      // Rolling back can't bring KVM back by itself; it is reported by the forward step's gate.
+      step: { ...rollbackInput.step, kvmBefore: undefined },
+      health: [],
+      slos: [],
+      replication: [],
+    });
     const hostAction = node.componentVersions?.actions?.find((a) => a.id === step.target.host?.id) ?? null;
     const result = advanceStep(
       {
@@ -407,7 +417,12 @@ export class RolloutControllerService implements OnApplicationBootstrap, OnModul
       },
     );
 
-    if (result.started) result.data.baseline = gateBaseline(ctx.tree, ctx.slos);
+    if (result.started) {
+      result.data.baseline = gateBaseline(ctx.tree, ctx.slos);
+
+      // KVM follows the kernel (3.1): remembered before the host update, checked after the reboot.
+      if (step.kind === 'host' && kvmInUse(node.capabilities)) result.data.kvmBefore = true;
+    }
 
     await this.apply(rollout, step, node, result.effects);
     await this.saveStep(step, result, now);

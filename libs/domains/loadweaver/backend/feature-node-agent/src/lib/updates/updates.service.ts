@@ -11,6 +11,7 @@ import type {
 } from '@forepath/loadweaver/shared/util-agent-protocol';
 import {
   packagePins,
+  REQUIRED_HOST_PACKAGES,
   trustedReleaseKeys,
   unsignedBundlesAllowed,
   unsignedBundlesNotice,
@@ -18,7 +19,7 @@ import {
   type ImageComponentName,
   type ReleaseManifest,
 } from '@forepath/loadweaver/shared/util-release';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import type Docker from 'dockerode';
 
 import { etcdClientUrl } from '../control-plane/control-plane-containers';
@@ -26,6 +27,7 @@ import { listMembers } from '../control-plane/etcd-client';
 import { CommandRunner } from '../host/command-runner';
 import { DOCKER } from '../host/docker.provider';
 import { HostInfoService } from '../host/host-info.service';
+import { IsolationProbeService } from '../host/isolation-probe.service';
 import { COMPONENT_LABEL, MANAGED_LABEL } from '../host/managed-containers';
 import { defaultFetch, type FetchImpl } from '../host/verified-download';
 import { AgentStateStore } from '../state/agent-state.store';
@@ -146,6 +148,7 @@ export class UpdatesService {
     private readonly commands: CommandRunner,
     private readonly hostInfo: HostInfoService,
     @Inject(DOCKER) private readonly docker: Docker,
+    @Optional() private readonly isolation?: IsolationProbeService,
   ) {
     const dir = join(state.dir, 'updates');
     // Loud on every start (M6 review L1).
@@ -297,11 +300,25 @@ export class UpdatesService {
     const os = await this.hostInfo.os();
 
     if (components.host) {
-      await this.os.run(components.host, manifest, identity.controlPlaneUrl, components.artifactBase, os);
+      const finished = (await this.actions.get(components.host.id))?.phase === 'done';
+
+      await this.os.run(
+        components.host,
+        manifest,
+        identity.controlPlaneUrl,
+        components.artifactBase,
+        os,
+        await this.isolation?.kvmPlan().catch(() => undefined),
+      );
       this.hostFacts = null;
 
-      if ((await this.actions.get(components.host.id))?.phase === 'done' && (await this.os.reboot(components.host)))
-        return;
+      const done = (await this.actions.get(components.host.id))?.phase === 'done';
+
+      if (done && (await this.os.reboot(components.host))) return;
+
+      // Packages / gVisor changed without a reboot: the isolation levels are probed again (3.1). After a reboot the
+      // restarted agent probes before it reports its capabilities.
+      if (done && !finished) void this.isolation?.reprobe('host update').catch(() => undefined);
     }
 
     await this.selfUpdater.ensure(manifest, os.arch, identity.controlPlaneUrl, components.artifactBase);
@@ -317,8 +334,14 @@ export class UpdatesService {
       () => false,
     );
     const os = await this.hostInfo.os();
-    const pinned = this.verified ? Object.keys(packagePins(this.verified.manifest, `${os.id}:${os.versionId}`)) : [];
-    const installed = pinned.length ? await this.os.installedPackages() : {};
+    // Pinned packages and the required host packages (the plan diff lists missing ones, F2).
+    const pinned = [
+      ...new Set([
+        ...(this.verified ? Object.keys(packagePins(this.verified.manifest, `${os.id}:${os.versionId}`)) : []),
+        ...REQUIRED_HOST_PACKAGES,
+      ]),
+    ];
+    const installed = await this.os.installedPackages();
     const drbd =
       /version:\s*([0-9][0-9.]*)/.exec(await readFile('/proc/drbd', 'utf8').catch(() => ''))?.[1] ??
       ((await this.commands

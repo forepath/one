@@ -15,6 +15,7 @@ import {
   OPENSEARCH_REPOSITORY_S3,
   PACKAGE_COMPONENT_VERSIONS,
   PACKAGE_PINS,
+  RELEASE_BUILT_IMAGES,
   splitImageReference,
   type ImageComponentName,
 } from './pins';
@@ -67,13 +68,16 @@ export function buildManifest(input: ManifestInput): ReleaseManifest {
     const reference = input.images?.[name] ?? source;
     const parts = splitImageReference(reference);
 
+    // A release-built image the pipeline didn't pin (development bundles): left out when optional.
+    if (!parts && !input.images?.[name] && RELEASE_BUILT_IMAGES[name] === 'optional') continue;
+
     if (!parts) throw new Error(`image ${name} (${reference}) is not pinned by digest`);
 
     const archive = add(input.imageArchives?.[name]);
 
     components[name] = {
       kind: 'image',
-      version: name === 'control-plane' ? input.version : imageVersion(parts.tag),
+      version: RELEASE_BUILT_IMAGES[name] ? input.version : imageVersion(parts.tag),
       repository: parts.repository,
       ...(parts.tag ? { tag: parts.tag } : {}),
       digest: parts.digest,

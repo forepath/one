@@ -1,8 +1,10 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { once } from 'node:events';
 import { constants } from 'node:fs';
-import { lstat, mkdir, open, rename, rm, symlink } from 'node:fs/promises';
+import { chmod, chown, lstat, mkdir, open, rename, rm, symlink } from 'node:fs/promises';
+import { createConnection, createServer as createUnixServer, type Socket } from 'node:net';
 import { dirname, join } from 'node:path';
+import type { Duplex } from 'node:stream';
 import { finished } from 'node:stream/promises';
 import { connect, createServer, type PeerCertificate, type Server, type TLSSocket } from 'node:tls';
 
@@ -60,8 +62,26 @@ function tokenMatches(expected: string, presented: unknown): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+/**
+ * The target side of a relay (QEMU live migration, 3.35 / M7.4): where an authenticated relay connection is piped to
+ * (the incoming launcher's libvirt session socket, resolved per connection) and what must happen first (e.g. promote
+ * the VM's disks: the source has allowed two primaries by the time it connects).
+ */
+export interface RelayTarget {
+  socketPath: () => Promise<string>;
+  onConnect?: () => Promise<void>;
+  /**
+   * Runs once a batch arrived, before the source gets its answer (generic microVM live migration, M7 W10b: a guest
+   * tree pass is applied, the volumes are taken over); a failure is the batch's error.
+   */
+  onBatch?: (batch: string) => Promise<void>;
+}
+
 interface ReceiveSession {
   key: string;
+  relay?: RelayTarget;
+  /** Open relay connections (closed with the attempt). */
+  relays: Set<Duplex>;
   token: string;
   peer: string;
   dir: string;
@@ -134,8 +154,11 @@ export class TransferService implements OnModuleDestroy {
     return `${migration}#${attempt}`;
   }
 
-  /** Opens the endpoint for one attempt (idempotent); returns where it listens. */
-  async open(request: OpenTransfer): Promise<TransferEndpoint> {
+  /**
+   * Opens the endpoint for one attempt (idempotent); returns where it listens. With `relay`, the source may also open
+   * relay connections (raw bytes to `relay.socketPath()`) besides sending batches.
+   */
+  async open(request: OpenTransfer, relay?: RelayTarget): Promise<TransferEndpoint> {
     const key = TransferService.key(request.migration, request.attempt);
     const existing = this.sessions.get(key);
 
@@ -152,6 +175,8 @@ export class TransferService implements OnModuleDestroy {
     const expiresInMs = request.expiresInSeconds * 1000;
     const session: ReceiveSession = {
       key,
+      ...(relay ? { relay } : {}),
+      relays: new Set(),
       token: request.token,
       peer: nodeIdentityUri(request.credentials.clusterId, request.peer),
       dir: request.dir,
@@ -180,6 +205,7 @@ export class TransferService implements OnModuleDestroy {
     clearTimeout(session.idle);
     this.sessions.delete(key);
     session.waiters.forEach((w) => w());
+    session.relays.forEach((r) => r.destroy());
     this.logger.log(`Transfer endpoint for ${key} ${reason}`);
 
     if (this.sessions.size === 0) void this.stop();
@@ -288,7 +314,19 @@ export class TransferService implements OnModuleDestroy {
 
       session.idle.refresh();
 
-      const received = session.queue.then(() => this.receive(reader, session));
+      if (hello.relay === true) {
+        if (!session.relay) return await reply({ ok: false, error: 'not authorized' });
+
+        return await this.relay(socket, reader, session, session.relay);
+      }
+
+      const received = session.queue.then(async () => {
+        const bytes = await this.receive(reader, session);
+
+        await session.relay?.onBatch?.(hello.batch);
+
+        return bytes;
+      });
 
       session.queue = received.catch(() => undefined);
 
@@ -302,6 +340,26 @@ export class TransferService implements OnModuleDestroy {
       this.logger.warn(`Transfer failed: ${error instanceof Error ? error.message : String(error)}`);
       await reply({ ok: false, error: (error instanceof Error ? error.message : String(error)).slice(0, 500) });
     }
+  }
+
+  /**
+   * A relay connection: after `onConnect` and the local connection, `result { ok }` goes back, then bytes flow both
+   * ways until either side closes (or the attempt ends). No idle timeout: libvirt keeps its connection alive itself.
+   */
+  private async relay(socket: TLSSocket, reader: FrameReader, session: ReceiveSession, target: RelayTarget) {
+    socket.setTimeout(0);
+    await target.onConnect?.();
+
+    const local = createConnection(await target.socketPath());
+
+    local.on('error', () => undefined);
+    await once(local, 'connect');
+    await writeChunk(socket, encodeFrame({ type: 'result', ok: true } satisfies TransferResult));
+    session.relays.add(socket);
+    session.relays.add(local);
+    socket.once('close', () => (session.relays.delete(socket), local.destroy()));
+    local.once('close', () => (session.relays.delete(local), socket.destroy()));
+    pipeRelay(reader, socket, local);
   }
 
   private async receive(reader: FrameReader, session: ReceiveSession): Promise<number> {
@@ -443,4 +501,230 @@ export async function sendCheckpointBatch(request: SendRequest): Promise<number>
     clearTimeout(timer);
     socket.destroy();
   }
+}
+
+/**
+ * Pipes a relay connection after its handshake: `reader`'s remaining bytes (the TLS side) to `local`, and `local` back
+ * to the TLS socket, with backpressure both ways; either side ending ends both.
+ */
+export function pipeRelay(reader: FrameReader, remote: Duplex, local: Duplex): void {
+  const close = () => {
+    remote.destroy();
+    local.destroy();
+  };
+
+  local.pipe(remote);
+  local.once('end', close);
+  void (async () => {
+    try {
+      for await (const chunk of reader.remaining()) await writeChunk(local, chunk);
+    } catch {
+      // either side went away
+    }
+
+    close();
+  })();
+}
+
+export interface RelayRequest {
+  endpoint: TransferEndpoint;
+  credentials: TransferCredentials;
+  /** The target node (its certificate must name it). */
+  peer: string;
+  token: string;
+  migration: string;
+  attempt: number;
+}
+
+/** Opens one relay connection to the target's endpoint (handshake done); the returned reader holds what follows. */
+export async function connectRelay(request: RelayRequest): Promise<{ socket: TLSSocket; reader: FrameReader }> {
+  const expected = nodeIdentityUri(request.credentials.clusterId, request.peer);
+  const socket = connect({
+    host: request.endpoint.address,
+    port: request.endpoint.port,
+    key: request.credentials.privateKeyPem,
+    cert: request.credentials.certificatePem,
+    ca: request.credentials.caCertificatePem,
+    minVersion: 'TLSv1.3',
+    checkServerIdentity: (_host, cert) =>
+      isNodeCertificate(cert, expected) ? undefined : new Error(`endpoint is not node ${request.peer}`),
+  });
+
+  socket.on('error', () => undefined);
+
+  try {
+    await once(socket, 'secureConnect');
+
+    const reader = new FrameReader(socket);
+
+    await writeChunk(
+      socket,
+      encodeFrame({
+        type: 'hello',
+        v: TRANSFER_PROTOCOL_VERSION,
+        token: request.token,
+        migration: request.migration,
+        attempt: request.attempt,
+        batch: 'relay',
+        relay: true,
+      } satisfies TransferHello),
+    );
+
+    const answer = await reader.frame<TransferResult>();
+
+    if (answer.type !== 'result' || !answer.ok)
+      throw new Error(`target refused the relay: ${answer.error ?? 'unknown error'}`);
+
+    return { socket, reader };
+  } catch (error) {
+    socket.destroy();
+    throw error;
+  }
+}
+
+export interface RelayListener {
+  /** Connections relayed so far. */
+  connections(): number;
+  /**
+   * Holds what the local side sends from now on (buffered, at most `maxBytes`: beyond, the connections fail) until
+   * {@link release}: a generic microVM's final migration data stays here until the volumes were handed over (M7 W10b).
+   */
+  gate(maxBytes: number): void;
+  /** Sends what the gate held and lets everything through again. */
+  release(): void;
+  /** Bytes the gate holds. */
+  held(): number;
+  close(): Promise<void>;
+}
+
+/** The local → remote direction of a source relay connection, with the listener's gate. */
+interface RelayGate {
+  maxBytes: number | null;
+  held: number;
+  flushers: Set<() => void>;
+}
+
+/**
+ * The source side of one relay connection: remote → local as {@link pipeRelay}; local → remote with backpressure,
+ * held while the gate is closed. The local end (QEMU finished sending) ends the remote side gracefully once
+ * everything held went out, so the target gets the whole stream.
+ */
+export function pipeGatedRelay(reader: FrameReader, remote: Duplex, local: Duplex, gate: RelayGate): void {
+  const queue: Buffer[] = [];
+  let ended = false;
+  const close = () => {
+    gate.held -= queue.reduce((sum, chunk) => sum + chunk.length, 0);
+    queue.length = 0;
+    gate.flushers.delete(flush);
+    remote.destroy();
+    local.destroy();
+  };
+  const flush = () => {
+    if (gate.maxBytes !== null) return;
+
+    while (queue.length > 0) {
+      const chunk = queue.shift() as Buffer;
+
+      gate.held -= chunk.length;
+
+      if (!remote.write(chunk)) {
+        local.pause();
+        remote.once('drain', () => (local.resume(), flush()));
+
+        return;
+      }
+    }
+
+    if (ended) {
+      gate.flushers.delete(flush);
+      remote.end();
+    }
+  };
+
+  gate.flushers.add(flush);
+  local.on('data', (chunk: Buffer) => {
+    if (gate.maxBytes !== null || queue.length > 0) {
+      queue.push(chunk);
+      gate.held += chunk.length;
+
+      if (gate.maxBytes !== null && gate.held > gate.maxBytes) close();
+
+      return;
+    }
+
+    if (!remote.write(chunk)) {
+      local.pause();
+      remote.once('drain', () => (local.resume(), flush()));
+    }
+  });
+  local.once('end', () => {
+    ended = true;
+    flush();
+  });
+  remote.once('close', () => (queue.length > 0 || !ended ? close() : undefined));
+  void (async () => {
+    try {
+      for await (const chunk of reader.remaining()) await writeChunk(local, chunk);
+    } catch {
+      // either side went away
+    }
+
+    // The target closed its side: a local end still being flushed finishes on its own.
+    if (!ended) close();
+  })();
+}
+
+/**
+ * The source side of a relay (M7.4): a unix socket in the source launcher's run directory (owned by the VMM user, so
+ * its libvirt can connect to it), each connection relayed to the target's endpoint over mTLS + the attempt's token.
+ */
+export async function listenRelay(
+  request: RelayRequest & { socketPath: string; owner?: { uid: number; gid: number } },
+): Promise<RelayListener> {
+  const open = new Set<Socket | TLSSocket>();
+  let count = 0;
+  const gate: RelayGate = { maxBytes: null, held: 0, flushers: new Set() };
+  const server = createUnixServer((conn) => {
+    count++;
+    open.add(conn);
+    conn.on('error', () => undefined);
+    conn.once('close', () => open.delete(conn));
+    conn.pause();
+    connectRelay(request).then(
+      ({ socket, reader }) => {
+        open.add(socket);
+        socket.once('close', () => open.delete(socket));
+        pipeGatedRelay(reader, socket, conn, gate);
+        // Paused until the remote side was connected: nothing it sent meanwhile is lost.
+        conn.resume();
+      },
+      () => conn.destroy(),
+    );
+  });
+
+  await rm(request.socketPath, { force: true });
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(request.socketPath, () => resolve());
+  });
+  await chmod(request.socketPath, 0o600);
+
+  if (request.owner) await chown(request.socketPath, request.owner.uid, request.owner.gid);
+
+  return {
+    connections: () => count,
+    gate: (maxBytes) => {
+      gate.maxBytes = maxBytes;
+    },
+    release: () => {
+      gate.maxBytes = null;
+      [...gate.flushers].forEach((flush) => flush());
+    },
+    held: () => gate.held,
+    close: async () => {
+      open.forEach((s) => s.destroy());
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      await rm(request.socketPath, { force: true });
+    },
+  };
 }

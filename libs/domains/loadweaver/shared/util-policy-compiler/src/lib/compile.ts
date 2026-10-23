@@ -880,8 +880,8 @@ function compileDnsAndServices(
   const workloadsByService = new Map<string, typeof input.workloads>();
 
   for (const workload of input.workloads) {
-    // Draining replicas take no new connections through service IPs.
-    if (workload.draining) continue;
+    // Draining replicas take no new connections through service IPs; a VM's extra NICs are no backends.
+    if (workload.draining || workload.secondaryInterface) continue;
 
     const key = `${workload.project}/${workload.service}`;
 

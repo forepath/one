@@ -23,6 +23,7 @@ import {
   type ClusterBackups,
   type ClusterSpec,
   nodeGroupSpecSchema,
+  nodeSpecSchema,
   policySpecSchema,
   workloadGroupSpecSchema,
   type DnsZoneSpec,
@@ -91,9 +92,11 @@ import {
 } from '../utils/workload-planning.utils';
 import { MasterKeyService } from './master-key.service';
 import { WorkloadPlannerService } from './workload-planner.service';
+import { vmBlockVolumes, vmNicAddresses, VM_NIC_LABEL } from '../utils/vm-planning.utils';
 import { computeControlPlaneMembership, type ControlPlaneMembership } from '../utils/control-plane-membership.utils';
 import { hostRoutes, keptAddresses } from '../utils/migration-state.utils';
 import { isDraining } from '../utils/replica-drain.utils';
+import { loadVmOperationalState } from '../utils/vm-power.utils';
 import { IMPORT_LIFECYCLES } from '../entities/node.entity';
 import { heldImportDeployments } from '../import/import-hold';
 import { ReleasesService } from '../updates/releases.service';
@@ -123,8 +126,9 @@ export interface WorkloadContext {
       >
     >)[];
   services: Pick<ServiceAddressEntity, 'id' | 'addressV4' | 'addressV6'>[];
-  /** Pinned images and secret versions per deployment (3.22). */
-  states?: Pick<DeploymentStateEntity, 'id' | 'images' | 'secretVersions' | 'generation'>[];
+  /** Pinned images and secret versions per deployment (3.22), with the inspected microVM / VM images (3.35). */
+  states?: (Pick<DeploymentStateEntity, 'id' | 'images' | 'secretVersions' | 'generation'> &
+    Partial<Pick<DeploymentStateEntity, 'imageConfigs'>>)[];
   /** Pod subnets per node: addresses outside them were kept by a live migration (3.10). */
   podSubnets?: ReadonlyMap<string, readonly string[]>;
 }
@@ -158,12 +162,20 @@ export function withMigrationHints(
   node: string,
   podSubnets: ReadonlyMap<string, readonly string[]> | undefined,
 ): WorkloadSpec {
-  const kept = podSubnets?.has(node) ? keptAddresses(spec.addresses, podSubnets.get(node) ?? []) : [];
+  const subnets = podSubnets?.get(node) ?? [];
+  const kept = podSubnets?.has(node) ? keptAddresses(spec.addresses, subnets) : [];
+  // A VM's extra NICs keep their addresses too (per-NIC host routes, 3.35); the first NIC uses the workload's.
+  const nics = spec.vm?.nics.map((nic, i) => {
+    const nicKept = i > 0 && podSubnets?.has(node) ? keptAddresses(nic.addresses, subnets) : [];
+
+    return nicKept.length > 0 ? { ...nic, hostRoutes: hostRoutes(nicKept) } : nic;
+  });
 
   return {
     ...spec,
     ...(placement.restored && placement.node === node ? { restoredFrom: placement.restored } : {}),
     ...(kept.length > 0 ? { hostRoutes: hostRoutes(kept) } : {}),
+    ...(spec.vm && nics ? { vm: { ...spec.vm, nics } } : {}),
   };
 }
 
@@ -191,6 +203,37 @@ export function workloadCompilerInput(
     const kept = context.podSubnets?.has(placement.node)
       ? keptAddresses(placement.addresses, context.podSubnets.get(placement.node) ?? [])
       : [];
+
+    const vm = parsed.virtualMachines?.[service];
+
+    // A VM is one policy member per NIC (3.35): each with its own addresses, labels and groups; the first NIC is
+    // the replica itself (service IPs, DNS), the others never back the VM's service.
+    if (vm) {
+      for (const { nic, index: nicIndex, addresses } of vmNicAddresses(vm, placement.addresses)) {
+        const nicKept = kept.filter((a) => addresses.includes(a));
+
+        workloads.push({
+          id: nicIndex === 0 ? copy.copyId : `${copy.copyId}#${nic.name}`,
+          project,
+          deployment,
+          service,
+          node: placement.node,
+          labels: {
+            ...workloadLabels(project, deployment, { ...spec, labels: { ...vm.labels } }, Number(index)),
+            ...(nic.labels ?? {}),
+            'loadweaver.com/vm': vm.name,
+            [VM_NIC_LABEL]: nic.name,
+          },
+          addresses,
+          ...(nicKept.length > 0 ? { keptAddresses: nicKept } : {}),
+          ...(isDraining(placement) ? { draining: true } : {}),
+          ...(nicIndex > 0 ? { secondaryInterface: true } : {}),
+          groups: [...nic.groups],
+        });
+      }
+
+      continue;
+    }
 
     workloads.push({
       id: copy.copyId,
@@ -266,6 +309,9 @@ export function effectiveSpec(
 
   const pinned = context.states?.find((s) => s.id === `${project}/${deployment}`);
 
+  // A VM runs once its image is pinned and inspected (3.35): until the apply stored it, nothing.
+  if (parsed.virtualMachines?.[service] && !pinned?.imageConfigs?.[service]?.vmImage) return null;
+
   return buildWorkloadSpec(parsed, spec, Number(index), addresses, dnsDomain, pinned);
 }
 
@@ -285,6 +331,34 @@ export function nodeWorkloads(node: string, context: WorkloadContext, dnsDomain:
     .sort((a, b) => a.id.localeCompare(b.id));
 }
 
+/** The KVM setting of each node's `Node` resource (`virtualization.kvm`, 3.1), where it sets one. */
+export function nodeKvmSettings(
+  resources: readonly Pick<ResourceEntity, 'kind' | 'name' | 'spec'>[],
+): Map<string, 'auto' | 'disabled'> {
+  const settings = new Map<string, 'auto' | 'disabled'>();
+
+  for (const r of resources.filter((x) => x.kind === 'Node')) {
+    const kvm = nodeSpecSchema.safeParse(r.spec).data?.virtualization?.kvm;
+
+    if (kvm) settings.set(r.name, kvm);
+  }
+
+  return settings;
+}
+
+/**
+ * `desiredState.host` of a node (3.1; stripped for agents without `isolation-ladder`): the node spec's KVM setting
+ * and the on-demand probe nonce. Absent when neither is set, so existing desired states don't change.
+ */
+export function desiredHost(
+  kvm: 'auto' | 'disabled' | undefined,
+  probeNonce: string | null | undefined,
+): DesiredState['host'] | undefined {
+  if (!kvm && !probeNonce) return undefined;
+
+  return { ...(kvm ? { kvm } : {}), ...(probeNonce ? { probeNonce } : {}) };
+}
+
 /** Nodes already warned about for holding volumes without a reported host name (once per process). */
 const unnamedVolumeHosts = new Set<string>();
 
@@ -293,6 +367,8 @@ export function nodeVolumes(
   node: string,
   placements: VolumePlacementEntity[],
   nodes: NodeEntity[],
+  /** VM disks (3.35): block mode and the boot disk's initialization, by volume id. */
+  blockVolumes: ReadonlyMap<string, Pick<VolumeAssignment, 'mode' | 'initializeFrom'>> = new Map(),
 ): VolumeAssignment[] {
   const byName = new Map(nodes.map((n) => [n.name, n]));
 
@@ -344,6 +420,8 @@ export function nodeVolumes(
           connections,
           primary: v.primaryNode,
           keyRef: volumeKeyRef(v.id),
+          // Only VM disks carry the refuse-gated block fields (filesystem volumes keep their assignment).
+          ...(blockVolumes.get(v.id) ?? {}),
         },
       ];
     })
@@ -909,6 +987,10 @@ export class NetworkStateService implements OnModuleDestroy {
         { kind: 'ClientGroup' },
         // Status page hostnames are ingress sites (3.25).
         { kind: 'StatusPage' },
+        // Virtual machines are workloads of the reserved deployment `lw-vm` (3.35).
+        { kind: 'VirtualMachine' },
+        // KVM opt-out of the node spec (3.1).
+        { kind: 'Node' },
       ],
     });
     const clusterResource = await manager
@@ -923,7 +1005,10 @@ export class NetworkStateService implements OnModuleDestroy {
     // Imported deployments wait for their join plan's release step (data copied, source stopped).
     const held = await heldImportDeployments(manager);
     const workloads: WorkloadContext = {
-      parsed: this.planner.parse(resources).parsed,
+      // VMs at their operational power and cloud-init generation (3.35, the lifecycle API).
+      parsed: ((vms) => this.planner.parse(resources, vms.power, vms.generations).parsed)(
+        await loadVmOperationalState(manager),
+      ),
       placements: (await manager.getRepository(WorkloadPlacementEntity).find()).filter(
         (p) => !held.has(`${p.project}/${p.deployment}`),
       ),
@@ -1034,6 +1119,8 @@ export class NetworkStateService implements OnModuleDestroy {
         : '';
 
       const volumePlacements = await manager.getRepository(VolumePlacementEntity).find();
+      const blockVolumes = vmBlockVolumes(workloads.parsed, workloads.states);
+      const nodeKvm = nodeKvmSettings(resources);
       // Control-plane data backups (3.20): the point-in-time clone a member runs, if any.
       const platformRestore = await activePlatformState(manager);
       // Backup repository servers on the members (3.20).
@@ -1126,7 +1213,9 @@ export class NetworkStateService implements OnModuleDestroy {
 
             return imagePolicy ? { ...spec, imagePolicy } : spec;
           }),
-          volumes: nodeVolumes(node.name, volumePlacements, nodes),
+          volumes: nodeVolumes(node.name, volumePlacements, nodes, blockVolumes),
+          // KVM opt-out from the node spec (3.1; stripped for agents without `isolation-ladder`).
+          ...optional('host', desiredHost(nodeKvm.get(node.name), node.isolationProbeNonce)),
           ...optional('objectStore', objectStoreRole(node, generations)),
           ...optional(
             'registry',

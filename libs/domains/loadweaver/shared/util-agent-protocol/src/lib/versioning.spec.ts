@@ -7,6 +7,7 @@ import {
   CONTROL_PLANE_MESSAGE_GATES,
   envelopeForNode,
   forNode,
+  GatedFieldRefused,
   KNOWN_PROTOCOL_FEATURES,
   LEGACY_PROTOCOL,
   messageAllowed,
@@ -61,6 +62,75 @@ const state = {
   liveAccess: { nodeShell: false },
   lifecycle: 'active',
 } as unknown as DesiredState;
+
+const M7_FEATURES = [
+  'isolation-ladder',
+  'workload-devices',
+  'microvm',
+  'virtual-machines',
+  'vm-block-volumes',
+  'vm-consoles',
+  'vm-migration',
+] as const;
+const DIGEST = 'sha256:' + 'a'.repeat(64);
+/** A full VM replica with every M7 workload field (two NICs). */
+const WORKLOAD_M7 = {
+  id: 'p1/lw-vm/db1/0',
+  project: 'p1',
+  deployment: 'lw-vm',
+  service: 'db1',
+  kind: 'service',
+  image: 'ghcr.io/forepath/microvm-launcher@' + DIGEST,
+  environment: {},
+  labels: { 'loadweaver.com/vm': 'db1' },
+  addresses: ['10.88.0.10'],
+  dnsSearch: [],
+  runtime: 'runc',
+  isolation: 'microvm',
+  devices: [{ path: '/dev/kvm', permissions: 'rwm' }],
+  resources: { cpuMillis: 2250, memoryBytes: 4_697_620_480 },
+  restart: 'always',
+  stopGracePeriodMs: 30_000,
+  init: false,
+  readOnly: false,
+  privileged: false,
+  capAdd: [],
+  capDrop: [],
+  ulimits: {},
+  extraHosts: [],
+  volumes: [],
+  secrets: [],
+  specHash: 'b'.repeat(32),
+  vm: {
+    uid: '6f1c1d2e-3b4a-4c5d-8e9f-0a1b2c3d4e5f',
+    firmware: 'uefi',
+    cpuModel: 'host-model',
+    vcpus: 2,
+    memoryMiB: 4096,
+    disks: [{ name: 'root', volume: 'p1/lw-vm/db1.root', bus: 'virtio', cache: 'none', boot: true }],
+    nics: [
+      { name: 'eth0', mac: '52:54:00:aa:bb:cc', addresses: ['10.88.0.10'] },
+      { name: 'eth1', mac: '52:54:00:aa:bb:cd', addresses: ['10.88.0.11'], hostRoutes: ['10.88.0.11/32'] },
+    ],
+    image: { ref: 'registry.lw/p1/debian-13:1', digest: DIGEST, format: 'qcow2', layerDigest: DIGEST },
+    cloudInit: { metaData: 'instance-id: x', secretRefs: [] },
+    graphics: true,
+    power: 'running',
+  },
+};
+const BLOCK_VOLUME = {
+  id: 'p1/lw-vm/db1.root',
+  dockerName: 'lw-vol-p1.lw-vm.db1.root',
+  minor: 1001,
+  port: 7801,
+  sizeBytes: 21_474_836_480,
+  replicas: [{ node: 'n1', nodeId: 0, address: '10.93.0.1' }],
+  connections: [],
+  primary: 'n1',
+  keyRef: 'secret://p1/lw-volume-lw-vm.db1.root',
+  mode: 'block',
+  initializeFrom: { digest: DIGEST, format: 'qcow2' },
+};
 
 /** Walks a zod object schema along a gate path; true if the last field is optional (or defaulted). */
 function gatedFieldIsOptional(schema: z.ZodType, path: string): boolean {
@@ -355,6 +425,162 @@ describe('agent-protocol versioning', () => {
       ).toBe(true);
     });
 
+    describe('refuse gates (M7: isolation levels, devices, microVMs, VMs, block volumes)', () => {
+      const REFUSE_GATES: FieldGates = {
+        desiredState: [
+          { path: 'workloads[].hostname', feature: TEST_FEATURE, onMissing: 'refuse' },
+          { path: 'liveAccess', feature: TEST_FEATURE },
+        ],
+      };
+      const capable = negotiate({ protocolVersion: PROTOCOL_VERSION, features: [TEST_FEATURE] }, [TEST_FEATURE]);
+
+      it('throws instead of stripping when a refuse-gated field is present for a node without the feature', () => {
+        const payload = {
+          ...state,
+          workloads: [{ other: 1 } as never, { hostname: 'h', other: 2 } as never],
+        } as DesiredState;
+        const snapshot = JSON.stringify(payload);
+        let error: unknown;
+
+        try {
+          forNode({ type: 'desiredState', payload }, LEGACY_PROTOCOL, REFUSE_GATES);
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(GatedFieldRefused);
+        expect(error).toMatchObject({
+          name: 'GatedFieldRefused',
+          type: 'desiredState',
+          path: 'workloads[].hostname',
+          feature: TEST_FEATURE,
+        });
+        expect(JSON.stringify(payload)).toBe(snapshot);
+        // A node with the feature gets the message as it is.
+        const message = { type: 'desiredState' as const, payload };
+
+        expect(forNode(message, capable, REFUSE_GATES)).toBe(message);
+      });
+
+      it('strips the other gates as usual when no refuse-gated field is present', () => {
+        const payload = { ...state, workloads: [{ other: 1 } as never] } as DesiredState;
+        const gated = forNode({ type: 'desiredState', payload }, LEGACY_PROTOCOL, REFUSE_GATES);
+
+        expect(gated.payload).not.toHaveProperty('liveAccess');
+        expect(gated.payload.workloads).toEqual([{ other: 1 }]);
+        // An explicitly undefined value counts as absent.
+        expect(
+          forNode(
+            {
+              type: 'desiredState',
+              payload: { ...state, workloads: [{ hostname: undefined, other: 1 } as never] } as DesiredState,
+            },
+            LEGACY_PROTOCOL,
+            REFUSE_GATES,
+          ).payload.workloads,
+        ).toEqual([{ other: 1 }]);
+      });
+
+      it('finds refuse-gated fields below records', () => {
+        const member = {
+          ...state,
+          controlPlane: { ...state.controlPlane, environment: { A: '1' } },
+        } as DesiredState;
+        const gates: FieldGates = {
+          desiredState: [{ path: 'controlPlane.*.A', feature: 'x', onMissing: 'refuse' }],
+        };
+
+        expect(() => forNode({ type: 'desiredState', payload: member }, LEGACY_PROTOCOL, gates)).toThrow(
+          GatedFieldRefused,
+        );
+        expect(() => forNode({ type: 'desiredState', payload: state }, LEGACY_PROTOCOL, gates)).not.toThrow();
+      });
+
+      it('refuses encoded envelopes instead of sending a stripped copy', () => {
+        const envelope = controlPlaneMessage('desiredState', {
+          ...state,
+          workloads: [WORKLOAD_M7],
+          volumes: [BLOCK_VOLUME],
+        } as never);
+
+        expect(() => envelopeForNode(envelope, LEGACY_PROTOCOL)).toThrow(GatedFieldRefused);
+        expect(() =>
+          envelopeForNode(envelope, negotiate({ protocolVersion: PROTOCOL_VERSION, features: ['isolation-ladder'] })),
+        ).toThrow(/workloads\[\]\.(devices|microvm|vm) needs the protocol feature/);
+        // Volumes alone are refused by `vm-block-volumes`.
+        expect(() =>
+          envelopeForNode(
+            controlPlaneMessage('desiredState', { ...state, volumes: [BLOCK_VOLUME] } as never),
+            LEGACY_PROTOCOL,
+          ),
+        ).toThrow(/volumes\[\]\.mode/);
+
+        const all = negotiate({ protocolVersion: PROTOCOL_VERSION, features: [...M7_FEATURES] });
+
+        expect(envelopeForNode(envelope, all)).toBe(envelope);
+      });
+
+      it('gates every M7 workload / volume field with refuse and the host settings with strip', () => {
+        const desired = CONTROL_PLANE_FIELD_GATES.desiredState ?? [];
+        const mode = (path: string) => desired.find((g) => g.path === path)?.onMissing ?? 'strip';
+
+        for (const path of [
+          'workloads[].isolation',
+          'workloads[].devices',
+          'workloads[].microvm',
+          'workloads[].vm',
+          'volumes[].mode',
+          'volumes[].initializeFrom',
+        ])
+          expect({ path, mode: mode(path) }).toEqual({ path, mode: 'refuse' });
+
+        expect(mode('host')).toBe('strip');
+
+        for (const gate of CONTROL_PLANE_FIELD_GATES.migrationPrepare ?? []) expect(gate.onMissing).toBe('refuse');
+
+        // Host settings are stripped for older agents, not refused.
+        const gated = forNode(
+          { type: 'desiredState', payload: { ...state, host: { kvm: 'disabled' } } as DesiredState },
+          LEGACY_PROTOCOL,
+        );
+
+        expect(gated.payload).not.toHaveProperty('host');
+      });
+
+      it('registers the M7 features since protocol 2, advertised by the agent once implemented', () => {
+        // Implemented by the node agent: the isolation ladder (M7 W4: per-level probes, KVM opt-out, host settings),
+        // VM consoles (M7 W7: serial collector + VNC relay on the live path), microVMs and allow-listed devices (M7 W6:
+        // launcher containers, unpack cache, tap networking, /dev/kvm pass-through), full VMs and their block disks
+        // (M7 W9: launcher wiring, image import into DRBD block volumes, cloud-init seed, power, block backups), QEMU
+        // live migration of VMs (M7 W10: relayed tunnelled p2p migration, DRBD dual-primary window).
+        const implemented: readonly string[] = [
+          'isolation-ladder',
+          'vm-consoles',
+          'microvm',
+          'workload-devices',
+          'virtual-machines',
+          'vm-block-volumes',
+          'vm-migration',
+        ];
+
+        for (const feature of M7_FEATURES) {
+          expect(PROTOCOL_FEATURES[feature].since).toBe(2);
+
+          if (implemented.includes(feature)) expect(SUPPORTED_PROTOCOL_FEATURES).toContain(feature);
+          else expect(SUPPORTED_PROTOCOL_FEATURES).not.toContain(feature);
+        }
+
+        expect(CONTROL_PLANE_MESSAGE_GATES).toMatchObject({
+          consoleOpen: 'vm-consoles',
+          vmPower: 'virtual-machines',
+          vmImageImport: 'virtual-machines',
+          vmMigrationPrepare: 'vm-migration',
+          vmMigrationStart: 'vm-migration',
+          vmMigrationSwitchover: 'vm-migration',
+        });
+      });
+    });
+
     it('only gates optional fields of real messages behind registered features', () => {
       const gates = { ...CONTROL_PLANE_FIELD_GATES, ...TEST_GATES };
 
@@ -376,5 +602,26 @@ describe('agent-protocol versioning', () => {
       for (const list of Object.values(CONTROL_PLANE_FIELD_GATES))
         for (const gate of list ?? []) expect(Object.keys(PROTOCOL_FEATURES)).toContain(gate.feature);
     });
+  });
+});
+
+describe('capability updates on the open stream (M7 follow-up)', () => {
+  it('is an agent feature since protocol 2; helloAck reaches only agents advertising it', () => {
+    expect(PROTOCOL_FEATURES['capability-updates'].since).toBe(2);
+    expect(SUPPORTED_PROTOCOL_FEATURES).toContain('capability-updates');
+    expect(CONTROL_PLANE_MESSAGE_GATES.helloAck).toBe('capability-updates');
+
+    const ack = controlPlaneMessage('helloAck', {
+      protocolVersion: PROTOCOL_VERSION,
+      features: [...KNOWN_PROTOCOL_FEATURES],
+    });
+
+    expect(envelopeForNode(ack, LEGACY_PROTOCOL)).toBeNull();
+    expect(
+      envelopeForNode(ack, negotiate({ protocolVersion: PROTOCOL_VERSION, features: ['live-migration'] })),
+    ).toBeNull();
+    expect(
+      envelopeForNode(ack, negotiate({ protocolVersion: PROTOCOL_VERSION, features: ['capability-updates'] })),
+    ).toBe(ack);
   });
 });

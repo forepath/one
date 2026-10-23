@@ -8,6 +8,7 @@ import {
   type AgentStreamConnection,
   type DesiredState,
   type Envelope,
+  type ProtocolFeature,
 } from '@forepath/loadweaver/shared/util-agent-protocol';
 import {
   createCsr,
@@ -20,6 +21,7 @@ import { openSealed, sealPublicKey, sealTo } from '@forepath/loadweaver/shared/u
 import { Injectable, Logger, OnApplicationShutdown, Optional } from '@nestjs/common';
 
 import { HostInfoService, kernelHostname, optionalHostname } from '../host/host-info.service';
+import { IsolationProbeService } from '../host/isolation-probe.service';
 import { ReconcilerService } from '../reconciler/reconciler.service';
 import { AgentStateStore, type AgentIdentity } from '../state/agent-state.store';
 import { SecretBroker } from '../workloads/secret-broker.service';
@@ -32,10 +34,12 @@ import { LogCollectorsService } from '../logs/log-collectors.service';
 import { LogShipper } from '../logs/log-shipper';
 import { LiveSessionsService } from '../live/live-sessions.service';
 import { MigrationService } from '../migration/migration.service';
+import { VmMigrationService } from '../migration/vm-migration.service';
 import { UpdatesService } from '../updates/updates.service';
 
 const LIVE_MESSAGES = new Set([
   'execOpen',
+  'consoleOpen',
   'execInput',
   'execResize',
   'execClose',
@@ -50,6 +54,7 @@ import { WorkloadManager } from '../workloads/workload.manager';
 import { BackupService } from '../backups/backup.manager';
 import { DiscoveryService } from '../import/discovery.service';
 import { ImportExecutor } from '../import/import-executor.service';
+import { VmSupport } from '../vm/vm-support.service';
 
 export { AGENT_VERSION } from '../updates/agent-version';
 import { AGENT_VERSION } from '../updates/agent-version';
@@ -88,7 +93,12 @@ interface Session {
   endpoint: string;
   connection: AgentStreamConnection;
   established: boolean;
+  /** Features the control plane announced on this stream (`helloAck`); none for control planes before it. */
+  controlPlaneFeatures?: ReadonlySet<string>;
 }
+
+/** Feature for capability changes on the open stream (`capabilitiesUpdate`). */
+const CAPABILITY_UPDATES: ProtocolFeature = 'capability-updates';
 
 /**
  * The node's one persistent, outbound stream to the control plane (3.19).
@@ -128,6 +138,9 @@ export class AgentConnectionService implements OnApplicationShutdown {
     @Optional() private readonly backups?: BackupService,
     @Optional() private readonly discovery?: DiscoveryService,
     @Optional() private readonly imports?: ImportExecutor,
+    @Optional() private readonly isolation?: IsolationProbeService,
+    @Optional() private readonly vms?: VmSupport,
+    @Optional() private readonly vmMigrations?: VmMigrationService,
   ) {}
 
   async start(): Promise<void> {
@@ -140,8 +153,12 @@ export class AgentConnectionService implements OnApplicationShutdown {
     }
 
     this.migrations.attach((envelope) => this.send(envelope));
+    this.vmMigrations?.attach((envelope) => this.send(envelope));
+    // Changed isolation probes (3.1): the control plane learns the new levels on the open stream (or a fresh hello).
+    this.hostInfo.onChange(() => void this.capabilitiesChanged());
     this.backups?.attach((envelope) => this.send(envelope));
     this.imports?.attach((envelope) => this.send(envelope));
+    this.vms?.attach((envelope) => this.send(envelope));
 
     if (this.pendingImport)
       this.logger.log('Joined for an import: waiting for the join plan, the host stays untouched');
@@ -184,11 +201,23 @@ export class AgentConnectionService implements OnApplicationShutdown {
   private async prepareHost(): Promise<void> {
     // Live sessions of a previous agent process are gone with it: their firewall allowances and helpers too.
     await this.live.reset();
+    // Serial collectors of the VMs on this node (boot log ring, 3.35); they follow VM containers from their start.
+    await this.live.watchConsoles();
+    // Removed VM launchers demote their disks (3.35), so the next primary can promote them.
+    await this.vms?.watch();
     // Live-migration sessions of a previous agent process (3.10): commit / abort still find them.
     await this.migrations
       .recover()
       .catch((error: unknown) =>
         this.logger.warn(`Migration sessions not recovered: ${error instanceof Error ? error.message : String(error)}`),
+      );
+    // QEMU live-migration sessions too (M7.4): their disks stay out of the reconcile until commit / abort.
+    await this.vmMigrations
+      ?.recover()
+      .catch((error: unknown) =>
+        this.logger.warn(
+          `VM migration sessions not recovered: ${error instanceof Error ? error.message : String(error)}`,
+        ),
       );
     // Backup / restore jobs of a previous agent process died with it (3.20): remove what they left behind.
     await this.backups
@@ -383,6 +412,10 @@ export class AgentConnectionService implements OnApplicationShutdown {
     if (LIVE_MESSAGES.has(message.type) && !channel) return;
 
     switch (message.type) {
+      // What the control plane speaks on this stream (feature `capability-updates`).
+      case 'helloAck':
+        session.controlPlaneFeatures = new Set(message.payload.features);
+        break;
       case 'desiredState': {
         await this.leavePending();
         this.live.configure(message.payload.liveAccess);
@@ -392,6 +425,13 @@ export class AgentConnectionService implements OnApplicationShutdown {
         this.probes.apply(message.payload.probes ?? []);
 
         if (report.status === 'applied') this.lastState = message.payload;
+
+        // Host settings (3.1): the node spec's KVM opt-out and on-demand isolation probes.
+        void this.isolation
+          ?.applyHost(message.payload.host)
+          .catch((error: unknown) =>
+            this.logger.warn(`Host settings: ${error instanceof Error ? error.message : String(error)}`),
+          );
 
         this.send(agentMessage('applyReport', report));
         void this.reportWorkloads();
@@ -432,6 +472,10 @@ export class AgentConnectionService implements OnApplicationShutdown {
       case 'execOpen':
         void this.live.openTerminal(channel, message.payload);
         break;
+      // VM consoles (3.35): then the exec data messages on the same channel.
+      case 'consoleOpen':
+        void this.live.openConsole(channel, message.payload);
+        break;
       case 'execInput':
         this.live.input(channel, message.payload.data, message.payload.eof === true);
         break;
@@ -460,7 +504,19 @@ export class AgentConnectionService implements OnApplicationShutdown {
       case 'migrationRestore':
       case 'migrationCommit':
       case 'migrationAbort':
-        void this.migrations.handle(message.type, message.payload);
+        // QEMU sessions (M7.4) share commit / abort with the checkpoint path: whoever owns the session ends it.
+        if (
+          (message.type === 'migrationCommit' || message.type === 'migrationAbort') &&
+          this.vmMigrations?.owns(message.payload.role, message.payload.migration, message.payload.attempt)
+        )
+          void this.vmMigrations.handle(message.type, message.payload);
+        else void this.migrations.handle(message.type, message.payload);
+        break;
+      // QEMU live migration of VMs (3.35 / M7.4), on the session's channel.
+      case 'vmMigrationPrepare':
+      case 'vmMigrationStart':
+      case 'vmMigrationSwitchover':
+        void this.vmMigrations?.handle(message.type, message.payload);
         break;
       // Backups / restores (3.20), on their channel; progress is reported there (`backupProgress`).
       case 'discoveryRequest': {
@@ -478,6 +534,11 @@ export class AgentConnectionService implements OnApplicationShutdown {
       case 'backupRun':
       case 'restoreRun':
         void this.backups?.handle(message.type, message.payload);
+        break;
+      // Full VMs (3.35): ACPI reboot / shutdown, reset, re-imaging a stopped VM's disk; outcomes come as events.
+      case 'vmPower':
+      case 'vmImageImport':
+        void this.vms?.handle(message.type, message.payload);
         break;
       case 'error':
         if (message.correlationId) this.secrets.deliver(message.correlationId, null, message.payload.message);
@@ -527,7 +588,9 @@ export class AgentConnectionService implements OnApplicationShutdown {
     if (!this.session?.established) return;
 
     try {
-      this.send(agentMessage('workloadStatus', await this.workloads.status()));
+      const status = await this.workloads.status();
+
+      this.send(agentMessage('workloadStatus', this.vms ? await this.vms.annotate(status) : status));
     } catch (error) {
       this.logger.warn(`Workload status unavailable: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -560,6 +623,52 @@ export class AgentConnectionService implements OnApplicationShutdown {
 
     this.pendingKey = await generateKeyPair();
     this.send(agentMessage('renewCertificate', { csrPem: await createCsr(this.pendingKey, identity.nodeName) }));
+  }
+
+  /**
+   * Reports changed capabilities (3.1): on the open stream when the control plane announced `capability-updates`
+   * (open live sessions stay), else through a fresh hello on a second stream (`refreshHello`).
+   */
+  async capabilitiesChanged(): Promise<void> {
+    const current = this.session;
+
+    if (!current?.established || this.stopped) return;
+
+    if (current.controlPlaneFeatures?.has(CAPABILITY_UPDATES)) {
+      try {
+        const capabilities = await this.hostInfo.capabilities();
+
+        // A stream that replaced this one in the meantime started with a fresh hello.
+        if (this.session === current && current.established)
+          this.send(agentMessage('capabilitiesUpdate', { capabilities }));
+
+        return;
+      } catch (error) {
+        this.logger.warn(
+          `Capabilities not reported on the stream (${error instanceof Error ? error.message : String(error)}); sending a fresh hello`,
+        );
+      }
+    }
+
+    this.refreshHello();
+  }
+
+  /**
+   * Sends a fresh hello (changed capabilities) without dropping the connection first: a second stream to the same
+   * endpoint replaces the current one once the control plane answers (make-before-break, as for preferred endpoints).
+   */
+  private refreshHello(): void {
+    const current = this.session;
+
+    if (!current?.established || this.candidate || this.stopped) return;
+
+    void this.open(current.endpoint).then(
+      (session) => {
+        this.candidate = session;
+      },
+      (error: unknown) =>
+        this.logger.warn(`Capabilities not refreshed: ${error instanceof Error ? error.message : String(error)}`),
+    );
   }
 
   private async checkPreference(): Promise<void> {

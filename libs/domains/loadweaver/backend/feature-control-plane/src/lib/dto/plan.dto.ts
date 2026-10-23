@@ -85,7 +85,13 @@ export function toPlanResponse(
     diagnostics: plan.diagnostics,
     workloadChanges: plan.workloadChanges ?? [],
     failureAnalysis: plan.failureAnalysis ?? null,
-    deploymentStates: plan.deploymentStates ?? {},
+    // Pins only: the inspected microVM / VM images (layers, process config) stay internal (3.35).
+    deploymentStates: Object.fromEntries(
+      Object.entries(plan.deploymentStates ?? {}).map(([id, state]) => [
+        id,
+        { images: state.images, secretVersions: state.secretVersions },
+      ]),
+    ),
     warnings: plan.warnings ?? [],
     createdBy: plan.createdBy,
     creatorRoles: plan.creatorRoles ?? {},

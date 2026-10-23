@@ -68,7 +68,9 @@ describe('schedule', () => {
     });
 
     expect(result.replicas.filter((r) => r.service === 'p/d/agent').map((r) => r.node)).toEqual(['n2', 'n2']);
-    expect(result.unschedulable).toEqual([{ service: 'p/d/gpu', reason: 'no eligible node (runtime runc, selector)' }]);
+    expect(result.unschedulable).toEqual([
+      { service: 'p/d/gpu', reason: 'no eligible node (selector matches none of the 2 nodes that can run workloads)' },
+    ]);
   });
 
   it('never overcommits capacity', () => {

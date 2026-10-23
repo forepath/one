@@ -47,6 +47,36 @@ export class RegistryTokenService {
   }
 
   async issue(subject: string, access: RegistryAccess[], ttlSeconds: number, now = Date.now()): Promise<string> {
+    return await this.sign(
+      subject,
+      access.map((a) => ({ type: 'repository', name: a.name, actions: a.actions })),
+      ttlSeconds,
+      now,
+    );
+  }
+
+  /**
+   * A control-plane token that may also list the registry's repositories (`/v2/_catalog`, distribution's
+   * `registry:catalog:*`): the VM image listing (3.35). Never handed to users or nodes.
+   */
+  async issueWithCatalog(subject: string, access: RegistryAccess[], ttlSeconds: number): Promise<string> {
+    return await this.sign(
+      subject,
+      [
+        { type: 'registry', name: 'catalog', actions: ['*'] },
+        ...access.map((a) => ({ type: 'repository', name: a.name, actions: a.actions as string[] })),
+      ],
+      ttlSeconds,
+      Date.now(),
+    );
+  }
+
+  private async sign(
+    subject: string,
+    access: { type: string; name: string; actions: string[] }[],
+    ttlSeconds: number,
+    now: number,
+  ): Promise<string> {
     const key = await this.tokenKey();
     const seconds = Math.floor(now / 1000);
 
@@ -58,7 +88,7 @@ export class RegistryTokenService {
         iat: seconds,
         nbf: seconds - 30,
         exp: seconds + ttlSeconds,
-        access: access.map((a) => ({ type: 'repository', name: a.name, actions: a.actions })),
+        access,
       },
       key.privateKeyPem,
       key.certificatePem,

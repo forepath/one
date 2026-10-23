@@ -38,6 +38,14 @@ The control plane must keep working with node agents one release behind (N-1), w
   drives the node with `importStep` (channel `import:<id>`: `components`, `precopy`, `stop`, `final-sync`,
   `restart-source`, `handover`, `wipe-identity`), answered with `importProgress`. Reports are redacted on the node
   (`redactCompose`, `isSensitiveVariable`: sensitive names, URL credentials) and again by the control plane.
+- Refuse gates (M7): a gate with `onMissing: 'refuse'` is not stripped — `forNode` / `envelopeForNode` throw
+  `GatedFieldRefused` when the field is present for a node without the feature, and the message must not be sent.
+  Used where stripping would silently change what runs: `workloads[].isolation` (`isolation-ladder`),
+  `workloads[].devices` (`workload-devices`), `workloads[].microvm` (`microvm`), `workloads[].vm`
+  (`virtual-machines`), `volumes[].mode` / `volumes[].initializeFrom` (`vm-block-volumes`), and the same workload
+  fields under `migrationPrepare.spec`. `desiredState.host` (KVM opt-out, probe nonce) is strip-gated by
+  `isolation-ladder`. The M7 messages `consoleOpen` (`vm-consoles`), `vmPower` / `vmImageImport`
+  (`virtual-machines`) and `vmMigrationPrepare` / `Start` / `Switchover` (`vm-migration`) are message-gated.
 - `CONTROL_PLANE_MESSAGE_GATES`: control-plane → agent message types that exist only with a feature (e.g. the
   `migration*` session messages of `live-migration`, protocol 2). `envelopeForNode` returns `null` for them on nodes
   without the feature, and the session drops them.

@@ -1,12 +1,12 @@
 import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
 
-import type { MigrationMethod } from '../utils/migration-eligibility.utils';
+import type { MigrationMethod, SessionRuntime } from '../utils/migration-eligibility.utils';
 import type { SessionReports } from '../utils/migration-state.utils';
 
 /**
  * Migration history (3.10): one row per attempt of moving a replica. A live attempt that falls back ends with
  * phase `fallback` and its reason; the short-stop / blue-green attempt that follows has the next attempt number.
- * Checkpoint attempts (`live`, `stop-and-copy`) are also the session record the commands are derived from.
+ * Session attempts (`live`, `stop-and-copy`, `vm-live`) are also the session record the commands are derived from.
  */
 @Entity('lw_migrations')
 @Index('IDX_lw_migrations_replica', ['replica', 'startedAt'])
@@ -65,9 +65,9 @@ export class MigrationEntity {
   @Column({ type: 'integer', name: 'precopy_rounds', nullable: true })
   precopyRounds!: number | null;
 
-  /** Checkpoint runtime (`runc` / `runsc`) of checkpoint attempts. */
+  /** Session runtime: `runc` / `runsc` of checkpoint attempts, `qemu` of QEMU live migrations (`vm-live`). */
   @Column({ type: 'varchar', length: 8, name: 'runtime', nullable: true })
-  runtime!: 'runc' | 'runsc' | null;
+  runtime!: SessionRuntime | null;
 
   /** Addresses the replica keeps (checkpoint attempts). */
   @Column({ type: 'jsonb', name: 'addresses', default: () => "'[]'" })

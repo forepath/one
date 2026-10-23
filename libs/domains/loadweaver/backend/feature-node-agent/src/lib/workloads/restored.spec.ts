@@ -17,7 +17,10 @@ import {
   nextHealth,
   RESTORED_HEALTH_LABEL,
   RESTORED_LABEL,
+  RESTORED_PLATFORM_LABEL,
   RESTORED_RUNTIME_LABEL,
+  gvisorPlatformOf,
+  restoredPlatform,
   restoredConfig,
   restoredExecCommand,
   restoredExecProcess,
@@ -222,6 +225,18 @@ describe('restored gVisor replicas (3.10 stop-and-copy)', () => {
     });
 
     // The image's health check when the service has none; runc placeholders keep Docker's.
+    // The placeholder records the platform of the replica's level (restore on the same platform, M7.1).
+    expect(holderOptions({ Image: 'img', HostConfig: { Runtime: 'runsc-kvm' } }, 'm', '/h').Labels).toMatchObject({
+      [RESTORED_RUNTIME_LABEL]: 'runsc',
+      [RESTORED_PLATFORM_LABEL]: 'kvm',
+    });
+    expect(holderOptions({ Image: 'img', HostConfig: { Runtime: 'runsc-systrap' } }, 'm', '/h').Labels).toMatchObject({
+      [RESTORED_PLATFORM_LABEL]: 'systrap',
+    });
+    expect(
+      holderOptions({ Image: 'img', HostConfig: {} }, 'm', '/h').Labels?.[RESTORED_PLATFORM_LABEL],
+    ).toBeUndefined();
+
     const fromImage = holderOptions({ Image: 'img', HostConfig: { Runtime: 'runsc-systrap' } }, 'm', '/h', {
       Test: ['CMD', 'true'],
     });
@@ -279,6 +294,32 @@ describe('restored gVisor replicas (3.10 stop-and-copy)', () => {
     ).toEqual({ binary: '/usr/local/lib/agenstra-gvisor/x/runsc', args: ['--platform=systrap'] });
     expect(sandboxRuntimeOf({ 'runsc-systrap-hostnet': { runtimeArgs: ['--network=host'] } })).toBeNull();
     expect(sandboxRuntimeOf({ runc: { path: 'runc' } })).toBeNull();
+
+    // Same platform only (M7.1): never `runsc-kvm` for a systrap checkpoint, nor systrap for a KVM one.
+    const both = {
+      'runsc-kvm': { path: '/g/runsc', runtimeArgs: ['--platform=kvm'] },
+      'runsc-kvm-hostnet': { path: '/g/runsc', runtimeArgs: ['--platform=kvm', '--network=host'] },
+      'runsc-systrap': { path: '/g/runsc', runtimeArgs: ['--platform=systrap'] },
+    };
+
+    expect(sandboxRuntimeOf(both, 'kvm')).toEqual({ binary: '/g/runsc', args: ['--platform=kvm'] });
+    expect(sandboxRuntimeOf(both, 'systrap')).toEqual({ binary: '/g/runsc', args: ['--platform=systrap'] });
+    expect(sandboxRuntimeOf({ 'runsc-kvm': both['runsc-kvm'] }, 'systrap')).toBeNull();
+    expect(sandboxRuntimeOf({ 'runsc-systrap': both['runsc-systrap'] }, 'kvm')).toBeNull();
+    expect(sandboxRuntimeOf({ 'runsc-kvm-hostnet': both['runsc-kvm-hostnet'] }, 'kvm')).toBeNull();
+    // Another name with the right flags; gVisor's default platform (no flag) is systrap; ptrace is never used.
+    expect(sandboxRuntimeOf({ runsc: { runtimeArgs: [] } }, 'systrap')).toEqual({ binary: 'runsc', args: [] });
+    expect(sandboxRuntimeOf({ 'runsc-x': { runtimeArgs: ['--platform=kvm'] } }, 'kvm')?.args).toEqual([
+      '--platform=kvm',
+    ]);
+    expect(sandboxRuntimeOf({ 'runsc-p': { runtimeArgs: ['--platform=ptrace'] } })).toBeNull();
+    // Commands on existing sandboxes take any Netstack runtime, systrap first.
+    expect(sandboxRuntimeOf(both)?.args).toEqual(['--platform=systrap']);
+    expect(sandboxRuntimeOf({ 'runsc-kvm': both['runsc-kvm'] })?.args).toEqual(['--platform=kvm']);
+    expect(gvisorPlatformOf(['--platform=kvm'])).toBe('kvm');
+    expect(gvisorPlatformOf(undefined)).toBe('systrap');
+    expect(restoredPlatform({ [RESTORED_PLATFORM_LABEL]: 'kvm' })).toBe('kvm');
+    expect(restoredPlatform(undefined)).toBe('systrap');
     expect(restoredExecCommand('b'.repeat(64), ['sh'], true, 'runsc')).toEqual([
       'runsc',
       '--root',

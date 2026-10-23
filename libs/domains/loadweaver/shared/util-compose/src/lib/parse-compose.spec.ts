@@ -160,7 +160,7 @@ services:
   a:
     image: x
     network_mode: host
-    devices: ["/dev/nvidia0"]
+    devices: ["/dev/kvm"]
     container_name: fixed
     volumes: ["/srv/data:/data", "/var/run/docker.sock:/var/run/docker.sock:ro"]
 volumes:
@@ -502,6 +502,20 @@ describe("Agenstra's agent manager on Loadweaver (section 4, step 1)", () => {
 
     expect(api).toMatchObject({ runtime: 'sandboxed', pins: [] });
     expect(api?.labels).toMatchObject({ 'agenstra.io/role': 'manager' });
+  });
+
+  it('keeps the agent context API off the public ingress and points environments at the service address', () => {
+    const api = parse('compose.loadweaver-runtime.yaml').deployment.services.find((s) => s.name === 'api');
+    const paths = (api?.http ?? []).map((h) => h.path);
+
+    expect(paths.length).toBeGreaterThan(0);
+    expect(paths).not.toContain('/');
+    expect(paths.some((p) => '/api/agent-context/health'.startsWith(p) || p.startsWith('/api/agent-context'))).toBe(
+      false,
+    );
+    expect(file('compose.loadweaver-runtime.yaml')).toContain(
+      'AGENT_CONTEXT_MCP_MANAGER_URL: http://api.agenstra-acme.lw:3000/api',
+    );
   });
 
   it('acknowledges the Docker socket pin of the Docker-host variant and declares its delegated containers', () => {

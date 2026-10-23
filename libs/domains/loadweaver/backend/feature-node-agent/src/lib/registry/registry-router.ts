@@ -73,6 +73,8 @@ export class RegistryRouter implements OnModuleDestroy {
   private requestedPort: number | null = null;
   private client: RegistryClient | null = null;
   private allowed = new Set<string>();
+  /** Private repositories allowed for a running agent task beyond the workloads' (re-imaging a stopped VM's disk). */
+  private readonly borrowed = new Map<string, number>();
   private readonly tokens = new Map<string, { token: string; expiresAt: number }>();
   private preferred = 0;
   private send: ((envelope: Envelope) => void) | null = null;
@@ -141,6 +143,28 @@ export class RegistryRouter implements OnModuleDestroy {
     await this.listen(client.routerPort);
 
     return true;
+  }
+
+  /** The registry client of the last applied state (null without the built-in registry). */
+  get registryClient(): RegistryClient | null {
+    return this.client;
+  }
+
+  /**
+   * Lets the router serve a private repository while `task` runs, although no workload on the node uses it (3.35:
+   * re-imaging the disk of a stopped VM, whose replica isn't in the desired state).
+   */
+  async withRepository<T>(repository: string, task: () => Promise<T>): Promise<T> {
+    this.borrowed.set(repository, (this.borrowed.get(repository) ?? 0) + 1);
+
+    try {
+      return await task();
+    } finally {
+      const left = (this.borrowed.get(repository) ?? 1) - 1;
+
+      if (left > 0) this.borrowed.set(repository, left);
+      else this.borrowed.delete(repository);
+    }
   }
 
   get listening(): number | null {
@@ -218,7 +242,7 @@ export class RegistryRouter implements OnModuleDestroy {
     }
 
     if (target.private) {
-      if (!this.allowed.has(target.repository))
+      if (!this.allowed.has(target.repository) && !this.borrowed.has(target.repository))
         return registryError(res, 403, 'DENIED', 'no workload on this node uses this repository');
 
       try {

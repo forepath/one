@@ -30,6 +30,22 @@
       },
       "cache": false
     },
+    "vm-lab-m7": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash libs/domains/shared/backend/util-vm-lab/scripts/run-lab.sh --config libs/domains/loadweaver/backend/feature-node-agent/jest.vm-lab-m7.config.cts --label org.forepath.loadweaver.vm-lab --cleanup-args '--ready-marker ready --prune-unfinished-golden'",
+        "forwardAllArgs": true
+      },
+      "cache": false
+    },
+    "vm-lab-spikes": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash libs/domains/shared/backend/util-vm-lab/scripts/run-lab.sh --config libs/domains/loadweaver/backend/feature-node-agent/jest.vm-lab-spikes.config.cts --label org.forepath.loadweaver.vm-lab --cleanup-args '--ready-marker ready --prune-unfinished-golden'",
+        "forwardAllArgs": true
+      },
+      "cache": false
+    },
     "vm-lab-cleanup": {
       "executor": "nx:run-commands",
       "options": {

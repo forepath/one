@@ -4,12 +4,15 @@ Replicas move between nodes when a plan changes their placement, when a node is 
 
 ## Methods
 
-| Method                     | Used for                                                        | Downtime                                     | State                                     |
-| -------------------------- | --------------------------------------------------------------- | -------------------------------------------- | ----------------------------------------- |
-| **live**                   | `runc` services that are eligible (below)                       | a short freeze (typically well below 1 s)    | memory, open connections and address kept |
-| **stop-and-copy (gVisor)** | eligible sandboxed services (`x-loadweaver.runtime: sandboxed`) | the whole checkpoint / restore (seconds)     | memory, open connections and address kept |
-| **blue-green**             | stateless services that aren't eligible                         | none: the new copy runs before the old stops | the new copy starts fresh                 |
-| **short-stop**             | stateful services that aren't eligible                          | seconds: stop, move the volume, start        | volume data kept                          |
+| Method                                                                 | Used for                                                          | Downtime                                             | State                                                                                 |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **live**                                                               | `runc` services that are eligible (below)                         | a short freeze (typically well below 1 s)            | memory, open connections and address kept                                             |
+| **stop-and-copy (gVisor)**                                             | eligible sandboxed services (`x-loadweaver.runtime: sandboxed`)   | the whole checkpoint / restore (seconds)             | memory, open connections and address kept                                             |
+| **vm-live (QEMU)**                                                     | [virtual machines](./virtual-machines.md#live-migration)          | a short pause (pre-copy, then the last dirty memory) | memory, open connections, addresses and MACs kept                                     |
+| **microvm-live (QEMU)**                                                | generic [microVMs](#microvms), with or without filesystem volumes | a short pause (pre-copy, then the last changes)      | memory, files, open connections and address kept                                      |
+| **microvm-live (QEMU; guest connections reset: user-mode networking)** | [bundled microVMs](#bundled-microvms) (Agenstra workspaces)       | a short pause (pre-copy, then the last changes)      | memory, processes, files and address kept; the guest's open TCP connections are reset |
+| **blue-green**                                                         | stateless services that aren't eligible                           | none: the new copy runs before the old stops         | the new copy starts fresh                                                             |
+| **short-stop**                                                         | stateful services that aren't eligible                            | seconds: stop, move the volume, start                | volume data kept                                                                      |
 
 The plan lists every move with its method and, if it isn't live, the reason:
 
@@ -17,6 +20,7 @@ The plan lists every move with its method and, if it isn't live, the reason:
 move shop/live/api/0 n1 → n2 (live)
 move shop/live/db/0 n1 → n3 (short-stop (volume shop/live/data has no synchronous replica on n3))
 move shop/live/old/0 n1 → n4 (blue-green (agent on n4 does not support live migration))
+move agenstra/env-7/agent/0 n2 → n3 (microvm-live (QEMU; guest connections reset: user-mode networking))
 ```
 
 The method is checked again at apply; if it changed in the meantime (for example a node lost checkpoint support), the apply refuses and asks for a new plan.
@@ -26,6 +30,7 @@ The method is checked again at apply; if it changed in the meantime (for example
 A replica is migrated with a checkpoint only if all of these hold; the first one that doesn't is the reason shown in the plan:
 
 - it is a long-running service (one-off jobs restart);
+- it runs at `runc` or `sandboxed` (checkpoints through CRIU / gVisor), at `sandboxed-kvm` (a gVisor checkpoint restored on the same KVM platform, `stop-and-copy (gVisor KVM)`), or it is a full VM or a generic [microVM](#microvms) that QEMU can live-migrate (`vm-live (QEMU)`: DRBD disks dual-primary during the switch; `microvm-live (QEMU)`: both nodes' launchers report virtio-fs state migration, `capabilities.microvmMigration`; [bundled microVMs](#bundled-microvms) when their image's launcher has the incoming mode and both agents report `capabilities.microvmBundledMigration`; `cpu.model: host-passthrough` VMs and microVMs — whose launchers always use the host CPU — between different CPUs move with a short stop); services with `/dev/kvm` device access are pinned (devices, below);
 - live migration isn't disabled for the service: `x-loadweaver: { liveMigration: false }` (use it for software that misbehaves after a restore);
 - the source node is reachable (failover is never live);
 - no privileged container, no host network, no devices (GPUs), no bind mounts of host paths;
@@ -52,6 +57,30 @@ A replica is migrated with a checkpoint only if all of these hold; the first one
 Any failure or timeout **aborts** the attempt: the target discards what it restored first and demotes the volumes, then the source resumes the replica (a paused replica is reconnected and thawed; a stopped one — replicas with volumes, gVisor replicas — is restored from its own final dump / checkpoint image, so its connections survive here too, or — if that fails — started again). After that the move continues as **short-stop** (stateful) or **blue-green** (stateless), recorded as the next attempt with the reason. Nothing is lost on the way: the source runs until the target does.
 
 Per-phase limits: prepare 2 min, pre-copy 10 min, freeze 1 min, transfer 5 min, restore 2 min, cut-over 2 min, abort 1 min.
+
+### MicroVMs
+
+Generic microVMs (`x-loadweaver.runtime: microvm`, [isolation levels](./isolation-levels.md)) migrate live like other workloads, shown as `microvm-live (QEMU)`. Besides the guest's memory, their files move with them:
+
+1. **prepare**: the target unpacks the image's read-only layers into its layer cache (verified by `diffID`, as for any start), mounts the overlay with an empty writable layer and starts the launcher paused, waiting for QEMU's incoming migration, on the replica's kept address. Its filesystem volumes stay with the source.
+2. **pre-copy**: the source copies the **writable layer** (the overlay's upper) and **tmpfs volumes** file by file while the guest runs, each pass only what changed since the last one (owner, mode, times, file capabilities and `user.*` attributes kept; deleted files and overlay whiteouts become deletions), applied on the target through its overlay. Then QEMU copies the memory in rounds.
+3. **freeze**: QEMU stops the guest and waits before the switch-over. The source sends the last file changes; with filesystem volumes, it lets QEMU send the device state (virtio-fs included) into the relay, which holds it, ends the volumes' virtiofsd, unmounts the volumes and demotes them; the target promotes and mounts them (one primary, never mounted on both nodes), and only then gets the held state, so its virtiofsd finds every file the guest had open.
+4. **restore**: the target resumes the guest and announces its address; its launcher re-attaches to the guest agent. Open terminals, `exec` sessions and tunnels on the source end with `replica migrated to <node>`; new ones go to the target.
+5. **commit**: the source removes its launcher and the writable layer.
+
+The freeze estimate adds the last file pass and each volume's hand-over to QEMU's (tmpfs counts like memory: pre-copied). An abort before the hand-over resumes the guest on the source; once the source's volume share is gone it can't, and the move continues with a short stop (the volumes are mounted again where the control plane expects them).
+
+A microVM moves with a short stop (stateful) or blue / green (stateless) instead when either node's launcher can't migrate microVMs (QEMU before 10.0 or virtiofsd before 1.13; the plan says `no microVM live migration on <node> …`), the nodes' CPUs differ (`cpu model host-passthrough needs identical CPUs …`), the image isn't inspected yet, or the usual checks fail. Writable layers with more than 500,000 entries or file names that aren't UTF-8 make the attempt fail, which also ends in a short stop.
+
+### Bundled microVMs
+
+Bundled microVMs — images that are their own launcher, such as [Agenstra's workspaces](../guides/agenstra-on-loadweaver.md) — migrate live the same way, shown as `microvm-live (QEMU; guest connections reset: user-mode networking)`:
+
+- **Networking**: the guest uses QEMU's user-mode network inside its launcher (outbound connections become sockets of the launcher, published ports are forwarded by the launcher's bridge). That connection state stays on the source, so the **guest's open TCP connections are reset** by the move — clients and the workload reconnect. Processes, memory, files and the replica's address survive; terminals and `exec` sessions on the source end with `replica migrated to <node>` as for generic microVMs.
+- **Files**: the guest root is the launcher's `/guest`. The pre-copy sends what the guest changed there (the `guest/` part of the launcher container's writable layer) and applies it through the target launcher's `/guest`; the launchers' own mount points (volumes, tmpfs, secrets) are never written or deleted through. tmpfs volumes are pre-copied as for generic microVMs.
+- **Volumes**: the node agent mounts a bundled microVM's filesystem volumes itself (one directory per volume, bound `rslave` at its target below `/guest`) instead of Docker volume mounts, so the target can receive them during the freeze. The image root's file share holds them on the source, so the source's launcher is stopped once QEMU's state left, then the volumes are unmounted, demoted and handed over (one primary, never mounted on both nodes). An abort after that point continues with a short stop.
+- **Eligibility**: the image's launcher must declare the mode (label `io.forepath.microvm.migration` lists `bundled`: images built on the microVM launcher since this release, with QEMU 10.0+ / virtiofsd 1.13+), and both nodes must report `capabilities.microvmBundledMigration` (an agent of this release with a ready microVM level). Otherwise: `bundled microVM: its launcher has no live migration (image built before the incoming mode; …)` or `no bundled microVM live migration on <node> …`, and a short stop / blue / green.
+- On Docker hosts without Loadweaver, nothing changes: the launcher only runs in migration mode when the Loadweaver node agent starts it that way.
 
 ### Addresses
 

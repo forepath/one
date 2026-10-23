@@ -4,7 +4,8 @@
  *   npx nx run loadweaver-shared-util-release:build-bundle -- --release 3.5.0 \
  *     --control-plane-image ghcr.io/forepath/loadweaver-control-plane-api:3.5.0@sha256:… \
  *     --agent-amd64 dist/…/loadweaver-agent --agent-arm64 dist/…/loadweaver-agent-arm64 \
- *     [--opensearch-image ref@sha256:…] [--console-image ref@sha256:…] [--image-archive envoy=envoy.oci.tar …] [--gvisor] [--drbd-source] \
+ *     [--opensearch-image ref@sha256:…] [--console-image ref@sha256:…] [--microvm-launcher-image ref@sha256:…] \
+ *     [--image-archive envoy=envoy.oci.tar …] [--gvisor] [--drbd-source] \
  *     [--drbd-prebuilt <kernel>:<arch>=<modules.tar.gz> …] [--drbd-compat <kernel>:<arch>=<entry.tar.gz> …] \
  *     [--apt-snapshot index.json [--apt-files <dir>]] [--note …] \
  *     [--minimum-version 3.4.0] [--out dist/loadweaver-bundle] [--require-signature] [--defer-signature]
@@ -70,6 +71,7 @@ const { values } = parseArgs({
     'control-plane-image': { type: 'string' },
     'opensearch-image': { type: 'string' },
     'console-image': { type: 'string' },
+    'microvm-launcher-image': { type: 'string' },
     'agent-amd64': { type: 'string' },
     'agent-arm64': { type: 'string' },
     'image-archive': { type: 'string', multiple: true },
@@ -258,6 +260,8 @@ async function main(): Promise<void> {
     ...(values['minimum-version'] ? { minimumVersion: values['minimum-version'] } : {}),
     images: {
       'control-plane': values['control-plane-image'],
+      // The release's microVM launcher (multi-arch); without it the bundle has none (development bundles).
+      ...(values['microvm-launcher-image'] ? { 'microvm-launcher': values['microvm-launcher-image'] } : {}),
       ...(values['opensearch-image'] ? { opensearch: values['opensearch-image'] } : {}),
     },
     opensearchWithRepositoryS3: !!values['opensearch-image'],

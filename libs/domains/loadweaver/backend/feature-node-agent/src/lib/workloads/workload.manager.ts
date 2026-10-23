@@ -1,21 +1,43 @@
-import { mkdir, rm, statfs, writeFile } from 'node:fs/promises';
+import { chown, mkdir, readFile, rm, statfs, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import type { RegistryClient, WorkloadSpec, WorkloadStatus } from '@forepath/loadweaver/shared/util-agent-protocol';
+import {
+  type RegistryClient,
+  workloadIsolationLevel,
+  type WorkloadSpec,
+  type WorkloadStatus,
+} from '@forepath/loadweaver/shared/util-agent-protocol';
 import { PRIVATE_REGISTRY_HOST } from '@forepath/loadweaver/shared/util-model';
 import { cidrContainsIp, parseCidr, parseIp } from '@forepath/loadweaver/shared/util-network';
+import { MICROVM_VMM_UID } from '@forepath/shared/backend/util-microvm-bridge';
 import { Inject, Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import type Docker from 'dockerode';
 
 import { DOCKER } from '../host/docker.provider';
+import { IsolationProbeService } from '../host/isolation-probe.service';
+import { isProbeContainer } from '../host/managed-containers';
 import { MigrationSessions } from '../migration/migration-sessions';
 import { KeptAddressPlugin } from '../network/kept-address.plugin';
 import { POD_NETWORK } from '../network/pod-network.manager';
+import { GuestNetwork, guestNetConfig, guestNics, networkMtu, usesTapNetworking } from '../microvm/guest-network';
+import { GuestVolumes } from '../microvm/guest-volumes';
+import { bundledMigrationSupported } from '../microvm/microvm-migration';
+import { guestLayers, RootfsCache } from '../microvm/rootfs-cache';
 import { RESTORED_LABEL, RestoredRuntime } from './restored-runtime';
 import {
+  bootProcess,
   containerName,
   containerOptions,
+  guestVolumeList,
+  guestVolumesCmdline,
+  type GuestVolume,
   MANAGED_LABEL,
+  launcherKindOf,
+  microvmKind,
+  MICROVM_MIGRATION_SUBDIR,
+  microvmRunDir,
+  microvmVolumesDir,
+  type MicrovmHostSide,
   secretDir,
   WORKLOAD_HASH_LABEL,
   WORKLOAD_LABEL,
@@ -47,6 +69,39 @@ export function keptAddressesOf(addresses: readonly string[], podSubnets: readon
 
 /** How often restored replicas (agent-managed, 3.10) are checked for an exited process. */
 const RESTORED_WATCH_MS = 5_000;
+/** Reconnect delay of the Docker event stream (launcher starts → guest networking). */
+const EVENTS_RETRY_MS = 5_000;
+
+/**
+ * Block devices of a full VM's disks in `vm.disks` order (`/dev/drbd<minor>`, promoted on this node), provided by the
+ * node's VM support (3.35, M7.3); without it the agent refuses full VMs.
+ */
+export const VM_BLOCK_DEVICES = Symbol('VM_BLOCK_DEVICES');
+export type VmBlockDevices = (spec: WorkloadSpec) => Promise<string[]>;
+/** Writes a full VM's `vm.json` (and `seed/`) into its run directory (node's VM support, 3.35). */
+export const VM_LAUNCH_FILES = Symbol('VM_LAUNCH_FILES');
+export type VmLaunchFiles = (spec: WorkloadSpec, runDir: string, devices: string[]) => Promise<void>;
+/**
+ * Background work of full VMs outside the reconcile (boot disk imports, F3b): told the desired workloads of every
+ * apply (jobs of replicas / disks no longer here are cancelled), and it tells when a job settled (a deferred launcher
+ * can start now: the workloads are re-applied).
+ */
+export const VM_DISK_JOBS = Symbol('VM_DISK_JOBS');
+export interface VmDiskJobs {
+  desired(workloads: WorkloadSpec[]): void;
+  onSettled(listener: () => void): void;
+}
+
+/**
+ * Thrown by a launcher hook when a replica can't start yet (its boot disk is being written by a background job):
+ * the reconcile skips the replica and goes on with the others; the job's settling re-applies.
+ */
+export class WorkloadDeferred extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'WorkloadDeferred';
+  }
+}
 
 /**
  * Runs the node's workloads through the Docker API (3.11): one container per replica, re-created when its spec
@@ -67,6 +122,12 @@ export class WorkloadManager implements OnModuleDestroy {
   private last: { workloads: WorkloadSpec[]; dnsServers: string[]; registry?: RegistryClient } | null = null;
   private chain: Promise<unknown> = Promise.resolve();
   private restoredWatch: NodeJS.Timeout | null = null;
+  /** Docker `start` events of launcher containers (each start has a fresh network namespace: taps again). */
+  private events: NodeJS.ReadableStream | null = null;
+  private eventsRetry: NodeJS.Timeout | null = null;
+  private destroyed = false;
+  /** Generic microVMs created as a live migration's target: their volumes arrive with the hand-over (M7 W10b). */
+  private readonly incoming = new Set<string>();
 
   constructor(
     @Inject(DOCKER) private readonly docker: Docker,
@@ -75,12 +136,46 @@ export class WorkloadManager implements OnModuleDestroy {
     @Optional() private readonly sessions?: MigrationSessions,
     @Optional() private readonly restored?: RestoredRuntime,
     @Optional() private readonly kept?: KeptAddressPlugin,
-  ) {}
+    @Optional() private readonly rootfs?: RootfsCache,
+    @Optional() private readonly guestNetwork?: GuestNetwork,
+    @Optional() @Inject(VM_BLOCK_DEVICES) private readonly vmBlockDevices?: VmBlockDevices,
+    @Optional() @Inject(VM_LAUNCH_FILES) private readonly vmLaunchFiles?: VmLaunchFiles,
+    @Optional() private readonly isolation?: IsolationProbeService,
+    @Optional() @Inject(VM_DISK_JOBS) private readonly vmDiskJobs?: VmDiskJobs,
+    @Optional() private readonly guestVolumes?: GuestVolumes,
+  ) {
+    this.vmDiskJobs?.onSettled(() => {
+      if (this.destroyed) return;
+
+      void this.reapply().catch((error: unknown) =>
+        this.logger.warn(`Re-applying workloads failed: ${error instanceof Error ? error.message : String(error)}`),
+      );
+    });
+  }
 
   onModuleDestroy(): void {
     if (this.restoredWatch) clearInterval(this.restoredWatch);
 
     this.restoredWatch = null;
+    this.destroyed = true;
+    this.stopEvents();
+  }
+
+  private stopEvents(): void {
+    if (this.eventsRetry) clearTimeout(this.eventsRetry);
+
+    this.eventsRetry = null;
+    (this.events as (NodeJS.ReadableStream & { destroy?: () => void }) | null)?.destroy?.();
+    this.events = null;
+  }
+
+  /** A microVM is about to be created as a live migration's target (its volumes are mounted later). */
+  expectIncoming(id: string): void {
+    this.incoming.add(id);
+  }
+
+  incomingDone(id: string): void {
+    this.incoming.delete(id);
   }
 
   /** The desired spec of a replica on this node (last applied state). */
@@ -137,13 +232,234 @@ export class WorkloadManager implements OnModuleDestroy {
   ): Promise<Docker.ContainerCreateOptions | null> {
     const image = await this.pullThroughCluster(spec.image, registry);
 
-    if (!(await this.allowedByPolicy(spec, image))) return null;
+    if (!(await this.policyAllows(spec, image, registry))) return null;
 
     const kept = spec.hostRoutes?.length ? spec.addresses : keptAddressesOf(spec.addresses, await this.podSubnets());
     const network = kept.length > 0 && this.kept ? await this.kept.ensureNetwork(spec.addresses) : undefined;
+    const microvm = microvmKind(spec)
+      ? await this.prepareMicrovm(spec, network ?? POD_NETWORK, registry, image)
+      : undefined;
     const secretFiles = await this.writeSecrets(spec);
 
-    return containerOptions({ ...spec, image }, { dnsServers, secretFiles, ...(network ? { network } : {}) });
+    return containerOptions(
+      { ...spec, image },
+      { dnsServers, secretFiles, ...(network ? { network } : {}), ...(microvm ? { microvm } : {}) },
+    );
+  }
+
+  /**
+   * The node side of a launcher workload (3.35), before every start (idempotent): a generic microVM's image layers
+   * unpacked and its guest root mounted, the run directory (`boot-process.json`, `net.json`, `stats/` writable by the
+   * VMM user); a full VM's block devices and `vm.json` / `seed/` from the node's VM support; a bundled image whose
+   * launcher migrates live its migration directory and volumes ({@link prepareBundled}). After a reboot the run
+   * directory (tmpfs) and the overlay are gone and are recreated here. `image`: the pulled (routed) image reference.
+   */
+  async prepareMicrovm(
+    spec: WorkloadSpec,
+    network: string,
+    registry?: RegistryClient,
+    image: string = spec.image,
+  ): Promise<MicrovmHostSide> {
+    const kind = microvmKind(spec);
+
+    if (!kind) return {};
+
+    if (kind === 'bundled') return this.prepareBundled(spec, image);
+
+    const runDir = microvmRunDir(runtimeDir(), spec.id);
+
+    await mkdir(runDir, { recursive: true, mode: 0o711 });
+    await mkdir(join(runDir, 'stats'), { recursive: true, mode: 0o755 });
+    // The launcher daemon (VMM user, no capabilities) writes the guest stats.
+    await chown(join(runDir, 'stats'), MICROVM_VMM_UID, MICROVM_VMM_UID);
+
+    if (kind === 'vm') {
+      // Live migration (M7.4): the incoming marker / relay socket; root-owned, the VMM user only traverses it.
+      await mkdir(join(runDir, MICROVM_MIGRATION_SUBDIR), { recursive: true, mode: 0o711 });
+
+      if (!this.vmBlockDevices || !this.vmLaunchFiles)
+        throw new Error(`${spec.id}: full VMs are not supported by this node agent yet`);
+
+      const blockDevices = await this.vmBlockDevices(spec);
+
+      await this.vmLaunchFiles(spec, runDir, blockDevices);
+
+      return { runDir, blockDevices };
+    }
+
+    const microvm = spec.microvm;
+
+    const layers = microvm ? guestLayers(microvm) : [];
+
+    if (!this.rootfs || !microvm?.guestImage || !layers.length)
+      throw new Error(`${spec.id}: generic microVMs need the guest image, its layers and the node's unpack cache`);
+
+    await this.rootfs.ensureLayers(microvm.guestImage, layers, registry);
+
+    const merged = await this.rootfs.mountReplica(spec.id, layers, microvm.rootfsBytes);
+    const [nic] = guestNics(spec);
+
+    // Live migration (M7 W10b): the incoming marker and the source's relay socket.
+    await mkdir(join(runDir, MICROVM_MIGRATION_SUBDIR), { recursive: true, mode: 0o711 });
+
+    // Filesystem volumes: mounted by the agent below a shared directory (`/lwvol` in the launcher); a migration
+    // target gets them with the hand-over during the freeze, the source still holds them.
+    const volumes = guestVolumeList(spec);
+    let volumesDir: string | undefined;
+
+    if (volumes.length > 0) {
+      if (!this.guestVolumes) throw new Error(`${spec.id}: this node agent can't mount microVM volumes`);
+
+      volumesDir = microvmVolumesDir(runtimeDir(), spec.id);
+      await this.guestVolumes.prepareDir(volumesDir, volumes);
+
+      if (!this.incoming.has(spec.id)) for (const volume of volumes) await this.guestVolumes.attach(volumesDir, volume);
+    }
+
+    await writeFile(join(runDir, 'volumes.cmdline'), guestVolumesCmdline(volumes), { mode: 0o644 });
+    await writeFile(join(runDir, 'volumes.json'), JSON.stringify(volumes), { mode: 0o600 });
+
+    // The workload process may carry configuration values: root only (the launcher reads it as root).
+    await writeFile(join(runDir, 'boot-process.json'), JSON.stringify(bootProcess(spec)), { mode: 0o600 });
+    await writeFile(
+      join(runDir, 'net.json'),
+      JSON.stringify(guestNetConfig(nic, await networkMtu(this.docker, network))),
+      { mode: 0o644 },
+    );
+
+    return { runDir, merged, ...(volumesDir ? { volumesDir } : {}) };
+  }
+
+  /**
+   * Bundled images (M7 F5): when the image's launcher migrates live (label `io.forepath.microvm.migration` lists
+   * `bundled`), the launcher runs in migration mode — the run directory's `migration/` (incoming marker, relay socket)
+   * and the filesystem volumes mounted by the agent below a shared directory, each bound `rslave` at its target below
+   * `/guest`, so a migration can hand them over (a target gets them during the freeze). Older bundled images run as
+   * before (Docker volume mounts, no migration mode); as a migration target they are refused.
+   */
+  private async prepareBundled(spec: WorkloadSpec, image: string): Promise<MicrovmHostSide> {
+    const labels = await this.docker
+      .getImage(image)
+      .inspect()
+      .then((info) => info.Config?.Labels ?? {})
+      .catch(() => ({}) as Record<string, string>);
+
+    if (!bundledMigrationSupported(labels)) {
+      if (this.incoming.has(spec.id))
+        throw new Error(`${spec.id}: the bundled image's launcher has no live migration (no incoming mode)`);
+
+      return {};
+    }
+
+    const runDir = microvmRunDir(runtimeDir(), spec.id);
+
+    await mkdir(join(runDir, MICROVM_MIGRATION_SUBDIR), { recursive: true, mode: 0o711 });
+
+    const volumes = guestVolumeList(spec);
+    let volumesDir: string | undefined;
+
+    if (volumes.length > 0) {
+      if (!this.guestVolumes) throw new Error(`${spec.id}: this node agent can't mount microVM volumes`);
+
+      volumesDir = microvmVolumesDir(runtimeDir(), spec.id);
+      await this.guestVolumes.prepareDir(volumesDir, volumes);
+
+      if (!this.incoming.has(spec.id)) for (const volume of volumes) await this.guestVolumes.attach(volumesDir, volume);
+    }
+
+    await writeFile(join(runDir, 'volumes.json'), JSON.stringify(volumes), { mode: 0o600 });
+
+    return { runDir, bundledMigration: true, ...(volumesDir ? { volumesDir } : {}) };
+  }
+
+  /**
+   * Further NICs of a full VM (3.35): one more container interface each, on a kept-address network of its own
+   * (routed /32 + /128 with the link-local gateways, per-veth anti-spoofing), connected before the start.
+   */
+  private async connectExtraNics(containerId: string, spec: WorkloadSpec): Promise<void> {
+    for (const nic of guestNics(spec).filter((n) => n.index > 0)) {
+      if (!this.kept) throw new Error(`${spec.id}: further VM NICs need the kept-address network plugin`);
+
+      const name = await this.kept.ensureNetwork(nic.addresses, nic.index);
+      const v4 = nic.addresses.find((a) => !a.includes(':'));
+      const v6 = nic.addresses.find((a) => a.includes(':'));
+
+      await this.docker.getNetwork(name).connect({
+        Container: containerId,
+        EndpointConfig: { IPAMConfig: { ...(v4 ? { IPv4Address: v4 } : {}), ...(v6 ? { IPv6Address: v6 } : {}) } },
+      });
+    }
+  }
+
+  /**
+   * Taps and tc redirects of a started launcher (3.35). Failures are logged: the launcher gives up after 30 s
+   * (`E_MICROVM_NET`) and Docker's restart policy starts it again, in a fresh namespace.
+   */
+  private async attachGuestNetwork(containerId: string, spec: WorkloadSpec): Promise<void> {
+    if (!usesTapNetworking(spec) || !this.guestNetwork) return;
+
+    this.watchStarts();
+
+    try {
+      await this.guestNetwork.attach(containerId, spec);
+    } catch (error) {
+      this.logger.warn(
+        `Guest network of ${spec.id} not connected: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /** Follows Docker `start` events of launcher containers (restarts by Docker's restart policy). */
+  watchStarts(): void {
+    if (this.events || this.eventsRetry || this.destroyed || !this.guestNetwork) return;
+
+    const retry = () => {
+      this.events = null;
+
+      if (this.destroyed || this.eventsRetry) return;
+
+      this.eventsRetry = setTimeout(() => {
+        this.eventsRetry = null;
+        this.watchStarts();
+      }, EVENTS_RETRY_MS);
+      this.eventsRetry.unref?.();
+    };
+
+    this.docker
+      // Every start (Docker ANDs label filters; launchers carry one of two labels): filtered by the spec below.
+      .getEvents({ filters: { type: ['container'], event: ['start'] } })
+      .then((stream) => {
+        if (this.destroyed) return (stream as NodeJS.ReadableStream & { destroy?: () => void }).destroy?.();
+
+        this.events = stream;
+
+        let buffer = '';
+
+        stream.on('data', (chunk: Buffer | string) => {
+          buffer += chunk.toString();
+
+          const lines = buffer.split('\n');
+
+          buffer = lines.pop() ?? '';
+
+          for (const line of lines.filter((l) => l.trim())) void this.onStartEvent(line);
+        });
+        stream.on('error', retry);
+        stream.on('end', retry);
+      })
+      .catch(retry);
+  }
+
+  private async onStartEvent(line: string): Promise<void> {
+    try {
+      const event = JSON.parse(line) as { id?: string; Actor?: { ID?: string; Attributes?: Record<string, string> } };
+      const id = event.Actor?.ID ?? event.id;
+      const spec = this.specOf(event.Actor?.Attributes?.[WORKLOAD_LABEL] ?? '');
+
+      if (id && spec && usesTapNetworking(spec)) await this.attachGuestNetwork(id, spec);
+    } catch {
+      // not an event line
+    }
   }
 
   /**
@@ -174,7 +490,7 @@ export class WorkloadManager implements OnModuleDestroy {
         ?.replica;
 
     return all
-      .filter((c) => c.Labels?.[MANAGED_LABEL] !== 'true')
+      .filter((c) => c.Labels?.[MANAGED_LABEL] !== 'true' && !isProbeContainer(c.Labels))
       .slice(0, 200)
       .map((c) => ({
         ...(delegatedTo(c.Labels) ? { delegatedTo: (delegatedTo(c.Labels) as string).slice(0, 256) } : {}),
@@ -222,6 +538,9 @@ export class WorkloadManager implements OnModuleDestroy {
       : new Map<string, boolean>();
 
     for (const id of [...this.blocked.keys()]) if (!desired.has(id)) this.blocked.delete(id);
+
+    // Background VM jobs of replicas / disks that are no longer here are cancelled.
+    this.vmDiskJobs?.desired(workloads);
     let changed = false;
 
     for (const container of existing) {
@@ -258,29 +577,61 @@ export class WorkloadManager implements OnModuleDestroy {
         continue;
       }
 
-      if (current && current.Labels[WORKLOAD_HASH_LABEL] === spec.specHash) {
-        // Jobs run once per spec; services are kept running by Docker's restart policy.
-        if (spec.kind === 'service' && current.State !== 'running' && spec.restart !== 'no') {
-          await this.docker.getContainer(current.Id).start();
-          changed = true;
+      try {
+        if (current && current.Labels[WORKLOAD_HASH_LABEL] === spec.specHash) {
+          // Jobs run once per spec; services are kept running by Docker's restart policy.
+          if (spec.kind === 'service' && current.State !== 'running' && spec.restart !== 'no') {
+            // Launchers: guest root and run directory again (gone after a reboot) before the start.
+            if (microvmKind(spec)) await this.prepareMicrovm(spec, this.networkOf(current), registry, current.Image);
+
+            await this.docker.getContainer(current.Id).start();
+            await this.attachGuestNetwork(current.Id, spec);
+            changed = true;
+          } else if (current.State === 'running') {
+            // Idempotent: a start the event stream missed (agent restart) still gets its taps.
+            await this.attachGuestNetwork(current.Id, spec);
+          }
+
+          continue;
         }
 
-        continue;
+        await this.create(spec, dnsServers, registry, current?.Id);
+        changed = true;
+      } catch (error) {
+        // Not startable yet (a VM's boot disk import runs in the background): the other replicas go on.
+        if (!(error instanceof WorkloadDeferred)) throw error;
       }
-
-      await this.create(spec, dnsServers, registry, current?.Id);
-      changed = true;
     }
 
-    // Running images are rescanned daily (3.22).
+    // Running images are rescanned daily (3.22); generic microVMs: the guest image (what policies judge).
     this.scanner.track(
       (await this.managed()).flatMap((c) => {
         const spec = workloads.find((w) => w.id === c.Labels[WORKLOAD_LABEL]);
-        const digest = spec ? /@(sha256:[0-9a-f]{64})$/.exec(spec.image)?.[1] : undefined;
+        const guest = spec?.microvm?.mode === 'generic' ? spec.microvm.guestImage : undefined;
+        const digest = spec ? /@(sha256:[0-9a-f]{64})$/.exec(guest ?? spec.image)?.[1] : undefined;
+        const image = guest ? routedImage(guest, registry) : c.Image;
 
-        return digest && c.Image ? [{ image: c.Image, digest }] : [];
+        return digest && image ? [{ image, digest }] : [];
       }),
     );
+
+    // The unpack cache keeps the desired layers; everything else is collected LRU when over its cap.
+    if (this.rootfs) {
+      this.rootfs.setDesired(
+        workloads.flatMap((w) => {
+          try {
+            return w.microvm ? guestLayers(w.microvm) : [];
+          } catch {
+            return [];
+          }
+        }),
+      );
+      void this.rootfs
+        .gc()
+        .catch((error: unknown) =>
+          this.logger.warn(`Unpack cache GC failed: ${error instanceof Error ? error.message : String(error)}`),
+        );
+    }
 
     return changed;
   }
@@ -294,18 +645,52 @@ export class WorkloadManager implements OnModuleDestroy {
   ): Promise<void> {
     const image = await this.pullThroughCluster(spec.image, registry);
 
-    if (!(await this.allowedByPolicy(spec, image))) return;
+    if (!(await this.policyAllows(spec, image, registry))) return;
 
     if (replaces) await this.remove(replaces, spec.id);
 
-    const options = await this.createOptions(spec, dnsServers, registry);
+    const level = workloadIsolationLevel(spec);
+    let container: Docker.Container;
 
-    if (!options) return;
+    try {
+      const options = await this.createOptions(spec, dnsServers, registry);
 
-    const container = await this.docker.createContainer(options);
+      if (!options) return;
 
-    await container.start();
+      container = await this.docker.createContainer(options);
+
+      // Interfaces before the start: Docker sets up the namespace with all of them.
+      if (spec.vm) await this.connectExtraNics(container.id, spec);
+
+      await container.start();
+    } catch (error) {
+      // Three failures in a row on a level re-probe it (3.1): a broken runtime drops out of the capabilities.
+      if (!(error instanceof WorkloadDeferred)) this.isolation?.recordStartFailure(level);
+
+      throw error;
+    }
+
+    this.isolation?.recordStartSuccess(level);
+    await this.attachGuestNetwork(container.id, spec);
     this.logger.log(`Started ${spec.id} (${containerName(spec.id)})`);
+  }
+
+  /** The Docker network a replica container is attached to (pod bridge or kept-address network). */
+  private networkOf(container: Docker.ContainerInfo): string {
+    return Object.keys(container.NetworkSettings?.Networks ?? {})[0] ?? POD_NETWORK;
+  }
+
+  /**
+   * Image policy subject (3.35): a generic microVM's guest image (pulled through the cluster for the scan; the
+   * launcher image itself is the platform's), else the container image. Bundled images and the launcher carry
+   * `io.forepath.scan.nested-rootfs`, which the scanner follows.
+   */
+  private async policyAllows(spec: WorkloadSpec, image: string, registry?: RegistryClient): Promise<boolean> {
+    const guest = spec.microvm?.mode === 'generic' ? spec.microvm.guestImage : undefined;
+
+    if (!guest) return await this.allowedByPolicy(spec, image, spec.image);
+
+    return await this.allowedByPolicy(spec, await this.pullThroughCluster(guest, registry), guest);
   }
 
   /**
@@ -313,8 +698,8 @@ export class WorkloadManager implements OnModuleDestroy {
    * (or unscannable) image from starting, `monitor` only logs. Without limits the scan runs in the background, for the
    * report.
    */
-  private async allowedByPolicy(spec: WorkloadSpec, image: string): Promise<boolean> {
-    const digest = /@(sha256:[0-9a-f]{64})$/.exec(spec.image)?.[1];
+  private async allowedByPolicy(spec: WorkloadSpec, image: string, reference: string): Promise<boolean> {
+    const digest = /@(sha256:[0-9a-f]{64})$/.exec(reference)?.[1];
 
     this.blocked.delete(spec.id);
 
@@ -332,9 +717,9 @@ export class WorkloadManager implements OnModuleDestroy {
       const blocked = scan ? blockedBy(scan, rule) : null;
       const reason =
         blocked === null
-          ? `image ${spec.image} could not be scanned`
+          ? `image ${reference} could not be scanned`
           : blocked > 0
-            ? `image ${spec.image} has ${blocked} ${rule.block.join(' / ').toLowerCase()} vulnerabilities`
+            ? `image ${reference} has ${blocked} ${rule.block.join(' / ').toLowerCase()} vulnerabilities`
             : null;
 
       return reason ? [{ mode: rule.mode, reason }] : [];
@@ -429,6 +814,25 @@ export class WorkloadManager implements OnModuleDestroy {
 
     await container.remove({ force: true });
     await rm(secretDir(runtimeDir(), workloadId), { recursive: true, force: true });
+
+    // Launchers: the writable layer is discarded with the replica (a recreate starts from the image), not on restart.
+    const kind = launcherKindOf(info?.Config.Labels);
+
+    if (kind === 'generic' || kind === 'bundled') {
+      // Volumes first (unmounted and demoted, as the volume plugin did at the container's end), then the guest root
+      // (generic). Bundled images in migration mode keep their volume list too (none otherwise).
+      const runDir = microvmRunDir(runtimeDir(), workloadId);
+      const volumes = await readFile(join(runDir, 'volumes.json'), 'utf8')
+        .then((raw) => JSON.parse(raw) as GuestVolume[])
+        .catch(() => [] as GuestVolume[]);
+
+      if (volumes.length > 0) await this.guestVolumes?.release(microvmVolumesDir(runtimeDir(), workloadId), volumes);
+
+      if (kind === 'generic') await this.rootfs?.release(workloadId);
+    }
+
+    if (kind) await rm(microvmRunDir(runtimeDir(), workloadId), { recursive: true, force: true });
+
     this.logger.log(`Removed ${workloadId}`);
   }
 

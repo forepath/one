@@ -177,3 +177,45 @@ export const migrationProgressSchema = z
   })
   .strict();
 export type MigrationProgress = z.infer<typeof migrationProgressSchema>;
+
+/**
+ * QEMU live migration (3.35, feature `vm-migration`) of full VMs and generic microVMs, on the same `migration:<id>`
+ * channel and with the same `migrationProgress` / `migrationCommit` / `migrationAbort` as the checkpoint path:
+ *   target ← `vmMigrationPrepare`    → volumes dual-primary, launcher started in incoming mode on the kept addresses,
+ *                                      transfer endpoint relaying to its libvirt session; `prepare` done
+ *   source ← `vmMigrationStart`      → `virsh migrate --live --p2p --tunnelled` through the relay; `precopy` running /
+ *                                      done, `freeze` done (= the downtime)
+ *   source ← `vmMigrationSwitchover` → force completion (auto-converge); post-copy stays off
+ *   target                            → `restore` done once the domain runs; then commit / abort as for checkpoints.
+ * Disks stay on DRBD (no storage copy). The spec of `vmMigrationPrepare` is added in `messages.ts`.
+ */
+export const vmMigrationPrepareBaseSchema = z
+  .object({
+    ...sessionFields,
+    source: nodeName,
+    token: transferTokenSchema,
+    /** The primary NIC's kept addresses; further NICs keep theirs from `spec.vm.nics`. */
+    addresses: z.array(ipAddress).min(1).max(2),
+    /** Volumes to make dual-primary for the switch. */
+    volumes: z.array(volumeIdSchema).max(32),
+    expiresInSeconds: z.number().int().min(10).max(3600),
+  })
+  .strict();
+
+export const vmMigrationStartSchema = z
+  .object({
+    ...sessionFields,
+    target: nodeName,
+    endpoint: transferEndpointSchema,
+    token: transferTokenSchema,
+    /** `virsh migrate-setmaxdowntime`: the freeze budget. */
+    downtimeLimitMs: z.number().int().min(10).max(600_000),
+    maxBandwidthBps: z.number().int().positive().max(1e12).optional(),
+    /** Pre-copy gives up (→ abort, short stop) after this long. */
+    maxSeconds: z.number().int().min(1).max(3600),
+  })
+  .strict();
+export type VmMigrationStart = z.infer<typeof vmMigrationStartSchema>;
+
+export const vmMigrationSwitchoverSchema = z.object({ ...sessionFields }).strict();
+export type VmMigrationSwitchover = z.infer<typeof vmMigrationSwitchoverSchema>;

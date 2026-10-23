@@ -186,7 +186,7 @@ export const CONSOLE_NAV: ConsoleNavEntry[] = [
     id: 'operate',
     icon: 'bi-tools',
     label: $localize`:@@lwConsoleNav-groupOperate:Operate`,
-    title: $localize`:@@lwConsoleNav-groupOperateTitle:Operate: terminals, files, sessions and backups`,
+    title: $localize`:@@lwConsoleNav-groupOperateTitle:Operate: terminals, files, sessions, virtual machines and backups`,
     items: [
       {
         // Replica terminals for project operators (and developers with developerExec), node shells for cluster admins.
@@ -207,6 +207,13 @@ export const CONSOLE_NAV: ConsoleNavEntry[] = [
         icon: 'bi-record-circle',
         label: $localize`:@@lwConsoleNav-sessions:Sessions`,
         title: $localize`:@@lwConsoleNav-sessionsTitle:Terminal sessions and tunnels`,
+      },
+      {
+        // Full virtual machines (3.35): status, power, consoles and snapshots; project members see their projects.
+        path: '/virtual-machines',
+        icon: 'bi-pc-display',
+        label: $localize`:@@lwConsoleNav-virtualMachines:Virtual machines`,
+        title: $localize`:@@lwConsoleNav-virtualMachinesTitle:Virtual machines: power, consoles and snapshots`,
       },
       {
         // Catalog, restores and deletion requests (3.20): cluster roles see everything, project members their projects.

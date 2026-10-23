@@ -41,6 +41,12 @@ Membership is computed continuously: new members are taken from the least repres
 
 Each member's Postgres serves a server certificate from the cluster CA (name `postgres.loadweaver` plus the member's overlay address, valid for a year); the API on every member connects with TLS and verifies it. The control plane stores one certificate per member and sends the same one with every desired state, so pushes of an unchanged state are identical whichever control-plane replica sends them. It issues a new one when the member's address or the cluster CA changed, or once only a third of the lifetime is left; a daily check re-sends the desired state to members whose certificate passed two thirds of its lifetime, so a member renews even when nothing else changes (`LOADWEAVER_POSTGRES_CERTIFICATE_RENEWAL=off` disables the check). The agent switches to the new certificate on the same rules, with one Postgres restart.
 
+## Isolation levels and KVM
+
+Each node reports which [isolation levels](./isolation-levels.md) it can run (`runc`, `sandboxed`, `sandboxed-kvm`, `microvm`), proven by real probes on agent start, every 6 hours, after host updates and on demand (`POST /api/nodes/{name}/isolation-probe`, infra operators and cluster admins). The node API shows the ready levels (`runtimes`), the per-level states and reason codes (`capabilities.isolation`), the KVM facts (`capabilities.kvm`) and the derived labels selectors see (`effectiveLabels`: `runtime.loadweaver.com/<level>: ready`, `loadweaver.com/runtime: <strongest>`). `GET /api/nodes?runtime=microvm` lists the nodes where a level is ready, `?runtime=>=sandboxed-kvm` those that offer at least that level.
+
+The installer prepares KVM where the CPU supports it. To keep a node out of KVM, join it with `--no-kvm` (or `LOADWEAVER_KVM=disabled`), or later set `spec.virtualization.kvm: disabled` in its `Node` resource: the node then offers neither `sandboxed-kvm` nor `microvm` and gets no `/dev/kvm` workloads. Drain KVM workloads off it first; a plan that opts out a node still running them fails. See [KVM on the nodes](./isolation-levels.md#kvm-on-the-nodes).
+
 ## Lifecycle
 
 - **Pending**: joined with `--discover`, waiting for its join plan; no desired state, nothing changed on the host (its agent still sends heartbeats and metrics). Cordon / drain don't apply; discarding the import (`DELETE /api/imports/{node}`) lets it leave right away.

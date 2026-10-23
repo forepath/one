@@ -12,6 +12,7 @@ volumes:
 - `crossSite`: `async` (default) keeps a copy in another site that may lag slightly, `sync` waits for it, `none` keeps all copies in one site (shown as a pin).
 - Volumes are **always encrypted**. Each volume has its own key in the secrets system; only nodes holding a copy receive it, and only in memory.
 - Deleting a deployment never deletes its volumes. Removing data is a separate, explicit action.
+- **Block mode**: the disks of [virtual machines](./virtual-machines.md#disks) are volumes too (`<project>/lw-vm/<vm>.<disk>`), with the same replication and encryption, but the DRBD device is handed to the VM as a raw disk: never formatted or mounted on the host, promoted on the VM's node before it starts and demoted when its launcher is removed.
 
 When a stateful workload moves, the primary moves with it (short stop). When a node drains, its volume copies are rebuilt elsewhere before it may leave.
 

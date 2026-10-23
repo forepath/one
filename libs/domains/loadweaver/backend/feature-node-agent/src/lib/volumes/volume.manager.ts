@@ -30,6 +30,11 @@ export function storageConfig(env: NodeJS.ProcessEnv = process.env): StorageConf
 
 const MANAGED_FILE = /^lw-(\d+)\.res$/;
 
+/** The DRBD device of a volume (`/dev/drbd<minor>`): a file system volume's mount source, a VM disk's device. */
+export function blockDevicePath(volume: Pick<VolumeAssignment, 'minor'>): string {
+  return `/dev/drbd${volume.minor}`;
+}
+
 /** An adjust (and the peers to forget after it) that didn't complete yet; unreadable markers count as none. */
 async function readPending(path: string): Promise<{ adjust: boolean; forget: number[] } | null> {
   try {
@@ -115,6 +120,16 @@ export class VolumeManager {
   private volumeKeyOption?: string;
   /** Volume id → removed peers whose `forget-peer` failed in the last reconcile (pending marker keeps them). */
   private readonly forgetFailures = new Map<string, { peers: number[]; error: string }>();
+  /**
+   * VM disks in a QEMU live migration's dual-primary window (M7.4): between the prepare and the commit / abort
+   * confirmations; the reconcile neither demotes nor adjusts them meanwhile (an adjust would reset the net options).
+   */
+  private readonly dualPrimary = new Set<string>();
+  /**
+   * Filesystem volumes of a generic microVM in a live migration (M7 W10b): between the prepare and the commit / abort
+   * the nodes hand them over themselves (single primary, never mounted twice); the reconcile doesn't adjust them.
+   */
+  private readonly migrationHolds = new Set<string>();
 
   constructor(
     private readonly commands: CommandRunner,
@@ -145,6 +160,11 @@ export class VolumeManager {
   /** The assignment of a volume this node holds a replica of (last apply). */
   assignment(volumeId: string): VolumeAssignment | undefined {
     return this.assignments.get(volumeId);
+  }
+
+  /** The VM disks (block volumes) this node holds a replica of (last apply). */
+  blockAssignments(): VolumeAssignment[] {
+    return [...this.assignments.values()].filter((v) => v.mode === 'block');
   }
 
   /** This node's name (last apply). */
@@ -269,9 +289,21 @@ export class VolumeManager {
       // A failed attach (or detach after I/O errors) leaves the resource up without its disk.
       await this.bringUp(volume, 'adjust');
       changed = true;
-    } else if (needsAdjust) {
+    } else if (needsAdjust && !this.dualPrimary.has(volume.id) && !this.migrationHolds.has(volume.id)) {
+      // (A pending adjust of a disk in a live migration's dual-primary window waits: the marker keeps it.)
       await this.commands.run('drbdadm', ['adjust', drbdResourceName(volume)]);
     }
+
+    // A VM disk whose primary moved elsewhere (failover, migration) is demoted here once its launcher let go of it;
+    // a device still held open (exit 11) stays primary until the launcher is gone (the next reconcile retries).
+    // Not while a QEMU live migration holds it dual-primary: its commit / abort demotes.
+    if (
+      volume.mode === 'block' &&
+      volume.primary !== this.node &&
+      status?.role === 'Primary' &&
+      !this.dualPrimary.has(volume.id)
+    )
+      await this.commands.run('drbdadm', ['secondary', drbdResourceName(volume)], { okExitCodes: [11] });
 
     const unforgotten: number[] = [];
     let forgetError = '';
@@ -521,21 +553,21 @@ export class VolumeManager {
    * stay thin; blocks never written through DRBD are not compared). A peer that isn't connected yet blocks this, so
    * a replica with data can never be overruled; one that joins later just-created gets a full sync.
    */
-  private async initialiseIfNew(volume: VolumeAssignment): Promise<void> {
+  private async initialiseIfNew(volume: VolumeAssignment): Promise<boolean> {
     const name = drbdResourceName(volume);
     const status = await this.drbdStatus(volume);
 
-    if (status?.devices[0]?.['disk-state'] !== 'Inconsistent') return;
+    if (status?.devices[0]?.['disk-state'] !== 'Inconsistent') return false;
 
     // Resync target of an up-to-date peer: DRBD promotes it and reads through the peer.
-    if (status.connections.some((c) => c.peer_devices[0]?.['peer-disk-state'] === 'UpToDate')) return;
+    if (status.connections.some((c) => c.peer_devices[0]?.['peer-disk-state'] === 'UpToDate')) return false;
 
     const peers = volume.replicas.filter((r) => r.node !== this.node);
 
     if (peers.length === 0) {
       await this.commands.run('drbdadm', ['primary', '--force', name]);
 
-      return;
+      return true;
     }
 
     const missing = peers.filter((peer) => {
@@ -557,6 +589,8 @@ export class VolumeManager {
 
     await this.commands.run('drbdadm', ['new-current-uuid', '--clear-bitmap', `${name}/0`]);
     this.logger.log(`Initialised new volume ${volume.id} (no initial sync)`);
+
+    return true;
   }
 
   /** Removes replicas the control plane moved away; data elsewhere is unaffected (3.2). */
@@ -591,9 +625,12 @@ export class VolumeManager {
 
     if (!volume) throw new Error(`unknown volume ${dockerName}`);
 
+    // A VM disk belongs to its guest: never formatted or mounted on the host (3.35).
+    if (volume.mode === 'block') throw new Error(`volume ${dockerName} is a VM disk (block mode), not a file system`);
+
     if (volume.primary !== this.node) throw new Error(`volume ${dockerName} is primary on ${volume.primary}, not here`);
 
-    const device = `/dev/drbd${volume.minor}`;
+    const device = blockDevicePath(volume);
     const mountpoint = this.mountpoint(volume);
 
     await this.initialiseIfNew(volume);
@@ -614,10 +651,202 @@ export class VolumeManager {
     return mountpoint;
   }
 
+  // --- block mode (VM disks, 3.35 / M7.3) ---------------------------------------------------------------------------
+
+  /**
+   * Promotes a VM disk on the node the control plane chose as its primary and returns its DRBD device, which the
+   * launcher gets passed through (no file system, no Docker volume plugin). `fresh`: the volume never held data
+   * anywhere (this promotion declared the empty replicas current), so an image may be written onto it.
+   */
+  async promoteBlock(volumeId: string): Promise<{ device: string; fresh: boolean }> {
+    const volume = this.assignments.get(volumeId);
+
+    if (!volume) throw new Error(`unknown volume ${volumeId}`);
+
+    if (volume.mode !== 'block') throw new Error(`volume ${volumeId} is not a block volume`);
+
+    if (volume.primary !== this.node) throw new Error(`volume ${volumeId} is primary on ${volume.primary}, not here`);
+
+    const fresh = await this.initialiseIfNew(volume);
+
+    await this.commands.run('drbdadm', ['primary', drbdResourceName(volume)]);
+
+    return { device: blockDevicePath(volume), fresh };
+  }
+
+  /**
+   * Starts / ends a VM disk's dual-primary window for a QEMU live migration (M7.4): `drbdadm net-options
+   * --allow-two-primaries=yes|no` on this node (both nodes need it before the second one may promote). The DRBD
+   * `after-sb-*` policies stay `disconnect`. Ending fails while the peer is still primary (DRBD refuses); the caller
+   * retries once the peer demoted.
+   */
+  async setDualPrimary(volumeId: string, allow: boolean): Promise<void> {
+    const volume = this.assignments.get(volumeId);
+
+    if (!volume) throw new Error(`unknown volume ${volumeId}`);
+
+    if (volume.mode !== 'block') throw new Error(`volume ${volumeId} is not a block volume`);
+
+    if (allow) this.holdDualPrimary(volumeId);
+
+    await this.commands.run('drbdadm', [
+      'net-options',
+      `--allow-two-primaries=${allow ? 'yes' : 'no'}`,
+      drbdResourceName(volume),
+    ]);
+
+    if (!allow) this.dualPrimary.delete(volumeId);
+  }
+
+  /**
+   * Marks a VM disk as in a dual-primary window without touching DRBD (a migration session recovered after an agent
+   * restart: the reconcile must not demote or adjust it until the session's commit / abort).
+   */
+  holdDualPrimary(volumeId: string): void {
+    this.dualPrimary.add(volumeId);
+  }
+
+  /** Whether a VM disk is in a live migration's dual-primary window on this node. */
+  inDualPrimary(volumeId: string): boolean {
+    return this.dualPrimary.has(volumeId);
+  }
+
+  /**
+   * Promotes a VM disk on a live migration's target while the source still holds it (M7.4): only inside the
+   * dual-primary window (never through the control plane's primary, which is still the source).
+   */
+  async promoteForMigration(volumeId: string): Promise<string> {
+    const volume = this.assignments.get(volumeId);
+
+    if (!volume || volume.mode !== 'block') throw new Error(`volume ${volumeId} is not a block volume here`);
+
+    if (!this.dualPrimary.has(volumeId)) throw new Error(`volume ${volumeId} is not in a dual-primary window`);
+
+    await this.commands.run('drbdadm', ['primary', drbdResourceName(volume)]);
+
+    return blockDevicePath(volume);
+  }
+
+  /** Demotes a VM disk after its launcher is gone; a device still held open (exit 11) stays primary. */
+  async demoteBlock(volumeId: string): Promise<void> {
+    const volume = this.assignments.get(volumeId);
+
+    if (volume?.mode !== 'block') return;
+
+    await this.commands.run('drbdadm', ['secondary', drbdResourceName(volume)], { okExitCodes: [11] });
+  }
+
+  /**
+   * Size of a VM disk as the guest sees it (the DRBD device: the LV minus DRBD's internal metadata), from sysfs in
+   * 512-byte sectors (a secondary DRBD device can't be opened).
+   */
+  async blockSizeBytes(volumeId: string): Promise<number> {
+    const volume = this.assignments.get(volumeId);
+
+    if (!volume) throw new Error(`unknown volume ${volumeId}`);
+
+    const { stdout } = await this.commands.run('cat', [`/sys/block/drbd${volume.minor}/size`]);
+    const sectors = Number(stdout.trim());
+
+    if (!Number.isSafeInteger(sectors) || sectors <= 0)
+      throw new Error(`cannot read the size of ${blockDevicePath(volume)}`);
+
+    return sectors * 512;
+  }
+
+  /** LVM tags of this node's replica LV (the VM image initialization marker lives there). */
+  async lvTags(volumeId: string, config = storageConfig()): Promise<string[]> {
+    const volume = this.assignments.get(volumeId);
+
+    if (!volume) throw new Error(`unknown volume ${volumeId}`);
+
+    const report = await this.commands.json<{ report: { lv: { lv_name: string; lv_tags?: string }[] }[] }>('lvs', [
+      '--reportformat',
+      'json',
+      '-o',
+      'lv_name,lv_tags',
+      `${config.volumeGroup}/${drbdResourceName(volume)}`,
+    ]);
+    const tags = report.report[0]?.lv.find((l) => l.lv_name === drbdResourceName(volume))?.lv_tags ?? '';
+
+    return tags
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t !== '');
+  }
+
+  /** Adds / removes LVM tags of this node's replica LV (one `lvchange`). */
+  async setLvTags(volumeId: string, add: string[], remove: string[] = [], config = storageConfig()): Promise<void> {
+    const volume = this.assignments.get(volumeId);
+
+    if (!volume) throw new Error(`unknown volume ${volumeId}`);
+
+    if (!add.length && !remove.length) return;
+
+    await this.commands.run('lvchange', [
+      ...remove.flatMap((t) => ['--deltag', t]),
+      ...add.flatMap((t) => ['--addtag', t]),
+      `${config.volumeGroup}/${drbdResourceName(volume)}`,
+    ]);
+  }
+
+  // --- filesystem volumes of a live-migrating generic microVM (M7 W10b) ----------------------------------------------
+
+  /** Starts / ends a filesystem volume's migration hold (no adjust meanwhile; hand-over outside the primary rule). */
+  holdForMigration(volumeId: string): void {
+    this.migrationHolds.add(volumeId);
+  }
+
+  endMigrationHold(volumeId: string): void {
+    this.migrationHolds.delete(volumeId);
+  }
+
+  inMigration(volumeId: string): boolean {
+    return this.migrationHolds.has(volumeId);
+  }
+
+  /**
+   * The source lets go of a filesystem volume during the freeze: unmounted and demoted, strictly (a device still held
+   * open fails the hand-over instead of staying primary). Protocol C replication: what was written before the
+   * unmount is on the target's replica, which DRBD only promotes when it is UpToDate.
+   */
+  async releaseForMigration(volumeId: string): Promise<void> {
+    const volume = this.assignments.get(volumeId);
+
+    if (!volume || volume.mode === 'block') throw new Error(`volume ${volumeId} is not a file system here`);
+
+    await this.commands.run('umount', [this.mountpoint(volume)], { okExitCodes: [32] });
+    await this.commands.run('drbdadm', ['secondary', drbdResourceName(volume)]);
+  }
+
+  /**
+   * The target takes a filesystem volume over during the freeze (the source demoted it; the control plane's primary
+   * follows at the cut-over): promoted and mounted here. Only inside a migration hold.
+   */
+  async takeOverForMigration(volumeId: string): Promise<string> {
+    const volume = this.assignments.get(volumeId);
+
+    if (!volume || volume.mode === 'block') throw new Error(`volume ${volumeId} is not a file system here`);
+
+    if (!this.migrationHolds.has(volumeId)) throw new Error(`volume ${volumeId} is not being migrated`);
+
+    const mountpoint = this.mountpoint(volume);
+
+    await this.commands.run('drbdadm', ['primary', drbdResourceName(volume)]);
+    await mkdir(mountpoint, { recursive: true, mode: 0o711 });
+
+    const mounts = await readFile('/proc/self/mounts', 'utf8').catch(() => '');
+
+    if (!mounts.split('\n').some((l) => l.split(' ')[1] === mountpoint))
+      await this.commands.run('mount', ['-o', 'nodev,nosuid', blockDevicePath(volume), mountpoint]);
+
+    return mountpoint;
+  }
+
   async unmount(dockerName: string): Promise<void> {
     const volume = this.byDockerName(dockerName);
 
-    if (!volume) return;
+    if (!volume || volume.mode === 'block') return;
 
     await this.commands.run('umount', [this.mountpoint(volume)], { okExitCodes: [32] });
     await this.commands.run('drbdadm', ['secondary', drbdResourceName(volume)], { okExitCodes: [11] });

@@ -5,6 +5,7 @@ export * from './lib/entities/audit-event.entity';
 export * from './lib/entities/cluster-member.entity';
 export * from './lib/entities/cluster.entity';
 export * from './lib/entities/cron-run.entity';
+export * from './lib/entities/virtual-machine.entities';
 export * from './lib/entities/join-token.entity';
 export * from './lib/entities/node-desired-state.entity';
 export * from './lib/entities/node.entity';

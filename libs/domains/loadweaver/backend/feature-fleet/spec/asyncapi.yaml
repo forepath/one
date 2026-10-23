@@ -11,7 +11,7 @@ info:
 
     Handshake: `auth: { Authorization: 'Bearer <token>' }` (interactive sessions; PAT sockets are rejected by the
     shared socket auth). Namespaces and the cluster-wide grant they need: `plans`, `topology`, `logs` → viewer;
-    `terminals` → operator (closed during the read-only grace). Project-only grants never open streams. At most 8
+    `terminals` and `consoles` (VM serial / VNC) → operator (closed during the read-only grace). Project-only grants never open streams. At most 8
     attachments per socket.
 
     Access is re-checked every `FLEET_SOCKET_RECHECK_MS` (60 s) and right away when a grant, the connection or the
@@ -75,7 +75,8 @@ components:
         required: [clusterId, namespace]
         properties:
           clusterId: { type: string, format: uuid }
-          namespace: { type: string, enum: [plans, topology, logs, terminals] }
+          namespace:
+            { type: string, enum: [plans, topology, logs, terminals, consoles] }
     attached:
       payload:
         type: object

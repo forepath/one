@@ -8,12 +8,15 @@ import { CommandRunner } from '../host/command-runner';
 import { DOCKER } from '../host/docker.provider';
 import { stateDir } from '../state/agent-state.store';
 import {
+  gvisorPlatformOf,
   RESTORED_LABEL,
   restoredKind,
+  restoredPlatform,
   restoredRuncRoot,
   restoredRunscRoot,
   RestoredRuntime,
   sandboxRuntimeOf,
+  type GvisorPlatform,
 } from './restored-runtime';
 
 /**
@@ -53,6 +56,11 @@ export interface CheckpointSource {
   /** A restored replica (3.10): its process tree runs in the agent's runc root next to a placeholder. */
   restored: boolean;
   runtime: 'runc' | 'runsc';
+  /**
+   * gVisor: the platform the sandbox runs on (M7.1), from its runtime's flags (or a restored placeholder's label);
+   * the checkpoint is taken with those flags and restored on the same platform only.
+   */
+  platform?: GvisorPlatform;
   /** runc / runsc binary and its global arguments (`--root`, the runtime's own flags). */
   binary: string;
   globalArgs: string[];
@@ -148,7 +156,8 @@ export class CheckpointManager {
     if (info.Config.Labels?.[RESTORED_LABEL]) {
       const name = RestoredRuntime.runcName(info.Id);
       const kind = restoredKind(info.Config.Labels);
-      const sandbox = kind === 'runsc' ? await this.sandboxRuntime() : null;
+      const platform = kind === 'runsc' ? restoredPlatform(info.Config.Labels) : undefined;
+      const sandbox = platform ? await this.sandboxRuntime(platform) : null;
       const binary = sandbox?.binary ?? 'runc';
       const globalArgs = sandbox ? ['--root', restoredRunscRoot(), ...sandbox.args] : ['--root', restoredRuncRoot()];
       const state = await this.commands.json<{ status?: string; pid?: number }>(binary, [...globalArgs, 'state', name]);
@@ -160,6 +169,7 @@ export class CheckpointManager {
         containerId: name,
         restored: true,
         runtime: kind,
+        ...(platform ? { platform } : {}),
         binary,
         globalArgs,
         pid: state.pid,
@@ -176,12 +186,16 @@ export class CheckpointManager {
     const runtime = runtimeName.startsWith('runsc') ? 'runsc' : 'runc';
     let binary = 'runc';
     let runtimeArgs: string[] = [];
+    let platform: GvisorPlatform | undefined;
 
     if (runtime === 'runsc') {
       const entry = (await this.dockerRuntimes())[runtimeName];
 
       binary = entry?.path || 'runsc';
       runtimeArgs = entry?.runtimeArgs ?? [];
+      platform = gvisorPlatformOf(runtimeArgs) ?? undefined;
+
+      if (!platform) throw new Error(`runtime ${runtimeName} uses a gVisor platform Loadweaver doesn't checkpoint`);
     }
 
     const root = await this.runtimeRoot(runtimeName, info.Id);
@@ -192,6 +206,7 @@ export class CheckpointManager {
       containerId: info.Id,
       restored: false,
       runtime,
+      ...(platform ? { platform } : {}),
       binary,
       globalArgs: ['--root', root, ...runtimeArgs],
       pid,
@@ -209,10 +224,10 @@ export class CheckpointManager {
     return docker.Runtimes ?? {};
   }
 
-  private async sandboxRuntime(): Promise<{ binary: string; args: string[] }> {
-    const runtime = sandboxRuntimeOf(await this.dockerRuntimes());
+  private async sandboxRuntime(platform: GvisorPlatform): Promise<{ binary: string; args: string[] }> {
+    const runtime = sandboxRuntimeOf(await this.dockerRuntimes(), platform);
 
-    if (!runtime) throw new Error('no gVisor runtime registered with Docker');
+    if (!runtime) throw new Error(`no gVisor ${platform} runtime registered with Docker`);
 
     return runtime;
   }

@@ -18,6 +18,7 @@ Access is not desired state: memberships, project settings and acceptances chang
 
 - Global admins (interactive login) and the static API key are cluster admins. A personal access token never inherits global admin from the login; it gets cluster and project roles from memberships like anyone else, narrowed by its scopes.
 - Terminals, the file browser and debug tunnels: operators and admins; developers terminals and files only with `developerExec`; viewers never (see [Terminals, files and tunnels](./terminals-files-and-tunnels.md#who-may)).
+- Virtual machines: power actions and the serial / VNC consoles follow the terminal rule (operators and admins; developers with `developerExec`); snapshots, re-imaging and VM image imports need an operator ([Virtual machines](./virtual-machines.md#roles)).
 - Who may plan, apply or discard is checked against the caller's roles at that moment. A plan that touches cluster-level resources needs `infra-operator` (or `cluster-admin` for `Cluster` and `Project`); project resources need at least `developer` in every project the plan changes.
 
 ## Who may grant what
@@ -100,18 +101,30 @@ spec:
     storage: 200g # volume sizes
     publicIps: 2 # egress addresses
     ports: 4 # published ports
+    virtualMachines: 5 # VirtualMachine resources
+    vmVcpus: 16 # vCPUs of running VMs
+    vmMemory: 32g # memory of running VMs
+    vmDiskBytes: 1t # disk sizes of all VMs
 ```
 
-| Field       | What counts                                                                                                    |
-| ----------- | -------------------------------------------------------------------------------------------------------------- |
-| `cpu`       | Each service's requested CPUs (`deploy.resources.reservations`, otherwise the project's `defaults`) × replicas |
-| `memory`    | Same for memory                                                                                                |
-| `storage`   | The size of every volume, counted once (not per replica)                                                       |
-| `publicIps` | One per pool in `egress.pools` of every project policy                                                         |
-| `ports`     | Every entry in a service's compose `ports` (once per service, not per replica)                                 |
+| Field             | What counts                                                                                                    |
+| ----------------- | -------------------------------------------------------------------------------------------------------------- |
+| `cpu`             | Each service's requested CPUs (`deploy.resources.reservations`, otherwise the project's `defaults`) × replicas |
+| `memory`          | Same for memory                                                                                                |
+| `storage`         | The size of every volume, counted once (not per replica)                                                       |
+| `publicIps`       | One per pool in `egress.pools` of every project policy                                                         |
+| `ports`           | Every entry in a service's compose `ports` (once per service, not per replica)                                 |
+| `virtualMachines` | Every [`VirtualMachine`](./virtual-machines.md) of the project, running or not                                 |
+| `vmVcpus`         | `cpu.vcpus` of the running VMs                                                                                 |
+| `vmMemory`        | `memory` of the running VMs                                                                                    |
+| `vmDiskBytes`     | The size of every VM disk, counted once (not per copy), running or not                                         |
+
+- [MicroVM](./isolation-levels.md#microvms) services and running [virtual machines](./virtual-machines.md#quotas) count their guest size plus the launcher's overhead (384 MiB memory, 0.25 CPU per replica or VM) into `cpu` and `memory`; VM disks count into `storage`. Starting a `Manual` VM through the API is checked against the quotas like a plan.
 
 - The desired state after the plan is judged, for every project the plan touches. A plan over a quota is rejected, with the usage and the limit in the message.
 - Lowering a quota below the current usage is rejected too, because the plan touches the project.
+
+**Device access** is an admin-only allowance in the same resource: `spec.workloads.allowedDevices: ['/dev/kvm']` lets the project's `runc` services use compose `devices` for `/dev/kvm` (the only device on the allow-list; it lets a workload run its own VMs and pins it for migration). Without it, a plan using the device fails with a policy error. See [Isolation levels](./isolation-levels.md#devices-devkvm).
 
 `spec.billing.decabillSubscriptionId` maps the project to a Decabill subscription that its [metered usage](./usage-metering.md) is billed on (cluster admins, like quotas).
 
@@ -195,4 +208,4 @@ Every access change is audited: `cluster.member.set` / `remove`, `project.member
 
 ## Scopes
 
-Personal access tokens need `projects:admin` to change members, settings and acceptances, `live:access` for the file browser, `live:exec` for [machine exec](./terminals-files-and-tunnels.md#machine-exec), `plans:approve` to approve plans, and `cluster:admin` for cluster members and access export / import. Reads need `projects:read` (project members, settings, requests) or `cluster:read` (cluster members, `GET /api/access/me`).
+Personal access tokens need `projects:admin` to change members, settings and acceptances, `live:access` for the file browser and VM power actions, `live:exec` for [machine exec](./terminals-files-and-tunnels.md#machine-exec), `plans:approve` to approve plans, and `cluster:admin` for cluster members and access export / import. Reads need `projects:read` (project members, settings, requests) or `cluster:read` (cluster members, `GET /api/access/me`).

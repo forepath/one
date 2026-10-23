@@ -15,6 +15,8 @@ import { relayKey, ReorderBuffer, signRelay, verifyRelay } from './relay.utils';
 /** Messages a live session sends to the node / receives from it (3.19). */
 export const LIVE_TO_AGENT = [
   'execOpen',
+  /** A VM console (3.35): then the exec data messages on its channel. */
+  'consoleOpen',
   'execInput',
   'execResize',
   'execClose',

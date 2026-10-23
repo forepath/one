@@ -1,6 +1,6 @@
 # Terraform
 
-The Loadweaver Terraform provider (`forepath/loadweaver`) manages projects, deployments, groups, policies, DNS, alert rules, backup policies and any other resource kind from Terraform. It talks to the same control-plane API as the console and the [CLI](../cli.md), and every change still goes through [plan and apply](../features/plan-and-apply.md):
+The Loadweaver Terraform provider (`forepath/loadweaver`) manages projects, deployments, virtual machines, groups, policies, DNS, alert rules, backup policies and any other resource kind from Terraform. It talks to the same control-plane API as the console and the [CLI](../cli.md), and every change still goes through [plan and apply](../features/plan-and-apply.md):
 
 - `terraform plan` runs a **Loadweaver dry-run plan** for each changed resource: the control plane validates the change and computes its effects; the plan is discarded right away. Refusals become Terraform errors on the attribute they concern. Network and workload effects, pins and approval risk show up as a warning per resource.
 - `terraform apply` **creates and applies a Loadweaver plan** per resource change and follows it until every node reported it. [Approval rules](../features/projects-and-access.md#approvals) still apply: `terraform apply` waits until an approver has approved the plan.
@@ -82,19 +82,20 @@ The token needs the scopes `resources:read`, `plans:create` and `plans:apply` (s
 
 Every resource has `id` (`Kind/name` or `Kind/project/name`), `name`, `labels` and `last_plan_id` (the Loadweaver plan that last changed it through Terraform). Changing `name`, `project` (or `kind`) replaces the resource.
 
-| Resource                    | Kind            | Scope              | Spec                                                                                                                 |
-| --------------------------- | --------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `loadweaver_project`        | `Project`       | cluster            | typed: `description`, `default_cpu` / `default_memory` / `default_volume_size`, `quota_*`, `billing_subscription_id` |
-| `loadweaver_deployment`     | `Deployment`    | project            | typed: `compose`, `variables`                                                                                        |
-| `loadweaver_workload_group` | `WorkloadGroup` | project            | `spec` (JSON)                                                                                                        |
-| `loadweaver_node_group`     | `NodeGroup`     | cluster            | `spec` (JSON)                                                                                                        |
-| `loadweaver_client_group`   | `ClientGroup`   | cluster            | `spec` (JSON)                                                                                                        |
-| `loadweaver_policy`         | `Policy`        | project or cluster | `spec` (JSON)                                                                                                        |
-| `loadweaver_dns_zone`       | `DnsZone`       | cluster            | `spec` (JSON)                                                                                                        |
-| `loadweaver_dns_record`     | `DnsRecord`     | project or cluster | `spec` (JSON)                                                                                                        |
-| `loadweaver_alert_rule`     | `AlertRule`     | project or cluster | `spec` (JSON)                                                                                                        |
-| `loadweaver_backup_policy`  | `BackupPolicy`  | project or cluster | `spec` (JSON)                                                                                                        |
-| `loadweaver_resource`       | any (`kind`)    | by kind            | `spec` (JSON), for every other kind (e.g. `ImagePolicy`, `IpPool`, `StatusPage`)                                     |
+| Resource                     | Kind             | Scope              | Spec                                                                                                                 |
+| ---------------------------- | ---------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `loadweaver_project`         | `Project`        | cluster            | typed: `description`, `default_cpu` / `default_memory` / `default_volume_size`, `quota_*`, `billing_subscription_id` |
+| `loadweaver_deployment`      | `Deployment`     | project            | typed: `compose`, `variables`                                                                                        |
+| `loadweaver_virtual_machine` | `VirtualMachine` | project            | typed: `image`, `vcpus`, `memory`, `disks` / `nics` (lists of objects), `cloud_init`, `placement`, … (see below)     |
+| `loadweaver_workload_group`  | `WorkloadGroup`  | project            | `spec` (JSON)                                                                                                        |
+| `loadweaver_node_group`      | `NodeGroup`      | cluster            | `spec` (JSON)                                                                                                        |
+| `loadweaver_client_group`    | `ClientGroup`    | cluster            | `spec` (JSON)                                                                                                        |
+| `loadweaver_policy`          | `Policy`         | project or cluster | `spec` (JSON)                                                                                                        |
+| `loadweaver_dns_zone`        | `DnsZone`        | cluster            | `spec` (JSON)                                                                                                        |
+| `loadweaver_dns_record`      | `DnsRecord`      | project or cluster | `spec` (JSON)                                                                                                        |
+| `loadweaver_alert_rule`      | `AlertRule`      | project or cluster | `spec` (JSON)                                                                                                        |
+| `loadweaver_backup_policy`   | `BackupPolicy`   | project or cluster | `spec` (JSON)                                                                                                        |
+| `loadweaver_resource`        | any (`kind`)     | by kind            | `spec` (JSON), for every other kind (e.g. `ImagePolicy`, `IpPool`, `StatusPage`)                                     |
 
 - **JSON specs** take the resource's `spec` exactly as in YAML, written with `jsonencode({ … })` or taken from a file with `jsonencode(yamldecode(file("policy.yaml")))`. The fields are those of the kind's JSON Schema (`GET /api/schemas/{kind}`, also used by the console editor). `jsonencode` keeps the value canonical, so formatting never shows up as a change.
 - **Defaults** the control plane fills in (e.g. a policy's `mode: enforce`) don't count as differences: a refresh compares the configured spec with the stored one after applying the same defaults. A real difference (someone changed the resource in the console) shows up as an update that puts the configuration back.
@@ -139,13 +140,71 @@ resource "loadweaver_resource" "signed_images" {
 }
 ```
 
+## Virtual machines
+
+`loadweaver_virtual_machine` manages a [full virtual machine](../features/virtual-machines.md) (`VirtualMachine`). Scalars are attributes, disks and NICs are **lists of objects** and cloud-init / placement are objects (Terraform's nested attributes, so leave out what you don't need):
+
+```hcl
+resource "loadweaver_virtual_machine" "db" {
+  name    = "db1"
+  project = loadweaver_project.shop.name
+  labels  = { app = "db" }
+  image   = "registry.lw/shop/debian-13:20261017" # pinned to its digest by the plan
+  vcpus   = 4
+  memory  = "8Gi"
+
+  disks = [
+    { name = "root", size = "20Gi", source = "image", replicas = 2 },
+    { name = "data", size = "200Gi", replicas = 2, cross_site = "async" },
+  ]
+
+  nics = [
+    { name = "eth0", groups = [loadweaver_workload_group.db.name] },
+    { name = "backup", groups = ["backup-net"], ipv6 = false },
+  ]
+
+  cloud_init = {
+    user_data           = file("${path.module}/db1.cloud-config.yaml") # may contain secret://shop/... references
+    ssh_authorized_keys = [file("~/.ssh/id_ed25519.pub")]
+  }
+
+  placement = {
+    selector = { match_labels = { tier = "vm" } }
+    spread   = "node"
+  }
+
+  run_strategy = "Manual" # power on / off in the console or API
+}
+```
+
+| Attribute                                          | Spec field                                        | Notes                                                                                                       |
+| -------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `image` (required)                                 | `image`                                           | VM image artifact or KubeVirt containerDisk in the registry                                                 |
+| `vcpus` (required), `cpu_model`                    | `cpu.vcpus`, `cpu.model`                          | 1-64; `host-model` (default) or `host-passthrough`                                                          |
+| `memory` (required)                                | `memory`                                          | e.g. `4Gi`, at least `256Mi`                                                                                |
+| `firmware`                                         | `firmware`                                        | `uefi` (default) or `bios` (amd64)                                                                          |
+| `disks` (required)                                 | `disks`                                           | `name`, `size` (required); `source` (`image` once, the boot disk), `replicas`, `cross_site`, `bus`, `cache` |
+| `nics` (required)                                  | `nics`                                            | `name` (required); `groups`, `labels`, `ipv4`, `ipv6`                                                       |
+| `cloud_init`                                       | `cloudInit`                                       | `user_data` or `user_data_secret`, `ssh_authorized_keys`, `network_config` (`auto` / `none`)                |
+| `placement`                                        | `placement`                                       | `selector` (`names`, `match_labels`, `match_expressions`), `spread` (`node` / `site`)                       |
+| `ha_restart_elsewhere`, `live_migration`           | `ha.restartElsewhere`, `liveMigration.enabled`    | both default `true`                                                                                         |
+| `run_strategy`, `graphical_console`, `description` | `runStrategy`, `console.graphical`, `description` | `Always` (default) / `Manual` / `Halted`; VNC on by default                                                 |
+
+- Defaults the control plane fills in (`source = "blank"`, `cache = "none"`, `firmware = "uefi"`, …) don't show up as differences; a real change inside a list (a disk resized in the console) shows up as an update of that list.
+- Terraform changes the **spec** only. Power actions of `Manual` VMs (start, stop, shutdown, reboot, reset), snapshots, re-imaging and the consoles stay in the console and API; `run_strategy = "Halted"` stops a VM through a plan.
+- Renaming a VM or moving it to another project **replaces** it: the new VM gets new disks (the boot disk written from the image again). Deleting a VM removes it from the cluster, but, as with a deployment's volumes, its disks are not deleted with it; removing data is a separate, explicit action. `lifecycle { prevent_destroy = true }` guards VMs that must not be replaced by accident.
+- Project quotas for VMs: `quota_virtual_machines`, `quota_vm_vcpus`, `quota_vm_memory`, `quota_vm_disk_bytes` on `loadweaver_project`.
+
+Upload images with `loadweaver vm-image push` or the import API first ([VM images](../features/virtual-machines.md#images)); the image name is a plain string, so Terraform doesn't track the image itself.
+
 ## Data sources
 
-| Data source                    | Reads                                                                                        |
-| ------------------------------ | -------------------------------------------------------------------------------------------- |
-| `loadweaver_resource`          | Any stored resource: `kind`, `name`, `project` → `spec` (JSON, use `jsondecode`), `labels`   |
-| `loadweaver_project`           | A project with its defaults and quota                                                        |
-| `loadweaver_deployment_status` | Where a deployment runs: `replicas` (node, state, addresses) and stable `services` addresses |
+| Data source                         | Reads                                                                                                                               |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `loadweaver_resource`               | Any stored resource: `kind`, `name`, `project` → `spec` (JSON, use `jsondecode`), `labels`                                          |
+| `loadweaver_project`                | A project with its defaults and quota                                                                                               |
+| `loadweaver_deployment_status`      | Where a deployment runs: `replicas` (node, state, addresses) and stable `services` addresses                                        |
+| `loadweaver_virtual_machine_status` | A VM's `phase`, `power`, `node`, `pinned_image`, `addresses` and per-NIC `nics` (`name`, `mac`, `primary`, `addresses`) and `disks` |
 
 ```hcl
 data "loadweaver_deployment_status" "site" {
@@ -155,6 +214,17 @@ data "loadweaver_deployment_status" "site" {
 
 output "service_address" {
   value = one([for s in data.loadweaver_deployment_status.site.services : s.address_v4 if s.name == "web"])
+}
+```
+
+```hcl
+data "loadweaver_virtual_machine_status" "db" {
+  name    = loadweaver_virtual_machine.db.name
+  project = loadweaver_project.shop.name
+}
+
+output "db_backup_address" {
+  value = one([for n in data.loadweaver_virtual_machine_status.db.nics : n.addresses[0] if n.name == "backup"])
 }
 ```
 
@@ -183,6 +253,7 @@ If nobody approves within `approval_timeout`, the plan is discarded and the appl
 ```bash
 terraform import loadweaver_project.shop shop                       # cluster kinds: name
 terraform import loadweaver_deployment.site shop/site               # project kinds: project/name (or name with the provider project)
+terraform import loadweaver_virtual_machine.db shop/db1
 terraform import loadweaver_policy.global global                    # cluster-wide policy
 terraform import loadweaver_resource.signed ImagePolicy/shop/signed # generic: Kind/name or Kind/project/name
 ```

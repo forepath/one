@@ -1,6 +1,7 @@
 import { createHmac, hkdfSync, randomBytes } from 'node:crypto';
 
 import { volumeKeyRef } from '@forepath/loadweaver/shared/util-agent-protocol';
+import type { WorkloadSpec } from '@forepath/loadweaver/shared/util-agent-protocol';
 import type { RequestWithUser } from '@forepath/identity/backend';
 
 import { envelopeDecrypt, envelopeEncrypt } from '@forepath/loadweaver/shared/util-secrets';
@@ -10,6 +11,7 @@ import { DataSource } from 'typeorm';
 
 import { ProjectAccessService } from '../access/project-access.service';
 import { DeploymentStateEntity } from '../entities/deployment-state.entity';
+import { NodeDesiredStateEntity } from '../entities/node-desired-state.entity';
 import { ResourceEntity } from '../entities/resource.entity';
 import { SecretEntity } from '../entities/secret.entity';
 import { VolumePlacementEntity } from '../entities/volume-placement.entity';
@@ -238,6 +240,18 @@ export class SecretsService {
     if (!parsed || !placement || placement.node !== node)
       throw new ForbiddenException('workload is not placed on this node');
 
+    if (parsed.project !== placement.project) throw new ForbiddenException('the secret belongs to another project');
+
+    const desired = await this.dataSource.getRepository(NodeDesiredStateEntity).findOne({ where: { nodeName: node } });
+    const workload = (desired?.state.workloads as WorkloadSpec[] | undefined)?.find(
+      (spec) => spec.id === workloadId && spec.project === placement.project,
+    );
+    // Exact refs preserve plan-time pins; the node cannot substitute another version or a platform secret.
+    const cloudInitReferenced = workload?.vm?.cloudInit?.secretRefs.includes(ref) ?? false;
+
+    if (cloudInitReferenced && parsed.name.startsWith('lw-'))
+      throw new ForbiddenException('VM cloud-init cannot reference platform-reserved secrets');
+
     const resources = await this.dataSource
       .getRepository(ResourceEntity)
       .find({ where: [{ kind: 'Project' }, { kind: 'Deployment', project: placement.project }] });
@@ -253,14 +267,15 @@ export class SecretsService {
         definitions.some((d) => d.name === mount.source && d.ref.split('@')[0] === base),
       );
 
-    if (!referenced) throw new ForbiddenException('the workload does not reference this secret');
+    if (!referenced && !cloudInitReferenced)
+      throw new ForbiddenException('the workload does not reference this secret');
 
     const state = await this.dataSource
       .getRepository(DeploymentStateEntity)
       .findOne({ where: { id: `${placement.project}/${placement.deployment}` } });
     const version = parsed.version ?? state?.secretVersions[base];
     const row = await this.dataSource.getRepository(SecretEntity).findOne({
-      where: { project: parsed.project, name: parsed.name, ...(version ? { version } : {}) },
+      where: { project: parsed.project, name: parsed.name, ...(version !== undefined ? { version } : {}) },
       order: { version: 'DESC' },
     });
 

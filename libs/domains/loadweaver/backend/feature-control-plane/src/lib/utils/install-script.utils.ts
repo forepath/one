@@ -1,5 +1,28 @@
-import { GVISOR_PIN, PACKAGE_PINS } from '@forepath/loadweaver/shared/util-release';
+import {
+  GVISOR_PIN,
+  PACKAGE_PINS,
+  REQUIRED_HOST_PACKAGES,
+  type AptUpstream,
+} from '@forepath/loadweaver/shared/util-release';
 import { buildGvisorInstallScript } from '@forepath/shared/backend/util-container-runtime';
+
+/**
+ * gVisor on Loadweaver nodes, with KVM host preparation (3.1: modprobe, persisted modules, the gVisor KVM runtimes)
+ * unless the node opts out. The shared installer never installs packages for it (`kvmApt: false`): Ubuntu's
+ * `linux-modules-extra-$(uname -r)` comes from the cluster's apt snapshot (below), later with the kernel rollouts.
+ */
+const LOADWEAVER_GVISOR_INSTALL_OPTIONS = {
+  release: GVISOR_PIN.release,
+  sha512: { x86_64: GVISOR_PIN.sha512.amd64, aarch64: GVISOR_PIN.sha512.arm64 },
+  kvm: true,
+  kvmApt: false,
+};
+
+/** The cluster's newest apt snapshot (3.26), served on `aptBase` (`/api/updates/apt/<id>`). */
+export interface InstallAptSnapshot {
+  aptBase: string;
+  sources: readonly Pick<AptUpstream, 'name' | 'suites' | 'components' | 'arches' | 'keyring' | 'os'>[];
+}
 
 export interface InstallScriptOptions {
   /** Public HTTPS URL of the control plane (configured, never taken from request headers). */
@@ -8,6 +31,8 @@ export interface InstallScriptOptions {
   caCertHash: string;
   /** SHA-256 of the agent binaries served by this control plane, per architecture. */
   agentSha256: Partial<Record<'amd64' | 'arm64', string>>;
+  /** The cluster's newest apt snapshot: Ubuntu's KVM modules are installed from it (never from upstream). */
+  aptSnapshot?: InstallAptSnapshot;
 }
 
 /**
@@ -33,6 +58,83 @@ function storagePackageCases(): string {
 }
 
 const URL_PATTERN = /^https:\/\/[A-Za-z0-9.-]+(:\d{1,5})?(\/[A-Za-z0-9._~/-]*)?$/;
+const APT_NAME = /^[a-z0-9][a-z0-9-]{0,40}$/;
+const APT_WORD = /^[a-z0-9][a-z0-9.-]{0,40}$/;
+const APT_PATH = /^\/[A-Za-z0-9._/-]{1,200}$/;
+
+/**
+ * KVM host preparation (3.1), before the gVisor block: Ubuntu kernels may ship `kvm_intel` / `kvm_amd` only in
+ * `linux-modules-extra-$(uname -r)`. Installed only on Ubuntu, when the module is missing, the CPU has vmx / svm and the
+ * node isn't opted out — and only from the cluster's apt snapshot (a temporary apt configuration naming nothing else);
+ * without a snapshot for this OS / architecture the package comes with the next host update. The opt-out
+ * (`--no-kvm` / `LOADWEAVER_KVM=disabled`) skips KVM entirely; the node spec's `virtualization.kvm: disabled` keeps it.
+ */
+export function kvmInstallSection(
+  controlPlaneUrl: string | undefined,
+  snapshot: InstallAptSnapshot | undefined,
+): string {
+  const cases: string[] = [];
+
+  if (controlPlaneUrl && snapshot) {
+    if (!APT_PATH.test(snapshot.aptBase)) throw new Error('invalid apt snapshot path');
+
+    const byHost = new Map<string, string[]>();
+
+    for (const source of snapshot.sources) {
+      if (!source.os.startsWith('ubuntu:')) continue;
+
+      if (
+        !APT_NAME.test(source.name) ||
+        !APT_PATH.test(source.keyring) ||
+        ![...source.suites, ...source.components].every((w) => APT_WORD.test(w)) ||
+        !/^ubuntu:[0-9.]{4,8}$/.test(source.os)
+      )
+        throw new Error(`invalid apt source ${source.name}`);
+
+      for (const arch of source.arches.filter((a) => a === 'amd64' || a === 'arm64'))
+        for (const suite of source.suites)
+          (
+            byHost.get(`${source.os}:${arch}`) ?? byHost.set(`${source.os}:${arch}`, []).get(`${source.os}:${arch}`)
+          )?.push(
+            `lw_kvm_source ${source.keyring} "deb [signed-by=${source.keyring}] ${controlPlaneUrl}${snapshot.aptBase}/${source.name} ${suite} ${source.components.join(' ')}"`,
+          );
+    }
+
+    for (const [host, lines] of [...byHost.entries()].sort()) cases.push(`    ${host}) ${lines.join('; ')} ;;`);
+  }
+
+  return `# KVM host preparation (3.1): /dev/kvm for the sandboxed-kvm and microvm levels, unless the node opts out.
+# Ubuntu's KVM modules may need linux-modules-extra-$(uname -r): only from the cluster's apt snapshot, never upstream.
+lw_kvm_source() { [ -r "$1" ] && LW_KVM_SOURCES="$LW_KVM_SOURCES$2"$'\\n'; return 0; }
+lw_kvm_modules() {
+  LW_KVM_SOURCES=""
+  case "$ID:$VERSION_ID:$(dpkg --print-architecture)" in
+${cases.join('\n')}${cases.length ? '\n' : ''}    *) ;;
+  esac
+  if [ -z "$LW_KVM_SOURCES" ]; then
+    echo "loadweaver-install: KVM modules missing; linux-modules-extra-$(uname -r) comes with the next host update from the cluster's apt snapshot" >&2
+    return 0
+  fi
+  local d o
+  d="$(mktemp -d)"
+  mkdir -p "$d/lists/partial"
+  printf '%s' "$LW_KVM_SOURCES" > "$d/sources.list"
+  o=(-o "Dir::Etc::sourcelist=$d/sources.list" -o Dir::Etc::sourceparts=- -o "Dir::State::Lists=$d/lists" -o Acquire::Languages=none -o Acquire::Check-Valid-Until=false)
+  if ! { apt-get "\${o[@]}" update -q && apt-get "\${o[@]}" install -y -q --no-install-recommends "linux-modules-extra-$(uname -r)"; }; then
+    echo "loadweaver-install: linux-modules-extra-$(uname -r) is not in the cluster's apt snapshot; KVM stays unavailable until a host update brings it" >&2
+  fi
+  rm -rf "$d"
+}
+if [ "\${LOADWEAVER_KVM:-auto}" = "disabled" ]; then
+  echo "loadweaver-install: KVM disabled for this node (no KVM preparation, no KVM levels)"
+  export GVISOR_KVM=0 AGENSTRA_KVM=0
+elif [ "$ID" = "ubuntu" ] && grep -Eqw 'vmx|svm' /proc/cpuinfo && ! modinfo kvm_intel >/dev/null 2>&1 && ! modinfo kvm_amd >/dev/null 2>&1; then
+  lw_kvm_modules
+fi
+export AGENSTRA_KVM_APT=0
+`;
+}
+
 const HASH_PATTERN = /^sha256:[0-9a-f]{64}$/;
 const SHA_PATTERN = /^[0-9a-f]{64}$/;
 
@@ -43,7 +145,11 @@ const SHA_PATTERN = /^[0-9a-f]{64}$/;
  * (import of a running host) only reloads Docker — live-restore is reloadable, running containers are never stopped.
  * Expects `$ID` / `$VERSION_ID` / `$VERSION_CODENAME` from `/etc/os-release`.
  */
-function componentsSection(options: { restartDocker: boolean }): string {
+function componentsSection(options: {
+  restartDocker: boolean;
+  controlPlaneUrl?: string;
+  aptSnapshot?: InstallAptSnapshot;
+}): string {
   const restart = options.restartDocker
     ? 'systemctl reload docker || systemctl restart docker'
     : 'systemctl reload docker || { echo "loadweaver-components: Docker did not reload (live-restore); not restarting a host that runs containers" >&2; exit 1; }';
@@ -66,6 +172,8 @@ lw_apt_install() {
   apt-get install -y -q --no-install-recommends "\${missing[@]}"
 }
 lw_apt_install ca-certificates curl gnupg jq iproute2 wireguard-tools nftables bird2 keepalived rsync
+# MicroVM guest roots (layer unpack with overlay whiteouts, ext4 writable layers): setfattr, mkfs.ext4.
+lw_apt_install ${REQUIRED_HOST_PACKAGES.join(' ')}
 
 # Replicated volumes (LVM thin -> LUKS2 -> DRBD 9): userland pinned to the tested versions.
 case "$ID:$VERSION_ID" in
@@ -97,7 +205,8 @@ mv /etc/docker/daemon.json.loadweaver /etc/docker/daemon.json
 systemctl enable --now docker
 ${restart}
 
-${buildGvisorInstallScript({ release: GVISOR_PIN.release, sha512: { x86_64: GVISOR_PIN.sha512.amd64, aarch64: GVISOR_PIN.sha512.arm64 } })}
+${kvmInstallSection(options.controlPlaneUrl, options.aptSnapshot)}
+${buildGvisorInstallScript(LOADWEAVER_GVISOR_INSTALL_OPTIONS)}
 # OS updates are orchestrated by Loadweaver (3.26: drain → update → reboot, from the cluster-local apt snapshot), so
 # reboots never happen uncoordinated: no unattended upgrades of their own.
 systemctl disable --now unattended-upgrades.service apt-daily-upgrade.timer >/dev/null 2>&1 || true
@@ -142,7 +251,8 @@ export function buildNodeInstallScript(options: InstallScriptOptions): string {
 
   return `#!/usr/bin/env bash
 # Loadweaver node installer, generated by the control plane at ${options.controlPlaneUrl}.
-# Usage: curl -fsSL ${options.controlPlaneUrl}/api/install/install.sh | sudo LOADWEAVER_JOIN_TOKEN=<token> bash -s -- --name <node> [--endpoint-host <public host>] [--label k=v ...]
+# Usage: curl -fsSL ${options.controlPlaneUrl}/api/install/install.sh | sudo LOADWEAVER_JOIN_TOKEN=<token> bash -s -- --name <node> [--endpoint-host <public host>] [--label k=v ...] [--no-kvm]
+# --no-kvm: no KVM preparation and no KVM levels on this node (keep it with the node spec's virtualization.kvm: disabled).
 # Import a host that already runs things (or a former node): add --discover (only the agent is installed; it
 # discovers read-only and waits for the join plan from the console's import wizard).
 # Disaster recovery (the cluster is lost; run the copy of this script saved with the recovery kit):
@@ -171,6 +281,7 @@ while [ $# -gt 0 ]; do
     --label) LW_LABELS+=(--label "\${2:-}"); shift 2 ;;
     --restore) LW_RESTORE=1; shift ;;
     --discover) LW_DISCOVER=1; shift ;;
+    --no-kvm) LOADWEAVER_KVM=disabled; shift ;;
     --agent-file) LW_AGENT_FILE="\${2:-}"; shift 2 ;;
     --) shift; LW_RESTORE_ARGS=("$@"); break ;;
     *) die "unknown option $1" ;;
@@ -233,7 +344,7 @@ if [ -n "$LW_DISCOVER" ]; then
   exit 0
 fi
 
-${componentsSection({ restartDocker: true })}
+${componentsSection({ restartDocker: true, controlPlaneUrl: options.controlPlaneUrl, ...(options.aptSnapshot ? { aptSnapshot: options.aptSnapshot } : {}) })}
 lw_install_agent
 
 if [ -n "$LW_RESTORE" ]; then

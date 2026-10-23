@@ -72,6 +72,21 @@ describe('LoadweaverClient', () => {
     await expect(failing.applyChange({ documents: 'x' })).rejects.toBeInstanceOf(LoadweaverApiError);
   });
 
+  it("reads the project's aggregated isolation capabilities, optionally narrowed by a selector", async () => {
+    const view = { project: 'ws', nodes: 1, levels: { microvm: { state: 'ready', nodes: 1 } } };
+    const { impl, calls } = fakeFetch({
+      'GET /projects/ws/isolation-capabilities': () => ({ status: 200, body: view }),
+    });
+    const client = new LoadweaverClient(config('k'), impl);
+
+    expect(await client.isolationCapabilities()).toEqual(view);
+    await client.isolationCapabilities('pool=kvm,loadweaver.com/site=fra1');
+    expect(calls.map((c) => c.url)).toEqual([
+      'https://lw.test/api/projects/ws/isolation-capabilities',
+      'https://lw.test/api/projects/ws/isolation-capabilities?selector=pool%3Dkvm%2Cloadweaver.com%2Fsite%3Dfra1',
+    ]);
+  });
+
   it('reads its configuration from the environment', () => {
     expect(() => loadweaverRuntimeConfig({})).toThrow('LOADWEAVER_URL');
     expect(() => loadweaverRuntimeConfig({ LOADWEAVER_URL: 'https://x' })).toThrow('LOADWEAVER_PROJECT');

@@ -6,6 +6,7 @@ import { DnsResolverService } from './dns/dns-resolver.service';
 import { CommandRunner } from './host/command-runner';
 import { dockerProvider } from './host/docker.provider';
 import { HostInfoService } from './host/host-info.service';
+import { IsolationProbeService } from './host/isolation-probe.service';
 import { ManagedContainers } from './host/managed-containers';
 import { DrRestoreService } from './join/dr-restore.service';
 import { JoinService } from './join/join.service';
@@ -44,8 +45,24 @@ import { RegistryRouter } from './registry/registry-router';
 import { CheckpointManager } from './workloads/checkpoint.manager';
 import { RestoredRuntime } from './workloads/restored-runtime';
 import { KeptAddressPlugin } from './network/kept-address.plugin';
+import { GuestNetwork } from './microvm/guest-network';
+import { GuestVolumes } from './microvm/guest-volumes';
+import { MicrovmProbe } from './microvm/microvm-probe';
+import { RootfsCache } from './microvm/rootfs-cache';
+import { CloudInitSeed } from './vm/cloud-init-seed';
+import { VmImageImporter } from './vm/vm-image-import';
+import { VmPower } from './vm/vm-power';
+import { VmSupport } from './vm/vm-support.service';
+import {
+  VM_BLOCK_DEVICES,
+  VM_DISK_JOBS,
+  VM_LAUNCH_FILES,
+  type VmBlockDevices,
+  type VmLaunchFiles,
+} from './workloads/workload.manager';
 import { TransferService } from './migration/transfer.service';
 import { MigrationSessions } from './migration/migration-sessions';
+import { VmMigrationService } from './migration/vm-migration.service';
 import { MigrationService } from './migration/migration.service';
 import { UpdatesService } from './updates/updates.service';
 import { BackupJobs } from './backups/backup-jobs';
@@ -62,6 +79,8 @@ import { KopiaServerManager } from './backups/kopia-server.manager';
     CommandRunner,
     // Release components (3.26).
     UpdatesService,
+    // Isolation levels (3.1): per-level probes, KVM facts, the node spec's KVM opt-out.
+    IsolationProbeService,
     HostInfoService,
     ManagedContainers,
     AgentStateStore,
@@ -90,6 +109,33 @@ import { KopiaServerManager } from './backups/kopia-server.manager';
     ControlPlaneRoleManager,
     SecretBroker,
     WorkloadManager,
+    // MicroVMs (3.35): image unpack cache (guest roots) and tap networking of launcher containers.
+    RootfsCache,
+    GuestNetwork,
+    GuestVolumes,
+    MicrovmProbe,
+    // Full VMs (3.35): disk images into block volumes, cloud-init seeds, power; the workload manager's VM hooks.
+    VmImageImporter,
+    CloudInitSeed,
+    VmPower,
+    VmSupport,
+    {
+      provide: VM_BLOCK_DEVICES,
+      useFactory:
+        (vms: VmSupport): VmBlockDevices =>
+        (spec) =>
+          vms.blockDevices(spec),
+      inject: [VmSupport],
+    },
+    { provide: VM_DISK_JOBS, useExisting: VmSupport },
+    {
+      provide: VM_LAUNCH_FILES,
+      useFactory:
+        (vms: VmSupport): VmLaunchFiles =>
+        (spec, runDir, devices) =>
+          vms.launchFiles(spec, runDir, devices),
+      inject: [VmSupport],
+    },
     VolumeManager,
     VolumePluginServer,
     ObjectStoreManager,
@@ -100,6 +146,7 @@ import { KopiaServerManager } from './backups/kopia-server.manager';
     KeptAddressPlugin,
     TransferService,
     MigrationSessions,
+    VmMigrationService,
     MigrationService,
     // Backups (3.20).
     KopiaServerManager,

@@ -9,7 +9,7 @@ import {
   MICROVM_BRIDGE_PROTOCOL_VERSION,
   MICROVM_PROTOCOL_LABEL,
   toMicrovmExecOptions,
-} from '@forepath/agenstra/backend/util-microvm-bridge';
+} from '@forepath/shared/backend/util-microvm-bridge';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import Docker = require('dockerode');
 import { v4 as uuidv4 } from 'uuid';

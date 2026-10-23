@@ -8,6 +8,7 @@ import {
 } from '@forepath/loadweaver/shared/util-agent-protocol';
 import { generateWireguardKeyPair } from '@forepath/loadweaver/shared/util-pki';
 
+import { HostInfoService } from '../host/host-info.service';
 import { desiredState } from '../test-fixtures';
 import { AgentConnectionService, preferredEndpoints } from './agent-connection.service';
 
@@ -106,5 +107,86 @@ describe('AgentConnectionService live migration', () => {
     );
 
     expect(handled).toEqual([['migrationCommit', payload]]);
+  });
+});
+
+describe('AgentConnectionService capability changes (M7 follow-up)', () => {
+  const capabilities = {
+    runtimes: ['runc' as const, 'microvm' as const],
+    sandboxProbe: 'missing' as const,
+    wireguard: true,
+    nftables: true,
+    bird: true,
+    drbd: false,
+    criu: false,
+  };
+
+  function setup() {
+    const writes: Envelope[] = [];
+    const closeAll = jest.fn(async () => undefined);
+    const deps = Array.from({ length: 16 }, () => ({}) as unknown);
+
+    deps[1] = { capabilities: async () => capabilities };
+    deps[12] = { start: () => undefined };
+    deps[14] = { closeAll, drained: () => undefined };
+
+    const service = new (AgentConnectionService as unknown as new (...d: unknown[]) => AgentConnectionService)(...deps);
+    const end = jest.fn();
+    const session = {
+      endpoint: 'cp:7443',
+      established: true,
+      connection: { stream: { write: (e: Envelope) => writes.push(e) > 0, end }, client: { close: jest.fn() } },
+    };
+    const internals = service as unknown as {
+      session: unknown;
+      candidate: unknown;
+      onMessage: (s: unknown, e: Envelope) => Promise<void>;
+      refreshHello: () => void;
+    };
+    const refreshHello = jest.spyOn(internals, 'refreshHello').mockImplementation(() => undefined);
+
+    internals.session = session;
+
+    return { service, session, internals, writes, closeAll, end, refreshHello };
+  }
+
+  it('reports them on the open stream when the control plane announced capability-updates (live sessions survive)', async () => {
+    const { service, session, internals, writes, closeAll, end, refreshHello } = setup();
+
+    await internals.onMessage(
+      session,
+      controlPlaneMessage('helloAck', { protocolVersion: PROTOCOL_VERSION, features: ['capability-updates'] }),
+    );
+    await service.capabilitiesChanged();
+
+    expect(writes.map((e) => e.type)).toEqual(['capabilitiesUpdate']);
+    expect(JSON.parse(new TextDecoder().decode(writes[0].payload))).toEqual({ capabilities });
+    // Same stream, no second hello: the open live sessions stay attached.
+    expect(refreshHello).not.toHaveBeenCalled();
+    expect(internals.session).toBe(session);
+    expect(internals.candidate).toBeNull();
+    expect(end).not.toHaveBeenCalled();
+    expect(closeAll).not.toHaveBeenCalled();
+  });
+
+  it('falls back to a fresh hello for control planes without the feature', async () => {
+    const { service, writes, refreshHello } = setup();
+
+    await service.capabilitiesChanged();
+
+    expect(writes).toEqual([]);
+    expect(refreshHello).toHaveBeenCalledTimes(1);
+  });
+
+  it('is triggered by changed isolation probes through the host info', () => {
+    const listeners: (() => void)[] = [];
+    const isolation = { onChange: (listener: () => void) => listeners.push(listener) };
+    const hostInfo = new HostInfoService({} as never, isolation as never);
+    const changed = jest.fn();
+
+    hostInfo.onChange(changed);
+    listeners.forEach((l) => l());
+
+    expect(changed).toHaveBeenCalledTimes(1);
   });
 });

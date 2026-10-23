@@ -8,10 +8,12 @@ import {
   execOutputSchema,
   execResizeSchema,
   fileRequestSchema,
+  consoleOpenSchema,
   fileResponseSchema,
   tunnelCloseSchema,
   tunnelDataSchema,
   tunnelOpenSchema,
+  volumeIdSchema,
 } from './live';
 import { componentVersionsSchema, nodeComponentsSchema } from './components';
 import {
@@ -22,7 +24,11 @@ import {
   migrationPrepareBaseSchema,
   migrationProgressSchema,
   migrationRestoreSchema,
+  vmMigrationPrepareBaseSchema,
+  vmMigrationStartSchema,
+  vmMigrationSwitchoverSchema,
 } from './migration';
+import { sha256RefSchema, vmImageImportSchema, vmImageRefSchema, vmPowerSchema } from './vm';
 import { backupProgressSchema, backupRunSchema, backupServerRoleSchema, restoreRunSchema } from './backups';
 import {
   discoveryReportSchema,
@@ -111,10 +117,60 @@ export const endpointHostSchema = z
   .max(253)
   .refine((v) => isIp(v) || HOSTNAME.test(v), 'invalid endpoint host');
 
-/** What a node can do; the scheduler only places `sandboxed` workloads on nodes whose probe passed (3.1). */
+/**
+ * Isolation levels on the wire (3.1), in ladder order: the values of util-model's `RUNTIMES`, re-declared so the
+ * wire format doesn't change with the model by accident. Agent → control plane only (capabilities); control plane →
+ * agent keeps `workloads[].runtime` at `runc | sandboxed` (the Docker family) and sends the stronger levels in the
+ * gated `workloads[].isolation` (no CP → agent enum is widened, see `versioning.ts`).
+ */
+export const RUNTIMES_WIRE = ['runc', 'sandboxed', 'sandboxed-kvm', 'microvm'] as const;
+export type RuntimeWire = (typeof RUNTIMES_WIRE)[number];
+
+/** Probe state of an isolation level on a node (Agenstra's names). */
+export const ISOLATION_STATES_WIRE = [
+  'ready',
+  'unsupported',
+  'installation-failed',
+  'probe-failed',
+  'disabled-by-admin',
+] as const;
+export type IsolationStateWire = (typeof ISOLATION_STATES_WIRE)[number];
+
+/** Probe result of one isolation level (3.1). */
+export const isolationProbeSchema = z
+  .object({
+    state: z.enum(ISOLATION_STATES_WIRE),
+    /** Agenstra's `IsolationReasonCode` strings (`E_KVM_UNAVAILABLE`, …). */
+    reasonCode: z.string().max(64).optional(),
+    reason: z.string().max(512).optional(),
+    checkedAt: z.string().datetime(),
+  })
+  .strict();
+export type IsolationProbe = z.infer<typeof isolationProbeSchema>;
+
+/** KVM facts of the host (`gvisor-host.sh check --json`, util-container-runtime's `GvisorHostKvmFacts`) and the verdict. */
+export const kvmFactsSchema = z
+  .object({
+    cpu: z.enum(['yes', 'no', 'unknown']),
+    device: z.enum(['present', 'absent']),
+    module: z.enum(['loaded', 'absent']),
+    nested: z.enum(['yes', 'no', 'unknown']),
+    hypervisor: z.enum(['yes', 'no']),
+    /** `/dev/kvm` present, module loaded, CPU support, openable. */
+    usable: z.boolean(),
+    /** The node spec opts the node out (`virtualization.kvm: disabled`): no KVM levels whatever the facts. */
+    optOut: z.boolean(),
+  })
+  .strict();
+export type KvmFacts = z.infer<typeof kvmFactsSchema>;
+
+/**
+ * What a node can do (3.1). `runtimes` lists the isolation levels whose probe passed; the scheduler places a workload
+ * only on nodes where its exact level is ready (never up- or downgraded).
+ */
 export const nodeCapabilitiesSchema = z
   .object({
-    runtimes: z.array(z.enum(['runc', 'sandboxed'])),
+    runtimes: z.array(z.enum(RUNTIMES_WIRE)),
     sandboxProbe: z.enum(['ready', 'missing', 'failed', 'unknown']),
     wireguard: z.boolean(),
     nftables: z.boolean(),
@@ -127,7 +183,13 @@ export const nodeCapabilitiesSchema = z
      * root), gVisor's `runsc checkpoint` / `restore`.
      */
     checkpoint: z
-      .object({ runc: z.boolean(), runsc: z.boolean(), criuVersion: z.string().max(32).optional() })
+      .object({
+        runc: z.boolean(),
+        runsc: z.boolean(),
+        criuVersion: z.string().max(32).optional(),
+        /** gVisor on the KVM platform can checkpoint / restore (restore must use the same platform). */
+        runscKvm: z.boolean().optional(),
+      })
       .strict()
       .optional(),
     /** Estimated node-to-node transfer rate (bits / s, e.g. the uplink speed), for the freeze estimate. */
@@ -137,6 +199,46 @@ export const nodeCapabilitiesSchema = z
      * Agents before this field don't report it (unknown: the control plane places volumes there with a warning).
      */
     drbd9: z.boolean().optional(),
+    /** Probe result per isolation level (3.1); `runtimes` = the levels with state `ready`. */
+    isolation: z.partialRecord(z.enum(RUNTIMES_WIRE), isolationProbeSchema).optional(),
+    /** KVM facts and the opt-out (3.1). */
+    kvm: kvmFactsSchema.optional(),
+    /** The shared microVM launcher on this node (3.35): pinned digest, image unpack cache, thin pool for upper layers. */
+    microvm: z
+      .object({
+        launcherDigest: z.string().max(100),
+        unpackCache: z.boolean(),
+        thinPool: z.boolean(),
+        /** Live migration support of the launcher (M7 W10b): modes and QEMU / virtiofsd versions from its labels. */
+        migration: z
+          .object({
+            generic: z.boolean(),
+            modes: z.array(z.string().max(16)).max(8),
+            qemu: z.string().max(64).optional(),
+            virtiofsd: z.string().max(64).optional(),
+          })
+          .strict()
+          .optional(),
+      })
+      .strict()
+      .optional(),
+    /**
+     * Generic microVMs live-migrate through QEMU (M7 W10b): microVM level ready, launcher with virtio-fs state
+     * migration (QEMU >= 10.0, virtiofsd >= 1.13). Both nodes need it; otherwise short stop / blue-green.
+     */
+    microvmMigration: z.boolean().optional(),
+    /**
+     * Bundled microVMs (Agenstra's images, their own launcher with an incoming mode) live-migrate through this agent
+     * (M7 F5): microVM level ready. Both nodes need it; otherwise short stop / blue-green.
+     */
+    microvmBundledMigration: z.boolean().optional(),
+    /** Full VMs are possible: microVM ready, DRBD 9 and UEFI firmware in the launcher (3.35). */
+    virtualMachines: z.boolean().optional(),
+    /** Hash of the host CPU's flags: `host-passthrough` VMs live-migrate only between identical values (3.35). */
+    cpuFlagsHash: z
+      .string()
+      .regex(/^[0-9a-f]{16,64}$/)
+      .optional(),
   })
   .strict();
 export type NodeCapabilities = z.infer<typeof nodeCapabilitiesSchema>;
@@ -196,6 +298,26 @@ export const agentHelloSchema = z
   })
   .strict();
 export type AgentHello = z.infer<typeof agentHelloSchema>;
+
+/**
+ * Changed capabilities on the open stream (feature `capability-updates`, M7): the isolation probes changed what the
+ * node can run. Replaces the node's capabilities like a hello would, without a new stream (open live sessions stay).
+ * Only sent when the control plane announced the feature (`helloAck`); otherwise the agent sends a fresh hello.
+ */
+export const capabilitiesUpdateSchema = z.object({ capabilities: nodeCapabilitiesSchema }).strict();
+export type CapabilitiesUpdate = z.infer<typeof capabilitiesUpdateSchema>;
+
+/**
+ * The control plane's answer to a hello (feature `capability-updates`, M7): its protocol version and the features it
+ * knows, so the agent can use agent → control plane messages a control plane one release behind wouldn't accept.
+ */
+export const helloAckSchema = z
+  .object({
+    protocolVersion: z.number().int().min(1).max(65_535),
+    features: z.array(protocolFeatureId).max(128),
+  })
+  .strict();
+export type HelloAck = z.infer<typeof helloAckSchema>;
 
 export const heartbeatSchema = z
   .object({
@@ -556,6 +678,127 @@ const absolutePath = z
   .string()
   .regex(/^\/[^\0]*$/)
   .max(4096);
+const secretRefSchema = z.string().regex(/^secret:\/\/[a-z0-9-]+\/[a-z0-9][a-z0-9._-]*(@\d+)?$/);
+const hostRouteSchema = z
+  .string()
+  .max(64)
+  .refine((v) => isCidr(v) && v.endsWith(v.includes(':') ? '/128' : '/32'), 'host route expected');
+
+/**
+ * Levels above the Docker family of `workloads[].runtime` (feature `isolation-ladder`): `sandboxed-kvm` runs with
+ * `runtime: sandboxed` (gVisor on the KVM platform), `microvm` with `runtime: runc` (the launcher runs on runc).
+ */
+export const WORKLOAD_ISOLATION_LEVELS = ['sandboxed-kvm', 'microvm'] as const;
+
+/** A workload's MAC address: QEMU's locally administered prefix 52:54:00 + 3 bytes (derived from the VM uid). */
+export const vmMacSchema = z.string().regex(/^52:54:00(:[0-9a-f]{2}){3}$/, 'invalid VM MAC address');
+
+/** A generic microVM's guest root: digest-pinned image layers (verified while unpacking) and its process. */
+/** One image layer of a generic microVM's guest root (verified while unpacking). */
+const microvmLayerSchema = z
+  .object({
+    digest: sha256RefSchema,
+    diffId: sha256RefSchema,
+    size: z.number().int().nonnegative(),
+    mediaType: z.string().max(128),
+  })
+  .strict();
+
+/** Node architectures a microVM guest image can be unpacked for (the node picks its own). */
+export const MICROVM_ARCHITECTURES = ['amd64', 'arm64'] as const;
+export type MicrovmArchitecture = (typeof MICROVM_ARCHITECTURES)[number];
+
+const microvmSpecSchema = z
+  .object({
+    /** `bundled`: the image carries Agenstra's microVM label and is its own launcher; `generic`: the image is the guest root. */
+    mode: z.enum(['bundled', 'generic']),
+    /** Generic: the digest-pinned service image (what is scanned and policy-checked); `image` is then the launcher. */
+    guestImage: z.string().max(512).optional(),
+    /** Single-architecture images: the layers (base first). Multi-arch images use `platformLayers`. */
+    layers: z.array(microvmLayerSchema).max(128).optional(),
+    /**
+     * Layers per node architecture (multi-arch guest images; mixed-arch clusters): the node unpacks its own
+     * architecture's list and refuses the workload when it is missing. Takes precedence over `layers`.
+     */
+    platformLayers: z.partialRecord(z.enum(MICROVM_ARCHITECTURES), z.array(microvmLayerSchema).max(128)).optional(),
+    /** Image config merged with the compose overrides. */
+    process: z
+      .object({
+        entrypoint: z.array(z.string().max(8192)).max(256),
+        cmd: z.array(z.string().max(8192)).max(256),
+        env: z.array(z.string().max(32768)).max(1024),
+        user: z.string().max(64),
+        workingDir: absolutePath,
+        stopSignal: z.string().max(16),
+      })
+      .strict()
+      .optional(),
+    vcpus: z.number().int().min(1).max(64),
+    memoryMiB: z.number().int().min(128).max(1_048_576),
+    /** Per-replica writable layer quota. */
+    rootfsBytes: z.number().int().positive(),
+  })
+  .strict();
+
+/** One guest network interface of a full VM (one or more per VM, M7). */
+const vmNicWireSchema = z
+  .object({
+    /** Interface name in the guest (cloud-init `match` is by MAC). */
+    name: z.string().regex(/^[a-z][a-z0-9]{0,14}$/),
+    mac: vmMacSchema,
+    /** The NIC's addresses; the first NIC's equal the workload's `addresses`. */
+    addresses: z.array(ipAddress).min(1).max(2),
+    /**
+     * Kept addresses after a live migration (as `workloads[].hostRoutes`) for NICs after the first; the first NIC uses
+     * the workload's `hostRoutes`.
+     */
+    hostRoutes: z.array(hostRouteSchema).max(2).optional(),
+  })
+  .strict();
+
+/** A full VM (3.35, feature `virtual-machines`): the launcher runs it from DRBD block disks. */
+const vmSpecSchema = z
+  .object({
+    uid: z.string().uuid(),
+    firmware: z.enum(['uefi', 'bios']),
+    cpuModel: z.enum(['host-model', 'host-passthrough']),
+    vcpus: z.number().int().min(1).max(64),
+    memoryMiB: z.number().int().min(256).max(1_048_576),
+    /** Boot disk first; each disk is a `volumes[]` assignment with `mode: block`. */
+    disks: z
+      .array(
+        z
+          .object({
+            name: z.string().regex(/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/),
+            volume: volumeIdSchema,
+            bus: z.literal('virtio'),
+            cache: z.enum(['none', 'writeback']),
+            boot: z.boolean(),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(8),
+    /** One or more NICs; the first is the primary one (default route). */
+    nics: z.array(vmNicWireSchema).min(1).max(8),
+    image: vmImageRefSchema,
+    /**
+     * NoCloud seed (built on tmpfs by the launcher at every start). Outside the spec hash except `metaData`'s
+     * instance-id: a user-data change doesn't recreate the VM. `secretRefs` are resolved through the secret broker.
+     */
+    cloudInit: z
+      .object({
+        metaData: z.string().max(4096),
+        networkConfig: z.string().max(16_384).optional(),
+        userData: z.string().max(65_536).optional(),
+        secretRefs: z.array(secretRefSchema).max(32),
+      })
+      .strict()
+      .optional(),
+    graphics: z.boolean(),
+    power: z.enum(['running', 'stopped']),
+  })
+  .strict();
 
 /** One replica the node runs (3.11): translated from compose by the control plane, executed via the Docker API. */
 export const workloadSpecSchema = z
@@ -679,22 +922,48 @@ export const workloadSpecSchema = z
      * node's pod subnet, as host routes (`/32`, `/128`). The node's IPAM plugin assigns them from the cluster pod
      * supernet and routes them to the container; BIRD originates them (`network.bgp.originate`).
      */
-    hostRoutes: z
-      .array(
-        z
-          .string()
-          .max(64)
-          .refine((v) => isCidr(v) && v.endsWith(v.includes(':') ? '/128' : '/32'), 'host route expected'),
-      )
-      .max(2)
+    hostRoutes: z.array(hostRouteSchema).max(2).optional(),
+    /**
+     * Isolation level above the Docker family of `runtime` (3.1, feature `isolation-ladder`, refuse-gated): only
+     * emitted for `sandboxed-kvm` (with `runtime: sandboxed`) and `microvm` (with `runtime: runc`), so existing
+     * replicas keep their spec hash. The workload runs at exactly this level.
+     */
+    isolation: z.enum(WORKLOAD_ISOLATION_LEVELS).optional(),
+    /** Allow-listed host devices (3.1, feature `workload-devices`, refuse-gated); only emitted when non-empty. */
+    devices: z
+      .array(z.object({ path: z.literal('/dev/kvm'), permissions: z.enum(['rw', 'rwm']).default('rwm') }).strict())
+      .max(4)
       .optional(),
+    /** MicroVM workload (3.35, feature `microvm`, refuse-gated): with `isolation: microvm`. */
+    microvm: microvmSpecSchema.optional(),
+    /** Full VM (3.35, feature `virtual-machines`, refuse-gated): with `isolation: microvm`, `image` = the launcher. */
+    vm: vmSpecSchema.optional(),
   })
   .strict();
 export type WorkloadSpec = z.infer<typeof workloadSpecSchema>;
+export type MicrovmSpec = z.infer<typeof microvmSpecSchema>;
+export type VmSpec = z.infer<typeof vmSpecSchema>;
+export type VmNicSpec = z.infer<typeof vmNicWireSchema>;
+
+/** The isolation level a workload runs at: `isolation` when set, else its Docker family (`runtime`). */
+export function workloadIsolationLevel(spec: Pick<WorkloadSpec, 'runtime' | 'isolation'>): RuntimeWire {
+  return spec.isolation ?? spec.runtime;
+}
+
+/** The Docker family (`workloads[].runtime`) of a level: `sandboxed-kvm` → `sandboxed`, `microvm` → `runc`. */
+export function dockerRuntimeFamily(level: RuntimeWire): WorkloadSpec['runtime'] {
+  if (level === 'sandboxed-kvm') return 'sandboxed';
+
+  return level === 'microvm' ? 'runc' : level;
+}
 
 /** To the target of a live migration (3.10): `migrationPrepare` with the spec the replica runs there. */
 export const migrationPrepareSchema = migrationPrepareBaseSchema.extend({ spec: workloadSpecSchema }).strict();
 export type MigrationPrepare = z.infer<typeof migrationPrepareSchema>;
+
+/** To the target of a QEMU live migration (3.35, feature `vm-migration`): `vmMigrationPrepare` with the spec. */
+export const vmMigrationPrepareSchema = vmMigrationPrepareBaseSchema.extend({ spec: workloadSpecSchema }).strict();
+export type VmMigrationPrepare = z.infer<typeof vmMigrationPrepareSchema>;
 
 /** Docker volume name of a replicated volume (`project/deployment/volume` → `lw-vol-project.deployment.volume`). */
 export function volumeDockerName(volumeId: string): string {
@@ -744,6 +1013,16 @@ export const volumeAssignmentSchema = z
     primary: name,
     /** Secret reference of the LUKS key (3.22: all volumes are encrypted at rest). */
     keyRef: z.string().regex(/^secret:\/\/[a-z0-9-]+\/[a-z0-9][a-z0-9._-]*(@\d+)?$/),
+    /**
+     * A VM disk (3.35, feature `vm-block-volumes`, refuse-gated): no filesystem, the DRBD device is passed to the
+     * launcher as a virtio-blk disk. Absent: a filesystem volume.
+     */
+    mode: z.literal('block').optional(),
+    /** Block volumes: initialize from this VM image disk layer once, when first promoted (feature `vm-block-volumes`). */
+    initializeFrom: z
+      .object({ digest: sha256RefSchema, format: z.enum(['qcow2', 'raw']) })
+      .strict()
+      .optional(),
   })
   .strict();
 export type VolumeAssignment = z.infer<typeof volumeAssignmentSchema>;
@@ -1198,6 +1477,20 @@ export const desiredStateSchema = z
     components: nodeComponentsSchema.optional(),
     /** Backup repository servers on control-plane members (3.20, feature `backups`). */
     backupServer: backupServerRoleSchema.optional(),
+    /**
+     * Host settings (3.1, feature `isolation-ladder`, stripped for nodes without it): `kvm: disabled` is the node
+     * spec's KVM opt-out (no KVM preparation, no KVM levels); a new `probeNonce` re-runs the isolation probes.
+     */
+    host: z
+      .object({
+        kvm: z.enum(['auto', 'disabled']).optional(),
+        probeNonce: z
+          .string()
+          .regex(/^[A-Za-z0-9_-]{1,64}$/)
+          .optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type DesiredState = z.infer<typeof desiredStateSchema>;
@@ -1486,6 +1779,33 @@ export const probeResultsSchema = z
   .strict();
 export type ProbeResults = z.infer<typeof probeResultsSchema>;
 
+/** A full VM's guest power state (libvirt `domstate`, normalized), in `workloadStatus`. */
+export const VM_POWER_STATES = [
+  'running',
+  'paused',
+  'shutting-down',
+  'shut-off',
+  'crashed',
+  'suspended',
+  'unknown',
+] as const;
+export type VmPowerState = (typeof VM_POWER_STATES)[number];
+
+/**
+ * Progress of a boot disk import (3.35): `queued` (the node's import slots are busy), `fetching` (the image layer
+ * into the node's cache; `bytes` downloaded, total unknown), `writing` (`qemu-img convert` onto the disk; `bytes` of
+ * `totalBytes` = the image's virtual size), `failed` (retried later; the message says why).
+ */
+export const VM_IMPORT_PHASES = ['queued', 'fetching', 'writing', 'failed'] as const;
+export const vmImportProgressSchema = z
+  .object({
+    phase: z.enum(VM_IMPORT_PHASES),
+    bytes: z.number().int().nonnegative().optional(),
+    totalBytes: z.number().int().nonnegative().optional(),
+  })
+  .strict();
+export type VmImportProgress = z.infer<typeof vmImportProgressSchema>;
+
 /** Runtime state of the node's workloads, reported after every reconcile and on changes. */
 export const workloadStatusSchema = z
   .object({
@@ -1497,6 +1817,20 @@ export const workloadStatusSchema = z
           exitCode: z.number().int().optional(),
           message: z.string().max(2048).optional(),
           specHash: z.string().max(64),
+          /**
+           * Full VMs (3.35, agents with `virtual-machines`): the guest's power state as libvirt reports it in the
+           * launcher, and `importing` while the boot disk is written from its image (no container yet; a background
+           * job on the node), with its progress in `importProgress` (also `failed` until the retry). Optional, so
+           * older control planes ignore it.
+           */
+          vm: z
+            .object({
+              power: z.enum(VM_POWER_STATES).optional(),
+              importing: z.boolean().optional(),
+              importProgress: vmImportProgressSchema.optional(),
+            })
+            .strict()
+            .optional(),
         })
         .strict(),
     ),
@@ -1511,6 +1845,19 @@ export const agentEventSchema = z
     message: z.string().max(8192),
     at: z.string().datetime(),
     labels: z.record(z.string().max(128), z.string().max(256)).optional(),
+    /**
+     * The VM node command this event reports the outcome of (3.35): `vmPower` with its `action`, `vmImageImport`
+     * with its `importId`. Optional (older agents only label the events); the control plane prefers it to the labels
+     * / message prefix and ignores values it doesn't know.
+     */
+    vmCommand: z
+      .object({
+        type: z.string().max(32),
+        action: z.string().max(32).optional(),
+        importId: z.string().max(64).optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type AgentEvent = z.infer<typeof agentEventSchema>;
@@ -1521,6 +1868,8 @@ export const errorMessageSchema = z.object({ code: z.string().max(64), message: 
 export const AGENT_TO_CONTROL_PLANE = {
   hello: agentHelloSchema,
   heartbeat: heartbeatSchema,
+  /** Changed capabilities without a new hello (feature `capability-updates`). */
+  capabilitiesUpdate: capabilitiesUpdateSchema,
   applyReport: applyReportSchema,
   renewCertificate: certificateRenewalSchema,
   event: agentEventSchema,
@@ -1556,6 +1905,8 @@ export const logAckSchema = z.object({ ok: z.boolean() }).strict();
 
 export const CONTROL_PLANE_TO_AGENT = {
   logAck: logAckSchema,
+  /** The control plane's features, answered to a hello (gated by `capability-updates`). */
+  helloAck: helloAckSchema,
   desiredState: desiredStateSchema,
   certificateIssued: certificateIssuedSchema,
   secretValue: secretValueSchema,
@@ -1583,6 +1934,15 @@ export const CONTROL_PLANE_TO_AGENT = {
   /** Import of existing hosts (3.21, protocol v2, gated by `node-import`). */
   discoveryRequest: discoveryRequestSchema,
   importStep: importStepCommandSchema,
+  /** Serial / VNC consoles of VMs (3.35, gated by `vm-consoles`), on a live channel. */
+  consoleOpen: consoleOpenSchema,
+  /** VM power actions and re-imaging (3.35, gated by `virtual-machines`). */
+  vmPower: vmPowerSchema,
+  vmImageImport: vmImageImportSchema,
+  /** QEMU live migration (3.35, gated by `vm-migration`), on the session's channel. */
+  vmMigrationPrepare: vmMigrationPrepareSchema,
+  vmMigrationStart: vmMigrationStartSchema,
+  vmMigrationSwitchover: vmMigrationSwitchoverSchema,
   error: errorMessageSchema,
 } as const;
 

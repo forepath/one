@@ -27,12 +27,35 @@ spec:
 - **Failure analysis**: single points of failure (one replica, a volume without a copy in another site) and whether the cluster keeps an N+1 reserve.
 - **Pinned images**: every image is resolved to a digest at plan time; the apply deploys exactly what was reviewed, even if a tag moves. A plan with `refresh` resolves the digests and secret versions of a deployment again.
 - **Pins**: things that tie a workload to one place (for example a single replica with a public port). Unacknowledged pins need `confirm: true` at apply.
+- **Isolation**: for every service above `runc`, the level it runs at and the nodes offering it.
+
+## Isolation level
+
+`x-loadweaver.runtime` sets the service's isolation level; it always runs at exactly that level ([Isolation levels and microVMs](./isolation-levels.md)):
+
+| Field                | Meaning                                                                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `runtime`            | `runc` (default), `sandboxed` (gVisor), `sandboxed-kvm` (gVisor on KVM) or `microvm` (the image boots as a QEMU / KVM microVM)                   |
+| `microvm.rootfsSize` | Only with `runtime: microvm`: size of each replica's writable layer (`10Gi` default; bytes or `k` / `m` / `g` / `t` / `Ki` / `Mi` / `Gi` / `Ti`) |
+
+```yaml
+services:
+  sandbox:
+    image: ghcr.io/acme/sandbox:2
+    deploy: { resources: { limits: { cpus: '2', memory: 2g } } } # 2 vCPUs, 2 GiB guest memory
+    x-loadweaver: { runtime: microvm, microvm: { rootfsSize: 20Gi } }
+```
+
+- Compose's own `runtime:` is mapped (`runsc` / `runsc-systrap` → `sandboxed`, `runsc-kvm` → `sandboxed-kvm`); unknown values are errors.
+- `devices` accepts only `/dev/kvm` (`rw` / `rwm`, same path, `runtime: runc`, project allowance `workloads.allowedDevices` required; a pin). See [Devices](./isolation-levels.md#devices-devkvm).
+- MicroVMs: `network_mode: host` and `privileged` are errors, `cap_add` applies inside the guest; the launcher's overhead (384 MiB, 0.25 CPU) counts into requests and quotas.
 
 ## Moving workloads
 
 - Eligible services move **live** (CRIU checkpoint with pre-copy, or gVisor stop-and-copy for sandboxed services): memory, connections and addresses come along. See [Migration](./migration.md) for eligibility, phases and the automatic fallback.
 - **Stateless** replicas move **blue / green** otherwise: the new copy starts, becomes ready, and only then the old one stops.
 - **Stateful** replicas (with volumes) move with a **short stop** otherwise: the old container stops, the volume's primary moves, the new one starts.
+- `sandboxed-kvm` and `microvm` services always move blue / green or with a short stop for now (no live migration of KVM-level workloads yet).
 - Services of a deployment move in `depends_on` order. A move that doesn't finish within 10 minutes is rolled back.
 
 **Removed replicas drain before they stop.** A replica a plan removes (lower `replicas`, a removed service or deployment) or the autoscaler scales away first leaves routing — ingress upstreams, service IPs, mesh endpoints and health-gated BGP announcements — while it keeps running its last spec, so requests in flight and open connections finish. After the service's `stop_grace_period` (compose; default 10 s, at least 2 s, at most 2 minutes) the control plane stops it with its stop signal and grace period. The drain deadline is stored with the placement, so a control-plane restart doesn't cut it short or let a replica run forever. A replica that is planned again while draining stays where it runs (the drain ends); planned on another node, its drain is cut short and it starts there. Replicas on a node that left are removed at once. While a replica drains, the deployment status (`GET /api/projects/{project}/deployments/{deployment}/status`) reports it with `state: draining` and the stop deadline `drainUntil` instead of its node-reported state, and the map shows it with a `draining` badge. Draining replicas are left out of the health tree (their stop is expected); project quotas count the replicas the deployments declare, so a draining replica doesn't count against them either.

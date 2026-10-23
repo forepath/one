@@ -1,4 +1,4 @@
-import { canRunWorkloads, eligibleNodes } from './schedule';
+import { canRunWorkloads, eligibleNodes } from './eligibility';
 import type {
   FailureAnalysis,
   FailureScope,

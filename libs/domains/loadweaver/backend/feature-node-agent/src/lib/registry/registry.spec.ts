@@ -8,7 +8,7 @@ import { parse } from 'yaml';
 import { garageSpec, renderGarageConfig } from '../object-store/garage-config';
 import { privateRepositories, routedImage } from './image-routing';
 import { mirrorContainerName, registrySpec, renderRegistryInstances } from './registry-config';
-import { routeRequest } from './registry-router';
+import { RegistryRouter, routeRequest } from './registry-router';
 
 const DIGEST = `sha256:${'c'.repeat(64)}`;
 const client: RegistryClient = {
@@ -36,6 +36,53 @@ describe('image routing', () => {
       'shop/api',
     ]);
     expect(privateRepositories([{ image: 'registry.lw/shop/api:1' }], undefined).size).toBe(0);
+    // Generic microVMs fetch their guest image's layers through the router (3.35).
+    expect([
+      ...privateRepositories(
+        [
+          {
+            image: 'ghcr.io/forepath/microvm-launcher:1',
+            microvm: { mode: 'generic', guestImage: 'registry.lw/shop/web@sha256:' + 'a'.repeat(64) } as never,
+          },
+        ],
+        client,
+      ),
+    ]).toEqual(['shop/web']);
+    // Full VMs fetch their disk image's layer through the router (3.35).
+    expect([
+      ...privateRepositories(
+        [
+          {
+            image: 'ghcr.io/forepath/microvm-launcher:1',
+            vm: { image: { ref: 'registry.lw/shop/debian@sha256:' + 'b'.repeat(64) } } as never,
+          },
+        ],
+        client,
+      ),
+    ]).toEqual(['shop/debian']);
+  });
+
+  it('serves a private repository no workload uses only while a task borrowed it (re-imaging a stopped VM)', async () => {
+    const router = new RegistryRouter();
+    // A closed port: the router gets past its checks and fails upstream (503), instead of refusing (403).
+    const local: RegistryClient = { ...client, routerPort: 0, endpoints: ['127.0.0.1'], privatePort: 1 };
+    const tokenProvider = jest.fn(async () => ({ token: 't', expiresInSeconds: 300 }));
+
+    router.tokenProvider = tokenProvider;
+    await router.apply(local, new Set());
+
+    const get = async () =>
+      (await fetch(`http://127.0.0.1:${router.listening}/v2/registry.lw/shop/debian/blobs/${DIGEST}`)).status;
+
+    try {
+      expect(router.registryClient).toBe(local);
+      expect(await get()).toBe(403);
+      expect(await router.withRepository('shop/debian', get)).toBe(503);
+      expect(tokenProvider).toHaveBeenCalledWith(['shop/debian']);
+      expect(await get()).toBe(403);
+    } finally {
+      await router.onModuleDestroy();
+    }
   });
 
   it('maps router paths to the registry instances', () => {

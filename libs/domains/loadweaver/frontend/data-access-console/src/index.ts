@@ -102,6 +102,15 @@ export * from './lib/state/dns/dns.reducer';
 export * from './lib/state/dns/dns.selectors';
 export * from './lib/state/dns/dns.effects';
 export * from './lib/state/dns/dns.facade';
+// Full virtual machines (3.35): status, power, snapshots, image imports and consoles.
+export * from './lib/types/virtual-machines.types';
+export * from './lib/services/virtual-machines.service';
+export * from './lib/sockets/vm-console-socket';
+export * from './lib/state/virtual-machines/virtual-machines.actions';
+export * from './lib/state/virtual-machines/virtual-machines.reducer';
+export * from './lib/state/virtual-machines/virtual-machines.selectors';
+export * from './lib/state/virtual-machines/virtual-machines.effects';
+export * from './lib/state/virtual-machines/virtual-machines.facade';
 // Live interaction (3.19) and the audit log (3.18).
 export * from './lib/types/live.types';
 export * from './lib/types/audit.types';

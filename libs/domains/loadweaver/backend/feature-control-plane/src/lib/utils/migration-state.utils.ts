@@ -9,10 +9,17 @@ import {
 } from '@forepath/loadweaver/shared/util-agent-protocol';
 import { cidrContainsIp, parseCidr, parseIp } from '@forepath/loadweaver/shared/util-network';
 
+import { eligibilityOptionsFromEnv, type SessionRuntime } from './migration-eligibility.utils';
+
 /**
  * The control-plane side of live migration (3.10) as pure functions: the phase state machine with its fallback
- * paths, dependency waves, kept-address bookkeeping and the commands a session sends to the nodes.
+ * paths, dependency waves, kept-address bookkeeping and the commands a session sends to the nodes. QEMU live
+ * migration (`vm-live`, 3.35 / M7.4) uses the same phases: prepare → precopy → freeze → restore → cut-over, without a
+ * transfer phase (the source's `freeze` done means QEMU's switch-over is through).
  */
+
+/** Methods that run as a session of phases (checkpoints and QEMU live migration). */
+export type SessionMethod = 'live' | 'stop-and-copy' | 'vm-live';
 
 export const CHECKPOINT_PHASES = ['prepare', 'precopy', 'freeze', 'transfer', 'restore', 'cutover'] as const;
 export type CheckpointPhase = (typeof CHECKPOINT_PHASES)[number];
@@ -57,7 +64,7 @@ export interface NodeReport {
 export type SessionReports = Partial<Record<'source' | 'target', Partial<Record<MigrationReportPhase, NodeReport>>>>;
 
 export interface SessionState {
-  method: 'live' | 'stop-and-copy';
+  method: SessionMethod;
   phase: SessionPhase;
   phaseStartedAt: number;
   reports: SessionReports;
@@ -65,6 +72,8 @@ export interface SessionState {
   restoreSent: boolean;
   /** The target node counts as lost (no heartbeat): it can't confirm an abort. */
   targetLost: boolean;
+  /** `vm-live`: QEMU's pre-copy gives up after this long (`vmMigrationStart.maxSeconds` + a margin). */
+  precopyLimitMs?: number;
 }
 
 export type SessionDecision =
@@ -136,12 +145,22 @@ export function sessionStep(
   switch (state.phase) {
     case 'prepare':
       if (doneReport(state, 'target', 'prepare') && report(state, 'target', 'prepare')?.endpoint)
-        return { kind: 'phase', phase: state.method === 'live' ? 'precopy' : 'freeze' };
+        return { kind: 'phase', phase: state.method === 'stop-and-copy' ? 'freeze' : 'precopy' };
       break;
     case 'precopy':
+      // QEMU: the switch-over can finish within one poll; its freeze report ends the pre-copy, too.
+      if (state.method === 'vm-live' && doneReport(state, 'source', 'freeze'))
+        return { kind: 'phase', phase: 'restore' };
+
       if (doneReport(state, 'source', 'precopy')) return { kind: 'phase', phase: 'freeze' };
       break;
     case 'freeze':
+      // QEMU moved memory and device state within the freeze: no separate transfer.
+      if (state.method === 'vm-live') {
+        if (doneReport(state, 'source', 'freeze')) return { kind: 'phase', phase: 'restore' };
+        break;
+      }
+
       if (doneReport(state, 'source', 'freeze') || report(state, 'source', 'transfer'))
         return doneReport(state, 'source', 'transfer')
           ? { kind: 'phase', phase: 'restore' }
@@ -155,8 +174,12 @@ export function sessionStep(
       break;
   }
 
-  if (elapsed > timeouts[state.phase])
-    return { kind: 'abort', reason: `${state.phase} timed out after ${Math.round(timeouts[state.phase] / 1000)} s` };
+  const limit =
+    state.phase === 'precopy' && state.precopyLimitMs !== undefined
+      ? Math.min(timeouts.precopy, state.precopyLimitMs)
+      : timeouts[state.phase];
+
+  if (elapsed > limit) return { kind: 'abort', reason: `${state.phase} timed out after ${Math.round(limit / 1000)} s` };
 
   return { kind: 'wait' };
 }
@@ -279,8 +302,8 @@ export interface SessionRecord {
   replica: string;
   fromNode: string;
   toNode: string;
-  method: 'live' | 'stop-and-copy';
-  runtime: CheckpointRuntime;
+  method: SessionMethod;
+  runtime: SessionRuntime;
   phase: SessionPhase;
   phaseStartedAt: number;
   token: string;
@@ -297,6 +320,12 @@ export interface SessionOptions {
   convergeBytes: number;
   freezeBudgetMs: number;
   endpointSeconds: number;
+  /** `vm-live`: QEMU's pre-copy gives up after this long (abort → short stop). */
+  vmMaxSeconds: number;
+  /** `vm-live`: a pre-copy still running after this long is forced to complete (`vmMigrationSwitchover`). */
+  vmSwitchoverAfterMs: number;
+  /** `vm-live`: bandwidth cap of the pre-copy (bytes / s); none when absent. */
+  vmMaxBandwidthBps?: number;
 }
 
 export const DEFAULT_SESSION_OPTIONS: SessionOptions = {
@@ -304,7 +333,43 @@ export const DEFAULT_SESSION_OPTIONS: SessionOptions = {
   convergeBytes: 4 * 1024 * 1024,
   freezeBudgetMs: 3_000,
   endpointSeconds: 900,
+  vmMaxSeconds: 120,
+  vmSwitchoverAfterMs: 60_000,
 };
+
+/**
+ * Session options from the environment: the freeze budget (`LOADWEAVER_LIVE_MIGRATION_FREEZE_BUDGET_MS`, also QEMU's
+ * downtime limit), QEMU's pre-copy limit / forced switch-over / bandwidth cap (`LOADWEAVER_VM_MIGRATION_MAX_SECONDS`,
+ * `…_SWITCHOVER_AFTER_MS`, `…_MAX_BANDWIDTH_BPS`).
+ */
+export function sessionOptionsFromEnv(env: NodeJS.ProcessEnv = process.env): SessionOptions {
+  const num = (key: string, fallback: number, min: number, max: number) => {
+    const value = Number(env[key]);
+
+    return env[key] !== undefined && Number.isFinite(value) && value >= min && value <= max ? value : fallback;
+  };
+  const d = DEFAULT_SESSION_OPTIONS;
+  const bandwidth = num('LOADWEAVER_VM_MIGRATION_MAX_BANDWIDTH_BPS', 0, 1, 1e12);
+
+  return {
+    ...d,
+    freezeBudgetMs: eligibilityOptionsFromEnv(env).freezeBudgetMs,
+    vmMaxSeconds: Math.round(num('LOADWEAVER_VM_MIGRATION_MAX_SECONDS', d.vmMaxSeconds, 1, 3600)),
+    vmSwitchoverAfterMs: num('LOADWEAVER_VM_MIGRATION_SWITCHOVER_AFTER_MS', d.vmSwitchoverAfterMs, 1_000, 3_600_000),
+    ...(bandwidth > 0 ? { vmMaxBandwidthBps: Math.round(bandwidth) } : {}),
+  };
+}
+
+/** Margin on top of `vmMaxSeconds` before the control plane aborts a silent pre-copy itself. */
+export const VM_PRECOPY_MARGIN_MS = 30_000;
+
+/** The pre-copy limit of a QEMU session (none for checkpoints). */
+export function precopyLimitMs(
+  method: SessionMethod,
+  options: SessionOptions = DEFAULT_SESSION_OPTIONS,
+): number | undefined {
+  return method === 'vm-live' ? options.vmMaxSeconds * 1000 + VM_PRECOPY_MARGIN_MS : undefined;
+}
 
 export interface SessionCommand<T extends ControlPlaneMessageType = ControlPlaneMessageType> {
   node: string;
@@ -331,13 +396,19 @@ export function sessionCommands(
   const add = <T extends ControlPlaneMessageType>(node: string, type: T, payload: ControlPlanePayload<T>) =>
     commands.push({ node, type, channel, payload } as unknown as SessionCommand);
 
+  if (record.method === 'vm-live') {
+    vmSessionCommands(record, now, options, timeouts, add);
+
+    return commands;
+  }
+
   switch (record.phase) {
     case 'prepare':
       if (unreported('target', 'prepare') && record.spec)
         add(record.toNode, 'migrationPrepare', {
           ...base,
           source: record.fromNode,
-          runtime: record.runtime,
+          runtime: record.runtime as CheckpointRuntime,
           token: record.token,
           addresses: record.addresses,
           expiresInSeconds: options.endpointSeconds,
@@ -363,7 +434,7 @@ export function sessionCommands(
           target: record.toNode,
           endpoint,
           token: record.token,
-          runtime: record.runtime,
+          runtime: record.runtime as CheckpointRuntime,
           volumes: record.volumes,
           freezeBudgetMs: options.freezeBudgetMs,
         });
@@ -372,7 +443,7 @@ export function sessionCommands(
       if (unreported('target', 'restore'))
         add(record.toNode, 'migrationRestore', {
           ...base,
-          runtime: record.runtime,
+          runtime: record.runtime as CheckpointRuntime,
           volumes: record.volumes,
           addresses: record.addresses,
         });
@@ -395,4 +466,86 @@ export function sessionCommands(
   }
 
   return commands;
+}
+
+type AddCommand = <T extends ControlPlaneMessageType>(node: string, type: T, payload: ControlPlanePayload<T>) => void;
+
+/**
+ * Commands of a QEMU live migration (`vm-live`, M7.4), mapped onto the checkpoint phases:
+ * - prepare → target `vmMigrationPrepare` (volumes dual-primary, launcher in incoming mode on the kept addresses,
+ *   transfer endpoint relaying to its libvirt session);
+ * - precopy → source `vmMigrationStart` (tunnelled p2p migration through the relay, downtime limit = freeze budget;
+ *   generic microVMs: guest tree passes, then QMP migration with the writable layer's final pass and the volume
+ *   hand-over in QEMU's pre-switchover pause, M7 W10b), and `vmMigrationSwitchover` once the pre-copy ran for
+ *   `vmSwitchoverAfterMs` without converging;
+ * - freeze / restore → nothing to send: the source reports `freeze` done (= the downtime), the target `restore` done
+ *   once the domain runs there;
+ * - cut-over → `migrationCommit` to both (source removes its launcher and demotes, both end dual-primary);
+ * - aborting → `migrationAbort` to the target (destroy the incoming launcher, demote) and the source
+ *   (`domjobabort`, the guest keeps running there; dual-primary ends once the target let go).
+ */
+function vmSessionCommands(
+  record: SessionRecord,
+  now: number,
+  options: SessionOptions,
+  timeouts: MigrationTimeouts,
+  add: AddCommand,
+): void {
+  const base = { migration: record.id, attempt: record.attempt, replica: record.replica };
+  const unreported = (role: 'source' | 'target', phase: MigrationReportPhase) => !record.reports[role]?.[phase];
+  const endpoint = record.reports.target?.prepare?.endpoint;
+
+  switch (record.phase) {
+    case 'prepare':
+      if (unreported('target', 'prepare') && record.spec)
+        add(record.toNode, 'vmMigrationPrepare', {
+          ...base,
+          source: record.fromNode,
+          token: record.token,
+          addresses: record.addresses,
+          volumes: record.volumes,
+          expiresInSeconds: options.endpointSeconds,
+          spec: record.spec,
+        });
+      break;
+    case 'precopy': {
+      if (!endpoint) break;
+
+      if (unreported('source', 'precopy'))
+        add(record.fromNode, 'vmMigrationStart', {
+          ...base,
+          target: record.toNode,
+          endpoint,
+          token: record.token,
+          downtimeLimitMs: Math.max(10, options.freezeBudgetMs),
+          ...(options.vmMaxBandwidthBps ? { maxBandwidthBps: options.vmMaxBandwidthBps } : {}),
+          maxSeconds: options.vmMaxSeconds,
+        });
+
+      const precopy = record.reports.source?.precopy;
+
+      if (
+        precopy?.status === 'running' &&
+        now - record.phaseStartedAt > options.vmSwitchoverAfterMs &&
+        unreported('source', 'freeze')
+      )
+        add(record.fromNode, 'vmMigrationSwitchover', { ...base });
+      break;
+    }
+    case 'cutover':
+      if (unreported('source', 'commit')) add(record.fromNode, 'migrationCommit', { ...base, role: 'source' });
+
+      if (unreported('target', 'commit')) add(record.toNode, 'migrationCommit', { ...base, role: 'target' });
+      break;
+    case 'aborting': {
+      const reason = 'migration attempt aborted';
+
+      if (unreported('target', 'abort') && !record.targetLost)
+        add(record.toNode, 'migrationAbort', { ...base, role: 'target', reason, volumes: record.volumes });
+
+      if (unreported('source', 'abort') && sourceMayResume(record, now, timeouts))
+        add(record.fromNode, 'migrationAbort', { ...base, role: 'source', reason, volumes: record.volumes });
+      break;
+    }
+  }
 }

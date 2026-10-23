@@ -2,13 +2,17 @@ import { controlPlaneMessage, type WorkloadSpec } from '@forepath/loadweaver/sha
 
 import {
   DEFAULT_MIGRATION_TIMEOUTS as T,
+  DEFAULT_SESSION_OPTIONS,
   hostRoutes,
   keptAddresses,
+  precopyLimitMs,
   sessionCommands,
   sessionMetrics,
+  sessionOptionsFromEnv,
   sessionStep,
   sourceMayResume,
   subnetOwner,
+  VM_PRECOPY_MARGIN_MS,
   waveDependencies,
   waveReady,
   type NodeReport,
@@ -311,5 +315,170 @@ describe('sessionCommands (3.10)', () => {
       expect(command.channel).toBe('migration:6f1c1d2e-3b4a-4c5d-8e9f-0a1b2c3d4e5f');
       expect(() => controlPlaneMessage(command.type, command.payload as never)).not.toThrow();
     }
+  });
+});
+
+describe('QEMU live migration sessions (vm-live, M7.4)', () => {
+  const vmState = (extra: Partial<SessionState> = {}): SessionState => state({ method: 'vm-live', ...extra });
+  const record = (extra: Partial<SessionRecord> = {}): SessionRecord => ({
+    id: '6f1c1d2e-3b4a-4c5d-8e9f-0a1b2c3d4e5f',
+    attempt: 1,
+    replica: 'p1/lw-vm/db1/0',
+    fromNode: 'n1',
+    toNode: 'n2',
+    method: 'vm-live',
+    runtime: 'qemu',
+    phase: 'prepare',
+    phaseStartedAt: NOW,
+    token: 'A'.repeat(43),
+    addresses: ['10.88.0.10'],
+    volumes: ['p1/lw-vm/db1.root'],
+    spec: { id: 'p1/lw-vm/db1/0' } as WorkloadSpec,
+    reports: {},
+    restoreSent: false,
+    targetLost: false,
+    ...extra,
+  });
+  const summary = (r: SessionRecord, now = NOW, options = DEFAULT_SESSION_OPTIONS) =>
+    sessionCommands(r, now, options).map((c) => `${c.node}:${c.type}`);
+  const prepared = { target: { prepare: ok({ endpoint: ENDPOINT }) } };
+
+  it('walks prepare → precopy → freeze → restore → cut-over without a transfer phase', () => {
+    expect(sessionStep(vmState({ reports: prepared }), NOW)).toEqual({ kind: 'phase', phase: 'precopy' });
+    expect(sessionStep(vmState({ phase: 'precopy', reports: { source: { precopy: running } } }), NOW)).toEqual({
+      kind: 'wait',
+    });
+    expect(sessionStep(vmState({ phase: 'precopy', reports: { source: { precopy: ok() } } }), NOW)).toEqual({
+      kind: 'phase',
+      phase: 'freeze',
+    });
+    // QEMU's switch-over can finish within one poll: freeze done ends the pre-copy directly.
+    expect(
+      sessionStep(vmState({ phase: 'precopy', reports: { source: { precopy: ok(), freeze: ok() } } }), NOW),
+    ).toEqual({ kind: 'phase', phase: 'restore' });
+    expect(sessionStep(vmState({ phase: 'freeze', reports: { source: { freeze: ok() } } }), NOW)).toEqual({
+      kind: 'phase',
+      phase: 'restore',
+    });
+    expect(sessionStep(vmState({ phase: 'freeze', reports: { source: { freeze: running } } }), NOW)).toEqual({
+      kind: 'wait',
+    });
+    expect(sessionStep(vmState({ phase: 'restore', reports: { target: { restore: ok() } } }), NOW)).toEqual({
+      kind: 'cutover',
+    });
+  });
+
+  it('aborts a pre-copy that runs past its limit and on failures', () => {
+    const limit = precopyLimitMs('vm-live');
+
+    expect(limit).toBe(120_000 + VM_PRECOPY_MARGIN_MS);
+    expect(precopyLimitMs('live')).toBeUndefined();
+    expect(
+      sessionStep(
+        vmState({ phase: 'precopy', precopyLimitMs: limit, reports: { source: { precopy: running } } }),
+        NOW + (limit as number) + 1,
+      ),
+    ).toEqual({ kind: 'abort', reason: 'precopy timed out after 150 s' });
+    expect(
+      sessionStep(vmState({ phase: 'precopy', reports: { source: { precopy: failed('job aborted') } } }), NOW),
+    ).toEqual({ kind: 'abort', reason: 'source precopy failed: job aborted' });
+  });
+
+  it('sends the VM messages per phase and forces the switch-over of a slow pre-copy', () => {
+    expect(summary(record())).toEqual(['n2:vmMigrationPrepare']);
+    expect(summary(record({ reports: { target: { prepare: running } } }))).toEqual([]);
+    expect(summary(record({ phase: 'precopy' }))).toEqual([]);
+    expect(summary(record({ phase: 'precopy', reports: prepared }))).toEqual(['n1:vmMigrationStart']);
+
+    const copying = { ...prepared, source: { precopy: running } };
+
+    expect(summary(record({ phase: 'precopy', reports: copying }), NOW + 59_000)).toEqual([]);
+    expect(summary(record({ phase: 'precopy', reports: copying }), NOW + 61_000)).toEqual(['n1:vmMigrationSwitchover']);
+    expect(
+      summary(
+        record({ phase: 'precopy', reports: { ...copying, source: { precopy: running, freeze: ok() } } }),
+        NOW + 61_000,
+      ),
+    ).toEqual([]);
+    // Freeze and restore are reported by the nodes on their own.
+    expect(summary(record({ phase: 'freeze', reports: prepared }))).toEqual([]);
+    expect(summary(record({ phase: 'restore', reports: prepared }))).toEqual([]);
+    expect(summary(record({ phase: 'cutover' }))).toEqual(['n1:migrationCommit', 'n2:migrationCommit']);
+
+    const aborting = record({ phase: 'aborting', restoreSent: true });
+
+    expect(summary(aborting)).toEqual(['n2:migrationAbort']);
+    expect(summary({ ...aborting, restoreSent: false })).toEqual(['n2:migrationAbort', 'n1:migrationAbort']);
+  });
+
+  it('builds valid vmMigration messages with the freeze budget as the downtime limit', () => {
+    const spec = {
+      id: 'p1/lw-vm/db1/0',
+      project: 'p1',
+      deployment: 'lw-vm',
+      service: 'db1',
+      kind: 'service',
+      image: 'launcher',
+      environment: {},
+      labels: {},
+      addresses: ['10.88.0.10'],
+      dnsSearch: [],
+      runtime: 'runc',
+      resources: { cpuMillis: 1, memoryBytes: 1 },
+      restart: 'always',
+      stopGracePeriodMs: 1,
+      init: false,
+      readOnly: false,
+      privileged: false,
+      capAdd: [],
+      capDrop: [],
+      ulimits: {},
+      extraHosts: [],
+      volumes: [],
+      secrets: [],
+      specHash: 'a'.repeat(32),
+    } as WorkloadSpec;
+    const options = { ...DEFAULT_SESSION_OPTIONS, freezeBudgetMs: 1500, vmMaxBandwidthBps: 500_000_000 };
+    const commands = [
+      ...sessionCommands(record({ spec }), NOW, options),
+      ...sessionCommands(
+        record({ phase: 'precopy', spec, reports: { ...prepared, source: { precopy: running } } }),
+        NOW + 61_000,
+        options,
+      ),
+      ...sessionCommands(record({ phase: 'aborting', spec }), NOW, options),
+    ];
+
+    expect(commands.map((c) => c.type)).toEqual([
+      'vmMigrationPrepare',
+      'vmMigrationSwitchover',
+      'migrationAbort',
+      'migrationAbort',
+    ]);
+    expect(commands[0].payload).toMatchObject({ volumes: ['p1/lw-vm/db1.root'], addresses: ['10.88.0.10'], spec });
+
+    const start = sessionCommands(record({ phase: 'precopy', spec, reports: prepared }), NOW, options)[0];
+
+    expect(start.payload).toMatchObject({ downtimeLimitMs: 1500, maxSeconds: 120, maxBandwidthBps: 500_000_000 });
+
+    for (const command of [...commands, start])
+      expect(() => controlPlaneMessage(command.type, command.payload as never)).not.toThrow();
+  });
+
+  it('reads the QEMU session options from the environment', () => {
+    expect(
+      sessionOptionsFromEnv({
+        LOADWEAVER_VM_MIGRATION_MAX_SECONDS: '300',
+        LOADWEAVER_VM_MIGRATION_SWITCHOVER_AFTER_MS: '5',
+        LOADWEAVER_VM_MIGRATION_MAX_BANDWIDTH_BPS: '1000000',
+        LOADWEAVER_LIVE_MIGRATION_FREEZE_BUDGET_MS: '2000',
+      }),
+    ).toMatchObject({
+      vmMaxSeconds: 300,
+      vmSwitchoverAfterMs: 60_000,
+      vmMaxBandwidthBps: 1_000_000,
+      freezeBudgetMs: 2000,
+    });
+    expect(sessionOptionsFromEnv({}).vmMaxBandwidthBps).toBeUndefined();
   });
 });

@@ -274,7 +274,7 @@ export class FleetRelayGateway implements OnGatewayInit, OnGatewayDisconnect, On
       this.attachments.set(socket.id, own);
       socket.emit('attached', { attachmentId: attachment.id, clusterId: cluster.id, namespace });
 
-      if (namespace === 'terminals')
+      if (namespace === 'terminals' || namespace === 'consoles')
         await this.audit.recordQuietly(
           caller,
           'relay.socket-attached',

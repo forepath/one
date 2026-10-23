@@ -15,17 +15,26 @@ export function routedImage(image: string, client: RegistryClient | undefined): 
   return `127.0.0.1:${client.routerPort}/${ref.host}/${ref.repository}${ref.digest ? `@${ref.digest}` : `:${ref.tag ?? 'latest'}`}`;
 }
 
-/** Private repositories the node may pull: only those its own workloads use. */
+/**
+ * Private repositories the node may pull: only those its own workloads use (a generic microVM's guest image and a
+ * full VM's disk image too: their blobs are fetched through the router, 3.35).
+ */
 export function privateRepositories(
-  workloads: readonly Pick<WorkloadSpec, 'image'>[],
+  workloads: readonly (Pick<WorkloadSpec, 'image'> & Partial<Pick<WorkloadSpec, 'microvm' | 'vm'>>)[],
   client: RegistryClient | undefined,
 ): Set<string> {
   const repositories = new Set<string>();
 
   for (const workload of client ? workloads : []) {
-    const ref = parseImageReference(workload.image);
+    for (const image of [
+      workload.image,
+      ...(workload.microvm?.guestImage ? [workload.microvm.guestImage] : []),
+      ...(workload.vm ? [workload.vm.image.ref] : []),
+    ]) {
+      const ref = parseImageReference(image);
 
-    if (ref && ref.host === client?.privateHost) repositories.add(ref.repository);
+      if (ref && ref.host === client?.privateHost) repositories.add(ref.repository);
+    }
   }
 
   return repositories;

@@ -1,8 +1,10 @@
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { cpus } from 'node:os';
 
 import { agentMessage, type Envelope, type MetricsReport } from '@forepath/loadweaver/shared/util-agent-protocol';
-import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { parseGuestStats } from '@forepath/shared/backend/util-microvm-bridge';
+import { Inject, Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import type Docker from 'dockerode';
 
 import { CommandRunner } from '../host/command-runner';
@@ -11,7 +13,9 @@ import { HostInfoService } from '../host/host-info.service';
 import { MANAGED_LABEL } from '../host/managed-containers';
 import { handshakes } from '../logs/log-parsing';
 import { NFT_TABLE } from '../network/nftables.renderer';
-import { WORKLOAD_LABEL } from '../workloads/workload-container';
+import { RootfsCache } from '../microvm/rootfs-cache';
+import { launcherKindOf, microvmRunDir, WORKLOAD_LABEL } from '../workloads/workload-container';
+import { runtimeDir } from '../workloads/workload.manager';
 import {
   cpuCores,
   DeniedFlows,
@@ -44,6 +48,26 @@ interface ReplicaReading {
 /** Increase of a cumulative counter; after a restart (counter went down) everything counted since the restart. */
 function counterDelta(now: number, before: number): number {
   return now >= before ? now - before : now;
+}
+
+/** Guest stats are written every 10 s; older ones belong to a guest that stopped reporting. */
+const GUEST_STATS_MAX_AGE_MS = 60_000;
+
+/** A launcher's guest stats file (`stats/stats.json`, written by the bridge daemon); null when missing or stale. */
+export async function readGuestStats(
+  file: string,
+  now = Date.now(),
+): Promise<ReturnType<typeof parseGuestStats> | null> {
+  try {
+    const raw = JSON.parse(await readFile(file, 'utf8')) as { updatedAt?: unknown };
+    const at = typeof raw.updatedAt === 'string' ? Date.parse(raw.updatedAt) : NaN;
+
+    if (!Number.isFinite(at) || now - at > GUEST_STATS_MAX_AGE_MS) return null;
+
+    return parseGuestStats(raw);
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -91,6 +115,7 @@ export class MetricsCollectorService implements OnModuleDestroy {
     @Inject(DOCKER) private readonly docker: Docker,
     private readonly commands: CommandRunner,
     private readonly host: HostInfoService,
+    @Optional() private readonly rootfs?: RootfsCache,
   ) {}
 
   attach(send: (envelope: Envelope) => boolean): void {
@@ -275,6 +300,29 @@ export class MetricsCollectorService implements OnModuleDestroy {
       );
 
     this.readings = readings;
+
+    // MicroVM guests (3.35): what the guest itself reports (the launcher's cgroup includes all guest RAM).
+    for (const c of replicas.filter((x) => ['generic', 'vm'].includes(launcherKindOf(x.Labels) ?? ''))) {
+      const replica = c.Labels[WORKLOAD_LABEL];
+      const guest = await readGuestStats(join(microvmRunDir(runtimeDir(), replica), 'stats', 'stats.json'), now);
+
+      if (!guest) continue;
+
+      const project = replica.split('/')[0];
+
+      add('replica.guest_memory_total_bytes', replica, guest.memTotal, project);
+      add('replica.guest_memory_used_bytes', replica, guest.memTotal - guest.memAvailable, project);
+      add('replica.guest_cpu_steal_ratio', replica, guest.cpuSteal, project);
+      add('replica.guest_load1', replica, guest.load1, project);
+    }
+
+    // The node's image unpack cache.
+    const cache = await this.rootfs?.usage().catch(() => null);
+
+    if (cache && cache.layers > 0) {
+      add('node.vmroot_cache_bytes', 'node', cache.bytes);
+      add('node.vmroot_layers', 'node', cache.layers);
+    }
 
     // Ingress per hostname.
     for (const h of this.requests.drain()) {

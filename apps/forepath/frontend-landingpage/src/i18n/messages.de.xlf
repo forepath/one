@@ -5797,8 +5797,8 @@
         <target>ForePath erweitert Produktteams um Cloud- und Platform-Engineering, Delivery-Pipelines, Coding-Agents mit Agenstra und SaaS-Abrechnung mit Decabill.</target>
       </trans-unit>
       <trans-unit id="featureForepathIndustry-softwareMetaKeywords" datatype="html">
-        <source>SaaS engineering, platform engineering, Kubernetes, CI/CD, coding agents, Agenstra, Decabill, startup</source>
-        <target>SaaS-Engineering, Platform Engineering, Kubernetes, CI/CD, Coding-Agents, Agenstra, Decabill, Start-up</target>
+        <source>SaaS engineering, platform engineering, Kubernetes, CI/CD, coding agents, Agenstra, Decabill, Loadweaver, startup</source>
+        <target>SaaS-Engineering, Platform Engineering, Kubernetes, CI/CD, Coding-Agents, Agenstra, Decabill, Loadweaver, Start-up</target>
       </trans-unit>
       <trans-unit id="featureForepathIndustry-softwareHeroAccent" datatype="html">
         <source>Software companies</source>
@@ -5959,6 +5959,26 @@
       <trans-unit id="featureForepathIndustry-softwareSolution4Item3" datatype="html">
         <source>DATEV export for your accountant</source>
         <target>DATEV-Export für Ihre Steuerberatung</target>
+      </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution5Title" datatype="html">
+        <source>Your own servers as one platform with Loadweaver</source>
+        <target>Eigene Server als eine Plattform mit Loadweaver</target>
+      </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution5Desc" datatype="html">
+        <source>Loadweaver turns a handful of servers into a resilient cluster for your Compose apps, with policies, failover, and isolation up to microVMs. Now in early access.</source>
+        <target>Loadweaver macht aus einer Handvoll Servern einen ausfallsicheren Cluster für Ihre Compose-Apps, mit Policies, Failover und Isolation bis zur MicroVM. Jetzt im Early Access.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution5Item1" datatype="html">
+        <source>Docker Compose deployments through plan and apply</source>
+        <target>Docker-Compose-Deployments über Plan und Apply</target>
+      </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution5Item2" datatype="html">
+        <source>Replicated storage and ingress that fails over on its own</source>
+        <target>Replizierter Speicher und Ingress, der selbstständig umschaltet</target>
+      </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution5Item3" datatype="html">
+        <source>gVisor sandboxes and microVMs for untrusted workloads</source>
+        <target>gVisor-Sandboxes und MicroVMs für nicht vertrauenswürdige Workloads</target>
       </trans-unit>
       <trans-unit id="featureForepathIndustry-softwareCtaTitle" datatype="html">
         <source>What would your team ship with more time?</source>

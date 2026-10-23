@@ -74,6 +74,10 @@ export { FpcSummaryCardValueDirective } from './lib/summary-card/summary-card-va
 export type { FpcSummaryCardTone } from './lib/summary-card/summary-card.component';
 export { FpcTerminalComponent, fpcTerminalGrid, fpcTerminalTheme } from './lib/terminal/terminal.component';
 export type { FpcTerminalSize } from './lib/terminal/terminal.component';
+export { FpcVncViewerComponent, FPC_VNC_RFB_LOADER } from './lib/vnc-viewer/vnc-viewer.component';
+export type { FpcRfbConstructor, FpcRfbInstance, FpcVncState } from './lib/vnc-viewer/vnc-viewer.component';
+export { FpcVncChannelAdapter } from './lib/vnc-viewer/vnc-channel';
+export type { FpcVncChannel, FpcVncReadyState, FpcVncTransport } from './lib/vnc-viewer/vnc-channel';
 
 // Forms
 export {

@@ -48,9 +48,9 @@ export interface PlanWorkloadChange {
   copy?: 'sync' | 'remote';
   from?: string;
   to?: string;
-  /** Live (CRIU pre-copy), stop-and-copy (gVisor), blue / green or short stop. */
-  method?: 'live' | 'stop-and-copy' | 'blue-green' | 'short-stop';
-  /** The method with its reason, e.g. `short-stop (privileged container)`. */
+  /** Live (CRIU pre-copy), stop-and-copy (gVisor), QEMU live migration (VMs / generic microVMs), blue / green or short stop. */
+  method?: 'live' | 'stop-and-copy' | 'vm-live' | 'blue-green' | 'short-stop';
+  /** The method with its reason, e.g. `short-stop (privileged container)`, `microvm-live (QEMU)`. */
   methodLabel?: string;
   [key: string]: unknown;
 }

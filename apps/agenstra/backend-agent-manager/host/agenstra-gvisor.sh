@@ -3,7 +3,7 @@
 #
 # GENERATED from libs/domains/shared/backend/util-container-runtime (buildGvisorHostScript) - do not edit.
 #
-# Usage: agenstra-gvisor.sh check|install|uninstall [--json]
+# Usage: agenstra-gvisor.sh check|install|uninstall|install-kvm|uninstall-kvm [--json]
 #   check      Report Docker/runc baseline and gVisor runtime state (no changes).
 #   install    Install the pinned, checksum-verified gVisor release and register the Docker runtimes
 #              'runsc-systrap' (--platform=systrap) and 'runsc-systrap-hostnet' (--platform=systrap
@@ -15,9 +15,13 @@
 #              rolls back the KVM runtimes).
 #   uninstall  Remove the runtime registrations (installed binaries stay under /usr/local/lib/agenstra-gvisor,
 #              the persisted KVM modules stay for the microvm level).
+#   install-kvm    Prepare KVM and register only the KVM runtimes on top of the installed gVisor release (no
+#                  download; GVISOR_KVM=0 / AGENSTRA_KVM=0 still apply).
+#   uninstall-kvm  Remove only the KVM runtime registrations (systrap runtimes, runc and the modules stay).
 # Environment: GVISOR_RELEASE (default 20261005.0), GVISOR_SHA512 (required for non-default releases),
 #              GVISOR_KVM=0 skips the gVisor KVM runtimes, AGENSTRA_KVM=0 skips the host KVM preparation
-#              (which otherwise runs first and independently of gVisor; the microvm level needs /dev/kvm only).
+#              (which otherwise runs first and independently of gVisor; the microvm level needs /dev/kvm only),
+#              AGENSTRA_KVM_APT=0 never installs the extra kernel modules package.
 #
 # Exit codes: 0 ok, 2 usage, 3 not root, 40 Docker/runc baseline unavailable (E_DOCKER_BASELINE_UNAVAILABLE),
 #             41 unsupported host, 42 install failed (rolled back), 43 runtime not ready.
@@ -31,6 +35,7 @@ AGENSTRA_GVISOR_HOSTNET_RUNTIME="runsc-systrap-hostnet"
 AGENSTRA_GVISOR_KVM_RUNTIME="runsc-kvm"
 AGENSTRA_GVISOR_KVM_HOSTNET_RUNTIME="runsc-kvm-hostnet"
 AGENSTRA_GVISOR_KVM_ENABLED="$(printf '%s' "${GVISOR_KVM:-1}")"
+AGENSTRA_KVM_APT_ENABLED="$(printf '%s' "${AGENSTRA_KVM_APT:-1}")"
 AGENSTRA_GVISOR_VERIFY_IMAGE="hello-world"
 AGENSTRA_GVISOR_PINNED_RELEASE="20261005.0"
 AGENSTRA_GVISOR_SHA512_X86_64="79869ae9a589355a46d46fdac068d9a954e741741ffe77c64e38c56ea955498c1cb04e9bce44e1cce5155333e6b76bee72347c6661bb7c78fd2fe3aad198c8fe"
@@ -286,7 +291,8 @@ agenstra_kvm_prepare() {
   command -v modprobe >/dev/null 2>&1 || return 1
   if ! modprobe kvm >/dev/null 2>&1 || { [ -n "$vendor" ] && ! modprobe "$vendor" >/dev/null 2>&1; }; then
     # Modules that exist but fail to load (e.g. virtualization disabled) are not fixed by a package.
-    if command -v apt-get >/dev/null 2>&1 && ! modinfo "${vendor:-kvm}" >/dev/null 2>&1; then
+    # AGENSTRA_KVM_APT=0: the host's packages come from a pinned snapshot; nothing is installed here.
+    if [ "$AGENSTRA_KVM_APT_ENABLED" = "1" ] && command -v apt-get >/dev/null 2>&1 && ! modinfo "${vendor:-kvm}" >/dev/null 2>&1; then
       agenstra_gvisor_log "Installing the KVM kernel modules (linux-modules-extra-$(uname -r))"
       agenstra_apt_install "linux-modules-extra-$(uname -r)" || true
     fi
@@ -417,8 +423,8 @@ main() {
   local command="${1:-}" json=0 baseline=unavailable sandboxed=unsupported sandboxed_kvm=unsupported
   [ "${2:-}" = "--json" ] && json=1
   case "$command" in
-    check|install|uninstall) ;;
-    *) echo "Usage: $0 check|install|uninstall [--json]" >&2; return 2 ;;
+    check|install|uninstall|install-kvm|uninstall-kvm) ;;
+    *) echo "Usage: $0 check|install|uninstall|install-kvm|uninstall-kvm [--json]" >&2; return 2 ;;
   esac
   if [ "$(id -u)" -ne 0 ] && [ "$command" != "check" ]; then
     echo "This command must run as root" >&2; return 3
@@ -456,6 +462,23 @@ main() {
       rm -f "$AGENSTRA_DOCKER_DAEMON_KVM_BACKUP" "$AGENSTRA_DOCKER_DAEMON_BACKUP"
       agenstra_docker_ready || { agenstra_gvisor_report unavailable unsupported "$json"; return 40; }
       agenstra_gvisor_report "$baseline" unsupported "$json"; return 0
+      ;;
+    install-kvm)
+      # Only the KVM part, on top of the installed release: nothing is downloaded, the systrap runtimes stay.
+      agenstra_gvisor_runtime_registered && sandboxed=registered
+      agenstra_kvm_prepare_host || true
+      if agenstra_kvm_install; then sandboxed_kvm=ready; else sandboxed_kvm="$(agenstra_kvm_state)"; fi
+      agenstra_gvisor_report "$baseline" "$sandboxed" "$json" "$sandboxed_kvm"; return 0
+      ;;
+    uninstall-kvm)
+      # Only the KVM runtime entries (a node opted out of KVM); systrap, runc and the persisted modules stay.
+      agenstra_gvisor_runtime_registered && sandboxed=registered
+      if agenstra_kvm_any_runtime_registered; then
+        agenstra_kvm_unregister "$AGENSTRA_GVISOR_PREFIX/current/runsc"
+        agenstra_docker_reload || true
+      fi
+      rm -f "$AGENSTRA_DOCKER_DAEMON_KVM_BACKUP"
+      agenstra_gvisor_report "$baseline" "$sandboxed" "$json" "$(agenstra_kvm_state)"; return 0
       ;;
   esac
 }

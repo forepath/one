@@ -20,6 +20,8 @@ export const environment: LoadweaverConsoleEnvironment = {
         logs: '/socket/logs',
         terminals: '/socket/terminals',
         tunnels: '/socket/tunnels',
+        // VM serial / VNC consoles (3.35).
+        consoles: '/socket/consoles',
         topology: '/socket/topology',
       },
     },

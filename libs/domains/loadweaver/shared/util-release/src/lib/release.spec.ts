@@ -229,6 +229,30 @@ describe('release manifests', () => {
     ).toThrow(/invalid image digest/);
   });
 
+  it('pins the release-built microVM launcher when given, and leaves it out of development manifests', () => {
+    const launcher = `ghcr.io/forepath/microvm-launcher:3.5.0@sha256:${'e'.repeat(64)}`;
+    const base = {
+      version: '3.5.0',
+      channel: 'stable' as const,
+      created: '2026-10-19T00:00:00.000Z',
+      agentBinaries: {},
+    };
+
+    expect(imageComponents(manifestFor())['microvm-launcher']).toBeUndefined();
+    expect(missingComponents(manifestFor())).toEqual([]);
+
+    const manifest = buildManifest({ ...base, images: { 'control-plane': CP, 'microvm-launcher': launcher } });
+
+    expect(imageReference(imageComponents(manifest)['microvm-launcher'])).toBe(launcher);
+    expect(imageComponents(manifest)['microvm-launcher'].version).toBe('3.5.0');
+    expect(() =>
+      buildManifest({
+        ...base,
+        images: { 'control-plane': CP, 'microvm-launcher': 'ghcr.io/forepath/microvm-launcher:3.5.0' },
+      }),
+    ).toThrow(/microvm-launcher .* not pinned by digest/);
+  });
+
   it('refuses images without a digest', () => {
     expect(() =>
       buildManifest({

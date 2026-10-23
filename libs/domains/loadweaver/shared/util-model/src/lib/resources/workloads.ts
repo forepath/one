@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+/** Host devices a project may be allowed to pass to its workloads (3.1); platform-internal devices never are. */
+export const PROJECT_ALLOWED_DEVICES = ['/dev/kvm'] as const;
+export type ProjectAllowedDevice = (typeof PROJECT_ALLOWED_DEVICES)[number];
+
 /** A project: the access unit inside a cluster (3.17) with its resource defaults (3.11). */
 export const projectSpecSchema = z
   .object({
@@ -44,6 +48,31 @@ export const projectSpecSchema = z
         publicIps: z.number().int().min(0).max(65_536).optional(),
         /** Published L4 ports (port forwards). */
         ports: z.number().int().min(0).max(65_536).optional(),
+        /** Full virtual machines (3.35, `VirtualMachine` resources). VM usage counts into `cpu` / `memory` / `storage` too. */
+        virtualMachines: z.number().int().min(0).max(65_536).optional(),
+        /** vCPUs of all virtual machines. */
+        vmVcpus: z.number().int().min(0).max(1_048_576).optional(),
+        /** Memory of all virtual machines (`512g`). */
+        vmMemory: z
+          .string()
+          .regex(/^\d+(\.\d+)?[kKmMgGtT]?[bB]?$/)
+          .optional(),
+        /** Disk sizes of all virtual machines (`2t`; each disk counted once, replicas not included). */
+        vmDiskBytes: z
+          .string()
+          .regex(/^\d+(\.\d+)?[kKmMgGtT]?[bB]?$/)
+          .optional(),
+      })
+      .strict()
+      .optional(),
+    /**
+     * Admin-only workload allowances (3.1). `allowedDevices`: host devices the project's services may request via
+     * compose `devices` (allow-list: `/dev/kvm`, which lets a workload run its own VMs and pins it for migration). A
+     * plan using a device the project isn't allowed fails with a policy error.
+     */
+    workloads: z
+      .object({
+        allowedDevices: z.array(z.literal(PROJECT_ALLOWED_DEVICES)).max(1).optional(),
       })
       .strict()
       .optional(),

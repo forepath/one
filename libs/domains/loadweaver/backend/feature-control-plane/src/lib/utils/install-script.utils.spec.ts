@@ -1,11 +1,13 @@
-import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
   AGENT_SYSTEMD_UNIT,
   buildComponentsScript,
   buildNodeInstallScript,
+  kvmInstallSection,
   STORAGE_PACKAGE_PINS,
 } from './install-script.utils';
 
@@ -54,6 +56,9 @@ describe('node install script', () => {
     expect(components).toContain(
       'lw_apt_install ca-certificates curl gnupg jq iproute2 wireguard-tools nftables bird2 keepalived rsync',
     );
+    // MicroVM guest roots (3.35): setfattr (overlay whiteouts) and mkfs.ext4 (writable layers), installer and imports.
+    expect(components).toContain('lw_apt_install attr e2fsprogs');
+    expect(script).toContain('lw_apt_install attr e2fsprogs');
     expect(components).toContain('[ ${#missing[@]} -eq 0 ] && return 0');
     expect(components).toContain('.["live-restore"] = true');
     expect(components).not.toContain('systemctl reload docker || systemctl restart docker');
@@ -119,6 +124,165 @@ describe('node install script', () => {
       '9606445eed5aedfcf05310e7ccef61d994089914c6622fc82624c24d2b18db1b2210f40e40a7be27b8b7772859de7d95c501b4eba66423053c960bf671377c5e',
     );
     expect(script).toContain('systemctl disable --now unattended-upgrades.service apt-daily-upgrade.timer');
+  });
+
+  describe('KVM host preparation (3.1)', () => {
+    const snapshot = {
+      aptBase: '/api/updates/apt/s-20261023-ab12',
+      sources: [
+        {
+          name: 'ubuntu-noble',
+          suites: ['noble', 'noble-updates'],
+          components: ['main', 'universe'],
+          arches: ['amd64'],
+          keyring: '/usr/share/keyrings/ubuntu-archive-keyring.gpg',
+          os: 'ubuntu:24.04',
+        },
+        {
+          name: 'ubuntu-ports-noble',
+          suites: ['noble'],
+          components: ['main'],
+          arches: ['arm64'],
+          keyring: '/usr/share/keyrings/ubuntu-archive-keyring.gpg',
+          os: 'ubuntu:24.04',
+        },
+        {
+          name: 'debian-trixie',
+          suites: ['trixie'],
+          components: ['main'],
+          arches: ['amd64'],
+          keyring: '/usr/share/keyrings/debian-archive-keyring.gpg',
+          os: 'debian:13',
+        },
+      ],
+    };
+
+    /** Runs the KVM section on a stubbed host; returns the apt calls, the sources it used and the exports. */
+    function runSection(
+      section: string,
+      host: {
+        id: string;
+        versionId: string;
+        arch?: string;
+        cpu?: string;
+        module?: boolean;
+        env?: Record<string, string>;
+      },
+    ) {
+      const dir = mkdtempSync(join(tmpdir(), 'lw-kvm-install-'));
+
+      try {
+        const stubs = `
+ID=${host.id}; VERSION_ID=${host.versionId}
+dpkg() { echo ${host.arch ?? 'amd64'}; }
+uname() { echo 6.8.0-90-generic; }
+grep() { case "$*" in *vmx*) [ "${host.cpu ?? 'vmx'}" != none ] ;; *) command grep "$@" ;; esac; }
+modinfo() { [ "${host.module ? '1' : '0'}" = 1 ]; }
+apt-get() { echo "apt-get $*" >> ${dir}/calls; for a in "$@"; do case "$a" in Dir::Etc::sourcelist=*) cp "\${a#*=}" ${dir}/sources ;; esac; done; }
+`;
+        const result = spawnSync(
+          'bash',
+          [
+            '-c',
+            `set -euo pipefail\n${stubs}\n${section}\necho "GVISOR_KVM=\${GVISOR_KVM:-} AGENSTRA_KVM=\${AGENSTRA_KVM:-} AGENSTRA_KVM_APT=\${AGENSTRA_KVM_APT:-}"`,
+          ],
+          { encoding: 'utf8', env: { PATH: process.env['PATH'] ?? '/usr/bin:/bin', ...(host.env ?? {}) } },
+        );
+        const read = (f: string) => (existsSync(join(dir, f)) ? readFileSync(join(dir, f), 'utf8') : '');
+
+        return {
+          status: result.status,
+          stdout: result.stdout,
+          stderr: result.stderr,
+          calls: read('calls'),
+          sources: read('sources'),
+        };
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    }
+
+    it('prepares KVM through the shared installer without its own package installs', () => {
+      expect(script).toContain('AGENSTRA_GVISOR_KVM_ENABLED="$(printf \'%s\' "${GVISOR_KVM:-1}")"');
+      expect(script).toContain('AGENSTRA_KVM_APT_ENABLED="$(printf \'%s\' "${AGENSTRA_KVM_APT:-0}")"');
+      expect(script.indexOf('lw_kvm_modules\nfi\nexport AGENSTRA_KVM_APT=0')).toBeGreaterThan(0);
+      expect(script.indexOf('export AGENSTRA_KVM_APT=0')).toBeLessThan(script.indexOf('agenstra_prepare_gvisor() {'));
+      expect(buildComponentsScript()).toContain('AGENSTRA_KVM_APT:-0');
+    });
+
+    it('opts a node out with --no-kvm (no preparation, no KVM runtimes)', () => {
+      expect(script).toContain('--no-kvm) LOADWEAVER_KVM=disabled; shift ;;');
+
+      const out = runSection(kvmInstallSection(options.controlPlaneUrl, snapshot), {
+        id: 'ubuntu',
+        versionId: '24.04',
+        env: { LOADWEAVER_KVM: 'disabled' },
+      });
+
+      expect(out.status).toBe(0);
+      expect(out.calls).toBe('');
+      expect(out.stdout).toContain('GVISOR_KVM=0 AGENSTRA_KVM=0 AGENSTRA_KVM_APT=0');
+    });
+
+    it("installs Ubuntu's missing KVM modules only from the cluster's apt snapshot", () => {
+      const section = kvmInstallSection(options.controlPlaneUrl, snapshot);
+
+      expect(section).toContain('    ubuntu:24.04:amd64) lw_kvm_source /usr/share/keyrings/ubuntu-archive-keyring.gpg');
+      expect(section).toContain('    ubuntu:24.04:arm64) lw_kvm_source');
+      expect(section).not.toContain('debian-trixie');
+      execFileSync('bash', ['-n'], { input: section });
+
+      // The section runs only where the keyring exists; the stubbed host uses /dev/null for it.
+      const devnull = {
+        ...snapshot,
+        sources: snapshot.sources.map((s) => ({ ...s, keyring: '/dev/null' })),
+      };
+      const out = runSection(kvmInstallSection(options.controlPlaneUrl, devnull), { id: 'ubuntu', versionId: '24.04' });
+
+      expect(out.status).toBe(0);
+      expect(out.sources).toBe(
+        'deb [signed-by=/dev/null] https://cp.example.com/api/updates/apt/s-20261023-ab12/ubuntu-noble noble main universe\n' +
+          'deb [signed-by=/dev/null] https://cp.example.com/api/updates/apt/s-20261023-ab12/ubuntu-noble noble-updates main universe\n',
+      );
+      expect(out.calls).toContain('-o Dir::Etc::sourceparts=- ');
+      expect(out.calls).toContain('install -y -q --no-install-recommends linux-modules-extra-6.8.0-90-generic');
+      expect(out.stdout).toContain('AGENSTRA_KVM_APT=0');
+      expect(out.stdout).not.toContain('GVISOR_KVM=0');
+    });
+
+    it('installs nothing when the module exists, the CPU lacks virtualization, on Debian or without a snapshot', () => {
+      const section = kvmInstallSection(options.controlPlaneUrl, {
+        ...snapshot,
+        sources: snapshot.sources.map((s) => ({ ...s, keyring: '/dev/null' })),
+      });
+
+      expect(runSection(section, { id: 'ubuntu', versionId: '24.04', module: true }).calls).toBe('');
+      expect(runSection(section, { id: 'ubuntu', versionId: '24.04', cpu: 'none' }).calls).toBe('');
+      expect(runSection(section, { id: 'debian', versionId: '13' }).calls).toBe('');
+      expect(runSection(section, { id: 'ubuntu', versionId: '22.04' }).calls).toBe('');
+
+      const none = runSection(kvmInstallSection(options.controlPlaneUrl, undefined), {
+        id: 'ubuntu',
+        versionId: '24.04',
+      });
+
+      expect(none.status).toBe(0);
+      expect(none.calls).toBe('');
+      expect(none.stderr).toContain('comes with the next host update');
+    });
+
+    it('rejects snapshot sources that would end up unsafe in the script', () => {
+      const bad = (patch: Record<string, unknown>) => ({
+        aptBase: '/api/updates/apt/s-1',
+        sources: [{ ...snapshot.sources[0], ...patch }],
+      });
+
+      expect(() => buildNodeInstallScript({ ...options, aptSnapshot: bad({ name: 'x; rm -rf /' }) })).toThrow();
+      expect(() => buildNodeInstallScript({ ...options, aptSnapshot: bad({ suites: ['$(id)'] }) })).toThrow();
+      expect(() => buildNodeInstallScript({ ...options, aptSnapshot: bad({ keyring: '/k" x' }) })).toThrow();
+      expect(() => buildNodeInstallScript({ ...options, aptSnapshot: { aptBase: '/x y', sources: [] } })).toThrow();
+      execFileSync('bash', ['-n'], { input: buildNodeInstallScript({ ...options, aptSnapshot: snapshot }) });
+    });
   });
 
   it('only supports Debian / Ubuntu LTS on amd64 / arm64 (3.21)', () => {

@@ -366,7 +366,8 @@ export class MigrationService implements OnModuleDestroy {
         session.holderId = await this.restored.createHolder(options, session.migration);
 
         // gVisor: its binaries come from disk at the first restore; read them now, not during the freeze.
-        if (session.runtime === 'runsc') await this.restored.prewarm();
+        if (session.runtime === 'runsc')
+          await this.restored.prewarm(session.spec.isolation === 'sandboxed-kvm' ? 'kvm' : 'systrap');
         session.endpoint = endpoint;
         session.state = 'prepared';
         await this.persist(session);

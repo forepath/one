@@ -3,6 +3,7 @@ import {
   type AgentEvent,
   type AgentHello,
   type ApplyReport,
+  type CapabilitiesUpdate,
   type CertificateIssued,
   type Heartbeat,
   type WorkloadStatus,
@@ -14,6 +15,7 @@ import { DataSource } from 'typeorm';
 import { NODE_HEARTBEAT_TIMEOUT_MS } from '../constants/control-plane.constants';
 import { NodeEntity } from '../entities/node.entity';
 import { WorkloadPlacementEntity } from '../entities/workload-placement.entity';
+import { applyVmCommandOutcome, vmCommandOutcome } from '../utils/vm-command-outcome.utils';
 import { AuditLogService } from './audit-log.service';
 import { ClusterIdentityService } from './cluster-identity.service';
 import { NetworkStateService } from './network-state.service';
@@ -90,6 +92,24 @@ export class NodeAgentsService {
 
     if (recompile)
       this.network.requestRecompile(`node ${nodeName} changed its WireGuard identity, endpoint or host name`);
+  }
+
+  /**
+   * Changed capabilities on the open stream (feature `capability-updates`, M7): replaces what the last hello reported,
+   * like a hello would (the scheduler reads them on the next plan / compile), without a new session.
+   */
+  async handleCapabilitiesUpdate(nodeName: string, update: CapabilitiesUpdate): Promise<void> {
+    await this.dataSource.getRepository(NodeEntity).update(
+      { name: nodeName },
+      {
+        capabilities: update.capabilities as unknown as Record<string, unknown>,
+        lastSeenAt: new Date(),
+        connected: true,
+      },
+    );
+    this.logger.log(
+      `Node ${nodeName} reported changed capabilities (ready: ${update.capabilities.runtimes.join(', ') || 'none'})`,
+    );
   }
 
   async handleHeartbeat(nodeName: string, heartbeat: Heartbeat): Promise<void> {
@@ -175,6 +195,14 @@ export class NodeAgentsService {
       default:
         this.logger.log(line);
     }
+
+    // VM node commands (3.35) have no result message: their outcome events update the queued command.
+    const outcome = vmCommandOutcome(event);
+
+    if (outcome)
+      void applyVmCommandOutcome(this.dataSource.manager, nodeName, outcome).catch((error: unknown) =>
+        this.logger.warn(`VM command outcome of ${nodeName} not recorded: ${(error as Error).message}`),
+      );
   }
 
   /**
@@ -199,6 +227,8 @@ export class NodeAgentsService {
             state: workload.state,
             ...(workload.exitCode !== undefined ? { exitCode: workload.exitCode } : {}),
             ...(workload.message ? { message: workload.message } : {}),
+            // Full VMs (3.35): the guest's power state / a boot disk being written from its image.
+            ...(workload.vm ? { vm: workload.vm } : {}),
             specHash: workload.specHash,
             at,
           }

@@ -7,6 +7,12 @@ import { DOCKER } from './docker.provider';
 export const COMPONENT_LABEL = 'loadweaver.com/component';
 export const SPEC_HASH_LABEL = 'loadweaver.com/spec-hash';
 export const MANAGED_LABEL = 'loadweaver.com/managed';
+/** Short-lived isolation probe containers (3.1): neither workloads nor drift; leftovers are removed at start. */
+export const PROBE_LABEL = 'loadweaver.com/probe';
+
+export function isProbeContainer(labels: Record<string, string> | undefined): boolean {
+  return labels?.[PROBE_LABEL] === '1';
+}
 
 /** A platform container the agent runs next to the workloads (control plane, object store, registry). */
 export interface ManagedContainerSpec {

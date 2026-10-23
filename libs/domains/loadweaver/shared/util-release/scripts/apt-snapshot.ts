@@ -15,7 +15,13 @@ import { mkdir, open, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
-import { buildAptBundleSnapshot, normalizeVersion, selectedKernels, type BlobStore } from '../src';
+import {
+  buildAptBundleSnapshot,
+  kernelsWithoutKvmModules,
+  normalizeVersion,
+  selectedKernels,
+  type BlobStore,
+} from '../src';
 
 const { values } = parseArgs({
   options: {
@@ -99,6 +105,10 @@ async function main(): Promise<void> {
     if (selection.missingRoots.length) console.log(`  not in the archives: ${selection.missingRoots.join(' ')}`);
 
     if (selection.missingPins.length) console.warn(`  pinned versions missing: ${selection.missingPins.join(' ')}`);
+
+    const withoutKvm = kernelsWithoutKvmModules(host.split('/')[0], selection.packages);
+
+    if (withoutKvm.length) console.warn(`  kernels without linux-modules-extra (no KVM): ${withoutKvm.join(' ')}`);
 
     if (selection.unresolved.length)
       console.warn(`  unresolved dependencies: ${selection.unresolved.slice(0, 20).join('; ')}`);

@@ -22,6 +22,8 @@ Create a cluster on one server, add nodes, write your first policy.
 - [Plan bot](./features/plan-bot.md) GitHub App and GitLab: pull requests planned with locks and one sticky comment, `loadweaver apply` / `plan` / `approve` / `unlock` / `drift`, merge after apply, account linking
 - [Projects and access](./features/projects-and-access.md) Cluster and project roles, approvals, cross-project policies, quotas, access as YAML
 - [Deployments and jobs](./features/deployments-and-jobs.md) Compose deployments, migration, drain and failover, one-off and cron jobs
+- [Isolation levels and microVMs](./features/isolation-levels.md) `runc`, gVisor (`sandboxed`), gVisor on KVM (`sandboxed-kvm`) and QEMU microVMs (`microvm`): exact levels, node probes, "at least" selectors, KVM opt-out, `/dev/kvm` devices, guest root, networking, exec and metrics
+- [Virtual machines](./features/virtual-machines.md) Full VMs (`VirtualMachine`): VM images in the registry (CLI push, URL import, KubeVirt containerDisks), replicated block disks, several NICs with their own groups and policies, cloud-init with secret references, run strategies and power actions, serial and VNC consoles, snapshots and disk restores, HA, QEMU live migration, quotas
 - [Autoscaling](./features/autoscaling.md) Horizontal autoscaling on CPU, memory, requests or custom metrics, within quota, capacity and the N+1 reserve
 - [Migration](./features/migration.md) Live migration with CRIU / gVisor, eligibility per service, phases, automatic fallback, kept addresses, history
 - [Backups](./features/backups.md) Volume backups with Kopia (schedules, retention, hooks, restore tests), recovery kit and backup key, external targets with object lock, deletion with a second admin and delay, catalog / diff / file restore, restores as plans; control-plane data with PITR, cut-over and an encrypted external copy
@@ -57,7 +59,7 @@ Create a cluster on one server, add nodes, write your first policy.
 
 ### [Guides](./guides/README.md)
 
-- [Agenstra on Loadweaver](./guides/agenstra-on-loadweaver.md) Agenstra's agent manager as a Loadweaver deployment, environments as sandboxed deployments with egress compiled from Agenstra's policy, or on the node's Docker as delegated containers
+- [Agenstra on Loadweaver](./guides/agenstra-on-loadweaver.md) Agenstra's agent manager as a Loadweaver deployment, environments as deployments at all four isolation levels (runc, gVisor, gVisor on KVM, microVM) with egress compiled from Agenstra's policy, or on the node's Docker as delegated containers
 - [Terraform](./guides/terraform.md) The `forepath/loadweaver` provider: dry-run Loadweaver plans on `terraform plan`, applied plans (with approvals) on `terraform apply`, resources, data sources and import
 
 ### [Console](./console.md)

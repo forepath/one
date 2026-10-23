@@ -1,8 +1,16 @@
-import type { Labels, Selector } from '@forepath/loadweaver/shared/util-model';
+import type { IsolationState, Labels, Runtime, Selector } from '@forepath/loadweaver/shared/util-model';
 
 export interface Resources {
   cpuMillis: number;
   memoryBytes: number;
+}
+
+/** Probe result of one isolation level on a node (agent capability `isolation`, 3.1), for unschedulable reasons. */
+export interface NodeIsolationStatus {
+  state: IsolationState;
+  /** Agenstra's reason codes, e.g. `E_KVM_UNAVAILABLE`. */
+  reasonCode?: string;
+  reason?: string;
 }
 
 export interface SchedulerNode {
@@ -15,7 +23,31 @@ export interface SchedulerNode {
   /** Allocatable capacity (node capacity minus the platform reserve). */
   capacity: Resources;
   diskBytes: number;
-  runtimes: ('runc' | 'sandboxed')[];
+  /**
+   * Isolation levels whose probe passed on the node (3.1). A service runs only on nodes with **exactly** its level:
+   * never upgraded or downgraded (the strength order is for selectors, capability views and plan output only).
+   */
+  runtimes: Runtime[];
+  /** Per-level probe states with reasons; only used to explain unschedulable services. */
+  isolation?: Partial<Record<Runtime, NodeIsolationStatus>>;
+  /**
+   * KVM on the node (3.1): `usable` = `/dev/kvm` present and openable with the module loaded; `optOut` = node spec
+   * `virtualization.kvm: disabled`. `undefined` (agent doesn't report it) counts as no usable KVM: KVM levels,
+   * `/dev/kvm` pass-through and full VMs need it.
+   */
+  kvm?: { usable: boolean; optOut: boolean };
+  /** Full VMs possible (3.35: microvm ready, DRBD 9, UEFI firmware in the launcher); `undefined` counts as no. */
+  virtualMachines?: boolean;
+  /**
+   * DRBD volumes in block mode (VM disks, 3.35); `undefined` counts as available when the node holds volumes at all
+   * and its agent has `vm-block-volumes`.
+   */
+  blockVolumes?: boolean;
+  /**
+   * CPU architecture of the node (`amd64` / `arm64`, from the agent's hello). Services with `architectures` run only
+   * on nodes of those architectures; `undefined` (not reported) passes.
+   */
+  arch?: string;
   /** Unreachable nodes are treated as lost (failover, 3.10). */
   reachable: boolean;
   /**
@@ -41,6 +73,8 @@ export interface SchedulerVolume {
   /** Replicas within the primary's site, including the primary. */
   replicas: number;
   crossSite: 'async' | 'sync' | 'none';
+  /** `block`: a raw DRBD device (VM disk, 3.35); its copies need nodes with block-volume support. Default filesystem. */
+  mode?: 'filesystem' | 'block';
 }
 
 export interface SchedulerService {
@@ -49,8 +83,18 @@ export interface SchedulerService {
   project: string;
   replicas: number;
   requests: Resources;
-  runtime: 'runc' | 'sandboxed';
+  /** Exact isolation level the replicas run at (3.1). */
+  runtime: Runtime;
+  /** `/dev/kvm` passed into the container (3.1): only nodes with usable KVM that aren't opted out. */
+  needsKvmDevice?: boolean;
+  /** A full VM (3.35, kind `VirtualMachine`, runtime `microvm`): only nodes with `virtualMachines`. */
+  virtualMachine?: boolean;
   selector?: Selector;
+  /**
+   * Node architectures the pinned image can run on (3.35: a microVM guest image's `platformLayers`, a VM image's
+   * architecture). Hard rule: nodes of other architectures get no replicas (already placed ones move). Absent: any.
+   */
+  architectures?: string[];
   spread: 'node' | 'site';
   /** Replicated volumes mounted read-write; force a single replica co-located with the volume primary. */
   volumes: SchedulerVolume[];

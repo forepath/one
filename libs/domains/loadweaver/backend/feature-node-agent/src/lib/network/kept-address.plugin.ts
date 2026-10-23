@@ -31,12 +31,15 @@ export function keptPluginSocketPath(env: NodeJS.ProcessEnv = process.env): stri
   return env['LOADWEAVER_KEPT_PLUGIN_SOCKET'] || `/run/docker/plugins/${KEPT_DRIVER}.sock`;
 }
 
-/** One network per address family mix (Docker requests an address of every enabled family). */
-export function keptNetworkName(addresses: readonly string[]): string {
+/**
+ * One network per address family mix (Docker requests an address of every enabled family). A container can only
+ * have one endpoint per network: further NICs of a full VM (3.35, `slot` ≥ 1) get a network of their own each.
+ */
+export function keptNetworkName(addresses: readonly string[], slot = 0): string {
   const v4 = addresses.some((a) => !a.includes(':'));
   const v6 = addresses.some((a) => a.includes(':'));
 
-  return `${KEPT_DRIVER}-${v4 ? '4' : ''}${v6 ? '6' : ''}`;
+  return `${KEPT_DRIVER}-${v4 ? '4' : ''}${v6 ? '6' : ''}${slot > 0 ? `-nic${slot}` : ''}`;
 }
 
 /** Host-side veth name of an endpoint (≤ 15 characters); the container side adds `c` before Docker renames it. */
@@ -215,11 +218,11 @@ export class KeptAddressPlugin implements OnModuleDestroy {
     this.server = null;
   }
 
-  /** Ensures the kept-address network for an address mix exists; returns its name. */
-  async ensureNetwork(addresses: readonly string[]): Promise<string> {
+  /** Ensures the kept-address network for an address mix (and NIC slot) exists; returns its name. */
+  async ensureNetwork(addresses: readonly string[], slot = 0): Promise<string> {
     await this.start();
 
-    const name = keptNetworkName(addresses);
+    const name = keptNetworkName(addresses, slot);
     const existing = await this.docker.listNetworks({ filters: { name: [name] } });
 
     if (existing.some((n) => n.Name === name)) return name;

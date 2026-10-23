@@ -48,6 +48,8 @@ export interface GateInput {
     revision?: number | null;
     /** Image digests of the step's release by component (`sha256:…`); absent: not checked. */
     images?: Record<string, string>;
+    /** The node used KVM when the host step started (3.1): it must still have it after the reboot. */
+    kvmBefore?: boolean;
   };
   node: {
     connected: boolean;
@@ -58,6 +60,8 @@ export interface GateInput {
     appliedRevision?: number;
     reportRevision?: number | null;
     reportSteps?: { layer: string; status: string; message?: string }[] | null;
+    /** KVM usable and not opted out, from the capabilities of the node's last hello (re-probed after a reboot). */
+    kvmUsable?: boolean;
   };
   /** Current health entities (failed / at-risk ones are enough). */
   health: { key: string; kind: string; state: string; reasons: { code: string }[] }[];
@@ -154,6 +158,21 @@ export function evaluateGates(input: GateInput): { state: GateState; gates: Gate
       rebooted ? 'pass' : 'wait',
       rebooted ? `${step.node} rebooted` : `waiting for ${step.node} to reboot`,
     );
+  }
+
+  // KVM follows the kernel (3.1): a node that used KVM must still have it once it is back from the reboot (its
+  // hello after the reboot carries a fresh isolation probe). Lost KVM fails the step like other health failures.
+  if (step.kvmBefore && step.bootIdBefore !== undefined) {
+    const rebooted = !!node.components?.bootId && node.components.bootId !== step.bootIdBefore;
+
+    if (rebooted && fresh)
+      gate(
+        'kvm',
+        node.kvmUsable ? 'pass' : 'fail',
+        node.kvmUsable
+          ? `KVM is usable on ${step.node} after the update`
+          : `kvm lost after update on ${step.node}: the KVM levels (sandboxed-kvm, microvm) dropped out`,
+      );
   }
 
   // Health: entities that became failed fail the step; ones that became at-risk are waited for (replicas moving).

@@ -9,6 +9,8 @@ import {
   CONTROL_PLANE_MESSAGE_GATES,
   envelopeForNode,
   forNode,
+  GatedFieldRefused,
+  KNOWN_PROTOCOL_FEATURES,
   LEGACY_PROTOCOL,
   messageAllowed,
   negotiate,
@@ -54,6 +56,55 @@ const WORKLOAD = {
   specHash: 'a'.repeat(32),
 };
 const SESSION = { migration: UUID, attempt: 1, replica: 'p1/d1/web/0' };
+const DIGEST = 'sha256:' + 'c'.repeat(64);
+const VM_IMAGE = { ref: 'registry.lw/p1/debian-13:1', digest: DIGEST, format: 'qcow2', layerDigest: DIGEST };
+const VM_SESSION = { migration: UUID, attempt: 1, replica: 'p1/lw-vm/db1/0' };
+/** A full VM replica (M7): every refuse-gated workload field. */
+const VM_WORKLOAD = {
+  ...WORKLOAD,
+  id: 'p1/lw-vm/db1/0',
+  deployment: 'lw-vm',
+  service: 'db1',
+  isolation: 'microvm',
+  devices: [{ path: '/dev/kvm', permissions: 'rwm' }],
+  vm: {
+    uid: UUID,
+    firmware: 'uefi',
+    cpuModel: 'host-model',
+    vcpus: 2,
+    memoryMiB: 2048,
+    disks: [{ name: 'root', volume: 'p1/lw-vm/db1.root', bus: 'virtio', cache: 'none', boot: true }],
+    nics: [
+      { name: 'eth0', mac: '52:54:00:00:00:01', addresses: ['10.88.0.10'] },
+      { name: 'eth1', mac: '52:54:00:00:00:02', addresses: ['10.88.1.10'] },
+    ],
+    image: VM_IMAGE,
+    graphics: false,
+    power: 'running',
+  },
+};
+const BLOCK_VOLUME = {
+  id: 'p1/lw-vm/db1.root',
+  dockerName: 'lw-vol-p1.lw-vm.db1.root',
+  minor: 1001,
+  port: 7801,
+  sizeBytes: 21_474_836_480,
+  replicas: [{ node: 'n1', nodeId: 0, address: '10.93.0.1' }],
+  connections: [],
+  primary: 'n1',
+  keyRef: 'secret://p1/lw-volume-lw-vm.db1.root',
+  mode: 'block',
+  initializeFrom: { digest: DIGEST, format: 'qcow2' },
+};
+const M7_FEATURES = [
+  'isolation-ladder',
+  'workload-devices',
+  'microvm',
+  'virtual-machines',
+  'vm-block-volumes',
+  'vm-consoles',
+  'vm-migration',
+];
 const PEM = '-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----\n';
 const BACKUP_REPOSITORY = {
   scope: 'project-p1',
@@ -67,6 +118,7 @@ const BACKUP_REPOSITORY = {
 /** What the current control plane sends, one sample per message type (desired state with its optional parts). */
 const SAMPLES: { [T in ControlPlaneMessageType]: unknown } = {
   logAck: { ok: true },
+  helloAck: { protocolVersion: 2, features: ['capability-updates', 'live-migration'] },
   desiredState: {
     revision: 7,
     network: {
@@ -99,6 +151,8 @@ const SAMPLES: { [T in ControlPlaneMessageType]: unknown } = {
     liveAccess: { nodeShell: false },
     probes: [],
     lifecycle: 'active',
+    // Host settings (M7, strip-gated by `isolation-ladder`).
+    host: { kvm: 'disabled', probeNonce: 'p-1' },
     // Release components (gated by `components`).
     components: {
       release: '3.5.0',
@@ -210,6 +264,28 @@ const SAMPLES: { [T in ControlPlaneMessageType]: unknown } = {
     step: 'shop/precopy',
     action: { kind: 'precopy', copies: [{ source: '/var/lib/docker/volumes/shop_html/_data', volume: 'lw-vol-x' }] },
   },
+  // M7 (3.35): message-gated by `vm-consoles`, `virtual-machines`, `vm-migration`.
+  consoleOpen: { target: { kind: 'replica', replica: 'p1/lw-vm/db1/0' }, kind: 'serial', cols: 80, rows: 24 },
+  vmPower: { replica: 'p1/lw-vm/db1/0', action: 'reboot' },
+  vmImageImport: { import: UUID, replica: 'p1/lw-vm/db1/0', volume: 'p1/lw-vm/db1.root', image: VM_IMAGE },
+  vmMigrationPrepare: {
+    ...VM_SESSION,
+    source: 'n1',
+    token: TOKEN,
+    addresses: ['10.88.0.10'],
+    volumes: ['p1/lw-vm/db1.root'],
+    expiresInSeconds: 600,
+    spec: VM_WORKLOAD,
+  },
+  vmMigrationStart: {
+    ...VM_SESSION,
+    target: 'n2',
+    endpoint: { address: '10.93.0.2', port: 7480 },
+    token: TOKEN,
+    downtimeLimitMs: 300,
+    maxSeconds: 120,
+  },
+  vmMigrationSwitchover: VM_SESSION,
   error: { code: 'closed', message: 'bye' },
 };
 
@@ -319,6 +395,49 @@ describe('agent-protocol compatibility with the N-1 snapshot (3.26)', () => {
     expect(payload(negotiate({ protocolVersion: PROTOCOL_VERSION, features: ['live-migration'] }))).not.toHaveProperty(
       'components',
     );
+  });
+
+  it('refuses M7 workload / volume fields for nodes without their features instead of stripping them (M7)', () => {
+    const previous = loadSnapshot(latest(), 'control-plane-to-agent');
+    const payload = {
+      ...(SAMPLES.desiredState as Record<string, unknown>),
+      workloads: [VM_WORKLOAD],
+      volumes: [BLOCK_VOLUME],
+    };
+    const envelope = controlPlaneMessage('desiredState', payload as never);
+    const prepare = controlPlaneMessage('migrationPrepare', {
+      ...(SAMPLES.migrationPrepare as Record<string, unknown>),
+      spec: { ...WORKLOAD, runtime: 'sandboxed', isolation: 'sandboxed-kvm' },
+    } as never);
+    const liveOnly = negotiate({ protocolVersion: PROTOCOL_VERSION, features: ['live-migration'] });
+
+    for (const negotiated of [LEGACY_PROTOCOL, negotiate({ protocolVersion: PROTOCOL_VERSION, features: [] })])
+      expect(() => envelopeForNode(envelope, negotiated)).toThrow(GatedFieldRefused);
+
+    // A sandboxed-kvm replica is never migrated to a node that would run it as plain `sandboxed`.
+    expect(() => envelopeForNode(prepare, liveOnly)).toThrow(
+      /spec\.isolation needs the protocol feature isolation-ladder/,
+    );
+    expect(
+      envelopeForNode(
+        prepare,
+        negotiate({ protocolVersion: PROTOCOL_VERSION, features: ['live-migration', 'isolation-ladder'] }),
+      ),
+    ).toBe(prepare);
+
+    // A node with every feature gets the message unchanged; what an N-1 agent gets has none of it.
+    const capable = negotiate({ protocolVersion: PROTOCOL_VERSION, features: [...KNOWN_PROTOCOL_FEATURES] });
+
+    expect(M7_FEATURES.every((f) => capable.features.has(f))).toBe(true);
+
+    expect(envelopeForNode(envelope, capable)).toBe(envelope);
+    expect(issues(previous, 'desiredState', payload)).not.toEqual([]);
+
+    const stripped = forNode({ type: 'desiredState', payload: SAMPLES.desiredState as never }, LEGACY_PROTOCOL)
+      .payload as never as Record<string, unknown>;
+
+    expect(stripped).not.toHaveProperty('host');
+    expect(issues(previous, 'desiredState', stripped)).toEqual([]);
   });
 
   describe('a field added since N-1 (simulated)', () => {

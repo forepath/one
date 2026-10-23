@@ -150,6 +150,10 @@ export class NodeEntity {
   @Column({ type: 'timestamptz', name: 'last_seen_at', nullable: true })
   lastSeenAt!: Date | null;
 
+  /** On-demand isolation probe (3.1): a new value goes out as `desiredState.host.probeNonce` and re-runs the probes. */
+  @Column({ type: 'varchar', length: 64, name: 'isolation_probe_nonce', nullable: true })
+  isolationProbeNonce!: string | null;
+
   @Column({ type: 'timestamptz', name: 'joined_at' })
   joinedAt!: Date;
 

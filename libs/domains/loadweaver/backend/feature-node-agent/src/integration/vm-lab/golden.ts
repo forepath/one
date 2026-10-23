@@ -1,9 +1,10 @@
 import { createHash } from 'node:crypto';
-import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { docker, dockerOk, LAB_LABEL, run, tarFiles } from './docker';
+import { ensureDockerImage, ensureGoldenVolume } from '@forepath/shared/backend/util-vm-lab';
+
+import { docker, LAB_LABEL } from './docker';
 
 /**
  * Everything the golden image is built from, pinned (M6 spike facts): base image by sha512, Docker's apt repository
@@ -78,15 +79,12 @@ export function qemuImage(): string {
 }
 
 export async function ensureQemuImage(): Promise<string> {
-  const image = qemuImage();
-
-  if (!(await dockerOk(['image', 'inspect', image])))
-    await docker(['build', '-q', '--label', `${LAB_LABEL}=image`, '-t', image, '-'], {
-      input: dockerfile(),
-      timeoutMs: 900_000,
-    });
-
-  return image;
+  return await ensureDockerImage({
+    tag: qemuImage(),
+    dockerfile: dockerfile(),
+    labels: { [LAB_LABEL]: 'image' },
+    timeoutMs: 900_000,
+  });
 }
 
 function provisionScript(): string {
@@ -159,17 +157,11 @@ export interface GoldenInfo {
   size: string;
 }
 
-async function goldenReady(image: string, volume: string): Promise<boolean> {
-  return (
-    (await dockerOk(['volume', 'inspect', volume])) &&
-    (await run('docker', ['run', '--rm', '-v', `${volume}:/g:ro`, image, 'test', '-f', '/g/ready'])).code === 0
-  );
-}
-
 /**
  * Builds the golden qcow2 once (Debian 13 genericcloud + Docker CE / containerd / runc / criu / DRBD 9 module /
  * gVisor / node tooling, see golden-provision.sh) into a named Docker volume, or reuses it. Lab VMs are qcow2 overlays on it.
- * The build boots the base image under QEMU user networking, provisions it with cloud-init and powers it off.
+ * The build boots the base image under QEMU user networking, provisions it with cloud-init and powers it off (the
+ * shared harness's golden builder; pins, provisioning and the volume name stay here).
  */
 export async function ensureGolden(
   log: (line: string) => void = () => undefined,
@@ -178,18 +170,16 @@ export async function ensureGolden(
   const image = await ensureQemuImage();
   const volume = goldenVolume(variant);
   const start = Date.now();
-  let built = false;
-
-  if (!(await goldenReady(image, volume))) {
-    const logFile = join(tmpdir(), `${volume}.log`);
-    const name = `${volume}-build`;
-
-    built = true;
-    writeFileSync(logFile, '');
-    log(`building golden image ${volume} (log: ${logFile}); this takes several minutes`);
-    await docker(['volume', 'create', '--label', `${LAB_LABEL}=golden`, volume]);
-    await docker(['run', '-i', '--rm', '-v', `${volume}:/g`, image, 'tar', '-C', '/g', '-xf', '-'], {
-      input: await tarFiles({
+  const result = await ensureGoldenVolume(
+    {
+      volume,
+      qemuImage: image,
+      mountPath: '/g',
+      readyFile: 'ready',
+      volumeLabels: { [LAB_LABEL]: 'golden' },
+      buildLabels: { [LAB_LABEL]: 'golden-build' },
+      buildContainerName: `${volume}-build`,
+      files: {
         'user-data': `#cloud-config\n${JSON.stringify({
           write_files: [
             {
@@ -202,63 +192,23 @@ export async function ensureGolden(
           runcmd: [['bash', '/root/lw-golden.sh']],
         })}\n`,
         'meta-data': 'instance-id: lw-vmlab-golden\nlocal-hostname: lw-golden\n',
-      }),
-    });
-    await run('docker', ['rm', '-f', name]);
-
-    let partial = '';
-    const result = await run(
-      'docker',
-      [
-        'run',
-        '--rm',
-        '--name',
-        name,
-        '--label',
-        `${LAB_LABEL}=golden-build`,
-        '--device',
-        '/dev/kvm',
-        '--memory',
-        `${BUILD_GUEST.memoryMb + 700}m`,
-        '-v',
-        `${volume}:/g`,
-        '-e',
-        `LW_IMAGE_URL=${baseImage(variant).url}`,
-        '-e',
-        `LW_IMAGE_SHA512=${baseImage(variant).sha512}`,
-        '-e',
-        `LW_DISK_GB=${BUILD_GUEST.diskGb}`,
-        '-e',
-        `LW_TIMEOUT_S=${BUILD_GUEST.timeoutS}`,
-        '-e',
-        `LW_CPUS=${BUILD_GUEST.cpus}`,
-        '-e',
-        `LW_MEMORY_MB=${BUILD_GUEST.memoryMb}`,
-        image,
-        'sh',
-        '-c',
-        BUILDER,
-      ],
-      {
-        timeoutMs: (BUILD_GUEST.timeoutS + 600) * 1000,
-        onStdout: (chunk) => {
-          const lines = (partial + chunk).split('\n');
-
-          partial = lines.pop() ?? '';
-          appendFileSync(logFile, chunk);
-
-          for (const line of lines)
-            if (/LW-GOLDEN-(STEP|OK|FAIL)/.test(line)) log(`golden: ${line.replace(/^.*?(LW-GOLDEN-)/, '$1').trim()}`);
-        },
       },
-    );
-
-    if (result.code !== 0 || !(await goldenReady(image, volume)))
-      throw new Error(
-        `golden image build failed (exit ${result.code}); log: ${logFile}\n${result.stderr.slice(-2000)}`,
-      );
-  }
-
+      script: BUILDER,
+      env: {
+        LW_IMAGE_URL: baseImage(variant).url,
+        LW_IMAGE_SHA512: baseImage(variant).sha512,
+        LW_DISK_GB: String(BUILD_GUEST.diskGb),
+        LW_TIMEOUT_S: String(BUILD_GUEST.timeoutS),
+        LW_CPUS: String(BUILD_GUEST.cpus),
+        LW_MEMORY_MB: String(BUILD_GUEST.memoryMb),
+      },
+      memoryMb: BUILD_GUEST.memoryMb + 700,
+      timeoutMs: (BUILD_GUEST.timeoutS + 600) * 1000,
+      progress: /LW-GOLDEN-(STEP|OK|FAIL)/,
+      formatProgress: (line) => `golden: ${line.replace(/^.*?(LW-GOLDEN-)/, '$1').trim()}`,
+    },
+    log,
+  );
   const size = await docker([
     'run',
     '--rm',
@@ -271,7 +221,7 @@ export async function ensureGolden(
   ]);
   const seconds = Math.round((Date.now() - start) / 1000);
 
-  log(`golden image ${volume} ${built ? `built in ${seconds}s` : 'reused'} (${size.trim()})`);
+  log(`golden image ${volume} ${result.built ? `built in ${seconds}s` : 'reused'} (${size.trim()})`);
 
-  return { volume, built, seconds, size: size.trim() };
+  return { volume, built: result.built, seconds, size: size.trim() };
 }

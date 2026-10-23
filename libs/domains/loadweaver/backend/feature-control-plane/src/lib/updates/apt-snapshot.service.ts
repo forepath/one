@@ -143,6 +143,15 @@ export class AptSnapshotService {
       : null;
   }
 
+  /** The newest snapshot (the node installer takes Ubuntu's KVM modules from it, 3.1). */
+  async latest(): Promise<AptSnapshotEntity | null> {
+    const [newest] = await this.dataSource
+      .getRepository(AptSnapshotEntity)
+      .find({ order: { createdAt: 'DESC' }, take: 1 });
+
+    return newest ?? null;
+  }
+
   async serve(id: string, source: string, path: string): Promise<ServedFile | null> {
     const snapshot = await this.get(id);
 

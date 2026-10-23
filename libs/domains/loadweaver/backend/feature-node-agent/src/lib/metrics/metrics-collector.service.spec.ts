@@ -1,6 +1,16 @@
 import type { MetricsReport } from '@forepath/loadweaver/shared/util-agent-protocol';
 
-import { MAX_SAMPLES_PER_REPORT, MetricsCollectorService, splitMetricsReport } from './metrics-collector.service';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { microvmRunDir } from '../workloads/workload-container';
+import {
+  MAX_SAMPLES_PER_REPORT,
+  MetricsCollectorService,
+  readGuestStats,
+  splitMetricsReport,
+} from './metrics-collector.service';
 
 /** Cumulative counters of one container, as Docker's one-shot stats report them. */
 interface Counters {
@@ -196,5 +206,92 @@ describe('MetricsCollectorService usage samples (3.24)', () => {
     // The first collection (1 report: no deltas yet), then the second and third (2 reports each).
     expect(sent).toHaveLength(5);
     now.mockRestore();
+  });
+});
+
+describe('MetricsCollectorService microVM guests (3.35)', () => {
+  let dir: string;
+  const env = process.env['LOADWEAVER_RUNTIME_DIR'];
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'lw-guest-stats-'));
+    process.env['LOADWEAVER_RUNTIME_DIR'] = dir;
+  });
+
+  afterEach(async () => {
+    if (env === undefined) delete process.env['LOADWEAVER_RUNTIME_DIR'];
+    else process.env['LOADWEAVER_RUNTIME_DIR'] = env;
+
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  const write = async (replica: string, stats: Record<string, unknown>) => {
+    const statsDir = join(microvmRunDir(dir, replica), 'stats');
+
+    await mkdir(statsDir, { recursive: true });
+    await writeFile(join(statsDir, 'stats.json'), JSON.stringify(stats));
+
+    return join(statsDir, 'stats.json');
+  };
+
+  it('reads fresh guest stats and ignores stale, missing or invalid files', async () => {
+    const now = Date.parse('2026-10-23T10:00:00Z');
+    const fresh = { memTotal: 1000, memAvailable: 400, cpuSteal: 0.1, load1: 0.5, updatedAt: '2026-10-23T09:59:55Z' };
+    const file = await write('shop/web/app/0', fresh);
+
+    expect(await readGuestStats(file, now)).toEqual({ memTotal: 1000, memAvailable: 400, cpuSteal: 0.1, load1: 0.5 });
+    expect(await readGuestStats(file, now + 120_000)).toBeNull();
+    expect(await readGuestStats(join(dir, 'missing.json'), now)).toBeNull();
+    expect(await readGuestStats(await write('x/y/z/0', { ...fresh, memTotal: 'x' }), now)).toBeNull();
+  });
+
+  it('reports guest memory, steal and load per launcher replica, and the unpack cache', async () => {
+    const replica = 'shop/web/app/0';
+
+    await write(replica, {
+      memTotal: 2 * 1024 ** 3,
+      memAvailable: 1024 ** 3,
+      cpuSteal: 0.02,
+      load1: 1.5,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const docker = {
+      listContainers: jest.fn(async () => [
+        {
+          Id: 'vm',
+          State: 'running',
+          Created: 1_000,
+          Labels: {
+            'loadweaver.com/managed': 'true',
+            'loadweaver.com/workload': replica,
+            'loadweaver.com/microvm': 'generic',
+          },
+        },
+      ]),
+      getContainer: jest.fn(() => ({ stats: jest.fn(async () => ({ cpu_stats: {}, memory_stats: { usage: 1 } })) })),
+    };
+    const rootfs = { usage: jest.fn(async () => ({ bytes: 5000, layers: 3 })) };
+    const collector = new MetricsCollectorService(
+      docker as never,
+      { run: jest.fn(async () => ({ stdout: '' })) } as never,
+      { usage: jest.fn(async () => null) } as never,
+      rootfs as never,
+    );
+    const report = await collector.collect();
+    const sample = (metric: string, entity = replica) =>
+      report.samples.find((s) => s.metric === metric && s.entity === entity);
+
+    expect(sample('replica.guest_memory_total_bytes')).toEqual({
+      metric: 'replica.guest_memory_total_bytes',
+      entity: replica,
+      value: 2 * 1024 ** 3,
+      project: 'shop',
+    });
+    expect(sample('replica.guest_memory_used_bytes')?.value).toBe(1024 ** 3);
+    expect(sample('replica.guest_cpu_steal_ratio')?.value).toBe(0.02);
+    expect(sample('replica.guest_load1')?.value).toBe(1.5);
+    expect(sample('node.vmroot_cache_bytes', 'node')?.value).toBe(5000);
+    expect(sample('node.vmroot_layers', 'node')?.value).toBe(3);
   });
 });

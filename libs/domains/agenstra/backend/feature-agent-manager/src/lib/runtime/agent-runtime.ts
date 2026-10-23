@@ -232,6 +232,10 @@ export abstract class AgentRuntime {
    * Probes the `microvm` level: usable `/dev/kvm`, then a launcher + guest boot of the microVM worker image
    * (`ownerImage` is the already pulled probe image used for the cheap KVM pre-check).
    */
-  abstract runMicrovmProbe(options: { image: string; ownerImage: string; timeoutMs: number }): Promise<IsolationProbeResult>;
+  abstract runMicrovmProbe(options: {
+    image: string;
+    ownerImage: string;
+    timeoutMs: number;
+  }): Promise<IsolationProbeResult>;
   abstract removeStaleIsolationProbes(): Promise<number>;
 }

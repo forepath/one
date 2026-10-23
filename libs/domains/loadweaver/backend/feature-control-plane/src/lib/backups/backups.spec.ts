@@ -32,6 +32,7 @@ import {
   policyVolumes,
   retentionMax,
   retentionShorter,
+  volumeCandidates,
   volumeDue,
 } from './backup.utils';
 import { replicatedEnvironment } from '../services/network-state.service';
@@ -155,6 +156,54 @@ describe('policy selection and schedules', () => {
       ).map((v) => v.id),
     ).toEqual(['a/web/data']);
     expect(policyVolumes({ project: null, spec: { selector: { projects: ['b'] } } }, volumes)).toHaveLength(1);
+  });
+
+  it("selects VM disks by their VirtualMachine's labels and name (3.35)", () => {
+    const candidates = volumeCandidates(
+      [{ id: 'a/web/data' }, { id: 'a/lw-vm/db1.root' }, { id: 'a/lw-vm/db1.data' }, { id: 'a/lw-vm/gone.root' }],
+      [
+        { kind: 'Deployment', project: 'a', name: 'web', labels: { tier: 'critical' } },
+        { kind: 'VirtualMachine', project: 'a', name: 'db1', labels: { app: 'db', tier: 'critical' } },
+        { kind: 'VirtualMachine', project: 'b', name: 'db1', labels: { app: 'other' } },
+      ],
+    );
+
+    expect(candidates).toEqual([
+      { id: 'a/web/data', project: 'a', deployment: 'web', volume: 'data', deploymentLabels: { tier: 'critical' } },
+      {
+        id: 'a/lw-vm/db1.root',
+        project: 'a',
+        deployment: 'lw-vm',
+        volume: 'db1.root',
+        deploymentLabels: { app: 'db', tier: 'critical', 'loadweaver.com/vm': 'db1' },
+      },
+      {
+        id: 'a/lw-vm/db1.data',
+        project: 'a',
+        deployment: 'lw-vm',
+        volume: 'db1.data',
+        deploymentLabels: { app: 'db', tier: 'critical', 'loadweaver.com/vm': 'db1' },
+      },
+      {
+        id: 'a/lw-vm/gone.root',
+        project: 'a',
+        deployment: 'lw-vm',
+        volume: 'gone.root',
+        deploymentLabels: { 'loadweaver.com/vm': 'gone' },
+      },
+    ]);
+    expect(
+      policyVolumes(
+        { project: 'a', spec: { selector: { deployments: { matchLabels: { 'loadweaver.com/vm': 'db1' } } } } },
+        candidates,
+      ).map((v) => v.id),
+    ).toEqual(['a/lw-vm/db1.root', 'a/lw-vm/db1.data']);
+    expect(
+      policyVolumes(
+        { project: null, spec: { selector: { deployments: { matchLabels: { tier: 'critical' } } } } },
+        candidates,
+      ).map((v) => v.id),
+    ).toEqual(['a/web/data', 'a/lw-vm/db1.root', 'a/lw-vm/db1.data']);
   });
 
   it('is due once per scheduled time; missed runs collapse', () => {

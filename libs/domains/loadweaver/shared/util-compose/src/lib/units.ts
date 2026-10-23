@@ -36,15 +36,19 @@ const BYTE_UNITS: Record<string, number> = {
   b: 1,
   k: 1024,
   kb: 1024,
+  ki: 1024,
   m: 1024 ** 2,
   mb: 1024 ** 2,
+  mi: 1024 ** 2,
   g: 1024 ** 3,
   gb: 1024 ** 3,
+  gi: 1024 ** 3,
   t: 1024 ** 4,
   tb: 1024 ** 4,
+  ti: 1024 ** 4,
 };
 
-/** Compose byte size (`512m`, `1g`, `1048576`). */
+/** Compose byte size (`512m`, `1g`, `10Gi`, `1048576`). */
 export function parseBytes(value: unknown): number | null {
   if (typeof value === 'number' && Number.isInteger(value) && value > 0) return value;
 

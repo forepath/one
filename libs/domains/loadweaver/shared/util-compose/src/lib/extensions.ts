@@ -1,4 +1,9 @@
-import { hostnamePatternSchema, resourceNameSchema, selectorSchema } from '@forepath/loadweaver/shared/util-model';
+import {
+  hostnamePatternSchema,
+  resourceNameSchema,
+  RUNTIMES,
+  selectorSchema,
+} from '@forepath/loadweaver/shared/util-model';
 import { z } from 'zod';
 
 /** `<requests>/<unit>`, e.g. `100/m`. */
@@ -15,7 +20,16 @@ export const serviceExtensionSchema = z
       .object({ selector: selectorSchema.optional(), spread: z.enum(['node', 'site']).optional() })
       .strict()
       .optional(),
-    runtime: z.enum(['runc', 'sandboxed']).optional(),
+    /**
+     * Isolation level (3.1): `runc` | `sandboxed` (gVisor systrap) | `sandboxed-kvm` (gVisor KVM) | `microvm` (QEMU
+     * microVM, 3.35). The service always runs at exactly this level; nodes without it ready don't get it.
+     */
+    runtime: z.enum(RUNTIMES).optional(),
+    /** MicroVM settings (3.35), only with `runtime: microvm`. `rootfsSize`: per-replica writable layer quota. */
+    microvm: z
+      .object({ rootfsSize: z.union([z.string(), z.number().int().positive()]).optional() })
+      .strict()
+      .optional(),
     exposure: z
       .object({
         http: z
@@ -136,6 +150,13 @@ export const serviceExtensionSchema = z
   .strict()
   .superRefine((ext, ctx) => {
     if (ext.job && ext.cron) ctx.addIssue({ code: 'custom', message: 'a service is either a job or a cron job' });
+
+    if (ext.microvm && ext.runtime !== 'microvm')
+      ctx.addIssue({
+        code: 'custom',
+        path: ['microvm'],
+        message: 'microvm settings need x-loadweaver.runtime: microvm',
+      });
 
     if (ext.slo && !ext.exposure?.http?.length)
       ctx.addIssue({

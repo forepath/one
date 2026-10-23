@@ -1,5 +1,5 @@
 import { desiredState } from '../test-fixtures';
-import { ReconcilerService } from './reconciler.service';
+import { keptHostRoutes, ReconcilerService } from './reconciler.service';
 
 function deps(overrides: Record<string, unknown> = {}) {
   const ok = (value = true) => ({ apply: jest.fn().mockResolvedValue(value) });
@@ -186,5 +186,22 @@ describe('ReconcilerService', () => {
 
     await Promise.all([r.apply(desiredState(1)), r.apply(desiredState(2))]);
     expect(d.state.saveAppliedState.mock.calls.map((c) => c[0].revision)).toEqual([1, 2]);
+  });
+});
+
+describe('keptHostRoutes (3.10, M7.4)', () => {
+  it("includes the kept addresses of a VM's further NICs", () => {
+    expect(
+      keptHostRoutes({
+        hostRoutes: ['10.88.1.10/32'],
+        vm: {
+          nics: [
+            { name: 'eth0', addresses: ['10.88.1.10'] },
+            { name: 'eth1', addresses: ['10.88.1.11', 'fd88:1::11'], hostRoutes: ['10.88.1.11/32', 'fd88:1::11/128'] },
+          ],
+        },
+      } as never),
+    ).toEqual(['10.88.1.10/32', '10.88.1.11/32', 'fd88:1::11/128']);
+    expect(keptHostRoutes({} as never)).toEqual([]);
   });
 });

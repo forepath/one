@@ -57,6 +57,7 @@ export * from './lib/repositories/agents.repository';
 export * from './lib/runtime/agent-runtime';
 export * from './lib/runtime/docker-host.runtime';
 export * from './lib/runtime/loadweaver/environment-compose';
+export * from './lib/runtime/loadweaver/isolation-mapping';
 export * from './lib/runtime/loadweaver/loadweaver-client';
 export * from './lib/runtime/loadweaver/loadweaver.runtime';
 export * from './lib/services/agent-chat-sessions.service';

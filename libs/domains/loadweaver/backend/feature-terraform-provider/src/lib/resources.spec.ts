@@ -6,9 +6,11 @@ import {
   canonicalJson,
   definitionFor,
   documentFromState,
+  fromSpecValue,
   RESOURCE_DEFINITIONS,
   resourceSchema,
   stateFromServer,
+  toSpecValue,
 } from './resources';
 
 const project = definitionFor('loadweaver_project')!;
@@ -96,6 +98,50 @@ describe('resource definitions', () => {
     expect(
       stateFromServer(policy, prior, { ...stored, metadata: { ...stored.metadata, labels: { a: 'b' } } })['labels'],
     ).toEqual({ a: 'b' });
+  });
+
+  it('converts nested attributes to the spec form and back', () => {
+    const vm = definitionFor('loadweaver_virtual_machine')!;
+    const disks = vm.fields!.find((f) => f.attribute.name === 'disks')!.attribute;
+    const placement = vm.fields!.find((f) => f.attribute.name === 'placement')!.attribute;
+    const disk = {
+      name: 'root',
+      size: '20Gi',
+      source: 'image',
+      replicas: null,
+      cross_site: 'async',
+      bus: null,
+      cache: null,
+    };
+
+    expect(toSpecValue(disks, [disk])).toEqual([{ name: 'root', size: '20Gi', source: 'image', crossSite: 'async' }]);
+    expect(fromSpecValue(disks, [{ name: 'root', size: 20, crossSite: 'async', source: 'image' }])).toEqual([
+      { ...disk, size: '20' },
+    ]);
+
+    // Map values (label keys) are kept as they are; nested objects inside nested objects are converted too.
+    const tf = {
+      selector: {
+        names: null,
+        match_labels: { tier_name: 'vm' },
+        match_expressions: [{ key: 'loadweaver.com/runtime', operator: 'In', values: ['microvm'] }],
+      },
+      spread: 'node',
+    };
+    const spec = {
+      selector: {
+        matchLabels: { tier_name: 'vm' },
+        matchExpressions: [{ key: 'loadweaver.com/runtime', operator: 'In', values: ['microvm'] }],
+      },
+      spread: 'node',
+    };
+
+    expect(toSpecValue(placement, tf)).toEqual(spec);
+    expect(fromSpecValue(placement, spec)).toEqual(tf);
+    expect(attributeForIssue(vm, 'spec.disks.1.size')).toBe('disks');
+    expect(attributeForIssue(vm, 'spec.cpu.vcpus')).toBe('vcpus');
+    expect(attributeForIssue(vm, 'spec.cpu.model')).toBe('cpu_model');
+    expect(attributeForIssue(vm, 'spec.ha.restartElsewhere')).toBe('ha_restart_elsewhere');
   });
 
   it('writes canonical JSON like jsonencode', () => {

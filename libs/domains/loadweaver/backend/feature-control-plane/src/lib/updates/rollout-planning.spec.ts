@@ -10,7 +10,15 @@ import {
   zonedInstant,
 } from './maintenance-window.utils';
 import { evaluateGates, gateBaseline, type GateInput } from './rollout-gates.utils';
-import { componentDiff, drbdSpaasAllowed, planSteps, waveRisks, type PlannerNode } from './rollout-planner.utils';
+import {
+  componentDiff,
+  drbdSpaasAllowed,
+  kvmInUse,
+  kvmModuleEntries,
+  planSteps,
+  waveRisks,
+  type PlannerNode,
+} from './rollout-planner.utils';
 
 const window = (spec: Partial<MaintenanceWindowSpec>): MaintenanceWindowSpec =>
   maintenanceWindowSpecSchema.parse({
@@ -248,6 +256,68 @@ describe('rollout planner (3.26)', () => {
     );
     expect(host.some((d) => d.component === 'package:bird2')).toBe(false);
     expect(host.find((d) => d.component === 'gvisor')?.method).toContain('drain');
+    // Required host packages the node lacks: installed from the snapshot, no reboot of their own (F2).
+    expect(host.find((d) => d.component === 'package:attr')).toEqual({
+      node: 'n1',
+      component: 'package:attr',
+      from: null,
+      to: 'snapshot version',
+      method: expect.stringContaining('if missing'),
+    });
+
+    const present = componentDiff(
+      [
+        {
+          ...base,
+          packages: { ...base.packages, attr: '1:2.5.2-3', e2fsprogs: '1.47.2-3' },
+          name: 'n1',
+          controlPlane: false,
+          images: {},
+        },
+      ],
+      manifest,
+      true,
+    );
+
+    expect(present.some((d) => d.component === 'package:attr' || d.component === 'package:e2fsprogs')).toBe(false);
+    expect(diff.some((d) => d.component === 'package:attr')).toBe(false);
+  });
+});
+
+describe('KVM modules follow kernel rollouts (3.1)', () => {
+  const kvm = (usable: boolean, optOut = false) => ({
+    kvm: { cpu: 'yes', device: 'present', module: 'loaded', nested: 'no', hypervisor: 'no', usable, optOut },
+  });
+
+  it('knows which nodes use KVM', () => {
+    expect(kvmInUse(kvm(true))).toBe(true);
+    expect(kvmInUse(kvm(true, true))).toBe(false);
+    expect(kvmInUse(kvm(false))).toBe(false);
+    expect(kvmInUse({ runtimes: ['runc'] })).toBe(false);
+    expect(kvmInUse(null)).toBe(false);
+  });
+
+  it('adds linux-modules-extra to the host step of Ubuntu nodes that use KVM, with the kernel', () => {
+    const entries = kvmModuleEntries(
+      [
+        { name: 'u1', os: 'ubuntu:24.04', capabilities: kvm(true) },
+        { name: 'u2', os: 'ubuntu:24.04', capabilities: kvm(true, true) },
+        { name: 'u3', os: 'ubuntu:22.04', capabilities: kvm(false) },
+        { name: 'd1', os: 'debian:13', capabilities: kvm(true) },
+        { name: 'x', os: null, capabilities: null },
+      ],
+      's-20261023-ab12',
+    );
+
+    expect(entries).toEqual([
+      {
+        node: 'u1',
+        component: 'kvm-modules',
+        from: null,
+        to: 'linux-modules-extra for the kernels of snapshot s-20261023-ab12',
+        method: 'with the kernel: drain → update → reboot → rejoin, isolation probe before uncordon',
+      },
+    ]);
   });
 });
 
@@ -270,6 +340,32 @@ describe('health gates (3.26)', () => {
     replication: [],
     members: [],
     ...over,
+  });
+
+  it('fails a host step whose node lost KVM in the reboot (3.1: kvm lost after update)', () => {
+    const host = (kvmUsable: boolean, bootId = 'boot-2') =>
+      evaluateGates(
+        base({
+          step: { ...base().step, kind: 'host', bootIdBefore: 'boot-1', kvmBefore: true },
+          node: { ...base().node, components: { release: '3.5.0', bootId }, kvmUsable },
+        }),
+      );
+
+    expect(host(true).state).toBe('pass');
+    expect(host(true).gates.find((g) => g.name === 'kvm')?.state).toBe('pass');
+    expect(host(false).state).toBe('fail');
+    expect(host(false).gates.find((g) => g.name === 'kvm')?.message).toContain('kvm lost after update on n1');
+    // Not back from the reboot yet: the reboot gate waits, KVM isn't judged on the old boot's capabilities.
+    expect(host(false, 'boot-1').gates.find((g) => g.name === 'kvm')).toBeUndefined();
+    // Nodes that didn't use KVM: no gate.
+    expect(
+      evaluateGates(
+        base({
+          step: { ...base().step, kind: 'host', bootIdBefore: 'boot-1' },
+          node: { ...base().node, components: { release: '3.5.0', bootId: 'boot-2' }, kvmUsable: false },
+        }),
+      ).gates.find((g) => g.name === 'kvm'),
+    ).toBeUndefined();
   });
 
   it('passes when the node is back with the new version and nothing got worse', () => {

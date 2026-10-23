@@ -269,6 +269,14 @@ paths:
       summary: List nodes
       operationId: listNodes
       description: Scope `cluster:read`.
+      parameters:
+        - {
+            name: runtime,
+            in: query,
+            required: false,
+            description: 'Isolation level filter (3.1): `microvm` = nodes where that level is ready (exact), `>=sandboxed-kvm` = nodes whose strongest ready level is at least that one. Levels: `runc`, `sandboxed`, `sandboxed-kvm`, `microvm`.',
+            schema: { type: string, example: '>=sandboxed-kvm' },
+          }
       responses:
         '200':
           description: Nodes
@@ -278,6 +286,31 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/NodeResponseDto'
+        '400':
+          description: Malformed `runtime` filter
+  /nodes/{name}/isolation-probe:
+    post:
+      summary: Re-run a node's isolation probes
+      operationId: requestNodeIsolationProbe
+      description: |
+        Puts a fresh probe nonce into the node's desired state (`host.probeNonce`); the agent re-probes every isolation
+        level and reports its new capabilities when done (3.1). Audited as `node.isolation-probe`. Infra operators and
+        cluster admins, scope `cluster:nodes`.
+      parameters:
+        - $ref: '#/components/parameters/NodeName'
+      responses:
+        '202':
+          description: Probe requested
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [node, probeNonce]
+                properties:
+                  node: { type: string }
+                  probeNonce: { type: string, format: uuid }
+        '400':
+          description: The node is not part of the cluster
   /nodes/{name}:
     get:
       summary: Get a node
@@ -920,6 +953,333 @@ paths:
                         addressV6: { type: [string, 'null'] }
         '403':
           $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Not found
+  /projects/{project}/isolation-capabilities:
+    get:
+      summary: Isolation levels a project's placement offers
+      description: |
+        Aggregated isolation capabilities (3.1, 3.35) of the project's placement: for each level (`runc`, `sandboxed`,
+        `sandboxed-kvm`, `microvm`) whether at least one schedulable node (lifecycle active, reachable, no witness,
+        matching `selector`, level probe passed, agent with the protocol features the level needs) would take a replica.
+        Otherwise the most common cause among the placement's nodes (`unsupported`, `probe-failed`,
+        `disabled-by-admin` for nodes opted out of KVM) with Agenstra's reason code and the scheduler's per-node reason.
+        Capacity is not considered: a plan can still fail for lack of capacity, and workloads always run at exactly
+        their level. Used by Agenstra's agent manager (its project-scoped service PAT) for its isolation capabilities.
+        Project members; scope `resources:read`.
+      operationId: getIsolationCapabilities
+      parameters:
+        - { name: project, in: path, required: true, schema: { type: string } }
+        - {
+            name: selector,
+            in: query,
+            required: false,
+            description: 'Narrows the placement: `key=value[,key=value]` on node labels (incl. `loadweaver.com/site`, `loadweaver.com/node` and the derived runtime labels)',
+            schema: { type: string },
+          }
+      responses:
+        '200':
+          description: Capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  [project, selector, nodes, strongest, levels, checkedAt]
+                properties:
+                  project: { type: string }
+                  selector: { type: [string, 'null'] }
+                  nodes:
+                    {
+                      type: integer,
+                      description: 'Schedulable nodes in the placement',
+                    }
+                  strongest:
+                    {
+                      type: [string, 'null'],
+                      enum: [runc, sandboxed, sandboxed-kvm, microvm, null],
+                      description: 'Strongest ready level (display only)',
+                    }
+                  levels:
+                    type: object
+                    required: [runc, sandboxed, sandboxed-kvm, microvm]
+                    properties:
+                      runc:
+                        $ref: '#/components/schemas/IsolationLevelCapability'
+                      sandboxed:
+                        $ref: '#/components/schemas/IsolationLevelCapability'
+                      sandboxed-kvm:
+                        $ref: '#/components/schemas/IsolationLevelCapability'
+                      microvm:
+                        $ref: '#/components/schemas/IsolationLevelCapability'
+                  checkedAt: { type: string, format: date-time }
+        '400':
+          description: Malformed selector
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Unknown project (or no access)
+  /virtual-machines:
+    get:
+      summary: Virtual machines the caller may read
+      description: |
+        Full virtual machines (3.35) of every project the caller may read, with phase, node, sizing and addresses.
+        `?project=` filters. Scope `resources:read`.
+      operationId: listAllVirtualMachines
+      parameters:
+        - {
+            name: project,
+            in: query,
+            required: false,
+            schema: { type: string },
+          }
+      responses:
+        '200':
+          description: Virtual machines
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/VirtualMachineSummary' },
+                }
+  /projects/{project}/virtual-machines:
+    get:
+      summary: Virtual machines of a project
+      operationId: listVirtualMachines
+      parameters:
+        - { name: project, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Virtual machines
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/VirtualMachineSummary' },
+                }
+        '404':
+          description: Project not found (or not readable)
+  /projects/{project}/virtual-machines/{name}:
+    get:
+      summary: A virtual machine with its status
+      description: |
+        Spec (as applied) and status: phase `Pending | Importing | Starting | Running | Stopping | Stopped | Migrating |
+        Failed`, node, the node's last report, NICs (MAC, groups, addresses per NIC), disks (DRBD block volumes with
+        their placement), console availability (`socket/consoles`, replica `<project>/lw-vm/<name>/0`), the actions the
+        VM's state and the caller's role allow, and the last node commands. Scope `resources:read`.
+      operationId: getVirtualMachine
+      parameters:
+        - { name: project, in: path, required: true, schema: { type: string } }
+        - { name: name, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: The virtual machine
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VirtualMachine' }
+        '404':
+          description: Not found
+  /projects/{project}/virtual-machines/{name}/{action}:
+    post:
+      summary: Power action
+      description: |
+        `start`, `stop` (ACPI shutdown within the launcher's grace), `force-off` (hard power-off via `vmPower destroy`,
+        no grace) and `shutdown` (ACPI via `vmPower`) change
+        the operational power of `Manual` VMs (409 "managed by the spec" for `Always` / `Halted`): the replica is placed
+        (quotas and the scheduler apply) or drained right away and the network recompiled — no plan. `reboot` (ACPI) and
+        `reset` (hard) go to the VM's node as `vmPower` (node feature `virtual-machines`). Operators and admins,
+        developers when the project allows exec; audited (`vm.<action>`). Scope `live:access`.
+      operationId: virtualMachineAction
+      parameters:
+        - { name: project, in: path, required: true, schema: { type: string } }
+        - { name: name, in: path, required: true, schema: { type: string } }
+        - {
+            name: action,
+            in: path,
+            required: true,
+            schema:
+              {
+                type: string,
+                enum: [start, stop, force-off, shutdown, reboot, reset],
+              },
+          }
+      responses:
+        '200':
+          description: The virtual machine after the action
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VirtualMachine' }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Not found
+        '409':
+          description: Not allowed in the VM's state (run strategy, already running / stopped, no capacity, quota, node without `virtual-machines`)
+  /projects/{project}/virtual-machines/{name}/reimage:
+    post:
+      summary: Re-image the boot disk
+      description: |
+        Writes a stopped VM's boot disk again from its pinned image on the disk's primary (`vmImageImport`) and bumps
+        the cloud-init instance generation, so first-boot configuration runs again. Operators; audited
+        (`vm.reimage`). Scope `plans:apply`.
+      operationId: reimageVirtualMachine
+      parameters:
+        - { name: project, in: path, required: true, schema: { type: string } }
+        - { name: name, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: The virtual machine
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VirtualMachine' }
+        '409':
+          description: Not stopped, disk or image not placed / pinned yet
+  /projects/{project}/virtual-machines/{name}/snapshots:
+    get:
+      summary: Snapshots of a virtual machine
+      operationId: listVirtualMachineSnapshots
+      parameters:
+        - { name: project, in: path, required: true, schema: { type: string } }
+        - { name: name, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Snapshots, newest first
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/VmSnapshot' },
+                }
+    post:
+      summary: Take a snapshot
+      description: |
+        One Kopia backup per disk now (as "back up now"); application-consistent when the pinned image declares the
+        guest agent (fsfreeze), else crash-consistent. Restores are `Restore` resources (plans). Operators; audited
+        (`vm.snapshot`). Scope `plans:apply`.
+      operationId: createVirtualMachineSnapshot
+      parameters:
+        - { name: project, in: path, required: true, schema: { type: string } }
+        - { name: name, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description: { type: string, maxLength: 1024 }
+      responses:
+        '201':
+          description: The snapshot (backups running)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VmSnapshot' }
+        '409':
+          description: Disks not placed yet, or a backup of a disk is running
+  /projects/{project}/vm-images/import:
+    post:
+      summary: Import a VM image
+      description: |
+        Background job: downloads `url` (HTTPS to public addresses only, checked on every redirect hop), verifies
+        `sha256`, accepts qcow2, raw (stored zstd-compressed) and KubeVirt containerDisk tars (`/disk/*.qcow2|*.img`,
+        also gzip-compressed), and pushes an OCI VM image artifact (`artifactType`
+        `application/vnd.loadweaver.vm-image.v1`) to `registry.lw/<project>/<ref>`. Operators; audited. Scope
+        `registry:push`.
+      operationId: importVmImage
+      parameters:
+        - { name: project, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url, sha256, ref]
+              properties:
+                url: { type: string, format: uri }
+                sha256:
+                  {
+                    type: string,
+                    description: 'Hex SHA-256 of the file (optionally `sha256:` prefixed)',
+                  }
+                ref:
+                  {
+                    type: string,
+                    description: '`<repository>:<tag>` in the project',
+                  }
+                arch: { type: string, enum: [amd64, arm64], default: amd64 }
+                firmware:
+                  {
+                    type: array,
+                    items: { type: string, enum: [uefi, bios] },
+                    default: [uefi],
+                  }
+                guestAgent: { type: boolean, default: false }
+      responses:
+        '202':
+          description: Queued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VmImageImport' }
+        '400':
+          description: Invalid request
+  /projects/{project}/vm-images:
+    get:
+      summary: VM images in the project's registry
+      description: |
+        VM image artifacts (`artifactType` `application/vnd.loadweaver.vm-image.v1`, also inside an OCI index) in the
+        project's repositories of the built-in registry — pushed with `loadweaver vm-image push`, any OCI client or an
+        import. Read from the registry catalog, tags and manifests (at most 100 repositories, 50 tags each; cached
+        30 s). Project readers.
+      operationId: listVmImages
+      parameters:
+        - { name: project, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: VM images, by repository
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/VmRegistryImage' },
+                }
+  /projects/{project}/vm-images/imports:
+    get:
+      summary: VM image imports of a project
+      operationId: listVmImageImports
+      parameters:
+        - { name: project, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Imports, newest first
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/VmImageImport' },
+                }
+  /projects/{project}/vm-images/imports/{id}:
+    get:
+      summary: One VM image import
+      operationId: getVmImageImport
+      parameters:
+        - { name: project, in: path, required: true, schema: { type: string } }
+        - {
+            name: id,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      responses:
+        '200':
+          description: The import
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VmImageImport' }
         '404':
           description: Not found
   /projects/{project}/cron-runs:
@@ -5682,6 +6042,32 @@ components:
       description: 'Relative path (`cluster/2026/09`, `projects/shop/2026/09/report.html`); empty: the top'
       schema: { type: string, maxLength: 512 }
   schemas:
+    IsolationLevelCapability:
+      type: object
+      description: One isolation level in a project's placement (`GET /projects/{project}/isolation-capabilities`).
+      required: [state, nodes]
+      properties:
+        state:
+          {
+            type: string,
+            enum: [ready, unsupported, probe-failed, disabled-by-admin],
+          }
+        nodes:
+          {
+            type: integer,
+            description: 'Schedulable nodes in the placement with the level ready',
+          }
+        reasonCode:
+          {
+            type: string,
+            description: "Agenstra's reason code of the most common cause (not ready only), e.g. E_KVM_UNAVAILABLE",
+          }
+        reason:
+          {
+            type: string,
+            maxLength: 512,
+            description: 'Per-node causes (not ready only)',
+          }
     SecretVersionDto:
       type: object
       required: [version, fingerprint, createdBy, createdAt]
@@ -6011,6 +6397,15 @@ components:
               [pending, importing, active, cordoned, draining, leaving, left],
           }
         labels: { type: object, additionalProperties: { type: string } }
+        effectiveLabels:
+          type: object
+          additionalProperties: { type: string }
+          description: 'Labels selectors see: the node labels, `loadweaver.com/site` / `loadweaver.com/node` and the derived runtime labels (`runtime.loadweaver.com/<level>: ready`, `loadweaver.com/runtime: <strongest ready level>`)'
+        runtimes:
+          type: array
+          items:
+            { type: string, enum: [runc, sandboxed, sandboxed-kvm, microvm] }
+          description: Ready isolation levels in ladder order; a workload runs only on nodes with exactly its level
         controlPlane: { type: boolean }
         witness: { type: boolean }
         agentVersion: { type: [string, 'null'] }
@@ -8834,3 +9229,266 @@ components:
               label:
                 type: string
                 description: '`<address> → <node>` for addresses, `<service>/<index> on <node>` for replicas (node for cluster roles only)'
+    VirtualMachineSummary:
+      type: object
+      properties:
+        project: { type: string }
+        name: { type: string }
+        labels: { type: object, additionalProperties: { type: string } }
+        description: { type: [string, 'null'] }
+        image: { type: string }
+        pinnedImage:
+          {
+            type: [string, 'null'],
+            description: Digest-pinned image of the last apply,
+          }
+        runStrategy: { type: string, enum: [Always, Manual, Halted] }
+        power: { type: string, enum: [running, stopped] }
+        phase:
+          {
+            type: string,
+            enum:
+              [
+                Pending,
+                Importing,
+                Starting,
+                Running,
+                Stopping,
+                Stopped,
+                Migrating,
+                Failed,
+              ],
+          }
+        node: { type: [string, 'null'] }
+        vcpus: { type: integer }
+        memoryBytes: { type: integer }
+        diskBytes: { type: integer }
+        disks: { type: integer }
+        nics: { type: integer }
+        addresses: { type: array, items: { type: string } }
+        graphical: { type: boolean }
+        invalid:
+          { type: string, description: Validation error of an invalid spec }
+        importProgress:
+          type: object
+          description: >-
+            Progress of the boot disk import while the node reports one (absent otherwise); same fields as
+            status.importProgress of a single VM.
+          properties:
+            phase: { type: string, enum: [queued, fetching, writing, failed] }
+            bytes: { type: integer }
+            totalBytes: { type: integer }
+    VirtualMachine:
+      allOf:
+        - $ref: '#/components/schemas/VirtualMachineSummary'
+        - type: object
+          properties:
+            spec:
+              {
+                type: [object, 'null'],
+                description: The `VirtualMachine` spec with defaults,
+              }
+            generation: { type: integer }
+            updatedAt: { type: string, format: date-time }
+            status:
+              type: object
+              properties:
+                phase: { type: string }
+                node: { type: [string, 'null'] }
+                state: { type: [string, 'null'] }
+                guestPower:
+                  {
+                    type: [string, 'null'],
+                    description: 'Guest power from the launcher: running, paused, shutting-down, shut-off, crashed, suspended, unknown',
+                  }
+                importing:
+                  {
+                    type: boolean,
+                    description: The boot disk is being written from its image,
+                  }
+                importProgress:
+                  type: [object, 'null']
+                  description: >-
+                    Progress of the boot disk import on the node (a background job): queued, fetching (bytes downloaded),
+                    writing (bytes of totalBytes = the image's virtual size), failed (retried later; see message).
+                  properties:
+                    phase:
+                      {
+                        type: string,
+                        enum: [queued, fetching, writing, failed],
+                      }
+                    bytes: { type: integer }
+                    totalBytes: { type: integer }
+                message: { type: [string, 'null'] }
+                exitCode: { type: [integer, 'null'] }
+                reportedAt: { type: [string, 'null'], format: date-time }
+                lastBoot: { type: [string, 'null'], format: date-time }
+                migration:
+                  {
+                    type: [object, 'null'],
+                    properties: { targetNode: { type: [string, 'null'] } },
+                  }
+            powerDetail:
+              type: object
+              properties:
+                graceful: { type: boolean }
+                changedBy: { type: [string, 'null'] }
+                changedAt: { type: [string, 'null'], format: date-time }
+                instanceGeneration: { type: integer }
+            nicStatus:
+              type: array
+              items:
+                type: object
+                properties:
+                  name: { type: string }
+                  index: { type: integer }
+                  primary: { type: boolean }
+                  mac: { type: string }
+                  groups: { type: array, items: { type: string } }
+                  labels:
+                    { type: object, additionalProperties: { type: string } }
+                  families:
+                    { type: array, items: { type: string, enum: [v4, v6] } }
+                  addresses: { type: array, items: { type: string } }
+            diskStatus:
+              type: array
+              items:
+                type: object
+                properties:
+                  name: { type: string }
+                  volume: { type: string }
+                  source: { type: string, enum: [image, blank] }
+                  boot: { type: boolean }
+                  sizeBytes: { type: integer }
+                  bus: { type: string }
+                  cache: { type: string }
+                  replicas: { type: [integer, 'null'] }
+                  crossSite: { type: [string, 'null'] }
+                  primaryNode: { type: [string, 'null'] }
+                  syncReplicas: { type: array, items: { type: string } }
+                  remoteReplicas: { type: array, items: { type: string } }
+            consoles:
+              type: object
+              properties:
+                replica: { type: string }
+                namespace: { type: string, enum: [socket/consoles] }
+                serial: { $ref: '#/components/schemas/VmConsoleAvailability' }
+                vnc: { $ref: '#/components/schemas/VmConsoleAvailability' }
+            actions:
+              type: array
+              items:
+                {
+                  type: string,
+                  enum:
+                    [start, stop, force-off, shutdown, reboot, reset, reimage],
+                }
+            permissions:
+              type: object
+              properties:
+                power: { type: boolean }
+                snapshot: { type: boolean }
+                console: { type: boolean }
+                edit: { type: boolean }
+            commands:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  type: { type: string, enum: [vmPower, vmImageImport] }
+                  action: { type: string }
+                  node: { type: string }
+                  status:
+                    {
+                      type: string,
+                      enum: [pending, sent, running, succeeded, failed],
+                      description: 'The node reports the outcome as an event; it is folded back here',
+                    }
+                  error: { type: [string, 'null'] }
+                  requestedBy: { type: [string, 'null'] }
+                  createdAt: { type: string, format: date-time }
+                  sentAt: { type: [string, 'null'], format: date-time }
+    VmConsoleAvailability:
+      type: object
+      properties:
+        available: { type: boolean }
+        reason: { type: string }
+    VmSnapshot:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        project: { type: string }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        consistency: { type: string, enum: [crash, application] }
+        status: { type: string, enum: [running, succeeded, failed, partial] }
+        createdBy: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+        disks:
+          type: array
+          items:
+            type: object
+            properties:
+              disk: { type: string }
+              backupId: { type: string, format: uuid }
+              status: { type: [string, 'null'] }
+              bytes: { type: [integer, 'null'] }
+              error: { type: [string, 'null'] }
+              finishedAt: { type: [string, 'null'], format: date-time }
+    VmRegistryImage:
+      type: object
+      properties:
+        project: { type: string }
+        repository: { type: string }
+        tag: { type: string }
+        reference:
+          {
+            type: string,
+            description: '`registry.lw/<project>/<repository>:<tag>@<digest>`',
+          }
+        digest: { type: string }
+        variants:
+          type: array
+          items:
+            type: object
+            properties:
+              arch: { type: string, enum: [amd64, arm64] }
+              format: { type: string, enum: [qcow2, raw] }
+              virtualSize: { type: integer }
+              firmware:
+                { type: array, items: { type: string, enum: [uefi, bios] } }
+              guestAgent: { type: boolean }
+              layerBytes: { type: integer }
+    VmImageImport:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        project: { type: string }
+        repository: { type: string }
+        tag: { type: string }
+        reference:
+          {
+            type: string,
+            description: '`registry.lw/<project>/<repository>:<tag>[@digest]`',
+          }
+        url: { type: string, description: Without credentials and query }
+        sha256: { type: string }
+        arch: { type: string, enum: [amd64, arm64] }
+        firmware: { type: array, items: { type: string, enum: [uefi, bios] } }
+        guestAgent: { type: boolean }
+        status: { type: string, enum: [pending, running, succeeded, failed] }
+        step:
+          {
+            type: [string, 'null'],
+            enum: [download, verify, convert, push, null],
+          }
+        format: { type: [string, 'null'], enum: [qcow2, raw, null] }
+        containerDisk: { type: boolean }
+        downloadedBytes: { type: integer }
+        virtualSize: { type: [integer, 'null'] }
+        digest: { type: [string, 'null'] }
+        error: { type: [string, 'null'] }
+        requestedBy: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+        startedAt: { type: [string, 'null'], format: date-time }
+        finishedAt: { type: [string, 'null'], format: date-time }

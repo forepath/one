@@ -164,11 +164,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # The shared microVM launcher is multi-arch (amd64 + arm64, like the OpenSearch image of the bundle job): QEMU
+      # emulation for the arm64 build stages.
+      - name: Set up QEMU (arm64 microVM launcher)
+        uses: docker/setup-qemu-action@v3
+
       - name: Publish Worker container images
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
           npx nx run-many --target=worker-container-image --configuration=release --parallel=3
+          # ghcr.io/forepath/microvm-launcher (multi-arch, pushed); the Agenstra microVM worker image is built FROM it.
+          npx nx run shared-microvm-launcher:container-image --configuration=release
+          # Multi-arch pushes aren't loaded locally: pull the runner's variant for the Trivy SBOM below.
+          docker pull "ghcr.io/forepath/microvm-launcher:${VERSION}"
           npx nx run-many --target=worker-microvm-container-image --configuration=release --parallel=1
           npx nx run-many --target=egress-guard-container-image --configuration=release --parallel=3
 
@@ -746,6 +755,8 @@ jobs:
       - build-api-container-images
       # The console image (loadweaver-console-server) is pinned by digest in the signed manifest (Loadweaver Cloud).
       - build-server-container-images
+      # The shared microVM launcher (microVMs and full VMs) is pinned by digest in the signed manifest.
+      - build-worker-container-images
     if: needs.publish.outputs.new_release_published == 'true'
     environment: production
     permissions:
@@ -837,12 +848,16 @@ jobs:
           # Not a cluster component: Loadweaver Cloud (Decabill) pulls the management endpoint's console by this digest.
           CONSOLE="ghcr.io/forepath/loadweaver-console-server:${VERSION}"
           CONSOLE="${CONSOLE}@$(digest "$CONSOLE")"
+          # The shared microVM launcher (multi-arch, built by the worker images job).
+          LAUNCHER="ghcr.io/forepath/microvm-launcher:${VERSION}"
+          LAUNCHER="${LAUNCHER}@$(digest "$LAUNCHER")"
           # The other component images, pinned by digest in the source of truth (util-release pins).
           npx esbuild libs/domains/loadweaver/shared/util-release/src/lib/pins.ts --bundle --platform=node --format=cjs --outfile=tmp/pins.cjs --log-level=warning
           {
-            node -e "const {COMPONENT_IMAGES}=require('./tmp/pins.cjs'); for (const [n,r] of Object.entries(COMPONENT_IMAGES)) if (n!=='control-plane' && n!=='opensearch') console.log(n+' '+r)"
+            node -e "const {COMPONENT_IMAGES}=require('./tmp/pins.cjs'); for (const [n,r] of Object.entries(COMPONENT_IMAGES)) if (n!=='control-plane' && n!=='opensearch' && n!=='microvm-launcher') console.log(n+' '+r)"
             echo "control-plane ${CP}"
             echo "opensearch ${OS}"
+            echo "microvm-launcher ${LAUNCHER}"
           } > /tmp/images.txt
           mkdir -p dist/images
           ARGS=""
@@ -852,6 +867,7 @@ jobs:
           done < /tmp/images.txt
           {
             echo "CONTROL_PLANE_IMAGE=${CP}"
+            echo "MICROVM_LAUNCHER_IMAGE=${LAUNCHER}"
             echo "OPENSEARCH_IMAGE=${OS}"
             echo "CONSOLE_IMAGE=${CONSOLE}"
             echo "IMAGE_ARCHIVES=${ARGS}"
@@ -913,7 +929,7 @@ jobs:
           npx nx run loadweaver-shared-util-release:build-bundle --release "${VERSION}" \
             --require-signature --defer-signature \
             --control-plane-image "${CONTROL_PLANE_IMAGE}" --opensearch-image "${OPENSEARCH_IMAGE}" \
-            --console-image "${CONSOLE_IMAGE}" \
+            --console-image "${CONSOLE_IMAGE}" --microvm-launcher-image "${MICROVM_LAUNCHER_IMAGE}" \
             --agent-amd64 dist/agent-sea/amd64/loadweaver-agent --agent-arm64 dist/agent-sea/arm64/loadweaver-agent \
             ${IMAGE_ARCHIVES} --gvisor --drbd-source ${DRBD_COMPAT} ${APT_SNAPSHOT} --out dist/loadweaver-bundle
 

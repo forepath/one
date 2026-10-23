@@ -71,6 +71,7 @@ loadweaver apply <plan id> [--watch]
 loadweaver watch <plan id>
 loadweaver port-forward <project/deployment/service[/replica]> <[local:]remote> [--ttl <seconds>]
 loadweaver vpn enroll --name <device> [--out <file>]
+loadweaver vm-image push <file> [registry.lw/]<project>/<repository>[:<tag>] [--arch amd64|arm64] [--firmware uefi[,bios]] [--guest-agent] [--format qcow2|raw]
 loadweaver updates status | releases | download | upload | plan | show | watch | approve | pause | resume | rollback | cancel
 loadweaver version
 ```
@@ -162,6 +163,14 @@ loadweaver updates pause <id> | resume <id> | rollback <id> | cancel <id>
 Release bundles, update plans and the rollout are described in [Updates](./features/updates.md). Importing and every
 action on update plans need the cluster-admin role (scope `cluster:admin`); `status`, `releases`, `show` and `watch` any
 cluster role.
+
+### vm-image push
+
+Pushes a VM disk image (qcow2, raw, or a KubeVirt containerDisk archive) into the project's namespace of the built-in registry as an OCI VM image artifact for [virtual machines](./features/virtual-machines.md#images), through the control plane with your login (`registry:push` for personal access tokens). The format and virtual size come from `qemu-img info` when it is installed, else from the file's header; images with a backing file are refused. Prints the pushed reference with its digest.
+
+```bash
+loadweaver vm-image push debian-13-genericcloud-amd64.qcow2 registry.lw/shop/debian-13:20261017 --firmware uefi,bios --guest-agent
+```
 
 ### version
 

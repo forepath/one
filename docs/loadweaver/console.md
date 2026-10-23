@@ -48,7 +48,8 @@ The console's part of the environment:
         "logs": "https://cp.example.com/socket/logs",
         "terminals": "https://cp.example.com/socket/terminals",
         "tunnels": "https://cp.example.com/socket/tunnels",
-        "topology": "https://cp.example.com/socket/topology"
+        "topology": "https://cp.example.com/socket/topology",
+        "consoles": "https://cp.example.com/socket/consoles"
       }
     }
   },
@@ -59,7 +60,7 @@ The console's part of the environment:
 ```
 
 - `console.urls.restApi` is the control plane's REST base (`…/api`); every view calls it.
-- `console.urls.websocket` names one Socket.IO namespace per live feature: `plans` (plan status and apply progress), `logs` (live tail), `terminals` (terminal sessions), `tunnels` (debug tunnel state) and `topology` (live traffic on the map). `default` is the plans namespace.
+- `console.urls.websocket` names one Socket.IO namespace per live feature: `plans` (plan status and apply progress), `logs` (live tail), `terminals` (terminal sessions), `tunnels` (debug tunnel state), `topology` (live traffic on the map) and `consoles` (serial and VNC consoles of virtual machines). `default` is the plans namespace.
 - In production, allow the control plane's origin in `CSP_CONNECT_SRC_EXTRA` if it isn't served over `https:` / `wss:`.
 
 ### Fleet mode
@@ -94,7 +95,7 @@ The sidebar is ordered by process, from setting up to daily use. **Overview** an
 | **Cluster**        | Nodes & sites, Import hosts, DNS, Certificates, Updates (rollouts), Drift |
 | **Access & audit** | Access, Devices, Device posture, Audit                                    |
 | **Deploy**         | Git, Resources, Policies, Plans                                           |
-| **Operate**        | Terminals, Files, Sessions, Backups                                       |
+| **Operate**        | Terminals, Files, Sessions, Virtual machines, Backups                     |
 | **Observe**        | Health, Alerts, SLOs, Status, Logs, Metrics, Reports, Wallboards          |
 | **Account**        | Tokens (`users` / `keycloak` authentication), Git accounts                |
 
@@ -126,6 +127,7 @@ Each item keeps its visibility rule (see above): a group whose items are all hid
 | Terminals              | `/terminals`                                                                                                                                                    | Project operators (developers if allowed), cluster admins                                                                        | `socket/terminals`                                                                                                                                                                                                                   |
 | Files                  | `/files`                                                                                                                                                        | Project operators and admins                                                                                                     | `/live/files`, `/live/files/content`                                                                                                                                                                                                 |
 | Sessions and tunnels   | `/live`                                                                                                                                                         | Auditors, cluster admins, project admins                                                                                         | `GET /live/sessions`, `GET /live/tunnels`                                                                                                                                                                                            |
+| Virtual machines       | `/virtual-machines` (`?project=`), `/virtual-machines/:project/:name` (`?tab=overview\|serial\|vnc`)                                                            | Project members (power and consoles: operators, admins, developers with `developerExec`)                                         | `GET /virtual-machines`, `GET /projects/:p/virtual-machines/:name`, `socket/consoles`                                                                                                                                                |
 | Audit log              | `/audit`                                                                                                                                                        | Auditors, cluster admins; project admins (scoped)                                                                                | `GET /audit`, `GET /audit/export`, `GET /cluster/audit/verify`                                                                                                                                                                       |
 | Reports                | `/reports`                                                                                                                                                      | Everyone (scoped)                                                                                                                | `GET /reports`, `POST /reports/run`, `/reports/files…`                                                                                                                                                                               |
 | Usage                  | `/usage`                                                                                                                                                        | Everyone (scoped; all projects for cluster roles)                                                                                | `GET /projects/{project}/usage`, `GET /usage`, `…/usage/export`                                                                                                                                                                      |
@@ -189,10 +191,16 @@ One [metric](./features/metrics.md) over a time range, grouped and aggregated, w
 ### Terminals, files and sessions
 
 - **Terminals:** pick a replica (project → deployment / service → replica) or, for cluster admins while the cluster allows it, a node shell, and work in several tabs over `socket/terminals`. Project operators and admins may open replica terminals; developers only when the project allows it. Recorded sessions show a banner. The map opens a terminal directly with `?replica=…`.
+- **MicroVMs:** terminals and files of [microVM](./features/isolation-levels.md#microvms) replicas work the same way and open inside the guest.
 - **Files:** a replica's container filesystem (writes are lost on restart) or a volume: list, preview text and images, download, upload (chunked above 10 MB), create, delete, rename, move and copy. `?target=…&path=…` deep links.
 - **Sessions and tunnels:** the audited terminal session records with their recordings (download or replay in the browser), and the open debug tunnels. Tunnels are opened with the [CLI](./cli.md), not from the browser.
 
 See [terminals, files and tunnels](./features/terminals-files-and-tunnels.md).
+
+### Virtual machines
+
+- **List** (`/virtual-machines`): every [virtual machine](./features/virtual-machines.md) you may read with phase, node, vCPUs, memory, disks and addresses; search and filters for project, phase and run strategy. With a project selected: its VM image imports and, for operators, **Import VM image** (URL, SHA-256, repository and tag, architecture, firmware, guest agent). **New** opens the resource editor with a `VirtualMachine` template; specs change through plans.
+- **Detail** (`/virtual-machines/:project/:name`, `?tab=`): the actions the VM's state and your role allow (start, stop, shutdown, force off, reboot, reset, take snapshot, reimage), each confirmed; links to the YAML and to edit it through a plan. Tabs: **Overview** (status with the guest's power state, machine and pinned image, NICs with MACs, groups and addresses, disks with primary and copies, snapshots linking to their backups, recent node commands), **Serial console** (terminal panel, boot log first, recorded badge, reconnect) and **Graphical console** (noVNC with Ctrl+Alt+Del). Consoles follow the terminal rules: operators and admins, developers with `developerExec`.
 
 ### Audit log
 
@@ -224,7 +232,7 @@ Containers on the nodes that Loadweaver doesn't manage, failed rollbacks whose c
 
 ### Nodes & sites (cluster roles)
 
-Nodes grouped by site with lifecycle, connection, roles and capacity, and the control plane's membership. Infra operators and cluster admins create and revoke join tokens. A node's page shows lifecycle, connection and apply state, capacity, network and system, with the lifecycle actions the API offers for its state (cordon, drain, …). These are runtime actions, not plans, and each is confirmed first. See [nodes and joining](./features/nodes-and-joining.md).
+Nodes grouped by site with lifecycle, connection, roles and capacity, and the control plane's membership. Infra operators and cluster admins create and revoke join tokens. A node's page shows lifecycle, connection and apply state, capacity, network and system, with the lifecycle actions the API offers for its state (cordon, drain, …). These are runtime actions, not plans, and each is confirmed first. A node's declarative part (site, labels, the KVM opt-out `virtualization.kvm: disabled`) is a `Node` resource and changes through the resource editor and a plan. See [nodes and joining](./features/nodes-and-joining.md).
 
 ### Import hosts (cluster roles)
 
@@ -279,4 +287,5 @@ The kiosk (`/kiosk#<token>`) needs no login, for a screen in the office. The tok
 
 ## Not there yet
 
+- **Isolation levels:** the node pages don't show the per-level probe states yet. Use the API (`GET /api/nodes/{name}`: `runtimes`, `capabilities.isolation`, `capabilities.kvm`; `GET /api/nodes?runtime=…`; `POST /api/nodes/{name}/isolation-probe`), see [isolation levels](./features/isolation-levels.md#node-probes).
 - **Display names:** members, authors and actors are shown by user id, not by name.

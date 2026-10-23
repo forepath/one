@@ -1,4 +1,5 @@
 import type { RequestWithUser } from '@forepath/identity/backend';
+import { VM_DEPLOYMENT_NAME } from '@forepath/loadweaver/shared/util-model';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, Not } from 'typeorm';
@@ -62,6 +63,29 @@ export class LiveAccessService {
     if (!allowed) throw new ForbiddenException(operatorOnly ? 'operator role required' : 'exec not allowed');
 
     return { node: placement.node, project: placement.project, target: `replica/${replica}`, caller };
+  }
+
+  /**
+   * A VM's console (3.35): roles as terminals (operators and admins, developers when the project allows exec); the
+   * graphical console only when the VM has one (`console.graphical`, default on).
+   */
+  async console(req: RequestWithUser | undefined, replica: string, kind: 'serial' | 'vnc'): Promise<LiveTarget> {
+    const [project, deployment, name] = replica.split('/');
+
+    if (deployment !== VM_DEPLOYMENT_NAME || !name) throw new NotFoundException('virtual machine not found');
+
+    const target = await this.replica(req, replica, 'exec');
+
+    if (kind === 'vnc') {
+      const vm = await this.resources.get('VirtualMachine', name, project);
+
+      if (!vm) throw new NotFoundException('virtual machine not found');
+
+      if (vm.spec.console?.graphical === false)
+        throw new ForbiddenException('the virtual machine has no graphical console');
+    }
+
+    return target;
   }
 
   /** A volume on the node holding its primary replica. */

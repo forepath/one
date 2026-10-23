@@ -21,13 +21,13 @@ import { AgentSessionRegistry } from '../agent-stream/agent-session.registry';
 import { MigrationEntity } from '../entities/migration.entity';
 import { NodeEntity } from '../entities/node.entity';
 import {
-  DEFAULT_SESSION_OPTIONS,
   sessionCommands,
+  sessionOptionsFromEnv,
   type NodeReport,
+  type SessionMethod,
   type SessionPhase,
   type SessionRecord,
 } from '../utils/migration-state.utils';
-import { eligibilityOptionsFromEnv } from '../utils/migration-eligibility.utils';
 import { FAILOVER_AFTER_MS, WorkloadControllerService } from './workload-controller.service';
 
 /** Commands not yet confirmed by the node are sent again after this long. */
@@ -93,7 +93,7 @@ export class MigrationSessionService implements OnApplicationBootstrap, OnModule
       .createQueryBuilder('m')
       .addSelect(['m.spec', 'm.token'])
       .where('m.finished_at IS NULL')
-      .andWhere(`m.method IN ('live', 'stop-and-copy')`)
+      .andWhere(`m.method IN ('live', 'stop-and-copy', 'vm-live')`)
       .getMany();
 
     if (rows.length === 0) return [];
@@ -111,8 +111,8 @@ export class MigrationSessionService implements OnApplicationBootstrap, OnModule
       replica: r.replica,
       fromNode: r.fromNode,
       toNode: r.toNode,
-      method: r.method as 'live' | 'stop-and-copy',
-      runtime: r.runtime ?? 'runc',
+      method: r.method as SessionMethod,
+      runtime: r.runtime ?? (r.method === 'vm-live' ? 'qemu' : 'runc'),
       phase: r.phase as SessionPhase,
       phaseStartedAt: r.phaseStartedAt.getTime(),
       token: r.token ?? '',
@@ -127,7 +127,8 @@ export class MigrationSessionService implements OnApplicationBootstrap, OnModule
 
   /**
    * Sends the due commands of every active session to the nodes connected to this replica. Only nodes that
-   * advertised `live-migration` ever get one (the session's `send` drops them for others, too).
+   * advertised `live-migration` (QEMU sessions: `vm-migration`) ever get one (the session's `send` drops them for
+   * others, too).
    */
   async sendDue(now = Date.now()): Promise<number> {
     if (this.sending) return 0;
@@ -135,7 +136,7 @@ export class MigrationSessionService implements OnApplicationBootstrap, OnModule
     this.sending = true;
 
     try {
-      const options = { ...DEFAULT_SESSION_OPTIONS, freezeBudgetMs: eligibilityOptionsFromEnv().freezeBudgetMs };
+      const options = sessionOptionsFromEnv();
       let count = 0;
       const live = new Set<string>();
 

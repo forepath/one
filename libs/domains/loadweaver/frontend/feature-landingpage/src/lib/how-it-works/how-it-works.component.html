@@ -324,6 +324,397 @@
   </div>
 </section>
 
+<!-- Isolation -->
+<section id="isolation" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="row g-4 g-lg-5 align-items-end mb-4">
+      <div class="col-lg-5">
+        <h2 class="h2 fw-semibold mb-0 text-body-emphasis" i18n="@@featureLoadweaverHowItWorks-isolationTitle">
+          Four isolation levels, from containers to microVMs
+        </h2>
+      </div>
+      <div class="col-lg-7">
+        <p class="lead text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-isolationLead">
+          A regular container shares the host kernel with everything else on the node. For code you trust less, one line
+          in the Compose file puts a second kernel in between: gVisor, gVisor on KVM, or a whole virtual machine built
+          from the same image.
+        </p>
+      </div>
+    </div>
+    <div class="row g-3 mb-5">
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm p-3 bg-body h-100">
+          <div class="d-flex gap-3 align-items-center">
+            <i class="bi bi-clipboard2-pulse text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+            <div>
+              <p class="fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-isolationFact1Title">
+                Probed on every node
+              </p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-isolationFact1Desc">
+                Each node proves with real test containers and a test microVM which levels it can run: at startup, every
+                six hours, after updates and on demand.
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm p-3 bg-body h-100">
+          <div class="d-flex gap-3 align-items-center">
+            <i class="bi bi-sign-stop text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+            <div>
+              <p class="fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-isolationFact2Title">
+                Exactly the level you declare
+              </p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-isolationFact2Desc">
+                A service never runs on a weaker level, and never on a stronger one by accident. If no node offers its
+                level, the plan says which nodes are missing what.
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm p-3 bg-body h-100">
+          <div class="d-flex gap-3 align-items-center">
+            <i class="bi bi-layers text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+            <div>
+              <p class="fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-isolationFact3Title">
+                MicroVMs from any image
+              </p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-isolationFact3Desc">
+                The container image becomes the guest, unpacked once per node and shared by every replica. No VM images
+                to build; signatures and scans still apply to your image.
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="card border rounded-3 shadow-sm overflow-hidden landing-bento-visual mb-4">
+      <div class="p-4 p-xl-5 d-flex flex-column">
+        <fpc-badge
+          color="primary"
+          class="mb-4 bento-badge align-self-start"
+          i18n="@@featureLoadweaverHowItWorks-isolationBadge"
+          >Where a system call ends up</fpc-badge
+        >
+        <div class="row g-4 hiw-stacks">
+          <div class="col-sm-6 col-lg-3 d-flex flex-column">
+            <div class="hiw-stack-head mb-3">
+              <h3 class="h6 fw-semibold mb-0" i18n="@@featureLoadweaverHowItWorks-runcTitle">Standard</h3>
+              <code class="hiw-meta">runc</code>
+            </div>
+            <ol class="list-unstyled hiw-stack mb-4">
+              <li class="hiw-layer">
+                <i class="bi bi-box-seam" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerService">Your service</span>
+              </li>
+              <li class="hiw-layer hiw-layer--host">
+                <i class="bi bi-cpu" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerHostKernel">Host kernel</span>
+                <small i18n="@@featureLoadweaverHowItWorks-layerHostKernelRunc">namespaces, cgroups, seccomp</small>
+              </li>
+            </ol>
+            <p class="small text-muted mb-0 mt-auto" i18n="@@featureLoadweaverHowItWorks-runcDesc">
+              Docker's default, on every node. The only level that may use /dev/kvm itself, for CI runners and
+              emulators, with the project's permission.
+            </p>
+          </div>
+          <div class="col-sm-6 col-lg-3 d-flex flex-column">
+            <div class="hiw-stack-head mb-3">
+              <h3 class="h6 fw-semibold mb-0 text-primary" i18n="@@featureLoadweaverHowItWorks-sandboxedTitle">
+                Sandboxed
+              </h3>
+              <code class="hiw-meta">sandboxed</code>
+            </div>
+            <ol class="list-unstyled hiw-stack mb-4">
+              <li class="hiw-layer">
+                <i class="bi bi-box-seam" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerService">Your service</span>
+              </li>
+              <li class="hiw-layer hiw-layer--sandbox">
+                <i class="bi bi-shield-fill-check" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerSentry">gVisor Sentry</span>
+                <small i18n="@@featureLoadweaverHowItWorks-layerSentryDesc">Linux implemented in user space</small>
+              </li>
+              <li class="hiw-layer hiw-layer--host">
+                <i class="bi bi-cpu" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerHostKernel">Host kernel</span>
+                <small i18n="@@featureLoadweaverHowItWorks-layerHostKernelSandboxed"
+                  >small, filtered set of calls</small
+                >
+              </li>
+            </ol>
+            <p class="small text-muted mb-0 mt-auto" i18n="@@featureLoadweaverHowItWorks-sandboxedDesc">
+              Runs on ordinary cloud VMs, no KVM needed. Moves between nodes with its memory and connections.
+            </p>
+          </div>
+          <div class="col-sm-6 col-lg-3 d-flex flex-column">
+            <div class="hiw-stack-head mb-3">
+              <h3 class="h6 fw-semibold mb-0 text-primary" i18n="@@featureLoadweaverHowItWorks-sandboxedKvmTitle">
+                Sandboxed + KVM
+              </h3>
+              <code class="hiw-meta">sandboxed-kvm</code>
+            </div>
+            <ol class="list-unstyled hiw-stack mb-4">
+              <li class="hiw-layer">
+                <i class="bi bi-box-seam" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerService">Your service</span>
+              </li>
+              <li class="hiw-layer hiw-layer--sandbox">
+                <i class="bi bi-shield-fill-check" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerSentry">gVisor Sentry</span>
+                <small i18n="@@featureLoadweaverHowItWorks-layerSentryKvmDesc"
+                  >in a hardware-virtualized address space</small
+                >
+              </li>
+              <li class="hiw-layer hiw-layer--host">
+                <i class="bi bi-cpu" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerHostKernel">Host kernel</span>
+                <small i18n="@@featureLoadweaverHowItWorks-layerHostKernelSandboxed"
+                  >small, filtered set of calls</small
+                >
+              </li>
+            </ol>
+            <p class="small text-muted mb-0 mt-auto" i18n="@@featureLoadweaverHowItWorks-sandboxedKvmDesc">
+              On nodes with KVM. System calls trap into the Sentry through the CPU's virtualization extensions instead
+              of seccomp.
+            </p>
+          </div>
+          <div class="col-sm-6 col-lg-3 d-flex flex-column">
+            <div class="hiw-stack-head mb-3">
+              <h3 class="h6 fw-semibold mb-0 text-primary" i18n="@@featureLoadweaverHowItWorks-microvmTitle">
+                MicroVM
+              </h3>
+              <span class="hiw-chips"><code class="hiw-meta">KVM</code><code class="hiw-meta">QEMU</code></span>
+            </div>
+            <ol class="list-unstyled hiw-stack mb-4">
+              <li class="hiw-layer">
+                <i class="bi bi-box-seam" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerService">Your service</span>
+              </li>
+              <li class="hiw-layer hiw-layer--sandbox">
+                <i class="bi bi-pc-display" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerGuestKernel">Guest kernel</span>
+                <small i18n="@@featureLoadweaverHowItWorks-layerGuestKernelDesc">its own Linux, inside the VM</small>
+              </li>
+              <li class="hiw-layer hiw-layer--sandbox">
+                <i class="bi bi-shield-fill-check" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerHypervisor">Hypervisor</span>
+                <small i18n="@@featureLoadweaverHowItWorks-layerHypervisorDesc">KVM, in a locked-down container</small>
+              </li>
+              <li class="hiw-layer hiw-layer--host">
+                <i class="bi bi-cpu" aria-hidden="true"></i>
+                <span i18n="@@featureLoadweaverHowItWorks-layerHostKernel">Host kernel</span>
+                <small i18n="@@featureLoadweaverHowItWorks-layerHostKernelMicrovm"
+                  >only the VM's virtual hardware</small
+                >
+              </li>
+            </ol>
+            <p class="small text-muted mb-0 mt-auto" i18n="@@featureLoadweaverHowItWorks-microvmDesc">
+              On nodes with KVM. The guest owns the workload's IP, so policies, ingress and failover work unchanged, and
+              terminals and files open inside the VM.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-4 align-items-stretch">
+      <div class="col-lg-6">
+        <div class="card border rounded-3 shadow-sm h-100 overflow-hidden">
+          <div class="d-flex align-items-center justify-content-between gap-2 px-4 py-3 border-bottom">
+            <span class="small fw-semibold" i18n="@@featureLoadweaverHowItWorks-isolationComposeCaption"
+              >One line per service</span
+            >
+            <fpc-badge color="primary" variant="marketing">x-loadweaver.runtime</fpc-badge>
+          </div>
+          <pre
+            class="bg-dark text-light font-monospace small p-4 mb-0 flex-grow-1 code-sample"
+          ><code>{{ isolationExample }}</code></pre>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card border rounded-3 shadow-sm h-100 overflow-hidden">
+          <ul class="list-unstyled mb-0 hiw-icon-list">
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-funnel text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-isolationSelectorsTitle">
+                  Select nodes by level
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-isolationSelectorsDesc">
+                  Every node carries labels for the levels it passed, so selectors and node groups can ask for nodes
+                  that offer at least sandboxed-kvm.
+                </p>
+              </div>
+            </li>
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-toggle-off text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-isolationKvmTitle">
+                  KVM prepared, or switched off per node
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-isolationKvmDesc">
+                  The installer and the rolling host updates keep KVM in step with each kernel. One setting in the node
+                  spec keeps a node out of KVM entirely.
+                </p>
+              </div>
+            </li>
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-robot text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-isolationAgenstraTitle">
+                  The same names as Agenstra
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-isolationAgenstraDesc">
+                  Agenstra's four isolation levels map one to one, so agent environments keep their level when they run
+                  on Loadweaver.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Virtual machines -->
+<section id="virtual-machines" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="row g-4 g-lg-5 align-items-end mb-4">
+      <div class="col-lg-5">
+        <h2 class="h2 fw-semibold mb-0 text-body-emphasis" i18n="@@featureLoadweaverHowItWorks-vmTitle">
+          Full virtual machines, next to your containers
+        </h2>
+      </div>
+      <div class="col-lg-7">
+        <p class="lead text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-vmLead">
+          Some workloads need their own operating system: an appliance, a legacy server, a test machine with its own
+          kernel. A VirtualMachine resource runs it on the same nodes, the same network and the same plan and apply as
+          everything else.
+        </p>
+      </div>
+    </div>
+    <div class="row g-3 mb-5">
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm p-3 bg-body-tertiary h-100">
+          <div class="d-flex gap-3 align-items-center">
+            <i class="bi bi-hdd-stack text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+            <div>
+              <p class="fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-vmFact1Title">
+                Disks replicated like volumes
+              </p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-vmFact1Desc">
+                Every disk is an encrypted, replicated block device. The boot disk is written once from the image; when
+                a node fails, the VM boots from a copy on another node.
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm p-3 bg-body-tertiary h-100">
+          <div class="d-flex gap-3 align-items-center">
+            <i class="bi bi-ethernet text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+            <div>
+              <p class="fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-vmFact2Title">One or more networks</p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-vmFact2Desc">
+                Each interface gets its own addresses and joins its own groups, so policies decide per interface what
+                may reach the VM.
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm p-3 bg-body-tertiary h-100">
+          <div class="d-flex gap-3 align-items-center">
+            <i class="bi bi-arrow-left-right text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+            <div>
+              <p class="fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-vmFact3Title">Moves while it runs</p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-vmFact3Desc">
+                Draining a node live-migrates its VMs: memory is copied while the guest keeps running, the disks are
+                already there, open connections survive.
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="row g-4 align-items-stretch">
+      <div class="col-lg-6">
+        <div class="card border rounded-3 shadow-sm h-100 overflow-hidden">
+          <div class="d-flex align-items-center justify-content-between gap-2 px-4 py-3 border-bottom">
+            <span class="small fw-semibold" i18n="@@featureLoadweaverHowItWorks-vmSampleCaption"
+              >A VM is a resource like any other</span
+            >
+            <fpc-badge color="primary" variant="marketing">kind: VirtualMachine</fpc-badge>
+          </div>
+          <pre
+            class="bg-dark text-light font-monospace small p-4 mb-0 flex-grow-1 code-sample"
+          ><code>{{ vmExample }}</code></pre>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card border rounded-3 shadow-sm h-100 overflow-hidden">
+          <ul class="list-unstyled mb-0 hiw-icon-list">
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-cloud-arrow-up text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-vmImagesTitle">
+                  Images in your own registry
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-vmImagesDesc">
+                  Push a qcow2 or raw image with the CLI, or import a cloud image from a URL. KubeVirt containerDisks
+                  work too, and image signatures are checked like for containers.
+                </p>
+              </div>
+            </li>
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-terminal text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-vmConsolesTitle">
+                  Serial and graphical console in the browser
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-vmConsolesDesc">
+                  Both go through the same audited path as terminals, with the same roles. Start, stop, reboot and reset
+                  are a click away.
+                </p>
+              </div>
+            </li>
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-camera text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-vmSnapshotsTitle">
+                  Snapshots and backups
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-vmSnapshotsDesc">
+                  Disks are backed up by the same policies as volumes, with the guest's file systems frozen for a moment
+                  when it runs the guest agent. Restores are plans.
+                </p>
+              </div>
+            </li>
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-key text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-vmCloudInitTitle">
+                  First boot with cloud-init
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-vmCloudInitDesc">
+                  Network settings, SSH keys and your user data, with secret references resolved on the node and never
+                  written to disk.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Failover -->
 <section id="failover" class="py-10 bg-body-tertiary grid-section">
   <div class="container grid-section__container">

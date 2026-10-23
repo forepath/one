@@ -29,11 +29,11 @@ flowchart TB
     Sched["Scheduler + autoscaler<br/>selectors, runtime capabilities, capacity, quotas<br/>jobs, cron (exactly once)"]
     ACME["ACME + workload CA<br/>certs and mTLS identities"]
     Secrets["Secrets<br/>envelope encryption, split master key / KMS"]
-    Registry["Registry + apt cache<br/>images, release bundles, OS packages<br/>scans, signatures"]
+    Registry["Registry + apt cache<br/>images, VM images (OCI artifacts), release bundles,<br/>OS packages, scans, signatures"]
     Updater["Update orchestrator<br/>control plane first, canary, waves<br/>health gates, auto-rollback"]
     ProvLib["Shared provider lib<br/>servers, failover IPs, DNS"]
     Alerts["Alerting<br/>built-in + custom rules"]
-    Live["Live gateway<br/>Socket.IO: plans, operation progress, flows, logs, terminals, files"]
+    Live["Live gateway<br/>Socket.IO: plans, operation progress, flows, logs, terminals, files,<br/>VM consoles (serial, noVNC)"]
     UI["Console (Angular)<br/>overview + health tree, graphs, logs, audit, search, wallboard, fleet view<br/>canvas: DNS, IPs, routes, tunnels, certs, storage, policies, traffic + path trace<br/>custom dashboards"]
     Reports["Report jobs<br/>periodic, util-file-storage, file tree"]
     State[("Postgres + TimescaleDB<br/>desired state, plans, audit log (hash-chained)<br/>metrics, aggregated flows")]
@@ -95,22 +95,22 @@ flowchart TB
   subgraph SiteA["Site A"]
     subgraph N1["Node 1 (control plane, ingress, edge)"]
       A1["Node agent (TypeScript, SEA, systemd)<br/>compose to Docker API"]
-      D1["Docker<br/>runc / gVisor runsc (systrap, kvm)<br/>QEMU launcher: microVMs + VMs (/dev/kvm)"]
+      D1["Docker<br/>runc / gVisor runsc (systrap, kvm)<br/>QEMU launcher: microVMs + VMs (/dev/kvm)<br/>launch-vm, cloud-init seed on tmpfs"]
       F1["nftables + node DNS resolver"]
       P1["Envoy node proxy<br/>egress, east-west L7 + mTLS"]
       I1["Envoy ingress<br/>L7 + L4, rate limits, WAF"]
       B1["BIRD"]
-      S1[("DRBD volume replicas<br/>LUKS encrypted")]
+      S1[("DRBD volume replicas<br/>LUKS encrypted, block mode for VM disks")]
       G1[("Garage object storage")]
     end
     subgraph N2["Node 2 (control plane, ingress, dns)"]
       A2["Node agent (TypeScript, SEA, systemd)<br/>compose to Docker API"]
-      D2["Docker<br/>runc / gVisor runsc (systrap, kvm)<br/>QEMU launcher: microVMs + VMs (/dev/kvm)"]
+      D2["Docker<br/>runc / gVisor runsc (systrap, kvm)<br/>QEMU launcher: microVMs + VMs (/dev/kvm)<br/>launch-vm, cloud-init seed on tmpfs"]
       F2["nftables + node DNS resolver"]
       P2["Envoy node proxy<br/>egress, east-west L7 + mTLS"]
       I2["Envoy ingress<br/>L7 + L4, rate limits, WAF"]
       B2["BIRD"]
-      S2[("DRBD volume replicas<br/>LUKS encrypted")]
+      S2[("DRBD volume replicas<br/>LUKS encrypted, block mode for VM disks")]
       Bind2[("bind9<br/>DNSSEC, GeoIP views, anycast NS")]
     end
   end
@@ -118,12 +118,12 @@ flowchart TB
   subgraph SiteB["Site B"]
     subgraph N3["Node 3 (control plane, ingress, dns, edge)"]
       A3["Node agent (TypeScript, SEA, systemd)<br/>compose to Docker API"]
-      D3["Docker<br/>runc / gVisor runsc (systrap, kvm)<br/>QEMU launcher: microVMs + VMs (/dev/kvm)"]
+      D3["Docker<br/>runc / gVisor runsc (systrap, kvm)<br/>QEMU launcher: microVMs + VMs (/dev/kvm)<br/>launch-vm, cloud-init seed on tmpfs"]
       F3["nftables + node DNS resolver"]
       P3["Envoy node proxy<br/>egress, east-west L7 + mTLS"]
       I3["Envoy ingress<br/>L7 + L4, rate limits, WAF"]
       B3["BIRD"]
-      S3[("DRBD volume replicas<br/>LUKS encrypted")]
+      S3[("DRBD volume replicas<br/>LUKS encrypted, block mode for VM disks")]
       Bind3[("bind9<br/>DNSSEC, GeoIP views, anycast NS")]
       G3[("Garage object storage")]
     end
@@ -163,7 +163,7 @@ flowchart TB
 
   P1 & P2 & P3 -->|"egress policies"| Internet
 
-  N1 -.live migration (addresses kept), drain, failover.-> N3
+  N1 -.live migration (addresses kept; VMs: QEMU pre-copy, DRBD dual-primary), drain, failover.-> N3
 
   S1 & S2 & S3 & State & Logs -.encrypted backups (Kopia server, append-only ACLs)<br/>WAL archive, snapshots, DR envelope.-> G1 & G3
   G1 <-.zone-aware replication.-> G3

@@ -166,6 +166,23 @@ await lab.stop(); // removes this run's containers and volumes
   agent's `LOADWEAVER_CONTROL_PLANE_IMAGE` override (bootstrap + a systemd drop-in for the installed agent). Needs `loadweaver-control-plane-api:dr-lab`,
   `ghcr.io/forepath/loadweaver-console-server:latest` and `dist/apps/loadweaver/backend-node-agent/sea/loadweaver-agent`.
 
+## M7: shared harness, M7 specs and spikes
+
+Since M7.6 the harness itself (`vm-lab.ts`, `golden.ts`, `docker.ts`, `cleanup.sh`) is a thin layer over the shared
+VM-lab harness [`libs/domains/shared/backend/util-vm-lab`](../../../../../../shared/backend/util-vm-lab/README.md)
+(also used by Agenstra's isolation lab): same API, names, labels and golden volume, plus nested-KVM VMs (`nested`,
+default on; `cpuFlags`), `nestedKvm()` / `dockerSocket()` / `forward()` per VM, the heavy / VM-lab locks, the host
+memory check and cleanup on exit.
+
+- `m7/` (`vm-lab-m7` target, `jest.vm-lab-m7.config.cts`): isolation ladder, microVMs, live sessions / consoles, full
+  VMs (node side), QEMU live migration — through the M7 node driver (`m7-agent.entry.ts`: the agent's real
+  `NodeAgentModule` with a control API, the test plays the control plane) — and scheduling, the VM API, Agenstra on
+  Loadweaver and capability updates on a real cluster (`m7-cluster.ts`, `m7-cluster-agent.entry.ts`: the agent with
+  the lab reconciler incl. the built-in registry), required host packages (F2, the M6 update driver).
+- `spikes/` (`vm-lab-spikes` target): S1–S10 with PASS / FAIL verdicts and measurements.
+
+Durations, memory and prerequisites: see the shared harness README.
+
 ## Findings from the first real-DRBD run (M6 step 1a)
 
 Fixed in `lib/volumes/volume.manager.ts` (unit tests in `volumes.spec.ts`):

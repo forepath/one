@@ -133,6 +133,12 @@
       "@forepath/shared/backend/util-dynamic-provider-registry": [
         "libs/domains/shared/backend/util-dynamic-provider-registry/src/index.ts"
       ],
+      "@forepath/shared/backend/util-microvm-bridge": [
+        "libs/domains/shared/backend/util-microvm-bridge/src/index.ts"
+      ],
+      "@forepath/shared/backend/util-vm-lab": [
+        "libs/domains/shared/backend/util-vm-lab/src/index.ts"
+      ],
       "@forepath/shared/backend/util-container-runtime": [
         "libs/domains/shared/backend/util-container-runtime/src/index.ts"
       ],
@@ -237,9 +243,6 @@
       ],
       "@forepath/agenstra/backend/feature-isolation-lab": [
         "libs/domains/agenstra/backend/feature-isolation-lab/src/index.ts"
-      ],
-      "@forepath/agenstra/backend/util-microvm-bridge": [
-        "libs/domains/agenstra/backend/util-microvm-bridge/src/index.ts"
       ],
       "@forepath/loadweaver/backend": [
         "libs/domains/loadweaver/backend/index.ts"

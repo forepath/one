@@ -1,6 +1,7 @@
 import {
   BACKUP_RETENTION_RULES,
   matchesSelector,
+  VM_DEPLOYMENT_NAME,
   type BackupPolicySpec,
   type BackupRetention,
 } from '@forepath/loadweaver/shared/util-model';
@@ -125,6 +126,44 @@ export interface VolumeCandidate {
   deployment: string;
   volume: string;
   deploymentLabels: Record<string, string>;
+}
+
+/** Label every VM disk carries for backup selectors: the VM's name (`matchLabels: { loadweaver.com/vm: db1 }`). */
+export const VM_BACKUP_LABEL = 'loadweaver.com/vm';
+
+/**
+ * Backup candidates of the placed volumes: a deployment's volumes carry its labels; a VM's disks
+ * (`<project>/lw-vm/<vm>.<disk>`, 3.35) carry the `VirtualMachine`'s labels and its name, so `BackupPolicy` selectors
+ * pick VMs by labels (all disks of a VM together).
+ */
+export function volumeCandidates(
+  placements: readonly { id: string }[],
+  resources: readonly { kind: string; project?: string | null; name: string; labels?: Record<string, string> | null }[],
+): VolumeCandidate[] {
+  const labels = new Map(
+    resources.filter((r) => r.kind === 'Deployment').map((r) => [`${r.project}/${r.name}`, r.labels ?? {}]),
+  );
+  const vms = new Map(
+    resources.filter((r) => r.kind === 'VirtualMachine').map((r) => [`${r.project}/${r.name}`, r.labels ?? {}]),
+  );
+
+  return placements.map((p) => {
+    const [project, deployment, volume] = p.id.split('/');
+
+    if (deployment === VM_DEPLOYMENT_NAME) {
+      const vm = volume.split('.')[0];
+
+      return {
+        id: p.id,
+        project,
+        deployment,
+        volume,
+        deploymentLabels: { ...(vms.get(`${project}/${vm}`) ?? {}), [VM_BACKUP_LABEL]: vm },
+      };
+    }
+
+    return { id: p.id, project, deployment, volume, deploymentLabels: labels.get(`${project}/${deployment}`) ?? {} };
+  });
 }
 
 /** Volumes a policy selects; project policies only ever select volumes of their own project. */

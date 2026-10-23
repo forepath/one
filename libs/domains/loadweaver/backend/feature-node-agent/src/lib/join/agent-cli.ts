@@ -16,6 +16,7 @@ import { restoreOptionsFrom, type RestoreFlags, type RestoreOptions } from './dr
 import { JoinService } from './join.service';
 import { CommandRunner } from '../host/command-runner';
 import { DiscoveryService } from '../import/discovery.service';
+import { runUnpackLayerCommand } from '../microvm/rootfs-unpack';
 
 const LABEL =
   /^([a-z0-9]([a-z0-9.-]*[a-z0-9])?\/)?[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?=([A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?)?$/;
@@ -219,6 +220,32 @@ export async function runAgentCli(argv: string[], USAGE: string): Promise<void> 
 
     if (values.output) await writeFile(values.output, text, { mode: 0o600 });
     else process.stdout.write(text);
+
+    return;
+  }
+
+  if (command === 'unpack-layer') {
+    // Internal (3.35): started by the rootfs cache under `unshare`; confines itself, unpacks stdin, prints the result.
+    const { values } = parseArgs({
+      args: rest,
+      options: {
+        staging: { type: 'string' },
+        'media-type': { type: 'string' },
+        size: { type: 'string' },
+        'max-bytes': { type: 'string' },
+      },
+      strict: true,
+    });
+    const size = Number(values.size);
+    const maxBytes = Number(values['max-bytes']);
+
+    if (!values.staging || !values['media-type'] || !Number.isSafeInteger(size) || !Number.isSafeInteger(maxBytes))
+      throw new Error('usage: unpack-layer --staging <dir> --media-type <type> --size <n> --max-bytes <n>');
+
+    await runUnpackLayerCommand(
+      { staging: values.staging, mediaType: values['media-type'], size, maxBytes },
+      { stdin: process.stdin, stdout: process.stdout, readMountinfo: () => readFile('/proc/self/mountinfo', 'utf8') },
+    );
 
     return;
   }

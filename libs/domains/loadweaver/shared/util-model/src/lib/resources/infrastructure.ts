@@ -27,10 +27,74 @@ export const siteSpecSchema = z
   .strict();
 export type SiteSpec = z.infer<typeof siteSpecSchema>;
 
-/** Container runtimes Loadweaver manages per node (3.1). */
-export const RUNTIMES = ['runc', 'sandboxed'] as const;
+/**
+ * Isolation levels Loadweaver manages per node (3.1, Agenstra's names), in ladder order (weakest first):
+ * `runc` (standard), `sandboxed` (gVisor `--platform=systrap`), `sandboxed-kvm` (gVisor `--platform=kvm`),
+ * `microvm` (QEMU microVM in the launcher, 3.35).
+ *
+ * Exact-level semantics: a workload always runs at exactly its declared level; the scheduler never upgrades or
+ * downgrades it (`microvm` and `sandboxed-kvm` change semantics). The strength order (`RUNTIME_RANK`, `atLeast`,
+ * `runtimesAtLeast`) is only used for node selectors (derived labels such as "can do at least sandboxed-kvm"),
+ * capability views (Agenstra's aggregation) and plan output — never for placement.
+ */
+export const RUNTIMES = ['runc', 'sandboxed', 'sandboxed-kvm', 'microvm'] as const;
 export const runtimeSchema = z.enum(RUNTIMES);
 export type Runtime = z.infer<typeof runtimeSchema>;
+
+/** Strength of each level (ladder order = rank). For selectors, capability views and plan output only. */
+export const RUNTIME_RANK: Readonly<Record<Runtime, number>> = Object.freeze({
+  runc: 1,
+  sandboxed: 2,
+  'sandboxed-kvm': 3,
+  microvm: 4,
+});
+
+export function isRuntime(value: unknown): value is Runtime {
+  return typeof value === 'string' && (RUNTIMES as readonly string[]).includes(value);
+}
+
+/**
+ * Whether `level` is at least as strong as `min`. Not a placement rule (placement needs the exact level): used for
+ * selectors such as `runtime ≥ sandboxed-kvm`, capability aggregation and plan output.
+ */
+export function atLeast(level: Runtime, min: Runtime): boolean {
+  return RUNTIME_RANK[level] >= RUNTIME_RANK[min];
+}
+
+/** Every level at least as strong as `min`, in ladder order (the `In` values a `runtime ≥ min` selector expands to). */
+export function runtimesAtLeast(min: Runtime): Runtime[] {
+  return RUNTIMES.filter((level) => atLeast(level, min));
+}
+
+/** The strongest of the given levels (e.g. a node's ready levels → `loadweaver.com/runtime`); null when empty. */
+export function strongestRuntime(levels: Iterable<Runtime>): Runtime | null {
+  let best: Runtime | null = null;
+
+  for (const level of levels) if (best === null || RUNTIME_RANK[level] > RUNTIME_RANK[best]) best = level;
+
+  return best;
+}
+
+/** Levels that need a usable `/dev/kvm` on the node (none of them on nodes with `virtualization.kvm: disabled`). */
+export const KVM_RUNTIMES: readonly Runtime[] = ['sandboxed-kvm', 'microvm'];
+
+/** Probe state of one isolation level on a node (Agenstra's names). */
+export const ISOLATION_STATES = [
+  'ready',
+  'unsupported',
+  'installation-failed',
+  'probe-failed',
+  'disabled-by-admin',
+] as const;
+export const isolationStateSchema = z.enum(ISOLATION_STATES);
+export type IsolationState = z.infer<typeof isolationStateSchema>;
+
+/**
+ * Per-node virtualization settings (3.1). `kvm: disabled` opts the node out of KVM: no KVM host preparation, no
+ * KVM levels (`sandboxed-kvm`, `microvm`), no microVMs and no full VMs on the node.
+ */
+export const nodeVirtualizationSchema = z.object({ kvm: z.enum(['auto', 'disabled']).default('auto') }).strict();
+export type NodeVirtualization = z.infer<typeof nodeVirtualizationSchema>;
 
 /**
  * Declarative part of a node. Nodes are registered by joining (3.21); their spec only carries what
@@ -44,6 +108,8 @@ export const nodeSpecSchema = z
     unschedulable: z.boolean().default(false),
     /** Witness nodes only vote in etcd / Patroni and never run workloads (3.2). */
     witness: z.boolean().default(false),
+    /** KVM opt-out (3.1); absent: `auto` (KVM levels where the probe passes). */
+    virtualization: nodeVirtualizationSchema.optional(),
   })
   .strict();
 export type NodeSpec = z.infer<typeof nodeSpecSchema>;

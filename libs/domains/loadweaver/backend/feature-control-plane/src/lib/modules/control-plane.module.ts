@@ -12,6 +12,7 @@ import { AgentStreamServer } from '../agent-stream/agent-stream.server';
 import { ClusterController } from '../controllers/cluster.controller';
 import { CronRunsController } from '../controllers/cron-runs.controller';
 import { DeploymentStatusController } from '../controllers/deployment-status.controller';
+import { IsolationCapabilitiesController } from '../controllers/isolation-capabilities.controller';
 import { MigrationsController } from '../controllers/migrations.controller';
 import { MigrationEntity } from '../entities/migration.entity';
 import { MigrationSessionService } from '../services/migration-session.service';
@@ -103,6 +104,12 @@ import { LiveFilesController } from '../controllers/live-files.controller';
 import { TerminalsGateway } from '../gateways/terminals.gateway';
 import { ExecGateway } from '../gateways/exec.gateway';
 import { TunnelsGateway } from '../gateways/tunnels.gateway';
+import { ConsolesGateway } from '../gateways/consoles.gateway';
+import { VirtualMachinesController, VmImagesController } from '../controllers/virtual-machines.controller';
+import { VIRTUAL_MACHINE_ENTITIES } from '../entities/virtual-machine.entities';
+import { VirtualMachinesService } from '../services/virtual-machines.service';
+import { VmImageCatalogService } from '../services/vm-image-catalog.service';
+import { VmImageImportService } from '../services/vm-image-import.service';
 import { LiveAccessService } from '../live/live-access.service';
 import { LiveBroker } from '../live/live-broker';
 import { LiveFilesService } from '../live/live-files.service';
@@ -234,6 +241,8 @@ export const CONTROL_PLANE_ENTITIES = [
   ...BACKUPS_ENTITIES,
   // Control-plane data backups (3.20).
   ...PLATFORM_BACKUPS_ENTITIES,
+  // Virtual machines (3.35): power, node commands, snapshots, image imports.
+  ...VIRTUAL_MACHINE_ENTITIES,
   ClusterEntity,
   ResourceEntity,
   NodeEntity,
@@ -340,6 +349,9 @@ export const CONTROL_PLANE_ENTITIES = [
     SecretsController,
     CronRunsController,
     DeploymentStatusController,
+    IsolationCapabilitiesController,
+    VirtualMachinesController,
+    VmImagesController,
     MigrationsController,
     RegistryController,
     CertificatesController,
@@ -436,6 +448,10 @@ export const CONTROL_PLANE_ENTITIES = [
     TerminalsGateway,
     ExecGateway,
     TunnelsGateway,
+    ConsolesGateway,
+    VirtualMachinesService,
+    VmImageImportService,
+    VmImageCatalogService,
     TopologyService,
     TopologyGateway,
     OtelSummaryCollector,

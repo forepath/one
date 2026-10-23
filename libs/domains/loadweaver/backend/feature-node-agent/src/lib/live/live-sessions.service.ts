@@ -5,6 +5,7 @@ import { PassThrough, type Duplex } from 'node:stream';
 import {
   agentMessage,
   LIVE_CHUNK_BYTES,
+  type ConsoleOpen,
   type DesiredState,
   type Envelope,
   type ExecOpen,
@@ -26,6 +27,8 @@ import {
 } from '../workloads/restored-runtime';
 import { WORKLOAD_LABEL } from '../workloads/workload-container';
 import { runFileRequest } from './confined-fs';
+import { guestExecOptions, guestFileRoot, guestKind, VM_CONSOLE_PATH } from './guest-target';
+import { SerialConsoles } from './serial-console';
 import { TunnelFirewall } from './tunnel-firewall';
 import { componentImage } from '../updates/release-images';
 
@@ -63,11 +66,21 @@ interface Terminal extends Output {
   idle?: NodeJS.Timeout;
   /** Machine exec (no TTY): Docker multiplexes stdout / stderr on the stream; stderr is buffered apart. */
   stderr?: Output;
+  /** The replica the session runs in (closed when the replica migrates away). */
+  replica?: string;
 }
 
 interface Tunnel {
   socket: Socket;
   expiry: NodeJS.Timeout;
+  replica: string;
+}
+
+/** A session on a VM's serial console: one viewer of the VM's shared serial collector. */
+interface SerialSession {
+  containerId: string;
+  detach: () => void;
+  idle: NodeJS.Timeout;
 }
 
 /**
@@ -82,6 +95,9 @@ export class LiveSessionsService implements OnModuleDestroy {
   private send: Send | null = null;
   private readonly terminals = new Map<string, Terminal>();
   private readonly tunnels = new Map<string, Tunnel>();
+  private readonly serialSessions = new Map<string, SerialSession>();
+  /** One collector per running VM: boot log ring + fan-out to its console sessions (3.35). */
+  readonly serial: SerialConsoles;
   /** Sources paused while the control-plane stream is full, resumed when it drains. */
   private readonly paused = new Set<Duplex>();
   private access: DesiredState['liveAccess'];
@@ -92,6 +108,7 @@ export class LiveSessionsService implements OnModuleDestroy {
     @Optional() commands?: CommandRunner,
   ) {
     this.firewall = commands ? new TunnelFirewall(commands) : null;
+    this.serial = new SerialConsoles(docker);
   }
 
   private readonly firewall: TunnelFirewall | null;
@@ -114,6 +131,12 @@ export class LiveSessionsService implements OnModuleDestroy {
 
   async onModuleDestroy(): Promise<void> {
     await this.closeAll();
+    this.serial.stop();
+  }
+
+  /** Serial collectors for the VMs on this node, from their start on (agent start, after `reset`). */
+  async watchConsoles(): Promise<void> {
+    await this.serial.watch();
   }
 
   /**
@@ -124,6 +147,8 @@ export class LiveSessionsService implements OnModuleDestroy {
     for (const channel of [...this.tunnels.keys()]) this.closeTunnel(channel);
 
     for (const channel of [...this.terminals.keys()]) await this.closeTerminal(channel);
+
+    for (const channel of [...this.serialSessions.keys()]) this.endSerial(channel);
 
     this.paused.clear();
   }
@@ -178,7 +203,7 @@ export class LiveSessionsService implements OnModuleDestroy {
 
   async openTerminal(channel: string, open: ExecOpen): Promise<void> {
     try {
-      if (this.terminals.size >= MAX_SESSIONS) throw new Error('too many terminal sessions on this node');
+      if (this.sessionCount() >= MAX_SESSIONS) throw new Error('too many terminal sessions on this node');
 
       const machine = open.tty === false;
 
@@ -187,49 +212,65 @@ export class LiveSessionsService implements OnModuleDestroy {
       const terminal =
         open.target.kind === 'node' ? await this.nodeShell(open) : await this.execInReplica(open.target.replica, open);
 
-      this.terminals.set(channel, terminal);
+      if (open.target.kind === 'replica') terminal.replica = open.target.replica;
 
-      if (terminal.stderr) {
-        // Machine exec: binary stdout / stderr apart; no idle limit (watchers run without input), the control plane
-        // bounds these sessions.
-        const stdout = new PassThrough();
-        const stderr = new PassThrough();
-        const stderrOutput = terminal.stderr;
-
-        let open = 2;
-        // Done once both demultiplexed streams have delivered everything.
-        const ended = () => {
-          if (--open === 0) void this.finish(channel);
-        };
-
-        stdout.on('data', (chunk: Buffer) => this.buffer(channel, terminal, chunk));
-        stderr.on('data', (chunk: Buffer) => this.buffer(channel, terminal, chunk, stderrOutput));
-        stdout.on('end', ended);
-        stderr.on('end', ended);
-        this.docker.modem.demuxStream(terminal.stream, stdout, stderr);
-        terminal.stream.on('end', () => {
-          stdout.end();
-          stderr.end();
-        });
-      } else {
-        // Idle is measured by input only: a program printing on its own doesn't keep a forgotten session open.
-        terminal.idle = setTimeout(() => void this.closeTerminal(channel), TERMINAL_IDLE_MS);
-        terminal.stream.on('data', (chunk: Buffer) => this.buffer(channel, terminal, chunk));
-        terminal.stream.on('end', () => void this.finish(channel));
-      }
-
-      terminal.stream.on('error', () => void this.finish(channel));
+      this.run(channel, terminal);
 
       if (!machine) await terminal.resize(open.cols, open.rows).catch(() => undefined);
     } catch (error) {
-      this.emit(
-        agentMessage(
-          'execExit',
-          { code: null, error: (error instanceof Error ? error.message : String(error)).slice(0, 1024) },
-          { channel },
-        ),
-      );
+      this.refuse(channel, error);
     }
+  }
+
+  private sessionCount(): number {
+    return this.terminals.size + this.serialSessions.size;
+  }
+
+  /** Ends a session that couldn't start, with the reason. */
+  private refuse(channel: string, error: unknown): void {
+    this.emit(
+      agentMessage(
+        'execExit',
+        { code: null, error: (error instanceof Error ? error.message : String(error)).slice(0, 1024) },
+        { channel },
+      ),
+    );
+  }
+
+  /** Wires a started session's stream to its channel: output batched, the end reported with the exit code. */
+  private run(channel: string, terminal: Terminal): void {
+    this.terminals.set(channel, terminal);
+
+    if (terminal.stderr) {
+      // Machine exec: binary stdout / stderr apart; no idle limit (watchers run without input), the control plane
+      // bounds these sessions.
+      const stdout = new PassThrough();
+      const stderr = new PassThrough();
+      const stderrOutput = terminal.stderr;
+
+      let open = 2;
+      // Done once both demultiplexed streams have delivered everything.
+      const ended = () => {
+        if (--open === 0) void this.finish(channel);
+      };
+
+      stdout.on('data', (chunk: Buffer) => this.buffer(channel, terminal, chunk));
+      stderr.on('data', (chunk: Buffer) => this.buffer(channel, terminal, chunk, stderrOutput));
+      stdout.on('end', ended);
+      stderr.on('end', ended);
+      this.docker.modem.demuxStream(terminal.stream, stdout, stderr);
+      terminal.stream.on('end', () => {
+        stdout.end();
+        stderr.end();
+      });
+    } else {
+      // Idle is measured by input only: a program printing on its own doesn't keep a forgotten session open.
+      terminal.idle = setTimeout(() => void this.closeTerminal(channel), TERMINAL_IDLE_MS);
+      terminal.stream.on('data', (chunk: Buffer) => this.buffer(channel, terminal, chunk));
+      terminal.stream.on('end', () => void this.finish(channel));
+    }
+
+    terminal.stream.on('error', () => void this.finish(channel));
   }
 
   private async execInReplica(replica: string, open: ExecOpen): Promise<Terminal> {
@@ -240,17 +281,22 @@ export class LiveSessionsService implements OnModuleDestroy {
     if (info.Config.Labels?.[RESTORED_LABEL])
       return await this.execInRestored(info.Id, open, restoredKind(info.Config.Labels));
 
+    // microVMs: the command runs in the guest through the launcher's `vm-exec` (M7.2); full VMs have no exec.
+    const kind = guestKind(info.Config.Labels);
+
     if (open.tty === false) {
-      const exec = await container.exec({
-        Cmd: open.command ?? DEFAULT_SHELL,
-        AttachStdin: true,
-        AttachStdout: true,
-        AttachStderr: true,
-        Tty: false,
-        ...(open.user ? { User: open.user } : {}),
-        ...(open.workingDir ? { WorkingDir: open.workingDir } : {}),
-        ...(open.env?.length ? { Env: open.env } : {}),
-      });
+      const exec = await container.exec(
+        guestExecOptions(kind, {
+          Cmd: open.command ?? DEFAULT_SHELL,
+          AttachStdin: true,
+          AttachStdout: true,
+          AttachStderr: true,
+          Tty: false,
+          ...(open.user ? { User: open.user } : {}),
+          ...(open.workingDir ? { WorkingDir: open.workingDir } : {}),
+          ...(open.env?.length ? { Env: open.env } : {}),
+        }),
+      );
       const stream = (await exec.start({ hijack: true, stdin: true })) as unknown as Duplex;
 
       return {
@@ -265,18 +311,21 @@ export class LiveSessionsService implements OnModuleDestroy {
       };
     }
 
-    const exec = await container.exec({
-      Cmd: open.command ?? DEFAULT_SHELL,
-      AttachStdin: true,
-      AttachStdout: true,
-      AttachStderr: true,
-      Tty: true,
-      Env: ['TERM=xterm-256color'],
-    });
+    const exec = await container.exec(
+      guestExecOptions(kind, {
+        Cmd: open.command ?? DEFAULT_SHELL,
+        AttachStdin: true,
+        AttachStdout: true,
+        AttachStderr: true,
+        Tty: true,
+        Env: ['TERM=xterm-256color'],
+      }),
+    );
     const stream = (await exec.start({ hijack: true, stdin: true, Tty: true })) as unknown as Duplex;
 
     return {
       stream,
+      // In a microVM the vm-exec client forwards the exec's window size to the guest's PTY.
       resize: async (cols, rows) => void (await exec.resize({ h: rows, w: cols })),
       exitCode: async () => (await exec.inspect()).ExitCode ?? null,
       cleanup: async () => undefined,
@@ -423,7 +472,7 @@ export class LiveSessionsService implements OnModuleDestroy {
   }
 
   /** `closing`: ended by us (closed, idle, stream dropped), so the program isn't waited for. */
-  private async finish(channel: string, closing = false): Promise<void> {
+  private async finish(channel: string, closing = false, error?: string): Promise<void> {
     const terminal = this.terminals.get(channel);
 
     if (!terminal) return;
@@ -448,14 +497,31 @@ export class LiveSessionsService implements OnModuleDestroy {
 
     if (!closing) await terminal.cleanup();
 
-    this.emit(agentMessage('execExit', { code }, { channel }));
+    this.emit(agentMessage('execExit', { code, ...(error ? { error: error.slice(0, 1024) } : {}) }, { channel }));
+  }
+
+  /**
+   * The replica left this node (live migration, 3.10 / M7 W10b): its terminals, machine execs and tunnels end with
+   * `reason`; new sessions go to the node it runs on now.
+   */
+  async closeReplicaSessions(replica: string, reason: string): Promise<void> {
+    for (const [channel, tunnel] of [...this.tunnels])
+      if (tunnel.replica === replica) this.closeTunnel(channel, reason);
+
+    for (const [channel, terminal] of [...this.terminals]) {
+      if (terminal.replica !== replica) continue;
+
+      terminal.stream.end();
+      terminal.stream.destroy();
+      await this.finish(channel, true, reason);
+    }
   }
 
   /** Input towards a session; `eof` closes the program's stdin afterwards (machine exec). */
   input(channel: string, data: string, eof = false): void {
     const terminal = this.terminals.get(channel);
 
-    if (!terminal) return;
+    if (!terminal) return this.serialInput(channel, data);
 
     terminal.idle?.refresh();
 
@@ -474,12 +540,106 @@ export class LiveSessionsService implements OnModuleDestroy {
   async closeTerminal(channel: string): Promise<void> {
     const terminal = this.terminals.get(channel);
 
-    if (!terminal) return;
+    if (!terminal) return this.endSerial(channel);
 
     // Ends the shell: closing stdin (the shell exits) and the connection.
     terminal.stream.end();
     terminal.stream.destroy();
     await this.finish(channel, true);
+  }
+
+  // VM consoles (3.35, feature `vm-consoles`).
+
+  /**
+   * A VM's console on a live channel; data then flows as for terminals (`execInput` / `execOutput` / `execClose` /
+   * `execExit`). `serial`: a viewer of the VM's serial collector (boot log first, input to the serial line, resize
+   * ignored: the guest owns the line). `vnc`: raw RFB of the graphical console through `vm-console vnc` in the
+   * launcher (no TTY, binary-safe), one relay per session. Full VMs only; the commands are the agent's own.
+   */
+  async openConsole(channel: string, open: ConsoleOpen): Promise<void> {
+    try {
+      if (this.sessionCount() >= MAX_SESSIONS) throw new Error('too many terminal sessions on this node');
+
+      if (this.terminals.has(channel) || this.serialSessions.has(channel)) throw new Error('channel in use');
+
+      const container = await this.container(open.target.replica);
+      const info = await container.inspect();
+
+      if (guestKind(info.Config?.Labels) !== 'vm') throw new Error('consoles are only available for virtual machines');
+
+      if (open.kind === 'serial') return this.openSerial(channel, info.Id, open.target.replica);
+
+      const exec = await container.exec({
+        Cmd: [VM_CONSOLE_PATH, 'vnc'],
+        AttachStdin: true,
+        AttachStdout: true,
+        AttachStderr: true,
+        Tty: false,
+      });
+      const stream = (await exec.start({ hijack: true, stdin: true })) as unknown as Duplex;
+
+      this.run(channel, {
+        stream,
+        resize: async () => undefined,
+        exitCode: async () => (await exec.inspect()).ExitCode ?? null,
+        cleanup: async () => undefined,
+        pending: [],
+        pendingBytes: 0,
+        timer: null,
+        stderr: { pending: [], pendingBytes: 0, timer: null },
+      });
+    } catch (error) {
+      this.refuse(channel, error);
+    }
+  }
+
+  private openSerial(channel: string, containerId: string, replica: string): void {
+    const session: SerialSession = {
+      containerId,
+      detach: () => undefined,
+      idle: setTimeout(() => this.endSerial(channel), TERMINAL_IDLE_MS),
+    };
+
+    this.serialSessions.set(channel, session);
+    session.detach = this.serial.view(containerId, replica, {
+      output: (chunk) => {
+        for (let i = 0; i < chunk.length; i += LIVE_CHUNK_BYTES)
+          this.emit(
+            agentMessage(
+              'execOutput',
+              { data: chunk.subarray(i, i + LIVE_CHUNK_BYTES).toString('base64') },
+              { channel },
+            ),
+          );
+      },
+      ended: (reason) => this.endSerial(channel, reason),
+    });
+  }
+
+  private serialInput(channel: string, data: string): void {
+    const session = this.serialSessions.get(channel);
+
+    if (!session || data.length === 0) return;
+
+    session.idle.refresh();
+    this.serial.input(session.containerId, Buffer.from(data, 'base64'));
+
+    if (this.serial.backlog(session.containerId) > MAX_BUFFERED_BYTES) {
+      this.logger.warn('Serial console session closed: the guest does not read');
+      this.endSerial(channel, 'the guest does not read its serial console');
+    }
+  }
+
+  /** Ends a serial console session (the VM keeps its collector and boot log). */
+  private endSerial(channel: string, error?: string): void {
+    const session = this.serialSessions.get(channel);
+
+    if (!session) return;
+
+    this.serialSessions.delete(channel);
+    clearTimeout(session.idle);
+    session.detach();
+    this.emit(agentMessage('execExit', { code: null, ...(error ? { error } : {}) }, { channel }));
   }
 
   // Files.
@@ -495,6 +655,11 @@ export class LiveSessionsService implements OnModuleDestroy {
     }
 
     const info = await (await this.container(request.target.replica)).inspect();
+    // microVMs: the guest's root (generic: the replica's overlay on the host; bundled: `/guest` in the image).
+    const guestRoot = guestFileRoot(guestKind(info.Config?.Labels), info);
+
+    if (guestRoot) return guestRoot;
+
     const merged = (info.GraphDriver?.Data as Record<string, string> | undefined)?.['MergedDir'];
 
     // A restored gVisor replica runs on a runc placeholder, but its files live in the sandbox.
@@ -549,6 +714,7 @@ export class LiveSessionsService implements OnModuleDestroy {
 
       this.tunnels.set(channel, {
         socket,
+        replica,
         expiry: setTimeout(() => {
           ended('the tunnel expired');
           socket.destroy();

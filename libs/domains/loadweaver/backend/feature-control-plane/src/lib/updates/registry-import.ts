@@ -79,7 +79,8 @@ function call(
   });
 }
 
-async function pushBlob(
+/** Uploads one blob (monolithic PUT after a POST); skipped when the repository already has it. */
+export async function pushBlob(
   endpoint: RegistryEndpoint,
   repository: string,
   digest: string,
@@ -113,6 +114,24 @@ async function pushBlob(
 
   if (done.status !== 201)
     throw new Error(`registry refused blob ${digest} (${done.status}): ${done.body.slice(0, 200)}`);
+}
+
+/** Puts a manifest by tag or digest (VM image artifacts, 3.35). */
+export async function pushManifest(
+  endpoint: RegistryEndpoint,
+  repository: string,
+  reference: string,
+  mediaType: string,
+  data: Buffer,
+): Promise<void> {
+  const res = await call(endpoint, 'PUT', `/v2/${repository}/manifests/${reference}`, {
+    body: data,
+    length: data.length,
+    headers: { 'content-type': mediaType },
+  });
+
+  if (res.status !== 201)
+    throw new Error(`registry refused manifest ${reference} (${res.status}): ${res.body.slice(0, 200)}`);
 }
 
 /**

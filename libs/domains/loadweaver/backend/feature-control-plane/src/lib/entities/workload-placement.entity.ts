@@ -1,6 +1,6 @@
 import { Column, Entity, Index, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
-import type { MigrationMethod } from '../utils/migration-eligibility.utils';
+import type { MigrationMethod, SessionRuntime } from '../utils/migration-eligibility.utils';
 import type { SessionPhase } from '../utils/migration-state.utils';
 
 /** A replica moving between nodes (3.10). */
@@ -20,8 +20,8 @@ export interface PlacementMigration {
   label?: string;
   /** Dependency wave (3.10): replicas that must have moved and run before this one starts. */
   after?: string[];
-  /** Checkpoint runtime of `live` / `stop-and-copy`. */
-  runtime?: 'runc' | 'runsc';
+  /** Session runtime of `live` / `stop-and-copy` (runc / runsc) and `vm-live` (qemu). */
+  runtime?: SessionRuntime;
 }
 
 /** Where one replica runs and with which addresses (3.11). Written on apply; status reported by the agent. */
@@ -92,7 +92,23 @@ export class WorkloadPlacementEntity {
 
   /** Last state reported per node (a migrating replica runs on two nodes). `absent` = no container there. */
   @Column({ type: 'jsonb', name: 'status', nullable: true })
-  status!: Record<string, { state: string; exitCode?: number; message?: string; specHash: string; at: string }> | null;
+  status!: Record<
+    string,
+    {
+      state: string;
+      exitCode?: number;
+      message?: string;
+      /** Full VMs (3.35): guest power state (`VM_POWER_STATES`) and a boot disk being written from its image. */
+      vm?: {
+        power?: string;
+        importing?: boolean;
+        /** The boot disk import's progress (background job on the node, F3b). */
+        importProgress?: { phase: string; bytes?: number; totalBytes?: number };
+      };
+      specHash: string;
+      at: string;
+    }
+  > | null;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;

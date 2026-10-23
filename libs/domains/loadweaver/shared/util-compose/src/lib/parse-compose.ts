@@ -1,5 +1,5 @@
 import { isValidTimeZone, parseCron } from '@forepath/loadweaver/shared/util-scheduler';
-import { PRIVATE_REGISTRY_HOST } from '@forepath/loadweaver/shared/util-model';
+import { PRIVATE_REGISTRY_HOST, type Runtime } from '@forepath/loadweaver/shared/util-model';
 import { parseDocument } from 'yaml';
 
 import { parseImageReference } from './image-reference';
@@ -15,6 +15,7 @@ import type {
   PortExposure,
   Rate,
   ResourceAmount,
+  ServiceDevice,
   ServiceSpec,
   VolumeMount,
   VolumeSpec,
@@ -505,6 +506,119 @@ function parseResources(
   return { requests, limits, source: fromCompose ? 'compose' : 'project-default' };
 }
 
+/**
+ * Compose's own `runtime:` key (Docker runtime names) → isolation level (3.1). `x-loadweaver.runtime` takes
+ * precedence; any other Docker runtime name is an error, because Loadweaver chooses the node's runtime per level.
+ */
+const COMPOSE_RUNTIMES: Readonly<Record<string, Runtime>> = {
+  runc: 'runc',
+  runsc: 'sandboxed',
+  'runsc-systrap': 'sandboxed',
+  'runsc-kvm': 'sandboxed-kvm',
+};
+
+function parseRuntime(raw: Obj, extension: Runtime | undefined, issues: Issues, path: string): Runtime {
+  const value = raw['runtime'];
+  let fromCompose: Runtime | undefined;
+
+  if (value !== undefined) {
+    if (typeof value === 'string' && Object.prototype.hasOwnProperty.call(COMPOSE_RUNTIMES, value))
+      fromCompose = COMPOSE_RUNTIMES[value];
+    else issues.error(`${path}.runtime`, `unknown runtime ${String(value)}, use x-loadweaver.runtime`);
+  }
+
+  if (extension && fromCompose && extension !== fromCompose)
+    issues.warn(`${path}.runtime`, `runtime ${String(value)} is overridden by x-loadweaver.runtime: ${extension}`);
+
+  return extension ?? fromCompose ?? 'runc';
+}
+
+/** The host devices a service may request (3.1); the project must allow them too (`workloads.allowedDevices`). */
+const ALLOWED_DEVICES: readonly string[] = ['/dev/kvm'];
+const DEVICE_PERMISSIONS: readonly string[] = ['rw', 'rwm'];
+
+/**
+ * `devices` (short `HOST[:CONTAINER][:PERMISSIONS]` or long `{ source, target, permissions }`): only allow-listed
+ * devices, mapped to the same path, on `runc` (gVisor and microVMs can't pass host devices through).
+ */
+function parseDevices(value: unknown, runtime: Runtime, issues: Issues, path: string): ServiceDevice[] {
+  if (value === undefined) return [];
+
+  if (!Array.isArray(value)) {
+    issues.error(path, 'devices must be a list');
+
+    return [];
+  }
+
+  const devices: ServiceDevice[] = [];
+
+  value.forEach((entry, index) => {
+    const at = `${path}[${index}]`;
+    let source: string;
+    let target: string;
+    let permissions: string;
+
+    if (isObj(entry)) {
+      source = String(entry['source'] ?? '');
+      target = entry['target'] !== undefined ? String(entry['target']) : source;
+      permissions = entry['permissions'] !== undefined ? String(entry['permissions']) : 'rwm';
+    } else if (typeof entry === 'string') {
+      const parts = entry.split(':');
+
+      source = parts[0];
+      // `HOST:PERMISSIONS` is Docker's shorthand for the same path inside the container.
+      const shorthand = parts.length === 2 && /^[rwm]+$/.test(parts[1]);
+
+      target = shorthand ? source : (parts[1] ?? source);
+      permissions = shorthand ? parts[1] : (parts[2] ?? 'rwm');
+
+      if (parts.length > 3) {
+        issues.error(at, `invalid device ${entry}`);
+
+        return;
+      }
+    } else {
+      issues.error(at, 'a device is a string or a map with source / target / permissions');
+
+      return;
+    }
+
+    if (!ALLOWED_DEVICES.includes(source)) {
+      issues.error(at, `device ${source || '(empty)'} is not allowed (allow-list: ${ALLOWED_DEVICES.join(', ')})`);
+
+      return;
+    }
+
+    if (target !== source) {
+      issues.error(at, `device ${source} must keep its path in the container (${source}:${source})`);
+
+      return;
+    }
+
+    if (!DEVICE_PERMISSIONS.includes(permissions)) {
+      issues.error(at, `device ${source} permissions must be ${DEVICE_PERMISSIONS.join(' or ')}`);
+
+      return;
+    }
+
+    if (devices.some((d) => d.path === source)) {
+      issues.error(at, `device ${source} is listed twice`);
+
+      return;
+    }
+
+    devices.push({ path: source as ServiceDevice['path'], permissions: permissions as ServiceDevice['permissions'] });
+  });
+
+  if (devices.length > 0 && runtime !== 'runc')
+    issues.error(
+      path,
+      `devices need runtime runc: runtime ${runtime} can't pass host devices through (${devices.map((d) => d.path).join(', ')})`,
+    );
+
+  return devices;
+}
+
 function parseService(
   name: string,
   raw: unknown,
@@ -595,11 +709,20 @@ function parseService(
   else if (networkMode && networkMode !== 'bridge')
     issues.error(`${path}.network_mode`, `network_mode ${networkMode} is not supported`);
 
-  const devices = Array.isArray(raw['devices'])
-    ? raw['devices'].map((d) => (isObj(d) ? String(d['source'] ?? '') : String(d)))
-    : [];
+  const runtime = parseRuntime(raw, x.runtime, issues, path);
+  const deviceAccess = parseDevices(raw['devices'], runtime, issues, `${path}.devices`);
+  const devices = deviceAccess.map((d) => d.path);
 
-  if (devices.length > 0) pins.push({ kind: 'deployment', reason: `device access (${devices.join(', ')})` });
+  if (devices.length > 0) {
+    pins.push({ kind: 'deployment', reason: `device access (${devices.join(', ')})` });
+    // Shown even when the pin is acknowledged: /dev/kvm lets the workload run its own VMs (3.1).
+    issues.warn(
+      `${path}.devices`,
+      `device access (${devices.join(', ')}): the workload can run its own VMs; it is pinned for migration`,
+    );
+  }
+
+  const microvm = runtime === 'microvm' ? parseMicrovm(raw, x, issues, path) : undefined;
 
   const containerName = typeof raw['container_name'] === 'string' ? raw['container_name'] : undefined;
 
@@ -654,14 +777,15 @@ function parseService(
 
   const privileged = raw['privileged'] === true;
 
-  if (privileged) issues.warn(`${path}.privileged`, 'privileged containers have full access to the host');
+  if (privileged && runtime !== 'microvm')
+    issues.warn(`${path}.privileged`, 'privileged containers have full access to the host');
 
   // Without these a workload can't send with another workload's address (and so its identity, 3.7).
   const spoofing = (Array.isArray(raw['cap_add']) ? raw['cap_add'].map(String) : []).filter((c) =>
     ['NET_RAW', 'NET_ADMIN', 'ALL'].includes(c.toUpperCase().replace(/^CAP_/, '')),
   );
 
-  if (spoofing.length > 0)
+  if (spoofing.length > 0 && runtime !== 'microvm')
     issues.warn(
       `${path}.cap_add`,
       `${spoofing.join(', ')} lets the service send with other workloads' addresses on its node (their policies and identities)`,
@@ -727,7 +851,8 @@ function parseService(
         : {}),
       ...(h.waf ? { waf: h.waf } : {}),
     })),
-    runtime: x.runtime ?? (raw['runtime'] === 'runsc' ? 'sandboxed' : 'runc'),
+    runtime,
+    ...(microvm ? { microvm } : {}),
     ...(x.placement?.selector ? { placement: x.placement.selector } : {}),
     spread: x.placement?.spread ?? 'node',
     kind: x.cron ? 'cron' : x.job ? 'job' : 'service',
@@ -755,6 +880,7 @@ function parseService(
     init: raw['init'] === true,
     ...(networkMode ? { networkMode } : {}),
     devices,
+    deviceAccess,
     ...(containerName ? { containerName } : {}),
     stopGracePeriodMs: stopGrace ?? 10_000,
     ...(typeof raw['stop_signal'] === 'string' ? { stopSignal: raw['stop_signal'] } : {}),
@@ -772,6 +898,44 @@ function parseService(
     );
 
   return service;
+}
+
+/**
+ * `runtime: microvm` (3.35): the image becomes the guest of a QEMU microVM that owns the workload IP. Host-level
+ * container options have no meaning there and are refused; capabilities apply inside the guest.
+ */
+function parseMicrovm(raw: Obj, x: ServiceExtension, issues: Issues, path: string): ServiceSpec['microvm'] {
+  if (raw['network_mode'] === 'host')
+    issues.error(
+      `${path}.network_mode`,
+      'network_mode: host is not supported with runtime microvm (the guest owns the workload IP)',
+    );
+
+  if (raw['privileged'] === true)
+    issues.error(
+      `${path}.privileged`,
+      'privileged is not supported with runtime microvm (the guest has its own kernel)',
+    );
+
+  if (Array.isArray(raw['cap_add']) && raw['cap_add'].length > 0)
+    issues.warn(
+      `${path}.cap_add`,
+      'cap_add has no effect on the microVM: the workload runs in its own guest kernel, where capabilities apply unrestricted',
+    );
+
+  const size = x.microvm?.rootfsSize;
+
+  if (size === undefined) return {};
+
+  const rootfsBytes = parseBytes(size);
+
+  if (rootfsBytes === null || rootfsBytes <= 0) {
+    issues.error(`${path}.x-loadweaver.microvm.rootfsSize`, 'invalid size');
+
+    return {};
+  }
+
+  return { rootfsBytes };
 }
 
 function backupHooks(

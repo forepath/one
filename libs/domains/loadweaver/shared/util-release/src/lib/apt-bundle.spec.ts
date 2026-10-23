@@ -13,6 +13,7 @@ import {
   collectAptBundleBlobs,
   compareDebianVersions,
   importAptBundlePacks,
+  kernelsWithoutKvmModules,
   parseControlStanzas,
   selectAptPackages,
   selectedKernels,
@@ -20,6 +21,7 @@ import {
 } from './apt-bundle';
 import { memoryPoolIndex, serveAptFile, type BlobStore } from './apt-snapshot.core';
 import type { AptUpstream } from './apt-snapshot.utils';
+import { MICROVM_HOST_PACKAGES, REQUIRED_HOST_PACKAGES } from './pins';
 import { buildManifest } from './source-manifest';
 import { buildTar } from './tar';
 
@@ -171,6 +173,89 @@ describe('bundled apt snapshot (3.26, air-gapped)', () => {
       expect(bundleAptRoots('ubuntu:24.04', 'amd64')).toEqual(
         expect.arrayContaining(['linux-image-generic-hwe-24.04', 'linux-headers-virtual', 'docker-ce']),
       );
+    });
+
+    it('roots the microVM host packages (attr, e2fsprogs) for every supported OS and architecture (3.35)', () => {
+      for (const os of ['debian:12', 'debian:13', 'ubuntu:22.04', 'ubuntu:24.04'])
+        for (const arch of ['amd64', 'arm64'])
+          expect(bundleAptRoots(os, arch)).toEqual(expect.arrayContaining([...MICROVM_HOST_PACKAGES]));
+
+      expect(MICROVM_HOST_PACKAGES).toEqual(['attr', 'e2fsprogs']);
+    });
+
+    it('roots every required host package (host updates install missing ones from the snapshot)', () => {
+      expect(REQUIRED_HOST_PACKAGES).toEqual(expect.arrayContaining([...MICROVM_HOST_PACKAGES]));
+
+      for (const os of ['debian:12', 'debian:13', 'ubuntu:22.04', 'ubuntu:24.04'])
+        for (const arch of ['amd64', 'arm64'])
+          expect(bundleAptRoots(os, arch)).toEqual(expect.arrayContaining([...REQUIRED_HOST_PACKAGES]));
+    });
+
+    it('roots the KVM modules of every bundled Ubuntu kernel (linux-modules-extra), on amd64 and arm64 (3.1)', () => {
+      for (const arch of ['amd64', 'arm64'])
+        expect(bundleAptRoots('ubuntu:22.04', arch)).toEqual(
+          expect.arrayContaining(['linux-image-extra-virtual', 'linux-image-extra-virtual-hwe-22.04']),
+        );
+
+      // Debian ships KVM in linux-image-*: nothing extra.
+      expect(bundleAptRoots('debian:12', 'amd64').filter((r) => r.includes('extra'))).toEqual([]);
+    });
+
+    it('selects linux-modules-extra for exactly the kernels the Ubuntu metapackages bring', () => {
+      const k1 = '6.8.0-90-generic';
+      const k2 = '6.14.0-37-generic';
+      const ubuntu = [
+        c('ubuntu', { Package: 'linux-image-virtual', Version: '6.8.0-90.91', Depends: 'linux-image-' + k1 }),
+        c('ubuntu', {
+          Package: 'linux-image-extra-virtual',
+          Version: '6.8.0-90.91',
+          Depends: `linux-image-generic (= 6.8.0-90.91)`,
+        }),
+        c('ubuntu', {
+          Package: 'linux-image-generic',
+          Version: '6.8.0-90.91',
+          Depends: `linux-image-${k1}, linux-modules-extra-${k1}`,
+        }),
+        c('ubuntu', {
+          Package: 'linux-image-virtual-hwe-24.04',
+          Version: '6.14.0-37.37',
+          Depends: 'linux-image-' + k2,
+        }),
+        c('ubuntu', {
+          Package: 'linux-image-extra-virtual-hwe-24.04',
+          Version: '6.14.0-37.37',
+          Depends: `linux-image-generic-hwe-24.04 (= 6.14.0-37.37)`,
+        }),
+        c('ubuntu', {
+          Package: 'linux-image-generic-hwe-24.04',
+          Version: '6.14.0-37.37',
+          Depends: `linux-image-${k2}, linux-modules-extra-${k2}`,
+        }),
+        c('ubuntu', { Package: `linux-image-${k1}`, Version: '6.8.0-90.91', Depends: `linux-modules-${k1}` }),
+        c('ubuntu', { Package: `linux-image-${k2}`, Version: '6.14.0-37.37', Depends: `linux-modules-${k2}` }),
+        c('ubuntu', { Package: `linux-modules-${k1}`, Version: '6.8.0-90.91' }),
+        c('ubuntu', { Package: `linux-modules-${k2}`, Version: '6.14.0-37.37' }),
+        c('ubuntu', { Package: `linux-modules-extra-${k1}`, Version: '6.8.0-90.91' }),
+        c('ubuntu', { Package: `linux-modules-extra-${k2}`, Version: '6.14.0-37.37' }),
+      ];
+      const roots = bundleAptRoots('ubuntu:24.04', 'amd64');
+      const selection = selectAptPackages(ubuntu, roots);
+      const kernels = selectedKernels(selection.packages);
+
+      expect(kernels).toEqual([k2, k1].sort());
+
+      for (const k of kernels)
+        expect(selection.packages.some((p) => p.startsWith(`linux-modules-extra-${k}=`))).toBe(true);
+
+      expect(kernelsWithoutKvmModules('ubuntu:24.04', selection.packages)).toEqual([]);
+      // Without the extra metapackages a kernel would come without its KVM modules: reported.
+      const bare = selectAptPackages(
+        ubuntu,
+        roots.filter((r) => !r.startsWith('linux-image-extra-') && !r.startsWith('linux-image-generic')),
+      );
+
+      expect(kernelsWithoutKvmModules('ubuntu:24.04', bare.packages)).toEqual([k2, k1].sort());
+      expect(kernelsWithoutKvmModules('debian:13', bare.packages)).toEqual([]);
     });
   });
 

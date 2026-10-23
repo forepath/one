@@ -2696,7 +2696,7 @@
         <source>Operate</source>
         </trans-unit>
       <trans-unit id="lwConsoleNav-groupOperateTitle" datatype="html">
-        <source>Operate: terminals, files, sessions and backups</source>
+        <source>Operate: terminals, files, sessions, virtual machines and backups</source>
         </trans-unit>
       <trans-unit id="lwConsoleNav-terminals" datatype="html">
         <source>Terminals</source>
@@ -8557,6 +8557,429 @@
         </trans-unit>
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-title" datatype="html">
+        <source>Virtual machine</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-back" datatype="html">
+        <source>All virtual machines</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-yaml" datatype="html">
+        <source>Show YAML</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-edit" datatype="html">
+        <source>Edit (plan)</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-refresh" datatype="html">
+        <source>Refresh</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-snapshot" datatype="html">
+        <source>Take snapshot</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-overviewTab" datatype="html">
+        <source>Overview</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-serialTab" datatype="html">
+        <source>Serial console</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-vncTab" datatype="html">
+        <source>Graphical console</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-status" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-machine" datatype="html">
+        <source>Machine</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-nics" datatype="html">
+        <source>Network interfaces</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-disks" datatype="html">
+        <source>Disks</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-snapshots" datatype="html">
+        <source>Snapshots</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-commands" datatype="html">
+        <source>Recent node commands</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-maintenance" datatype="html">
+        <source>Maintenance</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-cancel" datatype="html">
+        <source>Cancel</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-snapshotTitle" datatype="html">
+        <source>Take a snapshot</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-title" datatype="html">
+        <source>Virtual machines</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-refresh" datatype="html">
+        <source>Refresh</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-new" datatype="html">
+        <source>New virtual machine</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importImage" datatype="html">
+        <source>Import VM image</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-search" datatype="html">
+        <source>Search virtual machines</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-filters" datatype="html">
+        <source>Filters</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-projectFilter" datatype="html">
+        <source>Project</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-phaseFilter" datatype="html">
+        <source>Phase</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-strategyFilter" datatype="html">
+        <source>Run strategy</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-listTitle" datatype="html">
+        <source>Virtual machines</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importsTitle" datatype="html">
+        <source>VM image imports</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importTitle" datatype="html">
+        <source>Import a VM image</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-phasePending" datatype="html">
+        <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-phaseImporting" datatype="html">
+        <source>Importing image</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-phaseStarting" datatype="html">
+        <source>Starting</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-phaseRunning" datatype="html">
+        <source>Running</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-phaseStopping" datatype="html">
+        <source>Stopping</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-phaseStopped" datatype="html">
+        <source>Stopped</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-phaseMigrating" datatype="html">
+        <source>Migrating</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-phaseFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-strategyAlways" datatype="html">
+        <source>Always on</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-strategyManual" datatype="html">
+        <source>Manual power</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-strategyHalted" datatype="html">
+        <source>Halted</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-actionStart" datatype="html">
+        <source>Start</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-actionStop" datatype="html">
+        <source>Stop</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-actionForceOff" datatype="html">
+        <source>Force off</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-actionShutdown" datatype="html">
+        <source>Shut down</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-actionReboot" datatype="html">
+        <source>Reboot</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-actionReset" datatype="html">
+        <source>Reset</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-actionReimage" datatype="html">
+        <source>Re-image boot disk</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-confirmStart" datatype="html">
+        <source>The virtual machine is placed on a node and boots.</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-confirmStop" datatype="html">
+        <source>The guest is asked to shut down (ACPI); after the grace period the virtual machine is switched off. It stays off until you start it.</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-confirmShutdown" datatype="html">
+        <source>The guest operating system shuts down cleanly and the virtual machine stays off.</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-confirmForceOff" datatype="html">
+        <source>The virtual machine is switched off without a clean shutdown. Unsaved data in the guest is lost.</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-confirmReboot" datatype="html">
+        <source>The guest operating system restarts cleanly (ACPI).</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-confirmReset" datatype="html">
+        <source>The virtual machine is reset like a hardware reset. Unsaved data in the guest is lost.</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-confirmReimage" datatype="html">
+        <source>The boot disk is overwritten with the pinned image and first-boot configuration (cloud-init) runs again. Everything on the boot disk is lost.</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-snapshotRunning" datatype="html">
+        <source>Running</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-snapshotSucceeded" datatype="html">
+        <source>Complete</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-snapshotPartial" datatype="html">
+        <source>Partial</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-snapshotFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-commandPending" datatype="html">
+        <source>Queued</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-commandSent" datatype="html">
+        <source>Sent</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-commandRunning" datatype="html">
+        <source>Running</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-commandSucceeded" datatype="html">
+        <source>Done</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-commandFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-registryTitle" datatype="html">
+        <source>VM images in the registry</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-noRegistryImages" datatype="html">
+        <source>No VM images in this project&apos;s registry</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-noRegistryImagesHint" datatype="html">
+        <source>Push one with loadweaver vm-image push or import one.</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-guestAgent" datatype="html">
+        <source>guest agent</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-serialAria" datatype="html">
+        <source>Serial console</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-consoleConnected" datatype="html">
+        <source>Connected</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-consoleConnecting" datatype="html">
+        <source>Connecting…</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-consoleClosed" datatype="html">
+        <source>Closed</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-consoleRecorded" datatype="html">
+        <source>Recorded</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-serialHint" datatype="html">
+        <source>Serial console of the guest (boot log first). Press Enter if the prompt doesn&apos;t show.</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-reconnect" datatype="html">
+        <source>Reconnect</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-vncAria" datatype="html">
+        <source>Graphical console</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-vncPlaceholder" datatype="html">
+        <source>Waiting for the graphical console…</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-noConnection" datatype="html">
+        <source>No console connection (not signed in?)</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-vncHint" datatype="html">
+        <source>Graphical console of the guest. The session isn&apos;t recorded; its start and end are audited.</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-ctrlAltDel" datatype="html">
+        <source>Ctrl+Alt+Del</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-noSnapshots" datatype="html">
+        <source>No snapshots yet</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-noCommands" datatype="html">
+        <source>No node commands yet</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-snapshotDescription" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-invalid" datatype="html">
+        <source>Invalid spec</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-onNode" datatype="html">
+        <source>on</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-vcpus" datatype="html">
+        <source>vCPUs</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-consoleUnavailable" datatype="html">
+        <source>Consoles unavailable:</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-phase" datatype="html">
+        <source>Phase</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-node" datatype="html">
+        <source>Node</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-migratingTo" datatype="html">
+        <source>Migrating to</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-reported" datatype="html">
+        <source>Node report</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-message" datatype="html">
+        <source>Message</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-lastBoot" datatype="html">
+        <source>Running since</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-power" datatype="html">
+        <source>Power</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-labels" datatype="html">
+        <source>Labels</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-image" datatype="html">
+        <source>Image</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-pinned" datatype="html">
+        <source>Pinned</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-cpu" datatype="html">
+        <source>CPU</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-memory" datatype="html">
+        <source>Memory</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-storage" datatype="html">
+        <source>Storage</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-cloudInit" datatype="html">
+        <source>cloud-init generation</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-primaryNic" datatype="html">
+        <source>Primary</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-bootDisk" datatype="html">
+        <source>Boot disk</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-notPlaced" datatype="html">
+        <source>Not placed</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-primaryOn" datatype="html">
+        <source>Primary on</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-copies" datatype="html">
+        <source>copies</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-remote" datatype="html">
+        <source>remote</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-appConsistent" datatype="html">
+        <source>Application-consistent</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-crashConsistent" datatype="html">
+        <source>Crash-consistent</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-reimageHint" datatype="html">
+        <source> Re-imaging writes the pinned image onto the boot disk again and runs first-boot configuration (cloud-init) once more. Other disks are kept. </source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-snapshotHint" datatype="html">
+        <source> Every disk is backed up now. Without the guest agent in the image the snapshot is crash-consistent (like pulling the plug). Restore a disk through the backups page. </source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-cancelSnapshot" datatype="html">
+        <source>Cancel</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-takeSnapshot" datatype="html">
+        <source>Take snapshot</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-empty" datatype="html">
+        <source>No virtual machines</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-emptyHint" datatype="html">
+        <source>Create a VirtualMachine resource (YAML, applied through a plan) to run a full VM.</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-noImports" datatype="html">
+        <source>No VM image imports in this project</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importProject" datatype="html">
+        <source>Project</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importUrl" datatype="html">
+        <source>Download URL (HTTPS)</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importSha" datatype="html">
+        <source>SHA-256 of the file</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importRef" datatype="html">
+        <source>Image name and tag (repository:tag)</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importArch" datatype="html">
+        <source>Architecture</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importGuestAgent" datatype="html">
+        <source>Guest agent installed</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importInvalid" datatype="html">
+        <source>Enter an HTTPS URL, the 64-digit SHA-256, a lowercase repository:tag and at least one firmware (BIOS is amd64 only).</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-allProjects" datatype="html">
+        <source>All projects</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-allPhases" datatype="html">
+        <source>All phases</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-allStrategies" datatype="html">
+        <source>All run strategies</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-invalid" datatype="html">
+        <source>Invalid spec</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-vcpus" datatype="html">
+        <source>vCPUs</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-containerDisk" datatype="html">
+        <source>containerDisk</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-virtualSize" datatype="html">
+        <source>Virtual size</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importHint" datatype="html">
+        <source> The control plane downloads the disk image (qcow2, raw, or a KubeVirt containerDisk archive), checks its SHA-256 and stores it as a VM image in the project&apos;s registry. Use the reference in a virtual machine&apos;s image. </source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-cancel" datatype="html">
+        <source>Cancel</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-startImport" datatype="html">
+        <source>Start import</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleNav-virtualMachines" datatype="html">
+        <source>Virtual machines</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleNav-virtualMachinesTitle" datatype="html">
+        <source>Virtual machines: power, consoles and snapshots</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-guestPower" datatype="html">
+        <source>Guest</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importQueued" datatype="html">
+        <source>Boot disk import queued</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importFetching" datatype="html">
+        <source>Downloading the image</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importWriting" datatype="html">
+        <source>Writing the boot disk</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVms-importFailed" datatype="html">
+        <source>Boot disk import failed (retried)</source>
+        </trans-unit>
+      <trans-unit id="lwConsoleVmDetail-bootDiskImport" datatype="html">
+        <source>Boot disk</source>
         </trans-unit>
     </body>
   </file>

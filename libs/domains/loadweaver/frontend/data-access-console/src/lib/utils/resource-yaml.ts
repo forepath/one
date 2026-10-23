@@ -30,6 +30,16 @@ const STARTER_SPECS: Record<string, Record<string, unknown>> = {
     rules: [{ protocol: 'tcp', ports: [443] }],
   },
   DnsRecord: { zone: 'example', name: 'www', type: 'A', values: ['203.0.113.10'] },
+  // Full VM (3.35): an OCI VM image of the project, boot disk from the image, one NIC.
+  VirtualMachine: {
+    image: 'registry.lw/<project>/debian-13:latest',
+    cpu: { vcpus: 2 },
+    memory: '4Gi',
+    disks: [{ name: 'root', size: '20Gi', source: 'image' }],
+    nics: [{ name: 'eth0', groups: [] }],
+    runStrategy: 'Always',
+    cloudInit: { sshAuthorizedKeys: [] },
+  },
   // Backups (3.20): hourly 24 / daily 14 / monthly 12, a nightly restore test.
   BackupPolicy: {
     selector: { deployments: { matchLabels: { tier: 'critical' } } },
@@ -51,6 +61,14 @@ const STARTER_SPECS: Record<string, Record<string, unknown>> = {
   },
 };
 
+function starterSpec(kind: string, project?: string | null): Record<string, unknown> {
+  const spec = STARTER_SPECS[kind] ?? {};
+
+  if (kind !== 'VirtualMachine') return spec;
+
+  return { ...spec, image: String(spec['image']).replace('<project>', project || 'my-project') };
+}
+
 /** A starting point for a new resource of a kind: envelope, a placeholder name and a few spec fields for common kinds. */
 export function resourceTemplate(kind: string, project?: string | null): string {
   const name = `new-${kind.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}`.slice(0, 63);
@@ -60,7 +78,7 @@ export function resourceTemplate(kind: string, project?: string | null): string 
       apiVersion: LOADWEAVER_API_VERSION,
       kind,
       metadata: project ? { name, project } : { name },
-      spec: STARTER_SPECS[kind] ?? {},
+      spec: starterSpec(kind, project),
     },
     { lineWidth: 0 },
   );

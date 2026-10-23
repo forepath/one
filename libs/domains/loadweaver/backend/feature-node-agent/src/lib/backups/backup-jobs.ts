@@ -64,11 +64,31 @@ export interface JobContainerSpec {
   /** Secrets go here, never into `cmd`. */
   env?: Record<string, string>;
   binds: string[];
+  /**
+   * Host block devices passed through (`PathOnHost` = `PathInContainer`; VM disks, 3.35): `r` read-only, `rw` read /
+   * write; never `m` (no device nodes created).
+   */
+  devices?: { path: string; permissions: 'r' | 'rw' }[];
+  /** Container user (default: the image's). */
+  user?: string;
+  /** Root file system read-only. */
+  readOnly?: boolean;
   network: 'host' | 'none';
   /** Everything else is dropped. */
   capAdd?: string[];
   memoryBytes?: number;
   timeoutMs: number;
+  /** Cancels the job: the container is killed and removed, `run` rejects with the signal's reason. */
+  signal?: AbortSignal;
+  /** Called with the job's stdout so far every `intervalMs` while it runs (progress output, e.g. `qemu-img -p`). */
+  progress?: { intervalMs: number; stdout: (stdout: string) => void };
+}
+
+/** The reason of an aborted signal as an error. */
+export function abortError(signal: AbortSignal): Error {
+  const reason: unknown = signal.reason;
+
+  return reason instanceof Error ? reason : new Error(typeof reason === 'string' ? reason : 'cancelled');
 }
 
 /**
@@ -85,7 +105,11 @@ export class BackupJobs {
   ) {}
 
   async run(spec: JobContainerSpec): Promise<JobOutput> {
+    if (spec.signal?.aborted) throw abortError(spec.signal);
+
     const image = await this.containers.pull(spec.image);
+
+    if (spec.signal?.aborted) throw abortError(spec.signal);
 
     await this.docker
       .getContainer(spec.name)
@@ -98,9 +122,20 @@ export class BackupJobs {
       ...(spec.entrypoint ? { Entrypoint: spec.entrypoint } : {}),
       Cmd: spec.cmd,
       Env: Object.entries(spec.env ?? {}).map(([k, v]) => `${k}=${v}`),
+      ...(spec.user ? { User: spec.user } : {}),
       Labels: { [MANAGED_LABEL]: 'true', [COMPONENT_LABEL]: BACKUP_JOB_COMPONENT },
       HostConfig: {
         Binds: spec.binds,
+        ...(spec.devices?.length
+          ? {
+              Devices: spec.devices.map((d) => ({
+                PathOnHost: d.path,
+                PathInContainer: d.path,
+                CgroupPermissions: d.permissions,
+              })),
+            }
+          : {}),
+        ...(spec.readOnly ? { ReadonlyRootfs: true } : {}),
         NetworkMode: spec.network,
         CapDrop: ['ALL'],
         ...(spec.capAdd?.length ? { CapAdd: spec.capAdd } : {}),
@@ -110,6 +145,9 @@ export class BackupJobs {
       },
     });
 
+    let poll: NodeJS.Timeout | undefined;
+    let onAbort: (() => void) | undefined;
+
     try {
       await container.start();
 
@@ -117,12 +155,35 @@ export class BackupJobs {
       const timedOut = new Promise<null>((resolve) => {
         timer = setTimeout(() => resolve(null), spec.timeoutMs);
       });
+      const aborted = new Promise<'aborted'>((resolve) => {
+        if (!spec.signal) return;
+
+        onAbort = () => resolve('aborted');
+
+        if (spec.signal.aborted) onAbort();
+        else spec.signal.addEventListener('abort', onAbort, { once: true });
+      });
+      const progress = spec.progress;
+
+      if (progress)
+        poll = setInterval(() => {
+          void (container.logs({ stdout: true, stderr: false, follow: false }) as Promise<unknown>)
+            .then((logs) => progress.stdout(demux(Buffer.isBuffer(logs) ? logs : Buffer.from(String(logs))).stdout))
+            .catch(() => undefined);
+        }, progress.intervalMs);
+
       const result = await Promise.race([
         (container.wait() as Promise<{ StatusCode: number }>).then((r) => r.StatusCode),
         timedOut,
+        aborted,
       ]);
 
       clearTimeout(timer);
+
+      if (result === 'aborted') {
+        await container.kill().catch(() => undefined);
+        throw abortError(spec.signal as AbortSignal);
+      }
 
       if (result === null) await container.kill().catch(() => undefined);
 
@@ -130,6 +191,10 @@ export class BackupJobs {
 
       return { exitCode: result, ...demux(Buffer.isBuffer(logs) ? logs : Buffer.from(String(logs))) };
     } finally {
+      if (poll) clearInterval(poll);
+
+      if (onAbort) spec.signal?.removeEventListener('abort', onAbort);
+
       await container.remove({ force: true }).catch(() => undefined);
     }
   }

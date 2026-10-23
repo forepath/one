@@ -257,6 +257,7 @@ done
 - Files and directories are written by the agent as root (`0644` / `0755`). A replica running as another user may need to `chown` them.
 - Volumes are only reachable **while mounted on their primary node**, that is while their workload runs there. A stopped workload or a volume between placements answers `the volume is not mounted on this node`.
 - Sandboxed replicas (gVisor) keep their own root-filesystem overlay inside the sandbox: the file browser may show the image's files without what the replica wrote at runtime, and changes made through it may not reach the running replica. Use a terminal or a volume there. Replicas whose runtime exposes no merged filesystem on the host at all answer `this container runtime has no browsable filesystem`.
+- [MicroVM](./isolation-levels.md#microvms) replicas show the **guest's** root: the image layers plus the replica's writable layer the guest boots from, so files the workload wrote are visible and writes reach it. Terminals and machine exec in microVM replicas run inside the guest through the `vm-exec` bridge (same events, roles, recordings, TTY resize and exit codes).
 
 ### Confinement
 
@@ -268,6 +269,10 @@ All file operations stay inside the target's root:
 - The root itself can't be deleted; a directory can't be moved or copied into itself.
 
 Node errors map to HTTP: `not-found` → `404`, `exists` → `409`, `denied` → `403`, `too-large` → `413`, everything else → `400`; a node that doesn't answer within 30 seconds → `504`.
+
+## VM consoles
+
+[Virtual machines](./virtual-machines.md#consoles) have no container to open a terminal in; they get a **serial console** (the guest's serial line in the terminal panel, boot log first) and a **graphical console** (VNC through noVNC) instead, over the Socket.IO namespace `socket/consoles`. They use the same live path as terminals: the control plane relays over the node's agent stream, the same roles apply (operators and admins, developers with `developerExec`), sessions are audited (`vm.console.open` / `vm.console.close`) and appear in the session list with the target `virtual-machine/<project>/<name>/console/<serial|vnc>`. Serial consoles are recorded like terminals; VNC sessions record metadata and duration only. Idle consoles close after 30 minutes.
 
 ## Debug tunnels
 

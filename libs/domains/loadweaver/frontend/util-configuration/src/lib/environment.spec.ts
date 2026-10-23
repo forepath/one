@@ -58,7 +58,7 @@ describe('Loadweaver console environments', () => {
 
     const websocket = environment.console.urls.websocket as Record<string, string>;
 
-    for (const namespace of ['plans', 'logs', 'terminals', 'tunnels', 'topology'])
+    for (const namespace of ['plans', 'logs', 'terminals', 'tunnels', 'consoles', 'topology'])
       expect(websocket[namespace]).toMatch(new RegExp(`/socket/${namespace}$`));
     // Development defaults to the local fleet service; production stays single-cluster (a console served next to a
     // control plane, e.g. Loadweaver Cloud) unless the runtime config switches to the fleet.

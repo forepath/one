@@ -63,6 +63,21 @@ export const execOpenSchema = z
   .strict();
 export type ExecOpen = z.infer<typeof execOpenSchema>;
 
+/**
+ * A VM console (3.35, feature `vm-consoles`): `serial` (TTY, resize ignored) or `vnc` (raw RFB on stdio, no TTY),
+ * attached inside the replica's launcher. Data then uses `execInput` / `execOutput` / `execResize` / `execClose` /
+ * `execExit` on the same channel, as terminals do.
+ */
+export const consoleOpenSchema = z
+  .object({
+    target: z.object({ kind: z.literal('replica'), replica: replicaIdSchema }).strict(),
+    kind: z.enum(['serial', 'vnc']),
+    cols: z.number().int().min(1).max(1000).optional(),
+    rows: z.number().int().min(1).max(1000).optional(),
+  })
+  .strict();
+export type ConsoleOpen = z.infer<typeof consoleOpenSchema>;
+
 export const execInputSchema = z
   .object({
     data: base64Chunk(LIVE_CHUNK_BYTES),

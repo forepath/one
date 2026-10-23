@@ -1,22 +1,31 @@
 import {
   clusterSpecSchema,
   deploymentSpecSchema,
+  KVM_RUNTIMES,
+  nodeSpecSchema,
   projectSpecSchema,
   type ClusterSpec,
   type ProjectSpec,
 } from '@forepath/loadweaver/shared/util-model';
 import {
   analyzeFailures,
+  eligibleNodes,
+  isolationFeatures,
+  kvmUsable,
+  runsLevel,
   schedule,
   type FailureAnalysis,
   type ReplicaPlacement,
   type ScheduleResult,
+  type SchedulerNode,
+  type SchedulerService,
   type VolumePlacement,
 } from '@forepath/loadweaver/shared/util-scheduler';
 import { Injectable } from '@nestjs/common';
-import { EntityManager, IsNull, Not } from 'typeorm';
+import { EntityManager, In, IsNull, Not } from 'typeorm';
 
 import { ADVISORY_LOCK_PLACEMENT_ALLOCATION, NODE_HEARTBEAT_TIMEOUT_MS } from '../constants/control-plane.constants';
+import { DeploymentStateEntity } from '../entities/deployment-state.entity';
 import { NodeEntity } from '../entities/node.entity';
 import { NodeDesiredStateEntity } from '../entities/node-desired-state.entity';
 import { ResourceEntity } from '../entities/resource.entity';
@@ -26,10 +35,13 @@ import { WorkloadPlacementEntity } from '../entities/workload-placement.entity';
 import {
   allocateServiceAddresses,
   allocateWorkloadAddresses,
+  type AddressFamilies,
   diffPlacements,
+  replicaAgentFeatures,
   serviceId,
   toSchedulerNodes,
   toSchedulerServices,
+  withImageArchitectures,
   translateDeployments,
   type DeploymentIssue,
   type ParsedDeployment,
@@ -47,6 +59,7 @@ import {
 import {
   chooseMigrationMethod,
   eligibilityOptionsFromEnv,
+  type EligibilityInput,
   type EligibilityNode,
   type MigrationChoice,
 } from '../utils/migration-eligibility.utils';
@@ -56,6 +69,10 @@ import { drainDeadline, isDraining, removalAction } from '../utils/replica-drain
 import { nodeNotReady } from '../utils/node-readiness.utils';
 import { beginAttempt, finishAttempt, isCheckpointMethod, runningSpec } from './migration-records';
 import { applyAutoscaledReplicas, type AutoscaledService } from '../autoscaling/autoscale.utils';
+import { bundledMicrovmMigration, isBundledMicrovmImage, type ImageInspection } from '../utils/microvm-planning.utils';
+import { addressFamiliesOf, vmDeployments, type VmPower } from '../utils/vm-planning.utils';
+import { loadVmOperationalState } from '../utils/vm-power.utils';
+import { holdVmImports, importHoldIssues, vmImportHolds } from '../utils/vm-import-hold.utils';
 
 /** DRBD minors / ports for Loadweaver volumes (ports stay inside DRBD's usual range). */
 export const DRBD_MINOR_BASE = 1000;
@@ -175,8 +192,11 @@ export function plannerNodes(
   nodes: NodeEntity[],
   now = Date.now(),
   desiredRevisions?: ReadonlyMap<string, number>,
+  /** Nodes whose `Node` spec opts out of KVM (`virtualization.kvm: disabled`), before their agent applied it. */
+  kvmOptOut: ReadonlySet<string> = new Set(),
 ): PlannerNode[] {
   return nodes.map((n) => ({
+    ...isolationCapabilities(n.capabilities, kvmOptOut.has(n.name)),
     name: n.name,
     site: n.site,
     labels: n.labels ?? {},
@@ -186,11 +206,143 @@ export function plannerNodes(
     controlPlane: n.controlPlane,
     capacity: n.capacity,
     runtimes: ((n.capabilities?.['runtimes'] as string[] | undefined) ?? ['runc']).slice(),
+    ...(nodeArch(n) ? { arch: nodeArch(n) } : {}),
     drbd9: drbd9Capability(n),
     reachable: !!n.lastSeenAt && now - n.lastSeenAt.getTime() <= NODE_HEARTBEAT_TIMEOUT_MS,
     features: [...(n.protocolFeatures ?? [])],
     ...withNotReady(n, desiredRevisions, now),
   }));
+}
+
+/** A node's CPU architecture as images name it (`amd64` / `arm64`); undefined when the agent didn't report one. */
+export function nodeArch(node: Pick<NodeEntity, 'os'>): string | undefined {
+  const arch = node.os?.arch;
+
+  if (!arch) return undefined;
+
+  if (arch === 'aarch64') return 'arm64';
+
+  return arch === 'x86_64' || arch === 'x64' ? 'amd64' : arch;
+}
+
+/**
+ * The isolation part of a node's capabilities (3.1, M7): probe states, KVM facts (with the node spec's opt-out) and
+ * full-VM support. Malformed or missing values count as "not reported".
+ */
+export function isolationCapabilities(
+  capabilities: Record<string, unknown> | null | undefined,
+  optOut = false,
+): Pick<PlannerNode, 'isolation' | 'kvm' | 'virtualMachines'> {
+  const kvm = capabilities?.['kvm'] as { usable?: unknown; optOut?: unknown } | undefined;
+  const isolation = capabilities?.['isolation'];
+  const vms = capabilities?.['virtualMachines'];
+
+  return {
+    ...(isolation && typeof isolation === 'object'
+      ? { isolation: isolation as NonNullable<PlannerNode['isolation']> }
+      : {}),
+    ...(kvm && typeof kvm === 'object'
+      ? { kvm: { usable: kvm.usable === true, optOut: kvm.optOut === true || optOut } }
+      : optOut
+        ? { kvm: { usable: false, optOut: true } }
+        : {}),
+    ...(typeof vms === 'boolean' ? { virtualMachines: vms } : {}),
+  };
+}
+
+/** Nodes whose `Node` resource opts out of KVM (3.1). */
+export function kvmOptOutNodes(resources: readonly Pick<ResourceEntity, 'kind' | 'name' | 'spec'>[]): Set<string> {
+  return new Set(
+    resources
+      .filter((r) => r.kind === 'Node')
+      .filter((r) => nodeSpecSchema.safeParse(r.spec).data?.virtualization?.kvm === 'disabled')
+      .map((r) => r.name),
+  );
+}
+
+/**
+ * A node can't be opted out of KVM while it still runs KVM-level, microVM or VM replicas (3.1): plan errors that
+ * tell the admin to drain it first.
+ */
+export function kvmOptOutIssues(
+  optOut: ReadonlySet<string>,
+  current: readonly ReplicaPlacement[],
+  services: readonly SchedulerService[],
+  nodes: readonly Pick<NodeEntity, 'name' | 'capabilities'>[],
+): DeploymentIssue[] {
+  const byId = new Map(services.map((s) => [s.id, s]));
+  const issues: DeploymentIssue[] = [];
+
+  for (const node of nodes) {
+    const caps = node.capabilities?.['kvm'] as { optOut?: unknown } | undefined;
+
+    // Already opted out on the node: nothing new.
+    if (!optOut.has(node.name) || caps?.optOut === true) continue;
+
+    const kvmReplicas = current
+      .filter((r) => r.node === node.name)
+      .filter((r) => {
+        const s = byId.get(r.service);
+
+        return !!s && (KVM_RUNTIMES.includes(s.runtime) || !!s.needsKvmDevice || !!s.virtualMachine);
+      })
+      .map((r) => r.replica)
+      .sort();
+
+    if (kvmReplicas.length > 0)
+      issues.push({
+        level: 'error',
+        project: 'cluster',
+        deployment: node.name,
+        path: `nodes.${node.name}.virtualization.kvm`,
+        message: `node ${node.name} still runs KVM workloads (${kvmReplicas.join(', ')}); drain it first, then disable KVM`,
+      });
+  }
+
+  return issues;
+}
+
+/**
+ * Plan notes on isolation levels (3.1, M7): every service above `runc`, VM and `/dev/kvm` user with the nodes that
+ * offer exactly what it needs ("at least" is only the selectors' view), and the nodes refused because their agents
+ * lack the refuse-gated protocol features.
+ */
+export function isolationPlanNotes(
+  services: readonly SchedulerService[],
+  nodes: readonly SchedulerNode[],
+): DeploymentIssue[] {
+  return services
+    .filter((s) => s.runtime !== 'runc' || s.needsKvmDevice || s.virtualMachine)
+    .map((s) => {
+      const [project, deployment, name] = s.id.split('/');
+      const what = s.virtualMachine
+        ? 'virtual machine'
+        : `runtime ${s.runtime}${s.needsKvmDevice ? ' with /dev/kvm' : ''}`;
+      const capable = nodes.filter(
+        (n) =>
+          runsLevel(n, s.runtime) &&
+          (!s.needsKvmDevice || kvmUsable(n)) &&
+          (!s.virtualMachine || (n.virtualMachines === true && kvmUsable(n))),
+      );
+      const ready = new Set(eligibleNodes({ ...s, selector: undefined }, nodes).map((n) => n.name));
+      const features = isolationFeatures(s);
+      const outdated = capable.filter(
+        (n) => !ready.has(n.name) && features.some((f) => n.features && !n.features.includes(f)),
+      );
+
+      return {
+        level: 'warning' as const,
+        project,
+        deployment,
+        path: `services.${name}.runtime`,
+        message:
+          `${name} runs at exactly ${what}; nodes offering it: ${capable.map((n) => n.name).join(', ') || 'none'}` +
+          (outdated.length > 0
+            ? ` (refused: ${outdated.map((n) => n.name).join(', ')} lack the agent features ${features.join(', ')})`
+            : ''),
+        isolation: true,
+      };
+    });
 }
 
 function withNotReady(
@@ -213,6 +365,65 @@ function withNotReady(
   );
 
   return reason ? { notReady: reason } : {};
+}
+
+/**
+ * What a launcher workload is for the migration eligibility (M7.4): a full VM with its CPU model, or a microVM in
+ * bundled / generic mode from its pinned image inspection (`unknown` until the image was inspected). Undefined for
+ * the container levels.
+ */
+export function migrationLauncher(
+  deployment: Pick<ParsedDeployment, 'virtualMachines'>,
+  service: Pick<ParsedDeployment['compose']['services'][number], 'name' | 'runtime'>,
+  inspection: ImageInspection | null | undefined,
+): EligibilityInput['launcher'] {
+  const vm = deployment.virtualMachines?.[service.name];
+
+  if (vm) return { kind: 'vm', cpuModel: vm.spec.cpu.model };
+
+  if (service.runtime !== 'microvm') return undefined;
+
+  if (!inspection) return { kind: 'unknown' };
+
+  return isBundledMicrovmImage(inspection)
+    ? { kind: 'bundled', migration: bundledMicrovmMigration(inspection) }
+    : { kind: 'generic' };
+}
+
+/**
+ * VMs with `ha.restartElsewhere: false` stay on the node they run on (3.35): no failover, no rebalancing; a new VM is
+ * placed freely once.
+ */
+export function pinVmsWithoutFailover(
+  services: SchedulerService[],
+  parsed: readonly ParsedDeployment[],
+  current: readonly ReplicaPlacement[],
+): SchedulerService[] {
+  const pinned = new Map<string, string>();
+
+  for (const d of parsed)
+    for (const vm of Object.values(d.virtualMachines ?? {})) {
+      if (vm.spec.ha.restartElsewhere) continue;
+
+      const id = serviceId(d.project, d.name, vm.name);
+      const node = current.find((r) => r.service === id)?.node;
+
+      if (node) pinned.set(id, node);
+    }
+
+  return services.map((s) => {
+    const node = pinned.get(s.id);
+
+    return node
+      ? {
+          ...s,
+          selector: {
+            ...(s.selector ?? {}),
+            matchLabels: { ...(s.selector?.matchLabels ?? {}), 'loadweaver.com/node': node },
+          },
+        }
+      : s;
+  });
 }
 
 /** Plan notes for volume copies held back from nodes that are still joining (M6 gate). */
@@ -240,15 +451,33 @@ export function heldVolumeIssues(held: ScheduleResult['held']): DeploymentIssue[
  */
 @Injectable()
 export class WorkloadPlannerService {
-  parse(resources: readonly ResourceEntity[]): { parsed: ParsedDeployment[]; issues: DeploymentIssue[] } {
+  /**
+   * Compose deployments and the projects' virtual machines (3.35, the reserved deployment `lw-vm`). `vmPower`: the
+   * operational power of `Manual` VMs (`<project>/<name>`, W8's lifecycle API); absent = running.
+   */
+  parse(
+    resources: readonly ResourceEntity[],
+    vmPower: ReadonlyMap<string, VmPower> = new Map(),
+    /** cloud-init instance generations of VMs (`<project>/<name>`, bumped by W8's `reimage`); absent = 1. */
+    vmGenerations: ReadonlyMap<string, number> = new Map(),
+  ): { parsed: ParsedDeployment[]; issues: DeploymentIssue[] } {
     const projects = new Map<string, ProjectSpec>(
       resources.filter((r) => r.kind === 'Project').map((r) => [r.name, projectSpecSchema.parse(r.spec)]),
     );
     const deployments = resources
       .filter((r) => r.kind === 'Deployment' && r.project)
       .map((r) => ({ project: r.project as string, name: r.name, spec: deploymentSpecSchema.parse(r.spec) }));
+    const compose = translateDeployments(deployments, projects);
+    const vms = vmDeployments(
+      resources
+        .filter((r) => r.kind === 'VirtualMachine' && r.project)
+        .map((r) => ({ project: r.project as string, name: r.name, labels: r.labels, spec: r.spec })),
+      projects,
+      vmPower,
+      vmGenerations,
+    );
 
-    return translateDeployments(deployments, projects);
+    return { parsed: [...compose.parsed, ...vms.parsed], issues: [...compose.issues, ...vms.issues] };
   }
 
   /** The autoscaler's replica count per service (3.23); services it never scaled are missing. */
@@ -260,12 +489,16 @@ export class WorkloadPlannerService {
     return new Map(rows.map((r) => [r.service_key, Number(r.replicas)]));
   }
 
-  /** `parse`, with autoscaled services at the autoscaler's counts instead of their compose `replicas` (3.23). */
+  /**
+   * `parse`, with autoscaled services at the autoscaler's counts instead of their compose `replicas` (3.23) and VMs at
+   * their operational power / cloud-init generation (3.35, `lw_vm_power`).
+   */
   async parseAutoscaled(
     manager: EntityManager,
     resources: readonly ResourceEntity[],
   ): Promise<{ parsed: ParsedDeployment[]; issues: DeploymentIssue[]; autoscaled: AutoscaledService[] }> {
-    const { parsed, issues } = this.parse(resources);
+    const vms = await loadVmOperationalState(manager);
+    const { parsed, issues } = this.parse(resources, vms.power, vms.generations);
     const autoscaled = applyAutoscaledReplicas(parsed, await this.autoscaleCounts(manager));
 
     return { parsed, issues, autoscaled };
@@ -275,6 +508,11 @@ export class WorkloadPlannerService {
     manager: EntityManager,
     resources: readonly ResourceEntity[],
     nodeOverrides?: NodeEntity[],
+    /**
+     * Deployment states a plan pinned but hasn't persisted yet (`<project>/<deployment>` → image inspections): they
+     * replace the stored ones for the image-architecture rule (3.35).
+     */
+    pinnedOverrides?: Readonly<Record<string, { imageConfigs?: Record<string, ImageInspection> | null }>>,
   ): Promise<WorkloadPlan> {
     const { parsed, issues, autoscaled } = await this.parseAutoscaled(manager, resources);
     const clusterResource = resources.find((r) => r.kind === 'Cluster');
@@ -282,18 +520,34 @@ export class WorkloadPlannerService {
     const nodes =
       nodeOverrides ??
       (await manager.getRepository(NodeEntity).find({ where: { lifecycle: Not('left') }, order: { name: 'ASC' } }));
-    const current = await this.current(manager);
+    const { current, placements } = await this.loadCurrent(manager);
     // Nodes still joining get no new volume copies (M6 gate): readiness from their desired-state revisions.
     const desiredRevisions = new Map(
       (await manager.getRepository(NodeDesiredStateEntity).find({ select: { nodeName: true, revision: true } })).map(
         (d) => [d.nodeName, d.revision] as const,
       ),
     );
-    const schedulerNodes = toSchedulerNodes(plannerNodes(nodes, Date.now(), desiredRevisions));
+    const optOut = kvmOptOutNodes(resources);
+    const schedulerNodes = toSchedulerNodes(plannerNodes(nodes, Date.now(), desiredRevisions, optOut));
     // Per-source egress settings older agents can't apply: new replicas only on nodes with `egress-policies` (M6 gate).
     const unfoldable = unfoldableEgressServices(parsed, resources);
-    const services = withEgressFeatureRequirements(toSchedulerServices(parsed), unfoldable);
-    const result = schedule({ nodes: schedulerNodes, services, current });
+    const services = pinVmsWithoutFailover(
+      withImageArchitectures(
+        withEgressFeatureRequirements(toSchedulerServices(parsed), unfoldable),
+        parsed,
+        await this.pinnedImageConfigs(manager, parsed, pinnedOverrides),
+      ),
+      parsed,
+      current.replicas,
+    );
+    // VMs writing their first boot disk stay where they are (M7 F4); failover (node unreachable) isn't held.
+    const held = holdVmImports(
+      schedule({ nodes: schedulerNodes, services, current }),
+      current,
+      vmImportHolds(placements, new Set(schedulerNodes.filter((n) => n.reachable).map((n) => n.name))),
+      new Map(services.flatMap((s) => s.volumes.map((v): [string, string] => [v.id, s.id]))),
+    );
+    const result = held.schedule;
     const statefulServices = new Set(services.filter((s) => s.volumes.length > 0).map((s) => s.id));
     const before = new Map(current.replicas.map((r) => [r.replica, r.node]));
     const moves = result.replicas
@@ -305,7 +559,10 @@ export class WorkloadPlannerService {
       parsed,
       issues: [
         ...issues,
+        ...kvmOptOutIssues(optOut, current.replicas, services, nodes),
+        ...isolationPlanNotes(services, schedulerNodes),
         ...heldVolumeIssues(result.held),
+        ...importHoldIssues(held.held),
         ...legacyEgressPlacementIssues(
           result.replicas,
           unfoldable,
@@ -322,6 +579,33 @@ export class WorkloadPlannerService {
       choices,
       autoscaled,
     };
+  }
+
+  /**
+   * Image inspections of the deployments with microVM / VM services (3.35): stored deployment states, replaced by the
+   * plan's not yet persisted ones.
+   */
+  private async pinnedImageConfigs(
+    manager: EntityManager,
+    parsed: readonly ParsedDeployment[],
+    overrides: Readonly<Record<string, { imageConfigs?: Record<string, ImageInspection> | null }>> = {},
+  ): Promise<Map<string, Record<string, ImageInspection> | null | undefined>> {
+    const ids = parsed
+      .filter((d) => !!d.virtualMachines || d.compose.services.some((s) => s.runtime === 'microvm'))
+      .map((d) => `${d.project}/${d.name}`);
+    const configs = new Map<string, Record<string, ImageInspection> | null | undefined>();
+
+    if (ids.length === 0) return configs;
+
+    const stored = await manager
+      .getRepository(DeploymentStateEntity)
+      .find({ where: { id: In(ids) }, select: { id: true, imageConfigs: true } });
+
+    for (const state of stored ?? []) configs.set(state.id, state.imageConfigs);
+
+    for (const id of ids) if (overrides[id]) configs.set(id, overrides[id].imageConfigs);
+
+    return configs;
   }
 
   /**
@@ -358,6 +642,9 @@ export class WorkloadPlannerService {
     );
     const volumePlacements = new Map(volumes.map((v) => [v.volume, v]));
     const options = eligibilityOptionsFromEnv();
+    // Launcher workloads: bundled vs generic microVMs come from the pinned image inspection (3.35).
+    const imageConfigs = await this.pinnedImageConfigs(manager, parsed);
+    const schedulerServices = new Map(toSchedulerServices(parsed).map((s) => [s.id, s]));
 
     for (const move of moves) {
       const [project, deployment, service] = move.service.split('/');
@@ -371,6 +658,12 @@ export class WorkloadPlannerService {
         .filter((m): m is Extract<typeof m, { type: 'volume' }> => m.type === 'volume')
         .map((m) => volumeId(project, deployment, m.source));
 
+      const deployed = parsed.find((d) => d.project === project && d.name === deployment);
+      const launcher = deployed
+        ? migrationLauncher(deployed, spec, imageConfigs.get(`${project}/${deployment}`)?.[service])
+        : undefined;
+      const scheduled = schedulerServices.get(move.service);
+
       choices.set(
         move.replica,
         chooseMigrationMethod(
@@ -380,6 +673,9 @@ export class WorkloadPlannerService {
             unsyncedVolumes: volumeIds.filter((id) => !volumePlacements.get(id)?.syncReplicas.includes(move.to)),
             source: eligibility.get(move.from),
             target: eligibility.get(move.to),
+            ...(launcher ? { launcher } : {}),
+            // A VM / microVM target must run the replica at all: the placement rule's agent features (M7.4).
+            ...(scheduled ? { targetFeatures: replicaAgentFeatures(scheduled) } : {}),
             ...(memory.has(move.replica) ? { memoryBytes: memory.get(move.replica) } : {}),
           },
           options,
@@ -401,7 +697,14 @@ export class WorkloadPlannerService {
    * New addresses for a replica on `node` (a live attempt that fell back gets an address of the target's own pod
    * subnet), taken under the allocation lock and avoiding every address in use.
    */
-  async allocateOn(manager: EntityManager, replica: string, service: string, node: string): Promise<string[]> {
+  /** `families`: address slots per replica (VM NIC layouts, `addressFamiliesOf`); default one per pod subnet. */
+  async allocateOn(
+    manager: EntityManager,
+    replica: string,
+    service: string,
+    node: string,
+    families?: AddressFamilies,
+  ): Promise<string[]> {
     await manager.query('SELECT pg_advisory_xact_lock($1)', [ADVISORY_LOCK_PLACEMENT_ALLOCATION]);
 
     const nodes = await manager.getRepository(NodeEntity).find({ where: { lifecycle: Not('left') } });
@@ -414,11 +717,20 @@ export class WorkloadPlannerService {
         podSubnets,
         new Map(),
         reservedAddresses(all, new Set(), podSubnets),
+        families,
       ).get(replica) ?? []
     );
   }
 
   async current(manager: EntityManager): Promise<{ replicas: ReplicaPlacement[]; volumes: VolumePlacement[] }> {
+    return (await this.loadCurrent(manager)).current;
+  }
+
+  /** `current`, with the placement rows it came from (their reported status). */
+  private async loadCurrent(manager: EntityManager): Promise<{
+    current: { replicas: ReplicaPlacement[]; volumes: VolumePlacement[] };
+    placements: WorkloadPlacementEntity[];
+  }> {
     // Cron runs are owned by the cron controller (3.23), not by plans; draining replicas are already removed.
     const replicas = await manager
       .getRepository(WorkloadPlacementEntity)
@@ -426,24 +738,27 @@ export class WorkloadPlannerService {
     const volumes = await manager.getRepository(VolumePlacementEntity).find();
 
     return {
-      replicas: replicas.map((p) => ({
-        service: serviceId(p.project, p.deployment, p.service),
-        replica: p.id,
-        node: p.node,
-      })),
-      volumes: volumes.map((v) => ({
-        volume: v.id,
-        primary: v.primaryNode,
-        syncReplicas: v.syncReplicas,
-        remoteReplicas: v.remoteReplicas,
-      })),
+      placements: replicas,
+      current: {
+        replicas: replicas.map((p) => ({
+          service: serviceId(p.project, p.deployment, p.service),
+          replica: p.id,
+          node: p.node,
+        })),
+        volumes: volumes.map((v) => ({
+          volume: v.id,
+          primary: v.primaryNode,
+          syncReplicas: v.syncReplicas,
+          remoteReplicas: v.remoteReplicas,
+        })),
+      },
     };
   }
 
   /**
    * Persists placements inside the apply transaction. Moves from a reachable node become migrations (3.10) with
-   * the method chosen per service (live, stop-and-copy, blue / green, short stop), in dependency waves per
-   * deployment; a failover (source gone) moves directly.
+   * the method chosen per service (live, stop-and-copy, vm-live / microvm-live, blue / green, short stop), in
+   * dependency waves per deployment; a failover (source gone) moves directly.
    */
   async persist(
     manager: EntityManager,
@@ -473,6 +788,8 @@ export class WorkloadPlannerService {
       podSubnets,
       new Map(existing.map((p) => [p.id, { node: p.node, addresses: p.addresses }])),
       reservedAddresses(all, keepAddressesOf(all, plan), podSubnets),
+      // VMs: one address per NIC and family (3.35).
+      addressFamiliesOf(plan.parsed),
     );
     const keep = new Set(plan.schedule.replicas.map((r) => r.replica));
     const liveNodes = new Set(nodes.map((n) => n.name));

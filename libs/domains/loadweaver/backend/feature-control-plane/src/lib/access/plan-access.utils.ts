@@ -10,6 +10,7 @@ import { parseBytes, parseCpus } from '@forepath/loadweaver/shared/util-compose'
 
 import { canonicalJson } from '../utils/canonical-json.utils';
 import { toSchedulerServices, type ParsedDeployment } from '../utils/workload-planning.utils';
+import { vmUsage } from '../utils/vm-planning.utils';
 
 type ResourceRow = { kind: string; name: string; project: string | null; spec: Record<string, unknown> };
 type Change = {
@@ -81,11 +82,16 @@ export interface ProjectUsage {
   storageBytes: number;
   publicIps: number;
   ports: number;
+  /** Virtual machines (3.35): count, vCPUs / memory of running ones, all disk sizes; they count into the above too. */
+  virtualMachines?: number;
+  vmVcpus?: number;
+  vmMemoryBytes?: number;
+  vmDiskBytes?: number;
 }
 
 /**
- * What each project asks for: requests of all replicas, volume sizes plus stored backup bytes (3.20), egress
- * addresses, published ports. Autoscaled services (3.23) count with `min` replicas (what a plan commits to; the
+ * What each project asks for: requests of all replicas (microVMs and VMs with their launcher overhead, 3.35), volume
+ * sizes plus stored backup bytes (3.20), egress addresses, published ports, and the VM usage. Autoscaled services (3.23) count with `min` replicas (what a plan commits to; the
  * autoscaler stays within the quota above it), or with the replicas they run now (`autoscaled: 'current'`).
  */
 export function projectUsage(
@@ -137,6 +143,8 @@ export function projectUsage(
 
   for (const [project, bytes] of backupBytes) of(project).storageBytes += bytes;
 
+  for (const [project, vms] of vmUsage(parsed)) Object.assign(of(project), vms);
+
   for (const r of resources.filter((x) => x.kind === 'Policy' && x.project))
     of(r.project as string).publicIps += policySpecSchema.parse(r.spec).egress?.pools.length ?? 0;
 
@@ -169,6 +177,11 @@ export function quotaIssues(
     check('storage', u.storageBytes, quota.storage ? parseBytes(quota.storage) : undefined, gib);
     check('public IPs', u.publicIps, quota.publicIps, String);
     check('published ports', u.ports, quota.ports, String);
+    // Virtual machines (3.35).
+    check('virtual machines', u.virtualMachines ?? 0, quota.virtualMachines, String);
+    check('VM vCPUs', u.vmVcpus ?? 0, quota.vmVcpus, String);
+    check('VM memory', u.vmMemoryBytes ?? 0, quota.vmMemory ? parseBytes(quota.vmMemory) : undefined, gib);
+    check('VM disks', u.vmDiskBytes ?? 0, quota.vmDiskBytes ? parseBytes(quota.vmDiskBytes) : undefined, gib);
   }
 
   return issues;
@@ -193,6 +206,10 @@ export function quotaShares(
       ['storage', u.storageBytes, quota.storage ? parseBytes(quota.storage) : undefined],
       ['public IPs', u.publicIps, quota.publicIps ?? undefined],
       ['published ports', u.ports, quota.ports ?? undefined],
+      ['virtual machines', u.virtualMachines ?? 0, quota.virtualMachines ?? undefined],
+      ['VM vCPUs', u.vmVcpus ?? 0, quota.vmVcpus ?? undefined],
+      ['VM memory', u.vmMemoryBytes ?? 0, quota.vmMemory ? parseBytes(quota.vmMemory) : undefined],
+      ['VM disks', u.vmDiskBytes ?? 0, quota.vmDiskBytes ? parseBytes(quota.vmDiskBytes) : undefined],
     ] as const)
       if (limit !== undefined && limit !== null && limit > 0)
         out.push({ project: r.name, resource, used, limit, share: used / limit });

@@ -6,6 +6,8 @@ export const NETWORK_KINDS = new Set([
   'Cluster',
   'Node',
   'Deployment',
+  // Virtual machines are policy members per NIC (3.35).
+  'VirtualMachine',
   'Project',
   'IpPool',
   'DnsProvider',
@@ -34,6 +36,8 @@ export const ADDRESS_KINDS = new Set(['Cluster', 'IpPool', 'DnsProvider', 'Polic
  */
 export const WORKLOAD_KINDS = new Set([
   'Deployment',
+  // Planned as the reserved deployment `lw-vm` of their project (3.35).
+  'VirtualMachine',
   'Project',
   'Node',
   'Cluster',

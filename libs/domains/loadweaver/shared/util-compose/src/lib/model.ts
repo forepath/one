@@ -1,4 +1,4 @@
-import type { Selector } from '@forepath/loadweaver/shared/util-model';
+import type { ProjectAllowedDevice, Runtime, Selector } from '@forepath/loadweaver/shared/util-model';
 
 /** Normalized deployment produced from a compose project (3.11). */
 
@@ -92,6 +92,19 @@ export interface BackupHooksSpec {
   check?: { command: string[]; timeoutSeconds: number };
 }
 
+/** An allow-listed host device passed into the container (3.1: `/dev/kvm` only, `runc` services only). */
+export interface ServiceDevice {
+  path: ProjectAllowedDevice;
+  /** Device cgroup permissions; compose's default is `rwm`. */
+  permissions: 'rw' | 'rwm';
+}
+
+/** `x-loadweaver.microvm` (3.35); guest vCPUs and memory come from `deploy.resources` at plan time. */
+export interface MicrovmSettings {
+  /** Per-replica writable layer quota; absent = the planner's default. */
+  rootfsBytes?: number;
+}
+
 export interface ServiceSpec {
   name: string;
   image: string;
@@ -116,7 +129,10 @@ export interface ServiceSpec {
   aliases: string[];
   ports: PortExposure[];
   http: HttpExposure[];
-  runtime: 'runc' | 'sandboxed';
+  /** Isolation level (3.1); the service runs at exactly this level. */
+  runtime: Runtime;
+  /** Only with `runtime: microvm`. */
+  microvm?: MicrovmSettings;
   placement?: Selector;
   spread: 'node' | 'site';
   kind: 'service' | 'job' | 'cron';
@@ -135,7 +151,10 @@ export interface ServiceSpec {
   privileged: boolean;
   init: boolean;
   networkMode?: string;
+  /** Host paths of the requested devices (pins and migration eligibility); see `deviceAccess`. */
   devices: string[];
+  /** The requested devices with their permissions (allow-listed: `/dev/kvm`). */
+  deviceAccess: ServiceDevice[];
   containerName?: string;
   stopGracePeriodMs: number;
   stopSignal?: string;

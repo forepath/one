@@ -21,6 +21,9 @@ describe('kept-address network plugin (3.10)', () => {
     expect(keptNetworkName(['10.88.0.5'])).toBe('loadweaver-kept-4');
     expect(keptNetworkName(['10.88.0.5', 'fd00:42::5'])).toBe('loadweaver-kept-46');
     expect(keptNetworkName(['fd00:42::5'])).toBe('loadweaver-kept-6');
+    // Further NICs of a full VM (3.35): one network each (a container has one endpoint per network).
+    expect(keptNetworkName(['10.88.0.5'], 1)).toBe('loadweaver-kept-4-nic1');
+    expect(keptNetworkName(['10.88.0.5', 'fd00:42::5'], 2)).toBe('loadweaver-kept-46-nic2');
     expect(keptInterface('e'.repeat(64))).toMatch(/^lwk[0-9a-f]{10}$/);
     expect(`${keptInterface('e'.repeat(64))}c`.length).toBeLessThanOrEqual(15);
   });

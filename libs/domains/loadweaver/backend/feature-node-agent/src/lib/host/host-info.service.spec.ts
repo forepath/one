@@ -54,6 +54,82 @@ describe('host info', () => {
     expect(await info(new Error('modinfo: ERROR: Module drbd not found.')).drbd9()).toBe(false);
   });
 
+  it('reports the isolation levels from the probes: ready levels, every state, KVM facts, no name matching', async () => {
+    const at = '2026-10-23T10:00:00.000Z';
+    const report = {
+      checkedAt: at,
+      levels: {
+        runc: { state: 'ready', checkedAt: at },
+        sandboxed: { state: 'ready', checkedAt: at },
+        'sandboxed-kvm': { state: 'unsupported', reasonCode: 'E_KVM_UNAVAILABLE', checkedAt: at },
+        microvm: { state: 'disabled-by-admin', reasonCode: 'E_DISABLED_BY_ADMIN', checkedAt: at },
+      },
+      runtimes: ['runc', 'sandboxed'],
+      kvm: {
+        cpu: 'no',
+        device: 'absent',
+        module: 'absent',
+        nested: 'no',
+        hypervisor: 'yes',
+        usable: false,
+        optOut: true,
+      },
+      cpuFlagsHash: 'a'.repeat(64),
+      dockerRuntimes: {
+        'runsc-systrap': { path: 'runsc', runtimeArgs: ['--platform=systrap'] },
+        'runsc-kvm': { path: 'runsc', runtimeArgs: ['--platform=kvm'] },
+      },
+    };
+    const commands = {
+      run: jest.fn(async () => ({ stdout: '', stderr: '' })),
+      available: jest.fn(async () => true),
+      json: jest.fn(async (cmd: string) => (cmd === 'docker' ? { ServerVersion: '29.0.0' } : [])),
+    };
+    const caps = await new HostInfoService(commands as never, { current: async () => report } as never).capabilities();
+
+    expect(caps.runtimes).toEqual(['runc', 'sandboxed']);
+    expect(caps.sandboxProbe).toBe('ready');
+    expect(caps.isolation).toBe(report.levels);
+    expect(caps.kvm).toEqual(report.kvm);
+    expect(caps.cpuFlagsHash).toBe('a'.repeat(64));
+    expect(caps.dockerVersion).toBe('29.0.0');
+    // The KVM runtime is registered, but its level isn't ready: no gVisor-KVM checkpoints.
+    expect(caps.checkpoint?.runscKvm).toBe(false);
+    // No microVM level: no full VMs either.
+    expect(caps.virtualMachines).toBe(false);
+  });
+
+  it('offers full VMs with a ready microVM level, the launcher and DRBD 9', async () => {
+    const at = '2026-10-23T10:00:00.000Z';
+    const report = {
+      checkedAt: at,
+      levels: { runc: { state: 'ready', checkedAt: at }, microvm: { state: 'ready', checkedAt: at } },
+      runtimes: ['runc', 'microvm'],
+      microvm: { launcherDigest: `sha256:${'b'.repeat(64)}`, unpackCache: true, thinPool: true },
+      dockerRuntimes: {},
+    };
+    const commands = {
+      run: jest.fn(async () => ({ stdout: '', stderr: '' })),
+      available: jest.fn(async () => true),
+      json: jest.fn(async (cmd: string) => (cmd === 'docker' ? { ServerVersion: '29.0.0' } : [])),
+    };
+    const service = new HostInfoService(commands as never, { current: async () => report } as never);
+
+    jest.spyOn(service, 'drbd9').mockResolvedValue(true);
+    expect((await service.capabilities()).virtualMachines).toBe(true);
+
+    jest.spyOn(service, 'drbd9').mockResolvedValue(false);
+    expect((await service.capabilities()).virtualMachines).toBe(false);
+    // Generic microVM live migration (M7 W10b): only with the launcher's virtio-fs migration support.
+    expect((await service.capabilities()).microvmMigration).toBe(false);
+    report.microvm = { ...report.microvm, migration: { generic: true, modes: ['generic', 'vm'] } } as never;
+    expect((await service.capabilities()).microvmMigration).toBe(true);
+    // Bundled microVMs (M7 F5): their image is the launcher; the agent drives them where the microVM level is ready.
+    expect((await service.capabilities()).microvmBundledMigration).toBe(true);
+    report.levels.microvm = { state: 'probe-failed', checkedAt: at };
+    expect((await service.capabilities()).microvmBundledMigration).toBe(false);
+  });
+
   it('reports the kernel host name DRBD matches against, if DRBD can use it', () => {
     expect(kernelHostname('node-1')).toBe('node-1');
     expect(kernelHostname('node-1.dc1.example.com')).toBe('node-1.dc1.example.com');

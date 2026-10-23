@@ -6,6 +6,11 @@ describe('plan kinds', () => {
     expect(WORKLOAD_KINDS.has('WorkloadGroup')).toBe(true);
   });
 
+  it('plans and compiles virtual machines (3.35)', () => {
+    expect(WORKLOAD_KINDS.has('VirtualMachine')).toBe(true);
+    expect(NETWORK_KINDS.has('VirtualMachine')).toBe(true);
+  });
+
   it('every workload kind except NodeImport also recompiles the network', () => {
     expect([...WORKLOAD_KINDS].filter((k) => !NETWORK_KINDS.has(k))).toEqual(['NodeImport']);
   });

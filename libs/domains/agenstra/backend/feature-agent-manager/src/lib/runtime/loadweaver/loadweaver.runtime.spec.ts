@@ -5,11 +5,13 @@ import {
 import { NotFoundException } from '@nestjs/common';
 import { parse, parseAllDocuments } from 'yaml';
 
+import { IsolationCapabilitiesService } from '../../services/isolation-capabilities.service';
 import { parseEnvironmentFile } from '../../utils/agent-environment-file.utils';
 
 import { environmentCompose, environmentDeployment, parseEnvironmentCompose } from './environment-compose';
-import { LoadweaverClient } from './loadweaver-client';
-import { LoadweaverRuntime } from './loadweaver.runtime';
+import { LoadweaverIsolationMappingError } from './isolation-mapping';
+import { LoadweaverClient, type LoadweaverIsolationCapabilities } from './loadweaver-client';
+import { loadweaverManagerPorts, loadweaverMicrovmSize, LoadweaverRuntime } from './loadweaver.runtime';
 
 const AGENT = '0123abcd-4567-89ef-0123-456789abcdef';
 const DEPLOYMENT = environmentDeployment(AGENT);
@@ -65,6 +67,21 @@ function mockClient() {
     metrics: jest.fn(),
     writeFile: jest.fn(),
     close: jest.fn(),
+    isolationCapabilities: jest.fn<Promise<LoadweaverIsolationCapabilities>, []>(async () => ({
+      project: 'agenstra-ws',
+      nodes: 2,
+      levels: {
+        runc: { state: 'ready', nodes: 2 },
+        sandboxed: { state: 'ready', nodes: 2 },
+        'sandboxed-kvm': { state: 'ready', nodes: 1 },
+        microvm: {
+          state: 'unsupported',
+          nodes: 0,
+          reasonCode: 'E_KVM_UNAVAILABLE',
+          reason: 'no eligible node (runtime microvm: 0 of 2 nodes ready — n1 E_KVM_UNAVAILABLE, n2 E_KVM_UNAVAILABLE)',
+        },
+      },
+    })),
   };
 
   return { client, resources, policies };
@@ -347,6 +364,298 @@ describe('LoadweaverRuntime', () => {
     expect(client.deleteSecret).toHaveBeenCalledWith(`${DEPLOYMENT}-env`);
   });
 
+  it('creates every isolation level 1:1 and refuses unknown runtimes before anything is stored', async () => {
+    for (const [runtime, expected] of [
+      ['runc', 'runc'],
+      ['runsc-systrap', 'sandboxed'],
+      ['runsc-systrap-hostnet', 'sandboxed'],
+      ['runsc-kvm', 'sandboxed-kvm'],
+      ['runsc-kvm-hostnet', 'sandboxed-kvm'],
+    ] as const) {
+      const { client, resources } = mockClient();
+
+      await create(new LoadweaverRuntime(client as unknown as LoadweaverClient), { runtime });
+      expect(parseEnvironmentCompose(resources.get(DEPLOYMENT)?.spec.compose ?? '', '20g')?.runtime).toBe(expected);
+    }
+
+    const { client } = mockClient();
+    const runtime = new LoadweaverRuntime(client as unknown as LoadweaverClient);
+
+    await expect(create(runtime, { runtime: 'kata' })).rejects.toThrow(LoadweaverIsolationMappingError);
+    await expect(create(runtime, { runtime: 'runsc-systrap', microvm: true })).rejects.toThrow(/runs on runc/);
+    expect(client.putSecret).not.toHaveBeenCalled();
+    expect(client.applyChange).not.toHaveBeenCalled();
+  });
+
+  it("runs microVM environments as Agenstra's microVM image in Loadweaver's bundled mode", async () => {
+    const { client, resources } = mockClient();
+    const runtime = new LoadweaverRuntime(client as unknown as LoadweaverClient);
+
+    await create(runtime, {
+      runtime: 'runc',
+      microvm: true,
+      image: 'ghcr.io/forepath/agenstra-manager-worker-microvm:1.2.3',
+      capDrop: ['NET_RAW'],
+    });
+
+    const compose = parse(resources.get(DEPLOYMENT)?.spec.compose ?? '');
+    const worker = compose.services.worker;
+
+    expect(worker).toMatchObject({
+      image: 'ghcr.io/forepath/agenstra-manager-worker-microvm:1.2.3',
+      // Guest paths: the node agent mounts volumes and secrets below the launcher's /guest.
+      volumes: ['workspace:/app'],
+      secrets: [{ source: 'environment', target: '/etc/agenstra/environment/environment' }],
+      environment: { AGENSTRA_MICROVM_FORWARD_PORTS: '4096,6080', AGENSTRA_MICROVM_LOOPBACK_PORTS: '' },
+      // CPU reservation defaults to the limit; the guest memory is always fully reserved.
+      deploy: { resources: { limits: { cpus: '2', memory: '2g' }, reservations: { cpus: '2', memory: '2g' } } },
+      'x-loadweaver': { replicas: 1, runtime: 'microvm' },
+    });
+    // The launcher's host settings are the node agent's: nothing in the compose can weaken them.
+    for (const key of ['cap_add', 'cap_drop', 'init', 'devices', 'privileged', 'security_opt', 'runtime'])
+      expect(worker).not.toHaveProperty(key);
+    expect(parseEnvironmentCompose(resources.get(DEPLOYMENT)?.spec.compose ?? '', '20g')).toMatchObject({
+      runtime: 'microvm',
+      microvm: { cpus: '2', memory: '2g' },
+    });
+  });
+
+  it('defaults a microVM environment to the microVM image and the configured guest size', async () => {
+    const env = process.env;
+
+    process.env = {
+      ...env,
+      AGENT_MICROVM_IMAGE: 'registry.example/worker-microvm:9',
+      LOADWEAVER_ENVIRONMENT_MICROVM_CPUS: '4',
+      LOADWEAVER_ENVIRONMENT_MICROVM_MEMORY: '6g',
+    };
+
+    try {
+      const { client, resources } = mockClient();
+
+      await create(new LoadweaverRuntime(client as unknown as LoadweaverClient), {
+        runtime: 'runc',
+        microvm: true,
+        image: undefined,
+      });
+
+      const worker = parse(resources.get(DEPLOYMENT)?.spec.compose ?? '').services.worker;
+
+      expect(worker.image).toBe('registry.example/worker-microvm:9');
+      expect(worker.deploy.resources.limits).toEqual({ cpus: '4', memory: '6g' });
+      expect(worker.deploy.resources.reservations).toEqual({ cpus: '4', memory: '6g' });
+    } finally {
+      process.env = env;
+    }
+
+    expect(
+      loadweaverMicrovmSize({ LOADWEAVER_ENVIRONMENT_MICROVM_CPUS: '0', LOADWEAVER_ENVIRONMENT_MICROVM_MEMORY: 'x' }),
+    ).toEqual({ cpus: '2', memory: '2g', cpuReservation: '2' });
+  });
+
+  it('reserves the configured CPUs of microVM environments (memory stays fully reserved)', async () => {
+    const env = process.env;
+
+    process.env = {
+      ...env,
+      LOADWEAVER_ENVIRONMENT_MICROVM_CPUS: '4',
+      LOADWEAVER_ENVIRONMENT_MICROVM_MEMORY: '6g',
+      LOADWEAVER_ENVIRONMENT_MICROVM_CPU_RESERVATION: '0.5',
+    };
+
+    try {
+      const { client, resources } = mockClient();
+
+      await create(new LoadweaverRuntime(client as unknown as LoadweaverClient), { runtime: 'runc', microvm: true });
+
+      const compose = resources.get(DEPLOYMENT)?.spec.compose ?? '';
+      const worker = parse(compose).services.worker;
+
+      expect(worker.deploy.resources).toEqual({
+        limits: { cpus: '4', memory: '6g' },
+        reservations: { cpus: '0.5', memory: '6g' },
+      });
+      expect(parseEnvironmentCompose(compose, '20g')?.microvm).toEqual({
+        cpus: '4',
+        memory: '6g',
+        cpuReservation: '0.5',
+      });
+    } finally {
+      process.env = env;
+    }
+  });
+
+  it('refuses an invalid CPU reservation at startup (> 0, at most the limit)', () => {
+    const size = (reservation: string, cpus = '2') =>
+      loadweaverMicrovmSize({
+        LOADWEAVER_ENVIRONMENT_MICROVM_CPUS: cpus,
+        LOADWEAVER_ENVIRONMENT_MICROVM_CPU_RESERVATION: reservation,
+      });
+
+    expect(size('2').cpuReservation).toBe('2');
+    expect(size('0.25').cpuReservation).toBe('0.25');
+    expect(size('').cpuReservation).toBe('2');
+    expect(size(' 1 ', '4').cpuReservation).toBe('1');
+
+    for (const invalid of ['0', '0.0', '-1', '3', 'x', '1e2', '50%'])
+      expect(() => size(invalid)).toThrow('LOADWEAVER_ENVIRONMENT_MICROVM_CPU_RESERVATION');
+
+    const env = process.env;
+
+    process.env = {
+      ...env,
+      LOADWEAVER_ENVIRONMENT_MICROVM_CPUS: '2',
+      LOADWEAVER_ENVIRONMENT_MICROVM_CPU_RESERVATION: '4',
+    };
+
+    try {
+      // The manager doesn't start with it (the runtime is built at module init).
+      expect(() => new LoadweaverRuntime(mockClient().client as unknown as LoadweaverClient)).toThrow(
+        'at most the CPU limit 2',
+      );
+    } finally {
+      process.env = env;
+    }
+  });
+
+  it('keeps an environment at its level on updates; a microVM stays a microVM', async () => {
+    const { client, resources } = mockClient();
+    const runtime = new LoadweaverRuntime(client as unknown as LoadweaverClient);
+    const level = () => parseEnvironmentCompose(resources.get(DEPLOYMENT)?.spec.compose ?? '', '20g')?.runtime;
+
+    await create(runtime, { runtime: 'runsc-kvm' });
+    await runtime.updateContainer(ID, { runtime: 'runsc-kvm-hostnet' });
+    expect(level()).toBe('sandboxed-kvm');
+    await expect(runtime.updateContainer(ID, { runtime: 'kata' })).rejects.toThrow(LoadweaverIsolationMappingError);
+    expect(level()).toBe('sandboxed-kvm');
+
+    await runtime.deleteContainer(ID);
+    await create(runtime, { runtime: 'runc', microvm: true });
+    client.applyChange.mockClear();
+    // Agenstra pins a microVM's launcher runtime (runc) on every recreate: the environment stays a microVM.
+    await runtime.updateContainer(ID, { runtime: 'runc' });
+    expect(level()).toBe('microvm');
+    expect(client.applyChange).not.toHaveBeenCalled();
+    await expect(runtime.updateContainer(ID, { runtime: 'runsc-systrap' })).rejects.toThrow(/microVM/);
+    expect(level()).toBe('microvm');
+  });
+
+  it('sends commands into microVM environments unchanged (the node agent wraps them in vm-exec)', async () => {
+    const { client } = mockClient();
+    const runtime = new LoadweaverRuntime(client as unknown as LoadweaverClient);
+
+    await create(runtime, { runtime: 'runc', microvm: true });
+    client.startExec = execReturning([{ stream: 'stdout', data: 'ok' }], 0);
+    expect(await runtime.sendCommandToContainer(ID, ['git', 'status'], undefined, true, { user: 'agenstra' })).toBe(
+      'ok',
+    );
+
+    const [, argv, options] = client.startExec.mock.calls[0] as unknown as [string, string[], { user: string }];
+
+    expect(argv).toEqual(['git', 'status']);
+    expect(options.user).toBe('agenstra');
+  });
+
+  it('reports host facts from the control plane; probes answer from its aggregated view (cached)', async () => {
+    const { client } = mockClient();
+    const runtime = new LoadweaverRuntime(client as unknown as LoadweaverClient);
+    const info = await runtime.getDockerHostInfo();
+
+    expect(Object.keys(info.runtimes).sort()).toEqual(Object.keys(info.runtimeArgs).sort());
+    expect(info.runtimeArgs).toMatchObject({
+      runc: null,
+      'runsc-systrap': ['--platform=systrap'],
+      'runsc-systrap-hostnet': ['--platform=systrap', '--network=host'],
+      'runsc-kvm': ['--platform=kvm'],
+      'runsc-kvm-hostnet': ['--platform=kvm', '--network=host'],
+    });
+    expect(await runtime.runIsolationProbe({ expectedRuntime: 'runc', image: 'i', timeoutMs: 1 })).toEqual({
+      ok: true,
+    });
+    expect(await runtime.runIsolationProbe({ runtime: 'runsc-systrap', image: 'i', timeoutMs: 1 })).toEqual({
+      ok: true,
+      gvisorKernelDetected: true,
+    });
+    expect(await runtime.runIsolationProbe({ runtime: 'runsc-kvm', image: 'i', timeoutMs: 1 })).toEqual({
+      ok: true,
+      gvisorKernelDetected: true,
+    });
+
+    const microvm = await runtime.runMicrovmProbe();
+
+    expect(microvm).toMatchObject({ ok: false, reasonCode: 'E_KVM_UNAVAILABLE' });
+    expect((microvm as { reason: string }).reason).toContain('n1 E_KVM_UNAVAILABLE');
+    expect(await runtime.runIsolationProbe({ runtime: 'kata', image: 'i', timeoutMs: 1 })).toMatchObject({
+      ok: false,
+      reasonCode: 'E_RUNTIME_NOT_REGISTERED',
+    });
+    // One request for the whole probe round.
+    expect(client.isolationCapabilities).toHaveBeenCalledTimes(1);
+  });
+
+  it("gives Agenstra's isolation capabilities Loadweaver's real state per level", async () => {
+    const { client } = mockClient();
+    const service = new IsolationCapabilitiesService(new LoadweaverRuntime(client as unknown as LoadweaverClient));
+
+    await service.probe();
+
+    const { levels, recommendedLevel } = await service.whenMicrovmProbed();
+
+    expect(levels.standard.state).toBe('ready');
+    expect(levels.sandboxed.state).toBe('ready');
+    expect(levels['sandboxed-kvm'].state).toBe('ready');
+    expect(levels.microvm).toMatchObject({ state: 'unsupported', reasonCode: 'E_KVM_UNAVAILABLE' });
+    expect(recommendedLevel).toBe('sandboxed-kvm');
+  });
+
+  it('fails the host facts when the control plane does not answer; probes report it', async () => {
+    const { client } = mockClient();
+    const runtime = new LoadweaverRuntime(client as unknown as LoadweaverClient);
+
+    client.isolationCapabilities.mockRejectedValue(new Error('503'));
+    await expect(runtime.getDockerHostInfo()).rejects.toThrow('503');
+    expect(await runtime.runMicrovmProbe()).toMatchObject({ ok: false, reasonCode: 'E_PROBE_START_FAILED' });
+  });
+
+  it('surfaces the context MCP image label from the image content, once per image', async () => {
+    const { client } = mockClient();
+    const runtime = new LoadweaverRuntime(client as unknown as LoadweaverClient);
+
+    await create(runtime);
+    client.exec.mockResolvedValue({ exitCode: 0, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0) });
+    expect((await runtime.inspectContainerSummary(ID))?.labels).toMatchObject({
+      'io.agenstra.context-mcp': '1',
+      'io.agenstra.agent-id': AGENT,
+    });
+    await runtime.inspectContainerSummary(ID);
+    expect(client.exec).toHaveBeenCalledTimes(1);
+    expect(client.exec.mock.calls[0][1]).toEqual(['test', '-f', '/opt/agenstra/mcp/agenstra-context-mcp.cjs']);
+  });
+
+  it('lets environments reach the manager API (context MCP) through a platform policy in every mode', async () => {
+    const env = process.env;
+
+    process.env = { ...env, AGENT_CONTEXT_MCP_MANAGER_URL: 'http://api.agenstra-ws.lw:3000/api' };
+
+    try {
+      expect(loadweaverManagerPorts()).toEqual([3000]);
+      expect(loadweaverManagerPorts({ AGENT_CONTEXT_MCP_MANAGER_URL: 'https://m.example' })).toEqual([443]);
+      expect(
+        loadweaverManagerPorts({ AGENT_CONTEXT_MCP_MANAGER_URL: 'http://m:1/api', AGENT_CONTEXT_MCP_ENABLED: 'false' }),
+      ).toEqual([]);
+
+      const { client, policies } = mockClient();
+      const runtime = new LoadweaverRuntime(client as unknown as LoadweaverClient);
+
+      await create(runtime, {
+        egressPolicy: normalizeEffectiveEgressPolicy({ ...resolveEffectiveEgressPolicy([]), mode: 'offline' }),
+      });
+      expect(policies).toContain(`${DEPLOYMENT}-egress-platform`);
+    } finally {
+      process.env = env;
+    }
+  });
+
   it('keeps the compose file readable back', () => {
     const spec = {
       image: 'i',
@@ -361,5 +670,36 @@ describe('LoadweaverRuntime', () => {
     };
 
     expect(parseEnvironmentCompose(environmentCompose('p', 'env-x', spec), '20g')).toEqual(spec);
+
+    const microvm = {
+      ...spec,
+      runtime: 'microvm' as const,
+      capDrop: [],
+      microvm: { cpus: '3', memory: '4g', cpuReservation: '1.5' },
+    };
+
+    expect(parseEnvironmentCompose(environmentCompose('p', 'env-x', microvm), '20g')).toEqual(microvm);
+    // Without a reservation: the limit is reserved, and read back as such (also from older composes).
+    expect(
+      parseEnvironmentCompose(
+        environmentCompose('p', 'env-x', { ...microvm, microvm: { cpus: '3', memory: '4g' } }),
+        '20g',
+      )?.microvm,
+    ).toEqual({ cpus: '3', memory: '4g', cpuReservation: '3' });
+    expect(
+      parseEnvironmentCompose(
+        'services:\n  worker:\n    image: i\n    deploy:\n      resources:\n        limits:\n          cpus: "3"\n          memory: 4g\n    x-loadweaver:\n      runtime: microvm\n',
+        '20g',
+      )?.microvm,
+    ).toEqual({ cpus: '3', memory: '4g', cpuReservation: '3' });
+  });
+
+  it('maps the compose runtime back exactly: unknown values are an error, not sandboxed', () => {
+    const compose = (runtime: unknown) =>
+      `services:\n  worker:\n    image: i\n    x-loadweaver:\n${runtime === undefined ? '      replicas: 1\n' : `      runtime: ${String(runtime)}\n`}`;
+
+    expect(parseEnvironmentCompose(compose('sandboxed-kvm'), '20g')?.runtime).toBe('sandboxed-kvm');
+    expect(parseEnvironmentCompose(compose(undefined), '20g')?.runtime).toBe('runc');
+    expect(() => parseEnvironmentCompose(compose('runsc'), '20g')).toThrow(LoadweaverIsolationMappingError);
   });
 });

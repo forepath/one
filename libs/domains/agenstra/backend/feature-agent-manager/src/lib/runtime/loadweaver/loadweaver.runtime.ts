@@ -1,4 +1,5 @@
 import {
+  AGENSTRA_CONTEXT_MCP_BIN_PATH,
   compileEgressPolicyForLoadweaver,
   loadweaverEgressNetwork,
   type EffectiveEgressPolicy,
@@ -7,11 +8,15 @@ import {
 import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleDestroy } from '@nestjs/common';
 import { stringify } from 'yaml';
 
+import {
+  AGENT_CONTEXT_MCP_ENABLED_ENV,
+  AGENT_CONTEXT_MCP_MANAGER_URL_ENV,
+} from '../../constants/agent-context.constants';
 import { AGENT_ID_LABEL } from '../../constants/container-naming.constants';
 import {
   IsolationReasonCode,
-  resolveSandboxedIsolationRuntime,
-  resolveSandboxedSharedNetnsIsolationRuntime,
+  resolveGvisorLevelRuntimes,
+  resolveMicrovmImage,
   STANDARD_ISOLATION_RUNTIME,
 } from '../../constants/container-isolation.constants';
 import {
@@ -41,10 +46,28 @@ import {
   environmentDeployment,
   environmentDocument,
   environmentSecret,
+  MICROVM_ENVIRONMENT_SIZE_DEFAULT,
   parseEnvironmentCompose,
   type EnvironmentSpec,
+  type MicrovmEnvironmentSize,
 } from './environment-compose';
-import { LoadweaverApiError, LoadweaverClient, type LoadweaverDeploymentStatus } from './loadweaver-client';
+import {
+  isolationLevelOfContainerRuntime,
+  LOADWEAVER_RUNTIME_FOR_LEVEL,
+  loadweaverRuntimeForContainer,
+  loadweaverRuntimeForUpdate,
+  type LoadweaverEnvironmentRuntime,
+} from './isolation-mapping';
+import {
+  LoadweaverApiError,
+  LoadweaverClient,
+  type LoadweaverDeploymentStatus,
+  type LoadweaverIsolationCapabilities,
+  type LoadweaverIsolationLevelCapability,
+} from './loadweaver-client';
+
+/** Image label of workers bundling the context MCP server (`AGENT_CONTEXT_MCP_IMAGE_LABEL`). */
+const LOADWEAVER_CONTEXT_MCP_IMAGE_LABEL = 'io.agenstra.context-mcp';
 
 /** Container ids of this runtime: `lw:<deployment>`. */
 export const LOADWEAVER_CONTAINER_PREFIX = 'lw:';
@@ -56,6 +79,57 @@ const EVENTS_PAGE = 500;
 
 /** Loadweaver replica states of a running container (`unhealthy` still runs; OpenCode's health is checked apart). */
 const RUNNING_STATES = new Set(['running', 'healthy', 'unhealthy']);
+
+/** How long the control plane's aggregated isolation capabilities are reused (probes of all four levels share one). */
+const CAPABILITIES_CACHE_MS = 60_000;
+
+/**
+ * Guest size of microVM environments (`LOADWEAVER_ENVIRONMENT_MICROVM_CPUS` / `LOADWEAVER_ENVIRONMENT_MICROVM_MEMORY`)
+ * and their CPU reservation (`LOADWEAVER_ENVIRONMENT_MICROVM_CPU_RESERVATION`, default the CPU limit; > 0 and at most
+ * the limit, anything else is a configuration error thrown at startup). The memory is always fully reserved.
+ */
+export function loadweaverMicrovmSize(env: NodeJS.ProcessEnv = process.env): MicrovmEnvironmentSize {
+  const raw = env['LOADWEAVER_ENVIRONMENT_MICROVM_CPUS']?.trim();
+  const memory = env['LOADWEAVER_ENVIRONMENT_MICROVM_MEMORY']?.trim();
+  const reservation = env['LOADWEAVER_ENVIRONMENT_MICROVM_CPU_RESERVATION']?.trim();
+  const cpus = raw && /^\d+(\.\d+)?$/.test(raw) && Number(raw) > 0 ? raw : MICROVM_ENVIRONMENT_SIZE_DEFAULT.cpus;
+
+  if (
+    reservation &&
+    !(/^\d+(\.\d+)?$/.test(reservation) && Number(reservation) > 0 && Number(reservation) <= Number(cpus))
+  )
+    throw new Error(
+      `LOADWEAVER_ENVIRONMENT_MICROVM_CPU_RESERVATION must be a CPU count > 0 and at most the CPU limit ${cpus} (LOADWEAVER_ENVIRONMENT_MICROVM_CPUS), got '${reservation}'`,
+    );
+
+  return {
+    cpus,
+    memory: memory && /^\d+(\.\d+)?[kKmMgG]?[bB]?$/.test(memory) ? memory : MICROVM_ENVIRONMENT_SIZE_DEFAULT.memory,
+    cpuReservation: reservation || cpus,
+  };
+}
+
+/**
+ * Manager API port(s) environments must always reach (the agent context MCP at `AGENT_CONTEXT_MCP_MANAGER_URL`, the
+ * Loadweaver equivalent of the egress guard's platform allows); none while the context MCP is disabled.
+ */
+export function loadweaverManagerPorts(env: NodeJS.ProcessEnv = process.env): number[] {
+  if (env[AGENT_CONTEXT_MCP_ENABLED_ENV]?.trim().toLowerCase() === 'false') return [];
+
+  const raw = env[AGENT_CONTEXT_MCP_MANAGER_URL_ENV]?.trim();
+
+  if (!raw) return [];
+
+  try {
+    const url = new URL(raw);
+
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return [];
+
+    return [url.port ? Number.parseInt(url.port, 10) : url.protocol === 'https:' ? 443 : 80];
+  } catch {
+    return [];
+  }
+}
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -82,7 +156,8 @@ class LineSplitter {
 
 /**
  * Agent environments on a Loadweaver cluster (Loadweaver plan, section 4 step 2): each environment is one Deployment
- * (compose, `runtime: sandboxed` for the sandboxed isolation level) in the workspace's project, created / changed /
+ * (compose, `x-loadweaver.runtime` = the isolation level 1:1, `isolation-mapping.ts`; microVMs run Agenstra's microVM
+ * image as a bundled microVM) in the workspace's project, created / changed /
  * deleted through plan + apply (source `api`) with a project-scoped operator PAT. The manager reaches OpenCode and
  * VNC through the environment's service address (standing project policy, manager → environments); commands run over
  * Loadweaver's machine exec channel (`live:exec`), files go through `/live/files`, logs / stats come from the logs and
@@ -100,9 +175,15 @@ export class LoadweaverRuntime extends AgentRuntime implements OnModuleDestroy {
   private readonly logger = new Logger(LoadweaverRuntime.name);
   /** Environment files (the processes' environment) by deployment; the secret itself is write-only. */
   private readonly environments = new Map<string, Record<string, string>>();
+  /** Image capability labels by `<deployment>@<image>` (see {@link imageLabels}). */
+  private readonly imageLabelCache = new Map<string, Record<string, string>>();
+
+  /** Size of new microVM environments, validated at startup (an invalid CPU reservation fails the manager's start). */
+  private readonly microvmSize: MicrovmEnvironmentSize;
 
   constructor(private readonly client: LoadweaverClient) {
     super();
+    this.microvmSize = loadweaverMicrovmSize();
   }
 
   onModuleDestroy(): void {
@@ -217,22 +298,38 @@ export class LoadweaverRuntime extends AgentRuntime implements OnModuleDestroy {
     const env = this.sanitize({ ...(options.env ?? {}) });
     const workspace = (options.volumes ?? []).find((v) => !v.readOnly);
     const egress = options.egressPolicy
-      ? compileEgressPolicyForLoadweaver(options.egressPolicy, { project: this.client.project, deployment })
+      ? compileEgressPolicyForLoadweaver(options.egressPolicy, {
+          project: this.client.project,
+          deployment,
+          managerPorts: loadweaverManagerPorts(),
+        })
       : null;
 
     if (egress?.issues.length) throw new BadRequestException(`Egress policy: ${egress.issues.join('; ')}`);
 
+    // Resolved before anything is stored: an unknown isolation level is refused, never downgraded. Whether the
+    // cluster can run it is the plan's answer (exact level, no fallback): a failed plan fails the creation.
+    const runtime = loadweaverRuntimeForContainer(options.runtime ?? STANDARD_ISOLATION_RUNTIME, {
+      microvm: options.microvm,
+    });
     const secretVersion = await this.storeEnvironment(deployment, env);
     const spec: EnvironmentSpec = {
-      image: options.image || process.env['AGENT_DEFAULT_IMAGE'] || 'ghcr.io/forepath/agenstra-manager-worker:latest',
+      // A microVM environment always runs a microVM image (never the plain worker image as a generic guest).
+      image:
+        options.image ||
+        (runtime === 'microvm'
+          ? resolveMicrovmImage()
+          : process.env['AGENT_DEFAULT_IMAGE'] || 'ghcr.io/forepath/agenstra-manager-worker:latest'),
       workspacePath: workspace?.containerPath ?? '/app',
-      runtime: options.runtime && options.runtime !== STANDARD_ISOLATION_RUNTIME ? 'sandboxed' : 'runc',
+      runtime,
       labels: options.labels ?? {},
       network: loadweaverEgressNetwork(options.egressPolicy?.mode ?? 'off'),
       capDrop: options.capDrop ?? [],
       secretVersion,
       replicas: 1,
       volumeSize: this.client.config.volumeSize,
+      // Agenstra's microVM image (the caller passes it) as a bundled microVM, sized for the worker.
+      ...(runtime === 'microvm' ? { microvm: this.microvmSize } : {}),
     };
 
     try {
@@ -258,6 +355,8 @@ export class LoadweaverRuntime extends AgentRuntime implements OnModuleDestroy {
   async updateContainer(containerId: string, options: AgentContainerUpdateOptions): Promise<string> {
     const deployment = this.deployment(containerId);
     const spec = await this.spec(deployment);
+    // Checked first: an unknown or impossible level change changes nothing (no new secret version either).
+    const runtime = options.runtime ? loadweaverRuntimeForUpdate(spec.runtime, options.runtime) : undefined;
     let changed = false;
 
     if (options.env) {
@@ -273,9 +372,7 @@ export class LoadweaverRuntime extends AgentRuntime implements OnModuleDestroy {
       changed = true;
     }
 
-    if (options.runtime) {
-      const runtime = options.runtime !== STANDARD_ISOLATION_RUNTIME ? 'sandboxed' : 'runc';
-
+    if (runtime) {
       changed ||= runtime !== spec.runtime;
       spec.runtime = runtime;
     }
@@ -377,7 +474,10 @@ export class LoadweaverRuntime extends AgentRuntime implements OnModuleDestroy {
     return;
   }
 
-  // Exec.
+  // Exec. MicroVM environments need no rewrite here: the node agent runs every machine exec into a microVM replica
+  // inside the guest through the launcher's `vm-exec` (Loadweaver M7 W7, `toMicrovmExecOptions`: user, working
+  // directory, env names as arguments, values in the exec env), so commands, users and paths are the guest's. Wrapping
+  // here as well would run `vm-exec` inside the guest.
 
   private async execEnv(containerId: string, extra?: string[]): Promise<string[]> {
     const env = await this.getContainerEnvironmentMap(containerId).catch(() => ({}) as Record<string, string>);
@@ -611,14 +711,45 @@ export class LoadweaverRuntime extends AgentRuntime implements OnModuleDestroy {
     if (!status) return null;
 
     const spec = await this.spec(deployment).catch(() => null);
+    const running = status.replicas.some((r) => RUNNING_STATES.has(r.state));
 
     return {
       id: containerId,
-      running: status.replicas.some((r) => RUNNING_STATES.has(r.state)),
+      running,
       startedAt: null,
       networkMode: null,
-      labels: spec?.labels ?? {},
+      labels: { ...(spec && running ? await this.imageLabels(deployment, spec.image) : {}), ...(spec?.labels ?? {}) },
     };
+  }
+
+  /**
+   * Capability labels of the environment's image, as Docker merges them into a container's labels: Loadweaver's API
+   * doesn't expose image labels, so the one the manager needs (`io.agenstra.context-mcp`, the bundled context MCP
+   * server of `Dockerfile.worker`) is derived from the image content once per deployment and image.
+   */
+  private async imageLabels(deployment: string, image: string): Promise<Record<string, string>> {
+    const key = `${deployment}@${image}`;
+    const cached = this.imageLabelCache.get(key);
+
+    if (cached) return cached;
+
+    let exitCode: number | null = null;
+
+    try {
+      ({ exitCode } = await this.client.exec(this.replica(deployment), ['test', '-f', AGENSTRA_CONTEXT_MCP_BIN_PATH], {
+        user: '0',
+      }));
+    } catch {
+      // Not answered (replica starting / moving): unknown, asked again next time.
+    }
+
+    if (exitCode === null) return {};
+
+    const labels: Record<string, string> = exitCode === 0 ? { [LOADWEAVER_CONTEXT_MCP_IMAGE_LABEL]: '1' } : {};
+
+    this.imageLabelCache.set(key, labels);
+
+    return labels;
   }
 
   async listContainersByLabel(): Promise<Array<{ id: string; labels: Record<string, string>; createdAt: Date }>> {
@@ -630,19 +761,56 @@ export class LoadweaverRuntime extends AgentRuntime implements OnModuleDestroy {
     throw new BadRequestException('Egress guard sidecars are not used on Loadweaver (the node proxy filters egress)');
   }
 
-  // Isolation: Loadweaver places sandboxed environments on gVisor nodes (or the plan fails), so both levels exist.
+  // Isolation (Loadweaver plan 3.35, M7.5): all four levels map 1:1 to Loadweaver runtimes. A level is ready when at
+  // least one schedulable node in the project's placement passed the level's probe — the control plane's aggregated
+  // view (`GET /projects/:p/isolation-capabilities`), reused for 60 s so one probe round asks once. Environments
+  // still run at exactly their level: no capacity for it fails the plan, and the creation, never a weaker level.
 
+  private capabilitiesCache: { at: number; value: LoadweaverIsolationCapabilities } | null = null;
+  private capabilitiesInFlight: Promise<LoadweaverIsolationCapabilities> | null = null;
+
+  /** The control plane's per-level view of the project's placement (cached {@link CAPABILITIES_CACHE_MS}). */
+  private async capabilityView(): Promise<LoadweaverIsolationCapabilities> {
+    if (this.capabilitiesCache && Date.now() - this.capabilitiesCache.at < CAPABILITIES_CACHE_MS)
+      return this.capabilitiesCache.value;
+
+    this.capabilitiesInFlight ??= this.client
+      .isolationCapabilities()
+      .then((value) => {
+        this.capabilitiesCache = { at: Date.now(), value };
+
+        return value;
+      })
+      .finally(() => (this.capabilitiesInFlight = null));
+
+    return await this.capabilitiesInFlight;
+  }
+
+  /**
+   * Every level's runtimes, with the runtime arguments the shared gVisor installer registers (so the levels reach
+   * their probe, which answers from the control plane's view with its per-node reasons). Fails when the control plane
+   * doesn't answer (Agenstra then reports every level as unavailable, like an unreachable Docker daemon).
+   */
   async getDockerHostInfo(): Promise<DockerHostInfo> {
+    await this.capabilityView();
+
+    const sandboxed = resolveGvisorLevelRuntimes('sandboxed');
+    const kvm = resolveGvisorLevelRuntimes('sandboxed-kvm');
+    // Same shape as Docker's `runtimeArgs` for runtimes registered by the shared gVisor installer.
+    const runtimeArgs: Record<string, string[] | null> = {
+      [STANDARD_ISOLATION_RUNTIME]: null,
+      [sandboxed.runtime]: ['--platform=systrap'],
+      [sandboxed.sharedNetnsRuntime]: ['--platform=systrap', '--network=host'],
+      [kvm.runtime]: ['--platform=kvm'],
+      [kvm.sharedNetnsRuntime]: ['--platform=kvm', '--network=host'],
+    };
+
     return {
       serverVersion: 'loadweaver',
       kernelVersion: null,
       defaultRuntime: STANDARD_ISOLATION_RUNTIME,
-      runtimes: {
-        [STANDARD_ISOLATION_RUNTIME]: null,
-        [resolveSandboxedIsolationRuntime()]: null,
-        [resolveSandboxedSharedNetnsIsolationRuntime()]: null,
-      },
-      runtimeArgs: {},
+      runtimes: Object.fromEntries(Object.keys(runtimeArgs).map((name) => [name, null])),
+      runtimeArgs,
     };
   }
 
@@ -650,19 +818,54 @@ export class LoadweaverRuntime extends AgentRuntime implements OnModuleDestroy {
     return null;
   }
 
-  async runIsolationProbe(options: IsolationProbeOptions): Promise<IsolationProbeResult> {
-    return options.runtime && options.runtime !== STANDARD_ISOLATION_RUNTIME
-      ? { ok: true, gvisorKernelDetected: true }
-      : { ok: true };
-  }
+  /** A level's probe result from the aggregated view (`gvisorKernelDetected` for the gVisor levels). */
+  private async levelProbe(runtime: LoadweaverEnvironmentRuntime): Promise<IsolationProbeResult> {
+    let level: LoadweaverIsolationLevelCapability | undefined;
 
-  /** MicroVM environments are not available on Loadweaver yet. */
-  async runMicrovmProbe(): Promise<IsolationProbeResult> {
+    try {
+      level = (await this.capabilityView()).levels[runtime];
+    } catch (error) {
+      return {
+        ok: false,
+        reasonCode: IsolationReasonCode.PROBE_START_FAILED,
+        reason: `Loadweaver isolation capabilities unavailable: ${(error as Error).message}`.slice(0, 300),
+      };
+    }
+
+    if (level?.state === 'ready')
+      return runtime === 'sandboxed' || runtime === 'sandboxed-kvm'
+        ? { ok: true, gvisorKernelDetected: true }
+        : { ok: true };
+
     return {
       ok: false,
-      reasonCode: IsolationReasonCode.KVM_UNAVAILABLE,
-      reason: 'MicroVM environments are not available on Loadweaver yet',
+      // The control plane reports Agenstra's reason codes (node probes, Loadweaver plan 3.1).
+      reasonCode: (level?.reasonCode ?? IsolationReasonCode.RUNTIME_NOT_REGISTERED) as IsolationReasonCode,
+      reason:
+        `Loadweaver: no schedulable node in project ${this.client.project} runs ${runtime}` +
+        (level
+          ? ` (${level.state}${level.reason ? `: ${level.reason}` : ''})`
+          : ' (not reported by the control plane)'),
     };
+  }
+
+  async runIsolationProbe(options: IsolationProbeOptions): Promise<IsolationProbeResult> {
+    const name = options.runtime ?? options.expectedRuntime ?? STANDARD_ISOLATION_RUNTIME;
+    const level = isolationLevelOfContainerRuntime(name);
+
+    if (!level)
+      return {
+        ok: false,
+        reasonCode: IsolationReasonCode.RUNTIME_NOT_REGISTERED,
+        reason: `Container runtime '${name}' has no Loadweaver equivalent`,
+      };
+
+    return await this.levelProbe(LOADWEAVER_RUNTIME_FOR_LEVEL[level]);
+  }
+
+  /** Ready when a schedulable node in the placement passed the `microvm` probe (its boot probe microVM included). */
+  async runMicrovmProbe(): Promise<IsolationProbeResult> {
+    return await this.levelProbe('microvm');
   }
 
   async removeStaleIsolationProbes(): Promise<number> {
@@ -677,7 +880,11 @@ export class LoadweaverRuntime extends AgentRuntime implements OnModuleDestroy {
    */
   private async applyEgressPolicy(containerId: string, policy: EffectiveEgressPolicy): Promise<{ revision: string }> {
     const deployment = this.deployment(containerId);
-    const compiled = compileEgressPolicyForLoadweaver(policy, { project: this.client.project, deployment });
+    const compiled = compileEgressPolicyForLoadweaver(policy, {
+      project: this.client.project,
+      deployment,
+      managerPorts: loadweaverManagerPorts(),
+    });
 
     if (compiled.issues.length > 0) throw new Error(`Egress policy: ${compiled.issues.join('; ')}`);
 

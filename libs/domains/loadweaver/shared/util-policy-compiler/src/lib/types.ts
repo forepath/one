@@ -54,6 +54,12 @@ export interface CompilerWorkload {
    * service IPs and no mesh endpoint any more; it stops once the drain ends.
    */
   draining?: boolean;
+  /**
+   * An additional NIC of a full VM (3.35, M7: one or more NICs, each with its own groups / policies): a policy
+   * member with its own addresses, labels and groups, but never a backend of the VM's service IPs or mesh identity
+   * (those answer on the primary NIC only).
+   */
+  secondaryInterface?: boolean;
 }
 
 /** A service with its stable service IPs (3.4), resolved through the policy-aware DNS. */

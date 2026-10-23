@@ -14,7 +14,7 @@ export interface LoadweaverBillingConsoleEnvironment extends BaseEnvironment {
 }
 
 /** Socket.IO namespaces of the control plane the console uses. */
-export type LoadweaverConsoleWebsocket = 'plans' | 'logs' | 'terminals' | 'tunnels' | 'topology';
+export type LoadweaverConsoleWebsocket = 'plans' | 'logs' | 'terminals' | 'tunnels' | 'consoles' | 'topology';
 
 /**
  * The cluster console: served next to each cluster's control plane, talks to its API (`console.urls.restApi`) and

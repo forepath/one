@@ -4,6 +4,7 @@ import { createReadStream } from 'node:fs';
 import { mkdir, readdir, readFile, realpath, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
+import { parseGvisorRuntimeArgs } from '@forepath/shared/backend/util-container-runtime';
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import type Docker from 'dockerode';
 
@@ -12,7 +13,7 @@ import { DOCKER } from '../host/docker.provider';
 import { stateDir } from '../state/agent-state.store';
 import { CRIU_OPTIONS } from './checkpoint.manager';
 import { ensureHolder, HOLDER_TARGET, holderPath } from './holder';
-import { SANDBOX_RUNTIME } from './workload-container';
+import { SANDBOX_KVM_RUNTIME, SANDBOX_RUNTIME } from './workload-container';
 
 /**
  * Agent-managed runtime of restored replicas (3.10). Restoring through Docker is broken (moby wires the network
@@ -47,6 +48,27 @@ export const RESTORED_HEALTH_LABEL = 'loadweaver.com/restored-health';
 
 export type RestoredKind = 'runc' | 'runsc';
 
+/**
+ * Label of a gVisor placeholder: the platform its sandbox is restored on (`systrap`, `kvm`; M7.1). A checkpoint is
+ * only ever restored on the platform it was taken on — never a systrap checkpoint on `runsc-kvm` or vice versa.
+ */
+export const RESTORED_PLATFORM_LABEL = 'loadweaver.com/restored-platform';
+
+/** gVisor platforms Loadweaver runs (sandboxed: systrap, sandboxed-kvm: KVM). */
+export type GvisorPlatform = 'systrap' | 'kvm';
+
+/** The platform of gVisor runtime flags: `kvm`, or systrap (also gVisor's default without `--platform`); else null. */
+export function gvisorPlatformOf(runtimeArgs: readonly string[] | undefined): GvisorPlatform | null {
+  const { platform } = parseGvisorRuntimeArgs(runtimeArgs ?? []);
+
+  return platform === 'kvm' ? 'kvm' : platform === null || platform === 'systrap' ? 'systrap' : null;
+}
+
+/** The gVisor platform of a placeholder (labels; systrap for placeholders from before the label). */
+export function restoredPlatform(labels: Record<string, string> | undefined): GvisorPlatform {
+  return labels?.[RESTORED_PLATFORM_LABEL] === 'kvm' ? 'kvm' : 'systrap';
+}
+
 export function restoredRuncRoot(env: NodeJS.ProcessEnv = process.env): string {
   return env['LOADWEAVER_RESTORED_RUNC_ROOT'] || '/run/loadweaver/runc';
 }
@@ -67,20 +89,36 @@ export interface SandboxRuntime {
 }
 
 /**
- * The gVisor runtime registered with Docker for sandboxed workloads ({@link SANDBOX_RUNTIME}; else another `runsc*`
- * runtime with gVisor's own network stack). Restores must use the same flags as the checkpointed sandbox.
+ * The gVisor runtime registered with Docker for a platform (M7.1): the Loadweaver name first ({@link SANDBOX_RUNTIME},
+ * {@link SANDBOX_KVM_RUNTIME}), else another `runsc*` runtime — always with gVisor's own network stack and exactly
+ * that platform, so a restore uses the checkpointed sandbox's platform. Without `platform` (commands on existing
+ * sandboxes: state, list, kill, exec, which don't depend on it) any such runtime, systrap first.
  */
 export function sandboxRuntimeOf(
   runtimes: Record<string, { path?: string; runtimeArgs?: string[] } | undefined>,
+  platform?: GvisorPlatform,
 ): SandboxRuntime | null {
   const netstack = (args: string[] = []) => !args.some((a) => /^--?network=(host|none)$/.test(a));
-  const entry =
-    runtimes[SANDBOX_RUNTIME] ??
-    Object.entries(runtimes).find(([name, r]) => name.startsWith('runsc') && netstack(r?.runtimeArgs))?.[1];
+  const preferred =
+    platform === 'kvm' ? [SANDBOX_KVM_RUNTIME] : platform ? [SANDBOX_RUNTIME] : [SANDBOX_RUNTIME, SANDBOX_KVM_RUNTIME];
+  const names = [
+    ...preferred.filter((n) => runtimes[n]),
+    ...Object.keys(runtimes)
+      .filter((n) => n.startsWith('runsc') && !preferred.includes(n))
+      .sort(),
+  ];
 
-  if (!entry || !netstack(entry.runtimeArgs)) return null;
+  for (const name of names) {
+    const entry = runtimes[name];
+    const args = entry?.runtimeArgs ?? [];
+    const own = gvisorPlatformOf(args);
 
-  return { binary: entry.path || 'runsc', args: entry.runtimeArgs ?? [] };
+    if (!entry || !netstack(args) || !own || (platform && own !== platform)) continue;
+
+    return { binary: entry.path || 'runsc', args };
+  }
+
+  return null;
 }
 
 /** A health check as the agent runs it for gVisor replicas (Docker's semantics and defaults). */
@@ -225,6 +263,8 @@ export function holderOptions(
   const sandboxed = !!options.HostConfig?.Runtime?.startsWith('runsc');
   // gVisor: Docker would probe the placeholder's kernel, not the sandbox; the agent runs the check (runsc exec).
   const health = sandboxed ? restoredHealthCheck(options.Healthcheck ?? imageHealthcheck) : null;
+  // The replica's level decides the platform (M7.1): restored on the platform it was checkpointed on.
+  const platform: GvisorPlatform = options.HostConfig?.Runtime === SANDBOX_KVM_RUNTIME ? 'kvm' : 'systrap';
 
   return {
     ...options,
@@ -235,6 +275,7 @@ export function holderOptions(
       ...(options.Labels ?? {}),
       [RESTORED_LABEL]: migration,
       [RESTORED_RUNTIME_LABEL]: sandboxed ? 'runsc' : 'runc',
+      ...(sandboxed ? { [RESTORED_PLATFORM_LABEL]: platform } : {}),
       ...(health ? { [RESTORED_HEALTH_LABEL]: JSON.stringify(health) } : {}),
     },
     HostConfig: {
@@ -254,7 +295,7 @@ export function holderOptions(
 @Injectable()
 export class RestoredRuntime implements OnModuleDestroy {
   private readonly logger = new Logger(RestoredRuntime.name);
-  private sandbox: SandboxRuntime | null = null;
+  private readonly sandboxes = new Map<GvisorPlatform | 'any', SandboxRuntime>();
   private readonly health = new Map<string, HealthState>();
 
   constructor(
@@ -277,20 +318,30 @@ export class RestoredRuntime implements OnModuleDestroy {
     return ['--root', restoredRuncRoot(), ...args];
   }
 
-  /** Docker's gVisor runtime (binary + flags), looked up once. */
-  async sandboxRuntime(): Promise<SandboxRuntime> {
-    if (this.sandbox) return this.sandbox;
+  /**
+   * Docker's gVisor runtime (binary + flags) for a platform, looked up once per platform (M7.1); without a platform
+   * any Netstack runtime (commands on existing sandboxes).
+   */
+  async sandboxRuntime(platform?: GvisorPlatform): Promise<SandboxRuntime> {
+    const cached = this.sandboxes.get(platform ?? 'any');
+
+    if (cached) return cached;
 
     const info = await this.commands
       .json<{
         Runtimes?: Record<string, { path?: string; runtimeArgs?: string[] }>;
       }>('docker', ['info', '--format', '{{json .}}'], { timeoutMs: 15_000 })
       .catch(() => null);
-    const runtime = sandboxRuntimeOf(info?.Runtimes ?? {});
+    const runtime = sandboxRuntimeOf(info?.Runtimes ?? {}, platform);
 
-    if (!runtime) throw new Error(`no gVisor runtime (${SANDBOX_RUNTIME}) registered with Docker`);
+    if (!runtime)
+      throw new Error(
+        platform === 'kvm'
+          ? `no gVisor KVM runtime (${SANDBOX_KVM_RUNTIME}) registered with Docker: restore needs the same platform`
+          : `no gVisor runtime (${SANDBOX_RUNTIME}) registered with Docker`,
+      );
 
-    this.sandbox = runtime;
+    this.sandboxes.set(platform ?? 'any', runtime);
 
     return runtime;
   }
@@ -299,8 +350,8 @@ export class RestoredRuntime implements OnModuleDestroy {
    * Reads the gVisor binaries (`runsc`, the `gvisor-bin/` sidecars next to it) once, so a restore during the freeze
    * doesn't wait for them to come from disk. Best effort.
    */
-  async prewarm(): Promise<void> {
-    const runtime = await this.sandboxRuntime().catch(() => null);
+  async prewarm(platform?: GvisorPlatform): Promise<void> {
+    const runtime = await this.sandboxRuntime(platform).catch(() => null);
 
     if (!runtime) return;
 
@@ -321,9 +372,9 @@ export class RestoredRuntime implements OnModuleDestroy {
       });
   }
 
-  /** `runsc` with the agent's root for restored sandboxes and Docker's runtime flags. */
-  private async runsc(args: string[]): Promise<[string, string[]]> {
-    const runtime = await this.sandboxRuntime();
+  /** `runsc` with the agent's root for restored sandboxes and Docker's runtime flags (of `platform`, if given). */
+  private async runsc(args: string[], platform?: GvisorPlatform): Promise<[string, string[]]> {
+    const runtime = await this.sandboxRuntime(platform);
 
     return [runtime.binary, ['--root', restoredRunscRoot(), ...runtime.args, ...args]];
   }
@@ -411,20 +462,24 @@ export class RestoredRuntime implements OnModuleDestroy {
         await mkdir(restoredRunscRoot(), { recursive: true, mode: 0o700 });
 
         const log = join(workDir, 'runsc.log');
-        const [binary, args] = await this.runsc([
-          '--log',
-          log,
-          // gVisor sets "live TCP migration" only on sandboxes it starts (not on restored ones): without this, the
-          // next checkpoint of this sandbox (another move, a resume) would reset its established connections.
-          '--allow-connected-on-save',
-          'restore',
-          '-detach',
-          '--image-path',
-          imageDir,
-          '--bundle',
-          bundle,
-          name,
-        ]);
+        const [binary, args] = await this.runsc(
+          [
+            '--log',
+            log,
+            // gVisor sets "live TCP migration" only on sandboxes it starts (not on restored ones): without this, the
+            // next checkpoint of this sandbox (another move, a resume) would reset its established connections.
+            '--allow-connected-on-save',
+            'restore',
+            '-detach',
+            '--image-path',
+            imageDir,
+            '--bundle',
+            bundle,
+            name,
+            // Same platform as the checkpoint (M7.1): the placeholder's label comes from the replica's level.
+          ],
+          restoredPlatform(info.Config.Labels),
+        );
 
         await this.runRestore(info.Id, binary, args, log);
       } else {

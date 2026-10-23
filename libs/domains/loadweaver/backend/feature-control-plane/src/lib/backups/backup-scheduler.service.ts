@@ -43,6 +43,7 @@ import {
   retentionMax,
   retentionShorter,
   sameRetention,
+  volumeCandidates,
   volumeDue,
   type VolumeCandidate,
 } from './backup.utils';
@@ -148,18 +149,12 @@ export class BackupSchedulerService implements OnApplicationBootstrap, OnModuleD
   }
 
   private async inventory(): Promise<Inventory> {
-    const resources = await this.dataSource
-      .getRepository(ResourceEntity)
-      .find({ where: { kind: In(['Project', 'Deployment', 'BackupPolicy', 'BackupTarget', 'Restore']) } });
-    const placements = await this.dataSource.getRepository(VolumePlacementEntity).find();
-    const labels = new Map(
-      resources.filter((r) => r.kind === 'Deployment').map((r) => [`${r.project}/${r.name}`, r.labels ?? {}]),
-    );
-    const volumes = placements.map((p) => {
-      const [project, deployment, volume] = p.id.split('/');
-
-      return { id: p.id, project, deployment, volume, deploymentLabels: labels.get(`${project}/${deployment}`) ?? {} };
+    const resources = await this.dataSource.getRepository(ResourceEntity).find({
+      where: { kind: In(['Project', 'Deployment', 'VirtualMachine', 'BackupPolicy', 'BackupTarget', 'Restore']) },
     });
+    const placements = await this.dataSource.getRepository(VolumePlacementEntity).find();
+    // VM disks (3.35) are selected by their VirtualMachine's labels and name.
+    const volumes = volumeCandidates(placements, resources);
 
     return { resources, parsed: this.planner.parse(resources).parsed, placements, volumes };
   }

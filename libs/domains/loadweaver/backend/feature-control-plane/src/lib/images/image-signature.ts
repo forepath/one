@@ -2,8 +2,14 @@ import { createHash, createPublicKey, verify } from 'node:crypto';
 
 /** Reads from one image repository: manifests by tag / digest, blobs by digest. */
 export interface RepositoryReader {
-  manifest(reference: string): Promise<{ mediaType?: string; layers?: OciDescriptor[] } | null>;
+  /** `accept`: manifest media types to accept (default: an OCI image manifest); image inspection asks for indexes too. */
+  manifest(
+    reference: string,
+    accept?: string,
+  ): Promise<({ mediaType?: string; layers?: OciDescriptor[] } & Record<string, unknown>) | null>;
   blob(digest: string): Promise<Buffer>;
+  /** The first `bytes` of a (large) blob, e.g. a layer's first tar headers; readers without it can't peek into layers. */
+  blobPrefix?(digest: string, bytes: number): Promise<Buffer>;
 }
 
 export interface OciDescriptor {

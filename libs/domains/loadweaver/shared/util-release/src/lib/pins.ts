@@ -6,8 +6,8 @@ import type { NodeArch, SupportedHostOs } from './manifest';
  * control planes). Every image is pinned by digest (section 6). `LOADWEAVER_*_IMAGE` environment overrides remain
  * for development only: the agent logs a warning, and update plans list the override as a warning.
  *
- * The control-plane image is built per release; here it is the moving development tag, and the bundle builder
- * replaces it with the release's digest.
+ * The control-plane and microVM launcher images are built per release; here they are moving development tags, and the
+ * bundle builder replaces them with the release's digests (`RELEASE_BUILT_IMAGES`).
  */
 export const COMPONENT_IMAGES = {
   'control-plane': 'ghcr.io/forepath/loadweaver-control-plane-api:latest',
@@ -28,6 +28,8 @@ export const COMPONENT_IMAGES = {
   'node-shell': 'docker.io/library/alpine:3.22@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8',
   // Backups (3.20): repository servers on the members and the snapshot client on every node (official image index).
   kopia: 'docker.io/kopia/kopia:0.23.1@sha256:89fd95ee2942880ca00eae964266958a394421ddbdf69bca62e38afc55f5900e',
+  // MicroVMs and full VMs (3.35): the shared KVM launcher (`apps/shared/microvm-launcher`, amd64 + arm64).
+  'microvm-launcher': 'ghcr.io/forepath/microvm-launcher:latest',
 } as const;
 
 export type ImageComponentName = keyof typeof COMPONENT_IMAGES;
@@ -47,6 +49,17 @@ export const IMAGE_OVERRIDE_ENV: Record<ImageComponentName, string> = {
   trivy: 'LOADWEAVER_TRIVY_IMAGE',
   'node-shell': 'LOADWEAVER_NODE_SHELL_IMAGE',
   kopia: 'LOADWEAVER_KOPIA_IMAGE',
+  'microvm-launcher': 'LOADWEAVER_MICROVM_LAUNCHER_IMAGE',
+};
+
+/**
+ * Images built by the release pipeline itself (moving development tags in `COMPONENT_IMAGES`); the bundle builder
+ * pins them to the release's digests. Required ones must be given; optional ones are left out of a manifest built
+ * without them (development bundles), and nodes then fall back to the development tag or the override.
+ */
+export const RELEASE_BUILT_IMAGES: Readonly<Partial<Record<ImageComponentName, 'required' | 'optional'>>> = {
+  'control-plane': 'required',
+  'microvm-launcher': 'optional',
 };
 
 /**
@@ -133,6 +146,22 @@ export const PACKAGE_PINS: Record<'storage' | 'docker' | 'containerd' | 'criu' |
     'debian:12': { 'wireguard-tools': '1.0.20210914-1+b1' },
   },
 };
+
+/**
+ * Host packages the microVM guest-root cache needs (3.35, M7.2): `attr` (`setfattr`: overlay whiteouts / opaque
+ * directories while unpacking layers) and `e2fsprogs` (`mkfs.ext4`: per-replica writable layers on thin LVs / loop
+ * images). Installed by the node installer and rooted in the release's apt bundle; their versions follow the frozen
+ * apt snapshot (no `PACKAGE_PINS` entry).
+ */
+export const MICROVM_HOST_PACKAGES = ['attr', 'e2fsprogs'] as const;
+
+/**
+ * Host packages every node needs (installer and host updates): the installer installs them, and every host update
+ * installs the ones missing on the node from the release's frozen apt snapshot (nodes installed before a package became
+ * required; never from upstream, no reboot of its own). Rooted in the release's apt bundle, so air-gapped snapshots
+ * carry them. New host dependencies go here (versions follow the snapshot unless `PACKAGE_PINS` pins them).
+ */
+export const REQUIRED_HOST_PACKAGES: readonly string[] = [...MICROVM_HOST_PACKAGES];
 
 /** Versions shown for package components (the upstream version the pins correspond to). */
 export const PACKAGE_COMPONENT_VERSIONS: Record<keyof typeof PACKAGE_PINS, string> = {

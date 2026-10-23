@@ -40,6 +40,14 @@ function message(error: unknown): string {
 }
 
 /**
+ * Host routes of addresses a replica kept from another node in a live migration (3.10): the workload's, and for a
+ * full VM those of its further NICs (`vm.nics[].hostRoutes`, M7.4); each NIC's guest resolves through this node.
+ */
+export function keptHostRoutes(workload: NonNullable<DesiredState['workloads']>[number]): string[] {
+  return [...(workload.hostRoutes ?? []), ...(workload.vm?.nics ?? []).flatMap((nic) => nic.hostRoutes ?? [])];
+}
+
+/**
  * Applies desired states to the host, layer by layer: tunnels → routing → filtering / services → DNS →
  * control plane. If a layer fails, the last successfully applied state is re-applied (3.19: failed applies
  * roll back), and the report says exactly which layers succeeded, failed or were rolled back.
@@ -148,10 +156,10 @@ export class ReconcilerService {
       if (result.spec.gateways.length > 0 || vpn) {
         await this.dns.bind({
           listen: [...result.spec.gateways, ...(vpn ? [vpn.address.split('/')[0]] : [])],
-          // Replicas that kept their address in a live migration (3.10) resolve here too.
+          // Replicas that kept their address in a live migration (3.10) resolve here too, a VM with every NIC.
           clients: [
             ...result.spec.subnets,
-            ...(state.workloads ?? []).flatMap((w) => w.hostRoutes ?? []),
+            ...(state.workloads ?? []).flatMap(keptHostRoutes),
             ...(vpn?.prefixes ?? []),
           ],
           upstreams: [],

@@ -158,7 +158,9 @@ export function compileMesh(input: CompilerInput): { mesh: Map<string, MeshConfi
 
     // Every node running a (not draining) replica of the destination answers for it.
     const replicaNodes = uniqueSorted(
-      input.workloads.filter((w) => serviceIdentity(w) === identity && !w.draining).map((w) => w.node),
+      input.workloads
+        .filter((w) => serviceIdentity(w) === identity && !w.draining && !w.secondaryInterface)
+        .map((w) => w.node),
     );
     let up = sourceNode.upstreams.find((u) => u.name === upstream);
 
@@ -188,7 +190,7 @@ export function compileMesh(input: CompilerInput): { mesh: Map<string, MeshConfi
     }
 
     // A draining replica gets no new connections from its node's proxy either.
-    if (!edge.destination.draining)
+    if (!edge.destination.draining && !edge.destination.secondaryInterface)
       inbound.backends = uniqueSorted([...inbound.backends, ...edge.destination.addresses]);
   }
 

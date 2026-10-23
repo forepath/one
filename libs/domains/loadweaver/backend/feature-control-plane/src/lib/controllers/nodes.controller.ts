@@ -1,5 +1,5 @@
 import { RequireScopes, type RequestWithUser } from '@forepath/identity/backend';
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, Req } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req } from '@nestjs/common';
 
 import type { NodeResponseDto } from '../dto/node.dto';
 import { actorFromRequest } from '../services/audit-log.service';
@@ -19,10 +19,11 @@ export class NodesController {
 
   @Get()
   @RequireScopes('cluster:read')
-  async list(@Req() req?: RequestWithUser): Promise<NodeResponseDto[]> {
+  async list(@Req() req?: RequestWithUser, @Query('runtime') runtime?: string): Promise<NodeResponseDto[]> {
     await this.access.assert(req, 'read');
 
-    return await this.nodes.list();
+    // `?runtime=microvm` (level ready) or `?runtime=>=sandboxed-kvm` (at least, 3.1).
+    return await this.nodes.list(runtime ? { runtime } : {});
   }
 
   @Get(':name')
@@ -40,6 +41,19 @@ export class NodesController {
     await this.access.assert(req, 'infra');
 
     return await this.nodes.setLifecycle(name, 'cordoned', actorFromRequest(req));
+  }
+
+  /** Re-runs the node's isolation probes (3.1): cluster admins and infra operators. */
+  @Post(':name/isolation-probe')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @RequireScopes('cluster:nodes')
+  async isolationProbe(
+    @Param('name', NodeNamePipe) name: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<{ node: string; probeNonce: string }> {
+    await this.access.assert(req, 'infra');
+
+    return await this.nodes.requestIsolationProbe(name, actorFromRequest(req));
   }
 
   @Post(':name/uncordon')

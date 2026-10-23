@@ -1,0 +1,117 @@
+#!/bin/busybox sh
+# Generic microVM initramfs (built into /usr/lib/agenstra-microvm/initramfs-generic.img at image build time).
+#
+# Unlike Agenstra's bundled init there is no switch_root: the initramfs stays the agent's root.
+#   1. mounts the image root (virtio-fs `guestroot`, the launcher's /guest) at /newroot and the guest tools
+#      (virtio-fs `lwtools`, read-only) at /tools;
+#   2. binds the filesystem volumes (virtio-fs `lwvols`, one directory per volume; kernel command line
+#      `lw.vol=<index>:<hex target>:<ro|rw>`) to their targets inside the image root;
+#   3. configures eth0 from the kernel command line (lw.mac, lw.mtu, lw.ip4/lw.gw4, lw.ip6/lw.gw6; static, link-local
+#      gateways; no DHCP);
+#   4. runs the bridge agent from the guest tools (own loader and libraries, independent of the image's libc) under
+#      tini, which chroots the workload into /newroot; powers the guest off when it exits.
+/bin/busybox mkdir -p /proc /sys /dev /run /newroot /tools
+/bin/busybox mount -t proc -o nosuid,nodev,noexec proc /proc
+/bin/busybox mount -t sysfs -o nosuid,nodev,noexec sysfs /sys
+/bin/busybox mount -t devtmpfs -o nosuid,mode=0755 devtmpfs /dev
+/bin/busybox mount -t tmpfs -o nosuid,nodev,mode=0755 tmpfs /run
+/bin/busybox --install -s /bin
+export PATH=/bin
+
+fail() {
+  echo "agenstra-microvm initramfs: $*" >/dev/console
+  echo o >/proc/sysrq-trigger
+  sleep 10
+}
+
+# Hex-encoded path (the kernel command line splits on blanks) back to text.
+unhex() {
+  rest="$1"
+  out=""
+  while [ -n "$rest" ]; do
+    byte="${rest%"${rest#??}"}"
+    rest="${rest#??}"
+    out="$out$(printf "\\$(printf '%03o' "0x$byte")")"
+  done
+  printf '%s' "$out"
+}
+
+mount -t virtiofs guestroot /newroot || fail "cannot mount the image root"
+mount -t virtiofs -o ro,nosuid,nodev lwtools /tools || fail "cannot mount the guest tools"
+[ -x /tools/bin/tini ] && [ -x /tools/lib/ld.so ] || fail "the guest tools are incomplete"
+
+# Filesystem volumes: a share of their own (not below the image root), so a live migration hands them over apart.
+volumes=""
+for parameter in $(cat /proc/cmdline); do
+  case "$parameter" in
+    lw.vol=*) volumes="$volumes ${parameter#lw.vol=}" ;;
+  esac
+done
+if [ -n "$volumes" ]; then
+  mkdir -p /lwvols
+  mount -t virtiofs -o nosuid,nodev lwvols /lwvols || fail "cannot mount the volumes"
+  for volume in $volumes; do
+    index="${volume%%:*}"
+    rest="${volume#*:}"
+    target="$(unhex "${rest%%:*}")"
+    mode="${rest#*:}"
+    case "$target" in
+      /*) ;;
+      *) fail "invalid volume target $target" ;;
+    esac
+    [ -d "/lwvols/$index" ] || fail "volume $index is missing"
+    mkdir -p "/newroot$target" || fail "cannot create the mount point $target"
+    mount --bind "/lwvols/$index" "/newroot$target" || fail "cannot mount the volume at $target"
+    if [ "$mode" != rw ]; then
+      mount -o remount,bind,ro "/newroot$target" || fail "cannot make $target read-only"
+    fi
+  done
+fi
+
+for module in failover net_failover virtio_net; do
+  insmod "/modules/$module.ko" || fail "cannot load $module"
+done
+
+ip4="" gw4="" ip6="" gw6="" mtu=1500 mac=""
+for parameter in $(cat /proc/cmdline); do
+  case "$parameter" in
+    lw.ip4=*) ip4="${parameter#lw.ip4=}" ;;
+    lw.gw4=*) gw4="${parameter#lw.gw4=}" ;;
+    lw.ip6=*) ip6="${parameter#lw.ip6=}" ;;
+    lw.gw6=*) gw6="${parameter#lw.gw6=}" ;;
+    lw.mtu=*) mtu="${parameter#lw.mtu=}" ;;
+    lw.mac=*) mac="${parameter#lw.mac=}" ;;
+  esac
+done
+
+# The NIC with the launcher-assigned MAC (the domain has exactly one).
+device=eth0
+if [ -n "$mac" ]; then
+  for path in /sys/class/net/*; do
+    [ "$(cat "$path/address" 2>/dev/null)" = "$mac" ] && device="${path##*/}"
+  done
+fi
+
+ip link set lo up
+ip link set "$device" mtu "$mtu" || fail "cannot set the MTU"
+# Static addresses: duplicate address detection would only delay the address the control plane allocated.
+echo 0 >"/proc/sys/net/ipv6/conf/$device/accept_dad" 2>/dev/null
+echo 0 >"/proc/sys/net/ipv6/conf/$device/autoconf" 2>/dev/null
+ip link set "$device" up || fail "cannot bring up $device"
+if [ -n "$ip4" ]; then
+  ip addr add "$ip4" dev "$device" || fail "cannot configure $ip4"
+  ip route add "$gw4" dev "$device" scope link || fail "cannot reach the gateway $gw4"
+  ip route add default via "$gw4" dev "$device" || fail "cannot add the IPv4 default route"
+fi
+if [ -n "$ip6" ]; then
+  ip -6 addr add "$ip6" dev "$device" || fail "cannot configure $ip6"
+  ip -6 route add default via "$gw6" dev "$device" || fail "cannot add the IPv6 default route"
+fi
+
+/tools/bin/tini -s -g -- /tools/lib/ld.so --library-path /tools/lib /tools/bin/node.real \
+  /tools/bridge-guest.cjs --root /newroot --tools /tools
+status=$?
+echo "agenstra-microvm guest: bridge agent exited with status ${status}" >/dev/console
+sync
+echo o >/proc/sysrq-trigger
+sleep 30

@@ -4,7 +4,9 @@
 # Deploy into the workspace project (e.g. `agenstra-acme`) as the `spec.compose` of a Deployment resource
 # (`metadata: { name: agent-manager, project: agenstra-acme }`), then `loadweaver plan -f agent-manager.yaml --apply`.
 # Secrets (set before the first plan, never in this file):
-#   agent-manager-env     shell-style KEY=value lines: DB_PASSWORD, ENCRYPTION_KEY, STATIC_API_KEY or JWT_SECRET, ...
+#   agent-manager-env     shell-style KEY=value lines: DB_PASSWORD, ENCRYPTION_KEY, STATIC_API_KEY or JWT_SECRET,
+#                         AGENT_CONTEXT_TOKEN_SECRET (random, e.g. `openssl rand -hex 32`; signs the per-agent context
+#                         MCP tokens), ...
 #   loadweaver-token      the manager's Loadweaver PAT (project operator, scopes below)
 #   agent-manager-db      the Postgres password (same value as DB_PASSWORD)
 # PAT scopes: projects:read resources:read plans:create plans:apply secrets:write logs:read metrics:read
@@ -56,6 +58,20 @@ services:
       # Egress is filtered by Loadweaver's node proxies (no guard sidecars); events come from Loadweaver's logs.
       AGENT_EGRESS_EVENTS_COLLECTOR_ENABLED: 'true'
       AGENT_ISOLATION_SANDBOX_ENABLED: 'true'
+      # All four isolation levels map 1:1 to Loadweaver runtimes; a level is offered when a schedulable node in the
+      # project passes its probe. MicroVM environments run the microVM image (bundled mode) with this guest size.
+      AGENT_ISOLATION_SANDBOX_KVM_ENABLED: 'true'
+      AGENT_ISOLATION_MICROVM_ENABLED: 'true'
+      AGENT_MICROVM_IMAGE: ghcr.io/forepath/agenstra-manager-worker-microvm:latest
+      LOADWEAVER_ENVIRONMENT_MICROVM_CPUS: '2'
+      LOADWEAVER_ENVIRONMENT_MICROVM_MEMORY: 2g
+      # CPUs the scheduler reserves per microVM environment (> 0, at most the CPU limit above; unset = the limit).
+      # Lower values overcommit the vCPUs; the guest memory is always fully reserved.
+      LOADWEAVER_ENVIRONMENT_MICROVM_CPU_RESERVATION: '2'
+      # Agent context MCP: environments reach the manager at its Loadweaver service address (`<service>.<project>.lw`,
+      # standing policy `agenstra-environments-manager`, valid in every egress mode incl. offline). The token secret
+      # comes from agent-manager-env (AGENT_CONTEXT_TOKEN_SECRET). Replace the project.
+      AGENT_CONTEXT_MCP_MANAGER_URL: http://api.agenstra-acme.lw:3000/api
     secrets: [agent-manager-env, loadweaver-token]
     labels:
       agenstra.io/role: manager
@@ -66,8 +82,17 @@ services:
     x-loadweaver:
       replicas: 1
       # The Agenstra controller (on its own servers) reaches the manager through the ingress; replace the hostname.
+      # Only the controller-facing routes are exposed (prefix routes): the agent context API (/api/agent-context, used
+      # by environments inside the cluster) stays internal.
       exposure:
-        http: [{ host: agents.example.com, port: 3000 }]
+        http:
+          - { host: agents.example.com, port: 3000, path: /api/agents }
+          - { host: agents.example.com, port: 3000, path: /api/egress }
+          - { host: agents.example.com, port: 3000, path: /api/config }
+          - { host: agents.example.com, port: 3000, path: /api/health }
+          - { host: agents.example.com, port: 3000, path: /api/instance-status }
+          - { host: agents.example.com, port: 3000, path: /api/isolation }
+          - { host: agents.example.com, port: 3000, path: /socket.io }
       # The manager holds no Docker socket here: it can run in gVisor like its environments.
       runtime: sandboxed
 

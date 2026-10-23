@@ -30,7 +30,7 @@ import {
   type RolloutStatus,
   type StepTarget,
 } from './rollout.entity';
-import { componentDiff, drbdSpaasAllowed, planSteps, waveRisks } from './rollout-planner.utils';
+import { componentDiff, drbdSpaasAllowed, kvmModuleEntries, planSteps, waveRisks } from './rollout-planner.utils';
 import { IN_FLIGHT_STEP_STATES } from './rollout-state.utils';
 
 export interface CreateRolloutInput {
@@ -288,7 +288,7 @@ export class RolloutService {
       host,
     );
 
-    if (host && options.osUpgrade)
+    if (host && options.osUpgrade) {
       for (const s of plan.steps)
         diff.push({
           node: s.node,
@@ -297,6 +297,21 @@ export class RolloutService {
           to: `snapshot ${snapshot}`,
           method: 'cluster-local apt source, reboot if needed',
         });
+
+      // KVM modules follow the kernel on nodes that use KVM (3.1).
+      diff.push(
+        ...kvmModuleEntries(
+          nodes
+            .filter((n) => plan.steps.some((s) => s.node === n.name))
+            .map((n) => ({
+              name: n.name,
+              os: n.os ? `${n.os.id}:${n.os.versionId}` : null,
+              capabilities: n.capabilities,
+            })),
+          snapshot,
+        ),
+      );
+    }
 
     const failureAnalysis = waveRisks(
       plan.steps,

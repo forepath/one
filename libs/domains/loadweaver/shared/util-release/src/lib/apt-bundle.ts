@@ -15,7 +15,7 @@ import {
 } from './apt-snapshot.core';
 import { aptUpstreams, snapshotId, validateUpstream, type AptUpstream } from './apt-snapshot.utils';
 import { artifactPathSchema, sha256HexSchema, SUPPORTED_HOST_OS } from './manifest';
-import { PACKAGE_PINS } from './pins';
+import { PACKAGE_PINS, REQUIRED_HOST_PACKAGES } from './pins';
 import { readTar, TAR_END, tarHeader, tarPadding } from './tar';
 
 /**
@@ -217,6 +217,11 @@ export function bundleAptRoots(os: string, arch: string): string[] {
           `linux-image-virtual-hwe-${version}`,
           `linux-headers-generic-hwe-${version}`,
           `linux-headers-virtual-hwe-${version}`,
+          // KVM host preparation (3.1): Ubuntu's KVM modules may live in `linux-modules-extra-<abi>`. These
+          // metapackages pull it for exactly the kernels the snapshot carries, so node agents install it from the
+          // snapshot together with the kernel (never from upstream). Debian ships KVM in `linux-image-*`.
+          'linux-image-extra-virtual',
+          `linux-image-extra-virtual-hwe-${version}`,
         ];
 
   return [
@@ -225,6 +230,9 @@ export function bundleAptRoots(os: string, arch: string): string[] {
       ...['ca-certificates', 'curl', 'gnupg', 'jq', 'iproute2', 'wireguard-tools', 'nftables', 'bird2', 'keepalived'],
       ...['rsync', 'lvm2', 'cryptsetup', 'drbd-utils', 'thin-provisioning-tools', 'docker-ce', 'docker-ce-cli'],
       ...['containerd.io', 'criu', ...pinned],
+      // Required host packages (the microVM guest-root cache, 3.35: setfattr, mkfs.ext4): host updates install
+      // missing ones from the snapshot, so air-gapped (bundle) snapshots must carry them.
+      ...REQUIRED_HOST_PACKAGES,
       // A cloud host.
       ...['openssh-server', 'sudo', 'kmod', 'cloud-init', 'grub-common', 'initramfs-tools'],
       // DRBD built from source on the node (headers come with the kernel's headers metapackage).
@@ -399,6 +407,24 @@ export function selectedKernels(packages: readonly string[]): string[] {
       }),
     ),
   ].sort();
+}
+
+/**
+ * Ubuntu kernels among selected packages without their `linux-modules-extra-<k>` (3.1: the KVM modules follow the kernel
+ * snapshot; such a kernel would boot a node without KVM). Empty for Debian (KVM is part of `linux-image-*`).
+ */
+export function kernelsWithoutKvmModules(os: string, packages: readonly string[]): string[] {
+  if (!os.startsWith('ubuntu:')) return [];
+
+  const extra = new Set(
+    packages.flatMap((p) => {
+      const match = /^linux-modules-extra-([0-9][0-9A-Za-z._+~-]*)=/.exec(p);
+
+      return match ? [match[1]] : [];
+    }),
+  );
+
+  return selectedKernels(packages).filter((k) => !extra.has(k));
 }
 
 // ---------------------------------------------------------------------------------------------------------------

@@ -14,11 +14,16 @@ import { hasControlPlaneQuorum } from '../utils/control-plane-membership.utils';
 import { toSchedulerServices, type ParsedDeployment } from '../utils/workload-planning.utils';
 import {
   DEFAULT_MIGRATION_TIMEOUTS,
+  precopyLimitMs,
+  sessionOptionsFromEnv,
   sessionStep,
   waveReady,
   type MigrationTimeouts,
+  type SessionMethod,
   type SessionPhase,
 } from '../utils/migration-state.utils';
+import { addressFamiliesOf } from '../utils/vm-planning.utils';
+import { importHoldReason, vmImportHolds, type VmImportHold } from '../utils/vm-import-hold.utils';
 import { AuditLogService } from './audit-log.service';
 import {
   beginAttempt,
@@ -29,13 +34,22 @@ import {
   setPhase,
 } from './migration-records';
 import { NetworkStateService } from './network-state.service';
-import { WorkloadPlannerService, type WorkloadPlan } from './workload-planner.service';
+import { plannerNodes, WorkloadPlannerService, type WorkloadPlan } from './workload-planner.service';
 
 export const FAILOVER_AFTER_MS = 60_000;
 export const MIGRATION_TIMEOUT_MS = 10 * 60_000;
 const TICK_MS = 5_000;
+/** Resources the workload planner parses: projects, compose deployments and virtual machines (3.35). */
+const WORKLOAD_RESOURCE_KINDS = [{ kind: 'Project' }, { kind: 'Deployment' }, { kind: 'VirtualMachine' }];
 const ADVISORY_LOCK_WORKLOAD_CONTROLLER = 0x4c570006;
 const READY_STATES = new Set(['running', 'healthy']);
+
+/** QEMU sessions (`vm-live`): the pre-copy limit the session commands use (`LOADWEAVER_VM_MIGRATION_MAX_SECONDS`). */
+function vmPrecopyLimit(method: SessionMethod): { precopyLimitMs?: number } {
+  const limit = precopyLimitMs(method, sessionOptionsFromEnv());
+
+  return limit === undefined ? {} : { precopyLimitMs: limit };
+}
 
 /** Keeps the current placement for every replica except `moving`; volumes only change where their owner moves. */
 export function restrictSchedule(
@@ -65,6 +79,35 @@ export function restrictSchedule(
           : (currentVolumes.get(v.volume) as typeof v),
       ),
     },
+  };
+}
+
+/**
+ * What a drain moves now (3.12): replicas on draining nodes that aren't migrating or draining already, except VMs
+ * writing their first boot disk (M7 F4): those wait — with their disk volumes — and are reported in `waiting`.
+ * `volumesOnNode`: volume copies on draining nodes that still have to move (not those of a held VM).
+ */
+export function drainEvacuation(
+  placements: readonly Pick<WorkloadPlacementEntity, 'id' | 'node' | 'migration' | 'drainUntil'>[],
+  volumes: readonly Pick<VolumePlacementEntity, 'id' | 'pendingPrimary' | 'syncReplicas' | 'remoteReplicas'>[],
+  draining: ReadonlySet<string>,
+  holds: ReadonlyMap<string, VmImportHold>,
+): { moving: Set<string>; volumesOnNode: boolean; waiting: string[] } {
+  const candidates = placements.filter((p) => draining.has(p.node) && !p.migration && !p.drainUntil);
+  const held = candidates.map((p) => holds.get(p.id)).filter((h): h is VmImportHold => !!h);
+  const heldServices = held.map((h) => h.service);
+  // VM disk volumes are `<project>/lw-vm/<vm>.<disk>`.
+  const ownedByHeld = (volume: string) => heldServices.some((s) => volume.startsWith(`${s}.`));
+
+  return {
+    moving: new Set(candidates.filter((p) => !holds.has(p.id)).map((p) => p.id)),
+    volumesOnNode: volumes.some(
+      (v) =>
+        !v.pendingPrimary &&
+        !ownedByHeld(v.id) &&
+        [...v.syncReplicas, ...v.remoteReplicas].some((n) => draining.has(n)),
+    ),
+    waiting: held.map(importHoldReason),
   };
 }
 
@@ -174,9 +217,7 @@ export class WorkloadControllerService implements OnApplicationBootstrap, OnModu
   }
 
   private async volumesOf(manager: EntityManager, service: string): Promise<VolumePlacementEntity[]> {
-    const resources = await manager
-      .getRepository(ResourceEntity)
-      .find({ where: [{ kind: 'Project' }, { kind: 'Deployment' }] });
+    const resources = await manager.getRepository(ResourceEntity).find({ where: WORKLOAD_RESOURCE_KINDS });
     const ids = toSchedulerServices(this.planner.parse(resources).parsed)
       .filter((s) => s.id === service)
       .flatMap((s) => s.volumes.map((v) => v.id));
@@ -204,7 +245,7 @@ export class WorkloadControllerService implements OnApplicationBootstrap, OnModu
     let parsed: ParsedDeployment[] | null = null;
     const deployments = async () =>
       (parsed ??= this.planner.parse(
-        await manager.getRepository(ResourceEntity).find({ where: [{ kind: 'Project' }, { kind: 'Deployment' }] }),
+        await manager.getRepository(ResourceEntity).find({ where: WORKLOAD_RESOURCE_KINDS }),
       ).parsed);
     let changed = false;
 
@@ -353,7 +394,13 @@ export class WorkloadControllerService implements OnApplicationBootstrap, OnModu
           label: `${method} (nothing running on the source yet)`,
           runtime: undefined,
         };
-        p.targetAddresses = await this.planner.allocateOn(manager, p.id, service, p.targetNode as string);
+        p.targetAddresses = await this.planner.allocateOn(
+          manager,
+          p.id,
+          service,
+          p.targetNode as string,
+          addressFamiliesOf(await deployments()),
+        );
       }
     }
 
@@ -419,12 +466,13 @@ export class WorkloadControllerService implements OnApplicationBootstrap, OnModu
 
     const decision = sessionStep(
       {
-        method: row.method as 'live' | 'stop-and-copy',
+        method: row.method as SessionMethod,
         phase: row.phase as SessionPhase,
         phaseStartedAt: row.phaseStartedAt.getTime(),
         reports: row.reports,
         restoreSent: row.restoreSent,
         targetLost: lost.has(row.toNode),
+        ...vmPrecopyLimit(row.method as SessionMethod),
       },
       now,
       this.timeouts,
@@ -472,7 +520,9 @@ export class WorkloadControllerService implements OnApplicationBootstrap, OnModu
           targetNode: null,
           targetAddresses: [],
           migration: null,
-          restored: { migration: row.id, runtime: row.runtime ?? 'runc' },
+          // QEMU (`vm-live`): the target's launcher is a regular Docker container already, nothing to adopt.
+          restored:
+            row.runtime === 'qemu' ? null : { migration: row.id, runtime: (row.runtime ?? 'runc') as 'runc' | 'runsc' },
           status: p.status?.[row.toNode] ? { [row.toNode]: p.status[row.toNode] } : null,
         });
         await manager.getRepository(WorkloadPlacementEntity).save(p);
@@ -544,7 +594,14 @@ export class WorkloadControllerService implements OnApplicationBootstrap, OnModu
 
     const method = stateful ? 'short-stop' : 'blue-green';
 
-    p.targetAddresses = await this.planner.allocateOn(manager, p.id, service, row.toNode);
+    // VMs: one address per NIC and family (3.35), as their placement has.
+    p.targetAddresses = await this.planner.allocateOn(
+      manager,
+      p.id,
+      service,
+      row.toNode,
+      addressFamiliesOf(await deployments()),
+    );
     p.migration = {
       method,
       phase: stateful ? 'stopping' : 'starting',
@@ -567,7 +624,7 @@ export class WorkloadControllerService implements OnApplicationBootstrap, OnModu
     for (const row of rows) {
       const decision = sessionStep(
         {
-          method: row.method as 'live' | 'stop-and-copy',
+          method: row.method as SessionMethod,
           phase: 'cutover',
           phaseStartedAt: row.phaseStartedAt.getTime(),
           reports: row.reports,
@@ -659,7 +716,7 @@ export class WorkloadControllerService implements OnApplicationBootstrap, OnModu
     let changed = false;
 
     const resources = gated.length
-      ? await manager.getRepository(ResourceEntity).find({ where: [{ kind: 'Project' }, { kind: 'Deployment' }] })
+      ? await manager.getRepository(ResourceEntity).find({ where: WORKLOAD_RESOURCE_KINDS })
       : [];
     const parsedById = new Map(this.planner.parse(resources).parsed.map((d) => [`${d.project}/${d.name}`, d]));
 
@@ -699,21 +756,28 @@ export class WorkloadControllerService implements OnApplicationBootstrap, OnModu
   }
 
   private async evacuate(manager: EntityManager): Promise<boolean> {
-    const draining = new Set(
-      (await manager.getRepository(NodeEntity).find({ where: { lifecycle: 'draining' } })).map((n) => n.name),
-    );
+    const nodes = await manager.getRepository(NodeEntity).find({ where: { lifecycle: Not('left') } });
+    const draining = new Set(nodes.filter((n) => n.lifecycle === 'draining').map((n) => n.name));
 
     if (draining.size === 0) return false;
 
     // A running cron run finishes on the draining node; the cron controller places no new runs there.
     const placements = await manager.getRepository(WorkloadPlacementEntity).find({ where: { cronRun: IsNull() } });
-    const moving = new Set(
-      placements.filter((p) => draining.has(p.node) && !p.migration && !p.drainUntil).map((p) => p.id),
-    );
     const volumes = await manager.getRepository(VolumePlacementEntity).find();
-    const volumesOnNode = volumes.some(
-      (v) => !v.pendingPrimary && [...v.syncReplicas, ...v.remoteReplicas].some((n) => draining.has(n)),
+    const reachable = new Set(
+      plannerNodes(nodes)
+        .filter((n) => n.reachable)
+        .map((n) => n.name),
     );
+    const { moving, volumesOnNode, waiting } = drainEvacuation(
+      placements,
+      volumes,
+      draining,
+      vmImportHolds(placements, reachable),
+    );
+
+    // VMs writing their first boot disk move once the import finished (M7 F4); the rest of the drain goes on.
+    if (waiting.length > 0) this.logger.log(`Drain waits: ${waiting.join('; ')}`);
 
     if (moving.size === 0 && !volumesOnNode) return false;
 

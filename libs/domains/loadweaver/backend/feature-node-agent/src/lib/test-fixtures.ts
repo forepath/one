@@ -95,3 +95,80 @@ export function desiredState(revision = 1, overrides: Partial<DesiredState> = {}
     ...overrides,
   };
 }
+
+/** One entry of {@link tarArchive}: a ustar header (plus a pax header for `pax` records) and its data. */
+export interface TarFixtureEntry {
+  name: string;
+  /** ustar type flag: '0' file, '1' hardlink, '2' symlink, '3' char, '5' dir, '6' fifo, … */
+  type?: string;
+  data?: string | Buffer;
+  mode?: number;
+  uid?: number;
+  gid?: number;
+  linkname?: string;
+  mtime?: number;
+  pax?: Record<string, string | Buffer>;
+}
+
+function tarHeader(e: Required<Pick<TarFixtureEntry, 'name' | 'type'>> & TarFixtureEntry, size: number): Buffer {
+  const block = Buffer.alloc(512);
+  const put = (value: string, offset: number, length: number) => block.write(value, offset, length, 'utf8');
+  const octal = (value: number, offset: number, length: number) =>
+    put(`${value.toString(8).padStart(length - 1, '0')}\0`, offset, length);
+
+  put(e.name, 0, 100);
+  octal(e.mode ?? 0o644, 100, 8);
+  octal(e.uid ?? 0, 108, 8);
+  octal(e.gid ?? 0, 116, 8);
+  octal(size, 124, 12);
+  octal(e.mtime ?? 1_700_000_000, 136, 12);
+  block.fill(0x20, 148, 156);
+  put(e.type, 156, 1);
+  put(e.linkname ?? '', 157, 100);
+  put('ustar\0', 257, 6);
+  put('00', 263, 2);
+
+  let sum = 0;
+
+  for (const byte of block) sum += byte;
+
+  put(`${sum.toString(8).padStart(6, '0')}\0 `, 148, 8);
+
+  return block;
+}
+
+function padded(data: Buffer): Buffer {
+  return Buffer.concat([data, Buffer.alloc((512 - (data.length % 512)) % 512)]);
+}
+
+/** A tar archive for unpack tests (crafted entries, pax records), ending with two zero blocks. */
+export function tarArchive(entries: TarFixtureEntry[]): Buffer {
+  const parts: Buffer[] = [];
+
+  for (const entry of entries) {
+    if (entry.pax) {
+      const records = Object.entries(entry.pax).map(([key, value]) => {
+        const body = Buffer.concat([Buffer.from(` ${key}=`), Buffer.from(value), Buffer.from('\n')]);
+        let length = body.length + 1;
+
+        while (String(length).length + body.length !== length) length = String(length).length + body.length;
+
+        return Buffer.concat([Buffer.from(String(length)), body]);
+      });
+      const data = Buffer.concat(records);
+
+      parts.push(tarHeader({ name: 'PaxHeader', type: 'x' }, data.length), padded(data));
+    }
+
+    const data = Buffer.isBuffer(entry.data) ? entry.data : Buffer.from(entry.data ?? '');
+    const type = entry.type ?? '0';
+
+    parts.push(tarHeader({ ...entry, type }, type === '0' ? data.length : 0));
+
+    if (type === '0') parts.push(padded(data));
+  }
+
+  parts.push(Buffer.alloc(1024));
+
+  return Buffer.concat(parts);
+}

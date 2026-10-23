@@ -1,10 +1,14 @@
 import type { JoinRequest, JoinResponse } from '@forepath/loadweaver/shared/util-agent-protocol';
 import {
   clusterSpecSchema,
+  isRuntime,
   LOADWEAVER_API_VERSION,
   labelsSchema,
+  matchesSelector,
   type Resource,
+  type Selector,
 } from '@forepath/loadweaver/shared/util-model';
+import { RUNTIME_READY_LABEL_PREFIX, runtimeAtLeastExpression } from '@forepath/loadweaver/shared/util-scheduler';
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
@@ -13,7 +17,7 @@ import { DataSource, Not } from 'typeorm';
 
 import { AgentSessionRegistry } from '../agent-stream/agent-session.registry';
 import { ADVISORY_LOCK_ALLOCATION } from '../constants/control-plane.constants';
-import { toNodeResponse, type NodeResponseDto } from '../dto/node.dto';
+import { effectiveNodeLabels, toNodeResponse, type NodeResponseDto } from '../dto/node.dto';
 import { IMPORT_LIFECYCLES, NodeEntity, type NodeLifecycle } from '../entities/node.entity';
 import { NodeDesiredStateEntity } from '../entities/node-desired-state.entity';
 import { NodeDiscoveryEntity } from '../import/import.entities';
@@ -24,6 +28,7 @@ import { WorkloadPlacementEntity } from '../entities/workload-placement.entity';
 import { ResourceEntity } from '../entities/resource.entity';
 import { NodesRepository } from '../repositories/nodes.repository';
 import { allocateNodeAddressing, heldPodSubnets } from '../utils/network-allocation.utils';
+import { drainImportNote } from '../utils/vm-import-hold.utils';
 import { AuditLogService, type AuditActor } from './audit-log.service';
 import { ClusterIdentityService } from './cluster-identity.service';
 import { JoinTokensService } from './join-tokens.service';
@@ -35,6 +40,22 @@ export function readControlPlaneEndpoints(env: NodeJS.ProcessEnv = process.env):
     .split(',')
     .map((e) => e.trim())
     .filter(Boolean);
+}
+
+/**
+ * A node query on isolation levels (3.1): `sandboxed-kvm` = the level is ready (exact), `>=sandboxed-kvm` = the
+ * node's strongest ready level is at least that (`runtime ≥ X`, an `In` over the stronger levels). Null if malformed.
+ */
+export function runtimeQuerySelector(query: string): Selector | null {
+  const trimmed = query.trim();
+  const atLeast = trimmed.startsWith('>=');
+  const level = atLeast ? trimmed.slice(2).trim() : trimmed;
+
+  if (!isRuntime(level)) return null;
+
+  return atLeast
+    ? { matchExpressions: [runtimeAtLeastExpression(level)] }
+    : { matchLabels: { [`${RUNTIME_READY_LABEL_PREFIX}${level}`]: 'ready' } };
 }
 
 /**
@@ -54,8 +75,16 @@ export class NodesService {
     private readonly sessions: AgentSessionRegistry,
   ) {}
 
-  async list(): Promise<NodeResponseDto[]> {
-    return (await this.nodes.findAll()).map((n) => toNodeResponse(n, !!this.sessions.get(n.name)));
+  /** All nodes, or those matching a runtime query (`runtimeQuerySelector`: `microvm`, `>=sandboxed-kvm`). */
+  async list(filter: { runtime?: string } = {}): Promise<NodeResponseDto[]> {
+    const selector = filter.runtime ? runtimeQuerySelector(filter.runtime) : null;
+
+    if (filter.runtime && !selector)
+      throw new BadRequestException('runtime must be a level (runc, sandboxed, sandboxed-kvm, microvm), optionally >=');
+
+    return (await this.nodes.findAll())
+      .filter((n) => !selector || matchesSelector(selector, { name: n.name, labels: effectiveNodeLabels(n) }))
+      .map((n) => toNodeResponse(n, !!this.sessions.get(n.name)));
   }
 
   async get(name: string): Promise<NodeResponseDto> {
@@ -219,6 +248,35 @@ export class NodesService {
   }
 
   /**
+   * Re-runs a node's isolation probes now (3.1): a fresh nonce in its desired state (`host.probeNonce`); the agent
+   * reports the new capabilities when done.
+   */
+  async requestIsolationProbe(name: string, actor: AuditActor): Promise<{ node: string; probeNonce: string }> {
+    const nonce = randomUUID();
+
+    await this.dataSource.transaction(async (manager) => {
+      const repo = manager.getRepository(NodeEntity);
+      const entity = await repo.findOne({ where: { name }, lock: { mode: 'pessimistic_write' } });
+
+      if (!entity || entity.lifecycle === 'left')
+        throw new BadRequestException(`node ${name} is not part of the cluster`);
+
+      entity.isolationProbeNonce = nonce;
+      await repo.save(entity);
+      await this.audit.record(manager, {
+        actor,
+        action: 'node.isolation-probe',
+        target: `node/${name}`,
+        details: { probeNonce: nonce },
+      });
+    });
+
+    this.network.requestRecompile(`isolation probe requested on ${name}`);
+
+    return { node: name, probeNonce: nonce };
+  }
+
+  /**
    * Planned removal (3.12): the node must be drained first; its identity is revoked immediately.
    * Workload evacuation and the capacity check with workload selection arrive with the scheduler (M2).
    */
@@ -243,8 +301,17 @@ export class NodesService {
       );
 
       if (placements > 0 || volumes.length > 0) {
+        // VMs writing their first boot disk move once the import finished (M7 F4).
+        const importing =
+          placements > 0
+            ? drainImportNote(
+                await manager.getRepository(WorkloadPlacementEntity).find({ where: { node: name } }),
+                name,
+              )
+            : '';
+
         throw new ConflictException(
-          `the node still runs ${placements} replica(s) and holds ${volumes.length} volume copy(ies); wait for the drain to finish`,
+          `the node still runs ${placements} replica(s) and holds ${volumes.length} volume copy(ies); wait for the drain to finish${importing}`,
         );
       }
 

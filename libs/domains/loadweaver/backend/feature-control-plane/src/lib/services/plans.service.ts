@@ -11,6 +11,7 @@ import {
   parseResourceDocuments,
   PRIVATE_REGISTRY_HOST,
   RESOURCE_KINDS,
+  VM_DEPLOYMENT_NAME,
   type ClusterSpec,
   type Resource,
   type ResourceKind,
@@ -123,9 +124,49 @@ import {
   VPN_ADDRESS_OWNER,
 } from '../remote-access/remote-access.utils';
 import { volumeNodeWarnings } from '../utils/drbd-volumes.utils';
+import { inspectImageArchitectures, inspectVmImage } from './image-resolver.service';
+import { microvmIssues, type ImageInspection } from '../utils/microvm-planning.utils';
+import { addressFamiliesOf, pinVmSecrets, vmImageIssues } from '../utils/vm-planning.utils';
 import { autoscalePlanNotes } from '../autoscaling/autoscale.utils';
 
 const RESERVED_PROJECT_NAMES = new Set(['cluster']);
+
+/**
+ * Names users can't take (3.17, 3.35): the project `cluster` (the cluster-wide scope) and the deployment `lw-vm` (a
+ * project's virtual machines).
+ */
+export function reservedNameIssue(resources: readonly Pick<Resource, 'kind' | 'metadata'>[]): string | null {
+  if (resources.some((r) => r.kind === 'Project' && RESERVED_PROJECT_NAMES.has(r.metadata.name)))
+    return `project names ${[...RESERVED_PROJECT_NAMES].join(', ')} are reserved`;
+
+  if (resources.some((r) => r.kind === 'Deployment' && r.metadata.name === VM_DEPLOYMENT_NAME))
+    return `the deployment name ${VM_DEPLOYMENT_NAME} is reserved for virtual machines`;
+
+  return null;
+}
+
+/** The architecture images are pinned for (3.35): arm64 only when every workload node is arm64. */
+export function workloadArch(nodes: readonly Pick<NodeEntity, 'os' | 'witness'>[]): 'amd64' | 'arm64' {
+  const arches = nodes
+    .filter((n) => !n.witness)
+    .map((n) => (n.os?.arch === 'arm64' || n.os?.arch === 'aarch64' ? 'arm64' : 'amd64'));
+
+  return arches.length > 0 && arches.every((a) => a === 'arm64') ? 'arm64' : 'amd64';
+}
+
+/**
+ * Every architecture of the cluster's workload nodes (3.35, mixed-arch clusters), `amd64` first; nodes without a
+ * reported architecture count as amd64 (as in `workloadArch`). MicroVM guest images are inspected for each.
+ */
+export function workloadArches(nodes: readonly Pick<NodeEntity, 'os' | 'witness'>[]): ('amd64' | 'arm64')[] {
+  const arches = new Set(
+    nodes
+      .filter((n) => !n.witness)
+      .map((n) => (n.os?.arch === 'arm64' || n.os?.arch === 'aarch64' ? 'arm64' : 'amd64')),
+  );
+
+  return (['amd64', 'arm64'] as const).filter((a) => arches.has(a));
+}
 
 /** UI sessions vs. machine callers (API key, PATs) as a plan's source (3.29). */
 export function requestSourceKind(req?: RequestWithUser): 'ui' | 'api' {
@@ -134,7 +175,15 @@ export function requestSourceKind(req?: RequestWithUser): 'ui' | 'api' {
   return info.isApiKeyAuth || (info.amr ?? []).includes('pat') ? 'api' : 'ui';
 }
 
-type DeploymentStates = Record<string, { images: Record<string, string>; secretVersions: Record<string, number> }>;
+type DeploymentStates = Record<
+  string,
+  {
+    images: Record<string, string>;
+    secretVersions: Record<string, number>;
+    /** Inspected microVM / VM images per service (3.35). */
+    imageConfigs?: Record<string, ImageInspection>;
+  }
+>;
 
 interface Preview {
   deploymentStates: DeploymentStates;
@@ -316,8 +365,15 @@ export class PlansService {
       })());
 
     return {
-      manifest: async (reference) => (await open()).manifest(reference),
+      manifest: async (reference, accept) => (await open()).manifest(reference, accept),
       blob: async (digest) => (await open()).blob(digest),
+      blobPrefix: async (digest, bytes) => {
+        const opened = await open();
+
+        if (!opened.blobPrefix) throw new Error('blob prefixes not supported');
+
+        return await opened.blobPrefix(digest, bytes);
+      },
     };
   }
 
@@ -438,9 +494,10 @@ export class PlansService {
       submitted.push(...parsed.resources.map(normalizeResource));
     }
 
-    // `cluster` names the cluster-wide scope (reports, overview), so no project may take it.
-    if (submitted.some((r) => r.kind === 'Project' && RESERVED_PROJECT_NAMES.has(r.metadata.name)))
-      throw new BadRequestException(`project names ${[...RESERVED_PROJECT_NAMES].join(', ')} are reserved`);
+    // `cluster` names the cluster-wide scope (reports, overview), so no project may take it; `lw-vm` holds VMs.
+    const reserved = reservedNameIssue(submitted);
+
+    if (reserved) throw new BadRequestException(reserved);
 
     const deletions = dto.delete ?? [];
     const refresh = (dto.refresh ?? []).filter((r) => r.kind === 'Deployment' && r.project);
@@ -488,9 +545,9 @@ export class PlansService {
     source: PlanSource;
   }): Promise<PlanEntity> {
     const submitted = input.submitted.map(normalizeResource);
+    const reserved = reservedNameIssue(submitted);
 
-    if (submitted.some((r) => r.kind === 'Project' && RESERVED_PROJECT_NAMES.has(r.metadata.name)))
-      throw new BadRequestException(`project names ${[...RESERVED_PROJECT_NAMES].join(', ')} are reserved`);
+    if (reserved) throw new BadRequestException(reserved);
 
     return await this.build(submitted, input.deletions, [], {
       createdBy: 'git',
@@ -571,6 +628,10 @@ export class PlansService {
       changes.some((c) => c.action !== 'unchanged' && NETWORK_KINDS.has(c.kind)) || refresh.length > 0;
     const toResolve = new Set([
       ...submitted.filter((r) => r.kind === 'Deployment').map((r) => `${r.metadata.project}/${r.metadata.name}`),
+      // A project's VMs are pinned per VM (3.35): only the submitted ones are re-resolved.
+      ...submitted
+        .filter((r) => r.kind === 'VirtualMachine')
+        .map((r) => `${r.metadata.project}/${VM_DEPLOYMENT_NAME}/${r.metadata.name}`),
       ...refresh.map((r) => `${r.project}/${r.name}`),
     ]);
     const preview: Preview = touchesNetwork
@@ -734,23 +795,82 @@ export class PlansService {
     manager: EntityManager,
     workload: WorkloadPlan,
     toResolve: ReadonlySet<string>,
+    nodes: readonly NodeEntity[] = [],
+    warnings: Record<string, unknown>[] = [],
   ): Promise<DeploymentStates> {
     const states: DeploymentStates = {};
     const errors: Record<string, unknown>[] = [];
+    const arch = workloadArch(nodes);
+    const arches = workloadArches(nodes);
 
     for (const deployment of workload.parsed) {
       const id = `${deployment.project}/${deployment.name}`;
+      const vms = deployment.virtualMachines;
+      // VMs: only the submitted ones are re-pinned, the others keep their pins (3.35).
+      const changedVms = vms ? Object.keys(vms).filter((vm) => toResolve.has(`${id}/${vm}`)) : [];
 
-      if (!toResolve.has(id)) continue;
+      if (!toResolve.has(id) && changedVms.length === 0) continue;
 
+      const previous = vms ? await manager.getRepository(DeploymentStateEntity).findOne({ where: { id } }) : null;
       const images: Record<string, string> = {};
+      const imageConfigs: Record<string, ImageInspection> = {};
 
       for (const service of deployment.compose.services) {
+        const kept = previous?.images[service.name];
+
+        if (vms && !toResolve.has(id) && !changedVms.includes(service.name) && kept) {
+          images[service.name] = kept;
+
+          const inspection = previous?.imageConfigs?.[service.name];
+
+          if (inspection) imageConfigs[service.name] = inspection;
+
+          continue;
+        }
+
         try {
           images[service.name] =
             parseImageReference(service.image)?.host === PRIVATE_REGISTRY_HOST
               ? await this.resolvePrivateImage(manager, service.image)
               : await this.images.resolve(service.image);
+
+          // MicroVMs and VMs (3.35): labels, process config and layers, or the VM disk, read once at plan time.
+          const vm = vms?.[service.name];
+
+          if (vm || service.runtime === 'microvm') {
+            const image = images[service.name];
+            const reader =
+              parseImageReference(image)?.host === PRIVATE_REGISTRY_HOST
+                ? this.privateReader(manager, image)
+                : this.images.publicReader(image);
+            // VM images are single-arch artifacts; microVM guest images are inspected for every cluster architecture.
+            const { inspection, missing } = vm
+              ? { inspection: await inspectVmImage(reader, image, arch), missing: [] as string[] }
+              : await inspectImageArchitectures(reader, image, arches);
+            const issues = vm
+              ? vmImageIssues(vm, inspection)
+              : microvmIssues(service, inspection).map((i) => ({
+                  ...i,
+                  project: deployment.project,
+                  deployment: deployment.name,
+                }));
+
+            imageConfigs[service.name] = inspection;
+            errors.push(...issues.filter((i) => i.level === 'error').map((i) => ({ ...i })));
+            warnings.push(...issues.filter((i) => i.level !== 'error').map((i) => ({ ...i })));
+
+            // Architectures of the cluster the image lacks: the scheduler keeps the replicas off those nodes.
+            const lacking = vm ? arches.filter((a) => a !== inspection.vmImage?.arch) : missing;
+
+            if (lacking.length > 0)
+              warnings.push({
+                level: 'warning',
+                project: deployment.project,
+                deployment: deployment.name,
+                path: `services.${service.name}.image`,
+                message: `${service.image} has no ${lacking.map((a) => `linux/${a}`).join(', ')} variant; its replicas avoid the ${lacking.join(', ')} nodes`,
+              });
+          }
         } catch (error) {
           errors.push({
             level: 'error',
@@ -776,7 +896,28 @@ export class PlansService {
           });
       }
 
-      states[id] = { images, secretVersions };
+      // VM user data (3.35): every unpinned `secret://` ref gets its latest version per VM (kept for VMs not re-pinned).
+      if (vms) {
+        const pins = await pinVmSecrets(
+          vms,
+          (vm) => toResolve.has(id) || changedVms.includes(vm),
+          previous?.secretVersions,
+          (vmRefs) => this.secrets.latestVersions(vmRefs),
+        );
+
+        Object.assign(secretVersions, pins.versions);
+
+        for (const { vm, ref } of pins.missing)
+          errors.push({
+            level: 'error',
+            project: deployment.project,
+            deployment: deployment.name,
+            path: `${vm}.spec.cloudInit`,
+            message: `${ref} has no value yet; set it before applying`,
+          });
+      }
+
+      states[id] = { images, secretVersions, ...(Object.keys(imageConfigs).length > 0 ? { imageConfigs } : {}) };
     }
 
     if (errors.length > 0) throw new BadRequestException({ message: 'The plan cannot be applied', issues: errors });
@@ -838,13 +979,31 @@ export class PlansService {
           })),
         );
 
-        deploymentStates = await this.resolveDeployments(manager, workload, toResolve);
+        deploymentStates = await this.resolveDeployments(manager, workload, toResolve, state.nodesAfter, warnings);
+
+        // Image architectures (3.35): freshly pinned microVM / VM images may rule out nodes of other architectures,
+        // so the placements are planned again with them (the apply re-plans with the same pinned states).
+        if (Object.values(deploymentStates).some((d) => d.imageConfigs)) {
+          workload = await this.planner.plan(manager, state.after, state.nodesAfter, deploymentStates);
+
+          const unschedulable = workload.schedule.unschedulable.map((u) => ({
+            level: 'error',
+            project: u.service.split('/')[0],
+            deployment: u.service.split('/')[1],
+            path: u.replica ?? u.service,
+            message: u.reason,
+          }));
+
+          if (unschedulable.length > 0)
+            throw new BadRequestException({ message: 'The plan cannot be applied', issues: unschedulable });
+        }
 
         // Image policies (3.22) on the pinned digests of the deployments this plan changes.
         const imageIssues = await this.imagePolicies.evaluate(
           manager,
           workload.parsed
-            .filter((d) => toResolve.has(`${d.project}/${d.name}`))
+            // Every deployment whose images this plan pinned (VMs are pinned per VM, 3.35).
+            .filter((d) => !!deploymentStates[`${d.project}/${d.name}`])
             .flatMap((d) =>
               d.compose.services.flatMap((service) => {
                 const image = deploymentStates[`${d.project}/${d.name}`]?.images[service.name];
@@ -923,6 +1082,8 @@ export class PlansService {
           workload.schedule.replicas,
           podSubnets,
           new Map(currentContext.placements.map((p) => [p.id, { node: p.node, addresses: p.addresses }])),
+          new Map(),
+          addressFamiliesOf(workload.parsed),
         );
         const serviceIds = workload.parsed.flatMap((d) =>
           d.compose.services.map((sv) => serviceId(d.project, d.name, sv.name)),
@@ -1484,7 +1645,18 @@ export class PlansService {
           stateIds.map((id) => {
             const p = previousStates.find((x) => x.id === id);
 
-            return [id, p ? { images: p.images, secretVersions: p.secretVersions } : null];
+            return [
+              id,
+              p
+                ? {
+                    images: p.images,
+                    secretVersions: p.secretVersions,
+                    ...(p.imageConfigs && Object.keys(p.imageConfigs).length > 0
+                      ? { imageConfigs: p.imageConfigs }
+                      : {}),
+                  }
+                : null,
+            ];
           }),
         ),
       };
@@ -1559,7 +1731,8 @@ export class PlansService {
       ) {
         // Re-plan against the current cluster: apply exactly what was reviewed, or nothing (3.8).
         const resources = await manager.getRepository(ResourceEntity).find();
-        const workload = await this.planner.plan(manager, resources);
+        // The plan's pinned images (not stored yet) decide the image-architecture rule as in the preview (3.35).
+        const workload = await this.planner.plan(manager, resources, undefined, entity.deploymentStates ?? {});
 
         // The method label carries live estimates (memory, link) that drift; the method itself must still match.
         // Added volume copies are informational (M6 gate): the apply persists the volume holders it schedules now.
@@ -1591,7 +1764,13 @@ export class PlansService {
           const generation = (previous?.generation ?? 0) + 1;
 
           await stateRepo.save(
-            stateRepo.create({ id: stateId, images: state.images, secretVersions: state.secretVersions, generation }),
+            stateRepo.create({
+              id: stateId,
+              images: state.images,
+              secretVersions: state.secretVersions,
+              imageConfigs: state.imageConfigs ?? {},
+              generation,
+            }),
           );
 
           await this.gateJobs(manager, workload, stateId);

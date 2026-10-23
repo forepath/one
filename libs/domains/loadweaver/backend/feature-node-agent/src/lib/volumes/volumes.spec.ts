@@ -120,6 +120,8 @@ describe('VolumeManager', () => {
     forgetUnknown?: boolean;
     /** `drbdadm adjust` fails this many times. */
     adjustFails?: number;
+    /** DRBD role while up (default Secondary). */
+    role?: string;
   }
 
   /** `drbdsetup status --json` as DRBD 9.2 prints it (fields the manager reads). */
@@ -129,7 +131,7 @@ describe('VolumeManager', () => {
     return JSON.stringify([
       {
         name: 'lw-1000',
-        role: 'Secondary',
+        role: state.role ?? 'Secondary',
         devices: [{ volume: 0, 'disk-state': state.disk ?? 'UpToDate' }],
         connections: ['n1', 'n2', 'b1']
           .filter((n) => n in peers)
@@ -197,6 +199,8 @@ describe('VolumeManager', () => {
           return { stdout: `${state.uuid ?? '0000000000000004'}:0000000000000000:0:0:0:0:1:1:0:0:1\n`, stderr: '' };
 
         if (cmd === 'blkid') return { stdout: state.fs ?? '', stderr: '' };
+
+        if (cmd === 'cat' && args[0] === '/sys/block/drbd1000/size') return { stdout: '41943040\n', stderr: '' };
 
         return { stdout: '', stderr: '' };
       }),
@@ -267,6 +271,33 @@ describe('VolumeManager', () => {
 
     await secondary.apply('n2', [volume]);
     await expect(secondary.mount('lw-vol-shop.store.data')).rejects.toThrow('primary on n1');
+  });
+
+  it('hands a microVM file system volume over during a live migration (M7 W10b): never through the primary rule', async () => {
+    const r = runner({ lvs: ['lw-1000'], luks: true, mapped: true, up: true, fs: 'ext4' });
+    const target = new VolumeManager(r as never, secrets as never);
+
+    await target.apply('n2', [volume]);
+    await expect(target.takeOverForMigration(volume.id)).rejects.toThrow('not being migrated');
+
+    target.holdForMigration(volume.id);
+    expect(target.inMigration(volume.id)).toBe(true);
+    r.calls.length = 0;
+    expect(await target.takeOverForMigration(volume.id)).toBe(join(dir, 'mnt', 'lw-vol-shop.store.data'));
+    expect(r.calls.map((c) => [c.cmd, ...c.args].join(' '))).toEqual([
+      'drbdadm primary lw-1000',
+      `mount -o nodev,nosuid /dev/drbd1000 ${join(dir, 'mnt', 'lw-vol-shop.store.data')}`,
+    ]);
+
+    // The source: unmounted and demoted strictly (no exit 11 accepted: a held device fails the hand-over).
+    r.calls.length = 0;
+    await target.releaseForMigration(volume.id);
+    expect(r.calls.map((c) => [c.cmd, ...c.args].join(' '))).toEqual([
+      `umount ${join(dir, 'mnt', 'lw-vol-shop.store.data')}`,
+      'drbdadm secondary lw-1000',
+    ]);
+    target.endMigrationHold(volume.id);
+    expect(target.inMigration(volume.id)).toBe(false);
   });
 
   // Found in the VM lab (M6 step 1a): on real DRBD a new volume is Inconsistent everywhere and can't be promoted.
@@ -679,6 +710,138 @@ describe('VolumeManager', () => {
       'drbdadm new-current-uuid --clear-bitmap lw-1000/0',
     );
     expect(await readFile(join(dir, 'lw-1000.res'), 'utf8')).toContain('on "host-a" { node-id 0;');
+  });
+
+  describe('block mode (VM disks, M7.3)', () => {
+    const disk: VolumeAssignment = { ...volume, mode: 'block' };
+    const lines = (r: ReturnType<typeof runner>) => r.calls.map((c) => [c.cmd, ...c.args].join(' '));
+
+    it('never formats or mounts a VM disk on the host', async () => {
+      const r = runner({ lvs: ['lw-1000'], luks: true, mapped: true, up: true, fs: '' });
+      const manager = new VolumeManager(r as never, secrets as never);
+
+      await manager.apply('n1', [disk]);
+      await expect(manager.mount(disk.dockerName)).rejects.toThrow('is a VM disk (block mode)');
+      await manager.unmount(disk.dockerName);
+      expect(lines(r).filter((c) => /mkfs|mount|drbdadm (primary|secondary)/.test(c))).toEqual([]);
+    });
+
+    it('promotes a VM disk on its primary and tells whether it never held data', async () => {
+      const fresh = runner({
+        lvs: ['lw-1000'],
+        luks: true,
+        mapped: true,
+        up: true,
+        disk: 'Inconsistent',
+        peers: { n2: 'Inconsistent', b1: 'Inconsistent' },
+      });
+      const manager = new VolumeManager(fresh as never, secrets as never);
+
+      await manager.apply('n1', [disk]);
+      expect(await manager.promoteBlock(disk.id)).toEqual({ device: '/dev/drbd1000', fresh: true });
+      expect(lines(fresh).slice(-2)).toEqual([
+        'drbdadm new-current-uuid --clear-bitmap lw-1000/0',
+        'drbdadm primary lw-1000',
+      ]);
+      expect(manager.blockAssignments()).toEqual([disk]);
+
+      const used = new VolumeManager(
+        runner({ lvs: ['lw-1000'], luks: true, mapped: true, up: true }) as never,
+        secrets as never,
+      );
+
+      await used.apply('n1', [disk]);
+      expect(await used.promoteBlock(disk.id)).toEqual({ device: '/dev/drbd1000', fresh: false });
+
+      const elsewhere = new VolumeManager(
+        runner({ lvs: ['lw-1000'], luks: true, mapped: true, up: true }) as never,
+        secrets as never,
+      );
+
+      await elsewhere.apply('n2', [disk]);
+      await expect(elsewhere.promoteBlock(disk.id)).rejects.toThrow('primary on n1, not here');
+      await expect(manager.promoteBlock(volume.id.replace('data', 'other'))).rejects.toThrow('unknown volume');
+    });
+
+    it('demotes a VM disk whose primary moved away (a device still open, exit 11, stays primary)', async () => {
+      const r = runner({ lvs: ['lw-1000'], luks: true, mapped: true, up: true, role: 'Primary' });
+      const manager = new VolumeManager(r as never, secrets as never);
+
+      await manager.apply('n2', [disk]);
+      expect(lines(r)).toContain('drbdadm secondary lw-1000');
+      expect(r.run.mock.calls.find((c) => c[0] === 'drbdadm' && c[1][0] === 'secondary')?.[2]).toEqual({
+        okExitCodes: [11],
+      });
+
+      // Filesystem volumes are left to the volume plugin; the primary keeps its role.
+      const fs = runner({ lvs: ['lw-1000'], luks: true, mapped: true, up: true, role: 'Primary' });
+
+      await new VolumeManager(fs as never, secrets as never).apply('n2', [volume]);
+      expect(lines(fs)).not.toContain('drbdadm secondary lw-1000');
+
+      await manager.demoteBlock(disk.id);
+      expect(lines(r).filter((c) => c === 'drbdadm secondary lw-1000')).toHaveLength(2);
+    });
+
+    it('opens and closes the dual-primary window of a live migration; the reconcile leaves the disk alone meanwhile', async () => {
+      const r = runner({ lvs: ['lw-1000'], luks: true, mapped: true, up: true, role: 'Primary' });
+      const manager = new VolumeManager(r as never, secrets as never);
+
+      await manager.apply('n2', [disk]);
+      r.calls.length = 0;
+
+      await expect(manager.promoteForMigration(disk.id)).rejects.toThrow('not in a dual-primary window');
+      await manager.setDualPrimary(disk.id, true);
+      expect(manager.inDualPrimary(disk.id)).toBe(true);
+      expect(await manager.promoteForMigration(disk.id)).toBe('/dev/drbd1000');
+      // Primary elsewhere by the control plane's record, but in the window: no demotion.
+      await manager.apply('n2', [disk]);
+      expect(lines(r).filter((c) => c.startsWith('drbdadm'))).toEqual([
+        'drbdadm net-options --allow-two-primaries=yes lw-1000',
+        'drbdadm primary lw-1000',
+      ]);
+
+      await manager.setDualPrimary(disk.id, false);
+      expect(manager.inDualPrimary(disk.id)).toBe(false);
+      expect(lines(r)).toContain('drbdadm net-options --allow-two-primaries=no lw-1000');
+      await manager.apply('n2', [disk]);
+      expect(lines(r)).toContain('drbdadm secondary lw-1000');
+
+      // A failed close (the peer is still primary) keeps the window open; a recovered session holds it, too.
+      await manager.setDualPrimary(disk.id, true);
+      r.run.mockRejectedValueOnce(new Error('State change failed: two primaries'));
+      await expect(manager.setDualPrimary(disk.id, false)).rejects.toThrow('two primaries');
+      expect(manager.inDualPrimary(disk.id)).toBe(true);
+      await manager.setDualPrimary(disk.id, false);
+      manager.holdDualPrimary(disk.id);
+      expect(manager.inDualPrimary(disk.id)).toBe(true);
+      await expect(manager.setDualPrimary('p/x/unknown', true)).rejects.toThrow('unknown volume');
+    });
+
+    it("reads a VM disk's size from sysfs and its LV tags, and sets them in one lvchange", async () => {
+      const r = runner({ lvs: ['lw-1000'], luks: true, mapped: true, up: true });
+      const manager = new VolumeManager(r as never, secrets as never);
+
+      await manager.apply('n1', [disk]);
+      expect(await manager.blockSizeBytes(disk.id)).toBe(41943040 * 512);
+
+      r.json.mockResolvedValueOnce({
+        report: [{ lv: [{ lv_name: 'lw-1000', lv_active: 'active', lv_tags: 'lw.init=sha256:aa,other' }] }],
+      } as never);
+      expect(await manager.lvTags(disk.id)).toEqual(['lw.init=sha256:aa', 'other']);
+      expect(r.json).toHaveBeenLastCalledWith('lvs', [
+        '--reportformat',
+        'json',
+        '-o',
+        'lv_name,lv_tags',
+        'loadweaver/lw-1000',
+      ]);
+
+      await manager.setLvTags(disk.id, ['lw.init=sha256:bb'], ['lw.importing=sha256:bb']);
+      expect(lines(r).pop()).toBe(
+        'lvchange --deltag lw.importing=sha256:bb --addtag lw.init=sha256:bb loadweaver/lw-1000',
+      );
+    });
   });
 });
 

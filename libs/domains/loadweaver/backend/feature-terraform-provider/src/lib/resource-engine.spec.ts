@@ -1,6 +1,7 @@
 import { createPluginLogger, UNKNOWN, type TfObject } from '@forepath/loadweaver/backend/util-terraform-protocol';
 
 import { LoadweaverApiError, LoadweaverClient } from './api-client';
+import { DATA_SOURCE_DEFINITIONS } from './data-sources';
 import type { RunnerContext } from './plan-runner';
 import type { ProviderSettings } from './provider-config';
 import {
@@ -89,6 +90,30 @@ async function planAndApply(
 
 const json = (v: unknown) => JSON.stringify(v);
 
+/** A nested object as Terraform sends it: every attribute of the nested schema, null where not configured. */
+function nested(typeName: string, attribute: string, values: TfObject): TfObject {
+  const schema = resourceSchema(def(typeName)).attributes.find((a) => a.name === attribute);
+
+  return { ...Object.fromEntries((schema?.nested?.attributes ?? []).map((a) => [a.name, null])), ...values };
+}
+
+const VM = 'loadweaver_virtual_machine';
+const vmDisk = (values: TfObject) => nested(VM, 'disks', values);
+const vmNic = (values: TfObject) => nested(VM, 'nics', values);
+const VM_CREATE: TfObject = {
+  name: 'db1',
+  labels: { app: 'db' },
+  image: 'registry.lw/shop/debian-13:20261017',
+  vcpus: 2,
+  memory: '4Gi',
+  disks: [
+    vmDisk({ name: 'root', size: '20Gi', source: 'image', replicas: 2 }),
+    vmDisk({ name: 'data', size: '100Gi' }),
+  ],
+  nics: [vmNic({ name: 'eth0', groups: ['db'] }), vmNic({ name: 'backup', ipv6: false })],
+  cloud_init: nested(VM, 'cloud_init', { ssh_authorized_keys: ['ssh-ed25519 AAAA test'] }),
+};
+
 const CASES: [string, string, TfObject, TfObject][] = [
   [
     'loadweaver_project',
@@ -148,6 +173,7 @@ const CASES: [string, string, TfObject, TfObject][] = [
     { name: 'daily', spec: json({ schedules: ['@daily'] }) },
     { spec: json({ schedules: ['@hourly'] }) },
   ],
+  [VM, 'VirtualMachine/shop/db1', VM_CREATE, { vcpus: 4, run_strategy: 'Manual' }],
   [
     'loadweaver_resource',
     'ImagePolicy/shop/signed',
@@ -212,6 +238,102 @@ describe.each(CASES)('%s', (typeName, key, create, update) => {
     expect(destroyed).toEqual({ newState: null, diagnostics: [] });
     expect(fake.resources.has(key)).toBe(false);
     expect(fake.pendingPlans()).toEqual([]);
+  });
+});
+
+describe('loadweaver_virtual_machine', () => {
+  it('stores disks, NICs and cloud-init in the spec form and keeps the configured form on refresh', async () => {
+    const { fake, ctx } = setup();
+    const created = await planAndApply(ctx, VM, config(VM, VM_CREATE), null);
+
+    expect(fake.resources.get('VirtualMachine/shop/db1')).toMatchObject({
+      metadata: { name: 'db1', project: 'shop', labels: { app: 'db' } },
+      spec: {
+        image: 'registry.lw/shop/debian-13:20261017',
+        firmware: 'uefi',
+        cpu: { vcpus: 2, model: 'host-model' },
+        memory: '4Gi',
+        disks: [
+          { name: 'root', size: '20Gi', source: 'image', replicas: 2, bus: 'virtio', cache: 'none' },
+          { name: 'data', size: '100Gi', source: 'blank', bus: 'virtio', cache: 'none' },
+        ],
+        nics: [
+          { name: 'eth0', groups: ['db'] },
+          { name: 'backup', groups: [], ipv6: false },
+        ],
+        cloudInit: { sshAuthorizedKeys: ['ssh-ed25519 AAAA test'], networkConfig: 'auto' },
+        ha: { restartElsewhere: true },
+        runStrategy: 'Always',
+      },
+    });
+    // Defaults filled in by the control plane don't show up as differences.
+    expect(created?.['firmware']).toBeNull();
+    expect(created?.['disks']).toEqual(VM_CREATE['disks']);
+  });
+
+  it('shows drift inside a nested list and maps issues onto the nested attribute', async () => {
+    const { fake, ctx } = setup();
+    const created = await planAndApply(ctx, VM, config(VM, VM_CREATE), null);
+    const stored = fake.resources.get('VirtualMachine/shop/db1')!;
+    const spec = stored.spec as { disks: { size: string }[] };
+
+    fake.seed({ ...stored, spec: { ...spec, disks: [spec.disks[0], { ...spec.disks[1], size: '200Gi' }] } as never });
+
+    const read = await readResource(def(VM), ctx, created);
+
+    expect((read.newState?.['disks'] as TfObject[])[1]).toMatchObject({ name: 'data', size: '200Gi', cache: 'none' });
+    // Untouched attributes keep their configured form.
+    expect(read.newState?.['nics']).toEqual(VM_CREATE['nics']);
+    expect(read.newState?.['firmware']).toBeNull();
+
+    const twoBootDisks = config(VM, {
+      ...VM_CREATE,
+      name: 'db2',
+      disks: [
+        vmDisk({ name: 'a', size: '20Gi', source: 'image' }),
+        vmDisk({ name: 'b', size: '1Gi', source: 'image' }),
+      ],
+    });
+    const plan = await planResourceChange(def(VM), ctx, { prior: null, proposed: twoBootDisks, config: twoBootDisks });
+
+    expect(plan.diagnostics).toEqual([
+      expect.objectContaining({
+        severity: 1,
+        summary: 'Invalid VirtualMachine',
+        attribute: { steps: [{ attribute_name: 'disks' }] },
+      }),
+    ]);
+  });
+
+  it('reads the status of a virtual machine', async () => {
+    const { ctx } = setup();
+
+    await planAndApply(ctx, VM, config(VM, VM_CREATE), null);
+
+    const status = DATA_SOURCE_DEFINITIONS.find((d) => d.typeName === 'loadweaver_virtual_machine_status')!;
+    const read = await status.read(ctx, { name: 'db1', project: null });
+
+    expect(read.state).toMatchObject({
+      id: 'VirtualMachine/shop/db1',
+      phase: 'Running',
+      node: 'node-1',
+      addresses: ['10.64.1.10', '10.64.1.11'],
+      nics: [
+        { name: 'eth0', primary: true, addresses: ['10.64.1.10'] },
+        { name: 'backup', primary: false },
+      ],
+      disks: [
+        { name: 'root', volume: 'shop/lw-vm/db1.root', boot: true, size_bytes: 20 * 1024 ** 3 },
+        { name: 'data', boot: false },
+      ],
+    });
+    expect((read.state?.['pinned_image'] as string).startsWith('registry.lw/shop/debian-13:20261017@sha256:')).toBe(
+      true,
+    );
+
+    const missing = await status.read(ctx, { name: 'nope', project: 'shop' });
+
+    expect(missing.diagnostics[0]).toMatchObject({ summary: 'Virtual machine not found' });
   });
 });
 

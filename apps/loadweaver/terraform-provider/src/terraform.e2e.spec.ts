@@ -186,6 +186,36 @@ resource "loadweaver_policy" "web_in" {
   })
 }
 
+resource "loadweaver_virtual_machine" "db" {
+  name    = "db1"
+  project = loadweaver_project.shop.name
+  labels  = { app = "db" }
+  image   = "registry.lw/shop/debian-13:20261017"
+  vcpus   = 2
+  memory  = "4Gi"
+  disks = [
+    { name = "root", size = "20Gi", source = "image", replicas = 2 },
+    { name = "data", size = "100Gi" },
+  ]
+  nics = [
+    { name = "eth0", groups = [loadweaver_workload_group.web.name] },
+    { name = "backup", ipv6 = false },
+  ]
+  cloud_init = {
+    ssh_authorized_keys = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE2e test"]
+  }
+  run_strategy = "Manual"
+}
+
+data "loadweaver_virtual_machine_status" "db" {
+  name    = loadweaver_virtual_machine.db.name
+  project = loadweaver_project.shop.name
+}
+
+output "db_addresses" {
+  value = data.loadweaver_virtual_machine_status.db.nics[1].addresses
+}
+
 data "loadweaver_deployment_status" "site" {
   name    = loadweaver_deployment.site.name
   project = loadweaver_project.shop.name
@@ -240,12 +270,13 @@ describe('terraform CLI against the provider (gate)', () => {
   it('plans with a Loadweaver dry-run plan and creates nothing', async () => {
     const { code, out } = await run(['plan', '-input=false']);
 
-    expect(out).toContain('Plan: 4 to add, 0 to change, 0 to destroy.');
+    expect(out).toContain('Plan: 5 to add, 0 to change, 0 to destroy.');
     expect(code).toBe(0);
     // Effects of the dry-run plans beyond the resource diff: network changes of the policy, the new replica.
     expect(out).toContain('Loadweaver dry-run plan: create Policy shop/web-in');
     expect(out).toContain('filtering create on node-1: policy web-in');
     expect(out).toContain('start shop/site/web/0 to node-1');
+    expect(out).toContain('start shop/lw-vm/db1/0 to node-1');
     expect(fake.resources.size).toBe(0);
     // Every dry-run plan was discarded again.
     expect([...fake.plans.values()].every((p) => p.status === 'discarded')).toBe(true);
@@ -254,16 +285,32 @@ describe('terraform CLI against the provider (gate)', () => {
   it('applies through Loadweaver plans', async () => {
     const { code, out } = await run(['apply', '-input=false', '-auto-approve']);
 
-    expect(out).toContain('Apply complete! Resources: 4 added, 0 changed, 0 destroyed.');
+    expect(out).toContain('Apply complete! Resources: 5 added, 0 changed, 0 destroyed.');
     expect(code).toBe(0);
     expect(out).toContain('replicas = 1');
+    expect(out).toContain('"10.64.1.11"');
     expect([...fake.resources.keys()].sort()).toEqual([
       'Deployment/shop/site',
       'Policy/shop/web-in',
       'Project/shop',
+      'VirtualMachine/shop/db1',
       'WorkloadGroup/shop/web',
     ]);
     expect(fake.resources.get('Project/shop')?.spec).toMatchObject({ description: 'The shop', quota: { cpu: '8' } });
+    // Disks / NICs as nested attributes end up in the spec form, defaults filled in by the control plane.
+    expect(fake.resources.get('VirtualMachine/shop/db1')?.spec).toMatchObject({
+      cpu: { vcpus: 2, model: 'host-model' },
+      disks: [
+        { name: 'root', size: '20Gi', source: 'image', replicas: 2, cache: 'none' },
+        { name: 'data', size: '100Gi', source: 'blank' },
+      ],
+      nics: [
+        { name: 'eth0', groups: ['web'] },
+        { name: 'backup', ipv6: false },
+      ],
+      cloudInit: { networkConfig: 'auto' },
+      runStrategy: 'Manual',
+    });
   });
 
   it('shows no changes when the cluster matches (defaults filled in by the control plane)', async () => {
@@ -292,6 +339,25 @@ describe('terraform CLI against the provider (gate)', () => {
     expect((fake.resources.get('Policy/shop/web-in')?.spec as { rules: unknown[] }).rules).toEqual([
       { protocol: 'tcp', ports: [80] },
     ]);
+  });
+
+  it('detects drift inside a VM disk list and puts it back', async () => {
+    const vm = fake.resources.get('VirtualMachine/shop/db1');
+    const spec = vm!.spec as { disks: { size: string }[] };
+
+    fake.seed({ ...vm!, spec: { ...spec, disks: [spec.disks[0], { ...spec.disks[1], size: '200Gi' }] } as never });
+
+    const plan = await run(['plan', '-input=false', '-detailed-exitcode']);
+
+    expect(plan.out).toContain('loadweaver_virtual_machine.db will be updated in-place');
+    expect(plan.code).toBe(2);
+
+    const apply = await run(['apply', '-input=false', '-auto-approve']);
+
+    expect(apply.code).toBe(0);
+    expect((fake.resources.get('VirtualMachine/shop/db1')?.spec as { disks: { size: string }[] }).disks[1].size).toBe(
+      '100Gi',
+    );
   });
 
   it('waits for a required approval during apply', async () => {
@@ -371,7 +437,7 @@ resource "loadweaver_workload_group" "api" {
   it('destroys through Loadweaver plans', async () => {
     const { code, out } = await run(['destroy', '-input=false', '-auto-approve', '-var', 'tag=1.28']);
 
-    expect(out).toContain('Destroy complete! Resources: 5 destroyed.');
+    expect(out).toContain('Destroy complete! Resources: 6 destroyed.');
     expect(code).toBe(0);
     expect(fake.resources.size).toBe(0);
   });

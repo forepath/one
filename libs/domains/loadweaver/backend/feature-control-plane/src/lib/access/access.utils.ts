@@ -52,7 +52,10 @@ export function mayGrant(
   return role !== 'admin' && current !== 'admin';
 }
 
-/** Kinds only cluster admins change: the cluster itself and projects (with their quotas). */
+/**
+ * Kinds only cluster admins change: the cluster itself and projects (with their quotas and admin-only workload
+ * allowances such as `workloads.allowedDevices`, 3.1).
+ */
 const ADMIN_KINDS = new Set(['Cluster', 'Project']);
 
 export interface PlanRequirements {

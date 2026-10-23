@@ -62,6 +62,7 @@ describe('provider handlers', () => {
     expect((metadata['resources'] as { type_name: string }[]).map((r) => r.type_name)).toEqual([
       'loadweaver_project',
       'loadweaver_deployment',
+      'loadweaver_virtual_machine',
       'loadweaver_workload_group',
       'loadweaver_node_group',
       'loadweaver_client_group',
@@ -83,11 +84,25 @@ describe('provider handlers', () => {
     };
 
     expect(schema.provider.block.attributes.find((a) => a.name === 'token')?.sensitive).toBe(true);
-    expect(Object.keys(schema.resource_schemas)).toHaveLength(11);
+    expect(Object.keys(schema.resource_schemas)).toHaveLength(12);
     expect(schema.resource_schemas['loadweaver_project'].block.attributes.map((a) => a.name)).not.toContain('project');
     expect(schema.resource_schemas['loadweaver_deployment'].block.attributes.map((a) => a.name)).toEqual(
       expect.arrayContaining(['id', 'name', 'project', 'labels', 'compose', 'variables', 'last_plan_id']),
     );
+    // Disks / NICs are lists of nested attributes (tfplugin6 nested_type, nesting LIST).
+    const vmAttributes = (
+      schema.resource_schemas['loadweaver_virtual_machine'].block.attributes as {
+        name: string;
+        nested_type?: { nesting: number; attributes: { name: string }[] };
+      }[]
+    ).filter((a) => a.nested_type);
+
+    expect(vmAttributes.map((a) => [a.name, a.nested_type?.nesting])).toEqual([
+      ['disks', 2],
+      ['nics', 2],
+      ['cloud_init', 1],
+      ['placement', 1],
+    ]);
     expect(schema.server_capabilities.plan_destroy).toBe(true);
   });
 

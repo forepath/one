@@ -1,6 +1,7 @@
 import type { BlockSchema, TfObject, TfValue } from '@forepath/loadweaver/backend/util-terraform-protocol';
 import { RESOURCE_KINDS } from '@forepath/loadweaver/shared/util-model';
 
+import { LoadweaverApiError } from './api-client';
 import { attributeError, type Diagnostic } from './diagnostics';
 import { apiDiagnostics, type RunnerContext } from './plan-runner';
 import { canonicalJson, definitionFor, resourceId, scopeOfKind } from './resources';
@@ -201,6 +202,106 @@ export const DATA_SOURCE_DEFINITIONS: DataSourceDefinition[] = [
           diagnostics: [],
         };
       } catch (err) {
+        return { state: null, diagnostics: apiDiagnostics(err, 'read', () => 'name') };
+      }
+    },
+  },
+  {
+    typeName: 'loadweaver_virtual_machine_status',
+    schema: {
+      version: 0,
+      description: 'Where a virtual machine runs: phase, power, node, the pinned image and the addresses of every NIC.',
+      attributes: [
+        { name: 'name', type: 'string', required: true, description: 'Virtual machine name.' },
+        { name: 'project', type: 'string', optional: true, description: 'Project (default: the provider project).' },
+        { name: 'id', type: 'string', computed: true, description: '`VirtualMachine/project/name`.' },
+        {
+          name: 'phase',
+          type: 'string',
+          computed: true,
+          description: '`Pending`, `Importing`, `Starting`, `Running`, `Stopping`, `Stopped`, `Migrating` or `Failed`.',
+        },
+        { name: 'power', type: 'string', computed: true, description: 'Desired power: `running` or `stopped`.' },
+        { name: 'node', type: 'string', computed: true, description: 'Node the VM is placed on (null when stopped).' },
+        {
+          name: 'pinned_image',
+          type: 'string',
+          computed: true,
+          description: 'The digest-pinned image of the last apply.',
+        },
+        { name: 'addresses', type: ['list', 'string'], computed: true, description: 'Addresses of all NICs.' },
+        {
+          name: 'nics',
+          type: ['list', ['object', { name: 'string', mac: 'string', primary: 'bool', addresses: ['list', 'string'] }]],
+          computed: true,
+          description: 'NICs in order (the first is the primary one) with MAC and addresses.',
+        },
+        {
+          name: 'disks',
+          type: [
+            'list',
+            [
+              'object',
+              { name: 'string', volume: 'string', boot: 'bool', size_bytes: 'number', primary_node: 'string' },
+            ],
+          ],
+          computed: true,
+          description: 'Disks (DRBD block volumes) with their primary node.',
+        },
+      ],
+    },
+    async read(ctx, config) {
+      const project = projectFor(config, ctx, 'VirtualMachine');
+      const name = String(config['name']);
+
+      if (!project)
+        return {
+          state: null,
+          diagnostics: [attributeError('project', 'Missing project', 'Set project here or in the provider block.')],
+        };
+
+      try {
+        const vm = await ctx.client.virtualMachine(project, name, ctx.signal);
+
+        return {
+          state: {
+            name,
+            project,
+            id: resourceId('VirtualMachine', name, project),
+            phase: vm.phase,
+            power: vm.power,
+            node: vm.node ?? null,
+            pinned_image: vm.pinnedImage ?? null,
+            addresses: vm.addresses ?? [],
+            nics: (vm.nicStatus ?? []).map((n) => ({
+              name: n.name,
+              mac: n.mac,
+              primary: n.primary,
+              addresses: n.addresses ?? [],
+            })),
+            disks: (vm.diskStatus ?? []).map((d) => ({
+              name: d.name,
+              volume: d.volume,
+              boot: d.boot,
+              size_bytes: d.sizeBytes,
+              primary_node: d.primaryNode ?? null,
+            })),
+          },
+          diagnostics: [],
+        };
+      } catch (err) {
+        if (err instanceof LoadweaverApiError && err.status === 404)
+          return {
+            state: null,
+            diagnostics: [
+              attributeError(
+                'name',
+                'Virtual machine not found',
+                `${resourceId('VirtualMachine', name, project)} does not exist or is not visible to the token.`,
+              ),
+            ],
+          };
+
         return { state: null, diagnostics: apiDiagnostics(err, 'read', () => 'name') };
       }
     },

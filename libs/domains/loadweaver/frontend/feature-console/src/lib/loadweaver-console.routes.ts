@@ -68,6 +68,16 @@ import {
   loadPolicies$,
   loadGroupMembers$,
   ConsoleNodesFacade,
+  ConsoleVirtualMachinesFacade,
+  consoleVirtualMachinesReducer,
+  loadVirtualMachines$,
+  loadVirtualMachine$,
+  virtualMachineActions$,
+  loadVmSnapshots$,
+  createVmSnapshot$,
+  loadVmImageImports$,
+  loadVmRegistryImages$,
+  importVmImage$,
   consoleNodesReducer,
   loadNodes$,
   loadNode$,
@@ -257,6 +267,8 @@ import { LoadweaverPoliciesPageComponent } from './policies/policies-page.compon
 import { LoadweaverPolicyDetailPageComponent } from './policies/policy-detail-page.component';
 import { LoadweaverNodesPageComponent } from './nodes/nodes-page.component';
 import { LoadweaverNodeDetailPageComponent } from './nodes/node-detail-page.component';
+import { LoadweaverVirtualMachineDetailPageComponent } from './virtual-machines/virtual-machine-detail-page.component';
+import { LoadweaverVirtualMachinesPageComponent } from './virtual-machines/virtual-machines-page.component';
 import { LoadweaverDnsPageComponent } from './dns/dns-page.component';
 import { LoadweaverTerminalsPageComponent } from './terminals/terminals-page.component';
 import { LoadweaverFilesPageComponent } from './files/files-page.component';
@@ -473,6 +485,20 @@ export const loadweaverConsoleRoutes: Route[] = [
         component: LoadweaverPolicyDetailPageComponent,
         canActivate: [authGuard],
         title: () => buildPageTitle($localize`:@@lwConsolePolicyDetail-title:Policy`),
+      },
+      {
+        // Full virtual machines (3.35); `?project=` filters.
+        path: 'virtual-machines',
+        component: LoadweaverVirtualMachinesPageComponent,
+        canActivate: [authGuard],
+        title: () => buildPageTitle($localize`:@@lwConsoleVms-title:Virtual machines`),
+      },
+      {
+        // `?tab=overview|serial|vnc`.
+        path: 'virtual-machines/:project/:name',
+        component: LoadweaverVirtualMachineDetailPageComponent,
+        canActivate: [authGuard],
+        title: () => buildPageTitle($localize`:@@lwConsoleVmDetail-title:Virtual machine`),
       },
       {
         path: 'nodes',
@@ -701,6 +727,7 @@ export const loadweaverConsoleRoutes: Route[] = [
       ConsoleResourcesFacade,
       ConsolePoliciesFacade,
       ConsoleNodesFacade,
+      ConsoleVirtualMachinesFacade,
       ConsoleDnsFacade,
       ConsoleLiveFacade,
       ConsoleFilesFacade,
@@ -740,6 +767,7 @@ export const loadweaverConsoleRoutes: Route[] = [
       provideState('consoleResources', consoleResourcesReducer, CONSOLE_FEATURE_CONFIG),
       provideState('consolePolicies', consolePoliciesReducer, CONSOLE_FEATURE_CONFIG),
       provideState('consoleNodes', consoleNodesReducer, CONSOLE_FEATURE_CONFIG),
+      provideState('consoleVirtualMachines', consoleVirtualMachinesReducer, CONSOLE_FEATURE_CONFIG),
       provideState('consoleDns', consoleDnsReducer, CONSOLE_FEATURE_CONFIG),
       provideState('consoleTopology', consoleTopologyReducer, CONSOLE_FEATURE_CONFIG),
       provideState('consoleLogs', consoleLogsReducer, CONSOLE_FEATURE_CONFIG),
@@ -826,6 +854,14 @@ export const loadweaverConsoleRoutes: Route[] = [
         loadJoinTokens$,
         createJoinToken$,
         revokeJoinToken$,
+        loadVirtualMachines$,
+        loadVirtualMachine$,
+        virtualMachineActions$,
+        loadVmSnapshots$,
+        createVmSnapshot$,
+        loadVmImageImports$,
+        loadVmRegistryImages$,
+        importVmImage$,
         loadDns$,
         confirmDnsFailback$,
         reloadDnsAfterFailback$,

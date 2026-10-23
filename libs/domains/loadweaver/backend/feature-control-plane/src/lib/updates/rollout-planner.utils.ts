@@ -2,6 +2,7 @@ import {
   imageComponents,
   imageReference,
   packagePins,
+  REQUIRED_HOST_PACKAGES,
   type BinaryComponent,
   type KernelModuleComponent,
   type ReleaseManifest,
@@ -162,10 +163,38 @@ export const COMPONENT_METHODS: Record<string, string> = {
   bird: 'graceful restart, routes stay installed',
   docker: 'live-restore, containers keep running',
   packages: 'cluster-local apt source',
+  'required-packages': 'installed from the cluster-local apt snapshot if missing (no reboot of its own)',
   kernel: 'drain → update → reboot → rejoin',
   gvisor: 'drain → update → reboot → rejoin',
   drbd: 'drain → module build → reboot → rejoin',
+  'kvm-modules': 'with the kernel: drain → update → reboot → rejoin, isolation probe before uncordon',
 };
+
+/** The node uses KVM (3.1): usable per its last isolation probe and not opted out by its node spec. */
+export function kvmInUse(capabilities: Record<string, unknown> | null | undefined): boolean {
+  const kvm = capabilities?.['kvm'] as { usable?: boolean; optOut?: boolean } | undefined;
+
+  return !!kvm?.usable && !kvm.optOut;
+}
+
+/**
+ * KVM modules follow kernel rollouts (3.1): Ubuntu nodes that use KVM get `linux-modules-extra` of the snapshot's
+ * kernels in the same host step as the kernel (drain → update → reboot); Debian has KVM in `linux-image-*`.
+ */
+export function kvmModuleEntries(
+  nodes: readonly { name: string; os: string | null; capabilities: Record<string, unknown> | null | undefined }[],
+  snapshot: string | undefined,
+): RolloutDiffEntry[] {
+  return nodes
+    .filter((n) => n.os?.startsWith('ubuntu:') && kvmInUse(n.capabilities))
+    .map((n) => ({
+      node: n.name,
+      component: 'kvm-modules',
+      from: null,
+      to: `linux-modules-extra for the kernels of snapshot ${snapshot ?? 'none'}`,
+      method: COMPONENT_METHODS['kvm-modules'],
+    }));
+}
 
 /** Where a component runs: on members only, on ingress / every node, or the node's host. */
 const MEMBER_COMPONENTS = new Set(['control-plane', 'valkey', 'etcd', 'postgres', 'opensearch', 'garage', 'registry']);
@@ -250,6 +279,17 @@ export function componentDiff(nodes: readonly DiffNode[], target: ReleaseManifes
                 : pkg.startsWith('docker')
                   ? COMPONENT_METHODS['docker']
                   : COMPONENT_METHODS['packages'],
+          });
+
+      // Required host packages the node lacks (installed before they were required): installed from the snapshot.
+      for (const pkg of REQUIRED_HOST_PACKAGES)
+        if (!pins[pkg] && !node.packages[pkg])
+          out.push({
+            node: node.name,
+            component: `package:${pkg}`,
+            from: null,
+            to: 'snapshot version',
+            method: COMPONENT_METHODS['required-packages'],
           });
     }
   }

@@ -79,6 +79,22 @@ export interface LoadweaverLogLine {
   fields?: Record<string, unknown>;
 }
 
+/** State of one isolation level in the project's placement (control plane `GET /projects/:p/isolation-capabilities`). */
+export interface LoadweaverIsolationLevelCapability {
+  state: 'ready' | 'unsupported' | 'probe-failed' | 'disabled-by-admin';
+  /** Schedulable nodes in the placement with the level ready. */
+  nodes: number;
+  reasonCode?: string;
+  reason?: string;
+}
+
+export interface LoadweaverIsolationCapabilities {
+  project: string;
+  /** Schedulable nodes in the placement (lifecycle active, reachable, not a witness, matching the selector). */
+  nodes: number;
+  levels: Partial<Record<'runc' | 'sandboxed' | 'sandboxed-kvm' | 'microvm', LoadweaverIsolationLevelCapability>>;
+}
+
 export interface LoadweaverExecResult {
   exitCode: number | null;
   stdout: Buffer;
@@ -305,6 +321,19 @@ export class LoadweaverClient {
     await this.request('DELETE', `/projects/${this.project}/secrets/${name}`).catch((error: unknown) => {
       if (!(error instanceof LoadweaverApiError && error.status === 404)) throw error;
     });
+  }
+
+  /**
+   * The aggregated isolation capabilities of the project's placement (Loadweaver plan 3.35): per level whether at
+   * least one schedulable node passed its probe. `selector`: `key=value[,key=value]` to narrow the placement.
+   */
+  async isolationCapabilities(selector?: string): Promise<LoadweaverIsolationCapabilities> {
+    const query = selector ? `?selector=${encodeURIComponent(selector)}` : '';
+
+    return await this.request<LoadweaverIsolationCapabilities>(
+      'GET',
+      `/projects/${this.project}/isolation-capabilities${query}`,
+    );
   }
 
   async readFile(target: string, path: string): Promise<Buffer> {

@@ -1,6 +1,6 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { createServer, type AddressInfo, type Server } from 'node:net';
-import { Duplex } from 'node:stream';
+import { Duplex, PassThrough } from 'node:stream';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -110,6 +110,45 @@ describe('live sessions: files and tunnels', () => {
     for (let i = 0; i < 50 && !sent.some((e) => e.channel === 'x2'); i++) await new Promise((r) => setTimeout(r, 20));
 
     expect(last('x2')).toMatchObject({ type: 'tunnelClose', payload: { reason: expect.any(String) } });
+  });
+
+  it('closes the sessions of a replica that migrated away with the reason (M7 W10b)', async () => {
+    const live = new LiveSessionsService(docker(dir), { mountedPath: async () => null } as never);
+
+    live.attach((e) => void sent.push(e));
+    await live.openTunnel('m1', 'shop/site/web/0', (server.address() as AddressInfo).port);
+
+    // A terminal in the replica (the exec itself is covered below): what the session keeps of it.
+    const stream = new PassThrough();
+    const terminals = (live as unknown as { terminals: Map<string, unknown> }).terminals;
+
+    terminals.set('m2', {
+      stream,
+      replica: 'shop/site/web/0',
+      pending: [],
+      pendingBytes: 0,
+      timer: null,
+      resize: async () => undefined,
+      exitCode: async () => null,
+      cleanup: async () => undefined,
+    });
+    terminals.set('m3', {
+      stream: new PassThrough(),
+      replica: 'shop/site/api/0',
+      pending: [],
+      pendingBytes: 0,
+      timer: null,
+      resize: async () => undefined,
+      exitCode: async () => null,
+      cleanup: async () => undefined,
+    });
+
+    await live.closeReplicaSessions('shop/site/web/0', 'replica migrated to n2');
+
+    expect(last('m1')).toMatchObject({ type: 'tunnelClose', payload: { reason: 'replica migrated to n2' } });
+    expect(last('m2')).toMatchObject({ type: 'execExit', payload: { code: null, error: 'replica migrated to n2' } });
+    expect(stream.destroyed).toBe(true);
+    expect(terminals.has('m3')).toBe(true);
   });
 
   it('ends a tunnel after the longest TTL the control plane grants, and closes all tunnels when the stream drops', async () => {
@@ -316,5 +355,249 @@ describe('live sessions: terminals', () => {
 
     expect(messages('t3').at(-1)?.type).toBe('execExit');
     expect(stream.destroyed).toBe(true);
+  });
+});
+
+describe('live sessions: microVM guests and VM consoles', () => {
+  const sent: Envelope[] = [];
+  const messages = (channel: string) =>
+    sent
+      .filter((e) => e.channel === channel)
+      .map((e) => decodeAgentMessage(e))
+      .flatMap((d) => (d.ok ? [d.message] : []));
+  const settle = async () => {
+    for (let i = 0; i < 20; i++) await new Promise((r) => setImmediate(r));
+  };
+  const frame = (kind: 1 | 2, data: Buffer) => {
+    const header = Buffer.alloc(8);
+
+    header[0] = kind;
+    header.writeUInt32BE(data.length, 4);
+
+    return Buffer.concat([header, data]);
+  };
+
+  const setup = (labels: Record<string, string>, extra: Record<string, unknown> = {}) => {
+    const execOptions: Record<string, unknown>[] = [];
+    const streams: Duplex[] = [];
+    const written: Buffer[] = [];
+    const resized: unknown[] = [];
+    const docker = {
+      modem: {
+        demuxStream: (source: Duplex, stdout: Duplex, stderr: Duplex) => {
+          let buffer = Buffer.alloc(0);
+
+          source.on('data', (chunk: Buffer) => {
+            buffer = Buffer.concat([buffer, chunk]);
+
+            while (buffer.length >= 8 && buffer.length >= 8 + buffer.readUInt32BE(4)) {
+              const length = buffer.readUInt32BE(4);
+
+              (buffer[0] === 2 ? stderr : stdout).write(buffer.subarray(8, 8 + length));
+              buffer = buffer.subarray(8 + length);
+            }
+          });
+          source.on('end', () => (stdout.end(), stderr.end()));
+        },
+      },
+      listContainers: async () => [{ Id: 'c1' }],
+      getContainer: (id: string) => ({
+        inspect: async () => ({ Id: id, Config: { Labels: labels }, State: { Running: true }, ...extra }),
+        exec: async (options: Record<string, unknown>) => {
+          execOptions.push(options);
+
+          const stream = new Duplex({
+            read: () => undefined,
+            write: (chunk: Buffer, _encoding, done) => (written.push(chunk), done()),
+          });
+
+          streams.push(stream);
+
+          return {
+            start: async () => stream,
+            resize: async (size: unknown) => void resized.push(size),
+            inspect: async () => ({ ExitCode: 0 }),
+          };
+        },
+      }),
+    } as never;
+    const live = new LiveSessionsService(docker, { mountedPath: async () => null } as never);
+
+    live.attach((e) => void sent.push(e));
+
+    return { live, execOptions, streams, written, resized };
+  };
+  const replica = { kind: 'replica' as const, replica: 'shop/site/web/0' };
+  const vmReplica = { kind: 'replica' as const, replica: 'shop/lw-vm/db1/0' };
+
+  it('runs terminals and machine exec in a microVM through vm-exec, with TTY and resize carried', async () => {
+    const { live, execOptions, resized } = setup({ 'loadweaver.com/microvm': 'generic' });
+
+    await live.openTerminal('g1', { target: replica, cols: 120, rows: 40 });
+    expect(execOptions[0]).toMatchObject({
+      Cmd: [
+        '/usr/lib/agenstra-microvm/vm-exec',
+        '--pass-env',
+        'TERM',
+        '--',
+        '/bin/sh',
+        '-c',
+        expect.stringContaining('bash'),
+      ],
+      User: 'agenstra-vmm',
+      Tty: true,
+      Env: ['TERM=xterm-256color'],
+    });
+    expect(resized).toEqual([{ h: 40, w: 120 }]);
+    await live.resize('g1', 100, 30);
+    expect(resized.at(-1)).toEqual({ h: 30, w: 100 });
+
+    await live.openTerminal('g2', {
+      target: replica,
+      command: ['cat'],
+      cols: 80,
+      rows: 24,
+      tty: false,
+      user: 'app',
+      workingDir: '/srv',
+      env: ['TOKEN=secret'],
+    });
+    expect(execOptions[1]).toMatchObject({
+      Cmd: [
+        '/usr/lib/agenstra-microvm/vm-exec',
+        '--user',
+        'app',
+        '--workdir',
+        '/srv',
+        '--pass-env',
+        'TOKEN',
+        '--',
+        'cat',
+      ],
+      User: 'agenstra-vmm',
+      Tty: false,
+      Env: ['TOKEN=secret'],
+    });
+    expect(execOptions[1]).not.toHaveProperty('WorkingDir');
+    expect(JSON.stringify(execOptions[1]['Cmd'])).not.toContain('secret');
+    await live.closeAll();
+  });
+
+  it('wraps launcher-labelled (Agenstra) images too, and refuses exec into full VMs', async () => {
+    const bundled = setup({ 'io.agenstra.microvm.protocol': '1' });
+
+    await bundled.live.openTerminal('b1', { target: replica, cols: 80, rows: 24 });
+    expect((bundled.execOptions[0]['Cmd'] as string[])[0]).toBe('/usr/lib/agenstra-microvm/vm-exec');
+    await bundled.live.closeAll();
+
+    const vm = setup({ 'loadweaver.com/vm': 'db1' });
+
+    await vm.live.openTerminal('v1', { target: vmReplica, cols: 80, rows: 24 });
+    expect(vm.execOptions).toEqual([]);
+    expect(messages('v1').at(-1)).toMatchObject({
+      type: 'execExit',
+      payload: { code: null, error: expect.stringContaining('serial console') },
+    });
+  });
+
+  it("browses a generic microVM's guest root and refuses a VM's disks", async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'lw-guest-'));
+
+    try {
+      await writeFile(join(dir, 'os-release'), 'ID=alpine');
+
+      const { live } = setup(
+        { 'loadweaver.com/microvm': 'generic' },
+        {
+          HostConfig: { Runtime: 'runc' },
+          GraphDriver: { Data: { MergedDir: '/nonexistent' } },
+          Mounts: [{ Type: 'bind', Source: dir, Destination: '/guest' }],
+        },
+      );
+
+      await live.file('gf1', { op: 'list', target: replica, path: '/' });
+      expect(messages('gf1').at(-1)?.payload).toMatchObject({ ok: true, entries: [{ name: 'os-release' }] });
+
+      const vm = setup({ 'loadweaver.com/vm': 'db1' }, { HostConfig: { Runtime: 'runc' } });
+
+      await vm.live.file('gf2', { op: 'list', target: vmReplica, path: '/' });
+      expect(messages('gf2').at(-1)?.payload).toMatchObject({
+        ok: false,
+        error: { message: 'virtual machine disks are not browsable' },
+      });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('opens the serial console of a VM: boot log first, input to the serial line, close ends the session only', async () => {
+    const { live, execOptions, streams, written } = setup({ 'loadweaver.com/vm': 'db1' });
+
+    // The collector runs from the VM's start (here: the first console).
+    await live.openConsole('s1', { target: vmReplica, kind: 'serial', cols: 80, rows: 24 });
+    await settle();
+    expect(execOptions[0]).toEqual({
+      Cmd: ['/usr/lib/agenstra-microvm/vm-console', 'serial'],
+      AttachStdin: true,
+      AttachStdout: true,
+      AttachStderr: true,
+      Tty: false,
+    });
+    streams[0].push(frame(1, Buffer.from('Debian GNU/Linux 13 db1 ttyS0\r\n')));
+    await settle();
+    live.input('s1', Buffer.from('root\r').toString('base64'));
+    expect(Buffer.concat(written).toString()).toBe('root\r');
+
+    // A second viewer gets the boot log, and shares the line.
+    await live.openConsole('s2', { target: vmReplica, kind: 'serial' });
+    const replay = messages('s2').find((m) => m.type === 'execOutput')?.payload as { data: string };
+
+    expect(Buffer.from(replay.data, 'base64').toString()).toBe('Debian GNU/Linux 13 db1 ttyS0\r\n');
+    expect(execOptions).toHaveLength(1);
+
+    await live.closeTerminal('s1');
+    expect(messages('s1').at(-1)).toMatchObject({ type: 'execExit', payload: { code: null } });
+    expect(streams[0].destroyed).toBe(false);
+    await live.resize('s2', 100, 30);
+    await live.closeAll();
+    expect(messages('s2').at(-1)?.type).toBe('execExit');
+    live.serial.stop();
+  });
+
+  it('relays VNC as raw binary RFB without a TTY and without vm-exec', async () => {
+    const { live, execOptions, streams, written } = setup({ 'loadweaver.com/vm': 'db1' });
+    const rfb = Buffer.from('RFB 003.008\n');
+
+    await live.openConsole('n1', { target: vmReplica, kind: 'vnc' });
+    expect(execOptions[0]).toEqual({
+      Cmd: ['/usr/lib/agenstra-microvm/vm-console', 'vnc'],
+      AttachStdin: true,
+      AttachStdout: true,
+      AttachStderr: true,
+      Tty: false,
+    });
+    streams[0].push(frame(1, rfb));
+    live.input('n1', Buffer.from([0x03, 0x08, 0xff]).toString('base64'));
+    expect(Buffer.concat(written)).toEqual(Buffer.from([0x03, 0x08, 0xff]));
+    streams[0].push(null);
+
+    for (let i = 0; i < 50 && messages('n1').at(-1)?.type !== 'execExit'; i++)
+      await new Promise((r) => setTimeout(r, 10));
+
+    const out = messages('n1') as { type: string; payload: { data?: string; code?: number } }[];
+
+    expect(Buffer.from(out[0].payload.data ?? '', 'base64')).toEqual(rfb);
+    expect(out.at(-1)).toMatchObject({ type: 'execExit', payload: { code: 0 } });
+  });
+
+  it('opens consoles for full VMs only', async () => {
+    const { live, execOptions } = setup({ 'loadweaver.com/microvm': 'generic' });
+
+    await live.openConsole('c1', { target: replica, kind: 'serial' });
+    expect(execOptions).toEqual([]);
+    expect(messages('c1').at(-1)).toMatchObject({
+      type: 'execExit',
+      payload: { code: null, error: 'consoles are only available for virtual machines' },
+    });
   });
 });

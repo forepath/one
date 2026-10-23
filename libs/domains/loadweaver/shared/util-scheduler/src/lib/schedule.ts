@@ -1,5 +1,11 @@
-import { matchesSelector } from '@forepath/loadweaver/shared/util-model';
-
+import {
+  canHoldBlockVolumes,
+  canHoldVolumes,
+  eligibleNodes,
+  hasRequiredFeatures,
+  ineligibilityReason,
+  missingFeaturesReason,
+} from './eligibility';
 import type {
   HeldVolumeCopy,
   ReplicaPlacement,
@@ -7,7 +13,6 @@ import type {
   ScheduleInput,
   ScheduleResult,
   SchedulerNode,
-  SchedulerService,
   SchedulerVolume,
   Unschedulable,
   VolumePlacement,
@@ -34,35 +39,9 @@ function load(capacity: Resources, used: Resources): number {
   );
 }
 
-/** Nodes that can hold volume copies: DRBD 9 module present or not reported (3.5). */
-export function canHoldVolumes(node: SchedulerNode): boolean {
-  return node.drbd9 !== false;
-}
-
-export function canRunWorkloads(node: SchedulerNode): boolean {
-  return node.lifecycle === 'active' && !node.witness && node.reachable;
-}
-
-/** Nodes a service may run on, ignoring capacity: lifecycle, runtime capability (3.1) and selector (P4). */
-export function eligibleNodes(service: SchedulerService, nodes: readonly SchedulerNode[]): SchedulerNode[] {
-  return nodes.filter(
-    (n) =>
-      canRunWorkloads(n) &&
-      n.runtimes.includes(service.runtime) &&
-      (!service.selector || matchesSelector(service.selector, { name: n.name, labels: n.labels })),
-  );
-}
-
-/** Whether the node's agent has every protocol feature the service's new replicas need (unknown features: yes). */
-export function hasRequiredFeatures(service: SchedulerService, node: SchedulerNode): boolean {
-  return (service.requiredFeatures ?? []).every((f) => !node.features || node.features.includes(f));
-}
-
-/** Unschedulable reason when only nodes without the needed agent features would fit. */
-export function missingFeaturesReason(service: SchedulerService): string {
-  const features = (service.requiredFeatures ?? []).join(', ');
-
-  return `no eligible node with enough capacity has an agent with the protocol feature ${features}${service.requiredFeaturesReason ? ` (needed for ${service.requiredFeaturesReason})` : ''}; update the node agents`;
+/** Nodes that can hold copies of this volume: DRBD 9, and block-volume support for VM disks (3.5, 3.35). */
+function canHold(volume: SchedulerVolume, node: SchedulerNode): boolean {
+  return volume.mode === 'block' ? canHoldBlockVolumes(node) : canHoldVolumes(node);
 }
 
 class Ledger {
@@ -114,7 +93,7 @@ function placeVolume(
       n.lifecycle !== 'leaving' &&
       n.lifecycle !== 'draining' &&
       n.name !== primary.name &&
-      canHoldVolumes(n),
+      canHold(volume, n),
   );
   // Nodes that aren't ready (joining) keep their copies but get no new ones: a copy there would hold the apply up
   // until the node finished initialising, and the plan would roll back (M6 gate).
@@ -194,7 +173,7 @@ export function schedule(input: ScheduleInput): ScheduleResult {
     if (candidates.length === 0) {
       unschedulable.push({
         service: service.id,
-        reason: `no eligible node (runtime ${service.runtime}${service.selector ? ', selector' : ''})`,
+        reason: ineligibilityReason(service, input.nodes) ?? 'no eligible node',
       });
       continue;
     }
@@ -207,14 +186,17 @@ export function schedule(input: ScheduleInput): ScheduleResult {
       // (failover and migration promote a replica, 3.10). New volumes may go anywhere.
       const holders =
         existing.length > 0 ? existing.map((v) => new Set([v.primary, ...v.syncReplicas, ...v.remoteReplicas])) : null;
-      const withDrbd = candidates.filter(canHoldVolumes);
+      const withDrbd = candidates.filter((n) => service.volumes.every((v) => canHold(v, n)));
 
       if (withDrbd.length === 0) {
+        const block = service.volumes.some((v) => v.mode === 'block') && candidates.some(canHoldVolumes);
+
         unschedulable.push({
           service: service.id,
           replica: replicaId,
-          reason:
-            'no eligible node has the DRBD 9 kernel module its volumes need (node capability drbd9; install the Loadweaver release bundle)',
+          reason: block
+            ? 'no eligible node can hold the block volumes its VM disks need (DRBD 9 and an agent with the protocol feature vm-block-volumes)'
+            : 'no eligible node has the DRBD 9 kernel module its volumes need (node capability drbd9; install the Loadweaver release bundle)',
         });
         continue;
       }

@@ -98,6 +98,19 @@ export interface DeploymentStatusView {
   services: { name: string; addressV4: string | null; addressV6: string | null }[];
 }
 
+/** The parts of `GET /projects/:p/virtual-machines/:name` the provider reads. */
+export interface VirtualMachineStatusView {
+  project: string;
+  name: string;
+  phase: string;
+  power: string;
+  node: string | null;
+  pinnedImage: string | null;
+  addresses: string[];
+  nicStatus: { name: string; mac: string; primary: boolean; addresses: string[] }[];
+  diskStatus: { name: string; volume: string; boot: boolean; sizeBytes: number; primaryNode: string | null }[];
+}
+
 /** Default cap for one control-plane response body (32 MiB); larger responses are aborted. */
 export const DEFAULT_MAX_RESPONSE_BYTES = 32 * 1024 * 1024;
 
@@ -254,6 +267,15 @@ export class LoadweaverClient {
 
       throw error;
     }
+  }
+
+  virtualMachine(project: string, name: string, signal?: AbortSignal): Promise<VirtualMachineStatusView> {
+    return this.request(
+      'GET',
+      `/projects/${encodeURIComponent(project)}/virtual-machines/${encodeURIComponent(name)}`,
+      undefined,
+      signal,
+    );
   }
 
   deploymentStatus(project: string, deployment: string, signal?: AbortSignal): Promise<DeploymentStatusView> {

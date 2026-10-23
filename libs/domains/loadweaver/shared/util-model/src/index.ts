@@ -19,3 +19,5 @@ export * from './lib/resources/updates';
 export * from './lib/resources/platform-backups';
 export * from './lib/resources/backups';
 export * from './lib/resources/node-import';
+export * from './lib/resources/virtual-machines';
+export * from './lib/vm-image';

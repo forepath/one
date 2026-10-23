@@ -94,9 +94,39 @@ describe('Agenstra egress policy → Loadweaver policies', () => {
 
     expect(docs.map((d) => d.metadata.name)).toEqual([
       'agenstra-manager-environments',
+      'agenstra-environments-manager',
       'agenstra-environments-open',
       'agenstra-environments-web',
     ]);
     expect(docs[0].spec['rules']).toEqual([{ protocol: 'tcp', ports: [4096, 6080] }]);
+    // Every environment (any egress class) reaches the manager API: the agent context MCP works in every mode.
+    expect(docs[1].spec).toMatchObject({
+      from: [{ selector: { matchLabels: { 'agenstra.io/role': 'environment' } } }],
+      to: [{ selector: { matchLabels: { 'agenstra.io/role': 'manager' } } }],
+      rules: [{ protocol: 'tcp', ports: [3000] }],
+    });
+    expect(loadweaverWorkspacePolicies('agenstra-ws', { managerApiPort: 8080 })[1].spec['rules']).toEqual([
+      { protocol: 'tcp', ports: [8080] },
+    ]);
+  });
+
+  it.each(['off', 'monitor', 'enforce', 'offline'])(
+    'lets the environment reach the manager API in mode %s (platform allow of the context MCP)',
+    (mode) => {
+      const result = compileEgressPolicyForLoadweaver(policy({ mode }), { ...target, managerPorts: [3000, 3000] });
+
+      expect(specs(result)['-egress-platform']).toEqual(
+        expect.objectContaining({
+          to: [{ selector: { matchLabels: { 'agenstra.io/role': 'manager' } } }],
+          rules: [{ protocol: 'tcp', ports: [3000] }],
+        }),
+      );
+    },
+  );
+
+  it('adds no platform policy without manager ports', () => {
+    const result = compileEgressPolicyForLoadweaver(policy({ mode: 'offline' }), { ...target, managerPorts: [0] });
+
+    expect(result.documents.map((d) => d.metadata.name)).not.toContain(`${target.deployment}-egress-platform`);
   });
 });

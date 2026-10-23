@@ -408,6 +408,9 @@ jobs:
       - name: Build Worker container images
         run: |
           npx nx affected --target=worker-container-image --configuration=test --parallel=3
+          # Shared microVM launcher (registry.forenet.internal/forepath/microvm-launcher:test) + its smoke test;
+          # the Agenstra microVM worker image is built FROM it.
+          npx nx affected --target=container-image-test --parallel=1
           npx nx affected --target=worker-microvm-container-image --configuration=test --parallel=1
           npx nx affected --target=egress-guard-container-image --configuration=test --parallel=3
 

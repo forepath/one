@@ -45,6 +45,47 @@ describe('Loadweaver landing pages', () => {
     element.querySelectorAll('[role="img"]').forEach((img) => expect(img.getAttribute('aria-label')).toBeTruthy());
   });
 
+  it('shows the isolation ladder with all four levels up to microVMs on how it works', () => {
+    const fixture = TestBed.createComponent(PortalHowItWorksComponent);
+
+    fixture.detectChanges();
+    const section = (fixture.nativeElement as HTMLElement).querySelector('section#isolation');
+
+    expect(section).toBeTruthy();
+    const stacks = Array.from(section?.querySelectorAll('.hiw-stacks .hiw-stack-head h3') ?? []).map((h) =>
+      h.textContent?.trim(),
+    );
+
+    expect(stacks).toEqual(['Standard', 'Sandboxed', 'Sandboxed + KVM', 'MicroVM']);
+    expect(section?.querySelector('pre code')?.textContent).toContain('runtime: microvm');
+  });
+
+  it('shows full virtual machines on how it works, after the isolation ladder', () => {
+    const fixture = TestBed.createComponent(PortalHowItWorksComponent);
+
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const ids = Array.from(element.querySelectorAll('section[id]')).map((s) => s.id);
+    const section = element.querySelector('section#virtual-machines');
+
+    expect(ids.indexOf('virtual-machines')).toBe(ids.indexOf('isolation') + 1);
+    expect(section?.querySelector('h2')?.textContent).toContain('Full virtual machines');
+    expect(section?.querySelector('pre code')?.textContent).toContain('kind: VirtualMachine');
+    expect(section?.querySelector('pre code')?.textContent).toContain('name: backup');
+    expect(section?.textContent).toContain('Serial and graphical console');
+  });
+
+  it('names microVMs and full VMs where the home page describes runtimes', () => {
+    const fixture = TestBed.createComponent(PortalHomeComponent);
+
+    fixture.detectChanges();
+    const compose = (fixture.nativeElement as HTMLElement).querySelector('section#compose');
+
+    expect(compose?.textContent).toContain('From containers to full VMs');
+    expect(compose?.textContent).toContain('microVM');
+    expect(compose?.querySelector('pre code')?.textContent).toContain('runtime: microvm');
+  });
+
   it('renders a comparison page from its route data', () => {
     TestBed.overrideProvider(ActivatedRoute, {
       useValue: {

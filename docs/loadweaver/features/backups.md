@@ -129,10 +129,21 @@ spec:
     # overwrite: false
 ```
 
+- **VM disks** restore as a whole, in place ([below](#virtual-machine-disks)).
 - **Whole volume**, into the volume itself or **side by side** into another (new, empty) volume of the deployment — add the volume to the deployment in the same plan; the restore waits up to an hour for it to be placed. Containers using the target volume are stopped during a whole-volume restore and started again afterwards.
 - **Single files / directories**: browse a backup in the console (file browser over the catalog), download a file directly, or restore a path into the volume (`path`; existing files are never overwritten unless `overwrite: true`).
 - A `Restore` runs once per change of the resource; its progress and result are shown under _Backups → Restores_ (`GET /api/backups/restores`).
 - Restores stay within their project: a backup of another project is refused. Restores into another cluster (disaster recovery to a standby, cloning) go through the fleet console.
+
+## Virtual machine disks
+
+[VM](./virtual-machines.md#snapshots-backups-and-restores) disks are block volumes (`<project>/lw-vm/<vm>.<disk>`) and are backed up as **one file each**, the raw disk:
+
+- LVM thin snapshot of the disk (for a running VM wrapped in a guest file-system freeze through qemu-guest-agent, at most 60 s) → the snapshot opened read-only with the volume key → an exact-size read-only view of the disk (DRBD's metadata left out) → `kopia snapshot create --stdin-file=<vm>.<disk>.raw`. The disk never leaves the node unencrypted and is never mounted on the host.
+- Each backup is tagged `consistency:filesystem-frozen` or `consistency:crash` (no guest agent, or the freeze failed); hooks don't apply to VMs.
+- Policies select VMs by labels: every disk carries the VM's labels plus `loadweaver.com/vm: <vm>`, so `selector.deployments: { matchLabels: { app: db } }` picks all disks of matching VMs.
+- **Snapshots** of a VM (console or `POST /api/projects/{p}/virtual-machines/{name}/snapshots`) are one backup of every disk, started together.
+- **Restore** a whole disk with `target: { deployment: lw-vm, volume: <vm>.<disk>, mode: replace }`: the VM is stopped (or its disk promoted, if it is stopped), the backup is written onto the disk in place on its primary, the copies follow through DRBD, and the VM starts again. Single paths (`path`) are refused for VM disks; the file browser over such a backup shows the one raw file. Scheduled restore tests restore the raw file into scratch space and run no check inside the guest.
 
 ## Restore tests
 

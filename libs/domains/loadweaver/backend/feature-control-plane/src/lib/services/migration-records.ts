@@ -6,15 +6,19 @@ import type { EntityManager } from 'typeorm';
 import { MigrationEntity } from '../entities/migration.entity';
 import { NodeDesiredStateEntity } from '../entities/node-desired-state.entity';
 import type { WorkloadPlacementEntity } from '../entities/workload-placement.entity';
-import { sessionMetrics, type SessionReports } from '../utils/migration-state.utils';
+import { sessionMetrics, type SessionMethod, type SessionReports } from '../utils/migration-state.utils';
 
 /**
  * Migration history and session records (3.10), written inside the transaction of the change they belong to.
  */
 
-const CHECKPOINT = new Set(['live', 'stop-and-copy']);
+const CHECKPOINT = new Set(['live', 'stop-and-copy', 'vm-live']);
 
-export function isCheckpointMethod(method: string | undefined): method is 'live' | 'stop-and-copy' {
+/**
+ * Methods that run as a session of phases with the nodes (checkpoint / restore and QEMU live migration, `vm-live`):
+ * a history row with token, kept addresses and the running spec.
+ */
+export function isCheckpointMethod(method: string | undefined): method is SessionMethod {
   return !!method && CHECKPOINT.has(method);
 }
 
@@ -75,7 +79,7 @@ export async function beginAttempt(
     freezeMs: null,
     checkpointBytes: null,
     precopyRounds: null,
-    runtime: checkpoint ? (migration.runtime ?? 'runc') : null,
+    runtime: checkpoint ? (migration.runtime ?? (migration.method === 'vm-live' ? 'qemu' : 'runc')) : null,
     addresses: checkpoint ? placement.addresses : placement.targetAddresses,
     volumes: checkpoint ? options.volumes : [],
     spec: checkpoint ? (options.spec as unknown as Record<string, unknown>) : null,

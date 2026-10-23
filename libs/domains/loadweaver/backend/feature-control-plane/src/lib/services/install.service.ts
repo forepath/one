@@ -3,9 +3,11 @@ import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { Injectable, NotFoundException, StreamableFile } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Optional, StreamableFile } from '@nestjs/common';
 
-import { buildNodeInstallScript } from '../utils/install-script.utils';
+import { AptSnapshotService } from '../updates/apt-snapshot.service';
+import { APT_ROUTE } from '../updates/releases.service';
+import { buildNodeInstallScript, type InstallAptSnapshot } from '../utils/install-script.utils';
 import { ClusterIdentityService } from './cluster-identity.service';
 
 export type AgentArch = 'amd64' | 'arm64';
@@ -24,9 +26,24 @@ function caCertHash(pem: string): string {
  */
 @Injectable()
 export class InstallService {
+  private readonly logger = new Logger(InstallService.name);
   private readonly checksums = new Map<string, { mtimeMs: number; sha256: string }>();
 
-  constructor(private readonly identity: ClusterIdentityService) {}
+  constructor(
+    private readonly identity: ClusterIdentityService,
+    @Optional() private readonly apt?: AptSnapshotService,
+  ) {}
+
+  /** The cluster's newest apt snapshot for the installer's KVM modules (3.1); none yet: they come with a host update. */
+  private async aptSnapshot(): Promise<InstallAptSnapshot | undefined> {
+    const snapshot = await this.apt?.latest().catch((error: unknown) => {
+      this.logger.warn(`No apt snapshot for the installer: ${error instanceof Error ? error.message : String(error)}`);
+
+      return null;
+    });
+
+    return snapshot ? { aptBase: `${APT_ROUTE}/${snapshot.id}`, sources: snapshot.sources } : undefined;
+  }
 
   private binaryPath(arch: AgentArch): string | null {
     const dir = process.env.LOADWEAVER_AGENT_BINARY_DIR;
@@ -96,11 +113,13 @@ export class InstallService {
     if (!url) throw new NotFoundException('installer not available: LOADWEAVER_PUBLIC_URL is not configured');
 
     const [amd64, arm64] = await Promise.all(AGENT_ARCHES.map((a) => this.sha256(a)));
+    const aptSnapshot = await this.aptSnapshot();
 
     return buildNodeInstallScript({
       controlPlaneUrl: url,
       caCertHash: caCertHash(await this.identity.caCertificate()),
       agentSha256: { amd64, arm64 },
+      ...(aptSnapshot ? { aptSnapshot } : {}),
     });
   }
 

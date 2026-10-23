@@ -261,7 +261,10 @@ for this source: the snapshot is frozen on purpose.)
 On the node the agent writes its own apt configuration below `/var/lib/loadweaver/apt` (the host's sources stay
 untouched), pins the release's host packages (installed ones only) and runs one script as a transient systemd unit:
 `apt-get update`, `dist-upgrade` (OS updates) and the pinned versions (also as downgrades), BIRD's graceful restart,
-gVisor (the verified tarball, registered with the shared install script, Docker reloaded, not restarted), and the DRBD 9
+gVisor (the verified tarball, registered with the shared install script, Docker reloaded, not restarted; with its
+KVM runtime unless the node [opted out of KVM](./isolation-levels.md#kvm-on-the-nodes)), on Ubuntu nodes that use KVM
+`linux-modules-extra-<kernel>` for the running and the next-boot kernel (the plan's `kvm-modules` entry; the rollout's
+`kvm` gate fails the step when a node that used KVM comes back from the reboot without it), and the DRBD 9
 module for the kernel the next boot runs (prebuilt for that kernel, else built from the verified source against its
 headers with the release's compat patch, offline — see below; build log in `/var/log/loadweaver-drbd-build-<kernel>.log`;
 with Secure Boot on, only signed prebuilt modules are accepted). The script fails before any reboot unless
