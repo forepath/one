@@ -1,0 +1,109 @@
+%% Decabill - full architecture (billing manager, contributors, queue, provisioned stacks, frontends)
+flowchart TB
+  Customers(["Customers<br/>browser, API, PATs"])
+  Admins(["Admins / operators<br/>billing administration, catalog, AR + AP"])
+  Visitors(["Visitors<br/>marketing site, docs, pricing"])
+  Keycloak(["Keycloak / OIDC<br/>or built-in users (JWT) / static API key"])
+  Smtp(["SMTP + webhook receivers"])
+  Otel(["OpenTelemetry collector<br/>OTLP export, metrics scrape"])
+  Stripe(["Stripe<br/>Checkout, setup sessions, off-session charges, refunds"])
+  PaymentPlugins(["Dynamic payment processors<br/>DYNAMIC_PAYMENT_PROCESSORS"])
+  CloudProviders(["Server providers<br/>Hetzner Cloud, DigitalOcean, provider plugins"])
+  Cloudflare(["Cloudflare DNS<br/>hostnames below DNS_BASE_DOMAIN"])
+  Vies(["EU VIES<br/>VAT id validation"])
+  GitHubReleases(["GitHub Releases<br/>update checks"])
+  S3(["S3-compatible storage<br/>AWS, R2, B2, Ceph, MinIO"])
+  Datev(["DATEV<br/>EXTF CSV + document ZIP import"])
+  Registry(["ghcr.io/forepath<br/>decabill-billing-api, decabill-billing-console-server,<br/>decabill-docs-server, Agenstra images"])
+  AgenstraFrontends(["Agenstra landing page + billing console build<br/>public plan offerings, portal"])
+
+  subgraph Frontends["Frontends (Angular SSR, Express)"]
+    Console["Billing console (:4202)<br/>dashboard + server control, plan order wizard, subscriptions,<br/>service details (contributor tabs), invoices, offers, projects + board,<br/>promotions, usage, customer profile + auto-billing, /withdrawal (public);<br/>administration: catalog, meters, addons, cloud-init configs, billing,<br/>customer + supplier profiles, supplier invoices, DATEV, file explorer, updates"]
+    Landing["Landing page (:4200)<br/>home, pricing, comparisons, legal, portal"]
+    Docs["Docs (:4201)<br/>markdown + OpenAPI / AsyncAPI renderers"]
+  end
+
+  Customers --> Console
+  Admins --> Console
+  Visitors --> Landing
+  Visitors --> Docs
+
+  subgraph Manager["Billing manager (NestJS :3200, one image, QUEUE_ROLE = api | worker | scheduler | all)"]
+    BAuth["Authentication + tenancy<br/>api-key, keycloak (user sync), users, PAT scopes,<br/>X-Tenant header, tenant-user guard"]
+    BApi["REST API /api<br/>public offerings, pricing + tax preview, availability,<br/>subscriptions, items, usage, invoices, customer profile,<br/>admin billing, catalog, offers, projects, public withdrawal"]
+    StatusGw["Socket.IO socket/billing<br/>dashboard server status, live meter updates"]
+    BoardGw["Socket.IO socket/projects<br/>live project board"]
+    Catalog["Service catalog<br/>service types + plans, provider defaults,<br/>addons, meters, cloud-init configs, promotions"]
+    Subs["Subscriptions<br/>order, backorders, config changes (resize),<br/>cancel / instant cancel, statutory withdrawal + refunds,<br/>renewal, expiration, teardown"]
+    Provisioning["Provisioning dispatch<br/>provider modules, hostname reservation,<br/>cloud-init user data, encrypted SSH keys + config snapshots"]
+    Invoicing["Invoicing<br/>billing schedule, open positions, metered usage,<br/>manual invoices, void + credit documents,<br/>PDF + e-invoice XML (EN16931), numbering"]
+    Tax["Tax treatment<br/>EU VAT rates, reverse charge, OSS threshold ledger"]
+    Payments["Payment orchestration<br/>processor factory, checkout, auto-billing,<br/>webhook events, payment attempts, refunds"]
+    Offers["Offers<br/>draft, archive (PDF), accept / decline,<br/>fulfillment: subscriptions, projects, invoices"]
+    Projects["Projects<br/>milestones, tickets + comments + attachments,<br/>time entries, time reports, bill unbilled hours"]
+    Suppliers["Accounts payable<br/>supplier profiles + contracts, supplier invoices,<br/>inbound e-invoice parse"]
+    DatevExport["DATEV export<br/>debtor / creditor accounts, booking mapper, document archive"]
+    Profiles["Customer profiles<br/>billing data, VAT id, trust score"]
+    FileExplorer["Stored files + file explorer<br/>signed document registry, ZIP download"]
+    Search["Search<br/>OpenSearch indexes, SQL ILIKE fallback"]
+    Notify["Notifications + updates<br/>email templates, webhooks, release checks"]
+    Contributors["Contributor host<br/>provider, addon, integrated stack and cloud-init module registries;<br/>dynamic plugins via DYNAMIC_* env, contributor jobs + migrations"]
+    BuiltIn["First-party contributors<br/>providers: Hetzner, DigitalOcean;<br/>integrated stacks: Agenstra controller, Agenstra manager, Decabill billing;<br/>addon: Container Manager"]
+    Ssh["SSH executor<br/>docker compose pull / update, container stats + logs"]
+    Queue["BullMQ queue billing (coordinator + unit jobs)<br/>subscription billing, provisioning, item update, config change,<br/>expiration, instant cancel, withdrawal, renewal reminder,<br/>invoice overdue, auto-payment, open-position invoice, bill now,<br/>backorder retry, meter + contributor collect, price recalc,<br/>plan price migrate, offer expiration + fulfillment,<br/>VAT id validation, DATEV export, search reindex"]
+    BPg[("Postgres<br/>tenants, users, catalog, subscriptions + items, invoices,<br/>open positions, payments, offers, projects, suppliers,<br/>usage records, container stats, DATEV, audit log")]
+    Redis[("Redis<br/>BullMQ, caches, update state")]
+    OpenSearch[("OpenSearch<br/>billing entity indexes")]
+    Files[("File storage<br/>local or S3: invoice, offer, time report,<br/>supplier and DATEV documents")]
+  end
+
+  Console -->|"REST /api + X-Tenant"| BApi
+  Console <-->|"Socket.IO"| StatusGw
+  Console <-->|"Socket.IO"| BoardGw
+  Landing -.public plan offerings + portal.-> BApi
+  AgenstraFrontends -.public plan offerings, REST + socket/billing.-> BApi
+  BApi --> BAuth
+  StatusGw --> BAuth
+  BoardGw --> BAuth
+  BAuth -.OIDC.-> Keycloak
+  BApi --> Catalog & Subs & Invoicing & Payments & Offers & Projects & Suppliers & DatevExport & Profiles & FileExplorer & Search
+  BoardGw --> Projects
+  StatusGw -.poll provisioned items.-> Provisioning
+  Subs --> Provisioning
+  Subs --> Invoicing
+  Offers -.fulfillment.-> Subs & Projects & Invoicing
+  Projects -.billable hours.-> Invoicing
+  Invoicing --> Tax
+  Invoicing --> Payments
+  Invoicing & Offers & Projects & Suppliers & DatevExport --> Files
+  Provisioning --> Contributors
+  Contributors --> BuiltIn
+  BuiltIn --> Ssh
+  Catalog & Subs & Invoicing & Payments & Offers & Projects & Suppliers & Profiles & Contributors --> BPg
+  Search --> OpenSearch
+  Queue --> Redis
+  Notify --> Redis
+  Queue -.jobs.-> Subs & Provisioning & Invoicing & Payments & Offers & Profiles & DatevExport & Search & Contributors & Notify
+  Payments --> Stripe
+  Payments -.loaded at runtime.-> PaymentPlugins
+  Stripe -.signed webhooks.-> BApi
+  Profiles -.VAT id checks.-> Vies
+  DatevExport -.export ZIPs.-> Datev
+  Files -.FILE_STORAGE_PROVIDER s3.-> S3
+  Notify --> Smtp
+  Notify -.release feed.-> GitHubReleases
+  Provisioning -.DNS records.-> Cloudflare
+  Manager -.metrics + traces.-> Otel
+
+  subgraph Provisioned["Provisioned customer server (one per subscription item)"]
+    CloudInit["cloud-init user data<br/>Docker, Let's Encrypt, stack compose,<br/>appended addon scripts"]
+    Stack["Workload<br/>integrated stack (Agenstra controller / manager, Decabill billing)<br/>or custom cloud-init config (image, compose or user-data template)"]
+    DockerHost[("Docker host<br/>containers, networks, stats")]
+  end
+
+  BuiltIn -->|"create / start / stop / resize / delete servers"| CloudProviders
+  CloudProviders -.boots with.-> CloudInit
+  CloudInit --> Stack
+  Stack --> DockerHost
+  Ssh -->|"SSH (per-item key)"| DockerHost
+  Registry -.images.-> Manager & Console & Docs & Stack
