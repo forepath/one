@@ -404,6 +404,7 @@ jobs:
       - name: Build Worker container images
         run: |
           npx nx affected --target=worker-container-image --configuration=test --parallel=3
+          npx nx affected --target=worker-microvm-container-image --configuration=test --parallel=1
           npx nx affected --target=egress-guard-container-image --configuration=test --parallel=3
 
       - name: Scan Worker container images with Trivy

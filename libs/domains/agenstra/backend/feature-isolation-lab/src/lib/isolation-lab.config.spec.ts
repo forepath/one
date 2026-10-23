@@ -2,6 +2,7 @@ import { GVISOR_RUNTIMES } from '@forepath/shared/backend/util-container-runtime
 
 import {
   buildIsolationLabGoldenUserData,
+  buildIsolationLabMicrovmScenarios,
   buildIsolationLabQemuArgs,
   buildIsolationLabRunUserData,
   buildIsolationLabScenarios,
@@ -41,6 +42,17 @@ describe('isolation lab configuration', () => {
     expect(buildIsolationLabScenarios(['sandboxed-kvm']).every((scenario) => scenario.level === 'sandboxed-kvm')).toBe(
       true,
     );
+  });
+
+  it('covers every topology and guard mode for the microvm level', () => {
+    expect(buildIsolationLabMicrovmScenarios()).toEqual([
+      { topology: 'bridge' },
+      { topology: 'agent-network' },
+      { topology: 'guard', mode: 'off' },
+      { topology: 'guard', mode: 'monitor' },
+      { topology: 'guard', mode: 'enforce' },
+      { topology: 'guard', mode: 'offline' },
+    ]);
   });
 
   it('builds QEMU arguments with or without nested virtualization', () => {

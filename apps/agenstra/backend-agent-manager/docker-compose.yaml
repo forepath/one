@@ -86,14 +86,17 @@ services:
       # Git over SSH (TCP 22) to curated Git hosts through the egress guard (see egress-filtering.md)
       AGENT_EGRESS_GIT_SSH_ENABLED: ${AGENT_EGRESS_GIT_SSH_ENABLED:-true}
       AGENT_EGRESS_GIT_SSH_HOSTS: ${AGENT_EGRESS_GIT_SSH_HOSTS:-}
-      # Container isolation levels (standard = runc, sandboxed = gVisor, sandboxed-kvm = gVisor on KVM;
-      # see docs/agenstra/features/container-isolation.md)
+      # Container isolation levels (standard = runc, sandboxed = gVisor, sandboxed-kvm = gVisor on KVM,
+      # microvm = KVM microVM; see docs/agenstra/features/container-isolation.md)
       AGENT_SANDBOX_RUNTIME: ${AGENT_SANDBOX_RUNTIME:-runsc-systrap}
       AGENT_SANDBOX_SHARED_NETNS_RUNTIME: ${AGENT_SANDBOX_SHARED_NETNS_RUNTIME:-runsc-systrap-hostnet}
       AGENT_ISOLATION_SANDBOX_ENABLED: ${AGENT_ISOLATION_SANDBOX_ENABLED:-true}
       AGENT_SANDBOX_KVM_RUNTIME: ${AGENT_SANDBOX_KVM_RUNTIME:-runsc-kvm}
       AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME: ${AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME:-runsc-kvm-hostnet}
       AGENT_ISOLATION_SANDBOX_KVM_ENABLED: ${AGENT_ISOLATION_SANDBOX_KVM_ENABLED:-true}
+      AGENT_ISOLATION_MICROVM_ENABLED: ${AGENT_ISOLATION_MICROVM_ENABLED:-true}
+      AGENT_MICROVM_IMAGE: ${AGENT_MICROVM_IMAGE:-ghcr.io/forepath/agenstra-manager-worker-microvm:latest}
+      AGENT_ISOLATION_MICROVM_PROBE_TIMEOUT_MS: ${AGENT_ISOLATION_MICROVM_PROBE_TIMEOUT_MS:-240000}
       AGENT_ISOLATION_PROBE_ENABLED: ${AGENT_ISOLATION_PROBE_ENABLED:-true}
       AGENT_ISOLATION_PROBE_INTERVAL_MS: ${AGENT_ISOLATION_PROBE_INTERVAL_MS:-21600000}
       AGENT_ISOLATION_PROBE_TIMEOUT_MS: ${AGENT_ISOLATION_PROBE_TIMEOUT_MS:-90000}

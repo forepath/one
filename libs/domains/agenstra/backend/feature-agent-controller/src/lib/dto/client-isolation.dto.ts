@@ -14,7 +14,7 @@ export class ClientIsolationSummaryDto {
   recommendedLevel!: IsolationLevel | null;
   /** Ready levels, strongest first. */
   availableLevels!: IsolationLevel[];
-  /** Every level (`standard`, `sandboxed`, `sandboxed-kvm`) is always present. */
+  /** Every level (`standard`, `sandboxed`, `sandboxed-kvm`, `microvm`) is always present. */
   levels!: Record<IsolationLevel, IsolationLevelCapabilityDto>;
   /** Capability revision to submit with environment creation (stale selections are rejected). */
   revision!: string | null;

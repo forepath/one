@@ -4549,9 +4549,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     });
   }
 
-  /** Stable radio ids (`agentIsolationSandboxed`, `agentIsolationStandard`, `agentIsolationSandboxedKvm`). */
+  /** Stable radio ids (`agentIsolationSandboxed`, `agentIsolationStandard`, `agentIsolationSandboxedKvm`, `agentIsolationMicrovm`). */
   isolationLevelCheckId(level: IsolationLevel): string {
     switch (level) {
+      case 'microvm':
+        return 'agentIsolationMicrovm';
       case 'sandboxed-kvm':
         return 'agentIsolationSandboxedKvm';
       case 'sandboxed':

@@ -5,6 +5,11 @@ import * as path from 'path';
 import { PassThrough } from 'stream';
 import { promisify } from 'util';
 
+import {
+  MICROVM_BRIDGE_PROTOCOL_VERSION,
+  MICROVM_PROTOCOL_LABEL,
+  toMicrovmExecOptions,
+} from '@forepath/agenstra/backend/util-microvm-bridge';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import Docker = require('dockerode');
 import { v4 as uuidv4 } from 'uuid';
@@ -31,6 +36,10 @@ import {
   ISOLATION_PROBE_LABEL,
   ISOLATION_PROBE_NAME_PREFIX,
   IsolationReasonCode,
+  MICROVM_GUEST_ROOT,
+  MICROVM_KVM_DEVICE,
+  MICROVM_LAUNCHER_CAPABILITIES,
+  STANDARD_ISOLATION_RUNTIME,
 } from '../constants/container-isolation.constants';
 import { mapGvisorRuntimeForNetwork } from '../utils/container-isolation.utils';
 import { DockerPullProgressAggregator, type DockerPullProgressEvent } from '../utils/docker-pull-progress.utils';
@@ -85,6 +94,10 @@ export class DockerService {
     { env: Record<string, string> | null; expiresAt: number }
   >();
   private readonly environmentLocks = new Map<string, Promise<unknown>>();
+  private static readonly MICROVM_CONTAINER_CACHE_SIZE = 2048;
+  /** Loopback port of the shared-namespace probe's owner service. */
+  private static readonly PROBE_LOOPBACK_PORT = 18765;
+  private readonly microvmContainerCache = new Map<string, boolean>();
 
   async createContainer(options: {
     image?: string;
@@ -106,14 +119,32 @@ export class DockerService {
     /** Container name (`agenstra-worker-<agentId>`); Docker generates one when omitted. */
     name?: string;
     labels?: Record<string, string>;
+    /**
+     * Run the workload as a KVM microVM (isolation level `microvm`). The image must be a microVM worker image
+     * (bridge protocol label); the launcher container runs on runc with `/dev/kvm` and the reduced launcher
+     * capability set, and volumes / the managed environment file are mounted below the guest root.
+     */
+    microvm?: boolean;
   }): Promise<string> {
-    const { image, env, volumes = [], network, sharedNetworkContainerId, capDrop, runtime, name, labels } = options;
+    const {
+      image,
+      env,
+      volumes = [],
+      network,
+      sharedNetworkContainerId,
+      capDrop,
+      runtime,
+      name,
+      labels,
+      microvm,
+    } = options;
     // Docker rejects port publishing / exposing for containers sharing another network namespace.
     const ports = sharedNetworkContainerId ? [] : (options.ports ?? []);
     // Resolve image: explicit -> env -> default placeholder
     const resolvedImage = image || process.env.AGENT_DEFAULT_IMAGE || 'ghcr.io/forepath/agenstra-manager-worker:latest';
+    const guestRoot = microvm ? MICROVM_GUEST_ROOT : '';
     // Build HostConfig.Binds from volumes
-    const binds = volumes.map((v) => `${v.hostPath}:${v.containerPath}${v.readOnly ? ':ro' : ''}`);
+    const binds = volumes.map((v) => `${v.hostPath}:${guestRoot}${v.containerPath}${v.readOnly ? ':ro' : ''}`);
     // Build ExposedPorts and PortBindings from ports
     const exposedPorts: Record<string, Record<string, never>> = {};
     const portBindings: Record<string, Array<{ HostPort?: string; HostIp?: string }>> = {};
@@ -135,6 +166,10 @@ export class DockerService {
     // would overwrite a locally rebuilt worker with a stale registry image and break OpenCode serve.
     await this.ensureImageExists(resolvedImage);
 
+    if (microvm) {
+      await this.assertMicrovmImage(resolvedImage);
+    }
+
     const envMap = this.sanitizeEnvironment(
       Object.fromEntries(Object.entries(env ?? {}).map(([key, value]) => [key, value == null ? '' : String(value)])),
     );
@@ -152,7 +187,7 @@ export class DockerService {
         ExposedPorts: Object.keys(exposedPorts).length ? exposedPorts : undefined,
         HostConfig: {
           Binds: binds.length ? binds : undefined,
-          Mounts: environmentVolumeName ? [this.buildEnvironmentMount(environmentVolumeName)] : undefined,
+          Mounts: environmentVolumeName ? [this.buildEnvironmentMount(environmentVolumeName, guestRoot)] : undefined,
           PortBindings: Object.keys(portBindings).length ? portBindings : undefined,
           AutoRemove: false,
           RestartPolicy: {
@@ -174,11 +209,13 @@ export class DockerService {
                 ),
               }
             : {}),
+          // Last: the launcher's device, capability and runtime set is not negotiable.
+          ...(microvm ? this.microvmHostConfig() : {}),
         },
       });
 
       if (environmentVolumeName) {
-        await this.writeEnvironmentOverlay(container, envMap);
+        await this.writeEnvironmentOverlay(container, envMap, guestRoot);
         this.cacheEnvironmentOverlay(container.id as unknown as string, envMap);
       }
 
@@ -306,7 +343,7 @@ export class DockerService {
       return baseEnv;
     }
 
-    const overlay = await this.readEnvironmentOverlay(container);
+    const overlay = await this.readEnvironmentOverlay(container, this.guestRootForLabels(inspectInfo.Config?.Labels));
 
     this.cacheEnvironmentOverlay(containerId, overlay);
 
@@ -319,10 +356,11 @@ export class DockerService {
     env: Record<string, string | undefined> | undefined,
   ): Promise<string> {
     const container = this.docker.getContainer(containerId);
-    const overlay = this.mergeEnvironment(await this.readEnvironmentOverlay(container), env);
+    const guestRoot = this.guestRootForLabels(inspectInfo.Config?.Labels);
+    const overlay = this.mergeEnvironment(await this.readEnvironmentOverlay(container, guestRoot), env);
 
     this.invalidateEnvironmentOverlayCache(containerId);
-    await this.writeEnvironmentOverlay(container, overlay);
+    await this.writeEnvironmentOverlay(container, overlay, guestRoot);
     this.cacheEnvironmentOverlay(containerId, overlay);
 
     try {
@@ -351,7 +389,9 @@ export class DockerService {
   ): Promise<string> {
     const container = this.docker.getContainer(containerId);
     const existingEnvironmentMount = this.findEnvironmentMount(inspectInfo);
-    const existingOverlay = existingEnvironmentMount ? await this.readEnvironmentOverlay(container) : {};
+    const existingOverlay = existingEnvironmentMount
+      ? await this.readEnvironmentOverlay(container, this.guestRootForLabels(inspectInfo.Config?.Labels))
+      : {};
     // Existing Config.Env values are carried over verbatim (no re-encoding on every update).
     const mergedEnv = this.mergeEnvironment(
       { ...parseDockerEnvList(inspectInfo.Config?.Env), ...existingOverlay },
@@ -395,6 +435,8 @@ export class DockerService {
 
     const imageInfo = await this.docker.getImage(image).inspect();
     const migrateToEnvironmentMount = this.labelsSupportEnvironmentMount(imageInfo.Config?.Labels);
+    // MicroVM workers keep the workload filesystem (volumes, environment file) below the guest root.
+    const guestRoot = this.guestRootForLabels(imageInfo.Config?.Labels);
     let containerEnv: string[];
     let overlay: Record<string, string> | undefined;
 
@@ -415,9 +457,13 @@ export class DockerService {
     }
 
     const otherMounts = ((hostConfig as { Mounts?: Docker.MountSettings[] }).Mounts ?? []).filter(
-      (mount) => mount.Target !== AGENT_ENVIRONMENT_MOUNT_TARGET,
+      (mount) => !this.isEnvironmentMountTarget(mount.Target),
     );
-    const mountTargets = new Set([AGENT_ENVIRONMENT_MOUNT_TARGET, ...otherMounts.map((mount) => mount.Target)]);
+    const mountTargets = new Set([
+      AGENT_ENVIRONMENT_MOUNT_TARGET,
+      `${MICROVM_GUEST_ROOT}${AGENT_ENVIRONMENT_MOUNT_TARGET}`,
+      ...otherMounts.map((mount) => mount.Target),
+    ]);
     // Build volume binds from mounts; entries declared via HostConfig.Mounts (incl. the managed
     // environment volume) are re-attached through Mounts to avoid duplicate mount points.
     const binds = mounts
@@ -436,14 +482,14 @@ export class DockerService {
         return null;
       })
       .filter((bind): bind is string => bind !== null);
+    const workspaceContextTarget = `${guestRoot}${DockerService.WORKSPACE_CONTEXT_BIND_TARGET}`;
     const hasWorkspaceContextBind = mounts.some(
       (mount) =>
-        mount.Source === DockerService.WORKSPACE_CONTEXT_BIND_SOURCE &&
-        mount.Destination === DockerService.WORKSPACE_CONTEXT_BIND_TARGET,
+        mount.Source === DockerService.WORKSPACE_CONTEXT_BIND_SOURCE && mount.Destination === workspaceContextTarget,
     );
 
     if (!hasWorkspaceContextBind) {
-      binds.push(`${DockerService.WORKSPACE_CONTEXT_BIND_SOURCE}:${DockerService.WORKSPACE_CONTEXT_BIND_TARGET}:ro`);
+      binds.push(`${DockerService.WORKSPACE_CONTEXT_BIND_SOURCE}:${workspaceContextTarget}:ro`);
     }
 
     const reusedVolumeName = existingEnvironmentMount?.Name;
@@ -451,7 +497,7 @@ export class DockerService {
       ? (reusedVolumeName ?? (await this.createEnvironmentVolume()))
       : undefined;
     const hostMounts = environmentVolumeName
-      ? [...otherMounts, this.buildEnvironmentMount(environmentVolumeName)]
+      ? [...otherMounts, this.buildEnvironmentMount(environmentVolumeName, guestRoot)]
       : otherMounts;
     let newContainer: Docker.Container | undefined;
     let previousStopped = false;
@@ -474,7 +520,7 @@ export class DockerService {
       });
 
       if (overlay) {
-        await this.writeEnvironmentOverlay(newContainer, overlay);
+        await this.writeEnvironmentOverlay(newContainer, overlay, guestRoot);
       }
 
       // Stop and remove the current container; already stopped (304) / gone (404) is fine.
@@ -625,6 +671,81 @@ export class DockerService {
     }
   }
 
+  /**
+   * HostConfig of a microVM launcher container: runc (QEMU needs the host kernel's KVM, never gVisor), only
+   * `/dev/kvm`, all capabilities dropped except the set virtiofsd needs for the guest root (no NET_ADMIN /
+   * NET_RAW / SYS_ADMIN: the launcher may share the egress guard's network namespace) and no privilege gain.
+   */
+  private microvmHostConfig(): Docker.HostConfig {
+    return {
+      Runtime: STANDARD_ISOLATION_RUNTIME,
+      // tini is the image's entrypoint; Docker's init would bind-mount /sbin/docker-init outside /guest.
+      Init: false,
+      Devices: [{ PathOnHost: MICROVM_KVM_DEVICE, PathInContainer: MICROVM_KVM_DEVICE, CgroupPermissions: 'rwm' }],
+      CapDrop: ['ALL'],
+      CapAdd: [...MICROVM_LAUNCHER_CAPABILITIES],
+      SecurityOpt: ['no-new-privileges'],
+    };
+  }
+
+  /** The image must speak the microVM bridge protocol of this manager (exec, ports and boot depend on it). */
+  private async assertMicrovmImage(image: string): Promise<void> {
+    const labels = (await this.docker.getImage(image).inspect()).Config?.Labels;
+
+    if (labels?.[MICROVM_PROTOCOL_LABEL] !== String(MICROVM_BRIDGE_PROTOCOL_VERSION)) {
+      throw new BadRequestException(
+        `Image ${image} is not a microVM worker image for bridge protocol ${MICROVM_BRIDGE_PROTOCOL_VERSION} (${IsolationReasonCode.MICROVM_IMAGE_UNSUPPORTED})`,
+      );
+    }
+  }
+
+  /**
+   * MicroVM workers (images carrying {@link MICROVM_PROTOCOL_LABEL}) keep the workload's filesystem below
+   * {@link MICROVM_GUEST_ROOT}: their volumes, the managed environment file and archive paths live there.
+   */
+  private guestRootForLabels(labels: Record<string, string> | null | undefined): string {
+    return labels?.[MICROVM_PROTOCOL_LABEL] ? MICROVM_GUEST_ROOT : '';
+  }
+
+  /** Whether a container is a microVM worker (cached per container id; it never changes for a container). */
+  private async isMicrovmContainer(containerId: string): Promise<boolean> {
+    const cached = this.microvmContainerCache.get(containerId);
+
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    const inspectInfo = await this.docker.getContainer(containerId).inspect();
+    const microvm = this.guestRootForLabels(inspectInfo.Config?.Labels) !== '';
+
+    if (this.microvmContainerCache.size >= DockerService.MICROVM_CONTAINER_CACHE_SIZE) {
+      this.microvmContainerCache.clear();
+    }
+
+    this.microvmContainerCache.set(containerId, microvm);
+
+    return microvm;
+  }
+
+  /**
+   * Every `docker exec` of the manager goes through here: for microVM workers the command runs inside the guest
+   * through the image's bridge client (`vm-exec`, as the unprivileged VMM user of the launcher), so exec
+   * semantics (user, env, exit status, streams) stay those of the workload, not of the launcher.
+   */
+  private async createExec(container: Docker.Container, options: Docker.ExecCreateOptions): Promise<Docker.Exec> {
+    // Only a missing container falls through (the exec then fails like before); any other inspect error must not
+    // run a command in a microVM launcher instead of its guest.
+    const microvm = await this.isMicrovmContainer(container.id as unknown as string).catch((error: unknown) => {
+      if ((error as { statusCode?: number }).statusCode === 404) {
+        return false;
+      }
+
+      throw error;
+    });
+
+    return container.exec(microvm ? toMicrovmExecOptions(options) : options);
+  }
+
   private resolveEnvironmentApplyStrategy(inspectInfo: Docker.ContainerInspectInfo): EnvironmentApplyStrategy {
     return this.labelsSupportEnvironmentMount(inspectInfo.Config?.Labels) && this.findEnvironmentMount(inspectInfo)
       ? 'restart'
@@ -647,18 +768,29 @@ export class DockerService {
     }
   }
 
+  private isEnvironmentMountTarget(target: string | undefined): boolean {
+    return (
+      target === AGENT_ENVIRONMENT_MOUNT_TARGET || target === `${MICROVM_GUEST_ROOT}${AGENT_ENVIRONMENT_MOUNT_TARGET}`
+    );
+  }
+
   private findEnvironmentMount(
     inspectInfo: Pick<Docker.ContainerInspectInfo, 'Mounts'>,
   ): Docker.ContainerInspectInfo['Mounts'][number] | undefined {
     return (inspectInfo.Mounts ?? []).find(
-      (mount) => mount.Type === 'volume' && mount.Destination === AGENT_ENVIRONMENT_MOUNT_TARGET && !!mount.Name,
+      (mount) => mount.Type === 'volume' && this.isEnvironmentMountTarget(mount.Destination) && !!mount.Name,
     );
   }
 
-  private buildEnvironmentMount(volumeName: string): Docker.MountSettings {
+  private buildEnvironmentMount(volumeName: string, guestRoot = ''): Docker.MountSettings {
     // Writable so the manager can putArchive into it; the image keeps the directory root-only (0700)
     // and the file is written root-owned 0600, so the unprivileged agent user cannot read or modify it.
-    return { Type: 'volume', Source: volumeName, Target: AGENT_ENVIRONMENT_MOUNT_TARGET, ReadOnly: false };
+    return {
+      Type: 'volume',
+      Source: volumeName,
+      Target: `${guestRoot}${AGENT_ENVIRONMENT_MOUNT_TARGET}`,
+      ReadOnly: false,
+    };
   }
 
   private async createEnvironmentVolume(): Promise<string> {
@@ -728,11 +860,11 @@ export class DockerService {
     return this.sanitizeEnvironment(merged);
   }
 
-  private async readEnvironmentOverlay(container: Docker.Container): Promise<Record<string, string>> {
+  private async readEnvironmentOverlay(container: Docker.Container, guestRoot = ''): Promise<Record<string, string>> {
     let archiveStream: NodeJS.ReadableStream;
 
     try {
-      archiveStream = await container.getArchive({ path: AGENT_ENVIRONMENT_FILE_PATH });
+      archiveStream = await container.getArchive({ path: `${guestRoot}${AGENT_ENVIRONMENT_FILE_PATH}` });
     } catch (error: unknown) {
       if ((error as { statusCode?: number }).statusCode === 404) {
         return {};
@@ -746,7 +878,11 @@ export class DockerService {
     return parseEnvironmentFile(extractFirstFileFromTar(archive));
   }
 
-  private async writeEnvironmentOverlay(container: Docker.Container, env: Record<string, string>): Promise<void> {
+  private async writeEnvironmentOverlay(
+    container: Docker.Container,
+    env: Record<string, string>,
+    guestRoot = '',
+  ): Promise<void> {
     const content = serializeEnvironmentFile(env);
 
     if (content.length > AGENT_ENVIRONMENT_FILE_MAX_BYTES) {
@@ -754,7 +890,7 @@ export class DockerService {
     }
 
     await container.putArchive(buildSingleFileTar(AGENT_ENVIRONMENT_FILE_NAME, content), {
-      path: AGENT_ENVIRONMENT_MOUNT_TARGET,
+      path: `${guestRoot}${AGENT_ENVIRONMENT_MOUNT_TARGET}`,
     });
   }
 
@@ -828,7 +964,9 @@ export class DockerService {
         const container = this.docker.getContainer(containerId);
         const inspectInfo = await container.inspect();
 
-        overlay = this.findEnvironmentMount(inspectInfo) ? await this.readEnvironmentOverlay(container) : null;
+        overlay = this.findEnvironmentMount(inspectInfo)
+          ? await this.readEnvironmentOverlay(container, this.guestRootForLabels(inspectInfo.Config?.Labels))
+          : null;
         this.cacheEnvironmentOverlay(containerId, overlay);
       }
 
@@ -1514,7 +1652,7 @@ export class DockerService {
       // Create exec instance with stdin enabled for keystrokes.
       // Optional User (e.g. '0') runs as that container UID — used for absolute paths outside /app.
       const environmentOptions = await this.getExecEnvironmentOptions(containerId, options?.user);
-      const execInstance = await container.exec({
+      const execInstance = await this.createExec(container, {
         ...(options?.env?.length ? { Env: [...(environmentOptions.Env ?? []), ...options.env] } : environmentOptions),
         Cmd: [executable, ...args],
         AttachStdin: true,
@@ -1736,7 +1874,7 @@ export class DockerService {
       throw error;
     }
 
-    const execInstance = await container.exec({
+    const execInstance = await this.createExec(container, {
       ...(await this.getExecEnvironmentOptions(containerId, 'agenstra')),
       Cmd: command,
       AttachStdin: false,
@@ -1846,7 +1984,7 @@ export class DockerService {
     const commandParts = this.parseShellCommand(command.trim());
     const executable = commandParts[0];
     const args = commandParts.slice(1);
-    const execInstance = await container.exec({
+    const execInstance = await this.createExec(container, {
       ...(await this.getExecEnvironmentOptions(containerId, 'agenstra')),
       Cmd: [executable, ...args],
       AttachStdin: true,
@@ -1973,7 +2111,7 @@ export class DockerService {
       const escapedPath = filePath.replace(/'/g, "'\\''");
       const safePath = `'${escapedPath}'`;
       // Create exec instance to read file
-      const exec = await container.exec({
+      const exec = await this.createExec(container, {
         ...(await this.getExecEnvironmentOptions(containerId, 'agenstra')),
         Cmd: ['sh', '-c', `cat ${safePath}`],
         AttachStdin: false,
@@ -2129,7 +2267,7 @@ export class DockerService {
       throw error;
     }
 
-    const exec = await container.exec({
+    const exec = await this.createExec(container, {
       ...(await this.getExecEnvironmentOptions(containerId, options.user)),
       // Regular files only: `cat` on a FIFO would block the exec until the timeout.
       Cmd: [
@@ -2262,7 +2400,7 @@ export class DockerService {
         throw error;
       }
 
-      const exec = await container.exec({
+      const exec = await this.createExec(container, {
         ...(await this.getExecEnvironmentOptions(containerId, 'agenstra')),
         Cmd: ['sh', '-c', 'printf %s "${HOME:-/home/agenstra}"'],
         AttachStdin: false,
@@ -2924,42 +3062,7 @@ export class DockerService {
    * join their egress guard. Probe containers are always removed, also on failure or timeout.
    */
   async runIsolationProbe(options: IsolationProbeOptions): Promise<IsolationProbeResult> {
-    const probeId = uuidv4().slice(0, 12);
-    const created: string[] = [];
-    const volumeName = `${ISOLATION_PROBE_NAME_PREFIX}${probeId}`;
-    let volumeCreated = false;
-    let finished = false;
-    let timer: NodeJS.Timeout | undefined;
-    // Idempotent cleanup: runs when the probe settles (or times out) and again once a timed-out probe
-    // run finally settles, so containers created after a timeout are removed as well.
-    const cleanup = async (): Promise<void> => {
-      for (const id of created.splice(0).reverse()) {
-        await this.docker
-          .getContainer(id)
-          .remove({ force: true, v: true })
-          .catch(() => undefined);
-      }
-
-      if (volumeCreated) {
-        await this.docker
-          .getVolume(volumeName)
-          .remove({ force: true })
-          .then(() => (volumeCreated = false))
-          .catch(() => undefined);
-      }
-    };
-    const track = (container: Docker.Container): void => {
-      created.push(container.id as unknown as string);
-
-      if (finished) {
-        throw new Error('Isolation probe aborted');
-      }
-    };
-
-    const run = async (): Promise<IsolationProbeResult> => {
-      await this.docker.createVolume({ Name: volumeName, Labels: { [ISOLATION_PROBE_LABEL]: '1' } });
-      volumeCreated = true;
-
+    return this.runProbeScaffold([options.image], options.timeoutMs, async ({ volumeName, track }) => {
       let container: Docker.Container;
 
       try {
@@ -2985,38 +3088,10 @@ export class DockerService {
         };
       }
 
-      const fileCheck = await this.execProbeCommand(
-        container,
-        'set -e; printf agenstra > /probe/probe.tmp; sync; mv /probe/probe.tmp /probe/probe.txt; test "$(cat /probe/probe.txt)" = agenstra; rm /probe/probe.txt',
-      );
+      const contract = await this.probeWorkerContract(container);
 
-      if (fileCheck.exitCode !== 0) {
-        return {
-          ok: false,
-          reasonCode: IsolationReasonCode.PROBE_FILESYSTEM_FAILED,
-          reason: 'Volume file operations failed',
-        };
-      }
-
-      const exitCodeCheck = await this.execProbeCommand(container, 'exit 7');
-      const nonRootCheck = await this.execProbeCommand(container, 'id -u', '65534');
-
-      if (exitCodeCheck.exitCode !== 7 || nonRootCheck.exitCode !== 0 || nonRootCheck.output.trim() !== '65534') {
-        return {
-          ok: false,
-          reasonCode: IsolationReasonCode.PROBE_EXEC_FAILED,
-          reason: 'Exec exit codes or non-root exec failed',
-        };
-      }
-
-      const logs = await this.readProbeLogs(container);
-
-      if (!logs.includes('agenstra-probe-stdout') || !logs.includes('agenstra-probe-stderr')) {
-        return {
-          ok: false,
-          reasonCode: IsolationReasonCode.PROBE_LOGS_FAILED,
-          reason: 'Container logs were not captured',
-        };
+      if (!contract.ok) {
+        return contract;
       }
 
       const kernel = await this.execProbeCommand(container, 'dmesg 2>/dev/null | head -n 5 || true');
@@ -3032,16 +3107,307 @@ export class DockerService {
       }
 
       return { ok: true, gvisorKernelDetected: /gvisor/i.test(kernel.output) };
+    });
+  }
+
+  /**
+   * Boot a probe microVM of the microVM worker image and exercise the worker contract inside the guest (through
+   * the exec bridge): file operations on a volume plus their coherence with Docker's archive API, root and
+   * non-root exec with exit codes, stdout/stderr logs. The launcher joins a runc-owned network namespace the way
+   * agents join their egress guard: the guest must reach the owner's loopback service through the loopback relay,
+   * resolve names through Docker's embedded DNS (agent network) and the owner must keep its interface.
+   */
+  async runMicrovmProbe(options: {
+    image: string;
+    ownerImage: string;
+    timeoutMs: number;
+  }): Promise<IsolationProbeResult> {
+    // Cheap pre-check with the (already pulled) probe image: hosts without /dev/kvm never pull the microVM image.
+    const kvm = await this.probeKvmDevice(options.ownerImage);
+
+    if (!kvm.ok) {
+      return kvm;
+    }
+
+    try {
+      await this.ensureImageExists(options.image);
+      await this.assertMicrovmImage(options.image);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        return { ok: false, reasonCode: IsolationReasonCode.MICROVM_IMAGE_UNSUPPORTED, reason: error.message };
+      }
+
+      return this.probeFailure(IsolationReasonCode.PROBE_IMAGE_UNAVAILABLE, 'MicroVM image is not available', error);
+    }
+
+    return this.runProbeScaffold([options.ownerImage], options.timeoutMs, async ({ volumeName, track }) => {
+      const ownerNetwork = process.env.AGENT_DOCKER_NETWORK?.trim();
+      const ownerName = `${volumeName}-netns-owner`;
+      const owner = await this.createProbeContainer(
+        { runtime: undefined, image: options.ownerImage, timeoutMs: options.timeoutMs },
+        ownerName,
+        ownerNetwork ? { NetworkMode: ownerNetwork } : {},
+        null,
+        [
+          'mkdir -p /tmp/agenstra-probe && echo agenstra-netns-ok > /tmp/agenstra-probe/index.html && ' +
+            `exec python3 -m http.server ${DockerService.PROBE_LOOPBACK_PORT} --bind 127.0.0.1 --directory /tmp/agenstra-probe`,
+        ],
+      );
+
+      track(owner);
+      await owner.start();
+
+      let vm: Docker.Container;
+
+      try {
+        vm = await this.docker.createContainer({
+          Image: options.image,
+          name: `${volumeName}-microvm`,
+          Labels: { [ISOLATION_PROBE_LABEL]: '1' },
+          Env: [
+            'AGENSTRA_MICROVM_ENTRYPOINT=/bin/sh',
+            `AGENSTRA_MICROVM_LOOPBACK_PORTS=${DockerService.PROBE_LOOPBACK_PORT}`,
+            'AGENSTRA_MICROVM_FORWARD_PORTS=',
+            'AGENSTRA_MICROVM_MEMORY_MB=512',
+            'AGENSTRA_MICROVM_VCPUS=1',
+          ],
+          Cmd: [
+            '-c',
+            'echo agenstra-probe-stdout; echo agenstra-probe-stderr 1>&2; trap "exit 0" TERM INT; while :; do sleep 1; done',
+          ],
+          Tty: false,
+          HostConfig: {
+            AutoRemove: false,
+            NetworkMode: `container:${owner.id as unknown as string}`,
+            Binds: [`${volumeName}:${MICROVM_GUEST_ROOT}/probe`],
+            Memory: 1024 * 1024 * 1024,
+            PidsLimit: 1024,
+            LogConfig: { Type: 'json-file', Config: { 'max-size': '1m', 'max-file': '1' } },
+            ...this.microvmHostConfig(),
+          },
+        });
+        track(vm);
+        await vm.start();
+      } catch (error) {
+        return this.probeFailure(IsolationReasonCode.PROBE_START_FAILED, 'Probe microVM failed to start', error);
+      }
+
+      // The first exec waits until the guest agent is up (or the launcher gave up).
+      const booted = await this.execProbeCommand(vm, 'true');
+
+      if (booted.exitCode !== 0) {
+        const logs = await this.readProbeLogs(vm).catch(() => '');
+
+        if (/E_KVM_UNAVAILABLE/.test(logs)) {
+          return {
+            ok: false,
+            reasonCode: IsolationReasonCode.KVM_UNAVAILABLE,
+            reason: 'The KVM device (/dev/kvm) is not available on this host',
+          };
+        }
+
+        return {
+          ok: false,
+          reasonCode: IsolationReasonCode.MICROVM_BOOT_FAILED,
+          reason: `The probe microVM did not boot: ${logs.trim().split('\n').slice(-3).join(' | ').slice(0, 500)}`,
+        };
+      }
+
+      const contract = await this.probeWorkerContract(vm);
+
+      if (!contract.ok) {
+        return contract;
+      }
+
+      // Files the guest writes are the files Docker's archive API (environment file, docker cp) sees.
+      await this.execProbeCommand(vm, 'printf agenstra-coherent > /probe/coherence.txt && sync');
+
+      const archived = await vm
+        .getArchive({ path: `${MICROVM_GUEST_ROOT}/probe/coherence.txt` })
+        .then((stream) => this.readStreamWithLimit(stream, 64 * 1024))
+        .then((archive) => extractFirstFileFromTar(archive).toString('utf-8'))
+        .catch(() => '');
+
+      if (archived !== 'agenstra-coherent') {
+        return {
+          ok: false,
+          reasonCode: IsolationReasonCode.PROBE_FILESYSTEM_FAILED,
+          reason: 'Guest writes are not visible to the Docker archive API',
+        };
+      }
+
+      const fetchScript =
+        'for i in 1 2 3 4 5 6 7 8 9 10; do ' +
+        `python3 -c "import urllib.request,sys; sys.stdout.write(urllib.request.urlopen('http://127.0.0.1:${DockerService.PROBE_LOOPBACK_PORT}/', timeout=3).read().decode())" ` +
+        '2>/dev/null && exit 0; sleep 1; done; exit 1';
+      const fetched = await this.execProbeCommand(vm, fetchScript);
+      const ownerRoutes = await this.execProbeCommand(owner, 'awk \'NR>1 && $1!="lo"\' /proc/net/route | grep -q .');
+
+      if (fetched.exitCode !== 0 || !fetched.output.includes('agenstra-netns-ok') || ownerRoutes.exitCode !== 0) {
+        return {
+          ok: false,
+          reasonCode: IsolationReasonCode.SHARED_NETNS_FAILED,
+          reason: 'MicroVM workers cannot use the egress guard network namespace (loopback proxy or interfaces)',
+        };
+      }
+
+      if (ownerNetwork) {
+        const resolved = await this.execProbeCommand(
+          vm,
+          `python3 -c "import socket; socket.gethostbyname('${ownerName}')"`,
+        );
+
+        if (resolved.exitCode !== 0) {
+          return {
+            ok: false,
+            reasonCode: IsolationReasonCode.SHARED_NETNS_FAILED,
+            reason: `MicroVM workers cannot resolve names on the agent network '${ownerNetwork}'`,
+          };
+        }
+      }
+
+      await vm.stop({ t: 10 });
+      await owner.stop({ t: 5 });
+
+      return { ok: true };
+    });
+  }
+
+  /** Whether Docker can hand `/dev/kvm` to a container (and the device answers), without pulling anything new. */
+  private async probeKvmDevice(image: string): Promise<IsolationProbeResult> {
+    let container: Docker.Container | undefined;
+
+    try {
+      await this.ensureImageExists(image);
+      container = await this.docker.createContainer({
+        Image: image,
+        name: `${ISOLATION_PROBE_NAME_PREFIX}${uuidv4().slice(0, 12)}-kvm`,
+        Labels: { [ISOLATION_PROBE_LABEL]: '1' },
+        Entrypoint: ['/bin/sh', '-c'],
+        Cmd: ['test -c /dev/kvm'],
+        HostConfig: {
+          AutoRemove: false,
+          NetworkMode: 'none',
+          CapDrop: ['ALL'],
+          SecurityOpt: ['no-new-privileges'],
+          Devices: [{ PathOnHost: MICROVM_KVM_DEVICE, PathInContainer: MICROVM_KVM_DEVICE, CgroupPermissions: 'rwm' }],
+        },
+      });
+      await container.start();
+
+      const result = (await container.wait()) as { StatusCode?: number };
+
+      return result.StatusCode === 0
+        ? { ok: true }
+        : {
+            ok: false,
+            reasonCode: IsolationReasonCode.KVM_UNAVAILABLE,
+            reason: 'The KVM device (/dev/kvm) is not available on this host',
+          };
+    } catch (error) {
+      return this.probeFailure(IsolationReasonCode.PROBE_START_FAILED, 'KVM device check failed', error);
+    } finally {
+      await container?.remove({ force: true }).catch(() => undefined);
+    }
+  }
+
+  /** File operations on the probe volume, exec exit codes, non-root exec and stdout/stderr logs. */
+  private async probeWorkerContract(container: Docker.Container): Promise<IsolationProbeResult> {
+    const fileCheck = await this.execProbeCommand(
+      container,
+      'set -e; printf agenstra > /probe/probe.tmp; sync; mv /probe/probe.tmp /probe/probe.txt; test "$(cat /probe/probe.txt)" = agenstra; rm /probe/probe.txt',
+    );
+
+    if (fileCheck.exitCode !== 0) {
+      return {
+        ok: false,
+        reasonCode: IsolationReasonCode.PROBE_FILESYSTEM_FAILED,
+        reason: 'Volume file operations failed',
+      };
+    }
+
+    const exitCodeCheck = await this.execProbeCommand(container, 'exit 7');
+    const nonRootCheck = await this.execProbeCommand(container, 'id -u', '65534');
+
+    if (exitCodeCheck.exitCode !== 7 || nonRootCheck.exitCode !== 0 || nonRootCheck.output.trim() !== '65534') {
+      return {
+        ok: false,
+        reasonCode: IsolationReasonCode.PROBE_EXEC_FAILED,
+        reason: 'Exec exit codes or non-root exec failed',
+      };
+    }
+
+    const logs = await this.readProbeLogs(container);
+
+    if (!logs.includes('agenstra-probe-stdout') || !logs.includes('agenstra-probe-stderr')) {
+      return {
+        ok: false,
+        reasonCode: IsolationReasonCode.PROBE_LOGS_FAILED,
+        reason: 'Container logs were not captured',
+      };
+    }
+
+    return { ok: true };
+  }
+
+  /**
+   * Shared probe lifecycle: pulls the images outside of the timeout, creates the labelled probe volume, races the
+   * probe body against the timeout and always removes probe containers / volumes (also after a timed-out body
+   * finally settles, so containers it created late are removed as well).
+   */
+  private async runProbeScaffold(
+    images: string[],
+    timeoutMs: number,
+    body: (context: {
+      volumeName: string;
+      track: (container: Docker.Container) => void;
+    }) => Promise<IsolationProbeResult>,
+  ): Promise<IsolationProbeResult> {
+    const probeId = uuidv4().slice(0, 12);
+    const created: string[] = [];
+    const volumeName = `${ISOLATION_PROBE_NAME_PREFIX}${probeId}`;
+    let volumeCreated = false;
+    let finished = false;
+    let timer: NodeJS.Timeout | undefined;
+    const cleanup = async (): Promise<void> => {
+      for (const id of created.splice(0).reverse()) {
+        await this.docker
+          .getContainer(id)
+          .remove({ force: true, v: true })
+          .catch(() => undefined);
+      }
+
+      if (volumeCreated) {
+        await this.docker
+          .getVolume(volumeName)
+          .remove({ force: true })
+          .then(() => (volumeCreated = false))
+          .catch(() => undefined);
+      }
+    };
+    const track = (container: Docker.Container): void => {
+      created.push(container.id as unknown as string);
+
+      if (finished) {
+        throw new Error('Isolation probe aborted');
+      }
     };
 
     try {
       // Pulling a large worker image must not count against the probe timeout.
-      await this.ensureImageExists(options.image);
+      for (const image of images) {
+        await this.ensureImageExists(image);
+      }
     } catch (error) {
       return this.probeFailure(IsolationReasonCode.PROBE_IMAGE_UNAVAILABLE, 'Probe image is not available', error);
     }
 
-    const running = run();
+    const running = (async () => {
+      await this.docker.createVolume({ Name: volumeName, Labels: { [ISOLATION_PROBE_LABEL]: '1' } });
+      volumeCreated = true;
+
+      return body({ volumeName, track });
+    })();
 
     // A timed-out run keeps going until its current Docker call returns: clean up again afterwards.
     void running.catch(() => undefined).finally(() => (finished ? cleanup() : undefined));
@@ -3055,9 +3421,9 @@ export class DockerService {
               resolve({
                 ok: false,
                 reasonCode: IsolationReasonCode.PROBE_TIMEOUT,
-                reason: `Probe did not finish within ${options.timeoutMs} ms`,
+                reason: `Probe did not finish within ${timeoutMs} ms`,
               }),
-            options.timeoutMs,
+            timeoutMs,
           );
           timer.unref?.();
         }),
@@ -3152,7 +3518,7 @@ export class DockerService {
         null,
         [
           'mkdir -p /tmp/agenstra-probe && echo agenstra-netns-ok > /tmp/agenstra-probe/index.html && ' +
-            'exec python3 -m http.server 18765 --bind 127.0.0.1 --directory /tmp/agenstra-probe',
+            `exec python3 -m http.server ${DockerService.PROBE_LOOPBACK_PORT} --bind 127.0.0.1 --directory /tmp/agenstra-probe`,
         ],
       );
 
@@ -3199,7 +3565,7 @@ export class DockerService {
 
       const fetchScript =
         'for i in 1 2 3 4 5 6 7 8 9 10; do ' +
-        'python3 -c "import urllib.request,sys; sys.stdout.write(urllib.request.urlopen(\'http://127.0.0.1:18765/\', timeout=3).read().decode())" ' +
+        `python3 -c "import urllib.request,sys; sys.stdout.write(urllib.request.urlopen('http://127.0.0.1:${DockerService.PROBE_LOOPBACK_PORT}/', timeout=3).read().decode())" ` +
         '2>/dev/null && exit 0; sleep 1; done; exit 1';
       const fetched = await this.execProbeCommand(member, fetchScript);
       // The owner must keep a non-loopback interface (Netstack would take it over).
@@ -3231,7 +3597,7 @@ export class DockerService {
     script: string,
     user?: string,
   ): Promise<{ exitCode: number | null; output: string }> {
-    const execInstance = await container.exec({
+    const execInstance = await this.createExec(container, {
       Cmd: ['/bin/sh', '-c', script],
       AttachStdout: true,
       AttachStderr: true,

@@ -219,13 +219,16 @@ See [Egress Filtering](../features/egress-filtering.md).
 - `AGENT_SANDBOX_KVM_RUNTIME` - Docker runtime name of the sandboxed-kvm (gVisor on KVM) level (default: `runsc-kvm`; same charset validation as `AGENT_SANDBOX_RUNTIME`).
 - `AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME` - gVisor KVM runtime with `--network=host` for sandboxed-kvm workers that share their egress guard's network namespace or are attached to `AGENT_DOCKER_NETWORK` (default: `runsc-kvm-hostnet`; required for the sandboxed-kvm level while egress guards are enabled or an agent network is configured).
 - `AGENT_ISOLATION_SANDBOX_KVM_ENABLED` - `false` disables the sandboxed-kvm level on this manager (default: `true`).
+- `AGENT_ISOLATION_MICROVM_ENABLED` - `false` disables the microvm (KVM microVM) level on this manager (default: `true`).
+- `AGENT_MICROVM_IMAGE` - Image of microVM workers and of the microvm probe (default: `ghcr.io/forepath/agenstra-manager-worker-microvm:latest`). It must be a microVM worker image of the same release (bridge protocol label `io.agenstra.microvm.protocol`).
+- `AGENT_ISOLATION_MICROVM_PROBE_TIMEOUT_MS` - Upper bound of the microvm probe, including the boot of the probe microVM (default: `240000`, minimum `30000`).
 - `AGENT_ISOLATION_PROBE_ENABLED` - `false` disables the periodic re-probe; startup, on-demand and failure-triggered probes still run (default: `true`).
 - `AGENT_ISOLATION_PROBE_INTERVAL_MS` - Periodic re-probe interval, ±10 % jitter (default: `21600000`, minimum `60000`).
 - `AGENT_ISOLATION_PROBE_TIMEOUT_MS` - Upper bound of one level probe, excluding the image pull (default: `90000`, minimum `5000`).
 - `AGENT_ISOLATION_PROBE_IMAGE` - Probe image (default: empty, uses `OPENCODE_AGENT_DOCKER_IMAGE` / `AGENT_DEFAULT_IMAGE`).
 - `AGENT_ISOLATION_FAILURE_THRESHOLD` - Consecutive runtime failures of a gVisor level that trigger a re-probe, counted per level (default: `3`).
 
-The gVisor runtimes are installed on the Docker host, not in the manager container (cloud-init on provisioned servers, or `apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh`; the release and checksums are pinned; `GVISOR_RELEASE` / `GVISOR_SHA512` override them for the standalone script only). The KVM runtimes are only registered when `/dev/kvm` is usable; `GVISOR_KVM=0` skips them. See [Container Isolation Levels](../features/container-isolation.md).
+The gVisor runtimes are installed on the Docker host, not in the manager container (cloud-init on provisioned servers, or `apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh`; the release and checksums are pinned; `GVISOR_RELEASE` / `GVISOR_SHA512` override them for the standalone script only). The host preparation makes `/dev/kvm` usable first and independently of gVisor (the microvm level needs `/dev/kvm` only: libvirt and QEMU run inside the microVM worker image); `AGENSTRA_KVM=0` skips that. The gVisor KVM runtimes are only registered when `/dev/kvm` is usable; `GVISOR_KVM=0` skips them. See [Container Isolation Levels](../features/container-isolation.md).
 
 ### API image build arguments (manager / controller)
 

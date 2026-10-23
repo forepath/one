@@ -1,0 +1,30 @@
+#!/bin/busybox sh
+# Agenstra microVM initramfs (built into /usr/lib/agenstra-microvm/initramfs.img at image build time).
+#
+# Mounts the guest root (virtio-fs tag `guestroot`: the container's /guest tree), loads the virtio network
+# driver and configures the user-mode network's fixed address plan (guest 10.0.2.15/24, gateway 10.0.2.2),
+# then hands over to the guest init.
+/bin/busybox mkdir -p /proc /dev /newroot
+/bin/busybox mount -t proc proc /proc
+/bin/busybox mount -t devtmpfs devtmpfs /dev
+/bin/busybox --install -s /bin
+export PATH=/bin
+
+fail() {
+  echo "agenstra-microvm initramfs: $*" >/dev/console
+  echo o >/proc/sysrq-trigger
+  sleep 10
+}
+
+mount -t virtiofs guestroot /newroot || fail "cannot mount the guest root"
+[ -x /newroot/usr/lib/agenstra-microvm/guest-init ] || fail "the guest root has no /usr/lib/agenstra-microvm/guest-init"
+
+for module in failover net_failover virtio_net; do
+  insmod "/modules/$module.ko" || fail "cannot load $module"
+done
+ip link set lo up
+ip link set eth0 up && ip addr add 10.0.2.15/24 dev eth0 && ip route add default via 10.0.2.2 dev eth0 ||
+  fail "cannot configure the network"
+
+umount /proc /dev
+exec switch_root /newroot /usr/lib/agenstra-microvm/guest-init

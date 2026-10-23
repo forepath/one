@@ -66,7 +66,7 @@ OpenSearch on `agenstra-controller` and `decabill-billing` is single-node, bound
 
 On `agenstra-manager` hosts, cloud-init installs a pinned, checksum-verified gVisor release right after Docker. It registers the Docker runtimes `runsc-systrap` and `runsc-systrap-hostnet`, which enable the **sandboxed** container isolation level for Agenstra environments. Docker's default runtime stays `runc`.
 
-When the host exposes hardware virtualization (`/dev/kvm`, or a CPU with `vmx` / `svm` whose KVM modules can be loaded), cloud-init also registers `runsc-kvm` and `runsc-kvm-hostnet` for the **sandboxed-kvm** level (gVisor on its KVM platform). No libvirt or QEMU is installed. Hetzner Cloud and DigitalOcean servers normally do not expose KVM, so those hosts offer `sandboxed` only.
+When the host exposes hardware virtualization (`/dev/kvm`, or a CPU with `vmx` / `svm` whose KVM modules can be loaded), cloud-init also registers `runsc-kvm` and `runsc-kvm-hostnet` for the **sandboxed-kvm** level (gVisor on its KVM platform). No libvirt or QEMU is installed on the host. The same `/dev/kvm` also enables the **microvm** level (a KVM microVM per environment). cloud-init prepares it first and independently of gVisor, so it is available even when the gVisor installation fails. The level needs nothing else on the host, because libvirt and QEMU ship inside the microVM worker image that the agent manager pulls. Hetzner Cloud and DigitalOcean servers normally do not expose KVM, so those hosts offer `sandboxed` only.
 
 Both steps are optional and never fail provisioning. On any failure they are rolled back; a KVM failure only rolls back the KVM runtimes, and the host keeps whatever it could set up (at least standard Docker).
 

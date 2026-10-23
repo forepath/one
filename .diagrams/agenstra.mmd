@@ -14,7 +14,7 @@ flowchart TB
   Pipelines(["CI pipelines<br/>GitHub Actions, GitLab CI"])
   Llm(["LLM providers<br/>via OpenCode provider credentials"])
   Internet(["Internet"])
-  Registry(["ghcr.io/forepath<br/>controller-api, manager-api, manager-worker,<br/>manager-egress-guard, console-server, landingpage-server"])
+  Registry(["ghcr.io/forepath<br/>controller-api, manager-api, manager-worker,<br/>manager-worker-microvm, manager-egress-guard, console-server, landingpage-server"])
   Decabill(["Decabill billing manager (:3200)<br/>plans, orders, cloud-init provisioning of<br/>Agenstra controllers + managers"])
   Communication(["Forepath communication API (:3300)<br/>contact form, Turnstile"])
 
@@ -84,7 +84,7 @@ flowchart TB
   Provisioning --> CloudProviders
   Controller -.metrics.-> Otel
 
-  subgraph ManagerHost["Agent manager host (one per workspace, Docker + optional gVisor runsc-systrap / -hostnet,<br/>+ gVisor on KVM runsc-kvm / -hostnet when /dev/kvm is available)"]
+  subgraph ManagerHost["Agent manager host (one per workspace, Docker + optional gVisor runsc-systrap / -hostnet,<br/>+ gVisor on KVM runsc-kvm / -hostnet and microVM launchers when /dev/kvm is available)"]
     subgraph Manager["Agent manager (NestJS :3000, docker.sock)"]
       MAuth["Authentication<br/>api-key / keycloak, per-agent socket login"]
       MApi["REST API /api<br/>agents, files, VCS, deployments, env vars, egress,<br/>isolation, workspace index, OpenCode config + MCP, permissions"]
@@ -98,7 +98,7 @@ flowchart TB
       Runtime["OpenCode runtime<br/>sessions per chat / reserved suffix, SSE event bridge,<br/>permission + question tracking, auto-replies"]
       ConfigSync["OpenCode config sync<br/>PATCH /global/config, secrets, platform agents + skills,<br/>platform agenstra MCP server"]
       Egress["Egress service<br/>guard lifecycle, policy render, events collector"]
-      Isolation["Isolation probes<br/>standard (runc) / sandboxed (gVisor) /<br/>sandboxed-kvm (gVisor on KVM)"]
+      Isolation["Isolation probes<br/>standard (runc) / sandboxed (gVisor) /<br/>sandboxed-kvm (gVisor on KVM) / microvm (probe microVM)"]
       Filters["Chat filters<br/>incoming / outgoing, plugins"]
       Deploy["Deployments<br/>GitHub / GitLab pipeline providers"]
       WsIndex["Workspace index<br/>inotify supervisor, change notifier"]
@@ -106,7 +106,8 @@ flowchart TB
     end
 
     subgraph Agent["Per agent"]
-      subgraph Worker["Worker container (agenstra-manager-worker, io.agenstra.context-mcp=1)<br/>runtime per isolation level: runc / runsc-systrap(-hostnet) / runsc-kvm(-hostnet)"]
+      subgraph Worker["Worker container (agenstra-manager-worker, io.agenstra.context-mcp=1)<br/>runtime per isolation level: runc / runsc-systrap(-hostnet) / runsc-kvm(-hostnet);<br/>microvm: agenstra-manager-worker-microvm on runc + /dev/kvm, worker below /guest as KVM guest"]
+        Launcher["MicroVM launcher (microvm only, container root)<br/>libvirt session + QEMU/KVM + virtiofsd as agenstra-vmm,<br/>bridge daemon: vm-exec, ports 4096 / 6080, loopback relay :3128,<br/>user networking = sockets in the container netns"]
         OpenCode["OpenCode serve :4096<br/>agents: build, agenstra-automation, agenstra-plan"]
         CtxMcp["agenstra MCP server (stdio)<br/>/opt/agenstra/mcp, root-owned<br/>context_* (list, search, get, request_access),<br/>tasks_* (own recurring tasks),<br/>handoff_* (agents, profile_get, profile_update,<br/>create, get, respond)"]
         Desktop["XFCE + TigerVNC + websockify :6080<br/>Chromium, vnc-auth-proxy"]
@@ -143,6 +144,8 @@ flowchart TB
   CtxMcp -->|"HTTP /api/agent-context (Bearer token, ticket)"| CtxApi
   OpenCode --> AppVol
   MGw -.VNC.-> Desktop
+  MApi -.docker exec rewritten to vm-exec (microvm).-> Launcher
+  Launcher -.boots /guest (virtio-fs) as the VM, virtio-serial bridge.-> OpenCode
   WsIndex -.inotifywait via docker exec.-> AppVol
   Egress --> Guard
   Worker -->|"shared network namespace"| Guard
@@ -152,5 +155,5 @@ flowchart TB
   Deploy --> Pipelines
   Manager -.metrics.-> Otel
   Registry -.images.-> Manager & Worker & Guard & Controller
-  IsolationLab(["E2E isolation lab (feature-isolation-lab)<br/>QEMU/KVM VMs in Docker: host scripts, probes,<br/>guard modes, DNS per isolation level"])
+  IsolationLab(["E2E isolation lab (feature-isolation-lab)<br/>QEMU/KVM VMs in Docker: host scripts, probes,<br/>guard modes, DNS per isolation level, nested microVMs"])
   IsolationLab -.real host preparation + manager services.-> ManagerHost

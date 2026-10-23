@@ -26,7 +26,10 @@ import {
   GVISOR_ISOLATION_LEVEL_DESCRIPTION,
   ISOLATION_RUNTIME_FAILURE_CODE,
   type IsolationLevel,
+  MICROVM_ISOLATION_LEVEL_DESCRIPTION,
   resolveGvisorLevelRuntimes,
+  resolveMicrovmImage,
+  STANDARD_ISOLATION_RUNTIME,
 } from '../constants/container-isolation.constants';
 import { GitRepositorySetupMode, resolveGitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import type { AgentIsolationSelectionDto } from '../dto/container-isolation.dto';
@@ -47,7 +50,9 @@ import {
   buildIsolationSelection,
   containerRuntimeForIsolationLevel,
   effectiveIsolationLevel,
+  isEnhancedIsolationLevel,
   isGvisorIsolationLevel,
+  isMicrovmIsolationLevel,
   IsolationResolutionError,
   resolveIsolationRequest,
   runtimeForIsolationLevel,
@@ -371,7 +376,9 @@ export class AgentsService implements OnApplicationBootstrap {
     const agentType = createAgentDto.agentType || 'opencode';
     // Get the provider for this agent type to retrieve the Docker image
     const provider = this.agentProviderFactory.getProvider(agentType);
-    const dockerImage = provider.getDockerImage();
+    // MicroVM environments run the microVM worker image (the worker image below the launcher's guest root).
+    const microvm = isMicrovmIsolationLevel(isolation.level);
+    const dockerImage = microvm ? resolveMicrovmImage() : provider.getDockerImage();
     const basePath = provider.getBasePath?.() || '/app';
     const opencodeServerPassword = this.generateRandomPassword();
     const opencodeServerUsername = process.env.OPENCODE_SERVER_USERNAME || OPENCODE_SERVER_USERNAME_DEFAULT;
@@ -443,6 +450,7 @@ export class AgentsService implements OnApplicationBootstrap {
           },
         ],
         ...(isolation.runtime ? { runtime: isolation.runtime } : {}),
+        ...(microvm ? { microvm: true } : {}),
         ...(egressGuard
           ? {
               // The guard owns the network namespace (agent network attachment / published ports).
@@ -476,7 +484,7 @@ export class AgentsService implements OnApplicationBootstrap {
       // Never retry on a weaker runtime: report the failure and let the user decide.
       this.isolationCapabilities?.recordRuntimeFailure(isolation.level);
 
-      if (isGvisorIsolationLevel(isolation.level) && !(error instanceof HttpException)) {
+      if (isEnhancedIsolationLevel(isolation.level) && !(error instanceof HttpException)) {
         const message = (error as { message?: string })?.message || 'unknown error';
 
         throw this.isolationRuntimeFailure(isolation.level, message);
@@ -627,9 +635,9 @@ export class AgentsService implements OnApplicationBootstrap {
 
       this.logger.error(`Agent creation failed after container start: ${message}`, err.stack);
 
-      if (isGvisorIsolationLevel(isolation.level) && workerRuntimeFailed) {
-        // e.g. the worker never became healthy on gVisor: count it as a runtime failure (re-probe after
-        // repeated failures) and never retry on a weaker runtime.
+      if (isEnhancedIsolationLevel(isolation.level) && workerRuntimeFailed) {
+        // e.g. the worker never became healthy on gVisor / in the microVM: count it as a runtime failure
+        // (re-probe after repeated failures) and never retry on a weaker runtime.
         this.isolationCapabilities?.recordRuntimeFailure(isolation.level);
         throw this.isolationRuntimeFailure(isolation.level, message);
       }
@@ -868,14 +876,17 @@ export class AgentsService implements OnApplicationBootstrap {
    * `400` for a gVisor environment container that could not be started. The environment was not
    * created and is never retried on a weaker runtime; `code` lets the controller detect the case.
    */
-  private isolationRuntimeFailure(level: GvisorIsolationLevel, message: string): BadRequestException {
+  private isolationRuntimeFailure(level: GvisorIsolationLevel | 'microvm', message: string): BadRequestException {
+    const description =
+      level === 'microvm' ? MICROVM_ISOLATION_LEVEL_DESCRIPTION : GVISOR_ISOLATION_LEVEL_DESCRIPTION[level];
+
     return new BadRequestException({
       statusCode: 400,
       error: 'Bad Request',
       code: ISOLATION_RUNTIME_FAILURE_CODE,
       isolationLevel: level,
       message:
-        `The ${GVISOR_ISOLATION_LEVEL_DESCRIPTION[level]} container could not be started: ${message}. ` +
+        `The ${description} container could not be started: ${message}. ` +
         'The environment was not created; retry or explicitly choose the standard isolation level.',
     });
   }
@@ -898,6 +909,11 @@ export class AgentsService implements OnApplicationBootstrap {
             : runtimes.runtime,
         selection: agent.isolationSelection ?? null,
       };
+    }
+
+    if (isMicrovmIsolationLevel(level)) {
+      // The launcher container always runs on runc; the workload runs in the microVM.
+      return { level, runtime: STANDARD_ISOLATION_RUNTIME, selection: agent.isolationSelection ?? null };
     }
 
     return {

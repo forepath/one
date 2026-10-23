@@ -12,18 +12,22 @@ import {
   IsolationReasonCode,
   isGvisorIsolationLevelEnabled,
   isIsolationProbeSchedulerEnabled,
+  isMicrovmIsolationEnabled,
   resolveGvisorLevelRuntimes,
   resolveIsolationFailureThreshold,
   resolveIsolationProbeImage,
   resolveIsolationProbeIntervalMs,
   resolveIsolationProbeTimeoutMs,
+  resolveMicrovmImage,
+  resolveMicrovmProbeTimeoutMs,
   STANDARD_ISOLATION_RUNTIME,
 } from '../constants/container-isolation.constants';
 import type { HostIsolationCapabilitiesDto, IsolationLevelCapabilityDto } from '../dto/container-isolation.dto';
 import {
   availableIsolationLevels,
   computeIsolationCapabilityRevision,
-  isGvisorIsolationLevel,
+  isEnhancedIsolationLevel,
+  runtimeForIsolationLevel,
   strongestAvailableIsolationLevel,
 } from '../utils/container-isolation.utils';
 
@@ -45,17 +49,26 @@ const GVISOR_LEVEL_LABEL: Readonly<Record<GvisorIsolationLevel, string>> = {
  *   `ready` only after their runtime is registered with Docker AND the complete probe (worker image
  *   contract, filesystem, exec, logs, shared egress namespace) passed on it. Presence of the binary or a
  *   daemon.json entry alone is never enough. The levels are probed independently on top of the floor.
+ * - MicroVM becomes `ready` only after a probe microVM of the configured microVM image (matching bridge
+ *   protocol) booted on `/dev/kvm` and passed the same contract inside the guest, joined to a runc-owned
+ *   network namespace the way agents join their egress guard.
  *
  * Probes run on startup, periodically (with jitter), on demand, and after repeated runtime
  * failures. Concurrent probe requests share one in-flight probe.
+ *
+ * The microvm probe (image pull, VM boot) runs after the other levels were committed, in the background: creations
+ * and API callers never wait for it. Until it completes, the level keeps its last known state (`E_PROBE_PENDING`
+ * after a manager start); its result is committed as a new revision.
  */
 @Injectable()
 export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnModuleDestroy {
   private readonly logger = new Logger(IsolationCapabilitiesService.name);
   private capabilities: HostIsolationCapabilitiesDto;
   private inFlight?: Promise<HostIsolationCapabilitiesDto>;
+  private microvmInFlight?: Promise<HostIsolationCapabilitiesDto>;
+  private lastFacts: Omit<Parameters<typeof computeIsolationCapabilityRevision>[0], 'levels'> = { runtimes: {} };
   private timer?: NodeJS.Timeout;
-  private readonly consecutiveRuntimeFailures = new Map<GvisorIsolationLevel, number>();
+  private readonly consecutiveRuntimeFailures = new Map<Exclude<IsolationLevel, 'standard'>, number>();
   static readonly ON_DEMAND_MIN_AGE_MS = 30_000;
 
   constructor(private readonly dockerService: DockerService) {
@@ -87,7 +100,14 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
 
   /** Current capability record (from the last completed probe). */
   getCapabilities(): HostIsolationCapabilitiesDto {
-    return { ...this.capabilities, probing: this.inFlight !== undefined };
+    return { ...this.capabilities, probing: this.inFlight !== undefined || this.microvmInFlight !== undefined };
+  }
+
+  /** Capabilities once a running background microvm probe completed (immediately when none is running). */
+  async whenMicrovmProbed(): Promise<HostIsolationCapabilitiesDto> {
+    await this.microvmInFlight?.catch(() => undefined);
+
+    return this.getCapabilities();
   }
 
   /**
@@ -133,20 +153,20 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
     return this.inFlight;
   }
 
-  /** A gVisor environment container started fine: reset the failure streak of its level. */
+  /** A gVisor / microVM environment container started fine: reset the failure streak of its level. */
   recordRuntimeSuccess(level: IsolationLevel): void {
-    if (isGvisorIsolationLevel(level)) {
+    if (isEnhancedIsolationLevel(level)) {
       this.consecutiveRuntimeFailures.set(level, 0);
     }
   }
 
   /**
-   * A gVisor environment container failed to be created/started. After the configured number of
+   * A gVisor / microVM environment container failed to be created/started. After the configured number of
    * consecutive failures of the same level the capabilities are re-probed, so a broken runtime stops
    * being offered. The failed workload is never re-run on another runtime.
    */
   recordRuntimeFailure(level: IsolationLevel): void {
-    if (!isGvisorIsolationLevel(level)) {
+    if (!isEnhancedIsolationLevel(level)) {
       return;
     }
 
@@ -177,9 +197,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
   private buildInitialCapabilities(): HostIsolationCapabilitiesDto {
     const pending = (level: IsolationLevel): IsolationLevelCapabilityDto => ({
       rank: ISOLATION_LEVEL_RANK[level],
-      runtime: isGvisorIsolationLevel(level)
-        ? resolveGvisorLevelRuntimes(level, this.env).runtime
-        : STANDARD_ISOLATION_RUNTIME,
+      runtime: runtimeForIsolationLevel(level, this.env),
       state: 'probe-failed',
       reasonCode: IsolationReasonCode.PROBE_PENDING,
       reason: 'Isolation capabilities have not been probed yet',
@@ -207,6 +225,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
           { rank: ISOLATION_LEVEL_RANK[level], runtime: gvisorRuntimes[level].runtime, state: 'unsupported' },
         ]),
       ),
+      microvm: { rank: ISOLATION_LEVEL_RANK.microvm, runtime: STANDARD_ISOLATION_RUNTIME, state: 'unsupported' },
     } as CapabilityLevels;
     let hostInfo: Awaited<ReturnType<DockerService['getDockerHostInfo']>> | null = null;
 
@@ -220,7 +239,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
         'Docker daemon is not reachable',
       );
 
-      for (const level of GVISOR_ISOLATION_LEVELS) {
+      for (const level of ISOLATION_LEVELS.filter((candidate) => candidate !== 'standard')) {
         levels[level] = this.failed(
           { ...levels[level], state: 'unsupported' },
           IsolationReasonCode.DOCKER_UNAVAILABLE,
@@ -275,14 +294,119 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
       });
     }
 
+    const microvmPrecheck = this.microvmPrecheck(levels.microvm, levels.standard.state === 'ready');
     const probeImageId = await this.dockerService.getImageId(image).catch(() => null);
+    const microvmImageId = await this.dockerService.getImageId(resolveMicrovmImage(this.env)).catch(() => null);
 
-    return this.commit(levels, new Date(), {
+    this.lastFacts = {
       dockerVersion: hostInfo.serverVersion,
       kernelVersion: hostInfo.kernelVersion,
       runtimes: hostInfo.runtimes,
       probeImageId,
+      microvmImageId,
+    };
+
+    // Read right before committing: a background microvm probe may have committed during the awaits above.
+    const previousMicrovm = this.capabilities.levels.microvm;
+
+    levels.microvm =
+      microvmPrecheck ??
+      (this.capabilities.probedAt !== null && previousMicrovm.reasonCode !== IsolationReasonCode.RUNC_PROBE_FAILED
+        ? previousMicrovm
+        : this.failed(levels.microvm, IsolationReasonCode.PROBE_PENDING, 'The microVM probe has not completed yet'));
+    this.commit(levels, new Date(), this.lastFacts);
+
+    if (!microvmPrecheck && !this.microvmInFlight) {
+      this.microvmInFlight = this.probeMicrovmInBackground(image).finally(() => {
+        this.microvmInFlight = undefined;
+      });
+    }
+
+    return this.getCapabilities();
+  }
+
+  /** Cheap microvm states that need no probe microVM (`null`: a probe is needed). */
+  private microvmPrecheck(
+    capability: IsolationLevelCapabilityDto,
+    standardReady: boolean,
+  ): IsolationLevelCapabilityDto | null {
+    if (!isMicrovmIsolationEnabled(this.env)) {
+      return {
+        ...capability,
+        state: 'disabled-by-admin',
+        reasonCode: IsolationReasonCode.DISABLED_BY_ADMIN,
+        reason: 'The microvm level is disabled on this agent manager (AGENT_ISOLATION_MICROVM_ENABLED=false)',
+      };
+    }
+
+    if (!standardReady) {
+      return this.failed(
+        capability,
+        IsolationReasonCode.RUNC_PROBE_FAILED,
+        'Skipped: the standard Docker baseline failed',
+      );
+    }
+
+    return null;
+  }
+
+  /** Background microvm probe; commits its result on top of the latest committed record. */
+  private async probeMicrovmInBackground(probeImage: string): Promise<HostIsolationCapabilitiesDto> {
+    let level: IsolationLevelCapabilityDto;
+
+    try {
+      level = await this.probeMicrovmLevel(this.capabilities.levels.microvm, probeImage);
+    } catch (error) {
+      level = this.failed(
+        this.capabilities.levels.microvm,
+        IsolationReasonCode.MICROVM_BOOT_FAILED,
+        `MicroVM probe failed: ${(error as Error).message}`.slice(0, 300),
+      );
+    }
+
+    const microvmImageId = await this.dockerService.getImageId(resolveMicrovmImage(this.env)).catch(() => null);
+
+    this.lastFacts = { ...this.lastFacts, microvmImageId };
+
+    // A floor that failed in the meantime wins (it was committed by a newer probe).
+    if (this.capabilities.levels.standard.state !== 'ready') {
+      return this.getCapabilities();
+    }
+
+    return this.commit(
+      { ...this.capabilities.levels, microvm: level },
+      this.capabilities.probedAt ? new Date(this.capabilities.probedAt) : new Date(),
+      this.lastFacts,
+    );
+  }
+
+  /**
+   * Probe microVM of the configured microVM image (after a cheap `/dev/kvm` check; the protocol label is checked
+   * before any VM boots). Hosts without `/dev/kvm` report `E_KVM_UNAVAILABLE`.
+   */
+  private async probeMicrovmLevel(
+    capability: IsolationLevelCapabilityDto,
+    probeImage: string,
+  ): Promise<IsolationLevelCapabilityDto> {
+    const result = await this.dockerService.runMicrovmProbe({
+      image: resolveMicrovmImage(this.env),
+      ownerImage: probeImage,
+      timeoutMs: resolveMicrovmProbeTimeoutMs(this.env),
     });
+
+    if (!result.ok) {
+      const failure = result as Extract<IsolationProbeResult, { ok: false }>;
+
+      // Hosts without hardware virtualization or images without the bridge can never run the level.
+      if (
+        failure.reasonCode === IsolationReasonCode.KVM_UNAVAILABLE ||
+        failure.reasonCode === IsolationReasonCode.MICROVM_IMAGE_UNSUPPORTED
+      ) {
+        return { ...capability, state: 'unsupported', reasonCode: failure.reasonCode, reason: failure.reason };
+      }
+    }
+
+    return this.applyResult(capability, result, IsolationReasonCode.MICROVM_BOOT_FAILED);
   }
 
   /** Probe chain of one gVisor level (see the class documentation). */

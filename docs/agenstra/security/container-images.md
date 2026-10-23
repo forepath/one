@@ -30,7 +30,7 @@ When the agent manager creates an agent, it bind-mounts host paths into child co
 
 The per-agent **egress guard** sidecar uses its own image (`agenstra-manager-egress-guard`, built by the `egress-guard-container-image` target); it is not an agent type.
 
-Worker containers of **sandboxed** and **sandboxed-kvm** environments run the same worker image on the gVisor runtime (`runsc-systrap` or `runsc-kvm`, or their `-hostnet` variants) instead of `runc`; images, users and bind mounts are unchanged. The manager's isolation probe uses the worker image as well (`AGENT_ISOLATION_PROBE_IMAGE` to override) and checks volume file operations and non-root `exec` on each runtime. See [Container Isolation Levels](../features/container-isolation.md).
+Worker containers of **sandboxed** and **sandboxed-kvm** environments run the same worker image on the gVisor runtime (`runsc-systrap` or `runsc-kvm`, or their `-hostnet` variants) instead of `runc`; images, users and bind mounts are unchanged. **microvm** environments run `agenstra-manager-worker-microvm` instead: a Debian launcher root (libvirt, QEMU, virtiofsd, a pinned Debian cloud kernel) with the unchanged worker image below `/guest` (built in the same release from the same worker image, `Dockerfile.worker-microvm`). The launcher runs as root with a reduced capability set; the VMM runs as the unprivileged `agenstra-vmm` user (uid 10930). The manager's isolation probe uses the worker image as well (`AGENT_ISOLATION_PROBE_IMAGE` to override) and checks volume file operations and non-root `exec` on each runtime. See [Container Isolation Levels](../features/container-isolation.md).
 
 Each agent worker mounts its host directory at the provider **`basePath`** (typically `/app`).
 

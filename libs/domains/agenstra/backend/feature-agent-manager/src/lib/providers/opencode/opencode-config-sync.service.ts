@@ -596,7 +596,12 @@ for parent in /opt /opt/agenstra /opt/agenstra/skills; do
     exit 1
   fi
   if [ ! -e "$parent" ]; then
-    mkdir -m 755 -- "$parent"
+    # Platform skill installs run concurrently: another install may create it first (validated below).
+    mkdir -m 755 -- "$parent" 2>/dev/null || [ -d "$parent" ]
+  fi
+  if [ -L "$parent" ]; then
+    printf 'Unsafe platform skill ancestor: %s\\n' "$parent" >&2
+    exit 1
   fi
   owner=$(stat -c %u -- "$parent")
   mode=$(stat -c %a -- "$parent")
@@ -666,7 +671,12 @@ for parent in ${parentList}; do
     exit 1
   fi
   if [ ! -e "$parent" ]; then
-    mkdir -m 755 -- "$parent"
+    # Platform skill installs run concurrently: another install may create it first (validated below).
+    mkdir -m 755 -- "$parent" 2>/dev/null || [ -d "$parent" ]
+  fi
+  if [ -L "$parent" ]; then
+    printf 'Unsafe platform skill ancestor: %s\\n' "$parent" >&2
+    exit 1
   fi
   owner=$(stat -c %u -- "$parent")
   mode=$(stat -c %a -- "$parent")

@@ -1,0 +1,29 @@
+#!/bin/bash
+# Agenstra microVM guest init (PID 1 inside the guest, after the initramfs mounted the guest root).
+#
+# Mounts the guest's kernel filesystems and runs the bridge agent (under tini, which reaps orphans). The agent
+# applies the container's identity (hostname, hosts, resolver), starts the worker's original entrypoint and
+# reports its exit status to the launcher; the guest then powers off, which ends the container.
+set -u
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
+mount -t proc -o nosuid,nodev,noexec proc /proc
+mount -t sysfs -o nosuid,nodev,noexec sysfs /sys
+mount -t devtmpfs -o nosuid,mode=0755 devtmpfs /dev
+mkdir -p /dev/pts /dev/shm /dev/mqueue
+mount -t devpts -o nosuid,noexec,newinstance,ptmxmode=0666,mode=0620,gid=5 devpts /dev/pts
+ln -sf pts/ptmx /dev/ptmx
+mount -t tmpfs -o nosuid,nodev,mode=1777 tmpfs /dev/shm
+mount -t mqueue -o nosuid,nodev,noexec mqueue /dev/mqueue 2>/dev/null || true
+mount -t cgroup2 -o nosuid,nodev,noexec cgroup2 /sys/fs/cgroup 2>/dev/null || true
+ln -sf /proc/self/fd /dev/fd
+ln -sf /proc/self/fd/0 /dev/stdin
+ln -sf /proc/self/fd/1 /dev/stdout
+ln -sf /proc/self/fd/2 /dev/stderr
+
+/usr/bin/tini -s -g -- /usr/bin/node /usr/lib/agenstra-microvm/bridge-guest.cjs
+status=$?
+echo "agenstra-microvm guest: bridge agent exited with status ${status}" >/dev/console
+sync
+echo o >/proc/sysrq-trigger
+sleep 30

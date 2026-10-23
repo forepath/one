@@ -3608,6 +3608,9 @@
       <trans-unit id="featureWorkspaceSearch-queryPlaceholderFiles" datatype="html">
         <source>Search by file path...</source>
         </trans-unit>
+      <trans-unit id="featureChat-isolationLevelMicrovm" datatype="html">
+        <source>MicroVM (KVM)</source>
+        </trans-unit>
       <trans-unit id="featureChat-isolationLevelSandboxedKvm" datatype="html">
         <source>Sandboxed (gVisor on KVM)</source>
         </trans-unit>
@@ -3617,6 +3620,9 @@
       <trans-unit id="featureChat-isolationLevelStandard" datatype="html">
         <source>Standard Docker</source>
         </trans-unit>
+      <trans-unit id="featureChat-isolationMicrovmDescription" datatype="html">
+        <source>Runs in its own virtual machine with a separate Linux kernel (KVM).</source>
+        </trans-unit>
       <trans-unit id="featureChat-isolationSandboxedKvmDescription" datatype="html">
         <source>Runs through gVisor&apos;s application kernel, isolated with hardware virtualization (KVM).</source>
         </trans-unit>
@@ -3625,6 +3631,15 @@
         </trans-unit>
       <trans-unit id="featureChat-isolationStandardDescription" datatype="html">
         <source>Maximum compatibility; shares the workspace host&apos;s Linux kernel.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedKvmTitle" datatype="html">
+        <source>Use the gVisor sandbox instead of a microVM?</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedKvmMessage" datatype="html">
+        <source>Sandboxed (gVisor on KVM) runs gVisor&apos;s application kernel on the workspace host. The recommended level runs the environment in its own virtual machine with a separate Linux kernel, so a kernel-level flaw stays inside the VM.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedKvmConfirm" datatype="html">
+        <source>Use Sandboxed (gVisor on KVM)</source>
         </trans-unit>
       <trans-unit id="featureChat-isolationConfirmSandboxedTitle" datatype="html">
         <source>Use the gVisor sandbox without KVM?</source>
@@ -3639,7 +3654,7 @@
         <source>Use Standard Docker?</source>
         </trans-unit>
       <trans-unit id="featureChat-isolationConfirmStandardMessage" datatype="html">
-        <source>Standard Docker has lower isolation than the recommended gVisor sandbox. The container will interact with the workspace host&apos;s Linux kernel through Docker&apos;s normal namespace, capability and seccomp controls.</source>
+        <source>Standard Docker has lower isolation than the recommended isolation level. The container will interact with the workspace host&apos;s Linux kernel through Docker&apos;s normal namespace, capability and seccomp controls.</source>
         </trans-unit>
       <trans-unit id="featureChat-isolationConfirmStandardConfirm" datatype="html">
         <source>Use Standard Docker</source>
@@ -3661,6 +3676,9 @@
         </trans-unit>
       <trans-unit id="featureChat-isolationLegacyManager" datatype="html">
         <source>The workspace&apos;s agent manager does not support isolation levels yet.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationMicrovmAvailable" datatype="html">
+        <source>MicroVM available</source>
         </trans-unit>
       <trans-unit id="featureChat-isolationSandboxKvmAvailable" datatype="html">
         <source>KVM sandbox available</source>

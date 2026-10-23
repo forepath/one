@@ -13,9 +13,11 @@
 #              --network=host) are registered as well (sandboxed-kvm level; no libvirt / QEMU needed).
 #              Docker is only reloaded (never restarted). Rolled back on failure (a KVM failure only
 #              rolls back the KVM runtimes).
-#   uninstall  Remove the runtime registrations (installed binaries stay under /usr/local/lib/agenstra-gvisor).
+#   uninstall  Remove the runtime registrations (installed binaries stay under /usr/local/lib/agenstra-gvisor,
+#              the persisted KVM modules stay for the microvm level).
 # Environment: GVISOR_RELEASE (default 20261005.0), GVISOR_SHA512 (required for non-default releases),
-#              GVISOR_KVM=0 skips the KVM platform.
+#              GVISOR_KVM=0 skips the gVisor KVM runtimes, AGENSTRA_KVM=0 skips the host KVM preparation
+#              (which otherwise runs first and independently of gVisor; the microvm level needs /dev/kvm only).
 #
 # Exit codes: 0 ok, 2 usage, 3 not root, 40 Docker/runc baseline unavailable (E_DOCKER_BASELINE_UNAVAILABLE),
 #             41 unsupported host, 42 install failed (rolled back), 43 runtime not ready.
@@ -268,13 +270,14 @@ agenstra_kvm_wait_device() {
 
 # Make /dev/kvm available when the CPU supports hardware virtualization: load (and persist) the KVM
 # modules; install the distribution's extra kernel modules only when the module does not exist. No
-# hypervisor stack (libvirt / QEMU) is installed: gVisor's KVM platform only needs /dev/kvm.
+# hypervisor stack (libvirt / QEMU) is installed: gVisor's KVM platform only needs /dev/kvm, and the
+# microvm level ships its hypervisor in its container image.
 agenstra_kvm_prepare() {
   local vendor=""
   agenstra_kvm_facts
   [ "$AGENSTRA_KVM_DEVICE" = "present" ] && return 0
   if [ "$AGENSTRA_KVM_CPU" = "no" ]; then
-    agenstra_gvisor_log "No hardware virtualization (vmx/svm) exposed to this host; skipping the KVM platform"
+    agenstra_gvisor_log "No hardware virtualization (vmx/svm) exposed to this host; KVM is unavailable"
     return 1
   fi
   if [ "$(agenstra_gvisor_arch)" = "x86_64" ]; then
@@ -294,6 +297,22 @@ agenstra_kvm_prepare() {
     printf 'kvm\n%s\n' "$vendor" | sed '/^$/d' >"$AGENSTRA_KVM_MODULES_LOAD_DIR/agenstra-kvm.conf"
   fi
   agenstra_kvm_wait_device
+}
+
+# Host KVM preparation, independent of gVisor (sandboxed-kvm needs gVisor, microvm only /dev/kvm). It runs
+# before the gVisor installation so a gVisor failure or GVISOR_KVM=0 never withholds /dev/kvm from the microvm
+# level. AGENSTRA_KVM=0 skips it. Never fatal.
+agenstra_kvm_prepare_host() {
+  if [ "${AGENSTRA_KVM:-1}" = "0" ]; then
+    agenstra_gvisor_log "KVM preparation disabled (AGENSTRA_KVM=0); skipping"
+    return 1
+  fi
+  if agenstra_kvm_prepare; then
+    agenstra_gvisor_log "KVM is available (/dev/kvm)"
+    return 0
+  fi
+  agenstra_gvisor_log "KVM is not available on this host; the sandboxed-kvm and microvm levels stay unavailable"
+  return 1
 }
 
 # Either KVM runtime registered (partial registrations are cleaned up as well).
@@ -347,7 +366,7 @@ agenstra_kvm_install() {
     fi
     return 1
   fi
-  if ! agenstra_kvm_prepare; then
+  if ! { [ -c "$AGENSTRA_KVM_DEVICE_PATH" ] || agenstra_kvm_prepare_host; }; then
     agenstra_gvisor_log "KVM is not available on this host; the sandboxed-kvm level stays unavailable"
     if agenstra_kvm_any_runtime_registered; then
       agenstra_kvm_unregister "$runsc"
@@ -416,6 +435,8 @@ main() {
       [ "$sandboxed" = "registered" ] && return 0 || return 43
       ;;
     install)
+      # /dev/kvm first: the microvm level needs it even where gVisor cannot be installed.
+      agenstra_kvm_prepare_host || true
       if [ "$(agenstra_gvisor_arch)" = "unsupported" ] || ! agenstra_gvisor_kernel_supported; then
         agenstra_gvisor_report "$baseline" unsupported "$json"; return 41
       fi
@@ -431,8 +452,8 @@ main() {
       agenstra_gvisor_unregister "$AGENSTRA_GVISOR_PREFIX/current/runsc"
       agenstra_kvm_unregister "$AGENSTRA_GVISOR_PREFIX/current/runsc"
       agenstra_docker_reload || true
-      rm -f "$AGENSTRA_DOCKER_DAEMON_KVM_BACKUP" "$AGENSTRA_KVM_MODULES_LOAD_DIR/agenstra-kvm.conf"
-      rm -f "$AGENSTRA_DOCKER_DAEMON_BACKUP"
+      # The persisted KVM modules stay: the microvm level needs /dev/kvm without gVisor.
+      rm -f "$AGENSTRA_DOCKER_DAEMON_KVM_BACKUP" "$AGENSTRA_DOCKER_DAEMON_BACKUP"
       agenstra_docker_ready || { agenstra_gvisor_report unavailable unsupported "$json"; return 40; }
       agenstra_gvisor_report "$baseline" unsupported "$json"; return 0
       ;;

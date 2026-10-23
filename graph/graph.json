@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-22T10:18:27.908Z",
+  "generatedAt": "2026-10-22T17:37:10.704Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -562,6 +562,28 @@
         "domain": "shared",
         "context": "frontend",
         "featureGroup": "feature"
+      }
+    },
+    {
+      "id": "project:agenstra-backend-util-microvm-bridge",
+      "type": "lib",
+      "attrs": {
+        "name": "agenstra-backend-util-microvm-bridge",
+        "root": "libs/domains/agenstra/backend/util-microvm-bridge",
+        "tags": [
+          "domain:agenstra",
+          "scope:backend",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "build",
+          "test"
+        ],
+        "domain": "agenstra",
+        "context": "backend",
+        "featureGroup": "util"
       }
     },
     {
@@ -1534,7 +1556,9 @@
           "test",
           "api-container-image",
           "copy-context-mcp",
+          "copy-microvm-bridge",
           "worker-container-image",
+          "worker-microvm-container-image",
           "egress-guard-container-image",
           "start-containers",
           "openapi-client-js",
@@ -12199,6 +12223,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/util-microvm-bridge/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/util-microvm-bridge/README.md",
+        "languageOrKind": "md",
+        "projectName": "agenstra-backend-util-microvm-bridge"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-portal/README.md",
       "type": "readme",
       "attrs": {
@@ -18652,6 +18685,24 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "isolation.baseline_failed",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:isolation.microvm_available",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "isolation.microvm_available",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:isolation.microvm_unavailable",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "isolation.microvm_unavailable",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
@@ -27363,6 +27414,16 @@
       }
     },
     {
+      "id": "concept:agenstra-microvm-level",
+      "type": "concept",
+      "attrs": {
+        "title": "MicroVM level",
+        "docPath": "docs/agenstra/features/container-isolation.md",
+        "sectionAnchor": "microvm-level",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-egress-guard-interaction",
       "type": "concept",
       "attrs": {
@@ -35511,6 +35572,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "project:agenstra-backend-util-microvm-bridge",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "project:shared-shared-util-network-address",
       "type": "depends_on"
     },
@@ -35522,6 +35588,26 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "project:agenstra-shared-util-opencode-mcp-servers",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-isolation-lab",
+      "to": "project:agenstra-backend-feature-agent-manager",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-isolation-lab",
+      "to": "project:decabill-backend-feature-billing-manager",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-isolation-lab",
+      "to": "project:shared-backend-util-container-runtime",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-isolation-lab",
+      "to": "project:agenstra-shared-util-opencode-config",
       "type": "depends_on"
     },
     {
@@ -36057,6 +36143,11 @@
     {
       "from": "project:agenstra-backend-agent-manager",
       "to": "project:agenstra-agent-context-mcp",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-manager",
+      "to": "project:agenstra-backend-util-microvm-bridge",
       "type": "depends_on"
     },
     {
@@ -43245,6 +43336,11 @@
       "type": "contains"
     },
     {
+      "from": "project:agenstra-backend-util-microvm-bridge",
+      "to": "file:libs/domains/agenstra/backend/util-microvm-bridge/README.md",
+      "type": "contains"
+    },
+    {
       "from": "project:agenstra-frontend-data-access-portal",
       "to": "file:libs/domains/agenstra/frontend/data-access-portal/README.md",
       "type": "contains"
@@ -45822,6 +45918,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "webhook-event:agenstra-backend-feature-agent-controller:isolation.baseline_failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:isolation.microvm_available",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:isolation.microvm_unavailable",
       "type": "contains"
     },
     {
@@ -50852,6 +50958,11 @@
     {
       "from": "file:docs/agenstra/features/container-isolation.md",
       "to": "concept:agenstra-capability-probing",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-microvm-level",
       "type": "contains"
     },
     {
@@ -82110,6 +82221,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:agenstra-backend-util-microvm-bridge",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-backend-util-microvm-bridge",
+      "to": "context:backend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-backend-util-microvm-bridge",
+      "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:agenstra-frontend-data-access-portal",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -85111,6 +85237,11 @@
     },
     {
       "from": "concept:agenstra-capability-probing",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-microvm-level",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

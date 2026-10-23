@@ -1,0 +1,97 @@
+# -----------------------------------------------------------------------------
+# Image:      agenstra-manager-worker-microvm
+# Project:    backend-agent-manager — Nx target `worker-microvm-container-image`
+# Registry:   ghcr.io/forepath/agenstra-manager-worker-microvm
+# Base:       debian:trixie-slim (launcher) + the agenstra-manager-worker image below /guest
+# User:       root (launcher); the workload keeps the worker image's users inside the guest
+# Exposes:    4096 (opencode serve HTTP API), 6080 (websockify → TigerVNC), tunnelled into the microVM
+# Build:      npx nx run agenstra-backend-agent-manager:worker-microvm-container-image
+# Run:        only through the agent manager (isolation level `microvm`): needs --device /dev/kvm,
+#             the kvm group and the reduced capability set the manager grants.
+# Notes:      The container root is the launcher (libvirt session, QEMU/KVM, virtiofsd, bridge daemon); the
+#             worker filesystem lives below /guest and is the microVM's root filesystem (virtio-fs). The guest
+#             never sees the launcher tree, so nothing it writes changes what the launcher runs.
+#             Volumes, `docker cp` and archive paths of the workload are below /guest.
+#             Label io.agenstra.microvm.protocol=<n>: bridge protocol version the agent manager checks.
+# -----------------------------------------------------------------------------
+#
+ARG VERSION=latest
+ARG WORKER_IMAGE=ghcr.io/forepath/agenstra-manager-worker:${VERSION}
+
+# Guest root: the unchanged worker image plus a root-owned Node.js runtime and the guest-side bridge.
+FROM ${WORKER_IMAGE} AS guest
+
+USER root
+# The worker image's Node.js lives in the agent-writable nvm tree; the guest agent runs as root and must not.
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nodejs tini python3 util-linux && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    install -d -m 0755 /usr/lib/agenstra-microvm && \
+    /usr/bin/env -0 > /usr/lib/agenstra-microvm/worker.env && \
+    pwd > /usr/lib/agenstra-microvm/worker.workdir
+
+COPY --chmod=0755 worker-microvm/guest-init /usr/lib/agenstra-microvm/guest-init
+COPY --chmod=0644 worker-microvm/pty-helper.py /usr/lib/agenstra-microvm/pty-helper.py
+COPY --chmod=0644 microvm-bridge/bridge-guest.cjs /usr/lib/agenstra-microvm/bridge-guest.cjs
+
+# Launcher root.
+FROM docker.io/debian:trixie-slim
+
+ARG VERSION=0.0.0
+ENV VERSION=${VERSION}
+ENV DEBIAN_FRONTEND=noninteractive
+
+COPY --chmod=0755 worker-microvm/initramfs-init /tmp/agenstra-initramfs-init
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "${arch}" in \
+      amd64) qemu=qemu-system-x86 ;; \
+      arm64) qemu=qemu-system-arm ;; \
+      *) echo "unsupported architecture ${arch}" >&2; exit 1 ;; \
+    esac; \
+    apt-get update; \
+    apt-get upgrade -y --no-install-recommends; \
+    apt-get install -y --no-install-recommends \
+      "${qemu}" libvirt-daemon libvirt-daemon-driver-qemu libvirt-clients virtiofsd nodejs tini procps \
+      util-linux "linux-image-cloud-${arch}" busybox-static cpio xz-utils; \
+    # initramfs: static busybox, the virtio network driver and the init that mounts the virtio-fs guest root.
+    kernel_version="$(ls /lib/modules)"; \
+    staging="$(mktemp -d)"; \
+    mkdir -p "${staging}/bin" "${staging}/modules"; \
+    cp /usr/bin/busybox "${staging}/bin/busybox"; \
+    install -m 0755 /tmp/agenstra-initramfs-init "${staging}/init"; \
+    for module in kernel/net/core/failover kernel/drivers/net/net_failover kernel/drivers/net/virtio_net; do \
+      xz -dc "/lib/modules/${kernel_version}/${module}.ko.xz" > "${staging}/modules/$(basename "${module}").ko"; \
+    done; \
+    install -d -m 0755 /usr/lib/agenstra-microvm; \
+    (cd "${staging}" && find . | cpio -o -H newc --quiet) | gzip -9 > /usr/lib/agenstra-microvm/initramfs.img; \
+    rm -rf "${staging}" /tmp/agenstra-initramfs-init /boot/initrd.img* /initrd.img* /vmlinuz.old; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*; \
+    useradd --system --uid 10930 --user-group --no-create-home --home-dir /nonexistent \
+      --shell /usr/sbin/nologin agenstra-vmm
+
+COPY --chmod=0755 worker-microvm/launch /usr/lib/agenstra-microvm/launch
+COPY --chmod=0644 microvm-bridge/bridge-host.cjs /usr/lib/agenstra-microvm/bridge-host.cjs
+RUN printf '#!/bin/sh\nexec /usr/bin/node /usr/lib/agenstra-microvm/bridge-host.cjs exec "$@"\n' \
+      > /usr/lib/agenstra-microvm/vm-exec && \
+    chmod 0755 /usr/lib/agenstra-microvm/vm-exec
+
+COPY --link --from=guest / /guest/
+RUN cp /guest/usr/lib/agenstra-microvm/worker.env /guest/usr/lib/agenstra-microvm/worker.workdir \
+      /usr/lib/agenstra-microvm/
+
+# Workload contract inside the guest (the worker image's entrypoint, its ports and the egress guard's loopback
+# proxy port that guarded workers reach as 127.0.0.1).
+ENV AGENSTRA_MICROVM_ENTRYPOINT=/usr/local/bin/docker-entrypoint.sh
+ENV AGENSTRA_MICROVM_FORWARD_PORTS=4096,6080
+ENV AGENSTRA_MICROVM_LOOPBACK_PORTS=3128
+EXPOSE 4096 6080
+
+LABEL io.agenstra.microvm.protocol="1"
+LABEL io.forepath.scan.nested-rootfs="/guest"
+LABEL io.agenstra.environment-mount="1"
+LABEL io.agenstra.context-mcp="1"
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/lib/agenstra-microvm/launch"]

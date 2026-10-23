@@ -26,6 +26,8 @@ export const AGENSTRA_NOTIFICATION_EVENTS = [
   'isolation.sandbox_unavailable',
   'isolation.sandbox_kvm_available',
   'isolation.sandbox_kvm_unavailable',
+  'isolation.microvm_available',
+  'isolation.microvm_unavailable',
   'isolation.baseline_failed',
   'agent.isolation_override',
   'agent.sandbox_creation_failed',

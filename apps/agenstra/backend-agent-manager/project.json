@@ -7,7 +7,8 @@
   "implicitDependencies": [
     "shared-platform-authentication",
     "agenstra-backend-feature-agent-manager",
-    "agenstra-agent-context-mcp"
+    "agenstra-agent-context-mcp",
+    "agenstra-backend-util-microvm-bridge"
   ],
   "targets": {
     "build": {
@@ -27,6 +28,11 @@
             "glob": "**/*",
             "input": "apps/agenstra/backend-agent-manager/worker-desktop",
             "output": "worker-desktop"
+          },
+          {
+            "glob": "**/*",
+            "input": "apps/agenstra/backend-agent-manager/worker-microvm",
+            "output": "worker-microvm"
           }
         ],
         "webpackConfig": "apps/agenstra/backend-agent-manager/webpack.config.cjs",
@@ -164,6 +170,26 @@
         "parallel": false
       }
     },
+    "copy-microvm-bridge": {
+      "dependsOn": [
+        "build",
+        {
+          "projects": ["agenstra-backend-util-microvm-bridge"],
+          "target": "build"
+        }
+      ],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/agenstra/backend-agent-manager/microvm-bridge"
+      ],
+      "options": {
+        "commands": [
+          "mkdir -p dist/apps/agenstra/backend-agent-manager/microvm-bridge",
+          "cp dist/libs/domains/agenstra/backend/util-microvm-bridge/bridge-host.cjs dist/libs/domains/agenstra/backend/util-microvm-bridge/bridge-guest.cjs dist/apps/agenstra/backend-agent-manager/microvm-bridge/"
+        ],
+        "parallel": false
+      }
+    },
     "worker-container-image": {
       "dependsOn": ["prune", "copy-context-mcp"],
       "cache": false,
@@ -189,6 +215,40 @@
           "tags": [
             "ghcr.io/forepath/agenstra-manager-worker:latest",
             "ghcr.io/forepath/agenstra-manager-worker:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "worker-microvm-container-image": {
+      "dependsOn": ["worker-container-image", "copy-microvm-bridge"],
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/agenstra/backend-agent-manager/Dockerfile.worker-microvm",
+        "context": "dist/apps/agenstra/backend-agent-manager",
+        "build-args": ["VERSION"]
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "labels": [
+            "io.forepath.one.test-project=agenstra-backend-agent-manager"
+          ],
+          "build-args": [
+            "VERSION",
+            "WORKER_IMAGE=registry.forenet.internal/forepath/agenstra-manager-worker:test"
+          ],
+          "tags": [
+            "registry.forenet.internal/forepath/agenstra-manager-worker-microvm:test"
+          ]
+        },
+        "release": {
+          "push": true,
+          "tags": [
+            "ghcr.io/forepath/agenstra-manager-worker-microvm:latest",
+            "ghcr.io/forepath/agenstra-manager-worker-microvm:$VERSION"
           ]
         }
       },
@@ -227,6 +287,7 @@
       "dependsOn": [
         "api-container-image",
         "worker-container-image",
+        "worker-microvm-container-image",
         "egress-guard-container-image"
       ],
       "cache": false,

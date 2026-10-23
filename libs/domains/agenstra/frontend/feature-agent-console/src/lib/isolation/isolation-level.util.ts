@@ -8,12 +8,18 @@ import type {
 import type { FpcBadgeColor } from '@forepath/shared/frontend/ui-components';
 
 /** Isolation levels from strongest to weakest (`standard` is the floor of every host). */
-export const ISOLATION_LEVELS_STRONGEST_FIRST: readonly IsolationLevel[] = ['sandboxed-kvm', 'sandboxed', 'standard'];
+export const ISOLATION_LEVELS_STRONGEST_FIRST: readonly IsolationLevel[] = [
+  'microvm',
+  'sandboxed-kvm',
+  'sandboxed',
+  'standard',
+];
 
 const ISOLATION_LEVEL_RANK: Readonly<Record<IsolationLevel, number>> = {
   standard: 1,
   sandboxed: 2,
   'sandboxed-kvm': 3,
+  microvm: 4,
 };
 
 /** True for the isolation levels this console knows (newer hosts may report levels it does not know yet). */
@@ -30,6 +36,8 @@ type ClientIsolationSource = Pick<ClientResponseDto, 'isolation'> | null | undef
 
 export function isolationLevelLabel(level: IsolationLevel): string {
   switch (level) {
+    case 'microvm':
+      return $localize`:@@featureChat-isolationLevelMicrovm:MicroVM (KVM)`;
     case 'sandboxed-kvm':
       return $localize`:@@featureChat-isolationLevelSandboxedKvm:Sandboxed (gVisor on KVM)`;
     case 'sandboxed':
@@ -44,6 +52,8 @@ export function isolationLevelLabel(level: IsolationLevel): string {
 /** One-line description of a level for the Add Environment dialog. */
 export function isolationLevelDescription(level: IsolationLevel): string {
   switch (level) {
+    case 'microvm':
+      return $localize`:@@featureChat-isolationMicrovmDescription:Runs in its own virtual machine with a separate Linux kernel (KVM).`;
     case 'sandboxed-kvm':
       return $localize`:@@featureChat-isolationSandboxedKvmDescription:Runs through gVisor's application kernel, isolated with hardware virtualization (KVM).`;
     case 'sandboxed':
@@ -63,6 +73,14 @@ export interface IsolationDowngradeDialogTexts {
 }
 
 export function isolationDowngradeDialogTexts(level: IsolationLevel): IsolationDowngradeDialogTexts {
+  if (level === 'sandboxed-kvm') {
+    return {
+      title: $localize`:@@featureChat-isolationConfirmSandboxedKvmTitle:Use the gVisor sandbox instead of a microVM?`,
+      message: $localize`:@@featureChat-isolationConfirmSandboxedKvmMessage:Sandboxed (gVisor on KVM) runs gVisor's application kernel on the workspace host. The recommended level runs the environment in its own virtual machine with a separate Linux kernel, so a kernel-level flaw stays inside the VM.`,
+      confirmLabel: $localize`:@@featureChat-isolationConfirmSandboxedKvmConfirm:Use Sandboxed (gVisor on KVM)`,
+    };
+  }
+
   if (level === 'sandboxed') {
     return {
       title: $localize`:@@featureChat-isolationConfirmSandboxedTitle:Use the gVisor sandbox without KVM?`,
@@ -73,7 +91,7 @@ export function isolationDowngradeDialogTexts(level: IsolationLevel): IsolationD
 
   return {
     title: $localize`:@@featureChat-isolationConfirmStandardTitle:Use Standard Docker?`,
-    message: $localize`:@@featureChat-isolationConfirmStandardMessage:Standard Docker has lower isolation than the recommended gVisor sandbox. The container will interact with the workspace host's Linux kernel through Docker's normal namespace, capability and seccomp controls.`,
+    message: $localize`:@@featureChat-isolationConfirmStandardMessage:Standard Docker has lower isolation than the recommended isolation level. The container will interact with the workspace host's Linux kernel through Docker's normal namespace, capability and seccomp controls.`,
     confirmLabel: $localize`:@@featureChat-isolationConfirmStandardConfirm:Use Standard Docker`,
   };
 }
@@ -170,6 +188,10 @@ export function getIsolationLevelUnavailableReason(
 }
 
 export function getIsolationBadgeColor(level: IsolationLevel): FpcBadgeColor {
+  if (level === 'microvm') {
+    return 'dark';
+  }
+
   if (level === 'sandboxed-kvm') {
     return 'primary';
   }
@@ -188,6 +210,10 @@ export function getEnvironmentIsolationLevel(
 export function getWorkspaceIsolationIndicatorLabel(client: ClientIsolationSource): string | null {
   if (!client?.isolation) {
     return null;
+  }
+
+  if (isIsolationLevelAvailable(client, 'microvm')) {
+    return $localize`:@@featureChat-isolationMicrovmAvailable:MicroVM available`;
   }
 
   if (isIsolationLevelAvailable(client, 'sandboxed-kvm')) {

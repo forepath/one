@@ -36,6 +36,8 @@ describe('isolation lab: capability probes', () => {
     AGENT_ISOLATION_PROBE_IMAGE: PROBE_IMAGE,
     AGENT_ISOLATION_PROBE_ENABLED: 'false',
     AGENT_ISOLATION_PROBE_TIMEOUT_MS: String(5 * 60_000),
+    // The microvm level has its own spec (microvm.isolation-lab.spec.ts) with a lab microVM image.
+    AGENT_ISOLATION_MICROVM_ENABLED: 'false',
   };
 
   beforeAll(() => {

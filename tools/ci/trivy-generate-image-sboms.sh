@@ -100,16 +100,27 @@ if ! command -v trivy >/dev/null 2>&1; then
   exit 1
 fi
 
+# shellcheck source=tools/ci/trivy-nested-rootfs.sh
+. "$REPO_ROOT/tools/ci/trivy-nested-rootfs.sh"
+
+cleanup_roots=()
+
+cleanup() {
+  for root in "${cleanup_roots[@]}"; do
+    remove_nested_rootfs "$root"
+  done
+}
+trap cleanup EXIT
+
 echo "Generating CycloneDX SBOMs for ${#filtered_images[@]} image(s): ${filtered_images[*]}"
 
-for image in "${filtered_images[@]}"; do
-  repo="${image%%:*}"
-  repo_name="${repo##*/}"
-  bom_path="${SBOM_OUTPUT_DIR}/container-${repo_name}.cdx.json"
+bom_count=0
 
-  echo "SBOM for ${image} -> ${bom_path}"
+write_sbom() {
+  local bom_path="$1"
+  shift
 
-  trivy image "$image" \
+  trivy "$@" \
     --config trivy.yaml \
     --quiet \
     --format cyclonedx \
@@ -117,6 +128,31 @@ for image in "${filtered_images[@]}"; do
     --exit-code 0
 
   normalize_container_cyclonedx_for_dependency_track "$bom_path"
+  bom_count=$((bom_count + 1))
+}
+
+for image in "${filtered_images[@]}"; do
+  repo="${image%%:*}"
+  repo_name="${repo##*/}"
+  bom_path="${SBOM_OUTPUT_DIR}/container-${repo_name}.cdx.json"
+  nested_rootfs="$(nested_rootfs_of "$image")"
+
+  echo "SBOM for ${image} -> ${bom_path}"
+
+  if [ -z "$nested_rootfs" ]; then
+    write_sbom "$bom_path" image "$image"
+    continue
+  fi
+
+  # The nested root gets its own SBOM (container-<image>-<dir>.cdx.json) so its OS packages are listed correctly.
+  write_sbom "$bom_path" image "$image" --skip-dirs "$nested_rootfs"
+
+  nested_bom_path="${SBOM_OUTPUT_DIR}/container-${repo_name}-${nested_rootfs//\//-}.cdx.json"
+  echo "SBOM for nested root filesystem /${nested_rootfs} of ${image} -> ${nested_bom_path}"
+  nested_root="$(extract_nested_rootfs "$image" "$nested_rootfs")"
+  cleanup_roots+=("$nested_root")
+  write_sbom "$nested_bom_path" rootfs "$nested_root"
+  remove_nested_rootfs "$nested_root"
 done
 
-echo "Wrote ${#filtered_images[@]} container image SBOM file(s) under ${SBOM_OUTPUT_DIR}"
+echo "Wrote ${bom_count} container image SBOM file(s) under ${SBOM_OUTPUT_DIR}"

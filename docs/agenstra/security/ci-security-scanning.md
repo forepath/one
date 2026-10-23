@@ -12,6 +12,8 @@ Agenstra uses [Trivy](https://trivy.dev/) in GitHub Actions for automated vulner
 
 Scanners enabled for filesystem scans: **vuln**, **secret**, **misconfig**.
 
+**Images with a nested root filesystem.** The microVM worker image (`agenstra-manager-worker-microvm`) carries the guest's complete root below `/guest`. Trivy only reads the package databases of an image's own root, so it would miss every Debian package of the guest and report files those packages own (for example Debian's `python3-certifi`) as stand-alone language packages. Images declare such a directory with the `io.forepath.scan.nested-rootfs` label (here `/guest`). `tools/ci/trivy-scan-local-images.sh` then scans the image without that directory and the extracted directory on its own with `trivy rootfs`, both under the same CRITICAL gate. `tools/ci/trivy-generate-image-sboms.sh` writes a separate SBOM for it (`container-agenstra-manager-worker-microvm-guest.cdx.json`, its own Dependency-Track project). The helpers live in `tools/ci/trivy-nested-rootfs.sh`.
+
 ## Workflows
 
 | Workflow                                    | Jobs                                                                                |

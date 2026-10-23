@@ -1,7 +1,5 @@
 import {
   CreateAgentDto,
-  GVISOR_ISOLATION_LEVELS,
-  type GvisorIsolationLevel,
   HostIsolationCapabilitiesDto,
   ISOLATION_LEVEL_RANK,
   ISOLATION_LEVELS,
@@ -10,7 +8,7 @@ import {
   type IsolationLevelCapabilityDto,
   IsolationResolution,
   IsolationResolutionError,
-  isGvisorIsolationLevel,
+  isEnhancedIsolationLevel,
   resolveIsolationRequest,
   runtimeForIsolationLevel,
 } from '@forepath/agenstra/backend/feature-agent-manager';
@@ -38,17 +36,26 @@ import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 
 /**
- * Message of the agent manager when a gVisor (sandboxed / sandboxed-kvm) worker container fails to start.
- * Fallback for managers that do not report `code: E_ISOLATION_RUNTIME_FAILED` yet.
+ * Message of the agent manager when a gVisor (sandboxed / sandboxed-kvm) or microVM worker container fails to
+ * start. Fallback for managers that do not report `code: E_ISOLATION_RUNTIME_FAILED` yet.
  */
-const SANDBOX_RUNTIME_FAILURE_PATTERN = /sandboxed(?:-kvm)? \(gVisor(?: on KVM)?\) container could not be started/i;
+const SANDBOX_RUNTIME_FAILURE_PATTERN =
+  /(?:sandboxed(?:-kvm)? \(gVisor(?: on KVM)?\)|microvm \(KVM microVM\)) container could not be started/i;
 
-/** Transition events of the gVisor levels (`sandboxed` keeps its original event names). */
-const GVISOR_LEVEL_TRANSITIONS: Readonly<
-  Record<GvisorIsolationLevel, { available: IsolationHostTransitionType; unavailable: IsolationHostTransitionType }>
+/** Levels above the standard floor (gVisor and microVM), each with its own availability events. */
+type EnhancedIsolationLevel = Exclude<IsolationLevel, 'standard'>;
+
+const ENHANCED_ISOLATION_LEVELS = ISOLATION_LEVELS.filter(
+  (level): level is EnhancedIsolationLevel => level !== 'standard',
+);
+
+/** Transition events of the levels above the floor (`sandboxed` keeps its original event names). */
+const LEVEL_TRANSITIONS: Readonly<
+  Record<EnhancedIsolationLevel, { available: IsolationHostTransitionType; unavailable: IsolationHostTransitionType }>
 > = {
   sandboxed: { available: 'isolation.sandbox_available', unavailable: 'isolation.sandbox_unavailable' },
   'sandboxed-kvm': { available: 'isolation.sandbox_kvm_available', unavailable: 'isolation.sandbox_kvm_unavailable' },
+  microvm: { available: 'isolation.microvm_available', unavailable: 'isolation.microvm_unavailable' },
 };
 
 /** Level a manager that predates it cannot offer (older agent manager release). */
@@ -105,6 +112,7 @@ const LEGACY_SUMMARY: ClientIsolationSummaryDto = {
     standard: { rank: 1, runtime: 'runc', state: 'ready' },
     sandboxed: managerUnsupportedLevel('sandboxed'),
     'sandboxed-kvm': managerUnsupportedLevel('sandboxed-kvm'),
+    microvm: managerUnsupportedLevel('microvm'),
   },
   revision: null,
   probedAt: null,
@@ -365,9 +373,9 @@ export class ClientIsolationService {
     const message = (error as { message?: string })?.message ?? '';
     const level = plan.resolution?.level;
 
-    // Only runtime failures of a gVisor container (reported by the agent manager), not e.g.
+    // Only runtime failures of a gVisor / microVM container (reported by the agent manager), not e.g.
     // validation errors such as a duplicate environment name.
-    if (!level || !isGvisorIsolationLevel(level) || !this.isRuntimeFailure(error, message)) {
+    if (!level || !isEnhancedIsolationLevel(level) || !this.isRuntimeFailure(error, message)) {
       return;
     }
 
@@ -404,6 +412,7 @@ export class ClientIsolationService {
       standardState: capabilities.levels.standard.state,
       sandboxedState: capabilities.levels.sandboxed.state,
       sandboxedKvmState: capabilities.levels['sandboxed-kvm']?.state ?? null,
+      microvmState: capabilities.levels.microvm?.state ?? null,
       recommendedLevel: capabilities.recommendedLevel ?? null,
       capabilities,
       probedAt: new Date(capabilities.probedAt),
@@ -460,23 +469,24 @@ export class ClientIsolationService {
     }> = [];
     const standard = capabilities.levels.standard.state;
     const previousStandard = previous?.standardState ?? null;
-    const previousStates: Record<GvisorIsolationLevel, string | null> = {
+    const previousStates: Record<EnhancedIsolationLevel, string | null> = {
       sandboxed: previous?.sandboxedState ?? null,
       'sandboxed-kvm': previous?.sandboxedKvmState ?? null,
+      microvm: previous?.microvmState ?? null,
     };
 
-    for (const gvisorLevel of GVISOR_ISOLATION_LEVELS) {
-      const state = capabilities.levels[gvisorLevel]?.state;
-      const previousState = previousStates[gvisorLevel];
+    for (const enhancedLevel of ENHANCED_ISOLATION_LEVELS) {
+      const state = capabilities.levels[enhancedLevel]?.state;
+      const previousState = previousStates[enhancedLevel];
 
       if (state === 'ready' && previousState !== 'ready') {
-        transitions.push({ type: GVISOR_LEVEL_TRANSITIONS[gvisorLevel].available, level: gvisorLevel, previousState });
+        transitions.push({ type: LEVEL_TRANSITIONS[enhancedLevel].available, level: enhancedLevel, previousState });
       }
 
       if (state !== 'ready' && previousState === 'ready') {
         transitions.push({
-          type: GVISOR_LEVEL_TRANSITIONS[gvisorLevel].unavailable,
-          level: gvisorLevel,
+          type: LEVEL_TRANSITIONS[enhancedLevel].unavailable,
+          level: enhancedLevel,
           previousState,
         });
       }
@@ -511,7 +521,7 @@ export class ClientIsolationService {
   }
 
   /**
-   * Runtime failure of a gVisor container: the agent manager's machine-readable `code` (current
+   * Runtime failure of a gVisor / microVM container: the agent manager's machine-readable `code` (current
    * releases), otherwise its message (older releases).
    */
   private isRuntimeFailure(error: unknown, message: string): boolean {
