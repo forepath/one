@@ -112,22 +112,7 @@ export class OpenCodePtyService {
       return;
     }
 
-    const response = await fetch(this.ptyResourceUrl(session.baseUrl, session.ptyID), {
-      method: 'PATCH',
-      headers: {
-        Authorization: session.authorization,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ size: { cols, rows } }),
-    });
-
-    if (!response.ok) {
-      const detail = await response.text().catch(() => '');
-
-      this.logger.warn(
-        `OpenCode PTY resize failed for session ${sessionId}: ${response.status}${detail ? ` ${detail}` : ''}`,
-      );
-    }
+    await this.updatePtySize(session.baseUrl, session.authorization, session.ptyID, cols, rows);
   }
 
   async close(sessionId: string): Promise<void> {
@@ -268,17 +253,47 @@ export class OpenCodePtyService {
     const pty = this.parsePty(await response.json());
 
     if (cols && rows && cols > 0 && rows > 0) {
-      await fetch(this.ptyResourceUrl(baseUrl, pty.id), {
-        method: 'PATCH',
-        headers: {
-          Authorization: authorization,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ size: { cols, rows } }),
-      });
+      try {
+        await this.updatePtySize(baseUrl, authorization, pty.id, cols, rows);
+      } catch (error) {
+        const err = error as { message?: string };
+
+        this.logger.warn(`Initial OpenCode PTY size for ${pty.id} not applied: ${err.message}`);
+      }
     }
 
     return pty;
+  }
+
+  /**
+   * OpenCode updates PTYs via `PUT /pty/{id}`. Unknown method/route pairs fall through to the
+   * web UI, which answers 200 with HTML, so a non-JSON success is treated as a failure too.
+   */
+  private async updatePtySize(
+    baseUrl: string,
+    authorization: string,
+    ptyID: string,
+    cols: number,
+    rows: number,
+  ): Promise<void> {
+    const response = await fetch(this.ptyResourceUrl(baseUrl, ptyID), {
+      method: 'PUT',
+      headers: {
+        Authorization: authorization,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ size: { cols, rows } }),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+
+      throw new Error(`OpenCode PTY resize failed: ${response.status}${detail ? ` ${detail}` : ''}`);
+    }
+
+    if (!response.headers.get('content-type')?.includes('application/json')) {
+      throw new Error('OpenCode PTY resize returned a non-JSON response');
+    }
   }
 
   private async createConnectToken(
