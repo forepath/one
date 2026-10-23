@@ -19,7 +19,7 @@ Map your intended profile to **[System Requirements](./system-requirements.md)**
 
 - [ ] Host OS is Linux **amd64** or **arm64** (prefer amd64 for busy manager hosts)
 - [ ] Docker **20.10+** (recommended **24+**) and Compose **2.0+** on manager hosts
-- [ ] Node.js **24.14.1** only if running local Nx (containers already pin this version)
+- [ ] Node.js **24.22.1** only if running local Nx (containers already pin this version)
 - [ ] Manager host has Docker socket access; permissions restricted per [Container image security](../security/container-images.md) [ ] Host path **`/opt/agents`** exists and is writable by UID **10001** (or entrypoint `chown` after bind mount)
 
 ### Controller stack

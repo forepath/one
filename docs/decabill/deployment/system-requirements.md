@@ -51,10 +51,10 @@ Workers and the API share the same image, which includes **Playwright Chromium**
 | **Host OS**                     | Linux amd64 or arm64 with a current kernel | Same; use LTS distributions for production |
 | **Docker**                      | 20.10+                                     | 24+ with Compose v2                        |
 | **Docker Compose**              | 2.0+                                       | Latest stable                              |
-| **Node.js** (local Nx dev only) | 24.14.1                                    | Match container `NODE_VERSION`             |
+| **Node.js** (local Nx dev only) | 24.22.1                                    | Match container `NODE_VERSION`             |
 | **Architecture**                | 64-bit                                     | 64-bit                                     |
 
-Container images target **Node.js 24.14.1** on **debian:trixie-slim**. Billing API images run as non-root user `decabill` (UID **10001**). Frontend server images run as `node` (UID **1000**).
+Container images target **Node.js 24.22.1** on **debian:trixie-slim**. Billing API images run as non-root user `decabill` (UID **10001**). Frontend server images run as `node` (UID **1000**).
 
 ## Data Services
 
