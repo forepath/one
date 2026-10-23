@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.0](https://github.com/forepath/one/compare/v4.0.0...v4.1.0) (2026-10-23)
+
+
+### Features
+
+* **agenstra:** gvisor kvm-based isolation ([#695](https://github.com/forepath/one/issues/695)) ([6a049c3](https://github.com/forepath/one/commit/6a049c3240870803cc8923a9d89852ee71b8d099))
+* **agenstra:** qemu kvm-based isolation ([#696](https://github.com/forepath/one/issues/696)) ([5d11fa4](https://github.com/forepath/one/commit/5d11fa41b4397294f3a48cb7c085bf640ebb9584))
+
+
+### Bug Fixes
+
+* **agenstra:** pty resizing ([#698](https://github.com/forepath/one/issues/698)) ([0bc8445](https://github.com/forepath/one/commit/0bc84451e711d9818cec2f228e90b13c8681768d))
+
+
+### Chores
+
+* **decabill:** components diagram ([#697](https://github.com/forepath/one/issues/697)) ([d501521](https://github.com/forepath/one/commit/d5015211d8689d54acfb3489f2e3cecb95b93a46))
+
 ## [4.0.0](https://github.com/forepath/one/compare/v3.5.1...v4.0.0) (2026-10-22)
 
 
