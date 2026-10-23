@@ -15,12 +15,17 @@ import {
   FpcButtonComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormCheckGroupComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 
@@ -36,6 +41,11 @@ const DEFAULT_DAYS = 365;
 @Component({
   selector: 'loadweaver-wallboards-page',
   imports: [
+    FpcPanelGridComponent,
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
+    FpcFormCheckComponent,
+    FpcFormCheckGroupComponent,
     CommonModule,
     FormsModule,
     FpcAlertComponent,
@@ -101,6 +111,7 @@ export class LoadweaverWallboardsPageComponent implements OnInit {
 
   readonly title = $localize`:@@lwConsoleWallboards-title:Wallboards`;
   readonly refreshLabel = $localize`:@@lwConsoleWallboards-refresh:Refresh`;
+  readonly addLabel = $localize`:@@lwConsoleWallboards-add:New wallboard`;
   readonly tokensTitle = $localize`:@@lwConsoleWallboards-tokens:Wallboard tokens`;
   readonly createTitle = $localize`:@@lwConsoleWallboards-createTitle:New wallboard`;
   readonly revokeTitle = $localize`:@@lwConsoleWallboards-revokeTitle:Revoke the wallboard token?`;

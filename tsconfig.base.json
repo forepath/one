@@ -312,6 +312,15 @@
       ],
       "@forepath/loadweaver/shared/util-import": [
         "libs/domains/loadweaver/shared/util-import/src/index.ts"
+      ],
+      "@forepath/loadweaver/backend/util-terraform-protocol": [
+        "libs/domains/loadweaver/backend/util-terraform-protocol/src/index.ts"
+      ],
+      "@forepath/loadweaver/backend/feature-terraform-provider": [
+        "libs/domains/loadweaver/backend/feature-terraform-provider/src/index.ts"
+      ],
+      "@forepath/loadweaver/backend/feature-fleet": [
+        "libs/domains/loadweaver/backend/feature-fleet/src/index.ts"
       ]
     }
   },

@@ -9,6 +9,7 @@ import {
   FpcButtonComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
   FpcStatusBadgeComponent,
 } from '@forepath/shared/frontend/ui-components';
@@ -37,6 +38,7 @@ import { LoadweaverAlertSilenceModalComponent, type SilencePrefill } from './ale
     FpcButtonComponent,
     FpcPageHeaderComponent,
     FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
     FpcStatusBadgeComponent,
     LoadweaverAlertSilenceModalComponent,
@@ -75,6 +77,8 @@ export class LoadweaverAlertDetailPageComponent implements OnInit {
 
   readonly title = $localize`:@@lwConsoleAlertDetail-title:Alert`;
   readonly backLabel = $localize`:@@lwConsoleAlertDetail-back:All alerts`;
+  readonly silenceLabel = $localize`:@@lwConsoleAlertDetail-silence:Silence`;
+  readonly acknowledgeLabel = $localize`:@@lwConsoleAlertDetail-acknowledge:Acknowledge`;
   readonly detailsTitle = $localize`:@@lwConsoleAlertDetail-details:Details`;
   readonly timelineTitle = $localize`:@@lwConsoleAlertDetail-timeline:Timeline`;
 

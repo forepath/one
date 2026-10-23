@@ -15,6 +15,7 @@ import {
   FpcEmptyStateComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { combineLatest } from 'rxjs';
@@ -37,6 +38,7 @@ import { peerGroupKey, peerIcon, peerLabel, ruleLabel } from './policy-format';
     FpcEmptyStateComponent,
     FpcPageHeaderComponent,
     FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
   ],
   templateUrl: './policy-detail-page.component.html',
@@ -86,6 +88,9 @@ export class LoadweaverPolicyDetailPageComponent implements OnInit {
 
   readonly title = $localize`:@@lwConsolePolicyDetail-title:Policy`;
   readonly backLabel = $localize`:@@lwConsolePolicyDetail-back:Groups & policies`;
+  readonly mapLabel = $localize`:@@lwConsolePolicyDetail-map:Map`;
+  readonly yamlLabel = $localize`:@@lwConsolePolicyDetail-yaml:YAML`;
+  readonly editLabel = $localize`:@@lwConsolePolicyDetail-edit:Edit`;
   readonly overviewTitle = $localize`:@@lwConsolePolicyDetail-overview:Overview`;
   readonly fromTitle = $localize`:@@lwConsolePolicyDetail-from:From`;
   readonly toTitle = $localize`:@@lwConsolePolicyDetail-to:To`;

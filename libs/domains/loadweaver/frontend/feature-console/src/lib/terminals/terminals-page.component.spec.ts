@@ -146,7 +146,8 @@ describe('LoadweaverTerminalsPageComponent', () => {
     fixture.detectChanges();
     expect(el().textContent).toContain('too many terminals');
 
-    component().closeTab(component().tabs()[0]);
+    // The tab bar's close action ends the tab.
+    (el().querySelector('[data-testid="terminals-tabs"] .fpc-tab-group__action') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(component().tabs()).toEqual([]);
     expect(client['close']).not.toHaveBeenCalled();

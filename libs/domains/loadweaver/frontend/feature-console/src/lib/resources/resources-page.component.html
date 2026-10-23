@@ -1,94 +1,126 @@
-<fpc-page-header [title]="title" icon="file-earmark-code">
-  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
-    <label class="visually-hidden" for="lw-resources-search">{{ searchLabel }}</label>
-    <input
-      id="lw-resources-search"
-      type="search"
-      class="form-control form-control-sm w-auto"
-      [placeholder]="searchLabel"
-      [ngModel]="search()"
-      (ngModelChange)="search.set($event)"
-    />
-    <label class="visually-hidden" for="lw-resources-kind">{{ kindFilterLabel }}</label>
-    <select
-      id="lw-resources-kind"
-      class="form-select form-select-sm w-auto"
-      [ngModel]="kind()"
-      (ngModelChange)="kind.set($event)"
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="file-earmark-code">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="newLabel"
+      [title]="newLabel"
+      (clicked)="create()"
+      data-testid="resources-new"
     >
-      <option value="" i18n="@@lwConsoleResources-allKinds">All kinds</option>
-      @for (k of kinds(); track k) {
-        <option [value]="k">{{ k }} ({{ count(k) }})</option>
-      }
-    </select>
-    <label class="visually-hidden" for="lw-resources-project">{{ projectFilterLabel }}</label>
-    <select
-      id="lw-resources-project"
-      class="form-select form-select-sm w-auto"
-      [ngModel]="project()"
-      (ngModelChange)="project.set($event)"
-    >
-      <option value="" i18n="@@lwConsoleResources-allProjects">All projects</option>
-      @if (seesInfrastructure()) {
-        <option [value]="clusterScope" i18n="@@lwConsoleResources-clusterScope">Cluster-level</option>
-      }
-      @for (p of projects(); track p) {
-        <option [value]="p">{{ p }}</option>
-      }
-    </select>
-    <fpc-button variant="primary" size="sm" (clicked)="create()" data-testid="resources-new">
-      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i><span i18n="@@lwConsoleResources-new">New resource</span>
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
     </fpc-button>
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="dark"
       size="sm"
-      iconOnly
+      [iconOnly]="true"
       [ariaLabel]="refreshLabel"
       [title]="refreshLabel"
       (clicked)="refresh()"
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-@if (error(); as message) {
-  <fpc-alert class="m-3" variant="danger" [message]="message" />
-}
+  <fpc-search-field
+    class="flex-shrink-0 border-bottom"
+    inputId="lw-resources-search"
+    [bordered]="false"
+    [placeholder]="searchLabel"
+    [ariaLabel]="searchLabel"
+    [value]="search()"
+    (valueChange)="search.set($event)"
+  />
 
-@if (kindDescription(); as description) {
-  <p class="small text-body-secondary px-3 pt-3 mb-0" data-testid="resources-kind-description">
-    <i class="bi {{ kindIcon(kind()) }} me-1" aria-hidden="true"></i>{{ description }}
-  </p>
-}
+  <fpc-collapsible-filter-panel
+    class="flex-shrink-0"
+    [(open)]="filtersOpen"
+    [title]="filtersLabel"
+    [activeCount]="activeFilterCount()"
+    (cleared)="clearFilters()"
+  >
+    <div class="row g-3 mb-0 w-100">
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-resources-kind" [label]="kindFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-resources-kind"
+            size="sm"
+            [ngModel]="kind()"
+            (ngModelChange)="kind.set($event)"
+          >
+            <option value="" i18n="@@lwConsoleResources-allKinds">All kinds</option>
+            @for (k of kinds(); track k) {
+              <option [value]="k">{{ k }} ({{ count(k) }})</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-resources-project" [label]="projectFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-resources-project"
+            size="sm"
+            [ngModel]="project()"
+            (ngModelChange)="project.set($event)"
+          >
+            <option value="" i18n="@@lwConsoleResources-allProjects">All projects</option>
+            @if (seesInfrastructure()) {
+              <option [value]="clusterScope" i18n="@@lwConsoleResources-clusterScope">Cluster-level</option>
+            }
+            @for (p of projects(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+    </div>
+  </fpc-collapsible-filter-panel>
 
-@if (loading() && resources().length === 0) {
-  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-} @else if (filtered().length === 0) {
-  <fpc-empty-state icon="file-earmark-code" i18n-title="@@lwConsoleResources-empty" title="No resources" />
-} @else {
-  <fpc-list [flush]="true" data-testid="resources-list">
-    @for (r of filtered(); track r.kind + '/' + (r.metadata.project ?? '') + '/' + r.metadata.name) {
-      <fpc-list-item [clickable]="true" (selected)="open(r)">
-        <div fpcListItemTitle class="d-flex align-items-center gap-2 min-w-0">
-          <i class="bi {{ kindIcon(r.kind) }} text-body-secondary" aria-hidden="true"></i>
-          <span class="fw-semibold text-truncate">{{ r.metadata.name }}</span>
-          <fpc-badge color="secondary" size="sm">{{ r.kind }}</fpc-badge>
-          @if (r.metadata.project) {
-            <fpc-badge color="light" size="sm">{{ r.metadata.project }}</fpc-badge>
-          } @else {
-            <fpc-badge color="dark" size="sm">{{ clusterLabel }}</fpc-badge>
-          }
-        </div>
-        <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap align-items-center gap-3">
-          @if (description(r); as d) {
-            <span class="text-truncate">{{ d }}</span>
-          }
-          @for (label of r.metadata.labels ?? {} | keyvalue; track label.key) {
-            <span class="font-monospace">{{ label.key }}={{ label.value }}</span>
-          }
-        </div>
-      </fpc-list-item>
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
     }
-  </fpc-list>
-}
+
+    @if (kindDescription(); as description) {
+      <p class="small text-body-secondary px-3 py-2 mb-0 border-bottom" data-testid="resources-kind-description">
+        <i class="bi {{ kindIcon(kind()) }} me-1" aria-hidden="true"></i>{{ description }}
+      </p>
+    }
+
+    @if (loading() && resources().length === 0) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (filtered().length === 0) {
+      <fpc-empty-state icon="file-earmark-code" i18n-title="@@lwConsoleResources-empty" title="No resources" />
+    } @else {
+      <fpc-list [flush]="true" data-testid="resources-list">
+        @for (r of filtered(); track r.kind + '/' + (r.metadata.project ?? '') + '/' + r.metadata.name) {
+          <fpc-list-item [clickable]="true" (selected)="open(r)">
+            <div fpcListItemTitle class="d-flex align-items-center gap-2 min-w-0">
+              <i class="bi {{ kindIcon(r.kind) }} text-body-secondary" aria-hidden="true"></i>
+              <span class="fw-semibold text-truncate">{{ r.metadata.name }}</span>
+              <fpc-badge color="secondary" size="sm">{{ r.kind }}</fpc-badge>
+              @if (r.metadata.project) {
+                <fpc-badge color="light" size="sm">{{ r.metadata.project }}</fpc-badge>
+              } @else {
+                <fpc-badge color="dark" size="sm">{{ clusterLabel }}</fpc-badge>
+              }
+            </div>
+            <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap align-items-center gap-3">
+              @if (description(r); as d) {
+                <span class="text-truncate">{{ d }}</span>
+              }
+              @for (label of r.metadata.labels ?? {} | keyvalue; track label.key) {
+                <span class="font-monospace">{{ label.key }}={{ label.value }}</span>
+              }
+            </div>
+          </fpc-list-item>
+        }
+      </fpc-list>
+    }
+  </div>
+</div>

@@ -1,0 +1,226 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="receipt">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      [loading]="loading()"
+      [disabled]="noProject()"
+      (clicked)="load()"
+      data-testid="usage-refresh"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="exportCsvLabel"
+      [title]="exportCsvLabel"
+      [loading]="exporting()"
+      [disabled]="noProject()"
+      (clicked)="export()"
+      data-testid="usage-export"
+    >
+      <i class="bi bi-filetype-csv" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (report(); as r) {
+    <fpc-summary-bar [columns]="4" data-testid="usage-totals">
+      @for (meter of meters; track meter) {
+        <fpc-summary-card [label]="meterLabel(meter)" [value]="total(meter)" />
+      }
+    </fpc-summary-bar>
+  }
+
+  <form class="flex-shrink-0" (ngSubmit)="load()" data-testid="usage-filter">
+    <fpc-collapsible-filter-panel
+      [(open)]="filtersOpen"
+      [title]="filtersLabel"
+      [activeCount]="activeFilterCount()"
+      (cleared)="reset()"
+    >
+      <div class="row g-3 mb-0 w-100">
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-usage-project" [label]="projectLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-usage-project"
+              name="project"
+              size="sm"
+              [ngModel]="project()"
+              (ngModelChange)="project.set($event)"
+            >
+              @if (clusterWide()) {
+                <option value="" i18n="@@lwConsoleUsage-allProjects">All projects</option>
+              }
+              @for (p of projectOptions(); track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-usage-granularity" [label]="granularityLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-usage-granularity"
+              name="granularity"
+              size="sm"
+              [ngModel]="granularity()"
+              (ngModelChange)="granularity.set($event)"
+            >
+              @for (g of granularities; track g) {
+                <option [value]="g">{{ granularityName(g) }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-usage-from" [label]="fromLabel">
+            <fpc-form-control
+              controlId="lw-usage-from"
+              name="from"
+              inputType="datetime-local"
+              size="sm"
+              [ngModel]="fromInput()"
+              (ngModelChange)="fromInput.set($event)"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-usage-to" [label]="toLabel">
+            <fpc-form-control
+              controlId="lw-usage-to"
+              name="to"
+              inputType="datetime-local"
+              size="sm"
+              [ngModel]="toInput()"
+              (ngModelChange)="toInput.set($event)"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-12 d-flex gap-2">
+          <fpc-button
+            type="submit"
+            variant="primary"
+            size="sm"
+            [loading]="loading()"
+            [disabled]="noProject()"
+            data-testid="usage-apply"
+          >
+            {{ applyLabel }}
+          </fpc-button>
+          <fpc-button variant="secondary" size="sm" (clicked)="reset()">{{ resetLabel }}</fpc-button>
+        </div>
+      </div>
+    </fpc-collapsible-filter-panel>
+  </form>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (exportError(); as message) {
+      <fpc-alert
+        class="m-3"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="exportError.set(null)"
+      />
+    }
+    @if (report()?.truncated) {
+      <fpc-alert class="m-3" variant="warning" data-testid="usage-truncated">
+        <span i18n="@@lwConsoleUsage-truncated"
+          >Only the first rows are shown. Narrow the time range, choose a project or a coarser resolution.</span
+        >
+      </fpc-alert>
+    }
+
+    @if (noProject()) {
+      <fpc-empty-state
+        icon="receipt"
+        i18n-title="@@lwConsoleUsage-noProjects"
+        title="You are not a member of any project"
+        data-testid="usage-no-projects"
+      />
+    } @else if (loading() && !report()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (lines().length === 0) {
+      @if (!error()) {
+        <fpc-empty-state
+          icon="receipt"
+          i18n-title="@@lwConsoleUsage-empty"
+          title="No usage in this time range"
+          data-testid="usage-empty"
+        />
+      }
+    } @else {
+      <fpc-panel flush>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover align-middle small mb-0" data-testid="usage-table">
+            <thead>
+              <tr>
+                <th scope="col" i18n="@@lwConsoleUsage-colBucket">Period (UTC)</th>
+                <th scope="col" i18n="@@lwConsoleUsage-colProject">Project</th>
+                @for (meter of meters; track meter) {
+                  <th scope="col" class="text-end text-nowrap">
+                    {{ meterLabel(meter) }}
+                    @if (unit(meter); as u) {
+                      <div class="fw-normal text-body-secondary">{{ u }}</div>
+                    }
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of pageLines(); track line.bucket + line.project) {
+                <tr>
+                  <td class="text-nowrap font-monospace">
+                    {{ line.bucket | date: bucketFormat() : 'UTC' }}
+                    @if (!line.final) {
+                      <i
+                        class="bi bi-hourglass-split text-body-secondary ms-1"
+                        i18n-title="@@lwConsoleUsage-open"
+                        title="Not final yet: values can still change"
+                        data-testid="usage-open"
+                      ></i>
+                    }
+                  </td>
+                  <td>{{ line.project }}</td>
+                  @for (meter of meters; track meter) {
+                    <td class="text-end font-monospace">{{ value(line, meter) }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div fpcPanelFooter class="d-flex justify-content-end align-items-center w-100" data-testid="usage-paging">
+          <fpc-pager
+            size="sm"
+            [page]="page() + 1"
+            [hasPrevious]="page() > 0"
+            [hasNext]="hasNext()"
+            [pageSizes]="pageSizes"
+            [pageSize]="pageSize()"
+            (pageSizeChange)="onPageSizeChange($event ?? pageSize())"
+            [pageLabel]="pageLabel"
+            [previousLabel]="newerLabel"
+            [nextLabel]="olderLabel"
+            [pageSizeLabel]="pageSizeLabel"
+            (previous)="previous()"
+            (next)="next()"
+          />
+        </div>
+      </fpc-panel>
+    }
+  </div>
+</div>

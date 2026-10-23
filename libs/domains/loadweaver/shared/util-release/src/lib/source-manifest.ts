@@ -1,6 +1,7 @@
 import {
   RELEASE_MANIFEST_SCHEMA_VERSION,
   releaseManifestSchema,
+  CONSOLE_IMAGE_REPOSITORY,
   type ArtifactFile,
   type NodeArch,
   type ReleaseChannel,
@@ -26,6 +27,8 @@ export interface ManifestInput {
   minimumVersion?: string;
   /** Image references by digest replacing the source pins (the release's control-plane image, derived images). */
   images?: Partial<Record<ImageComponentName, string>>;
+  /** The release's console image by digest (`repo:tag@sha256:…`), for Loadweaver Cloud (`consoleImage`). */
+  consoleImage?: string;
   /** The OpenSearch image carries the `repository-s3` plugin (a derived release image). */
   opensearchWithRepositoryS3?: boolean;
   /** OCI archives of images in the bundle. */
@@ -137,6 +140,19 @@ export function buildManifest(input: ManifestInput): ReleaseManifest {
   for (const [name, packages] of Object.entries(PACKAGE_PINS) as [keyof typeof PACKAGE_PINS, never][])
     components[name] = { kind: 'packages', version: PACKAGE_COMPONENT_VERSIONS[name], packages };
 
+  let consoleImage: ReleaseManifest['consoleImage'];
+
+  if (input.consoleImage) {
+    const parts = splitImageReference(input.consoleImage);
+
+    if (!parts) throw new Error(`console image (${input.consoleImage}) is not pinned by digest`);
+
+    if (parts.repository !== CONSOLE_IMAGE_REPOSITORY)
+      throw new Error(`console image must come from ${CONSOLE_IMAGE_REPOSITORY}, got ${parts.repository}`);
+
+    consoleImage = { repository: parts.repository, ...(parts.tag ? { tag: parts.tag } : {}), digest: parts.digest };
+  }
+
   const aptSnapshot = add(input.aptSnapshot);
 
   if (input.aptPackages?.length && !aptSnapshot) throw new Error('apt packages need the apt snapshot index');
@@ -156,6 +172,7 @@ export function buildManifest(input: ManifestInput): ReleaseManifest {
     components,
     ...(aptSnapshot ? { aptSnapshot } : {}),
     ...(aptPackages.length ? { aptPackages } : {}),
+    ...(consoleImage ? { consoleImage } : {}),
     artifacts: [...artifacts.values()].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0)),
   });
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -10,7 +10,12 @@ import {
 } from '@forepath/loadweaver/frontend/data-access-console';
 import {
   FpcAlertComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcListComponent,
+  FpcListItemComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
   FpcPanelGridComponent,
@@ -37,7 +42,12 @@ const REFRESH_MS = 30_000;
     FormsModule,
     RouterModule,
     FpcAlertComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcListComponent,
+    FpcListItemComponent,
     FpcPageHeaderComponent,
     FpcPanelComponent,
     FpcPanelGridComponent,
@@ -69,8 +79,10 @@ export class LoadweaverOverviewPageComponent implements OnInit {
   readonly title = $localize`:@@lwConsoleOverview-title:Overview`;
   readonly projectLabel = $localize`:@@lwConsoleOverview-project:Project`;
   readonly allProjects = $localize`:@@lwConsoleOverview-allProjects:Whole cluster`;
+  readonly filtersLabel = $localize`:@@lwConsoleOverview-filters:Filters`;
 
   project = '';
+  readonly filtersOpen = signal(false);
 
   ngOnInit(): void {
     this.facade.load();

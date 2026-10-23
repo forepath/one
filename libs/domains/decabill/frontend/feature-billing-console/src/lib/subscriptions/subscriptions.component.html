@@ -833,6 +833,22 @@
                                 </fpc-form-field>
                               }
                             }
+                          } @else if (
+                            showIntegratedOrderConfiguration(selectedPlan) &&
+                            orderRequestedConfig.service === 'loadweaver'
+                          ) {
+                            <fpc-alert
+                              variant="info"
+                              i18n-heading="@@featureSubscriptions-loadweaverOrderHeading"
+                              heading="Single-node Loadweaver cluster"
+                            >
+                              <span i18n="@@featureSubscriptions-loadweaverOrderInfo">
+                                The server becomes a complete Loadweaver cluster with control plane and console. Its
+                                secrets are generated on the server; the first account you register in the console
+                                becomes the administrator. Further nodes run on your own servers or provider accounts
+                                and are not billed here.
+                              </span>
+                            </fpc-alert>
                           } @else if (showIntegratedOrderConfiguration(selectedPlan)) {
                             <fpc-form-field
                               forId="orderAuthMethod"
@@ -2144,6 +2160,91 @@
     </p>
   }
 </fpc-confirm-dialog>
+
+<!-- Loadweaver cluster: data-safe cancel / withdraw confirm -->
+<fpc-modal
+  [(open)]="loadweaverTeardownModalOpen"
+  size="lg"
+  [closable]="(subscriptionsCanceling$ | async) !== true && (subscriptionsWithdrawing$ | async) !== true"
+  [closeOnBackdrop]="false"
+  [closeOnEscape]="(subscriptionsCanceling$ | async) !== true && (subscriptionsWithdrawing$ | async) !== true"
+  i18n-title="@@featureSubscriptions-loadweaverTeardownTitle"
+  title="Delete the Loadweaver cluster?"
+>
+  @if (subscriptionsError$ | async; as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <fpc-alert
+    variant="danger"
+    i18n-heading="@@featureSubscriptions-loadweaverTeardownHeading"
+    heading="All cluster data on this server will be deleted"
+  >
+    @if (loadweaverTeardownAction() === 'withdraw') {
+      <span i18n="@@featureSubscriptions-loadweaverTeardownWithdraw">
+        Withdrawing ends the subscription immediately. The server with the control plane and console, its addresses and
+        DNS records are deleted right away, together with every volume, backup and secret stored on it.
+      </span>
+    } @else {
+      <span i18n="@@featureSubscriptions-loadweaverTeardownCancel">
+        The cluster keeps running until the end of the period and for a short grace period afterwards (not billed). Then
+        the server with the control plane and console, its addresses and DNS records are deleted, together with every
+        volume, backup and secret stored on it.
+      </span>
+    }
+  </fpc-alert>
+  <p class="small mb-2" i18n="@@featureSubscriptions-loadweaverTeardownStepsIntro">
+    Before you continue, in the Loadweaver console:
+  </p>
+  <ol class="small mb-3 ps-3">
+    <li i18n="@@featureSubscriptions-loadweaverTeardownStep1">
+      Run a final platform backup and copy it to your external target (Backups, Platform).
+    </li>
+    <li i18n="@@featureSubscriptions-loadweaverTeardownStep2">
+      Save the recovery kit and the disaster-recovery info file: without them the backups cannot be restored.
+    </li>
+    <li i18n="@@featureSubscriptions-loadweaverTeardownStep3">
+      Drain and remove, or keep, the nodes in your own provider accounts. They are not deleted here.
+    </li>
+  </ol>
+  <fpc-form-check
+    checkId="loadweaverTeardownConfirm"
+    [checked]="loadweaverTeardownConfirmed()"
+    (checkedChange)="loadweaverTeardownConfirmed.set($event)"
+  >
+    <label
+      class="form-check-label"
+      for="loadweaverTeardownConfirm"
+      i18n="@@featureSubscriptions-loadweaverTeardownCheckbox"
+    >
+      I have saved what I need. I understand that the cluster data on this server is deleted and cannot be recovered by
+      the provider.
+    </label>
+  </fpc-form-check>
+  <div *fpcModalFooter>
+    <fpc-button-group>
+      <fpc-button
+        variant="secondary"
+        [disabled]="(subscriptionsCanceling$ | async) === true || (subscriptionsWithdrawing$ | async) === true"
+        (clicked)="loadweaverTeardownModalOpen.set(false)"
+        i18n="@@featureSubscriptions-loadweaverTeardownKeep"
+      >
+        Keep the cluster
+      </fpc-button>
+      <fpc-button
+        variant="danger"
+        [disabled]="!loadweaverTeardownConfirmed()"
+        [loading]="(subscriptionsCanceling$ | async) === true || (subscriptionsWithdrawing$ | async) === true"
+        (clicked)="confirmLoadweaverTeardown()"
+      >
+        @if (loadweaverTeardownAction() === 'withdraw') {
+          <span i18n="@@featureSubscriptions-loadweaverTeardownConfirmWithdraw">Withdraw and delete</span>
+        } @else {
+          <span i18n="@@featureSubscriptions-loadweaverTeardownConfirmCancel">Cancel and delete</span>
+        }
+      </fpc-button>
+    </fpc-button-group>
+  </div>
+</fpc-modal>
 
 <!-- Resume subscription confirm -->
 <fpc-confirm-dialog

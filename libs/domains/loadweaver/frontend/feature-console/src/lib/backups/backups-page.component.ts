@@ -17,11 +17,17 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcListComponent,
+  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
   FpcStatusBadgeComponent,
   FpcSummaryBarComponent,
@@ -30,6 +36,7 @@ import {
 import { interval } from 'rxjs';
 
 import { formatBytes } from '../overview/console-format';
+import { LoadweaverBackupsNavComponent } from './backups-nav.component';
 import {
   BACKUP_STATUS_TONE,
   backupStatusLabel,
@@ -58,6 +65,13 @@ export interface CatalogVolume extends BackupVolume {
 @Component({
   selector: 'loadweaver-backups-page',
   imports: [
+    FpcCollapsibleFilterPanelComponent,
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
+    FpcPanelGridComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    LoadweaverBackupsNavComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -76,6 +90,7 @@ export interface CatalogVolume extends BackupVolume {
     LoadweaverBackupRestoreModalComponent,
   ],
   templateUrl: './backups-page.component.html',
+  styleUrl: './backups-page.component.scss',
   standalone: true,
 })
 export class LoadweaverBackupsPageComponent implements OnInit {
@@ -189,6 +204,9 @@ export class LoadweaverBackupsPageComponent implements OnInit {
   readonly title = $localize`:@@lwConsoleBackups-title:Backups`;
   readonly refreshLabel = $localize`:@@lwConsoleBackups-refresh:Refresh`;
   readonly allProjectsLabel = $localize`:@@lwConsoleBackups-allProjects:All projects`;
+  readonly filtersTitle = $localize`:@@lwConsoleBackups-filters:Filters`;
+  readonly projectLabel = $localize`:@@lwConsoleBackups-project:Project`;
+  readonly filtersOpen = signal(false);
   readonly keyLabel = $localize`:@@lwConsoleBackups-keyCard:Recovery kit`;
   readonly backupsLabel = $localize`:@@lwConsoleBackups-backupsCard:Backups`;
   readonly sizeLabel = $localize`:@@lwConsoleBackups-sizeCard:Backed-up data`;

@@ -1,0 +1,79 @@
+{
+  "name": "loadweaver-terraform-provider",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/loadweaver/terraform-provider/src",
+  "projectType": "application",
+  "tags": ["domain:loadweaver", "type:app", "scope:cli"],
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/loadweaver/terraform-provider",
+        "main": "apps/loadweaver/terraform-provider/src/main.ts",
+        "tsConfig": "apps/loadweaver/terraform-provider/tsconfig.app.json",
+        "assets": [],
+        "webpackConfig": "apps/loadweaver/terraform-provider/webpack.config.cjs",
+        "generatePackageJson": true
+      },
+      "configurations": {
+        "development": {
+          "outputHashing": "none"
+        },
+        "production": {},
+        "sea": {
+          "externalDependencies": "none",
+          "generatePackageJson": false,
+          "outputHashing": "none",
+          "sourceMap": false
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/loadweaver/terraform-provider/jest.config.cts",
+        "passWithNoTests": true
+      }
+    },
+    "test-e2e": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "commands": [
+          "npx nx run loadweaver-terraform-provider:build:sea --skip-nx-cache",
+          "LOADWEAVER_TF_E2E=1 npx jest -c apps/loadweaver/terraform-provider/jest.config.cts --runInBand apps/loadweaver/terraform-provider/src/terraform.e2e.spec.ts"
+        ],
+        "parallel": false
+      }
+    },
+    "sea": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "commands": [
+          "npx nx run loadweaver-terraform-provider:build:sea --skip-nx-cache",
+          "node apps/loadweaver/backend-node-agent/scripts/build-sea.mjs --bundle dist/apps/loadweaver/terraform-provider/main.js --out dist/apps/loadweaver/terraform-provider/sea --name terraform-provider-loadweaver"
+        ],
+        "parallel": false
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "commands": [
+          "npx nx run loadweaver-terraform-provider:build:sea --skip-nx-cache",
+          "node apps/loadweaver/terraform-provider/scripts/package-provider.mjs build --bundle dist/apps/loadweaver/terraform-provider/main.js --out dist/terraform-provider --version {args.release} --platforms {args.platforms}",
+          "node apps/loadweaver/terraform-provider/scripts/package-provider.mjs checksums --dir dist/terraform-provider --version {args.release}"
+        ],
+        "args": "--platforms=linux_amd64,linux_arm64,windows_amd64",
+        "parallel": false
+      }
+    }
+  }
+}

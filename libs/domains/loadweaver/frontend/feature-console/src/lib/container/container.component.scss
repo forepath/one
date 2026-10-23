@@ -28,6 +28,11 @@
   span {
     &.small {
       font-size: 0.65rem;
+      // Longer labels (e.g. "Access & audit") wrap onto two lines; keep them centred like the icon.
+      max-width: 100%;
+      padding-inline: 0.25rem;
+      line-height: 1.15;
+      text-align: center;
     }
   }
 }

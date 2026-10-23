@@ -1,12 +1,13 @@
-<fpc-page-header [title]="title" icon="terminal">
-  <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="terminal">
     @if (openCount() > 0) {
-      <fpc-badge size="sm" color="success" data-testid="terminals-open-count">
+      <fpc-badge fpcPageHeaderActions size="sm" color="success" data-testid="terminals-open-count">
         {{ openCount() }} <span i18n="@@lwConsoleTerminals-running">running</span>
       </fpc-badge>
     }
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="dark"
       size="sm"
       [loading]="targetsLoading()"
       (clicked)="reloadTargets()"
@@ -16,13 +17,20 @@
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-<div class="p-3 d-flex flex-column gap-3">
-  <form class="d-flex flex-wrap align-items-end gap-2" (ngSubmit)="open()" data-testid="terminals-picker">
+  <form
+    class="flex-shrink-0 d-flex flex-wrap align-items-end gap-2 px-3 py-2 border-bottom"
+    (ngSubmit)="open()"
+    data-testid="terminals-picker"
+  >
     @if (isClusterAdmin()) {
-      <div class="btn-group btn-group-sm" role="group" i18n-aria-label="@@lwConsoleTerminals-kind" aria-label="Kind">
+      <div
+        class="btn-group btn-group-sm align-self-end"
+        role="group"
+        i18n-aria-label="@@lwConsoleTerminals-kind"
+        aria-label="Kind"
+      >
         <button
           type="button"
           class="btn"
@@ -50,12 +58,12 @@
     }
 
     @if (mode() === 'replica') {
-      <div>
-        <label class="form-label small mb-1" for="lw-terminals-project">{{ projectLabel }}</label>
-        <select
-          id="lw-terminals-project"
+      <fpc-form-field class="mb-0" forId="lw-terminals-project" [label]="projectLabel">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-terminals-project"
           name="project"
-          class="form-select form-select-sm"
+          size="sm"
           [ngModel]="project()"
           (ngModelChange)="onProjectChange($event)"
         >
@@ -63,14 +71,14 @@
           @for (p of projects(); track p) {
             <option [value]="p">{{ p }}</option>
           }
-        </select>
-      </div>
-      <div class="flex-grow-1" style="min-width: 16rem; max-width: 32rem">
-        <label class="form-label small mb-1" for="lw-terminals-replica">{{ replicaFieldLabel }}</label>
-        <select
-          id="lw-terminals-replica"
+        </fpc-form-control>
+      </fpc-form-field>
+      <fpc-form-field class="mb-0 flex-grow-1" forId="lw-terminals-replica" [label]="replicaFieldLabel">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-terminals-replica"
           name="replica"
-          class="form-select form-select-sm"
+          size="sm"
           data-testid="terminals-replica"
           [ngModel]="replica()"
           (ngModelChange)="replica.set($event)"
@@ -86,16 +94,16 @@
           @if (replica() && !groups().length) {
             <option [value]="replica()">{{ replica() }}</option>
           }
-        </select>
-      </div>
+        </fpc-form-control>
+      </fpc-form-field>
     } @else {
-      <div>
-        <label class="form-label small mb-1" for="lw-terminals-node">{{ nodeLabel }}</label>
+      <fpc-form-field class="mb-0" forId="lw-terminals-node" [label]="nodeLabel">
         @if (nodes().length > 0) {
-          <select
-            id="lw-terminals-node"
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-terminals-node"
             name="node"
-            class="form-select form-select-sm"
+            size="sm"
             data-testid="terminals-node"
             [ngModel]="node()"
             (ngModelChange)="node.set($event)"
@@ -104,177 +112,157 @@
             @for (n of nodes(); track n) {
               <option [value]="n">{{ n }}</option>
             }
-          </select>
+          </fpc-form-control>
         } @else {
-          <input
-            id="lw-terminals-node"
+          <fpc-form-control
+            controlId="lw-terminals-node"
             name="node"
-            class="form-control form-control-sm"
+            size="sm"
             data-testid="terminals-node"
             [ngModel]="node()"
             (ngModelChange)="node.set($event)"
           />
         }
-      </div>
+      </fpc-form-field>
     }
 
-    <div>
-      <label class="form-label small mb-1" for="lw-terminals-shell">{{ shellLabel }}</label>
-      <input
-        id="lw-terminals-shell"
+    <fpc-form-field class="mb-0" forId="lw-terminals-shell" [label]="shellLabel">
+      <fpc-form-control
+        controlId="lw-terminals-shell"
         name="shell"
-        class="form-control form-control-sm font-monospace"
+        size="sm"
+        controlClass="font-monospace"
         placeholder="/bin/bash"
-        [class.is-invalid]="!shellValid()"
+        [invalid]="!shellValid()"
         [ngModel]="shell()"
         (ngModelChange)="shell.set($event)"
       />
-    </div>
+    </fpc-form-field>
     <fpc-button type="submit" variant="primary" size="sm" [disabled]="!canOpen()" data-testid="terminals-open">
       <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>{{ openLabel }}
     </fpc-button>
+    @if (mode() === 'node') {
+      <p class="small text-body-secondary mb-0 w-100" i18n="@@lwConsoleTerminals-nodeShellHint">
+        A node shell is a root shell on the host, always recorded. It needs the cluster admin role and
+        <code>nodeShellEnabled</code> on the Cluster resource.
+      </p>
+    }
   </form>
 
-  @if (mode() === 'node') {
-    <p class="small text-body-secondary mb-0" i18n="@@lwConsoleTerminals-nodeShellHint">
-      A node shell is a root shell on the host, always recorded. It needs the cluster admin role and
-      <code>nodeShellEnabled</code> on the Cluster resource.
-    </p>
-  }
   @if (targetsError(); as message) {
-    <fpc-alert variant="warning" [message]="message" />
+    <fpc-alert class="flex-shrink-0" [flush]="true" variant="warning" [message]="message" />
   }
   @if (connectionError(); as message) {
-    <fpc-alert variant="danger" [message]="message" [dismissible]="true" (closed)="connectionError.set(null)" />
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="connectionError.set(null)"
+    />
   }
   @if (socketError(); as message) {
-    <fpc-alert variant="warning" [message]="message" [dismissible]="true" (closed)="socketError.set(null)" />
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      variant="warning"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="socketError.set(null)"
+    />
   }
 
   @if (tabs().length === 0) {
-    <fpc-empty-state
-      icon="terminal"
-      i18n-title="@@lwConsoleTerminals-empty"
-      title="No terminal open"
-      i18n-message="@@lwConsoleTerminals-emptyHint"
-      message="Pick a replica above, or open one from the map. Every session is audited."
-    />
+    <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+      <fpc-empty-state
+        icon="terminal"
+        i18n-title="@@lwConsoleTerminals-empty"
+        title="No terminal open"
+        i18n-message="@@lwConsoleTerminals-emptyHint"
+        message="Pick a replica above, or open one from the map. Every session is audited."
+      />
+    </div>
   } @else {
-    <div class="border rounded d-flex flex-column" style="min-height: 28rem">
-      <ul class="nav nav-tabs px-2 pt-2 bg-body-tertiary" role="tablist" data-testid="terminals-tabs">
-        @for (tab of tabs(); track tab.id) {
-          <li class="nav-item" role="presentation">
-            <div
-              class="nav-link d-flex align-items-center gap-2 py-1"
-              role="tab"
-              tabindex="0"
-              [class.active]="tab.id === active()"
-              [attr.aria-selected]="tab.id === active()"
-              (click)="select(tab)"
-              (keydown.enter)="select(tab)"
-            >
-              <i
-                class="bi"
-                [class.bi-circle-fill]="tab.status === 'open'"
-                [class.text-success]="tab.status === 'open'"
-                [class.bi-hourglass-split]="tab.status === 'connecting'"
-                [class.bi-x-circle]="tab.status === 'failed'"
-                [class.text-danger]="tab.status === 'failed'"
-                [class.bi-stop-circle]="tab.status === 'closed'"
-                [class.text-body-secondary]="tab.status === 'closed'"
-                style="font-size: 0.6rem"
-                aria-hidden="true"
-              ></i>
-              <span class="font-monospace small">{{ tab.label }}</span>
-              @if (tab.recorded) {
-                <i class="bi bi-record-circle text-danger" aria-hidden="true"></i>
-              }
-              <button
-                type="button"
-                class="btn-close btn-close-sm"
-                style="font-size: 0.6rem"
-                [attr.aria-label]="closeTabLabel"
-                (click)="$event.stopPropagation(); closeTab(tab)"
-                data-testid="terminals-tab-close"
-              ></button>
-            </div>
-          </li>
-        }
-      </ul>
-
-      @if (activeTab(); as tab) {
-        @if (tab.recorded && tab.status === 'open') {
-          <div class="alert alert-danger rounded-0 mb-0 py-1 small" role="status" data-testid="terminals-recorded">
-            <i class="bi bi-record-circle me-1" aria-hidden="true"></i>
-            <span i18n="@@lwConsoleTerminals-recorded"
-              >This session is recorded: everything shown in it is stored and can be replayed by auditors.</span
-            >
-          </div>
-        }
-        @if (tab.status === 'failed') {
-          <div
-            class="alert alert-danger rounded-0 mb-0 py-1 small d-flex align-items-center gap-2"
-            data-testid="terminals-failed"
-          >
-            <i class="bi bi-x-octagon" aria-hidden="true"></i>
-            <span><span i18n="@@lwConsoleTerminals-failed">Could not open the terminal</span>: {{ tab.error }}</span>
-            @if ('node' in tab.target) {
-              <span class="text-body-secondary" i18n="@@lwConsoleTerminals-nodeShellRefused"
-                >(node shells need the cluster admin role and nodeShellEnabled)</span
-              >
-            }
-            <button
-              type="button"
-              class="btn btn-link btn-sm p-0 ms-auto"
-              (click)="reopen(tab)"
-              i18n="@@lwConsoleTerminals-retry"
-            >
-              Retry
-            </button>
-          </div>
-        }
-        @if (tab.status === 'closed') {
-          <div
-            class="alert alert-secondary rounded-0 mb-0 py-1 small d-flex align-items-center gap-2"
-            data-testid="terminals-closed"
-          >
-            <i class="bi bi-stop-circle" aria-hidden="true"></i>
-            <span>
-              <span i18n="@@lwConsoleTerminals-ended">Session ended</span>
-              @if (tab.exitCode !== null) {
-                (<span i18n="@@lwConsoleTerminals-exitCode">exit code</span> {{ tab.exitCode }})
-              }
-              @if (tab.error) {
-                : {{ tab.error }}
-              }
-            </span>
-            <button
-              type="button"
-              class="btn btn-link btn-sm p-0 ms-auto"
-              (click)="reopen(tab)"
-              i18n="@@lwConsoleTerminals-reconnect"
-            >
-              Open again
-            </button>
-          </div>
-        }
-        @if (tab.status === 'open' && tab.error) {
-          <div class="alert alert-warning rounded-0 mb-0 py-1 small">{{ tab.error }}</div>
-        }
+    <fpc-tab-group class="flex-shrink-0" [activeId]="active()" [ariaLabel]="title" data-testid="terminals-tabs">
+      @for (tab of tabs(); track tab.id) {
+        <fpc-tab
+          [id]="tab.id"
+          [label]="tab.label"
+          [icon]="tabIcon(tab)"
+          actionIcon="x-lg"
+          [actionAriaLabel]="closeTabLabel"
+          (selected)="select(tab)"
+          (action)="closeTab(tab)"
+        />
       }
+    </fpc-tab-group>
 
-      <div class="flex-grow-1 position-relative" style="min-height: 24rem">
-        @for (tab of tabs(); track tab.id) {
-          <fpc-terminal
-            class="position-absolute top-0 start-0 w-100 h-100"
-            [class.d-none]="tab.id !== active()"
-            [visible]="tab.id === active()"
-            [ariaLabel]="tab.label"
-            (data)="onInput(tab, $event)"
-            (sizeChange)="onResize(tab, $event)"
-          />
-        }
-      </div>
+    @if (activeTab(); as tab) {
+      @if (tab.recorded && tab.status === 'open') {
+        <fpc-alert
+          class="flex-shrink-0 small"
+          [flush]="true"
+          variant="danger"
+          icon="record-circle"
+          data-testid="terminals-recorded"
+        >
+          <span i18n="@@lwConsoleTerminals-recorded"
+            >This session is recorded: everything shown in it is stored and can be replayed by auditors.</span
+          >
+        </fpc-alert>
+      }
+      @if (tab.status === 'failed') {
+        <fpc-alert
+          class="flex-shrink-0 small"
+          [flush]="true"
+          variant="danger"
+          icon="x-octagon"
+          data-testid="terminals-failed"
+        >
+          <span><span i18n="@@lwConsoleTerminals-failed">Could not open the terminal</span>: {{ tab.error }}</span>
+          @if ('node' in tab.target) {
+            <span class="text-body-secondary ms-1" i18n="@@lwConsoleTerminals-nodeShellRefused"
+              >(node shells need the cluster admin role and nodeShellEnabled)</span
+            >
+          }
+          <fpc-button fpcAlertActions variant="link" size="sm" (clicked)="reopen(tab)">{{ retryLabel }}</fpc-button>
+        </fpc-alert>
+      }
+      @if (tab.status === 'closed') {
+        <fpc-alert
+          class="flex-shrink-0 small"
+          [flush]="true"
+          variant="secondary"
+          icon="stop-circle"
+          data-testid="terminals-closed"
+        >
+          <span i18n="@@lwConsoleTerminals-ended">Session ended</span>
+          @if (tab.exitCode !== null) {
+            (<span i18n="@@lwConsoleTerminals-exitCode">exit code</span> {{ tab.exitCode }})
+          }
+          @if (tab.error) {
+            : {{ tab.error }}
+          }
+          <fpc-button fpcAlertActions variant="link" size="sm" (clicked)="reopen(tab)">{{ reconnectLabel }}</fpc-button>
+        </fpc-alert>
+      }
+      @if (tab.status === 'open' && tab.error) {
+        <fpc-alert class="flex-shrink-0 small" [flush]="true" variant="warning" [message]="tab.error" />
+      }
+    }
+
+    <div class="flex-grow-1 position-relative min-h-0">
+      @for (tab of tabs(); track tab.id) {
+        <fpc-terminal
+          class="position-absolute top-0 start-0 w-100 h-100"
+          [class.d-none]="tab.id !== active()"
+          [visible]="tab.id === active()"
+          [ariaLabel]="tab.label"
+          (data)="onInput(tab, $event)"
+          (sizeChange)="onResize(tab, $event)"
+        />
+      }
     </div>
   }
 </div>

@@ -19,8 +19,15 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
   FpcPageHeaderComponent,
+  FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { firstValueFrom } from 'rxjs';
@@ -41,8 +48,15 @@ import { LoadweaverCastPlayerComponent } from './cast-player.component';
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
     FpcPageHeaderComponent,
+    FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
     LoadweaverCastPlayerComponent,
   ],
@@ -74,6 +88,8 @@ export class LoadweaverSessionsPageComponent implements OnInit {
   readonly localPort = signal<number | null>(null);
   readonly ttl = signal<number | null>(null);
   readonly copied = signal(false);
+  readonly filtersOpen = signal(false);
+  readonly forwardOpen = signal(false);
 
   readonly groups = computed(() => replicaGroups(this.replicas(), null));
   readonly command = computed(() =>
@@ -91,13 +107,28 @@ export class LoadweaverSessionsPageComponent implements OnInit {
   readonly downloadLabel = $localize`:@@lwConsoleSessions-download:Download recording`;
   readonly copyLabel = $localize`:@@lwConsoleSessions-copy:Copy`;
   readonly copiedLabel = $localize`:@@lwConsoleSessions-copied:Copied`;
+  readonly projectLabel = $localize`:@@lwConsoleSessions-project:Project`;
+  readonly filtersLabel = $localize`:@@lwConsoleSessions-filters:Filters`;
+  readonly closePlayerLabel = $localize`:@@lwConsoleSessions-closePlayer:Close player`;
+  readonly sessionsTitle = $localize`:@@lwConsoleSessions-sessions:Terminal sessions`;
+  readonly tunnelsTitle = $localize`:@@lwConsoleSessions-tunnels:Open debug tunnels`;
+  readonly forwardTitle = $localize`:@@lwConsoleSessions-forwardTitle:Open a tunnel`;
+  readonly forwardReplicaLabel = $localize`:@@lwConsoleSessions-forwardReplica:Replica`;
+  readonly remotePortLabel = $localize`:@@lwConsoleSessions-remotePort:Replica port`;
+  readonly localPortLabel = $localize`:@@lwConsoleSessions-localPort:Local port`;
+  readonly ttlLabel = $localize`:@@lwConsoleSessions-ttl:TTL (seconds)`;
+  readonly closeLabel = $localize`:@@lwConsoleSessions-close:Close`;
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
     const replica = params.get('replica');
     const project = params.get('project') ?? '';
 
-    if (isReplicaId(replica)) this.forwardReplica.set(replica);
+    // A deep-linked replica opens the port-forward dialog with it.
+    if (isReplicaId(replica)) {
+      this.forwardReplica.set(replica);
+      this.forwardOpen.set(true);
+    }
 
     this.project.set(/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/.test(project) ? project : '');
     this.live.loadTargets();

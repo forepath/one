@@ -17,6 +17,8 @@ export class LoadweaverSearchResultsComponent {
   readonly activeId = input<string | null>(null);
   /** Optional: id prefix of the rendered rows (for `aria-activedescendant`). */
   readonly idPrefix = input('lw-search-entry');
+  /** Full-bleed sections (search page): flush lists under header strips instead of spaced cards (palette). */
+  readonly flush = input(false);
 
   readonly picked = output<SearchEntry>();
   readonly starred = output<SearchResult>();

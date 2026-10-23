@@ -16,11 +16,21 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
   FpcGraphCanvasComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
+  FpcSearchFieldComponent,
+  FpcSectionColumnComponent,
+  FpcSectionRowComponent,
   FpcSpinnerComponent,
+  FpcTabComponent,
+  FpcTabGroupComponent,
   type FpcGraphEdgeSelectEvent,
   type FpcGraphElementSelectEvent,
 } from '@forepath/shared/frontend/ui-components';
@@ -65,11 +75,21 @@ type Selection = { type: 'element'; id: string } | { type: 'edge'; id: string };
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcFormSwitchComponent,
     FpcGraphCanvasComponent,
     FpcPageHeaderComponent,
     FpcPanelComponent,
+    FpcPanelGridComponent,
+    FpcSearchFieldComponent,
+    FpcSectionColumnComponent,
+    FpcSectionRowComponent,
     FpcSpinnerComponent,
+    FpcTabComponent,
+    FpcTabGroupComponent,
   ],
   templateUrl: './topology-page.component.html',
   styleUrl: './topology-page.component.scss',
@@ -109,9 +129,16 @@ export class LoadweaverTopologyPageComponent implements OnInit, OnDestroy {
   readonly timelineAt = signal<string>(new Date(Date.now() - 60 * MINUTE_MS).toISOString());
   readonly planId = signal<string | null>(null);
   readonly hostInput = signal('');
+  readonly filtersOpen = signal(false);
 
   readonly pendingPlans = computed(() => this.plans().filter((p) => p.status === 'pending'));
   readonly canvasInput = computed(() => topologyCanvas(this.graph(), this.mode() === 'live'));
+  /** Switched-off layers (the traffic layer only counts for cluster roles, who see it). */
+  readonly activeFilterCount = computed(
+    () =>
+      TOPOLOGY_MAP_LAYERS.filter((layer) => !this.layers().has(layer) && (layer !== 'traffic' || this.clusterRole()))
+        .length,
+  );
   readonly hiddenKinds = computed(() => topologyHiddenKinds(this.layers()));
   readonly tracedIds = computed(() => this.traceSteps().map((s) => s.id));
   readonly highlight = computed(() =>
@@ -173,6 +200,7 @@ export class LoadweaverTopologyPageComponent implements OnInit, OnDestroy {
   readonly planSelectLabel = $localize`:@@lwConsoleTopology-planSelect:Pending plan`;
   readonly detailsTitle = $localize`:@@lwConsoleTopology-details:Details`;
   readonly closeLabel = $localize`:@@lwConsoleTopology-close:Close`;
+  readonly filtersLabel = $localize`:@@lwConsoleTopology-filters:Layers and time`;
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
@@ -222,6 +250,9 @@ export class LoadweaverTopologyPageComponent implements OnInit, OnDestroy {
 
     this.mode.set(next);
     this.selection.set(null);
+
+    // Timeline and plan views are driven from the filter panel (time slider, plan select): show it.
+    if (next !== 'live') this.filtersOpen.set(true);
     this.facade.disconnectLive();
 
     if (next === 'live') {
@@ -263,6 +294,11 @@ export class LoadweaverTopologyPageComponent implements OnInit, OnDestroy {
     else next.delete(layer);
 
     this.layers.set(next);
+  }
+
+  /** Switches every layer back on. */
+  resetLayers(): void {
+    this.layers.set(new Set(TOPOLOGY_MAP_LAYERS));
   }
 
   onSlider(value: number | string): void {

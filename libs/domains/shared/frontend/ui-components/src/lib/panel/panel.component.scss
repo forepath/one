@@ -28,6 +28,20 @@
   padding: 0.75rem 1rem;
 }
 
+// A body that holds an empty state directly becomes a flex column, so the empty state fills the
+// panel's height (e.g. in a `fill` panel grid) instead of staying content-sized.
+:host ::ng-deep .fpc-panel__body:has(> .fpc-empty-state) {
+  display: flex;
+  flex-direction: column;
+}
+
+// Grow, never shrink: the empty state's own `flex: 1 1 0; min-height: 0` would collapse it to
+// nothing in a content-sized panel (no `fill` grid), and the grid clips the overflow.
+:host ::ng-deep .fpc-panel__body > .fpc-empty-state {
+  flex: 1 0 auto;
+  min-height: auto;
+}
+
 :host(.fpc-panel--flush) .fpc-panel__body {
   padding: 0;
 }

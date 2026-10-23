@@ -1,79 +1,96 @@
 <fpc-modal [open]="open()" (openChange)="open.set($event)" [title]="title">
   <form (ngSubmit)="submit()" id="lw-silence-form" data-testid="silence-form">
-    <div class="mb-2">
-      <label class="form-label small" for="lw-silence-rule" i18n="@@lwConsoleSilence-rule">Rule</label>
-      <input
-        id="lw-silence-rule"
-        name="rule"
-        class="form-control form-control-sm font-monospace"
-        placeholder="builtin:node-down, rule:shop/*"
-        [(ngModel)]="rule"
-      />
-    </div>
-    <div class="mb-2">
-      <label class="form-label small" for="lw-silence-project" i18n="@@lwConsoleSilence-project">Project</label>
-      <input
-        id="lw-silence-project"
-        name="project"
-        class="form-control form-control-sm"
-        list="lw-silence-projects"
-        [(ngModel)]="project"
-      />
-      <datalist id="lw-silence-projects">
-        @for (p of projects(); track p) {
-          <option [value]="p"></option>
-        }
-      </datalist>
-    </div>
-    <div class="mb-2">
-      <label class="form-label small" for="lw-silence-key" i18n="@@lwConsoleSilence-key">Key</label>
-      <input id="lw-silence-key" name="key" class="form-control form-control-sm font-monospace" [(ngModel)]="key" />
-    </div>
-    <div class="mb-2">
-      <label class="form-label small" for="lw-silence-reason" i18n="@@lwConsoleSilence-reason">Reason</label>
-      <textarea
-        id="lw-silence-reason"
-        name="reason"
-        class="form-control form-control-sm"
-        rows="2"
-        required
-        [(ngModel)]="reason"
-      ></textarea>
-    </div>
-    <div class="row g-2 mb-2">
-      <div class="col">
-        <label class="form-label small" for="lw-silence-starts" i18n="@@lwConsoleSilence-starts"
-          >Starts (empty: now)</label
-        >
-        <input
-          id="lw-silence-starts"
-          name="startsAt"
-          type="datetime-local"
-          class="form-control form-control-sm"
-          [(ngModel)]="startsAt"
-        />
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-silence-rule" i18n-label="@@lwConsoleSilence-rule" label="Rule">
+          <fpc-form-control
+            controlId="lw-silence-rule"
+            name="rule"
+            size="sm"
+            controlClass="font-monospace"
+            placeholder="builtin:node-down, rule:shop/*"
+            [(ngModel)]="rule"
+          />
+        </fpc-form-field>
       </div>
-      <div class="col">
-        <label class="form-label small" for="lw-silence-ends" i18n="@@lwConsoleSilence-ends">Ends</label>
-        <input
-          id="lw-silence-ends"
-          name="endsAt"
-          type="datetime-local"
-          class="form-control form-control-sm"
-          required
-          [(ngModel)]="endsAt"
-        />
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-silence-project" i18n-label="@@lwConsoleSilence-project" label="Project">
+          <fpc-typeahead-select
+            inputId="lw-silence-project"
+            listboxId="lw-silence-projects"
+            size="sm"
+            [placeholder]="null"
+            [query]="project"
+            (queryChange)="project = $event"
+            [(open)]="projectSuggestionsOpen"
+          >
+            <div fpcTypeaheadSuggestions>
+              @for (p of projectSuggestions(); track p) {
+                <button type="button" class="dropdown-item small" (mousedown)="pickProject(p, $event)">
+                  {{ p }}
+                </button>
+              }
+            </div>
+          </fpc-typeahead-select>
+        </fpc-form-field>
+      </div>
+      <div class="col-12">
+        <fpc-form-field forId="lw-silence-key" i18n-label="@@lwConsoleSilence-key" label="Key">
+          <fpc-form-control
+            controlId="lw-silence-key"
+            name="key"
+            size="sm"
+            controlClass="font-monospace"
+            [(ngModel)]="key"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-12">
+        <fpc-form-field forId="lw-silence-reason" i18n-label="@@lwConsoleSilence-reason" label="Reason" required>
+          <fpc-form-control
+            controlType="textarea"
+            controlId="lw-silence-reason"
+            name="reason"
+            size="sm"
+            [rows]="2"
+            required
+            [(ngModel)]="reason"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-silence-starts" i18n-label="@@lwConsoleSilence-starts" label="Starts (empty: now)">
+          <fpc-form-control
+            controlId="lw-silence-starts"
+            name="startsAt"
+            inputType="datetime-local"
+            size="sm"
+            [(ngModel)]="startsAt"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-silence-ends" i18n-label="@@lwConsoleSilence-ends" label="Ends" required>
+          <fpc-form-control
+            controlId="lw-silence-ends"
+            name="endsAt"
+            inputType="datetime-local"
+            size="sm"
+            required
+            [(ngModel)]="endsAt"
+          />
+        </fpc-form-field>
       </div>
     </div>
     @if (invalid(); as message) {
-      <fpc-alert variant="warning" [message]="message" />
+      <fpc-alert class="mt-3" variant="warning" [message]="message" />
     }
     @if (error(); as message) {
-      <fpc-alert variant="danger" [message]="message" />
+      <fpc-alert class="mt-3" variant="danger" [message]="message" />
     }
   </form>
   <div *fpcModalFooter class="d-flex justify-content-end gap-2">
-    <fpc-button variant="outline-secondary" (clicked)="open.set(false)">
+    <fpc-button variant="secondary" (clicked)="open.set(false)">
       <span i18n="@@lwConsoleSilence-cancel">Cancel</span>
     </fpc-button>
     <fpc-button variant="primary" [loading]="saving()" (clicked)="submit()" data-testid="silence-submit">

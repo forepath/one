@@ -1,8 +1,14 @@
 export const USAGE = `Usage: loadweaver-agent <command> [options]
 
 Commands:
-  bootstrap --name <node> --public-host <host> [--cluster-name <name>]
+  bootstrap --name <node> --public-host <host> [--cluster-name <name>] [--public-url <https-url>]
+            [--admin-claim-token-file <file>]
             Create a new cluster on this node (control plane, database, API) and join it.
+            --public-url: the API's public HTTPS URL (LOADWEAVER_PUBLIC_URL: installer line, registry, OAuth
+            callbacks), e.g. when a TLS proxy in front of the node serves console and API on one origin.
+            --admin-claim-token-file: one-time admin claim token (or LOADWEAVER_ADMIN_CLAIM_TOKEN); while the
+            cluster has no account, the first console registration (the administrator) must present it. Only
+            its SHA-256 is kept.
   bootstrap --restore --name <node> --public-host <host> <target> <key> [--target-time <iso>]
             [--no-volume-restore] [--keep-staging]
             Whole-cluster disaster recovery on a fresh node: restores the control plane (etcd, database,
@@ -31,6 +37,7 @@ Commands:
 export {
   BOOTSTRAP_OPTIONS,
   parseLabels,
+  readAdminClaimToken,
   RESTORE_ONLY_FLAGS,
   shareThreshold,
   splitPastedShares,

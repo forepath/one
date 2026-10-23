@@ -8,7 +8,10 @@ import {
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
+  FpcListComponent,
+  FpcListItemComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 
@@ -28,7 +31,16 @@ import {
  */
 @Component({
   selector: 'loadweaver-autoscaling-panel',
-  imports: [CommonModule, FpcAlertComponent, FpcBadgeComponent, FpcPanelComponent, FpcSpinnerComponent],
+  imports: [
+    CommonModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcPanelComponent,
+    FpcPanelGridComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './autoscaling-panel.component.html',
   standalone: true,
 })

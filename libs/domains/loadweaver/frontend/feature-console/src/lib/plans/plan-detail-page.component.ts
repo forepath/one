@@ -9,6 +9,7 @@ import {
   ConsolePlansFacade,
   type GitConnection,
   type PlanResourceChange,
+  ConsoleEndpointService,
 } from '@forepath/loadweaver/frontend/data-access-console';
 import {
   FpcAlertComponent,
@@ -16,12 +17,15 @@ import {
   FpcButtonComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormSwitchComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcProgressComponent,
   FpcSpinnerComponent,
   FpcStatusBadgeComponent,
@@ -76,12 +80,15 @@ export const PR_POLL_MAX_MS = 120_000;
     FpcButtonComponent,
     FpcConfirmDialogComponent,
     FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormSwitchComponent,
     FpcListComponent,
     FpcListItemComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
     FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcProgressComponent,
     FpcSpinnerComponent,
     FpcStatusBadgeComponent,
@@ -121,10 +128,12 @@ export class LoadweaverPlanDetailPageComponent implements OnInit, OnDestroy {
   readonly prPollTimedOut = signal(false);
   private prPoll: { id: string; timer: ReturnType<typeof setInterval> | null } | null = null;
 
+  /** Fleet mode: approvals stay native — given in the cluster's own console, never through the fleet's relay. */
+  protected readonly fleetMode = inject(ConsoleEndpointService).fleetMode;
   readonly canApprove = computed(() => {
     const plan = this.plan();
 
-    return !!plan && mayApprove(plan, this.me());
+    return !!plan && !this.fleetMode && mayApprove(plan, this.me());
   });
   readonly canChange = computed(() => {
     const plan = this.plan();
@@ -196,6 +205,10 @@ export class LoadweaverPlanDetailPageComponent implements OnInit, OnDestroy {
 
   readonly title = $localize`:@@lwConsolePlanDetail-title:Plan`;
   readonly backLabel = $localize`:@@lwConsolePlanDetail-back:All plans`;
+  readonly approveLabel = $localize`:@@lwConsolePlanDetail-approve:Approve`;
+  readonly discardLabel = $localize`:@@lwConsolePlanDetail-discard:Discard`;
+  readonly applyLabel = $localize`:@@lwConsolePlanDetail-apply:Apply`;
+  readonly cancelApplyLabel = $localize`:@@lwConsolePlanDetail-cancel:Cancel apply`;
   readonly applyProgressLabel = $localize`:@@lwConsolePlanDetail-applyProgress:Apply progress`;
   readonly rollbackProgressLabel = $localize`:@@lwConsolePlanDetail-rollbackProgress:Rollback progress`;
   readonly tabChanges = $localize`:@@lwConsolePlanDetail-tabChanges:Changes`;

@@ -18,8 +18,12 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcPageHeaderComponent,
@@ -57,8 +61,12 @@ export type AlertStateFilter = 'open' | 'firing' | 'pending' | 'resolved' | 'all
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcConfirmDialogComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcFormSwitchComponent,
     FpcListComponent,
     FpcListItemComponent,
     FpcPageHeaderComponent,
@@ -99,6 +107,11 @@ export class LoadweaverAlertsPageComponent implements OnInit {
   readonly silenceToEnd = signal<AlertSilence | null>(null);
   readonly exporting = signal(false);
   readonly exportError = signal<string | null>(null);
+  readonly filtersOpen = signal(false);
+  readonly silenceFiltersOpen = signal(false);
+  readonly activeFilterCount = computed(
+    () => (this.stateFilter() !== 'open' ? 1 : 0) + (this.severity() ? 1 : 0) + (this.project() ? 1 : 0),
+  );
 
   readonly filtered = computed(() => {
     const state = this.stateFilter();
@@ -134,6 +147,11 @@ export class LoadweaverAlertsPageComponent implements OnInit {
   readonly endSilenceMessage = $localize`:@@lwConsoleAlerts-endSilenceMessage:Matching alerts are sent again; the silence stays as history.`;
   readonly endSilenceConfirm = $localize`:@@lwConsoleAlerts-endSilenceConfirm:End silence`;
   readonly keepLabel = $localize`:@@lwConsoleAlerts-keep:Keep`;
+  readonly filtersLabel = $localize`:@@lwConsoleAlerts-filters:Filters`;
+  readonly newSilenceLabel = $localize`:@@lwConsoleAlerts-newSilence:New silence`;
+  readonly endLabel = $localize`:@@lwConsoleAlerts-endSilence:End`;
+  readonly exportCsvLabel = $localize`:@@lwConsoleAlerts-exportCsv:Export CSV`;
+  readonly exportJsonLabel = $localize`:@@lwConsoleAlerts-exportJson:Export JSON`;
 
   ngOnInit(): void {
     this.load();
@@ -175,6 +193,13 @@ export class LoadweaverAlertsPageComponent implements OnInit {
 
   onProjectChange(project: string): void {
     this.project.set(project);
+    this.load();
+  }
+
+  clearFilters(): void {
+    this.stateFilter.set('open');
+    this.severity.set('');
+    this.project.set('');
     this.load();
   }
 

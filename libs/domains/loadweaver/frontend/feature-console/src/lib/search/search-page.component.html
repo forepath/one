@@ -1,47 +1,47 @@
-<fpc-page-header [title]="title" icon="search" />
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="search" />
 
-<div class="p-3">
-  <label class="visually-hidden" for="lw-search-page-input">{{ inputLabel }}</label>
-  <div class="input-group mb-3">
-    <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
-    <input
-      id="lw-search-page-input"
-      type="search"
-      class="form-control"
-      autocomplete="off"
-      [placeholder]="placeholder"
-      [value]="query()"
-      (input)="onQueryChange($any($event.target).value)"
-      data-testid="search-page-input"
-    />
-  </div>
+  <fpc-search-field
+    class="border-bottom flex-shrink-0"
+    inputId="lw-search-page-input"
+    autocomplete="off"
+    [bordered]="false"
+    [placeholder]="placeholder"
+    [ariaLabel]="inputLabel"
+    [value]="query()"
+    (valueChange)="onQueryChange($event)"
+    data-testid="search-page-input"
+  />
 
-  @if (error(); as message) {
-    <fpc-alert variant="danger" [message]="message" />
-  }
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
 
-  @if (loading() && count() === 0) {
-    <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-  } @else if (count() === 0) {
-    @if (query().trim()) {
-      <fpc-empty-state icon="search" i18n-title="@@lwConsoleSearch-pageEmpty" title="Nothing found" />
+    @if (loading() && count() === 0) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (count() === 0) {
+      @if (query().trim()) {
+        <fpc-empty-state icon="search" i18n-title="@@lwConsoleSearch-pageEmpty" title="Nothing found" />
+      } @else {
+        <fpc-empty-state
+          icon="search"
+          i18n-title="@@lwConsoleSearch-pageStart"
+          title="Search the console"
+          i18n-message="@@lwConsoleSearch-pageStartMessage"
+          message="Projects, deployments, services, nodes, plans and alerts you may see; Ctrl / ⌘ + K opens the palette anywhere."
+        />
+      }
     } @else {
-      <fpc-empty-state
-        icon="search"
-        i18n-title="@@lwConsoleSearch-pageStart"
-        title="Search the console"
-        i18n-message="@@lwConsoleSearch-pageStartMessage"
-        message="Projects, deployments, services, nodes, plans and alerts you may see; Ctrl / ⌘ + K opens the palette anywhere."
+      <loadweaver-search-results
+        [sections]="sections()"
+        idPrefix="lw-search-page-entry"
+        [flush]="true"
+        (picked)="pick($event)"
+        (starred)="star($event)"
       />
     }
-  } @else {
-    <loadweaver-search-results
-      [sections]="sections()"
-      idPrefix="lw-search-page-entry"
-      (picked)="pick($event)"
-      (starred)="star($event)"
-    />
-  }
+  </div>
 </div>
 
 <loadweaver-search-action-confirm [action]="pendingAction()" (actionChange)="pendingAction.set($event)" />

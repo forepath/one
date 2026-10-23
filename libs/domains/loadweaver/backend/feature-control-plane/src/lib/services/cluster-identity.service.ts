@@ -101,6 +101,25 @@ export class ClusterIdentityService {
     return { ...issued, caCertificatePem: cluster.caCertificate, clusterId: cluster.clusterId };
   }
 
+  /** A remote access device certificate (`client/<device id>`, 3.31), a posture fact; the key stays on the device. */
+  async issueClientCertificate(
+    clientId: string,
+    csrPem: string,
+    validityHours: number,
+  ): Promise<IssuedCertificate & { caCertificatePem: string }> {
+    const cluster = await this.cluster();
+    const issued = await issueCertificate({
+      ca: { certificatePem: cluster.caCertificate, privateKeyPem: cluster.caPrivateKey },
+      csrPem,
+      clusterId: cluster.clusterId,
+      kind: 'client',
+      name: clientId,
+      validityHours,
+    });
+
+    return { ...issued, caCertificatePem: cluster.caCertificate };
+  }
+
   /** A workload identity (`project/deployment/service`) for the node proxies' mTLS (3.7); short-lived. */
   async issueWorkloadCertificate(identity: string, csrPem: string): Promise<IssuedCertificate> {
     const cluster = await this.cluster();

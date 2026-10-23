@@ -14,6 +14,43 @@ export const AUDIT_GENESIS_HASH = '0'.repeat(64);
 export interface AuditActor {
   type: AuditEventEntity['actorType'];
   id?: string | null;
+  /**
+   * The person a trusted relay acted for (fleet service, 3.24): recorded as `details.onBehalfOf`. Only set by
+   * {@link actorFromRequest} for PATs carrying {@link ON_BEHALF_OF_SCOPE}; the actor stays the service user.
+   */
+  onBehalfOf?: string;
+}
+
+/** Header a fleet service sends with the acting fleet user (3.24). */
+export const ON_BEHALF_OF_HEADER = 'x-loadweaver-on-behalf-of';
+
+/**
+ * PAT scope that opts a service user's token in to the on-behalf-of header (3.24). Interactive sessions, the static
+ * API key and tokens without the scope are ignored, so nobody can annotate the audit log by just sending the header.
+ */
+export const ON_BEHALF_OF_SCOPE = 'fleet:on-behalf-of';
+
+const ON_BEHALF_OF_MAX = 255;
+
+/**
+ * The on-behalf-of value of a request, or undefined: only for PAT callers whose token carries the opt-in scope;
+ * control characters are dropped and the value is capped (it is a label, never used for access decisions).
+ */
+export function onBehalfOfFromRequest(req?: RequestWithUser): string | undefined {
+  const user = req?.user;
+
+  if (!req || req.apiKeyAuthenticated || !user?.id) return undefined;
+
+  if (!(user.amr ?? []).includes('pat') || !(user.scopes ?? []).includes(ON_BEHALF_OF_SCOPE)) return undefined;
+
+  const raw = (req.headers as Record<string, string | string[] | undefined> | undefined)?.[ON_BEHALF_OF_HEADER];
+  const value = [...((Array.isArray(raw) ? raw[0] : raw) ?? '')]
+    .filter((c) => c.charCodeAt(0) >= 0x20 && c.charCodeAt(0) !== 0x7f)
+    .join('')
+    .trim()
+    .slice(0, ON_BEHALF_OF_MAX);
+
+  return value ? value : undefined;
 }
 
 export interface AuditEntry {
@@ -37,7 +74,9 @@ export function actorFromRequest(req?: RequestWithUser): AuditActor {
 
   if (info.isApiKeyAuth) return { type: 'api-key', id: null };
 
-  return { type: 'user', id: info.userId ?? null };
+  const onBehalfOf = onBehalfOfFromRequest(req);
+
+  return { type: 'user', id: info.userId ?? null, ...(onBehalfOf ? { onBehalfOf } : {}) };
 }
 
 export function computeAuditHash(prevHash: string, event: Omit<AuditEventEntity, 'hash' | 'prevHash'>): string {
@@ -84,7 +123,9 @@ export class AuditLogService {
       action: entry.action,
       target: entry.target,
       project: entry.project ?? null,
-      details: entry.details ?? {},
+      details: entry.actor.onBehalfOf
+        ? { ...(entry.details ?? {}), onBehalfOf: entry.actor.onBehalfOf }
+        : (entry.details ?? {}),
     };
     const prevHash = last?.hash ?? AUDIT_GENESIS_HASH;
 

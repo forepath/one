@@ -26,6 +26,7 @@ import { WorkloadPlacementEntity } from '../entities/workload-placement.entity';
 import { WorkloadPlannerService } from '../services/workload-planner.service';
 import { SloService } from '../health/slo.service';
 import { BackupsService } from '../backups/backups.service';
+import { PostureIntegrationsService } from '../posture/posture-integrations.service';
 import { backupBytesByProject } from '../backups/backup-usage';
 import { projectUsage, quotaShares } from '../access/plan-access.utils';
 import { LogsService } from '../logs/logs.service';
@@ -192,6 +193,7 @@ export class AlertService implements OnApplicationBootstrap, OnModuleDestroy {
     private readonly planner: WorkloadPlannerService,
     private readonly slos: SloService,
     private readonly backups: BackupsService,
+    private readonly posture: PostureIntegrationsService,
   ) {}
 
   onApplicationBootstrap(): void {
@@ -262,6 +264,9 @@ export class AlertService implements OnApplicationBootstrap, OnModuleDestroy {
       ['builtin:quota-near-limit', () => this.quotas()],
       ['builtin:slo-burn', () => this.sloBurn()],
       ['builtin:autoscale-blocked', () => this.autoscaleBlocked()],
+      // Device posture (3.31).
+      ['builtin:device-restricted', () => this.devicesRestricted()],
+      ['builtin:posture-integration-failing', () => this.postureIntegrationsFailing()],
       // Backups (3.20).
       ['builtin:backup-failed', () => this.backups.alertFindings('builtin:backup-failed', now)],
       ['builtin:restore-test-failed', () => this.backups.alertFindings('builtin:restore-test-failed', now)],
@@ -804,6 +809,35 @@ export class AlertService implements OnApplicationBootstrap, OnModuleDestroy {
       title: `Autoscaling of ${r.service_key} blocked: ${r.status.blocked}`,
       message: `${r.service_key} wants more replicas than it may run (${r.status.blocked}); last evaluation: ${r.status.reason}`,
       forMs: 300_000,
+      repeatMs: 0,
+      notify: { emails: [], webhooks: true },
+    }));
+  }
+
+  /** A remote access device moved into a restricted group by its posture (3.31), with the reasons. */
+  private async devicesRestricted(): Promise<AlertFinding[]> {
+    return (await this.posture.restrictedDevices()).map((d) => ({
+      rule: 'builtin:device-restricted',
+      key: `vpn/${d.id}`,
+      severity: 'info' as const,
+      title: `Device ${d.label} restricted by posture`,
+      message: `${d.label} fails posture checks and is in its restricted group: ${d.reasons.slice(0, 5).join('; ')}`,
+      forMs: 0,
+      repeatMs: 0,
+      notify: { emails: [], webhooks: true },
+    }));
+  }
+
+  /** A posture integration (MDM / EDR) failing three syncs in a row: its results go stale, devices fail closed. */
+  private async postureIntegrationsFailing(): Promise<AlertFinding[]> {
+    return (await this.posture.failingIntegrations()).map((i) => ({
+      rule: 'builtin:posture-integration-failing',
+      key: `posture/${i.name}`,
+      severity: 'warning' as const,
+      title: `Posture integration ${i.name} failing`,
+      message: `The posture integration ${i.name} failed ${i.failures} syncs in a row${i.lastError ? ` (${i.lastError})` : ''}; its results count as unknown after ${i.maxAgeMinutes} minutes.`,
+      value: i.failures,
+      forMs: 0,
       repeatMs: 0,
       notify: { emails: [], webhooks: true },
     }));

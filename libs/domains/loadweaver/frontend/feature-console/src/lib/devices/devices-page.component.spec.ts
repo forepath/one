@@ -35,7 +35,34 @@ describe('LoadweaverDevicesPageComponent', () => {
   async function setup(clusterRole: ClusterRole | null = null) {
     facade = facadeStub(
       {
-        devices$: [device(), device({ id: 'd2', name: 'old', status: 'revoked', restrictions: {} })],
+        devices$: [
+          device({
+            posture: {
+              reportedAt: '2026-10-20T10:00:00.000Z',
+              platform: 'macos',
+              osVersion: '15.1',
+              appVersion: null,
+              diskEncryption: false,
+              firewall: true,
+              screenLock: true,
+              serialNumber: 'C02XK1ABJG5J',
+              hostname: 'alice-mbp',
+              integrations: [
+                {
+                  integration: 'intune',
+                  type: 'intune',
+                  category: 'mdm',
+                  status: 'non-compliant',
+                  reasons: ['Intune: not compliant with its compliance policies'],
+                  checkedAt: '2026-10-20T10:00:00.000Z',
+                  staleAt: '2999-01-01T00:00:00.000Z',
+                },
+              ],
+              certificate: null,
+            },
+          }),
+          device({ id: 'd2', name: 'old', status: 'revoked', restrictions: {} }),
+        ],
         all$: false,
         loading$: false,
         error$: null,
@@ -69,13 +96,19 @@ describe('LoadweaverDevicesPageComponent', () => {
     expect(facade['load']).toHaveBeenCalledWith(false);
     expect(list).toContain('Restricted by posture');
     expect(list).toContain('staff: disk encryption off');
+
+    const facts = el().querySelector('[data-testid="devices-posture-laptop"]')?.textContent ?? '';
+
+    expect(facts).toContain('macos 15.1 · serial C02XK1ABJG5J · alice-mbp');
+    expect(facts).toContain('intune: not compliant');
+    expect(facts).toContain('No device certificate');
     expect(el().querySelector('[data-testid="devices-revoke-old"]')).toBeNull();
     expect(el().querySelector('[data-testid="devices-scope"]')).toBeNull();
     expect(el().querySelector('[data-testid="devices-restricted"]')).not.toBeNull();
 
     component.deviceName.set('work-laptop');
     fixture.detectChanges();
-    expect((el().querySelector('[data-testid="devices-command"]') as HTMLInputElement).value).toBe(
+    expect((el().querySelector('[data-testid="devices-command"] input') as HTMLInputElement).value).toBe(
       'loadweaver vpn enroll --name work-laptop',
     );
 

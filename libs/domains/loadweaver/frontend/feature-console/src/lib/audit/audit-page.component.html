@@ -1,272 +1,324 @@
-<fpc-page-header [title]="title" icon="shield-check">
-  <div fpcPageHeaderActions class="d-flex align-items-center gap-2 flex-wrap">
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="shield-check">
     @if (canVerify()) {
       <fpc-button
-        variant="outline-primary"
+        fpcPageHeaderActions
+        variant="primary"
         size="sm"
+        [iconOnly]="true"
+        [ariaLabel]="verifyLabel"
+        [title]="verifyLabel"
         [loading]="verifying()"
         (clicked)="verify()"
         data-testid="audit-verify"
       >
-        <i class="bi bi-link-45deg me-1" aria-hidden="true"></i>{{ verifyLabel }}
+        <i class="bi bi-link-45deg" aria-hidden="true"></i>
       </fpc-button>
     }
-    <fpc-button variant="outline-secondary" size="sm" [loading]="exporting()" (clicked)="export('csv')">
-      <i class="bi bi-download me-1" aria-hidden="true"></i>CSV
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="exportCsvLabel"
+      [title]="exportCsvLabel"
+      [loading]="exporting()"
+      (clicked)="export('csv')"
+    >
+      <i class="bi bi-filetype-csv" aria-hidden="true"></i>
     </fpc-button>
-    <fpc-button variant="outline-secondary" size="sm" [loading]="exporting()" (clicked)="export('ndjson')">
-      <i class="bi bi-download me-1" aria-hidden="true"></i>NDJSON
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="exportNdjsonLabel"
+      [title]="exportNdjsonLabel"
+      [loading]="exporting()"
+      (clicked)="export('ndjson')"
+    >
+      <i class="bi bi-filetype-json" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-<div class="p-3">
-  @if (verifyError(); as message) {
-    <fpc-alert class="d-block mb-3" variant="danger" [message]="message" />
-  }
   @if (verification(); as v) {
-    <div
-      class="alert mb-3 small"
-      [class.alert-success]="v.ok"
-      [class.alert-danger]="!v.ok"
-      role="status"
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      [variant]="v.ok ? 'success' : 'danger'"
       data-testid="audit-verification"
     >
-      <div class="d-flex align-items-center gap-2 fw-semibold mb-1">
-        <i class="bi" [class.bi-shield-check]="v.ok" [class.bi-shield-exclamation]="!v.ok" aria-hidden="true"></i>
-        @if (v.ok) {
-          <span i18n="@@lwConsoleAudit-chainOk">The hash chain is intact</span>
-        } @else {
-          <span i18n="@@lwConsoleAudit-chainBroken">The hash chain is broken</span>
-        }
-        @if (verifiedAt(); as at) {
-          <span class="fw-normal text-body-secondary ms-auto">{{ at | date: 'MMM d, y HH:mm:ss' }}</span>
-        }
-      </div>
-      <div>
-        <span i18n="@@lwConsoleAudit-checked">Entries checked</span>: {{ v.checked }}
-        @if (v.head) {
-          · <span i18n="@@lwConsoleAudit-head">head</span> <span class="font-monospace">#{{ v.head }}</span>
-        }
-        @if (v.brokenAt) {
-          ·
-          <span i18n="@@lwConsoleAudit-brokenAt">first mismatch at</span>
-          <span class="font-monospace">#{{ v.brokenAt }}</span>
-        }
-      </div>
-      <div>
-        @if (v.anchors.available) {
-          <span i18n="@@lwConsoleAudit-anchors">External anchors compared</span>: {{ v.anchors.checked }}
-          @if (v.anchors.mismatched.length > 0) {
-            · <span i18n="@@lwConsoleAudit-anchorsMismatched">rewritten after anchoring</span>:
-            <span class="font-monospace">{{ v.anchors.mismatched.join(', ') }}</span>
+      <div class="small">
+        <div class="d-flex align-items-center gap-2 fw-semibold mb-1">
+          @if (v.ok) {
+            <span i18n="@@lwConsoleAudit-chainOk">The hash chain is intact</span>
+          } @else {
+            <span i18n="@@lwConsoleAudit-chainBroken">The hash chain is broken</span>
           }
-        } @else {
-          <span class="text-body-secondary" i18n="@@lwConsoleAudit-anchorsUnavailable"
-            >External anchors are not available (log store unreachable): only the chain itself was checked.</span
-          >
-        }
+          @if (verifiedAt(); as at) {
+            <span class="fw-normal text-body-secondary ms-auto">{{ at | date: 'MMM d, y HH:mm:ss' }}</span>
+          }
+        </div>
+        <div>
+          <span i18n="@@lwConsoleAudit-checked">Entries checked</span>: {{ v.checked }}
+          @if (v.head) {
+            · <span i18n="@@lwConsoleAudit-head">head</span> <span class="font-monospace">#{{ v.head }}</span>
+          }
+          @if (v.brokenAt) {
+            ·
+            <span i18n="@@lwConsoleAudit-brokenAt">first mismatch at</span>
+            <span class="font-monospace">#{{ v.brokenAt }}</span>
+          }
+        </div>
+        <div>
+          @if (v.anchors.available) {
+            <span i18n="@@lwConsoleAudit-anchors">External anchors compared</span>: {{ v.anchors.checked }}
+            @if (v.anchors.mismatched.length > 0) {
+              · <span i18n="@@lwConsoleAudit-anchorsMismatched">rewritten after anchoring</span>:
+              <span class="font-monospace">{{ v.anchors.mismatched.join(', ') }}</span>
+            }
+          } @else {
+            <span class="text-body-secondary" i18n="@@lwConsoleAudit-anchorsUnavailable"
+              >External anchors are not available (log store unreachable): only the chain itself was checked.</span
+            >
+          }
+        </div>
       </div>
-    </div>
+    </fpc-alert>
   }
 
-  <form class="d-flex flex-column gap-2 mb-3" (ngSubmit)="search()" data-testid="audit-filter">
-    <div class="d-flex flex-wrap align-items-center gap-2">
-      <input
-        name="text"
-        type="search"
-        class="form-control form-control-sm flex-grow-1"
-        style="min-width: 12rem; max-width: 32rem"
-        [attr.aria-label]="placeholder('text')"
-        [placeholder]="placeholder('text')"
-        [ngModel]="filters().text"
-        (ngModelChange)="setFilter('text', $event)"
-      />
-      <label class="small text-body-secondary" for="lw-audit-from">{{ fromLabel }}</label>
-      <input
-        id="lw-audit-from"
-        name="from"
-        type="datetime-local"
-        class="form-control form-control-sm w-auto"
-        [ngModel]="fromInput()"
-        (ngModelChange)="fromInput.set($event)"
-      />
-      <label class="small text-body-secondary" for="lw-audit-to">{{ toLabel }}</label>
-      <input
-        id="lw-audit-to"
-        name="to"
-        type="datetime-local"
-        class="form-control form-control-sm w-auto"
-        [ngModel]="toInput()"
-        (ngModelChange)="toInput.set($event)"
-      />
-      <fpc-button type="submit" variant="primary" size="sm" [loading]="loading()" data-testid="audit-search">
-        <i class="bi bi-search me-1" aria-hidden="true"></i>{{ searchLabel }}
-      </fpc-button>
-      <fpc-button variant="outline-secondary" size="sm" (clicked)="reset()">{{ resetLabel }}</fpc-button>
-    </div>
-    <div class="d-flex flex-wrap align-items-center gap-2">
-      @if (projects().length > 0) {
-        <select
-          name="project"
-          class="form-select form-select-sm w-auto"
-          [attr.aria-label]="placeholder('project')"
-          [ngModel]="filters().project"
-          (ngModelChange)="setFilter('project', $event)"
-        >
-          <option value="" i18n="@@lwConsoleAudit-allProjects">All projects</option>
-          @for (p of projects(); track p) {
-            <option [value]="p">{{ p }}</option>
-          }
-          @if (filters().project && !projects().includes(filters().project)) {
-            <option [value]="filters().project">{{ filters().project }}</option>
-          }
-        </select>
-      } @else {
-        <input
-          name="project"
-          class="form-control form-control-sm w-auto"
-          [attr.aria-label]="placeholder('project')"
-          [placeholder]="placeholder('project')"
-          [ngModel]="filters().project"
-          (ngModelChange)="setFilter('project', $event)"
-        />
-      }
-      <input
-        name="action"
-        class="form-control form-control-sm font-monospace"
-        style="width: 18rem"
-        [attr.aria-label]="placeholder('action')"
-        [placeholder]="placeholder('action')"
-        [ngModel]="filters().action"
-        (ngModelChange)="setFilter('action', $event)"
-      />
-      <input
-        name="actor"
-        class="form-control form-control-sm font-monospace w-auto"
-        [attr.aria-label]="placeholder('actor')"
-        [placeholder]="placeholder('actor')"
-        [ngModel]="filters().actor"
-        (ngModelChange)="setFilter('actor', $event)"
-      />
-      <input
-        name="target"
-        class="form-control form-control-sm font-monospace w-auto"
-        [attr.aria-label]="placeholder('target')"
-        [placeholder]="placeholder('target')"
-        [ngModel]="filters().target"
-        (ngModelChange)="setFilter('target', $event)"
-      />
-    </div>
+  <form class="flex-shrink-0" (ngSubmit)="search()" data-testid="audit-filter">
+    <fpc-search-field
+      class="border-bottom"
+      name="text"
+      [bordered]="false"
+      [placeholder]="placeholder('text')"
+      [ariaLabel]="placeholder('text')"
+      [ngModel]="filters().text"
+      (ngModelChange)="setFilter('text', $event)"
+    />
+
+    <fpc-collapsible-filter-panel
+      [(open)]="filtersOpen"
+      [title]="filtersLabel"
+      [activeCount]="activeFilterCount()"
+      (cleared)="reset()"
+    >
+      <div class="row g-3 mb-0 w-100">
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-audit-from" [label]="fromLabel">
+            <fpc-form-control
+              controlId="lw-audit-from"
+              name="from"
+              inputType="datetime-local"
+              size="sm"
+              [ngModel]="fromInput()"
+              (ngModelChange)="fromInput.set($event)"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-audit-to" [label]="toLabel">
+            <fpc-form-control
+              controlId="lw-audit-to"
+              name="to"
+              inputType="datetime-local"
+              size="sm"
+              [ngModel]="toInput()"
+              (ngModelChange)="toInput.set($event)"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-audit-project" [label]="placeholder('project')">
+            @if (projects().length > 0) {
+              <fpc-form-control
+                controlType="select"
+                controlId="lw-audit-project"
+                name="project"
+                size="sm"
+                [ngModel]="filters().project"
+                (ngModelChange)="setFilter('project', $event)"
+              >
+                <option value="" i18n="@@lwConsoleAudit-allProjects">All projects</option>
+                @for (p of projects(); track p) {
+                  <option [value]="p">{{ p }}</option>
+                }
+                @if (filters().project && !projects().includes(filters().project)) {
+                  <option [value]="filters().project">{{ filters().project }}</option>
+                }
+              </fpc-form-control>
+            } @else {
+              <fpc-form-control
+                controlId="lw-audit-project"
+                name="project"
+                size="sm"
+                [placeholder]="placeholder('project')"
+                [ngModel]="filters().project"
+                (ngModelChange)="setFilter('project', $event)"
+              />
+            }
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-audit-action" [label]="actionLabel">
+            <fpc-form-control
+              controlId="lw-audit-action"
+              name="action"
+              size="sm"
+              controlClass="font-monospace"
+              [placeholder]="placeholder('action')"
+              [ngModel]="filters().action"
+              (ngModelChange)="setFilter('action', $event)"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-audit-actor" [label]="placeholder('actor')">
+            <fpc-form-control
+              controlId="lw-audit-actor"
+              name="actor"
+              size="sm"
+              controlClass="font-monospace"
+              [placeholder]="placeholder('actor')"
+              [ngModel]="filters().actor"
+              (ngModelChange)="setFilter('actor', $event)"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-audit-target" [label]="placeholder('target')">
+            <fpc-form-control
+              controlId="lw-audit-target"
+              name="target"
+              size="sm"
+              controlClass="font-monospace"
+              [placeholder]="placeholder('target')"
+              [ngModel]="filters().target"
+              (ngModelChange)="setFilter('target', $event)"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-12 d-flex gap-2">
+          <fpc-button type="submit" variant="primary" size="sm" [loading]="loading()" data-testid="audit-search">
+            <i class="bi bi-search me-1" aria-hidden="true"></i>{{ searchLabel }}
+          </fpc-button>
+          <fpc-button variant="secondary" size="sm" (clicked)="reset()">{{ resetLabel }}</fpc-button>
+        </div>
+      </div>
+    </fpc-collapsible-filter-panel>
   </form>
 
-  @if (error(); as message) {
-    <fpc-alert class="d-block mb-3" variant="danger" [message]="message" />
-  }
-  @if (exportError(); as message) {
-    <fpc-alert
-      class="d-block mb-3"
-      variant="danger"
-      [message]="message"
-      [dismissible]="true"
-      (closed)="exportError.set(null)"
-    />
-  }
-
-  @if (loading() && entries().length === 0) {
-    <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-  } @else if (entries().length === 0) {
-    @if (!error()) {
-      <fpc-empty-state icon="shield" i18n-title="@@lwConsoleAudit-empty" title="No audit entries match" />
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (verifyError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
     }
-  } @else {
-    <div class="table-responsive">
-      <table class="table table-sm table-hover align-middle small mb-2" data-testid="audit-table">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col" i18n="@@lwConsoleAudit-colTime">Time</th>
-            <th scope="col" i18n="@@lwConsoleAudit-colAction">Action</th>
-            <th scope="col" i18n="@@lwConsoleAudit-colTarget">Target</th>
-            <th scope="col" i18n="@@lwConsoleAudit-colProject">Project</th>
-            <th scope="col" i18n="@@lwConsoleAudit-colActor">Actor</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (entry of entries(); track entry.seq) {
-            <tr role="button" (click)="toggle(entry)" [class.table-active]="expanded() === entry.seq">
-              <td class="font-monospace text-body-secondary">{{ entry.seq }}</td>
-              <td class="text-nowrap font-monospace">{{ entry.at | date: 'MMM d, y HH:mm:ss' }}</td>
-              <td>
-                <fpc-badge size="sm" color="light"
-                  ><span class="font-monospace">{{ entry.action }}</span></fpc-badge
-                >
-              </td>
-              <td class="font-monospace text-break">{{ entry.target }}</td>
-              <td>{{ entry.project ?? '' }}</td>
-              <td class="font-monospace text-truncate" style="max-width: 12rem">
-                {{ entry.actorType }}{{ entry.actorId ? ':' + entry.actorId : '' }}
-              </td>
-            </tr>
-            @if (expanded() === entry.seq) {
-              <tr data-testid="audit-entry-details">
-                <td colspan="6" class="bg-body-tertiary">
-                  <pre class="small mb-2 p-2 border rounded bg-body" style="max-height: 20rem">{{
-                    details(entry)
-                  }}</pre>
-                  <div class="small text-body-secondary mb-2">
-                    <span i18n="@@lwConsoleAudit-hash">Hash</span>:
-                    <span class="font-monospace text-break">{{ entry.hash }}</span>
-                  </div>
-                  <div class="d-flex flex-wrap gap-3 small">
-                    <a href="" (click)="$event.preventDefault(); narrow('action', entry.action)"
-                      ><i class="bi bi-funnel me-1" aria-hidden="true"></i
-                      ><span i18n="@@lwConsoleAudit-onlyAction">Only this action</span></a
-                    >
-                    <a href="" (click)="$event.preventDefault(); narrow('target', entry.target)"
-                      ><i class="bi bi-funnel me-1" aria-hidden="true"></i
-                      ><span i18n="@@lwConsoleAudit-onlyTarget">Only this target</span></a
-                    >
-                    @if (entry.actorId) {
-                      <a href="" (click)="$event.preventDefault(); narrow('actor', entry.actorId)"
-                        ><i class="bi bi-funnel me-1" aria-hidden="true"></i
-                        ><span i18n="@@lwConsoleAudit-onlyActor">Only this actor</span></a
-                      >
-                    }
-                    @if (sessionOf(entry)) {
-                      <a [routerLink]="['/live']" [queryParams]="entry.project ? { project: entry.project } : null"
-                        ><i class="bi bi-record-circle me-1" aria-hidden="true"></i
-                        ><span i18n="@@lwConsoleAudit-sessions">Terminal sessions</span></a
-                      >
-                    }
-                  </div>
-                </td>
-              </tr>
-            }
-          }
-        </tbody>
-      </table>
-    </div>
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (exportError(); as message) {
+      <fpc-alert
+        class="m-3"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="exportError.set(null)"
+      />
+    }
 
-    <div class="d-flex align-items-center gap-2" data-testid="audit-paging">
-      <fpc-button variant="outline-secondary" size="sm" [disabled]="!hasPrevious() || loading()" (clicked)="newer()">
-        <i class="bi bi-chevron-left me-1" aria-hidden="true"></i>{{ newerLabel }}
-      </fpc-button>
-      <span class="small text-body-secondary"><span i18n="@@lwConsoleAudit-page">Page</span> {{ page() + 1 }}</span>
-      <fpc-button variant="outline-secondary" size="sm" [disabled]="!hasNext() || loading()" (clicked)="older()">
-        {{ olderLabel }}<i class="bi bi-chevron-right ms-1" aria-hidden="true"></i>
-      </fpc-button>
-      <label class="visually-hidden" for="lw-audit-limit">{{ pageSizeLabel }}</label>
-      <select
-        id="lw-audit-limit"
-        class="form-select form-select-sm w-auto ms-auto"
-        [ngModel]="limit()"
-        (ngModelChange)="onLimitChange($event)"
-      >
-        @for (size of pageSizes; track size) {
-          <option [ngValue]="size">{{ size }}</option>
-        }
-      </select>
-    </div>
-  }
+    @if (loading() && entries().length === 0) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (entries().length === 0) {
+      @if (!error()) {
+        <fpc-empty-state icon="shield" i18n-title="@@lwConsoleAudit-empty" title="No audit entries match" />
+      }
+    } @else {
+      <fpc-panel flush>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover align-middle small mb-0" data-testid="audit-table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col" i18n="@@lwConsoleAudit-colTime">Time</th>
+                <th scope="col" i18n="@@lwConsoleAudit-colAction">Action</th>
+                <th scope="col" i18n="@@lwConsoleAudit-colTarget">Target</th>
+                <th scope="col" i18n="@@lwConsoleAudit-colProject">Project</th>
+                <th scope="col" i18n="@@lwConsoleAudit-colActor">Actor</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of entries(); track entry.seq) {
+                <tr role="button" (click)="toggle(entry)" [class.table-active]="expanded() === entry.seq">
+                  <td class="font-monospace text-body-secondary">{{ entry.seq }}</td>
+                  <td class="text-nowrap font-monospace">{{ entry.at | date: 'MMM d, y HH:mm:ss' }}</td>
+                  <td>
+                    <fpc-badge size="sm" color="light"
+                      ><span class="font-monospace">{{ entry.action }}</span></fpc-badge
+                    >
+                  </td>
+                  <td class="font-monospace text-break">{{ entry.target }}</td>
+                  <td>{{ entry.project ?? '' }}</td>
+                  <td class="font-monospace text-break">
+                    {{ entry.actorType }}{{ entry.actorId ? ':' + entry.actorId : '' }}
+                  </td>
+                </tr>
+                @if (expanded() === entry.seq) {
+                  <tr data-testid="audit-entry-details">
+                    <td colspan="6" class="bg-body-tertiary">
+                      <pre class="small mb-2 p-2 border rounded bg-body">{{ details(entry) }}</pre>
+                      <div class="small text-body-secondary mb-2">
+                        <span i18n="@@lwConsoleAudit-hash">Hash</span>:
+                        <span class="font-monospace text-break">{{ entry.hash }}</span>
+                      </div>
+                      <div class="d-flex flex-wrap gap-3 small">
+                        <a href="" (click)="$event.preventDefault(); narrow('action', entry.action)"
+                          ><i class="bi bi-funnel me-1" aria-hidden="true"></i
+                          ><span i18n="@@lwConsoleAudit-onlyAction">Only this action</span></a
+                        >
+                        <a href="" (click)="$event.preventDefault(); narrow('target', entry.target)"
+                          ><i class="bi bi-funnel me-1" aria-hidden="true"></i
+                          ><span i18n="@@lwConsoleAudit-onlyTarget">Only this target</span></a
+                        >
+                        @if (entry.actorId) {
+                          <a href="" (click)="$event.preventDefault(); narrow('actor', entry.actorId)"
+                            ><i class="bi bi-funnel me-1" aria-hidden="true"></i
+                            ><span i18n="@@lwConsoleAudit-onlyActor">Only this actor</span></a
+                          >
+                        }
+                        @if (sessionOf(entry)) {
+                          <a [routerLink]="['/live']" [queryParams]="entry.project ? { project: entry.project } : null"
+                            ><i class="bi bi-record-circle me-1" aria-hidden="true"></i
+                            ><span i18n="@@lwConsoleAudit-sessions">Terminal sessions</span></a
+                          >
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div fpcPanelFooter class="d-flex justify-content-end align-items-center w-100" data-testid="audit-paging">
+          <fpc-pager
+            size="sm"
+            [page]="page() + 1"
+            [hasPrevious]="hasPrevious()"
+            [hasNext]="hasNext()"
+            [disabled]="loading()"
+            [pageSizes]="pageSizes"
+            [pageSize]="limit()"
+            (pageSizeChange)="onLimitChange($event ?? limit())"
+            [pageLabel]="pageLabel"
+            [previousLabel]="newerLabel"
+            [nextLabel]="olderLabel"
+            [pageSizeLabel]="pageSizeLabel"
+            (previous)="newer()"
+            (next)="older()"
+          />
+        </div>
+      </fpc-panel>
+    }
+  </div>
 </div>

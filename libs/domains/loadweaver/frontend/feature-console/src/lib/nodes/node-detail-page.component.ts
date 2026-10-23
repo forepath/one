@@ -14,6 +14,7 @@ import {
   FpcConfirmDialogComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcProgressComponent,
   FpcSpinnerComponent,
   FpcStatusBadgeComponent,
@@ -44,6 +45,7 @@ const REFRESH_MS = 15_000;
 @Component({
   selector: 'loadweaver-node-detail-page',
   imports: [
+    FpcPanelGridComponent,
     CommonModule,
     RouterModule,
     FpcAlertComponent,
@@ -139,6 +141,7 @@ export class LoadweaverNodeDetailPageComponent implements OnInit {
 
   readonly title = $localize`:@@lwConsoleNodeDetail-title:Node`;
   readonly backLabel = $localize`:@@lwConsoleNodeDetail-back:All nodes`;
+  readonly healthLabel = $localize`:@@lwConsoleNodeDetail-health:Health`;
   readonly statusTitle = $localize`:@@lwConsoleNodeDetail-status:Status`;
   readonly capacityTitle = $localize`:@@lwConsoleNodeDetail-capacity:Capacity`;
   readonly networkTitle = $localize`:@@lwConsoleNodeDetail-network:Network`;

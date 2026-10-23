@@ -46,20 +46,20 @@ describe('LoadweaverNodesPageComponent', () => {
   let fixture: ComponentFixture<LoadweaverNodesPageComponent>;
   let facade: ReturnType<typeof facadeStub>;
 
-  async function setup(clusterRole: 'cluster-admin' | 'auditor' = 'cluster-admin') {
-    const nodes = [
-      node(),
-      node({ name: 'n2', connected: false, controlPlane: false }),
-      node({ name: 'n3', site: 'ams1' }),
-    ];
+  async function setup(clusterRole: 'cluster-admin' | 'auditor' = 'cluster-admin', empty = false) {
+    const nodes = empty
+      ? []
+      : [node(), node({ name: 'n2', connected: false, controlPlane: false }), node({ name: 'n3', site: 'ams1' })];
 
     facade = facadeStub(
       {
         nodes$: nodes,
-        sites$: [
-          { site: 'ams1', nodes: [nodes[2]] },
-          { site: 'fra1', nodes: [nodes[0], nodes[1]] },
-        ],
+        sites$: empty
+          ? []
+          : [
+              { site: 'ams1', nodes: [nodes[2]] },
+              { site: 'fra1', nodes: [nodes[0], nodes[1]] },
+            ],
         cluster$: {
           clusterId: 'c-1',
           displayName: 'Production',
@@ -119,6 +119,32 @@ describe('LoadweaverNodesPageComponent', () => {
     expect(fixture.componentInstance.connectedCount()).toBe(2);
   });
 
+  it('lists the join tokens first, then one titled panel per site', async () => {
+    await setup();
+
+    const titles = Array.from(el().querySelectorAll('fpc-panel')).map((p) => p.textContent ?? '');
+
+    expect(titles).toHaveLength(3);
+    expect(titles[0]).toContain('Join tokens (1)');
+    expect(titles[1]).toContain('ams1 (1)');
+    expect(titles[2]).toContain('fra1 (2)');
+    expect(el().querySelector('[data-testid="nodes-empty"]')).toBeNull();
+  });
+
+  it('keeps the Nodes section with its title and the empty state inside when there are no nodes', async () => {
+    await setup('cluster-admin', true);
+
+    const panels = Array.from(el().querySelectorAll('fpc-panel'));
+    const empty = el().querySelector('[data-testid="nodes-empty"]');
+
+    expect(panels).toHaveLength(2);
+    expect(panels[0].textContent).toContain('Join tokens (1)');
+    expect(panels[1]).toBe(empty);
+    expect(empty?.textContent).toContain('Nodes (0)');
+    expect(empty?.querySelector('fpc-empty-state')?.textContent).toContain('No nodes');
+    expect(el().querySelectorAll('fpc-empty-state')).toHaveLength(1);
+  });
+
   it('hides join tokens from auditors', async () => {
     await setup('auditor');
 
@@ -163,7 +189,8 @@ describe('LoadweaverNodesPageComponent', () => {
     // The token is shown (to paste at the prompt) but never part of the line.
     expect(component.joinCommand()).not.toContain('lwj_secret');
     expect(
-      (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('[data-testid="nodes-join-token"]')?.value,
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('[data-testid="nodes-join-token"] input')
+        ?.value,
     ).toBe('lwj_secret');
 
     component.onJoinOpenChange(false);

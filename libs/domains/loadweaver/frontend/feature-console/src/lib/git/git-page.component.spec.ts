@@ -128,7 +128,7 @@ describe('LoadweaverGitPageComponent', () => {
     expect(table?.querySelector('a[href="https://github.com/acme/infra/commit/abcdef0123456789"]')).not.toBeNull();
     expect(table?.querySelector('a[href="/plans/3f2a1b4c-0000-4000-8000-000000000001"]')).not.toBeNull();
     expect(table?.querySelector('[data-testid="git-commit-reason"]')?.textContent).toContain('github-token');
-    expect((el().querySelector('[data-testid="git-webhook-url"]') as HTMLInputElement).value).toBe(
+    expect((el().querySelector('[data-testid="git-webhook-url"] input') as HTMLInputElement).value).toBe(
       `https://lw.example${shop.webhookPath}`,
     );
   });
@@ -195,7 +195,9 @@ describe('LoadweaverGitPageComponent', () => {
 
     (git['webhookSecret$'] as BehaviorSubject<unknown>).next({ id: shop.id, secret: 'whsec_123' });
     fixture.detectChanges();
-    expect((el().querySelector('[data-testid="git-webhook-secret"]') as HTMLInputElement).value).toBe('whsec_123');
+    expect((el().querySelector('[data-testid="git-webhook-secret"] input') as HTMLInputElement).value).toBe(
+      'whsec_123',
+    );
 
     component.hideSecret();
     expect(git['hideWebhookSecret']).toHaveBeenCalled();
@@ -231,7 +233,9 @@ describe('LoadweaverGitPageComponent', () => {
     (git['webhookSecret$'] as BehaviorSubject<unknown>).next({ id: shop.id, secret: 'whsec_new', rotated: true });
     fixture.detectChanges();
 
-    expect((el().querySelector('[data-testid="git-webhook-secret"]') as HTMLInputElement).value).toBe('whsec_new');
+    expect((el().querySelector('[data-testid="git-webhook-secret"] input') as HTMLInputElement).value).toBe(
+      'whsec_new',
+    );
     expect(el().querySelector('[data-testid="git-webhook-rotated"]')).not.toBeNull();
     expect(el().querySelector('[data-testid="git-webhook-generation"]')?.textContent).toContain('1');
 
@@ -318,10 +322,10 @@ describe('LoadweaverGitPageComponent', () => {
     (git['sopsRecipient$'] as BehaviorSubject<unknown>).next('age1qyqszqgpqyqszqgpqyqszqgpqyqszqgp');
     fixture.detectChanges();
 
-    expect((el().querySelector('[data-testid="git-sops-recipient"]') as HTMLInputElement).value).toBe(
+    expect((el().querySelector('[data-testid="git-sops-recipient"] input') as HTMLInputElement).value).toBe(
       'age1qyqszqgpqyqszqgpqyqszqgpqyqszqgp',
     );
-    expect((el().querySelector('[data-testid="git-sops-command"]') as HTMLInputElement).value).toBe(
+    expect((el().querySelector('[data-testid="git-sops-command"] input') as HTMLInputElement).value).toBe(
       'sops --encrypt --age age1qyqszqgpqyqszqgpqyqszqgpqyqszqgp --in-place secrets.yaml',
     );
 

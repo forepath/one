@@ -20,10 +20,13 @@ import {
   FpcBadgeComponent,
   FpcButtonComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
   FpcSummaryCardComponent,
@@ -56,6 +59,9 @@ import { LoadweaverBackupRestoreModalComponent } from './backup-restore-modal.co
 @Component({
   selector: 'loadweaver-backup-detail-page',
   imports: [
+    FpcPanelGridComponent,
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -152,6 +158,9 @@ export class LoadweaverBackupDetailPageComponent implements OnInit {
   readonly browserTitle = $localize`:@@lwConsoleBackupDetail-browser:Files in the backup`;
   readonly downloadLabel = $localize`:@@lwConsoleBackupDetail-download:Download`;
   readonly restoreLabel = $localize`:@@lwConsoleBackupDetail-restorePath:Restore this`;
+  readonly restoreBackupLabel = $localize`:@@lwConsoleBackupDetail-restore:Restore`;
+  readonly compareLabel = $localize`:@@lwConsoleBackupDetail-compare:Compare`;
+  readonly testNowLabel = $localize`:@@lwConsoleBackupDetail-testNow:Restore test now`;
   readonly refreshLabel = $localize`:@@lwConsoleBackupDetail-refresh:Refresh`;
   readonly diffTitle = $localize`:@@lwConsoleBackupDetail-diffTitle:Compare with another backup`;
 

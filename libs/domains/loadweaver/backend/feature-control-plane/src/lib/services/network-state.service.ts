@@ -473,6 +473,7 @@ export const REPLICATED_CONTROL_PLANE_ENV = [
   'LOADWEAVER_GRPC_HOSTNAMES',
   'LOADWEAVER_GRPC_ENDPOINTS',
   'LOADWEAVER_PUBLIC_URL',
+  'LOADWEAVER_TRUST_PROXY',
   'LOADWEAVER_POSTGRES_REPLICATION_PASSWORD',
   'LOADWEAVER_POSTGRES_ADMIN_PASSWORD',
   // External KMS for the master key (3.22).
@@ -483,6 +484,12 @@ export const REPLICATED_CONTROL_PLANE_ENV = [
   'VAULT_NAMESPACE',
   'LOADWEAVER_VAULT_TRANSIT_MOUNT',
   'LOADWEAVER_VAULT_TRANSIT_KEY',
+  // One-time admin claim (Loadweaver Cloud): only the SHA-256 of the token. Without it a member would answer
+  // `claimRequired: false` and accept an unclaimed first registration.
+  'ADMIN_CLAIM_TOKEN_SHA256',
+  // Posture integrations (3.31): every member loads the same plugins and runs the same sync schedule.
+  'DYNAMIC_POSTURE_PLUGINS',
+  'LOADWEAVER_POSTURE_SYNC_CRON',
 ] as const;
 
 export function replicatedEnvironment(env: NodeJS.ProcessEnv = process.env): Record<string, string> {

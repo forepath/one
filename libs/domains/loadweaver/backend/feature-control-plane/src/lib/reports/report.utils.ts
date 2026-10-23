@@ -1,3 +1,5 @@
+import { USAGE_METER_DEFINITIONS, type UsageMeter } from '../usage/usage.constants';
+
 /** One monthly report (3.25): uptime and SLOs, incidents, capacity trend and forecast, denies, health, usage. */
 export interface ReportData {
   scope: string;
@@ -12,6 +14,8 @@ export interface ReportData {
   capacity?: { points: { day: string; usedBytes: number }[]; capacityBytes: number; daysUntil90Percent: number | null };
   deniedPackets?: number;
   usage?: { cpuMillis: number; memoryBytes: number; storageBytes: number };
+  /** Metered usage in the month (3.24), per meter in its unit (`USAGE_METER_DEFINITIONS`). */
+  metered?: Partial<Record<UsageMeter, number>>;
   /** Backups and restore tests in the month (3.20). */
   backups?: {
     backups: number;
@@ -130,10 +134,20 @@ ${
     data.usage
       ? `<h2>Usage</h2><p>Requested at the end of the month: ${(data.usage.cpuMillis / 1000).toFixed(2)} CPUs, ${gib(data.usage.memoryBytes)} memory, ${gib(data.usage.storageBytes)} storage.</p>`
       : ''
-  }${
+  }${data.metered ? meteredSection(data.metered) : ''}${
     data.backups
       ? `<h2>Backups and restore tests</h2><p>${data.backups.backups} backups (${data.backups.failedBackups} failed), ${gib(data.backups.bytes)} backed up, ${gib(data.backups.uploadedBytes)} stored after deduplication; ${data.backups.restoreTests} restore tests (${data.backups.failedRestoreTests} failed).</p>`
       : ''
   }${data.notYet.length ? `<p><small>Not in this report yet: ${data.notYet.map(escapeHtml).join(', ')}.</small></p>` : ''}
 </body></html>`;
+}
+
+/** Metered usage of the month (3.24): one line per meter with its unit. */
+export function meteredSection(metered: Partial<Record<UsageMeter, number>>): string {
+  const lines = USAGE_METER_DEFINITIONS.map(
+    (m) =>
+      `<tr><td>${escapeHtml(m.description)}</td><td>${(metered[m.key] ?? 0).toFixed(2)} ${escapeHtml(m.unit)}</td></tr>`,
+  ).join('');
+
+  return `<h2>Metered usage</h2><table><tr><th>Meter</th><th>Usage</th></tr>${lines}</table>`;
 }

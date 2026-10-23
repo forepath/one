@@ -1,0 +1,213 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="layout-split" />
+
+  @if (comparison(); as cmp) {
+    <fpc-summary-bar class="flex-shrink-0" [columns]="4" data-testid="fleet-compare-summary">
+      <fpc-summary-card
+        i18n-label="@@lwConsoleFleetCompare-sumVersions"
+        label="Versions"
+        [value]="cmp.sameVersion ? '=' : '≠'"
+        [tone]="cmp.sameVersion ? 'success' : 'warning'"
+      />
+      <fpc-summary-card
+        i18n-label="@@lwConsoleFleetCompare-sumIdentical"
+        label="Identical policies"
+        [value]="'' + cmp.policyDrift.identical"
+        tone="success"
+      />
+      <fpc-summary-card
+        i18n-label="@@lwConsoleFleetCompare-sumDifferent"
+        label="Different"
+        [value]="'' + cmp.policyDrift.different"
+        [tone]="cmp.policyDrift.different > 0 ? 'warning' : 'default'"
+      />
+      <fpc-summary-card
+        i18n-label="@@lwConsoleFleetCompare-sumMissing"
+        label="Missing somewhere"
+        [value]="'' + cmp.policyDrift.missing"
+        [tone]="cmp.policyDrift.missing > 0 ? 'warning' : 'default'"
+      />
+    </fpc-summary-bar>
+  }
+
+  <fpc-collapsible-filter-panel
+    class="flex-shrink-0"
+    [(open)]="selectionOpen"
+    [title]="selectionLabel"
+    [activeCount]="selected().length"
+    (cleared)="clear()"
+  >
+    <div class="row g-3 mb-0 w-100">
+      @if (selectable().length === 0) {
+        <div class="col-12 small text-body-secondary" i18n="@@lwConsoleFleetCompare-noneSelectable">
+          Comparing needs a cluster-wide grant on at least two clusters.
+        </div>
+      }
+      @for (c of selectable(); track c.id) {
+        <div class="col-12 col-md-6 col-xl-4">
+          <fpc-form-check
+            [checkId]="'lw-fleet-compare-' + c.id"
+            [label]="c.name"
+            [checked]="isSelected(c.id)"
+            (checkedChange)="toggle(c.id, $event)"
+            [attr.data-testid]="'fleet-compare-pick-' + c.name"
+          />
+        </div>
+      }
+      <div class="col-12 d-flex align-items-center gap-2">
+        <fpc-button
+          variant="primary"
+          size="sm"
+          [disabled]="!canCompare()"
+          [loading]="loading()"
+          (clicked)="compare()"
+          data-testid="fleet-compare-run"
+        >
+          <i class="bi bi-layout-split me-1" aria-hidden="true"></i>{{ compareLabel }}
+        </fpc-button>
+        <span class="small text-body-secondary" i18n="@@lwConsoleFleetCompare-limits">2 to 8 clusters</span>
+      </div>
+    </div>
+  </fpc-collapsible-filter-panel>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    @if (loading() && !comparison()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (comparison(); as cmp) {
+      <fpc-panel-grid [columns]="2">
+        <fpc-panel i18n-title="@@lwConsoleFleetCompare-versions" title="Versions" [flush]="true">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle small mb-0" data-testid="fleet-compare-versions">
+              <thead>
+                <tr>
+                  <th scope="col" i18n="@@lwConsoleFleetCompare-colCluster">Cluster</th>
+                  <th scope="col" i18n="@@lwConsoleFleetCompare-colVersion">Version</th>
+                  <th scope="col" i18n="@@lwConsoleFleetCompare-colLatest">Latest available</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (v of cmp.versions; track v.clusterId) {
+                  <tr>
+                    <td>{{ name(v.clusterId) }}</td>
+                    <td class="font-monospace">{{ v.version ?? '–' }}</td>
+                    <td class="font-monospace">{{ v.latestAvailable ?? '–' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </fpc-panel>
+        <fpc-panel i18n-title="@@lwConsoleFleetCompare-capacity" title="Capacity" [flush]="true">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle small mb-0" data-testid="fleet-compare-capacity">
+              <thead>
+                <tr>
+                  <th scope="col" i18n="@@lwConsoleFleetCompare-colCluster">Cluster</th>
+                  <th scope="col" i18n="@@lwConsoleFleetCompare-colSites">Sites</th>
+                  <th scope="col" i18n="@@lwConsoleFleetCompare-colNodes">Nodes up</th>
+                  <th scope="col" i18n="@@lwConsoleFleetCompare-colCpu">CPU</th>
+                  <th scope="col" i18n="@@lwConsoleFleetCompare-colMemory">Memory</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of cmp.capacity; track row.clusterId) {
+                  <tr>
+                    <td>{{ name(row.clusterId) }}</td>
+                    <td>{{ row.sites ?? '–' }}</td>
+                    <td>
+                      @if (row.nodes; as n) {
+                        {{ n.up }} / {{ n.total }}
+                      } @else {
+                        –
+                      }
+                    </td>
+                    <td>
+                      @if (capacityPercent(row.capacity, 'cpu'); as p) {
+                        {{ p }}%
+                      } @else {
+                        –
+                      }
+                    </td>
+                    <td>
+                      @if (capacityPercent(row.capacity, 'memory'); as p) {
+                        {{ p }}%
+                      } @else {
+                        –
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </fpc-panel>
+      </fpc-panel-grid>
+      <fpc-panel-grid [columns]="1" fill>
+        <fpc-panel i18n-title="@@lwConsoleFleetCompare-drift" title="Policy drift" [flush]="true">
+          @if (cmp.policyDrift.items.length === 0) {
+            <fpc-empty-state
+              icon="check2-circle"
+              size="sm"
+              i18n-title="@@lwConsoleFleetCompare-noDrift"
+              title="The policies are the same on every cluster"
+            />
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-striped table-hover align-middle small mb-0" data-testid="fleet-compare-drift">
+                <thead>
+                  <tr>
+                    <th scope="col" i18n="@@lwConsoleFleetCompare-colKind">Kind</th>
+                    <th scope="col" i18n="@@lwConsoleFleetCompare-colName">Name</th>
+                    <th scope="col" i18n="@@lwConsoleFleetCompare-colState">Drift</th>
+                    @for (c of cmp.clusters; track c.id) {
+                      <th scope="col">{{ c.name }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of cmp.policyDrift.items; track item.kind + '/' + (item.project ?? '') + '/' + item.name) {
+                    <tr>
+                      <td>{{ item.kind }}</td>
+                      <td class="font-monospace">
+                        @if (item.project) {
+                          {{ item.project }}/
+                        }
+                        {{ item.name }}
+                      </td>
+                      <td>
+                        @if (item.state === 'missing') {
+                          <fpc-badge size="sm" color="warning" i18n="@@lwConsoleFleetCompare-missing"
+                            >missing</fpc-badge
+                          >
+                        } @else {
+                          <fpc-badge size="sm" color="info" i18n="@@lwConsoleFleetCompare-different"
+                            >different</fpc-badge
+                          >
+                        }
+                      </td>
+                      @for (c of cmp.clusters; track c.id) {
+                        <td class="font-monospace" [class.text-body-secondary]="!item.clusters[c.id]">
+                          {{ hash(item.clusters[c.id]) }}
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </fpc-panel>
+      </fpc-panel-grid>
+    } @else if (!error()) {
+      <fpc-empty-state
+        icon="layout-split"
+        i18n-title="@@lwConsoleFleetCompare-empty"
+        title="Choose 2 to 8 clusters to compare"
+      />
+    }
+  </div>
+</div>

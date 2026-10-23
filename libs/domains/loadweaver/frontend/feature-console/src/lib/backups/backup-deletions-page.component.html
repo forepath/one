@@ -1,10 +1,8 @@
-<fpc-page-header [title]="title" icon="trash">
-  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
-    <fpc-button variant="link" size="sm" routerLink="/backups">
-      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
-    </fpc-button>
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="trash">
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="dark"
       size="sm"
       iconOnly
       [ariaLabel]="refreshLabel"
@@ -13,139 +11,151 @@
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-@if (error(); as message) {
-  <fpc-alert class="d-block m-3" variant="danger" [message]="message" />
-}
-@if (actionError(); as message) {
-  <fpc-alert class="d-block m-3" variant="danger" [message]="message" data-testid="deletions-action-error" />
-}
+  <loadweaver-backups-nav
+    active="deletions"
+    [platform]="hasClusterRole()"
+    [keys]="isClusterAdmin()"
+    [deletions]="open().length"
+  />
 
-@if (loading() && deletions() === null) {
-  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-} @else {
-  <div class="p-3 d-flex flex-column gap-3">
-    <fpc-alert variant="info" [showIcon]="true">
-      <span i18n="@@lwConsoleBackupDeletions-rule"
-        >Deleting backups or shortening retention needs the approval of a second admin of the same scope (project admin,
-        or cluster admin for the cluster). An approved request takes effect only after the deletion delay, counted from
-        the request; until then any admin can cancel it. Deletions are requested from the backup catalog.</span
-      >
-    </fpc-alert>
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" data-testid="deletions-action-error" />
+    }
 
-    <fpc-panel [title]="openTitle + ' (' + open().length + ')'" [flush]="true">
-      <fpc-list [flush]="true" data-testid="deletions-open">
-        @for (d of open(); track d.id) {
-          <fpc-list-item>
-            <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
-              <fpc-badge [color]="tone[d.state]" size="sm">{{ stateLabel(d.state) }}</fpc-badge>
-              <fpc-badge color="light" size="sm">{{ scope(d.scope) }}</fpc-badge>
-              @if (d.kind === 'retention') {
-                <span class="fw-semibold"
-                  ><span i18n="@@lwConsoleBackupDeletions-retention">Shorter retention of policy</span>
-                  {{ d.retention?.policy }}</span
-                >
-              } @else {
-                <span class="fw-semibold"
-                  >{{ d.backupIds.length }} <span i18n="@@lwConsoleBackupDeletions-backups">backups</span></span
-                >
-              }
-            </div>
-            <div fpcListItemMeta class="small text-body-secondary d-flex flex-column gap-1">
-              <span class="text-body">{{ d.reason }}</span>
-              <span>
-                <span i18n="@@lwConsoleBackupDeletions-requestedBy">Requested by</span> {{ d.requestedBy }} ·
-                {{ d.createdAt | date: 'short' }}
-                @if (d.approvedBy) {
-                  · <span i18n="@@lwConsoleBackupDeletions-approvedBy">approved by</span> {{ d.approvedBy }}
-                  {{ d.approvedAt | date: 'short' }}
-                }
-              </span>
-              <span [class.text-warning]="waiting(d)">
-                <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
-                ><span i18n="@@lwConsoleBackupDeletions-notBefore">Takes effect at the earliest</span>
-                {{ d.notBefore | date: 'medium' }}
-              </span>
-              @if (d.kind === 'backups') {
-                <span class="d-flex flex-wrap gap-2">
-                  @for (id of d.backupIds; track id) {
-                    <a class="font-monospace" [routerLink]="['/backups', id]">{{ id.slice(0, 8) }}</a>
+    @if (loading() && deletions() === null) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else {
+      <fpc-alert class="m-3" variant="info" [showIcon]="true">
+        <span i18n="@@lwConsoleBackupDeletions-rule"
+          >Deleting backups or shortening retention needs the approval of a second admin of the same scope (project
+          admin, or cluster admin for the cluster). An approved request takes effect only after the deletion delay,
+          counted from the request; until then any admin can cancel it. Deletions are requested from the backup
+          catalog.</span
+        >
+      </fpc-alert>
+
+      <fpc-panel-grid [columns]="1" fill>
+        <fpc-panel [title]="openTitle + ' (' + open().length + ')'" [flush]="true">
+          @if (open().length === 0) {
+            <fpc-empty-state
+              icon="check2-circle"
+              size="sm"
+              i18n-title="@@lwConsoleBackupDeletions-none"
+              title="No open deletion requests"
+            />
+          } @else {
+            <fpc-list [flush]="true" data-testid="deletions-open">
+              @for (d of open(); track d.id) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <fpc-badge [color]="tone[d.state]" size="sm">{{ stateLabel(d.state) }}</fpc-badge>
+                    <fpc-badge color="light" size="sm">{{ scope(d.scope) }}</fpc-badge>
+                    @if (d.kind === 'retention') {
+                      <span class="fw-semibold"
+                        ><span i18n="@@lwConsoleBackupDeletions-retention">Shorter retention of policy</span>
+                        {{ d.retention?.policy }}</span
+                      >
+                    } @else {
+                      <span class="fw-semibold"
+                        >{{ d.backupIds.length }} <span i18n="@@lwConsoleBackupDeletions-backups">backups</span></span
+                      >
+                    }
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary d-flex flex-column gap-1">
+                    <span class="text-body">{{ d.reason }}</span>
+                    <span>
+                      <span i18n="@@lwConsoleBackupDeletions-requestedBy">Requested by</span> {{ d.requestedBy }} ·
+                      {{ d.createdAt | date: 'short' }}
+                      @if (d.approvedBy) {
+                        · <span i18n="@@lwConsoleBackupDeletions-approvedBy">approved by</span> {{ d.approvedBy }}
+                        {{ d.approvedAt | date: 'short' }}
+                      }
+                    </span>
+                    <span [class.text-warning]="waiting(d)">
+                      <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
+                      ><span i18n="@@lwConsoleBackupDeletions-notBefore">Takes effect at the earliest</span>
+                      {{ d.notBefore | date: 'medium' }}
+                    </span>
+                    @if (d.kind === 'backups') {
+                      <span class="d-flex flex-wrap gap-2">
+                        @for (id of d.backupIds; track id) {
+                          <a class="font-monospace" [routerLink]="['/backups', id]">{{ id.slice(0, 8) }}</a>
+                        }
+                      </span>
+                    }
+                  </div>
+                  @if (mayAct(d)) {
+                    <div fpcListItemActions class="d-flex gap-2">
+                      @if (mayApprove(d)) {
+                        <fpc-button
+                          variant="danger"
+                          size="sm"
+                          [loading]="acting()?.id === d.id && acting()?.action === 'approve'"
+                          [disabled]="acting() !== null"
+                          (clicked)="ask(d, 'approve')"
+                          [attr.data-testid]="'deletions-approve-' + d.id"
+                        >
+                          {{ approveLabel }}
+                        </fpc-button>
+                      } @else if (d.state === 'pending') {
+                        <span class="small text-body-secondary align-self-center" i18n="@@lwConsoleBackupDeletions-own"
+                          >Another admin approves</span
+                        >
+                      }
+                      <fpc-button
+                        variant="secondary"
+                        size="sm"
+                        [loading]="acting()?.id === d.id && acting()?.action === 'cancel'"
+                        [disabled]="acting() !== null"
+                        (clicked)="ask(d, 'cancel')"
+                        [attr.data-testid]="'deletions-cancel-' + d.id"
+                      >
+                        {{ cancelLabel }}
+                      </fpc-button>
+                    </div>
                   }
-                </span>
+                </fpc-list-item>
               }
-            </div>
-            @if (mayAct(d)) {
-              <div fpcListItemActions class="d-flex gap-2">
-                @if (mayApprove(d)) {
-                  <fpc-button
-                    variant="outline-danger"
-                    size="sm"
-                    [loading]="acting()?.id === d.id && acting()?.action === 'approve'"
-                    [disabled]="acting() !== null"
-                    (clicked)="ask(d, 'approve')"
-                    [attr.data-testid]="'deletions-approve-' + d.id"
-                  >
-                    {{ approveLabel }}
-                  </fpc-button>
-                } @else if (d.state === 'pending') {
-                  <span class="small text-body-secondary align-self-center" i18n="@@lwConsoleBackupDeletions-own"
-                    >Another admin approves</span
-                  >
-                }
-                <fpc-button
-                  variant="outline-secondary"
-                  size="sm"
-                  [loading]="acting()?.id === d.id && acting()?.action === 'cancel'"
-                  [disabled]="acting() !== null"
-                  (clicked)="ask(d, 'cancel')"
-                  [attr.data-testid]="'deletions-cancel-' + d.id"
-                >
-                  {{ cancelLabel }}
-                </fpc-button>
-              </div>
-            }
-          </fpc-list-item>
-        } @empty {
-          <fpc-empty-state
-            icon="check2-circle"
-            size="sm"
-            i18n-title="@@lwConsoleBackupDeletions-none"
-            title="No open deletion requests"
-          />
-        }
-      </fpc-list>
-    </fpc-panel>
-
-    @if (history().length > 0) {
-      <fpc-panel [title]="historyTitle" [flush]="true">
-        <fpc-list [flush]="true" data-testid="deletions-history">
-          @for (d of history(); track d.id) {
-            <fpc-list-item>
-              <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
-                <fpc-badge [color]="tone[d.state]" size="sm">{{ stateLabel(d.state) }}</fpc-badge>
-                <fpc-badge color="light" size="sm">{{ scope(d.scope) }}</fpc-badge>
-                <span>{{ d.reason }}</span>
-              </div>
-              <div fpcListItemMeta class="small text-body-secondary">
-                <span i18n="@@lwConsoleBackupDeletions-requestedBy">Requested by</span> {{ d.requestedBy }} ·
-                {{ d.createdAt | date: 'short' }}
-                @if (d.approvedBy) {
-                  · <span i18n="@@lwConsoleBackupDeletions-approvedBy">approved by</span> {{ d.approvedBy }}
-                }
-                @if (d.executedAt) {
-                  · <span i18n="@@lwConsoleBackupDeletions-executedAt">executed</span>
-                  {{ d.executedAt | date: 'short' }}
-                }
-              </div>
-            </fpc-list-item>
+            </fpc-list>
           }
-        </fpc-list>
-      </fpc-panel>
+        </fpc-panel>
+
+        @if (history().length > 0) {
+          <fpc-panel [title]="historyTitle" [flush]="true">
+            <fpc-list [flush]="true" data-testid="deletions-history">
+              @for (d of history(); track d.id) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <fpc-badge [color]="tone[d.state]" size="sm">{{ stateLabel(d.state) }}</fpc-badge>
+                    <fpc-badge color="light" size="sm">{{ scope(d.scope) }}</fpc-badge>
+                    <span>{{ d.reason }}</span>
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary">
+                    <span i18n="@@lwConsoleBackupDeletions-requestedBy">Requested by</span> {{ d.requestedBy }} ·
+                    {{ d.createdAt | date: 'short' }}
+                    @if (d.approvedBy) {
+                      · <span i18n="@@lwConsoleBackupDeletions-approvedBy">approved by</span> {{ d.approvedBy }}
+                    }
+                    @if (d.executedAt) {
+                      · <span i18n="@@lwConsoleBackupDeletions-executedAt">executed</span>
+                      {{ d.executedAt | date: 'short' }}
+                    }
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
     }
   </div>
-}
+</div>
 
 <fpc-confirm-dialog
   [open]="confirm() !== null"

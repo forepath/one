@@ -1,5 +1,13 @@
 import { AuditEventEntity } from '../entities/audit-event.entity';
-import { AUDIT_GENESIS_HASH, AuditLogService, computeAuditHash } from './audit-log.service';
+import {
+  actorFromRequest,
+  AUDIT_GENESIS_HASH,
+  AuditLogService,
+  computeAuditHash,
+  ON_BEHALF_OF_HEADER,
+  ON_BEHALF_OF_SCOPE,
+  onBehalfOfFromRequest,
+} from './audit-log.service';
 
 function chain(count: number): AuditEventEntity[] {
   const events: AuditEventEntity[] = [];
@@ -88,5 +96,68 @@ describe('AuditLogService', () => {
     };
 
     expect(computeAuditHash(AUDIT_GENESIS_HASH, body)).not.toBe(computeAuditHash('1'.repeat(64), body));
+  });
+});
+
+describe('on behalf of (fleet service, 3.24)', () => {
+  const pat = (scopes: string[], header?: string | string[]) =>
+    ({
+      user: { id: 'svc', amr: ['pat'], scopes },
+      headers: header === undefined ? {} : { [ON_BEHALF_OF_HEADER]: header },
+    }) as never;
+
+  it('is read only for PATs carrying the opt-in scope', () => {
+    expect(onBehalfOfFromRequest(pat([ON_BEHALF_OF_SCOPE], 'fleet:alice@example.com'))).toBe('fleet:alice@example.com');
+    expect(onBehalfOfFromRequest(pat(['cluster:read'], 'fleet:alice'))).toBeUndefined();
+    expect(
+      onBehalfOfFromRequest({
+        user: { id: 'u', amr: ['pwd'], scopes: [ON_BEHALF_OF_SCOPE] },
+        headers: { [ON_BEHALF_OF_HEADER]: 'x' },
+      } as never),
+    ).toBeUndefined();
+    expect(
+      onBehalfOfFromRequest({ apiKeyAuthenticated: true, headers: { [ON_BEHALF_OF_HEADER]: 'x' } } as never),
+    ).toBeUndefined();
+    expect(onBehalfOfFromRequest(undefined)).toBeUndefined();
+  });
+
+  it('drops control characters, trims and caps the value', () => {
+    expect(onBehalfOfFromRequest(pat([ON_BEHALF_OF_SCOPE], ' a\nb\u0000c '))).toBe('abc');
+    expect(onBehalfOfFromRequest(pat([ON_BEHALF_OF_SCOPE], 'x'.repeat(400)))?.length).toBe(255);
+    expect(onBehalfOfFromRequest(pat([ON_BEHALF_OF_SCOPE], ['first', 'second']))).toBe('first');
+    expect(onBehalfOfFromRequest(pat([ON_BEHALF_OF_SCOPE], ' \n '))).toBeUndefined();
+  });
+
+  it('keeps the service user as the actor and adds onBehalfOf', () => {
+    expect(actorFromRequest(pat([ON_BEHALF_OF_SCOPE], 'fleet:alice'))).toEqual({
+      type: 'user',
+      id: 'svc',
+      onBehalfOf: 'fleet:alice',
+    });
+    expect(actorFromRequest(pat([], 'fleet:alice'))).toEqual({ type: 'user', id: 'svc' });
+  });
+
+  it('records onBehalfOf in the details (hashed with the entry)', async () => {
+    const saved: Record<string, unknown>[] = [];
+    const repo = {
+      createQueryBuilder: () => ({ orderBy: () => ({ limit: () => ({ getOne: async () => null }) }) }),
+      create: (v: Record<string, unknown>) => v,
+      save: async (v: Record<string, unknown>) => {
+        saved.push(v);
+
+        return v;
+      },
+    };
+    const manager = { queryRunner: { isTransactionActive: true }, query: jest.fn(), getRepository: () => repo };
+
+    await new AuditLogService({} as never).record(manager as never, {
+      actor: { type: 'user', id: 'svc', onBehalfOf: 'fleet:alice' },
+      action: 'plan.applied',
+      target: 'plan/1',
+      details: { plan: '1' },
+    });
+
+    expect(saved[0]['details']).toEqual({ plan: '1', onBehalfOf: 'fleet:alice' });
+    expect(saved[0]['actorId']).toBe('svc');
   });
 });

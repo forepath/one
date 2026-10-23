@@ -4,7 +4,14 @@ import { RELEASE_SIGNING_KEYS } from '@forepath/shared/shared/util-release-keys'
 
 import { BundleError, MANIFEST_ENTRY, parseManifest, readBundle, SIGNATURE_ENTRY, verifyManifest } from './bundle';
 import { canonicalJson } from './canonical-json';
-import { imageComponents, imageReference, missingComponents, packagePins, type ArtifactFile } from './manifest';
+import {
+  CONSOLE_IMAGE_REPOSITORY,
+  imageComponents,
+  imageReference,
+  missingComponents,
+  packagePins,
+  type ArtifactFile,
+} from './manifest';
 import { COMPONENT_IMAGES, splitImageReference } from './pins';
 import { trustedReleaseKeys, unsignedBundlesAllowed, unsignedBundlesNotice } from './bundle-trust';
 import { generateReleaseKeyPair, releaseKeyId, signManifest, verifyManifestSignature } from './signature';
@@ -181,6 +188,45 @@ describe('release manifests', () => {
     ]);
     expect(packagePins(manifest, 'debian:13')).toMatchObject({ 'drbd-utils': '9.22.0-1.1', bird2: '2.17.5-0+deb13u1' });
     expect(packagePins(manifest, 'ubuntu:22.04')).toMatchObject({ 'drbd-utils': '9.15.0-1ubuntu0.1' });
+  });
+
+  it('pins the console image by digest at the top level, outside the cluster components (Loadweaver Cloud)', () => {
+    const digest = `sha256:${'d'.repeat(64)}`;
+    const manifest = buildManifest({
+      version: '3.5.0',
+      channel: 'stable',
+      created: '2026-10-19T00:00:00.000Z',
+      images: { 'control-plane': CP },
+      consoleImage: `${CONSOLE_IMAGE_REPOSITORY}:3.5.0@${digest}`,
+      agentBinaries: {},
+    });
+
+    expect(manifest.consoleImage).toEqual({ repository: CONSOLE_IMAGE_REPOSITORY, tag: '3.5.0', digest });
+    expect(imageComponents(manifest)['console']).toBeUndefined();
+    expect(parseManifest(Buffer.from(canonicalJson(manifest))).consoleImage?.digest).toBe(digest);
+    // Bundles without it stay valid (older releases, development bundles).
+    expect(manifestFor().consoleImage).toBeUndefined();
+
+    const base = {
+      version: '3.5.0',
+      channel: 'stable' as const,
+      created: '2026-10-19T00:00:00.000Z',
+      agentBinaries: {},
+    };
+
+    expect(() =>
+      buildManifest({ ...base, images: { 'control-plane': CP }, consoleImage: `${CONSOLE_IMAGE_REPOSITORY}:3.5.0` }),
+    ).toThrow(/console image .* not pinned by digest/);
+    expect(() =>
+      buildManifest({ ...base, images: { 'control-plane': CP }, consoleImage: `ghcr.io/evil/console@${digest}` }),
+    ).toThrow(/must come from/);
+    expect(() =>
+      parseManifest(
+        Buffer.from(
+          canonicalJson({ ...manifest, consoleImage: { repository: CONSOLE_IMAGE_REPOSITORY, digest: 'x' } }),
+        ),
+      ),
+    ).toThrow(/invalid image digest/);
   });
 
   it('refuses images without a digest', () => {

@@ -19,6 +19,7 @@ import {
   FpcListItemComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
   FpcTabComponent,
   FpcTabGroupComponent,
@@ -45,6 +46,7 @@ export interface DnsRecordRow {
 @Component({
   selector: 'loadweaver-dns-page',
   imports: [
+    FpcPanelGridComponent,
     CommonModule,
     RouterModule,
     FpcAlertComponent,
@@ -115,6 +117,7 @@ export class LoadweaverDnsPageComponent implements OnInit {
 
   readonly title = $localize`:@@lwConsoleDns-title:DNS`;
   readonly refreshLabel = $localize`:@@lwConsoleDns-refresh:Refresh`;
+  readonly newRecordLabel = $localize`:@@lwConsoleDns-newRecord:New record`;
   readonly recordsTab = $localize`:@@lwConsoleDns-recordsTab:Records`;
   readonly zonesTab = $localize`:@@lwConsoleDns-zonesTab:Zones`;
   readonly dnssecTab = $localize`:@@lwConsoleDns-dnssecTab:DNSSEC`;

@@ -1,0 +1,403 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title()" icon="hdd-network">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="secondary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="backLabel"
+      [title]="backLabel"
+      routerLink="/fleet/clusters"
+    >
+      <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (clustersError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    @if (cluster(); as c) {
+      <fpc-panel-grid [columns]="1" fill>
+        <fpc-panel i18n-title="@@lwConsoleFleetCluster-connection" title="Connection">
+          <ng-container fpcPanelActions>
+            <fpc-button
+              variant="outline-secondary"
+              size="sm"
+              [loading]="polling().includes(c.id)"
+              (clicked)="poll()"
+              data-testid="fleet-cluster-poll"
+            >
+              <i class="bi bi-activity me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleFleetCluster-poll">Check now</span>
+            </fpc-button>
+            @if (c.state !== 'retired') {
+              <fpc-button variant="primary" size="sm" class="ms-2" (clicked)="open()" data-testid="fleet-cluster-open">
+                <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i
+                ><span i18n="@@lwConsoleFleetCluster-open">Open cluster</span>
+              </fpc-button>
+            }
+          </ng-container>
+          <dl class="row small mb-0">
+            <dt class="col-4 col-md-3 fw-normal text-body-secondary" i18n="@@lwConsoleFleetCluster-health">Health</dt>
+            <dd class="col-8 col-md-9">
+              <span class="d-inline-flex align-items-center gap-2">
+                <fpc-status-badge [tone]="connectionTone(c.health.state)" size="sm">
+                  <i class="bi {{ connectionIcon(c.health.state) }}" aria-hidden="true"></i>
+                </fpc-status-badge>
+                {{ connectionLabel(c.health.state) }}
+              </span>
+              @if (c.health.checkedAt) {
+                <span class="text-body-secondary ms-2">{{ c.health.checkedAt | date: 'medium' }}</span>
+              }
+              @if (c.health.error) {
+                <div class="text-danger text-break">{{ c.health.error }}</div>
+              }
+            </dd>
+            <dt class="col-4 col-md-3 fw-normal text-body-secondary" i18n="@@lwConsoleFleetCluster-version">Version</dt>
+            <dd class="col-8 col-md-9 font-monospace">{{ c.health.version ?? '–' }}</dd>
+            <dt class="col-4 col-md-3 fw-normal text-body-secondary" i18n="@@lwConsoleFleetCluster-endpoint">
+              Endpoint
+            </dt>
+            <dd class="col-8 col-md-9 font-monospace text-break">{{ c.endpoint }}</dd>
+            <dt class="col-4 col-md-3 fw-normal text-body-secondary" i18n="@@lwConsoleFleetCluster-credential">
+              Service credential
+            </dt>
+            <dd class="col-8 col-md-9 font-monospace">…{{ c.credentialHint }}</dd>
+            <dt class="col-4 col-md-3 fw-normal text-body-secondary" i18n="@@lwConsoleFleetCluster-customCa">
+              Custom CA
+            </dt>
+            <dd class="col-8 col-md-9">
+              @if (c.hasCustomCa) {
+                <span i18n="@@lwConsoleFleetCluster-yes">yes</span>
+              } @else {
+                <span i18n="@@lwConsoleFleetCluster-no">no</span>
+              }
+            </dd>
+            <dt class="col-4 col-md-3 fw-normal text-body-secondary" i18n="@@lwConsoleFleetCluster-access">
+              Your access
+            </dt>
+            <dd class="col-8 col-md-9">
+              {{ roleLabel(c.access.clusterRole) }}
+              @for (entry of c.access.projects | keyvalue; track entry.key) {
+                <fpc-badge size="sm" color="light" class="ms-1"
+                  >{{ entry.key }}: {{ roleLabel(entry.value) }}</fpc-badge
+                >
+              }
+              @if (c.access.readOnly) {
+                <fpc-badge size="sm" color="warning" class="ms-1" i18n="@@lwConsoleFleetCluster-readOnly"
+                  >read-only</fpc-badge
+                >
+              }
+            </dd>
+            @if (c.description) {
+              <dt class="col-4 col-md-3 fw-normal text-body-secondary" i18n="@@lwConsoleFleetCluster-description">
+                Description
+              </dt>
+              <dd class="col-8 col-md-9">{{ c.description }}</dd>
+            }
+          </dl>
+        </fpc-panel>
+
+        @if (c.reference) {
+          <fpc-panel
+            i18n-title="@@lwConsoleFleetCluster-cloud"
+            title="Loadweaver Cloud"
+            data-testid="fleet-cluster-cloud"
+          >
+            <dl class="row small mb-0">
+              <dt class="col-4 col-md-3 fw-normal text-body-secondary" i18n="@@lwConsoleFleetCluster-reference">
+                Reference
+              </dt>
+              <dd class="col-8 col-md-9 font-monospace text-break">{{ c.reference }}</dd>
+              <dt class="col-4 col-md-3 fw-normal text-body-secondary" i18n="@@lwConsoleFleetCluster-state">State</dt>
+              <dd class="col-8 col-md-9">
+                @switch (c.state) {
+                  @case ('teardown') {
+                    <fpc-badge size="sm" color="warning">
+                      <span i18n="@@lwConsoleFleetCluster-teardown">Teardown: read-only until</span>
+                      {{ c.readOnlyUntil | date: 'medium' }}
+                    </fpc-badge>
+                    @if (c.readOnlyReason) {
+                      <span class="ms-2 text-body-secondary">{{ c.readOnlyReason }}</span>
+                    }
+                  }
+                  @case ('retired') {
+                    <fpc-badge size="sm" color="secondary" i18n="@@lwConsoleFleetCluster-retired"
+                      >Retired: the relay is closed</fpc-badge
+                    >
+                  }
+                  @default {
+                    <fpc-badge size="sm" color="success" i18n="@@lwConsoleFleetCluster-active">Active</fpc-badge>
+                  }
+                }
+              </dd>
+            </dl>
+            @if (c.state === 'teardown') {
+              <p class="small text-body-secondary mt-2 mb-0" i18n="@@lwConsoleFleetCluster-graceHint">
+                During the grace period every grant on this cluster is capped at viewer: reads, exports and catalog
+                downloads work through the fleet, changes and terminals don't.
+              </p>
+            }
+            @if (cloudError(); as message) {
+              <fpc-alert class="mt-2" variant="danger" [message]="message" />
+            }
+            @if (cloud()?.finalBackup; as op) {
+              <div class="mt-3" data-testid="fleet-cluster-final-backup">
+                <div class="d-flex align-items-center gap-2 small">
+                  <span class="fw-semibold" i18n="@@lwConsoleFleetCluster-finalBackup">Final backup</span>
+                  <fpc-badge size="sm" [color]="operationTone[op.status]">{{
+                    operationStatusLabel(op.status)
+                  }}</fpc-badge>
+                  <span class="text-body-secondary ms-auto">{{ op.updatedAt | date: 'short' }}</span>
+                </div>
+                <fpc-progress
+                  class="d-block mt-1"
+                  height="0.5rem"
+                  [value]="operationProgress(op)"
+                  [striped]="op.status === 'running'"
+                  [animated]="op.status === 'running'"
+                />
+                <ul class="list-unstyled small mt-2 mb-0">
+                  @for (step of op.steps; track step.key) {
+                    <li class="d-flex align-items-center gap-2">
+                      <fpc-badge size="sm" [color]="stepTone(step.status)">{{
+                        operationStatusLabel(step.status)
+                      }}</fpc-badge>
+                      <span class="font-monospace">{{ step.key }}</span>
+                      @if (step.error) {
+                        <span class="text-danger text-break">{{ step.error }}</span>
+                      }
+                    </li>
+                  }
+                </ul>
+              </div>
+            } @else if (admin() && !cloudError()) {
+              <div class="small text-body-secondary mt-2" i18n="@@lwConsoleFleetCluster-noFinalBackup">
+                No final backup has run.
+              </div>
+            }
+          </fpc-panel>
+        }
+
+        @if (admin()) {
+          <fpc-panel i18n-title="@@lwConsoleFleetCluster-grants" title="Grants" [flush]="true">
+            <fpc-button
+              fpcPanelActions
+              variant="primary"
+              size="sm"
+              (clicked)="openGrant()"
+              data-testid="fleet-grant-add"
+            >
+              <i class="bi bi-plus-lg me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleFleetCluster-addGrant">Grant access</span>
+            </fpc-button>
+            @if (grantsError(); as message) {
+              <fpc-alert class="m-3" variant="danger" [message]="message" />
+            }
+            @if (!grantOpen() && grantError(); as message) {
+              <fpc-alert class="m-3" variant="danger" [message]="message" />
+            }
+            @if (grantsLoading() && grants().length === 0) {
+              <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+            } @else if (grants().length === 0) {
+              <fpc-empty-state
+                icon="people"
+                size="sm"
+                i18n-title="@@lwConsoleFleetCluster-noGrants"
+                title="No grants: only fleet admins reach this cluster"
+              />
+            } @else {
+              <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle small mb-0" data-testid="fleet-grants">
+                  <thead>
+                    <tr>
+                      <th scope="col" i18n="@@lwConsoleFleetCluster-colUser">User</th>
+                      <th scope="col" i18n="@@lwConsoleFleetCluster-colScope">Scope</th>
+                      <th scope="col" i18n="@@lwConsoleFleetCluster-colRole">Role</th>
+                      <th scope="col" i18n="@@lwConsoleFleetCluster-colSince">Since</th>
+                      <th scope="col" class="text-end">
+                        <span class="visually-hidden" i18n="@@lwConsoleFleetCluster-colActions">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (grant of grants(); track grant.id) {
+                      <tr>
+                        <td class="text-break">{{ userLabel(grant.userId) }}</td>
+                        <td>
+                          @if (grant.project) {
+                            <span i18n="@@lwConsoleFleetCluster-projectScope">Project</span>
+                            <span class="font-monospace">{{ grant.project }}</span>
+                          } @else {
+                            <span i18n="@@lwConsoleFleetCluster-clusterScope">Whole cluster</span>
+                          }
+                        </td>
+                        <td>
+                          <fpc-badge size="sm" color="light">{{ roleLabel(grant.role) }}</fpc-badge>
+                        </td>
+                        <td class="text-nowrap">{{ grant.createdAt | date: 'mediumDate' }}</td>
+                        <td class="text-end text-nowrap">
+                          <fpc-button
+                            variant="link"
+                            size="sm"
+                            iconOnly
+                            i18n-ariaLabel="@@lwConsoleFleetCluster-editGrant"
+                            ariaLabel="Edit grant"
+                            (clicked)="openGrant(grant)"
+                          >
+                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                          </fpc-button>
+                          <fpc-button
+                            variant="link"
+                            size="sm"
+                            iconOnly
+                            class="text-danger"
+                            i18n-ariaLabel="@@lwConsoleFleetCluster-removeGrant"
+                            ariaLabel="Remove grant"
+                            (clicked)="askRevoke(grant)"
+                            [attr.data-testid]="'fleet-grant-remove-' + grant.id"
+                          >
+                            <i class="bi bi-trash" aria-hidden="true"></i>
+                          </fpc-button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+    } @else if (clustersLoaded()) {
+      <fpc-empty-state
+        icon="question-circle"
+        i18n-title="@@lwConsoleFleetCluster-notFound"
+        title="Cluster not found, or no access"
+      />
+    } @else {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    }
+  </div>
+</div>
+
+<fpc-modal [open]="grantOpen()" (openChange)="grantOpen.set($event)" [title]="grantTitle">
+  @if (grantFormError(); as message) {
+    <fpc-alert class="mb-3" variant="danger" [message]="message" />
+  }
+  @if (grantError(); as message) {
+    <fpc-alert class="mb-3" variant="danger" [message]="message" />
+  }
+  <fpc-form-field forId="lw-fleet-grant-search" i18n-label="@@lwConsoleFleetCluster-user" label="User" required>
+    <div class="d-flex gap-2">
+      <fpc-form-control
+        class="flex-grow-1"
+        controlId="lw-fleet-grant-search"
+        size="sm"
+        i18n-placeholder="@@lwConsoleFleetCluster-userSearch"
+        placeholder="Search by email"
+        [(ngModel)]="userQuery"
+        (keydown.enter)="searchUsers()"
+      />
+      <fpc-button variant="outline-secondary" size="sm" [loading]="searching()" (clicked)="searchUsers()">
+        <i class="bi bi-search" aria-hidden="true"></i>
+      </fpc-button>
+    </div>
+  </fpc-form-field>
+  @if (userResults().length > 0) {
+    <fpc-form-field forId="lw-fleet-grant-user" i18n-label="@@lwConsoleFleetCluster-userPick" label="Matching users">
+      <fpc-form-control controlType="select" controlId="lw-fleet-grant-user" size="sm" [(ngModel)]="grantUserId">
+        <option value="" i18n="@@lwConsoleFleetCluster-choose">Choose…</option>
+        @for (u of userResults(); track u.id) {
+          <option [value]="u.id">{{ u.email }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+  }
+  @if (userSearchError(); as message) {
+    <div class="small text-body-secondary mb-2">{{ message }}</div>
+  }
+  <fpc-form-field forId="lw-fleet-grant-user-id" i18n-label="@@lwConsoleFleetCluster-userId" label="User id">
+    <fpc-form-control
+      controlId="lw-fleet-grant-user-id"
+      size="sm"
+      controlClass="font-monospace"
+      [(ngModel)]="grantUserId"
+      data-testid="fleet-grant-user-id"
+    />
+  </fpc-form-field>
+  <div class="row g-3">
+    <div class="col-12 col-md-6">
+      <fpc-form-field
+        forId="lw-fleet-grant-project"
+        i18n-label="@@lwConsoleFleetCluster-project"
+        label="Project"
+        i18n-hint="@@lwConsoleFleetCluster-projectHint"
+        hint="Empty: the whole cluster."
+      >
+        <fpc-form-control
+          controlId="lw-fleet-grant-project"
+          size="sm"
+          controlClass="font-monospace"
+          [(ngModel)]="grantProject"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-12 col-md-6">
+      <fpc-form-field forId="lw-fleet-grant-role" i18n-label="@@lwConsoleFleetCluster-role" label="Role" required>
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-fleet-grant-role"
+          size="sm"
+          [(ngModel)]="grantRole"
+          data-testid="fleet-grant-role"
+        >
+          @for (role of roles; track role) {
+            <option [value]="role">{{ roleLabel(role) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+  </div>
+  <p class="small text-body-secondary mb-0" i18n="@@lwConsoleFleetCluster-roleHint">
+    Viewer reads; operator also plans, drains nodes, acknowledges alerts and runs backups and terminals; admin also
+    administers the cluster, downloads backups and browses files. Approvals are always given in the cluster's own
+    console. Project grants only reach that project's routes.
+  </p>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="secondary" size="sm" (clicked)="grantOpen.set(false)">{{ cancelLabel }}</fpc-button>
+    <fpc-button
+      variant="primary"
+      size="sm"
+      [loading]="grantSaving()"
+      (clicked)="saveGrant()"
+      data-testid="fleet-grant-save"
+    >
+      <span i18n="@@lwConsoleFleetCluster-saveGrant">Save</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="revoking() !== null"
+  (openChange)="onRevokeOpenChange($event)"
+  [title]="revokeTitle"
+  [message]="revokeMessage"
+  [confirmLabel]="revokeConfirm"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="confirmRevoke()"
+/>

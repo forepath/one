@@ -103,7 +103,8 @@ describe('LoadweaverBackupsPageComponent', () => {
     expect(q('backups-keys')).not.toBeNull();
     expect(q('backups-platform')).not.toBeNull();
     expect(q('backups-new-target')).not.toBeNull();
-    expect(q('backups-deletions')?.textContent).toContain('1');
+    expect(q('backups-deletions')).not.toBeNull();
+    expect(el().querySelector('#fpc-tab-deletions')?.textContent).toContain('1');
 
     const volume = q('backups-volume-shop/web/data');
 

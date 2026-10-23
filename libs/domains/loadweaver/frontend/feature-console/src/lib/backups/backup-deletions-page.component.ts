@@ -8,6 +8,7 @@ import {
   isOpenDeletion,
   type BackupDeletion,
   type BackupDeletionAction,
+  ConsoleEndpointService,
 } from '@forepath/loadweaver/frontend/data-access-console';
 import {
   FpcAlertComponent,
@@ -19,10 +20,12 @@ import {
   FpcListItemComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 
 import { canAdminister, DELETION_STATE_TONE, deletionStateLabel, scopeLabel } from './backup-format';
+import { LoadweaverBackupsNavComponent } from './backups-nav.component';
 
 /**
  * Deletion requests (3.20): deleting backups or shortening retention needs a second admin of the scope and takes
@@ -32,6 +35,8 @@ import { canAdminister, DELETION_STATE_TONE, deletionStateLabel, scopeLabel } fr
 @Component({
   selector: 'loadweaver-backup-deletions-page',
   imports: [
+    FpcPanelGridComponent,
+    LoadweaverBackupsNavComponent,
     CommonModule,
     RouterModule,
     FpcAlertComponent,
@@ -58,6 +63,8 @@ export class LoadweaverBackupDeletionsPageComponent implements OnInit {
   readonly acting = toSignal(this.facade.deletionActing$, { initialValue: null });
   readonly actionError = toSignal(this.facade.deletionActionError$, { initialValue: null });
   readonly me = toSignal(this.access.me$, { initialValue: null });
+  readonly isClusterAdmin = toSignal(this.access.isClusterAdmin$, { initialValue: false });
+  readonly hasClusterRole = toSignal(this.access.seesInfrastructure$, { initialValue: false });
 
   readonly open = computed(() => (this.deletions() ?? []).filter(isOpenDeletion));
   readonly history = computed(() => (this.deletions() ?? []).filter((d) => !isOpenDeletion(d)));
@@ -68,7 +75,6 @@ export class LoadweaverBackupDeletionsPageComponent implements OnInit {
   readonly scope = scopeLabel;
 
   readonly title = $localize`:@@lwConsoleBackupDeletions-title:Deletion requests`;
-  readonly backLabel = $localize`:@@lwConsoleBackupDeletions-back:Backups`;
   readonly refreshLabel = $localize`:@@lwConsoleBackupDeletions-refresh:Refresh`;
   readonly openTitle = $localize`:@@lwConsoleBackupDeletions-open:Open requests`;
   readonly historyTitle = $localize`:@@lwConsoleBackupDeletions-history:History`;
@@ -92,13 +98,20 @@ export class LoadweaverBackupDeletionsPageComponent implements OnInit {
     return deletion.scope === 'cluster' ? null : deletion.scope.replace(/^project-/, '');
   }
 
+  /** Fleet mode: approvals stay native — given in the cluster's own console, never through the fleet's relay. */
+  protected readonly fleetMode = inject(ConsoleEndpointService).fleetMode;
   mayAct(deletion: BackupDeletion): boolean {
     return canAdminister(this.me(), this.project(deletion));
   }
 
   /** The requester can't approve their own request (the API refuses it, too). */
   mayApprove(deletion: BackupDeletion): boolean {
-    return deletion.state === 'pending' && this.mayAct(deletion) && deletion.requestedBy !== this.me()?.userId;
+    return (
+      !this.fleetMode &&
+      deletion.state === 'pending' &&
+      this.mayAct(deletion) &&
+      deletion.requestedBy !== this.me()?.userId
+    );
   }
 
   ask(deletion: BackupDeletion, action: BackupDeletionAction): void {

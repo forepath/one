@@ -75,4 +75,4 @@ Key material is created and held by the product owner; it never goes into the re
 
 ## Note
 
-Checksums detect tampering or corruption; they do not replace OS code signing. See **`SECURITY.md`**.
+Checksums detect tampering or corruption; they do not replace OS code signing. OS signing (Developer ID + notarization, Authenticode, GPG-signed apt / rpm repositories) and the in-app update feeds come from the shared desktop release pipeline, [`tools/desktop-release`](../desktop-release/README.md); the checksums and the signed release manifest (over the files exactly as published, signed rpms and macOS zips included) stay on top. See **`SECURITY.md`**.

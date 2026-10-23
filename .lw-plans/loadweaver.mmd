@@ -51,11 +51,11 @@ flowchart TB
   Releases -.download once, verify.-> Registry
   AppStore(["App store (postponed)<br/>official, private, community catalogs<br/>Agenstra, Decabill, ... as signed OCI apps"])
   AppStore -.install / update as plans.-> API
-  Fleet <-.cluster APIs.-> API
+  Fleet <-.fleet service relays to cluster APIs.-> API
   API -.usage metering (hosters' own clusters).-> Decabill
   Decabill -.cloud-init: initial node, provider tokens from order fields or defaults.-> Providers
   AgentMgr(["Agenstra agent-manager<br/>runtime per workspace: Docker host or Loadweaver"])
-  AgentMgr -.agent envs as deployments on gVisor nodes<br/>egress compiled to Envoy policies.-> API
+  AgentMgr -.agent envs as deployments (runc / gVisor / gVisor-KVM / microVM)<br/>egress compiled to Envoy policies.-> API
   UI --> API
   API --> Auth
   API --> State
@@ -95,7 +95,7 @@ flowchart TB
   subgraph SiteA["Site A"]
     subgraph N1["Node 1 (control plane, ingress, edge)"]
       A1["Node agent (TypeScript, SEA, systemd)<br/>compose to Docker API"]
-      D1["Docker<br/>runc / gVisor runsc"]
+      D1["Docker<br/>runc / gVisor runsc (systrap, kvm)<br/>QEMU launcher: microVMs + VMs (/dev/kvm)"]
       F1["nftables + node DNS resolver"]
       P1["Envoy node proxy<br/>egress, east-west L7 + mTLS"]
       I1["Envoy ingress<br/>L7 + L4, rate limits, WAF"]
@@ -105,7 +105,7 @@ flowchart TB
     end
     subgraph N2["Node 2 (control plane, ingress, dns)"]
       A2["Node agent (TypeScript, SEA, systemd)<br/>compose to Docker API"]
-      D2["Docker<br/>runc / gVisor runsc"]
+      D2["Docker<br/>runc / gVisor runsc (systrap, kvm)<br/>QEMU launcher: microVMs + VMs (/dev/kvm)"]
       F2["nftables + node DNS resolver"]
       P2["Envoy node proxy<br/>egress, east-west L7 + mTLS"]
       I2["Envoy ingress<br/>L7 + L4, rate limits, WAF"]
@@ -118,7 +118,7 @@ flowchart TB
   subgraph SiteB["Site B"]
     subgraph N3["Node 3 (control plane, ingress, dns, edge)"]
       A3["Node agent (TypeScript, SEA, systemd)<br/>compose to Docker API"]
-      D3["Docker<br/>runc / gVisor runsc"]
+      D3["Docker<br/>runc / gVisor runsc (systrap, kvm)<br/>QEMU launcher: microVMs + VMs (/dev/kvm)"]
       F3["nftables + node DNS resolver"]
       P3["Envoy node proxy<br/>egress, east-west L7 + mTLS"]
       I3["Envoy ingress<br/>L7 + L4, rate limits, WAF"]

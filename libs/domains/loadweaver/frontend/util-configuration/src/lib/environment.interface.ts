@@ -2,6 +2,7 @@ import type {
   ApiConfigWithWebsocket,
   BaseEnvironment,
   CommunicationConfig,
+  DocsConfig,
   LandingConfig,
 } from '@forepath/shared/frontend/util-configuration';
 
@@ -21,6 +22,27 @@ export type LoadweaverConsoleWebsocket = 'plans' | 'logs' | 'terminals' | 'tunne
  */
 export interface LoadweaverConsoleEnvironment extends BaseEnvironment {
   console: ApiConfigWithWebsocket<LoadweaverConsoleWebsocket>;
+  /**
+   * `fleet` (3.24): the console signs in at a fleet service and manages several clusters through it — the fleet
+   * views plus every cluster view against the selected cluster through the fleet's relay. Default / `cluster`: one
+   * cluster's control plane (`console.urls`).
+   */
+  mode?: 'cluster' | 'fleet';
+  /** The fleet service (only read in `mode: 'fleet'`). */
+  fleet?: LoadweaverFleetConfig;
+}
+
+/** Where the console reaches the fleet service in fleet mode. */
+export interface LoadweaverFleetConfig {
+  /** REST base of the fleet (`https://fleet.example.com/api`); sign-in, fleet views and the relay live here. */
+  apiUrl: string;
+  /** Socket.IO namespace of the fleet's socket relay (`https://fleet.example.com/socket/fleet`). */
+  websocketUrl: string;
+}
+
+/** Whether the console runs in fleet mode (`mode: 'fleet'` with a fleet API URL). */
+export function isFleetConsole(environment: Pick<LoadweaverConsoleEnvironment, 'mode' | 'fleet'>): boolean {
+  return environment.mode === 'fleet' && !!environment.fleet?.apiUrl;
 }
 
 /**
@@ -32,6 +54,11 @@ export interface LoadweaverConsoleEnvironment extends BaseEnvironment {
 export interface LoadweaverLandingEnvironment extends BaseEnvironment {
   landing: LandingConfig;
   communication: CommunicationConfig;
+}
+
+/** Documentation site (docs.loadweaver.com): the shared docs app rendering `docs/loadweaver/**`. */
+export interface LoadweaverDocsEnvironment extends BaseEnvironment {
+  docs: DocsConfig;
 }
 
 /** Default fileReplacement target type (landingpage). */

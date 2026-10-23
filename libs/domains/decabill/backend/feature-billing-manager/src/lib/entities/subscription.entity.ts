@@ -65,6 +65,15 @@ export class SubscriptionEntity {
   @Column({ type: 'timestamp', nullable: true, name: 'cancel_effective_at' })
   cancelEffectiveAt?: Date;
 
+  /**
+   * Effective teardown time when it is later than {@link cancelEffectiveAt}: a cancelled Loadweaver cluster keeps
+   * running for `LOADWEAVER_TEARDOWN_GRACE_DAYS` after the effective date. Null = teardown at the effective date. The
+   * expiration queue selects on `COALESCE(teardown_not_before, cancel_effective_at)` so subscriptions in their grace
+   * period never occupy batch slots.
+   */
+  @Column({ type: 'timestamp', nullable: true, name: 'teardown_not_before' })
+  teardownNotBefore?: Date | null;
+
   @Column({ type: 'timestamp', nullable: true, name: 'resumed_at' })
   resumedAt?: Date;
 

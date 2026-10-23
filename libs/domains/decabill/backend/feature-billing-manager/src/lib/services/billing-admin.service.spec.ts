@@ -116,9 +116,11 @@ describe('BillingAdminService', () => {
     usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1', email: 'user@test.local' });
     servicePlansRepository.findById.mockResolvedValue({ id: 'plan-1', name: 'Basic Plan' });
 
-    const result = await service.cancelSubscriptionForAdmin('sub-1');
+    const result = await service.cancelSubscriptionForAdmin('sub-1', { confirmDataTeardown: true });
 
-    expect(subscriptionService.cancelSubscription).toHaveBeenCalledWith('sub-1', 'user-1');
+    expect(subscriptionService.cancelSubscription).toHaveBeenCalledWith('sub-1', 'user-1', {
+      confirmDataTeardown: true,
+    });
     expect(result.status).toBe('pending_cancel');
     expect(result.userEmail).toBe('user@test.local');
   });
@@ -136,7 +138,7 @@ describe('BillingAdminService', () => {
 
     const result = await service.instantCancelSubscriptionForAdmin('sub-1');
 
-    expect(subscriptionService.instantCancelSubscription).toHaveBeenCalledWith('sub-1', 'user-1');
+    expect(subscriptionService.instantCancelSubscription).toHaveBeenCalledWith('sub-1', 'user-1', {});
     expect(result.status).toBe('pending_instant_cancel');
     expect(result.userEmail).toBe('user@test.local');
   });

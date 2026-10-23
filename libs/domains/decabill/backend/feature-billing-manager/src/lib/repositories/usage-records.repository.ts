@@ -156,4 +156,25 @@ export class UsageRecordsRepository {
 
     return await qb.getOne();
   }
+
+  /** Whether a usage row with this idempotency key exists for the subscription and meter (collector dedupe). */
+  async existsByIdempotencyKey(params: {
+    subscriptionId: string;
+    meterId: string;
+    idempotencyKey: string;
+  }): Promise<boolean> {
+    const qb = this.repository
+      .createQueryBuilder('usage')
+      .innerJoin('usage.subscription', 'sub')
+      .innerJoin('users', 'user', 'user.id = sub.user_id')
+      .where('usage.subscription_id = :subscriptionId', { subscriptionId: params.subscriptionId })
+      .andWhere('usage.meter_id = :meterId', { meterId: params.meterId })
+      .andWhere("usage.usage_payload ->> 'idempotencyKey' = :idempotencyKey", {
+        idempotencyKey: params.idempotencyKey,
+      });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return (await qb.getCount()) > 0;
+  }
 }

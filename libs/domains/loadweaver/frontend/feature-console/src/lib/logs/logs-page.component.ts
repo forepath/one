@@ -20,8 +20,15 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcPageHeaderComponent,
+  FpcPagerComponent,
+  FpcPanelComponent,
+  FpcSearchFieldComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 
@@ -45,6 +52,8 @@ type TextFilter = (typeof TEXT_FILTERS)[number];
 
 const PAGE_SIZES = [50, 100, 250, 500];
 
+const DEFAULT_RANGE: LogRange = '1h';
+
 /**
  * The log explorer (3.14): time range, sources, levels, labels and full text; newest first, paged by cursor; live
  * tail over `socket/logs`; export. The filter lives in the URL, so other views link to it
@@ -59,11 +68,19 @@ const PAGE_SIZES = [50, 100, 250, 500];
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcPageHeaderComponent,
+    FpcPagerComponent,
+    FpcPanelComponent,
+    FpcSearchFieldComponent,
     FpcSpinnerComponent,
   ],
   templateUrl: './logs-page.component.html',
+  styleUrl: './logs-page.component.scss',
   standalone: true,
 })
 export class LoadweaverLogsPageComponent implements OnInit, OnDestroy {
@@ -86,7 +103,7 @@ export class LoadweaverLogsPageComponent implements OnInit, OnDestroy {
   readonly tail = toSignal(this.facade.tail$, { initialValue: [] as LogLine[] });
   readonly projects = toSignal(this.access.projects$, { initialValue: [] as string[] });
 
-  readonly range = signal<LogRange>('1h');
+  readonly range = signal<LogRange>(DEFAULT_RANGE);
   readonly customFrom = signal('');
   readonly customTo = signal('');
   readonly sources = signal<ReadonlySet<ConsoleLogSource>>(new Set());
@@ -106,6 +123,17 @@ export class LoadweaverLogsPageComponent implements OnInit, OnDestroy {
   readonly exportError = signal<string | null>(null);
   /** The filter of the shown results (with the resolved time range). */
   readonly applied = signal<LogFilter | null>(null);
+
+  readonly filtersOpen = signal(false);
+
+  /** Panel filters that differ from the defaults (the full-text search field is not counted). */
+  readonly activeFilterCount = computed(
+    () =>
+      TEXT_FILTERS.filter((name) => name !== 'text' && this.labels()[name].trim()).length +
+      (this.range() !== DEFAULT_RANGE ? 1 : 0) +
+      (this.sources().size > 0 ? 1 : 0) +
+      (this.levels().size > 0 ? 1 : 0),
+  );
 
   readonly shown = computed(() => (this.tailing() ? this.tail() : this.lines()));
 
@@ -133,6 +161,11 @@ export class LoadweaverLogsPageComponent implements OnInit, OnDestroy {
   readonly followLabel = $localize`:@@lwConsoleLogs-follow:Live tail`;
   readonly stopLabel = $localize`:@@lwConsoleLogs-stop:Stop tail`;
   readonly clearLabel = $localize`:@@lwConsoleLogs-clear:Clear`;
+  readonly pageLabel = $localize`:@@lwConsoleLogs-page:Page`;
+  readonly filtersLabel = $localize`:@@lwConsoleLogs-filters:Filters`;
+  readonly resetLabel = $localize`:@@lwConsoleLogs-reset:Reset`;
+  readonly exportCsvLabel = $localize`:@@lwConsoleLogs-exportCsv:Export CSV`;
+  readonly exportNdjsonLabel = $localize`:@@lwConsoleLogs-exportNdjson:Export NDJSON`;
 
   ngOnInit(): void {
     this.readUrl(this.route.snapshot.queryParamMap);
@@ -230,6 +263,25 @@ export class LoadweaverLogsPageComponent implements OnInit, OnDestroy {
     this.syncUrl();
 
     if (this.tailing()) this.facade.startTail(filter);
+  }
+
+  /** Resets the panel filters (time range, sources, levels, labels) and searches again; keeps the full text. */
+  resetFilters(): void {
+    this.range.set(DEFAULT_RANGE);
+    this.customFrom.set('');
+    this.customTo.set('');
+    this.sources.set(new Set());
+    this.levels.set(new Set());
+    this.labels.set({
+      project: '',
+      deployment: '',
+      service: '',
+      replica: '',
+      node: '',
+      policy: '',
+      text: this.labels().text,
+    });
+    this.search();
   }
 
   onLimitChange(limit: number | string): void {

@@ -93,10 +93,11 @@ export class ManagedContainers {
     }
 
     const changed = info ? changedSpecFields(info, spec) : [];
+    // The image first: a pull that fails (registry outage, unreachable release copy) must leave the running container
+    // in place instead of tearing down the control plane / etcd / Postgres with nothing to replace it.
+    const image = await this.pull(spec.image);
 
     if (info) await this.remove(spec.name);
-
-    const image = await this.pull(spec.image);
 
     const created = await this.docker.createContainer({
       name: spec.name,

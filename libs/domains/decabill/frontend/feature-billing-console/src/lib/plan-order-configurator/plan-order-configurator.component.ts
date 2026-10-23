@@ -526,7 +526,12 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
           Object.entries(env as Record<string, unknown>).map(([key, value]) => [key, String(value ?? '')]),
         );
       }
-    } else if (service === 'agenstra-controller' || service === 'agenstra-manager' || service === 'decabill-billing') {
+    } else if (
+      service === 'agenstra-controller' ||
+      service === 'agenstra-manager' ||
+      service === 'decabill-billing' ||
+      service === 'loadweaver'
+    ) {
       this.integratedConfig = this.mergeIntegratedConfigFromSnapshot(config);
     } else {
       this.integratedConfig = createDefaultIntegratedOrderConfig();

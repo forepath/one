@@ -33,10 +33,16 @@ import {
   FpcCodeEditorComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
+  FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcProgressComponent,
+  FpcSearchFieldComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { firstValueFrom } from 'rxjs';
@@ -136,10 +142,16 @@ function blobText(blob: Blob): Promise<string> {
     FpcCodeEditorComponent,
     FpcConfirmDialogComponent,
     FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
+    FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcProgressComponent,
+    FpcSearchFieldComponent,
     FpcSpinnerComponent,
   ],
   templateUrl: './files-page.component.html',
@@ -216,6 +228,12 @@ export class LoadweaverFilesPageComponent implements OnInit {
   readonly createTitle = $localize`:@@lwConsoleFiles-createTitle:Create`;
   readonly cancelLabel = $localize`:@@lwConsoleFiles-cancel:Cancel`;
   readonly deleteTitle = $localize`:@@lwConsoleFiles-deleteTitle:Delete this entry?`;
+  readonly newDirectoryLabel = $localize`:@@lwConsoleFiles-newDirectoryAction:New folder`;
+  readonly newFileLabel = $localize`:@@lwConsoleFiles-newFileAction:New file`;
+  readonly closePreviewLabel = $localize`:@@lwConsoleFiles-closePreview:Close preview`;
+  readonly uploadsTitle = $localize`:@@lwConsoleFiles-uploads:Uploads`;
+  readonly clearUploadsLabel = $localize`:@@lwConsoleFiles-clearUploads:Clear`;
+  readonly typeLabel = $localize`:@@lwConsoleFiles-type:Type`;
 
   ngOnInit(): void {
     this.live.loadTargets();

@@ -18,18 +18,26 @@ import {
   type ProjectMember,
   type ProjectRole,
   type ProjectSettingsPatch,
+  ConsoleEndpointService,
 } from '@forepath/loadweaver/frontend/data-access-console';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
   FpcCodeEditorComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
   FpcListComponent,
   FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { map } from 'rxjs';
@@ -65,6 +73,13 @@ export const ACCESS_EXPORT_FILE_NAME = 'loadweaver-access.yaml';
 @Component({
   selector: 'loadweaver-access-page',
   imports: [
+    FpcPanelGridComponent,
+    FpcCollapsibleFilterPanelComponent,
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
+    FpcFormSwitchComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -120,7 +135,9 @@ export class LoadweaverAccessPageComponent {
   readonly isClusterAdmin = computed(() => this.me()?.clusterRole === 'cluster-admin');
   readonly myProjectRole = computed(() => projectRoleOf(this.me(), this.project()));
   readonly mayAdminProject = computed(() => this.myProjectRole() === 'admin');
-  readonly mayAccept = computed(() => atLeastRole(this.myProjectRole(), 'operator'));
+  /** Fleet mode: approvals stay native — given in the cluster's own console, never through the fleet's relay. */
+  protected readonly fleetMode = inject(ConsoleEndpointService).fleetMode;
+  readonly mayAccept = computed(() => !this.fleetMode && atLeastRole(this.myProjectRole(), 'operator'));
   readonly mayGrantAdmin = computed(() => mayGrantProjectAdmin(this.me(), this.projectAccess()?.settings ?? null));
   readonly grantableRoles = computed(() => PROJECT_ROLES.filter((r) => r !== 'admin' || this.mayGrantAdmin()));
   readonly settingsDirty = computed(() => {
@@ -137,6 +154,9 @@ export class LoadweaverAccessPageComponent {
   readonly pending = signal<PendingConfirm | null>(null);
   readonly clusterInvalid = signal(false);
   readonly memberInvalid = signal(false);
+  readonly filtersOpen = signal(false);
+  readonly clusterFormOpen = signal(false);
+  readonly memberFormOpen = signal(false);
   readonly approvalMode = signal<ApprovalMode>('developers');
   readonly developerExec = signal(false);
   readonly recordTerminals = signal(false);
@@ -164,6 +184,9 @@ export class LoadweaverAccessPageComponent {
   readonly requestsTitle = $localize`:@@lwConsoleAccess-requests:Requests from other projects`;
   readonly transferTitle = $localize`:@@lwConsoleAccess-transfer:Export and import`;
   readonly cancelLabel = $localize`:@@lwConsoleAccess-cancel:Cancel`;
+  readonly filtersTitle = $localize`:@@lwConsoleAccess-filters:Filters`;
+  readonly addClusterMemberLabel = $localize`:@@lwConsoleAccess-addClusterMember:Grant a cluster role`;
+  readonly addMemberLabel = $localize`:@@lwConsoleAccess-addMember:Add member`;
   readonly importedLabel = $localize`:@@lwConsoleAccess-imported:changes imported`;
 
   constructor() {
@@ -236,10 +259,17 @@ export class LoadweaverAccessPageComponent {
 
   // Cluster members
 
+  openClusterMemberForm(): void {
+    this.clusterUserId = '';
+    this.clusterInvalid.set(false);
+    this.clusterFormOpen.set(true);
+  }
+
   editClusterMember(member: ClusterMember): void {
     this.clusterUserId = member.userId;
     this.clusterRole = member.role;
     this.clusterInvalid.set(false);
+    this.clusterFormOpen.set(true);
   }
 
   saveClusterMember(): void {
@@ -253,6 +283,7 @@ export class LoadweaverAccessPageComponent {
     }
 
     this.clusterInvalid.set(false);
+    this.clusterFormOpen.set(false);
     this.confirm({
       title: $localize`:@@lwConsoleAccess-setClusterTitle:Grant the cluster role?`,
       message: $localize`:@@lwConsoleAccess-setClusterMessage:${userId}:userId: becomes ${clusterRoleLabel(role)}:role:. The change takes effect immediately.`,
@@ -277,10 +308,17 @@ export class LoadweaverAccessPageComponent {
 
   // Project members
 
+  openMemberForm(): void {
+    this.memberUserId = '';
+    this.memberInvalid.set(false);
+    this.memberFormOpen.set(true);
+  }
+
   editMember(member: ProjectMember): void {
     this.memberUserId = member.userId;
     this.memberRole = member.role;
     this.memberInvalid.set(false);
+    this.memberFormOpen.set(true);
   }
 
   saveMember(): void {
@@ -297,6 +335,7 @@ export class LoadweaverAccessPageComponent {
     }
 
     this.memberInvalid.set(false);
+    this.memberFormOpen.set(false);
     this.confirm({
       title: $localize`:@@lwConsoleAccess-setMemberTitle:Grant the project role?`,
       message: $localize`:@@lwConsoleAccess-setMemberMessage:${userId}:userId: becomes ${projectRoleLabel(role)}:role: in ${project}:project:. The change takes effect immediately.`,

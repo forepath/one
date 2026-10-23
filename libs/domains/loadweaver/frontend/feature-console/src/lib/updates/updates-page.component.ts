@@ -21,12 +21,15 @@ import {
   FpcButtonComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcProgressComponent,
   FpcSpinnerComponent,
   FpcStatusBadgeComponent,
@@ -73,6 +76,9 @@ export const HOST_ONLY = '';
 @Component({
   selector: 'loadweaver-updates-page',
   imports: [
+    FpcPanelGridComponent,
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -171,6 +177,10 @@ export class LoadweaverUpdatesPageComponent implements OnInit {
 
   readonly title = $localize`:@@lwConsoleUpdates-title:Updates`;
   readonly refreshLabel = $localize`:@@lwConsoleUpdates-refresh:Refresh`;
+  readonly announcementsLabel = $localize`:@@lwConsoleUpdates-announcements:Announcements`;
+  readonly planButtonLabel = $localize`:@@lwConsoleUpdates-planButton:Plan update`;
+  readonly windowNewLabel = $localize`:@@lwConsoleUpdates-windowNew:New window`;
+  readonly noReleaseHint = $localize`:@@lwConsolePlanUpdate-noRelease:No release bundle is imported yet: download or upload one under Releases first.`;
   readonly tabOverview = $localize`:@@lwConsoleUpdates-tabOverview:Overview`;
   readonly tabReleases = $localize`:@@lwConsoleUpdates-tabReleases:Releases`;
   readonly tabPlans = $localize`:@@lwConsoleUpdates-tabPlans:Update plans`;

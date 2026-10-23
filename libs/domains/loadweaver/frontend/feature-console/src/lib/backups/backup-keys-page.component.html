@@ -1,21 +1,22 @@
-<fpc-page-header [title]="title" icon="key">
-  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
-    <fpc-button variant="link" size="sm" routerLink="/backups">
-      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
-    </fpc-button>
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="key">
     <fpc-button
-      variant="outline-danger"
+      fpcPageHeaderActions
+      variant="danger"
       size="sm"
+      iconOnly
+      [ariaLabel]="rotateLabel"
+      [title]="rotateLabel"
       [loading]="isActing('rotate', null)"
       [disabled]="acting() !== null"
       (clicked)="openSize({ mode: 'rotate' })"
       data-testid="keys-rotate"
     >
-      <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i
-      ><span i18n="@@lwConsoleBackupKeys-rotate">Rotate key</span>
+      <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
     </fpc-button>
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="dark"
       size="sm"
       iconOnly
       [ariaLabel]="refreshLabel"
@@ -24,49 +25,47 @@
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-@if (error(); as message) {
-  <fpc-alert class="d-block m-3" variant="danger" [message]="message" />
-}
-@if (actionError(); as message) {
-  <fpc-alert class="d-block m-3" variant="danger" [message]="message" data-testid="keys-action-error" />
-}
+  <loadweaver-backups-nav active="keys" [platform]="true" [keys]="true" />
 
-@if (loading() && !loaded()) {
-  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-} @else {
-  <div class="p-3 d-flex flex-column gap-3">
-    @if (!activeRecoverable()) {
-      <fpc-alert variant="danger" [showIcon]="true" data-testid="keys-not-recoverable">
-        <span class="fw-semibold" i18n="@@lwConsoleBackupKeys-notRecoverableHeading">Backups are not recoverable.</span>
-        <span i18n="@@lwConsoleBackupKeys-notRecoverable"
-          >If this cluster is lost, nobody can decrypt its backups until the recovery kit of the active key is
-          downloaded and confirmed (or the key is escrowed in a KMS). Download every share, give each to a different
-          person, then confirm the kit by pasting enough shares back.</span
-        >
-      </fpc-alert>
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" data-testid="keys-action-error" />
     }
 
-    <fpc-alert variant="info" [showIcon]="true">
-      <span i18n="@@lwConsoleBackupKeys-explain"
-        >Backups are encrypted with their own key hierarchy, separate from the cluster's secrets. The recovery kit
-        splits the key into shares: any threshold of them recovers it (e.g. 2 of 3), fewer reveal nothing. Each share
-        can be downloaded only once. Disaster recovery from a fresh node asks for the kit (or the KMS) first.</span
-      >
-    </fpc-alert>
+    @if (loading() && !loaded()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else {
+      @if (!activeRecoverable()) {
+        <fpc-alert class="m-3" variant="danger" [showIcon]="true" data-testid="keys-not-recoverable">
+          <span class="fw-semibold" i18n="@@lwConsoleBackupKeys-notRecoverableHeading"
+            >Backups are not recoverable.</span
+          >
+          <span i18n="@@lwConsoleBackupKeys-notRecoverable"
+            >If this cluster is lost, nobody can decrypt its backups until the recovery kit of the active key is
+            downloaded and confirmed (or the key is escrowed in a KMS). Download every share, give each to a different
+            person, then confirm the kit by pasting enough shares back.</span
+          >
+        </fpc-alert>
+      }
 
-    <fpc-panel data-testid="keys-dr">
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        <span class="fw-semibold" i18n="@@lwConsoleBackupKeys-drTitle">Disaster recovery</span>
-        <span class="small text-body-secondary" i18n="@@lwConsoleBackupKeys-drHint"
-          >Keep the DR info file (target locations and key generations, no secrets) with the kit: a fresh node needs
-          both to rebuild the control plane.</span
+      <fpc-alert class="m-3" variant="info" [showIcon]="true">
+        <span i18n="@@lwConsoleBackupKeys-explain"
+          >Backups are encrypted with their own key hierarchy, separate from the cluster's secrets. The recovery kit
+          splits the key into shares: any threshold of them recovers it (e.g. 2 of 3), fewer reveal nothing. Each share
+          can be downloaded only once. Disaster recovery from a fresh node asks for the kit (or the KMS) first.</span
         >
-        <div class="ms-auto d-flex gap-2">
+      </fpc-alert>
+
+      <fpc-panel-grid [columns]="1">
+        <fpc-panel [title]="drTitle" data-testid="keys-dr">
           <fpc-button
-            variant="outline-primary"
+            fpcPanelActions
+            variant="primary"
             size="sm"
             [loading]="drDownloading()"
             (clicked)="downloadDrInfo()"
@@ -75,127 +74,147 @@
             <i class="bi bi-download me-1" aria-hidden="true"></i
             ><span i18n="@@lwConsoleBackupKeys-drInfo">Download DR info</span>
           </fpc-button>
-          <fpc-button variant="link" size="sm" routerLink="/backups/platform" data-testid="keys-dr-platform">
+          <fpc-button
+            fpcPanelActions
+            variant="link"
+            size="sm"
+            routerLink="/backups/platform"
+            data-testid="keys-dr-platform"
+          >
             <span i18n="@@lwConsoleBackupKeys-drPlatform">Platform backups</span>
           </fpc-button>
-        </div>
-      </div>
-      @if (drError(); as message) {
-        <fpc-alert class="d-block mt-2" variant="danger" [message]="message" data-testid="keys-dr-error" />
-      }
-    </fpc-panel>
+          <p class="small text-body-secondary mb-0" i18n="@@lwConsoleBackupKeys-drHint">
+            Keep the DR info file (target locations and key generations, no secrets) with the kit: a fresh node needs
+            both to rebuild the control plane.
+          </p>
+          @if (drError(); as message) {
+            <fpc-alert class="d-block mt-2" variant="danger" [message]="message" data-testid="keys-dr-error" />
+          }
+        </fpc-panel>
 
-    @for (g of generations(); track g.generation) {
-      <fpc-panel [attr.data-testid]="'keys-generation-' + g.generation">
-        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-          <span class="fw-semibold">{{ generationLabel }} {{ g.generation }}</span>
-          @if (g.active) {
-            <fpc-badge color="primary" size="sm" i18n="@@lwConsoleBackupKeys-active">Active</fpc-badge>
-          } @else {
-            <fpc-badge color="secondary" size="sm" i18n="@@lwConsoleBackupKeys-retired">Retired</fpc-badge>
-          }
-          @if (g.kit.confirmedAt) {
-            <fpc-badge color="success" size="sm" i18n="@@lwConsoleBackupKeys-confirmed">Kit confirmed</fpc-badge>
-          } @else {
-            <fpc-badge color="danger" size="sm" i18n="@@lwConsoleBackupKeys-unconfirmed">Kit not confirmed</fpc-badge>
-          }
-          @if (g.escrow) {
-            <fpc-badge color="info" size="sm" i18n="@@lwConsoleBackupKeys-escrowed">Escrowed in KMS</fpc-badge>
-          }
-          <span class="small text-body-secondary font-monospace ms-auto">{{ g.rootId }}</span>
-        </div>
-
-        <div class="small text-body-secondary mb-3">
-          <span i18n="@@lwConsoleBackupKeys-created">Created</span> {{ g.createdAt | date: 'medium' }}
-          @if (g.retiredAt) {
-            · <span i18n="@@lwConsoleBackupKeys-retiredAt">retired</span> {{ g.retiredAt | date: 'medium' }}
-          }
-          · <span i18n="@@lwConsoleBackupKeys-kitSize">kit</span> {{ g.kit.threshold }} / {{ g.kit.shares }}
-          @if (g.kit.confirmedAt) {
-            · <span i18n="@@lwConsoleBackupKeys-confirmedAt">confirmed</span>
-            {{ g.kit.confirmedAt | date: 'medium' }}
-            @if (g.kit.confirmedBy) {
-              ({{ g.kit.confirmedBy }})
-            }
-          }
-          @if (g.escrow; as e) {
-            · KMS {{ e.provider }} {{ e.at | date: 'short' }}
-          }
-        </div>
-
-        <ul class="list-group small mb-3" [attr.data-testid]="'keys-shares-' + g.generation">
-          @for (i of shareIndexes(g); track i) {
-            <li class="list-group-item d-flex flex-wrap align-items-center gap-2">
-              <i class="bi bi-file-earmark-lock" aria-hidden="true"></i>
-              <span><span i18n="@@lwConsoleBackupKeys-share">Share</span> {{ i }} / {{ g.kit.shares }}</span>
-              @if (downloadedShare(g, i); as d) {
-                <span class="text-body-secondary">
-                  <span i18n="@@lwConsoleBackupKeys-handedOut">handed out</span> {{ d.downloadedAt | date: 'short' }}
-                  @if (d.downloadedBy) {
-                    ({{ d.downloadedBy }})
-                  }
-                </span>
+        @for (g of generations(); track g.generation) {
+          <fpc-panel
+            [title]="generationLabel + ' ' + g.generation"
+            [flush]="true"
+            [attr.data-testid]="'keys-generation-' + g.generation"
+          >
+            <div class="d-flex flex-wrap align-items-center gap-2 px-3 pt-2">
+              @if (g.active) {
+                <fpc-badge color="primary" size="sm" i18n="@@lwConsoleBackupKeys-active">Active</fpc-badge>
               } @else {
-                <fpc-button
-                  class="ms-auto"
-                  variant="outline-primary"
-                  size="sm"
-                  [loading]="isActing('share', g.generation, i)"
-                  [disabled]="acting() !== null"
-                  (clicked)="askShare(g, i)"
-                  [attr.data-testid]="'keys-share-' + g.generation + '-' + i"
+                <fpc-badge color="secondary" size="sm" i18n="@@lwConsoleBackupKeys-retired">Retired</fpc-badge>
+              }
+              @if (g.kit.confirmedAt) {
+                <fpc-badge color="success" size="sm" i18n="@@lwConsoleBackupKeys-confirmed">Kit confirmed</fpc-badge>
+              } @else {
+                <fpc-badge color="danger" size="sm" i18n="@@lwConsoleBackupKeys-unconfirmed"
+                  >Kit not confirmed</fpc-badge
                 >
-                  <i class="bi bi-download me-1" aria-hidden="true"></i
-                  ><span i18n="@@lwConsoleBackupKeys-downloadShare">Download once</span>
+              }
+              @if (g.escrow) {
+                <fpc-badge color="info" size="sm" i18n="@@lwConsoleBackupKeys-escrowed">Escrowed in KMS</fpc-badge>
+              }
+              <span class="small text-body-secondary font-monospace ms-auto">{{ g.rootId }}</span>
+            </div>
+
+            <div class="small text-body-secondary px-3 pt-1 pb-2 border-bottom">
+              <span i18n="@@lwConsoleBackupKeys-created">Created</span> {{ g.createdAt | date: 'medium' }}
+              @if (g.retiredAt) {
+                · <span i18n="@@lwConsoleBackupKeys-retiredAt">retired</span> {{ g.retiredAt | date: 'medium' }}
+              }
+              · <span i18n="@@lwConsoleBackupKeys-kitSize">kit</span> {{ g.kit.threshold }} / {{ g.kit.shares }}
+              @if (g.kit.confirmedAt) {
+                · <span i18n="@@lwConsoleBackupKeys-confirmedAt">confirmed</span>
+                {{ g.kit.confirmedAt | date: 'medium' }}
+                @if (g.kit.confirmedBy) {
+                  ({{ g.kit.confirmedBy }})
+                }
+              }
+              @if (g.escrow; as e) {
+                · KMS {{ e.provider }} {{ e.at | date: 'short' }}
+              }
+            </div>
+
+            <fpc-list [flush]="true" [attr.data-testid]="'keys-shares-' + g.generation">
+              @for (i of shareIndexes(g); track i) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2 small">
+                    <i class="bi bi-file-earmark-lock" aria-hidden="true"></i>
+                    <span><span i18n="@@lwConsoleBackupKeys-share">Share</span> {{ i }} / {{ g.kit.shares }}</span>
+                    @if (downloadedShare(g, i); as d) {
+                      <span class="text-body-secondary">
+                        <span i18n="@@lwConsoleBackupKeys-handedOut">handed out</span>
+                        {{ d.downloadedAt | date: 'short' }}
+                        @if (d.downloadedBy) {
+                          ({{ d.downloadedBy }})
+                        }
+                      </span>
+                    }
+                  </div>
+                  @if (!downloadedShare(g, i)) {
+                    <fpc-button
+                      fpcListItemActions
+                      variant="primary"
+                      size="sm"
+                      [loading]="isActing('share', g.generation, i)"
+                      [disabled]="acting() !== null"
+                      (clicked)="askShare(g, i)"
+                      [attr.data-testid]="'keys-share-' + g.generation + '-' + i"
+                    >
+                      <i class="bi bi-download me-1" aria-hidden="true"></i
+                      ><span i18n="@@lwConsoleBackupKeys-downloadShare">Download once</span>
+                    </fpc-button>
+                  }
+                </fpc-list-item>
+              }
+            </fpc-list>
+
+            <div fpcPanelFooter class="d-flex flex-wrap gap-2">
+              <fpc-button
+                [variant]="g.kit.confirmedAt ? 'secondary' : 'primary'"
+                size="sm"
+                [loading]="isActing('confirm', g.generation)"
+                [disabled]="acting() !== null"
+                (clicked)="openConfirm(g)"
+                [attr.data-testid]="'keys-confirm-' + g.generation"
+              >
+                <i class="bi bi-check2-square me-1" aria-hidden="true"></i
+                ><span i18n="@@lwConsoleBackupKeys-confirm">Confirm kit</span>
+              </fpc-button>
+              <fpc-button
+                variant="secondary"
+                size="sm"
+                [loading]="isActing('reissue', g.generation)"
+                [disabled]="acting() !== null"
+                (clicked)="openSize({ mode: 'reissue', generation: g.generation }, g)"
+                [attr.data-testid]="'keys-reissue-' + g.generation"
+              >
+                <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i
+                ><span i18n="@@lwConsoleBackupKeys-reissue">Re-issue kit</span>
+              </fpc-button>
+              @if (!g.escrow) {
+                <fpc-button
+                  variant="secondary"
+                  size="sm"
+                  [loading]="isActing('escrow', g.generation)"
+                  [disabled]="acting() !== null"
+                  (clicked)="askEscrow(g)"
+                  [attr.data-testid]="'keys-escrow-' + g.generation"
+                >
+                  <i class="bi bi-safe2 me-1" aria-hidden="true"></i
+                  ><span i18n="@@lwConsoleBackupKeys-escrow">Escrow in KMS</span>
                 </fpc-button>
               }
-            </li>
-          }
-        </ul>
-
-        <div class="d-flex flex-wrap gap-2">
-          <fpc-button
-            [variant]="g.kit.confirmedAt ? 'outline-secondary' : 'primary'"
-            size="sm"
-            [loading]="isActing('confirm', g.generation)"
-            [disabled]="acting() !== null"
-            (clicked)="openConfirm(g)"
-            [attr.data-testid]="'keys-confirm-' + g.generation"
-          >
-            <i class="bi bi-check2-square me-1" aria-hidden="true"></i
-            ><span i18n="@@lwConsoleBackupKeys-confirm">Confirm kit</span>
-          </fpc-button>
-          <fpc-button
-            variant="outline-secondary"
-            size="sm"
-            [loading]="isActing('reissue', g.generation)"
-            [disabled]="acting() !== null"
-            (clicked)="openSize({ mode: 'reissue', generation: g.generation }, g)"
-            [attr.data-testid]="'keys-reissue-' + g.generation"
-          >
-            <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i
-            ><span i18n="@@lwConsoleBackupKeys-reissue">Re-issue kit</span>
-          </fpc-button>
-          @if (!g.escrow) {
-            <fpc-button
-              variant="outline-secondary"
-              size="sm"
-              [loading]="isActing('escrow', g.generation)"
-              [disabled]="acting() !== null"
-              (clicked)="askEscrow(g)"
-              [attr.data-testid]="'keys-escrow-' + g.generation"
-            >
-              <i class="bi bi-safe2 me-1" aria-hidden="true"></i
-              ><span i18n="@@lwConsoleBackupKeys-escrow">Escrow in KMS</span>
-            </fpc-button>
-          }
-        </div>
-      </fpc-panel>
-    } @empty {
-      <fpc-empty-state icon="key" i18n-title="@@lwConsoleBackupKeys-none" title="No backup key yet" />
+            </div>
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+      @if (generations().length === 0) {
+        <fpc-empty-state icon="key" i18n-title="@@lwConsoleBackupKeys-none" title="No backup key yet" />
+      }
     }
   </div>
-}
+</div>
 
 <fpc-modal
   [open]="sizeDialog() !== null"
@@ -213,44 +232,52 @@
       The kit is split again: the previous shares stop counting and the new kit must be downloaded and confirmed.
     </p>
   }
-  <div class="row g-2">
+  <div class="row g-3">
     <div class="col-6">
-      <label class="form-label small" for="lw-kit-shares" i18n="@@lwConsoleBackupKeys-sharesLabel">Shares (n)</label>
-      <input
-        id="lw-kit-shares"
-        type="number"
-        class="form-control form-control-sm"
-        [min]="minKit"
-        [max]="maxKit"
-        [(ngModel)]="kitShares"
-        data-testid="keys-kit-shares"
-      />
+      <fpc-form-field forId="lw-kit-shares" i18n-label="@@lwConsoleBackupKeys-sharesLabel" label="Shares (n)">
+        <fpc-form-control
+          controlId="lw-kit-shares"
+          size="sm"
+          inputType="number"
+          [invalid]="!validSize(+kitShares, +kitThreshold)"
+          [min]="minKit"
+          [max]="maxKit"
+          [(ngModel)]="kitShares"
+          data-testid="keys-kit-shares"
+        />
+      </fpc-form-field>
     </div>
     <div class="col-6">
-      <label class="form-label small" for="lw-kit-threshold" i18n="@@lwConsoleBackupKeys-thresholdLabel"
-        >Needed to recover (k)</label
+      <fpc-form-field
+        forId="lw-kit-threshold"
+        i18n-label="@@lwConsoleBackupKeys-thresholdLabel"
+        label="Needed to recover (k)"
       >
-      <input
-        id="lw-kit-threshold"
-        type="number"
-        class="form-control form-control-sm"
-        [min]="minKit"
-        [max]="kitShares"
-        [(ngModel)]="kitThreshold"
-        data-testid="keys-kit-threshold"
-      />
+        <fpc-form-control
+          controlId="lw-kit-threshold"
+          size="sm"
+          inputType="number"
+          [invalid]="!validSize(+kitShares, +kitThreshold)"
+          [min]="minKit"
+          [max]="kitShares"
+          [(ngModel)]="kitThreshold"
+          data-testid="keys-kit-threshold"
+        />
+      </fpc-form-field>
     </div>
   </div>
   @if (!validSize(+kitShares, +kitThreshold)) {
-    <div class="small text-danger mt-2" i18n="@@lwConsoleBackupKeys-sizeInvalid">
-      Between 2 and 16 shares; at least 2 and at most all of them needed.
-    </div>
+    <fpc-alert
+      variant="warning"
+      i18n-message="@@lwConsoleBackupKeys-sizeInvalid"
+      message="Between 2 and 16 shares; at least 2 and at most all of them needed."
+    />
   }
   @if (actionError(); as message) {
-    <fpc-alert class="d-block mt-3" variant="danger" [message]="message" />
+    <fpc-alert variant="danger" [message]="message" />
   }
   <div *fpcModalFooter class="d-flex justify-content-end gap-2">
-    <fpc-button variant="outline-secondary" (clicked)="sizeDialog.set(null)">{{ cancelLabel }}</fpc-button>
+    <fpc-button variant="secondary" (clicked)="sizeDialog.set(null)">{{ cancelLabel }}</fpc-button>
     <fpc-button
       variant="danger"
       [disabled]="!validSize(+kitShares, +kitThreshold)"
@@ -299,16 +326,18 @@
       <span i18n="@@lwConsoleBackupKeys-checksum">checksum</span>
       <span class="font-monospace">{{ s.share.document.checksum }}</span>
     </div>
-    <textarea
-      class="form-control form-control-sm font-monospace"
-      rows="10"
-      readonly
+    <fpc-form-control
+      controlType="textarea"
+      size="sm"
+      controlClass="font-monospace"
+      [rows]="10"
+      readOnly
       [value]="s.share.text"
       data-testid="keys-share-text"
-    ></textarea>
+    />
   }
   <div *fpcModalFooter class="d-flex justify-content-end gap-2">
-    <fpc-button variant="outline-secondary" (clicked)="saveShare()" data-testid="keys-share-save">
+    <fpc-button variant="secondary" (clicked)="saveShare()" data-testid="keys-share-save">
       <i class="bi bi-download me-1" aria-hidden="true"></i
       ><span i18n="@@lwConsoleBackupKeys-saveAgain">Save as text file again</span>
     </fpc-button>
@@ -327,28 +356,25 @@
       {{ g.kit.threshold }} / {{ g.kit.shares }}.
     </p>
     @for (value of pasted(); track $index; let i = $index) {
-      <div class="mb-2">
-        <div class="d-flex align-items-center gap-2 mb-1">
-          <label class="form-label small mb-0" [for]="'lw-kit-paste-' + i"
-            ><span i18n="@@lwConsoleBackupKeys-share">Share</span> {{ i + 1 }}</label
-          >
-          <input
-            type="file"
-            accept=".txt,text/plain"
-            class="form-control form-control-sm w-auto ms-auto"
-            [attr.aria-label]="shareTitle + ' ' + (i + 1)"
-            (change)="readFile(i, $event)"
-          />
-        </div>
-        <textarea
-          [id]="'lw-kit-paste-' + i"
-          class="form-control form-control-sm font-monospace"
-          rows="4"
+      <fpc-form-field [forId]="'lw-kit-paste-' + i" [label]="shareLabel + ' ' + (i + 1)">
+        <fpc-form-control
+          controlType="textarea"
+          [controlId]="'lw-kit-paste-' + i"
+          size="sm"
+          controlClass="font-monospace"
+          [rows]="4"
           [ngModel]="value"
           (ngModelChange)="setPasted(i, $event)"
           [attr.data-testid]="'keys-paste-' + i"
-        ></textarea>
-      </div>
+        />
+        <input
+          type="file"
+          accept=".txt,text/plain"
+          class="form-control form-control-sm mt-1"
+          [attr.aria-label]="shareTitle + ' ' + (i + 1)"
+          (change)="readFile(i, $event)"
+        />
+      </fpc-form-field>
     }
     @if (pasted().length < g.kit.shares) {
       <fpc-button variant="link" size="sm" (clicked)="addPasted()">
@@ -358,10 +384,10 @@
     }
   }
   @if (actionError(); as message) {
-    <fpc-alert class="d-block mt-3" variant="danger" [message]="message" data-testid="keys-confirm-error" />
+    <fpc-alert variant="danger" [message]="message" data-testid="keys-confirm-error" />
   }
   <div *fpcModalFooter class="d-flex justify-content-end gap-2">
-    <fpc-button variant="outline-secondary" (clicked)="confirmFor.set(null)">{{ cancelLabel }}</fpc-button>
+    <fpc-button variant="secondary" (clicked)="confirmFor.set(null)">{{ cancelLabel }}</fpc-button>
     <fpc-button
       variant="primary"
       [disabled]="pastedCount() === 0"

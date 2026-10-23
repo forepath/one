@@ -1,152 +1,163 @@
-<fpc-page-header [title]="entity()?.name ?? key() ?? title" icon="heart-pulse">
-  <div fpcPageHeaderActions>
-    <fpc-button variant="link" size="sm" routerLink="/health">
-      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="entity()?.name ?? key() ?? title" icon="heart-pulse">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="secondary"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="backLabel"
+      [title]="backLabel"
+      routerLink="/health"
+    >
+      <i class="bi bi-arrow-left" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-@if (error(); as message) {
-  <fpc-alert class="m-3" variant="danger" [message]="message" />
-}
-
-@if (entity(); as e) {
-  <div class="d-flex align-items-center gap-3 p-3 border-bottom" data-testid="health-entity">
-    <fpc-status-badge [tone]="healthTone[e.state]" size="lg" [ariaLabel]="healthLabel(e.state)">
-      <i class="bi {{ healthIcon[e.state] }}" aria-hidden="true"></i>
-    </fpc-status-badge>
-    <div class="min-w-0">
-      <div class="fw-semibold">{{ healthLabel(e.state) }}</div>
-      <div class="small text-body-secondary">
-        <i class="bi {{ kindIcon[e.kind] }} me-1" aria-hidden="true"></i>{{ kindLabel(e.kind) }} ·
-        <span class="font-monospace">{{ e.key }}</span> · <span i18n="@@lwConsoleHealthDetail-since">since</span>
-        {{ e.since | date: 'medium' }}
-      </div>
-      @if (e.parent) {
-        <div class="small">
-          <span i18n="@@lwConsoleHealthDetail-parent">Part of</span>
-          <a [routerLink]="link(e.parent)" class="font-monospace">{{ e.parent }}</a>
+  @if (entity(); as e) {
+    <div class="flex-shrink-0 d-flex align-items-center gap-3 px-3 py-2 border-bottom" data-testid="health-entity">
+      <fpc-status-badge [tone]="healthTone[e.state]" size="lg" [ariaLabel]="healthLabel(e.state)">
+        <i class="bi {{ healthIcon[e.state] }}" aria-hidden="true"></i>
+      </fpc-status-badge>
+      <div class="min-w-0">
+        <div class="fw-semibold">{{ healthLabel(e.state) }}</div>
+        <div class="small text-body-secondary">
+          <i class="bi {{ kindIcon[e.kind] }} me-1" aria-hidden="true"></i>{{ kindLabel(e.kind) }} ·
+          <span class="font-monospace">{{ e.key }}</span> · <span i18n="@@lwConsoleHealthDetail-since">since</span>
+          {{ e.since | date: 'medium' }}
         </div>
-      }
-    </div>
-  </div>
-
-  <fpc-panel-grid [columns]="2">
-    <fpc-panel [title]="reasonsTitle" [flush]="true">
-      @if (e.reasons.length === 0) {
-        <fpc-empty-state icon="check2" size="sm" i18n-title="@@lwConsoleHealthDetail-noReasons" title="No issues" />
-      } @else {
-        <ul class="list-group list-group-flush" data-testid="health-reasons">
-          @for (reason of e.reasons; track reason.code + reason.message) {
-            <li class="list-group-item">
-              <div>
-                <fpc-badge color="light" size="sm"
-                  ><span class="font-monospace">{{ reason.code }}</span></fpc-badge
-                >
-                {{ reason.message }}
-              </div>
-              @if (reason.entities?.length) {
-                <div class="small mt-1 d-flex flex-wrap gap-2">
-                  @for (entity of reason.entities!; track entity) {
-                    @if (isEntityKey(entity)) {
-                      <a [routerLink]="link(entity)" class="font-monospace">{{ entity }}</a>
-                    } @else {
-                      <span class="font-monospace">{{ entity }}</span>
-                    }
-                  }
-                </div>
-              }
-            </li>
-          }
-        </ul>
-      }
-    </fpc-panel>
-
-    <fpc-panel [title]="timeTitle">
-      <div fpcPanelActions>
-        <label class="visually-hidden" for="lw-health-range">{{ rangeLabel }}</label>
-        <select
-          id="lw-health-range"
-          class="form-select form-select-sm w-auto"
-          [ngModel]="rangeDays()"
-          (ngModelChange)="onRangeChange($event)"
-        >
-          @for (days of ranges; track days) {
-            <option [ngValue]="days">{{ rangeName(days) }}</option>
-          }
-        </select>
+        @if (e.parent) {
+          <div class="small">
+            <span i18n="@@lwConsoleHealthDetail-parent">Part of</span>
+            <a [routerLink]="link(e.parent)" class="font-monospace">{{ e.parent }}</a>
+          </div>
+        }
       </div>
-      @if (historyError(); as message) {
-        <fpc-alert variant="danger" [message]="message" />
-      } @else if (historyLoading() && !history()) {
-        <div class="d-flex justify-content-center p-3"><fpc-spinner size="sm" /></div>
-      } @else if (durations().rows.length === 0) {
-        <p class="small text-body-secondary mb-0" i18n="@@lwConsoleHealthDetail-noDurations">
-          No recorded states in this range.
-        </p>
-      } @else {
-        <fpc-progress [segments]="segments()" height="1.25rem" class="d-block mb-3" />
-        <ul class="list-unstyled small mb-0" data-testid="health-durations">
-          @for (row of durations().rows; track row.state) {
-            <li class="d-flex align-items-center gap-2 py-1">
-              <fpc-status-badge [tone]="healthTone[row.state]" size="sm">
-                <i class="bi {{ healthIcon[row.state] }}" aria-hidden="true"></i>
-              </fpc-status-badge>
-              <span class="flex-grow-1">{{ healthLabel(row.state) }}</span>
-              <span class="font-monospace">{{ formatDuration(row.ms) }}</span>
-              <span class="text-body-secondary" style="min-width: 4rem; text-align: right">{{ row.share }} %</span>
-            </li>
-          }
-        </ul>
-      }
-    </fpc-panel>
-
-    <fpc-panel [title]="childrenTitle">
-      @if (children().length === 0) {
-        <p class="small text-body-secondary mb-0" i18n="@@lwConsoleHealthDetail-noChildren">
-          Nothing below this entity.
-        </p>
-      } @else {
-        <loadweaver-health-tree [nodes]="children()" [expandDepth]="1" />
-      }
-    </fpc-panel>
-
-    <fpc-panel [title]="historyTitle" [flush]="true">
-      @if (changes().length === 0) {
-        <fpc-empty-state
-          icon="clock-history"
-          size="sm"
-          i18n-title="@@lwConsoleHealthDetail-noChanges"
-          title="No state changes in this range"
-        />
-      } @else {
-        <ul class="list-group list-group-flush" data-testid="health-changes">
-          @for (change of changes(); track change.at + change.to) {
-            <li class="list-group-item small">
-              <div class="d-flex align-items-center gap-2">
-                <span class="text-body-secondary">{{ change.at | date: 'medium' }}</span>
-                @if (change.from) {
-                  <fpc-badge size="sm" color="light">{{ healthLabel(change.from) }}</fpc-badge>
-                  <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                }
-                <fpc-badge size="sm" [color]="healthTone[change.to]">{{ healthLabel(change.to) }}</fpc-badge>
-              </div>
-              <div>{{ change.message }}</div>
-            </li>
-          }
-        </ul>
-      }
-    </fpc-panel>
-  </fpc-panel-grid>
-  @if (autoscaleScope(); as scope) {
-    <div class="px-3 pb-3">
-      <loadweaver-autoscaling-panel
-        [project]="scope.project"
-        [deployment]="scope.deployment"
-        [serviceName]="scope.service"
-      />
     </div>
   }
-} @else if (loading()) {
-  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-}
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    @if (entity(); as e) {
+      <fpc-panel-grid [columns]="2" [fill]="!autoscaleScope()">
+        <fpc-panel [title]="reasonsTitle" [flush]="true">
+          @if (e.reasons.length === 0) {
+            <fpc-empty-state icon="check2" size="sm" i18n-title="@@lwConsoleHealthDetail-noReasons" title="No issues" />
+          } @else {
+            <fpc-list [flush]="true" data-testid="health-reasons">
+              @for (reason of e.reasons; track reason.code + reason.message) {
+                <fpc-list-item>
+                  <div fpcListItemTitle>
+                    <fpc-badge color="light" size="sm"
+                      ><span class="font-monospace">{{ reason.code }}</span></fpc-badge
+                    >
+                    {{ reason.message }}
+                  </div>
+                  @if (reason.entities?.length) {
+                    <div fpcListItemMeta class="small d-flex flex-wrap gap-2">
+                      @for (entity of reason.entities!; track entity) {
+                        @if (isEntityKey(entity)) {
+                          <a [routerLink]="link(entity)" class="font-monospace">{{ entity }}</a>
+                        } @else {
+                          <span class="font-monospace">{{ entity }}</span>
+                        }
+                      }
+                    </div>
+                  }
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+
+        <fpc-panel [title]="timeTitle">
+          <div fpcPanelActions>
+            <label class="visually-hidden" for="lw-health-range">{{ rangeLabel }}</label>
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-health-range"
+              size="sm"
+              [ngModel]="'' + rangeDays()"
+              (ngModelChange)="onRangeChange($event)"
+            >
+              @for (days of ranges; track days) {
+                <option [value]="'' + days">{{ rangeName(days) }}</option>
+              }
+            </fpc-form-control>
+          </div>
+          @if (historyError(); as message) {
+            <fpc-alert class="mb-0" variant="danger" [message]="message" />
+          } @else if (historyLoading() && !history()) {
+            <div class="d-flex justify-content-center p-3"><fpc-spinner size="sm" variant="primary" /></div>
+          } @else if (durations().rows.length === 0) {
+            <p class="small text-body-secondary mb-0" i18n="@@lwConsoleHealthDetail-noDurations">
+              No recorded states in this range.
+            </p>
+          } @else {
+            <fpc-progress [segments]="segments()" height="1.25rem" class="d-block mb-3" />
+            <ul class="list-unstyled small mb-0" data-testid="health-durations">
+              @for (row of durations().rows; track row.state) {
+                <li class="d-flex align-items-center gap-2 py-1">
+                  <fpc-status-badge [tone]="healthTone[row.state]" size="sm">
+                    <i class="bi {{ healthIcon[row.state] }}" aria-hidden="true"></i>
+                  </fpc-status-badge>
+                  <span class="flex-grow-1">{{ healthLabel(row.state) }}</span>
+                  <span class="font-monospace">{{ formatDuration(row.ms) }}</span>
+                  <span class="text-body-secondary text-end">{{ row.share }} %</span>
+                </li>
+              }
+            </ul>
+          }
+        </fpc-panel>
+
+        <fpc-panel [title]="childrenTitle">
+          @if (children().length === 0) {
+            <p class="small text-body-secondary mb-0" i18n="@@lwConsoleHealthDetail-noChildren">
+              Nothing below this entity.
+            </p>
+          } @else {
+            <loadweaver-health-tree [nodes]="children()" [expandDepth]="1" />
+          }
+        </fpc-panel>
+
+        <fpc-panel [title]="historyTitle" [flush]="true">
+          @if (changes().length === 0) {
+            <fpc-empty-state
+              icon="clock-history"
+              size="sm"
+              i18n-title="@@lwConsoleHealthDetail-noChanges"
+              title="No state changes in this range"
+            />
+          } @else {
+            <fpc-list [flush]="true" data-testid="health-changes">
+              @for (change of changes(); track change.at + change.to) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex align-items-center gap-2 small">
+                    <span class="text-body-secondary">{{ change.at | date: 'medium' }}</span>
+                    @if (change.from) {
+                      <fpc-badge size="sm" color="light">{{ healthLabel(change.from) }}</fpc-badge>
+                      <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    }
+                    <fpc-badge size="sm" [color]="healthTone[change.to]">{{ healthLabel(change.to) }}</fpc-badge>
+                  </div>
+                  <div fpcListItemMeta class="small">{{ change.message }}</div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+      </fpc-panel-grid>
+      @if (autoscaleScope(); as scope) {
+        <loadweaver-autoscaling-panel
+          [project]="scope.project"
+          [deployment]="scope.deployment"
+          [serviceName]="scope.service"
+        />
+      }
+    } @else if (loading()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    }
+  </div>
+</div>

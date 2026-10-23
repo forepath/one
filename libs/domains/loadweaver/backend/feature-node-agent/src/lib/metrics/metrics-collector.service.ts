@@ -15,6 +15,7 @@ import { WORKLOAD_LABEL } from '../workloads/workload-container';
 import {
   cpuCores,
   DeniedFlows,
+  dockerNetworkBytes,
   dockerUsage,
   parseNetDev,
   parseNftCounters,
@@ -27,13 +28,47 @@ export const METRICS_INTERVAL_MS = 10_000;
 /** Reports kept while disconnected (5 minutes). */
 const MAX_PENDING = 30;
 const STATS_CONCURRENCY = 16;
+/** Samples per `metrics` message (the protocol's limit); larger collections go out as several reports. */
+export const MAX_SAMPLES_PER_REPORT = 10_000;
 
 type Sample = MetricsReport['samples'][number];
 
+/** A running replica container's last reading of its cumulative counters (usage metering, 3.24). */
+interface ReplicaReading {
+  /** When it was read (the collection's time, ms). */
+  at: number;
+  cpu?: { cpu_usage?: { total_usage?: number }; system_cpu_usage?: number };
+  net?: { rx: number; tx: number };
+}
+
+/** Increase of a cumulative counter; after a restart (counter went down) everything counted since the restart. */
+function counterDelta(now: number, before: number): number {
+  return now >= before ? now - before : now;
+}
+
+/**
+ * Splits a collection into reports the protocol accepts (at most `max` samples each, all with the same `at`); the
+ * flows travel with the first one. Lets usage samples cover every replica of a node however many it runs.
+ */
+export function splitMetricsReport(report: MetricsReport, max = MAX_SAMPLES_PER_REPORT): MetricsReport[] {
+  if (report.samples.length <= max) return [report];
+
+  const reports: MetricsReport[] = [];
+
+  for (let i = 0; i < report.samples.length; i += max)
+    reports.push({ at: report.at, samples: report.samples.slice(i, i + max), flows: i === 0 ? report.flows : [] });
+
+  return reports;
+}
+
 /**
  * The node's metrics every 10 s (3.18): CPU / memory / disk, containers by state, network per interface, WireGuard
- * per peer, CPU / memory per replica, requests / errors / latency per ingress hostname (from its access log), and
+ * per peer, CPU / memory / network per replica, requests / errors / latency per ingress hostname (from its access log), and
  * flows per policy edge (rule counters) plus denied flows (firewall log). Rates are per second over the interval.
+ *
+ * Usage metering (3.24) gets integrated per-replica samples over the measured time since the replica's previous
+ * reading (`replica.cpu_seconds`, `replica.memory_byte_seconds`, `replica.net_rx_bytes`, `replica.net_tx_bytes`), so a
+ * skipped or slow tick bills the full time, never a fixed 10 s per sample. Every running replica is read (no cap).
  */
 @Injectable()
 export class MetricsCollectorService implements OnModuleDestroy {
@@ -42,12 +77,13 @@ export class MetricsCollectorService implements OnModuleDestroy {
   readonly denied = new DeniedFlows();
   private send: ((envelope: Envelope) => boolean) | null = null;
   private timer: NodeJS.Timeout | null = null;
-  private pending: MetricsReport[] = [];
+  /** Collections not sent yet (each one or more reports), the oldest first. */
+  private pending: MetricsReport[][] = [];
   private cpu: { busy: number; total: number } | null = null;
   private net = new Map<string, { rx: number; tx: number }>();
   private wg = new Map<string, { rx: number; tx: number }>();
   private rules = new Map<number, RuleCounter>();
-  private replicaCpu = new Map<string, { cpu_usage?: { total_usage?: number }; system_cpu_usage?: number }>();
+  private readings = new Map<string, ReplicaReading>();
   private last = Date.now();
   private running = false;
 
@@ -72,11 +108,18 @@ export class MetricsCollectorService implements OnModuleDestroy {
     this.running = true;
 
     try {
-      this.pending.push(await this.collect());
+      this.pending.push(splitMetricsReport(await this.collect()));
       this.pending = this.pending.slice(-MAX_PENDING);
 
-      while (this.send && this.pending.length > 0 && this.send(agentMessage('metrics', this.pending[0])))
-        this.pending.shift();
+      while (this.send && this.pending.length > 0) {
+        const group = this.pending[0];
+
+        if (group.length > 0 && !this.send(agentMessage('metrics', group[0]))) break;
+
+        group.shift();
+
+        if (group.length === 0) this.pending.shift();
+      }
     } catch (error) {
       this.logger.warn(`Metrics: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
@@ -85,6 +128,7 @@ export class MetricsCollectorService implements OnModuleDestroy {
   }
 
   async collect(now = Date.now()): Promise<MetricsReport> {
+    const previousCollection = this.last;
     const seconds = Math.max(1, (now - this.last) / 1000);
     const samples: Sample[] = [];
     const add = (metric: string, entity: string, value: number, project?: string) => {
@@ -162,38 +206,75 @@ export class MetricsCollectorService implements OnModuleDestroy {
 
     for (const [state, count] of states) add('node.containers', state, count);
 
-    // One-shot readings (no 1 s sampling wait), a few at a time, so hundreds of replicas fit in the interval.
-    const cpu: typeof this.replicaCpu = new Map();
-    const replicas = containers.filter((x) => x.State === 'running' && x.Labels?.[WORKLOAD_LABEL]).slice(0, 500);
+    // One-shot readings (no 1 s sampling wait), a few at a time. Every running replica is read: these are also the
+    // usage-metering samples, and since they integrate the measured time a slow pass costs resolution, not billing.
+    const readings = new Map<string, ReplicaReading>();
+    const replicas = containers.filter((x) => x.State === 'running' && x.Labels?.[WORKLOAD_LABEL]);
 
     for (let i = 0; i < replicas.length; i += STATS_CONCURRENCY)
       await Promise.all(
         replicas.slice(i, i + STATS_CONCURRENCY).map(async (c) => {
           const replica = c.Labels[WORKLOAD_LABEL];
           const project = replica.split('/')[0];
+          const before = this.readings.get(c.Id);
 
           try {
             const stats = (await this.docker
               .getContainer(c.Id)
               .stats({ stream: false, 'one-shot': true })) as Parameters<typeof dockerUsage>[0];
             // One-shot readings carry no previous sample: CPU is the change since this collector's last reading.
-            const before = this.replicaCpu.get(c.Id);
-            const u = dockerUsage({ ...stats, precpu_stats: before ?? stats.cpu_stats });
+            const u = dockerUsage({ ...stats, precpu_stats: before?.cpu ?? stats.cpu_stats });
+            const bytes = dockerNetworkBytes(stats as Parameters<typeof dockerNetworkBytes>[0]);
+            const reading: ReplicaReading = {
+              at: now,
+              cpu: {
+                cpu_usage: { total_usage: stats.cpu_stats?.cpu_usage?.total_usage },
+                system_cpu_usage: stats.cpu_stats?.system_cpu_usage,
+              },
+              ...(bytes ? { net: bytes } : {}),
+            };
+            // Created since the previous collection: its counters started within this interval and count in full.
+            const createdAt = typeof c.Created === 'number' && c.Created > 0 ? c.Created * 1000 : null;
+            const fresh = !before && createdAt !== null && createdAt > previousCollection;
+            // Measured time this reading stands for: since the replica's previous reading, else since the previous
+            // collection (or its creation, if later).
+            const interval = before
+              ? Math.max(0, (now - before.at) / 1000)
+              : Math.max(0, Math.min(seconds, createdAt !== null ? (now - createdAt) / 1000 : seconds));
 
-            cpu.set(c.Id, {
-              cpu_usage: { total_usage: stats.cpu_stats?.cpu_usage?.total_usage },
-              system_cpu_usage: stats.cpu_stats?.system_cpu_usage,
-            });
+            readings.set(c.Id, reading);
 
             if (before) add('replica.cpu_cores', replica, u.cores, project);
             add('replica.memory_bytes', replica, u.memoryBytes, project);
+            add('replica.memory_byte_seconds', replica, u.memoryBytes * interval, project);
+
+            const cpuNow = stats.cpu_stats?.cpu_usage?.total_usage;
+            const cpuBefore = before?.cpu?.cpu_usage?.total_usage;
+
+            if (typeof cpuNow === 'number' && (typeof cpuBefore === 'number' || fresh))
+              add('replica.cpu_seconds', replica, counterDelta(cpuNow, cpuBefore ?? 0) / 1e9, project);
+
+            // Traffic per replica: counter increase since the last reading; a restart resets the counters.
+            if (bytes && (before?.net || fresh)) {
+              const rx = counterDelta(bytes.rx, before?.net?.rx ?? 0);
+              const tx = counterDelta(bytes.tx, before?.net?.tx ?? 0);
+
+              add('replica.net_rx_bytes', replica, rx, project);
+              add('replica.net_tx_bytes', replica, tx, project);
+
+              if (before?.net && bytes.rx >= before.net.rx && bytes.tx >= before.net.tx && interval > 0) {
+                add('replica.net_rx_bytes_per_s', replica, rx / interval, project);
+                add('replica.net_tx_bytes_per_s', replica, tx / interval, project);
+              }
+            }
           } catch {
-            // gone meanwhile
+            // Gone meanwhile, or the reading failed: keep the previous one, so the next reading covers the gap.
+            if (before) readings.set(c.Id, before);
           }
         }),
       );
 
-    this.replicaCpu = cpu;
+    this.readings = readings;
 
     // Ingress per hostname.
     for (const h of this.requests.drain()) {

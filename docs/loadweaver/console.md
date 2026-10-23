@@ -6,7 +6,7 @@ The console only shows what the caller may read. The control plane scopes every 
 
 ## Running the console
 
-The console is an Angular app served by a small Express server (`apps/loadweaver/frontend-console`, image `ghcr.io/forepath/loadweaver-console-server`). The default port is **4602** (see [port allocation](../port-allocation.md)).
+The console is an Angular app served by a small Express server (`apps/loadweaver/frontend-console`, image `ghcr.io/forepath/loadweaver-console-server`). The default port is **4602** (see `docs/port-allocation.md` in the repository).
 
 ```bash
 npx nx run loadweaver-frontend-console:build:production   # en and de builds
@@ -62,6 +62,10 @@ The console's part of the environment:
 - `console.urls.websocket` names one Socket.IO namespace per live feature: `plans` (plan status and apply progress), `logs` (live tail), `terminals` (terminal sessions), `tunnels` (debug tunnel state) and `topology` (live traffic on the map). `default` is the plans namespace.
 - In production, allow the control plane's origin in `CSP_CONNECT_SRC_EXTRA` if it isn't served over `https:` / `wss:`.
 
+### Fleet mode
+
+One console can manage several clusters through the [fleet service](./features/fleet.md#console-fleet-mode). Set `"mode": "fleet"` and `fleet.apiUrl` / `fleet.websocketUrl` (the fleet's REST base and its `socket/fleet` namespace) in the runtime configuration; `console.urls` is then not used. Users sign in at the fleet; the sidebar gets the **Fleet** group (fleet overview, clusters and grants, compare, operations, fleet audit) and the top bar a **cluster switcher**. With a cluster selected, every view below works against that cluster through the fleet's relay, scoped by the user's fleet grant. Views the relay doesn't carry show "Not available through the fleet", and approvals are given in the cluster's own console. In production, allow the fleet's origin in `CSP_CONNECT_SRC_EXTRA` if needed. Without `mode` (or with `"cluster"`) the console behaves as described on this page. **Local development** (`nx serve loadweaver-frontend-console`) uses fleet mode by default against the local fleet service on `http://localhost:3500` (start it with `nx run loadweaver-backend-fleet:start-containers`); remove `mode` in `environment.console.ts` to talk to one control plane on port 3400 directly. Production builds stay single-cluster unless the runtime configuration sets `mode`.
+
 ### Authentication
 
 The console uses the shared ForePath identity screens. `authentication.config.type` must match the control plane's `AUTHENTICATION_METHOD`:
@@ -79,7 +83,22 @@ With `users` and `keycloak` the account menu also offers **Security** (`/setting
 - **Cluster roles** (cluster admin, infra operator, auditor) see the whole cluster, including the infrastructure views (Drift, Nodes & sites) and traffic on the map.
 - **Project roles** (admin, operator, developer, viewer) see their projects' part of every view. Infrastructure views are hidden from the sidebar.
 - **Access** and **Git** are shown to everyone with any cluster or project role, **Wallboards** to cluster admins and project admins.
-- The **Admin** popover in the top bar holds **Webhooks** (`/webhooks`, cluster admins) and **Users** (`/users`, user management for global admins with `users` or `keycloak` authentication).
+- The **Admin** popover at the bottom of the sidebar holds **Webhooks** (`/webhooks`, cluster admins), **Users** (`/users`, user management for global admins with `users` or `keycloak` authentication) and **Updates** (`/updates/announcements`, the release announcements of the shared updates feature, for global admins and the API key; a dot on **Admin** and **Updates** marks news there).
+
+## Navigation
+
+The sidebar is ordered by process, from setting up to daily use. **Overview** and **Map** are plain links; the rest is grouped into popovers that open next to the sidebar (one at a time, Enter or Space opens a focused group, Escape or a click outside closes it):
+
+| Group              | Items                                                                     |
+| ------------------ | ------------------------------------------------------------------------- |
+| **Cluster**        | Nodes & sites, Import hosts, DNS, Certificates, Updates (rollouts), Drift |
+| **Access & audit** | Access, Devices, Device posture, Audit                                    |
+| **Deploy**         | Git, Resources, Policies, Plans                                           |
+| **Operate**        | Terminals, Files, Sessions, Backups                                       |
+| **Observe**        | Health, Alerts, SLOs, Status, Logs, Metrics, Reports, Wallboards          |
+| **Account**        | Tokens (`users` / `keycloak` authentication), Git accounts                |
+
+Each item keeps its visibility rule (see above): a group whose items are all hidden is not shown, a group with one visible item is shown as a plain link. A group is highlighted when the current page belongs to one of its items. **Admin** stays at the bottom of the sidebar.
 
 ## Top bar
 
@@ -109,6 +128,7 @@ With `users` and `keycloak` the account menu also offers **Security** (`/setting
 | Sessions and tunnels   | `/live`                                                                                                                                                         | Auditors, cluster admins, project admins                                                                                         | `GET /live/sessions`, `GET /live/tunnels`                                                                                                                                                                                            |
 | Audit log              | `/audit`                                                                                                                                                        | Auditors, cluster admins; project admins (scoped)                                                                                | `GET /audit`, `GET /audit/export`, `GET /cluster/audit/verify`                                                                                                                                                                       |
 | Reports                | `/reports`                                                                                                                                                      | Everyone (scoped)                                                                                                                | `GET /reports`, `POST /reports/run`, `/reports/files…`                                                                                                                                                                               |
+| Usage                  | `/usage`                                                                                                                                                        | Everyone (scoped; all projects for cluster roles)                                                                                | `GET /projects/{project}/usage`, `GET /usage`, `…/usage/export`                                                                                                                                                                      |
 | Drift                  | `/drift`                                                                                                                                                        | Cluster roles                                                                                                                    | `GET /drift`, `POST /drift/plans`                                                                                                                                                                                                    |
 | Nodes & sites          | `/nodes`, `/nodes/:name`                                                                                                                                        | Cluster roles                                                                                                                    | `GET /nodes`, `POST /nodes/{name}/…`, `/join-tokens`                                                                                                                                                                                 |
 | Import hosts           | `/imports`, `/imports/:node`                                                                                                                                    | Cluster roles (read), infra operators and cluster admins (change)                                                                | `/imports`, `/imports/{node}/…`                                                                                                                                                                                                      |
@@ -117,6 +137,7 @@ With `users` and `keycloak` the account menu also offers **Security** (`/setting
 | DNS                    | `/dns`                                                                                                                                                          | Everyone (scoped); zones, DNSSEC and failover for cluster roles                                                                  | `GET /resources`, `GET /dns/zones`, `GET /dns/dnssec`, `/dns/failover`                                                                                                                                                               |
 | Access                 | `/access`, `/projects/:project/requests`                                                                                                                        | Any cluster or project role                                                                                                      | `/access/me`, `/cluster/members`, `/projects/{project}/…`, `/access/export`, `/access/import`                                                                                                                                        |
 | Devices                | `/devices`                                                                                                                                                      | Everyone (own devices); all clients for infra operators and cluster admins                                                       | `GET /vpn/devices`, `DELETE /vpn/devices/{id}`                                                                                                                                                                                       |
+| Device posture         | `/posture`                                                                                                                                                      | Infra operators (read), cluster admins (edit)                                                                                    | `GET /posture/plugins`, `/posture/integrations`, `/posture/certificates`; `POST` / `PATCH` / `DELETE /posture/integrations…`, `PUT /posture/certificates`                                                                            |
 | Wallboards             | `/wallboards`                                                                                                                                                   | Cluster admins, project admins                                                                                                   | `/wallboards`                                                                                                                                                                                                                        |
 | Linked Git accounts    | `/settings/git-accounts`                                                                                                                                        | Everyone signed in (own accounts)                                                                                                | `GET /git/accounts`, `POST /git/accounts/{provider}/authorize`, `GET` / `DELETE /git/accounts/pending/{nonce}`, `POST /git/accounts/confirm`, `DELETE /git/accounts/{id}`                                                            |
 | Kiosk                  | `/kiosk#<token>`                                                                                                                                                | No login (wallboard token)                                                                                                       | `GET /public/wallboard`                                                                                                                                                                                                              |
@@ -181,6 +202,10 @@ Search by actor, action (exact or `prefix*`), target prefix, project, time and f
 
 [Periodic reports](./features/periodic-reports.md) per scope and month, re-runs of a finished month (cluster admins and project admins), and the reports' file tree with downloads, folder archives and the printable report in a sandboxed viewer.
 
+### Usage
+
+[Metered usage](./features/usage-metering.md) per project: totals per meter, a table per period (hour, day or month, UTC) and project with open periods marked, filters for project, resolution and time range, and the CSV export. Project members see their projects; cluster roles can also look at all projects at once.
+
 ### Git
 
 The [Git connections](./features/gitops.md) per scope (the cluster scope, each project): provider, repository, branch, path, mode (Git authoritative or bidirectional), trigger (webhooks and / or polling), options, the last synced commit, the last sync and the last error, and the commits Loadweaver synced or wrote, each with its plan, state (and the reported commit status), pull request and, for rejected pushes, the file, line and rule. `/git/<id>` (where the inbox links) or `/git?connection=<id>` shows one connection.
@@ -240,7 +265,11 @@ Cluster members (cluster roles read, cluster admins manage); per project its mem
 
 ### Devices
 
-The caller's [remote-access](./features/remote-access.md) devices (every client for infra operators and cluster admins) with posture state and connection, instant revocation, and how to enroll a device with the CLI. The key pair is generated on the device, so no private key passes through the browser.
+The caller's [remote-access](./features/remote-access.md) devices (every client for infra operators and cluster admins) with posture facts (last report, MDM / EDR results, device certificate), restrictions and connection, instant revocation, and how to enroll a device with the CLI. The key pair is generated on the device, so no private key passes through the browser.
+
+### Device posture
+
+[Posture integrations](./features/device-posture.md) (Intune, Jamf Pro, Kandji, Defender for Endpoint, CrowdStrike, SentinelOne and plugins) with their sync state, last error and matched devices; cluster admins add, edit (stored secrets stay unless replaced), test, sync and delete them. Below, the trust for device certificates: company CA bundle, CRLs, the cluster CA and the proof-of-possession requirement.
 
 ### Wallboards and kiosk
 

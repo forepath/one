@@ -84,13 +84,18 @@ describe('LoadweaverAuditPageComponent', () => {
     );
     expect(navigate.mock.calls[0][1].queryParams).toMatchObject({ project: 'shop', action: 'terminal.*', actor: null });
     expect(el().querySelector('[data-testid="audit-table"]')?.textContent).toContain('files.write');
+    // The panel counts the filled filters and holds the project filter.
+    expect(el().querySelector('.fpc-collapsible-filter-panel .badge')?.textContent?.trim()).toBe('3');
+    (el().querySelector('.fpc-collapsible-filter-panel__toggle') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect((el().querySelector('#lw-audit-project') as HTMLSelectElement | null)?.tagName).toBe('SELECT');
     // Project admins don't verify the chain.
     expect(el().querySelector('[data-testid="audit-verify"]')).toBeNull();
   });
 
   it('pages, shows entry details and narrows the search', async () => {
     await create();
-    component().older();
+    (el().querySelector('[data-testid="audit-paging"] .fpc-pager__next') as HTMLButtonElement).click();
     expect(facade['next']).toHaveBeenCalled();
 
     (el().querySelector('[data-testid="audit-table"] tbody tr') as HTMLElement).click();
@@ -123,7 +128,7 @@ describe('LoadweaverAuditPageComponent', () => {
 
     const result = el().querySelector('[data-testid="audit-verification"]');
 
-    expect(result?.classList).toContain('alert-danger');
+    expect(result?.querySelector('.alert')?.classList).toContain('alert-danger');
     expect(result?.textContent).toContain('#87');
   });
 

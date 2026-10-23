@@ -1,6 +1,7 @@
 import {
   cpuCores,
   DeniedFlows,
+  dockerNetworkBytes,
   dockerUsage,
   parseNetDev,
   parseNftCounters,
@@ -128,5 +129,15 @@ describe('node metrics (3.18)', () => {
         memory_stats: { usage: 1000, stats: { inactive_file: 200 } },
       }),
     ).toEqual({ cores: 0.4, memoryBytes: 800 });
+  });
+
+  it('sums container network counters over the interfaces (usage metering, 3.24)', () => {
+    expect(
+      dockerNetworkBytes({
+        networks: { eth0: { rx_bytes: 1_000, tx_bytes: 300 }, eth1: { rx_bytes: 24, tx_bytes: 0 } },
+      }),
+    ).toEqual({ rx: 1_024, tx: 300 });
+    expect(dockerNetworkBytes({})).toBeNull();
+    expect(dockerNetworkBytes({ networks: {} })).toBeNull();
   });
 });

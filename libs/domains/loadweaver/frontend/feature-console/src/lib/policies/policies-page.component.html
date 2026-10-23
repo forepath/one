@@ -1,155 +1,191 @@
-<fpc-page-header [title]="title" icon="shield-shaded">
-  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
-    @if (projects().length > 0) {
-      <label class="visually-hidden" for="lw-policies-project">{{ projectFilterLabel }}</label>
-      <select
-        id="lw-policies-project"
-        class="form-select form-select-sm w-auto"
-        [ngModel]="project()"
-        (ngModelChange)="project.set($event)"
-      >
-        <option value="" i18n="@@lwConsolePolicies-allProjects">All projects</option>
-        @for (p of projects(); track p) {
-          <option [value]="p">{{ p }}</option>
-        }
-      </select>
-    }
-    <fpc-button variant="outline-secondary" size="sm" routerLink="/topology" data-testid="policies-map">
-      <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i><span i18n="@@lwConsolePolicies-map">Map</span>
-    </fpc-button>
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="shield-shaded">
     <fpc-button
-      variant="outline-primary"
+      fpcPageHeaderActions
+      variant="primary"
       size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="newGroupLabel"
+      [title]="newGroupLabel"
       (clicked)="create('WorkloadGroup')"
       data-testid="policies-new-group"
     >
-      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i><span i18n="@@lwConsolePolicies-newGroup">New group</span>
-    </fpc-button>
-    <fpc-button variant="primary" size="sm" (clicked)="create('Policy')" data-testid="policies-new-policy">
-      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i><span i18n="@@lwConsolePolicies-newPolicy">New policy</span>
+      <i class="bi bi-folder-plus" aria-hidden="true"></i>
     </fpc-button>
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="primary"
       size="sm"
-      iconOnly
+      [iconOnly]="true"
+      [ariaLabel]="newPolicyLabel"
+      [title]="newPolicyLabel"
+      (clicked)="create('Policy')"
+      data-testid="policies-new-policy"
+    >
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="secondary"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="mapLabel"
+      [title]="mapLabel"
+      routerLink="/topology"
+      data-testid="policies-map"
+    >
+      <i class="bi bi-diagram-3" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
       [ariaLabel]="refreshLabel"
       [title]="refreshLabel"
       (clicked)="refresh()"
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-@if (error(); as message) {
-  <fpc-alert class="m-3" variant="danger" [message]="message" />
-}
+  @if (projects().length > 0) {
+    <fpc-collapsible-filter-panel
+      class="flex-shrink-0"
+      [(open)]="filtersOpen"
+      [title]="filtersLabel"
+      [activeCount]="project() ? 1 : 0"
+      (cleared)="project.set('')"
+    >
+      <div class="row g-3 mb-0 w-100">
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-policies-project" [label]="projectFilterLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-policies-project"
+              size="sm"
+              [ngModel]="project()"
+              (ngModelChange)="project.set($event)"
+            >
+              <option value="" i18n="@@lwConsolePolicies-allProjects">All projects</option>
+              @for (p of projects(); track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+      </div>
+    </fpc-collapsible-filter-panel>
+  }
 
-@if (loading() && groups().length === 0 && policies().length === 0) {
-  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-} @else {
-  <p class="small text-body-secondary px-3 pt-3 mb-0" i18n="@@lwConsolePolicies-intro">
-    Default deny between groups, allow within a group. Policies only allow (deny exists for L7 matches) and are never
-    transitive; each one is compiled into tunnels, routes, filters and the proxy.
-  </p>
-  <div class="row g-3 p-3">
-    <div class="col-xl-6">
-      <fpc-panel [title]="groupsTitle + ' (' + filteredGroups().length + ')'" [flush]="true">
-        @if (filteredGroups().length === 0) {
-          <fpc-empty-state icon="collection" size="sm" i18n-title="@@lwConsolePolicies-noGroups" title="No groups" />
-        } @else {
-          <fpc-list [flush]="true" data-testid="policies-groups">
-            @for (g of filteredGroups(); track (g.metadata.project ?? '') + '/' + g.metadata.name) {
-              <fpc-list-item [clickable]="true" (selected)="openGroup(g)">
-                <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
-                  <i class="bi bi-collection text-body-secondary" aria-hidden="true"></i>
-                  <span class="fw-semibold">{{ g.metadata.name }}</span>
-                  @if (g.metadata.project) {
-                    <fpc-badge color="light" size="sm">{{ g.metadata.project }}</fpc-badge>
-                  }
-                  @if (g.spec.exposed) {
-                    <fpc-badge color="info" size="sm" i18n="@@lwConsolePolicies-exposed">Exposed</fpc-badge>
-                  }
-                  @if (g.spec.intraGroup === 'isolate') {
-                    <fpc-badge color="warning" size="sm" i18n="@@lwConsolePolicies-isolated">Isolated</fpc-badge>
-                  }
-                </div>
-                <div fpcListItemMeta class="small text-body-secondary d-flex flex-column gap-1">
-                  <span class="font-monospace">{{ selectorLabel(g.spec.selector) }}</span>
-                  @if (membersOf(g); as members) {
-                    <span data-testid="policies-group-members">
-                      <i class="bi bi-boxes me-1" aria-hidden="true"></i>{{ members.length }}
-                      <span i18n="@@lwConsolePolicies-members">members</span>
-                      @for (m of members.slice(0, memberPreview); track m.replica) {
-                        <span class="font-monospace ms-2"
-                          >{{ m.deployment ? m.deployment + '/' : '' }}{{ m.label }}</span
-                        >
-                      }
-                      @if (members.length > memberPreview) {
-                        <span class="ms-2">+{{ members.length - memberPreview }}</span>
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    @if (loading() && groups().length === 0 && policies().length === 0) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else {
+      <p class="small text-body-secondary px-3 py-2 mb-0 border-bottom" i18n="@@lwConsolePolicies-intro">
+        Default deny between groups, allow within a group. Policies only allow (deny exists for L7 matches) and are
+        never transitive; each one is compiled into tunnels, routes, filters and the proxy.
+      </p>
+      <fpc-panel-grid [columns]="2" fill>
+        <fpc-panel [title]="groupsTitle + ' (' + filteredGroups().length + ')'" [flush]="true">
+          @if (filteredGroups().length === 0) {
+            <fpc-empty-state icon="collection" size="sm" i18n-title="@@lwConsolePolicies-noGroups" title="No groups" />
+          } @else {
+            <fpc-list [flush]="true" data-testid="policies-groups">
+              @for (g of filteredGroups(); track (g.metadata.project ?? '') + '/' + g.metadata.name) {
+                <fpc-list-item [clickable]="true" (selected)="openGroup(g)">
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <i class="bi bi-collection text-body-secondary" aria-hidden="true"></i>
+                    <span class="fw-semibold">{{ g.metadata.name }}</span>
+                    @if (g.metadata.project) {
+                      <fpc-badge color="light" size="sm">{{ g.metadata.project }}</fpc-badge>
+                    }
+                    @if (g.spec.exposed) {
+                      <fpc-badge color="info" size="sm" i18n="@@lwConsolePolicies-exposed">Exposed</fpc-badge>
+                    }
+                    @if (g.spec.intraGroup === 'isolate') {
+                      <fpc-badge color="warning" size="sm" i18n="@@lwConsolePolicies-isolated">Isolated</fpc-badge>
+                    }
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary d-flex flex-column gap-1">
+                    <span class="font-monospace">{{ selectorLabel(g.spec.selector) }}</span>
+                    @if (membersOf(g); as members) {
+                      <span data-testid="policies-group-members">
+                        <i class="bi bi-boxes me-1" aria-hidden="true"></i>{{ members.length }}
+                        <span i18n="@@lwConsolePolicies-members">members</span>
+                        @for (m of members.slice(0, memberPreview); track m.replica) {
+                          <span class="font-monospace ms-2"
+                            >{{ m.deployment ? m.deployment + '/' : '' }}{{ m.label }}</span
+                          >
+                        }
+                        @if (members.length > memberPreview) {
+                          <span class="ms-2">+{{ members.length - memberPreview }}</span>
+                        }
+                      </span>
+                    }
+                  </div>
+                  <div fpcListItemActions>
+                    <fpc-button
+                      variant="warning"
+                      size="sm"
+                      iconOnly
+                      [ariaLabel]="editLabel"
+                      [title]="editLabel"
+                      (clicked)="editGroup(g)"
+                    >
+                      <i class="bi bi-pencil" aria-hidden="true"></i>
+                    </fpc-button>
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+        <fpc-panel [title]="policiesTitle + ' (' + filteredPolicies().length + ')'" [flush]="true">
+          @if (filteredPolicies().length === 0) {
+            <fpc-empty-state
+              icon="shield-shaded"
+              size="sm"
+              i18n-title="@@lwConsolePolicies-noPolicies"
+              title="No policies"
+            />
+          } @else {
+            <fpc-list [flush]="true" data-testid="policies-list">
+              @for (p of filteredPolicies(); track (p.metadata.project ?? '') + '/' + p.metadata.name) {
+                <fpc-list-item [clickable]="true" (selected)="openPolicy(p)">
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <i class="bi bi-shield-check text-body-secondary" aria-hidden="true"></i>
+                    <span class="fw-semibold">{{ p.metadata.name }}</span>
+                    @if (p.metadata.project) {
+                      <fpc-badge color="light" size="sm">{{ p.metadata.project }}</fpc-badge>
+                    } @else {
+                      <fpc-badge color="dark" size="sm">{{ clusterWideLabel }}</fpc-badge>
+                    }
+                    @if (p.spec.mode === 'monitor') {
+                      <fpc-badge color="warning" size="sm" i18n="@@lwConsolePolicies-monitor">Monitor</fpc-badge>
+                    }
+                    @if (p.spec.action === 'deny') {
+                      <fpc-badge color="danger" size="sm" i18n="@@lwConsolePolicies-deny">Deny</fpc-badge>
+                    }
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary d-flex flex-column gap-1">
+                    <span>{{ summary(p) }}</span>
+                    <span class="font-monospace">
+                      @for (rule of p.spec.rules; track $index) {
+                        <span class="me-3">{{ ruleLabel(rule) }}</span>
                       }
                     </span>
-                  }
-                </div>
-                <div fpcListItemActions>
-                  <fpc-button
-                    variant="outline-secondary"
-                    size="sm"
-                    iconOnly
-                    [ariaLabel]="editLabel"
-                    [title]="editLabel"
-                    (clicked)="editGroup(g)"
-                  >
-                    <i class="bi bi-pencil" aria-hidden="true"></i>
-                  </fpc-button>
-                </div>
-              </fpc-list-item>
-            }
-          </fpc-list>
-        }
-      </fpc-panel>
-    </div>
-    <div class="col-xl-6">
-      <fpc-panel [title]="policiesTitle + ' (' + filteredPolicies().length + ')'" [flush]="true">
-        @if (filteredPolicies().length === 0) {
-          <fpc-empty-state
-            icon="shield-shaded"
-            size="sm"
-            i18n-title="@@lwConsolePolicies-noPolicies"
-            title="No policies"
-          />
-        } @else {
-          <fpc-list [flush]="true" data-testid="policies-list">
-            @for (p of filteredPolicies(); track (p.metadata.project ?? '') + '/' + p.metadata.name) {
-              <fpc-list-item [clickable]="true" (selected)="openPolicy(p)">
-                <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
-                  <i class="bi bi-shield-check text-body-secondary" aria-hidden="true"></i>
-                  <span class="fw-semibold">{{ p.metadata.name }}</span>
-                  @if (p.metadata.project) {
-                    <fpc-badge color="light" size="sm">{{ p.metadata.project }}</fpc-badge>
-                  } @else {
-                    <fpc-badge color="dark" size="sm">{{ clusterWideLabel }}</fpc-badge>
-                  }
-                  @if (p.spec.mode === 'monitor') {
-                    <fpc-badge color="warning" size="sm" i18n="@@lwConsolePolicies-monitor">Monitor</fpc-badge>
-                  }
-                  @if (p.spec.action === 'deny') {
-                    <fpc-badge color="danger" size="sm" i18n="@@lwConsolePolicies-deny">Deny</fpc-badge>
-                  }
-                </div>
-                <div fpcListItemMeta class="small text-body-secondary d-flex flex-column gap-1">
-                  <span>{{ summary(p) }}</span>
-                  <span class="font-monospace">
-                    @for (rule of p.spec.rules; track $index) {
-                      <span class="me-3">{{ ruleLabel(rule) }}</span>
-                    }
-                  </span>
-                </div>
-              </fpc-list-item>
-            }
-          </fpc-list>
-        }
-      </fpc-panel>
-    </div>
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+      </fpc-panel-grid>
+    }
   </div>
-}
+</div>

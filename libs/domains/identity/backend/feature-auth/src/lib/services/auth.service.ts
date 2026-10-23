@@ -10,6 +10,9 @@ import {
 } from '@forepath/identity/backend';
 import {
   BadRequestException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   Logger,
@@ -34,6 +37,7 @@ import { DUMMY_PAT_BCRYPT_HASH, PAT_TOKEN_PREFIX } from '../constants/pat.consta
 import { TwoFactorStatusDto } from '../dto/auth/two-factor-status.dto';
 import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
+import { AdminClaimAttemptLimiter, adminClaimTokenMatches, resolveAdminClaimConfig } from '../utils/admin-claim.utils';
 import { buildTotpOtpauthUrl, createTotpSecret, verifyTotpCode } from '../utils/totp.utils';
 
 import { PersonalAccessTokenService } from './personal-access-token.service';
@@ -76,6 +80,7 @@ export interface RegisterResponse {
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly adminClaimLimiter = new AdminClaimAttemptLimiter();
 
   constructor(
     private readonly usersRepository: UsersRepository,
@@ -294,13 +299,58 @@ export class AuthService {
     };
   }
 
-  async register(email: string, password: string): Promise<RegisterResponse> {
+  /**
+   * Whether the next registration needs the one-time admin claim token (opt-in via `ADMIN_CLAIM_TOKEN_SHA256`; see
+   * `admin-claim.utils.ts`): configured and no account exists yet. Always false when the claim is not configured.
+   */
+  async isAdminClaimRequired(): Promise<boolean> {
+    if (!resolveAdminClaimConfig().configured) {
+      return false;
+    }
+
+    return (await this.usersRepository.countByTenant()) === 0;
+  }
+
+  /**
+   * Admin claim state for status endpoints: `claimConfigured` (the env is set on this instance) and `claimRequired`
+   * (configured and no account yet). A caller can only conclude "claimed" from `configured && !required` — an
+   * instance without the env says nothing about the claim.
+   */
+  async adminClaimStatus(): Promise<{ claimConfigured: boolean; claimRequired: boolean }> {
+    const claimConfigured = resolveAdminClaimConfig().configured;
+
+    return { claimConfigured, claimRequired: claimConfigured && (await this.isAdminClaimRequired()) };
+  }
+
+  /**
+   * @param adminClaimToken One-time admin claim token; only consulted for the first account and only when the claim
+   *   is configured (`ADMIN_CLAIM_TOKEN_SHA256`). Never logged. With the claim configured, registration is closed once
+   *   the first (claimed) account exists — as with `DISABLE_SIGNUP`; admins create or invite further users.
+   * @param clientKey Client identity (IP) for the failed-claim limiter.
+   */
+  async register(
+    email: string,
+    password: string,
+    adminClaimToken?: string,
+    clientKey?: string,
+  ): Promise<RegisterResponse> {
     if (process.env.DISABLE_SIGNUP === 'true') {
       throw new ServiceUnavailableException('Signup is disabled');
     }
 
     const count = await this.usersRepository.countByTenant();
     const isFirstUser = count === 0;
+
+    // Claimed clusters (opt-in via ADMIN_CLAIM_TOKEN_SHA256) have no open signup: the claim made the administrator,
+    // everyone else is added by them.
+    if (!isFirstUser && resolveAdminClaimConfig().configured) {
+      throw new ServiceUnavailableException('Signup is disabled');
+    }
+
+    if (isFirstUser) {
+      this.assertAdminClaim(adminClaimToken, clientKey ?? 'unknown');
+    }
+
     const created = await this.usersService.create(
       { email, password, role: isFirstUser ? UserRole.ADMIN : UserRole.USER },
       isFirstUser,
@@ -321,6 +371,24 @@ export class AuthService {
         'Account created. Please confirm your email before logging in. Check your inbox for the confirmation code.',
       emailConfirmed: false,
     };
+  }
+
+  private assertAdminClaim(adminClaimToken: string | undefined, clientKey: string): void {
+    const claim = resolveAdminClaimConfig();
+
+    if (!claim.configured) {
+      return;
+    }
+
+    if (this.adminClaimLimiter.isBlocked(clientKey)) {
+      throw new HttpException('Too many admin claim attempts. Try again later.', HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    if (!adminClaimTokenMatches(adminClaimToken, claim.hash)) {
+      this.adminClaimLimiter.recordFailure(clientKey);
+      this.logger.warn('Rejected the first registration: missing or invalid admin claim token');
+      throw new ForbiddenException('A valid admin claim token is required to create the first account.');
+    }
   }
 
   async confirmEmail(email: string, code: string): Promise<{ message: string }> {

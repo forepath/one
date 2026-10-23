@@ -6968,6 +6968,13 @@ components:
         password:
           type: string
           minLength: 8
+        adminClaimToken:
+          type: string
+          maxLength: 256
+          description: >-
+            One-time admin claim token. Only checked for the first account and only when the deployment sets
+            `ADMIN_CLAIM_TOKEN_SHA256` (e.g. Loadweaver Cloud); ignored otherwise. With that setting, registration is
+            closed once the first account exists (503, as with `DISABLE_SIGNUP`).
     ConfirmEmailDto:
       type: object
       required: [email, code]

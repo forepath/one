@@ -358,6 +358,22 @@
         <source>Passwords do not match.</source>
         <target>Passwörter stimmen nicht überein.</target>
       </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenLabel" datatype="html">
+        <source>Admin claim token</source>
+        <target>Admin-Claim-Token</target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenPlaceholder" datatype="html">
+        <source>Paste the admin claim token</source>
+        <target>Admin-Claim-Token einfügen</target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenHint" datatype="html">
+        <source> This installation has no account yet. The first account becomes the administrator and needs the one-time admin claim token from your provider (for Loadweaver Cloud: the Cluster tab of your service). </source>
+        <target> Diese Installation hat noch kein Konto. Das erste Konto wird Administrator und benötigt das einmalige Admin-Claim-Token Ihres Anbieters (bei Loadweaver Cloud: der Tab „Cluster“ Ihres Service). </target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenRequired" datatype="html">
+        <source> The admin claim token is required. </source>
+        <target> Das Admin-Claim-Token ist erforderlich. </target>
+      </trans-unit>
       <trans-unit id="featureRegister-legalHintPrefix" datatype="html">
         <source>By registering, you acknowledge our</source>
         <target>Mit Ihrer Registrierung erkennen Sie unsere</target>
@@ -853,8 +869,8 @@
       <trans-unit id="featureTokenManager-revokeConfirm" datatype="html">
         <source> Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
       &gt;"/>? </source>
-        <target>Möchten Sie das Token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-      &gt;"/> wirklich widerrufen?</target>
+        <target> Möchten Sie das Token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/> wirklich widerrufen? </target>
       </trans-unit>
       <trans-unit id="featureTokenManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -983,8 +999,8 @@
       <trans-unit id="featureUserManager-deleteUserConfirm" datatype="html">
         <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
       &gt;"/>? </source>
-        <target>Möchten Sie den Benutzer <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-      &gt;"/> wirklich löschen?</target>
+        <target> Möchten Sie den Benutzer <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/> wirklich löschen? </target>
       </trans-unit>
       <trans-unit id="featureUserManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -1204,6 +1220,18 @@
         <source>Cancel</source>
         <target>Abbrechen</target>
       </trans-unit>
+      <trans-unit id="lwConsoleAccess-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleAccess-addClusterMember" datatype="html">
+        <source>Grant a cluster role</source>
+        <target>Cluster-Rolle vergeben</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleAccess-addMember" datatype="html">
+        <source>Add member</source>
+        <target>Mitglied hinzufügen</target>
+      </trans-unit>
       <trans-unit id="lwConsoleAccess-imported" datatype="html">
         <source>changes imported</source>
         <target>Änderungen importiert</target>
@@ -1295,6 +1323,66 @@
       <trans-unit id="lwConsoleAccess-requestOpenPlan" datatype="html">
         <source>Open plan</source>
         <target>Plan öffnen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleContainer-updatesAttention" datatype="html">
+        <source>Updates need attention</source>
+        <target>Updates erfordern Aufmerksamkeit</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-adminUpdates" datatype="html">
+        <source>Updates</source>
+        <target>Updates</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-adminUpdatesTitle" datatype="html">
+        <source>Release announcements</source>
+        <target>Release-Ankündigungen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupAccess" datatype="html">
+        <source>Access &amp; audit</source>
+        <target>Zugriff &amp; Audit</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupAccessTitle" datatype="html">
+        <source>Access, devices and audit</source>
+        <target>Zugriff, Geräte und Audit</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupAccount" datatype="html">
+        <source>Account</source>
+        <target>Konto</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupAccountTitle" datatype="html">
+        <source>Your account: tokens and linked Git accounts</source>
+        <target>Ihr Konto: Tokens und verknüpfte Git-Konten</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupCluster" datatype="html">
+        <source>Cluster</source>
+        <target>Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupClusterTitle" datatype="html">
+        <source>Cluster: nodes, DNS, certificates and updates</source>
+        <target>Cluster: Nodes, DNS, Zertifikate und Updates</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupDeploy" datatype="html">
+        <source>Deploy</source>
+        <target>Deployment</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupDeployTitle" datatype="html">
+        <source>Deploy: Git, resources, policies and plans</source>
+        <target>Deployment: Git, Ressourcen, Policies und Pläne</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupObserve" datatype="html">
+        <source>Observe</source>
+        <target>Beobachten</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupObserveTitle" datatype="html">
+        <source>Observe: health, alerts, logs and metrics</source>
+        <target>Beobachten: Zustand, Alerts, Logs und Metriken</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupOperate" datatype="html">
+        <source>Operate</source>
+        <target>Betrieb</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupOperateTitle" datatype="html">
+        <source>Operate: terminals, files, sessions and backups</source>
+        <target>Betrieb: Terminals, Dateien, Sitzungen und Backups</target>
       </trans-unit>
       <trans-unit id="lwConsoleProjectRequests-access" datatype="html">
         <source>Project access</source>
@@ -1508,6 +1596,14 @@
         <source>End</source>
         <target>Beenden</target>
       </trans-unit>
+      <trans-unit id="lwConsoleAlerts-exportCsv" datatype="html">
+        <source>Export CSV</source>
+        <target>Als CSV exportieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleAlerts-exportJson" datatype="html">
+        <source>Export JSON</source>
+        <target>Als JSON exportieren</target>
+      </trans-unit>
       <trans-unit id="lwConsoleAlerts-title" datatype="html">
         <source>Alerts</source>
         <target>Alerts</target>
@@ -1555,6 +1651,10 @@
       <trans-unit id="lwConsoleAlerts-keep" datatype="html">
         <source>Keep</source>
         <target>Beibehalten</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleAlerts-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
       </trans-unit>
       <trans-unit id="lwConsoleAlerts-filterOpen" datatype="html">
         <source>Open (firing and pending)</source>
@@ -1659,6 +1759,22 @@
       <trans-unit id="lwConsoleAudit-page" datatype="html">
         <source>Page</source>
         <target>Seite</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleAudit-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleAudit-actionLabel" datatype="html">
+        <source>Action</source>
+        <target>Aktion</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleAudit-exportCsv" datatype="html">
+        <source>Export CSV</source>
+        <target>Als CSV exportieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleAudit-exportNdjson" datatype="html">
+        <source>Export NDJSON</source>
+        <target>Als NDJSON exportieren</target>
       </trans-unit>
       <trans-unit id="lwConsoleAudit-title" datatype="html">
         <source>Audit log</source>
@@ -2301,7 +2417,7 @@
         <target>Delegiert</target>
       </trans-unit>
       <trans-unit id="lwConsoleDrift-delegatedHint" datatype="html">
-        <source> Started by a workload that controls the node's Docker (an acknowledged pin), for example Agenstra's agent manager and its environments. Owned by that workload, not drift. </source>
+        <source> Started by a workload that controls the node&apos;s Docker (an acknowledged pin), for example Agenstra&apos;s agent manager and its environments. Owned by that workload, not drift. </source>
         <target> Von einem Workload gestartet, der das Docker des Nodes steuert (ein bestätigter Pin), zum Beispiel Agenstras Agent-Manager und seine Umgebungen. Gehört diesem Workload, kein Drift. </target>
       </trans-unit>
       <trans-unit id="lwConsoleDrift-propose" datatype="html">
@@ -2352,14 +2468,6 @@
         <source>Propose a plan</source>
         <target>Plan vorschlagen</target>
       </trans-unit>
-      <trans-unit id="lwConsoleFiles-newDirectory" datatype="html">
-        <source>Folder</source>
-        <target>Ordner</target>
-      </trans-unit>
-      <trans-unit id="lwConsoleFiles-newFile" datatype="html">
-        <source>File</source>
-        <target>Datei</target>
-      </trans-unit>
       <trans-unit id="lwConsoleFiles-chooseTarget" datatype="html">
         <source>Choose a replica or a volume</source>
         <target>Replikat oder Volume auswählen</target>
@@ -2373,8 +2481,12 @@
         <target> Dies ist das eigene Dateisystem des Containers: Änderungen gehen verloren, wenn das Replikat neu startet oder verschoben wird. Verwenden Sie ein Volume für alles, was erhalten bleiben muss. </target>
       </trans-unit>
       <trans-unit id="lwConsoleFiles-clearUploads" datatype="html">
-        <source> Clear </source>
-        <target> Leeren </target>
+        <source>Clear</source>
+        <target>Leeren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFiles-type" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
       </trans-unit>
       <trans-unit id="lwConsoleFiles-empty" datatype="html">
         <source>Choose a replica or a volume</source>
@@ -2412,6 +2524,10 @@
         <source>Close preview</source>
         <target>Vorschau schließen</target>
       </trans-unit>
+      <trans-unit id="lwConsoleFiles-uploads" datatype="html">
+        <source>Uploads</source>
+        <target>Uploads</target>
+      </trans-unit>
       <trans-unit id="lwConsoleFiles-partial" datatype="html">
         <source>Only the first 512 KiB are shown. Download the file for all of it.</source>
         <target>Nur die ersten 512 KiB werden angezeigt. Laden Sie die Datei herunter, um alles zu sehen.</target>
@@ -2425,12 +2541,12 @@
         <target>Laden Sie sie herunter, um den Inhalt anzusehen.</target>
       </trans-unit>
       <trans-unit id="lwConsoleFiles-typeDirectory" datatype="html">
-        <source> Folder </source>
-        <target> Ordner </target>
+        <source>Folder</source>
+        <target>Ordner</target>
       </trans-unit>
       <trans-unit id="lwConsoleFiles-typeFile" datatype="html">
-        <source> Empty file </source>
-        <target> Leere Datei </target>
+        <source>Empty file</source>
+        <target>Leere Datei</target>
       </trans-unit>
       <trans-unit id="lwConsoleFiles-name" datatype="html">
         <source>Name in <x id="INTERPOLATION" equiv-text="{{ path() }}"/></source>
@@ -2503,6 +2619,14 @@
       <trans-unit id="lwConsoleFiles-deleteTitle" datatype="html">
         <source>Delete this entry?</source>
         <target>Diesen Eintrag löschen?</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFiles-newDirectoryAction" datatype="html">
+        <source>New folder</source>
+        <target>Neuer Ordner</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFiles-newFileAction" datatype="html">
+        <source>New file</source>
+        <target>Neue Datei</target>
       </trans-unit>
       <trans-unit id="lwConsoleFiles-copyTitle" datatype="html">
         <source>Copy to</source>
@@ -2659,6 +2783,10 @@
       <trans-unit id="lwConsoleHealth-refresh" datatype="html">
         <source>Refresh</source>
         <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleHealth-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
       </trans-unit>
       <trans-unit id="lwConsoleHealthTree-since" datatype="html">
         <source>since</source>
@@ -2900,6 +3028,22 @@
         <source>Page</source>
         <target>Seite</target>
       </trans-unit>
+      <trans-unit id="lwConsoleLogs-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleLogs-reset" datatype="html">
+        <source>Reset</source>
+        <target>Zurücksetzen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleLogs-exportCsv" datatype="html">
+        <source>Export CSV</source>
+        <target>Als CSV exportieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleLogs-exportNdjson" datatype="html">
+        <source>Export NDJSON</source>
+        <target>Als NDJSON exportieren</target>
+      </trans-unit>
       <trans-unit id="lwConsoleLogs-search" datatype="html">
         <source>Search</source>
         <target>Suche</target>
@@ -3111,6 +3255,10 @@
       <trans-unit id="lwConsoleMetrics-dashboard" datatype="html">
         <source>Dashboard</source>
         <target>Dashboard</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleMetrics-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
       </trans-unit>
       <trans-unit id="lwConsoleMetrics-byEntity" datatype="html">
         <source>Per entity</source>
@@ -3448,13 +3596,13 @@
         <source>Refresh</source>
         <target>Aktualisieren</target>
       </trans-unit>
-      <trans-unit id="lwConsoleNodes-cluster" datatype="html">
-        <source>Cluster</source>
-        <target>Cluster</target>
-      </trans-unit>
       <trans-unit id="lwConsoleNodes-tokens" datatype="html">
         <source>Join tokens</source>
         <target>Beitritts-Tokens</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNodes-nodesTitle" datatype="html">
+        <source>Nodes</source>
+        <target>Nodes</target>
       </trans-unit>
       <trans-unit id="lwConsoleNodes-joinTitle" datatype="html">
         <source>Add a node</source>
@@ -3543,6 +3691,10 @@
       <trans-unit id="lwConsoleOverview-allProjects" datatype="html">
         <source>Whole cluster</source>
         <target>Gesamter Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleOverview-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
       </trans-unit>
       <trans-unit id="lwConsolePlanDetail-approve" datatype="html">
         <source>Approve</source>
@@ -3661,8 +3813,8 @@
         <target>Der Verlust einer Node kann Replikate ohne Kapazität zurücklassen.</target>
       </trans-unit>
       <trans-unit id="lwConsolePlanDetail-noSpof" datatype="html">
-        <source>No single points of failure.</source>
-        <target>Keine Single Points of Failure.</target>
+        <source> No single points of failure. </source>
+        <target> Keine Single Points of Failure. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlanDetail-noAnalysis" datatype="html">
         <source> The plan doesn&apos;t change workloads. </source>
@@ -3673,8 +3825,8 @@
         <target>Fixierte Images und Secret-Versionen</target>
       </trans-unit>
       <trans-unit id="lwConsolePlanDetail-noPins" datatype="html">
-        <source>No deployment states pinned.</source>
-        <target>Keine Deployment-Zustände fixiert.</target>
+        <source> No deployment states pinned. </source>
+        <target> Keine Deployment-Zustände fixiert. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlanDetail-pinsHeading" datatype="html">
         <source>Unacknowledged pins: apply has to confirm them</source>
@@ -3920,6 +4072,10 @@
         <source>Project</source>
         <target>Projekt</target>
       </trans-unit>
+      <trans-unit id="lwConsolePlans-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
       <trans-unit id="lwConsolePolicies-allProjects" datatype="html">
         <source>All projects</source>
         <target>Alle Projekte</target>
@@ -3935,6 +4091,10 @@
       <trans-unit id="lwConsolePolicies-newPolicy" datatype="html">
         <source>New policy</source>
         <target>Neue Policy</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePolicies-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
       </trans-unit>
       <trans-unit id="lwConsolePolicies-intro" datatype="html">
         <source> Default deny between groups, allow within a group. Policies only allow (deny exists for L7 matches) and are never transitive; each one is compiled into tunnels, routes, filters and the proxy. </source>
@@ -4137,8 +4297,8 @@
         <target>Bericht erstellen</target>
       </trans-unit>
       <trans-unit id="lwConsoleReports-runHint" datatype="html">
-        <source>Replaces the files of a report that already exists.</source>
-        <target>Ersetzt die Dateien eines bereits vorhandenen Berichts.</target>
+        <source> Replaces the files of a report that already exists. </source>
+        <target> Ersetzt die Dateien eines bereits vorhandenen Berichts. </target>
       </trans-unit>
       <trans-unit id="lwConsoleReports-empty" datatype="html">
         <source>No reports yet</source>
@@ -4199,6 +4359,10 @@
       <trans-unit id="lwConsoleReports-queued" datatype="html">
         <source>The report is queued; it shows up below when it runs.</source>
         <target>Der Bericht ist in der Warteschlange; er erscheint unten, sobald er läuft.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleReports-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
       </trans-unit>
       <trans-unit id="lwConsoleReports-popupBlocked" datatype="html">
         <source>The browser blocked the new tab.</source>
@@ -4351,6 +4515,10 @@
       <trans-unit id="lwConsoleResources-new" datatype="html">
         <source>New resource</source>
         <target>Neue Ressource</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleResources-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
       </trans-unit>
       <trans-unit id="lwConsoleResources-empty" datatype="html">
         <source>No resources</source>
@@ -4516,6 +4684,10 @@
         <source>Project</source>
         <target>Projekt</target>
       </trans-unit>
+      <trans-unit id="lwConsoleSessions-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
       <trans-unit id="lwConsoleSessions-allProjects" datatype="html">
         <source>All projects</source>
         <target>Alle Projekte</target>
@@ -4624,6 +4796,10 @@
         <source>TTL (seconds)</source>
         <target>TTL (Sekunden)</target>
       </trans-unit>
+      <trans-unit id="lwConsoleSessions-close" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
+      </trans-unit>
       <trans-unit id="lwConsoleSessions-refresh" datatype="html">
         <source>Refresh</source>
         <target>Aktualisieren</target>
@@ -4647,27 +4823,27 @@
       <trans-unit id="lwConsoleGitAccounts-confirmHeading" datatype="html">
         <source>Confirm the link</source>
         <target>Verknüpfung bestätigen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitAccounts-confirmQuestion" datatype="html">
         <source>Link <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;fw-semibold&quot;&gt;"/><x id="INTERPOLATION" equiv-text="{{ p.login }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> on <x id="INTERPOLATION_1" equiv-text="{{ providerLabel(p.provider) }}"/> to your account?</source>
         <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;fw-semibold&quot;&gt;"/><x id="INTERPOLATION" equiv-text="{{ p.login }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> auf <x id="INTERPOLATION_1" equiv-text="{{ providerLabel(p.provider) }}"/> mit Ihrem Konto verknüpfen?</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitAccounts-confirmHint" datatype="html">
         <source> Plan bot commands from this Git account will run with your roles. Only confirm if you just started linking this account yourself. </source>
         <target> Befehle des Plan-Bots von diesem Git-Konto laufen mit Ihren Rollen. Bestätigen Sie nur, wenn Sie die Verknüpfung dieses Kontos gerade selbst gestartet haben. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitAccounts-confirmLink" datatype="html">
         <source>Link account</source>
         <target>Konto verknüpfen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitAccounts-confirmCancel" datatype="html">
         <source>Cancel</source>
         <target>Abbrechen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitAccounts-confirmed" datatype="html">
         <source><x id="INTERPOLATION" equiv-text="{{ account.login }}"/> on <x id="INTERPOLATION_1" equiv-text="{{ providerLabel(account.provider) }}"/> is linked to your account.</source>
         <target><x id="INTERPOLATION" equiv-text="{{ account.login }}"/> auf <x id="INTERPOLATION_1" equiv-text="{{ providerLabel(account.provider) }}"/> ist mit Ihrem Konto verknüpft.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleSlos-stateOk" datatype="html">
         <source>OK</source>
         <target>OK</target>
@@ -4760,6 +4936,10 @@
         <source>State</source>
         <target>Zustand</target>
       </trans-unit>
+      <trans-unit id="lwConsoleSlos-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
       <trans-unit id="lwConsoleSlos-budgetUsed" datatype="html">
         <source>Error budget used</source>
         <target>Verbrauchtes Fehlerbudget</target>
@@ -4769,8 +4949,8 @@
         <target>Titel</target>
       </trans-unit>
       <trans-unit id="lwConsoleIncident-titleHint" datatype="html">
-        <source> Shown publicly on every status page of <x id="INTERPOLATION" equiv-text="{{ project() }}"/>. </source>
-        <target> Wird öffentlich auf jeder Statusseite von <x id="INTERPOLATION" equiv-text="{{ project() }}"/> angezeigt. </target>
+        <source>Shown publicly on every status page of <x id="INTERPOLATION" equiv-text="{{ project() }}"/>.</source>
+        <target>Wird öffentlich auf jeder Statusseite von <x id="INTERPOLATION" equiv-text="{{ project() }}"/> angezeigt.</target>
       </trans-unit>
       <trans-unit id="lwConsoleIncident-status" datatype="html">
         <source>Status</source>
@@ -4825,8 +5005,8 @@
         <target>Behoben</target>
       </trans-unit>
       <trans-unit id="lwConsoleStatusPages-pagesHint" datatype="html">
-        <source>Status pages are project resources: change them through a plan.</source>
-        <target>Statusseiten sind Projektressourcen: Ändern Sie sie über einen Plan.</target>
+        <source> Status pages are project resources: change them through a plan. </source>
+        <target> Statusseiten sind Projektressourcen: Ändern Sie sie über einen Plan. </target>
       </trans-unit>
       <trans-unit id="lwConsoleStatusPages-newPage" datatype="html">
         <source>New status page</source>
@@ -4892,6 +5072,10 @@
         <source>Project</source>
         <target>Projekt</target>
       </trans-unit>
+      <trans-unit id="lwConsoleStatusPages-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
       <trans-unit id="lwConsoleTerminals-running" datatype="html">
         <source>running</source>
         <target>läuft</target>
@@ -4945,8 +5129,8 @@
         <target>(Node-Shells erfordern die Rolle Cluster-Admin und nodeShellEnabled)</target>
       </trans-unit>
       <trans-unit id="lwConsoleTerminals-retry" datatype="html">
-        <source> Retry </source>
-        <target> Erneut versuchen </target>
+        <source>Retry</source>
+        <target>Erneut versuchen</target>
       </trans-unit>
       <trans-unit id="lwConsoleTerminals-ended" datatype="html">
         <source>Session ended</source>
@@ -4957,8 +5141,8 @@
         <target>Exit-Code</target>
       </trans-unit>
       <trans-unit id="lwConsoleTerminals-reconnect" datatype="html">
-        <source> Open again </source>
-        <target> Erneut öffnen </target>
+        <source>Open again</source>
+        <target>Erneut öffnen</target>
       </trans-unit>
       <trans-unit id="lwConsoleTerminals-open" datatype="html">
         <source>Open terminal</source>
@@ -5100,10 +5284,6 @@
         <source>denied</source>
         <target>abgelehnt</target>
       </trans-unit>
-      <trans-unit id="lwConsoleTopology-traceButton" datatype="html">
-        <source>Trace</source>
-        <target>Verfolgen</target>
-      </trans-unit>
       <trans-unit id="lwConsoleTopology-empty" datatype="html">
         <source>Nothing on the map yet</source>
         <target>Noch nichts auf der Karte</target>
@@ -5179,6 +5359,10 @@
       <trans-unit id="lwConsoleTopology-close" datatype="html">
         <source>Close</source>
         <target>Schließen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleTopology-filters" datatype="html">
+        <source>Layers and time</source>
+        <target>Ebenen und Zeit</target>
       </trans-unit>
       <trans-unit id="lwConsoleKiosk-noTokenTitle" datatype="html">
         <source>No wallboard token</source>
@@ -5468,6 +5652,18 @@
         <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
         <target>Decabill, Billing, Abonnements, Zahlungsabwicklung, Rechnungsstellung, Stripe, Billing-API, Billing-Konsole, Mandantenfähiges Billing</target>
       </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackLoadweaver" datatype="html">
+        <source>Official Loadweaver documentation: install, deploy, secure, and operate resilient multi-site clusters, the encrypted network between sites, storage, ingress, policies, and the cluster console.</source>
+        <target>Offizielle Loadweaver-Dokumentation: Installation, Deployment, Sicherheit und Betrieb ausfallsicherer Multi-Site-Cluster, des verschlüsselten Netzwerks zwischen Standorten, von Storage, Ingress, Policies und der Cluster-Konsole.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsLoadweaver" datatype="html">
+        <source>Loadweaver, cluster, multi-site, WireGuard, BGP, network policies, replicated storage, ingress failover, self-hosted, control plane</source>
+        <target>Loadweaver, Cluster, Multi-Site, WireGuard, BGP, Netzwerk-Policies, replizierter Storage, Ingress-Failover, Self-Hosted, Control Plane</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionLoadweaver" datatype="html">
+        <source>Search Loadweaver docs for setup guides, API references, security hardening, network and policy configuration, deployment patterns, and troubleshooting.</source>
+        <target>Durchsuchen Sie die Loadweaver-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Netzwerk- und Policy-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
+      </trans-unit>
       <trans-unit id="featureDocsPage-metaKeywords" datatype="html">
         <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
         <target>Agenstra, KI-Agents, Agent-Verwaltung, verteilte Systeme, KI-Agent-Infrastruktur, Agent-Plattform, KI-Agent-Konsole, Container-Verwaltung, WebSocket-Agents, Docker-Agents</target>
@@ -5710,7 +5906,7 @@
       </trans-unit>
       <trans-unit id="featureNotifications-signingSecretHint" datatype="html">
         <source> Copy this signing secret now. It will not be shown again. </source>
-        <target>Kopieren Sie diesen Signaturgeheimnis-Schlüssel jetzt. Er wird nicht erneut angezeigt.</target>
+        <target> Kopieren Sie diesen Signaturgeheimnis-Schlüssel jetzt. Er wird nicht erneut angezeigt. </target>
       </trans-unit>
       <trans-unit id="featureNotifications-done" datatype="html">
         <source>Done</source>
@@ -5758,15 +5954,15 @@
       </trans-unit>
       <trans-unit id="featureNotifications-authAuthorization" datatype="html">
         <source> Authorization header </source>
-        <target>Authorization-Header</target>
+        <target> Authorization-Header </target>
       </trans-unit>
       <trans-unit id="featureNotifications-authCustomHeader" datatype="html">
         <source> Custom header </source>
-        <target>Eigener Header</target>
+        <target> Eigener Header </target>
       </trans-unit>
       <trans-unit id="featureNotifications-authQueryParam" datatype="html">
         <source> Query parameter </source>
-        <target>Query-Parameter</target>
+        <target> Query-Parameter </target>
       </trans-unit>
       <trans-unit id="featureNotifications-enabledLabel" datatype="html">
         <source>Enabled</source>
@@ -5868,7 +6064,7 @@
       </trans-unit>
       <trans-unit id="featureNotifications-moreDeliveries" datatype="html">
         <source> More deliveries exist than shown. </source>
-        <target>Es gibt mehr Zustellungen als angezeigt.</target>
+        <target> Es gibt mehr Zustellungen als angezeigt. </target>
       </trans-unit>
       <trans-unit id="featureNotifications-totalDeliveries" datatype="html">
         <source>total deliveries</source>
@@ -6319,8 +6515,8 @@
         <target>Bereich</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-noScopes" datatype="html">
-        <source> Every scope you administer is connected already. </source>
-        <target> Alle Bereiche, die Sie verwalten, sind bereits verbunden. </target>
+        <source>Every scope you administer is connected already.</source>
+        <target>Alle Bereiche, die Sie verwalten, sind bereits verbunden.</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-provider" datatype="html">
         <source>Provider</source>
@@ -6331,8 +6527,8 @@
         <target>Repository-URL</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-repoUrlInvalid" datatype="html">
-        <source> Only https://… or SSH (ssh://user@host/path, user@host:path) without credentials, query or fragment. </source>
-        <target> Nur https://… oder SSH (ssh://user@host/path, user@host:path) ohne Zugangsdaten, Query oder Fragment. </target>
+        <source>Only https://… or SSH (ssh://user@host/path, user@host:path) without credentials, query or fragment.</source>
+        <target>Nur https://… oder SSH (ssh://user@host/path, user@host:path) ohne Zugangsdaten, Query oder Fragment.</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-branch" datatype="html">
         <source>Branch</source>
@@ -6347,8 +6543,8 @@
         <target>Pfad im Repository (leer: Wurzelverzeichnis)</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-pathInvalid" datatype="html">
-        <source> A relative directory without .. or .git. </source>
-        <target> Ein relatives Verzeichnis ohne .. oder .git. </target>
+        <source>A relative directory without .. or .git.</source>
+        <target>Ein relatives Verzeichnis ohne .. oder .git.</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-mode" datatype="html">
         <source>Mode</source>
@@ -6359,12 +6555,12 @@
         <target>Zugangsdaten (Secret-Referenz)</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-credentialsHint" datatype="html">
-        <source> A secret holding a token (HTTPS), an SSH private key (deploy key), or JSON with token, sshPrivateKey and username. Never the value itself. </source>
-        <target> Ein Secret mit einem Token (HTTPS), einem privaten SSH-Schlüssel (Deploy Key) oder JSON mit token, sshPrivateKey und username. Niemals der Wert selbst. </target>
+        <source>A secret holding a token (HTTPS), an SSH private key (deploy key), or JSON with token, sshPrivateKey and username. Never the value itself.</source>
+        <target>Ein Secret mit einem Token (HTTPS), einem privaten SSH-Schlüssel (Deploy Key) oder JSON mit token, sshPrivateKey und username. Niemals der Wert selbst.</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-credentialsInvalid" datatype="html">
-        <source> Use secret://project/name. SSH repositories need one, and a project&apos;s connection only its own project&apos;s secrets. </source>
-        <target> Verwenden Sie secret://projekt/name. SSH-Repositorys benötigen eines, und die Verbindung eines Projekts nur Secrets dieses Projekts. </target>
+        <source>Use secret://project/name. SSH repositories need one, and a project&apos;s connection only its own project&apos;s secrets.</source>
+        <target>Verwenden Sie secret://projekt/name. SSH-Repositorys benötigen eines, und die Verbindung eines Projekts nur Secrets dieses Projekts.</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-trigger" datatype="html">
         <source>Trigger</source>
@@ -6387,8 +6583,8 @@
         <target>Sekunden</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-triggerInvalid" datatype="html">
-        <source> Enable webhooks or polling (every 10 to 86,400 seconds), otherwise nothing is synced. </source>
-        <target> Aktivieren Sie Webhooks oder Abfragen (alle 10 bis 86.400 Sekunden), sonst wird nichts synchronisiert. </target>
+        <source>Enable webhooks or polling (every 10 to 86,400 seconds), otherwise nothing is synced.</source>
+        <target>Aktivieren Sie Webhooks oder Abfragen (alle 10 bis 86.400 Sekunden), sonst wird nichts synchronisiert.</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-options" datatype="html">
         <source>Options</source>
@@ -6417,15 +6613,15 @@
       <trans-unit id="lwConsoleGitConnection-githubApp" datatype="html">
         <source>Use the cluster&apos;s GitHub App</source>
         <target>GitHub App des Clusters verwenden</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitConnection-githubAppHint" datatype="html">
         <source> Only cluster admins may enable it. It applies to GitHub connections without their own token, and the connection&apos;s API URL must be the cluster&apos;s GitHub API (Cluster.spec.git.github.apiUrl). A change of the repository, API URL or provider turns it off unless a cluster admin makes it. </source>
         <target> Nur Cluster-Admins dürfen dies aktivieren. Es gilt für GitHub-Verbindungen ohne eigenes Token, und die API-URL der Verbindung muss die GitHub-API des Clusters sein (Cluster.spec.git.github.apiUrl). Eine Änderung des Repositorys, der API-URL oder des Anbieters schaltet es ab, außer ein Cluster-Admin nimmt sie vor. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitConnection-githubAppReset" datatype="html">
         <source> This change turns the GitHub App off for the connection; only a cluster admin can enable it again. </source>
         <target> Diese Änderung schaltet die GitHub App für die Verbindung ab; nur ein Cluster-Admin kann sie wieder aktivieren. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitConnection-advanced" datatype="html">
         <source>Self-hosted provider and private CA</source>
         <target>Selbst gehosteter Anbieter und private CA</target>
@@ -6435,16 +6631,16 @@
         <target>API-URL des Anbieters (leer: aus dem Repository-Host abgeleitet)</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-apiUrlInvalid" datatype="html">
-        <source> An https:// URL without credentials, query or fragment (plain Git has no API). </source>
-        <target> Eine https://-URL ohne Zugangsdaten, Query oder Fragment (Plain Git hat keine API). </target>
+        <source>An https:// URL without credentials, query or fragment (plain Git has no API).</source>
+        <target>Eine https://-URL ohne Zugangsdaten, Query oder Fragment (Plain Git hat keine API).</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-ca" datatype="html">
         <source>CA certificate (PEM, for a Git host behind a private CA)</source>
         <target>CA-Zertifikat (PEM, für einen Git-Host hinter einer privaten CA)</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-caInvalid" datatype="html">
-        <source> PEM certificates only, never a private key. </source>
-        <target> Nur PEM-Zertifikate, niemals ein privater Schlüssel. </target>
+        <source>PEM certificates only, never a private key.</source>
+        <target>Nur PEM-Zertifikate, niemals ein privater Schlüssel.</target>
       </trans-unit>
       <trans-unit id="lwConsoleGitConnection-resyncHint" datatype="html">
         <source>Another repository, branch or path is another history: the next sync starts from scratch (another host also pins its SSH host key anew).</source>
@@ -6697,11 +6893,11 @@
       <trans-unit id="lwConsoleGit-exportSkipped" datatype="html">
         <source>Not exported: resources from SOPS-encrypted files</source>
         <target>Nicht exportiert: Ressourcen aus SOPS-verschlüsselten Dateien</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGit-exportSkippedHint" datatype="html">
         <source> They would be written in clear, so the export left them out. Keep them encrypted in the repository yourself. </source>
         <target> Sie würden im Klartext geschrieben, daher hat der Export sie ausgelassen. Halten Sie sie selbst verschlüsselt im Repository. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGit-resetDone" datatype="html">
         <source>The SSH host key was reset; the next contact pins the server&apos;s key.</source>
         <target>Der SSH-Host-Key wurde zurückgesetzt; der nächste Kontakt fixiert den Schlüssel des Servers.</target>
@@ -6757,7 +6953,7 @@
       <trans-unit id="lwConsoleGit-optGithubApp" datatype="html">
         <source>Cluster GitHub App</source>
         <target>GitHub App des Clusters</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGit-optCa" datatype="html">
         <source>Private CA</source>
         <target>Private CA</target>
@@ -6789,11 +6985,11 @@
       <trans-unit id="lwConsoleGit-rotatedHeading" datatype="html">
         <source>New webhook secret: update the provider now</source>
         <target>Neues Webhook-Secret: Aktualisieren Sie jetzt den Anbieter</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGit-rotatedMessage" datatype="html">
         <source>The previous secret no longer works. Copy this one into the provider&apos;s webhook settings; it is shown only now. The rotation was recorded in the audit log.</source>
         <target>Das bisherige Secret funktioniert nicht mehr. Kopieren Sie dieses in die Webhook-Einstellungen des Anbieters; es wird nur jetzt angezeigt. Die Rotation wurde im Audit-Log protokolliert.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGit-secretWarning" datatype="html">
         <source>Sensitive: keep it in the provider&apos;s webhook settings only. This read was recorded in the audit log.</source>
         <target>Vertraulich: Bewahren Sie es nur in den Webhook-Einstellungen des Anbieters auf. Dieser Lesezugriff wurde im Audit-Log protokolliert.</target>
@@ -6813,11 +7009,11 @@
       <trans-unit id="lwConsoleGit-rotateSecret" datatype="html">
         <source>Rotate webhook secret</source>
         <target>Webhook-Secret rotieren</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGit-webhookGeneration" datatype="html">
         <source>Secret rotations so far: <x id="INTERPOLATION" equiv-text="{{ c.webhookGeneration }}"/></source>
         <target>Bisherige Rotationen des Secrets: <x id="INTERPOLATION" equiv-text="{{ c.webhookGeneration }}"/></target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGit-webhookOff" datatype="html">
         <source> Webhooks are off for this connection; the branch is polled. </source>
         <target> Webhooks sind für diese Verbindung ausgeschaltet; der Branch wird abgefragt. </target>
@@ -6965,15 +7161,15 @@
       <trans-unit id="lwConsoleGit-rotateTitle" datatype="html">
         <source>Rotate the webhook secret?</source>
         <target>Webhook-Secret rotieren?</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGit-rotateMessage" datatype="html">
         <source>The current secret stops working immediately: update the webhook secret at the provider afterwards, deliveries signed with the old one are refused until then. The new secret is shown once; rotating is recorded in the audit log.</source>
         <target>Das aktuelle Secret funktioniert sofort nicht mehr: Aktualisieren Sie anschließend das Webhook-Secret beim Anbieter, bis dahin werden mit dem alten Secret signierte Zustellungen abgelehnt. Das neue Secret wird einmal angezeigt; das Rotieren wird im Audit-Log protokolliert.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGit-rotateConfirm" datatype="html">
         <source>Rotate secret</source>
         <target>Secret rotieren</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGit-keep" datatype="html">
         <source>Cancel</source>
         <target>Abbrechen</target>
@@ -7005,11 +7201,11 @@
       <trans-unit id="lwConsoleGitPlan-prOpening" datatype="html">
         <source>Pull request is being opened…</source>
         <target>Der Pull Request wird geöffnet…</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitPlan-prOpeningSlow" datatype="html">
         <source>This takes longer than usual; reload the page later.</source>
         <target>Das dauert länger als üblich; laden Sie die Seite später neu.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitPlan-prFailed" datatype="html">
         <source>The pull request couldn&apos;t be opened:</source>
         <target>Der Pull Request konnte nicht geöffnet werden:</target>
@@ -7045,7 +7241,7 @@
       <trans-unit id="lwConsoleGitPlanSource-supersededBadge" datatype="html">
         <source>superseded</source>
         <target>ersetzt</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitPlanSource-commit" datatype="html">
         <source>Commit</source>
         <target>Commit</target>
@@ -7061,11 +7257,11 @@
       <trans-unit id="lwConsoleGitPlanSource-prLink" datatype="html">
         <source>Pull request</source>
         <target>Pull Request</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitPlanSource-limited" datatype="html">
         <source>limited to <x id="INTERPOLATION" equiv-text="{{ s.limited }}"/></source>
         <target>beschränkt auf <x id="INTERPOLATION" equiv-text="{{ s.limited }}"/></target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitPlanSource-connection" datatype="html">
         <source>Git connection</source>
         <target>Git-Verbindung</target>
@@ -7073,15 +7269,15 @@
       <trans-unit id="lwConsoleGitPlanSource-supersedes" datatype="html">
         <source>Supersedes plan</source>
         <target>Ersetzt Plan</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitPlanSource-supersededBy" datatype="html">
         <source>Superseded by plan</source>
         <target>Ersetzt durch Plan</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitPlanSource-authors" datatype="html">
         <source>The change&apos;s authors can&apos;t approve it:</source>
         <target>Die Autoren der Änderung können sie nicht freigeben:</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleGitEditor-planPr" datatype="html">
         <source>Plan and open pull request</source>
         <target>Planen und Pull Request öffnen</target>
@@ -7173,7 +7369,7 @@
       <trans-unit id="lwConsoleGitAccounts-confirmExpired" datatype="html">
         <source>The link request expired or is unknown. Start linking again.</source>
         <target>Die Verknüpfungsanfrage ist abgelaufen oder unbekannt. Starten Sie die Verknüpfung erneut.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="lwConsoleNav-updates" datatype="html">
         <source>Updates</source>
         <target>Updates</target>
@@ -7232,7 +7428,7 @@
       </trans-unit>
       <trans-unit id="lwConsoleUpdateDetail-waitsForAdmin" datatype="html">
         <source> The plan waits for a cluster admin&apos;s approval. </source>
-        <target>Der Plan wartet auf die Freigabe durch einen Cluster-Admin.</target>
+        <target> Der Plan wartet auf die Freigabe durch einen Cluster-Admin. </target>
       </trans-unit>
       <trans-unit id="lwConsoleUpdateDetail-noDiff" datatype="html">
         <source>No changes</source>
@@ -7256,7 +7452,7 @@
       </trans-unit>
       <trans-unit id="lwConsoleUpdateDetail-approveHint" datatype="html">
         <source> The rollout starts in the next maintenance window of each node: control plane first, then a canary node, then waves. A failing health gate pauses it and rolls that step back. </source>
-        <target>Der Rollout startet im nächsten Wartungsfenster des jeweiligen Nodes: zuerst die Control Plane, dann ein Canary-Node, dann die Wellen. Ein fehlschlagendes Health-Gate pausiert ihn und rollt diesen Schritt zurück.</target>
+        <target> Der Rollout startet im nächsten Wartungsfenster des jeweiligen Nodes: zuerst die Control Plane, dann ein Canary-Node, dann die Wellen. Ein fehlschlagendes Health-Gate pausiert ihn und rollt diesen Schritt zurück. </target>
       </trans-unit>
       <trans-unit id="lwConsoleUpdateDetail-emergency" datatype="html">
         <source>Emergency: run outside maintenance windows</source>
@@ -7708,7 +7904,7 @@
       </trans-unit>
       <trans-unit id="lwConsoleUpdates-uploadHint" datatype="html">
         <source> Air-gapped clusters import a release bundle as a single file. The control plane verifies its signature and checksums before anything is stored. </source>
-        <target>Air-gapped Cluster importieren ein Release-Bundle als einzelne Datei. Die Control Plane prüft Signatur und Prüfsummen, bevor etwas gespeichert wird.</target>
+        <target> Air-gapped Cluster importieren ein Release-Bundle als einzelne Datei. Die Control Plane prüft Signatur und Prüfsummen, bevor etwas gespeichert wird. </target>
       </trans-unit>
       <trans-unit id="lwConsoleUpdates-bundleFile" datatype="html">
         <source>Bundle file</source>
@@ -7820,7 +8016,7 @@
       </trans-unit>
       <trans-unit id="lwConsolePlanUpdate-hint" datatype="html">
         <source> An update is a plan: it shows the diff per node and component, notes, warnings and what each wave puts at risk. It runs only after an approval: control plane first, then a canary node, then waves. </source>
-        <target>Ein Update ist ein Plan: Er zeigt die Änderungen je Node und Komponente, Hinweise, Warnungen und was jede Welle gefährdet. Er läuft erst nach einer Freigabe: zuerst die Control Plane, dann ein Canary-Node, dann die Wellen.</target>
+        <target> Ein Update ist ein Plan: Er zeigt die Änderungen je Node und Komponente, Hinweise, Warnungen und was jede Welle gefährdet. Er läuft erst nach einer Freigabe: zuerst die Control Plane, dann ein Canary-Node, dann die Wellen. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlanUpdate-release" datatype="html">
         <source>Release</source>
@@ -7828,10 +8024,10 @@
       </trans-unit>
       <trans-unit id="lwConsolePlanUpdate-hostOnly" datatype="html">
         <source> The running release: host and OS updates only </source>
-        <target>Das laufende Release: nur Host- und OS-Updates</target>
+        <target> Das laufende Release: nur Host- und OS-Updates </target>
       </trans-unit>
       <trans-unit id="lwConsolePlanUpdate-noRelease" datatype="html">
-        <source> No release bundle is imported yet: download or upload one under Releases first. </source>
+        <source>No release bundle is imported yet: download or upload one under Releases first.</source>
         <target>Es ist noch kein Release-Bundle importiert: Laden Sie unter Releases zuerst eines herunter oder hoch.</target>
       </trans-unit>
       <trans-unit id="lwConsolePlanUpdate-host" datatype="html">
@@ -7977,10 +8173,6 @@
       <trans-unit id="lwConsoleBackupDeletions-title" datatype="html">
         <source>Deletion requests</source>
         <target>Löschanfragen</target>
-      </trans-unit>
-      <trans-unit id="lwConsoleBackupDeletions-back" datatype="html">
-        <source>Backups</source>
-        <target>Backups</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupDeletions-refresh" datatype="html">
         <source>Refresh</source>
@@ -8319,7 +8511,7 @@
         <target>Geht dieser Cluster verloren, kann niemand seine Backups entschlüsseln, bis das Recovery-Kit des aktiven Schlüssels heruntergeladen und bestätigt ist (oder der Schlüssel in einem KMS hinterlegt ist). Laden Sie jeden Anteil herunter, geben Sie jeden einer anderen Person und bestätigen Sie das Kit dann, indem Sie genügend Anteile wieder einfügen.</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-explain" datatype="html">
-        <source>Backups are encrypted with their own key hierarchy, separate from the cluster's secrets. The recovery kit splits the key into shares: any threshold of them recovers it (e.g. 2 of 3), fewer reveal nothing. Each share can be downloaded only once. Disaster recovery from a fresh node asks for the kit (or the KMS) first.</source>
+        <source>Backups are encrypted with their own key hierarchy, separate from the cluster&apos;s secrets. The recovery kit splits the key into shares: any threshold of them recovers it (e.g. 2 of 3), fewer reveal nothing. Each share can be downloaded only once. Disaster recovery from a fresh node asks for the kit (or the KMS) first.</source>
         <target>Backups werden mit einer eigenen Schlüsselhierarchie verschlüsselt, getrennt von den Secrets des Clusters. Das Recovery-Kit teilt den Schlüssel in Anteile: Jede Mindestanzahl davon stellt ihn wieder her (z. B. 2 von 3), weniger verraten nichts. Jeder Anteil kann nur einmal heruntergeladen werden. Die Notfallwiederherstellung von einem neuen Node fragt zuerst nach dem Kit (oder dem KMS).</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-active" datatype="html">
@@ -8383,12 +8575,12 @@
         <target>Im KMS hinterlegen</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-rotateHint" datatype="html">
-        <source> A new key generation is created and used for new backups; existing backups stay readable with their generation's kit. The new generation has a new recovery kit that must be downloaded and confirmed. </source>
-        <target>Eine neue Schlüsselgeneration wird erstellt und für neue Backups verwendet; bestehende Backups bleiben mit dem Kit ihrer Generation lesbar. Die neue Generation hat ein neues Recovery-Kit, das heruntergeladen und bestätigt werden muss.</target>
+        <source> A new key generation is created and used for new backups; existing backups stay readable with their generation&apos;s kit. The new generation has a new recovery kit that must be downloaded and confirmed. </source>
+        <target> Eine neue Schlüsselgeneration wird erstellt und für neue Backups verwendet; bestehende Backups bleiben mit dem Kit ihrer Generation lesbar. Die neue Generation hat ein neues Recovery-Kit, das heruntergeladen und bestätigt werden muss. </target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-reissueHint" datatype="html">
         <source> The kit is split again: the previous shares stop counting and the new kit must be downloaded and confirmed. </source>
-        <target>Das Kit wird neu aufgeteilt: Die bisherigen Anteile zählen nicht mehr, und das neue Kit muss heruntergeladen und bestätigt werden.</target>
+        <target> Das Kit wird neu aufgeteilt: Die bisherigen Anteile zählen nicht mehr, und das neue Kit muss heruntergeladen und bestätigt werden. </target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-sharesLabel" datatype="html">
         <source>Shares (n)</source>
@@ -8399,7 +8591,7 @@
         <target>Nötig zur Wiederherstellung (k)</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-sizeInvalid" datatype="html">
-        <source> Between 2 and 16 shares; at least 2 and at most all of them needed. </source>
+        <source>Between 2 and 16 shares; at least 2 and at most all of them needed.</source>
         <target>Zwischen 2 und 16 Anteile; mindestens 2 und höchstens alle davon nötig.</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-rotateSubmit" datatype="html">
@@ -8411,7 +8603,7 @@
         <target>Neu ausstellen</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-shareOnce" datatype="html">
-        <source>This share is shown only now and can't be downloaded again. It was saved as a text file; store it offline and hand it to its keeper before closing this dialog.</source>
+        <source>This share is shown only now and can&apos;t be downloaded again. It was saved as a text file; store it offline and hand it to its keeper before closing this dialog.</source>
         <target>Dieser Anteil wird nur jetzt angezeigt und kann nicht erneut heruntergeladen werden. Er wurde als Textdatei gespeichert; bewahren Sie ihn offline auf und übergeben Sie ihn seiner verantwortlichen Person, bevor Sie diesen Dialog schließen.</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-checksum" datatype="html">
@@ -8445,10 +8637,6 @@
       <trans-unit id="lwConsoleBackupKeys-title" datatype="html">
         <source>Backup key and recovery kit</source>
         <target>Backup-Schlüssel und Recovery-Kit</target>
-      </trans-unit>
-      <trans-unit id="lwConsoleBackupKeys-back" datatype="html">
-        <source>Backups</source>
-        <target>Backups</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-refresh" datatype="html">
         <source>Refresh</source>
@@ -8503,8 +8691,8 @@
         <target>Abbrechen</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-hint" datatype="html">
-        <source> A restore is a plan: it creates a Restore resource of the project, so the project's approvals apply. It runs once the plan is applied; its progress is shown under Restores. </source>
-        <target>Eine Wiederherstellung ist ein Plan: Sie legt eine Restore-Ressource des Projekts an, daher gelten die Freigaben des Projekts. Sie läuft, sobald der Plan angewendet ist; ihr Fortschritt wird unter Wiederherstellungen angezeigt.</target>
+        <source> A restore is a plan: it creates a Restore resource of the project, so the project&apos;s approvals apply. It runs once the plan is applied; its progress is shown under Restores. </source>
+        <target> Eine Wiederherstellung ist ein Plan: Sie legt eine Restore-Ressource des Projekts an, daher gelten die Freigaben des Projekts. Sie läuft, sobald der Plan angewendet ist; ihr Fortschritt wird unter Wiederherstellungen angezeigt. </target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-stepWhat" datatype="html">
         <source>What</source>
@@ -8523,7 +8711,7 @@
         <target>Pfad im Backup</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-pathHint" datatype="html">
-        <source> Relative to the volume root, without "..". Browse the backup to pick a file or directory. </source>
+        <source>Relative to the volume root, without &quot;..&quot;. Browse the backup to pick a file or directory.</source>
         <target>Relativ zur Volume-Wurzel, ohne "..". Durchsuchen Sie das Backup, um eine Datei oder ein Verzeichnis auszuwählen.</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-deployment" datatype="html">
@@ -8535,7 +8723,7 @@
         <target>Volume</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-newVolume" datatype="html">
-        <source>This volume doesn't exist yet. Add it to the deployment in the same plan (resources editor) before applying; the restore waits up to an hour for it to be placed.</source>
+        <source>This volume doesn&apos;t exist yet. Add it to the deployment in the same plan (resources editor) before applying; the restore waits up to an hour for it to be placed.</source>
         <target>Dieses Volume existiert noch nicht. Fügen Sie es vor dem Anwenden im selben Plan dem Deployment hinzu (Ressourcen-Editor); die Wiederherstellung wartet bis zu einer Stunde, bis es platziert ist.</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-mode" datatype="html">
@@ -8544,11 +8732,11 @@
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-modeReplace" datatype="html">
         <source> Replace: empty the target first, then restore </source>
-        <target>Ersetzen: Ziel zuerst leeren, dann wiederherstellen</target>
+        <target> Ersetzen: Ziel zuerst leeren, dann wiederherstellen </target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-modeMerge" datatype="html">
         <source> Merge: restore over what is there, keep other files </source>
-        <target>Zusammenführen: über den Bestand wiederherstellen, andere Dateien behalten</target>
+        <target> Zusammenführen: über den Bestand wiederherstellen, andere Dateien behalten </target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-targetPath" datatype="html">
         <source>Target path in the volume</source>
@@ -8559,11 +8747,11 @@
         <target>Leer: derselbe Pfad.</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-replaceWarning" datatype="html">
-        <source>The volume's current content is replaced by the backup. Containers using the volume are stopped during the restore and started again afterwards.</source>
+        <source>The volume&apos;s current content is replaced by the backup. Containers using the volume are stopped during the restore and started again afterwards.</source>
         <target>Der aktuelle Inhalt des Volumes wird durch das Backup ersetzt. Container, die das Volume nutzen, werden während der Wiederherstellung gestoppt und danach wieder gestartet.</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-mergeWarning" datatype="html">
-        <source>Files from the backup are written over the volume's content, other files stay. Containers using the volume are stopped during the restore and started again afterwards.</source>
+        <source>Files from the backup are written over the volume&apos;s content, other files stay. Containers using the volume are stopped during the restore and started again afterwards.</source>
         <target>Dateien aus dem Backup überschreiben den Inhalt des Volumes, andere Dateien bleiben erhalten. Container, die das Volume nutzen, werden während der Wiederherstellung gestoppt und danach wieder gestartet.</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestore-description" datatype="html">
@@ -8612,7 +8800,7 @@
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestores-hint" datatype="html">
         <source> Restores are started from the catalog (restore wizard) as plans; once the plan is applied they run here. </source>
-        <target>Wiederherstellungen werden im Katalog (Wiederherstellungs-Assistent) als Pläne gestartet; sobald der Plan angewendet ist, laufen sie hier.</target>
+        <target> Wiederherstellungen werden im Katalog (Wiederherstellungs-Assistent) als Pläne gestartet; sobald der Plan angewendet ist, laufen sie hier. </target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupRestores-kindPath" datatype="html">
         <source>Single path</source>
@@ -8650,10 +8838,6 @@
         <source>Restores</source>
         <target>Wiederherstellungen</target>
       </trans-unit>
-      <trans-unit id="lwConsoleBackupRestores-back" datatype="html">
-        <source>Backups</source>
-        <target>Backups</target>
-      </trans-unit>
       <trans-unit id="lwConsoleBackupRestores-refresh" datatype="html">
         <source>Refresh</source>
         <target>Aktualisieren</target>
@@ -8662,6 +8846,14 @@
         <source>All projects</source>
         <target>Alle Projekte</target>
       </trans-unit>
+      <trans-unit id="lwConsoleBackupRestores-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleBackupRestores-project" datatype="html">
+        <source>Project</source>
+        <target>Projekt</target>
+      </trans-unit>
       <trans-unit id="lwConsoleBackupRestores-tabRestores" datatype="html">
         <source>Restores</source>
         <target>Wiederherstellungen</target>
@@ -8669,6 +8861,14 @@
       <trans-unit id="lwConsoleBackupRestores-tabTests" datatype="html">
         <source>Restore tests</source>
         <target>Wiederherstellungstests</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleBackups-sections" datatype="html">
+        <source>Backup sections</source>
+        <target>Backup-Bereiche</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleBackups-overviewTab" datatype="html">
+        <source>Overview</source>
+        <target>Übersicht</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackups-restoresLink" datatype="html">
         <source>Restores</source>
@@ -8711,8 +8911,8 @@
         <target>Gespeichert</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackups-usageHint" datatype="html">
-        <source> Stored is what the backups occupy after deduplication; it counts against the project's storage quota. </source>
-        <target>Gespeichert ist, was die Backups nach der Deduplizierung belegen; es zählt zum Speicherkontingent des Projekts.</target>
+        <source> Stored is what the backups occupy after deduplication; it counts against the project&apos;s storage quota. </source>
+        <target> Gespeichert ist, was die Backups nach der Deduplizierung belegen; es zählt zum Speicherkontingent des Projekts. </target>
       </trans-unit>
       <trans-unit id="lwConsoleBackups-policies" datatype="html">
         <source>Backup policies</source>
@@ -8854,6 +9054,14 @@
         <source>All projects</source>
         <target>Alle Projekte</target>
       </trans-unit>
+      <trans-unit id="lwConsoleBackups-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleBackups-project" datatype="html">
+        <source>Project</source>
+        <target>Projekt</target>
+      </trans-unit>
       <trans-unit id="lwConsoleBackups-keyCard" datatype="html">
         <source>Recovery kit</source>
         <target>Recovery-Kit</target>
@@ -8950,10 +9158,6 @@
         <source>Platform backups and disaster recovery</source>
         <target>Plattform-Backups und Disaster Recovery</target>
       </trans-unit>
-      <trans-unit id="lwConsolePlatformBackups-back" datatype="html">
-        <source>Backups</source>
-        <target>Backups</target>
-      </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-refresh" datatype="html">
         <source>Refresh</source>
         <target>Aktualisieren</target>
@@ -9025,10 +9229,6 @@
       <trans-unit id="lwConsolePlatformBackups-downloadFailed" datatype="html">
         <source>Download failed</source>
         <target>Download fehlgeschlagen</target>
-      </trans-unit>
-      <trans-unit id="lwConsolePlatformBackups-deletionsLink" datatype="html">
-        <source>Deletion requests</source>
-        <target>Löschanfragen</target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-pin" datatype="html">
         <source>Pin:</source>
@@ -9147,8 +9347,8 @@
         <target>Herunterladen</target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-noBackups" datatype="html">
-        <source>No backups yet.</source>
-        <target>Noch keine Backups.</target>
+        <source> No backups yet. </source>
+        <target> Noch keine Backups. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-pitrTitle" datatype="html">
         <source>Point-in-time recovery (Postgres)</source>
@@ -9159,8 +9359,8 @@
         <target>Auf einen Zeitpunkt wiederherstellen</target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-pitrExplain" datatype="html">
-        <source>A restore brings the database back into its own scope next to the live one, which stays untouched. Inspect it, then switch the control plane to it (a second cluster admin approves) or discard it.</source>
-        <target>Eine Wiederherstellung legt die Datenbank in einem eigenen Scope neben der laufenden an, die unverändert bleibt. Prüfen Sie sie, dann schalten Sie die Control Plane darauf um (ein zweiter Cluster-Admin gibt frei) oder verwerfen Sie sie.</target>
+        <source> A restore brings the database back into its own scope next to the live one, which stays untouched. Inspect it, then switch the control plane to it (a second cluster admin approves) or discard it. </source>
+        <target> Eine Wiederherstellung legt die Datenbank in einem eigenen Scope neben der laufenden an, die unverändert bleibt. Prüfen Sie sie, dann schalten Sie die Control Plane darauf um (ein zweiter Cluster-Admin gibt frei) oder verwerfen Sie sie. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-window" datatype="html">
         <source>Recovery window</source>
@@ -9211,8 +9411,8 @@
         <target>Verwerfen</target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-noRestores" datatype="html">
-        <source>No restores.</source>
-        <target>Keine Wiederherstellungen.</target>
+        <source> No restores. </source>
+        <target> Keine Wiederherstellungen. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-cutoverTitle" datatype="html">
         <source>Cut-over of the control-plane database</source>
@@ -9227,12 +9427,12 @@
         <target>Daten, die nach diesem Zeitpunkt geschrieben wurden, gehen verloren:</target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-finalBackupKept" datatype="html">
-        <source>A final base backup of the current database is taken and kept before switching.</source>
-        <target>Vor dem Umschalten wird ein letztes Basis-Backup der aktuellen Datenbank erstellt und aufbewahrt.</target>
+        <source> A final base backup of the current database is taken and kept before switching. </source>
+        <target> Vor dem Umschalten wird ein letztes Basis-Backup der aktuellen Datenbank erstellt und aufbewahrt. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-secondAdmin" datatype="html">
-        <source>You requested this cut-over: a second cluster admin has to approve it.</source>
-        <target>Sie haben diese Umschaltung angefordert: ein zweiter Cluster-Admin muss sie freigeben.</target>
+        <source> You requested this cut-over: a second cluster admin has to approve it. </source>
+        <target> Sie haben diese Umschaltung angefordert: ein zweiter Cluster-Admin muss sie freigeben. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-steps" datatype="html">
         <source>Steps</source>
@@ -9287,8 +9487,8 @@
         <target>Neuester DR-Umschlag zurückgelesen und entschlüsselt:</target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-notVerified" datatype="html">
-        <source>No DR envelope verified on this target yet.</source>
-        <target>Auf diesem Ziel wurde noch kein DR-Umschlag geprüft.</target>
+        <source> No DR envelope verified on this target yet. </source>
+        <target> Auf diesem Ziel wurde noch kein DR-Umschlag geprüft. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-drTitle" datatype="html">
         <source>Disaster recovery</source>
@@ -9299,8 +9499,8 @@
         <target>DR-Info herunterladen</target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-drExplain" datatype="html">
-        <source>If the whole cluster is lost, a fresh node rebuilds the control plane from the external copy. It needs the DR info file (target locations and key generations, no secrets), the access keys of the target and enough shares of the recovery kit (or the KMS the key is escrowed in). Keep the DR info file with the kit, outside the cluster, together with this release's agent binary (or the node installer, which takes --restore).</source>
-        <target>Geht der ganze Cluster verloren, baut ein frischer Node die Control Plane aus der externen Kopie wieder auf. Dafür braucht er die DR-Info-Datei (Speicherorte der Ziele und Schlüsselgenerationen, keine Geheimnisse), die Zugangsschlüssel des Ziels und genügend Anteile des Recovery-Kits (oder das KMS, in dem der Schlüssel hinterlegt ist). Bewahren Sie die DR-Info-Datei zusammen mit dem Kit außerhalb des Clusters auf, dazu das Agent-Binary dieses Releases (oder den Node-Installer, der --restore unterstützt).</target>
+        <source> If the whole cluster is lost, a fresh node rebuilds the control plane from the external copy. It needs the DR info file (target locations and key generations, no secrets), the access keys of the target and enough shares of the recovery kit (or the KMS the key is escrowed in). Keep the DR info file with the kit, outside the cluster, together with this release&apos;s agent binary (or the node installer, which takes --restore). </source>
+        <target> Geht der ganze Cluster verloren, baut ein frischer Node die Control Plane aus der externen Kopie wieder auf. Dafür braucht er die DR-Info-Datei (Speicherorte der Ziele und Schlüsselgenerationen, keine Geheimnisse), die Zugangsschlüssel des Ziels und genügend Anteile des Recovery-Kits (oder das KMS, in dem der Schlüssel hinterlegt ist). Bewahren Sie die DR-Info-Datei zusammen mit dem Kit außerhalb des Clusters auf, dazu das Agent-Binary dieses Releases (oder den Node-Installer, der --restore unterstützt). </target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-kit" datatype="html">
         <source>Recovery kit</source>
@@ -9327,8 +9527,8 @@
         <target>Auf einem frischen Node wiederherstellen</target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-restoreHint" datatype="html">
-        <source>The database is restored into a new scope; the live database keeps running. Leave the time empty for the newest state.</source>
-        <target>Die Datenbank wird in einen neuen Scope wiederhergestellt; die laufende Datenbank läuft weiter. Ohne Zeitpunkt wird der neueste Stand wiederhergestellt.</target>
+        <source> The database is restored into a new scope; the live database keeps running. Leave the time empty for the newest state. </source>
+        <target> Die Datenbank wird in einen neuen Scope wiederhergestellt; die laufende Datenbank läuft weiter. Ohne Zeitpunkt wird der neueste Stand wiederhergestellt. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-targetTimeLabel" datatype="html">
         <source>Target time (your local time)</source>
@@ -9347,12 +9547,12 @@
         <target>Alles, was nach dem Zeitpunkt der Wiederherstellung in die Control-Plane-Datenbank geschrieben wurde, geht verloren:</target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-planHint" datatype="html">
-        <source>This only plans the cut-over: a second cluster admin approves it, then the control plane switches to the restored database. A final base backup of the current database is kept.</source>
-        <target>Damit wird die Umschaltung nur geplant: ein zweiter Cluster-Admin gibt sie frei, dann schaltet die Control Plane auf die wiederhergestellte Datenbank um. Ein letztes Basis-Backup der aktuellen Datenbank wird aufbewahrt.</target>
+        <source> This only plans the cut-over: a second cluster admin approves it, then the control plane switches to the restored database. A final base backup of the current database is kept. </source>
+        <target> Damit wird die Umschaltung nur geplant: ein zweiter Cluster-Admin gibt sie frei, dann schaltet die Control Plane auf die wiederhergestellte Datenbank um. Ein letztes Basis-Backup der aktuellen Datenbank wird aufbewahrt. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-approveHint" datatype="html">
-        <source>The control plane switches to the restored database right away; services reconnect. A final base backup of the current database is kept.</source>
-        <target>Die Control Plane schaltet sofort auf die wiederhergestellte Datenbank um; die Dienste verbinden sich neu. Ein letztes Basis-Backup der aktuellen Datenbank wird aufbewahrt.</target>
+        <source> The control plane switches to the restored database right away; services reconnect. A final base backup of the current database is kept. </source>
+        <target> Die Control Plane schaltet sofort auf die wiederhergestellte Datenbank um; die Dienste verbinden sich neu. Ein letztes Basis-Backup der aktuellen Datenbank wird aufbewahrt. </target>
       </trans-unit>
       <trans-unit id="lwConsolePlatformBackups-noTargets" datatype="html">
         <source>No external backup target</source>
@@ -9455,8 +9655,8 @@
         <target>Disaster Recovery</target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-drHint" datatype="html">
-        <source>Keep the DR info file (target locations and key generations, no secrets) with the kit: a fresh node needs both to rebuild the control plane.</source>
-        <target>Bewahren Sie die DR-Info-Datei (Speicherorte der Ziele und Schlüsselgenerationen, keine Geheimnisse) zusammen mit dem Kit auf: ein frischer Node braucht beides, um die Control Plane wieder aufzubauen.</target>
+        <source> Keep the DR info file (target locations and key generations, no secrets) with the kit: a fresh node needs both to rebuild the control plane. </source>
+        <target> Bewahren Sie die DR-Info-Datei (Speicherorte der Ziele und Schlüsselgenerationen, keine Geheimnisse) zusammen mit dem Kit auf: ein frischer Node braucht beides, um die Control Plane wieder aufzubauen. </target>
       </trans-unit>
       <trans-unit id="lwConsoleBackupKeys-drInfo" datatype="html">
         <source>Download DR info</source>
@@ -9519,8 +9719,8 @@
         <target>stabil</target>
       </trans-unit>
       <trans-unit id="lwConsoleAutoscaling-replicas" datatype="html">
-        <source><x id="INTERPOLATION" equiv-text="{{ s.replicas }}"/> replicas (<x id="INTERPOLATION_1" equiv-text="{{ s.min }}"/>..<x id="INTERPOLATION_2" equiv-text="{{ s.max }}"/>)</source>
-        <target><x id="INTERPOLATION" equiv-text="{{ s.replicas }}"/> Replikate (<x id="INTERPOLATION_1" equiv-text="{{ s.min }}"/>..<x id="INTERPOLATION_2" equiv-text="{{ s.max }}"/>)</target>
+        <source> <x id="INTERPOLATION" equiv-text="{{ s.replicas }}"/> replicas (<x id="INTERPOLATION_1" equiv-text="{{ s.min }}"/>..<x id="INTERPOLATION_2" equiv-text="{{ s.max }}"/>) </source>
+        <target> <x id="INTERPOLATION" equiv-text="{{ s.replicas }}"/> Replikate (<x id="INTERPOLATION_1" equiv-text="{{ s.min }}"/>..<x id="INTERPOLATION_2" equiv-text="{{ s.max }}"/>) </target>
       </trans-unit>
       <trans-unit id="lwConsoleAutoscaling-metric" datatype="html">
         <source>Metric</source>
@@ -9663,8 +9863,8 @@
         <target>Host-Pfad behalten</target>
       </trans-unit>
       <trans-unit id="lwConsoleImport-listIntro" datatype="html">
-        <source>Hosts that already run containers or compose projects (or were Loadweaver nodes before) join with <x id="START_TAG_CODE" equiv-text="&lt;code&gt;"/>install.sh --discover<x id="CLOSE_TAG_CODE" equiv-text="&lt;/code&gt;"/>: only the agent is installed, it discovers read-only and waits here. Nothing on the host changes until its join plan is approved.</source>
-        <target>Hosts, auf denen schon Container oder Compose-Projekte laufen (oder die früher Loadweaver-Nodes waren), treten mit <x id="START_TAG_CODE" equiv-text="&lt;code&gt;"/>install.sh --discover<x id="CLOSE_TAG_CODE" equiv-text="&lt;/code&gt;"/> bei: Nur der Agent wird installiert, er erkennt nur lesend und wartet hier. Auf dem Host ändert sich nichts, bis sein Join-Plan freigegeben ist.</target>
+        <source> Hosts that already run containers or compose projects (or were Loadweaver nodes before) join with <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>install.sh --discover<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>: only the agent is installed, it discovers read-only and waits here. Nothing on the host changes until its join plan is approved. </source>
+        <target> Hosts, auf denen schon Container oder Compose-Projekte laufen (oder die früher Loadweaver-Nodes waren), treten mit <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>install.sh --discover<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> bei: Nur der Agent wird installiert, er erkennt nur lesend und wartet hier. Auf dem Host ändert sich nichts, bis sein Join-Plan freigegeben ist. </target>
       </trans-unit>
       <trans-unit id="lwConsoleImport-listTitle" datatype="html">
         <source>Import hosts</source>
@@ -9675,8 +9875,8 @@
         <target>Der Import konnte nicht geladen werden.</target>
       </trans-unit>
       <trans-unit id="lwConsoleImport-migrate" datatype="html">
-        <source>Migrate to other nodes</source>
-        <target>Auf andere Nodes migrieren</target>
+        <source> Migrate to other nodes </source>
+        <target> Auf andere Nodes migrieren </target>
       </trans-unit>
       <trans-unit id="lwConsoleImport-offline" datatype="html">
         <source>offline</source>
@@ -9719,8 +9919,8 @@
         <target>Vorhandene Tunnel (Bootstrap-Pfad, danach ignoriert)</target>
       </trans-unit>
       <trans-unit id="lwConsoleImport-variablesHint" datatype="html">
-        <source>Discovery never sends secrets: these values were redacted on the host. Give the ones the compose file needs.</source>
-        <target>Die Erkennung sendet nie Geheimnisse: Diese Werte wurden auf dem Host geschwärzt. Gib die an, die die Compose-Datei braucht.</target>
+        <source> Discovery never sends secrets: these values were redacted on the host. Give the ones the compose file needs. </source>
+        <target> Die Erkennung sendet nie Geheimnisse: Diese Werte wurden auf dem Host geschwärzt. Geben Sie die an, die die Compose-Datei braucht. </target>
       </trans-unit>
       <trans-unit id="lwConsoleImport-variablesTitle" datatype="html">
         <source>Secrets that stayed on the host</source>
@@ -9753,6 +9953,1466 @@
       <trans-unit id="lwConsoleNodes-pending" datatype="html">
         <source>Waiting for its join plan</source>
         <target>Wartet auf seinen Join-Plan</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-usage" datatype="html">
+        <source>Usage</source>
+        <target>Nutzung</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-usageTitle" datatype="html">
+        <source>Metered usage per project</source>
+        <target>Gemessene Nutzung pro Projekt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-title" datatype="html">
+        <source>Usage</source>
+        <target>Nutzung</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-allProjects" datatype="html">
+        <source>All projects</source>
+        <target>Alle Projekte</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-truncated" datatype="html">
+        <source>Only the first rows are shown. Narrow the time range, choose a project or a coarser resolution.</source>
+        <target>Es werden nur die ersten Zeilen angezeigt. Grenzen Sie den Zeitraum ein, wählen Sie ein Projekt oder eine gröbere Auflösung.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-noProjects" datatype="html">
+        <source>You are not a member of any project</source>
+        <target>Sie sind in keinem Projekt Mitglied</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-empty" datatype="html">
+        <source>No usage in this time range</source>
+        <target>Keine Nutzung in diesem Zeitraum</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-colBucket" datatype="html">
+        <source>Period (UTC)</source>
+        <target>Zeitraum (UTC)</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-colProject" datatype="html">
+        <source>Project</source>
+        <target>Projekt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-open" datatype="html">
+        <source>Not final yet: values can still change</source>
+        <target>Noch nicht abgeschlossen: Werte können sich noch ändern</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-refresh" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-exportCsv" datatype="html">
+        <source>Export CSV</source>
+        <target>Als CSV exportieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-project" datatype="html">
+        <source>Project</source>
+        <target>Projekt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-granularity" datatype="html">
+        <source>Resolution</source>
+        <target>Auflösung</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-from" datatype="html">
+        <source>From</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-to" datatype="html">
+        <source>To</source>
+        <target>Bis</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-apply" datatype="html">
+        <source>Apply</source>
+        <target>Anwenden</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-reset" datatype="html">
+        <source>Reset</source>
+        <target>Zurücksetzen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-page" datatype="html">
+        <source>Page</source>
+        <target>Seite</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-newer" datatype="html">
+        <source>Newer</source>
+        <target>Neuer</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-older" datatype="html">
+        <source>Older</source>
+        <target>Älter</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-pageSize" datatype="html">
+        <source>Rows per page</source>
+        <target>Zeilen pro Seite</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-meterCpu" datatype="html">
+        <source>CPU</source>
+        <target>CPU</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-meterMemory" datatype="html">
+        <source>Memory</source>
+        <target>Arbeitsspeicher</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-meterStorage" datatype="html">
+        <source>Storage</source>
+        <target>Speicher</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-meterStorageReplicas" datatype="html">
+        <source>Storage incl. replicas</source>
+        <target>Speicher inkl. Replikate</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-meterTrafficIn" datatype="html">
+        <source>Traffic in</source>
+        <target>Traffic eingehend</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-meterTrafficOut" datatype="html">
+        <source>Traffic out</source>
+        <target>Traffic ausgehend</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-meterPublicIps" datatype="html">
+        <source>Public IPs</source>
+        <target>Öffentliche IPs</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-hourly" datatype="html">
+        <source>Hourly</source>
+        <target>Stündlich</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-daily" datatype="html">
+        <source>Daily</source>
+        <target>Täglich</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleUsage-monthly" datatype="html">
+        <source>Monthly</source>
+        <target>Monatlich</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-posture" datatype="html">
+        <source>Device posture</source>
+        <target>Gerätestatus</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-postureTitle" datatype="html">
+        <source>MDM / EDR integrations and device certificates</source>
+        <target>MDM-/EDR-Integrationen und Gerätezertifikate</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleDevices-noReport" datatype="html">
+        <source>No posture report yet</source>
+        <target>Noch kein Statusbericht</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-matchSerial" datatype="html">
+        <source>Serial number</source>
+        <target>Seriennummer</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-matchDeviceId" datatype="html">
+        <source>Device ID</source>
+        <target>Geräte-ID</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-matchHostname" datatype="html">
+        <source>Hostname</source>
+        <target>Hostname</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-statusOk" datatype="html">
+        <source>Syncing</source>
+        <target>Synchronisiert</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-statusFailing" datatype="html">
+        <source>Failing</source>
+        <target>Fehlerhaft</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-statusPending" datatype="html">
+        <source>Waiting for the first sync</source>
+        <target>Wartet auf die erste Synchronisierung</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-statusDisabled" datatype="html">
+        <source>Disabled</source>
+        <target>Deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-factStale" datatype="html">
+        <source>outdated</source>
+        <target>veraltet</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-factCompliant" datatype="html">
+        <source>compliant</source>
+        <target>konform</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-factNonCompliant" datatype="html">
+        <source>not compliant</source>
+        <target>nicht konform</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-factUnknown" datatype="html">
+        <source>unknown</source>
+        <target>unbekannt</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-factRisk" datatype="html">
+        <source>risk</source>
+        <target>Risiko</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-riskLow" datatype="html">
+        <source>low</source>
+        <target>niedrig</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-riskMedium" datatype="html">
+        <source>medium</source>
+        <target>mittel</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-riskHigh" datatype="html">
+        <source>high</source>
+        <target>hoch</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-certNone" datatype="html">
+        <source>No device certificate</source>
+        <target>Kein Gerätezertifikat</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-certInvalid" datatype="html">
+        <source>Device certificate invalid</source>
+        <target>Gerätezertifikat ungültig</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-certExpired" datatype="html">
+        <source>Device certificate expired</source>
+        <target>Gerätezertifikat abgelaufen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-certCluster" datatype="html">
+        <source>Device certificate (cluster CA)</source>
+        <target>Gerätezertifikat (Cluster-CA)</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-certCompany" datatype="html">
+        <source>Device certificate (company CA)</source>
+        <target>Gerätezertifikat (Unternehmens-CA)</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-serial" datatype="html">
+        <source>serial</source>
+        <target>Seriennr.</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-deleteMessage" datatype="html">
+        <source><x id="name" equiv-text="integration.name"/> and its results are removed from every device. Conditions that use it fail until another integration provides the facts.</source>
+        <target><x id="name" equiv-text="integration.name"/> und seine Ergebnisse werden von allen Geräten entfernt. Bedingungen, die es verwenden, schlagen fehl, bis eine andere Integration die Fakten liefert.</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-title" datatype="html">
+        <source>Device posture</source>
+        <target>Gerätestatus</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-refresh" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-add" datatype="html">
+        <source>Add integration</source>
+        <target>Integration hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-integrations" datatype="html">
+        <source>MDM and EDR integrations</source>
+        <target>MDM- und EDR-Integrationen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-certificates" datatype="html">
+        <source>Device certificates</source>
+        <target>Gerätezertifikate</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-createTitle" datatype="html">
+        <source>Add a posture integration</source>
+        <target>Statusintegration hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-editTitle" datatype="html">
+        <source>Edit posture integration</source>
+        <target>Statusintegration bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-deleteTitle" datatype="html">
+        <source>Delete the integration?</source>
+        <target>Integration löschen?</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-deleteConfirm" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-secretStored" datatype="html">
+        <source>Stored — leave empty to keep it</source>
+        <target>Gespeichert – leer lassen, um es beizubehalten</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-trustClusterCa" datatype="html">
+        <source>Trust device certificates issued by the cluster CA at enrollment</source>
+        <target>Gerätezertifikaten vertrauen, die die Cluster-CA bei der Registrierung ausstellt</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-requireProof" datatype="html">
+        <source>Require a proof of possession with each report</source>
+        <target>Mit jedem Bericht einen Besitznachweis verlangen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-enabled" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-requireUserMatch" datatype="html">
+        <source>The device user in the MDM must be the owner of the VPN client</source>
+        <target>Der Gerätebenutzer im MDM muss der Eigentümer des VPN-Clients sein</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-hostnameWarning" datatype="html">
+        <source>Matching by hostname is weak: hostnames are self-reported and not unique, so another device reporting the same name could inherit this verdict. Prefer serial number or device ID, require the device user to match and combine with device.certificate.valid.</source>
+        <target>Die Zuordnung über den Hostnamen ist schwach: Hostnamen meldet das Gerät selbst und sie sind nicht eindeutig, sodass ein anderes Gerät mit demselben Namen dieses Ergebnis übernehmen könnte. Verwenden Sie bevorzugt Seriennummer oder Geräte-ID, verlangen Sie einen passenden Gerätebenutzer und kombinieren Sie mit device.certificate.valid.</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-userMatchOffWarning" datatype="html">
+        <source>The device user is not compared with the owner of the VPN client: a device enrolled by someone else could inherit this verdict.</source>
+        <target>Der Gerätebenutzer wird nicht mit dem Eigentümer des VPN-Clients verglichen: Ein von jemand anderem registriertes Gerät könnte dieses Ergebnis übernehmen.</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-empty" datatype="html">
+        <source>No posture integrations</source>
+        <target>Keine Statusintegrationen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-emptyHint" datatype="html">
+        <source>Connect an MDM (Intune, Jamf Pro, Kandji) or an EDR (Defender for Endpoint, CrowdStrike, SentinelOne); client groups use their results in posture conditions.</source>
+        <target>Verbinden Sie ein MDM (Intune, Jamf Pro, Kandji) oder ein EDR (Defender for Endpoint, CrowdStrike, SentinelOne); Client-Gruppen nutzen deren Ergebnisse in Statusbedingungen.</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-matched" datatype="html">
+        <source>Matched devices</source>
+        <target>Zugeordnete Geräte</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-matchBy" datatype="html">
+        <source>Match by</source>
+        <target>Zuordnung über</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-interval" datatype="html">
+        <source>Every</source>
+        <target>Alle</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-minutes" datatype="html">
+        <source>min</source>
+        <target>Min.</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-lastSuccess" datatype="html">
+        <source>Last successful sync</source>
+        <target>Letzte erfolgreiche Synchronisierung</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-nextSync" datatype="html">
+        <source>Next sync</source>
+        <target>Nächste Synchronisierung</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-lastError" datatype="html">
+        <source>Last error</source>
+        <target>Letzter Fehler</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-test" datatype="html">
+        <source>Test</source>
+        <target>Testen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-sync" datatype="html">
+        <source>Sync now</source>
+        <target>Jetzt synchronisieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-edit" datatype="html">
+        <source>Edit</source>
+        <target>Bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-delete" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-certificatesHint" datatype="html">
+        <source> Devices can present a certificate with their posture report: one from your company CA (bundle and CRLs below) or one the cluster CA issues at enrollment. Client groups require it with the condition device.certificate.valid. </source>
+        <target> Geräte können mit ihrem Statusbericht ein Zertifikat vorlegen: eines Ihrer Unternehmens-CA (Bundle und CRLs unten) oder eines, das die Cluster-CA bei der Registrierung ausstellt. Client-Gruppen verlangen es mit der Bedingung device.certificate.valid. </target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-trustSaved" datatype="html">
+        <source>Saved.</source>
+        <target>Gespeichert.</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-trustedCas" datatype="html">
+        <source>Trusted company CAs</source>
+        <target>Vertrauenswürdige Unternehmens-CAs</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-companyCa" datatype="html">
+        <source>Company CA bundle (PEM)</source>
+        <target>Unternehmens-CA-Bundle (PEM)</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-crl" datatype="html">
+        <source>CRLs (PEM)</source>
+        <target>CRLs (PEM)</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-saveTrust" datatype="html">
+        <source>Save certificate trust</source>
+        <target>Zertifikatsvertrauen speichern</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-type" datatype="html">
+        <source>Integration</source>
+        <target>Integration</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-name" datatype="html">
+        <source>Name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-nameHint" datatype="html">
+        <source>Used in conditions, e.g. mdm.intune.compliant</source>
+        <target>Wird in Bedingungen verwendet, z. B. mdm.intune.compliant</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-matchByLabel" datatype="html">
+        <source>Match devices by (in this order)</source>
+        <target>Geräte zuordnen über (in dieser Reihenfolge)</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-intervalLabel" datatype="html">
+        <source>Sync every (minutes)</source>
+        <target>Synchronisieren alle (Minuten)</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-maxAgeLabel" datatype="html">
+        <source>Results valid for (minutes)</source>
+        <target>Ergebnisse gültig für (Minuten)</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-cancelForm" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-testConnection" datatype="html">
+        <source>Test connection</source>
+        <target>Verbindung testen</target>
+      </trans-unit>
+      <trans-unit id="lwConsolePosture-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-accessRevoked" datatype="html">
+        <source>Your access to this live view through the fleet was revoked.</source>
+        <target>Ihr Zugriff auf diese Live-Ansicht über die Flotte wurde entzogen.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupFleet" datatype="html">
+        <source>Fleet</source>
+        <target>Flotte</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-groupFleetTitle" datatype="html">
+        <source>Fleet: all clusters, comparison and cross-cluster operations</source>
+        <target>Flotte: alle Cluster, Vergleich und clusterübergreifende Vorgänge</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-fleetOverview" datatype="html">
+        <source>Fleet overview</source>
+        <target>Flottenübersicht</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-fleetOverviewTitle" datatype="html">
+        <source>Cards, inbox and sites of every cluster</source>
+        <target>Karten, Posteingang und Standorte aller Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-fleetClusters" datatype="html">
+        <source>Clusters</source>
+        <target>Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-fleetClustersTitle" datatype="html">
+        <source>Cluster connections and grants</source>
+        <target>Cluster-Verbindungen und Freigaben</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-fleetCompare" datatype="html">
+        <source>Compare</source>
+        <target>Vergleichen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-fleetCompareTitle" datatype="html">
+        <source>Versions, capacity and policy drift side by side</source>
+        <target>Versionen, Kapazität und Richtlinienabweichungen im Vergleich</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-fleetOperations" datatype="html">
+        <source>Operations</source>
+        <target>Vorgänge</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-fleetOperationsTitle" datatype="html">
+        <source>Cross-cluster restores and clones</source>
+        <target>Clusterübergreifende Wiederherstellungen und Klone</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-fleetAudit" datatype="html">
+        <source>Fleet audit</source>
+        <target>Flotten-Audit</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleNav-fleetAuditTitle" datatype="html">
+        <source>Audit log of the fleet</source>
+        <target>Audit-Log der Flotte</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleContainer-clusterSwitcher" datatype="html">
+        <source>Cluster</source>
+        <target>Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleContainer-fleetLevel" datatype="html">
+        <source>Fleet (all clusters)</source>
+        <target>Flotte (alle Cluster)</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-allClusters" datatype="html">
+        <source>All clusters</source>
+        <target>Alle Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-colTime" datatype="html">
+        <source>Time</source>
+        <target>Zeit</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-colAction" datatype="html">
+        <source>Action</source>
+        <target>Aktion</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-colCluster" datatype="html">
+        <source>Cluster</source>
+        <target>Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-colTarget" datatype="html">
+        <source>Target</source>
+        <target>Ziel</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-colActor" datatype="html">
+        <source>Actor</source>
+        <target>Akteur</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-cluster" datatype="html">
+        <source>Cluster</source>
+        <target>Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-action" datatype="html">
+        <source>Action</source>
+        <target>Aktion</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-empty" datatype="html">
+        <source>No audit entries match</source>
+        <target>Keine passenden Audit-Einträge</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-title" datatype="html">
+        <source>Fleet audit log</source>
+        <target>Audit-Log der Flotte</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-refresh" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-search" datatype="html">
+        <source>Search</source>
+        <target>Suchen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-actionPlaceholder" datatype="html">
+        <source>Action (e.g. relay.request)</source>
+        <target>Aktion (z. B. relay.request)</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-page" datatype="html">
+        <source>Page</source>
+        <target>Seite</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-newer" datatype="html">
+        <source>Newer</source>
+        <target>Neuer</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-older" datatype="html">
+        <source>Older</source>
+        <target>Älter</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetAudit-pageSize" datatype="html">
+        <source>Entries per page</source>
+        <target>Einträge pro Seite</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-poll" datatype="html">
+        <source>Check now</source>
+        <target>Jetzt prüfen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-open" datatype="html">
+        <source>Open cluster</source>
+        <target>Cluster öffnen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-health" datatype="html">
+        <source>Health</source>
+        <target>Zustand</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-version" datatype="html">
+        <source>Version</source>
+        <target>Version</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-endpoint" datatype="html">
+        <source>Endpoint</source>
+        <target>Endpunkt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-credential" datatype="html">
+        <source>Service credential</source>
+        <target>Dienst-Zugangsdaten</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-customCa" datatype="html">
+        <source>Custom CA</source>
+        <target>Eigene CA</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-yes" datatype="html">
+        <source>yes</source>
+        <target>ja</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-no" datatype="html">
+        <source>no</source>
+        <target>nein</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-access" datatype="html">
+        <source>Your access</source>
+        <target>Ihr Zugriff</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-readOnly" datatype="html">
+        <source>read-only</source>
+        <target>schreibgeschützt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-description" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-reference" datatype="html">
+        <source>Reference</source>
+        <target>Referenz</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-state" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-teardown" datatype="html">
+        <source>Teardown: read-only until</source>
+        <target>Abbau: schreibgeschützt bis</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-retired" datatype="html">
+        <source>Retired: the relay is closed</source>
+        <target>Stillgelegt: das Relay ist geschlossen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-active" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-graceHint" datatype="html">
+        <source> During the grace period every grant on this cluster is capped at viewer: reads, exports and catalog downloads work through the fleet, changes and terminals don&apos;t. </source>
+        <target> Während der Kulanzfrist ist jede Freigabe für diesen Cluster auf Betrachter begrenzt: Lesen, Exporte und Downloads aus dem Katalog funktionieren über die Flotte, Änderungen und Terminals nicht. </target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-finalBackup" datatype="html">
+        <source>Final backup</source>
+        <target>Abschluss-Backup</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-noFinalBackup" datatype="html">
+        <source>No final backup has run.</source>
+        <target>Es ist noch kein Abschluss-Backup gelaufen.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-addGrant" datatype="html">
+        <source>Grant access</source>
+        <target>Zugriff freigeben</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-colUser" datatype="html">
+        <source>User</source>
+        <target>Benutzer</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-colScope" datatype="html">
+        <source>Scope</source>
+        <target>Umfang</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-colRole" datatype="html">
+        <source>Role</source>
+        <target>Rolle</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-colSince" datatype="html">
+        <source>Since</source>
+        <target>Seit</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-colActions" datatype="html">
+        <source>Actions</source>
+        <target>Aktionen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-projectScope" datatype="html">
+        <source>Project</source>
+        <target>Projekt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-clusterScope" datatype="html">
+        <source>Whole cluster</source>
+        <target>Ganzer Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-choose" datatype="html">
+        <source>Choose…</source>
+        <target>Auswählen…</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-roleHint" datatype="html">
+        <source> Viewer reads; operator also plans, drains nodes, acknowledges alerts and runs backups and terminals; admin also administers the cluster, downloads backups and browses files. Approvals are always given in the cluster&apos;s own console. Project grants only reach that project&apos;s routes. </source>
+        <target> Betrachter lesen; Operatoren planen zusätzlich, leeren Nodes, bestätigen Alarme und starten Backups und Terminals; Admins verwalten zusätzlich den Cluster, laden Backups herunter und durchsuchen Dateien. Freigaben werden immer in der eigenen Konsole des Clusters erteilt. Projektfreigaben erreichen nur die Routen dieses Projekts. </target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-saveGrant" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-connection" datatype="html">
+        <source>Connection</source>
+        <target>Verbindung</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-cloud" datatype="html">
+        <source>Loadweaver Cloud</source>
+        <target>Loadweaver Cloud</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-grants" datatype="html">
+        <source>Grants</source>
+        <target>Freigaben</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-noGrants" datatype="html">
+        <source>No grants: only fleet admins reach this cluster</source>
+        <target>Keine Freigaben: Nur Flotten-Admins erreichen diesen Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-editGrant" datatype="html">
+        <source>Edit grant</source>
+        <target>Freigabe bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-removeGrant" datatype="html">
+        <source>Remove grant</source>
+        <target>Freigabe entfernen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-notFound" datatype="html">
+        <source>Cluster not found, or no access</source>
+        <target>Cluster nicht gefunden oder kein Zugriff</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-user" datatype="html">
+        <source>User</source>
+        <target>Benutzer</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-userSearch" datatype="html">
+        <source>Search by email</source>
+        <target>Nach E-Mail suchen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-userPick" datatype="html">
+        <source>Matching users</source>
+        <target>Passende Benutzer</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-userId" datatype="html">
+        <source>User id</source>
+        <target>Benutzer-ID</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-project" datatype="html">
+        <source>Project</source>
+        <target>Projekt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-projectHint" datatype="html">
+        <source>Empty: the whole cluster.</source>
+        <target>Leer: der ganze Cluster.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-role" datatype="html">
+        <source>Role</source>
+        <target>Rolle</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-back" datatype="html">
+        <source>Back to the clusters</source>
+        <target>Zurück zu den Clustern</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-refresh" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-grantTitle" datatype="html">
+        <source>Grant access</source>
+        <target>Zugriff freigeben</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-revokeTitle" datatype="html">
+        <source>Remove the grant?</source>
+        <target>Freigabe entfernen?</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-revokeMessage" datatype="html">
+        <source>The user loses this access to the cluster through the fleet.</source>
+        <target>Der Benutzer verliert diesen Zugriff auf den Cluster über die Flotte.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-revokeConfirm" datatype="html">
+        <source>Remove</source>
+        <target>Entfernen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-title" datatype="html">
+        <source>Cluster</source>
+        <target>Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-userSearchFailed" datatype="html">
+        <source>The user search is not available; enter the user id.</source>
+        <target>Die Benutzersuche ist nicht verfügbar; geben Sie die Benutzer-ID ein.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-userRequired" datatype="html">
+        <source>Choose a user (or enter the user id).</source>
+        <target>Wählen Sie einen Benutzer (oder geben Sie die Benutzer-ID ein).</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCluster-projectInvalid" datatype="html">
+        <source>Project: a project name of the cluster.</source>
+        <target>Projekt: ein Projektname des Clusters.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-colName" datatype="html">
+        <source>Cluster</source>
+        <target>Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-colConnection" datatype="html">
+        <source>Connection</source>
+        <target>Verbindung</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-colVersion" datatype="html">
+        <source>Version</source>
+        <target>Version</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-colEndpoint" datatype="html">
+        <source>Endpoint</source>
+        <target>Endpunkt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-colAccess" datatype="html">
+        <source>Your access</source>
+        <target>Ihr Zugriff</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-colActions" datatype="html">
+        <source>Actions</source>
+        <target>Aktionen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-cloud" datatype="html">
+        <source>Loadweaver Cloud</source>
+        <target>Loadweaver Cloud</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-readOnlyUntil" datatype="html">
+        <source>Read-only until</source>
+        <target>Schreibgeschützt bis</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-retired" datatype="html">
+        <source>Retired</source>
+        <target>Stillgelegt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-open" datatype="html">
+        <source>Open</source>
+        <target>Öffnen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-testVersion" datatype="html">
+        <source>version</source>
+        <target>Version</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-testConnection" datatype="html">
+        <source>Test connection</source>
+        <target>Verbindung testen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-empty" datatype="html">
+        <source>No clusters yet</source>
+        <target>Noch keine Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-emptyHint" datatype="html">
+        <source>Register a cluster with its control-plane endpoint and the PAT of a dedicated fleet service user.</source>
+        <target>Registrieren Sie einen Cluster mit dem Endpunkt seiner Control Plane und dem PAT eines eigenen Flotten-Dienstbenutzers.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-name" datatype="html">
+        <source>Name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-description" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-endpoint" datatype="html">
+        <source>Control-plane endpoint</source>
+        <target>Control-Plane-Endpunkt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-endpointHint" datatype="html">
+        <source>HTTPS URL of the cluster&apos;s control plane, without /api.</source>
+        <target>HTTPS-URL der Control Plane des Clusters, ohne /api.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-credential" datatype="html">
+        <source>Service credential</source>
+        <target>Dienst-Zugangsdaten</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-ca" datatype="html">
+        <source>CA bundle (PEM, private CAs only)</source>
+        <target>CA-Bundle (PEM, nur private CAs)</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-removeCa" datatype="html">
+        <source>Remove the custom CA</source>
+        <target>Eigene CA entfernen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-testBeforeSave" datatype="html">
+        <source>Test the connection before saving</source>
+        <target>Verbindung vor dem Speichern testen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-title" datatype="html">
+        <source>Clusters</source>
+        <target>Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-register" datatype="html">
+        <source>Register cluster</source>
+        <target>Cluster registrieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-refresh" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-edit" datatype="html">
+        <source>Edit connection</source>
+        <target>Verbindung bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-delete" datatype="html">
+        <source>Remove connection</source>
+        <target>Verbindung entfernen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-poll" datatype="html">
+        <source>Check now</source>
+        <target>Jetzt prüfen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-deleteTitle" datatype="html">
+        <source>Remove the connection?</source>
+        <target>Verbindung entfernen?</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-deleteMessage" datatype="html">
+        <source>The fleet forgets the connection and its grants. The cluster itself is not changed.</source>
+        <target>Die Flotte vergisst die Verbindung und ihre Freigaben. Der Cluster selbst bleibt unverändert.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-deleteConfirm" datatype="html">
+        <source>Remove</source>
+        <target>Entfernen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-credentialHintNew" datatype="html">
+        <source>PAT of the cluster&apos;s fleet service user. Stored encrypted; it is never shown again.</source>
+        <target>PAT des Flotten-Dienstbenutzers des Clusters. Wird verschlüsselt gespeichert und nie wieder angezeigt.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-credentialHintAgain" datatype="html">
+        <source>Required again: the endpoint or CA changes.</source>
+        <target>Erneut erforderlich: Endpunkt oder CA ändern sich.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-credentialHintKeep" datatype="html">
+        <source>Leave empty to keep the stored credential (ending in</source>
+        <target>Leer lassen, um die gespeicherten Zugangsdaten zu behalten (endend auf</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-credentialShort" datatype="html">
+        <source>The service credential has at least 16 characters.</source>
+        <target>Die Dienst-Zugangsdaten haben mindestens 16 Zeichen.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-nameInvalid" datatype="html">
+        <source>Name: lowercase letters, digits and dashes (DNS label).</source>
+        <target>Name: Kleinbuchstaben, Ziffern und Bindestriche (DNS-Label).</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-required" datatype="html">
+        <source>Endpoint and service credential are required.</source>
+        <target>Endpunkt und Dienst-Zugangsdaten sind erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetClusters-credentialAgain" datatype="html">
+        <source>Changing the endpoint or the CA needs the service credential again.</source>
+        <target>Wer Endpunkt oder CA ändert, muss die Dienst-Zugangsdaten erneut angeben.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-noneSelectable" datatype="html">
+        <source>Comparing needs a cluster-wide grant on at least two clusters.</source>
+        <target>Für einen Vergleich brauchen Sie eine clusterweite Freigabe für mindestens zwei Cluster.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-limits" datatype="html">
+        <source>2 to 8 clusters</source>
+        <target>2 bis 8 Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-colCluster" datatype="html">
+        <source>Cluster</source>
+        <target>Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-colVersion" datatype="html">
+        <source>Version</source>
+        <target>Version</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-colLatest" datatype="html">
+        <source>Latest available</source>
+        <target>Neueste verfügbare</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-colSites" datatype="html">
+        <source>Sites</source>
+        <target>Standorte</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-colNodes" datatype="html">
+        <source>Nodes up</source>
+        <target>Nodes aktiv</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-colCpu" datatype="html">
+        <source>CPU</source>
+        <target>CPU</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-colMemory" datatype="html">
+        <source>Memory</source>
+        <target>Arbeitsspeicher</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-colKind" datatype="html">
+        <source>Kind</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-colName" datatype="html">
+        <source>Name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-colState" datatype="html">
+        <source>Drift</source>
+        <target>Abweichung</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-missing" datatype="html">
+        <source>missing</source>
+        <target>fehlt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-different" datatype="html">
+        <source>different</source>
+        <target>abweichend</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-sumVersions" datatype="html">
+        <source>Versions</source>
+        <target>Versionen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-sumIdentical" datatype="html">
+        <source>Identical policies</source>
+        <target>Gleiche Richtlinien</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-sumDifferent" datatype="html">
+        <source>Different</source>
+        <target>Abweichend</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-sumMissing" datatype="html">
+        <source>Missing somewhere</source>
+        <target>Fehlen irgendwo</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-versions" datatype="html">
+        <source>Versions</source>
+        <target>Versionen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-capacity" datatype="html">
+        <source>Capacity</source>
+        <target>Kapazität</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-drift" datatype="html">
+        <source>Policy drift</source>
+        <target>Richtlinienabweichungen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-noDrift" datatype="html">
+        <source>The policies are the same on every cluster</source>
+        <target>Die Richtlinien sind auf allen Clustern gleich</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-empty" datatype="html">
+        <source>Choose 2 to 8 clusters to compare</source>
+        <target>Wählen Sie 2 bis 8 Cluster für den Vergleich</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-title" datatype="html">
+        <source>Compare clusters</source>
+        <target>Cluster vergleichen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-selection" datatype="html">
+        <source>Clusters to compare</source>
+        <target>Zu vergleichende Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetCompare-compare" datatype="html">
+        <source>Compare</source>
+        <target>Vergleichen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-connHealthy" datatype="html">
+        <source>Healthy</source>
+        <target>Gesund</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-connDegraded" datatype="html">
+        <source>Degraded</source>
+        <target>Beeinträchtigt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-connUnreachable" datatype="html">
+        <source>Unreachable</source>
+        <target>Nicht erreichbar</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-connCredentialRejected" datatype="html">
+        <source>Credential rejected</source>
+        <target>Zugangsdaten abgelehnt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-connUnknown" datatype="html">
+        <source>Not checked yet</source>
+        <target>Noch nicht geprüft</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-roleAdmin" datatype="html">
+        <source>Admin</source>
+        <target>Admin</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-roleOperator" datatype="html">
+        <source>Operator</source>
+        <target>Operator</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-roleViewer" datatype="html">
+        <source>Viewer</source>
+        <target>Betrachter</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-roleNone" datatype="html">
+        <source>No access</source>
+        <target>Kein Zugriff</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-opRunning" datatype="html">
+        <source>Running</source>
+        <target>Läuft</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-opWaiting" datatype="html">
+        <source>Waiting</source>
+        <target>Wartet</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-opSucceeded" datatype="html">
+        <source>Succeeded</source>
+        <target>Erfolgreich</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-opFailed" datatype="html">
+        <source>Failed</source>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-opCancelled" datatype="html">
+        <source>Cancelled</source>
+        <target>Abgebrochen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-opSkipped" datatype="html">
+        <source>Skipped</source>
+        <target>Übersprungen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-opPending" datatype="html">
+        <source>Pending</source>
+        <target>Ausstehend</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-kindClone" datatype="html">
+        <source>Clone</source>
+        <target>Klon</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-kindFinalBackup" datatype="html">
+        <source>Final backup</source>
+        <target>Abschluss-Backup</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-kindRestore" datatype="html">
+        <source>Cross-cluster restore</source>
+        <target>Clusterübergreifende Wiederherstellung</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-allClusters" datatype="html">
+        <source>All clusters</source>
+        <target>Alle Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-source" datatype="html">
+        <source>Source</source>
+        <target>Quelle</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-choose" datatype="html">
+        <source>Choose…</source>
+        <target>Auswählen…</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-loadBackups" datatype="html">
+        <source>Load backups</source>
+        <target>Backups laden</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-noBackups" datatype="html">
+        <source>No succeeded backups found on the source cluster.</source>
+        <target>Keine erfolgreichen Backups im Quell-Cluster gefunden.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-colBackup" datatype="html">
+        <source>Backup</source>
+        <target>Backup</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-colSize" datatype="html">
+        <source>Size</source>
+        <target>Größe</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-colVolume" datatype="html">
+        <source>Target volume</source>
+        <target>Ziel-Volume</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-target" datatype="html">
+        <source>Target</source>
+        <target>Ziel</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-modeReplace" datatype="html">
+        <source>Replace the volume content</source>
+        <target>Inhalt des Volumes ersetzen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-modeMerge" datatype="html">
+        <source>Merge into the volume</source>
+        <target>In das Volume zusammenführen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-applyHint" datatype="html">
+        <source> Without apply, the plans wait in the target cluster for its operators. With apply, the target&apos;s approval rules still hold them until they are approved in the target&apos;s own console. </source>
+        <target> Ohne Anwenden warten die Pläne im Ziel-Cluster auf dessen Operatoren. Mit Anwenden halten die Freigaberegeln des Ziels sie zurück, bis sie in der eigenen Konsole des Ziels freigegeben sind. </target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-start" datatype="html">
+        <source>Start</source>
+        <target>Starten</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-cluster" datatype="html">
+        <source>Cluster</source>
+        <target>Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-empty" datatype="html">
+        <source>No fleet operations yet</source>
+        <target>Noch keine Flottenvorgänge</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-emptyHint" datatype="html">
+        <source>Restore a backup of one cluster into another, or clone a deployment with its data.</source>
+        <target>Stellen Sie ein Backup eines Clusters in einem anderen wieder her oder klonen Sie ein Deployment mit seinen Daten.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-kind" datatype="html">
+        <source>What</source>
+        <target>Was</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-kindRestore" datatype="html">
+        <source>Restore into an existing deployment</source>
+        <target>In ein bestehendes Deployment wiederherstellen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-kindClone" datatype="html">
+        <source>Clone a deployment with its data</source>
+        <target>Deployment mit seinen Daten klonen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-sourceCluster" datatype="html">
+        <source>Source cluster</source>
+        <target>Quell-Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-sourceProject" datatype="html">
+        <source>Project (filters the backups)</source>
+        <target>Projekt (filtert die Backups)</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-cloneProject" datatype="html">
+        <source>Source project</source>
+        <target>Quellprojekt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-cloneDeployment" datatype="html">
+        <source>Source deployment</source>
+        <target>Quell-Deployment</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-targetCluster" datatype="html">
+        <source>Target cluster</source>
+        <target>Ziel-Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-targetProject" datatype="html">
+        <source>Target project</source>
+        <target>Zielprojekt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-targetDeployment" datatype="html">
+        <source>Target deployment</source>
+        <target>Ziel-Deployment</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-mode" datatype="html">
+        <source>Restore mode</source>
+        <target>Wiederherstellungsmodus</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-apply" datatype="html">
+        <source>Apply the plans on the target</source>
+        <target>Pläne im Ziel anwenden</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-errClusters" datatype="html">
+        <source>Choose the source and the target cluster.</source>
+        <target>Wählen Sie Quell- und Ziel-Cluster.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-errBackups" datatype="html">
+        <source>Choose 1 to 16 backups.</source>
+        <target>Wählen Sie 1 bis 16 Backups.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-errVolume" datatype="html">
+        <source>Every backup needs a target volume name.</source>
+        <target>Jedes Backup braucht den Namen eines Ziel-Volumes.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-errTarget" datatype="html">
+        <source>Target project and deployment are required.</source>
+        <target>Zielprojekt und Ziel-Deployment sind erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-errClone" datatype="html">
+        <source>Cloning needs the source project and deployment.</source>
+        <target>Zum Klonen sind Quellprojekt und Quell-Deployment erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-title" datatype="html">
+        <source>Fleet operations</source>
+        <target>Flottenvorgänge</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-new" datatype="html">
+        <source>Restore or clone across clusters</source>
+        <target>Clusterübergreifend wiederherstellen oder klonen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-refresh" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-wizardTitle" datatype="html">
+        <source>Cross-cluster restore / clone</source>
+        <target>Clusterübergreifende Wiederherstellung / Klon</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-cancelTitle" datatype="html">
+        <source>Cancel the operation?</source>
+        <target>Vorgang abbrechen?</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-cancelMessage" datatype="html">
+        <source>The fleet stops it. Imports and plans the clusters already created stay visible there.</source>
+        <target>Die Flotte stoppt ihn. Importe und Pläne, die die Cluster bereits angelegt haben, bleiben dort sichtbar.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-cancelConfirm" datatype="html">
+        <source>Cancel operation</source>
+        <target>Vorgang abbrechen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-keep" datatype="html">
+        <source>Keep running</source>
+        <target>Weiterlaufen lassen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOps-close" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-open" datatype="html">
+        <source>Open</source>
+        <target>Öffnen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-teardown" datatype="html">
+        <source>Teardown: read-only until</source>
+        <target>Abbau: schreibgeschützt bis</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-retired" datatype="html">
+        <source>Retired</source>
+        <target>Stillgelegt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-cloud" datatype="html">
+        <source>Loadweaver Cloud</source>
+        <target>Loadweaver Cloud</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-limited" datatype="html">
+        <source>Project access</source>
+        <target>Projektzugriff</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-rollout" datatype="html">
+        <source>Update running</source>
+        <target>Update läuft</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-version" datatype="html">
+        <source>Version</source>
+        <target>Version</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-sites" datatype="html">
+        <source>Sites</source>
+        <target>Standorte</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-nodes" datatype="html">
+        <source>Nodes up</source>
+        <target>Nodes aktiv</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-alerts" datatype="html">
+        <source>Open alerts</source>
+        <target>Offene Alarme</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-plans" datatype="html">
+        <source>Pending plans</source>
+        <target>Ausstehende Pläne</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-inbox" datatype="html">
+        <source>Inbox</source>
+        <target>Posteingang</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-cpu" datatype="html">
+        <source>CPU</source>
+        <target>CPU</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-memory" datatype="html">
+        <source>Memory</source>
+        <target>Arbeitsspeicher</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-details" datatype="html">
+        <source>Connection &amp; grants</source>
+        <target>Verbindung &amp; Freigaben</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-approveNative" datatype="html">
+        <source>Approve in the cluster&apos;s console</source>
+        <target>In der Konsole des Clusters freigeben</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-openNative" datatype="html">
+        <source>Open in the cluster&apos;s console</source>
+        <target>In der Konsole des Clusters öffnen</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-withoutLocation" datatype="html">
+        <source>Sites without a location</source>
+        <target>Standorte ohne Ortsangabe</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-sumClusters" datatype="html">
+        <source>Clusters</source>
+        <target>Cluster</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-sumAttention" datatype="html">
+        <source>Needs attention</source>
+        <target>Handlungsbedarf</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-sumAlerts" datatype="html">
+        <source>Open alerts</source>
+        <target>Offene Alarme</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-sumPlans" datatype="html">
+        <source>Pending plans</source>
+        <target>Ausstehende Pläne</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-sumUpgrades" datatype="html">
+        <source>Upgrades available</source>
+        <target>Upgrades verfügbar</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-sumTeardown" datatype="html">
+        <source>In teardown</source>
+        <target>Im Abbau</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-empty" datatype="html">
+        <source>No clusters in the fleet yet</source>
+        <target>Noch keine Cluster in der Flotte</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-emptyHint" datatype="html">
+        <source>Fleet admins register clusters under Clusters; others see the clusters they have a grant on.</source>
+        <target>Flotten-Admins registrieren Cluster unter Cluster; alle anderen sehen die Cluster, für die sie eine Freigabe haben.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-inboxTitle" datatype="html">
+        <source>Needs attention</source>
+        <target>Handlungsbedarf</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-inboxEmpty" datatype="html">
+        <source>Nothing needs attention</source>
+        <target>Kein Handlungsbedarf</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-sitesTitle" datatype="html">
+        <source>Sites</source>
+        <target>Standorte</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-noLocations" datatype="html">
+        <source>No site locations known</source>
+        <target>Keine Standortkoordinaten bekannt</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-noLocationsHint" datatype="html">
+        <source>Set spec.location (latitude / longitude) on the Site resources to see them on the map.</source>
+        <target>Setzen Sie spec.location (Breiten- / Längengrad) in den Site-Ressourcen, um sie auf der Karte zu sehen.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-title" datatype="html">
+        <source>Fleet overview</source>
+        <target>Flottenübersicht</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-refresh" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetOverview-mapLabel" datatype="html">
+        <source>World map of sites</source>
+        <target>Weltkarte der Standorte</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetUnavailable-title" datatype="html">
+        <source>Not available through the fleet</source>
+        <target>Über die Flotte nicht verfügbar</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetUnavailable-headingPage" datatype="html">
+        <source>Not available through the fleet:</source>
+        <target>Über die Flotte nicht verfügbar:</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetUnavailable-message" datatype="html">
+        <source>This part of the cluster is never relayed by the fleet (secrets, personal settings of the service user, joining, Git connections, approvals). Open it in the cluster&apos;s own console.</source>
+        <target>Dieser Teil des Clusters wird von der Flotte nie weitergeleitet (Secrets, persönliche Einstellungen des Dienstbenutzers, Beitritt, Git-Verbindungen, Freigaben). Öffnen Sie ihn in der eigenen Konsole des Clusters.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetUnavailable-overview" datatype="html">
+        <source>Cluster overview</source>
+        <target>Cluster-Übersicht</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleetUnavailable-fleet" datatype="html">
+        <source>Fleet overview</source>
+        <target>Flottenübersicht</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-approvalNative" datatype="html">
+        <source>Approvals are not available through the fleet: approve this plan in the cluster&apos;s own console.</source>
+        <target>Freigaben sind über die Flotte nicht möglich: Geben Sie diesen Plan in der eigenen Konsole des Clusters frei.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-relayUnavailable" datatype="html">
+        <source>Not available through the fleet: this part of the cluster is only reachable in the cluster&apos;s own console.</source>
+        <target>Über die Flotte nicht verfügbar: Dieser Teil des Clusters ist nur in der eigenen Konsole des Clusters erreichbar.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-relayCredential" datatype="html">
+        <source>The cluster refused the fleet&apos;s service credential: the cluster connection needs a new credential (fleet admins: Clusters → edit).</source>
+        <target>Der Cluster hat die Dienst-Zugangsdaten der Flotte abgelehnt: Die Cluster-Verbindung braucht neue Zugangsdaten (Flotten-Admins: Cluster → bearbeiten).</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-relayReadOnly" datatype="html">
+        <source>The cluster is in its read-only grace period: changes through the fleet are closed.</source>
+        <target>Der Cluster ist in seiner schreibgeschützten Kulanzfrist: Änderungen über die Flotte sind gesperrt.</target>
+      </trans-unit>
+      <trans-unit id="lwConsoleFleet-relayForbidden" datatype="html">
+        <source>No permission through the fleet: your grant on this cluster does not allow it.</source>
+        <target>Keine Berechtigung über die Flotte: Ihre Freigabe für diesen Cluster erlaubt das nicht.</target>
       </trans-unit>
     </body>
   </file>

@@ -12,6 +12,13 @@ info:
     The built-in private registry is served under `/v2` (outside the `/api` prefix) for `docker login`,
     `docker push` and `docker pull` of `registry.lw/<project>/<repository>` images: requests are streamed to the
     registry instances on the control-plane members, which authenticate with tokens from `/registry/token`.
+
+    Fleet services (3.24) call this API with a PAT of a dedicated service user and send the acting fleet user in
+    `X-Loadweaver-On-Behalf-Of`. The header is recorded as `details.onBehalfOf` in the audit log only when the PAT
+    carries the opt-in scope `fleet:on-behalf-of` (ignored for interactive sessions, the static API key and other
+    tokens); the audit actor stays the service user. `fleet:on-behalf-of` can only be granted (`POST /auth/tokens`,
+    `PATCH /auth/tokens/{id}`) by accounts with a cluster-wide role (cluster admins, the fleet service user); 403
+    for everyone else.
   contact:
     name: ForePath
     email: hi@forepath.io
@@ -1734,6 +1741,72 @@ paths:
           description: Volume not found
         '409':
           description: A backup of the volume is running
+  /backups/now/all:
+    post:
+      summary: Back up every volume now (final backup)
+      description: |
+        Cluster admins only (scope `cluster:admin`): starts one backup per placed volume that has none running, e.g.
+        the final backup a fleet service runs before a Loadweaver Cloud teardown (3.24). Secondary copies to external
+        targets follow after each backup; platform backups are separate (`/backups/platform/{kind}/run`). Audited as
+        `backup.all-started`.
+      operationId: backupAllNow
+      responses:
+        '200':
+          description: Volumes whose backup started, and the ones skipped (running / not placed)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [started, skipped]
+                properties:
+                  started: { type: array, items: { type: string } }
+                  skipped: { type: array, items: { type: string } }
+        '403':
+          description: Not a cluster admin
+  /backups/imports:
+    post:
+      summary: Import a backup archive (cross-cluster restore target)
+      description: |
+        Imports a tar archive exported by another cluster (`GET /backups/{id}/archive`) into the catalog of the target
+        volume's project, as a new backup without policy (no retention removes it; deletion requests apply). Restore
+        it with a `Restore` resource through plan / apply. Operators of the project; scope `backups:import`. The body
+        is streamed to a temporary file, capped by `LOADWEAVER_BACKUP_ARCHIVE_MAX_BYTES` (default 50 GiB); only files,
+        directories and symbolic links are accepted. Audited as `backup.imported` with the source labels (3.20, 3.24).
+      operationId: importBackupArchive
+      parameters:
+        - in: query
+          name: volume
+          required: true
+          description: Target volume `project/deployment/volume` (must be placed)
+          schema: { type: string }
+        - in: query
+          name: sourceCluster
+          schema: { type: string, pattern: '^[A-Za-z0-9._:-]{1,128}$' }
+        - in: query
+          name: sourceBackup
+          schema: { type: string, pattern: '^[A-Za-z0-9._:-]{1,128}$' }
+      requestBody:
+        required: true
+        content:
+          application/x-tar:
+            schema: { type: string, format: binary }
+      responses:
+        '201':
+          description: The imported backup
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Backup'
+        '400':
+          description: Invalid volume / labels / archive, or not sent as application/x-tar
+        '403':
+          description: Not an operator of the project
+        '404':
+          description: Volume not found
+        '409':
+          description: A backup of the volume is running
+        '413':
+          description: Archive larger than the limit
   /backups/diff:
     get:
       summary: Diff two backups of a volume
@@ -2093,6 +2166,35 @@ paths:
           content:
             application/octet-stream:
               schema: { type: string, format: binary }
+  /backups/{id}/archive:
+    get:
+      summary: Export a whole backup as a tar archive (cross-cluster restore source)
+      description: |
+        The backup restored into a tar archive by the control plane (decrypted with this cluster's backup key) and
+        streamed; the source side of a cross-cluster restore / clone through the fleet service (3.20, 3.24). Project
+        backups only; operators of the project; scope `backups:export`. Audited as `backup.exported`.
+      operationId: exportBackupArchive
+      parameters:
+        - {
+            in: path,
+            name: id,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      responses:
+        '200':
+          description: Tar archive
+          content:
+            application/x-tar:
+              schema: { type: string, format: binary }
+        '400':
+          description: The backup is not available
+        '403':
+          description: Not an operator of the project
+        '404':
+          description: Backup not found (or cluster-scoped)
+        '413':
+          description: Backup larger than `LOADWEAVER_BACKUP_ARCHIVE_MAX_BYTES`
   /backups/{id}/restore-test:
     post:
       summary: Run a restore test of a backup now
@@ -2675,12 +2777,15 @@ paths:
     post:
       summary: Report device posture
       description: |
-        Core posture checks reported by the device; the control plane adds the verdicts of the posture plugins its
-        groups require (10 s timeout each). Devices failing a group's requirements get its `restrictedGroup`
-        instead. Reports older than 24 hours count as missing. A user device reports only for itself; infra admins
-        only for machines. Needs an interactive login. Once a plugin recognised the `deviceId` (verdict other than
-        `unknown`), it is pinned: later reports with another id are rejected, and no other valid client may report
-        a pinned id.
+        Posture report protocol v1 (`postureReportSchema` in util-model): core checks and identifiers reported by the
+        device, plus an optional device certificate with a proof of possession (signature over
+        `loadweaver-posture-v1:<device id>:<timestamp>` with the certificate's key, timestamp within 5 minutes).
+        MDM / EDR results come from the posture integrations' syncs (`/posture/integrations`), not from this call; a
+        device reporting new identifiers triggers a sync. Devices failing a group's requirements get its
+        `restrictedGroup` instead. Reports older than 24 hours count as missing. A user device reports only for
+        itself; infra admins only for machines. Needs an interactive login. `deviceId` and `serialNumber` are pinned
+        at the first report: later reports with other values are rejected, and no other valid client may report a
+        pinned value.
       operationId: reportVpnPosture
       parameters:
         - $ref: '#/components/parameters/VpnClientId'
@@ -2696,11 +2801,46 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/VpnClientSummary' }
         '400':
-          description: Invalid report, or a `deviceId` other than the pinned one
+          description: Invalid report, or a `deviceId` / `serialNumber` other than the pinned one
         '404':
           description: Device not found
         '409':
-          description: The `deviceId` belongs to another enrolled device
+          description: The `deviceId` or `serialNumber` belongs to another enrolled device
+  /vpn/devices/{id}/certificate:
+    post:
+      summary: Issue a device certificate
+      description: |
+        A device certificate from the cluster CA for the caller's own device (identity
+        `spiffe://<cluster>.loadweaver/client/<device id>`), valid until the device key expires; a posture fact
+        (`device.certificate.valid`). The key pair is generated on the device (CSR, ECDSA P-256). A new certificate
+        supersedes the previous one. Needs an interactive login.
+      operationId: issueVpnDeviceCertificate
+      parameters:
+        - $ref: '#/components/parameters/VpnClientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [csr]
+              properties:
+                csr:
+                  {
+                    type: string,
+                    maxLength: 8192,
+                    description: PEM PKCS#10 certificate request,
+                  }
+      responses:
+        '201':
+          description: Issued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IssuedDeviceCertificate' }
+        '400':
+          description: Invalid CSR (signature, key type) or no interactive login
+        '404':
+          description: Device not found (not yours, revoked or expired)
   /vpn/devices/{id}:
     delete:
       summary: Revoke a device
@@ -2783,6 +2923,182 @@ paths:
                 { type: object, properties: { revoked: { type: integer } } }
         '403':
           $ref: '#/components/responses/Forbidden'
+  /posture/plugins:
+    get:
+      summary: List posture plugins
+      description: Built-in (Intune, Jamf Pro, Kandji, Defender for Endpoint, CrowdStrike Falcon, SentinelOne) and `DYNAMIC_POSTURE_PLUGINS`, with their configuration fields. Scope `cluster:read`.
+      operationId: listPosturePlugins
+      responses:
+        '200':
+          description: Plugins
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/PosturePluginInfo' },
+                }
+  /posture/integrations:
+    get:
+      summary: List posture integrations
+      description: MDM / EDR integrations with their sync state. Secret fields are never returned (`secretsSet` names them). Infra operators and cluster admins; scope `cluster:read`.
+      operationId: listPostureIntegrations
+      responses:
+        '200':
+          description: Integrations
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/PostureIntegration' },
+                }
+    post:
+      summary: Create a posture integration
+      description: Validates the configuration with the plugin (HTTPS, allowed hosts, formats) and stores it encrypted. The first sync runs with the next coordinator round. Cluster admins; scope `cluster:admin`.
+      operationId: createPostureIntegration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PostureIntegrationInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PostureIntegration' }
+        '400':
+          description: Unknown plugin, invalid name or configuration
+        '409':
+          description: Name taken, or 16 integrations exist
+  /posture/integrations/test:
+    post:
+      summary: Test an unsaved configuration
+      description: Authenticates and reads one page. The message never contains credentials. Scope `cluster:admin`.
+      operationId: testUnsavedPostureIntegration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, config]
+              properties:
+                type: { type: string }
+                config: { type: object, additionalProperties: { type: string } }
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PostureTestResult' }
+  /posture/integrations/{id}:
+    patch:
+      summary: Change a posture integration
+      description: Name and type are fixed. Omitted secret fields keep their stored value, an empty string clears a field. New configuration or matching resets the failure streak and syncs soon. Scope `cluster:admin`.
+      operationId: updatePostureIntegration
+      parameters:
+        - {
+            name: id,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PostureIntegrationInput' }
+      responses:
+        '200':
+          description: Changed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PostureIntegration' }
+        '404':
+          description: Not found
+    delete:
+      summary: Delete a posture integration
+      description: Removes the integration and its results from every device; devices re-evaluate at once (conditions on it fail closed). Scope `cluster:admin`.
+      operationId: deletePostureIntegration
+      parameters:
+        - {
+            name: id,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      responses:
+        '204':
+          description: Deleted
+  /posture/integrations/{id}/test:
+    post:
+      summary: Test a saved integration
+      operationId: testPostureIntegration
+      description: Scope `cluster:admin`.
+      parameters:
+        - {
+            name: id,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PostureTestResult' }
+  /posture/integrations/{id}/sync:
+    post:
+      summary: Sync now
+      description: Enqueues a sync (deduplicated per minute). Scope `cluster:admin`.
+      operationId: syncPostureIntegration
+      parameters:
+        - {
+            name: id,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      responses:
+        '202':
+          description: Enqueued
+  /posture/certificates:
+    get:
+      summary: Device certificate trust
+      description: Company CA bundle and CRLs, whether the cluster CA's device certificates count, and whether reports must prove possession. Scope `cluster:read`.
+      operationId: getPostureCertificateTrust
+      responses:
+        '200':
+          description: Settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CertificateTrustSettings' }
+    put:
+      summary: Change device certificate trust
+      description: The bundle may only contain CA certificates (≤ 64, ≤ 256 KiB); `null` clears. Scope `cluster:admin`.
+      operationId: updatePostureCertificateTrust
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                companyCaPem: { type: [string, 'null'] }
+                crlPem: { type: [string, 'null'] }
+                trustClusterCa: { type: boolean }
+                requireProof: { type: boolean }
+      responses:
+        '200':
+          description: Settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CertificateTrustSettings' }
+        '400':
+          description: Not a CA certificate, expired, or invalid CRL
   /vpn/sessions:
     get:
       summary: Active remote access sessions
@@ -3049,6 +3365,130 @@ paths:
           description: Token without the `metrics:read` scope
         '404':
           description: The `project` is not visible to the caller
+  /usage:
+    get:
+      summary: Usage of all projects
+      description: |
+        Usage metering (3.24): per project and meter, buckets of an hour, day or month (UTC) in `[from, to)`. Hourly
+        buckets are the billing record; they are recomputed until they are **final** (15 minutes after the hour) and
+        never change afterwards. Days / months are final once all their hours are and they have ended. Hourly rows
+        carry an `idempotencyKey` (`loadweaver:<cluster>:<project>:<meter>:<hour>`) and the Decabill subscription the
+        project was mapped to (`spec.billing.decabillSubscriptionId`) when the bucket was computed. Cluster roles only
+        (cluster admins, infra operators, auditors); Decabill's Loadweaver usage module reads
+        `?billingSubscription=<id>&granularity=hour&finalOnly=true` with an auditor's PAT. Scope `usage:read`.
+      operationId: getClusterUsage
+      parameters:
+        - $ref: '#/components/parameters/UsageFrom'
+        - $ref: '#/components/parameters/UsageTo'
+        - $ref: '#/components/parameters/UsageGranularity'
+        - $ref: '#/components/parameters/UsageMeter'
+        - $ref: '#/components/parameters/UsageFinalOnly'
+        - in: query
+          name: project
+          schema:
+            { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+        - in: query
+          name: billingSubscription
+          description: Only buckets of projects mapped to this Decabill subscription.
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Usage
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UsageReport' }
+        '400':
+          description: Invalid parameter, or the range is too long for the granularity (hour 93, day 400, month 800 days)
+        '403':
+          description: Token without the `usage:read` scope, or the caller has no cluster role
+  /usage/export:
+    get:
+      summary: Export the usage of all projects as CSV
+      description: |
+        `GET /usage` (same parameters and scoping) as CSV: header
+        `project,bucket,granularity,meter,unit,value,final,idempotency_key`. Scope `usage:read`.
+      operationId: exportClusterUsage
+      parameters:
+        - $ref: '#/components/parameters/UsageFrom'
+        - $ref: '#/components/parameters/UsageTo'
+        - $ref: '#/components/parameters/UsageGranularity'
+        - $ref: '#/components/parameters/UsageMeter'
+        - $ref: '#/components/parameters/UsageFinalOnly'
+        - in: query
+          name: project
+          schema:
+            { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+        - in: query
+          name: billingSubscription
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: CSV
+          content:
+            text/csv:
+              schema: { type: string }
+        '400':
+          description: Invalid parameter or range
+        '403':
+          description: Token without the `usage:read` scope, or the caller has no cluster role
+  /projects/{project}/usage:
+    parameters:
+      - in: path
+        name: project
+        required: true
+        schema: { type: string }
+    get:
+      summary: Usage of a project
+      description: |
+        `GET /usage` for one project: everyone who may read the project (members, auditors, infra operators, cluster
+        admins). Scope `usage:read`.
+      operationId: getProjectUsage
+      parameters:
+        - $ref: '#/components/parameters/UsageFrom'
+        - $ref: '#/components/parameters/UsageTo'
+        - $ref: '#/components/parameters/UsageGranularity'
+        - $ref: '#/components/parameters/UsageMeter'
+        - $ref: '#/components/parameters/UsageFinalOnly'
+      responses:
+        '200':
+          description: Usage
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UsageReport' }
+        '400':
+          description: Invalid parameter or range
+        '403':
+          description: Token without the `usage:read` scope
+        '404':
+          description: Project not visible to the caller
+  /projects/{project}/usage/export:
+    parameters:
+      - in: path
+        name: project
+        required: true
+        schema: { type: string }
+    get:
+      summary: Export the usage of a project as CSV
+      description: '`GET /projects/{project}/usage` as CSV (columns as `GET /usage/export`). Scope `usage:read`.'
+      operationId: exportProjectUsage
+      parameters:
+        - $ref: '#/components/parameters/UsageFrom'
+        - $ref: '#/components/parameters/UsageTo'
+        - $ref: '#/components/parameters/UsageGranularity'
+        - $ref: '#/components/parameters/UsageMeter'
+        - $ref: '#/components/parameters/UsageFinalOnly'
+      responses:
+        '200':
+          description: CSV
+          content:
+            text/csv:
+              schema: { type: string }
+        '400':
+          description: Invalid parameter or range
+        '403':
+          description: Token without the `usage:read` scope
+        '404':
+          description: Project not visible to the caller
   /alerts:
     get:
       summary: List alerts
@@ -4373,6 +4813,50 @@ paths:
               schema: { type: string, format: binary }
         '404':
           description: No database configured
+  /install/components.sh:
+    get:
+      summary: Node components script
+      description: >-
+        The installer's component setup (Docker with live-restore, gVisor, WireGuard, nftables, BIRD, keepalived,
+        storage userland) as a standalone, idempotent script without a join, for a first node bootstrapped from a
+        verified release agent (Decabill's `loadweaver` service kind). Contains no secrets; never restarts Docker.
+      operationId: componentsScript
+      security: []
+      responses:
+        '200':
+          description: Shell script
+          content:
+            text/x-shellscript:
+              schema: { type: string }
+  /install/claim-status:
+    get:
+      summary: Admin claim status
+      description: >-
+        Whether the first console registration still needs the one-time admin claim token: true only with
+        `AUTHENTICATION_METHOD=users`, `ADMIN_CLAIM_TOKEN_SHA256` set (by `loadweaver-agent bootstrap
+        --admin-claim-token-file`, Decabill's Loadweaver Cloud) and no account yet. While true, `POST /auth/register`
+        needs `adminClaimToken` (403 without / with a wrong one, 429 after repeated failures per client); afterwards
+        registration is closed (503, as with `DISABLE_SIGNUP`) — the claimed administrator creates or invites users.
+        `claimConfigured` says whether this instance has the claim hash at all; only `claimConfigured: true` with
+        `claimRequired: false` means the cluster was claimed (older clusters omit `claimConfigured`: unknown).
+        Contains no secrets.
+      operationId: adminClaimStatus
+      security: []
+      responses:
+        '200':
+          description: Claim status
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [claimRequired, claimConfigured]
+                properties:
+                  claimRequired: { type: boolean }
+                  claimConfigured:
+                    {
+                      type: boolean,
+                      description: ADMIN_CLAIM_TOKEN_SHA256 is configured on this instance (users authentication),
+                    }
   /install/loadweaver-agent.service:
     get:
       summary: systemd unit of the node agent
@@ -5073,6 +5557,29 @@ components:
       required: true
       description: '`node.cpu_cores`, `replica.memory_bytes`, `ingress.requests_per_s`, … (see docs/loadweaver/features/metrics.md)'
       schema: { type: string, pattern: '^[a-z][a-z0-9_.]{0,63}$' }
+    UsageFrom:
+      in: query
+      name: from
+      description: Start (floored to the granularity, UTC); default the start of the current month
+      schema: { type: string, format: date-time }
+    UsageTo:
+      in: query
+      name: to
+      description: End (exclusive); default now
+      schema: { type: string, format: date-time }
+    UsageGranularity:
+      in: query
+      name: granularity
+      schema: { type: string, enum: [hour, day, month], default: day }
+    UsageMeter:
+      in: query
+      name: meter
+      schema: { $ref: '#/components/schemas/UsageMeterKey' }
+    UsageFinalOnly:
+      in: query
+      name: finalOnly
+      description: Only final buckets (what billing consumes)
+      schema: { type: boolean, default: false }
     MetricFrom:
       in: query
       name: from
@@ -6479,7 +6986,9 @@ components:
           }
     PostureReportDto:
       type: object
+      description: Posture report protocol v1.
       required: [platform, osVersion]
+      additionalProperties: false
       properties:
         platform: { type: string, enum: [macos, windows, linux, ios, android] }
         osVersion: { type: string, pattern: '^[0-9A-Za-z.+-]{1,32}$' }
@@ -6490,7 +6999,183 @@ components:
         deviceId:
           type: string
           pattern: '^[0-9A-Za-z._:-]{1,128}$'
-          description: MDM / EDR device id or serial, passed to posture plugins
+          description: MDM / EDR device id (Intune / Entra device id, Defender machine id, CrowdStrike AID, SentinelOne agent id / UUID)
+        serialNumber: { type: string, pattern: '^[0-9A-Za-z._-]{1,64}$' }
+        hostname: { type: string, maxLength: 253 }
+        certificate:
+          type: object
+          required: [pem]
+          properties:
+            pem: { type: string, maxLength: 16384 }
+            proof:
+              type: object
+              required: [timestamp, signature]
+              properties:
+                timestamp: { type: string, format: date-time }
+                signature:
+                  {
+                    type: string,
+                    description: 'Base64 signature over `loadweaver-posture-v1:<device id>:<timestamp>` (ECDSA P-256 / P-384 raw or DER, RSA PKCS#1 v1.5 SHA-256)',
+                  }
+    PostureIntegrationFact:
+      type: object
+      properties:
+        integration: { type: string }
+        type: { type: string }
+        category: { type: string, enum: [mdm, edr] }
+        status: { type: string, enum: [compliant, non-compliant, unknown] }
+        risk: { type: string, enum: [low, medium, high] }
+        reasons: { type: array, items: { type: string } }
+        checkedAt: { type: string, format: date-time }
+        staleAt: { type: string, format: date-time }
+        matchedBy: { type: string, enum: [serial, deviceId, hostname] }
+    VpnClientPosture:
+      type: object
+      properties:
+        reportedAt: { type: [string, 'null'], format: date-time }
+        platform: { type: [string, 'null'] }
+        osVersion: { type: [string, 'null'] }
+        appVersion: { type: [string, 'null'] }
+        diskEncryption: { type: [boolean, 'null'] }
+        firewall: { type: [boolean, 'null'] }
+        screenLock: { type: [boolean, 'null'] }
+        serialNumber: { type: [string, 'null'] }
+        hostname: { type: [string, 'null'] }
+        integrations:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/PostureIntegrationFact' },
+          }
+        certificate:
+          type: [object, 'null']
+          properties:
+            source: { type: string, enum: [company, loadweaver] }
+            valid: { type: boolean }
+            revoked: { type: boolean }
+            serialNumber: { type: string }
+            notAfter: { type: string, format: date-time }
+            reasons: { type: array, items: { type: string } }
+            checkedAt: { type: string, format: date-time }
+    PosturePluginInfo:
+      type: object
+      properties:
+        id: { type: string }
+        displayName: { type: string }
+        category: { type: string, enum: [mdm, edr] }
+        defaultMatchBy:
+          {
+            type: array,
+            items: { type: string, enum: [serial, deviceId, hostname] },
+            description: Never contains hostname (self-reported; opt-in per integration with a warning),
+          }
+        supportsUserMatch:
+          {
+            type: boolean,
+            description: Vendor records carry the device user (e-mail / UPN); integrations then require it to match the VPN client owner by default,
+          }
+        fields:
+          type: array
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              label: { type: string }
+              secret: { type: boolean }
+              required: { type: boolean }
+              options: { type: array, items: { type: string } }
+              default: { type: string }
+              description: { type: string }
+    PostureIntegrationInput:
+      type: object
+      properties:
+        name:
+          {
+            type: string,
+            pattern: '^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$',
+            description: Create only; used in conditions,
+          }
+        type: { type: string, description: Create only; plugin id }
+        enabled: { type: boolean }
+        config: { type: object, additionalProperties: { type: string } }
+        matchBy:
+          {
+            type: array,
+            items: { type: string, enum: [serial, deviceId, hostname] },
+            minItems: 1,
+            maxItems: 3,
+            description: Defaults to the plugin's defaultMatchBy. hostname is weak (self-reported,
+            not unique) and adds a warning,
+          }
+        requireUserMatch:
+          {
+            type: boolean,
+            description: "The vendor's device user must match the VPN client owner (e-mail / UPN, case-insensitive). Default true where the plugin supports it; true for a plugin without user data is refused (400). Machine clients are never user-matched",
+          }
+        intervalMinutes:
+          { type: integer, minimum: 5, maximum: 1440, default: 30 }
+        maxAgeMinutes:
+          { type: integer, minimum: 10, maximum: 10080, default: 1440 }
+    PostureIntegration:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        type: { type: string }
+        displayName: { type: string }
+        category: { type: string, enum: [mdm, edr] }
+        enabled: { type: boolean }
+        config:
+          {
+            type: object,
+            additionalProperties: { type: string },
+            description: Non-secret fields only,
+          }
+        secretsSet:
+          {
+            type: array,
+            items: { type: string },
+            description: Secret fields that have a stored value,
+          }
+        matchBy: { type: array, items: { type: string } }
+        requireUserMatch: { type: boolean }
+        warnings:
+          {
+            type: array,
+            items: { type: string },
+            description: Weak matching settings (hostname matching,
+            user match turned off),
+          }
+        intervalMinutes: { type: integer }
+        maxAgeMinutes: { type: integer }
+        status: { type: string, enum: [ok, failing, pending, disabled] }
+        lastSyncAt: { type: [string, 'null'], format: date-time }
+        lastSuccessAt: { type: [string, 'null'], format: date-time }
+        lastError: { type: [string, 'null'] }
+        failures: { type: integer }
+        nextSyncAt: { type: [string, 'null'], format: date-time }
+        vendorDevices: { type: integer }
+        matchedDevices: { type: integer }
+    PostureTestResult:
+      type: object
+      properties:
+        ok: { type: boolean }
+        message: { type: string }
+    CertificateTrustSettings:
+      type: object
+      properties:
+        companyCaPem: { type: [string, 'null'] }
+        crlPem: { type: [string, 'null'] }
+        trustClusterCa: { type: boolean }
+        requireProof: { type: boolean }
+        companyCaSubjects: { type: array, items: { type: string } }
+        updatedAt: { type: [string, 'null'], format: date-time }
+    IssuedDeviceCertificate:
+      type: object
+      properties:
+        certificatePem: { type: string }
+        caCertificatePem: { type: string }
+        serialNumber: { type: string }
+        notAfter: { type: string, format: date-time }
     VpnClientSummary:
       type: object
       properties:
@@ -6509,6 +7194,7 @@ components:
           type: object
           additionalProperties: { type: array, items: { type: string } }
           description: Why the device fails, per group
+        posture: { $ref: '#/components/schemas/VpnClientPosture' }
         status: { type: string, enum: [active, expired, revoked] }
         createdAt: { type: string, format: date-time }
         expiresAt: { type: string, format: date-time }
@@ -7284,6 +7970,81 @@ components:
         after:
           type: [string, 'null']
           description: Position after the last line; null on an empty page
+    UsageReport:
+      type: object
+      required:
+        [cluster, from, to, granularity, meters, rows, totals, truncated]
+      properties:
+        cluster:
+          {
+            type: string,
+            description: Cluster id (part of the idempotency keys),
+          }
+        from:
+          {
+            type: string,
+            format: date-time,
+            description: Floored to the granularity (UTC),
+          }
+        to: { type: string, format: date-time }
+        granularity: { type: string, enum: [hour, day, month] }
+        meters:
+          type: array
+          items:
+            type: object
+            required: [key, unit, description]
+            properties:
+              key: { $ref: '#/components/schemas/UsageMeterKey' }
+              unit:
+                {
+                  type: string,
+                  examples: [core-hours, GiB-hours, GB, IP-hours],
+                }
+              description: { type: string }
+        rows:
+          type: array
+          items:
+            type: object
+            required: [project, bucket, meter, value, final]
+            properties:
+              project: { type: string }
+              bucket: { type: string, format: date-time }
+              meter: { $ref: '#/components/schemas/UsageMeterKey' }
+              value:
+                {
+                  type: number,
+                  minimum: 0,
+                  description: In the meter's unit,
+                  6 decimals,
+                }
+              final: { type: boolean }
+              idempotencyKey: { type: string, description: Hourly rows only }
+              billingSubscription:
+                { type: [string, 'null'], description: Hourly rows only }
+        totals:
+          type: array
+          items:
+            type: object
+            required: [project, meter, value]
+            properties:
+              project: { type: string }
+              meter: { $ref: '#/components/schemas/UsageMeterKey' }
+              value: { type: number }
+        truncated:
+          {
+            type: boolean,
+            description: More than 50 000 rows matched; narrow the range or the projects,
+          }
+    UsageMeterKey:
+      type: string
+      enum:
+        - cpu_core_hours
+        - memory_gib_hours
+        - storage_gib_hours
+        - storage_replica_gib_hours
+        - traffic_in_gb
+        - traffic_out_gb
+        - public_ip_hours
     MetricQueryResult:
       type: object
       required: [step, series]

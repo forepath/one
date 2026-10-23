@@ -11,6 +11,7 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcEmptyStateComponent,
+  FpcPanelComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 
@@ -30,6 +31,7 @@ export const DASHBOARD_ROW_PX = 64;
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcEmptyStateComponent,
+    FpcPanelComponent,
     FpcSpinnerComponent,
     LoadweaverMetricChartComponent,
   ],

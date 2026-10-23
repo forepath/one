@@ -202,7 +202,7 @@ describe('LoadweaverPlatformBackupsPageComponent', () => {
     expect(q('platform-copy-offsite')?.textContent).toContain('3.0 MiB');
     expect(q('platform-verified-offsite')?.textContent).toContain('dr/envelope-0042.json');
     expect(q('platform-dr-kit')?.textContent).toContain('Kit confirmed');
-    expect((q('platform-dr-command') as HTMLTextAreaElement).value).toContain(
+    expect((q('platform-dr-command')?.querySelector('textarea') as HTMLTextAreaElement).value).toContain(
       '--dr-info loadweaver-dr-info-<cluster>.json',
     );
   });
@@ -312,7 +312,9 @@ describe('LoadweaverPlatformBackupsPageComponent', () => {
     fixture.detectChanges();
     expect(service['drInfo']).toHaveBeenCalled();
     expect(anchorClick).toHaveBeenCalled();
-    expect((q('platform-dr-command') as HTMLTextAreaElement).value).toContain('--dr-info loadweaver-dr-info-prod.json');
+    expect((q('platform-dr-command')?.querySelector('textarea') as HTMLTextAreaElement).value).toContain(
+      '--dr-info loadweaver-dr-info-prod.json',
+    );
     anchorClick.mockRestore();
   });
 

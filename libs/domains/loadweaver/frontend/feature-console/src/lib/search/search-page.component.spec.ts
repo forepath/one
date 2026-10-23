@@ -73,7 +73,12 @@ describe('LoadweaverSearchPageComponent', () => {
   it('keeps the query in the URL, opens results and stars them', () => {
     const component = fixture.componentInstance;
 
-    component.onQueryChange('web');
+    const input = el().querySelector('[data-testid="search-page-input"] input') as HTMLInputElement;
+
+    expect(input.value).toBe('n1');
+    input.value = 'web';
+    input.dispatchEvent(new Event('input'));
+    expect(component.query()).toBe('web');
     expect(facade['search']).toHaveBeenLastCalledWith('web', SEARCH_PAGE_LIMIT);
     expect(router.navigate).toHaveBeenCalledWith(
       [],

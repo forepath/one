@@ -98,10 +98,19 @@ describe('LoadweaverReportsPageComponent', () => {
     expect(component.month()).toBe(monthValue(lastFinishedMonth().year, lastFinishedMonth().month));
     expect(el().querySelector('[data-testid="reports-list"]')?.textContent).toContain('object store down');
 
+    // The run form lives in the "Run report" dialog of the header.
+    expect(el().querySelector('[data-testid="report-run-form"]')).toBeNull();
+    (el().querySelector('[data-testid="report-run-open"] button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(el().querySelector('[data-testid="report-run-form"] #lw-report-scope')).not.toBeNull();
+
     component.scope.set('shop');
     component.month.set('2026-08');
     component.run();
     expect(facade['run']).toHaveBeenCalledWith({ scope: 'shop', year: 2026, month: 8 });
+    facade['queued$'].next({ id: 'r1' });
+    fixture.detectChanges();
+    expect(component.runOpen()).toBe(false);
 
     facade['run'].mockClear();
     component.month.set('2999-01');
@@ -115,6 +124,7 @@ describe('LoadweaverReportsPageComponent', () => {
 
     expect(fixture.componentInstance.scopes()).toEqual([]);
     expect(el().querySelector('[data-testid="report-run-form"]')).toBeNull();
+    expect(el().querySelector('[data-testid="report-run-open"]')).toBeNull();
   });
 
   it('walks the tree, downloads files and folders', async () => {

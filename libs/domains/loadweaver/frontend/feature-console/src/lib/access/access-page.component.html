@@ -1,21 +1,8 @@
-<fpc-page-header [title]="title" icon="people-fill">
-  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
-    @if (projects().length > 0) {
-      <label class="visually-hidden" for="lw-access-project">{{ projectLabel }}</label>
-      <select
-        id="lw-access-project"
-        class="form-select form-select-sm"
-        [ngModel]="project() ?? ''"
-        (ngModelChange)="selectProject($event)"
-        data-testid="access-project"
-      >
-        @for (p of projects(); track p) {
-          <option [value]="p">{{ p }}</option>
-        }
-      </select>
-    }
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="people-fill">
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="dark"
       size="sm"
       iconOnly
       [ariaLabel]="refreshLabel"
@@ -24,130 +11,132 @@
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-<div class="p-3 d-flex flex-column gap-3">
-  @if (changeError(); as message) {
-    <fpc-alert variant="danger" [message]="message" data-testid="access-change-error" />
-  }
-
-  @if (me() && !seesCluster() && projects().length === 0) {
-    <fpc-empty-state
-      icon="people"
-      i18n-title="@@lwConsoleAccess-noRoles"
-      title="You have no cluster or project role yet"
-      i18n-message="@@lwConsoleAccess-noRolesHint"
-      message="Ask a project admin to add you to a project."
-    />
-  }
-
-  @if (seesCluster()) {
-    <fpc-panel [title]="clusterTitle + ' (' + clusterMembers().length + ')'" [flush]="true">
-      @if (clusterMembersError(); as message) {
-        <fpc-alert class="d-block m-2" variant="danger" [message]="message" />
-      }
-      @if (clusterMembersLoading() && clusterMembers().length === 0) {
-        <div class="d-flex justify-content-center p-3"><fpc-spinner /></div>
-      } @else if (clusterMembers().length === 0) {
-        <fpc-empty-state
-          icon="person-badge"
-          size="sm"
-          i18n-title="@@lwConsoleAccess-noClusterMembers"
-          title="No cluster roles assigned (global admins are cluster admins)"
-        />
-      } @else {
-        <fpc-list [flush]="true" data-testid="access-cluster-members">
-          @for (m of clusterMembers(); track m.userId) {
-            <fpc-list-item>
-              <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
-                <span class="font-monospace">{{ m.userId }}</span>
-                <fpc-badge [color]="roleColor(m.role)" size="sm">{{ clusterRoleLabel(m.role) }}</fpc-badge>
-              </div>
-              <div fpcListItemMeta class="small text-body-secondary">
-                <span i18n="@@lwConsoleAccess-since">Since</span> {{ m.createdAt | date: 'short' }}
-                @if (m.createdBy) {
-                  · <span i18n="@@lwConsoleAccess-by">by</span> {{ m.createdBy }}
-                }
-              </div>
-              @if (isClusterAdmin()) {
-                <div fpcListItemActions class="d-flex gap-1">
-                  <fpc-button variant="outline-secondary" size="sm" (clicked)="editClusterMember(m)">
-                    <span i18n="@@lwConsoleAccess-changeRole">Change role</span>
-                  </fpc-button>
-                  <fpc-button
-                    variant="outline-danger"
-                    size="sm"
-                    [disabled]="changing()"
-                    (clicked)="removeClusterMember(m)"
-                    [attr.data-testid]="'access-remove-cluster-' + m.userId"
-                  >
-                    <span i18n="@@lwConsoleAccess-remove">Remove</span>
-                  </fpc-button>
-                </div>
-              }
-            </fpc-list-item>
-          }
-        </fpc-list>
-      }
-      @if (isClusterAdmin()) {
-        <form
-          class="row g-2 align-items-end p-3 border-top"
-          (ngSubmit)="saveClusterMember()"
-          data-testid="access-cluster-form"
-        >
-          <div class="col-md-6">
-            <label class="form-label small" for="lw-access-cluster-user" i18n="@@lwConsoleAccess-userId">User id</label>
-            <input
-              id="lw-access-cluster-user"
-              name="clusterUserId"
-              class="form-control form-control-sm font-monospace"
-              placeholder="00000000-0000-0000-0000-000000000000"
-              [(ngModel)]="clusterUserId"
-            />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label small" for="lw-access-cluster-role" i18n="@@lwConsoleAccess-role">Role</label>
-            <select
-              id="lw-access-cluster-role"
-              name="clusterRole"
-              class="form-select form-select-sm"
-              [(ngModel)]="clusterRole"
+  @if (projects().length > 0) {
+    <fpc-collapsible-filter-panel
+      [(open)]="filtersOpen"
+      [title]="filtersTitle"
+      [activeCount]="project() ? 1 : 0"
+      [showClear]="false"
+    >
+      <div class="row g-3 mb-0 w-100">
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-access-project" [label]="projectLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-access-project"
+              size="sm"
+              [ngModel]="project() ?? ''"
+              (ngModelChange)="selectProject($event)"
+              data-testid="access-project"
             >
-              @for (r of clusterRoles; track r) {
-                <option [value]="r">{{ clusterRoleLabel(r) }}</option>
+              @for (p of projects(); track p) {
+                <option [value]="p">{{ p }}</option>
               }
-            </select>
-          </div>
-          <div class="col-md-2">
-            <fpc-button type="submit" variant="primary" size="sm" [block]="true" [loading]="changing()">
-              <span i18n="@@lwConsoleAccess-grant">Grant</span>
-            </fpc-button>
-          </div>
-          @if (clusterInvalid()) {
-            <div class="col-12">
-              <fpc-alert
-                variant="warning"
-                i18n-message="@@lwConsoleAccess-clusterInvalid"
-                message="Cluster roles need the platform user id (a UUID)."
-              />
-            </div>
-          }
-        </form>
-      }
-    </fpc-panel>
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+      </div>
+    </fpc-collapsible-filter-panel>
   }
 
-  @if (project(); as p) {
-    @if (projectError(); as message) {
-      <fpc-alert variant="danger" [message]="message" />
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (changeError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" data-testid="access-change-error" />
     }
-    @if (projectLoading() && !projectAccess()) {
-      <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-    } @else if (projectAccess(); as pa) {
-      <div class="row g-3">
-        <div class="col-xl-7">
-          <fpc-panel [title]="membersTitle + ' · ' + p + ' (' + members().length + ')'" [flush]="true">
+
+    @if (project() && projectError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    <fpc-panel-grid [columns]="12" [fill]="!(me() && !seesCluster() && projects().length === 0)">
+      @if (seesCluster()) {
+        <fpc-panel [span]="12" [title]="clusterTitle + ' (' + clusterMembers().length + ')'" [flush]="true">
+          @if (isClusterAdmin()) {
+            <fpc-button
+              fpcPanelActions
+              variant="primary"
+              size="sm"
+              iconOnly
+              [ariaLabel]="addClusterMemberLabel"
+              [title]="addClusterMemberLabel"
+              (clicked)="openClusterMemberForm()"
+              data-testid="access-cluster-add"
+            >
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </fpc-button>
+          }
+          @if (clusterMembersError(); as message) {
+            <fpc-alert class="d-block m-3" variant="danger" [message]="message" />
+          }
+          @if (clusterMembersLoading() && clusterMembers().length === 0) {
+            <div class="d-flex justify-content-center p-4"><fpc-spinner /></div>
+          } @else if (clusterMembers().length === 0) {
+            <fpc-empty-state
+              icon="person-badge"
+              size="sm"
+              i18n-title="@@lwConsoleAccess-noClusterMembers"
+              title="No cluster roles assigned (global admins are cluster admins)"
+            />
+          } @else {
+            <fpc-list [flush]="true" data-testid="access-cluster-members">
+              @for (m of clusterMembers(); track m.userId) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="font-monospace">{{ m.userId }}</span>
+                    <fpc-badge [color]="roleColor(m.role)" size="sm">{{ clusterRoleLabel(m.role) }}</fpc-badge>
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary">
+                    <span i18n="@@lwConsoleAccess-since">Since</span> {{ m.createdAt | date: 'short' }}
+                    @if (m.createdBy) {
+                      · <span i18n="@@lwConsoleAccess-by">by</span> {{ m.createdBy }}
+                    }
+                  </div>
+                  @if (isClusterAdmin()) {
+                    <div fpcListItemActions class="d-flex gap-1">
+                      <fpc-button variant="secondary" size="sm" (clicked)="editClusterMember(m)">
+                        <span i18n="@@lwConsoleAccess-changeRole">Change role</span>
+                      </fpc-button>
+                      <fpc-button
+                        variant="danger"
+                        size="sm"
+                        [disabled]="changing()"
+                        (clicked)="removeClusterMember(m)"
+                        [attr.data-testid]="'access-remove-cluster-' + m.userId"
+                      >
+                        <span i18n="@@lwConsoleAccess-remove">Remove</span>
+                      </fpc-button>
+                    </div>
+                  }
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+      }
+
+      @if (project(); as p) {
+        @if (projectLoading() && !projectAccess()) {
+          <fpc-panel [span]="12">
+            <div class="d-flex justify-content-center p-4"><fpc-spinner /></div>
+          </fpc-panel>
+        } @else if (projectAccess(); as pa) {
+          <fpc-panel [span]="7" [title]="membersTitle + ' · ' + p + ' (' + members().length + ')'" [flush]="true">
+            @if (mayAdminProject()) {
+              <fpc-button
+                fpcPanelActions
+                variant="primary"
+                size="sm"
+                iconOnly
+                [ariaLabel]="addMemberLabel"
+                [title]="addMemberLabel"
+                (clicked)="openMemberForm()"
+                data-testid="access-member-add"
+              >
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+              </fpc-button>
+            }
             @if (members().length === 0) {
               <fpc-empty-state icon="people" size="sm" i18n-title="@@lwConsoleAccess-noMembers" title="No members" />
             } @else {
@@ -169,11 +158,11 @@
                     </div>
                     @if (mayAdminProject() && (m.role !== 'admin' || mayGrantAdmin())) {
                       <div fpcListItemActions class="d-flex gap-1">
-                        <fpc-button variant="outline-secondary" size="sm" (clicked)="editMember(m)">
+                        <fpc-button variant="secondary" size="sm" (clicked)="editMember(m)">
                           <span i18n="@@lwConsoleAccess-changeRole">Change role</span>
                         </fpc-button>
                         <fpc-button
-                          variant="outline-danger"
+                          variant="danger"
                           size="sm"
                           [disabled]="changing()"
                           (clicked)="removeMember(m)"
@@ -187,66 +176,20 @@
                 }
               </fpc-list>
             }
-            @if (mayAdminProject()) {
-              <form
-                class="row g-2 align-items-end p-3 border-top"
-                (ngSubmit)="saveMember()"
-                data-testid="access-member-form"
-              >
-                <div class="col-md-6">
-                  <label class="form-label small" for="lw-access-member-user" i18n="@@lwConsoleAccess-userId"
-                    >User id</label
-                  >
-                  <input
-                    id="lw-access-member-user"
-                    name="memberUserId"
-                    class="form-control form-control-sm font-monospace"
-                    [(ngModel)]="memberUserId"
-                  />
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label small" for="lw-access-member-role" i18n="@@lwConsoleAccess-role">Role</label>
-                  <select
-                    id="lw-access-member-role"
-                    name="memberRole"
-                    class="form-select form-select-sm"
-                    [(ngModel)]="memberRole"
-                  >
-                    @for (r of grantableRoles(); track r) {
-                      <option [value]="r">{{ projectRoleLabel(r) }}</option>
-                    }
-                  </select>
-                </div>
-                <div class="col-md-2">
-                  <fpc-button type="submit" variant="primary" size="sm" [block]="true" [loading]="changing()">
-                    <span i18n="@@lwConsoleAccess-grant">Grant</span>
-                  </fpc-button>
-                </div>
-                @if (memberInvalid()) {
-                  <div class="col-12">
-                    <fpc-alert
-                      variant="warning"
-                      i18n-message="@@lwConsoleAccess-memberInvalid"
-                      message="Enter a user id (letters, digits and @._:|-) and a role you may grant."
-                    />
-                  </div>
-                }
-              </form>
-            }
           </fpc-panel>
-        </div>
 
-        <div class="col-xl-5">
-          <fpc-panel [title]="settingsTitle + ' · ' + p">
-            <form class="d-flex flex-column gap-3" (ngSubmit)="saveSettings()" data-testid="access-settings">
-              <div>
-                <label class="form-label small" for="lw-access-approval" i18n="@@lwConsoleAccess-approvalMode"
-                  >Plans that need an approval</label
-                >
-                <select
-                  id="lw-access-approval"
+          <fpc-panel [span]="5" [title]="settingsTitle + ' · ' + p">
+            <form (ngSubmit)="saveSettings()" data-testid="access-settings">
+              <fpc-form-field
+                forId="lw-access-approval"
+                i18n-label="@@lwConsoleAccess-approvalMode"
+                label="Plans that need an approval"
+              >
+                <fpc-form-control
+                  controlType="select"
+                  controlId="lw-access-approval"
                   name="approvalMode"
-                  class="form-select form-select-sm"
+                  size="sm"
                   [disabled]="!mayAdminProject()"
                   [ngModel]="approvalMode()"
                   (ngModelChange)="approvalMode.set($event)"
@@ -254,52 +197,39 @@
                   @for (mode of approvalModes; track mode) {
                     <option [value]="mode">{{ approvalModeLabel(mode) }}</option>
                   }
-                </select>
-              </div>
-              <div class="form-check form-switch">
-                <input
-                  id="lw-access-developer-exec"
-                  name="developerExec"
-                  type="checkbox"
-                  role="switch"
-                  class="form-check-input"
-                  [disabled]="!mayAdminProject()"
-                  [ngModel]="developerExec()"
-                  (ngModelChange)="developerExec.set($event)"
-                />
+                </fpc-form-control>
+              </fpc-form-field>
+              <fpc-form-switch
+                class="d-block mb-3"
+                switchId="lw-access-developer-exec"
+                [disabled]="!mayAdminProject()"
+                [checked]="developerExec()"
+                (checkedChange)="developerExec.set($event)"
+              >
                 <label class="form-check-label small" for="lw-access-developer-exec">
                   <span i18n="@@lwConsoleAccess-developerExec">Developers may open terminals</span>
                   <span class="d-block text-body-secondary" i18n="@@lwConsoleAccess-developerExecHint"
                     >Exec into the project's replicas, not only operators and admins.</span
                   >
                 </label>
-              </div>
-              <div class="form-check form-switch">
-                <input
-                  id="lw-access-record"
-                  name="recordTerminals"
-                  type="checkbox"
-                  role="switch"
-                  class="form-check-input"
-                  [disabled]="!mayAdminProject()"
-                  [ngModel]="recordTerminals()"
-                  (ngModelChange)="recordTerminals.set($event)"
-                />
+              </fpc-form-switch>
+              <fpc-form-switch
+                class="d-block mb-3"
+                switchId="lw-access-record"
+                [disabled]="!mayAdminProject()"
+                [checked]="recordTerminals()"
+                (checkedChange)="recordTerminals.set($event)"
+              >
                 <label class="form-check-label small" for="lw-access-record">
                   <span i18n="@@lwConsoleAccess-recordTerminals">Record terminal sessions</span>
                   <span class="d-block text-body-secondary" i18n="@@lwConsoleAccess-recordTerminalsHint"
                     >Input and output are kept for the audit; off: metadata only.</span
                   >
                 </label>
-              </div>
+              </fpc-form-switch>
               @if (mayAdminProject()) {
                 <div class="d-flex justify-content-end gap-2">
-                  <fpc-button
-                    variant="outline-secondary"
-                    size="sm"
-                    [disabled]="!settingsDirty()"
-                    (clicked)="resetSettings()"
-                  >
+                  <fpc-button variant="secondary" size="sm" [disabled]="!settingsDirty()" (clicked)="resetSettings()">
                     <span i18n="@@lwConsoleAccess-reset">Reset</span>
                   </fpc-button>
                   <fpc-button
@@ -319,76 +249,180 @@
               }
             </form>
           </fpc-panel>
-        </div>
-      </div>
 
-      <fpc-panel [title]="requestsTitle + ' (' + openRequests() + ')'" [flush]="true">
-        <loadweaver-access-requests
-          [requests]="requests()"
-          [mayAccept]="mayAccept()"
-          [changing]="changing()"
-          (accept)="acceptRequest($event)"
-        />
-      </fpc-panel>
-    }
-  }
-
-  @if (isClusterAdmin()) {
-    <fpc-panel [title]="transferTitle" data-testid="access-transfer">
-      <p class="small text-body-secondary" i18n="@@lwConsoleAccess-transferHint">
-        Every cluster role, project membership and project setting as YAML, for documentation and setup. An import
-        applies the memberships and settings it lists.
-      </p>
-      <div class="d-flex flex-wrap gap-2 mb-2">
-        <fpc-button
-          variant="outline-primary"
-          size="sm"
-          [loading]="exporting()"
-          (clicked)="exportAccess('download')"
-          data-testid="access-export"
-        >
-          <i class="bi bi-download me-1" aria-hidden="true"></i
-          ><span i18n="@@lwConsoleAccess-download">Download YAML</span>
-        </fpc-button>
-        <fpc-button variant="outline-secondary" size="sm" [disabled]="exporting()" (clicked)="exportAccess('editor')">
-          <i class="bi bi-pencil-square me-1" aria-hidden="true"></i
-          ><span i18n="@@lwConsoleAccess-loadIntoEditor">Load current access into the editor</span>
-        </fpc-button>
-      </div>
-      @if (exportError(); as message) {
-        <fpc-alert class="d-block mb-2" variant="danger" [message]="message" />
+          <fpc-panel [span]="12" [title]="requestsTitle + ' (' + openRequests() + ')'" [flush]="true">
+            @if (requests().length === 0) {
+              <fpc-empty-state
+                icon="inbox"
+                size="sm"
+                i18n-title="@@lwConsoleAccess-requestsEmpty"
+                title="No requests from other projects"
+              />
+            } @else {
+              <loadweaver-access-requests
+                [requests]="requests()"
+                [mayAccept]="mayAccept()"
+                [changing]="changing()"
+                (accept)="acceptRequest($event)"
+              />
+            }
+          </fpc-panel>
+        }
       }
-      <fpc-code-editor
-        [value]="editorValue()"
-        language="yaml"
-        height="20rem"
-        (valueChange)="onImportYamlChange($event)"
+
+      @if (isClusterAdmin()) {
+        <fpc-panel [span]="12" [title]="transferTitle" data-testid="access-transfer">
+          <p class="small text-body-secondary" i18n="@@lwConsoleAccess-transferHint">
+            Every cluster role, project membership and project setting as YAML, for documentation and setup. An import
+            applies the memberships and settings it lists.
+          </p>
+          <div class="d-flex flex-wrap gap-2 mb-2">
+            <fpc-button
+              variant="primary"
+              size="sm"
+              [loading]="exporting()"
+              (clicked)="exportAccess('download')"
+              data-testid="access-export"
+            >
+              <i class="bi bi-download me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleAccess-download">Download YAML</span>
+            </fpc-button>
+            <fpc-button variant="secondary" size="sm" [disabled]="exporting()" (clicked)="exportAccess('editor')">
+              <i class="bi bi-pencil-square me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleAccess-loadIntoEditor">Load current access into the editor</span>
+            </fpc-button>
+          </div>
+          @if (exportError(); as message) {
+            <fpc-alert class="d-block mb-2" variant="danger" [message]="message" />
+          }
+          <fpc-code-editor
+            [value]="editorValue()"
+            language="yaml"
+            height="20rem"
+            (valueChange)="onImportYamlChange($event)"
+          />
+          @if (importError(); as message) {
+            <fpc-alert class="d-block mt-2" variant="danger" [message]="message" data-testid="access-import-error" />
+          }
+          @if (importResult(); as result) {
+            <fpc-alert
+              class="d-block mt-2"
+              variant="success"
+              [message]="result.changed + ' ' + importedLabel"
+              data-testid="access-import-result"
+            />
+          }
+          <div class="d-flex justify-content-end mt-2">
+            <fpc-button
+              variant="danger"
+              size="sm"
+              [loading]="importing()"
+              (clicked)="importAccess()"
+              data-testid="access-import"
+            >
+              <i class="bi bi-upload me-1" aria-hidden="true"></i><span i18n="@@lwConsoleAccess-import">Import</span>
+            </fpc-button>
+          </div>
+        </fpc-panel>
+      }
+    </fpc-panel-grid>
+
+    @if (me() && !seesCluster() && projects().length === 0) {
+      <fpc-empty-state
+        icon="people"
+        i18n-title="@@lwConsoleAccess-noRoles"
+        title="You have no cluster or project role yet"
+        i18n-message="@@lwConsoleAccess-noRolesHint"
+        message="Ask a project admin to add you to a project."
       />
-      @if (importError(); as message) {
-        <fpc-alert class="d-block mt-2" variant="danger" [message]="message" data-testid="access-import-error" />
-      }
-      @if (importResult(); as result) {
+    }
+  </div>
+</div>
+
+@if (isClusterAdmin()) {
+  <fpc-modal [(open)]="clusterFormOpen" [title]="addClusterMemberLabel">
+    <form (ngSubmit)="saveClusterMember()" data-testid="access-cluster-form">
+      <fpc-form-field forId="lw-access-cluster-user" i18n-label="@@lwConsoleAccess-userId" label="User id">
+        <fpc-form-control
+          controlId="lw-access-cluster-user"
+          name="clusterUserId"
+          size="sm"
+          controlClass="font-monospace"
+          placeholder="00000000-0000-0000-0000-000000000000"
+          [(ngModel)]="clusterUserId"
+        />
+      </fpc-form-field>
+      <fpc-form-field forId="lw-access-cluster-role" i18n-label="@@lwConsoleAccess-role" label="Role">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-access-cluster-role"
+          name="clusterRole"
+          size="sm"
+          [(ngModel)]="clusterRole"
+        >
+          @for (r of clusterRoles; track r) {
+            <option [value]="r">{{ clusterRoleLabel(r) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+      @if (clusterInvalid()) {
         <fpc-alert
-          class="d-block mt-2"
-          variant="success"
-          [message]="result.changed + ' ' + importedLabel"
-          data-testid="access-import-result"
+          variant="warning"
+          i18n-message="@@lwConsoleAccess-clusterInvalid"
+          message="Cluster roles need the platform user id (a UUID)."
         />
       }
-      <div class="d-flex justify-content-end mt-2">
-        <fpc-button
-          variant="danger"
+    </form>
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button variant="secondary" (clicked)="clusterFormOpen.set(false)">{{ cancelLabel }}</fpc-button>
+      <fpc-button variant="primary" [loading]="changing()" (clicked)="saveClusterMember()">
+        <span i18n="@@lwConsoleAccess-grant">Grant</span>
+      </fpc-button>
+    </div>
+  </fpc-modal>
+}
+
+@if (mayAdminProject()) {
+  <fpc-modal [(open)]="memberFormOpen" [title]="addMemberLabel">
+    <form (ngSubmit)="saveMember()" data-testid="access-member-form">
+      <fpc-form-field forId="lw-access-member-user" i18n-label="@@lwConsoleAccess-userId" label="User id">
+        <fpc-form-control
+          controlId="lw-access-member-user"
+          name="memberUserId"
           size="sm"
-          [loading]="importing()"
-          (clicked)="importAccess()"
-          data-testid="access-import"
+          controlClass="font-monospace"
+          [(ngModel)]="memberUserId"
+        />
+      </fpc-form-field>
+      <fpc-form-field forId="lw-access-member-role" i18n-label="@@lwConsoleAccess-role" label="Role">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-access-member-role"
+          name="memberRole"
+          size="sm"
+          [(ngModel)]="memberRole"
         >
-          <i class="bi bi-upload me-1" aria-hidden="true"></i><span i18n="@@lwConsoleAccess-import">Import</span>
-        </fpc-button>
-      </div>
-    </fpc-panel>
-  }
-</div>
+          @for (r of grantableRoles(); track r) {
+            <option [value]="r">{{ projectRoleLabel(r) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+      @if (memberInvalid()) {
+        <fpc-alert
+          variant="warning"
+          i18n-message="@@lwConsoleAccess-memberInvalid"
+          message="Enter a user id (letters, digits and @._:|-) and a role you may grant."
+        />
+      }
+    </form>
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button variant="secondary" (clicked)="memberFormOpen.set(false)">{{ cancelLabel }}</fpc-button>
+      <fpc-button variant="primary" [loading]="changing()" (clicked)="saveMember()">
+        <span i18n="@@lwConsoleAccess-grant">Grant</span>
+      </fpc-button>
+    </div>
+  </fpc-modal>
+}
 
 <fpc-confirm-dialog
   [open]="pending() !== null"

@@ -85,8 +85,8 @@ export const adminCancelSubscription$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(adminCancelSubscription),
-      switchMap(({ id }) =>
-        service.cancelSubscription(id).pipe(
+      switchMap(({ id, options }) =>
+        service.cancelSubscription(id, options).pipe(
           map((subscription) => adminCancelSubscriptionSuccess({ subscription })),
           catchError((error) => of(adminCancelSubscriptionFailure({ error: normalizeError(error) }))),
         ),
@@ -99,8 +99,8 @@ export const adminWithdrawSubscription$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(adminWithdrawSubscription),
-      switchMap(({ id }) =>
-        service.withdrawSubscription(id).pipe(
+      switchMap(({ id, options }) =>
+        service.withdrawSubscription(id, options).pipe(
           map((subscription) => adminWithdrawSubscriptionSuccess({ subscription })),
           catchError((error) => of(adminWithdrawSubscriptionFailure({ error: normalizeError(error) }))),
         ),
@@ -113,8 +113,8 @@ export const adminInstantCancelSubscription$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(adminInstantCancelSubscription),
-      switchMap(({ id }) =>
-        service.instantCancelSubscription(id).pipe(
+      switchMap(({ id, options }) =>
+        service.instantCancelSubscription(id, options).pipe(
           map((subscription) => adminInstantCancelSubscriptionSuccess({ subscription })),
           catchError((error) => of(adminInstantCancelSubscriptionFailure({ error: normalizeError(error) }))),
         ),

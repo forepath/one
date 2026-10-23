@@ -110,6 +110,7 @@ Loadweaver turns a handful of servers into a resilient multi-site cluster, with 
 
 | Component                                                                       | Description                                         |
 | ------------------------------------------------------------------------------- | --------------------------------------------------- |
+| [Docs](./apps/loadweaver/frontend-docs/)                                        | Documentation site served at docs.loadweaver.com    |
 | [Landing page](./apps/loadweaver/frontend-landingpage/)                         | Marketing and pricing site served at loadweaver.com |
 | [Landing page feature](./libs/domains/loadweaver/frontend/feature-landingpage/) | Pages, layout, routes, and content for the site     |
 
@@ -261,6 +262,7 @@ You may view the source code to understand how the software works. No other righ
 
 - [`apps/loadweaver/frontend-landingpage`](./apps/loadweaver/frontend-landingpage/) ([LICENSE](./apps/loadweaver/frontend-landingpage/LICENSE))
 - [`libs/domains/loadweaver/frontend/feature-landingpage`](./libs/domains/loadweaver/frontend/feature-landingpage/) ([LICENSE](./libs/domains/loadweaver/frontend/feature-landingpage/LICENSE))
+- [`apps/loadweaver/frontend-docs`](./apps/loadweaver/frontend-docs/) ([LICENSE](./apps/loadweaver/frontend-docs/LICENSE))
 
 **Shared**
 

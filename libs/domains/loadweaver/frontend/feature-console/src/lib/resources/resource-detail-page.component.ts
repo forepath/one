@@ -16,6 +16,7 @@ import {
   FpcConfirmDialogComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
   FpcTabComponent,
   FpcTabGroupComponent,
@@ -53,6 +54,7 @@ export function routeResourceKey(
     FpcConfirmDialogComponent,
     FpcPageHeaderComponent,
     FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
     FpcTabComponent,
     FpcTabGroupComponent,
@@ -108,6 +110,10 @@ export class LoadweaverResourceDetailPageComponent implements OnInit {
 
   readonly title = $localize`:@@lwConsoleResourceDetail-title:Resource`;
   readonly backLabel = $localize`:@@lwConsoleResourceDetail-back:All resources`;
+  readonly mapLabel = $localize`:@@lwConsoleResourceDetail-map:Map`;
+  readonly healthLabel = $localize`:@@lwConsoleResourceDetail-health:Health`;
+  readonly deleteLabel = $localize`:@@lwConsoleResourceDetail-delete:Delete`;
+  readonly editLabel = $localize`:@@lwConsoleResourceDetail-edit:Edit`;
   readonly metadataTitle = $localize`:@@lwConsoleResourceDetail-metadata:Metadata`;
   readonly yamlTab = $localize`:@@lwConsoleResourceDetail-yaml:YAML`;
   readonly composeTab = $localize`:@@lwConsoleResourceDetail-compose:Compose file`;

@@ -320,6 +320,18 @@ export class BackorderService {
 
         await this.subscriptionItemsRepository.updateSshPrivateKey(baseItem.id, privateKey);
         effectiveConfig.sshPublicKey = publicKey;
+        const stackSecrets = this.cloudInitDispatchService.prepareProvisioningConfig(
+          effectiveConfig.service as string | undefined,
+        );
+
+        if (Object.keys(stackSecrets).length > 0) {
+          Object.assign(effectiveConfig, stackSecrets);
+          await this.subscriptionItemsRepository.updateConfigSnapshot(baseItem.id, {
+            ...(baseItem.configSnapshot ?? {}),
+            ...stackSecrets,
+          });
+        }
+
         const baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
         const userData = this.cloudInitDispatchService.buildUserData({
           service: effectiveConfig.service as string | undefined,

@@ -11,6 +11,8 @@ import { BackupCommandsService } from './backup-commands.service';
 import { BackupKeyService } from './backup-keys.service';
 import { BackupRepositoriesService } from './backup-repositories.service';
 import { BackupSchedulerService } from './backup-scheduler.service';
+import { BackupTransferController } from './backup-transfer.controller';
+import { BackupTransferService } from './backup-transfer.service';
 import { BackupsController } from './backups.controller';
 import { BackupsService } from './backups.service';
 import { DrEnvelopeService } from './dr-envelope';
@@ -26,7 +28,8 @@ export const BACKUPS_ENTITIES = [
   BackupRetentionEntity,
 ];
 
-export const BACKUPS_CONTROLLERS = [BackupsController];
+// Cross-cluster transfer (3.24) has no single-segment GET, so it never shadows `backups/:id`.
+export const BACKUPS_CONTROLLERS = [BackupsController, BackupTransferController];
 
 export const BACKUPS_PROVIDERS = [
   BackupKeyService,
@@ -35,4 +38,5 @@ export const BACKUPS_PROVIDERS = [
   BackupCommandsService,
   BackupSchedulerService,
   BackupsService,
+  BackupTransferService,
 ];

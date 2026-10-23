@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { resourceNameSchema } from '../metadata';
 import { secretRefSchema } from './edge';
+import { postureConditionSchema } from '../posture';
 import { cidrStringSchema } from './policy';
 
 /**
@@ -34,7 +35,16 @@ export const clientGroupSpecSchema = z
           )
           .optional(),
         minAppVersion: z.string().max(32).optional(),
-        /** Posture plugins (MDM, EDR) and the verdict they must give. */
+        /**
+         * Conditions on core checks, posture integrations (MDM / EDR, cluster settings) and device certificates, all of
+         * which must hold: `mdm.compliant`, `mdm.intune.compliant`, `edr.risk <= low`, `device.certificate.valid`,
+         * `device.certificate.expiresInDays >= 14`, `device.osVersion >= 14.5`, `device.platform != linux`.
+         */
+        conditions: z.array(postureConditionSchema).max(32).optional(),
+        /**
+         * Older form: an integration (by name, else by plugin type) and the verdict it must give. `credentials` is
+         * ignored since integrations carry their own (encrypted) configuration.
+         */
         plugins: z
           .array(
             z

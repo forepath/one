@@ -152,6 +152,23 @@ export function dockerUsage(stats: {
 }
 
 /**
+ * A container's network byte counters from Docker stats (summed over its interfaces), or null without networks
+ * (e.g. host networking). Usage metering (3.24) turns their increase into traffic per project.
+ */
+export function dockerNetworkBytes(stats: {
+  networks?: Record<string, { rx_bytes?: number; tx_bytes?: number }>;
+}): { rx: number; tx: number } | null {
+  const interfaces = Object.values(stats.networks ?? {});
+
+  if (interfaces.length === 0) return null;
+
+  return interfaces.reduce((sum, n) => ({ rx: sum.rx + (n.rx_bytes ?? 0), tx: sum.tx + (n.tx_bytes ?? 0) }), {
+    rx: 0,
+    tx: 0,
+  });
+}
+
+/**
  * Requests through the ingress per hostname within one interval (from its access log lines): counts, server errors
  * and latencies for p50 / p95 / p99.
  */

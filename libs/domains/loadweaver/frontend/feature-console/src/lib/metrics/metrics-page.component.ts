@@ -19,12 +19,17 @@ import {
 import {
   FpcAlertComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FpcTypeaheadSelectComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { interval } from 'rxjs';
 
@@ -46,6 +51,9 @@ const REFRESH_MS = 60_000;
 const GROUP_BYS: MetricGroupBy[] = ['entity', 'node', 'project', 'none'];
 const AGGREGATIONS: MetricAggregation[] = ['avg', 'min', 'max', 'sum'];
 const DEFAULT_DASHBOARD_RANGE = '6h';
+const DEFAULT_RANGE = '1h';
+const DEFAULT_GROUP_BY: MetricGroupBy = 'entity';
+const DEFAULT_AGGREGATION: MetricAggregation = 'avg';
 
 /**
  * Metrics and dashboards (3.18): one metric over a range, grouped and aggregated, with event markers; and the
@@ -60,12 +68,17 @@ const DEFAULT_DASHBOARD_RANGE = '6h';
     RouterModule,
     FpcAlertComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcPageHeaderComponent,
     FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
     FpcTabComponent,
     FpcTabGroupComponent,
+    FpcTypeaheadSelectComponent,
     LoadweaverDashboardWidgetComponent,
     LoadweaverMetricChartComponent,
   ],
@@ -100,9 +113,9 @@ export class LoadweaverMetricsPageComponent implements OnInit {
   readonly tab = signal<MetricsTab>('explore');
   // Explore
   readonly metric = signal('');
-  readonly range = signal<string>('1h');
-  readonly groupBy = signal<MetricGroupBy>('entity');
-  readonly aggregation = signal<MetricAggregation>('avg');
+  readonly range = signal<string>(DEFAULT_RANGE);
+  readonly groupBy = signal<MetricGroupBy>(DEFAULT_GROUP_BY);
+  readonly aggregation = signal<MetricAggregation>(DEFAULT_AGGREGATION);
   readonly entity = signal('');
   readonly node = signal('');
   readonly project = signal('');
@@ -111,6 +124,31 @@ export class LoadweaverMetricsPageComponent implements OnInit {
   readonly dashboardSelection = signal<string | null>(null);
   readonly dashboardRange = signal<string | null>(null);
   readonly dashboardProject = signal('');
+  readonly filtersOpen = signal(false);
+  readonly dashboardFiltersOpen = signal(false);
+  readonly metricSuggestionsOpen = signal(false);
+
+  /** Known metric names matching the typed text (at most 20). */
+  readonly metricSuggestions = computed(() => {
+    const query = this.metric().trim().toLowerCase();
+
+    return this.names()
+      .filter((name) => !query || name.toLowerCase().includes(query))
+      .slice(0, 20);
+  });
+  /** Explore filters that differ from the defaults. */
+  readonly activeFilterCount = computed(
+    () =>
+      [
+        this.range() !== DEFAULT_RANGE,
+        this.groupBy() !== DEFAULT_GROUP_BY,
+        this.aggregation() !== DEFAULT_AGGREGATION,
+        !!this.entity().trim(),
+        !!this.node().trim(),
+        !!this.project(),
+      ].filter(Boolean).length,
+  );
+  readonly dashboardFilterCount = computed(() => (this.dashboardRange() ? 1 : 0) + (this.dashboardProject() ? 1 : 0));
 
   readonly unit = computed(() => metricUnit(this.metric()));
   readonly series = computed(() => this.result()?.series ?? []);
@@ -154,6 +192,7 @@ export class LoadweaverMetricsPageComponent implements OnInit {
   readonly showLabel = $localize`:@@lwConsoleMetrics-show:Show`;
   readonly refreshLabel = $localize`:@@lwConsoleMetrics-refresh:Refresh`;
   readonly dashboardLabel = $localize`:@@lwConsoleMetrics-dashboard:Dashboard`;
+  readonly filtersLabel = $localize`:@@lwConsoleMetrics-filters:Filters`;
 
   constructor() {
     // A deep-linked (or the first) dashboard runs once the list is there.
@@ -230,6 +269,32 @@ export class LoadweaverMetricsPageComponent implements OnInit {
       ...(this.node().trim() ? { node: this.node().trim() } : {}),
       ...(this.project() ? { project: this.project() } : {}),
     };
+  }
+
+  pickMetric(name: string, event: Event): void {
+    // `mousedown` keeps the focus in the input until the pick is done.
+    event.preventDefault();
+    this.metric.set(name);
+    this.metricSuggestionsOpen.set(false);
+    this.show();
+  }
+
+  /** Resets the explore filters to their defaults and graphs again. */
+  resetFilters(): void {
+    this.range.set(DEFAULT_RANGE);
+    this.groupBy.set(DEFAULT_GROUP_BY);
+    this.aggregation.set(DEFAULT_AGGREGATION);
+    this.entity.set('');
+    this.node.set('');
+    this.project.set('');
+    this.show();
+  }
+
+  /** Resets the dashboard's range and project filter and runs it again. */
+  resetDashboardFilters(): void {
+    this.dashboardRange.set(null);
+    this.dashboardProject.set('');
+    this.refresh();
   }
 
   show(): void {
@@ -311,9 +376,9 @@ export class LoadweaverMetricsPageComponent implements OnInit {
       queryParams: {
         tab: dashboards ? 'dashboards' : null,
         metric: this.metric().trim() || null,
-        range: this.range() === '1h' ? null : this.range(),
-        groupBy: this.groupBy() === 'entity' ? null : this.groupBy(),
-        aggregation: this.aggregation() === 'avg' ? null : this.aggregation(),
+        range: this.range() === DEFAULT_RANGE ? null : this.range(),
+        groupBy: this.groupBy() === DEFAULT_GROUP_BY ? null : this.groupBy(),
+        aggregation: this.aggregation() === DEFAULT_AGGREGATION ? null : this.aggregation(),
         entity: this.entity().trim() || null,
         node: this.node().trim() || null,
         project: this.project() || null,

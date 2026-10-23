@@ -1,5 +1,7 @@
+import { createHash } from 'node:crypto';
+
 import { UserRole, createConfirmationCode, validateConfirmationCode } from '@forepath/identity/backend';
-import { ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 import * as totpUtils from '../utils/totp.utils';
@@ -373,6 +375,109 @@ describe('AuthService', () => {
       user: { id: 'admin-1', email: 'admin@example.com', role: UserRole.ADMIN },
       message: 'Account created successfully. You can log in immediately.',
       emailConfirmed: true,
+    });
+  });
+
+  describe('opt-in admin claim (ADMIN_CLAIM_TOKEN_SHA256)', () => {
+    const token = 'lwc_claim-token-with-plenty-of-entropy-0123456789';
+    const hash = createHash('sha256').update(token).digest('hex');
+
+    afterEach(() => {
+      delete process.env.ADMIN_CLAIM_TOKEN_SHA256;
+    });
+
+    beforeEach(() => {
+      mockUsersService.create.mockResolvedValue({
+        id: 'admin-1',
+        email: 'admin@example.com',
+        role: UserRole.ADMIN,
+        emailConfirmedAt: '2026-01-01T00:00:00.000Z',
+      });
+    });
+
+    it('is not required and not checked when unset (unchanged default)', async () => {
+      mockUsersRepository.countByTenant.mockResolvedValue(0);
+
+      await expect(service.isAdminClaimRequired()).resolves.toBe(false);
+      await expect(service.register('admin@example.com', 'password123')).resolves.toMatchObject({
+        user: { role: UserRole.ADMIN },
+      });
+    });
+
+    it('requires the token for the first account', async () => {
+      process.env.ADMIN_CLAIM_TOKEN_SHA256 = hash;
+      mockUsersRepository.countByTenant.mockResolvedValue(0);
+
+      await expect(service.isAdminClaimRequired()).resolves.toBe(true);
+      await expect(service.register('admin@example.com', 'password123')).rejects.toThrow(ForbiddenException);
+      await expect(service.register('admin@example.com', 'password123', 'wrong-token', '1.2.3.4')).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(mockUsersService.create).not.toHaveBeenCalled();
+
+      await expect(service.register('admin@example.com', 'password123', token, '1.2.3.4')).resolves.toMatchObject({
+        user: { role: UserRole.ADMIN },
+      });
+    });
+
+    it('closes registration once the claimed account exists (behaves as DISABLE_SIGNUP)', async () => {
+      process.env.ADMIN_CLAIM_TOKEN_SHA256 = hash;
+      mockUsersRepository.countByTenant.mockResolvedValue(1);
+
+      await expect(service.isAdminClaimRequired()).resolves.toBe(false);
+      await expect(service.adminClaimStatus()).resolves.toEqual({ claimConfigured: true, claimRequired: false });
+      await expect(service.register('user@example.com', 'password123', 'anything')).rejects.toThrow(
+        ServiceUnavailableException,
+      );
+      await expect(service.register('user@example.com', 'password123', token)).rejects.toThrow(
+        ServiceUnavailableException,
+      );
+      expect(mockUsersService.create).not.toHaveBeenCalled();
+    });
+
+    it('keeps open signup after the first account without the claim (Agenstra / Decabill unchanged)', async () => {
+      mockUsersRepository.countByTenant.mockResolvedValue(1);
+      mockUsersService.create.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        role: UserRole.USER,
+        emailConfirmedAt: null,
+      });
+
+      await expect(service.adminClaimStatus()).resolves.toEqual({ claimConfigured: false, claimRequired: false });
+      await expect(service.register('user@example.com', 'password123', 'anything')).resolves.toMatchObject({
+        user: { role: UserRole.USER },
+      });
+    });
+
+    it('reports a pending claim', async () => {
+      process.env.ADMIN_CLAIM_TOKEN_SHA256 = hash;
+      mockUsersRepository.countByTenant.mockResolvedValue(0);
+
+      await expect(service.adminClaimStatus()).resolves.toEqual({ claimConfigured: true, claimRequired: true });
+    });
+
+    it('rate-limits failed claims per client', async () => {
+      process.env.ADMIN_CLAIM_TOKEN_SHA256 = hash;
+      mockUsersRepository.countByTenant.mockResolvedValue(0);
+
+      for (let i = 0; i < 10; i++) {
+        await expect(service.register('a@example.com', 'password123', 'wrong', '9.9.9.9')).rejects.toThrow(
+          ForbiddenException,
+        );
+      }
+
+      await expect(service.register('a@example.com', 'password123', token, '9.9.9.9')).rejects.toMatchObject({
+        status: 429,
+      });
+      await expect(service.register('a@example.com', 'password123', token, '8.8.8.8')).resolves.toBeDefined();
+    });
+
+    it('fails closed on a malformed hash', async () => {
+      process.env.ADMIN_CLAIM_TOKEN_SHA256 = 'not-a-hash';
+      mockUsersRepository.countByTenant.mockResolvedValue(0);
+
+      await expect(service.register('admin@example.com', 'password123', token)).rejects.toThrow(ForbiddenException);
     });
   });
 

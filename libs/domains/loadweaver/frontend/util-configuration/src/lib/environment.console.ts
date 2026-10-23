@@ -24,4 +24,12 @@ export const environment: LoadweaverConsoleEnvironment = {
       },
     },
   },
+  // Local development runs against the local fleet service (`apps/loadweaver/backend-fleet`, port 3500): sign-in,
+  // fleet views and every cluster view through the fleet's relay. Remove `mode` to talk to one control plane
+  // (`console.urls`) directly.
+  mode: 'fleet',
+  fleet: {
+    apiUrl: 'http://localhost:3500/api',
+    websocketUrl: 'http://localhost:3500/socket/fleet',
+  },
 };

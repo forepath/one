@@ -288,6 +288,8 @@ export class ServicePlansPageComponent implements OnInit {
     if (this.serviceEnumIncludes(serviceTypes, providerDetails, serviceTypeId, 'decabill-billing', form)) {
       target.add('integrated:decabill-billing');
     }
+
+    // Loadweaver is opt-in (needs a release version in the plan defaults); never pre-selected.
   }
 
   private pruneInvalidProvisioningOptionKeys(
@@ -316,6 +318,13 @@ export class ServicePlansPageComponent implements OnInit {
       if (
         optionKey === 'integrated:decabill-billing' &&
         !this.serviceEnumIncludes(serviceTypes, providerDetails, serviceTypeId, 'decabill-billing', form)
+      ) {
+        target.delete(optionKey);
+      }
+
+      if (
+        optionKey === 'integrated:loadweaver' &&
+        !this.serviceEnumIncludes(serviceTypes, providerDetails, serviceTypeId, 'loadweaver', form)
       ) {
         target.delete(optionKey);
       }
@@ -366,6 +375,7 @@ export class ServicePlansPageComponent implements OnInit {
         value === 'agenstra-controller' ||
         value === 'agenstra-manager' ||
         value === 'decabill-billing' ||
+        value === 'loadweaver' ||
         value === 'controller' ||
         value === 'manager' ||
         value === 'custom',
@@ -1270,6 +1280,10 @@ export class ServicePlansPageComponent implements OnInit {
 
     if (optionKeys.has('integrated:decabill-billing')) {
       services.push('decabill-billing');
+    }
+
+    if (optionKeys.has('integrated:loadweaver')) {
+      services.push('loadweaver');
     }
 
     if (services.length > 0) {

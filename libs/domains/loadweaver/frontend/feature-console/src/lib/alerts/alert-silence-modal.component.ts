@@ -10,8 +10,11 @@ import {
 import {
   FpcAlertComponent,
   FpcButtonComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
+  FpcTypeaheadSelectComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 
@@ -34,8 +37,11 @@ export interface SilencePrefill {
     FormsModule,
     FpcAlertComponent,
     FpcButtonComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
+    FpcTypeaheadSelectComponent,
   ],
   templateUrl: './alert-silence-modal.component.html',
   standalone: true,
@@ -58,6 +64,7 @@ export class LoadweaverAlertSilenceModalComponent {
   startsAt = '';
   endsAt = '';
   readonly invalid = signal<string | null>(null);
+  readonly projectSuggestionsOpen = signal(false);
 
   readonly title = $localize`:@@lwConsoleSilence-title:New silence`;
   readonly needsMatcher = $localize`:@@lwConsoleSilence-needsMatcher:Set at least one of rule, project or key.`;
@@ -71,6 +78,20 @@ export class LoadweaverAlertSilenceModalComponent {
     inject(Actions)
       .pipe(ofType(createSilenceSuccess), takeUntilDestroyed(inject(DestroyRef)))
       .subscribe(() => this.open.set(false));
+  }
+
+  /** The caller's projects matching the typed project (free text stays allowed). */
+  projectSuggestions(): string[] {
+    const query = this.project.trim().toLowerCase();
+
+    return this.projects().filter((p) => !query || p.toLowerCase().includes(query));
+  }
+
+  pickProject(project: string, event: Event): void {
+    // `mousedown` keeps the focus in the input until the pick is done.
+    event.preventDefault();
+    this.project = project;
+    this.projectSuggestionsOpen.set(false);
   }
 
   submit(): void {

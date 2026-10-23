@@ -23,6 +23,7 @@ import type {
   PaginatedBillingAuditLogsResponse,
   AdminInvoiceListItem,
   AdminSubscriptionListItem,
+  AdminSubscriptionTeardownOptions,
   ServerInfoResponse,
   SubscriptionItemDetailResponse,
   SubscriptionItemResponse,
@@ -46,6 +47,11 @@ import type {
   TriggerDatevExportResponse,
 } from '../types/billing.types';
 import type { TaxPreviewRequestDto, TaxPreviewResponse } from '../types/billing.types';
+
+/** Only sends `confirmDataTeardown` when set, so other subscriptions keep the empty body. */
+function teardownBody(options: AdminSubscriptionTeardownOptions): AdminSubscriptionTeardownOptions {
+  return options.confirmDataTeardown === true ? { confirmDataTeardown: true } : {};
+}
 
 @Injectable({
   providedIn: 'root',
@@ -188,18 +194,33 @@ export class AdminBillingService {
     });
   }
 
-  cancelSubscription(id: string): Observable<AdminSubscriptionListItem> {
-    return this.http.post<AdminSubscriptionListItem>(`${this.apiUrl}/admin/billing/subscriptions/${id}/cancel`, {});
+  cancelSubscription(
+    id: string,
+    options: AdminSubscriptionTeardownOptions = {},
+  ): Observable<AdminSubscriptionListItem> {
+    return this.http.post<AdminSubscriptionListItem>(
+      `${this.apiUrl}/admin/billing/subscriptions/${id}/cancel`,
+      teardownBody(options),
+    );
   }
 
-  withdrawSubscription(id: string): Observable<AdminSubscriptionListItem> {
-    return this.http.post<AdminSubscriptionListItem>(`${this.apiUrl}/admin/billing/subscriptions/${id}/withdraw`, {});
+  withdrawSubscription(
+    id: string,
+    options: AdminSubscriptionTeardownOptions = {},
+  ): Observable<AdminSubscriptionListItem> {
+    return this.http.post<AdminSubscriptionListItem>(
+      `${this.apiUrl}/admin/billing/subscriptions/${id}/withdraw`,
+      teardownBody(options),
+    );
   }
 
-  instantCancelSubscription(id: string): Observable<AdminSubscriptionListItem> {
+  instantCancelSubscription(
+    id: string,
+    options: AdminSubscriptionTeardownOptions = {},
+  ): Observable<AdminSubscriptionListItem> {
     return this.http.post<AdminSubscriptionListItem>(
       `${this.apiUrl}/admin/billing/subscriptions/${id}/instant-cancel`,
-      {},
+      teardownBody(options),
     );
   }
 

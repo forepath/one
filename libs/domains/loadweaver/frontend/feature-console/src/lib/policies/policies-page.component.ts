@@ -15,11 +15,15 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 
@@ -43,11 +47,15 @@ const MEMBER_PREVIEW = 5;
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcListComponent,
     FpcListItemComponent,
     FpcPageHeaderComponent,
     FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
   ],
   templateUrl: './policies-page.component.html',
@@ -67,6 +75,7 @@ export class LoadweaverPoliciesPageComponent implements OnInit {
   private readonly memberProjects = toSignal(this.access.projects$, { initialValue: [] as string[] });
 
   readonly project = signal('');
+  readonly filtersOpen = signal(false);
 
   readonly projects = computed(() => [...new Set([...this.resourceProjects(), ...this.memberProjects()])].sort());
   readonly filteredGroups = computed(() =>
@@ -98,6 +107,10 @@ export class LoadweaverPoliciesPageComponent implements OnInit {
   readonly policiesTitle = $localize`:@@lwConsolePolicies-policies:Policies`;
   readonly clusterWideLabel = $localize`:@@lwConsolePolicies-clusterWide:Cluster-wide`;
   readonly editLabel = $localize`:@@lwConsolePolicies-edit:Edit`;
+  readonly mapLabel = $localize`:@@lwConsolePolicies-map:Map`;
+  readonly newGroupLabel = $localize`:@@lwConsolePolicies-newGroup:New group`;
+  readonly newPolicyLabel = $localize`:@@lwConsolePolicies-newPolicy:New policy`;
+  readonly filtersLabel = $localize`:@@lwConsolePolicies-filters:Filters`;
 
   ngOnInit(): void {
     this.facade.load();

@@ -4,6 +4,7 @@ import {
   ipPoolSpecSchema,
   matchesSelector,
   nodeGroupSpecSchema,
+  parsePostureCondition,
   policySpecSchema,
   type ClientGroupSpec,
   type ClusterRemoteAccess,
@@ -26,7 +27,8 @@ import {
   type CompilerRemoteAccess,
 } from '@forepath/loadweaver/shared/util-policy-compiler';
 
-import type { PostureState, VpnClientEntity } from '../entities/vpn-client.entity';
+import type { VpnClientEntity } from '../entities/vpn-client.entity';
+import { compareVersions, conditionFailure, legacyVerdict, type PostureFactsView } from '../posture/posture-facts';
 
 /** Owner of the gateway address in public IPAM (3.27, 3.31). */
 export const VPN_ADDRESS_OWNER = 'vpn/0';
@@ -82,30 +84,35 @@ export function allocateClientAddress(clientNetwork: string, used: readonly stri
   return address ? formatIp(address) : null;
 }
 
-/** `1.2.10` vs `1.2.9`: numeric per part, missing parts are 0. */
-export function compareVersions(a: string, b: string): number {
-  const pa = a.split(/[.\-+]/).map((p) => parseInt(p, 10) || 0);
-  const pb = b.split(/[.\-+]/).map((p) => parseInt(p, 10) || 0);
-
-  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-    const diff = (pa[i] ?? 0) - (pb[i] ?? 0);
-
-    if (diff !== 0) return Math.sign(diff);
-  }
-
-  return 0;
-}
+export { compareVersions };
 
 const VERDICT_RANK: Record<string, number> = { compliant: 0, 'low-risk': 1 };
 
-/** Why a device fails a group's posture requirements (empty when it passes, 3.31). */
+/** What posture evaluation reads of a client: its last report and the integration / certificate facts. */
+export type PostureSubject = Pick<VpnClientEntity, 'posture'> &
+  Partial<Pick<VpnClientEntity, 'integrationPosture' | 'certificateSerial'>>;
+
+export function postureView(subject: PostureSubject): PostureFactsView {
+  return {
+    report: subject.posture?.report ?? null,
+    ...(subject.posture?.certificate ? { certificate: subject.posture.certificate } : {}),
+    integrations: subject.integrationPosture ?? {},
+    certificateSerial: subject.certificateSerial ?? null,
+  };
+}
+
+/**
+ * Why a device fails a group's posture requirements (empty when it passes, 3.31): core checks, conditions on
+ * integrations (MDM / EDR) and device certificates, and the older inline plugin rules. Unknown fails.
+ */
 export function postureFailures(
   requirements: ClientGroupSpec['posture'],
-  state: PostureState | null,
+  subject: PostureSubject,
   now: number,
 ): string[] {
   if (!requirements) return [];
 
+  const state = subject.posture;
   const report = state?.report;
 
   if (!report || !state?.reportedAt) return ['no posture report from this device'];
@@ -128,13 +135,23 @@ export function postureFailures(
   if (requirements.minAppVersion && compareVersions(report.appVersion ?? '0', requirements.minAppVersion) < 0)
     reasons.push(`app ${report.appVersion ?? 'unknown'} is older than ${requirements.minAppVersion}`);
 
-  for (const plugin of requirements.plugins ?? []) {
-    const verdict = state.plugins[plugin.type]?.verdict ?? 'unknown';
+  const view = postureView(subject);
 
-    if ((VERDICT_RANK[verdict] ?? 99) > VERDICT_RANK[plugin.require])
-      reasons.push(
-        `${plugin.type}: ${verdict}${state.plugins[plugin.type]?.detail ? ` (${state.plugins[plugin.type]?.detail})` : ''}`,
-      );
+  for (const text of requirements.conditions ?? []) {
+    const condition = parsePostureCondition(text);
+    const failure = typeof condition === 'string' ? condition : conditionFailure(condition, view, now);
+
+    if (failure) reasons.push(failure);
+  }
+
+  for (const plugin of requirements.plugins ?? []) {
+    // Integrations first; rows from before them may still carry an inline verdict.
+    const fromIntegration = legacyVerdict(view, plugin.type, now);
+    const result =
+      fromIntegration.verdict !== 'unknown' ? fromIntegration : (state.plugins?.[plugin.type] ?? fromIntegration);
+
+    if ((VERDICT_RANK[result.verdict] ?? 99) > VERDICT_RANK[plugin.require])
+      reasons.push(`${plugin.type}: ${result.verdict}${result.detail ? ` (${result.detail})` : ''}`);
   }
 
   return reasons;
@@ -142,7 +159,7 @@ export function postureFailures(
 
 /** Groups a device is in after posture: failing groups are replaced by their restricted group, or dropped (3.31). */
 export function effectiveGroups(
-  client: Pick<VpnClientEntity, 'groups' | 'posture'>,
+  client: Pick<VpnClientEntity, 'groups'> & PostureSubject,
   groups: NamedClientGroups,
   now: number,
 ): string[] {
@@ -153,7 +170,7 @@ export function effectiveGroups(
 
     if (!spec) continue;
 
-    if (postureFailures(spec.posture, client.posture, now).length === 0) result.add(name);
+    if (postureFailures(spec.posture, client, now).length === 0) result.add(name);
     else if (spec.restrictedGroup && groups.has(spec.restrictedGroup)) result.add(spec.restrictedGroup);
   }
 

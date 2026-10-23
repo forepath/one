@@ -11,6 +11,12 @@ import {
 import {
   FpcAlertComponent,
   FpcButtonComponent,
+  FpcFormCheckComponent,
+  FpcFormCheckGroupComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
+  FpcInputGroupComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
 } from '@forepath/shared/frontend/ui-components';
@@ -42,6 +48,12 @@ import {
 @Component({
   selector: 'loadweaver-git-connection-modal',
   imports: [
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
+    FpcFormCheckComponent,
+    FpcFormCheckGroupComponent,
+    FpcFormSwitchComponent,
+    FpcInputGroupComponent,
     CommonModule,
     FormsModule,
     FpcAlertComponent,

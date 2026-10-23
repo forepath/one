@@ -1,5 +1,5 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -16,8 +16,12 @@ import {
   FpcBadgeComponent,
   FpcButtonComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcListComponent,
   FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcSpinnerComponent,
   FpcTabComponent,
@@ -59,8 +63,12 @@ const POLL_MS = 15_000;
     FpcBadgeComponent,
     FpcButtonComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcListComponent,
     FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
     FpcPageHeaderComponent,
     FpcSpinnerComponent,
     FpcTabComponent,
@@ -94,6 +102,7 @@ export class LoadweaverReportsPageComponent implements OnInit {
   /** The file being fetched (download, archive or opened). */
   readonly busyPath = signal<string | null>(null);
   readonly fileError = signal<string | null>(null);
+  readonly runOpen = signal(false);
 
   readonly scopes = computed(() =>
     runnableScopes(this.me(), [
@@ -131,6 +140,8 @@ export class LoadweaverReportsPageComponent implements OnInit {
   readonly folderLabel = $localize`:@@lwConsoleReports-showFiles:Show files`;
   readonly upLabel = $localize`:@@lwConsoleReports-up:Up`;
   readonly queuedMessage = $localize`:@@lwConsoleReports-queued:The report is queued; it shows up below when it runs.`;
+  readonly runLabel = $localize`:@@lwConsoleReports-run:Run report`;
+  readonly cancelLabel = $localize`:@@lwConsoleReports-cancel:Cancel`;
   readonly popupBlocked = $localize`:@@lwConsoleReports-popupBlocked:The browser blocked the new tab.`;
 
   constructor() {
@@ -139,6 +150,10 @@ export class LoadweaverReportsPageComponent implements OnInit {
       const scopes = this.scopes();
 
       if (!scopes.includes(this.scope()) && scopes.length > 0) this.scope.set(scopes[0]);
+    });
+    // A queued run closes the run dialog; the confirmation shows above the runs.
+    effect(() => {
+      if (this.queued()) untracked(() => this.runOpen.set(false));
     });
   }
 
@@ -164,6 +179,11 @@ export class LoadweaverReportsPageComponent implements OnInit {
     if (!parsed || !scope || !this.monthValid()) return;
 
     this.facade.run({ scope, year: parsed.year, month: parsed.month });
+  }
+
+  openRun(): void {
+    this.facade.clearRunResult();
+    this.runOpen.set(true);
   }
 
   dismissRunResult(): void {

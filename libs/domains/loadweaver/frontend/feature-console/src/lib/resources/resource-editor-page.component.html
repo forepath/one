@@ -1,16 +1,19 @@
-<fpc-page-header [title]="heading()" [icon]="kindIcon(kind()).slice(3)">
-  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="heading()" [icon]="kindIcon(kind()).slice(3)">
     @if (errorCount() > 0) {
-      <fpc-badge color="danger" size="sm" data-testid="editor-error-count">
+      <fpc-badge fpcPageHeaderActions color="danger" size="sm" data-testid="editor-error-count">
         {{ errorCount() }} <span i18n="@@lwConsoleResourceEditor-errors">errors</span>
       </fpc-badge>
     } @else if (dirty()) {
-      <fpc-badge color="warning" size="sm" i18n="@@lwConsoleResourceEditor-unsaved">Not planned yet</fpc-badge>
+      <fpc-badge fpcPageHeaderActions color="warning" size="sm" i18n="@@lwConsoleResourceEditor-unsaved"
+        >Not planned yet</fpc-badge
+      >
     }
-    <fpc-button variant="outline-secondary" size="sm" (clicked)="cancel()" data-testid="editor-cancel">
+    <fpc-button fpcPageHeaderActions variant="secondary" size="sm" (clicked)="cancel()" data-testid="editor-cancel">
       <span i18n="@@lwConsoleResourceEditor-cancel">Cancel</span>
     </fpc-button>
     <fpc-button
+      fpcPageHeaderActions
       variant="primary"
       size="sm"
       [disabled]="!canPlan()"
@@ -26,169 +29,186 @@
         ><span i18n="@@lwConsoleResourceEditor-plan">Plan changes</span>
       }
     </fpc-button>
-  </div>
-</fpc-page-header>
-
-@if (selectedError(); as message) {
-  <fpc-alert class="m-3" variant="danger" [message]="message" />
-}
-@if (planError(); as message) {
-  <fpc-alert
-    class="m-3"
-    variant="danger"
-    [message]="message"
-    [dismissible]="true"
-    (closed)="dismissPlanError()"
-    data-testid="editor-plan-error"
-  />
-}
-@if (schemaError(); as message) {
-  <fpc-alert class="m-3" variant="warning" [message]="message" />
-}
-
-<div class="p-3 d-flex flex-column gap-3">
-  <p class="small text-body-secondary mb-0" i18n="@@lwConsoleResourceEditor-hint">
-    Saving never changes the cluster directly: it creates a plan with the diff and its effect on every layer, which is
-    reviewed, approved and applied like any plan.
-  </p>
-  @if (gitAuthoritative().length > 0) {
-    <fpc-alert
-      variant="info"
-      icon="git"
-      i18n-heading="@@lwConsoleGitEditor-heading"
-      heading="Managed in Git: saving opens a pull request"
-      data-testid="editor-git-authoritative"
-    >
-      <p class="small mb-1" i18n="@@lwConsoleGitEditor-message">
-        Git is authoritative for this scope. The plan shows the effect of the change, but it isn't applied here:
-        Loadweaver pushes the change to a branch and opens a pull request, linked on the plan. Merging it creates the
-        plan that is applied.
-      </p>
-      <ul class="small mb-0">
-        @for (c of gitAuthoritative(); track c.id) {
-          <li>
-            <span class="fw-semibold">{{ scopeLabel(c.project) }}</span
-            >: <span class="font-monospace">{{ c.repoUrl }}</span> ({{ c.branch }})
-          </li>
-        }
-      </ul>
-    </fpc-alert>
-  }
+  </fpc-page-header>
 
   @if (original() === null) {
-    <div class="d-flex flex-wrap align-items-end gap-3">
-      <div>
-        <label class="form-label small mb-1" for="lw-editor-kind">{{ kindLabel }}</label>
-        <select
-          id="lw-editor-kind"
-          class="form-select form-select-sm w-auto"
-          [ngModel]="newKind()"
-          (ngModelChange)="changeKind($event)"
-          [disabled]="dirty()"
-        >
-          @for (k of kindInfos(); track k.kind) {
-            <option [value]="k.kind">{{ k.kind }}</option>
-          } @empty {
-            <option [value]="newKind()">{{ newKind() }}</option>
-          }
-        </select>
+    <div class="flex-shrink-0 px-3 py-3 border-bottom">
+      <div class="row g-3 align-items-end">
+        <div class="col-12 col-md-4">
+          <fpc-form-field forId="lw-editor-kind" [label]="kindLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-editor-kind"
+              size="sm"
+              [ngModel]="newKind()"
+              (ngModelChange)="changeKind($event)"
+              [disabled]="dirty()"
+            >
+              @for (k of kindInfos(); track k.kind) {
+                <option [value]="k.kind">{{ k.kind }}</option>
+              } @empty {
+                <option [value]="newKind()">{{ newKind() }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-4">
+          <fpc-form-field forId="lw-editor-project" [label]="projectLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-editor-project"
+              size="sm"
+              [ngModel]="newProject() ?? ''"
+              (ngModelChange)="changeProject($event)"
+              [disabled]="dirty()"
+            >
+              <option value="" i18n="@@lwConsoleResourceEditor-noProject">Cluster-level</option>
+              @for (p of projects(); track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        @if (kindDescription(); as description) {
+          <div class="col-12 col-md-4 small text-body-secondary">{{ description }}</div>
+        }
       </div>
-      <div>
-        <label class="form-label small mb-1" for="lw-editor-project">{{ projectLabel }}</label>
-        <select
-          id="lw-editor-project"
-          class="form-select form-select-sm w-auto"
-          [ngModel]="newProject() ?? ''"
-          (ngModelChange)="changeProject($event)"
-          [disabled]="dirty()"
-        >
-          <option value="" i18n="@@lwConsoleResourceEditor-noProject">Cluster-level</option>
-          @for (p of projects(); track p) {
-            <option [value]="p">{{ p }}</option>
-          }
-        </select>
-      </div>
-      @if (kindDescription(); as description) {
-        <span class="small text-body-secondary pb-1">{{ description }}</span>
-      }
     </div>
   }
 
-  @if (renamed() && declared(); as next) {
-    <fpc-alert variant="warning" data-testid="editor-renamed">
-      <span i18n="@@lwConsoleResourceEditor-renamed">The plan deletes</span>
-      <span class="font-monospace mx-1">{{ originalLabel() }}</span>
-      <span i18n="@@lwConsoleResourceEditor-renamedAnd">and creates</span>
-      <span class="font-monospace ms-1">{{ label(next) }}</span
-      >.
-    </fpc-alert>
-  }
-
-  @if (initialText() === null) {
-    <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-  } @else {
-    <fpc-tab-group [activeId]="activeTab()" (activeIdChange)="activeTab.set($event)">
-      <fpc-tab id="resource" [label]="resourceTab" icon="file-earmark-code">
-        <fpc-code-editor
-          #resourceEditor
-          [value]="text()"
-          language="yaml"
-          height="34rem"
-          [validate]="validate()"
-          (valueChange)="onTextChange($event)"
-          (diagnosticsChange)="diagnostics.set($event)"
-        />
-        @if (!schemaLoaded() && !schemaError()) {
-          <div class="small text-body-secondary mt-1" i18n="@@lwConsoleResourceEditor-schemaLoading">
-            Loading the schema of this kind…
-          </div>
-        }
-      </fpc-tab>
+  @if (initialText() !== null) {
+    <fpc-tab-group class="flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="activeTab.set($event)">
+      <fpc-tab id="resource" [label]="resourceTab" icon="file-earmark-code" />
       @if (isDeployment()) {
-        <fpc-tab id="compose" [label]="composeTab" icon="box-seam">
-          @if (compose() !== null) {
-            <fpc-code-editor
-              #composeEditor
-              [value]="compose() ?? ''"
-              language="yaml"
-              height="34rem"
-              [validate]="validateCompose"
-              (valueChange)="onComposeChange($event)"
-              (diagnosticsChange)="composeDiagnostics.set($event)"
-            />
-          } @else {
-            <fpc-alert
-              variant="info"
-              i18n-message="@@lwConsoleResourceEditor-composeUnavailable"
-              message="The compose file is edited here once the resource YAML parses and has spec.compose."
-            />
-          }
-        </fpc-tab>
+        <fpc-tab id="compose" [label]="composeTab" icon="box-seam" />
       }
     </fpc-tab-group>
-
-    @if (problems().length > 0) {
-      <ul class="list-group list-group-flush small border rounded" data-testid="editor-problems">
-        @for (p of problems(); track $index) {
-          <li class="list-group-item p-0">
-            <button type="button" class="btn btn-link btn-sm text-start w-100 text-decoration-none" (click)="reveal(p)">
-              <i
-                class="bi me-2"
-                [class.bi-x-circle-fill]="p.severity === 'error'"
-                [class.text-danger]="p.severity === 'error'"
-                [class.bi-exclamation-triangle-fill]="p.severity !== 'error'"
-                [class.text-warning]="p.severity !== 'error'"
-                aria-hidden="true"
-              ></i>
-              @if (p.source === 'compose') {
-                <span class="text-body-secondary me-1">{{ composeTab }}</span>
-              }
-              <span class="text-body-secondary me-2">{{ p.line }}:{{ p.column }}</span>
-              <span class="text-body">{{ p.message }}</span>
-            </button>
-          </li>
-        }
-      </ul>
-    }
   }
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (selectedError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (planError(); as message) {
+      <fpc-alert
+        class="m-3"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="dismissPlanError()"
+        data-testid="editor-plan-error"
+      />
+    }
+    @if (schemaError(); as message) {
+      <fpc-alert class="m-3" variant="warning" [message]="message" />
+    }
+
+    <p class="small text-body-secondary px-3 py-2 mb-0 border-bottom" i18n="@@lwConsoleResourceEditor-hint">
+      Saving never changes the cluster directly: it creates a plan with the diff and its effect on every layer, which is
+      reviewed, approved and applied like any plan.
+    </p>
+    @if (gitAuthoritative().length > 0) {
+      <fpc-alert
+        class="m-3"
+        variant="info"
+        icon="git"
+        i18n-heading="@@lwConsoleGitEditor-heading"
+        heading="Managed in Git: saving opens a pull request"
+        data-testid="editor-git-authoritative"
+      >
+        <p class="small mb-1" i18n="@@lwConsoleGitEditor-message">
+          Git is authoritative for this scope. The plan shows the effect of the change, but it isn't applied here:
+          Loadweaver pushes the change to a branch and opens a pull request, linked on the plan. Merging it creates the
+          plan that is applied.
+        </p>
+        <ul class="small mb-0">
+          @for (c of gitAuthoritative(); track c.id) {
+            <li>
+              <span class="fw-semibold">{{ scopeLabel(c.project) }}</span
+              >: <span class="font-monospace">{{ c.repoUrl }}</span> ({{ c.branch }})
+            </li>
+          }
+        </ul>
+      </fpc-alert>
+    }
+
+    @if (renamed() && declared(); as next) {
+      <fpc-alert class="m-3" variant="warning" data-testid="editor-renamed">
+        <span i18n="@@lwConsoleResourceEditor-renamed">The plan deletes</span>
+        <span class="font-monospace mx-1">{{ originalLabel() }}</span>
+        <span i18n="@@lwConsoleResourceEditor-renamedAnd">and creates</span>
+        <span class="font-monospace ms-1">{{ label(next) }}</span
+        >.
+      </fpc-alert>
+    }
+
+    @if (initialText() === null) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else {
+      <fpc-panel-grid [columns]="1">
+        <fpc-panel flush>
+          @if (activeTab() === 'compose' && isDeployment()) {
+            @if (compose() !== null) {
+              <fpc-code-editor
+                #composeEditor
+                [value]="compose() ?? ''"
+                language="yaml"
+                height="34rem"
+                [validate]="validateCompose"
+                (valueChange)="onComposeChange($event)"
+                (diagnosticsChange)="composeDiagnostics.set($event)"
+              />
+            } @else {
+              <fpc-alert
+                class="m-3"
+                variant="info"
+                i18n-message="@@lwConsoleResourceEditor-composeUnavailable"
+                message="The compose file is edited here once the resource YAML parses and has spec.compose."
+              />
+            }
+          } @else {
+            <fpc-code-editor
+              #resourceEditor
+              [value]="text()"
+              language="yaml"
+              height="34rem"
+              [validate]="validate()"
+              (valueChange)="onTextChange($event)"
+              (diagnosticsChange)="diagnostics.set($event)"
+            />
+            @if (!schemaLoaded() && !schemaError()) {
+              <div class="small text-body-secondary px-3 py-1" i18n="@@lwConsoleResourceEditor-schemaLoading">
+                Loading the schema of this kind…
+              </div>
+            }
+          }
+        </fpc-panel>
+        @if (problems().length > 0) {
+          <fpc-panel flush>
+            <fpc-list [flush]="true" data-testid="editor-problems">
+              @for (p of problems(); track $index) {
+                <fpc-list-item [clickable]="true" variant="condensed" (selected)="reveal(p)">
+                  <div fpcListItemTitle class="small">
+                    <i
+                      class="bi me-2"
+                      [class.bi-x-circle-fill]="p.severity === 'error'"
+                      [class.text-danger]="p.severity === 'error'"
+                      [class.bi-exclamation-triangle-fill]="p.severity !== 'error'"
+                      [class.text-warning]="p.severity !== 'error'"
+                      aria-hidden="true"
+                    ></i>
+                    @if (p.source === 'compose') {
+                      <span class="text-body-secondary me-1">{{ composeTab }}</span>
+                    }
+                    <span class="text-body-secondary me-2">{{ p.line }}:{{ p.column }}</span>
+                    <span class="text-body">{{ p.message }}</span>
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+    }
+  </div>
 </div>

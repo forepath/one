@@ -50,6 +50,7 @@ export * from './lib/services/admin-offers.service';
 export * from './lib/services/usage.service';
 export * from './lib/services/subscription-items.service';
 export * from './lib/services/container-manager.service';
+export * from './lib/services/loadweaver-cluster.service';
 export * from './lib/services/projects.service';
 export * from './lib/services/admin-projects.service';
 export * from './lib/services/project-tickets.service';

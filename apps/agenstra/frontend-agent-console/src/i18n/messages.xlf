@@ -4906,6 +4906,18 @@
       <trans-unit id="featureRegister-passwordsMismatch" datatype="html">
         <source>Passwords do not match.</source>
         </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenLabel" datatype="html">
+        <source>Admin claim token</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenPlaceholder" datatype="html">
+        <source>Paste the admin claim token</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenHint" datatype="html">
+        <source> This installation has no account yet. The first account becomes the administrator and needs the one-time admin claim token from your provider (for Loadweaver Cloud: the Cluster tab of your service). </source>
+        </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenRequired" datatype="html">
+        <source> The admin claim token is required. </source>
+        </trans-unit>
       <trans-unit id="featureRegister-legalHintPrefix" datatype="html">
         <source>By registering, you acknowledge our</source>
         </trans-unit>
@@ -5464,17 +5476,26 @@
       <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
         <source>Search Documentation</source>
         </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackLoadweaver" datatype="html">
+        <source>Official Loadweaver documentation: install, deploy, secure, and operate resilient multi-site clusters, the encrypted network between sites, storage, ingress, policies, and the cluster console.</source>
+        </trans-unit>
       <trans-unit id="featureDocsPage-metaDescriptionFallbackDecabill" datatype="html">
         <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
         </trans-unit>
       <trans-unit id="featureDocsPage-metaDescriptionFallback" datatype="html">
         <source>Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.</source>
         </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsLoadweaver" datatype="html">
+        <source>Loadweaver, cluster, multi-site, WireGuard, BGP, network policies, replicated storage, ingress failover, self-hosted, control plane</source>
+        </trans-unit>
       <trans-unit id="featureDocsPage-metaKeywordsDecabill" datatype="html">
         <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
         </trans-unit>
       <trans-unit id="featureDocsPage-metaKeywords" datatype="html">
         <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionLoadweaver" datatype="html">
+        <source>Search Loadweaver docs for setup guides, API references, security hardening, network and policy configuration, deployment patterns, and troubleshooting.</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaDescriptionDecabill" datatype="html">
         <source>Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.</source>
@@ -5500,6 +5521,9 @@
       <trans-unit id="sharedFeatureLandingpageContactPerson-messageDecabill" datatype="html">
         <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
         </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageLoadweaver" datatype="html">
+        <source>We build Loadweaver with AI every day, because it makes the product better and lets us ship faster.</source>
+        </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-mayaRole" datatype="html">
         <source>Virtual Customer Success</source>
         </trans-unit>
@@ -5514,6 +5538,9 @@
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
         <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageLoadweaver" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Loadweaver, and a person takes responsibility for every answer.</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
         <source>AI</source>
@@ -5846,6 +5873,12 @@
       <trans-unit id="featureUpdates-frontendVersion" datatype="html">
         <source>Frontend version</source>
         </trans-unit>
+      <trans-unit id="featureUpdates-channel" datatype="html">
+        <source>Channel</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-channelBeta" datatype="html">
+        <source>Beta</source>
+        </trans-unit>
       <trans-unit id="featureUpdates-searchInstancesPlaceholder" datatype="html">
         <source>Search instances</source>
         </trans-unit>
@@ -5863,6 +5896,9 @@
         </trans-unit>
       <trans-unit id="featureUpdates-mobilePanelShared" datatype="html">
         <source>Shared</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-channelStable" datatype="html">
+        <source>Stable</source>
         </trans-unit>
       <trans-unit id="featureUpdates-statusUpdateAvailable" datatype="html">
         <source>Update available</source>
@@ -5959,15 +5995,6 @@
         </trans-unit>
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-channel" datatype="html">
-        <source>Channel</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-channelBeta" datatype="html">
-        <source>Beta</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-channelStable" datatype="html">
-        <source>Stable</source>
         </trans-unit>
     </body>
   </file>

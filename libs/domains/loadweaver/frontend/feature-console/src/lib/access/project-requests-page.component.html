@@ -1,14 +1,17 @@
-<fpc-page-header [title]="title" [subtitle]="project()" icon="inbox">
-  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" [subtitle]="project()" icon="inbox">
     <a
-      class="btn btn-sm btn-outline-secondary"
+      fpcPageHeaderActions
+      class="btn btn-sm btn-secondary"
       routerLink="/access"
       [queryParams]="{ project: project() }"
-      i18n="@@lwConsoleProjectRequests-access"
-      >Project access</a
-    >
+      [attr.aria-label]="accessLabel"
+      [title]="accessLabel"
+      ><i class="bi bi-people" aria-hidden="true"></i
+    ></a>
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="dark"
       size="sm"
       iconOnly
       [ariaLabel]="refreshLabel"
@@ -17,32 +20,30 @@
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-<div class="p-3 d-flex flex-column gap-3">
-  @if (error(); as message) {
-    <fpc-alert variant="danger" [message]="message" />
-  }
-  @if (changeError(); as message) {
-    <fpc-alert variant="danger" [message]="message" />
-  }
-  <p class="small text-body-secondary mb-0" i18n="@@lwConsoleProjectRequests-hint">
-    Policies of other projects that reach this project's groups need its acceptance, bound to the exact version. To
-    reject one, don't accept it (the plan stays blocked) or reject the requesting plan.
-  </p>
-  @if (loading() && !ready()) {
-    <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-  } @else if (ready()) {
-    <fpc-panel [flush]="true">
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (changeError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    <p class="small text-body-secondary mb-0 px-3 py-2 border-bottom" i18n="@@lwConsoleProjectRequests-hint">
+      Policies of other projects that reach this project's groups need its acceptance, bound to the exact version. To
+      reject one, don't accept it (the plan stays blocked) or reject the requesting plan.
+    </p>
+    @if (loading() && !ready()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (ready()) {
       <loadweaver-access-requests
         [requests]="requests()"
         [mayAccept]="mayAccept()"
         [changing]="changing()"
         (accept)="acceptFor.set($event)"
       />
-    </fpc-panel>
-  }
+    }
+  </div>
 </div>
 
 <fpc-confirm-dialog

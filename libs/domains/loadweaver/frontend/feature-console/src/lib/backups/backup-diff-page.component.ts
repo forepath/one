@@ -9,6 +9,7 @@ import {
   FpcEmptyStateComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
   FpcSummaryCardComponent,
@@ -21,6 +22,7 @@ import { sizeDelta } from './backup-format';
 @Component({
   selector: 'loadweaver-backup-diff-page',
   imports: [
+    FpcPanelGridComponent,
     CommonModule,
     RouterModule,
     FpcAlertComponent,

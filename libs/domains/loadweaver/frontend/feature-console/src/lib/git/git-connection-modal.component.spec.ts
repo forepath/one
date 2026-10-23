@@ -93,8 +93,10 @@ describe('LoadweaverGitConnectionModalComponent', () => {
 
     // Stays open to show the secret.
     expect(component.open()).toBe(true);
-    expect((el().querySelector('[data-testid="git-created-secret"]') as HTMLInputElement).value).toBe('whsec_once');
-    expect((el().querySelector('[data-testid="git-created-url"]') as HTMLInputElement).value).toBe(
+    expect((el().querySelector('[data-testid="git-created-secret"] input') as HTMLInputElement).value).toBe(
+      'whsec_once',
+    );
+    expect((el().querySelector('[data-testid="git-created-url"] input') as HTMLInputElement).value).toBe(
       'https://lw.example/api/git/webhooks/new',
     );
 
@@ -139,7 +141,7 @@ describe('LoadweaverGitConnectionModalComponent', () => {
     expect(git['update']).not.toHaveBeenCalled();
   });
 
-  const appToggle = () => el().querySelector('[data-testid="git-form-github-app"]') as HTMLInputElement | null;
+  const appToggle = () => el().querySelector('[data-testid="git-form-github-app"] input') as HTMLInputElement | null;
 
   it('lets cluster admins enable the GitHub App for GitHub connections', async () => {
     await setup(testGitConnection({ credentials: null }), [], true);

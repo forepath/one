@@ -126,6 +126,42 @@
             }
           </fpc-form-field>
 
+          @if (adminClaimRequired()) {
+            <!-- One-time admin claim token (first account of a fresh deployment, e.g. Loadweaver Cloud) -->
+            <fpc-form-field
+              forId="adminClaimToken"
+              i18n-label="@@featureRegister-adminClaimTokenLabel"
+              label="Admin claim token"
+            >
+              <fpc-input-group>
+                <span fpcInputGroupPrefix class="input-group-text">
+                  <i class="bi bi-key-fill" aria-hidden="true"></i>
+                </span>
+                <fpc-form-control
+                  controlId="adminClaimToken"
+                  inputType="password"
+                  formControlName="adminClaimToken"
+                  i18n-placeholder="@@featureRegister-adminClaimTokenPlaceholder"
+                  placeholder="Paste the admin claim token"
+                  autocomplete="off"
+                  [invalid]="
+                    !!(registerForm.get('adminClaimToken')?.invalid && registerForm.get('adminClaimToken')?.touched)
+                  "
+                  [disabled]="(registering$ | async) ?? false"
+                />
+              </fpc-input-group>
+              <div fpcFormFieldHint i18n="@@featureRegister-adminClaimTokenHint">
+                This installation has no account yet. The first account becomes the administrator and needs the one-time
+                admin claim token from your provider (for Loadweaver Cloud: the Cluster tab of your service).
+              </div>
+              @if (registerForm.get('adminClaimToken')?.invalid && registerForm.get('adminClaimToken')?.touched) {
+                <div fpcFormFieldError i18n="@@featureRegister-adminClaimTokenRequired">
+                  The admin claim token is required.
+                </div>
+              }
+            </fpc-form-field>
+          }
+
           @if (termsUrl && privacyPolicyUrl) {
             <p class="form-check-label mb-3 small border p-3 rounded-2">
               <span i18n="@@featureRegister-legalHintPrefix">By registering, you acknowledge our</span>

@@ -18,6 +18,7 @@ import {
   FpcListItemComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 
@@ -85,6 +86,7 @@ export function gitLinkReturnOf(query: { get(name: string): string | null }): Gi
     FpcListItemComponent,
     FpcPageHeaderComponent,
     FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
   ],
   templateUrl: './git-accounts-page.component.html',

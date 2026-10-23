@@ -28,6 +28,7 @@ import {
   FpcEmptyStateComponent,
   FpcModalComponent,
   FpcFormControlComponent,
+  FpcFormCheckComponent,
   FpcFormFieldComponent,
   FpcInfiniteScrollDirective,
   FpcListAppendFooterComponent,
@@ -87,6 +88,7 @@ interface AddonMeterOption {
     FpcSummaryCardValueDirective,
     FpcFormControlComponent,
     FpcFormFieldComponent,
+    FpcFormCheckComponent,
     FpcButtonComponent,
     FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
@@ -103,6 +105,8 @@ export class AdminSubscriptionsPageComponent implements OnInit {
   readonly cancelSubscriptionModalOpen = signal(false);
   readonly withdrawSubscriptionModalOpen = signal(false);
   readonly instantCancelSubscriptionModalOpen = signal(false);
+  /** Required by the API when the subscription runs a Loadweaver cluster (its data is deleted). */
+  readonly confirmDataTeardown = signal(false);
   readonly resumeConfirmModalOpen = signal(false);
   readonly metersModalOpen = signal(false);
   readonly deleteEntryModalOpen = signal(false);
@@ -333,24 +337,28 @@ export class AdminSubscriptionsPageComponent implements OnInit {
 
   openCancelConfirm(sub: AdminSubscriptionListItem): void {
     this.subscriptionToCancel = sub;
+    this.confirmDataTeardown.set(false);
     showBillingModal(this.cancelSubscriptionModalOpen);
   }
 
   confirmCancelSubscription(): void {
     if (!this.subscriptionToCancel) return;
 
-    this.facade.cancelSubscription(this.subscriptionToCancel.id);
+    this.facade.cancelSubscription(this.subscriptionToCancel.id, { confirmDataTeardown: this.confirmDataTeardown() });
   }
 
   openWithdrawConfirm(sub: AdminSubscriptionListItem): void {
     this.subscriptionToWithdraw = sub;
+    this.confirmDataTeardown.set(false);
     showBillingModal(this.withdrawSubscriptionModalOpen);
   }
 
   confirmWithdrawSubscription(): void {
     if (!this.subscriptionToWithdraw) return;
 
-    this.facade.withdrawSubscription(this.subscriptionToWithdraw.id);
+    this.facade.withdrawSubscription(this.subscriptionToWithdraw.id, {
+      confirmDataTeardown: this.confirmDataTeardown(),
+    });
   }
 
   canInstantCancel(sub: AdminSubscriptionListItem): boolean {
@@ -359,13 +367,16 @@ export class AdminSubscriptionsPageComponent implements OnInit {
 
   openInstantCancelConfirm(sub: AdminSubscriptionListItem): void {
     this.subscriptionToInstantCancel = sub;
+    this.confirmDataTeardown.set(false);
     showBillingModal(this.instantCancelSubscriptionModalOpen);
   }
 
   confirmInstantCancelSubscription(): void {
     if (!this.subscriptionToInstantCancel) return;
 
-    this.facade.instantCancelSubscription(this.subscriptionToInstantCancel.id);
+    this.facade.instantCancelSubscription(this.subscriptionToInstantCancel.id, {
+      confirmDataTeardown: this.confirmDataTeardown(),
+    });
   }
 
   openResumeConfirm(sub: AdminSubscriptionListItem): void {

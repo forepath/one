@@ -13,10 +13,14 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 
@@ -45,10 +49,14 @@ export const CLUSTER_SCOPE = '-';
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcListComponent,
     FpcListItemComponent,
     FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
     FpcSpinnerComponent,
   ],
   templateUrl: './resources-page.component.html',
@@ -72,6 +80,8 @@ export class LoadweaverResourcesPageComponent implements OnInit {
   readonly kind = signal('');
   readonly project = signal('');
   readonly search = signal('');
+  readonly filtersOpen = signal(false);
+  readonly activeFilterCount = computed(() => (this.kind() ? 1 : 0) + (this.project() ? 1 : 0));
 
   /** Kinds with resources first, then the other published kinds. */
   readonly kinds = computed(() => {
@@ -113,6 +123,8 @@ export class LoadweaverResourcesPageComponent implements OnInit {
   readonly projectFilterLabel = $localize`:@@lwConsoleResources-projectFilter:Project`;
   readonly searchLabel = $localize`:@@lwConsoleResources-search:Search resources`;
   readonly clusterLabel = $localize`:@@lwConsoleResources-cluster:Cluster`;
+  readonly newLabel = $localize`:@@lwConsoleResources-new:New resource`;
+  readonly filtersLabel = $localize`:@@lwConsoleResources-filters:Filters`;
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
@@ -121,6 +133,11 @@ export class LoadweaverResourcesPageComponent implements OnInit {
     this.project.set(params.get('project') ?? '');
     this.facade.load();
     this.facade.loadKinds();
+  }
+
+  clearFilters(): void {
+    this.kind.set('');
+    this.project.set('');
   }
 
   refresh(): void {

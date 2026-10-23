@@ -13,11 +13,17 @@ import {
   FpcButtonComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInputGroupComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
+  FpcTabComponent,
+  FpcTabGroupComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { interval } from 'rxjs';
 
@@ -30,6 +36,7 @@ import {
   mayManageAllDevices,
   restrictionLines,
 } from './device-format';
+import { certificateLabel, certificateTone, factLabel, factTone, reportSummary } from '../posture/posture-format';
 
 const REFRESH_MS = 30_000;
 
@@ -41,6 +48,12 @@ const REFRESH_MS = 30_000;
 @Component({
   selector: 'loadweaver-devices-page',
   imports: [
+    FpcPanelGridComponent,
+    FpcTabGroupComponent,
+    FpcTabComponent,
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
+    FpcInputGroupComponent,
     CommonModule,
     FormsModule,
     FpcAlertComponent,
@@ -88,6 +101,11 @@ export class LoadweaverDevicesPageComponent implements OnInit {
   readonly restricted = isRestricted;
   readonly restrictionLines = restrictionLines;
   readonly connected = (device: VpnClient) => isConnected(device);
+  readonly reportSummary = reportSummary;
+  readonly factLabel = (fact: Parameters<typeof factLabel>[0]) => factLabel(fact);
+  readonly factTone = (fact: Parameters<typeof factTone>[0]) => factTone(fact);
+  readonly certificateLabel = (certificate: Parameters<typeof certificateLabel>[0]) => certificateLabel(certificate);
+  readonly certificateTone = (certificate: Parameters<typeof certificateTone>[0]) => certificateTone(certificate);
 
   readonly title = $localize`:@@lwConsoleDevices-title:Remote access`;
   readonly refreshLabel = $localize`:@@lwConsoleDevices-refresh:Refresh`;

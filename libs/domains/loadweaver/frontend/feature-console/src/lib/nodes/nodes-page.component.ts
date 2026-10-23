@@ -11,6 +11,7 @@ import {
   type JoinToken,
   type NodeSite,
   RESOURCE_NAME_PATTERN,
+  ConsoleEndpointService,
 } from '@forepath/loadweaver/frontend/data-access-console';
 import {
   FpcAlertComponent,
@@ -18,15 +19,23 @@ import {
   FpcButtonComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInputGroupComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcProgressComponent,
   FpcSpinnerComponent,
   FpcStatusBadgeComponent,
+  FpcSummaryBarComponent,
+  FpcSummaryCardComponent,
+  FpcSummaryCardValueDirective,
 } from '@forepath/shared/frontend/ui-components';
 import { interval } from 'rxjs';
 
@@ -64,6 +73,14 @@ export function joinCommand(scriptUrl: string): string {
 @Component({
   selector: 'loadweaver-nodes-page',
   imports: [
+    FpcPanelGridComponent,
+    FpcSummaryBarComponent,
+    FpcSummaryCardComponent,
+    FpcSummaryCardValueDirective,
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
+    FpcFormCheckComponent,
+    FpcInputGroupComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -105,6 +122,9 @@ export class LoadweaverNodesPageComponent implements OnInit {
   private readonly me = toSignal(this.access.me$, { initialValue: null });
 
   readonly mayOperate = computed(() => mayOperateNodes(this.me()?.clusterRole));
+  /** Join tokens and the installer are never relayed by the fleet: joining happens in the cluster's own console. */
+  private readonly fleetMode = inject(ConsoleEndpointService).fleetMode;
+  readonly mayJoin = computed(() => this.mayOperate() && !this.fleetMode);
   readonly connectedCount = computed(() => this.nodes().filter((n) => n.connected && n.lifecycle !== 'left').length);
   readonly memberCount = computed(() => this.nodes().filter((n) => n.lifecycle !== 'left').length);
   readonly joinCommand = computed(() => {
@@ -132,8 +152,13 @@ export class LoadweaverNodesPageComponent implements OnInit {
 
   readonly title = $localize`:@@lwConsoleNodes-title:Nodes & sites`;
   readonly refreshLabel = $localize`:@@lwConsoleNodes-refresh:Refresh`;
-  readonly clusterTitle = $localize`:@@lwConsoleNodes-cluster:Cluster`;
+  readonly addLabel = $localize`:@@lwConsoleNodes-add:Add node`;
+  readonly clusterNameLabel = $localize`:@@lwConsoleNodes-clusterName:Name`;
+  readonly connectedLabel = $localize`:@@lwConsoleNodes-connected:Connected`;
+  readonly controlPlaneLabel = $localize`:@@lwConsoleNodes-controlPlane:Control plane`;
+  readonly failoverLabel = $localize`:@@lwConsoleNodes-failover:Failover`;
   readonly tokensTitle = $localize`:@@lwConsoleNodes-tokens:Join tokens`;
+  readonly nodesTitle = $localize`:@@lwConsoleNodes-nodesTitle:Nodes`;
   readonly joinTitle = $localize`:@@lwConsoleNodes-joinTitle:Add a node`;
   readonly revokeTitle = $localize`:@@lwConsoleNodes-revokeTitle:Revoke the join token?`;
   readonly revokeMessage = $localize`:@@lwConsoleNodes-revokeMessage:A node can no longer join with it.`;
@@ -143,7 +168,7 @@ export class LoadweaverNodesPageComponent implements OnInit {
   constructor() {
     // Join tokens need infra rights (auditors only read nodes).
     effect(() => {
-      if (this.mayOperate()) untracked(() => this.facade.loadJoinTokens());
+      if (this.mayJoin()) untracked(() => this.facade.loadJoinTokens());
     });
   }
 
@@ -157,7 +182,7 @@ export class LoadweaverNodesPageComponent implements OnInit {
   refresh(): void {
     this.facade.load();
 
-    if (this.mayOperate()) this.facade.loadJoinTokens();
+    if (this.mayJoin()) this.facade.loadJoinTokens();
   }
 
   open(node: ConsoleNode): void {

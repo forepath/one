@@ -1,5 +1,6 @@
 import { RequireInteractiveSession, RequireScopes, type RequestWithUser } from '@forepath/identity/backend';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -18,14 +19,19 @@ import {
   IsBoolean,
   IsIn,
   IsInt,
+  IsISO8601,
   IsOptional,
   IsString,
   Matches,
   Max,
   MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { postureReportSchema } from '@forepath/loadweaver/shared/util-model';
 
+import { PostureCertificatesService, type IssuedDeviceCertificate } from '../posture/posture-certificates.service';
 import {
   RemoteAccessService,
   type VpnClientConfigResponse,
@@ -84,6 +90,27 @@ export class RenewMachineDto {
   lifetimeDays?: number;
 }
 
+export class PostureProofDto {
+  @IsISO8601({ strict: true })
+  timestamp!: string;
+
+  @MaxLength(2048)
+  @Matches(/^[A-Za-z0-9+/]+={0,2}$/)
+  signature!: string;
+}
+
+export class PostureCertificateDto {
+  @IsString()
+  @MaxLength(16_384)
+  pem!: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PostureProofDto)
+  proof?: PostureProofDto;
+}
+
+/** Posture report protocol v1 (same shape as `postureReportSchema` in util-model). */
 export class PostureReportDto {
   @IsIn(['macos', 'windows', 'linux', 'ios', 'android'])
   platform!: 'macos' | 'windows' | 'linux' | 'ios' | 'android';
@@ -110,6 +137,28 @@ export class PostureReportDto {
   @IsOptional()
   @Matches(/^[0-9A-Za-z._:-]{1,128}$/)
   deviceId?: string;
+
+  @IsOptional()
+  @Matches(/^[0-9A-Za-z._-]{1,64}$/)
+  serialNumber?: string;
+
+  @IsOptional()
+  @MaxLength(253)
+  @Matches(/^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$/)
+  hostname?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PostureCertificateDto)
+  certificate?: PostureCertificateDto;
+}
+
+export class DeviceCertificateDto {
+  /** PKCS#10 CSR (ECDSA P-256) generated on the device. */
+  @IsString()
+  @MaxLength(8_192)
+  @Matches(/^-----BEGIN CERTIFICATE REQUEST-----[\s\S]+-----END CERTIFICATE REQUEST-----\s*$/)
+  csr!: string;
 }
 
 /**
@@ -118,7 +167,10 @@ export class PostureReportDto {
  */
 @Controller('vpn')
 export class VpnController {
-  constructor(private readonly remoteAccess: RemoteAccessService) {}
+  constructor(
+    private readonly remoteAccess: RemoteAccessService,
+    private readonly certificates: PostureCertificatesService,
+  ) {}
 
   @Get('devices')
   @RequireScopes('vpn:read')
@@ -158,7 +210,22 @@ export class VpnController {
     @Body() dto: PostureReportDto,
     @Req() req?: RequestWithUser,
   ): Promise<VpnClientSummary> {
-    return await this.remoteAccess.reportPosture(req, id, { ...dto });
+    const report = postureReportSchema.safeParse(JSON.parse(JSON.stringify(dto)));
+
+    if (!report.success) throw new BadRequestException(report.error.issues.map((i) => i.message).join('; '));
+
+    return await this.remoteAccess.reportPosture(req, id, report.data);
+  }
+
+  /** A device certificate from the cluster CA (posture fact), for the caller's own device; CSR from the device. */
+  @Post('devices/:id/certificate')
+  @RequireInteractiveSession()
+  async certificate(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() dto: DeviceCertificateDto,
+    @Req() req?: RequestWithUser,
+  ): Promise<IssuedDeviceCertificate> {
+    return await this.certificates.issue(req, id, dto.csr);
   }
 
   @Delete('devices/:id')

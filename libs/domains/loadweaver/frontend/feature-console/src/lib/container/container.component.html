@@ -1,4 +1,23 @@
 <fpc-top-bar brandSrc="assets/images/icon_light.svg" [brandAlt]="productName">
+  @if (fleetMode && showChrome() && (isAuthenticated$ | async)) {
+    <!-- Fleet mode (3.24): the cluster the cluster views work on, through the fleet's relay. -->
+    <label class="visually-hidden" for="lw-console-cluster-switcher">{{ clusterSwitcherLabel }}</label>
+    <fpc-form-control
+      class="fpc-top-bar__action"
+      controlType="select"
+      controlId="lw-console-cluster-switcher"
+      size="sm"
+      data-bs-theme="dark"
+      [ngModel]="activeClusterId() ?? ''"
+      (ngModelChange)="onClusterSwitch($event)"
+      data-testid="console-cluster-switcher"
+    >
+      <option value="">{{ fleetLevelLabel }}</option>
+      @for (c of switchableClusters(); track c.id) {
+        <option [value]="c.id">{{ c.name }}</option>
+      }
+    </fpc-form-control>
+  }
   @if (showChrome() && (isAuthenticated$ | async)) {
     <!-- Global search and command palette (3.25); Ctrl / Cmd + K opens it too. -->
     <fpc-button
@@ -59,71 +78,71 @@
 <div class="d-flex justify-content-end flex-grow-1 overflow-hidden" [class.border-top]="!showChrome()">
   @if (showChrome() && (isAuthenticated$ | async)) {
     <fpc-sidebar [ariaLabel]="sidebarAriaLabel">
-      @for (item of navItems(); track item.path) {
-        <a
-          [routerLink]="item.path"
-          routerLinkActive="active"
-          class="sidebar__item"
-          [title]="item.title"
-          [attr.aria-label]="item.title"
-        >
-          <i class="bi {{ item.icon }} me-1" aria-hidden="true"></i>
-          <span class="small">{{ item.label }}</span>
-        </a>
+      <!-- Ordered by process (setup to daily use); groups open as popovers, one at a time. -->
+      @for (view of nav(); track view.key) {
+        @if (view.kind === 'link') {
+          <ng-container *ngTemplateOutlet="navLink; context: { $implicit: view.item, popover: false }" />
+        } @else {
+          <fpc-sidebar-popover
+            [open]="openPopover() === view.group.id"
+            (openChange)="onPopoverOpenChange(view.group.id, $event)"
+            [ariaLabel]="view.group.title"
+            [attr.data-testid]="'console-nav-group-' + view.group.id"
+          >
+            <span
+              fpcSidebarPopoverTrigger
+              class="sidebar__item position-relative"
+              [class.active]="isGroupActive(view)"
+              tabindex="0"
+              role="button"
+              aria-haspopup="dialog"
+              [attr.aria-expanded]="openPopover() === view.group.id"
+              [title]="view.group.title"
+              [attr.aria-label]="view.group.title"
+              (keydown.enter)="onPopoverTriggerKey(view.group.id, $event)"
+              (keydown.space)="onPopoverTriggerKey(view.group.id, $event)"
+            >
+              <i class="bi {{ view.group.icon }} me-1" aria-hidden="true"></i>
+              <span class="small">{{ view.group.label }}</span>
+            </span>
+            @for (item of view.items; track item.path) {
+              <ng-container *ngTemplateOutlet="navLink; context: { $implicit: item, popover: true }" />
+            }
+          </fpc-sidebar-popover>
+        }
       }
-      @if (isPatUiEnabled) {
-        <a
-          routerLink="/settings/tokens"
-          routerLinkActive="active"
-          class="sidebar__item"
-          i18n-title="@@lwConsoleContainer-tokensTitle"
-          title="Access Tokens"
-        >
-          <i class="bi bi-key me-1" aria-hidden="true"></i>
-          <span class="small" i18n="@@lwConsoleContainer-tokens">Tokens</span>
-        </a>
-      }
-      <!-- Git accounts linked for the plan bot (3.30): the caller's own setting. -->
-      <a
-        routerLink="/settings/git-accounts"
-        routerLinkActive="active"
-        class="sidebar__item"
-        i18n-title="@@lwConsoleContainer-gitAccountsTitle"
-        title="Linked Git accounts"
-        data-testid="console-git-accounts"
-      >
-        <i class="bi bi-link-45deg me-1" aria-hidden="true"></i>
-        <span class="small" i18n="@@lwConsoleContainer-gitAccounts">Git accounts</span>
-      </a>
       @if (adminNavItems().length > 0) {
         <div fpcSidebarFooter>
-          <fpc-sidebar-popover [(open)]="adminPopoverOpen" [ariaLabel]="adminPopoverAriaLabel">
+          <fpc-sidebar-popover
+            [open]="openPopover() === 'admin'"
+            (openChange)="onPopoverOpenChange('admin', $event)"
+            [ariaLabel]="adminPopoverAriaLabel"
+            data-testid="console-nav-group-admin"
+          >
             <span
               fpcSidebarPopoverTrigger
               class="sidebar__item border-top position-relative"
               [class.active]="isAdminRouteActive()"
               tabindex="0"
               role="button"
+              aria-haspopup="dialog"
+              [attr.aria-expanded]="openPopover() === 'admin'"
               i18n-title="@@lwConsoleContainer-adminTitle"
               title="Admin"
               i18n-aria-label="@@lwConsoleContainer-adminTitle"
               aria-label="Admin"
+              (keydown.enter)="onPopoverTriggerKey('admin', $event)"
+              (keydown.space)="onPopoverTriggerKey('admin', $event)"
             >
               <i class="bi bi-gear me-1" aria-hidden="true"></i>
               <span class="small" i18n="@@lwConsoleContainer-admin">Admin</span>
+              @if (updatesAttentionBadge$ | async) {
+                <fpc-notification-indicator placement="absolute" />
+                <span class="visually-hidden" i18n="@@lwConsoleContainer-updatesAttention">Updates need attention</span>
+              }
             </span>
             @for (item of adminNavItems(); track item.path) {
-              <a
-                [routerLink]="item.path"
-                routerLinkActive="active"
-                class="sidebar__item"
-                [title]="item.title"
-                [attr.aria-label]="item.title"
-                (click)="adminPopoverOpen = false"
-              >
-                <i class="bi {{ item.icon }} me-1" aria-hidden="true"></i>
-                <span class="small">{{ item.label }}</span>
-              </a>
+              <ng-container *ngTemplateOutlet="navLink; context: { $implicit: item, popover: true }" />
             }
           </fpc-sidebar-popover>
         </div>
@@ -134,6 +153,26 @@
     <router-outlet></router-outlet>
   </fpc-section-container>
 </div>
+
+<ng-template #navLink let-item let-popover="popover">
+  <a
+    [routerLink]="item.path"
+    class="sidebar__item position-relative"
+    [class.active]="item.path === activePath()"
+    [attr.aria-current]="item.path === activePath() ? 'page' : null"
+    [title]="item.title"
+    [attr.aria-label]="item.title"
+    [attr.data-testid]="item.testId ?? null"
+    (click)="popover && closePopover()"
+  >
+    <i class="bi {{ item.icon }} me-1" aria-hidden="true"></i>
+    <span class="small">{{ item.label }}</span>
+    @if (item.badge === 'updates' && (updatesAttentionBadge$ | async)) {
+      <fpc-notification-indicator placement="absolute" />
+      <span class="visually-hidden" i18n="@@lwConsoleContainer-updatesAttention">Updates need attention</span>
+    }
+  </a>
+</ng-template>
 
 <identity-logout-confirm-modal (confirmed)="onLogoutConfirmed($event)" />
 

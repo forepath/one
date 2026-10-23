@@ -926,6 +926,10 @@
         <source>Blog</source>
         <target state="translated">Blog</target>
       </trans-unit>
+      <trans-unit id="sharedFeatureLandingpagePortal-footerLink" datatype="html">
+        <source>Portal</source>
+        <target state="translated">Portal</target>
+      </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
         <source>Contact</source>
         <target state="translated">Kontakt</target>

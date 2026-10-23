@@ -1,10 +1,20 @@
-<fpc-page-header [title]="title" icon="display">
-  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
-    <fpc-button variant="primary" size="sm" (clicked)="openCreate()" data-testid="wallboards-add">
-      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i><span i18n="@@lwConsoleWallboards-add">New wallboard</span>
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="display">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="addLabel"
+      [title]="addLabel"
+      (clicked)="openCreate()"
+      data-testid="wallboards-add"
+    >
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
     </fpc-button>
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="dark"
       size="sm"
       iconOnly
       [ariaLabel]="refreshLabel"
@@ -13,72 +23,79 @@
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-<div class="p-3 d-flex flex-column gap-3">
-  @if (error(); as message) {
-    <fpc-alert variant="danger" [message]="message" />
-  }
-  @if (tokenError(); as message) {
-    @if (!createOpen()) {
-      <fpc-alert variant="danger" [message]="message" />
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
     }
-  }
-  <p class="small text-body-secondary mb-0" i18n="@@lwConsoleWallboards-hint">
-    A wallboard shows the overview on a screen in the office: the health headline, what needs attention and the summary,
-    for its scope and then each project in rotation. Its token can open the kiosk view and nothing else.
-  </p>
+    @if (tokenError(); as message) {
+      @if (!createOpen()) {
+        <fpc-alert class="m-3" variant="danger" [message]="message" />
+      }
+    }
+    <p class="small text-body-secondary mb-0 px-3 py-2 border-bottom" i18n="@@lwConsoleWallboards-hint">
+      A wallboard shows the overview on a screen in the office: the health headline, what needs attention and the
+      summary, for its scope and then each project in rotation. Its token can open the kiosk view and nothing else.
+    </p>
 
-  <fpc-panel [title]="tokensTitle + ' (' + tokens().length + ')'" [flush]="true">
-    @if (loading() && tokens().length === 0) {
-      <div class="d-flex justify-content-center p-4"><fpc-spinner /></div>
-    } @else if (tokens().length === 0) {
-      <fpc-empty-state icon="display" size="sm" i18n-title="@@lwConsoleWallboards-empty" title="No wallboards" />
-    } @else {
-      <fpc-list [flush]="true" data-testid="wallboards-list">
-        @for (t of tokens(); track t.id) {
-          <fpc-list-item>
-            <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
-              <span class="fw-semibold">{{ t.name }}</span>
-              <fpc-badge [color]="t.projects?.length ? 'light' : 'primary'" size="sm">{{ scopeLabel(t) }}</fpc-badge>
-            </div>
-            <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
-              <span
-                ><span i18n="@@lwConsoleWallboards-created">Created</span> {{ t.createdAt | date: 'short' }}
-                @if (t.createdBy) {
-                  · {{ t.createdBy }}
-                }
-              </span>
-              @if (t.expiresAt) {
-                <span><span i18n="@@lwConsoleWallboards-expires">Expires</span> {{ t.expiresAt | date: 'short' }}</span>
-              } @else {
-                <span i18n="@@lwConsoleWallboards-noExpiry">Never expires</span>
-              }
-              @if (t.lastUsedAt) {
-                <span
-                  ><span i18n="@@lwConsoleWallboards-lastUsed">Last used</span> {{ t.lastUsedAt | date: 'short' }}</span
-                >
-              } @else {
-                <span i18n="@@lwConsoleWallboards-unused">Not used yet</span>
-              }
-            </div>
-            <div fpcListItemActions>
-              <fpc-button
-                variant="outline-danger"
-                size="sm"
-                [loading]="revoking() === t.id"
-                (clicked)="revokeFor.set(t)"
-                [attr.data-testid]="'wallboards-revoke-' + t.id"
-              >
-                <span i18n="@@lwConsoleWallboards-revoke">Revoke</span>
-              </fpc-button>
-            </div>
-          </fpc-list-item>
+    <fpc-panel-grid [columns]="1" fill>
+      <fpc-panel [title]="tokensTitle + ' (' + tokens().length + ')'" [flush]="true">
+        @if (loading() && tokens().length === 0) {
+          <div class="d-flex justify-content-center p-4"><fpc-spinner /></div>
+        } @else if (tokens().length === 0) {
+          <fpc-empty-state icon="display" size="sm" i18n-title="@@lwConsoleWallboards-empty" title="No wallboards" />
+        } @else {
+          <fpc-list [flush]="true" data-testid="wallboards-list">
+            @for (t of tokens(); track t.id) {
+              <fpc-list-item>
+                <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                  <span class="fw-semibold">{{ t.name }}</span>
+                  <fpc-badge [color]="t.projects?.length ? 'light' : 'primary'" size="sm">{{
+                    scopeLabel(t)
+                  }}</fpc-badge>
+                </div>
+                <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+                  <span
+                    ><span i18n="@@lwConsoleWallboards-created">Created</span> {{ t.createdAt | date: 'short' }}
+                    @if (t.createdBy) {
+                      · {{ t.createdBy }}
+                    }
+                  </span>
+                  @if (t.expiresAt) {
+                    <span
+                      ><span i18n="@@lwConsoleWallboards-expires">Expires</span> {{ t.expiresAt | date: 'short' }}</span
+                    >
+                  } @else {
+                    <span i18n="@@lwConsoleWallboards-noExpiry">Never expires</span>
+                  }
+                  @if (t.lastUsedAt) {
+                    <span
+                      ><span i18n="@@lwConsoleWallboards-lastUsed">Last used</span>
+                      {{ t.lastUsedAt | date: 'short' }}</span
+                    >
+                  } @else {
+                    <span i18n="@@lwConsoleWallboards-unused">Not used yet</span>
+                  }
+                </div>
+                <div fpcListItemActions>
+                  <fpc-button
+                    variant="danger"
+                    size="sm"
+                    [loading]="revoking() === t.id"
+                    (clicked)="revokeFor.set(t)"
+                    [attr.data-testid]="'wallboards-revoke-' + t.id"
+                  >
+                    <span i18n="@@lwConsoleWallboards-revoke">Revoke</span>
+                  </fpc-button>
+                </div>
+              </fpc-list-item>
+            }
+          </fpc-list>
         }
-      </fpc-list>
-    }
-  </fpc-panel>
+      </fpc-panel>
+    </fpc-panel-grid>
+  </div>
 </div>
 
 <fpc-modal [open]="createOpen()" (openChange)="onCreateOpenChange($event)" [title]="createTitle">
@@ -87,15 +104,18 @@
       Open this URL on the screen. The token is shown only now; it sits in the URL fragment, which is never sent to a
       server.
     </p>
-    <label class="form-label small" for="lw-wallboard-url" i18n="@@lwConsoleWallboards-url">Kiosk URL</label>
-    <textarea
-      id="lw-wallboard-url"
-      class="form-control form-control-sm font-monospace"
-      rows="3"
-      readonly
-      [value]="createdUrl()"
-      data-testid="wallboards-url"
-    ></textarea>
+    <fpc-form-field forId="lw-wallboard-url" i18n-label="@@lwConsoleWallboards-url" label="Kiosk URL">
+      <fpc-form-control
+        controlType="textarea"
+        controlId="lw-wallboard-url"
+        size="sm"
+        controlClass="font-monospace"
+        [rows]="3"
+        readOnly
+        [value]="createdUrl() ?? ''"
+        data-testid="wallboards-url"
+      />
+    </fpc-form-field>
     <div class="d-flex justify-content-between align-items-center mt-2 small text-body-secondary">
       <span>{{ t.name }} · {{ scopeLabel(t) }}</span>
       <span class="d-flex gap-2">
@@ -109,84 +129,75 @@
       </span>
     </div>
   } @else {
-    <div class="mb-2">
-      <label class="form-label small" for="lw-wallboard-name" i18n="@@lwConsoleWallboards-name">Name</label>
-      <input
-        id="lw-wallboard-name"
-        class="form-control form-control-sm"
-        maxlength="255"
+    <fpc-form-field forId="lw-wallboard-name" i18n-label="@@lwConsoleWallboards-name" label="Name">
+      <fpc-form-control
+        controlId="lw-wallboard-name"
+        size="sm"
+        maxLength="255"
         i18n-placeholder="@@lwConsoleWallboards-namePlaceholder"
         placeholder="Office screen"
         [(ngModel)]="name"
       />
-    </div>
+    </fpc-form-field>
     @if (isClusterAdmin()) {
-      <div class="mb-2">
-        <div class="form-label small" i18n="@@lwConsoleWallboards-scope">Scope</div>
-        <div class="form-check form-check-inline">
-          <input
-            id="lw-wallboard-scope-cluster"
-            type="radio"
-            class="form-check-input"
-            name="scope"
-            value="cluster"
-            [(ngModel)]="scope"
-          />
-          <label class="form-check-label small" for="lw-wallboard-scope-cluster" i18n="@@lwConsoleWallboards-cluster"
-            >Whole cluster</label
-          >
-        </div>
-        <div class="form-check form-check-inline">
-          <input
-            id="lw-wallboard-scope-projects"
-            type="radio"
-            class="form-check-input"
-            name="scope"
-            value="projects"
-            [(ngModel)]="scope"
-          />
-          <label class="form-check-label small" for="lw-wallboard-scope-projects" i18n="@@lwConsoleWallboards-projects"
-            >Projects</label
-          >
-        </div>
-      </div>
+      <fpc-form-check-group class="d-block mb-3" i18n-label="@@lwConsoleWallboards-scope" label="Scope" inline>
+        <fpc-form-check
+          type="radio"
+          checkId="lw-wallboard-scope-cluster"
+          name="scope"
+          value="cluster"
+          i18n-label="@@lwConsoleWallboards-cluster"
+          label="Whole cluster"
+          [checked]="scope === 'cluster'"
+          (valueSelect)="scope = 'cluster'"
+        />
+        <fpc-form-check
+          type="radio"
+          checkId="lw-wallboard-scope-projects"
+          name="scope"
+          value="projects"
+          i18n-label="@@lwConsoleWallboards-projects"
+          label="Projects"
+          [checked]="scope === 'projects'"
+          (valueSelect)="scope = 'projects'"
+        />
+      </fpc-form-check-group>
     }
     @if (scope === 'projects') {
-      <div class="mb-2" data-testid="wallboards-projects">
-        <div class="form-label small">
-          <span i18n="@@lwConsoleWallboards-projectsLabel">Projects (up to 20)</span>
-        </div>
+      <fpc-form-check-group
+        class="d-block mb-3"
+        i18n-label="@@lwConsoleWallboards-projectsLabel"
+        label="Projects (up to 20)"
+        data-testid="wallboards-projects"
+      >
         @for (p of adminProjects(); track p) {
-          <div class="form-check">
-            <input
-              [id]="'lw-wallboard-project-' + p"
-              type="checkbox"
-              class="form-check-input"
-              [checked]="selectedProjects().includes(p)"
-              (change)="toggleProject(p, $any($event.target).checked)"
-            />
-            <label class="form-check-label small" [for]="'lw-wallboard-project-' + p">{{ p }}</label>
-          </div>
+          <fpc-form-check
+            [checkId]="'lw-wallboard-project-' + p"
+            [label]="p"
+            [checked]="selectedProjects().includes(p)"
+            (checkedChange)="toggleProject(p, $event)"
+          />
         } @empty {
           <div class="small text-body-secondary" i18n="@@lwConsoleWallboards-noProjects">
             You administer no project.
           </div>
         }
-      </div>
+      </fpc-form-check-group>
     }
-    <div class="mb-2">
-      <label class="form-label small" for="lw-wallboard-days" i18n="@@lwConsoleWallboards-days"
-        >Valid for (days, empty: no expiry)</label
-      >
-      <input
-        id="lw-wallboard-days"
-        type="number"
+    <fpc-form-field
+      forId="lw-wallboard-days"
+      i18n-label="@@lwConsoleWallboards-days"
+      label="Valid for (days, empty: no expiry)"
+    >
+      <fpc-form-control
+        controlId="lw-wallboard-days"
+        size="sm"
+        inputType="number"
         min="1"
         [max]="maxDays"
-        class="form-control form-control-sm"
         [(ngModel)]="expiresInDays"
       />
-    </div>
+    </fpc-form-field>
     @if (invalid()) {
       <fpc-alert
         variant="warning"
@@ -204,7 +215,7 @@
         <span i18n="@@lwConsoleWallboards-done">Done</span>
       </fpc-button>
     } @else {
-      <fpc-button variant="outline-secondary" (clicked)="onCreateOpenChange(false)">
+      <fpc-button variant="secondary" (clicked)="onCreateOpenChange(false)">
         <span i18n="@@lwConsoleWallboards-cancel">Cancel</span>
       </fpc-button>
       <fpc-button variant="primary" [loading]="creating()" (clicked)="create()" data-testid="wallboards-create">

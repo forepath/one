@@ -12,6 +12,7 @@ export * from './lib/resource';
 export * from './lib/documents';
 export * from './lib/resources/image-policy';
 export * from './lib/resources/remote-access';
+export * from './lib/posture';
 export * from './lib/resources/observability';
 export * from './lib/resources/git';
 export * from './lib/resources/updates';

@@ -11,8 +11,14 @@ import {
 import {
   FpcAlertComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
   FpcPageHeaderComponent,
+  FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
   FpcSummaryCardComponent,
@@ -37,8 +43,14 @@ const STATES: HealthState[] = ['failed', 'at-risk', 'degraded', 'unknown', 'heal
     FormsModule,
     FpcAlertComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcFormSwitchComponent,
     FpcPageHeaderComponent,
+    FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
     FpcSummaryBarComponent,
     FpcSummaryCardComponent,
@@ -60,6 +72,8 @@ export class LoadweaverHealthPageComponent implements OnInit {
 
   readonly project = signal('');
   readonly onlyUnhealthy = signal(false);
+  readonly filtersOpen = signal(false);
+  readonly activeFilterCount = computed(() => (this.project() ? 1 : 0) + (this.onlyUnhealthy() ? 1 : 0));
 
   readonly shown = computed(() => (this.onlyUnhealthy() ? unhealthyOnly(this.tree()) : this.tree()));
   readonly counts = computed(() => {
@@ -72,6 +86,7 @@ export class LoadweaverHealthPageComponent implements OnInit {
   readonly title = $localize`:@@lwConsoleHealth-title:Health`;
   readonly projectLabel = $localize`:@@lwConsoleHealth-project:Project`;
   readonly refreshLabel = $localize`:@@lwConsoleHealth-refresh:Refresh`;
+  readonly filtersLabel = $localize`:@@lwConsoleHealth-filters:Filters`;
 
   ngOnInit(): void {
     this.facade.loadTree();
@@ -83,6 +98,12 @@ export class LoadweaverHealthPageComponent implements OnInit {
   onProjectChange(project: string): void {
     this.project.set(project);
     this.facade.loadTree(project || undefined);
+  }
+
+  clearFilters(): void {
+    this.onlyUnhealthy.set(false);
+
+    if (this.project()) this.onProjectChange('');
   }
 
   refresh(): void {

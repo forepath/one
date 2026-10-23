@@ -6,6 +6,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   ConsoleAccessFacade,
   ConsoleBackupsFacade,
+  type BackupDeletion,
   type BackupRestore,
   type RestoreTest,
 } from '@forepath/loadweaver/frontend/data-access-console';
@@ -13,7 +14,10 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcPageHeaderComponent,
@@ -24,6 +28,7 @@ import {
 import { interval } from 'rxjs';
 
 import { formatBytes } from '../overview/console-format';
+import { LoadweaverBackupsNavComponent } from './backups-nav.component';
 import {
   BACKUPS_IDLE_POLL_TICKS,
   BACKUPS_POLL_MS,
@@ -42,6 +47,10 @@ export type RestoresTab = 'restores' | 'tests';
 @Component({
   selector: 'loadweaver-backup-restores-page',
   imports: [
+    FpcCollapsibleFilterPanelComponent,
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
+    LoadweaverBackupsNavComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -57,6 +66,7 @@ export type RestoresTab = 'restores' | 'tests';
     FpcTabGroupComponent,
   ],
   templateUrl: './backup-restores-page.component.html',
+  styleUrl: './backup-restores-page.component.scss',
   standalone: true,
 })
 export class LoadweaverBackupRestoresPageComponent implements OnInit {
@@ -73,6 +83,10 @@ export class LoadweaverBackupRestoresPageComponent implements OnInit {
   readonly error = toSignal(this.facade.restoresError$, { initialValue: null });
   readonly busy = toSignal(this.facade.restoresBusy$, { initialValue: false });
   readonly accessProjects = toSignal(this.access.projects$, { initialValue: [] as string[] });
+  readonly isClusterAdmin = toSignal(this.access.isClusterAdmin$, { initialValue: false });
+  readonly hasClusterRole = toSignal(this.access.seesInfrastructure$, { initialValue: false });
+  readonly openDeletions = toSignal(this.facade.openDeletions$, { initialValue: [] as BackupDeletion[] });
+  readonly filtersOpen = signal(false);
 
   readonly project = signal<string | null>(null);
   readonly activeTab = signal<RestoresTab>('restores');
@@ -96,9 +110,10 @@ export class LoadweaverBackupRestoresPageComponent implements OnInit {
   readonly bytes = formatBytes;
 
   readonly title = $localize`:@@lwConsoleBackupRestores-title:Restores`;
-  readonly backLabel = $localize`:@@lwConsoleBackupRestores-back:Backups`;
   readonly refreshLabel = $localize`:@@lwConsoleBackupRestores-refresh:Refresh`;
   readonly allProjectsLabel = $localize`:@@lwConsoleBackupRestores-allProjects:All projects`;
+  readonly filtersTitle = $localize`:@@lwConsoleBackupRestores-filters:Filters`;
+  readonly projectLabel = $localize`:@@lwConsoleBackupRestores-project:Project`;
   readonly tabRestores = $localize`:@@lwConsoleBackupRestores-tabRestores:Restores`;
   readonly tabTests = $localize`:@@lwConsoleBackupRestores-tabTests:Restore tests`;
 

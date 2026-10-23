@@ -163,6 +163,8 @@ export type {
 } from './lib/language-switcher/language-switcher.component';
 export { FpcPaginationComponent } from './lib/pagination/pagination.component';
 export type { FpcPaginationSize } from './lib/pagination/pagination.component';
+export { FpcPagerComponent } from './lib/pager/pager.component';
+export type { FpcPagerSize } from './lib/pager/pager.component';
 export { FpcSidebarComponent } from './lib/sidebar/sidebar.component';
 export { FpcSidebarNavItemComponent } from './lib/sidebar-nav-item/sidebar-nav-item.component';
 export { FpcSidebarPopoverComponent } from './lib/sidebar-popover/sidebar-popover.component';

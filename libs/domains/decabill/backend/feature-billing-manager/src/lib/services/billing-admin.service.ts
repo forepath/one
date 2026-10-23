@@ -14,7 +14,7 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 
 import { InvoiceCreationService } from './invoice-creation.service';
-import { SubscriptionService } from './subscription.service';
+import { SubscriptionService, type TeardownConfirmationOptions } from './subscription.service';
 
 @Injectable()
 export class BillingAdminService {
@@ -79,29 +79,40 @@ export class BillingAdminService {
     };
   }
 
-  async cancelSubscriptionForAdmin(subscriptionId: string): Promise<AdminSubscriptionListItemDto> {
+  async cancelSubscriptionForAdmin(
+    subscriptionId: string,
+    options: TeardownConfirmationOptions = {},
+  ): Promise<AdminSubscriptionListItemDto> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
-    const updated = await this.subscriptionService.cancelSubscription(subscriptionId, subscription.userId);
+    const updated = await this.subscriptionService.cancelSubscription(subscriptionId, subscription.userId, options);
 
     return (await this.mapEntitiesToAdminListItems([updated]))[0];
   }
 
-  async withdrawSubscriptionForAdmin(subscriptionId: string): Promise<AdminSubscriptionListItemDto> {
+  async withdrawSubscriptionForAdmin(
+    subscriptionId: string,
+    options: TeardownConfirmationOptions = {},
+  ): Promise<AdminSubscriptionListItemDto> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
     const { subscription: updated, withdrawalResult } = await this.subscriptionService.withdrawSubscription(
       subscriptionId,
       subscription.userId,
+      options,
     );
     const [item] = await this.mapEntitiesToAdminListItems([updated]);
 
     return { ...item, withdrawalResult };
   }
 
-  async instantCancelSubscriptionForAdmin(subscriptionId: string): Promise<AdminSubscriptionListItemDto> {
+  async instantCancelSubscriptionForAdmin(
+    subscriptionId: string,
+    options: TeardownConfirmationOptions = {},
+  ): Promise<AdminSubscriptionListItemDto> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
     const { subscription: updated } = await this.subscriptionService.instantCancelSubscription(
       subscriptionId,
       subscription.userId,
+      options,
     );
 
     return (await this.mapEntitiesToAdminListItems([updated]))[0];

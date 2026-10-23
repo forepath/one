@@ -16,11 +16,11 @@
   </ol>
 
   @if (step() === 1) {
-    <div class="mb-3">
-      <label class="form-label small" for="lw-restore-backup" i18n="@@lwConsoleBackupRestore-backup">Backup</label>
-      <select
-        id="lw-restore-backup"
-        class="form-select form-select-sm"
+    <fpc-form-field forId="lw-restore-backup" i18n-label="@@lwConsoleBackupRestore-backup" label="Backup">
+      <fpc-form-control
+        controlType="select"
+        controlId="lw-restore-backup"
+        size="sm"
         [ngModel]="backupId()"
         (ngModelChange)="backupId.set($event)"
         data-testid="restore-backup"
@@ -28,11 +28,11 @@
         @for (b of choices(); track b.id) {
           <option [value]="b.id">{{ b.startedAt | date: 'medium' }} · {{ bytes(b.bytes) }}</option>
         }
-      </select>
+      </fpc-form-control>
       @if (selected(); as b) {
-        <div class="form-text font-monospace">{{ b.resource }}</div>
+        <span fpcFormFieldHint class="font-monospace">{{ b.resource }}</span>
       }
-    </div>
+    </fpc-form-field>
 
     <div class="mb-3">
       <fpc-form-check
@@ -58,23 +58,21 @@
     </div>
 
     @if (scope() === 'path') {
-      <div class="mb-3">
-        <label class="form-label small" for="lw-restore-path" i18n="@@lwConsoleBackupRestore-path"
-          >Path in the backup</label
-        >
-        <input
-          id="lw-restore-path"
-          class="form-control form-control-sm font-monospace"
-          [class.is-invalid]="sourcePath() !== '' && !sourcePathValid()"
+      <fpc-form-field forId="lw-restore-path" i18n-label="@@lwConsoleBackupRestore-path" label="Path in the backup">
+        <fpc-form-control
+          controlId="lw-restore-path"
+          size="sm"
+          controlClass="font-monospace"
+          [invalid]="sourcePath() !== '' && !sourcePathValid()"
           [ngModel]="sourcePath()"
           (ngModelChange)="sourcePath.set($event)"
           placeholder="uploads/2026"
           data-testid="restore-path"
         />
-        <div class="form-text" i18n="@@lwConsoleBackupRestore-pathHint">
-          Relative to the volume root, without "..". Browse the backup to pick a file or directory.
-        </div>
-      </div>
+        <span fpcFormFieldHint i18n="@@lwConsoleBackupRestore-pathHint"
+          >Relative to the volume root, without "..". Browse the backup to pick a file or directory.</span
+        >
+      </fpc-form-field>
     }
   } @else {
     <div class="mb-3">
@@ -104,39 +102,44 @@
     </div>
 
     @if (target() === 'other') {
-      <div class="row g-2 mb-3">
-        <div class="col-sm-6">
-          <label class="form-label small" for="lw-restore-deployment" i18n="@@lwConsoleBackupRestore-deployment"
-            >Deployment</label
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <fpc-form-field
+            forId="lw-restore-deployment"
+            i18n-label="@@lwConsoleBackupRestore-deployment"
+            label="Deployment"
           >
-          <select
-            id="lw-restore-deployment"
-            class="form-select form-select-sm"
-            [ngModel]="deployment()"
-            (ngModelChange)="deployment.set($event)"
-            data-testid="restore-deployment"
-          >
-            @for (d of deployments(); track d) {
-              <option [value]="d">{{ d }}</option>
-            }
-          </select>
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-restore-deployment"
+              size="sm"
+              [ngModel]="deployment()"
+              (ngModelChange)="deployment.set($event)"
+              data-testid="restore-deployment"
+            >
+              @for (d of deployments(); track d) {
+                <option [value]="d">{{ d }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
         </div>
-        <div class="col-sm-6">
-          <label class="form-label small" for="lw-restore-volume" i18n="@@lwConsoleBackupRestore-volume">Volume</label>
-          <input
-            id="lw-restore-volume"
-            class="form-control form-control-sm font-monospace"
-            list="lw-restore-volume-options"
-            [class.is-invalid]="!targetValid()"
-            [ngModel]="volume()"
-            (ngModelChange)="volume.set($event)"
-            data-testid="restore-volume"
-          />
-          <datalist id="lw-restore-volume-options">
-            @for (v of deploymentVolumes(); track v) {
-              <option [value]="v"></option>
-            }
-          </datalist>
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-restore-volume" i18n-label="@@lwConsoleBackupRestore-volume" label="Volume">
+            <input
+              id="lw-restore-volume"
+              class="form-control form-control-sm font-monospace"
+              list="lw-restore-volume-options"
+              [class.is-invalid]="!targetValid()"
+              [ngModel]="volume()"
+              (ngModelChange)="volume.set($event)"
+              data-testid="restore-volume"
+            />
+            <datalist id="lw-restore-volume-options">
+              @for (v of deploymentVolumes(); track v) {
+                <option [value]="v"></option>
+              }
+            </datalist>
+          </fpc-form-field>
         </div>
       </div>
       @if (targetValid() && !targetExists()) {
@@ -149,11 +152,11 @@
       }
     }
 
-    <div class="mb-3">
-      <label class="form-label small" for="lw-restore-mode" i18n="@@lwConsoleBackupRestore-mode">Mode</label>
-      <select
-        id="lw-restore-mode"
-        class="form-select form-select-sm"
+    <fpc-form-field forId="lw-restore-mode" i18n-label="@@lwConsoleBackupRestore-mode" label="Mode">
+      <fpc-form-control
+        controlType="select"
+        controlId="lw-restore-mode"
+        size="sm"
         [ngModel]="mode()"
         (ngModelChange)="mode.set($event)"
         data-testid="restore-mode"
@@ -164,25 +167,27 @@
         <option value="merge" i18n="@@lwConsoleBackupRestore-modeMerge">
           Merge: restore over what is there, keep other files
         </option>
-      </select>
-    </div>
+      </fpc-form-control>
+    </fpc-form-field>
 
     @if (scope() === 'path') {
-      <div class="mb-3">
-        <label class="form-label small" for="lw-restore-target-path" i18n="@@lwConsoleBackupRestore-targetPath"
-          >Target path in the volume</label
-        >
-        <input
-          id="lw-restore-target-path"
-          class="form-control form-control-sm font-monospace"
-          [class.is-invalid]="!targetPathValid()"
+      <fpc-form-field
+        forId="lw-restore-target-path"
+        i18n-label="@@lwConsoleBackupRestore-targetPath"
+        label="Target path in the volume"
+      >
+        <fpc-form-control
+          controlId="lw-restore-target-path"
+          size="sm"
+          controlClass="font-monospace"
+          [invalid]="!targetPathValid()"
           [ngModel]="targetPath()"
           (ngModelChange)="targetPath.set($event)"
           [placeholder]="sourcePath()"
           data-testid="restore-target-path"
         />
-        <div class="form-text" i18n="@@lwConsoleBackupRestore-targetPathHint">Empty: the same path.</div>
-      </div>
+        <span fpcFormFieldHint i18n="@@lwConsoleBackupRestore-targetPathHint">Empty: the same path.</span>
+      </fpc-form-field>
       <fpc-form-check
         class="d-block mb-3"
         checkId="lw-restore-overwrite"
@@ -209,26 +214,27 @@
       </fpc-alert>
     }
 
-    <div class="mb-1">
-      <label class="form-label small" for="lw-restore-description" i18n="@@lwConsoleBackupRestore-description"
-        >Description (optional)</label
-      >
-      <input
-        id="lw-restore-description"
-        class="form-control form-control-sm"
-        maxlength="1024"
+    <fpc-form-field
+      forId="lw-restore-description"
+      i18n-label="@@lwConsoleBackupRestore-description"
+      label="Description (optional)"
+    >
+      <fpc-form-control
+        controlId="lw-restore-description"
+        size="sm"
+        maxLength="1024"
         [ngModel]="description()"
         (ngModelChange)="description.set($event)"
       />
-    </div>
+    </fpc-form-field>
   }
 
   @if (planError(); as message) {
-    <fpc-alert class="d-block mt-3" variant="danger" [message]="message" data-testid="restore-error" />
+    <fpc-alert variant="danger" [message]="message" data-testid="restore-error" />
   }
 
   <div *fpcModalFooter class="d-flex justify-content-end gap-2">
-    <fpc-button variant="outline-secondary" (clicked)="open.set(false)">
+    <fpc-button variant="secondary" (clicked)="open.set(false)">
       <span i18n="@@lwConsoleBackupRestore-cancel">Cancel</span>
     </fpc-button>
     @if (step() === 1) {
@@ -236,7 +242,7 @@
         <span i18n="@@lwConsoleBackupRestore-next">Next</span>
       </fpc-button>
     } @else {
-      <fpc-button variant="outline-secondary" (clicked)="back()">
+      <fpc-button variant="secondary" (clicked)="back()">
         <span i18n="@@lwConsoleBackupRestore-back">Back</span>
       </fpc-button>
       <fpc-button

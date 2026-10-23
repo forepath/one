@@ -1,4 +1,5 @@
 import { getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
+import type { PostureReportInput } from '@forepath/loadweaver/shared/util-model';
 import type { VpnSessions } from '@forepath/loadweaver/shared/util-agent-protocol';
 import { compileNetwork } from '@forepath/loadweaver/shared/util-policy-compiler';
 import {
@@ -16,19 +17,20 @@ import { DataSource, EntityManager, In } from 'typeorm';
 
 import { PublicAddressEntity } from '../entities/public-address.entity';
 import { ResourceEntity } from '../entities/resource.entity';
-import {
-  VpnClientEntity,
-  VpnGatewayKeyEntity,
-  type PostureReport,
-  type PostureState,
-} from '../entities/vpn-client.entity';
+import { VpnClientEntity, VpnGatewayKeyEntity, type PostureState } from '../entities/vpn-client.entity';
 import { egressGateways } from '../ipam/public-ipam.utils';
 import { AuditLogService, actorFromRequest } from '../services/audit-log.service';
 import { ClusterAccessService } from '../services/cluster-access.service';
 import { NetworkStateService } from '../services/network-state.service';
-import { PlatformCredentialsService } from '../services/platform-credentials.service';
+import { PostureCertificatesService } from '../posture/posture-certificates.service';
+import {
+  pinIdentifiers,
+  pinnedIdentifierViolation,
+  type CertificateFact,
+  type IntegrationFact,
+} from '../posture/posture-facts';
+import { PostureIntegrationsService } from '../posture/posture-integrations.service';
 import { ADVISORY_LOCK_VPN, ensureVpnGatewayKey, GATEWAY_KEY_ID } from './gateway-key';
-import { PosturePluginRegistry } from './posture-plugin';
 import {
   allocateClientAddress,
   clientGroups,
@@ -46,7 +48,6 @@ import {
 } from './remote-access.utils';
 
 const TICK_MS = 60_000;
-const PLUGIN_TIMEOUT_MS = 10_000;
 const MAX_DEVICES_PER_USER = 20;
 const MAX_ENROLLMENTS_PER_DAY = 20;
 /** A revoked / expired client's address stays reserved this long (stale peers), its row is removed after a while. */
@@ -65,12 +66,56 @@ export interface VpnClientSummary {
   effectiveGroups: string[];
   /** Why the device is restricted, per failing group. */
   restrictions: Record<string, string[]>;
+  /** Posture facts: the last report, integration results (MDM / EDR) and the device certificate (3.31). */
+  posture: VpnClientPosture;
   status: 'active' | 'expired' | 'revoked';
   createdAt: string;
   expiresAt: string;
   revokedAt: string | null;
   lastHandshakeAt: string | null;
   lastEndpoint: string | null;
+}
+
+export interface VpnClientPosture {
+  reportedAt: string | null;
+  platform: string | null;
+  osVersion: string | null;
+  appVersion: string | null;
+  diskEncryption: boolean | null;
+  firewall: boolean | null;
+  screenLock: boolean | null;
+  serialNumber: string | null;
+  hostname: string | null;
+  integrations: Omit<IntegrationFact, 'externalId'>[];
+  certificate: (CertificateFact & { expiresAt: string | null }) | null;
+}
+
+export function clientPosture(client: Pick<VpnClientEntity, 'posture' | 'integrationPosture'>): VpnClientPosture {
+  const report = client.posture?.report ?? null;
+  const certificate = client.posture?.certificate;
+
+  return {
+    reportedAt: client.posture?.reportedAt ?? null,
+    platform: report?.platform ?? null,
+    osVersion: report?.osVersion ?? null,
+    appVersion: report?.appVersion ?? null,
+    diskEncryption: report?.diskEncryption ?? null,
+    firewall: report?.firewall ?? null,
+    screenLock: report?.screenLock ?? null,
+    serialNumber: client.posture?.serialNumber ?? report?.serialNumber ?? null,
+    hostname: report?.hostname ?? null,
+    integrations: Object.values(client.integrationPosture ?? {})
+      .map((fact) => {
+        // The vendor's record id stays internal.
+        const copy: Partial<IntegrationFact> = { ...fact };
+
+        delete copy.externalId;
+
+        return copy as Omit<IntegrationFact, 'externalId'>;
+      })
+      .sort((a, b) => a.integration.localeCompare(b.integration)),
+    certificate: certificate ? { ...certificate, expiresAt: certificate.notAfter ?? null } : null,
+  };
 }
 
 export interface VpnClientConfigResponse {
@@ -107,8 +152,8 @@ export class RemoteAccessService implements OnApplicationBootstrap, OnModuleDest
     private readonly network: NetworkStateService,
     private readonly access: ClusterAccessService,
     private readonly audit: AuditLogService,
-    private readonly credentials: PlatformCredentialsService,
-    private readonly plugins: PosturePluginRegistry,
+    private readonly certificates: PostureCertificatesService,
+    private readonly integrations: PostureIntegrationsService,
   ) {}
 
   onApplicationBootstrap(): void {
@@ -196,9 +241,10 @@ export class RemoteAccessService implements OnApplicationBootstrap, OnModuleDest
       effectiveGroups: clientValid(client, now) ? effectiveGroups(client, groups, now) : [],
       restrictions: Object.fromEntries(
         client.groups
-          .map((g) => [g, postureFailures(groups.get(g)?.posture, client.posture, now)] as const)
+          .map((g) => [g, postureFailures(groups.get(g)?.posture, client, now)] as const)
           .filter(([, reasons]) => reasons.length > 0),
       ),
+      posture: clientPosture(client),
       status: client.revokedAt ? 'revoked' : clientValid(client, now) ? 'active' : 'expired',
       createdAt: client.createdAt.toISOString(),
       expiresAt: client.expiresAt.toISOString(),
@@ -599,103 +645,122 @@ export class RemoteAccessService implements OnApplicationBootstrap, OnModuleDest
     });
   }
 
-  /** Posture reported by the device (core checks), plus the verdicts of the plugins its groups require (3.31). */
-  async reportPosture(req: RequestWithUser | undefined, id: string, report: PostureReport): Promise<VpnClientSummary> {
+  /**
+   * Posture reported by the device (protocol v1, 3.31): core checks and identifiers, plus a device certificate
+   * verified here. Integration results (MDM / EDR) come from the syncs; a device with new identifiers triggers one.
+   * Device id, serial and hostname are normalized, pinned at the first report and unique among valid clients
+   * (checked here, enforced by partial unique indexes against races), so a device can't borrow another one's
+   * compliance.
+   */
+  async reportPosture(
+    req: RequestWithUser | undefined,
+    id: string,
+    input: PostureReportInput,
+  ): Promise<VpnClientSummary> {
     const client = await this.owned(req, id);
     const userId = getUserFromRequest(req || ({} as RequestWithUser)).userId;
 
     // A user device reports for itself; admins only for machines.
     if (client.kind === 'user' && client.userId !== userId) throw new NotFoundException('device not found');
 
-    const pinned = client.posture?.deviceId;
+    const { certificate, ...report } = input;
+    const others = (await this.dataSource.getRepository(VpnClientEntity).find()).filter(
+      (c) => c.id !== client.id && clientValid(c, Date.now()),
+    );
+    const pin = pinIdentifiers(
+      client.posture,
+      report,
+      others.map((c) => c.posture),
+    );
 
-    if (pinned && report.deviceId !== pinned)
-      throw new BadRequestException('this device reported another device id before; enroll it again');
+    if ('error' in pin) {
+      if (pin.error === 'changed') throw new BadRequestException(pin.message);
 
-    if (!pinned && report.deviceId) {
-      const others = await this.dataSource.getRepository(VpnClientEntity).find();
-
-      if (
-        others.some((c) => c.id !== client.id && clientValid(c, Date.now()) && c.posture?.deviceId === report.deviceId)
-      )
-        throw new ConflictException('this device id belongs to another enrolled device');
+      throw new ConflictException(pin.message);
     }
+
+    const newIdentifiers = pin.newIdentifiers;
 
     const resources = await this.dataSource.getRepository(ResourceEntity).find({ where: { kind: 'ClientGroup' } });
     const groups = clientGroups(resources);
-    const plugins: PostureState['plugins'] = {};
-
-    for (const rule of client.groups.flatMap((g) => groups.get(g)?.posture?.plugins ?? [])) {
-      if (plugins[rule.type]) continue;
-
-      plugins[rule.type] = await this.pluginVerdict(rule.type, rule.credentials, client, report);
-    }
-
     const now = Date.now();
-    // Pinned once a plugin recognised the device id.
-    const recognised = Object.values(plugins).some((p) => p.verdict !== 'unknown');
+    const certificateFact = certificate
+      ? await this.certificates.verifyReport(client, certificate, new Date(now))
+      : undefined;
     const posture: PostureState = {
       report,
       reportedAt: new Date(now).toISOString(),
-      plugins,
+      plugins: {},
       failing: {},
-      ...(pinned || (recognised && report.deviceId) ? { deviceId: pinned ?? report.deviceId } : {}),
+      ...pin.pinned,
+      ...(certificateFact ? { certificate: certificateFact } : {}),
     };
-
-    posture.failing = Object.fromEntries(
-      client.groups
-        .map((g) => [g, postureFailures(groups.get(g)?.posture, posture, now)] as const)
-        .filter(([, reasons]) => reasons.length > 0),
-    );
-
     const before = effectiveGroups(client, groups, now).join(',');
 
     client.posture = posture;
-    await this.dataSource.getRepository(VpnClientEntity).update({ id: client.id }, { posture });
+    posture.failing = Object.fromEntries(
+      client.groups
+        .map((g) => [g, postureFailures(groups.get(g)?.posture, client, now)] as const)
+        .filter(([, reasons]) => reasons.length > 0),
+    );
+    await this.savePosture(client.id, posture, now);
 
     if (effectiveGroups(client, groups, now).join(',') !== before) {
       await this.audit.recordStandalone({
         actor: actorFromRequest(req),
         action: 'vpn.posture',
         target: `vpn/${client.id}`,
-        details: { failing: posture.failing },
+        details: { failing: posture.failing, source: 'report' },
       });
       await this.network.recompile();
     }
 
+    // New identifiers: integrations look the device up now instead of at their next scheduled sync.
+    if (newIdentifiers)
+      await this.integrations.syncSoon(now).catch((error: unknown) => {
+        this.logger.warn(`Posture sync request failed: ${error instanceof Error ? error.message : String(error)}`);
+      });
+
     return this.summary(client, groups, now);
   }
 
-  private async pluginVerdict(
-    type: string,
-    credentials: string | undefined,
-    client: VpnClientEntity,
-    report: PostureReport,
-  ): Promise<{ verdict: string; detail?: string }> {
-    if (!this.plugins.has(type)) return { verdict: 'unknown', detail: 'posture plugin not installed' };
+  /**
+   * Stores a report's posture. Expired (not revoked) clients release the identifiers this one pins first (the
+   * unique indexes cover every non-revoked client). A concurrent report that pinned the same device id / serial
+   * first wins (409); a hostname lost to a race is just not pinned.
+   */
+  private async savePosture(id: string, posture: PostureState, now: number): Promise<void> {
+    const repo = this.dataSource.getRepository(VpnClientEntity);
+
+    for (const key of ['deviceId', 'serialNumber', 'hostname'] as const) {
+      const value = posture[key];
+
+      if (value)
+        await this.dataSource.query(
+          `UPDATE lw_vpn_clients SET posture = posture - $3::text
+             WHERE id <> $1 AND revoked_at IS NULL AND expires_at <= $2 AND posture->>$3::text = $4`,
+          [id, new Date(now), key, value],
+        );
+    }
 
     try {
-      const config = credentials ? await this.credentials.providerConfig(credentials) : {};
-      const plugin = this.plugins.create(type, config);
-      let timer: NodeJS.Timeout | undefined;
-      const result = await Promise.race([
-        plugin.check({
-          id: client.id,
-          owner: client.ownerLabel,
-          name: client.name,
-          platform: report.platform,
-          ...(report.deviceId ? { deviceId: report.deviceId } : {}),
-        }),
-        new Promise<never>((_, reject) => {
-          timer = setTimeout(() => reject(new Error('timed out')), PLUGIN_TIMEOUT_MS);
-        }),
-      ]).finally(() => clearTimeout(timer));
-
-      return { verdict: result.verdict, ...(result.detail ? { detail: result.detail.slice(0, 256) } : {}) };
+      await repo.update({ id }, { posture });
     } catch (error) {
-      this.logger.warn(`Posture plugin ${type}: ${error instanceof Error ? error.message : String(error)}`);
+      const violated = pinnedIdentifierViolation(error);
 
-      return { verdict: 'unknown', detail: 'posture check failed' };
+      if (violated === 'hostname') {
+        delete posture.hostname;
+        await repo.update({ id }, { posture });
+
+        return;
+      }
+
+      if (violated === 'deviceId') throw new ConflictException('this device id belongs to another enrolled device');
+
+      if (violated === 'serialNumber')
+        throw new ConflictException('this serial number belongs to another enrolled device');
+
+      throw error;
     }
   }
 

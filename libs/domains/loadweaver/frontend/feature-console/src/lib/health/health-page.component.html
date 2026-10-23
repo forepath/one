@@ -1,73 +1,94 @@
-<fpc-page-header [title]="title" icon="heart-pulse">
-  <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
-    <div class="form-check form-switch mb-0">
-      <input
-        class="form-check-input"
-        type="checkbox"
-        role="switch"
-        id="lw-health-unhealthy"
-        [ngModel]="onlyUnhealthy()"
-        (ngModelChange)="onlyUnhealthy.set($event)"
-      />
-      <label class="form-check-label small" for="lw-health-unhealthy" i18n="@@lwConsoleHealth-onlyUnhealthy"
-        >Needs attention only</label
-      >
-    </div>
-    @if (projects().length > 0) {
-      <label class="visually-hidden" for="lw-health-project">{{ projectLabel }}</label>
-      <select
-        id="lw-health-project"
-        class="form-select form-select-sm w-auto"
-        [ngModel]="project()"
-        (ngModelChange)="onProjectChange($event)"
-      >
-        @if (seesInfrastructure()) {
-          <option value="" i18n="@@lwConsoleHealth-wholeCluster">Whole cluster</option>
-        } @else {
-          <option value="" i18n="@@lwConsoleHealth-allProjects">All my projects</option>
-        }
-        @for (p of projects(); track p) {
-          <option [value]="p">{{ p }}</option>
-        }
-      </select>
-    }
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="heart-pulse">
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="dark"
       size="sm"
-      iconOnly
+      [iconOnly]="true"
       [ariaLabel]="refreshLabel"
       [title]="refreshLabel"
       (clicked)="refresh()"
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-@if (error(); as message) {
-  <fpc-alert class="m-3" variant="danger" [message]="message" />
-}
+  @if (tree().length > 0) {
+    <fpc-summary-bar class="flex-shrink-0" [columns]="5">
+      @for (c of counts(); track c.state) {
+        <fpc-summary-card [label]="healthLabel(c.state)" [value]="'' + c.count" [tone]="tone(c.state, c.count)" />
+      }
+    </fpc-summary-bar>
+  }
 
-@if (tree().length > 0) {
-  <fpc-summary-bar [columns]="5">
-    @for (c of counts(); track c.state) {
-      <fpc-summary-card [label]="healthLabel(c.state)" [value]="'' + c.count" [tone]="tone(c.state, c.count)" />
+  <fpc-collapsible-filter-panel
+    class="flex-shrink-0"
+    [(open)]="filtersOpen"
+    [title]="filtersLabel"
+    [activeCount]="activeFilterCount()"
+    (cleared)="clearFilters()"
+  >
+    <div class="row g-3 mb-0 w-100 align-items-end">
+      @if (projects().length > 0) {
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-health-project" [label]="projectLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-health-project"
+              size="sm"
+              [ngModel]="project()"
+              (ngModelChange)="onProjectChange($event)"
+            >
+              @if (seesInfrastructure()) {
+                <option value="" i18n="@@lwConsoleHealth-wholeCluster">Whole cluster</option>
+              } @else {
+                <option value="" i18n="@@lwConsoleHealth-allProjects">All my projects</option>
+              }
+              @for (p of projects(); track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+      }
+      <div class="col-12 col-md-6">
+        <fpc-form-switch
+          switchId="lw-health-unhealthy"
+          [ngModel]="onlyUnhealthy()"
+          (ngModelChange)="onlyUnhealthy.set($event)"
+        >
+          <label class="form-check-label small" for="lw-health-unhealthy" i18n="@@lwConsoleHealth-onlyUnhealthy"
+            >Needs attention only</label
+          >
+        </fpc-form-switch>
+      </div>
+    </div>
+  </fpc-collapsible-filter-panel>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
     }
-  </fpc-summary-bar>
-  <div class="p-3">
-    @if (shown().length === 0) {
-      <fpc-empty-state
-        icon="check2-circle"
-        size="sm"
-        i18n-title="@@lwConsoleHealth-allHealthy"
-        title="Everything is healthy"
-      />
-    } @else {
-      <loadweaver-health-tree [nodes]="shown()" [expandDepth]="onlyUnhealthy() ? 10 : 2" />
+
+    @if (tree().length > 0) {
+      @if (shown().length === 0) {
+        <fpc-empty-state
+          icon="check2-circle"
+          size="sm"
+          i18n-title="@@lwConsoleHealth-allHealthy"
+          title="Everything is healthy"
+        />
+      } @else {
+        <fpc-panel-grid [columns]="1">
+          <fpc-panel>
+            <loadweaver-health-tree [nodes]="shown()" [expandDepth]="onlyUnhealthy() ? 10 : 2" />
+          </fpc-panel>
+        </fpc-panel-grid>
+      }
+    } @else if (loading()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (!error()) {
+      <fpc-empty-state icon="heart-pulse" i18n-title="@@lwConsoleHealth-empty" title="No health data yet" />
     }
   </div>
-} @else if (loading()) {
-  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-} @else if (!error()) {
-  <fpc-empty-state icon="heart-pulse" i18n-title="@@lwConsoleHealth-empty" title="No health data yet" />
-}
+</div>

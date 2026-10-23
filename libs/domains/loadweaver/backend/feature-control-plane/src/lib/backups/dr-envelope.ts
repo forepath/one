@@ -23,7 +23,10 @@ import { backupDataKey } from './backup-keys.utils';
  * - `KEYCLOAK_CLIENT_SECRET`: keycloak mode;
  * - `REDIS_PASSWORD`: queue;
  * - `LOADWEAVER_MASTER_KEY_KMS`, `LOADWEAVER_VAULT_TRANSIT_KEY`: which KMS held the master key (the KMS
- *   credentials themselves are not stored).
+ *   credentials themselves are not stored);
+ * - `ADMIN_CLAIM_TOKEN_SHA256`: the one-time admin claim (hash only) — a restored, never claimed cluster keeps
+ *   requiring the token instead of opening the first registration;
+ * - `DYNAMIC_POSTURE_PLUGINS`, `LOADWEAVER_POSTURE_SYNC_CRON`: posture integrations keep their plugins / schedule.
  */
 export const DR_ENVELOPE_ENV_KEYS = [
   'ENCRYPTION_KEY',
@@ -47,10 +50,15 @@ export const DR_ENVELOPE_ENV_KEYS = [
   'CORS_ORIGIN',
   'LOADWEAVER_CLUSTER_NAME',
   'LOADWEAVER_PUBLIC_URL',
+  'LOADWEAVER_TRUST_PROXY',
   'DYNAMIC_KMS_PROVIDERS',
   'VAULT_ADDR',
   'VAULT_NAMESPACE',
   'LOADWEAVER_VAULT_TRANSIT_MOUNT',
+  // A restored Cloud cluster that was never claimed still requires the claim token (hash only).
+  'ADMIN_CLAIM_TOKEN_SHA256',
+  'DYNAMIC_POSTURE_PLUGINS',
+  'LOADWEAVER_POSTURE_SYNC_CRON',
 ] as const;
 
 export const DR_ENVELOPE_FORMAT = 'loadweaver-dr-envelope';

@@ -385,3 +385,12 @@ automatic, what is manual, timings from the drill) is in [Disaster recovery](./d
 - **At most 256 project repositories** per cluster (one Kopia repository server port per repository from `7500–7755`).
 - **Backup hooks after a live migration**: a replica restored by a live migration runs as an agent-managed runc / runsc container until its next restart; pre / post / check hooks don't run in it until then.
 - **Kopia on arm64**: the `kopia` binary in the control-plane image (retention, maintenance, catalog) is untested on arm64.
+
+## Cross-cluster restore and final backup
+
+Through the [fleet service](./fleet.md#cross-cluster-restore-and-cloning-320) a backup can be restored into another cluster (standby DR, cloning for staging). The cluster side:
+
+- `GET /api/backups/:id/archive` exports a project backup as a tar archive (decrypted by this control plane; operators of the project, PAT scope `backups:export`, audited `backup.exported`).
+- `POST /api/backups/imports?volume=<project/deployment/volume>` imports such an archive (`Content-Type: application/x-tar`, streamed) into the project's repository under this cluster's backup key, as a backup without policy (no retention removes it); restore it with a `Restore` resource (operators, scope `backups:import`, audited `backup.imported` with the source labels). Only files, directories and symbolic links are accepted. Only **uncompressed ustar** archives (POSIX / PAX or GNU headers, as the export writes them) are accepted: gzip / zstd / brotli input is refused before anything is extracted (a compressed upload would otherwise slip past the size cap, which counts uploaded bytes). The declared sizes of all entries count against the cap as well, and setuid / setgid / sticky bits are stripped from extracted modes.
+- `POST /api/backups/now/all` backs up every placed volume now (cluster admins, scope `cluster:admin`), the final backup before a Loadweaver Cloud teardown.
+- `LOADWEAVER_BACKUP_ARCHIVE_MAX_BYTES` (default 50 GiB) caps archives in both directions (uploaded bytes and the extracted contents). Exports and imports are staged in `LOADWEAVER_BACKUP_STAGING_DIR` (default: the OS temp dir). Recommended: point it at a dedicated filesystem or volume with a quota of at least twice the cap — an import holds the upload and the extracted tree at the same time — so a large transfer can't fill the control plane's root disk.

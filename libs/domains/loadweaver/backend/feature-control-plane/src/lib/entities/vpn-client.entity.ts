@@ -1,27 +1,30 @@
 import { createAes256GcmTransformer } from '@forepath/shared/backend';
+import type { PostureReportInput } from '@forepath/loadweaver/shared/util-model';
 import { Column, CreateDateColumn, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
-/** Core posture checks a client reports (3.31); plugins (MDM / EDR) add their verdicts. */
-export interface PostureReport {
-  platform: 'macos' | 'windows' | 'linux' | 'ios' | 'android';
-  osVersion: string;
-  appVersion?: string;
-  diskEncryption?: boolean;
-  firewall?: boolean;
-  screenLock?: boolean;
-  /** MDM / EDR device id or serial, so plugins can look the device up. */
-  deviceId?: string;
-}
+import type { CertificateFact, IntegrationFact } from '../posture/posture-facts';
+
+/** Core posture checks and identifiers a client reports (3.31, protocol v1); the certificate is kept as a fact only. */
+export type PostureReport = Omit<PostureReportInput, 'certificate'>;
 
 export interface PostureState {
   report: PostureReport | null;
   reportedAt: string | null;
-  /** Plugin verdicts by plugin type, at the time of the report. */
+  /** Verdicts of the older inline plugin rules (kept for existing rows; integrations write `integrationPosture`). */
   plugins: Record<string, { verdict: string; detail?: string }>;
   /** Groups the device fails, with the reasons shown to the user. */
   failing: Record<string, string[]>;
-  /** MDM / EDR device id, pinned once a plugin knew it: later reports can't borrow another device's compliance. */
+  /** MDM / EDR device id (normalized), pinned at the first report: later reports can't borrow another device's compliance. */
   deviceId?: string;
+  /** Serial number, pinned the same way. */
+  serialNumber?: string;
+  /**
+   * Hostname (normalized first label), pinned at the first report when no other valid client holds it; a later
+   * different hostname doesn't replace it. Only used by integrations that opt into hostname matching.
+   */
+  hostname?: string;
+  /** The device certificate of the last report, verified at report time. */
+  certificate?: CertificateFact;
 }
 
 /**
@@ -65,6 +68,17 @@ export class VpnClientEntity {
 
   @Column({ type: 'jsonb', name: 'posture', nullable: true })
   posture!: PostureState | null;
+
+  /** Latest result per posture integration (MDM / EDR), written by the integration syncs only. */
+  @Column({ type: 'jsonb', name: 'integration_posture', default: () => "'{}'" })
+  integrationPosture!: Record<string, IntegrationFact>;
+
+  /** The device certificate the cluster CA issued last (older ones count as superseded). */
+  @Column({ type: 'varchar', length: 64, name: 'certificate_serial', nullable: true })
+  certificateSerial!: string | null;
+
+  @Column({ type: 'timestamptz', name: 'certificate_not_after', nullable: true })
+  certificateNotAfter!: Date | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;

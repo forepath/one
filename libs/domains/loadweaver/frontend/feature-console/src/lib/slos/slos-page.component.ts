@@ -13,8 +13,13 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcPageHeaderComponent,
+  FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcProgressRingComponent,
   FpcSpinnerComponent,
   FpcStatusBadgeComponent,
@@ -54,8 +59,13 @@ const REFRESH_MS = 60_000;
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcPageHeaderComponent,
+    FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcProgressRingComponent,
     FpcSpinnerComponent,
     FpcStatusBadgeComponent,
@@ -79,7 +89,9 @@ export class LoadweaverSlosPageComponent implements OnInit {
   readonly memberProjects = toSignal(this.access.projects$, { initialValue: [] as string[] });
 
   readonly project = signal('');
+  readonly filtersOpen = signal(false);
   readonly state = signal<SloState | ''>('');
+  readonly activeFilterCount = computed(() => (this.project() ? 1 : 0) + (this.state() ? 1 : 0));
 
   /** The filter's projects: memberships plus those of listed SLOs (cluster roles read every project). */
   readonly projects = computed(() =>
@@ -107,6 +119,7 @@ export class LoadweaverSlosPageComponent implements OnInit {
   readonly refreshLabel = $localize`:@@lwConsoleSlos-refresh:Refresh`;
   readonly projectFilterLabel = $localize`:@@lwConsoleSlos-projectFilter:Project`;
   readonly stateFilterLabel = $localize`:@@lwConsoleSlos-stateFilter:State`;
+  readonly filtersLabel = $localize`:@@lwConsoleSlos-filters:Filters`;
   readonly budgetLabel = $localize`:@@lwConsoleSlos-budgetUsed:Error budget used`;
 
   ngOnInit(): void {
@@ -123,6 +136,12 @@ export class LoadweaverSlosPageComponent implements OnInit {
   onProjectChange(project: string): void {
     this.project.set(project);
     this.load();
+  }
+
+  clearFilters(): void {
+    this.state.set('');
+
+    if (this.project()) this.onProjectChange('');
   }
 
   logsQuery(slo: Slo): Record<string, string> {

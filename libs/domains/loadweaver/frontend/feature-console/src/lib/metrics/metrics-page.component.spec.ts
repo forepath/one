@@ -137,6 +137,11 @@ describe('LoadweaverMetricsPageComponent', () => {
 
     expect(query).toMatchObject({ metric: 'node.cpu_cores', aggregation: 'max', entity: 'n1' });
     expect(new Date(query.to).getTime() - new Date(query.from).getTime()).toBe(7 * 86_400_000);
+    // Range, aggregation and entity differ from the defaults: the filter panel counts them.
+    expect(el().querySelector('.fpc-collapsible-filter-panel .badge')?.textContent?.trim()).toBe('3');
+    // The metric field suggests the known names matching the typed text.
+    fixture.componentInstance.metric.set('memory');
+    expect(fixture.componentInstance.metricSuggestions()).toEqual(['replica.memory_bytes']);
   });
 
   it('runs the deep-linked dashboard with its own range and lays out its widgets', async () => {

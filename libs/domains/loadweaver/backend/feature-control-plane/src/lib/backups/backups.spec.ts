@@ -34,6 +34,7 @@ import {
   retentionShorter,
   volumeDue,
 } from './backup.utils';
+import { replicatedEnvironment } from '../services/network-state.service';
 import { DR_ENVELOPE_ENV_KEYS, drEnvironment, openDrEnvelope, sealDrEnvelope } from './dr-envelope';
 import { parseKopiaDiff, parseKopiaList } from './kopia-cli';
 
@@ -270,6 +271,17 @@ describe('DR envelope (3.20)', () => {
   it('carries only the listed environment variables', () => {
     expect(Object.keys(contents.env).sort()).toEqual(['DB_PASSWORD', 'ENCRYPTION_KEY', 'JWT_SECRET']);
     expect(DR_ENVELOPE_ENV_KEYS).toContain('LOADWEAVER_POSTGRES_REPLICATION_PASSWORD');
+  });
+
+  it('carries the admin claim hash and the posture settings to restores and control-plane members', () => {
+    const env = {
+      ADMIN_CLAIM_TOKEN_SHA256: 'a'.repeat(64),
+      DYNAMIC_POSTURE_PLUGINS: '/opt/plugins/acme-mdm.js',
+      LOADWEAVER_POSTURE_SYNC_CRON: '*/5 * * * *',
+    };
+
+    expect(drEnvironment(env)).toEqual(env);
+    expect(replicatedEnvironment(env)).toEqual(env);
   });
 
   it('seals under the current generation and opens with the service, the data key or the kit root', async () => {

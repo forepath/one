@@ -35,11 +35,32 @@ export function parseLabels(values: string[]): Record<string, string> {
   return labels;
 }
 
+/**
+ * One-time admin claim token for `bootstrap`: from `--admin-claim-token-file` (preferred: never in the process list),
+ * else `LOADWEAVER_ADMIN_CLAIM_TOKEN`; undefined when neither is set (no claim: the first registration becomes admin).
+ */
+export async function readAdminClaimToken(
+  file: string | undefined,
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<string | undefined> {
+  const raw = file !== undefined ? await readFile(file, 'utf8') : env['LOADWEAVER_ADMIN_CLAIM_TOKEN'];
+
+  if (raw === undefined) return undefined;
+
+  const token = raw.trim();
+
+  if (!token) throw new Error('the admin claim token is empty');
+
+  return token;
+}
+
 /** `parseArgs` options of `bootstrap` (new cluster and `--restore`). */
 export const BOOTSTRAP_OPTIONS = {
   name: { type: 'string' },
   'public-host': { type: 'string' },
   'cluster-name': { type: 'string' },
+  'public-url': { type: 'string' },
+  'admin-claim-token-file': { type: 'string' },
   restore: { type: 'boolean' },
   'dr-info': { type: 'string' },
   target: { type: 'string' },
@@ -62,7 +83,7 @@ export const BOOTSTRAP_OPTIONS = {
 
 /** Flags only `--restore` takes (a plain bootstrap refuses them, so a forgotten `--restore` can't create a cluster). */
 export const RESTORE_ONLY_FLAGS = Object.keys(BOOTSTRAP_OPTIONS).filter(
-  (k) => !['name', 'public-host', 'cluster-name', 'restore'].includes(k),
+  (k) => !['name', 'public-host', 'cluster-name', 'public-url', 'admin-claim-token-file', 'restore'].includes(k),
 );
 
 /**
@@ -267,9 +288,13 @@ export async function runAgentCli(argv: string[], USAGE: string): Promise<void> 
 
       if (!values.name || !values['public-host']) throw new Error('bootstrap needs --name and --public-host');
 
-      await app
-        .get(JoinService)
-        .bootstrap({ nodeName: values.name, publicHost: values['public-host'], clusterName: values['cluster-name'] });
+      await app.get(JoinService).bootstrap({
+        nodeName: values.name,
+        publicHost: values['public-host'],
+        clusterName: values['cluster-name'],
+        publicUrl: values['public-url'],
+        adminClaimToken: await readAdminClaimToken(values['admin-claim-token-file']),
+      });
       await app.close();
       break;
     }

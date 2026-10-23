@@ -6,13 +6,13 @@ import {
   ConsoleAccessFacade,
   ConsoleAccessManagementFacade,
   type CrossProjectRequest,
+  ConsoleEndpointService,
 } from '@forepath/loadweaver/frontend/data-access-console';
 import {
   FpcAlertComponent,
   FpcButtonComponent,
   FpcConfirmDialogComponent,
   FpcPageHeaderComponent,
-  FpcPanelComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { map } from 'rxjs';
@@ -34,7 +34,6 @@ import { LoadweaverAccessRequestsComponent } from './access-requests.component';
     FpcButtonComponent,
     FpcConfirmDialogComponent,
     FpcPageHeaderComponent,
-    FpcPanelComponent,
     FpcSpinnerComponent,
     LoadweaverAccessRequestsComponent,
   ],
@@ -55,7 +54,11 @@ export class LoadweaverProjectRequestsPageComponent {
   readonly changing = toSignal(this.facade.changing$, { initialValue: false });
   readonly changeError = toSignal(this.facade.changeError$, { initialValue: null });
 
-  readonly mayAccept = computed(() => atLeastRole(projectRoleOf(this.me(), this.project()), 'operator'));
+  /** Fleet mode: approvals stay native — given in the cluster's own console, never through the fleet's relay. */
+  protected readonly fleetMode = inject(ConsoleEndpointService).fleetMode;
+  readonly mayAccept = computed(
+    () => !this.fleetMode && atLeastRole(projectRoleOf(this.me(), this.project()), 'operator'),
+  );
   readonly ready = computed(() => this.loaded() === this.project());
   readonly acceptFor = signal<CrossProjectRequest | null>(null);
   readonly acceptMessage = computed(() => {
@@ -68,6 +71,7 @@ export class LoadweaverProjectRequestsPageComponent {
 
   readonly title = $localize`:@@lwConsoleProjectRequests-title:Requests from other projects`;
   readonly refreshLabel = $localize`:@@lwConsoleProjectRequests-refresh:Refresh`;
+  readonly accessLabel = $localize`:@@lwConsoleProjectRequests-access:Project access`;
   readonly acceptTitle = $localize`:@@lwConsoleProjectRequests-acceptTitle:Accept the policy?`;
   readonly acceptLabel = $localize`:@@lwConsoleProjectRequests-accept:Accept`;
   readonly cancelLabel = $localize`:@@lwConsoleProjectRequests-cancel:Cancel`;

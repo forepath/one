@@ -1,0 +1,16 @@
+// Loadweaver design system (Bootstrap 5 overrides via shared FPC brands)
+//
+// Stack: functions → brands/loadweaver/palette → brands/chrome → brands/badge-tint → bootstrap → FPC styles → brands extras
+@import 'bootstrap/scss/functions';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/loadweaver/palette';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/chrome';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/badge-tint';
+
+@import 'bootstrap/scss/bootstrap';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/extras';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/loadweaver/extras';
+
+@import 'bootstrap/scss/bootstrap-grid';
+@import 'bootstrap-icons/font/bootstrap-icons';
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';

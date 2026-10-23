@@ -11,6 +11,7 @@ import {
   FpcAlertComponent,
   FpcEmptyStateComponent,
   FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { map } from 'rxjs';
@@ -37,6 +38,7 @@ export const SEARCH_PAGE_LIMIT = 50;
     FpcAlertComponent,
     FpcEmptyStateComponent,
     FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
     FpcSpinnerComponent,
     LoadweaverSearchActionConfirmComponent,
     LoadweaverSearchResultsComponent,

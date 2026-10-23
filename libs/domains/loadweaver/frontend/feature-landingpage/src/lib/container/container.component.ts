@@ -67,6 +67,11 @@ export class PortalContainerComponent {
   private readonly environment = inject<EnvironmentWithLanding>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
 
+  /** Billing portal (portal.loadweaver.com), linked from the footer like on the other landing pages. */
+  readonly portalUrl = this.environment.application.production
+    ? `${this.environment.landing.urls.portal}/${this.locale}`
+    : this.environment.landing.urls.portal;
+
   /** Statutory withdrawal page of the billing portal (same pattern as the other landing pages). */
   readonly withdrawalUrl = this.environment.application.production
     ? `${this.environment.landing.urls.portal}/${this.locale}/withdrawal`

@@ -3,9 +3,11 @@ import {
   registerDynamicProviders,
 } from '@forepath/shared/backend/util-dynamic-provider-registry';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AgentSessionRegistry } from '../agent-stream/agent-session.registry';
+import { FleetOnBehalfOfScopeInterceptor } from '../auth/fleet-on-behalf-of-scope.interceptor';
 import { AgentStreamServer } from '../agent-stream/agent-stream.server';
 import { ClusterController } from '../controllers/cluster.controller';
 import { CronRunsController } from '../controllers/cron-runs.controller';
@@ -30,6 +32,11 @@ import { WorkloadIdentityService } from '../mesh/workload-identity.service';
 import { ImagePolicyService } from '../images/image-policy.service';
 import { ImagesController } from '../controllers/images.controller';
 import { VpnController } from '../controllers/vpn.controller';
+import { PostureController } from '../controllers/posture.controller';
+import { PostureCertificateTrustEntity, PostureIntegrationEntity } from '../entities/posture-integration.entity';
+import { PostureCertificatesService } from '../posture/posture-certificates.service';
+import { PostureIntegrationsService } from '../posture/posture-integrations.service';
+import { BUILTIN_POSTURE_PLUGINS } from '../posture/plugins/builtin-posture-plugins';
 import { AccessController } from '../controllers/access.controller';
 import { ApplyOperationService } from '../plans/apply-operation.service';
 import { PlansGateway } from '../gateways/plans.gateway';
@@ -67,6 +74,8 @@ import { LogsGateway } from '../gateways/logs.gateway';
 import { LogsService } from '../logs/logs.service';
 import { MetricsController } from '../controllers/metrics.controller';
 import { MetricsStore } from '../metrics/metrics.store';
+import { UsageController } from '../controllers/usage.controller';
+import { UsageService } from '../usage/usage.service';
 import { AlertsController } from '../controllers/alerts.controller';
 import { AlertService } from '../alerts/alert.service';
 import { AuditService } from '../audit/audit.service';
@@ -257,6 +266,9 @@ export const CONTROL_PLANE_ENTITIES = [
   ImageScanEntity,
   VpnClientEntity,
   VpnGatewayKeyEntity,
+  // Posture integrations and device certificate trust (3.31).
+  PostureIntegrationEntity,
+  PostureCertificateTrustEntity,
   ProjectMemberEntity,
   ProjectSettingsEntity,
   PlanApprovalEntity,
@@ -293,6 +305,7 @@ export const CONTROL_PLANE_ENTITIES = [
   controllers: [
     ImagesController,
     VpnController,
+    PostureController,
     AccessController,
     DriftController,
     GitConnectionsController,
@@ -302,6 +315,7 @@ export const CONTROL_PLANE_ENTITIES = [
     GitSopsController,
     LogsController,
     MetricsController,
+    UsageController,
     AlertsController,
     AuditController,
     DashboardsController,
@@ -338,6 +352,8 @@ export const CONTROL_PLANE_ENTITIES = [
     ...BACKUPS_CONTROLLERS,
   ],
   providers: [
+    // `fleet:on-behalf-of` only for cluster admins / fleet service users (checked at PAT create / change).
+    { provide: APP_INTERCEPTOR, useClass: FleetOnBehalfOfScopeInterceptor },
     ...UPDATES_PROVIDERS,
     ...AUTOSCALING_PROVIDERS,
     ...IMPORT_PROVIDERS,
@@ -381,6 +397,8 @@ export const CONTROL_PLANE_ENTITIES = [
     WorkloadIdentityService,
     ImagePolicyService,
     RemoteAccessService,
+    PostureIntegrationsService,
+    PostureCertificatesService,
     ProjectAccessService,
     ApplyOperationService,
     PlansGateway,
@@ -398,6 +416,7 @@ export const CONTROL_PLANE_ENTITIES = [
     { provide: GitSopsDecryptor, useExisting: ClusterSopsDecryptor },
     LogsService,
     MetricsStore,
+    UsageService,
     AlertService,
     AuditService,
     SiemForwarderService,
@@ -428,6 +447,9 @@ export const CONTROL_PLANE_ENTITIES = [
       provide: PosturePluginRegistry,
       useFactory: async (dynamicLoader: DynamicProviderLoaderService) => {
         const registry = new PosturePluginRegistry();
+
+        // Built-in MDM / EDR plugins first, then plugins from DYNAMIC_POSTURE_PLUGINS.
+        for (const factory of BUILTIN_POSTURE_PLUGINS) registry.register(factory);
 
         await registerDynamicProviders<PosturePluginFactory>({
           envKey: DYNAMIC_POSTURE_PLUGINS_ENV,
@@ -520,6 +542,8 @@ export const CONTROL_PLANE_ENTITIES = [
   exports: [
     // The app's queue processor runs the report jobs (3.25).
     ReportsService,
+    // ... and the posture integration syncs (3.31).
+    PostureIntegrationsService,
     AuditLogService,
     ClusterAccessService,
     ResourceStoreService,

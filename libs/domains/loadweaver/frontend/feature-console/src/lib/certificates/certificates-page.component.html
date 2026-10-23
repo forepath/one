@@ -1,7 +1,8 @@
-<fpc-page-header [title]="title" icon="shield-lock">
-  <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="shield-lock">
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="dark"
       size="sm"
       iconOnly
       [ariaLabel]="refreshLabel"
@@ -10,91 +11,94 @@
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-<div class="p-3 d-flex flex-column gap-3">
-  @if (error(); as message) {
-    <fpc-alert variant="danger" [message]="message" />
-  }
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
 
-  @if (selectedId(); as id) {
-    @if (selected(); as c) {
-      <fpc-panel [title]="c.id" data-testid="certificate-detail">
-        <dl class="row small mb-0">
-          <dt class="col-sm-3" i18n="@@lwConsoleCertificates-state">State</dt>
-          <dd class="col-sm-9">
-            <fpc-badge [color]="tone[state(c)]" size="sm">{{ stateLabel(state(c)) }}</fpc-badge>
-          </dd>
-          <dt class="col-sm-3" i18n="@@lwConsoleCertificates-source">Source</dt>
-          <dd class="col-sm-9">{{ c.source === 'acme' ? sourceAcme : sourceCustom }}</dd>
-          <dt class="col-sm-3" i18n="@@lwConsoleCertificates-names">Names</dt>
-          <dd class="col-sm-9 font-monospace">
-            @for (name of c.names; track name) {
-              <div>{{ name }}</div>
-            }
-          </dd>
-          <dt class="col-sm-3" i18n="@@lwConsoleCertificates-notAfter">Valid until</dt>
-          <dd class="col-sm-9">{{ c.notAfter ? (c.notAfter | date: 'medium') : '–' }}</dd>
-          <dt class="col-sm-3" i18n="@@lwConsoleCertificates-failures">Failed renewals</dt>
-          <dd class="col-sm-9">{{ c.failures }}</dd>
-          @if (c.lastError) {
-            <dt class="col-sm-3" i18n="@@lwConsoleCertificates-lastError">Last error</dt>
-            <dd class="col-sm-9 text-danger text-break">{{ c.lastError }}</dd>
-          }
-        </dl>
-      </fpc-panel>
-    } @else if (loaded() && !loading()) {
+    @if (selectedId() && !selected() && loaded() && !loading()) {
       <fpc-alert
+        class="m-3"
         variant="warning"
         i18n-message="@@lwConsoleCertificates-notFound"
         message="This certificate doesn't exist (any more)."
         data-testid="certificate-not-found"
       />
     }
-  }
 
-  <fpc-panel [title]="title + ' (' + certificates().length + ')'" [flush]="true">
-    @if (loading() && certificates().length === 0) {
-      <div class="d-flex justify-content-center p-4"><fpc-spinner /></div>
-    } @else if (certificates().length === 0) {
-      <fpc-empty-state
-        icon="shield-lock"
-        size="sm"
-        i18n-title="@@lwConsoleCertificates-empty"
-        title="No certificates yet"
-        i18n-message="@@lwConsoleCertificates-emptyHint"
-        message="Certificates are issued for every exposed hostname."
-      />
-    } @else {
-      <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle mb-0" data-testid="certificates-table">
-          <thead>
-            <tr>
-              <th scope="col" i18n="@@lwConsoleCertificates-id">Certificate</th>
-              <th scope="col" i18n="@@lwConsoleCertificates-names">Names</th>
-              <th scope="col" i18n="@@lwConsoleCertificates-source">Source</th>
-              <th scope="col" i18n="@@lwConsoleCertificates-notAfter">Valid until</th>
-              <th scope="col" i18n="@@lwConsoleCertificates-state">State</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (c of certificates(); track c.id) {
-              <tr [class.table-active]="c.id === selectedId()">
-                <td>
-                  <a [routerLink]="['/certificates', c.id]" class="font-monospace">{{ c.id }}</a>
-                </td>
-                <td class="font-monospace small text-break">{{ c.names.join(', ') }}</td>
-                <td>{{ c.source === 'acme' ? sourceAcme : sourceCustom }}</td>
-                <td class="small">{{ c.notAfter ? (c.notAfter | date: 'short') : '–' }}</td>
-                <td>
-                  <fpc-badge [color]="tone[state(c)]" size="sm">{{ stateLabel(state(c)) }}</fpc-badge>
-                </td>
-              </tr>
+    <fpc-panel-grid [columns]="1" fill>
+      @if (selected(); as c) {
+        <fpc-panel [title]="c.id" data-testid="certificate-detail">
+          <dl class="row small mb-0">
+            <dt class="col-sm-3" i18n="@@lwConsoleCertificates-state">State</dt>
+            <dd class="col-sm-9">
+              <fpc-badge [color]="tone[state(c)]" size="sm">{{ stateLabel(state(c)) }}</fpc-badge>
+            </dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleCertificates-source">Source</dt>
+            <dd class="col-sm-9">{{ c.source === 'acme' ? sourceAcme : sourceCustom }}</dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleCertificates-names">Names</dt>
+            <dd class="col-sm-9 font-monospace">
+              @for (name of c.names; track name) {
+                <div>{{ name }}</div>
+              }
+            </dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleCertificates-notAfter">Valid until</dt>
+            <dd class="col-sm-9">{{ c.notAfter ? (c.notAfter | date: 'medium') : '–' }}</dd>
+            <dt class="col-sm-3" i18n="@@lwConsoleCertificates-failures">Failed renewals</dt>
+            <dd class="col-sm-9">{{ c.failures }}</dd>
+            @if (c.lastError) {
+              <dt class="col-sm-3" i18n="@@lwConsoleCertificates-lastError">Last error</dt>
+              <dd class="col-sm-9 text-danger text-break">{{ c.lastError }}</dd>
             }
-          </tbody>
-        </table>
-      </div>
-    }
-  </fpc-panel>
+          </dl>
+        </fpc-panel>
+      }
+
+      <fpc-panel [title]="title + ' (' + certificates().length + ')'" [flush]="true">
+        @if (loading() && certificates().length === 0) {
+          <div class="d-flex justify-content-center p-4"><fpc-spinner /></div>
+        } @else if (certificates().length === 0) {
+          <fpc-empty-state
+            icon="shield-lock"
+            size="sm"
+            i18n-title="@@lwConsoleCertificates-empty"
+            title="No certificates yet"
+            i18n-message="@@lwConsoleCertificates-emptyHint"
+            message="Certificates are issued for every exposed hostname."
+          />
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0" data-testid="certificates-table">
+              <thead>
+                <tr>
+                  <th scope="col" i18n="@@lwConsoleCertificates-id">Certificate</th>
+                  <th scope="col" i18n="@@lwConsoleCertificates-names">Names</th>
+                  <th scope="col" i18n="@@lwConsoleCertificates-source">Source</th>
+                  <th scope="col" i18n="@@lwConsoleCertificates-notAfter">Valid until</th>
+                  <th scope="col" i18n="@@lwConsoleCertificates-state">State</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of certificates(); track c.id) {
+                  <tr [class.table-active]="c.id === selectedId()">
+                    <td>
+                      <a [routerLink]="['/certificates', c.id]" class="font-monospace">{{ c.id }}</a>
+                    </td>
+                    <td class="font-monospace small text-break">{{ c.names.join(', ') }}</td>
+                    <td>{{ c.source === 'acme' ? sourceAcme : sourceCustom }}</td>
+                    <td class="small">{{ c.notAfter ? (c.notAfter | date: 'short') : '–' }}</td>
+                    <td>
+                      <fpc-badge [color]="tone[state(c)]" size="sm">{{ stateLabel(state(c)) }}</fpc-badge>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </fpc-panel>
+    </fpc-panel-grid>
+  </div>
 </div>

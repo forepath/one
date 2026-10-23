@@ -44,6 +44,25 @@ describe('pki', () => {
     expect(verified?.fingerprintSha256).toBe(issued.fingerprintSha256);
   });
 
+  it('limits device (client) certificates to client authentication; other kinds also serve', async () => {
+    const usages = async (kind: 'client' | 'node') => {
+      const issued = await issueCertificate({
+        ca,
+        csrPem: await createCsr(await generateKeyPair(), 'x'),
+        clusterId: 'prod',
+        kind,
+        name: 'd1',
+        validityHours: 1,
+      });
+      const cert = new x509.X509Certificate(issued.certificatePem);
+
+      return cert.getExtension(x509.ExtendedKeyUsageExtension)?.usages;
+    };
+
+    expect(await usages('client')).toEqual([x509.ExtendedKeyUsage.clientAuth]);
+    expect(await usages('node')).toEqual([x509.ExtendedKeyUsage.serverAuth, x509.ExtendedKeyUsage.clientAuth]);
+  });
+
   it('rejects certificates of another CA, expired ones and garbage', async () => {
     const other = await createCertificateAuthority({ commonName: 'other', validityDays: 1 });
     const keys = await generateKeyPair();

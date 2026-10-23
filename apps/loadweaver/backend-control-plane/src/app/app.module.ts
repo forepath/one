@@ -1,4 +1,8 @@
-import { ControlPlaneModule, LoadweaverOtelModule } from '@forepath/loadweaver/backend/feature-control-plane';
+import {
+  ControlPlaneModule,
+  LoadweaverIdentityEmailBridgeModule,
+  LoadweaverOtelModule,
+} from '@forepath/loadweaver/backend/feature-control-plane';
 import {
   BullBoardSkippingThrottlerGuard,
   getAuthenticationMethod,
@@ -23,6 +27,7 @@ const authMethod = getAuthenticationMethod();
     ThrottlerModule.forRoot(getRateLimitConfig()),
     ...controlPlaneAuthImports(authMethod),
     ControlPlaneModule,
+    LoadweaverIdentityEmailBridgeModule,
     ControlPlaneQueueModule,
     LoadweaverOtelModule,
     MonitoringModule,

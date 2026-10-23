@@ -161,6 +161,7 @@ export * from './lib/types/remote-access.types';
 export * from './lib/types/wallboards.types';
 export * from './lib/services/access-management.service';
 export * from './lib/services/remote-access.service';
+export * from './lib/services/posture.service';
 export * from './lib/services/wallboards.service';
 export * from './lib/state/access-management/access-management.actions';
 export * from './lib/state/access-management/access-management.reducer';
@@ -218,3 +219,20 @@ export * from './lib/services/autoscaling.service';
 // Import of existing hosts and former nodes (3.21).
 export * from './lib/types/import.types';
 export * from './lib/services/import.service';
+// Usage metering per project (3.24).
+export * from './lib/types/usage.types';
+export * from './lib/services/usage.service';
+export * from './lib/state/usage/usage.actions';
+export * from './lib/state/usage/usage.reducer';
+export * from './lib/state/usage/usage.selectors';
+export * from './lib/state/usage/usage.effects';
+export * from './lib/state/usage/usage.facade';
+export * from './lib/types/fleet.types';
+export * from './lib/services/console-endpoint.service';
+export * from './lib/services/fleet.service';
+export * from './lib/sockets/fleet-relay-socket';
+export * from './lib/state/fleet/fleet.actions';
+export * from './lib/state/fleet/fleet.reducer';
+export * from './lib/state/fleet/fleet.selectors';
+export * from './lib/state/fleet/fleet.effects';
+export * from './lib/state/fleet/fleet.facade';

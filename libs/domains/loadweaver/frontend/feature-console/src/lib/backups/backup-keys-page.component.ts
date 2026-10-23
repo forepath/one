@@ -18,10 +18,15 @@ import {
   FpcButtonComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcListComponent,
+  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { firstValueFrom } from 'rxjs';
@@ -29,6 +34,7 @@ import { firstValueFrom } from 'rxjs';
 import { saveFile } from '../live/live-format';
 import { kitShareFileName } from './backup-format';
 import { saveDrInfo } from './platform-backup-format';
+import { LoadweaverBackupsNavComponent } from './backups-nav.component';
 
 export type KitSizeDialog = { mode: 'rotate' } | { mode: 'reissue'; generation: number };
 
@@ -44,6 +50,12 @@ const MAX_KIT = 16;
 @Component({
   selector: 'loadweaver-backup-keys-page',
   imports: [
+    FpcPanelGridComponent,
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    LoadweaverBackupsNavComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -101,7 +113,9 @@ export class LoadweaverBackupKeysPageComponent implements OnInit {
   readonly maxKit = MAX_KIT;
 
   readonly title = $localize`:@@lwConsoleBackupKeys-title:Backup key and recovery kit`;
-  readonly backLabel = $localize`:@@lwConsoleBackupKeys-back:Backups`;
+  readonly rotateLabel = $localize`:@@lwConsoleBackupKeys-rotate:Rotate key`;
+  readonly drTitle = $localize`:@@lwConsoleBackupKeys-drTitle:Disaster recovery`;
+  readonly shareLabel = $localize`:@@lwConsoleBackupKeys-share:Share`;
   readonly refreshLabel = $localize`:@@lwConsoleBackupKeys-refresh:Refresh`;
   readonly generationLabel = $localize`:@@lwConsoleBackupKeys-generation:Generation`;
   readonly rotateTitle = $localize`:@@lwConsoleBackupKeys-rotateTitle:Rotate the backup key`;

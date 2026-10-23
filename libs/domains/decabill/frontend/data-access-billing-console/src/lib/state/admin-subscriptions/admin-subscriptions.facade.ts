@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { take } from 'rxjs';
 
+import type { AdminSubscriptionTeardownOptions } from '../../types/billing.types';
+
 import {
   adminCancelSubscription,
   adminInstantCancelSubscription,
@@ -60,16 +62,16 @@ export class AdminSubscriptionsFacade {
       });
   }
 
-  cancelSubscription(id: string): void {
-    this.store.dispatch(adminCancelSubscription({ id }));
+  cancelSubscription(id: string, options?: AdminSubscriptionTeardownOptions): void {
+    this.store.dispatch(adminCancelSubscription({ id, options }));
   }
 
-  withdrawSubscription(id: string): void {
-    this.store.dispatch(adminWithdrawSubscription({ id }));
+  withdrawSubscription(id: string, options?: AdminSubscriptionTeardownOptions): void {
+    this.store.dispatch(adminWithdrawSubscription({ id, options }));
   }
 
-  instantCancelSubscription(id: string): void {
-    this.store.dispatch(adminInstantCancelSubscription({ id }));
+  instantCancelSubscription(id: string, options?: AdminSubscriptionTeardownOptions): void {
+    this.store.dispatch(adminInstantCancelSubscription({ id, options }));
   }
 
   resumeSubscription(id: string): void {

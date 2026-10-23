@@ -238,7 +238,13 @@ export async function issueCertificate(params: IssueCertificateParams): Promise<
     extensions: [
       new x509.BasicConstraintsExtension(false, undefined, true),
       new x509.KeyUsagesExtension(x509.KeyUsageFlags.digitalSignature | x509.KeyUsageFlags.keyAgreement, true),
-      new x509.ExtendedKeyUsageExtension([x509.ExtendedKeyUsage.serverAuth, x509.ExtendedKeyUsage.clientAuth], false),
+      // Devices (VPN clients) only authenticate as clients; nodes, workloads and the control plane also serve.
+      new x509.ExtendedKeyUsageExtension(
+        params.kind === 'client'
+          ? [x509.ExtendedKeyUsage.clientAuth]
+          : [x509.ExtendedKeyUsage.serverAuth, x509.ExtendedKeyUsage.clientAuth],
+        false,
+      ),
       new x509.SubjectAlternativeNameExtension(names, false),
       await x509.AuthorityKeyIdentifierExtension.create(caCert, false),
       await x509.SubjectKeyIdentifierExtension.create(csr.publicKey),

@@ -37,6 +37,53 @@ export interface BootstrapOptions {
   /** Hostname or IP other nodes reach this one on (control-plane gRPC + WireGuard). */
   publicHost: string;
   clusterName?: string;
+  /**
+   * Public HTTPS URL of the API (`LOADWEAVER_PUBLIC_URL`), e.g. `https://lw.example.com` when a TLS proxy in front of
+   * this node serves console and API on one origin (Decabill's `loadweaver` service kind). Also the CORS origin.
+   */
+  publicUrl?: string;
+  /**
+   * One-time admin claim token (`--admin-claim-token-file` / `LOADWEAVER_ADMIN_CLAIM_TOKEN`): while the cluster has no
+   * account, the first console registration (which becomes the administrator) must present it. Only its SHA-256 is
+   * stored (`ADMIN_CLAIM_TOKEN_SHA256` in the control-plane environment). Used by Decabill's Loadweaver Cloud so the
+   * first visitor of a freshly provisioned public node can't take the cluster over.
+   */
+  adminClaimToken?: string;
+}
+
+const ADMIN_CLAIM_TOKEN_PATTERN = /^[A-Za-z0-9._~-]{32,256}$/;
+
+/** Validates an admin claim token (32 to 256 URL-safe characters) and returns the SHA-256 the control plane keeps. */
+export function adminClaimTokenSha256(value: string): string {
+  const token = value.trim();
+
+  if (!ADMIN_CLAIM_TOKEN_PATTERN.test(token)) {
+    throw new Error('the admin claim token must be 32 to 256 URL-safe characters');
+  }
+
+  return createHash('sha256').update(token, 'utf8').digest('hex');
+}
+
+const PUBLIC_URL_PATTERN = /^https:\/\/[A-Za-z0-9.-]+(:\d{1,5})?$/;
+
+/** Validates `--public-url` (a plain `https://host[:port]` origin, no path) and strips a trailing slash. */
+/**
+ * Control-plane environment for `bootstrap --public-url`: the public origin (installer, CORS) and `trust proxy`
+ * for loopback peers, since a public URL implies a same-host TLS proxy (nginx → 127.0.0.1:3400) — otherwise every
+ * client shares the throttler bucket of `127.0.0.1` (H1).
+ */
+export function publicUrlEnvironment(publicUrl: string | undefined): Record<string, string> {
+  if (!publicUrl) return {};
+
+  return { LOADWEAVER_PUBLIC_URL: publicUrl, CORS_ORIGIN: publicUrl, LOADWEAVER_TRUST_PROXY: 'loopback' };
+}
+
+export function normalizeBootstrapPublicUrl(value: string): string {
+  const url = value.trim().replace(/\/+$/, '');
+
+  if (!PUBLIC_URL_PATTERN.test(url)) throw new Error('--public-url must be a plain https://host[:port] URL');
+
+  return url;
 }
 
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '[::1]']);
@@ -171,6 +218,9 @@ export class JoinService {
   async bootstrap(options: BootstrapOptions): Promise<JoinResponse> {
     if (await this.state.credentials()) throw new Error('this node already belongs to a cluster');
 
+    const publicUrl = options.publicUrl === undefined ? undefined : normalizeBootstrapPublicUrl(options.publicUrl);
+    const adminClaimHash =
+      options.adminClaimToken === undefined ? undefined : adminClaimTokenSha256(options.adminClaimToken);
     const clusterId = `lw-${randomBytes(4).toString('hex')}`;
     const bootstrapToken = randomJoinToken();
     const environment: Record<string, string> = {
@@ -187,6 +237,8 @@ export class JoinService {
       LOADWEAVER_POSTGRES_REPLICATION_PASSWORD: secret(),
       LOADWEAVER_POSTGRES_ADMIN_PASSWORD: secret(),
       ...(options.clusterName ? { LOADWEAVER_CLUSTER_NAME: options.clusterName } : {}),
+      ...publicUrlEnvironment(publicUrl),
+      ...(adminClaimHash ? { ADMIN_CLAIM_TOKEN_SHA256: adminClaimHash } : {}),
     };
 
     await this.controlPlane.apply(options.nodeName, '127.0.0.1', {

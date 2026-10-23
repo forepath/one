@@ -152,6 +152,20 @@ await lab.stop(); // removes this run's containers and volumes
   first). Needs the `loadweaver-control-plane-api:dr-lab` image like the DR drill. Result: 139 s cold, of which the
   Spilo pull is ~110 s; 19 s warm (Patroni finds the local etcd within 2 s and initialises in ~4–6 s).
 
+- `cloud.vm-lab.spec.ts` (P gate, Loadweaver Cloud): the user-data Decabill renders for the `loadweaver` service kind
+  (`buildLoadweaverCloudInitUserData`, bundled with esbuild at test time — no cross-domain import) runs on one VM
+  (4 GiB) like cloud-init would. The release (manifest + signature + standalone SEA agent) comes from an HTTPS server
+  on the VM (lab CA), dev-signed and passed as the trusted key, with `consoleImage` pinned to the digest of this
+  tree's console image (loaded into the VM, not pulled). A manifest signed by another key and a tampered agent stop
+  the script before anything is installed; the real run checks bootstrap `--public-url` (+ `LOADWEAVER_TRUST_PROXY`,
+  claim hash only), `components.sh` + agent unit, the digest-pinned console, nginx (`/`, `/api`, `/config.json`,
+  `/v2` token realm, HSTS, no version banner, `limit_req` 429s), the admin claim through nginx (403 / 403 / admin /
+  503), `nft list table inet loadweaver_cloud` and that `<VM IP>:3400` is unreachable from the lab switch.
+  Deviations: Certbot is stubbed (no public DNS: the stub issues a lab-CA certificate where Let's Encrypt would, the
+  script's own switch to the Let's Encrypt nginx config runs) and the control plane is this tree's image through the
+  agent's `LOADWEAVER_CONTROL_PLANE_IMAGE` override (bootstrap + a systemd drop-in for the installed agent). Needs `loadweaver-control-plane-api:dr-lab`,
+  `ghcr.io/forepath/loadweaver-console-server:latest` and `dist/apps/loadweaver/backend-node-agent/sea/loadweaver-agent`.
+
 ## Findings from the first real-DRBD run (M6 step 1a)
 
 Fixed in `lib/volumes/volume.manager.ts` (unit tests in `volumes.spec.ts`):

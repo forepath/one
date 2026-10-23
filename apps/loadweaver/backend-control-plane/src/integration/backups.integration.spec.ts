@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { request as httpRequest } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { AddressInfo } from 'node:net';
@@ -629,4 +630,109 @@ describe('backups (integration)', () => {
     expect(root).toHaveLength(32);
     expect((await keys.forGeneration(1)).length).toBe(32);
   }, 60_000);
+
+  it('exports a backup as a plain tar archive and imports it into another volume (P7a transfer)', async () => {
+    const COPY = 'p1/web/copy';
+    const exported = await fetch(`${baseUrl}/api/backups/${secondBackup}/archive`, {
+      headers: { authorization: `Bearer ${API_KEY}` },
+    });
+
+    expect(exported.status).toBe(200);
+
+    const archive = Buffer.from(await exported.arrayBuffer());
+
+    // Kopia's tar export is plain ustar: exactly what the import accepts.
+    expect(archive.subarray(257, 262).toString('latin1')).toBe('ustar');
+
+    const listed = spawnSync('tar', ['-t'], { input: archive, encoding: 'utf8' }).stdout.split('\n').filter(Boolean);
+
+    expect(listed.sort()).toEqual(['a.txt', 'sub/', 'sub/b.bin', 'sub/d.txt']);
+
+    // One connection per upload (no keep-alive): refused uploads end their connection before the body is read.
+    const importArchive = (volume: string, body: Buffer) =>
+      new Promise<{ status: number; json: () => Promise<unknown> }>((resolve, reject) => {
+        const url = new URL(`${baseUrl}/api/backups/imports?volume=${encodeURIComponent(volume)}&sourceCluster=lab-a`);
+        const req = httpRequest(
+          url,
+          {
+            method: 'POST',
+            agent: false,
+            headers: {
+              authorization: `Bearer ${API_KEY}`,
+              'content-type': 'application/x-tar',
+              'content-length': body.length,
+            },
+          },
+          (res) => {
+            const chunks: Buffer[] = [];
+
+            res.on('data', (c: Buffer) => chunks.push(c));
+            res.on('end', () =>
+              resolve({
+                status: res.statusCode ?? 0,
+                json: async () => JSON.parse(Buffer.concat(chunks).toString('utf8')),
+              }),
+            );
+          },
+        );
+
+        // The server may answer (404 / 413) and close before the whole body is written.
+        req.on('error', (error: NodeJS.ErrnoException) => (error.code === 'EPIPE' ? undefined : reject(error)));
+        req.end(body);
+      });
+
+    // The target volume must exist.
+    expect((await importArchive(COPY, archive)).status).toBe(404);
+    await dataSource.getRepository(VolumePlacementEntity).save(
+      dataSource.getRepository(VolumePlacementEntity).create({
+        id: COPY,
+        primaryNode: 'w1',
+        pendingPrimary: null,
+        syncReplicas: [],
+        remoteReplicas: [],
+        sizeBytes: String(1024 ** 3),
+        crossSite: 'none',
+        drbdMinor: 1001,
+        drbdPort: 7791,
+        drbdNodeIds: { w1: 0 },
+        drbdNextNodeId: 1,
+      }),
+    );
+
+    // Compressed input is refused before extraction (decompression bomb), and so is anything over the cap.
+    const gzip = spawnSync('gzip', ['-c'], { input: archive });
+
+    expect((await importArchive(COPY, gzip.stdout)).status).toBe(400);
+    process.env['LOADWEAVER_BACKUP_ARCHIVE_MAX_BYTES'] = '1024';
+
+    try {
+      expect((await importArchive(COPY, archive)).status).toBe(413);
+    } finally {
+      delete process.env['LOADWEAVER_BACKUP_ARCHIVE_MAX_BYTES'];
+    }
+
+    const imported = await importArchive(COPY, archive);
+    const row = (await imported.json()) as { id: string; resource: string; status: string; files: number };
+
+    expect(imported.status).toBe(201);
+    expect(row).toMatchObject({ resource: COPY, status: 'succeeded', files: 3 });
+
+    // The imported backup is a normal catalog entry of the project: browse / download its files.
+    const download = await fetch(`${baseUrl}/api/backups/${row.id}/download?path=sub/d.txt`, {
+      headers: { authorization: `Bearer ${API_KEY}` },
+    });
+
+    expect(download.status).toBe(200);
+    expect(await download.text()).toBe('new');
+
+    const files = await api('GET', `/backups/${row.id}/files`);
+
+    expect(files.json.map((f: { name: string }) => f.name).sort()).toEqual(['a.txt', 'sub']);
+
+    const audit = await dataSource.query(
+      `SELECT action FROM lw_audit_events WHERE action IN ('backup.exported', 'backup.imported') ORDER BY seq`,
+    );
+
+    expect(audit.map((a: { action: string }) => a.action)).toEqual(['backup.exported', 'backup.imported']);
+  }, 240_000);
 });

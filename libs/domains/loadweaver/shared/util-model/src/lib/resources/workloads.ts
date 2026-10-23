@@ -47,6 +47,16 @@ export const projectSpecSchema = z
       })
       .strict()
       .optional(),
+    /**
+     * Usage billing (3.24): the Decabill subscription this project's metered usage is billed on. Decabill's
+     * Loadweaver usage module collects the hourly buckets of all projects mapped to a subscription. Unset: not billed.
+     */
+    billing: z
+      .object({
+        decabillSubscriptionId: z.string().uuid(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type ProjectSpec = z.infer<typeof projectSpecSchema>;

@@ -11,6 +11,8 @@ import {
 import {
   ENVIRONMENT,
   environment,
+  fleetRelayErrorInterceptor,
+  isFleetConsole,
   provideLocale,
   type LoadweaverConsoleEnvironment,
 } from '@forepath/loadweaver/frontend/util-configuration';
@@ -30,17 +32,28 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     {
       provide: IDENTITY_AUTH_ENVIRONMENT,
-      useFactory: (env: LoadweaverConsoleEnvironment) => ({
-        productName: env.application.productName,
-        authMarketing: env.authentication.marketing,
-        authLayout: env.authentication.layout,
-        apiUrl: env.console.urls.restApi,
-        additionalApiUrls: [],
-        authentication: env.authentication.config,
-        controllerApiUrl: env.console.urls.restApi,
-        termsUrl: env.cookieConsent.urls.terms,
-        privacyPolicyUrl: env.cookieConsent.urls.privacyPolicy,
-      }),
+      useFactory: (env: LoadweaverConsoleEnvironment) => {
+        // Fleet mode (3.24): users sign in once at the fleet; the relay URLs start with its API, so they carry the token.
+        const fleet = isFleetConsole(env);
+        const apiUrl = fleet ? (env.fleet?.apiUrl ?? '') : env.console.urls.restApi;
+
+        return {
+          productName: env.application.productName,
+          authMarketing: env.authentication.marketing,
+          authLayout: env.authentication.layout,
+          apiUrl,
+          additionalApiUrls: [],
+          authentication: env.authentication.config,
+          controllerApiUrl: apiUrl,
+          termsUrl: env.cookieConsent.urls.terms,
+          privacyPolicyUrl: env.cookieConsent.urls.privacyPolicy,
+          // One-time admin claim of a fresh cluster (Loadweaver Cloud): the register form asks for the token while
+          // needed. Not at the fleet (it has no install endpoints).
+          adminClaimStatusUrl: fleet
+            ? undefined
+            : `${env.console.urls.restApi.replace(/\/$/, '')}/install/claim-status`,
+        };
+      },
       deps: [ENVIRONMENT],
     },
     {
@@ -62,10 +75,18 @@ export const appConfig: ApplicationConfig = {
       }),
       deps: [ENVIRONMENT],
     },
+    // In fleet mode the console's routing sends `/overview` without an active cluster on to the fleet overview.
     { provide: LOGIN_SUCCESS_REDIRECT_TARGET, useValue: ['/overview'] },
     // KeycloakService before the HTTP client, so the interceptor can inject it.
     ...(consoleEnvironment.authentication.config.type === 'keycloak' ? provideKeycloak() : []),
-    provideHttpClient(withInterceptors([getAuthInterceptor(), getUsersSessionInvalidationInterceptor()])),
+    provideHttpClient(
+      withInterceptors([
+        getAuthInterceptor(),
+        getUsersSessionInvalidationInterceptor(),
+        // Fleet mode only: clear messages for requests the fleet's relay refuses (a no-op otherwise).
+        fleetRelayErrorInterceptor,
+      ]),
+    ),
     provideStore(),
     ...(consoleEnvironment.application.production ? [] : [provideStoreDevtools({ maxAge: 25 })]),
     provideRouter(

@@ -14,6 +14,7 @@ import {
   FpcEmptyStateComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { map } from 'rxjs';
@@ -66,6 +67,7 @@ export function certificateStateLabel(state: CertificateState): string {
 @Component({
   selector: 'loadweaver-certificates-page',
   imports: [
+    FpcPanelGridComponent,
     CommonModule,
     RouterModule,
     FpcAlertComponent,

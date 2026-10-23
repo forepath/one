@@ -4,7 +4,7 @@
  *   npx nx run loadweaver-shared-util-release:build-bundle -- --release 3.5.0 \
  *     --control-plane-image ghcr.io/forepath/loadweaver-control-plane-api:3.5.0@sha256:… \
  *     --agent-amd64 dist/…/loadweaver-agent --agent-arm64 dist/…/loadweaver-agent-arm64 \
- *     [--opensearch-image ref@sha256:…] [--image-archive envoy=envoy.oci.tar …] [--gvisor] [--drbd-source] \
+ *     [--opensearch-image ref@sha256:…] [--console-image ref@sha256:…] [--image-archive envoy=envoy.oci.tar …] [--gvisor] [--drbd-source] \
  *     [--drbd-prebuilt <kernel>:<arch>=<modules.tar.gz> …] [--drbd-compat <kernel>:<arch>=<entry.tar.gz> …] \
  *     [--apt-snapshot index.json [--apt-files <dir>]] [--note …] \
  *     [--minimum-version 3.4.0] [--out dist/loadweaver-bundle] [--require-signature] [--defer-signature]
@@ -12,6 +12,11 @@
  * Signs with the PEM in `LOADWEAVER_RELEASE_SIGNING_KEY` (CI secret; never printed). Without it the bundle is unsigned
  * — accepted only by clusters with `LOADWEAVER_ALLOW_UNSIGNED_BUNDLES=true` (development, VM labs) — unless
  * `--require-signature` makes that an error (release builds).
+ *
+ * `--console-image` pins the release's console image (`loadweaver-console-server`) by digest in the signed manifest
+ * (`consoleImage`): Loadweaver Cloud (Decabill) pulls the management endpoint's console by that digest. Release builds
+ * pass it; without it the manifest has no console image and Loadweaver Cloud refuses to provision that release unless
+ * the plan pins a console digest itself.
  *
  * `--drbd-compat` takes the DRBD compat-patch entries `scripts/drbd-compat.sh` generated per kernel of the release's
  * snapshot (air-gapped nodes build DRBD from source without LINBIT's SPAAS); each is validated (`drbd-compat.ts`).
@@ -64,6 +69,7 @@ const { values } = parseArgs({
     out: { type: 'string', default: 'dist/loadweaver-bundle' },
     'control-plane-image': { type: 'string' },
     'opensearch-image': { type: 'string' },
+    'console-image': { type: 'string' },
     'agent-amd64': { type: 'string' },
     'agent-arm64': { type: 'string' },
     'image-archive': { type: 'string', multiple: true },
@@ -255,6 +261,7 @@ async function main(): Promise<void> {
       ...(values['opensearch-image'] ? { opensearch: values['opensearch-image'] } : {}),
     },
     opensearchWithRepositoryS3: !!values['opensearch-image'],
+    ...(values['console-image'] ? { consoleImage: values['console-image'] } : {}),
     imageArchives,
     agentBinaries,
     ...(values.gvisor ? { gvisorTarballs } : {}),

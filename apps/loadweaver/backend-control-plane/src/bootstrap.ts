@@ -27,6 +27,7 @@ import * as express from 'express';
 import { RegistryProxyService } from '@forepath/loadweaver/backend/feature-control-plane';
 
 import { AppModule } from './app/app.module';
+import { trustProxySetting } from './trust-proxy';
 import { typeormConfig } from './typeorm.config';
 
 const GLOBAL_PREFIX = 'api';
@@ -73,6 +74,10 @@ export async function createApp(
 ): Promise<INestApplication> {
   const role = getQueueRole();
   const app = await NestFactory.create(AppModule, { logger, bodyParser: false });
+  const trustProxy = trustProxySetting();
+
+  // Behind a same-host TLS proxy (Cloud nginx): client IPs from X-Forwarded-For for the throttlers (H1).
+  if (trustProxy) app.getHttpAdapter().getInstance().set('trust proxy', trustProxy);
   const httpLogger = new Logger('HTTP');
 
   app.use(

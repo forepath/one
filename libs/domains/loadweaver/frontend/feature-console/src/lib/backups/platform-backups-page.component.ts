@@ -16,6 +16,7 @@ import {
   type PlatformCopyRunResult,
   type PlatformCutover,
   type PlatformRestore,
+  ConsoleEndpointService,
 } from '@forepath/loadweaver/frontend/data-access-console';
 import {
   FpcAlertComponent,
@@ -23,10 +24,16 @@ import {
   FpcButtonComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInputGroupComponent,
+  FpcListComponent,
+  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
   FpcStatusBadgeComponent,
 } from '@forepath/shared/frontend/ui-components';
@@ -49,6 +56,7 @@ import {
   platformStatusTone,
   saveDrInfo,
 } from './platform-backup-format';
+import { LoadweaverBackupsNavComponent } from './backups-nav.component';
 
 /**
  * Control-plane ("platform") backups and disaster recovery (M6): the cluster's own Postgres, OpenSearch and etcd per
@@ -59,6 +67,13 @@ import {
 @Component({
   selector: 'loadweaver-platform-backups-page',
   imports: [
+    FpcPanelGridComponent,
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
+    FpcInputGroupComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    LoadweaverBackupsNavComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -79,6 +94,8 @@ import {
 })
 export class LoadweaverPlatformBackupsPageComponent implements OnInit {
   private readonly service = inject(BackupsService);
+  /** Fleet mode: approvals stay native (the cluster's own console). */
+  protected readonly fleetMode = inject(ConsoleEndpointService).fleetMode;
   private readonly access = inject(ConsoleAccessFacade);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
@@ -129,7 +146,11 @@ export class LoadweaverPlatformBackupsPageComponent implements OnInit {
   readonly locked = isLocked;
 
   readonly title = $localize`:@@lwConsolePlatformBackups-title:Platform backups and disaster recovery`;
-  readonly backLabel = $localize`:@@lwConsolePlatformBackups-back:Backups`;
+  readonly pitrTitle = $localize`:@@lwConsolePlatformBackups-pitrTitle:Point-in-time recovery (Postgres)`;
+  readonly cutoverTitle = $localize`:@@lwConsolePlatformBackups-cutoverTitle:Cut-over of the control-plane database`;
+  readonly cutoverHistoryTitle = $localize`:@@lwConsolePlatformBackups-cutoverHistory:Earlier cut-overs`;
+  readonly copiesTitle = $localize`:@@lwConsolePlatformBackups-copiesTitle:External copy`;
+  readonly drTitle = $localize`:@@lwConsolePlatformBackups-drTitle:Disaster recovery`;
   readonly refreshLabel = $localize`:@@lwConsolePlatformBackups-refresh:Refresh`;
   readonly cancelLabel = $localize`:@@lwConsolePlatformBackups-cancel:Cancel`;
   readonly restoreTitle = $localize`:@@lwConsolePlatformBackups-restoreTitle:Point-in-time restore of the control-plane database`;

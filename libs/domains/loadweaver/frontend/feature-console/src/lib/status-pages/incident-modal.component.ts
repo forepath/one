@@ -13,6 +13,8 @@ import {
 import {
   FpcAlertComponent,
   FpcButtonComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
 } from '@forepath/shared/frontend/ui-components';
@@ -31,6 +33,8 @@ const MAX_MESSAGE = 4000;
     FormsModule,
     FpcAlertComponent,
     FpcButtonComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
   ],

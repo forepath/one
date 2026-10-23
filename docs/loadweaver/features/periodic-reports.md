@@ -20,6 +20,7 @@ On the 1st of every month Loadweaver writes a report for the month that ended �
 | Capacity        | memory in use per day against today's capacity, and when a least-squares trend reaches 90 %                          | —                                               |
 | Policy denies   | denied packets in the month                                                                                          | —                                               |
 | Usage           | —                                                                                                                    | requested CPU, memory and storage at generation |
+| Metered usage   | [metered usage](./usage-metering.md) of all projects in the month, per meter                                         | the project's metered usage                     |
 
 - The HTML is self-contained and printable: no scripts, no external resources, every value escaped.
 - `report.json` holds the same data.

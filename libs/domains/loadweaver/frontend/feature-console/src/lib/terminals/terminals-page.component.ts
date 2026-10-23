@@ -19,7 +19,11 @@ import {
   FpcButtonComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcPageHeaderComponent,
+  FpcTabComponent,
+  FpcTabGroupComponent,
   FpcTerminalComponent,
   type FpcTerminalSize,
 } from '@forepath/shared/frontend/ui-components';
@@ -60,7 +64,11 @@ export interface TerminalTab {
     FpcButtonComponent,
     FpcConfirmDialogComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcPageHeaderComponent,
+    FpcTabComponent,
+    FpcTabGroupComponent,
     FpcTerminalComponent,
   ],
   providers: [TerminalSocketClient],
@@ -126,6 +134,8 @@ export class LoadweaverTerminalsPageComponent implements OnInit {
   readonly nodeConfirmTitle = $localize`:@@lwConsoleTerminals-nodeConfirmTitle:Open a root shell on this node?`;
   readonly nodeConfirmLabel = $localize`:@@lwConsoleTerminals-nodeConfirmOpen:Open node shell`;
   readonly cancelLabel = $localize`:@@lwConsoleTerminals-cancel:Cancel`;
+  readonly retryLabel = $localize`:@@lwConsoleTerminals-retry:Retry`;
+  readonly reconnectLabel = $localize`:@@lwConsoleTerminals-reconnect:Open again`;
 
   constructor() {
     this.client.events$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => this.onEvent(event));
@@ -218,6 +228,20 @@ export class LoadweaverTerminalsPageComponent implements OnInit {
 
     this.sentSizes.set(id, `${size.cols}x${size.rows}`);
     this.client.create({ sessionId: id, target, ...(shell && SHELL.test(shell) ? { shell } : {}), ...size });
+  }
+
+  /** The tab's status icon (a recording session shows the record icon while it runs). */
+  tabIcon(tab: TerminalTab): string {
+    switch (tab.status) {
+      case 'open':
+        return tab.recorded ? 'record-circle' : 'circle-fill';
+      case 'connecting':
+        return 'hourglass-split';
+      case 'failed':
+        return 'x-circle';
+      default:
+        return 'stop-circle';
+    }
   }
 
   select(tab: TerminalTab): void {

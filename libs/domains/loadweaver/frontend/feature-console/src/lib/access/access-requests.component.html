@@ -36,7 +36,7 @@
         @if (mayAccept() && !r.accepted) {
           <div fpcListItemActions>
             <fpc-button
-              variant="outline-success"
+              variant="success"
               size="sm"
               [disabled]="changing()"
               (clicked)="accept.emit(r)"

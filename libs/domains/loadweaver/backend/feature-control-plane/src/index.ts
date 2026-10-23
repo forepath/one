@@ -1,3 +1,4 @@
+export * from './lib/auth/fleet-on-behalf-of-scope.interceptor';
 export * from './lib/auth/loadweaver-pat.scopes';
 export * from './lib/constants/control-plane.constants';
 export * from './lib/entities/audit-event.entity';
@@ -91,6 +92,20 @@ export * from './lib/entities/image-scan.entity';
 export { ImageResolverService } from './lib/services/image-resolver.service';
 export * from './lib/entities/vpn-client.entity';
 export * from './lib/remote-access/posture-plugin';
+export * from './lib/entities/posture-integration.entity';
+export type { FetchLike as PostureFetchLike, PostureHttpOptions, PostureHttpRequest } from './lib/posture/posture-http';
+export {
+  PostureHttp,
+  PostureHttpError,
+  clientCredentialsToken,
+  httpsOrigin,
+  retryAfterMs,
+  safeErrorMessage,
+} from './lib/posture/posture-http';
+export * from './lib/posture/posture-facts';
+export * from './lib/posture/posture-integrations.service';
+export * from './lib/posture/posture-certificates.service';
+export * from './lib/posture/plugins/builtin-posture-plugins';
 export * from './lib/remote-access/remote-access.service';
 export * from './lib/remote-access/remote-access.utils';
 export * from './lib/entities/project-access.entity';
@@ -103,6 +118,10 @@ export * from './lib/logs/logs.service';
 export * from './lib/metrics/metrics.store';
 export * from './lib/metrics/prometheus.utils';
 export * from './lib/metrics/otel-summary.collector';
+export * from './lib/usage/usage.constants';
+export * from './lib/usage/usage.utils';
+export * from './lib/usage/usage.service';
+export * from './lib/controllers/usage.controller';
 export * from './lib/alerts/alert.service';
 export * from './lib/audit/audit.service';
 export * from './lib/siem/siem-formats';
@@ -145,6 +164,7 @@ export * from './lib/alerts/alert-rules.utils';
 export * from './lib/controllers/alerts.controller';
 export * from './lib/notifications/loadweaver-notification.events';
 export * from './lib/notifications/loadweaver-notifications.module';
+export * from './lib/notifications/loadweaver-identity-email-bridge.module';
 export * from './lib/entities/git.entity';
 export * from './lib/dto/git.dto';
 export * from './lib/git/git-client';

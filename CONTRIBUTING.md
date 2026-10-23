@@ -156,6 +156,7 @@ Run an application's local stack with `npx nx run <project>:start-containers`. T
 | [forepath-frontend-billing-console](apps/forepath/frontend-billing-console/project.json)     | `forepath-billing-console-server`                 | `server`           | Billing console server                                     |
 | [forepath-frontend-landingpage](apps/forepath/frontend-landingpage/project.json)             | `forepath-landingpage-server`                     | `postbuild`        | Landing page server                                        |
 | [loadweaver-frontend-billing-console](apps/loadweaver/frontend-billing-console/project.json) | `loadweaver-billing-console-server`               | `server`           | Billing console server                                     |
+| [loadweaver-frontend-docs](apps/loadweaver/frontend-docs/project.json)                       | `loadweaver-docs-server`                          | `postbuild`        | Documentation server                                       |
 | [loadweaver-frontend-landingpage](apps/loadweaver/frontend-landingpage/project.json)         | `loadweaver-landingpage-server`                   | `postbuild`        | Landing page server                                        |
 
 Infrastructure images such as PostgreSQL, Redis, OpenSearch, and MailHog are pulled separately. After a successful start, each project's obsolete test images are pruned automatically. The details below explain how images are built and cleaned up.

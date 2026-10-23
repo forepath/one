@@ -1,261 +1,301 @@
-<fpc-page-header
-  [title]="current() ? title + ' ' + version(current()!.fromVersion) + ' → ' + current()!.toVersion : title"
-  icon="cloud-arrow-down"
->
-  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
-    <fpc-button variant="link" size="sm" routerLink="/updates" [queryParams]="{ tab: 'plans' }">
-      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header
+    [title]="current() ? title + ' ' + version(current()!.fromVersion) + ' → ' + current()!.toVersion : title"
+    icon="cloud-arrow-down"
+  >
+    <fpc-button
+      fpcPageHeaderActions
+      variant="secondary"
+      size="sm"
+      iconOnly
+      routerLink="/updates"
+      [queryParams]="{ tab: 'plans' }"
+      [ariaLabel]="backLabel"
+      [title]="backLabel"
+    >
+      <i class="bi bi-arrow-left" aria-hidden="true"></i>
     </fpc-button>
     @if (current(); as r) {
       @for (action of actions(); track action) {
         <fpc-button
+          fpcPageHeaderActions
           [variant]="actionVariant(action)"
           size="sm"
+          iconOnly
+          [ariaLabel]="actionLabel(action)"
+          [title]="actionLabel(action)"
           [loading]="acting()?.id === r.id && acting()?.action === action"
           [disabled]="acting() !== null"
           (clicked)="request(action)"
           [attr.data-testid]="'update-action-' + action"
         >
-          {{ actionLabel(action) }}
+          <i class="bi {{ actionIcon[action] }}" aria-hidden="true"></i>
         </fpc-button>
       }
     }
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-@if (error(); as message) {
-  <fpc-alert class="d-block m-3" variant="danger" [message]="message" />
-}
-@if (actionError(); as message) {
-  <fpc-alert class="d-block m-3" variant="danger" [message]="message" data-testid="update-action-error" />
-}
-
-@if (loading() && !current()) {
-  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-} @else if (current(); as r) {
-  <div class="p-3 d-flex flex-column gap-3">
+  @if (current(); as r) {
     <fpc-summary-bar [columns]="3">
       <fpc-summary-card [label]="statusTitle" [value]="statusLabel(r.status)" />
       <fpc-summary-card [label]="kindTitle" [value]="kindLabel(r.kind)" />
       <fpc-summary-card [label]="progressTitle" [value]="r.progress.done + ' / ' + r.progress.total" />
     </fpc-summary-bar>
+  }
 
-    <fpc-panel data-testid="update-summary">
-      <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-        <fpc-badge [color]="statusTone[r.status]" size="sm">{{ statusLabel(r.status) }}</fpc-badge>
-        @if (r.options.host) {
-          <fpc-badge color="info" size="sm" i18n="@@lwConsoleUpdateDetail-hostBadge">Host updates</fpc-badge>
-        }
-        @if (r.options.osUpgrade) {
-          <fpc-badge color="info" size="sm" i18n="@@lwConsoleUpdateDetail-osUpgradeBadge">Full OS upgrade</fpc-badge>
-        }
-        @if (r.options.emergency || r.options.windows === 'ignore') {
-          <fpc-badge color="danger" size="sm" i18n="@@lwConsoleUpdateDetail-emergencyBadge"
-            >Emergency: outside maintenance windows</fpc-badge
-          >
-        }
-        @if (r.options.automatic) {
-          <fpc-badge color="secondary" size="sm" i18n="@@lwConsoleUpdateDetail-automaticBadge"
-            >Created by the update policy</fpc-badge
-          >
-        }
-        @if (r.options.snapshot) {
-          <span class="small text-body-secondary"
-            ><span i18n="@@lwConsoleUpdateDetail-snapshot">OS snapshot</span>
-            <span class="font-monospace">{{ r.options.snapshot }}</span></span
-          >
-        }
-      </div>
-      <fpc-progress
-        [value]="percent(r)"
-        height="0.6rem"
-        [striped]="r.status === 'running'"
-        [animated]="r.status === 'running'"
-        [variant]="
-          r.status === 'rollback-failed'
-            ? 'danger'
-            : r.status === 'paused' || r.status === 'rolling-back'
-              ? 'warning'
-              : r.status === 'completed'
-                ? 'success'
-                : 'primary'
-        "
-      />
-      <div class="row small g-3 mt-1">
-        <div class="col-sm-6 col-lg-3">
-          <div class="text-body-secondary" i18n="@@lwConsoleUpdateDetail-created">Planned</div>
-          <div>{{ r.createdAt | date: 'short' }}</div>
-          @if (r.createdBy) {
-            <div class="text-body-secondary">{{ r.createdBy }}</div>
-          }
-        </div>
-        <div class="col-sm-6 col-lg-3">
-          <div class="text-body-secondary" i18n="@@lwConsoleUpdateDetail-approved">Approved</div>
-          <div>{{ r.approvedAt ? (r.approvedAt | date: 'short') : '–' }}</div>
-          @if (r.approvedBy) {
-            <div class="text-body-secondary">{{ r.approvedBy }}</div>
-          }
-        </div>
-        <div class="col-sm-6 col-lg-3">
-          <div class="text-body-secondary" i18n="@@lwConsoleUpdateDetail-started">Started</div>
-          <div>{{ r.startedAt ? (r.startedAt | date: 'short') : '–' }}</div>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-          <div class="text-body-secondary" i18n="@@lwConsoleUpdateDetail-finished">Finished</div>
-          <div>{{ r.finishedAt ? (r.finishedAt | date: 'short') : '–' }}</div>
-        </div>
-      </div>
-      @if (r.pauseReason && (r.status === 'paused' || r.status === 'rolling-back')) {
-        <fpc-alert class="d-block mt-3" variant="warning" [message]="r.pauseReason" data-testid="update-pause-reason" />
-      }
-      @if (r.status === 'rollback-failed') {
-        <fpc-alert
-          class="d-block mt-3"
-          variant="danger"
-          i18n-message="@@lwConsoleUpdateDetail-rollbackFailed"
-          message="The rollback failed: the steps below show the real state of every node. Fix forward with a new update plan."
-        />
-      }
-      @if (r.status === 'planned' && !isClusterAdmin()) {
-        <div class="small text-body-secondary mt-3" i18n="@@lwConsoleUpdateDetail-waitsForAdmin">
-          The plan waits for a cluster admin's approval.
-        </div>
-      }
-    </fpc-panel>
-
-    @for (warning of r.warnings; track $index) {
-      <fpc-alert variant="warning" [message]="warning" />
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" data-testid="update-action-error" />
     }
 
-    @if (r.notes.length > 0) {
-      <fpc-panel [title]="notesTitle">
-        <ul class="small mb-0" data-testid="update-notes">
-          @for (note of r.notes; track $index) {
-            <li>{{ note }}</li>
-          }
-        </ul>
-      </fpc-panel>
-    }
+    @if (loading() && !current()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (current(); as r) {
+      @for (warning of r.warnings; track $index) {
+        <fpc-alert class="m-3" variant="warning" [message]="warning" />
+      }
 
-    <fpc-panel [title]="diffTitle + ' (' + r.diff.length + ')'" [flush]="true">
-      @if (r.diff.length === 0) {
-        <fpc-empty-state icon="file-diff" size="sm" i18n-title="@@lwConsoleUpdateDetail-noDiff" title="No changes" />
-      } @else {
-        <fpc-tab-group class="d-block px-2" [activeId]="diffBy()" (activeIdChange)="selectDiff($event)">
-          <fpc-tab id="node" [label]="byNode" icon="hdd-network" />
-          <fpc-tab id="component" [label]="byComponent" icon="boxes" />
-        </fpc-tab-group>
-        <div class="table-responsive">
-          <table class="table table-sm small mb-0 align-middle" data-testid="update-diff">
-            <tbody>
-              @for (group of diffGroups(); track group.key) {
-                <tr class="table-light">
-                  <th colspan="4" class="font-monospace">{{ group.key }}</th>
-                </tr>
-                @for (entry of group.entries; track $index) {
-                  <tr>
-                    <td class="font-monospace ps-3">{{ diffBy() === 'node' ? entry.component : entry.node }}</td>
-                    <td class="font-monospace text-body-secondary">{{ entry.from ?? '–' }}</td>
-                    <td class="font-monospace">→ {{ entry.to ?? '–' }}</td>
-                    <td class="text-body-secondary">{{ entry.method }}</td>
-                  </tr>
-                }
+      <fpc-panel-grid [columns]="1" fill>
+        <fpc-panel data-testid="update-summary">
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <fpc-badge [color]="statusTone[r.status]" size="sm">{{ statusLabel(r.status) }}</fpc-badge>
+            @if (r.options.host) {
+              <fpc-badge color="info" size="sm" i18n="@@lwConsoleUpdateDetail-hostBadge">Host updates</fpc-badge>
+            }
+            @if (r.options.osUpgrade) {
+              <fpc-badge color="info" size="sm" i18n="@@lwConsoleUpdateDetail-osUpgradeBadge"
+                >Full OS upgrade</fpc-badge
+              >
+            }
+            @if (r.options.emergency || r.options.windows === 'ignore') {
+              <fpc-badge color="danger" size="sm" i18n="@@lwConsoleUpdateDetail-emergencyBadge"
+                >Emergency: outside maintenance windows</fpc-badge
+              >
+            }
+            @if (r.options.automatic) {
+              <fpc-badge color="secondary" size="sm" i18n="@@lwConsoleUpdateDetail-automaticBadge"
+                >Created by the update policy</fpc-badge
+              >
+            }
+            @if (r.options.snapshot) {
+              <span class="small text-body-secondary"
+                ><span i18n="@@lwConsoleUpdateDetail-snapshot">OS snapshot</span>
+                <span class="font-monospace">{{ r.options.snapshot }}</span></span
+              >
+            }
+          </div>
+          <fpc-progress
+            [value]="percent(r)"
+            height="0.6rem"
+            [striped]="r.status === 'running'"
+            [animated]="r.status === 'running'"
+            [variant]="
+              r.status === 'rollback-failed'
+                ? 'danger'
+                : r.status === 'paused' || r.status === 'rolling-back'
+                  ? 'warning'
+                  : r.status === 'completed'
+                    ? 'success'
+                    : 'primary'
+            "
+          />
+          <div class="row small g-3 mt-1">
+            <div class="col-sm-6 col-lg-3">
+              <div class="text-body-secondary" i18n="@@lwConsoleUpdateDetail-created">Planned</div>
+              <div>{{ r.createdAt | date: 'short' }}</div>
+              @if (r.createdBy) {
+                <div class="text-body-secondary">{{ r.createdBy }}</div>
               }
-            </tbody>
-          </table>
-        </div>
-      }
-    </fpc-panel>
-
-    <h2 class="h6 mb-0 mt-2">{{ wavesTitle }}</h2>
-    @for (wave of waves(); track wave.wave) {
-      <fpc-panel
-        [title]="waveLabel(wave.wave, wave.phase) + ' (' + wave.done + '/' + wave.steps.length + ')'"
-        [flush]="true"
-        [attr.data-testid]="'update-wave-' + wave.wave"
-      >
-        @if (wave.risk.length > 0) {
-          <div class="p-2 border-bottom small">
-            <div class="fw-semibold mb-1">
-              <i class="bi bi-exclamation-triangle text-warning me-1" aria-hidden="true"></i
-              ><span i18n="@@lwConsoleUpdateDetail-risk">At risk while this wave runs</span>
             </div>
-            <ul class="mb-0">
-              @for (risk of wave.risk; track $index) {
-                <li>{{ risk }}</li>
+            <div class="col-sm-6 col-lg-3">
+              <div class="text-body-secondary" i18n="@@lwConsoleUpdateDetail-approved">Approved</div>
+              <div>{{ r.approvedAt ? (r.approvedAt | date: 'short') : '–' }}</div>
+              @if (r.approvedBy) {
+                <div class="text-body-secondary">{{ r.approvedBy }}</div>
               }
-            </ul>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="text-body-secondary" i18n="@@lwConsoleUpdateDetail-started">Started</div>
+              <div>{{ r.startedAt ? (r.startedAt | date: 'short') : '–' }}</div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="text-body-secondary" i18n="@@lwConsoleUpdateDetail-finished">Finished</div>
+              <div>{{ r.finishedAt ? (r.finishedAt | date: 'short') : '–' }}</div>
+            </div>
           </div>
-        }
-        @if (failedGates(wave) > 0) {
-          <div class="px-2 pt-2 small text-danger">
-            {{ failedGates(wave) }} <span i18n="@@lwConsoleUpdateDetail-failedGates">health gates fail</span>
-          </div>
-        }
-        <fpc-list [flush]="true">
-          @for (step of wave.steps; track step.index) {
-            <fpc-list-item [attr.data-testid]="'update-step-' + step.node">
-              <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
-                <fpc-badge [color]="stepTone[step.state]" size="sm">{{ stepLabel(step.state) }}</fpc-badge>
-                <span class="fw-semibold">{{ step.node }}</span>
-                <fpc-badge color="light" size="sm">{{ step.site }}</fpc-badge>
-                <span class="small text-body-secondary">{{ stepKind(step.kind) }}</span>
-                @if (step.from || step.to) {
-                  <span class="small font-monospace">{{ step.from ?? '–' }} → {{ step.to ?? '–' }}</span>
-                }
-              </div>
-              <div fpcListItemMeta class="small text-body-secondary">
-                @if (step.startedAt) {
-                  <span>{{ step.startedAt | date: 'short' }}</span>
-                }
-                @if (step.finishedAt) {
-                  <span> – {{ step.finishedAt | date: 'shortTime' }}</span>
-                }
-                @if (step.gates.length > 0) {
-                  <div class="d-flex flex-wrap gap-1 mt-1">
-                    @for (gate of step.gates; track gate.name) {
-                      <fpc-badge [color]="gate.ok ? 'success' : 'danger'" size="sm" [attr.title]="gate.message">
-                        <i class="bi me-1" [class]="gate.ok ? 'bi-check-lg' : 'bi-x-lg'" aria-hidden="true"></i
-                        >{{ gate.name }}
-                      </fpc-badge>
-                      @if (!gate.ok && gate.message) {
-                        <span class="text-danger">{{ gate.message }}</span>
-                      }
-                    }
-                  </div>
-                }
-                @if (step.error) {
-                  <fpc-alert class="d-block mt-1" variant="danger" [message]="step.error" />
-                }
-              </div>
-            </fpc-list-item>
-          } @empty {
-            <fpc-empty-state
-              size="sm"
-              icon="list-check"
-              i18n-title="@@lwConsoleUpdateDetail-noSteps"
-              title="No steps"
+          @if (r.pauseReason && (r.status === 'paused' || r.status === 'rolling-back')) {
+            <fpc-alert
+              class="d-block mt-3"
+              variant="warning"
+              [message]="r.pauseReason"
+              data-testid="update-pause-reason"
             />
           }
-        </fpc-list>
-      </fpc-panel>
-    } @empty {
-      <fpc-empty-state icon="list-check" i18n-title="@@lwConsoleUpdateDetail-noSteps" title="No steps" />
+          @if (r.status === 'rollback-failed') {
+            <fpc-alert
+              class="d-block mt-3"
+              variant="danger"
+              i18n-message="@@lwConsoleUpdateDetail-rollbackFailed"
+              message="The rollback failed: the steps below show the real state of every node. Fix forward with a new update plan."
+            />
+          }
+          @if (r.status === 'planned' && !isClusterAdmin()) {
+            <div class="small text-body-secondary mt-3" i18n="@@lwConsoleUpdateDetail-waitsForAdmin">
+              The plan waits for a cluster admin's approval.
+            </div>
+          }
+        </fpc-panel>
+
+        @if (r.notes.length > 0) {
+          <fpc-panel [title]="notesTitle">
+            <ul class="small mb-0" data-testid="update-notes">
+              @for (note of r.notes; track $index) {
+                <li>{{ note }}</li>
+              }
+            </ul>
+          </fpc-panel>
+        }
+
+        <fpc-panel [title]="diffTitle + ' (' + r.diff.length + ')'" [flush]="true">
+          @if (r.diff.length > 0) {
+            <fpc-tab-group fpcPanelActions [activeId]="diffBy()" (activeIdChange)="selectDiff($event)">
+              <fpc-tab id="node" [label]="byNode" icon="hdd-network" />
+              <fpc-tab id="component" [label]="byComponent" icon="boxes" />
+            </fpc-tab-group>
+          }
+          @if (r.diff.length === 0) {
+            <fpc-empty-state
+              icon="file-diff"
+              size="sm"
+              i18n-title="@@lwConsoleUpdateDetail-noDiff"
+              title="No changes"
+            />
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-sm table-hover small mb-0 align-middle" data-testid="update-diff">
+                <tbody>
+                  @for (group of diffGroups(); track group.key) {
+                    <tr class="table-light">
+                      <th colspan="4" class="font-monospace">{{ group.key }}</th>
+                    </tr>
+                    @for (entry of group.entries; track $index) {
+                      <tr>
+                        <td class="font-monospace ps-3">{{ diffBy() === 'node' ? entry.component : entry.node }}</td>
+                        <td class="font-monospace text-body-secondary">{{ entry.from ?? '–' }}</td>
+                        <td class="font-monospace">→ {{ entry.to ?? '–' }}</td>
+                        <td class="text-body-secondary">{{ entry.method }}</td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </fpc-panel>
+
+        @for (wave of waves(); track wave.wave) {
+          <fpc-panel
+            [title]="
+              wavesTitle + ' · ' + waveLabel(wave.wave, wave.phase) + ' (' + wave.done + '/' + wave.steps.length + ')'
+            "
+            [flush]="true"
+            [attr.data-testid]="'update-wave-' + wave.wave"
+          >
+            @if (wave.risk.length > 0) {
+              <div class="px-3 py-2 border-bottom small">
+                <div class="fw-semibold mb-1">
+                  <i class="bi bi-exclamation-triangle text-warning me-1" aria-hidden="true"></i
+                  ><span i18n="@@lwConsoleUpdateDetail-risk">At risk while this wave runs</span>
+                </div>
+                <ul class="mb-0">
+                  @for (risk of wave.risk; track $index) {
+                    <li>{{ risk }}</li>
+                  }
+                </ul>
+              </div>
+            }
+            @if (failedGates(wave) > 0) {
+              <div class="px-3 pt-2 small text-danger">
+                {{ failedGates(wave) }} <span i18n="@@lwConsoleUpdateDetail-failedGates">health gates fail</span>
+              </div>
+            }
+            @if (wave.steps.length === 0) {
+              <fpc-empty-state
+                size="sm"
+                icon="list-check"
+                i18n-title="@@lwConsoleUpdateDetail-noSteps"
+                title="No steps"
+              />
+            } @else {
+              <fpc-list [flush]="true">
+                @for (step of wave.steps; track step.index) {
+                  <fpc-list-item [attr.data-testid]="'update-step-' + step.node">
+                    <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                      <fpc-badge [color]="stepTone[step.state]" size="sm">{{ stepLabel(step.state) }}</fpc-badge>
+                      <span class="fw-semibold">{{ step.node }}</span>
+                      <fpc-badge color="light" size="sm">{{ step.site }}</fpc-badge>
+                      <span class="small text-body-secondary">{{ stepKind(step.kind) }}</span>
+                      @if (step.from || step.to) {
+                        <span class="small font-monospace">{{ step.from ?? '–' }} → {{ step.to ?? '–' }}</span>
+                      }
+                    </div>
+                    <div fpcListItemMeta class="small text-body-secondary">
+                      @if (step.startedAt) {
+                        <span>{{ step.startedAt | date: 'short' }}</span>
+                      }
+                      @if (step.finishedAt) {
+                        <span> – {{ step.finishedAt | date: 'shortTime' }}</span>
+                      }
+                      @if (step.gates.length > 0) {
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                          @for (gate of step.gates; track gate.name) {
+                            <fpc-badge [color]="gate.ok ? 'success' : 'danger'" size="sm" [attr.title]="gate.message">
+                              <i class="bi me-1" [class]="gate.ok ? 'bi-check-lg' : 'bi-x-lg'" aria-hidden="true"></i
+                              >{{ gate.name }}
+                            </fpc-badge>
+                            @if (!gate.ok && gate.message) {
+                              <span class="text-danger">{{ gate.message }}</span>
+                            }
+                          }
+                        </div>
+                      }
+                      @if (step.error) {
+                        <fpc-alert class="d-block mt-1" variant="danger" [message]="step.error" />
+                      }
+                    </div>
+                  </fpc-list-item>
+                }
+              </fpc-list>
+            }
+          </fpc-panel>
+        } @empty {
+          <fpc-panel>
+            <fpc-empty-state icon="list-check" i18n-title="@@lwConsoleUpdateDetail-noSteps" title="No steps" />
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+    } @else if (!error()) {
+      <fpc-empty-state
+        icon="cloud-arrow-down"
+        i18n-title="@@lwConsoleUpdateDetail-notFound"
+        title="Update plan not found"
+      />
     }
   </div>
-} @else if (!error()) {
-  <fpc-empty-state
-    icon="cloud-arrow-down"
-    i18n-title="@@lwConsoleUpdateDetail-notFound"
-    title="Update plan not found"
-  />
-}
+</div>
 
-<fpc-modal
+<fpc-confirm-dialog
   [open]="approveOpen()"
   (openChange)="approveOpen.set($event)"
   [title]="approveTitle"
-  [accent]="emergency() ? 'danger' : 'primary'"
+  [confirmLabel]="emergency() ? approveEmergencyLabel : approveLabel"
+  [cancelLabel]="keepLabel"
+  [danger]="emergency()"
+  (confirmed)="approve()"
+  data-testid="update-approve-confirm"
 >
   <p class="small" i18n="@@lwConsoleUpdateDetail-approveHint">
     The rollout starts in the next maintenance window of each node: control plane first, then a canary node, then waves.
@@ -277,21 +317,7 @@
       message="Nodes restart, drain and reboot right away, whatever their maintenance windows say. Use this only for urgent security fixes."
     />
   }
-  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
-    <fpc-button variant="outline-secondary" (clicked)="approveOpen.set(false)">{{ keepLabel }}</fpc-button>
-    <fpc-button
-      [variant]="emergency() ? 'danger' : 'primary'"
-      (clicked)="approve()"
-      data-testid="update-approve-confirm"
-    >
-      @if (emergency()) {
-        <span i18n="@@lwConsoleUpdateDetail-approveEmergency">Approve as emergency</span>
-      } @else {
-        <span i18n="@@lwConsoleUpdateDetail-approve">Approve</span>
-      }
-    </fpc-button>
-  </div>
-</fpc-modal>
+</fpc-confirm-dialog>
 
 <fpc-confirm-dialog
   [open]="confirmAction() !== null"

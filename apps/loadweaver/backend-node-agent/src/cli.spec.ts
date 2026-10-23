@@ -1,4 +1,15 @@
-import { BOOTSTRAP_OPTIONS, parseLabels, RESTORE_ONLY_FLAGS, shareThreshold, splitPastedShares } from './cli';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import {
+  BOOTSTRAP_OPTIONS,
+  parseLabels,
+  readAdminClaimToken,
+  RESTORE_ONLY_FLAGS,
+  shareThreshold,
+  splitPastedShares,
+} from './cli';
 
 describe('agent CLI', () => {
   it('parses labels', () => {
@@ -39,6 +50,27 @@ describe('agent CLI', () => {
       expect(RESTORE_ONLY_FLAGS).toEqual(expect.arrayContaining(['dr-info', 'share-file', 'kms', 'target-time']));
       expect(RESTORE_ONLY_FLAGS).not.toContain('name');
       expect(BOOTSTRAP_OPTIONS['share-file']).toEqual({ type: 'string', multiple: true });
+    });
+  });
+
+  describe('bootstrap --admin-claim-token-file', () => {
+    it('is a plain bootstrap flag, not restore-only', () => {
+      expect(BOOTSTRAP_OPTIONS['admin-claim-token-file']).toEqual({ type: 'string' });
+      expect(RESTORE_ONLY_FLAGS).not.toContain('admin-claim-token-file');
+    });
+
+    it('reads the token from the file, else from LOADWEAVER_ADMIN_CLAIM_TOKEN', async () => {
+      const file = join(mkdtempSync(join(tmpdir(), 'lw-claim-')), 'token');
+
+      writeFileSync(file, 'lwc_from_file\n');
+      await expect(readAdminClaimToken(file, { LOADWEAVER_ADMIN_CLAIM_TOKEN: 'lwc_env' })).resolves.toBe(
+        'lwc_from_file',
+      );
+      await expect(readAdminClaimToken(undefined, { LOADWEAVER_ADMIN_CLAIM_TOKEN: 'lwc_env' })).resolves.toBe(
+        'lwc_env',
+      );
+      await expect(readAdminClaimToken(undefined, {})).resolves.toBeUndefined();
+      await expect(readAdminClaimToken(undefined, { LOADWEAVER_ADMIN_CLAIM_TOKEN: '  ' })).rejects.toThrow('empty');
     });
   });
 });

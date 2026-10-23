@@ -1,133 +1,157 @@
-<fpc-page-header [title]="title" icon="grid">
-  @if (projects().length > 0) {
-    <div fpcPageHeaderActions>
-      <label class="visually-hidden" for="lw-overview-project">{{ projectLabel }}</label>
-      <select
-        id="lw-overview-project"
-        class="form-select form-select-sm"
-        [ngModel]="project"
-        (ngModelChange)="onProjectChange($event)"
-      >
-        <option value="">{{ allProjects }}</option>
-        @for (p of projects(); track p) {
-          <option [value]="p">{{ p }}</option>
-        }
-      </select>
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="grid" />
+
+  @if (overview(); as o) {
+    <div class="flex-shrink-0 d-flex align-items-center gap-3 px-3 py-2 border-bottom" data-testid="overview-headline">
+      <fpc-status-badge [tone]="healthTone[o.headline.state]" size="lg" [ariaLabel]="healthLabel(o.headline.state)">
+        <i class="bi {{ healthIcon[o.headline.state] }}" aria-hidden="true"></i>
+      </fpc-status-badge>
+      <div>
+        <div class="fw-semibold">{{ healthLabel(o.headline.state) }}</div>
+        <div class="text-body-secondary small">{{ o.headline.message }}</div>
+      </div>
     </div>
+
+    <fpc-summary-bar class="flex-shrink-0" [columns]="seesInfrastructure() ? 6 : 4">
+      @if (seesInfrastructure()) {
+        <fpc-summary-card
+          i18n-label="@@lwConsoleOverview-nodes"
+          label="Nodes up"
+          [value]="o.summary.nodes.up + ' / ' + o.summary.nodes.total"
+          [tone]="o.summary.nodes.up < o.summary.nodes.total ? 'warning' : 'default'"
+        />
+        <fpc-summary-card i18n-label="@@lwConsoleOverview-sites" label="Sites" [value]="'' + o.summary.sites" />
+      }
+      <fpc-summary-card
+        i18n-label="@@lwConsoleOverview-deployments"
+        label="Deployments"
+        [value]="'' + o.summary.deployments"
+      />
+      @if (o.summary.capacity; as capacity) {
+        <fpc-summary-card
+          i18n-label="@@lwConsoleOverview-memory"
+          label="Memory in use"
+          [value]="formatShare(capacity.memoryBytes.used, capacity.memoryBytes.total)"
+          [tone]="
+            capacity.memoryBytes.used + capacity.memoryBytes.reserve > capacity.memoryBytes.total
+              ? 'warning'
+              : 'default'
+          "
+        />
+      }
+      <fpc-summary-card
+        i18n-label="@@lwConsoleOverview-alerts"
+        label="Alerts firing"
+        [value]="'' + o.summary.alertsFiring"
+        [tone]="o.summary.alertsFiring > 0 ? 'danger' : 'default'"
+      />
+      <fpc-summary-card
+        i18n-label="@@lwConsoleOverview-slos"
+        label="SLOs burning"
+        [value]="o.summary.slos.burning + o.summary.slos.exhausted + ' / ' + o.summary.slos.total"
+        [tone]="o.summary.slos.burning + o.summary.slos.exhausted > 0 ? 'warning' : 'default'"
+      />
+    </fpc-summary-bar>
   }
-</fpc-page-header>
 
-@if (error(); as message) {
-  <fpc-alert variant="danger" [message]="message" />
-}
+  @if (projects().length > 0) {
+    <fpc-collapsible-filter-panel
+      class="flex-shrink-0"
+      [(open)]="filtersOpen"
+      [title]="filtersLabel"
+      [activeCount]="project ? 1 : 0"
+      (cleared)="onProjectChange('')"
+    >
+      <div class="row g-3 mb-0 w-100">
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-overview-project" [label]="projectLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-overview-project"
+              size="sm"
+              [ngModel]="project"
+              (ngModelChange)="onProjectChange($event)"
+            >
+              <option value="">{{ allProjects }}</option>
+              @for (p of projects(); track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+      </div>
+    </fpc-collapsible-filter-panel>
+  }
 
-@if (overview(); as o) {
-  <div class="d-flex align-items-center gap-3 p-3 border-bottom" data-testid="overview-headline">
-    <fpc-status-badge [tone]="healthTone[o.headline.state]" size="lg" [ariaLabel]="healthLabel(o.headline.state)">
-      <i class="bi {{ healthIcon[o.headline.state] }}" aria-hidden="true"></i>
-    </fpc-status-badge>
-    <div>
-      <div class="fw-semibold">{{ healthLabel(o.headline.state) }}</div>
-      <div class="text-body-secondary small">{{ o.headline.message }}</div>
-    </div>
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    @if (overview(); as o) {
+      <fpc-panel-grid [columns]="2" fill>
+        <fpc-panel i18n-title="@@lwConsoleOverview-inbox" title="Needs attention" [flush]="true">
+          @if (o.inbox.length === 0) {
+            <fpc-empty-state
+              icon="check2-circle"
+              size="sm"
+              i18n-title="@@lwConsoleOverview-inboxEmpty"
+              title="Nothing needs attention"
+            />
+          } @else {
+            <fpc-list [flush]="true" data-testid="overview-inbox">
+              @for (item of o.inbox; track item.link + item.title) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex align-items-start gap-2 min-w-0">
+                    <fpc-status-badge [tone]="severityTone(item)" size="sm">
+                      <i class="bi {{ severityIcon(item) }}" aria-hidden="true"></i>
+                    </fpc-status-badge>
+                    <div class="flex-grow-1 min-w-0">
+                      <a [routerLink]="item.link" class="text-decoration-none">
+                        @if (isGitItem(item)) {
+                          <i class="bi bi-git me-1" aria-hidden="true"></i>
+                        }
+                        {{ item.title }}</a
+                      >
+                    </div>
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary">
+                    @if (item.project) {
+                      <span>{{ item.project }}</span>
+                    }
+                    @if (item.since) {
+                      <span class="ms-2">{{ item.since | date: 'short' }}</span>
+                    }
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+        <fpc-panel i18n-title="@@lwConsoleOverview-activity" title="Recent activity" [flush]="true">
+          @if (o.activity.length === 0) {
+            <fpc-empty-state
+              icon="clock-history"
+              size="sm"
+              i18n-title="@@lwConsoleOverview-activityEmpty"
+              title="No activity yet"
+            />
+          } @else {
+            <fpc-list [flush]="true">
+              @for (a of o.activity; track a.time + a.entity) {
+                <fpc-list-item>
+                  <div fpcListItemTitle>
+                    <div class="small text-body-secondary">{{ a.time | date: 'short' }} · {{ a.kind }}</div>
+                    <div>{{ a.message }}</div>
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+      </fpc-panel-grid>
+    } @else if (loading()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    }
   </div>
-
-  <fpc-summary-bar [columns]="seesInfrastructure() ? 6 : 4">
-    @if (seesInfrastructure()) {
-      <fpc-summary-card
-        i18n-label="@@lwConsoleOverview-nodes"
-        label="Nodes up"
-        [value]="o.summary.nodes.up + ' / ' + o.summary.nodes.total"
-        [tone]="o.summary.nodes.up < o.summary.nodes.total ? 'warning' : 'default'"
-      />
-      <fpc-summary-card i18n-label="@@lwConsoleOverview-sites" label="Sites" [value]="'' + o.summary.sites" />
-    }
-    <fpc-summary-card
-      i18n-label="@@lwConsoleOverview-deployments"
-      label="Deployments"
-      [value]="'' + o.summary.deployments"
-    />
-    @if (o.summary.capacity; as capacity) {
-      <fpc-summary-card
-        i18n-label="@@lwConsoleOverview-memory"
-        label="Memory in use"
-        [value]="formatShare(capacity.memoryBytes.used, capacity.memoryBytes.total)"
-        [tone]="
-          capacity.memoryBytes.used + capacity.memoryBytes.reserve > capacity.memoryBytes.total ? 'warning' : 'default'
-        "
-      />
-    }
-    <fpc-summary-card
-      i18n-label="@@lwConsoleOverview-alerts"
-      label="Alerts firing"
-      [value]="'' + o.summary.alertsFiring"
-      [tone]="o.summary.alertsFiring > 0 ? 'danger' : 'default'"
-    />
-    <fpc-summary-card
-      i18n-label="@@lwConsoleOverview-slos"
-      label="SLOs burning"
-      [value]="o.summary.slos.burning + o.summary.slos.exhausted + ' / ' + o.summary.slos.total"
-      [tone]="o.summary.slos.burning + o.summary.slos.exhausted > 0 ? 'warning' : 'default'"
-    />
-  </fpc-summary-bar>
-
-  <fpc-panel-grid [columns]="2">
-    <fpc-panel i18n-title="@@lwConsoleOverview-inbox" title="Needs attention" [flush]="true">
-      @if (o.inbox.length === 0) {
-        <fpc-empty-state
-          icon="check2-circle"
-          size="sm"
-          i18n-title="@@lwConsoleOverview-inboxEmpty"
-          title="Nothing needs attention"
-        />
-      } @else {
-        <ul class="list-group list-group-flush" data-testid="overview-inbox">
-          @for (item of o.inbox; track item.link + item.title) {
-            <li class="list-group-item d-flex align-items-start gap-2">
-              <fpc-status-badge [tone]="severityTone(item)" size="sm">
-                <i class="bi {{ severityIcon(item) }}" aria-hidden="true"></i>
-              </fpc-status-badge>
-              <div class="flex-grow-1 min-w-0">
-                <a [routerLink]="item.link" class="text-decoration-none">
-                  @if (isGitItem(item)) {
-                    <i class="bi bi-git me-1" aria-hidden="true"></i>
-                  }
-                  {{ item.title }}</a
-                >
-                <div class="small text-body-secondary">
-                  @if (item.project) {
-                    <span>{{ item.project }}</span>
-                  }
-                  @if (item.since) {
-                    <span class="ms-2">{{ item.since | date: 'short' }}</span>
-                  }
-                </div>
-              </div>
-            </li>
-          }
-        </ul>
-      }
-    </fpc-panel>
-    <fpc-panel i18n-title="@@lwConsoleOverview-activity" title="Recent activity" [flush]="true">
-      @if (o.activity.length === 0) {
-        <fpc-empty-state
-          icon="clock-history"
-          size="sm"
-          i18n-title="@@lwConsoleOverview-activityEmpty"
-          title="No activity yet"
-        />
-      } @else {
-        <ul class="list-group list-group-flush">
-          @for (a of o.activity; track a.time + a.entity) {
-            <li class="list-group-item">
-              <div class="small text-body-secondary">{{ a.time | date: 'short' }} · {{ a.kind }}</div>
-              <div>{{ a.message }}</div>
-            </li>
-          }
-        </ul>
-      }
-    </fpc-panel>
-  </fpc-panel-grid>
-} @else if (loading()) {
-  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-}
+</div>

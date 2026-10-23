@@ -100,14 +100,13 @@ curl -X POST https://<control-plane>/api/vpn/machines \
 
 ## Posture
 
-A client group can require device checks. Devices report them with `POST /api/vpn/devices/{id}/posture` (interactive login).
+A client group can require device checks; failing devices move into its `restrictedGroup` instead of being disconnected. Devices report with `POST /api/vpn/devices/{id}/posture` (interactive login; a user device only for itself, admins only for machines).
 
-- A user device reports only for itself; admins report only for machines.
-- Core checks: `diskEncryption`, `firewall`, `screenLock`, `minOsVersion` per platform, `minAppVersion`. The device's app reports them itself; plugins are the independent source.
-- Plugins (`DYNAMIC_POSTURE_PLUGINS`) ask an MDM or EDR for a verdict; `require: compliant` needs `compliant`, `require: low-risk` accepts `compliant` or `low-risk`. A plugin that isn't installed, fails or takes longer than 10 seconds gives `unknown`, which fails.
-- A missing report, or one older than 24 hours, fails.
-- The `deviceId` is pinned once a plugin recognised it (a verdict other than `unknown`). Later reports with another id are rejected, and no other valid client can report a pinned id.
-- A failing device loses the group and gets its `restrictedGroup` instead (or nothing). The restricted group can't have posture requirements of its own, so it is always reachable. The device list shows why a device is restricted.
+- Core checks: `diskEncryption`, `firewall`, `screenLock`, `minOsVersion` per platform, `minAppVersion`, reported by the device itself.
+- `conditions` on MDM / EDR integrations (Intune, Jamf Pro, Kandji, Defender for Endpoint, CrowdStrike, SentinelOne) and device certificates: `mdm.compliant`, `edr.risk <= low`, `device.certificate.valid`, … — see [Device posture](./device-posture.md).
+- A missing report, or one older than 24 hours, fails; so does anything unknown.
+- `deviceId` and `serialNumber` are pinned at the first report and unique among valid clients.
+- The restricted group can't have posture requirements of its own, so it is always reachable. The device list shows the posture facts and why a device is restricted.
 
 ## Plan checks
 
@@ -122,7 +121,7 @@ A client group can require device checks. Devices report them with `POST /api/vp
 
 `loadweaver vpn enroll --name <device>` enrolls the machine it runs on: the key pair is generated locally and the private key is only written into the wg-quick file (mode `0600`). See the [CLI](../cli.md#vpn-enroll).
 
-Desktop and mobile apps and posture reports from the CLI come later. Until then, use the API and any WireGuard client.
+Desktop and mobile apps and posture reports from the CLI come later. Until then, use the API and any WireGuard client; the posture report protocol is fixed ([Device posture](./device-posture.md#clients)).
 
 ## Ports
 

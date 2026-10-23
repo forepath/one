@@ -66,9 +66,17 @@
         <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
         <target>Offizielle Decabill-Dokumentation: Installation, Deployment, Sicherheit und Betrieb von Billing-APIs, Abonnements, Zahlungsanbietern und der Billing-Konsole für Plattformteams.</target>
       </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackLoadweaver" datatype="html">
+        <source>Official Loadweaver documentation: install, deploy, secure, and operate resilient multi-site clusters, the encrypted network between sites, storage, ingress, policies, and the cluster console.</source>
+        <target>Offizielle Loadweaver-Dokumentation: Installation, Deployment, Sicherheit und Betrieb ausfallsicherer Multi-Site-Cluster, des verschlüsselten Netzwerks zwischen Standorten, von Storage, Ingress, Policies und der Cluster-Konsole.</target>
+      </trans-unit>
       <trans-unit id="featureDocsPage-metaKeywordsDecabill" datatype="html">
         <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
         <target>Decabill, Billing, Abonnements, Zahlungsabwicklung, Rechnungsstellung, Stripe, Billing-API, Billing-Konsole, Mandantenfähiges Billing</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsLoadweaver" datatype="html">
+        <source>Loadweaver, cluster, multi-site, WireGuard, BGP, network policies, replicated storage, ingress failover, self-hosted, control plane</source>
+        <target>Loadweaver, Cluster, Multi-Site, WireGuard, BGP, Netzwerk-Policies, replizierter Storage, Ingress-Failover, Self-Hosted, Control Plane</target>
       </trans-unit>
       <trans-unit id="featureDocsPage-metaTitlePrefix" datatype="html">
         <source>Documentation</source>
@@ -101,6 +109,10 @@
       <trans-unit id="featureDocsSearchPage-metaDescriptionDecabill" datatype="html">
         <source>Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.</source>
         <target>Durchsuchen Sie die Decabill-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Billing-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionLoadweaver" datatype="html">
+        <source>Search Loadweaver docs for setup guides, API references, security hardening, network and policy configuration, deployment patterns, and troubleshooting.</source>
+        <target>Durchsuchen Sie die Loadweaver-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Netzwerk- und Policy-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
       </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
         <source>Search Documentation</source>

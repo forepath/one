@@ -158,7 +158,7 @@
     "postbuild": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cp dist/apps/loadweaver/frontend-landingpage-delegating-server/server/delegating-server.js dist/apps/loadweaver/frontend-landingpage/server/server.mjs && cp -r dist/apps/loadweaver/frontend-landingpage/browser dist/apps/loadweaver/frontend-landingpage/server/browser"
+        "command": "cp dist/apps/loadweaver/frontend-landingpage-delegating-server/server/delegating-server.js dist/apps/loadweaver/frontend-landingpage/server/server.mjs && rm -rf dist/apps/loadweaver/frontend-landingpage/server/browser && cp -r dist/apps/loadweaver/frontend-landingpage/browser dist/apps/loadweaver/frontend-landingpage/server/browser"
       },
       "dependsOn": ["build", "build-delegating-server"]
     },

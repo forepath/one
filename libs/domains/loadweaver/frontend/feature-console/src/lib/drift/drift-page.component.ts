@@ -18,13 +18,17 @@ import {
   FpcBadgeComponent,
   FpcButtonComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
+  FpcTypeaheadSelectComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { interval } from 'rxjs';
 
@@ -60,13 +64,17 @@ export function deploymentName(container: string): string {
     FpcBadgeComponent,
     FpcButtonComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcListComponent,
     FpcListItemComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
     FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
+    FpcTypeaheadSelectComponent,
   ],
   templateUrl: './drift-page.component.html',
   standalone: true,
@@ -93,6 +101,7 @@ export class LoadweaverDriftPageComponent implements OnInit {
 
   readonly proposeFor = signal<DriftContainer | null>(null);
   readonly invalid = signal(false);
+  readonly projectSuggestionsOpen = signal(false);
   project = '';
   deployment = '';
 
@@ -103,6 +112,7 @@ export class LoadweaverDriftPageComponent implements OnInit {
   readonly inconsistentTitle = $localize`:@@lwConsoleDrift-inconsistent:Failed rollbacks`;
   readonly gitAheadTitle = $localize`:@@lwConsoleGitDrift-aheadTitle:Default branch ahead of the cluster`;
   readonly proposeTitle = $localize`:@@lwConsoleDrift-proposeTitle:Propose a plan`;
+  readonly proposeLabel = $localize`:@@lwConsoleDrift-propose:Propose plan`;
 
   ngOnInit(): void {
     this.facade.load();
@@ -122,6 +132,20 @@ export class LoadweaverDriftPageComponent implements OnInit {
     this.invalid.set(false);
     this.facade.clearProposeError();
     this.proposeFor.set(container);
+  }
+
+  /** The caller's projects matching the typed project (free text stays allowed). */
+  projectSuggestions(): string[] {
+    const query = this.project.trim().toLowerCase();
+
+    return this.projects().filter((p) => !query || p.toLowerCase().includes(query));
+  }
+
+  pickProject(project: string, event: Event): void {
+    // `mousedown` keeps the focus in the input until the pick is done.
+    event.preventDefault();
+    this.project = project;
+    this.projectSuggestionsOpen.set(false);
   }
 
   onProposeOpenChange(open: boolean): void {

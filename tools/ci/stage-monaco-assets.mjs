@@ -1,5 +1,5 @@
 import { cpSync, existsSync, mkdirSync, renameSync, rmSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const workspaceRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -86,7 +86,13 @@ try {
   const stagingTmp = `${stagingRoot}.tmp-${process.pid}`;
   rmSync(stagingTmp, { recursive: true, force: true });
   mkdirSync(dirname(stagingRoot), { recursive: true });
-  cpSync(sourceRoot, stagingTmp, { recursive: true, dereference: true });
+  // `node_modules/.bin` holds symlinks that cpSync rewrites to absolute paths of this machine (dangling links in the
+  // served assets and the desktop packages); the browser never loads them.
+  cpSync(sourceRoot, stagingTmp, {
+    recursive: true,
+    dereference: true,
+    filter: (src) => basename(src) !== '.bin',
+  });
 
   const stagedSentinel = join(
     stagingTmp,

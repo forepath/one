@@ -126,7 +126,7 @@ describe('LoadweaverBackupKeysPageComponent', () => {
 
     expect(createObjectURL).toHaveBeenCalledTimes(1);
     expect(q('keys-share-once')?.textContent).toContain("can't be downloaded again");
-    expect((q('keys-share-text') as HTMLTextAreaElement).value).toContain('share 2 of 3');
+    expect((q('keys-share-text')?.querySelector('textarea') as HTMLTextAreaElement).value).toContain('share 2 of 3');
     fixture.detectChanges();
     expect(createObjectURL).toHaveBeenCalledTimes(1);
     (q('keys-share-close')?.querySelector('button') as HTMLButtonElement).click();

@@ -14,7 +14,10 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcPageHeaderComponent,
@@ -51,7 +54,10 @@ const LIST_LIMIT = 100;
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcListComponent,
     FpcListItemComponent,
     FpcPageHeaderComponent,
@@ -78,6 +84,8 @@ export class LoadweaverPlansPageComponent implements OnInit, OnDestroy {
 
   readonly status = signal<PlanStatus | ''>('');
   readonly project = signal('');
+  readonly filtersOpen = signal(false);
+  readonly activeFilterCount = computed(() => (this.status() ? 1 : 0) + (this.project() ? 1 : 0));
 
   readonly projects = computed(() => [...new Set([...this.planProjects$(), ...this.memberProjects()])].sort());
   readonly filtered = computed(() => {
@@ -101,6 +109,7 @@ export class LoadweaverPlansPageComponent implements OnInit, OnDestroy {
   readonly refreshLabel = $localize`:@@lwConsolePlans-refresh:Refresh`;
   readonly statusFilterLabel = $localize`:@@lwConsolePlans-statusFilter:Status`;
   readonly projectFilterLabel = $localize`:@@lwConsolePlans-projectFilter:Project`;
+  readonly filtersLabel = $localize`:@@lwConsolePlans-filters:Filters`;
 
   ngOnInit(): void {
     this.facade.load(this.query());
@@ -125,6 +134,12 @@ export class LoadweaverPlansPageComponent implements OnInit, OnDestroy {
 
   setProject(project: string): void {
     this.project.set(project);
+    this.facade.load(this.query());
+  }
+
+  clearFilters(): void {
+    this.status.set('');
+    this.project.set('');
     this.facade.load(this.query());
   }
 

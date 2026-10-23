@@ -1,41 +1,8 @@
-<fpc-page-header [title]="title" icon="safe">
-  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
-    <select
-      class="form-select form-select-sm w-auto"
-      [attr.aria-label]="allProjectsLabel"
-      [ngModel]="project() ?? ''"
-      (ngModelChange)="selectProject($event)"
-      data-testid="backups-project"
-    >
-      <option value="">{{ allProjectsLabel }}</option>
-      @for (p of projects(); track p) {
-        <option [value]="p">{{ p }}</option>
-      }
-    </select>
-    <fpc-button variant="outline-secondary" size="sm" routerLink="/backups/restores" data-testid="backups-restores">
-      <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i
-      ><span i18n="@@lwConsoleBackups-restoresLink">Restores</span>
-    </fpc-button>
-    <fpc-button variant="outline-secondary" size="sm" routerLink="/backups/deletions" data-testid="backups-deletions">
-      <i class="bi bi-trash me-1" aria-hidden="true"></i
-      ><span i18n="@@lwConsoleBackups-deletionsLink">Deletion requests</span>
-      @if (openDeletions().length > 0) {
-        <fpc-badge class="ms-1" color="warning" size="sm">{{ openDeletions().length }}</fpc-badge>
-      }
-    </fpc-button>
-    @if (hasClusterRole()) {
-      <fpc-button variant="outline-secondary" size="sm" routerLink="/backups/platform" data-testid="backups-platform">
-        <i class="bi bi-database-check me-1" aria-hidden="true"></i
-        ><span i18n="@@lwConsoleBackups-platformLink">Platform backups</span>
-      </fpc-button>
-    }
-    @if (isClusterAdmin()) {
-      <fpc-button variant="outline-secondary" size="sm" routerLink="/backups/keys" data-testid="backups-keys">
-        <i class="bi bi-key me-1" aria-hidden="true"></i><span i18n="@@lwConsoleBackups-keysLink">Recovery kit</span>
-      </fpc-button>
-    }
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="safe">
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="dark"
       size="sm"
       iconOnly
       [ariaLabel]="refreshLabel"
@@ -44,38 +11,16 @@
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-@if (error(); as message) {
-  <fpc-alert class="d-block m-3" variant="danger" [message]="message" />
-}
-@if (actionError(); as message) {
-  <fpc-alert class="d-block m-3" variant="danger" [message]="message" data-testid="backups-action-error" />
-}
+  <loadweaver-backups-nav
+    active="overview"
+    [platform]="hasClusterRole()"
+    [keys]="isClusterAdmin()"
+    [deletions]="openDeletions().length"
+  />
 
-@if (loading() && !loaded()) {
-  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-} @else if (status(); as s) {
-  <div class="p-3 d-flex flex-column gap-3">
-    @for (pin of s.pins; track pin) {
-      <fpc-alert variant="danger" [showIcon]="true" data-testid="backups-pin">
-        <span class="fw-semibold" i18n="@@lwConsoleBackups-pin">Pin:</span> {{ pin }}
-      </fpc-alert>
-    }
-
-    @if (kitState() === 'unconfirmed') {
-      <fpc-alert variant="warning" [showIcon]="true" data-testid="backups-kit-warning">
-        <span i18n="@@lwConsoleBackups-kitWarning"
-          >Backups are not recoverable without the cluster until a recovery kit of the backup key is downloaded and
-          confirmed (or the key is escrowed in a KMS).</span
-        >
-        @if (isClusterAdmin()) {
-          <a class="ms-1" routerLink="/backups/keys" i18n="@@lwConsoleBackups-kitWarningLink">Open the recovery kit</a>
-        }
-      </fpc-alert>
-    }
-
+  @if (status(); as s) {
     <fpc-summary-bar [columns]="5">
       <fpc-summary-card
         [label]="keyLabel"
@@ -91,15 +36,73 @@
         [tone]="openDeletions().length > 0 ? 'warning' : 'default'"
       />
     </fpc-summary-bar>
+  }
 
-    <div class="row g-3">
-      <div class="col-lg-6">
+  <fpc-collapsible-filter-panel
+    [(open)]="filtersOpen"
+    [title]="filtersTitle"
+    [activeCount]="project() ? 1 : 0"
+    (cleared)="selectProject('')"
+  >
+    <div class="row g-3 mb-0 w-100">
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-backups-project" [label]="projectLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-backups-project"
+            size="sm"
+            [ngModel]="project() ?? ''"
+            (ngModelChange)="selectProject($event)"
+            data-testid="backups-project"
+          >
+            <option value="">{{ allProjectsLabel }}</option>
+            @for (p of projects(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+    </div>
+  </fpc-collapsible-filter-panel>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" data-testid="backups-action-error" />
+    }
+
+    @if (loading() && !loaded()) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (status(); as s) {
+      @for (pin of s.pins; track pin) {
+        <fpc-alert class="m-3" variant="danger" [showIcon]="true" data-testid="backups-pin">
+          <span class="fw-semibold" i18n="@@lwConsoleBackups-pin">Pin:</span> {{ pin }}
+        </fpc-alert>
+      }
+
+      @if (kitState() === 'unconfirmed') {
+        <fpc-alert class="m-3" variant="warning" [showIcon]="true" data-testid="backups-kit-warning">
+          <span i18n="@@lwConsoleBackups-kitWarning"
+            >Backups are not recoverable without the cluster until a recovery kit of the backup key is downloaded and
+            confirmed (or the key is escrowed in a KMS).</span
+          >
+          @if (isClusterAdmin()) {
+            <a class="ms-1" routerLink="/backups/keys" i18n="@@lwConsoleBackups-kitWarningLink"
+              >Open the recovery kit</a
+            >
+          }
+        </fpc-alert>
+      }
+
+      <fpc-panel-grid [columns]="2" [fill]="catalog().length > 0">
         <fpc-panel [title]="usageTitle" [flush]="true">
           @if (usage().length === 0) {
             <fpc-empty-state icon="database" size="sm" i18n-title="@@lwConsoleBackups-noUsage" title="No backups yet" />
           } @else {
             <div class="table-responsive">
-              <table class="table table-sm align-middle small mb-0" data-testid="backups-usage">
+              <table class="table table-striped table-hover align-middle small mb-0" data-testid="backups-usage">
                 <thead>
                   <tr>
                     <th scope="col" i18n="@@lwConsoleBackups-colProject">Project</th>
@@ -125,8 +128,6 @@
             Stored is what the backups occupy after deduplication; it counts against the project's storage quota.
           </div>
         </fpc-panel>
-      </div>
-      <div class="col-lg-6">
         <fpc-panel [title]="targetsTitle" [flush]="true">
           @if (s.targets.length === 0) {
             <fpc-empty-state
@@ -136,23 +137,25 @@
               title="No copies on targets reported yet"
             />
           } @else {
-            <ul class="list-group list-group-flush small" data-testid="backups-targets">
+            <fpc-list [flush]="true" data-testid="backups-targets">
               @for (t of s.targets; track t.target + t.scope) {
-                <li class="list-group-item d-flex flex-wrap align-items-center gap-2">
-                  <fpc-status-badge [tone]="t.ok ? 'success' : 'danger'" size="sm">
-                    <i class="bi" [ngClass]="t.ok ? 'bi-check-lg' : 'bi-x-lg'" aria-hidden="true"></i>
-                  </fpc-status-badge>
-                  <span class="fw-semibold">{{ t.target }}</span>
-                  <fpc-badge color="light" size="sm">{{ t.scope }}</fpc-badge>
-                  <span class="text-body-secondary">{{ t.at | date: 'short' }}</span>
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <fpc-status-badge [tone]="t.ok ? 'success' : 'danger'" size="sm">
+                      <i class="bi" [ngClass]="t.ok ? 'bi-check-lg' : 'bi-x-lg'" aria-hidden="true"></i>
+                    </fpc-status-badge>
+                    <span class="fw-semibold">{{ t.target }}</span>
+                    <fpc-badge color="light" size="sm">{{ t.scope }}</fpc-badge>
+                    <span class="text-body-secondary">{{ t.at | date: 'short' }}</span>
+                  </div>
                   @if (t.error) {
-                    <span class="text-danger text-break w-100">{{ t.error }}</span>
+                    <div fpcListItemMeta class="small text-danger text-break">{{ t.error }}</div>
                   }
-                </li>
+                </fpc-list-item>
               }
-            </ul>
+            </fpc-list>
           }
-          <div class="d-flex flex-wrap gap-2 px-3 py-2">
+          <div fpcPanelFooter class="d-flex flex-wrap gap-2">
             <fpc-button variant="link" size="sm" routerLink="/resources" [queryParams]="{ kind: 'BackupPolicy' }">
               <i class="bi bi-calendar-check me-1" aria-hidden="true"></i
               ><span i18n="@@lwConsoleBackups-policies">Backup policies</span>
@@ -185,204 +188,208 @@
             }
           </div>
         </fpc-panel>
-      </div>
-    </div>
 
-    <h2 class="h6 mb-0 mt-2">{{ catalogTitle }}</h2>
-    @for (v of catalog(); track v.resource) {
-      <fpc-panel [flush]="true" [attr.data-testid]="'backups-volume-' + v.resource">
-        <div class="d-flex flex-wrap align-items-center gap-2 px-3 pt-3">
-          <i class="bi bi-hdd" aria-hidden="true"></i>
-          <span class="fw-semibold font-monospace">{{ v.resource }}</span>
-          @if (v.running) {
-            <fpc-badge color="primary" size="sm" i18n="@@lwConsoleBackups-volumeRunning">Backup running</fpc-badge>
-          }
-          @if (v.empty) {
-            <fpc-badge color="secondary" size="sm" i18n="@@lwConsoleBackups-volumeNone">No backups</fpc-badge>
-          } @else {
-            <span class="small text-body-secondary">
-              {{ v.backups.length }} · {{ bytes(v.storedBytes) }}
-              @if (v.lastSucceeded; as last) {
-                · <span i18n="@@lwConsoleBackups-lastSucceeded">last good</span> {{ last.startedAt | date: 'short' }}
-              }
-            </span>
-          }
-          @if (mayOperate(v.project)) {
-            <fpc-button
-              class="ms-auto"
-              variant="outline-primary"
-              size="sm"
-              [loading]="backingUp().includes(v.resource)"
-              [disabled]="v.running || backingUp().includes(v.resource)"
-              (clicked)="backupNow(v)"
-              [attr.data-testid]="'backups-now-' + v.resource"
-            >
-              <i class="bi bi-play-fill me-1" aria-hidden="true"></i
-              ><span i18n="@@lwConsoleBackups-backupNow">Back up now</span>
-            </fpc-button>
-          }
-        </div>
-
-        @if (v.backups.length > 0) {
-          <div
-            class="d-flex align-items-end gap-1 px-3 pt-2 overflow-auto"
-            style="height: 3rem"
-            role="img"
-            [attr.aria-label]="catalogTitle"
-            data-testid="backups-timeline"
+        @for (v of catalog(); track v.resource) {
+          <fpc-panel
+            [span]="2"
+            [title]="catalogTitle + ' · ' + v.resource"
+            [flush]="true"
+            [attr.data-testid]="'backups-volume-' + v.resource"
           >
-            @for (point of timeline(v.backups); track point.backup.id) {
-              <a
-                class="d-block rounded-top flex-shrink-0"
-                style="width: 0.5rem"
-                [ngClass]="'bg-' + statusTone[point.backup.status]"
-                [style.height.%]="point.height"
-                [style.opacity]="point.backup.deletedAt ? 0.3 : 1"
-                [routerLink]="['/backups', point.backup.id]"
-                [title]="timelineTitle(point.backup)"
-                [attr.aria-label]="timelineTitle(point.backup)"
-              ></a>
+            @if (mayOperate(v.project)) {
+              <fpc-button
+                fpcPanelActions
+                variant="primary"
+                size="sm"
+                [loading]="backingUp().includes(v.resource)"
+                [disabled]="v.running || backingUp().includes(v.resource)"
+                (clicked)="backupNow(v)"
+                [attr.data-testid]="'backups-now-' + v.resource"
+              >
+                <i class="bi bi-play-fill me-1" aria-hidden="true"></i
+                ><span i18n="@@lwConsoleBackups-backupNow">Back up now</span>
+              </fpc-button>
             }
-          </div>
+            <div class="d-flex flex-wrap align-items-center gap-2 px-3 py-2">
+              @if (v.running) {
+                <fpc-badge color="primary" size="sm" i18n="@@lwConsoleBackups-volumeRunning">Backup running</fpc-badge>
+              }
+              @if (v.empty) {
+                <fpc-badge color="secondary" size="sm" i18n="@@lwConsoleBackups-volumeNone">No backups</fpc-badge>
+              } @else {
+                <span class="small text-body-secondary">
+                  {{ v.backups.length }} · {{ bytes(v.storedBytes) }}
+                  @if (v.lastSucceeded; as last) {
+                    · <span i18n="@@lwConsoleBackups-lastSucceeded">last good</span>
+                    {{ last.startedAt | date: 'short' }}
+                  }
+                </span>
+              }
+            </div>
 
-          <div class="table-responsive mt-2">
-            <table class="table table-sm table-hover align-middle small mb-0">
-              <thead>
-                <tr>
-                  <th scope="col" i18n="@@lwConsoleBackups-colTime">Time</th>
-                  <th scope="col" i18n="@@lwConsoleBackups-colStatus">Status</th>
-                  <th scope="col" class="text-end" i18n="@@lwConsoleBackups-colSize">Size</th>
-                  <th scope="col" i18n="@@lwConsoleBackups-colKeep">Kept as</th>
-                  <th scope="col" i18n="@@lwConsoleBackups-colTest">Restore test</th>
-                  <th scope="col" i18n="@@lwConsoleBackups-colImmutable">Immutable until</th>
-                  <th scope="col" i18n="@@lwConsoleBackups-colTargets">Targets</th>
-                  <th scope="col"><span class="visually-hidden" i18n="@@lwConsoleBackups-colActions">Actions</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (b of v.backups; track b.id) {
-                  <tr [class.text-body-secondary]="!!b.deletedAt" [attr.data-testid]="'backups-row-' + b.id">
-                    <td class="text-nowrap">
-                      <a [routerLink]="['/backups', b.id]">{{ b.startedAt | date: 'short' }}</a>
-                    </td>
-                    <td>
-                      <fpc-badge [color]="statusTone[b.status]" size="sm">{{ statusLabel(b.status) }}</fpc-badge>
-                      @if (b.deletedAt) {
-                        <fpc-badge class="ms-1" color="secondary" size="sm" i18n="@@lwConsoleBackups-deleted"
-                          >Deleted</fpc-badge
-                        >
-                      }
-                      @if (b.error) {
-                        <div class="text-danger text-break">{{ b.error }}</div>
-                      }
-                    </td>
-                    <td class="text-end text-nowrap">
-                      {{ bytes(b.bytes) }}
-                      <div class="text-body-secondary">+{{ bytes(b.uploadedBytes) }}</div>
-                    </td>
-                    <td>
-                      @for (k of b.keep; track k) {
-                        <fpc-badge class="me-1" color="light" size="sm">{{ keepLabel(k) }}</fpc-badge>
-                      }
-                    </td>
-                    <td>
-                      @if (b.restoreTest; as t) {
-                        <fpc-badge [color]="testTone[t.status]" size="sm">{{ testLabel(t.status) }}</fpc-badge>
-                      } @else {
-                        <span class="text-body-secondary">–</span>
-                      }
-                    </td>
-                    <td class="text-nowrap">
-                      @if (b.lockedUntil) {
-                        <i
-                          class="bi me-1"
-                          [ngClass]="locked(b.lockedUntil) ? 'bi-lock-fill text-success' : 'bi-unlock'"
-                          aria-hidden="true"
-                        ></i
-                        >{{ b.lockedUntil | date: 'shortDate' }}
-                      } @else {
-                        <span class="text-body-secondary">–</span>
-                      }
-                    </td>
-                    <td class="font-monospace">{{ targetNames(b) || '–' }}</td>
-                    <td class="text-end text-nowrap">
-                      @if (available(b)) {
-                        <button
-                          type="button"
-                          class="btn btn-link btn-sm p-0 me-2"
-                          [attr.aria-label]="browseLabel"
-                          [title]="browseLabel"
-                          [routerLink]="['/backups', b.id]"
-                        >
-                          <i class="bi bi-folder2-open" aria-hidden="true"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="btn btn-link btn-sm p-0 me-2"
-                          [attr.aria-label]="compareLabel"
-                          [title]="compareLabel"
-                          (click)="openDiff(b, v)"
-                          [attr.data-testid]="'backups-compare-' + b.id"
-                        >
-                          <i class="bi bi-file-diff" aria-hidden="true"></i>
-                        </button>
-                        @if (mayOperate(v.project) || mayAdminister(v.project)) {
-                          <button
-                            type="button"
-                            class="btn btn-link btn-sm p-0 me-2"
-                            [attr.aria-label]="restoreLabel"
-                            [title]="restoreLabel"
-                            (click)="openRestore(b, v)"
-                            [attr.data-testid]="'backups-restore-' + b.id"
-                          >
-                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                          </button>
-                        }
-                        @if (mayOperate(v.project)) {
-                          <button
-                            type="button"
-                            class="btn btn-link btn-sm p-0 me-2"
-                            [attr.aria-label]="testNowLabel"
-                            [title]="testNowLabel"
-                            [disabled]="testing().includes(b.id) || b.restoreTest?.status === 'running'"
-                            (click)="testNow(b)"
-                            [attr.data-testid]="'backups-test-' + b.id"
-                          >
-                            <i class="bi bi-clipboard-check" aria-hidden="true"></i>
-                          </button>
-                        }
-                        @if (mayAdminister(v.project)) {
-                          <button
-                            type="button"
-                            class="btn btn-link btn-sm p-0 text-danger"
-                            [attr.aria-label]="deleteLabel"
-                            [title]="deleteLabel"
-                            (click)="openDelete(b)"
-                            [attr.data-testid]="'backups-delete-' + b.id"
-                          >
-                            <i class="bi bi-trash" aria-hidden="true"></i>
-                          </button>
-                        }
-                      }
-                    </td>
-                  </tr>
+            @if (v.backups.length > 0) {
+              <div
+                class="backups-timeline d-flex align-items-end gap-1 px-3 overflow-auto"
+                role="img"
+                [attr.aria-label]="catalogTitle"
+                data-testid="backups-timeline"
+              >
+                @for (point of timeline(v.backups); track point.backup.id) {
+                  <a
+                    class="backups-timeline__bar d-block rounded-top flex-shrink-0"
+                    [ngClass]="'bg-' + statusTone[point.backup.status]"
+                    [style.height.%]="point.height"
+                    [style.opacity]="point.backup.deletedAt ? 0.3 : 1"
+                    [routerLink]="['/backups', point.backup.id]"
+                    [title]="timelineTitle(point.backup)"
+                    [attr.aria-label]="timelineTitle(point.backup)"
+                  ></a>
                 }
-              </tbody>
-            </table>
-          </div>
+              </div>
+
+              <div class="table-responsive mt-2">
+                <table class="table table-striped table-hover align-middle small mb-0">
+                  <thead>
+                    <tr>
+                      <th scope="col" i18n="@@lwConsoleBackups-colTime">Time</th>
+                      <th scope="col" i18n="@@lwConsoleBackups-colStatus">Status</th>
+                      <th scope="col" class="text-end" i18n="@@lwConsoleBackups-colSize">Size</th>
+                      <th scope="col" i18n="@@lwConsoleBackups-colKeep">Kept as</th>
+                      <th scope="col" i18n="@@lwConsoleBackups-colTest">Restore test</th>
+                      <th scope="col" i18n="@@lwConsoleBackups-colImmutable">Immutable until</th>
+                      <th scope="col" i18n="@@lwConsoleBackups-colTargets">Targets</th>
+                      <th scope="col">
+                        <span class="visually-hidden" i18n="@@lwConsoleBackups-colActions">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (b of v.backups; track b.id) {
+                      <tr [class.text-body-secondary]="!!b.deletedAt" [attr.data-testid]="'backups-row-' + b.id">
+                        <td class="text-nowrap">
+                          <a [routerLink]="['/backups', b.id]">{{ b.startedAt | date: 'short' }}</a>
+                        </td>
+                        <td>
+                          <fpc-badge [color]="statusTone[b.status]" size="sm">{{ statusLabel(b.status) }}</fpc-badge>
+                          @if (b.deletedAt) {
+                            <fpc-badge class="ms-1" color="secondary" size="sm" i18n="@@lwConsoleBackups-deleted"
+                              >Deleted</fpc-badge
+                            >
+                          }
+                          @if (b.error) {
+                            <div class="text-danger text-break">{{ b.error }}</div>
+                          }
+                        </td>
+                        <td class="text-end text-nowrap">
+                          {{ bytes(b.bytes) }}
+                          <div class="text-body-secondary">+{{ bytes(b.uploadedBytes) }}</div>
+                        </td>
+                        <td>
+                          @for (k of b.keep; track k) {
+                            <fpc-badge class="me-1" color="light" size="sm">{{ keepLabel(k) }}</fpc-badge>
+                          }
+                        </td>
+                        <td>
+                          @if (b.restoreTest; as t) {
+                            <fpc-badge [color]="testTone[t.status]" size="sm">{{ testLabel(t.status) }}</fpc-badge>
+                          } @else {
+                            <span class="text-body-secondary">–</span>
+                          }
+                        </td>
+                        <td class="text-nowrap">
+                          @if (b.lockedUntil) {
+                            <i
+                              class="bi me-1"
+                              [ngClass]="locked(b.lockedUntil) ? 'bi-lock-fill text-success' : 'bi-unlock'"
+                              aria-hidden="true"
+                            ></i
+                            >{{ b.lockedUntil | date: 'shortDate' }}
+                          } @else {
+                            <span class="text-body-secondary">–</span>
+                          }
+                        </td>
+                        <td class="font-monospace">{{ targetNames(b) || '–' }}</td>
+                        <td class="text-end text-nowrap">
+                          @if (available(b)) {
+                            <button
+                              type="button"
+                              class="btn btn-link btn-sm p-0 me-2"
+                              [attr.aria-label]="browseLabel"
+                              [title]="browseLabel"
+                              [routerLink]="['/backups', b.id]"
+                            >
+                              <i class="bi bi-folder2-open" aria-hidden="true"></i>
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-link btn-sm p-0 me-2"
+                              [attr.aria-label]="compareLabel"
+                              [title]="compareLabel"
+                              (click)="openDiff(b, v)"
+                              [attr.data-testid]="'backups-compare-' + b.id"
+                            >
+                              <i class="bi bi-file-diff" aria-hidden="true"></i>
+                            </button>
+                            @if (mayOperate(v.project) || mayAdminister(v.project)) {
+                              <button
+                                type="button"
+                                class="btn btn-link btn-sm p-0 me-2"
+                                [attr.aria-label]="restoreLabel"
+                                [title]="restoreLabel"
+                                (click)="openRestore(b, v)"
+                                [attr.data-testid]="'backups-restore-' + b.id"
+                              >
+                                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                              </button>
+                            }
+                            @if (mayOperate(v.project)) {
+                              <button
+                                type="button"
+                                class="btn btn-link btn-sm p-0 me-2"
+                                [attr.aria-label]="testNowLabel"
+                                [title]="testNowLabel"
+                                [disabled]="testing().includes(b.id) || b.restoreTest?.status === 'running'"
+                                (click)="testNow(b)"
+                                [attr.data-testid]="'backups-test-' + b.id"
+                              >
+                                <i class="bi bi-clipboard-check" aria-hidden="true"></i>
+                              </button>
+                            }
+                            @if (mayAdminister(v.project)) {
+                              <button
+                                type="button"
+                                class="btn btn-link btn-sm p-0 text-danger"
+                                [attr.aria-label]="deleteLabel"
+                                [title]="deleteLabel"
+                                (click)="openDelete(b)"
+                                [attr.data-testid]="'backups-delete-' + b.id"
+                              >
+                                <i class="bi bi-trash" aria-hidden="true"></i>
+                              </button>
+                            }
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </fpc-panel>
         }
-      </fpc-panel>
-    } @empty {
-      <fpc-empty-state
-        icon="safe"
-        i18n-title="@@lwConsoleBackups-emptyTitle"
-        title="No backed-up volumes"
-        i18n-message="@@lwConsoleBackups-emptyMessage"
-        message="Volumes are backed up once a BackupPolicy selects them."
-      />
+      </fpc-panel-grid>
+      @if (catalog().length === 0) {
+        <fpc-empty-state
+          icon="safe"
+          i18n-title="@@lwConsoleBackups-emptyTitle"
+          title="No backed-up volumes"
+          i18n-message="@@lwConsoleBackups-emptyMessage"
+          message="Volumes are backed up once a BackupPolicy selects them."
+        />
+      }
     }
   </div>
-}
+</div>
 
 <loadweaver-backup-restore-modal
   [(open)]="restoreOpen"
@@ -396,23 +403,27 @@
     @if (d.others.length === 0) {
       <p class="small mb-0" i18n="@@lwConsoleBackups-diffNone">This volume has no other available backup.</p>
     } @else {
-      <label class="form-label small" for="lw-backups-diff-other" i18n="@@lwConsoleBackups-diffOther"
-        >Other backup of the volume</label
+      <fpc-form-field
+        forId="lw-backups-diff-other"
+        i18n-label="@@lwConsoleBackups-diffOther"
+        label="Other backup of the volume"
       >
-      <select
-        id="lw-backups-diff-other"
-        class="form-select form-select-sm"
-        [(ngModel)]="diffOther"
-        data-testid="backups-diff-other"
-      >
-        @for (o of d.others; track o.id) {
-          <option [value]="o.id">{{ o.startedAt | date: 'medium' }} · {{ bytes(o.bytes) }}</option>
-        }
-      </select>
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-backups-diff-other"
+          size="sm"
+          [(ngModel)]="diffOther"
+          data-testid="backups-diff-other"
+        >
+          @for (o of d.others; track o.id) {
+            <option [value]="o.id">{{ o.startedAt | date: 'medium' }} · {{ bytes(o.bytes) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
     }
   }
   <div *fpcModalFooter class="d-flex justify-content-end gap-2">
-    <fpc-button variant="outline-secondary" (clicked)="diffFor.set(null)">
+    <fpc-button variant="secondary" (clicked)="diffFor.set(null)">
       <span i18n="@@lwConsoleBackups-diffCancel">Cancel</span>
     </fpc-button>
     <fpc-button variant="primary" [disabled]="!diffOther" (clicked)="compare()" data-testid="backups-diff-open">
@@ -448,19 +459,24 @@
       {{ status()?.deletionDelayHours ?? 72 }} h.
       <span i18n="@@lwConsoleBackups-deleteRuleCancel">Until then any admin can cancel it.</span>
     </fpc-alert>
-    <label class="form-label small" for="lw-backups-delete-reason" i18n="@@lwConsoleBackups-deleteReason"
-      >Reason (required)</label
+    <fpc-form-field
+      forId="lw-backups-delete-reason"
+      i18n-label="@@lwConsoleBackups-deleteReason"
+      label="Reason (required)"
+      required
     >
-    <textarea
-      id="lw-backups-delete-reason"
-      class="form-control form-control-sm"
-      rows="3"
-      maxlength="1000"
-      [(ngModel)]="deletionReason"
-      data-testid="backups-delete-reason"
-    ></textarea>
+      <fpc-form-control
+        controlType="textarea"
+        controlId="lw-backups-delete-reason"
+        size="sm"
+        [rows]="3"
+        maxLength="1000"
+        [(ngModel)]="deletionReason"
+        data-testid="backups-delete-reason"
+      />
+    </fpc-form-field>
     @if (requestError(); as message) {
-      <fpc-alert class="d-block mt-3" variant="danger" [message]="message" />
+      <fpc-alert variant="danger" [message]="message" />
     }
   }
   <div *fpcModalFooter class="d-flex justify-content-end gap-2">
@@ -469,7 +485,7 @@
         <span i18n="@@lwConsoleBackups-deleteClose">Close</span>
       </fpc-button>
     } @else {
-      <fpc-button variant="outline-secondary" (clicked)="closeDelete()">
+      <fpc-button variant="secondary" (clicked)="closeDelete()">
         <span i18n="@@lwConsoleBackups-deleteCancel">Cancel</span>
       </fpc-button>
       <fpc-button

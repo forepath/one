@@ -70,7 +70,9 @@ nothing in the cluster can add a trusted key.
 
 The release workflow (`.github/workflows/release.yml`, job _Build Loadweaver Release Bundle_) builds the agent as
 single executables for amd64 and arm64, builds and pushes the OpenSearch image with `repository-s3`, resolves the
-release's control-plane image digest, exports every image as an OCI archive (`skopeo copy --all`), downloads the
+release's control-plane and console image digests (the console image, `loadweaver-console-server`, is not a cluster
+component: it goes into the manifest's top-level `consoleImage`, which Loadweaver Cloud verifies and pulls by digest;
+clusters and N-1 control planes ignore it), exports every image as an OCI archive (`skopeo copy --all`), downloads the
 pinned gVisor tarballs and the DRBD source (checksums verified), freezes the apt snapshot for air-gapped clusters
 (`scripts/apt-snapshot.ts`, every supported OS release × amd64 / arm64, see _Air-gapped OS updates_ below),
 pre-generates DRBD's compat patch for every kernel that snapshot holds (`scripts/drbd-compat.sh` in a `debian:12` /
@@ -87,7 +89,8 @@ npx nx run loadweaver-shared-util-release:dev-bundle --release 0.0.0-dev.1 \
   --control-plane-image ghcr.io/forepath/loadweaver-control-plane-api:<tag>@sha256:<digest>
 # Full control: any combination of the release job's options
 npx nx run loadweaver-shared-util-release:build-bundle --release 3.5.0 --control-plane-image <ref@digest> \
-  --agent-amd64 <file> [--agent-arm64 <file>] [--image-archive envoy=<oci.tar> …] [--gvisor] [--drbd-source] \
+  --agent-amd64 <file> [--agent-arm64 <file>] [--console-image <ref@digest>] [--image-archive envoy=<oci.tar> …] \
+  [--gvisor] [--drbd-source] \
   [--drbd-prebuilt <kernel>:<arch>=<modules.tar.gz> …] [--drbd-compat <kernel>:<arch>=<entry.tar.gz> …] \
   [--apt-snapshot <dir>/snapshot.json [--apt-files <dir>/blobs]] [--note …] [--minimum-version 3.4.0]
 # The apt snapshot a bundle carries (network; packages are fetched by build-bundle, by checksum)

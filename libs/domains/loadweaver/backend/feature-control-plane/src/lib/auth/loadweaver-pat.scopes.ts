@@ -17,6 +17,8 @@ export const LOADWEAVER_PAT_SCOPES = [
   'projects:admin',
   'logs:read',
   'metrics:read',
+  // Usage metering per project (3.24): project readers their projects, cluster roles all (Decabill's collector).
+  'usage:read',
   'alerts:read',
   'alerts:write',
   'live:access',
@@ -34,6 +36,13 @@ export const LOADWEAVER_PAT_SCOPES = [
   'git:admin',
   // The caller's own Git account links (plan bot, 3.30).
   'git:accounts',
+  // Fleet service (3.24): whole-backup export as a tar archive (source of a cross-cluster restore / clone).
+  'backups:export',
+  // Fleet service (3.24): import of such an archive into the backup catalog (target of a cross-cluster restore).
+  'backups:import',
+  // Fleet service (3.24): opt-in for the X-Loadweaver-On-Behalf-Of header, recorded in the audit log. Only
+  // grantable by accounts with a cluster-wide role (FleetOnBehalfOfScopeInterceptor at PAT create / change).
+  'fleet:on-behalf-of',
   ...IDENTITY_PAT_SCOPES,
 ] as const;
 

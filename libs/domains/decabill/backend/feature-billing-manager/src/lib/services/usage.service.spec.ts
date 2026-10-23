@@ -180,4 +180,45 @@ describe('UsageService', () => {
 
     expect(usageRecordsRepository.create).not.toHaveBeenCalled();
   });
+
+  it('keeps the idempotency key when an admin replaces the usage payload of a meter entry', async () => {
+    subscriptionsRepository.findByIdOrThrow.mockResolvedValue({ id: 'sub-1', planId: 'plan-1' });
+    servicePlansRepository.findByIdOrThrow.mockResolvedValue({ id: 'plan-1', billInAdvance: false });
+    servicePlanMetersRepository.findByPlanAndMeter.mockResolvedValue({ id: 'link-1' });
+    usageRecordsRepository.findByIdForSubscriptionOrThrow.mockResolvedValue({
+      id: 'usage-3',
+      subscriptionId: 'sub-1',
+      meterId: 'meter-1',
+      attachmentType: 'plan',
+      addonId: null,
+      value: '4',
+      periodStart: new Date('2026-01-01T00:00:00Z'),
+      periodEnd: new Date('2026-01-01T01:00:00Z'),
+      usagePayload: { idempotencyKey: 'lw:cluster:project:2026-01-01T00', source: 'loadweaver' },
+    });
+    usageRecordsRepository.update.mockImplementation(async (entity: object, dto: object) => ({ ...entity, ...dto }));
+
+    await service.updateMeterEntry('sub-1', 'usage-3', {
+      value: 3,
+      usagePayload: { note: 'corrected', idempotencyKey: 'tampered' },
+    } as never);
+
+    expect(usageRecordsRepository.update).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        value: '3',
+        usagePayload: { note: 'corrected', idempotencyKey: 'lw:cluster:project:2026-01-01T00' },
+      }),
+    );
+
+    usageRecordsRepository.update.mockClear();
+    await service.updateMeterEntry('sub-1', 'usage-3', { value: 2 } as never);
+
+    expect(usageRecordsRepository.update).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        usagePayload: { idempotencyKey: 'lw:cluster:project:2026-01-01T00', source: 'loadweaver' },
+      }),
+    );
+  });
 });

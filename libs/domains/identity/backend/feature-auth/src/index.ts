@@ -58,3 +58,4 @@ export * from './lib/modules/pat-auth.module';
 export * from './lib/modules/users-auth.module';
 export * from './lib/modules/keycloak-user-sync.module';
 export * from './lib/utils/get-keycloak-pat-auth-guards';
+export * from './lib/utils/admin-claim.utils';

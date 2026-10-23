@@ -172,11 +172,18 @@ export class UsageService {
       addonId,
     );
 
+    // The collector dedupes on `usagePayload.idempotencyKey`: an admin edit must keep it, or the window would be
+    // collected (and billed) again.
+    const idempotencyKey = existing.usagePayload?.['idempotencyKey'];
+    const usagePayload =
+      dto.usagePayload !== undefined
+        ? { ...dto.usagePayload, ...(idempotencyKey !== undefined ? { idempotencyKey } : {}) }
+        : existing.usagePayload;
     const updated = await this.usageRecordsRepository.update(existing, {
       periodStart: dto.periodStart ? new Date(dto.periodStart) : existing.periodStart,
       periodEnd: dto.periodEnd ? new Date(dto.periodEnd) : existing.periodEnd,
       value: dto.value !== undefined ? String(dto.value) : existing.value,
-      usagePayload: dto.usagePayload ?? existing.usagePayload,
+      usagePayload,
       meterId,
       attachmentType,
       addonId,

@@ -304,6 +304,18 @@ jobs:
         run: |
           xvfb-run -a npx nx run-many --target=package --configuration=production-linux --parallel=3
 
+      # The rpm is built from Forge's packaged Linux app by the shared desktop release pipeline (tools/desktop-release);
+      # it is GPG-signed together with the repositories in "Publish Native Applications".
+      - name: Build the rpm packages
+        env:
+          RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y rpm
+          npx nx run desktop-release:bundle
+          node tmp/desktop-release/desktop-release.cjs linux-rpm --app agenstra --version "${RELEASE_VERSION}"
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -363,15 +375,6 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-      - name: Upload Windows zip artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: binary-artifacts-windows
-          path: dist/**/out/make/**/win32/**/*.zip
-          if-no-files-found: ignore
-          retention-days: 1
-          compression-level: 6
-
       - name: Detect Windows Electron bundle
         id: detect-windows-bundle
         if: ${{ !cancelled() }}
@@ -392,6 +395,8 @@ jobs:
     if: >-
       needs.publish.outputs.new_release_published == 'true' &&
       needs.build-native-applications-windows.outputs.has_windows_bundle == 'true'
+    # Authenticode certificate (tools/desktop-release/README.md); only the two signing steps receive it.
+    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -408,6 +413,33 @@ jobs:
           name: windows-electron-bundle
           path: windows-electron-bundle
 
+      # Built before any key is in the environment; the signing steps run this bundle only (no nx, no npm).
+      - name: Bundle the desktop release CLI
+        shell: bash
+        run: npx nx run desktop-release:bundle
+
+      - name: Check the Authenticode certificate
+        id: authenticode
+        shell: bash
+        env:
+          DESKTOP_WINDOWS_CERTIFICATE_PFX: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PFX }}
+          DESKTOP_WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -n "${DESKTOP_WINDOWS_CERTIFICATE_PFX}" ] && [ -n "${DESKTOP_WINDOWS_CERTIFICATE_PASSWORD}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Windows app not signed::DESKTOP_WINDOWS_CERTIFICATE_PFX / DESKTOP_WINDOWS_CERTIFICATE_PASSWORD are not set; the Windows app and installer are published without Authenticode signature."
+          fi
+
+      - name: Sign the app binaries (Authenticode)
+        if: steps.authenticode.outputs.present == 'true'
+        shell: bash
+        env:
+          DESKTOP_WINDOWS_CERTIFICATE_PFX: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PFX }}
+          DESKTOP_WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PASSWORD }}
+        run: node tmp/desktop-release/desktop-release.cjs sign-windows --app agenstra --path windows-electron-bundle
+
       - name: Build NSIS installer from prepackaged bundle
         shell: pwsh
         env:
@@ -415,14 +447,123 @@ jobs:
           REQUIRE_INSTALLER_BUNDLE: '1'
         run: ./tools/ci/build-windows-installer.ps1
 
+      - name: Sign the installer (Authenticode)
+        if: steps.authenticode.outputs.present == 'true'
+        shell: bash
+        env:
+          DESKTOP_WINDOWS_CERTIFICATE_PFX: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PFX }}
+          DESKTOP_WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PASSWORD }}
+        run: node tmp/desktop-release/desktop-release.cjs sign-windows --app agenstra --path apps/agenstra/native-agent-console/installer-out --top-level
+
+      # Same name and layout as Forge's zip maker, but from the (signed) bundle.
+      - name: Zip the Windows app
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
+        run: |
+          $name = 'native-agent-console-win32-x64'
+          Rename-Item -LiteralPath 'windows-electron-bundle' -NewName $name
+          New-Item -ItemType Directory -Force -Path 'windows-zip' | Out-Null
+          Compress-Archive -Path $name -DestinationPath "windows-zip/$name-$($env:RELEASE_VERSION).zip"
+
       - name: Upload Windows installer artifacts
         uses: actions/upload-artifact@v7
         with:
           name: binary-artifacts-windows-installer
-          path: apps/agenstra/native-agent-console/installer-out/*.exe
+          path: |
+            apps/agenstra/native-agent-console/installer-out/*.exe
+            windows-zip/*.zip
           if-no-files-found: ignore
           retention-days: 1
           compression-level: 6
+
+  build-native-applications-macos:
+    name: Build macOS Applications (${{ matrix.arch }})
+    runs-on: macos-latest
+    needs: publish
+    if: needs.publish.outputs.new_release_published == 'true'
+    # Apple Developer ID certificate + notarization key (tools/desktop-release/README.md); only the signing step gets them.
+    environment: production
+    # Best effort until the first signed macOS release has been verified end to end: a failure here must not hold back
+    # the Linux / Windows desktop release (the macOS zips are then simply missing from it).
+    continue-on-error: true
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, x64]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set nx shas
+        uses: nrwl/nx-set-shas@v5
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Package the app (unsigned)
+        env:
+          ELECTRON_FORGE_PLATFORM: darwin
+          ELECTRON_FORGE_ARCH: ${{ matrix.arch }}
+          RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
+        run: npx nx run agenstra-native-agent-console:package --configuration=production-macos
+
+      # Built before any key is in the environment; the signing step runs this bundle only (no nx, no npm).
+      - name: Bundle the desktop release CLI
+        run: npx nx run desktop-release:bundle
+
+      - name: Check the Apple signing secrets
+        id: apple
+        env:
+          DESKTOP_MACOS_CERTIFICATE_P12: ${{ secrets.DESKTOP_MACOS_CERTIFICATE_P12 }}
+          DESKTOP_MACOS_CERTIFICATE_PASSWORD: ${{ secrets.DESKTOP_MACOS_CERTIFICATE_PASSWORD }}
+          DESKTOP_APPLE_API_KEY_P8: ${{ secrets.DESKTOP_APPLE_API_KEY_P8 }}
+          DESKTOP_APPLE_API_KEY_ID: ${{ secrets.DESKTOP_APPLE_API_KEY_ID }}
+          DESKTOP_APPLE_API_ISSUER: ${{ secrets.DESKTOP_APPLE_API_ISSUER }}
+        run: |
+          if [ -n "${DESKTOP_MACOS_CERTIFICATE_P12}" ] && [ -n "${DESKTOP_MACOS_CERTIFICATE_PASSWORD}" ] && \
+             [ -n "${DESKTOP_APPLE_API_KEY_P8}" ] && [ -n "${DESKTOP_APPLE_API_KEY_ID}" ] && [ -n "${DESKTOP_APPLE_API_ISSUER}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=macOS app not signed::The DESKTOP_MACOS_* / DESKTOP_APPLE_* secrets are not all set; the macOS app is published ad-hoc signed, not notarized, without in-app updates."
+          fi
+
+      - name: Sign and notarize (Developer ID)
+        if: steps.apple.outputs.present == 'true'
+        env:
+          DESKTOP_MACOS_CERTIFICATE_P12: ${{ secrets.DESKTOP_MACOS_CERTIFICATE_P12 }}
+          DESKTOP_MACOS_CERTIFICATE_PASSWORD: ${{ secrets.DESKTOP_MACOS_CERTIFICATE_PASSWORD }}
+          DESKTOP_APPLE_API_KEY_P8: ${{ secrets.DESKTOP_APPLE_API_KEY_P8 }}
+          DESKTOP_APPLE_API_KEY_ID: ${{ secrets.DESKTOP_APPLE_API_KEY_ID }}
+          DESKTOP_APPLE_API_ISSUER: ${{ secrets.DESKTOP_APPLE_API_ISSUER }}
+        run: node tmp/desktop-release/desktop-release.cjs sign-macos --app agenstra --arch "${{ matrix.arch }}"
+
+      - name: Zip the app
+        env:
+          RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
+        run: node tmp/desktop-release/desktop-release.cjs zip-macos --app agenstra --arch "${{ matrix.arch }}" --version "${RELEASE_VERSION}"
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: binary-artifacts-macos-${{ matrix.arch }}
+          path: dist/**/out/make/zip/darwin/**/*.zip
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
 
   publish-native-applications:
     name: Publish Native Applications
@@ -432,8 +573,19 @@ jobs:
       - build-native-applications-linux
       - build-native-applications-windows
       - build-native-applications-windows-installer
-    if: needs.publish.outputs.new_release_published == 'true'
+      - build-native-applications-macos
+    # Explicit result checks: the best-effort macOS leg (and a skipped Windows installer) must not skip the publish;
+    # missing macOS zips are simply absent from the release (M5).
+    if: >-
+      ${{ !cancelled() &&
+      needs.publish.outputs.new_release_published == 'true' &&
+      needs.build-native-applications-linux.result == 'success' &&
+      needs.build-native-applications-windows.result == 'success' &&
+      (needs.build-native-applications-windows-installer.result == 'success' ||
+      needs.build-native-applications-windows-installer.result == 'skipped') }}
     environment: production
+    env:
+      VERSION: ${{ needs.publish.outputs.new_release_version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -464,6 +616,38 @@ jobs:
           find artifacts -type f -name '*.exe' -exec cp {} release/ \;
           find artifacts -type f -name '*.msi' -exec cp {} release/ \;
           find artifacts -type f -name '*.msix' -exec cp {} release/ \;
+
+      # Linux packages through signed apt / rpm repositories (tools/desktop-release): channels this release goes to,
+      # then rpm signing + repository metadata in the one step that has the GPG key. Without the key: plain downloads.
+      - name: Prepare the Linux repository tools
+        id: channels
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y rpm createrepo-c apt-utils
+          npx nx run desktop-release:bundle
+          node tmp/desktop-release/desktop-release.cjs channels --app agenstra --version "${VERSION}"
+
+      - name: Check the GPG key
+        id: gpg
+        env:
+          DESKTOP_LINUX_GPG_PRIVATE_KEY: ${{ secrets.DESKTOP_LINUX_GPG_PRIVATE_KEY }}
+        run: |
+          if [ -n "${DESKTOP_LINUX_GPG_PRIVATE_KEY}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Linux packages not signed::DESKTOP_LINUX_GPG_PRIVATE_KEY is not set; rpms stay unsigned and no apt / rpm repository is published."
+          fi
+
+      - name: Sign the Linux packages and build the repositories
+        if: steps.gpg.outputs.present == 'true' && steps.channels.outputs.channels != ''
+        env:
+          DESKTOP_LINUX_GPG_PRIVATE_KEY: ${{ secrets.DESKTOP_LINUX_GPG_PRIVATE_KEY }}
+          DESKTOP_LINUX_GPG_PASSPHRASE: ${{ secrets.DESKTOP_LINUX_GPG_PASSPHRASE }}
+        run: |
+          node tmp/desktop-release/desktop-release.cjs linux-repo --app agenstra \
+            --channels "${{ steps.channels.outputs.channels }}" --packages release --out dist/desktop-repo
 
       - name: Generate desktop integrity manifests (SHA256SUMS + integrity-manifest.json)
         run: |
@@ -496,6 +680,35 @@ jobs:
             exit 1
           fi
           aws s3 cp release/ "s3://${AGENSTRA_AWS_BUCKET}/releases/${{ needs.publish.outputs.new_release_version }}/desktop/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}"
+
+      - name: Upload the package repositories to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.AGENSTRA_CLOUDFLARE_R2_ENDPOINT }}
+          AGENSTRA_AWS_BUCKET: ${{ secrets.AGENSTRA_AWS_BUCKET }}
+        run: |
+          set -euo pipefail
+          if [ ! -d dist/desktop-repo ]; then
+            echo "No package repositories were built; skipping."
+            exit 0
+          fi
+          # Packages first, metadata last: clients never see an index naming a file that is not uploaded yet.
+          aws s3 cp dist/desktop-repo/ "s3://${AGENSTRA_AWS_BUCKET}/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}" \
+            --exclude '*' --include '*.deb' --include '*.rpm'
+          aws s3 cp dist/desktop-repo/ "s3://${AGENSTRA_AWS_BUCKET}/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}" \
+            --exclude '*.deb' --exclude '*.rpm' --cache-control 'no-cache'
+
+      # Exactly the files published above (signed rpms, macOS zips, ...) for the signed release manifest.
+      - name: Keep the published desktop files for the release manifest
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-release-files
+          path: release/
+          if-no-files-found: ignore
+          retention-days: 1
+          compression-level: 0
 
   publish-agentctx:
     name: Publish agentctx to Cloudflare R2
@@ -531,6 +744,8 @@ jobs:
     needs:
       - publish
       - build-api-container-images
+      # The console image (loadweaver-console-server) is pinned by digest in the signed manifest (Loadweaver Cloud).
+      - build-server-container-images
     if: needs.publish.outputs.new_release_published == 'true'
     environment: production
     permissions:
@@ -568,6 +783,15 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+
+      - name: Download the Terraform provider zips
+        if: steps.signing-key.outputs.present == 'true' && matrix.product == 'loadweaver'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          pattern: terraform-provider-*
+          path: dist/terraform-provider
+          merge-multiple: true
 
       - name: Setup environment
         if: steps.signing-key.outputs.present == 'true'
@@ -610,6 +834,9 @@ jobs:
           CP="${CP}@$(digest "$CP")"
           OS="ghcr.io/forepath/loadweaver-opensearch-s3:3.9.0-${VERSION}"
           OS="${OS}@$(digest "$OS")"
+          # Not a cluster component: Loadweaver Cloud (Decabill) pulls the management endpoint's console by this digest.
+          CONSOLE="ghcr.io/forepath/loadweaver-console-server:${VERSION}"
+          CONSOLE="${CONSOLE}@$(digest "$CONSOLE")"
           # The other component images, pinned by digest in the source of truth (util-release pins).
           npx esbuild libs/domains/loadweaver/shared/util-release/src/lib/pins.ts --bundle --platform=node --format=cjs --outfile=tmp/pins.cjs --log-level=warning
           {
@@ -626,6 +853,7 @@ jobs:
           {
             echo "CONTROL_PLANE_IMAGE=${CP}"
             echo "OPENSEARCH_IMAGE=${OS}"
+            echo "CONSOLE_IMAGE=${CONSOLE}"
             echo "IMAGE_ARCHIVES=${ARGS}"
           } >> "$GITHUB_ENV"
 
@@ -685,6 +913,7 @@ jobs:
           npx nx run loadweaver-shared-util-release:build-bundle --release "${VERSION}" \
             --require-signature --defer-signature \
             --control-plane-image "${CONTROL_PLANE_IMAGE}" --opensearch-image "${OPENSEARCH_IMAGE}" \
+            --console-image "${CONSOLE_IMAGE}" \
             --agent-amd64 dist/agent-sea/amd64/loadweaver-agent --agent-arm64 dist/agent-sea/arm64/loadweaver-agent \
             ${IMAGE_ARCHIVES} --gvisor --drbd-source ${DRBD_COMPAT} ${APT_SNAPSHOT} --out dist/loadweaver-bundle
 
@@ -714,6 +943,126 @@ jobs:
         run: |
           set -euo pipefail
           gh release upload "v${VERSION}" dist/loadweaver-bundle/loadweaver-bundle-"${VERSION}".* --clobber
+          # The agent binaries on their own (the same files as in the bundle; their SHA-256 is in the signed manifest):
+          # Decabill's `loadweaver` service kind bootstraps a first node from them without downloading the whole bundle.
+          mkdir -p dist/loadweaver-agent
+          for arch in amd64 arm64; do
+            cp "dist/agent-sea/${arch}/loadweaver-agent" "dist/loadweaver-agent/loadweaver-agent-${VERSION}-linux-${arch}"
+          done
+          gh release upload "v${VERSION}" dist/loadweaver-agent/loadweaver-agent-"${VERSION}"-linux-* --clobber
+
+  # Terraform provider (apps/loadweaver/terraform-provider): one Node single executable per platform, zipped in the
+  # Terraform registry layout. macOS binaries need an ad-hoc re-signature after the blob injection, so they are built
+  # on macOS; the others cross-build on Linux from checksum-verified official Node binaries.
+  build-loadweaver-terraform-provider:
+    name: Build Loadweaver Terraform Provider (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: publish
+    if: needs.publish.outputs.new_release_published == 'true'
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platforms: linux_amd64,linux_arm64,windows_amd64
+          - os: macos-latest
+            platforms: darwin_amd64,darwin_arm64
+    env:
+      VERSION: ${{ needs.publish.outputs.new_release_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Build and zip the provider
+        run: |
+          set -euo pipefail
+          npx nx run loadweaver-terraform-provider:build:sea --skip-nx-cache
+          node apps/loadweaver/terraform-provider/scripts/package-provider.mjs build \
+            --bundle dist/apps/loadweaver/terraform-provider/main.js --out dist/terraform-provider \
+            --version "${VERSION}" --platforms "${{ matrix.platforms }}"
+
+      - name: Upload the provider zips
+        uses: actions/upload-artifact@v7
+        with:
+          name: terraform-provider-${{ matrix.os }}
+          path: dist/terraform-provider/*.zip
+          if-no-files-found: error
+
+  publish-loadweaver-terraform-provider:
+    name: Publish Loadweaver Terraform Provider
+    runs-on: ubuntu-latest
+    needs:
+      - publish
+      - build-loadweaver-terraform-provider
+    if: needs.publish.outputs.new_release_published == 'true'
+    environment: production
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.publish.outputs.new_release_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Download the provider zips
+        uses: actions/download-artifact@v8
+        with:
+          pattern: terraform-provider-*
+          path: dist/terraform-provider
+          merge-multiple: true
+
+      # Registry files (terraform-provider-loadweaver_<v>_manifest.json + _SHA256SUMS) and, like the desktop
+      # artifacts, SHA256SUMS + integrity-manifest.json from tools/release-integrity (verified right away).
+      - name: Checksums and integrity manifest
+        run: |
+          set -euo pipefail
+          node apps/loadweaver/terraform-provider/scripts/package-provider.mjs checksums --dir dist/terraform-provider --version "${VERSION}"
+          npx nx run release-integrity:build
+          node tools/release-integrity/dist/src/cli.js --input dist/terraform-provider
+          node tools/release-integrity/dist/src/cli.js verify --input dist/terraform-provider
+
+      # Signature hook: the Terraform registry verifies a detached GPG signature of the SHA256SUMS file with the
+      # public key registered for the forepath namespace. Until that key exists (armored private key in this secret),
+      # the signature is skipped with a warning; the files are published unsigned (usable via mirrors / dev overrides).
+      - name: Sign SHA256SUMS for the Terraform registry
+        env:
+          TERRAFORM_PROVIDER_GPG_PRIVATE_KEY: ${{ secrets.TERRAFORM_PROVIDER_GPG_PRIVATE_KEY }}
+          TERRAFORM_PROVIDER_GPG_PASSPHRASE: ${{ secrets.TERRAFORM_PROVIDER_GPG_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TERRAFORM_PROVIDER_GPG_PRIVATE_KEY}" ]; then
+            echo "::warning title=Terraform provider unsigned::TERRAFORM_PROVIDER_GPG_PRIVATE_KEY is not set; SHA256SUMS has no registry signature."
+            exit 0
+          fi
+          export GNUPGHOME="$(mktemp -d)"
+          printf '%s' "${TERRAFORM_PROVIDER_GPG_PRIVATE_KEY}" | gpg --batch --import
+          SUMS="dist/terraform-provider/terraform-provider-loadweaver_${VERSION}_SHA256SUMS"
+          printf '%s' "${TERRAFORM_PROVIDER_GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+            --detach-sign --output "${SUMS}.sig" "${SUMS}"
+          gpg --batch --verify "${SUMS}.sig" "${SUMS}"
+          rm -rf "${GNUPGHOME}"
+
+      - name: Attach the provider to the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd dist/terraform-provider
+          mv SHA256SUMS "terraform-provider-loadweaver_${VERSION}_SHA256SUMS.integrity"
+          mv integrity-manifest.json "terraform-provider-loadweaver_${VERSION}_integrity-manifest.json"
+          gh release upload "v${VERSION}" terraform-provider-loadweaver_"${VERSION}"_* --clobber
 
   sign-release-manifests:
     name: Sign Release Manifest (${{ matrix.product }})
@@ -724,7 +1073,17 @@ jobs:
       - build-worker-container-images
       - build-server-container-images
       - publish-native-applications
-    if: needs.publish.outputs.new_release_published == 'true'
+      # Loadweaver: the Terraform provider zips are listed in the signed manifest too (not required: a failed provider
+      # build leaves them out instead of skipping the manifest).
+      - build-loadweaver-terraform-provider
+    # Result-based, so a failed best-effort macOS leg further up the chain cannot skip the manifests (M5).
+    if: >-
+      ${{ !cancelled() &&
+      needs.publish.outputs.new_release_published == 'true' &&
+      needs.build-api-container-images.result == 'success' &&
+      needs.build-worker-container-images.result == 'success' &&
+      needs.build-server-container-images.result == 'success' &&
+      needs.publish-native-applications.result == 'success' }}
     environment: production
     permissions:
       contents: write
@@ -777,11 +1136,12 @@ jobs:
 
       - name: Download desktop binaries
         if: steps.signing-key.outputs.present == 'true' && matrix.product == 'agenstra'
+        # The artifact is absent when no desktop files were published (e.g. only the macOS leg produced any and failed).
+        continue-on-error: true
         uses: actions/download-artifact@v8
         with:
+          name: desktop-release-files
           path: artifacts
-          pattern: binary-artifacts-*
-          merge-multiple: true
 
       - name: Setup environment
         if: steps.signing-key.outputs.present == 'true'
@@ -803,9 +1163,13 @@ jobs:
           FILES=()
           if [ "${{ matrix.product }}" = "agenstra" ]; then
             # The files published to R2 under releases/<version>/desktop/ and releases/<version>/agentctx/.
-            mkdir -p release
+            mkdir -p release artifacts
             find artifacts -type f \( -name '*.zip' -o -name '*.deb' -o -name '*.rpm' -o -name '*.exe' -o -name '*.msi' -o -name '*.msix' \) -exec cp {} release/ \;
             FILES+=(--files desktop=release --files agentctx=dist/tools/ai/bin)
+          fi
+          if [ "${{ matrix.product }}" = "loadweaver" ] && compgen -G 'dist/terraform-provider/*.zip' >/dev/null; then
+            # The provider zips as attached to the GitHub release (terraform-provider-loadweaver_<v>_<os>_<arch>.zip).
+            FILES+=(--files terraform-provider=dist/terraform-provider)
           fi
           npx nx run release-integrity:release-manifest create --product "${{ matrix.product }}" --release "${VERSION}" \
             --commit "${GITHUB_SHA}" --repository "${GITHUB_REPOSITORY}" --images-from-projects "${FILES[@]}" \
@@ -831,6 +1195,93 @@ jobs:
         run: |
           set -euo pipefail
           gh release upload "v${VERSION}" dist/release-manifests/${{ matrix.product }}-release-manifest-"${VERSION}".json* --clobber
+
+  # In-app update feeds of the desktop apps (tools/desktop-release): `updates/desktop/<channel>.json` points at the
+  # signed release manifest, which the apps verify with their compiled-in keys before they install anything. Only
+  # published once that manifest exists (and verifies here with the same keys); otherwise skipped with a warning.
+  publish-desktop-update-feeds:
+    name: Publish Desktop Update Feeds (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    needs:
+      - publish
+      - publish-native-applications
+      - sign-release-manifests
+    if: >-
+      ${{ !cancelled() &&
+      needs.publish.outputs.new_release_published == 'true' &&
+      needs.publish-native-applications.result == 'success' &&
+      needs.sign-release-manifests.result == 'success' }}
+    environment: production
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: agenstra
+            product: agenstra
+            bucket_secret: AGENSTRA_AWS_BUCKET
+            endpoint_secret: AGENSTRA_CLOUDFLARE_R2_ENDPOINT
+    env:
+      VERSION: ${{ needs.publish.outputs.new_release_version }}
+      MANIFEST: ${{ matrix.product }}-release-manifest-${{ needs.publish.outputs.new_release_version }}.json
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Download the signed release manifest
+        id: manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p dist/desktop-feed
+          if gh release download "v${VERSION}" --repo "${GITHUB_REPOSITORY}" --dir dist/desktop-feed \
+              --pattern "${MANIFEST}" --pattern "${MANIFEST}.sig"; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=${{ matrix.app }} update feeds unchanged::No signed release manifest on v${VERSION}; desktop apps are not offered this release in-app."
+          fi
+
+      - name: Setup environment
+        if: steps.manifest.outputs.present == 'true'
+        uses: ./.github/actions/setup-env
+
+      # Verifies the manifest with the compiled-in keys (as the apps do) before any feed is written; feeds only for the
+      # channels that announce an older version (never backwards).
+      - name: Write the update feeds
+        if: steps.manifest.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          npx nx run desktop-release:bundle
+          CHANNELS="$(node tmp/desktop-release/desktop-release.cjs channels --app "${{ matrix.app }}" --version "${VERSION}")"
+          if [ -z "${CHANNELS}" ]; then
+            echo "Every channel already announces ${VERSION} or newer; feeds unchanged."
+            exit 0
+          fi
+          node tmp/desktop-release/desktop-release.cjs feed --app "${{ matrix.app }}" --version "${VERSION}" \
+            --channels "${CHANNELS}" --manifest "dist/desktop-feed/${MANIFEST}" --out dist/desktop-feed/updates
+
+      - name: Upload the manifest and feeds to Cloudflare R2
+        if: steps.manifest.outputs.present == 'true'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets[matrix.endpoint_secret] }}
+          BUCKET: ${{ secrets[matrix.bucket_secret] }}
+        run: |
+          set -euo pipefail
+          for f in "${MANIFEST}" "${MANIFEST}.sig"; do
+            aws s3 cp "dist/desktop-feed/${f}" "s3://${BUCKET}/releases/${VERSION}/${f}" --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}"
+          done
+          # Feeds last: they only ever point at a manifest that is already published.
+          if [ -d dist/desktop-feed/updates ]; then
+            aws s3 cp dist/desktop-feed/updates/ "s3://${BUCKET}/updates/desktop/" --recursive \
+              --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}" --cache-control 'no-cache' --content-type 'application/json'
+          fi
 
   publish-sboms:
     name: Publish SBOMs to DependencyTrack
@@ -1036,6 +1487,19 @@ jobs:
           autocreate: true
           bomfilename: 'dist/sboms/loadweaver-frontend-landingpage.cdx.json'
 
+      - name: Upload loadweaver-frontend-docs SBOM
+        id: upload-sbom-loadweaver-frontend-docs
+        uses: forepath/gh-upload-sbom@v2
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: 'bb6467b6-ebe9-4f90-91f9-2a785f95441e'
+          projectname: 'loadweaver-frontend-docs'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/loadweaver-frontend-docs.cdx.json'
+
       - name: Upload forepath-backend-communication SBOM
         id: upload-sbom-forepath-backend-communication
         uses: forepath/gh-upload-sbom@v2
@@ -1070,6 +1534,7 @@ jobs:
             echo "| agenstra-frontend-landingpage | ${{ steps.upload-sbom-agenstra-frontend-landingpage.outcome }} |"
             echo "| decabill-frontend-landingpage | ${{ steps.upload-sbom-decabill-frontend-landingpage.outcome }} |"
             echo "| loadweaver-frontend-landingpage | ${{ steps.upload-sbom-loadweaver-frontend-landingpage.outcome }} |"
+            echo "| loadweaver-frontend-docs | ${{ steps.upload-sbom-loadweaver-frontend-docs.outcome }} |"
             echo "| forepath-backend-communication | ${{ steps.upload-sbom-forepath-backend-communication.outcome }} |"
           } >> "$GITHUB_STEP_SUMMARY"
           failed=0
@@ -1087,6 +1552,7 @@ jobs:
             "${{ steps.upload-sbom-agenstra-frontend-landingpage.outcome }}" \
             "${{ steps.upload-sbom-decabill-frontend-landingpage.outcome }}" \
             "${{ steps.upload-sbom-loadweaver-frontend-landingpage.outcome }}" \
+            "${{ steps.upload-sbom-loadweaver-frontend-docs.outcome }}" \
             "${{ steps.upload-sbom-forepath-backend-communication.outcome }}"
           do
             if [ "$outcome" = "failure" ]; then

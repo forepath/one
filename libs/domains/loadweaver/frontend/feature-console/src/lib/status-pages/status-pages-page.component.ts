@@ -13,7 +13,10 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcPageHeaderComponent,
@@ -47,7 +50,10 @@ import {
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcListComponent,
     FpcListItemComponent,
     FpcPageHeaderComponent,
@@ -57,6 +63,7 @@ import {
     LoadweaverIncidentModalComponent,
   ],
   templateUrl: './status-pages-page.component.html',
+  styleUrl: './status-pages-page.component.scss',
   standalone: true,
 })
 export class LoadweaverStatusPagesPageComponent implements OnInit {
@@ -79,6 +86,7 @@ export class LoadweaverStatusPagesPageComponent implements OnInit {
   readonly expanded = signal<ReadonlySet<string>>(new Set());
   readonly modalOpen = signal(false);
   readonly modalIncident = signal<Incident | null>(null);
+  readonly filtersOpen = signal(false);
 
   /** Memberships plus the projects that have status pages (cluster roles read every project). */
   readonly projects = computed(() =>
@@ -108,6 +116,12 @@ export class LoadweaverStatusPagesPageComponent implements OnInit {
   readonly tabIncidents = $localize`:@@lwConsoleStatusPages-tabIncidents:Incidents`;
   readonly refreshLabel = $localize`:@@lwConsoleStatusPages-refresh:Refresh`;
   readonly projectLabel = $localize`:@@lwConsoleStatusPages-project:Project`;
+  readonly filtersLabel = $localize`:@@lwConsoleStatusPages-filters:Filters`;
+  readonly newPageLabel = $localize`:@@lwConsoleStatusPages-newPage:New status page`;
+  readonly newIncidentLabel = $localize`:@@lwConsoleStatusPages-newIncident:New incident`;
+  readonly openPageLabel = $localize`:@@lwConsoleStatusPages-openPage:Open`;
+  readonly editLabel = $localize`:@@lwConsoleStatusPages-edit:Edit`;
+  readonly postUpdateLabel = $localize`:@@lwConsoleStatusPages-postUpdate:Update`;
 
   private readonly requestedProject = this.route.snapshot.queryParamMap.get('project');
 

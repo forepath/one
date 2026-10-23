@@ -1,146 +1,158 @@
-<fpc-page-header [title]="title" icon="speedometer">
-  <div fpcPageHeaderActions class="d-flex align-items-center gap-2 flex-wrap">
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="title" icon="speedometer">
     <fpc-button
-      variant="outline-secondary"
+      fpcPageHeaderActions
+      variant="dark"
       size="sm"
-      iconOnly
+      [iconOnly]="true"
       [ariaLabel]="refreshLabel"
       [title]="refreshLabel"
       (clicked)="load()"
     >
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
-  </div>
-</fpc-page-header>
+  </fpc-page-header>
 
-<fpc-summary-bar [columns]="4">
-  <fpc-summary-card i18n-label="@@lwConsoleSlos-total" label="SLOs" [value]="'' + counts().total" />
-  <fpc-summary-card
-    i18n-label="@@lwConsoleSlos-ok"
-    label="OK"
-    [value]="'' + counts().ok"
-    [tone]="counts().ok > 0 ? 'success' : 'default'"
-  />
-  <fpc-summary-card
-    i18n-label="@@lwConsoleSlos-burning"
-    label="Burning"
-    [value]="'' + counts().burning"
-    [tone]="counts().burning > 0 ? 'danger' : 'default'"
-  />
-  <fpc-summary-card
-    i18n-label="@@lwConsoleSlos-exhausted"
-    label="Budget exhausted"
-    [value]="'' + counts().exhausted"
-    [tone]="counts().exhausted > 0 ? 'warning' : 'default'"
-  />
-</fpc-summary-bar>
-
-<div class="p-3">
-  <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-    @if (projects().length > 0) {
-      <label class="visually-hidden" for="lw-slos-project">{{ projectFilterLabel }}</label>
-      <select
-        id="lw-slos-project"
-        class="form-select form-select-sm w-auto"
-        [ngModel]="project()"
-        (ngModelChange)="onProjectChange($event)"
-      >
-        <option value="" i18n="@@lwConsoleSlos-allProjects">All projects</option>
-        @for (p of projects(); track p) {
-          <option [value]="p">{{ p }}</option>
-        }
-      </select>
-    }
-    <label class="visually-hidden" for="lw-slos-state">{{ stateFilterLabel }}</label>
-    <select
-      id="lw-slos-state"
-      class="form-select form-select-sm w-auto"
-      [ngModel]="state()"
-      (ngModelChange)="state.set($event)"
-    >
-      <option value="" i18n="@@lwConsoleSlos-allStates">All states</option>
-      @for (s of states; track s) {
-        <option [value]="s">{{ stateLabel(s) }}</option>
-      }
-    </select>
-  </div>
-
-  @if (error(); as message) {
-    <fpc-alert variant="danger" [message]="message" />
-  }
-
-  @if (loading() && slos().length === 0) {
-    <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
-  } @else if (shown().length === 0) {
-    <fpc-empty-state
-      icon="speedometer"
-      i18n-title="@@lwConsoleSlos-empty"
-      title="No SLOs"
-      i18n-message="@@lwConsoleSlos-emptyMessage"
-      message="Declare an SLO in a service's x-loadweaver (availability and / or latency) to track it here."
+  <fpc-summary-bar class="flex-shrink-0" [columns]="4">
+    <fpc-summary-card i18n-label="@@lwConsoleSlos-total" label="SLOs" [value]="'' + counts().total" />
+    <fpc-summary-card
+      i18n-label="@@lwConsoleSlos-ok"
+      label="OK"
+      [value]="'' + counts().ok"
+      [tone]="counts().ok > 0 ? 'success' : 'default'"
     />
-  } @else {
-    <div class="row g-3" data-testid="slos-list">
-      @for (slo of shown(); track sloKey(slo)) {
-        <div class="col-12 col-xl-6">
-          <div class="card h-100" [attr.data-testid]="'slo-' + sloKey(slo)">
-            <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+    <fpc-summary-card
+      i18n-label="@@lwConsoleSlos-burning"
+      label="Burning"
+      [value]="'' + counts().burning"
+      [tone]="counts().burning > 0 ? 'danger' : 'default'"
+    />
+    <fpc-summary-card
+      i18n-label="@@lwConsoleSlos-exhausted"
+      label="Budget exhausted"
+      [value]="'' + counts().exhausted"
+      [tone]="counts().exhausted > 0 ? 'warning' : 'default'"
+    />
+  </fpc-summary-bar>
+
+  <fpc-collapsible-filter-panel
+    class="flex-shrink-0"
+    [(open)]="filtersOpen"
+    [title]="filtersLabel"
+    [activeCount]="activeFilterCount()"
+    (cleared)="clearFilters()"
+  >
+    <div class="row g-3 mb-0 w-100">
+      @if (projects().length > 0) {
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-slos-project" [label]="projectFilterLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-slos-project"
+              size="sm"
+              [ngModel]="project()"
+              (ngModelChange)="onProjectChange($event)"
+            >
+              <option value="" i18n="@@lwConsoleSlos-allProjects">All projects</option>
+              @for (p of projects(); track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+      }
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-slos-state" [label]="stateFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-slos-state"
+            size="sm"
+            [ngModel]="state()"
+            (ngModelChange)="state.set($event)"
+          >
+            <option value="" i18n="@@lwConsoleSlos-allStates">All states</option>
+            @for (s of states; track s) {
+              <option [value]="s">{{ stateLabel(s) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+    </div>
+  </fpc-collapsible-filter-panel>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="m-3" variant="danger" [message]="message" />
+    }
+
+    @if (loading() && slos().length === 0) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
+    } @else if (shown().length === 0) {
+      <fpc-empty-state
+        icon="speedometer"
+        i18n-title="@@lwConsoleSlos-empty"
+        title="No SLOs"
+        i18n-message="@@lwConsoleSlos-emptyMessage"
+        message="Declare an SLO in a service's x-loadweaver (availability and / or latency) to track it here."
+      />
+    } @else {
+      <fpc-panel-grid [columns]="2" data-testid="slos-list">
+        @for (slo of shown(); track sloKey(slo)) {
+          <fpc-panel [title]="sloKey(slo)" [attr.data-testid]="'slo-' + sloKey(slo)">
+            <span fpcPanelActions class="d-flex align-items-center gap-2">
+              <fpc-badge size="sm" color="secondary">{{ slo.window }}</fpc-badge>
+              <span class="small text-body-secondary">{{ stateLabel(slo.state) }}</span>
               <fpc-status-badge [tone]="stateTone[slo.state]" size="sm" [ariaLabel]="stateLabel(slo.state)">
                 <i class="bi {{ stateIcon[slo.state] }}" aria-hidden="true"></i>
               </fpc-status-badge>
-              <span class="fw-semibold font-monospace text-truncate">{{ sloKey(slo) }}</span>
-              <fpc-badge size="sm" color="secondary">{{ slo.window }}</fpc-badge>
-              <span class="ms-auto small text-body-secondary">{{ stateLabel(slo.state) }}</span>
-            </div>
-            <div class="card-body">
-              <div class="row g-3">
-                @if (slo.availability; as o) {
-                  <div class="col-12 col-sm-6 d-flex gap-3 align-items-center" data-testid="slo-availability">
-                    <fpc-progress-ring
-                      [value]="budgetUsed(o)"
-                      [tone]="budgetTone(o)"
-                      [size]="64"
-                      [label]="budgetLabel"
-                      [centerLabel]="budgetUsed(o) + '%'"
-                    />
-                    <div class="small">
-                      <div class="fw-semibold" i18n="@@lwConsoleSlos-availability">Availability</div>
-                      <div>
-                        <span i18n="@@lwConsoleSlos-sli">Measured</span> {{ percent(o.sli) }} /
-                        <span i18n="@@lwConsoleSlos-target">target</span> {{ percent(o.target) }}
-                      </div>
-                      <div [class.text-danger]="burnsFast(o)">
-                        <span i18n="@@lwConsoleSlos-burnRate">Burn rate (1 h)</span> {{ burnRate(o.burnRate1h) }}
-                      </div>
+            </span>
+            <div class="row g-3">
+              @if (slo.availability; as o) {
+                <div class="col-12 col-sm-6 d-flex gap-3 align-items-center" data-testid="slo-availability">
+                  <fpc-progress-ring
+                    [value]="budgetUsed(o)"
+                    [tone]="budgetTone(o)"
+                    [size]="64"
+                    [label]="budgetLabel"
+                    [centerLabel]="budgetUsed(o) + '%'"
+                  />
+                  <div class="small">
+                    <div class="fw-semibold" i18n="@@lwConsoleSlos-availability">Availability</div>
+                    <div>
+                      <span i18n="@@lwConsoleSlos-sli">Measured</span> {{ percent(o.sli) }} /
+                      <span i18n="@@lwConsoleSlos-target">target</span> {{ percent(o.target) }}
+                    </div>
+                    <div [class.text-danger]="burnsFast(o)">
+                      <span i18n="@@lwConsoleSlos-burnRate">Burn rate (1 h)</span> {{ burnRate(o.burnRate1h) }}
                     </div>
                   </div>
-                }
-                @if (slo.latency; as o) {
-                  <div class="col-12 col-sm-6 d-flex gap-3 align-items-center" data-testid="slo-latency">
-                    <fpc-progress-ring
-                      [value]="budgetUsed(o)"
-                      [tone]="budgetTone(o)"
-                      [size]="64"
-                      [label]="budgetLabel"
-                      [centerLabel]="budgetUsed(o) + '%'"
-                    />
-                    <div class="small">
-                      <div class="fw-semibold">
-                        <span i18n="@@lwConsoleSlos-latency">Latency</span> {{ o.percentile }} ≤ {{ o.thresholdMs }} ms
-                      </div>
-                      <div>
-                        <span i18n="@@lwConsoleSlos-sli">Measured</span> {{ percent(o.sli) }} /
-                        <span i18n="@@lwConsoleSlos-target">target</span> {{ percent(o.target) }}
-                      </div>
-                      <div [class.text-danger]="burnsFast(o)">
-                        <span i18n="@@lwConsoleSlos-burnRate">Burn rate (1 h)</span> {{ burnRate(o.burnRate1h) }}
-                      </div>
+                </div>
+              }
+              @if (slo.latency; as o) {
+                <div class="col-12 col-sm-6 d-flex gap-3 align-items-center" data-testid="slo-latency">
+                  <fpc-progress-ring
+                    [value]="budgetUsed(o)"
+                    [tone]="budgetTone(o)"
+                    [size]="64"
+                    [label]="budgetLabel"
+                    [centerLabel]="budgetUsed(o) + '%'"
+                  />
+                  <div class="small">
+                    <div class="fw-semibold">
+                      <span i18n="@@lwConsoleSlos-latency">Latency</span> {{ o.percentile }} ≤ {{ o.thresholdMs }} ms
+                    </div>
+                    <div>
+                      <span i18n="@@lwConsoleSlos-sli">Measured</span> {{ percent(o.sli) }} /
+                      <span i18n="@@lwConsoleSlos-target">target</span> {{ percent(o.target) }}
+                    </div>
+                    <div [class.text-danger]="burnsFast(o)">
+                      <span i18n="@@lwConsoleSlos-burnRate">Burn rate (1 h)</span> {{ burnRate(o.burnRate1h) }}
                     </div>
                   </div>
-                }
-              </div>
+                </div>
+              }
             </div>
-            <div class="card-footer small text-body-secondary d-flex flex-wrap gap-3 align-items-center">
+            <div fpcPanelFooter class="small text-body-secondary d-flex flex-wrap gap-3 align-items-center w-100">
               <span
                 ><i class="bi bi-calendar-check me-1" aria-hidden="true"></i
                 ><span i18n="@@lwConsoleSlos-monthlyUptime">Uptime this month</span>
@@ -156,9 +168,9 @@
                 >
               </span>
             </div>
-          </div>
-        </div>
-      }
-    </div>
-  }
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+    }
+  </div>
 </div>

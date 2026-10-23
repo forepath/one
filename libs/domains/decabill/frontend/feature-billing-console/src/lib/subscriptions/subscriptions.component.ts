@@ -44,6 +44,7 @@ import {
   type SubscriptionMeterSummary,
   formatBillingProviderLocationLabel,
   formatServerTypeOption,
+  hasLoadweaverItem,
   isNoneServiceTypeId,
   isSubscriptionItemDetailEligible,
   mergeMandatoryOrderAddonIds,
@@ -200,6 +201,11 @@ export class SubscriptionsComponent implements OnInit {
   readonly modifyConfigModalOpen = signal(false);
   readonly cancelSubscriptionModalOpen = signal(false);
   readonly withdrawSubscriptionModalOpen = signal(false);
+  /** Data-safe teardown: cancelling / withdrawing a subscription with a Loadweaver cluster needs an explicit confirmation. */
+  readonly loadweaverTeardownModalOpen = signal(false);
+  readonly loadweaverTeardownAction = signal<'cancel' | 'withdraw'>('cancel');
+  readonly loadweaverTeardownConfirmed = signal(false);
+  loadweaverTeardownSubscription: SubscriptionResponse | null = null;
   readonly resumeConfirmModalOpen = signal(false);
   readonly cancelBackorderModalOpen = signal(false);
   readonly editProfileModalOpen = signal(false);
@@ -475,7 +481,7 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   orderRequestedConfig: {
-    service: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'custom';
+    service: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'loadweaver' | 'custom';
     authenticationMethod: 'users' | 'api-key' | 'keycloak';
     staticApiKey: string;
     disableSignup: boolean;
@@ -2163,11 +2169,15 @@ export class SubscriptionsComponent implements OnInit {
       return;
     }
 
-    const requestedConfig: Record<string, unknown> = {
-      service: cfg.service,
-      authenticationMethod: cfg.authenticationMethod,
-      smtp: { ...cfg.smtp },
-    };
+    // Loadweaver generates its own secrets and accounts on the node (bootstrap); no auth / SMTP order fields.
+    const isLoadweaver = cfg.service === 'loadweaver';
+    const requestedConfig: Record<string, unknown> = isLoadweaver
+      ? { service: cfg.service }
+      : {
+          service: cfg.service,
+          authenticationMethod: cfg.authenticationMethod,
+          smtp: { ...cfg.smtp },
+        };
 
     this.attachOrderProvider(requestedConfig);
 
@@ -2175,11 +2185,11 @@ export class SubscriptionsComponent implements OnInit {
       requestedConfig['disableSignup'] = cfg.disableSignup;
     }
 
-    if (cfg.authenticationMethod === 'api-key' && cfg.staticApiKey?.trim()) {
+    if (!isLoadweaver && cfg.authenticationMethod === 'api-key' && cfg.staticApiKey?.trim()) {
       requestedConfig['staticApiKey'] = cfg.staticApiKey.trim();
     }
 
-    if (cfg.authenticationMethod === 'keycloak') {
+    if (!isLoadweaver && cfg.authenticationMethod === 'keycloak') {
       requestedConfig['keycloak'] = { ...cfg.keycloak };
     }
 
@@ -2825,8 +2835,33 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   openCancelConfirm(sub: SubscriptionResponse): void {
+    if (hasLoadweaverItem(sub.items)) {
+      this.openLoadweaverTeardownConfirm(sub, 'cancel');
+
+      return;
+    }
+
     this.subscriptionToCancel = sub;
     showBillingModal(this.cancelSubscriptionModalOpen);
+  }
+
+  openLoadweaverTeardownConfirm(sub: SubscriptionResponse, action: 'cancel' | 'withdraw'): void {
+    this.loadweaverTeardownSubscription = sub;
+    this.loadweaverTeardownAction.set(action);
+    this.loadweaverTeardownConfirmed.set(false);
+    showBillingModal(this.loadweaverTeardownModalOpen);
+  }
+
+  confirmLoadweaverTeardown(): void {
+    const sub = this.loadweaverTeardownSubscription;
+
+    if (!sub || !this.loadweaverTeardownConfirmed()) return;
+
+    if (this.loadweaverTeardownAction() === 'withdraw') {
+      this.subscriptionsFacade.withdrawSubscription(sub.id, { confirmDataTeardown: true });
+    } else {
+      this.subscriptionsFacade.cancelSubscription(sub.id, { confirmDataTeardown: true });
+    }
   }
 
   confirmCancelSubscription(): void {
@@ -2836,6 +2871,12 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   openWithdrawConfirm(sub: SubscriptionResponse): void {
+    if (hasLoadweaverItem(sub.items)) {
+      this.openLoadweaverTeardownConfirm(sub, 'withdraw');
+
+      return;
+    }
+
     this.subscriptionToWithdraw = sub;
     showBillingModal(this.withdrawSubscriptionModalOpen);
   }
@@ -3005,6 +3046,18 @@ export class SubscriptionsComponent implements OnInit {
         this.subscriptionToCancel = null;
       },
     });
+    for (const loading$ of [this.subscriptionsCanceling$, this.subscriptionsWithdrawing$]) {
+      watchBillingMutationModalClose({
+        loading$,
+        error$: this.subscriptionsError$,
+        open: this.loadweaverTeardownModalOpen,
+        destroyRef: this.destroyRef,
+        onSuccess: () => {
+          this.loadweaverTeardownSubscription = null;
+          this.loadweaverTeardownConfirmed.set(false);
+        },
+      });
+    }
     watchBillingMutationModalClose({
       loading$: this.subscriptionsWithdrawing$,
       error$: this.subscriptionsError$,

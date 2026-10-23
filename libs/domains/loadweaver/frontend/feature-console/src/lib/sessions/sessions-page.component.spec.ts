@@ -117,7 +117,15 @@ describe('LoadweaverSessionsPageComponent', () => {
     expect(el().querySelectorAll('[data-testid="sessions-play"]')).toHaveLength(1);
     expect(el().querySelector('[data-testid="tunnels-table"]')?.textContent).toContain('5432');
 
-    component().onProjectChange('shop');
+    // The project filter sits in the filter panel.
+    expect(el().querySelector('[data-testid="sessions-project"]')).toBeNull();
+    (el().querySelector('.fpc-collapsible-filter-panel__toggle') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const select = el().querySelector('[data-testid="sessions-project"] select') as HTMLSelectElement;
+
+    select.value = 'shop';
+    select.dispatchEvent(new Event('change'));
     expect(live['loadSessions']).toHaveBeenLastCalledWith('shop');
   });
 
@@ -145,8 +153,20 @@ describe('LoadweaverSessionsPageComponent', () => {
     expect(component().recordingError()).toBe('gone');
   });
 
+  it('opens the port-forward dialog from the tunnels panel', async () => {
+    await create();
+
+    expect(el().querySelector('[data-testid="port-forward"]')).toBeNull();
+    (el().querySelector('[data-testid="port-forward-open"] button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(el().querySelector('[data-testid="port-forward"] [data-testid="forward-replica"]')).not.toBeNull();
+    expect(component().command()).toBeNull();
+  });
+
   it('builds the port-forward command for a deep-linked replica', async () => {
     await create({ replica: 'shop/web/db/0' });
+
+    expect(component().forwardOpen()).toBe(true);
 
     expect(component().command()).toBe('loadweaver port-forward shop/web/db/0 <port>');
     component().remotePort.set(component().port('5432'));

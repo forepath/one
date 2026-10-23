@@ -18,7 +18,9 @@
               ></i>
             </button>
           } @else {
-            <span class="d-inline-block" style="width: 1rem"></span>
+            <span class="btn btn-link btn-sm p-0 invisible" aria-hidden="true"
+              ><i class="bi bi-chevron-right"></i
+            ></span>
           }
           <fpc-status-badge [tone]="toneOf(node)" size="sm" [ariaLabel]="healthLabel(node.entity.state)">
             <i class="bi {{ iconOf(node) }}" aria-hidden="true"></i>

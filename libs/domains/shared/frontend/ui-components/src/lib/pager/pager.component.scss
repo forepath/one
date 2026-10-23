@@ -1,0 +1,17 @@
+:host {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.375rem;
+}
+
+.fpc-pager__page {
+  white-space: nowrap;
+}

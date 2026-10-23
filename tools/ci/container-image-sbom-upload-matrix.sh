@@ -19,6 +19,7 @@ KNOWN_IMAGE_NAMES=(
   decabill-docs-server
   loadweaver-billing-console-server
   loadweaver-landingpage-server
+  loadweaver-docs-server
   agenstra-billing-console-server
   agenstra-console-server
   agenstra-controller-api

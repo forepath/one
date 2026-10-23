@@ -251,7 +251,23 @@
   confirmLabel="Cancel"
   [busy]="(canceling$ | async) === true"
   (confirmed)="confirmCancelSubscription()"
-/>
+>
+  <fpc-form-check
+    class="mt-3"
+    checkId="adminCancelConfirmTeardown"
+    [checked]="confirmDataTeardown()"
+    (checkedChange)="confirmDataTeardown.set($event)"
+  >
+    <label
+      class="form-check-label small"
+      for="adminCancelConfirmTeardown"
+      i18n="@@featureAdminSubscriptions-confirmLoadweaverTeardown"
+    >
+      Delete Loadweaver cluster data: required when this subscription runs a Loadweaver cluster. Its server, volumes,
+      backups and secrets are deleted.
+    </label>
+  </fpc-form-check>
+</fpc-confirm-dialog>
 
 <fpc-confirm-dialog
   [(open)]="withdrawSubscriptionModalOpen"
@@ -278,6 +294,21 @@
       <strong class="ms-1">{{ formatCurrencyAmount(refund) }}</strong>
     </p>
   }
+  <fpc-form-check
+    class="mt-3"
+    checkId="adminWithdrawConfirmTeardown"
+    [checked]="confirmDataTeardown()"
+    (checkedChange)="confirmDataTeardown.set($event)"
+  >
+    <label
+      class="form-check-label small"
+      for="adminWithdrawConfirmTeardown"
+      i18n="@@featureAdminSubscriptions-confirmLoadweaverTeardown"
+    >
+      Delete Loadweaver cluster data: required when this subscription runs a Loadweaver cluster. Its server, volumes,
+      backups and secrets are deleted.
+    </label>
+  </fpc-form-check>
 </fpc-confirm-dialog>
 
 <fpc-confirm-dialog
@@ -291,7 +322,23 @@
   [danger]="true"
   [busy]="(instantCanceling$ | async) === true"
   (confirmed)="confirmInstantCancelSubscription()"
-/>
+>
+  <fpc-form-check
+    class="mt-3"
+    checkId="adminInstantCancelConfirmTeardown"
+    [checked]="confirmDataTeardown()"
+    (checkedChange)="confirmDataTeardown.set($event)"
+  >
+    <label
+      class="form-check-label small"
+      for="adminInstantCancelConfirmTeardown"
+      i18n="@@featureAdminSubscriptions-confirmLoadweaverTeardown"
+    >
+      Delete Loadweaver cluster data: required when this subscription runs a Loadweaver cluster. Its server, volumes,
+      backups and secrets are deleted.
+    </label>
+  </fpc-form-check>
+</fpc-confirm-dialog>
 
 <fpc-modal
   [(open)]="metersModalOpen"

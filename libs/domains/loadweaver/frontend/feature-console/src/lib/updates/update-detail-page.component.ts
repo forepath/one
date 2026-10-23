@@ -8,6 +8,7 @@ import {
   isRolloutActive,
   type RolloutAction,
   type RolloutWave,
+  ConsoleEndpointService,
 } from '@forepath/loadweaver/frontend/data-access-console';
 import {
   FpcAlertComponent,
@@ -18,10 +19,9 @@ import {
   FpcFormCheckComponent,
   FpcListComponent,
   FpcListItemComponent,
-  FpcModalComponent,
-  FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcProgressComponent,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
@@ -56,6 +56,7 @@ import {
 @Component({
   selector: 'loadweaver-update-detail-page',
   imports: [
+    FpcPanelGridComponent,
     CommonModule,
     RouterModule,
     FpcAlertComponent,
@@ -66,8 +67,6 @@ import {
     FpcFormCheckComponent,
     FpcListComponent,
     FpcListItemComponent,
-    FpcModalComponent,
-    FpcModalFooterDirective,
     FpcPageHeaderComponent,
     FpcPanelComponent,
     FpcProgressComponent,
@@ -107,10 +106,14 @@ export class LoadweaverUpdateDetailPageComponent implements OnInit {
 
     return rollout && rollout.id === this.id() ? rollout : null;
   });
+  /** Fleet mode: approvals stay native — given in the cluster's own console, never through the fleet's relay. */
+  protected readonly fleetMode = inject(ConsoleEndpointService).fleetMode;
   readonly actions = computed(() => {
     const rollout = this.current();
 
-    return rollout && this.isClusterAdmin() ? rolloutActions(rollout.status) : [];
+    const actions = rollout && this.isClusterAdmin() ? rolloutActions(rollout.status) : [];
+
+    return this.fleetMode ? actions.filter((action) => action !== 'approve') : actions;
   });
   readonly diffGroups = computed(() => groupDiff(this.current()?.diff ?? [], this.diffBy()));
   readonly confirm = computed(() => {
@@ -142,6 +145,15 @@ export class LoadweaverUpdateDetailPageComponent implements OnInit {
   readonly wavesTitle = $localize`:@@lwConsoleUpdateDetail-waves:Rollout`;
   readonly approveTitle = $localize`:@@lwConsoleUpdateDetail-approveTitle:Approve the update?`;
   readonly keepLabel = $localize`:@@lwConsoleUpdateDetail-keep:Back`;
+  readonly approveLabel = $localize`:@@lwConsoleUpdateDetail-approve:Approve`;
+  readonly approveEmergencyLabel = $localize`:@@lwConsoleUpdateDetail-approveEmergency:Approve as emergency`;
+  readonly actionIcon: Record<RolloutAction, string> = {
+    approve: 'bi-check-lg',
+    pause: 'bi-pause-fill',
+    resume: 'bi-play-fill',
+    rollback: 'bi-arrow-counterclockwise',
+    cancel: 'bi-x-lg',
+  };
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
@@ -199,10 +211,10 @@ export class LoadweaverUpdateDetailPageComponent implements OnInit {
     if (by === 'node' || by === 'component') this.diffBy.set(by);
   }
 
-  actionVariant(action: RolloutAction): 'primary' | 'outline-secondary' | 'outline-danger' {
+  actionVariant(action: RolloutAction): 'primary' | 'secondary' | 'danger' {
     if (action === 'approve' || action === 'resume') return 'primary';
 
-    return action === 'rollback' || action === 'cancel' ? 'outline-danger' : 'outline-secondary';
+    return action === 'rollback' || action === 'cancel' ? 'danger' : 'secondary';
   }
 
   failedGates(wave: RolloutWave): number {

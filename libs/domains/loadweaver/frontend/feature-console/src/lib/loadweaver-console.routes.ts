@@ -97,6 +97,9 @@ import {
   auditPageNavigation$,
   loadAuditPage$,
   verifyAudit$,
+  ConsoleUsageFacade,
+  consoleUsageReducer,
+  loadUsage$,
   ConsoleSlosFacade,
   consoleSlosReducer,
   loadSlos$,
@@ -192,6 +195,31 @@ import {
   loadBackupKeys$,
   backupKeyActions$,
   reloadBackupKeysAfterAction$,
+  ConsoleFleetFacade,
+  consoleFleetReducer,
+  FLEET_FEATURE_CONFIG,
+  loadFleetClusters$,
+  saveFleetCluster$,
+  deleteFleetCluster$,
+  testFleetConnection$,
+  pollFleetCluster$,
+  loadFleetGrants$,
+  putFleetGrant$,
+  deleteFleetGrant$,
+  reloadFleetGrants$,
+  loadFleetCards$,
+  loadFleetInbox$,
+  loadFleetSites$,
+  loadFleetComparison$,
+  loadFleetOperations$,
+  createFleetOperation$,
+  cancelFleetOperation$,
+  loadFleetCloudStatus$,
+  searchFleetAudit$,
+  fleetAuditPageNavigation$,
+  loadFleetAuditPage$,
+  openFleetCluster$,
+  leaveFleetClusterOnLogout$,
 } from '@forepath/loadweaver/frontend/data-access-console';
 import { buildPageTitle } from '@forepath/loadweaver/frontend/util-configuration';
 import {
@@ -234,6 +262,7 @@ import { LoadweaverTerminalsPageComponent } from './terminals/terminals-page.com
 import { LoadweaverFilesPageComponent } from './files/files-page.component';
 import { LoadweaverSessionsPageComponent } from './sessions/sessions-page.component';
 import { LoadweaverAuditPageComponent } from './audit/audit-page.component';
+import { LoadweaverUsagePageComponent } from './usage/usage-page.component';
 import { LoadweaverSlosPageComponent } from './slos/slos-page.component';
 import { LoadweaverStatusPagesPageComponent } from './status-pages/status-pages-page.component';
 import { LoadweaverSearchPageComponent } from './search/search-page.component';
@@ -241,6 +270,7 @@ import { LoadweaverReportsPageComponent } from './reports/reports-page.component
 import { LoadweaverAccessPageComponent } from './access/access-page.component';
 import { LoadweaverProjectRequestsPageComponent } from './access/project-requests-page.component';
 import { LoadweaverDevicesPageComponent } from './devices/devices-page.component';
+import { LoadweaverPosturePageComponent } from './posture/posture-page.component';
 import { LoadweaverWallboardsPageComponent } from './wallboards/wallboards-page.component';
 import { LoadweaverKioskPageComponent } from './wallboards/kiosk-page.component';
 import { LoadweaverGitPageComponent } from './git/git-page.component';
@@ -254,14 +284,77 @@ import { LoadweaverBackupRestoresPageComponent } from './backups/backup-restores
 import { LoadweaverBackupDeletionsPageComponent } from './backups/backup-deletions-page.component';
 import { LoadweaverBackupKeysPageComponent } from './backups/backup-keys-page.component';
 import { LoadweaverPlatformBackupsPageComponent } from './backups/platform-backups-page.component';
+import { LoadweaverFleetAuditPageComponent } from './fleet/fleet-audit-page.component';
+import { LoadweaverFleetClusterDetailPageComponent } from './fleet/fleet-cluster-detail-page.component';
+import { LoadweaverFleetClustersPageComponent } from './fleet/fleet-clusters-page.component';
+import { LoadweaverFleetComparePageComponent } from './fleet/fleet-compare-page.component';
+import { LoadweaverFleetOperationsPageComponent } from './fleet/fleet-operations-page.component';
+import { LoadweaverFleetOverviewPageComponent } from './fleet/fleet-overview-page.component';
+import { LoadweaverFleetUnavailablePageComponent } from './fleet/fleet-unavailable-page.component';
+import {
+  fleetClusterEntryGuard,
+  fleetClusterLinkMatcher,
+  fleetConsoleGuard,
+  fleetModeOnlyGuard,
+} from './guards/fleet-mode.guard';
 
 export const loadweaverConsoleRoutes: Route[] = [
   {
     path: '',
     component: LoadweaverConsoleContainerComponent,
+    // Fleet mode (3.24): cluster views need an active cluster, unrelayed views show a notice (see the guard).
+    canActivateChild: [fleetConsoleGuard],
     children: [
       { path: '', redirectTo: 'overview', pathMatch: 'full' },
       ...identityAuthRoutes,
+      {
+        path: 'fleet',
+        component: LoadweaverFleetOverviewPageComponent,
+        canActivate: [authGuard, fleetModeOnlyGuard],
+        title: () => buildPageTitle($localize`:@@lwConsoleFleetOverview-title:Fleet overview`),
+      },
+      {
+        path: 'fleet/clusters',
+        component: LoadweaverFleetClustersPageComponent,
+        canActivate: [authGuard, fleetModeOnlyGuard],
+        title: () => buildPageTitle($localize`:@@lwConsoleFleetClusters-title:Clusters`),
+      },
+      {
+        path: 'fleet/clusters/:id',
+        component: LoadweaverFleetClusterDetailPageComponent,
+        canActivate: [authGuard, fleetModeOnlyGuard],
+        title: () => buildPageTitle($localize`:@@lwConsoleFleetCluster-title:Cluster`),
+      },
+      {
+        path: 'fleet/compare',
+        component: LoadweaverFleetComparePageComponent,
+        canActivate: [authGuard, fleetModeOnlyGuard],
+        title: () => buildPageTitle($localize`:@@lwConsoleFleetCompare-title:Compare clusters`),
+      },
+      {
+        path: 'fleet/operations',
+        component: LoadweaverFleetOperationsPageComponent,
+        canActivate: [authGuard, fleetModeOnlyGuard],
+        title: () => buildPageTitle($localize`:@@lwConsoleFleetOps-title:Fleet operations`),
+      },
+      {
+        path: 'fleet/audit',
+        component: LoadweaverFleetAuditPageComponent,
+        canActivate: [authGuard, fleetModeOnlyGuard, globalAdminGuard],
+        title: () => buildPageTitle($localize`:@@lwConsoleFleetAudit-title:Fleet audit log`),
+      },
+      {
+        path: 'fleet/unavailable',
+        component: LoadweaverFleetUnavailablePageComponent,
+        canActivate: [authGuard, fleetModeOnlyGuard],
+        title: () => buildPageTitle($localize`:@@lwConsoleFleetUnavailable-title:Not available through the fleet`),
+      },
+      {
+        // `/clusters/<id>/<path>`: links of fleet cards and the merged inbox (the guard redirects into the cluster).
+        matcher: fleetClusterLinkMatcher,
+        canActivate: [authGuard, fleetClusterEntryGuard],
+        children: [],
+      },
       ...createNotificationAdminRoutes([authGuard, clusterAdminGuard]),
       {
         path: 'overview',
@@ -500,6 +593,12 @@ export const loadweaverConsoleRoutes: Route[] = [
         title: () => buildPageTitle($localize`:@@lwConsoleAudit-title:Audit log`),
       },
       {
+        path: 'usage',
+        component: LoadweaverUsagePageComponent,
+        canActivate: [authGuard],
+        title: () => buildPageTitle($localize`:@@lwConsoleUsage-title:Usage`),
+      },
+      {
         path: 'slos',
         component: LoadweaverSlosPageComponent,
         canActivate: [authGuard],
@@ -544,6 +643,13 @@ export const loadweaverConsoleRoutes: Route[] = [
         component: LoadweaverDevicesPageComponent,
         canActivate: [authGuard],
         title: () => buildPageTitle($localize`:@@lwConsoleDevices-title:Remote access`),
+      },
+      {
+        // Posture integrations (MDM / EDR) and device certificate trust (3.31); the API enforces infra / admin.
+        path: 'posture',
+        component: LoadweaverPosturePageComponent,
+        canActivate: [authGuard],
+        title: () => buildPageTitle($localize`:@@lwConsolePosture-title:Device posture`),
       },
       {
         path: 'wallboards',
@@ -599,6 +705,7 @@ export const loadweaverConsoleRoutes: Route[] = [
       ConsoleLiveFacade,
       ConsoleFilesFacade,
       ConsoleAuditFacade,
+      ConsoleUsageFacade,
       ConsoleSlosFacade,
       ConsoleStatusPagesFacade,
       ConsoleSearchFacade,
@@ -627,6 +734,7 @@ export const loadweaverConsoleRoutes: Route[] = [
       provideState('consoleLive', consoleLiveReducer, CONSOLE_FEATURE_CONFIG),
       provideState('consoleFiles', consoleFilesReducer, CONSOLE_FEATURE_CONFIG),
       provideState('consoleAudit', consoleAuditReducer, CONSOLE_FEATURE_CONFIG),
+      provideState('consoleUsage', consoleUsageReducer, CONSOLE_FEATURE_CONFIG),
       // The resource editor (Monaco, served from `assets/monaco/min/vs` by the app build).
       provideMonacoEditor({ baseUrl: './assets/monaco/min/vs' }),
       provideState('consoleResources', consoleResourcesReducer, CONSOLE_FEATURE_CONFIG),
@@ -643,6 +751,33 @@ export const loadweaverConsoleRoutes: Route[] = [
       provideState('consoleHealth', consoleHealthReducer, CONSOLE_FEATURE_CONFIG),
       provideState('consoleAlerts', consoleAlertsReducer, CONSOLE_FEATURE_CONFIG),
       provideState('consoleDrift', consoleDriftReducer, CONSOLE_FEATURE_CONFIG),
+      // The fleet's own views outlive cluster switches (reset on logout only).
+      ConsoleFleetFacade,
+      provideState('consoleFleet', consoleFleetReducer, FLEET_FEATURE_CONFIG),
+      provideEffects({
+        loadFleetClusters$,
+        saveFleetCluster$,
+        deleteFleetCluster$,
+        testFleetConnection$,
+        pollFleetCluster$,
+        loadFleetGrants$,
+        putFleetGrant$,
+        deleteFleetGrant$,
+        reloadFleetGrants$,
+        loadFleetCards$,
+        loadFleetInbox$,
+        loadFleetSites$,
+        loadFleetComparison$,
+        loadFleetOperations$,
+        createFleetOperation$,
+        cancelFleetOperation$,
+        loadFleetCloudStatus$,
+        searchFleetAudit$,
+        fleetAuditPageNavigation$,
+        loadFleetAuditPage$,
+        openFleetCluster$,
+        leaveFleetClusterOnLogout$,
+      }),
       provideEffects({
         loadAccess$,
         loadOverview$,
@@ -705,6 +840,7 @@ export const loadweaverConsoleRoutes: Route[] = [
         auditPageNavigation$,
         loadAuditPage$,
         verifyAudit$,
+        loadUsage$,
         loadSlos$,
         loadStatusPages$,
         loadIncidents$,

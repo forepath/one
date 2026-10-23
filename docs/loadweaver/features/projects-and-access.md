@@ -113,6 +113,8 @@ spec:
 - The desired state after the plan is judged, for every project the plan touches. A plan over a quota is rejected, with the usage and the limit in the message.
 - Lowering a quota below the current usage is rejected too, because the plan touches the project.
 
+`spec.billing.decabillSubscriptionId` maps the project to a Decabill subscription that its [metered usage](./usage-metering.md) is billed on (cluster admins, like quotas).
+
 ## IP pools per project
 
 An `IpPool` can name the projects whose policies may take egress addresses from it:

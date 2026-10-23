@@ -15,6 +15,8 @@ import {
   FpcAlertComponent,
   FpcButtonComponent,
   FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
 } from '@forepath/shared/frontend/ui-components';
@@ -35,6 +37,8 @@ export type RestoreTarget = 'same' | 'other';
 @Component({
   selector: 'loadweaver-backup-restore-modal',
   imports: [
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
     CommonModule,
     FormsModule,
     FpcAlertComponent,

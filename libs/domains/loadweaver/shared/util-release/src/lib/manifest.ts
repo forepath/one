@@ -81,6 +81,22 @@ export const imageComponentSchema = z
   .loose();
 export type ImageComponent = z.infer<typeof imageComponentSchema>;
 
+/** Repository of the console image (`loadweaver-console-server`) the release pins in `consoleImage`. */
+export const CONSOLE_IMAGE_REPOSITORY = 'ghcr.io/forepath/loadweaver-console-server';
+
+/**
+ * An image that runs outside the cluster's own rollout (Loadweaver Cloud's management endpoint): pinned by digest in
+ * the signed manifest, so hosters (Decabill) pull it by the digest a trusted release key signed, never by tag.
+ */
+export const externalImageSchema = z
+  .object({
+    repository: imageRepositorySchema,
+    tag: z.string().max(128).optional(),
+    digest: imageDigestSchema,
+  })
+  .loose();
+export type ExternalImage = z.infer<typeof externalImageSchema>;
+
 /** Per-architecture binaries (the node agent). */
 export const binaryComponentSchema = z
   .object({
@@ -193,6 +209,12 @@ export const releaseManifestSchema = z
      * listed here and in `artifacts`, so the signature covers them; unpacked into the cluster's apt cache on import.
      */
     aptPackages: z.array(artifactPathSchema).max(16).optional(),
+    /**
+     * The release's console image (`CONSOLE_IMAGE_REPOSITORY`) by digest, for Loadweaver Cloud's management endpoint.
+     * Top level, not a component: clusters don't run it (their rollout ignores it; N-1 control planes keep it as an
+     * unknown field). Absent in bundles built before it existed and in development bundles without `--console-image`.
+     */
+    consoleImage: externalImageSchema.optional(),
     artifacts: z.array(artifactFileSchema).max(512),
   })
   .loose()

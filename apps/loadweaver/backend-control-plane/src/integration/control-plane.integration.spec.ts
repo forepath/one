@@ -48,6 +48,7 @@ import {
   DriftService,
   PlansService,
   PosturePluginRegistry,
+  PostureIntegrationsService,
   ProjectAccessService,
   RemoteAccessService,
   ResourcesController,
@@ -2911,16 +2912,38 @@ spec: ${JSON.stringify({
       (await dataSource.query(`SELECT public_key FROM lw_vpn_gateway_keys`)).length === 1 ? true : undefined,
     );
 
-    // A posture plugin (MDM) that knows one device.
+    // A posture plugin (MDM) that knows one device, configured as an integration (P4).
     app.get(PosturePluginRegistry).register({
       id: 'it-mdm',
       displayName: 'Integration MDM',
+      category: 'mdm',
+      fields: [{ key: 'apiToken', label: 'API token', secret: true, required: true }],
+      defaultMatchBy: ['deviceId'],
+      allowedHosts: () => ['mdm.example.test'],
       create: () => ({
         id: 'it-mdm',
-        check: async (device) =>
-          device.deviceId === 'SER-1' ? { verdict: 'compliant' as const } : { verdict: 'unknown' as const },
+        category: 'mdm',
+        testConnection: async () => 'ok',
+        fetchDevices: async () => [
+          { externalId: 'm-1', deviceIds: ['SER-1'], status: 'compliant' as const, reasons: [] },
+          {
+            externalId: 'm-2',
+            deviceIds: ['SER-9'],
+            status: 'non-compliant' as const,
+            reasons: ['MDM: encryption off'],
+          },
+        ],
       }),
     });
+
+    const posture = app.get(PostureIntegrationsService);
+    const mdm = await posture.create(admin, { name: 'it-mdm', type: 'it-mdm', config: { apiToken: 'it-secret' } });
+
+    expect(mdm).toMatchObject({ secretsSet: ['apiToken'], config: {} });
+    // The stored configuration is encrypted at rest.
+    expect(JSON.stringify(await dataSource.query(`SELECT config FROM lw_posture_integrations`))).not.toContain(
+      'it-secret',
+    );
 
     // Users enroll with an interactive login and an identity-provider group that maps to a client group.
     const laptopKey = generateWireguardKeyPair();
@@ -2958,7 +2981,15 @@ spec: ${JSON.stringify({
       diskEncryption: true,
       deviceId: 'SER-1',
     });
-    // The MDM knew the device: its id is pinned, no other report can borrow it.
+    // Until the integration looked the device up, the MDM verdict is unknown (fail closed).
+    expect((await remote.config(user('alice', ['staff']), enrolled.client.id)).client.effectiveGroups).toEqual([
+      'quarantine',
+    ]);
+    expect(await posture.sync({ integrationId: mdm.id, slot: 'it' })).toMatchObject({
+      vendorDevices: 2,
+      matchedDevices: 1,
+    });
+    // The device id is pinned at the first report, no other report can borrow it.
     await expect(
       remote.reportPosture(user('alice', ['staff']), enrolled.client.id, {
         platform: 'linux',
@@ -2978,6 +3009,13 @@ spec: ${JSON.stringify({
         deviceId: 'SER-1',
       }),
     ).rejects.toThrow('belongs to another enrolled device');
+    // Pins are stored normalized and unique among non-revoked clients in the database too (migration 048: a
+    // concurrent first report can't pin the same value twice).
+    await expect(
+      dataSource.query(`UPDATE lw_vpn_clients SET posture = '{"deviceId":"ser-1"}'::jsonb WHERE id = $1`, [
+        bobs.client.id,
+      ]),
+    ).rejects.toThrow(/UQ_lw_vpn_clients_pinned_device_id/);
     await remote.revoke(user('bob', ['staff']), bobs.client.id);
 
     const config = await remote.config(user('alice', ['staff']), enrolled.client.id);

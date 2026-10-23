@@ -150,6 +150,10 @@ describe('LoadweaverTopologyPageComponent', () => {
     expect(facade['load']).toHaveBeenCalledWith({ flows: false });
     expect(facade['connectLive']).not.toHaveBeenCalled();
     expect(el().querySelector('[data-testid="topology-modes"]')?.textContent).not.toContain('Timeline');
+    // The layer switches sit in the filter panel.
+    (el().querySelector('.fpc-collapsible-filter-panel__toggle') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(el().querySelector('#lw-topology-layer-tunnels')).not.toBeNull();
     expect(el().querySelector('#lw-topology-layer-traffic')).toBeNull();
   });
 
@@ -160,6 +164,7 @@ describe('LoadweaverTopologyPageComponent', () => {
     fixture.detectChanges();
 
     expect(canvas().hiddenKinds()).toEqual(['tunnel', 'exposure', 'hostname']);
+    expect(el().querySelector('.fpc-collapsible-filter-panel .badge')?.textContent?.trim()).toBe('2');
   });
 
   it('opens a deep-linked timeline and loads the flows at that time', async () => {

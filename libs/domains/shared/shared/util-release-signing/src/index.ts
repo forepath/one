@@ -3,3 +3,4 @@ export * from './lib/signature';
 export * from './lib/trusted-keys';
 export * from './lib/file-digest';
 export * from './lib/product-manifest';
+export * from './lib/desktop-update';

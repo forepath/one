@@ -109,11 +109,23 @@ describe('LoadweaverLogsPageComponent', () => {
       service: 'api',
       live: null,
     });
+
+    // The panel counts range, sources, levels, project and service; levels are checkboxes inside it.
+    expect(el().querySelector('.fpc-collapsible-filter-panel .badge')?.textContent?.trim()).toBe('5');
+    (el().querySelector('.fpc-collapsible-filter-panel__toggle') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const error = el().querySelector('#lw-logs-level-error') as HTMLInputElement;
+
+    expect(error.checked).toBe(true);
+    error.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.levels().has('error')).toBe(false);
   });
 
   it('pages and expands a line with its labels', async () => {
     await create();
-    fixture.componentInstance.older();
+    (el().querySelector('[data-testid="logs-paging"] .fpc-pager__next') as HTMLButtonElement).click();
     expect(facade['next']).toHaveBeenCalled();
 
     (el().querySelector('[data-testid="logs-table"] tbody tr') as HTMLElement).click();

@@ -19,6 +19,7 @@ import { DataSource, In } from 'typeorm';
 import { canReadProject, projectRole, type AccessCaller } from '../access/access.utils';
 import { projectUsage } from '../access/plan-access.utils';
 import { backupBytesByProject, backupReportSection } from '../backups/backup-usage';
+import { UsageService } from '../usage/usage.service';
 import { ProjectAccessService } from '../access/project-access.service';
 import { NodeEntity } from '../entities/node.entity';
 import { ResourceEntity } from '../entities/resource.entity';
@@ -146,6 +147,7 @@ export class ReportsService {
     private readonly health: HealthService,
     private readonly slos: SloService,
     private readonly planner: WorkloadPlannerService,
+    private readonly usage: UsageService,
     @InjectQueue(LOADWEAVER_QUEUE_NAME) private readonly queue: Queue,
   ) {}
 
@@ -293,6 +295,7 @@ export class ReportsService {
         healthChanges: Number(events?.health ?? 0),
       },
       backups: await backupReportSection(this.dataSource, project, from, to),
+      metered: await this.usage.totals(project, from, to),
       notYet: ['upgrades'],
     };
 

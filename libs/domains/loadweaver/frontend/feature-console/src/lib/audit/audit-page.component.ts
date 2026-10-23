@@ -16,8 +16,14 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
   FpcPageHeaderComponent,
+  FpcPagerComponent,
+  FpcPanelComponent,
+  FpcSearchFieldComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 
@@ -45,8 +51,14 @@ const PAGE_SIZES = [25, 50, 100, 250, 500];
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
     FpcPageHeaderComponent,
+    FpcPagerComponent,
+    FpcPanelComponent,
+    FpcSearchFieldComponent,
     FpcSpinnerComponent,
   ],
   templateUrl: './audit-page.component.html',
@@ -87,6 +99,15 @@ export class LoadweaverAuditPageComponent implements OnInit {
   readonly exporting = signal(false);
   readonly exportError = signal<string | null>(null);
   readonly applied = signal<AuditFilter | null>(null);
+  readonly filtersOpen = signal(false);
+
+  /** Filled filters in the panel (the full-text search field is not counted). */
+  readonly activeFilterCount = computed(
+    () =>
+      AUDIT_TEXT_FILTERS.filter((name) => name !== 'text' && this.filters()[name].trim()).length +
+      (this.fromInput() ? 1 : 0) +
+      (this.toInput() ? 1 : 0),
+  );
 
   /** The chain's verification: auditors and cluster admins. */
   readonly canVerify = computed(() => this.clusterRole() === 'cluster-admin' || this.clusterRole() === 'auditor');
@@ -102,6 +123,11 @@ export class LoadweaverAuditPageComponent implements OnInit {
   readonly pageSizeLabel = $localize`:@@lwConsoleAudit-pageSize:Entries per page`;
   readonly verifyLabel = $localize`:@@lwConsoleAudit-verify:Verify chain`;
   readonly resetLabel = $localize`:@@lwConsoleAudit-reset:Reset`;
+  readonly pageLabel = $localize`:@@lwConsoleAudit-page:Page`;
+  readonly filtersLabel = $localize`:@@lwConsoleAudit-filters:Filters`;
+  readonly actionLabel = $localize`:@@lwConsoleAudit-actionLabel:Action`;
+  readonly exportCsvLabel = $localize`:@@lwConsoleAudit-exportCsv:Export CSV`;
+  readonly exportNdjsonLabel = $localize`:@@lwConsoleAudit-exportNdjson:Export NDJSON`;
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;

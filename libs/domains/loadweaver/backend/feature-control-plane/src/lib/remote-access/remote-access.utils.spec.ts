@@ -64,6 +64,9 @@ function client(extra: Partial<VpnClientEntity> = {}): VpnClientEntity {
     lastHandshakeAt: null,
     lastEndpoint: null,
     lastGateway: null,
+    integrationPosture: {},
+    certificateSerial: null,
+    certificateNotAfter: null,
     ...extra,
   };
 }
@@ -89,23 +92,25 @@ describe('remote access utils', () => {
   it('checks posture: core checks, versions, plugin verdicts and stale reports', () => {
     const finance = groups.get('finance')?.posture;
 
-    expect(postureFailures(finance, posture(), NOW)).toEqual([]);
-    expect(postureFailures(finance, null, NOW)).toEqual(['no posture report from this device']);
+    expect(postureFailures(finance, { posture: posture() }, NOW)).toEqual([]);
+    expect(postureFailures(finance, { posture: null }, NOW)).toEqual(['no posture report from this device']);
     expect(
-      postureFailures(finance, posture({ reportedAt: new Date(NOW - 25 * 3_600_000).toISOString() }), NOW),
+      postureFailures(finance, { posture: posture({ reportedAt: new Date(NOW - 25 * 3_600_000).toISOString() }) }, NOW),
     ).toEqual(['posture report is older than 24 hours']);
     expect(
       postureFailures(
         finance,
-        posture({
-          report: { platform: 'macos', osVersion: '14.4', diskEncryption: false },
-          plugins: { crowdstrike: { verdict: 'high-risk', detail: 'detections' } },
-        }),
+        {
+          posture: posture({
+            report: { platform: 'macos', osVersion: '14.4', diskEncryption: false },
+            plugins: { crowdstrike: { verdict: 'high-risk', detail: 'detections' } },
+          }),
+        },
         NOW,
       ),
     ).toEqual(['disk encryption is off', 'macos 14.4 is older than 14.5', 'crowdstrike: high-risk (detections)']);
     // A plugin that never answered fails closed.
-    expect(postureFailures(finance, posture({ plugins: {} }), NOW)).toEqual(['crowdstrike: unknown']);
+    expect(postureFailures(finance, { posture: posture({ plugins: {} }) }, NOW)).toEqual(['crowdstrike: unknown']);
     expect(compareVersions('10.0.22631', '10.0.9200')).toBe(1);
     expect(compareVersions('14.5', '14.5.0')).toBe(0);
   });
@@ -290,5 +295,129 @@ describe('remote access utils', () => {
         '',
       ].join('\n'),
     );
+  });
+});
+
+describe('posture conditions with integrations and certificates', () => {
+  const engineering = clientGroupSpecSchema.parse({
+    idpGroups: ['eng'],
+    posture: {
+      conditions: ['mdm.compliant', 'edr.risk <= low', 'device.certificate.valid', 'device.osVersion >= 14'],
+    },
+    restrictedGroup: 'quarantine',
+  });
+  const named = new Map([
+    ['engineering', engineering],
+    ['quarantine', clientGroupSpecSchema.parse({})],
+  ]);
+  const fact = (extra: Record<string, unknown>) => ({
+    integration: 'intune',
+    type: 'intune',
+    category: 'mdm' as const,
+    status: 'compliant' as const,
+    reasons: [],
+    checkedAt: new Date(NOW - 60_000).toISOString(),
+    staleAt: new Date(NOW + 3_600_000).toISOString(),
+    ...extra,
+  });
+  const healthy = () =>
+    client({
+      groups: ['engineering'],
+      certificateSerial: 'abc1',
+      posture: posture({
+        plugins: {},
+        certificate: {
+          source: 'loadweaver',
+          valid: true,
+          revoked: false,
+          serialNumber: 'abc1',
+          notAfter: new Date(NOW + 10 * 86_400_000).toISOString(),
+          reasons: [],
+          checkedAt: new Date(NOW - 60_000).toISOString(),
+        },
+      }),
+      integrationPosture: {
+        intune: fact({}),
+        crowdstrike: fact({ integration: 'crowdstrike', type: 'crowdstrike', category: 'edr', risk: 'low' }),
+      },
+    });
+
+  it('passes when every condition holds', () => {
+    expect(postureFailures(engineering.posture, healthy(), NOW)).toEqual([]);
+    expect(effectiveGroups(healthy(), named, NOW)).toEqual(['engineering']);
+  });
+
+  it('moves a device with a failing integration into the restricted group, with the reasons', () => {
+    const device = healthy();
+
+    device.integrationPosture['intune'] = fact({
+      status: 'non-compliant',
+      reasons: ['Intune: not compliant with its compliance policies'],
+    });
+    device.integrationPosture['crowdstrike'] = fact({
+      integration: 'crowdstrike',
+      type: 'crowdstrike',
+      category: 'edr',
+      risk: 'high',
+      reasons: ['CrowdStrike: the host is network-contained'],
+    });
+
+    expect(postureFailures(engineering.posture, device, NOW)).toEqual([
+      'Intune: not compliant with its compliance policies',
+      'EDR: risk high (CrowdStrike: the host is network-contained)',
+    ]);
+    expect(effectiveGroups(device, named, NOW)).toEqual(['quarantine']);
+  });
+
+  it('fails closed on stale results, missing integrations and superseded certificates', () => {
+    const stale = healthy();
+
+    stale.integrationPosture['intune'] = fact({ staleAt: new Date(NOW - 1).toISOString() });
+    expect(postureFailures(engineering.posture, stale, NOW)).toEqual(['MDM: the last result is outdated']);
+
+    const none = healthy();
+
+    none.integrationPosture = {};
+    expect(postureFailures(engineering.posture, none, NOW)).toEqual([
+      'MDM: no result for this device',
+      'EDR: no current risk level for this device',
+    ]);
+
+    expect(postureFailures(engineering.posture, { ...healthy(), certificateSerial: 'other' }, NOW)).toEqual([
+      'the device certificate was superseded or revoked',
+    ]);
+  });
+
+  it('feeds the effective (restricted) groups into the compiler input', () => {
+    const device = healthy();
+
+    device.integrationPosture['intune'] = fact({ status: 'non-compliant' });
+
+    const input = remoteAccessInput(
+      [
+        {
+          kind: 'Cluster',
+          name: 'cluster',
+          spec: {
+            network: { podPoolV4: '10.42.0.0/16', servicePoolV4: '10.43.0.0/16', overlayPoolV4: '10.44.0.0/16' },
+            remoteAccess: {
+              nodeGroup: 'vpn',
+              endpoint: 'vpn.example.com',
+              pool: 'vpn-pool',
+              clientNetwork: '100.96.0.0/22',
+            },
+          },
+        },
+        { kind: 'NodeGroup', name: 'vpn', spec: { selector: { labels: { role: 'vpn' } } } },
+        { kind: 'ClientGroup', name: 'engineering', spec: engineering },
+        { kind: 'ClientGroup', name: 'quarantine', spec: {} },
+      ],
+      [{ name: 'gw-1', site: 'fra', labels: { role: 'vpn' }, lifecycle: 'active' }],
+      [device],
+      [{ owner: 'vpn/0', state: 'assigned', holder: 'gw-1' }],
+      NOW,
+    );
+
+    expect(input?.clients[0].groups).toEqual(['quarantine']);
   });
 });

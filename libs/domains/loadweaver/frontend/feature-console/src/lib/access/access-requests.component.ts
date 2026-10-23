@@ -27,6 +27,8 @@ import {
   ],
   templateUrl: './access-requests.component.html',
   standalone: true,
+  // A flex column that fills its parent, so the empty state stretches like a page-level one.
+  host: { class: 'd-flex flex-column flex-grow-1' },
 })
 export class LoadweaverAccessRequestsComponent {
   readonly requests = input<CrossProjectRequest[]>([]);

@@ -21,12 +21,18 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInputGroupComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { combineLatest, interval, map } from 'rxjs';
@@ -65,6 +71,12 @@ export function routeConnectionId(
 @Component({
   selector: 'loadweaver-git-page',
   imports: [
+    FpcPanelGridComponent,
+    FpcButtonGroupComponent,
+    FpcFormFieldComponent,
+    FpcFormControlComponent,
+    FpcFormCheckComponent,
+    FpcInputGroupComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -207,6 +219,13 @@ export class LoadweaverGitPageComponent implements OnInit {
 
   readonly title = $localize`:@@lwConsoleGit-title:Git`;
   readonly refreshLabel = $localize`:@@lwConsoleGit-refresh:Refresh`;
+  readonly connectLabel = $localize`:@@lwConsoleGit-connect:Connect repository`;
+  readonly testLabel = $localize`:@@lwConsoleGit-test:Test connection`;
+  readonly syncLabel = $localize`:@@lwConsoleGit-sync:Sync now`;
+  readonly exportLabel = $localize`:@@lwConsoleGit-export:Export to repository`;
+  readonly resetHostKeyLabel = $localize`:@@lwConsoleGit-resetHostKey:Reset SSH host key`;
+  readonly editLabel = $localize`:@@lwConsoleGit-edit:Edit`;
+  readonly deleteLabel = $localize`:@@lwConsoleGit-delete:Disconnect`;
   readonly connectionsTitle = $localize`:@@lwConsoleGit-connections:Connections`;
   readonly commitsTitle = $localize`:@@lwConsoleGit-commits:Commits`;
   readonly webhookTitle = $localize`:@@lwConsoleGit-webhook:Webhook`;

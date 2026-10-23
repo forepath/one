@@ -15,10 +15,13 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 
@@ -47,10 +50,13 @@ import {
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
     FpcListComponent,
     FpcListItemComponent,
     FpcPageHeaderComponent,
     FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
   ],
   templateUrl: './import-page.component.html',
@@ -75,6 +81,8 @@ export class LoadweaverImportPageComponent implements OnInit {
   readonly needsHostname = needsHostname;
 
   readonly title = computed(() => $localize`:@@lwConsoleImport-title:Import ${this.node()}:node:`);
+  readonly discoverLabel = $localize`:@@lwConsoleImport-discoverAgain:Discover again`;
+  readonly discardLabel = $localize`:@@lwConsoleImport-discard:Discard`;
   readonly editable = computed(() => {
     const status = this.preview()?.status;
 

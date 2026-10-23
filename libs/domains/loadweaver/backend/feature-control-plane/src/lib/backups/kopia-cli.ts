@@ -147,6 +147,28 @@ export function parseKopiaDiff(output: string): KopiaDiff {
   return diff;
 }
 
+/**
+ * The manifest `kopia snapshot create --json` prints (one JSON document; log lines before it are skipped).
+ * Throws when no snapshot with a root object is found.
+ */
+export function parseKopiaSnapshotCreate(output: string): KopiaSnapshot {
+  const trimmed = output.trim();
+  const candidates = [trimmed, trimmed.slice(trimmed.indexOf('{'))];
+
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate) as KopiaSnapshot | KopiaSnapshot[];
+      const snapshot = Array.isArray(parsed) ? parsed.at(-1) : parsed;
+
+      if (snapshot?.id && snapshot.rootEntry?.obj) return snapshot;
+    } catch {
+      // try the next candidate
+    }
+  }
+
+  throw new KopiaError('kopia snapshot create returned no snapshot', tail(output));
+}
+
 export class KopiaCli {
   constructor(private readonly command: string[] = kopiaCommand()) {}
 
@@ -294,6 +316,45 @@ export class KopiaCli {
     child.on('error', cleanup);
 
     return child.stdout;
+  }
+
+  /**
+   * A whole snapshot (or one directory of it) written as a tar archive file (`kopia snapshot restore --mode=tar`):
+   * the export side of a cross-cluster restore through the fleet service (3.24).
+   */
+  async restoreArchive(connection: KopiaConnection, object: string, file: string): Promise<void> {
+    await this.session(connection, async (run) => {
+      await run(['snapshot', 'restore', object, file, '--mode=tar'], 6 * 3_600_000);
+    });
+  }
+
+  /**
+   * Snapshots a local directory into the repository as the control plane's user (FULL): the import side of a
+   * cross-cluster restore (3.24). Tags are `key:value` pairs (letters, digits, `-`).
+   */
+  async snapshotDirectory(
+    connection: KopiaConnection,
+    dir: string,
+    description: string,
+    tags: Record<string, string> = {},
+  ): Promise<KopiaSnapshot> {
+    return await this.session(connection, async (run) =>
+      parseKopiaSnapshotCreate(
+        await run(
+          [
+            'snapshot',
+            'create',
+            dir,
+            `--description=${description.replace(/[^\w .:/-]/g, '').slice(0, 200)}`,
+            ...Object.entries(tags)
+              .filter(([k, v]) => /^[a-z0-9-]{1,32}$/i.test(k) && /^[a-z0-9.-]{1,128}$/i.test(v))
+              .map(([k, v]) => `--tags=${k}:${v}`),
+            '--json',
+          ],
+          6 * 3_600_000,
+        ),
+      ),
+    );
   }
 
   /** Adds (or updates) a Kopia user on the repository (control plane's FULL access to `type=user`). */

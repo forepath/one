@@ -4,6 +4,10 @@ import {
   LoadweaverAnnouncementsModule,
   LoadweaverAnnouncementsService,
   LoadweaverNotificationsModule,
+  POSTURE_SYNC_COORDINATOR_JOB,
+  POSTURE_SYNC_UNIT_JOB,
+  PostureIntegrationsService,
+  type PostureSyncPayload,
   REPORT_COORDINATOR_JOB,
   REPORT_UNIT_JOB,
   ReportsService,
@@ -43,6 +47,7 @@ export class ControlPlaneJobsProcessor extends WorkerHost {
     private readonly emails: EmailDeliveryService,
     private readonly reports: ReportsService,
     private readonly announcements: LoadweaverAnnouncementsService,
+    private readonly posture: PostureIntegrationsService,
   ) {
     super();
   }
@@ -64,6 +69,13 @@ export class ControlPlaneJobsProcessor extends WorkerHost {
         break;
       case REPORT_UNIT_JOB:
         await this.reports.generate(job.data as ReportUnitPayload);
+        break;
+      // Posture integrations (3.31): the coordinator enqueues one sync per due integration.
+      case POSTURE_SYNC_COORDINATOR_JOB:
+        await this.posture.coordinate();
+        break;
+      case POSTURE_SYNC_UNIT_JOB:
+        await this.posture.sync(job.data as PostureSyncPayload);
         break;
       // Release announcements (3.26): the shared update check for the cluster's channel.
       case UPDATE_CHECK_JOB_NAME:
@@ -92,6 +104,14 @@ export class ControlPlaneQueueRegistrar implements OnModuleInit {
       name: REPORT_COORDINATOR_JOB,
       coordinatorJobId: buildCoordinatorJobId('reports'),
       pattern: envCronOrDefault('LOADWEAVER_REPORTS_CRON', '0 3 1 * *'),
+      tz: 'UTC',
+    });
+    // Posture integrations (3.31): due integrations every 2 minutes (each has its own interval).
+    await registerRepeatableCoordinatorJob({
+      queue: this.queue,
+      name: POSTURE_SYNC_COORDINATOR_JOB,
+      coordinatorJobId: buildCoordinatorJobId('posture-sync'),
+      pattern: envCronOrDefault('LOADWEAVER_POSTURE_SYNC_CRON', '*/2 * * * *'),
       tz: 'UTC',
     });
 
