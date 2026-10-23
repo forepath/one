@@ -98,8 +98,11 @@ describe('OpenCodePtyService', () => {
         return new Response('true', { status: 200 });
       }
 
-      if (init?.method === 'PATCH') {
-        return new Response(JSON.stringify({ id: 'pty-1' }), { status: 200 });
+      if (init?.method === 'PUT') {
+        return new Response(JSON.stringify({ id: 'pty-1' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
 
       return new Response('not found', { status: 404 });
@@ -227,6 +230,66 @@ describe('OpenCodePtyService', () => {
     expect(fetchMock.mock.calls.some(([url, init]) => init?.method === 'DELETE' && String(url).includes('pty-1'))).toBe(
       true,
     );
+  });
+
+  it('open applies the initial size via PUT', async () => {
+    const fetchMock = mockFetchSequence();
+
+    await service.open(
+      'agent-1',
+      'container-1',
+      'sess-size',
+      { cols: 132, rows: 40 },
+      { onOutput: jest.fn(), onClosed: jest.fn() },
+    );
+
+    const sizeCall = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT');
+
+    expect(String(sizeCall?.[0])).toContain('/pty/pty-1?directory=');
+    expect(JSON.parse(String(sizeCall?.[1]?.body))).toEqual({ size: { cols: 132, rows: 40 } });
+  });
+
+  it('resize updates the PTY size via PUT', async () => {
+    const fetchMock = mockFetchSequence();
+
+    await service.open('agent-1', 'container-1', 'sess-r', {}, { onOutput: jest.fn(), onClosed: jest.fn() });
+    await service.resize('sess-r', 120, 30);
+
+    const sizeCalls = fetchMock.mock.calls.filter(([, init]) => init?.method === 'PUT');
+
+    expect(sizeCalls).toHaveLength(1);
+    expect(String(sizeCalls[0]?.[0])).toContain('/pty/pty-1?directory=');
+    expect(JSON.parse(String(sizeCalls[0]?.[1]?.body))).toEqual({ size: { cols: 120, rows: 30 } });
+  });
+
+  it('resize rejects when OpenCode answers with the web UI fallback instead of JSON', async () => {
+    const fetchMock = mockFetchSequence();
+
+    await service.open('agent-1', 'container-1', 'sess-html', {}, { onOutput: jest.fn(), onClosed: jest.fn() });
+
+    const fallback = fetchMock.getMockImplementation();
+
+    fetchMock.mockImplementation(async (input: string, init?: RequestInit) =>
+      init?.method === 'PUT'
+        ? new Response('<!doctype html>', { status: 200, headers: { 'Content-Type': 'text/html' } })
+        : fallback?.(input, init),
+    );
+
+    await expect(service.resize('sess-html', 120, 30)).rejects.toThrow('non-JSON');
+  });
+
+  it('resize rejects on an HTTP error', async () => {
+    const fetchMock = mockFetchSequence();
+
+    await service.open('agent-1', 'container-1', 'sess-err', {}, { onOutput: jest.fn(), onClosed: jest.fn() });
+
+    const fallback = fetchMock.getMockImplementation();
+
+    fetchMock.mockImplementation(async (input: string, init?: RequestInit) =>
+      init?.method === 'PUT' ? new Response('gone', { status: 404 }) : fallback?.(input, init),
+    );
+
+    await expect(service.resize('sess-err', 120, 30)).rejects.toThrow('404');
   });
 
   it('write throws when session missing', async () => {
