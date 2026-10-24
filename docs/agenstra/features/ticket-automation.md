@@ -20,7 +20,7 @@ The controller picks candidates with a SQL query that joins `tickets`, `ticket_a
 
 ## Background jobs (BullMQ)
 
-The **backend agent controller** registers a repeatable **coordinator** job on Redis (BullMQ). Each coordinator tick enqueues at most **N** **unit** jobs (one per ticket candidate). Workers process unit jobs in parallel; BullMQ `jobId` deduplication and DB leases prevent double-starts.
+The **backend agent controller** registers a repeatable **coordinator** job on Valkey (BullMQ). Each coordinator tick enqueues at most **N** **unit** jobs (one per ticket candidate). Workers process unit jobs in parallel; BullMQ `jobId` deduplication and DB leases prevent double-starts.
 
 Operator environment variables (see [Environment configuration](../deployment/environment-configuration.md) and [Background jobs](../deployment/background-jobs.md)):
 

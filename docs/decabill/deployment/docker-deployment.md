@@ -7,7 +7,7 @@ Containerized deployment guide for Decabill using Docker and Docker Compose.
 Docker deployment provides:
 
 - Isolated environments for billing API, workers, and frontends
-- Consistent dependencies (Postgres, Redis, Mailhog)
+- Consistent dependencies (Postgres, Valkey, Mailhog)
 - Repeatable production-like stacks on developer machines
 
 ## Prerequisites
@@ -27,7 +27,7 @@ docker compose up -d
 The `docker-compose.yaml` includes:
 
 - **postgres** PostgreSQL 16
-- **redis** Redis 7 with persistence; host port **6380** maps to container **6379** **backend-billing-manager** API (`QUEUE_ROLE=api`, port **3200** including Socket.IO)
+- **valkey** Valkey 9 (Redis-compatible) with persistence; host port **6380** maps to container **6379** **backend-billing-manager** API (`QUEUE_ROLE=api`, port **3200** including Socket.IO)
 - **backend-billing-manager-scheduler** Coordinator registration (`QUEUE_ROLE=scheduler`)
 - **backend-billing-manager-worker** Job processing (`QUEUE_ROLE=worker`)
 - **mailhog** Local SMTP capture for invoice and reminder emails
@@ -35,7 +35,7 @@ The `docker-compose.yaml` includes:
 Volumes:
 
 - `postgres_data` - Database files
-- `redis_data` - Redis AOF data
+- `valkey_data` - Valkey AOF data
 - `billing_file_data` - Shared file storage at `/data` (`customer/`, `supplier/`, `export/datev/` layout)
 - `./provider-plugins` - Optional dynamic provider plugins mount
 
@@ -76,7 +76,7 @@ services:
   backend-billing-manager:
     environment:
       - DB_HOST=postgres
-      - REDIS_HOST=redis
+      - VALKEY_HOST=valkey
       - STATIC_API_KEY=your-api-key
       - CORS_ORIGIN=https://billing.example.com
       - QUEUE_ROLE=api
@@ -144,7 +144,7 @@ docker compose down -v   # removes volumes
 
 ### Startup Order (Billing Manager)
 
-1. Postgres and Redis become healthy
+1. Postgres and Valkey become healthy
 2. API container (`QUEUE_ROLE=api`) starts and runs migrations
 3. Worker and scheduler start after API health check passes
 
@@ -176,7 +176,7 @@ docker compose logs --tail=100 backend-billing-manager-worker
 - **[Local Development](./local-development.md)** Local setup
 - **[Production Checklist](./production-checklist.md)** Production deployment
 - **[Environment Configuration](./environment-configuration.md)** Environment variables
-- **[Background Jobs](./background-jobs.md)** Queue roles and Redis
+- **[Background Jobs](./background-jobs.md)** Queue roles and Valkey
 
 ---
 

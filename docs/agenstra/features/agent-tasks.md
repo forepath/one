@@ -28,7 +28,7 @@ sequenceDiagram
     participant X as agenstra MCP (worker)
     participant M as Agent Manager
     participant C as Agent Controller
-    participant Q as BullMQ (Redis)
+    participant Q as BullMQ (Valkey)
 
     U->>C: REST /clients/:clientId/agents/:agentId/tasks
     O->>X: agenstra_tasks_create(...)

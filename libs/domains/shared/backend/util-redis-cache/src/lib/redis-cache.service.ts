@@ -1,40 +1,31 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import Redis from 'ioredis';
 import { recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel/metrics';
 
-import { readRedisConnectionConfig } from './redis-connection.config';
+import { createKeyValueClient } from './key-value-client/create-key-value-client';
+import type { KeyValueClient } from './key-value-client/key-value-client';
+import { readRedisConnectionConfig, readConnectionEnv } from './redis-connection.config';
 
 /**
- * Thin Redis JSON cache wrapper. Failures are logged and treated as cache misses
- * so callers can always fall back to live data sources.
+ * Thin Valkey/Redis JSON cache wrapper. The client library follows `CACHE_CLIENT` (GLIDE by default).
+ * Failures are logged and treated as cache misses so callers can always fall back to live data sources.
  */
 @Injectable()
 export class RedisCacheService implements OnModuleDestroy {
   private readonly logger = new Logger(RedisCacheService.name);
-  private client: Redis | null = null;
+  private client: KeyValueClient | null = null;
   private connectPromise: Promise<void> | null = null;
 
   private isEnabled(): boolean {
-    return process.env['REDIS_CACHE_ENABLED']?.trim().toLowerCase() !== 'false';
+    return readConnectionEnv(process.env, 'CACHE_ENABLED')?.toLowerCase() !== 'false';
   }
 
-  private async ensureConnected(): Promise<Redis | null> {
+  private async ensureConnected(): Promise<KeyValueClient | null> {
     if (!this.isEnabled()) {
       return null;
     }
 
     if (!this.client) {
-      const config = readRedisConnectionConfig();
-
-      this.client = new Redis({
-        host: config.host,
-        port: config.port,
-        db: config.db,
-        ...(config.password ? { password: config.password } : {}),
-        lazyConnect: true,
-        maxRetriesPerRequest: 1,
-        enableOfflineQueue: false,
-      });
+      this.client = createKeyValueClient({ config: readRedisConnectionConfig(), clientName: 'forepath-cache' });
     }
 
     if (!this.connectPromise) {
@@ -99,7 +90,7 @@ export class RedisCacheService implements OnModuleDestroy {
     }
 
     try {
-      await client.set(key, JSON.stringify(value), 'EX', ttlSeconds);
+      await client.set(key, JSON.stringify(value), ttlSeconds);
       this.recordCacheOperation('set', 'hit', Date.now() - startedAt);
 
       return true;
@@ -112,7 +103,7 @@ export class RedisCacheService implements OnModuleDestroy {
   }
 
   /**
-   * Atomically read and delete a JSON value (GETDEL when available, else GET+DEL).
+   * Atomically read and delete a JSON value (GETDEL).
    * Returns null on miss, disabled Redis, or errors (same fail-open posture as {@link getJson}).
    */
   async takeJson<T>(key: string): Promise<T | null> {
@@ -126,17 +117,7 @@ export class RedisCacheService implements OnModuleDestroy {
     }
 
     try {
-      let raw: string | null = null;
-
-      if (typeof (client as Redis & { getdel?: (k: string) => Promise<string | null> }).getdel === 'function') {
-        raw = await (client as Redis & { getdel: (k: string) => Promise<string | null> }).getdel(key);
-      } else {
-        raw = await client.get(key);
-
-        if (raw) {
-          await client.del(key);
-        }
-      }
+      const raw = await client.getDel(key);
 
       if (!raw) {
         this.recordCacheOperation('get', 'miss', Date.now() - startedAt);
@@ -172,7 +153,7 @@ export class RedisCacheService implements OnModuleDestroy {
     }
 
     try {
-      await this.client.quit();
+      await this.client.close();
     } catch (error) {
       this.logger.warn(`Redis cache disconnect failed: ${(error as Error).message}`);
     } finally {

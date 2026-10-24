@@ -1,6 +1,6 @@
 # Background jobs (BullMQ)
 
-Background work for **backend agent controller** runs through **Redis + BullMQ** instead of in-process `setInterval` loops in the API container.
+Background work for **backend agent controller** runs through **Valkey + BullMQ** instead of in-process `setInterval` loops in the API container.
 
 ## Architecture
 
@@ -11,11 +11,11 @@ Background work for **backend agent controller** runs through **Redis + BullMQ**
 | Worker                               | `worker`     | No       | No                                | Yes                 |
 | Local all-in-one                     | `all`        | Yes      | Yes                               | Yes                 |
 
-Each backend stack has its own **Redis** service in Docker Compose. Workers and schedulers use the **same environment variables** as the API (database, tokens, scheduler intervals, etc.). **Database migrations** run only on containers with `QUEUE_ROLE=api` or `QUEUE_ROLE=all` (faster worker/scheduler startup, no concurrent migration runners).
+Each backend stack has its own **Valkey** service in Docker Compose. Workers and schedulers use the **same environment variables** as the API (database, tokens, scheduler intervals, etc.). **Database migrations** run only on containers with `QUEUE_ROLE=api` or `QUEUE_ROLE=all` (faster worker/scheduler startup, no concurrent migration runners).
 
 ### Startup order
 
-1. Start **Redis** and **Postgres** (and other dependencies).
+1. Start **Valkey** and **Postgres** (and other dependencies).
 2. Start the **API** container (`QUEUE_ROLE=api`) and wait until it is healthy so migrations have run.
 3. Start **scheduler** and **worker** containers (Docker Compose `depends_on` with `service_healthy` on the API service enforces this when using the provided compose files).
 
@@ -36,7 +36,7 @@ See [Email notifications](../features/email-notifications.md).
 
 Application update check (same queue):
 
-- `update-check`: daily GitHub Releases fetch + Redis state refresh (`UPDATE_CHECK_CRON`, timezone `UPDATE_CHECK_TIMEZONE`)
+- `update-check`: daily GitHub Releases fetch + Valkey state refresh (`UPDATE_CHECK_CRON`, timezone `UPDATE_CHECK_TIMEZONE`)
 - `search-reindex.coordinator` / `search-reindex.unit` / `search-index-sync.unit`: OpenSearch index backfill and live sync retries (`SEARCH_REINDEX_INTERVAL`, default 15m). See [Search indexes](../features/search-indexes.md).
 - `opencode-providers.refresh`: fetch [models.dev](https://models.dev/) `api.json` (providers + models) and upsert into `opencode_providers` (`OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS`, default 24h). On first startup with an empty table, or when all rows have empty `models`, a one-shot bootstrap job is enqueued. See [Agent configuration](../features/agent-configuration.md).
 - `opencode-mcp-servers.refresh`: walk all cursor pages of the [official MCP Registry](https://registry.modelcontextprotocol.io/docs) `GET /v0.1/servers?version=latest` and upsert into `opencode_mcp_servers` (`OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS`, default 24h). On first startup with an empty table, a one-shot bootstrap job is enqueued. See [Agent configuration](../features/agent-configuration.md).
@@ -47,21 +47,24 @@ Application update check (same queue):
 
 See [Application updates](../features/application-updates.md).
 
-## Redis and queue environment variables
+## Valkey (or Redis) and queue environment variables
 
-| Variable                    | Purpose                                 | Default (local)                                       |
-| --------------------------- | --------------------------------------- | ----------------------------------------------------- |
-| `REDIS_HOST`                | Redis hostname                          | `localhost` / compose service `redis`                 |
-| `REDIS_PORT`                | Redis port                              | `6379`                                                |
-| `REDIS_PASSWORD`            | Optional password                       | empty                                                 |
-| `REDIS_DB`                  | Redis database index                    | `0`                                                   |
-| `REDIS_KEY_PREFIX`          | Key namespace                           | `agenstra-controller`                                 |
-| `QUEUE_ROLE`                | `api`, `scheduler`, `worker`, or `all`  | `all` (local), `api` in API container                 |
-| `QUEUE_WORKER_CONCURRENCY`  | Default worker concurrency              | `5`                                                   |
-| `QUEUE_BULL_BOARD_ENABLED`  | Mount Bull Board UI on API / `all` only | `true` on API in compose; `false` on worker/scheduler |
-| `QUEUE_BULL_BOARD_PATH`     | Bull Board route                        | `/admin/queues`                                       |
-| `QUEUE_BULL_BOARD_USERNAME` | HTTP Basic username                     | `admin`                                               |
-| `QUEUE_BULL_BOARD_PASSWORD` | HTTP Basic password (required)          | `bullmq` in local compose                             |
+The bundled Compose stacks run **[Valkey](https://valkey.io)**, the open-source, Redis-compatible in-memory store. Valkey and Redis (7.2+) are interchangeable here. Configure the connection with the `VALKEY_*` variables or the legacy `REDIS_*` names. When both are set, the family matching `CACHE_CLIENT` wins (`glide`: `VALKEY_*`, `ioredis`: `REDIS_*`) and the other one is the fallback.
+
+| Variable                    | Purpose                                                                                                              | Default (local)                                       |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `VALKEY_HOST`               | Valkey hostname                                                                                                      | `localhost` / compose service `valkey`                |
+| `VALKEY_PORT`               | Valkey port                                                                                                          | `6379`                                                |
+| `VALKEY_PASSWORD`           | Optional password                                                                                                    | empty                                                 |
+| `VALKEY_DB`                 | Valkey database index                                                                                                | `0`                                                   |
+| `VALKEY_KEY_PREFIX`         | Key namespace                                                                                                        | `agenstra-controller`                                 |
+| `CACHE_CLIENT`              | Client library for all Valkey connections (BullMQ queues, caches, update state): `glide` (Valkey GLIDE) or `ioredis` | `glide`                                               |
+| `QUEUE_ROLE`                | `api`, `scheduler`, `worker`, or `all`                                                                               | `all` (local), `api` in API container                 |
+| `QUEUE_WORKER_CONCURRENCY`  | Default worker concurrency                                                                                           | `5`                                                   |
+| `QUEUE_BULL_BOARD_ENABLED`  | Mount Bull Board UI on API / `all` only                                                                              | `true` on API in compose; `false` on worker/scheduler |
+| `QUEUE_BULL_BOARD_PATH`     | Bull Board route                                                                                                     | `/admin/queues`                                       |
+| `QUEUE_BULL_BOARD_USERNAME` | HTTP Basic username                                                                                                  | `admin`                                               |
+| `QUEUE_BULL_BOARD_PASSWORD` | HTTP Basic password (required)                                                                                       | `bullmq` in local compose                             |
 
 Existing `*_SCHEDULER_INTERVAL*` variables now control **coordinator repeat** intervals (milliseconds).
 
@@ -69,7 +72,7 @@ Existing `*_SCHEDULER_INTERVAL*` variables now control **coordinator repeat** in
 
 Each backend `docker-compose.yaml` defines:
 
-- `redis`
+- `valkey`
 - `backend-agent-controller` (API, `QUEUE_ROLE=api`)
 - `backend-agent-controller-scheduler` (`QUEUE_ROLE=scheduler`)
 - `backend-agent-controller-worker` (`QUEUE_ROLE=worker`)
@@ -90,6 +93,6 @@ Worker and scheduler containers set `QUEUE_BULL_BOARD_ENABLED=false` so they do 
 
 ## Related documentation
 
-- [Environment configuration](./environment-configuration.md) Queue and Redis variables
+- [Environment configuration](./environment-configuration.md) Queue and Valkey variables
 - [Local development](./local-development.md) Local API, worker, and scheduler setup
 - [Docker deployment](./docker-deployment.md) Compose services for queue roles

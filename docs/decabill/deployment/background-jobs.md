@@ -1,6 +1,6 @@
 # Background Jobs (BullMQ)
 
-Background work for **backend billing manager** runs through **Redis + BullMQ** instead of in-process `setInterval` loops in the API container.
+Background work for **backend billing manager** runs through **Valkey + BullMQ** instead of in-process `setInterval` loops in the API container.
 
 ## Architecture
 
@@ -11,11 +11,11 @@ Background work for **backend billing manager** runs through **Redis + BullMQ** 
 | Worker                               | `worker`     | No       | No                                | Yes                 |
 | Local all-in-one                     | `all`        | Yes      | Yes                               | Yes                 |
 
-The billing stack has its own **Redis** service in Docker Compose. Workers and schedulers use the **same environment variables** as the API (database, Stripe, scheduler intervals, provisioning tokens, etc.). **Database migrations** run only on containers with `QUEUE_ROLE=api` or `QUEUE_ROLE=all`.
+The billing stack has its own **Valkey** service in Docker Compose. Workers and schedulers use the **same environment variables** as the API (database, Stripe, scheduler intervals, provisioning tokens, etc.). **Database migrations** run only on containers with `QUEUE_ROLE=api` or `QUEUE_ROLE=all`.
 
 ### Startup order
 
-1. Start **Redis** and **Postgres** (and Mailhog or production SMTP).
+1. Start **Valkey** and **Postgres** (and Mailhog or production SMTP).
 2. Start the **API** container (`QUEUE_ROLE=api`) and wait until it is healthy so migrations have run.
 3. Start **scheduler** and **worker** containers (`depends_on` with `service_healthy` on the API service in the provided compose file).
 
@@ -95,22 +95,25 @@ DATEV unit job IDs:
 - Per-tenant: `datev-export.tenant.{tenantId}.{year}-{month}`
 - Unified: `datev-export.unified.{year}-{month}`
 
-## Redis and Queue Environment Variables
+## Valkey (or Redis) and Queue Environment Variables
 
-| Variable                    | Purpose                                 | Default (local compose)   |
-| --------------------------- | --------------------------------------- | ------------------------- |
-| `REDIS_HOST`                | Redis hostname                          | `redis` in compose        |
-| `REDIS_PORT`                | Redis port inside network               | `6379`                    |
-| `REDIS_HOST_PORT`           | Host port mapping in compose            | `6380`                    |
-| `REDIS_PASSWORD`            | Optional password                       | empty                     |
-| `REDIS_DB`                  | Redis database index                    | `0`                       |
-| `REDIS_KEY_PREFIX`          | Key namespace                           | `decabill-billing`        |
-| `QUEUE_ROLE`                | `api`, `scheduler`, `worker`, or `all`  | `api` in API container    |
-| `QUEUE_WORKER_CONCURRENCY`  | Default worker concurrency              | `5`                       |
-| `QUEUE_BULL_BOARD_ENABLED`  | Mount Bull Board UI on API / `all` only | `true` on API in compose  |
-| `QUEUE_BULL_BOARD_PATH`     | Bull Board route                        | `/admin/queues`           |
-| `QUEUE_BULL_BOARD_USERNAME` | HTTP Basic username                     | `admin`                   |
-| `QUEUE_BULL_BOARD_PASSWORD` | HTTP Basic password (required)          | `bullmq` in local compose |
+The bundled Compose stacks run **[Valkey](https://valkey.io)**, the open-source, Redis-compatible in-memory store. Valkey and Redis (7.2+) are interchangeable here. Configure the connection with the `VALKEY_*` variables or the legacy `REDIS_*` names. When both are set, the family matching `CACHE_CLIENT` wins (`glide`: `VALKEY_*`, `ioredis`: `REDIS_*`) and the other one is the fallback.
+
+| Variable                    | Purpose                                                                                                              | Default (local compose)   |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `VALKEY_HOST`               | Valkey hostname                                                                                                      | `valkey` in compose       |
+| `VALKEY_PORT`               | Valkey port inside network                                                                                           | `6379`                    |
+| `VALKEY_HOST_PORT`          | Host port mapping in compose                                                                                         | `6380`                    |
+| `VALKEY_PASSWORD`           | Optional password                                                                                                    | empty                     |
+| `VALKEY_DB`                 | Valkey database index                                                                                                | `0`                       |
+| `VALKEY_KEY_PREFIX`         | Key namespace                                                                                                        | `decabill-billing`        |
+| `CACHE_CLIENT`              | Client library for all Valkey connections (BullMQ queues, caches, update state): `glide` (Valkey GLIDE) or `ioredis` | `glide`                   |
+| `QUEUE_ROLE`                | `api`, `scheduler`, `worker`, or `all`                                                                               | `api` in API container    |
+| `QUEUE_WORKER_CONCURRENCY`  | Default worker concurrency                                                                                           | `5`                       |
+| `QUEUE_BULL_BOARD_ENABLED`  | Mount Bull Board UI on API / `all` only                                                                              | `true` on API in compose  |
+| `QUEUE_BULL_BOARD_PATH`     | Bull Board route                                                                                                     | `/admin/queues`           |
+| `QUEUE_BULL_BOARD_USERNAME` | HTTP Basic username                                                                                                  | `admin`                   |
+| `QUEUE_BULL_BOARD_PASSWORD` | HTTP Basic password (required)                                                                                       | `bullmq` in local compose |
 
 Scheduler interval variables (`BILLING_SCHEDULER_INTERVAL`, `EXPIRATION_SCHEDULER_INTERVAL`, `CONFIG_CHANGE_SCHEDULER_INTERVAL`, etc.) control **coordinator repeat** intervals in BullMQ. Config-change reclaim uses `CONFIG_CHANGE_PROCESSING_TIMEOUT_MS` (not an interval), see [Subscription Config Change](../features/subscription-config-change.md#operations).
 
@@ -118,12 +121,12 @@ Scheduler interval variables (`BILLING_SCHEDULER_INTERVAL`, `EXPIRATION_SCHEDULE
 
 `apps/decabill/backend-billing-manager/docker-compose.yaml` defines:
 
-- `redis` (host port **6380** by default)
+- `valkey` (host port **6380** by default)
 - `backend-billing-manager` (API, `QUEUE_ROLE=api`, port **3200**)
 - `backend-billing-manager-scheduler` (`QUEUE_ROLE=scheduler`)
 - `backend-billing-manager-worker` (`QUEUE_ROLE=worker`)
 
-Billing Redis is published on host port **6380** so it can run alongside other Redis instances on **6379**.
+Billing Valkey is published on host port **6380** so it can run alongside other Valkey instances on **6379**.
 
 ## Bull Board
 
@@ -150,7 +153,7 @@ Unit jobs resolve `tenant_id` from job payload data so multi-tenant billing runs
 
 ## Related documentation
 
-- **[Environment Configuration](./environment-configuration.md)** Redis and scheduler variables
+- **[Environment Configuration](./environment-configuration.md)** Valkey and scheduler variables
 - **[Local Development](./local-development.md)** `QUEUE_ROLE=all` locally
 - **[Docker Deployment](./docker-deployment.md)** Compose services
 - **[Multi-tenancy](../features/multi-tenancy.md)** `X-Tenant` and `TENANTS`

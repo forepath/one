@@ -4,7 +4,7 @@ Hardware and software requirements for running Decabill components in developmen
 
 ## Overview
 
-Decabill splits backend work across **queue roles** (`api`, `worker`, `scheduler`) from one billing-manager image. The billing console is a lightweight Express SSR server. PostgreSQL, Redis, and **OpenSearch** are required for every backend deployment.
+Decabill splits backend work across **queue roles** (`api`, `worker`, `scheduler`) from one billing-manager image. The billing console is a lightweight Express SSR server. PostgreSQL, Valkey, and **OpenSearch** are required for every backend deployment.
 
 Typical production layout:
 
@@ -28,7 +28,7 @@ graph TB
 
     subgraph "Data services"
         PG[(PostgreSQL 16)]
-        RD[(Redis 7)]
+        RD[(Valkey)]
         OS[(OpenSearch 2)]
     end
 
@@ -70,16 +70,16 @@ Primary datastore for tenants, subscriptions, invoices, identity, and project da
 
 Plan disk growth for invoice metadata, audit tables, and migration history. Enable automated backups before production cutover.
 
-### Redis 7
+### Valkey 9 (or Redis 7.2+)
 
-BullMQ backing store for the **`billing`** queue. AOF persistence is enabled in the default Compose file.
+BullMQ backing store for the **`billing`** queue. The default Compose file ships Valkey (the open-source Redis drop-in) with AOF persistence enabled; a Redis 7.2+ server works equally well.
 
 | Profile         | vCPU | Memory  | Disk  | Notes                                                    |
 | --------------- | ---- | ------- | ----- | -------------------------------------------------------- |
 | Local / staging | 0.5  | 512 MiB | 1 GiB | Default compose stack                                    |
 | Production      | 1    | 1-2 GiB | 5 GiB | Jobs are **not** auto-removed; memory grows with history |
 
-Monitor Redis memory when Bull Board retention is long or worker failure rates are high.
+Monitor Valkey memory when Bull Board retention is long or worker failure rates are high.
 
 ### OpenSearch 2
 
@@ -121,7 +121,7 @@ Scale **worker replicas** horizontally. Tune `QUEUE_WORKER_CONCURRENCY` to CPU c
 
 ### Scheduler (`QUEUE_ROLE=scheduler`)
 
-Registers repeatable coordinator jobs only. Lightweight and **singleton** per Redis key prefix.
+Registers repeatable coordinator jobs only. Lightweight and **singleton** per Valkey key prefix.
 
 | Profile          | vCPU     | Memory limit   | Notes                                          |
 | ---------------- | -------- | -------------- | ---------------------------------------------- |
@@ -129,7 +129,7 @@ Registers repeatable coordinator jobs only. Lightweight and **singleton** per Re
 
 ## Frontend Billing Console
 
-Angular SSR Express server. No database or Redis on this host.
+Angular SSR Express server. No database or Valkey on this host.
 
 | Application     | Image                             | vCPU | Memory limit   | Disk  | Default port |
 | --------------- | --------------------------------- | ---- | -------------- | ----- | ------------ |
@@ -150,7 +150,7 @@ The local file storage provider requires the same `FILE_STORAGE_ROOT` volume on 
 
 ## Mixed and Local Development Host
 
-When running the full Compose stack (Postgres, Redis, API, worker, scheduler, Mailhog) plus the billing console on one machine, or using **`QUEUE_ROLE=all`** with Nx:
+When running the full Compose stack (Postgres, Valkey, API, worker, scheduler, Mailhog) plus the billing console on one machine, or using **`QUEUE_ROLE=all`** with Nx:
 
 | Resource | Minimum     | Comfortable |
 | -------- | ----------- | ----------- |
@@ -164,10 +164,10 @@ Close other memory-heavy applications when testing invoice PDF generation or pro
 
 ### Small operator (single tenant, low job volume)
 
-| Host / service                                       | vCPU | Memory |
-| ---------------------------------------------------- | ---- | ------ |
-| Combined API + scheduler + worker + Postgres + Redis | 4    | 8 GiB  |
-| Billing console                                      | 1    | 1 GiB  |
+| Host / service                                        | vCPU | Memory |
+| ----------------------------------------------------- | ---- | ------ |
+| Combined API + scheduler + worker + Postgres + Valkey | 4    | 8 GiB  |
+| Billing console                                       | 1    | 1 GiB  |
 
 Acceptable for staging or a single-tenant pilot. Split worker from API before production traffic.
 
@@ -179,19 +179,19 @@ Acceptable for staging or a single-tenant pilot. Split worker from API before pr
 | Worker (1+ replicas)          | 2 each   | 4 GiB each   |
 | Scheduler (1 replica)         | 0.5      | 1 GiB        |
 | PostgreSQL                    | 2        | 4 GiB        |
-| Redis                         | 1        | 1 GiB        |
+| Valkey                        | 1        | 1 GiB        |
 | Billing console (1+ replicas) | 0.5 each | 1 GiB each   |
 
 ## Network and External Dependencies
 
-| Dependency                 | Required   | Notes                                               |
-| -------------------------- | ---------- | --------------------------------------------------- |
-| PostgreSQL                 | Yes        | Reachable from API, worker, and scheduler           |
-| Redis                      | Yes        | Same network; align `REDIS_KEY_PREFIX` across roles |
-| SMTP                       | Production | Replace Mailhog with production SMTP                |
-| Stripe API                 | Optional   | Checkout and webhooks when payments enabled         |
-| Hetzner / DigitalOcean API | Optional   | When service plans include infrastructure           |
-| Outbound HTTPS             | Yes        | Payment, cloud, and email providers                 |
+| Dependency                 | Required   | Notes                                                |
+| -------------------------- | ---------- | ---------------------------------------------------- |
+| PostgreSQL                 | Yes        | Reachable from API, worker, and scheduler            |
+| Valkey                     | Yes        | Same network; align `VALKEY_KEY_PREFIX` across roles |
+| SMTP                       | Production | Replace Mailhog with production SMTP                 |
+| Stripe API                 | Optional   | Checkout and webhooks when payments enabled          |
+| Hetzner / DigitalOcean API | Optional   | When service plans include infrastructure            |
+| Outbound HTTPS             | Yes        | Payment, cloud, and email providers                  |
 
 Ingress: expose console (**4202** or behind TLS terminator) and API (**3200**) with `/api/`, `/socket/`, and `/socket.io/` proxied to `PORT`. Restrict Bull Board (`/admin/queues`) to operations networks.
 

@@ -7,9 +7,9 @@ describe('compose-service.utils', () => {
   });
 
   it('emits named volumes without host binds', () => {
-    expect(buildComposeNamedVolumes(['postgres_data', 'redis_data'])).toBe(`volumes:
+    expect(buildComposeNamedVolumes(['postgres_data', 'valkey_data'])).toBe(`volumes:
   postgres_data:
-  redis_data:`);
+  valkey_data:`);
   });
 
   it('emits a private bridge network', () => {

@@ -265,7 +265,7 @@ describe('cloud-init.utils', () => {
       expect(script).toContain('MCP_OAUTH_CALLBACK_SECRET: mcp-oauth-secret');
     });
 
-    it('generates a compose stack with redis, opensearch, and api/worker/scheduler split', () => {
+    it('generates a compose stack with valkey, opensearch, and api/worker/scheduler split', () => {
       const config: CloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
@@ -297,10 +297,10 @@ describe('cloud-init.utils', () => {
       const b64 = buildBillingCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
 
-      expect(script).toContain('redis:');
+      expect(script).toContain('valkey:');
       expect(script).toContain('opensearch:');
       expect(script).toContain('pgvector/pgvector:pg16');
-      expect(script).toContain('redis:7-alpine');
+      expect(script).toContain('docker.io/valkey/valkey:9.0.6-alpine');
       expect(script).toContain('nginx:alpine');
       expect(script).toContain('opensearchproject/opensearch:2.19.1');
       expect(script).toContain('container_name: agent-controller-opensearch');
@@ -311,8 +311,8 @@ describe('cloud-init.utils', () => {
       expect(script).toContain('QUEUE_ROLE: worker');
       expect(script).toContain('QUEUE_ROLE: scheduler');
 
-      expect(script).toContain('REDIS_HOST: redis');
-      expect(script).toContain('REDIS_PORT: 6379');
+      expect(script).toContain('VALKEY_HOST: valkey');
+      expect(script).toContain('VALKEY_PORT: 6379');
       expect(script).toContain('OPENSEARCH_HOST: opensearch');
       expect(script).toContain("OPENSEARCH_NODE: 'http://opensearch:9200'");
       expect(script).toContain('OPENSEARCH_INDEX_PREFIX: agenstra');

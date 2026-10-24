@@ -2454,23 +2454,25 @@ describe('DockerService', () => {
   describe('getContainerHomeDirectory', () => {
     const containerId = 'test-container-id';
 
+    /**
+     * Writes the exec output synchronously so it is buffered before the service attaches its listener and is
+     * delivered on the next tick, always ahead of the mock stream's 10 ms `end`. A delayed write would race that
+     * timer and intermittently resolve with empty output under load.
+     */
+    function mockHomeOutput(output: string): void {
+      mockContainer.modem.demuxStream = jest.fn((_stream, stdout: PassThrough) => {
+        stdout.write(Buffer.from(output));
+        stdout.end();
+      });
+    }
+
     beforeEach(() => {
       mockContainer.inspect.mockResolvedValue({});
-      mockContainer.modem.demuxStream = jest.fn((stream, stdout) => {
-        setTimeout(() => {
-          stdout.write(Buffer.from(''));
-          stdout.end();
-        }, 5);
-      });
+      mockHomeOutput('');
     });
 
     it('should return trimmed HOME from container exec output', async () => {
-      mockContainer.modem.demuxStream = jest.fn((stream, stdout) => {
-        setTimeout(() => {
-          stdout.write(Buffer.from('  /custom/home  '));
-          stdout.end();
-        }, 5);
-      });
+      mockHomeOutput('  /custom/home  ');
 
       const home = await service.getContainerHomeDirectory(containerId);
 
@@ -2486,12 +2488,7 @@ describe('DockerService', () => {
     });
 
     it('should fall back to /home/agenstra when exec output is empty', async () => {
-      mockContainer.modem.demuxStream = jest.fn((stream, stdout) => {
-        setTimeout(() => {
-          stdout.write(Buffer.from('   '));
-          stdout.end();
-        }, 5);
-      });
+      mockHomeOutput('   ');
 
       const home = await service.getContainerHomeDirectory(containerId);
 

@@ -7,7 +7,7 @@ This guide helps you run Decabill locally, connect the billing console to the bi
 Before you begin, ensure you have:
 
 - **Node.js** 24.22.1 or higher
-- **Docker** and **Docker Compose** (recommended for Postgres, Redis, and Mailhog)
+- **Docker** and **Docker Compose** (recommended for Postgres, Valkey, and Mailhog)
 - **Git** (to clone the monorepo)
 - **Keycloak** (optional, for OAuth2/OIDC login in the billing console)
 - **Stripe test keys** (optional, for checkout and payment flows)
@@ -38,7 +38,7 @@ docker compose --env-file .start-containers.env up -d
 This starts:
 
 - PostgreSQL 16
-- Redis 7 (host port **6380** by default)
+- Valkey 9 or Redis 7.2+ (host port **6380** by default)
 - Billing API (`QUEUE_ROLE=api`, HTTP **3200** including Socket.IO `/socket/billing` and `/socket/projects`)
 - Billing worker (`QUEUE_ROLE=worker`)
 - Billing scheduler (`QUEUE_ROLE=scheduler`)
@@ -74,14 +74,14 @@ cd one
 npm install
 ```
 
-Start Postgres and Redis (Docker one-liners or the billing manager compose stack without the API containers). Then run:
+Start Postgres and Valkey (Docker one-liners or the billing manager compose stack without the API containers). Then run:
 
 ```bash
 # Terminal 1: billing manager (QUEUE_ROLE=all runs API, worker, and scheduler in one process)
 cd apps/decabill/backend-billing-manager
 cp .start-containers.env.example .env
 
-# Set QUEUE_ROLE=all, REDIS_PORT=6380 if Redis is published on the host, and auth variables
+# Set QUEUE_ROLE=all, VALKEY_PORT=6380 if Valkey is published on the host, and auth variables
 
 nx serve decabill-backend-billing-manager
 
@@ -113,10 +113,10 @@ DB_USERNAME=postgres
 DB_PASSWORD=postgres
 DB_DATABASE=postgres
 
-# Redis (6380 when using compose host mapping)
-REDIS_HOST=localhost
-REDIS_PORT=6380
-REDIS_KEY_PREFIX=decabill-billing
+# Valkey (6380 when using compose host mapping)
+VALKEY_HOST=localhost
+VALKEY_PORT=6380
+VALKEY_KEY_PREFIX=decabill-billing
 
 # Process role (local all-in-one)
 QUEUE_ROLE=all
@@ -238,8 +238,8 @@ Confirm WebSocket dashboard updates on the overview page when logged in as an en
 
 ## Troubleshooting
 
-- Database or Redis errors: see **[Local Development](./deployment/local-development.md)**.
-- Port conflicts: billing API **3200**, console **4202**, Redis host **6380**.
+- Database or Valkey errors: see **[Local Development](./deployment/local-development.md)**.
+- Port conflicts: billing API **3200**, console **4202**, Valkey host **6380**.
 - Migrations run only when `QUEUE_ROLE` is `api` or `all`. Ensure at least one API role process has started.
 
 ---

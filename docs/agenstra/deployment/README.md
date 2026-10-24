@@ -38,7 +38,7 @@ CPU, memory, and disk guidance by deployment role:
 
 - Controller API, worker, and scheduler sizing
 - Manager host and per-agent workload containers (worker)
-- PostgreSQL (pgvector) and Redis baselines
+- PostgreSQL (pgvector) and Valkey baselines
 - Frontend hosts and mixed local-development hosts
 
 ### [Environment Configuration](./environment-configuration.md)
@@ -77,7 +77,7 @@ BullMQ background processing for the agent controller:
 
 - Queue roles (API, scheduler, worker)
 - Job registry and coordinator schedules
-- Redis and Bull Board configuration
+- Valkey and Bull Board configuration
 
 ## Deployment Architecture
 

@@ -24,15 +24,15 @@ Map your intended profile to **[System Requirements](./system-requirements.md)**
 ### Data services
 
 - [ ] PostgreSQL 16 sized for profile (production small ≥2-4 GiB RAM / 50 GiB disk; medium per system requirements)
-- [ ] Redis 7 sized for BullMQ history (production ≥1-2 GiB); AOF or RDB recovery plan agreed
+- [ ] Valkey 9 (or Redis 7.2+) sized for BullMQ history (production ≥1-2 GiB); AOF or RDB recovery plan agreed
 - [ ] Disk growth planned for invoice metadata, audit tables, PDF volume, and DATEV exports when enabled
 
 ### Billing manager roles
 
-- [ ] Production uses split **`QUEUE_ROLE`**: `api`, `worker`, and **one** `scheduler` per Redis key prefix
+- [ ] Production uses split **`QUEUE_ROLE`**: `api`, `worker`, and **one** `scheduler` per Valkey key prefix
 - [ ] API memory limit ≥2-4 GiB (PDF path can briefly need **4 GiB**)
 - [ ] Worker memory limit ≥4 GiB for heavy PDF/provisioning batches; concurrency tuned to CPU and Stripe/cloud rate limits
-- [ ] Scheduler kept lightweight (≤1 GiB); never run multiple schedulers against the same Redis prefix
+- [ ] Scheduler kept lightweight (≤1 GiB); never run multiple schedulers against the same Valkey prefix
 - [ ] Invoice PDF and DATEV export volumes mounted on **api, worker, and scheduler** when those features are enabled
 
 ### Frontend and network
@@ -48,9 +48,9 @@ Run after Compose or orchestrated bring-up. Prefer staging with production-like 
 
 ### Bring-up order
 
-- [ ] PostgreSQL and Redis healthy and reachable from all queue roles
+- [ ] PostgreSQL and Valkey healthy and reachable from all queue roles
 - [ ] API container healthy (`/api/health`) with migrations applied **before** workers start
-- [ ] Scheduler and worker containers started with matching `REDIS_KEY_PREFIX`
+- [ ] Scheduler and worker containers started with matching `VALKEY_KEY_PREFIX`
 - [ ] Billing console reachable over intended URL (HTTPS in production)
 - [ ] Stripe webhook endpoint registered for the production API URL when payments are enabled
 
@@ -64,7 +64,7 @@ Run after Compose or orchestrated bring-up. Prefer staging with production-like 
 
 ### Security baseline (minimum)
 
-- [ ] No default database, Redis, or Bull Board credentials in production
+- [ ] No default database, Valkey, or Bull Board credentials in production
 - [ ] `NODE_ENV=production`, CORS origins, rate limiting, and `ENCRYPTION_KEY` set
 - [ ] `TENANTS` / `TENANTS_ALLOW_DEFAULT` / `STATIC_API_KEY_TENANT_ID` reviewed for multi-tenant scope
 - [ ] Stripe keys and webhook secret use production mode values
@@ -75,7 +75,7 @@ Run after Compose or orchestrated bring-up. Prefer staging with production-like 
 ### Capacity and queues
 
 - [ ] Monitor API and worker CPU/memory during invoice PDF batches and provisioning windows
-- [ ] Watch Redis memory growth from retained BullMQ jobs (jobs are **not** auto-removed)
+- [ ] Watch Valkey memory growth from retained BullMQ jobs (jobs are **not** auto-removed)
 - [ ] Scale **worker replicas** horizontally before raising concurrency beyond CPU/rate limits
 - [ ] Revisit Postgres disk and PDF/DATEV volume sizes against retention policy
 - [ ] Alert on elevated job failure rates and Stripe webhook processing errors
@@ -95,7 +95,7 @@ Run after Compose or orchestrated bring-up. Prefer staging with production-like 
 ### Logging and access
 
 - [ ] Centralize structured logs from all queue roles; correlate with `X-Correlation-Id` / `X-Request-Id`
-- [ ] Restrict Bull Board and Redis/Postgres network access to application and ops subnets
+- [ ] Restrict Bull Board and Valkey/Postgres network access to application and ops subnets
 - [ ] Do not log Stripe secrets, API keys, or full PII
 
 ## Disclosure and artifact checklist

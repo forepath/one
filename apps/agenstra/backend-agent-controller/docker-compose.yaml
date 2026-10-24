@@ -23,11 +23,17 @@ x-backend-agent-controller-environment: &backend-agent-controller-environment
   DB_USERNAME: ${DB_USERNAME:-postgres}
   DB_PASSWORD: ${DB_PASSWORD:-postgres}
   DB_DATABASE: ${DB_DATABASE:-postgres}
-  REDIS_HOST: ${REDIS_HOST:-redis}
-  REDIS_PORT: ${REDIS_PORT:-6379}
-  REDIS_PASSWORD: ${REDIS_PASSWORD:-}
-  REDIS_DB: ${REDIS_DB:-0}
-  REDIS_KEY_PREFIX: ${REDIS_KEY_PREFIX:-agenstra-controller}
+  VALKEY_HOST: ${VALKEY_HOST:-${REDIS_HOST:-valkey}}
+  REDIS_HOST: ${REDIS_HOST:-${VALKEY_HOST:-valkey}}
+  VALKEY_PORT: ${VALKEY_PORT:-${REDIS_PORT:-6379}}
+  REDIS_PORT: ${REDIS_PORT:-${VALKEY_PORT:-6379}}
+  VALKEY_PASSWORD: ${VALKEY_PASSWORD:-${REDIS_PASSWORD:-}}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-${VALKEY_PASSWORD:-}}
+  VALKEY_DB: ${VALKEY_DB:-${REDIS_DB:-0}}
+  REDIS_DB: ${REDIS_DB:-${VALKEY_DB:-0}}
+  VALKEY_KEY_PREFIX: ${VALKEY_KEY_PREFIX:-${REDIS_KEY_PREFIX:-agenstra-controller}}
+  REDIS_KEY_PREFIX: ${REDIS_KEY_PREFIX:-${VALKEY_KEY_PREFIX:-agenstra-controller}}
+  CACHE_CLIENT: ${CACHE_CLIENT:-glide}
   OPENSEARCH_ENABLED: ${OPENSEARCH_ENABLED:-true}
   OPENSEARCH_HOST: ${OPENSEARCH_HOST:-opensearch}
   OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
@@ -113,19 +119,19 @@ services:
       - agent-controller-network
     restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
-    container_name: agent-controller-redis
-    command: ['redis-server', '--appendonly', 'yes']
+  valkey:
+    image: docker.io/valkey/valkey:9.0.6-alpine@sha256:187679e3bd4036959631e3f03983ab2ba503ab21e6fd0454d508e909db2ee989
+    container_name: agent-controller-valkey
+    command: ['valkey-server', '--appendonly', 'yes']
     volumes:
-      - redis_data:/data
+      - valkey_data:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ['CMD', 'valkey-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
     ports:
-      - '${REDIS_HOST_PORT:-6379}:6379'
+      - '${VALKEY_HOST_PORT:-${REDIS_HOST_PORT:-6379}}:6379'
     networks:
       - agent-controller-network
     restart: unless-stopped
@@ -177,7 +183,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      valkey:
         condition: service_healthy
       opensearch:
         condition: service_healthy
@@ -209,7 +215,7 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-      redis:
+      valkey:
         condition: service_healthy
       opensearch:
         condition: service_healthy
@@ -241,7 +247,7 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-      redis:
+      valkey:
         condition: service_healthy
       opensearch:
         condition: service_healthy
@@ -263,7 +269,7 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
+  valkey_data:
   opensearch_data:
 
 networks:

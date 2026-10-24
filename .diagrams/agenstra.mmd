@@ -56,7 +56,7 @@ flowchart TB
     Queue["BullMQ queue agent-controller<br/>config / layer sync, embeddings, imports, egress ingest,<br/>isolation probes, automation, reindex, catalogs, deliveries"]
     CStatus["Instance scrape + console status<br/>manager /api/instance-status"]
     CPg[("Postgres + pgvector<br/>clients, tickets, knowledge, embeddings, plans,<br/>automation runs, agent tasks + runs, handoffs,<br/>statistics, config layers")]
-    Redis[("Redis<br/>BullMQ, VNC tickets, caches, updates")]
+    Valkey[("Valkey<br/>BullMQ, VNC tickets, caches, updates")]
     OpenSearch[("OpenSearch<br/>agenstra-* indexes, workspace-files")]
     Files[("File storage<br/>local or S3: attachments")]
   end
@@ -73,8 +73,8 @@ flowchart TB
   Tickets & Knowledge & Plans & AgentTasks & Handoffs & OcConfig --> CPg
   Handoffs -.task run handoffs: checks approval + targets,<br/>continues the waiting run.-> AgentTasks
   Attachments --> Files
-  Queue --> Redis
-  Notify --> Redis
+  Queue --> Valkey
+  Notify --> Valkey
   Search --> OpenSearch
   Queue -.jobs.-> OcConfig & Knowledge & Import & Tickets & AgentTasks & Handoffs & Search & Notify & CStatus
   Notify --> Smtp

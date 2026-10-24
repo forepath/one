@@ -102,7 +102,7 @@ caching still applies. The build paths are:
 
 Compose uses `pull_policy: never` for the application services and runs
 `up -d --force-recreate --remove-orphans`. Infrastructure images such as
-PostgreSQL, Redis, OpenSearch, and MailHog are separate pulled images.
+PostgreSQL, Valkey, OpenSearch, and MailHog are separate pulled images.
 
 Repeated starts do not necessarily create new image IDs: an unchanged Docker
 build can reuse its cached image. However, a changed build moves the fixed tag to

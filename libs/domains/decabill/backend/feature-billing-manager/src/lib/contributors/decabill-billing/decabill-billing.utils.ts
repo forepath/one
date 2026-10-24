@@ -16,10 +16,10 @@ import {
   buildPostgresComposeService,
 } from '../../utils/cloud-init/postgres-compose.utils';
 import {
-  REDIS_COMPOSE_DEPENDS_ON,
-  buildRedisBackendEnvLines,
-  buildRedisComposeService,
-} from '../../utils/cloud-init/redis-compose.utils';
+  VALKEY_COMPOSE_DEPENDS_ON,
+  buildValkeyBackendEnvLines,
+  buildValkeyComposeService,
+} from '../../utils/cloud-init/valkey-compose.utils';
 
 export const DECABILL_BILLING_STACK_DIR = '/opt/decabill-billing';
 
@@ -186,7 +186,7 @@ export function buildDecabillBillingCloudInitUserData(config: DecabillBillingClo
     `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'socket/billing'}`,
     `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
     ...buildPostgresBackendEnvLines(config.backend?.database),
-    ...buildRedisBackendEnvLines('decabill-billing'),
+    ...buildValkeyBackendEnvLines('decabill-billing'),
     ...buildOpenSearchBackendEnvLines('decabill'),
     `QUEUE_WORKER_CONCURRENCY: 5`,
     `QUEUE_BULL_BOARD_ENABLED: false`,
@@ -279,8 +279,8 @@ ${buildPostgresComposeService({
   database: config.backend?.database?.database ?? 'postgres',
 })}
 
-${buildRedisComposeService({
-  containerName: 'decabill-billing-redis',
+${buildValkeyComposeService({
+  containerName: 'decabill-billing-valkey',
   network: 'decabill-billing-network',
 })}
 
@@ -301,7 +301,7 @@ ${backendApiEnv}
       - '${config.backend?.port ?? '3200'}:${config.backend?.port ?? '3200'}'
     depends_on:
 ${POSTGRES_COMPOSE_DEPENDS_ON}
-${REDIS_COMPOSE_DEPENDS_ON}
+${VALKEY_COMPOSE_DEPENDS_ON}
 ${OPENSEARCH_COMPOSE_DEPENDS_ON}
     networks:
       - decabill-billing-network
@@ -317,7 +317,7 @@ ${backendWorkerEnv}
       - billing_file_data:/data
     depends_on:
 ${POSTGRES_COMPOSE_DEPENDS_ON}
-${REDIS_COMPOSE_DEPENDS_ON}
+${VALKEY_COMPOSE_DEPENDS_ON}
 ${OPENSEARCH_COMPOSE_DEPENDS_ON}
     networks:
       - decabill-billing-network
@@ -333,7 +333,7 @@ ${backendSchedulerEnv}
       - billing_file_data:/data
     depends_on:
 ${POSTGRES_COMPOSE_DEPENDS_ON}
-${REDIS_COMPOSE_DEPENDS_ON}
+${VALKEY_COMPOSE_DEPENDS_ON}
 ${OPENSEARCH_COMPOSE_DEPENDS_ON}
     networks:
       - decabill-billing-network
@@ -361,7 +361,7 @@ ${buildNginxComposeService({
   dependsOn: ['frontend-billing-console-server', 'backend-billing-manager'],
 })}
 
-${buildComposeNamedVolumes(['postgres_data', 'redis_data', 'opensearch_data', 'billing_file_data'])}
+${buildComposeNamedVolumes(['postgres_data', 'valkey_data', 'opensearch_data', 'billing_file_data'])}
 
 ${buildComposeBridgeNetwork('decabill-billing-network')}
 `;

@@ -17,7 +17,7 @@ Decabill can be deployed in several ways:
 Setting up Decabill for local development:
 
 - Prerequisites and installation
-- Local database and Redis setup
+- Local database and Valkey setup
 - Running the billing manager and frontends locally
 - Development workflow and testing
 
@@ -35,7 +35,7 @@ Containerized deployment using Docker:
 CPU, memory, and disk guidance by deployment role:
 
 - API, worker, and scheduler sizing for the billing manager
-- PostgreSQL and Redis baselines
+- PostgreSQL and Valkey baselines
 - Frontend SSR hosts and mixed local-development hosts
 - Production split examples
 
@@ -46,7 +46,7 @@ Complete environment variables reference:
 - Billing manager multi-tenancy
 - Stripe and payment processor configuration
 - Frontend Express variables for billing console and docs
-- Redis and BullMQ queue settings
+- Valkey and BullMQ queue settings
 
 ### [Production Checklist](./production-checklist.md)
 
@@ -72,7 +72,7 @@ BullMQ background processing for the billing manager:
 
 - Queue roles (API, scheduler, worker)
 - Job registry and coordinator schedules
-- Redis host port 6380 and Bull Board on port 3200
+- Valkey host port 6380 and Bull Board on port 3200
 
 ## Deployment Architecture
 
@@ -91,7 +91,7 @@ graph TB
 
     subgraph "Data"
         DB[(PostgreSQL)]
-        RD[(Redis)]
+        RD[(Valkey)]
     end
 
     subgraph "External"
@@ -115,7 +115,7 @@ graph TB
 ### Docker Compose (Recommended)
 
 ```bash
-# Billing manager (API, worker, scheduler, Postgres, Redis, Mailhog)
+# Billing manager (API, worker, scheduler, Postgres, Valkey, Mailhog)
 cd apps/decabill/backend-billing-manager
 docker compose up -d
 

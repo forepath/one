@@ -14,7 +14,7 @@ alwaysApply: true
 - **Indexing:** Create appropriate indexes on frequently queried columns
 - **Query Optimization:** Avoid N+1 queries; use joins and batch operations
 - **Connection Pooling:** Reuse database connections efficiently
-- **Caching:** Implement query result caching (Redis, Memcached)
+- **Caching:** Implement query result caching (Valkey/Redis, Memcached)
 - **Pagination:** Use pagination for large result sets
 - **Lazy Loading:** Load related data only when needed
 

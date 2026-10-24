@@ -4,6 +4,7 @@ import {
   readBullBoardPath,
   readQueueWorkerConcurrency,
   readRedisConnectionConfig,
+  readConnectionEnv,
   toBullMqConnection,
 } from './queue-connection.config';
 
@@ -33,6 +34,43 @@ describe('queue-connection.config', () => {
       db: 2,
       keyPrefix: 'billing',
     });
+  });
+
+  const bothFamilies = {
+    VALKEY_HOST: 'valkey',
+    REDIS_HOST: 'redis',
+    REDIS_PORT: '6380',
+    VALKEY_PASSWORD: '  ',
+    REDIS_PASSWORD: 'legacy-secret',
+    VALKEY_DB: '3',
+    VALKEY_KEY_PREFIX: 'valkey-prefix',
+    REDIS_KEY_PREFIX: 'redis-prefix',
+  };
+
+  it('readRedisConnectionConfig prefers VALKEY_* for the default glide driver, falling back per variable', () => {
+    expect(readRedisConnectionConfig(bothFamilies)).toEqual({
+      host: 'valkey',
+      port: 6380,
+      password: 'legacy-secret',
+      db: 3,
+      keyPrefix: 'valkey-prefix',
+    });
+  });
+
+  it('readRedisConnectionConfig prefers REDIS_* for the ioredis driver, falling back per variable', () => {
+    expect(readRedisConnectionConfig({ ...bothFamilies, CACHE_CLIENT: 'ioredis' })).toEqual({
+      host: 'redis',
+      port: 6380,
+      password: 'legacy-secret',
+      db: 3,
+      keyPrefix: 'redis-prefix',
+    });
+  });
+
+  it('readConnectionEnv treats blank values as unset', () => {
+    expect(readConnectionEnv({ VALKEY_HOST: ' ', REDIS_HOST: ' ' }, 'HOST')).toBeUndefined();
+    expect(readConnectionEnv({ REDIS_HOST: ' redis ' }, 'HOST')).toBe('redis');
+    expect(readConnectionEnv({ VALKEY_HOST: 'valkey', CACHE_CLIENT: 'ioredis' }, 'HOST')).toBe('valkey');
   });
 
   it('toBullMqConnection maps config', () => {

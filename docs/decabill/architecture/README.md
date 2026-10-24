@@ -15,7 +15,7 @@ The stack is built on:
 - **RESTful HTTP APIs** for synchronous billing operations
 - **Socket.IO** for dashboard server status and project board streaming
 - **PostgreSQL** for persistent billing and identity data
-- **Redis and BullMQ** for schedulers, workers, and repeatable jobs
+- **Valkey and BullMQ** for schedulers, workers, and repeatable jobs
 - **Stripe** (and optional dynamic payment plugins) for checkout and webhooks
 
 ## Documentation Structure
@@ -34,7 +34,7 @@ Detailed breakdown of runtime components:
 
 - Frontend billing console (Angular SSR and Express)
 - Backend billing manager (NestJS, queue roles, gateways)
-- PostgreSQL, Redis, Stripe, and external cloud providers
+- PostgreSQL, Valkey, Stripe, and external cloud providers
 
 ### [Data Flow](./data-flow.md)
 
@@ -79,7 +79,7 @@ See **[Authentication](../features/authentication.md)** and **[Multi-tenancy](..
 ### State Management
 
 - **Frontend** NgRx facades and effects for subscriptions, invoices, admin billing, projects, dashboard socket, and project board socket state
-- **Backend** PostgreSQL as source of truth; Redis for job queues; in-memory socket subscription timers for dashboard polling; project board room broadcasts
+- **Backend** PostgreSQL as source of truth; Valkey for job queues; in-memory socket subscription timers for dashboard polling; project board room broadcasts
 
 ## Related documentation
 
@@ -114,7 +114,7 @@ See **[Authentication](../features/authentication.md)** and **[Multi-tenancy](..
 ### Scalability
 
 - Horizontally scale **worker** containers for job throughput
-- Run a single **scheduler** per Redis namespace to register repeatable coordinators
+- Run a single **scheduler** per Valkey namespace to register repeatable coordinators
 - Scale **api** containers behind a load balancer; WebSocket port may require sticky sessions or a dedicated gateway
 
 ### Maintainability

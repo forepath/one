@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-22T17:37:10.704Z",
+  "generatedAt": "2026-10-24T10:31:05.172Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -2234,6 +2234,14 @@
       }
     },
     {
+      "id": "package:@valkey/valkey-glide",
+      "type": "package",
+      "attrs": {
+        "name": "@valkey/valkey-glide",
+        "version": "2.5.3"
+      }
+    },
+    {
       "id": "package:axios",
       "type": "package",
       "attrs": {
@@ -2254,7 +2262,7 @@
       "type": "package",
       "attrs": {
         "name": "bullmq",
-        "version": "5.76.10"
+        "version": "5.81.5"
       }
     },
     {
@@ -25784,12 +25792,12 @@
       }
     },
     {
-      "id": "concept:agenstra-redis-and-queue-environment-variables",
+      "id": "concept:agenstra-valkey-or-redis-and-queue-environment-variables",
       "type": "concept",
       "attrs": {
-        "title": "Redis and queue environment variables",
+        "title": "Valkey (or Redis) and queue environment variables",
         "docPath": "docs/agenstra/deployment/background-jobs.md",
-        "sectionAnchor": "redis-and-queue-environment-variables",
+        "sectionAnchor": "valkey-or-redis-and-queue-environment-variables",
         "domain": "agenstra"
       }
     },
@@ -26014,12 +26022,12 @@
       }
     },
     {
-      "id": "concept:agenstra-redis-and-bullmq-background-jobs",
+      "id": "concept:agenstra-valkey-or-redis-and-bullmq-background-jobs",
       "type": "concept",
       "attrs": {
-        "title": "Redis and BullMQ (background jobs)",
+        "title": "Valkey (or Redis) and BullMQ (background jobs)",
         "docPath": "docs/agenstra/deployment/environment-configuration.md",
-        "sectionAnchor": "redis-and-bullmq-background-jobs",
+        "sectionAnchor": "valkey-or-redis-and-bullmq-background-jobs",
         "domain": "agenstra"
       }
     },
@@ -26994,12 +27002,12 @@
       }
     },
     {
-      "id": "concept:agenstra-redis-flush",
+      "id": "concept:agenstra-valkey-flush",
       "type": "concept",
       "attrs": {
-        "title": "Redis flush",
+        "title": "Valkey flush",
         "docPath": "docs/agenstra/features/application-updates.md",
-        "sectionAnchor": "redis-flush",
+        "sectionAnchor": "valkey-flush",
         "domain": "agenstra"
       }
     },
@@ -30064,12 +30072,12 @@
       }
     },
     {
-      "id": "concept:decabill-redis",
+      "id": "concept:decabill-valkey-or-redis",
       "type": "concept",
       "attrs": {
-        "title": "Redis",
+        "title": "Valkey (or Redis)",
         "docPath": "docs/decabill/architecture/components.md",
-        "sectionAnchor": "redis",
+        "sectionAnchor": "valkey-or-redis",
         "domain": "decabill"
       }
     },
@@ -30304,12 +30312,12 @@
       }
     },
     {
-      "id": "concept:decabill-billing-manager-api-worker-scheduler-postgres-redis-mailhog",
+      "id": "concept:decabill-billing-manager-api-worker-scheduler-postgres-valkey-mailhog",
       "type": "concept",
       "attrs": {
-        "title": "Billing manager (API, worker, scheduler, Postgres, Redis, Mailhog)",
+        "title": "Billing manager (API, worker, scheduler, Postgres, Valkey, Mailhog)",
         "docPath": "docs/decabill/deployment/README.md",
-        "sectionAnchor": "billing-manager-api-worker-scheduler-postgres-redis-mailhog",
+        "sectionAnchor": "billing-manager-api-worker-scheduler-postgres-valkey-mailhog",
         "domain": "decabill"
       }
     },
@@ -30384,12 +30392,12 @@
       }
     },
     {
-      "id": "concept:decabill-redis-and-queue-environment-variables",
+      "id": "concept:decabill-valkey-or-redis-and-queue-environment-variables",
       "type": "concept",
       "attrs": {
-        "title": "Redis and Queue Environment Variables",
+        "title": "Valkey (or Redis) and Queue Environment Variables",
         "docPath": "docs/decabill/deployment/background-jobs.md",
-        "sectionAnchor": "redis-and-queue-environment-variables",
+        "sectionAnchor": "valkey-or-redis-and-queue-environment-variables",
         "domain": "decabill"
       }
     },
@@ -30554,12 +30562,12 @@
       }
     },
     {
-      "id": "concept:decabill-redis-and-bullmq-background-jobs",
+      "id": "concept:decabill-valkey-or-redis-and-bullmq-background-jobs",
       "type": "concept",
       "attrs": {
-        "title": "Redis and BullMQ (Background Jobs)",
+        "title": "Valkey (or Redis) and BullMQ (Background Jobs)",
         "docPath": "docs/decabill/deployment/environment-configuration.md",
-        "sectionAnchor": "redis-and-bullmq-background-jobs",
+        "sectionAnchor": "valkey-or-redis-and-bullmq-background-jobs",
         "domain": "decabill"
       }
     },
@@ -30614,12 +30622,12 @@
       }
     },
     {
-      "id": "concept:decabill-database-and-redis-setup",
+      "id": "concept:decabill-database-and-valkey-setup",
       "type": "concept",
       "attrs": {
-        "title": "Database and Redis Setup",
+        "title": "Database and Valkey Setup",
         "docPath": "docs/decabill/deployment/local-development.md",
-        "sectionAnchor": "database-and-redis-setup",
+        "sectionAnchor": "database-and-valkey-setup",
         "domain": "decabill"
       }
     },
@@ -30634,12 +30642,12 @@
       }
     },
     {
-      "id": "concept:decabill-redis-for-bullmq-host-port-6380-to-avoid-clashing-with-other-stacks",
+      "id": "concept:decabill-valkey-redis-compatible-for-bullmq-host-port-6380-to-avoid-clashing-with-other-stacks",
       "type": "concept",
       "attrs": {
-        "title": "Redis for BullMQ (host port 6380 to avoid clashing with other stacks)",
+        "title": "Valkey (Redis-compatible) for BullMQ (host port 6380 to avoid clashing with other stacks)",
         "docPath": "docs/decabill/deployment/local-development.md",
-        "sectionAnchor": "redis-for-bullmq-host-port-6380-to-avoid-clashing-with-other-stacks",
+        "sectionAnchor": "valkey-redis-compatible-for-bullmq-host-port-6380-to-avoid-clashing-with-other-stacks",
         "domain": "decabill"
       }
     },
@@ -30654,12 +30662,12 @@
       }
     },
     {
-      "id": "concept:decabill-redis-when-not-using-compose-network",
+      "id": "concept:decabill-valkey-when-not-using-compose-network",
       "type": "concept",
       "attrs": {
-        "title": "Redis (when not using compose network)",
+        "title": "Valkey (when not using compose network)",
         "docPath": "docs/decabill/deployment/local-development.md",
-        "sectionAnchor": "redis-when-not-using-compose-network",
+        "sectionAnchor": "valkey-when-not-using-compose-network",
         "domain": "decabill"
       }
     },
@@ -31314,12 +31322,12 @@
       }
     },
     {
-      "id": "concept:decabill-redis-flush",
+      "id": "concept:decabill-valkey-flush",
       "type": "concept",
       "attrs": {
-        "title": "Redis flush",
+        "title": "Valkey flush",
         "docPath": "docs/decabill/features/application-updates.md",
-        "sectionAnchor": "redis-flush",
+        "sectionAnchor": "valkey-flush",
         "domain": "decabill"
       }
     },
@@ -34024,12 +34032,12 @@
       }
     },
     {
-      "id": "concept:decabill-set-queue-role-all-redis-port-6380-if-redis-is-published-on-the-host-and-auth-variables",
+      "id": "concept:decabill-set-queue-role-all-valkey-port-6380-if-valkey-is-published-on-the-host-and-auth-variables",
       "type": "concept",
       "attrs": {
-        "title": "Set QUEUE_ROLE=all, REDIS_PORT=6380 if Redis is published on the host, and auth variables",
+        "title": "Set QUEUE_ROLE=all, VALKEY_PORT=6380 if Valkey is published on the host, and auth variables",
         "docPath": "docs/decabill/getting-started.md",
-        "sectionAnchor": "set-queue-role-all-redis-port-6380-if-redis-is-published-on-the-host-and-auth-variables",
+        "sectionAnchor": "set-queue-role-all-valkey-port-6380-if-valkey-is-published-on-the-host-and-auth-variables",
         "domain": "decabill"
       }
     },
@@ -34044,12 +34052,12 @@
       }
     },
     {
-      "id": "concept:decabill-redis-6380-when-using-compose-host-mapping",
+      "id": "concept:decabill-valkey-6380-when-using-compose-host-mapping",
       "type": "concept",
       "attrs": {
-        "title": "Redis (6380 when using compose host mapping)",
+        "title": "Valkey (6380 when using compose host mapping)",
         "docPath": "docs/decabill/getting-started.md",
-        "sectionAnchor": "redis-6380-when-using-compose-host-mapping",
+        "sectionAnchor": "valkey-6380-when-using-compose-host-mapping",
         "domain": "decabill"
       }
     },
@@ -34794,12 +34802,12 @@
       }
     },
     {
-      "id": "concept:decabill-background-jobs-and-redis",
+      "id": "concept:decabill-background-jobs-and-valkey",
       "type": "concept",
       "attrs": {
-        "title": "Background Jobs and Redis",
+        "title": "Background Jobs and Valkey",
         "docPath": "docs/decabill/troubleshooting/common-issues.md",
-        "sectionAnchor": "background-jobs-and-redis",
+        "sectionAnchor": "background-jobs-and-valkey",
         "domain": "decabill"
       }
     },
@@ -35886,6 +35894,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:shared-backend-feature-updates",
+      "to": "project:shared-backend-util-redis-cache",
+      "type": "depends_on"
+    },
+    {
       "from": "project:identity-backend-feature-auth",
       "to": "project:identity-backend-util-auth",
       "type": "depends_on"
@@ -36058,6 +36071,11 @@
     {
       "from": "project:shared-backend-util-email",
       "to": "project:shared-backend-util-otel",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-backend-util-queue",
+      "to": "project:shared-backend-util-redis-cache",
       "type": "depends_on"
     },
     {
@@ -36438,6 +36456,11 @@
     {
       "from": "project:agenstra-backend-agent-controller",
       "to": "package:@opentelemetry/semantic-conventions",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-controller",
+      "to": "package:@valkey/valkey-glide",
       "type": "depends_on"
     },
     {
@@ -37122,6 +37145,11 @@
     },
     {
       "from": "project:decabill-backend-billing-manager",
+      "to": "package:@valkey/valkey-glide",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-backend-billing-manager",
       "to": "package:archiver",
       "type": "depends_on"
     },
@@ -37542,6 +37570,11 @@
     },
     {
       "from": "project:agenstra-backend-agent-manager",
+      "to": "package:@valkey/valkey-glide",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-manager",
       "to": "package:axios",
       "type": "depends_on"
     },
@@ -37738,6 +37771,11 @@
     {
       "from": "project:forepath-backend-communication",
       "to": "package:@opentelemetry/semantic-conventions",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-backend-communication",
+      "to": "package:@valkey/valkey-glide",
       "type": "depends_on"
     },
     {
@@ -49862,7 +49900,7 @@
     },
     {
       "from": "file:docs/agenstra/deployment/background-jobs.md",
-      "to": "concept:agenstra-redis-and-queue-environment-variables",
+      "to": "concept:agenstra-valkey-or-redis-and-queue-environment-variables",
       "type": "contains"
     },
     {
@@ -50017,7 +50055,7 @@
     },
     {
       "from": "file:docs/agenstra/deployment/environment-configuration.md",
-      "to": "concept:agenstra-redis-and-bullmq-background-jobs",
+      "to": "concept:agenstra-valkey-or-redis-and-bullmq-background-jobs",
       "type": "contains"
     },
     {
@@ -50662,7 +50700,7 @@
     },
     {
       "from": "file:docs/agenstra/features/application-updates.md",
-      "to": "concept:agenstra-redis-flush",
+      "to": "concept:agenstra-valkey-flush",
       "type": "contains"
     },
     {
@@ -52822,7 +52860,7 @@
     },
     {
       "from": "file:docs/decabill/architecture/components.md",
-      "to": "concept:decabill-redis",
+      "to": "concept:decabill-valkey-or-redis",
       "type": "contains"
     },
     {
@@ -52972,7 +53010,7 @@
     },
     {
       "from": "file:docs/decabill/deployment/README.md",
-      "to": "concept:decabill-billing-manager-api-worker-scheduler-postgres-redis-mailhog",
+      "to": "concept:decabill-billing-manager-api-worker-scheduler-postgres-valkey-mailhog",
       "type": "contains"
     },
     {
@@ -53022,7 +53060,7 @@
     },
     {
       "from": "file:docs/decabill/deployment/background-jobs.md",
-      "to": "concept:decabill-redis-and-queue-environment-variables",
+      "to": "concept:decabill-valkey-or-redis-and-queue-environment-variables",
       "type": "contains"
     },
     {
@@ -53137,7 +53175,7 @@
     },
     {
       "from": "file:docs/decabill/deployment/environment-configuration.md",
-      "to": "concept:decabill-redis-and-bullmq-background-jobs",
+      "to": "concept:decabill-valkey-or-redis-and-bullmq-background-jobs",
       "type": "contains"
     },
     {
@@ -53177,7 +53215,7 @@
     },
     {
       "from": "file:docs/decabill/deployment/local-development.md",
-      "to": "concept:decabill-database-and-redis-setup",
+      "to": "concept:decabill-database-and-valkey-setup",
       "type": "contains"
     },
     {
@@ -53187,7 +53225,7 @@
     },
     {
       "from": "file:docs/decabill/deployment/local-development.md",
-      "to": "concept:decabill-redis-for-bullmq-host-port-6380-to-avoid-clashing-with-other-stacks",
+      "to": "concept:decabill-valkey-redis-compatible-for-bullmq-host-port-6380-to-avoid-clashing-with-other-stacks",
       "type": "contains"
     },
     {
@@ -53202,7 +53240,7 @@
     },
     {
       "from": "file:docs/decabill/deployment/local-development.md",
-      "to": "concept:decabill-redis-when-not-using-compose-network",
+      "to": "concept:decabill-valkey-when-not-using-compose-network",
       "type": "contains"
     },
     {
@@ -53622,7 +53660,7 @@
     },
     {
       "from": "file:docs/decabill/features/application-updates.md",
-      "to": "concept:decabill-redis-flush",
+      "to": "concept:decabill-valkey-flush",
       "type": "contains"
     },
     {
@@ -55512,7 +55550,7 @@
     },
     {
       "from": "file:docs/decabill/getting-started.md",
-      "to": "concept:decabill-set-queue-role-all-redis-port-6380-if-redis-is-published-on-the-host-and-auth-variables",
+      "to": "concept:decabill-set-queue-role-all-valkey-port-6380-if-valkey-is-published-on-the-host-and-auth-variables",
       "type": "contains"
     },
     {
@@ -55532,7 +55570,7 @@
     },
     {
       "from": "file:docs/decabill/getting-started.md",
-      "to": "concept:decabill-redis-6380-when-using-compose-host-mapping",
+      "to": "concept:decabill-valkey-6380-when-using-compose-host-mapping",
       "type": "contains"
     },
     {
@@ -55982,7 +56020,7 @@
     },
     {
       "from": "file:docs/decabill/troubleshooting/common-issues.md",
-      "to": "concept:decabill-background-jobs-and-redis",
+      "to": "concept:decabill-background-jobs-and-valkey",
       "type": "contains"
     },
     {
@@ -81621,7 +81659,7 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-set-queue-role-all-redis-port-6380-if-redis-is-published-on-the-host-and-auth-variables",
+      "from": "concept:decabill-set-queue-role-all-valkey-port-6380-if-valkey-is-published-on-the-host-and-auth-variables",
       "to": "project:decabill-backend-billing-manager",
       "type": "documents"
     },
@@ -84426,7 +84464,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-redis-and-queue-environment-variables",
+      "from": "concept:agenstra-valkey-or-redis-and-queue-environment-variables",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -84541,7 +84579,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-redis-and-bullmq-background-jobs",
+      "from": "concept:agenstra-valkey-or-redis-and-bullmq-background-jobs",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -85031,7 +85069,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-redis-flush",
+      "from": "concept:agenstra-valkey-flush",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -86566,7 +86604,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-redis",
+      "from": "concept:decabill-valkey-or-redis",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -86686,7 +86724,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-billing-manager-api-worker-scheduler-postgres-redis-mailhog",
+      "from": "concept:decabill-billing-manager-api-worker-scheduler-postgres-valkey-mailhog",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -86726,7 +86764,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-redis-and-queue-environment-variables",
+      "from": "concept:decabill-valkey-or-redis-and-queue-environment-variables",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -86811,7 +86849,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-redis-and-bullmq-background-jobs",
+      "from": "concept:decabill-valkey-or-redis-and-bullmq-background-jobs",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -86841,7 +86879,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-database-and-redis-setup",
+      "from": "concept:decabill-database-and-valkey-setup",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -86851,7 +86889,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-redis-for-bullmq-host-port-6380-to-avoid-clashing-with-other-stacks",
+      "from": "concept:decabill-valkey-redis-compatible-for-bullmq-host-port-6380-to-avoid-clashing-with-other-stacks",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -86861,7 +86899,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-redis-when-not-using-compose-network",
+      "from": "concept:decabill-valkey-when-not-using-compose-network",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -87191,7 +87229,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-redis-flush",
+      "from": "concept:decabill-valkey-flush",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -88546,7 +88584,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-set-queue-role-all-redis-port-6380-if-redis-is-published-on-the-host-and-auth-variables",
+      "from": "concept:decabill-set-queue-role-all-valkey-port-6380-if-valkey-is-published-on-the-host-and-auth-variables",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -88556,7 +88594,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-redis-6380-when-using-compose-host-mapping",
+      "from": "concept:decabill-valkey-6380-when-using-compose-host-mapping",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -88931,7 +88969,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-background-jobs-and-redis",
+      "from": "concept:decabill-background-jobs-and-valkey",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

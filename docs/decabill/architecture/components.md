@@ -28,7 +28,7 @@ This document describes the major runtime components in Decabill, their responsi
 ### Dependencies
 
 - PostgreSQL 16 (primary data store)
-- Redis 7 (BullMQ backing store)
+- Valkey 9 or Redis 7.2+ (BullMQ backing store)
 - SMTP or Mailhog (transactional email)
 - Stripe API (when payment processing is enabled)
 - Cloud provider API tokens (when plans include infrastructure)
@@ -122,16 +122,18 @@ This document describes the major runtime components in Decabill, their responsi
 - Tenant scoping via `tenant_id` columns on billing entities
 - Encrypted columns for provider config snapshots and SSH private keys when `ENCRYPTION_KEY` is set
 
-## Redis
+## Valkey (or Redis)
+
+The bundled Compose stacks run **[Valkey](https://valkey.io)**, the open-source, Redis-compatible in-memory store. Valkey and Redis (7.2+) are interchangeable here. Configure the connection with the `VALKEY_*` variables or the legacy `REDIS_*` names. When both are set, the family matching `CACHE_CLIENT` wins (`glide`: `VALKEY_*`, `ioredis`: `REDIS_*`) and the other one is the fallback.
 
 **Role**: BullMQ connection, job metadata, and repeatable coordinator schedules.
 
-**Compose service**: `redis` with AOF persistence
+**Compose service**: `valkey` with AOF persistence
 
 **Configuration**:
 
-- `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`
-- `REDIS_KEY_PREFIX` (default `decabill-billing`) isolates keys when sharing a Redis instance
+- `VALKEY_HOST`, `VALKEY_PORT`, `VALKEY_PASSWORD`, `VALKEY_DB`
+- `VALKEY_KEY_PREFIX` (default `decabill-billing`) isolates keys when sharing a Valkey instance
 - Host port **6380** maps to container **6379** in the default compose file to avoid clashing with other stacks
 
 ## Stripe
@@ -181,7 +183,7 @@ graph TB
 
     subgraph "Infrastructure"
         PG[(PostgreSQL)]
-        RD[(Redis)]
+        RD[(Valkey)]
         ST[Stripe]
     end
 

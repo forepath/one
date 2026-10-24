@@ -98,7 +98,7 @@ Accepted risk: **AR-002** in **[Accepted risks](./accepted-risks.md)**.
 - Browser never talks to the worker. Flow: authenticated REST mint (`agents:vnc` + `ensureClientAccess`) → short-lived ticket → raw WebSocket on controller HTTP **`PORT`** path **`/socket/vnc`** (default **3100**) → manager HTTP **`PORT`** path **`/socket/vnc`** (default **3000**) → authenticated worker edge.
 - Tickets are single-use and bound to client/agent/caller. They travel in **`Sec-WebSocket-Protocol`** (`agenstra.vnc.<ticket>`), not URL query strings. Manager/worker URLs are not returned to the browser.
 - Controller `/socket/vnc` upgrades use the same **`WEBSOCKET_CORS_ORIGIN` → `CORS_ORIGIN`** allowlist as Socket.IO, but **without** defaulting to `*` — in production, when both are unset, browser `Origin`s are rejected (fail closed). Manager `/socket/vnc` applies the same check.
-- Controller tickets are stored in **Redis** (with in-process fallback) so REST mint and WebSocket consume work across controller replicas. Manager tickets are **process-local** — run a **single agent-manager replica** (or sticky sessions) per client endpoint.
+- Controller tickets are stored in **Valkey** (with in-process fallback) so REST mint and WebSocket consume work across controller replicas. Manager tickets are **process-local** — run a **single agent-manager replica** (or sticky sessions) per client endpoint.
 - The agent console connects using `controller.vncWebsocketUrl`, or derives `ws(s)://…/socket/vnc` from `controller.websocketUrl` (same host/port as Socket.IO).
 - Desktop session starts as non-privileged user **`agenstra`** (no greeter). Worker image is larger due to XFCE + Chromium.
 

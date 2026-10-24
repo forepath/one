@@ -71,7 +71,7 @@ describe('decabill-billing.utils', () => {
       expect(script).toContain('ghcr.io/forepath/decabill-billing-api:latest');
       expect(script).toContain('ghcr.io/forepath/decabill-billing-console-server:latest');
       expect(script).toContain('postgres:16-alpine');
-      expect(script).toContain('redis:7-alpine');
+      expect(script).toContain('docker.io/valkey/valkey:9.0.6-alpine');
       expect(script).toContain('nginx:alpine');
       expect(script).toContain('opensearchproject/opensearch:2.19.1');
       expect(script).toContain('container_name: decabill-billing-opensearch');
@@ -85,7 +85,7 @@ describe('decabill-billing.utils', () => {
       expect(script).toContain('vm.max_map_count=262144');
       expect(script).not.toContain('9200:9200');
       expect(script).toContain(DECABILL_BILLING_STACK_DIR);
-      expect(script).toContain('REDIS_KEY_PREFIX: decabill-billing');
+      expect(script).toContain('VALKEY_KEY_PREFIX: decabill-billing');
       expect(script).toContain('BILLING_FRONTEND_URL:');
       expect(script).toContain('FILE_STORAGE_PROVIDER: local');
       expect(script).toContain("FILE_STORAGE_ROOT: '/data'");

@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import Redis from 'ioredis';
-import { readRedisConnectionConfig } from '@forepath/shared/backend/util-queue';
+import { readRedisConnectionConfig, readConnectionEnv } from '@forepath/shared/backend/util-queue';
+import { createKeyValueClient, type KeyValueClient } from '@forepath/shared/backend/util-redis-cache';
 
 import {
   buildUpdatesCheckJobKey,
@@ -11,10 +11,11 @@ import {
 } from '../constants/updates.constants';
 import type { ReleaseSnapshot, ServiceInstanceRecord, UpdateCheckJobMeta } from '../interfaces/updates.interfaces';
 
+/** Valkey/Redis-backed update state; the client library follows `CACHE_CLIENT` (GLIDE by default). */
 @Injectable()
 export class UpdatesRedisStore implements OnModuleDestroy {
   private readonly logger = new Logger(UpdatesRedisStore.name);
-  private client: Redis | null = null;
+  private client: KeyValueClient | null = null;
   private connectPromise: Promise<void> | null = null;
   private readonly keyPrefix: string;
 
@@ -23,7 +24,7 @@ export class UpdatesRedisStore implements OnModuleDestroy {
   }
 
   private isEnabled(): boolean {
-    return process.env['REDIS_CACHE_ENABLED']?.trim().toLowerCase() !== 'false';
+    return readConnectionEnv(process.env, 'CACHE_ENABLED')?.toLowerCase() !== 'false';
   }
 
   private releaseKey(): string {
@@ -38,23 +39,13 @@ export class UpdatesRedisStore implements OnModuleDestroy {
     return buildUpdatesCheckJobKey(this.keyPrefix);
   }
 
-  private async ensureConnected(): Promise<Redis | null> {
+  private async ensureConnected(): Promise<KeyValueClient | null> {
     if (!this.isEnabled()) {
       return null;
     }
 
     if (!this.client) {
-      const config = readRedisConnectionConfig();
-
-      this.client = new Redis({
-        host: config.host,
-        port: config.port,
-        db: config.db,
-        ...(config.password ? { password: config.password } : {}),
-        lazyConnect: true,
-        maxRetriesPerRequest: 1,
-        enableOfflineQueue: false,
-      });
+      this.client = createKeyValueClient({ config: readRedisConnectionConfig(), clientName: 'forepath-updates' });
     }
 
     if (!this.connectPromise) {
@@ -86,9 +77,7 @@ export class UpdatesRedisStore implements OnModuleDestroy {
     }
 
     try {
-      const response = await client.ping();
-
-      return response === 'PONG';
+      return await client.ping();
     } catch (error) {
       this.logger.warn(`Updates Redis ping failed: ${(error as Error).message}`);
 
@@ -144,20 +133,14 @@ export class UpdatesRedisStore implements OnModuleDestroy {
 
     try {
       do {
-        const [nextCursor, keys] = await client.scan(
-          cursor,
-          'MATCH',
-          buildUpdatesInstanceScanPattern(this.keyPrefix),
-          'COUNT',
-          100,
-        );
+        const [nextCursor, keys] = await client.scan(cursor, buildUpdatesInstanceScanPattern(this.keyPrefix), 100);
         cursor = nextCursor;
 
         if (keys.length === 0) {
           continue;
         }
 
-        const values = await client.mget(...keys);
+        const values = await client.mget(keys);
 
         for (const raw of values) {
           if (!raw) {
@@ -206,12 +189,7 @@ export class UpdatesRedisStore implements OnModuleDestroy {
     }
 
     try {
-      await client.set(
-        this.instanceKey(instance.instanceId),
-        JSON.stringify(instance),
-        'EX',
-        INSTANCE_HEARTBEAT_TTL_SECONDS,
-      );
+      await client.set(this.instanceKey(instance.instanceId), JSON.stringify(instance), INSTANCE_HEARTBEAT_TTL_SECONDS);
     } catch (error) {
       this.logger.warn(`Updates Redis upsertInstance failed: ${(error as Error).message}`);
     }
@@ -259,7 +237,7 @@ export class UpdatesRedisStore implements OnModuleDestroy {
     }
 
     try {
-      await this.client.quit();
+      await this.client.close();
     } catch (error) {
       this.logger.warn(`Updates Redis disconnect failed: ${(error as Error).message}`);
     } finally {

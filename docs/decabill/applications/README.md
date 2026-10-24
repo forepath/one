@@ -64,7 +64,7 @@ graph TB
     FE[Frontend Billing Console]
     BM[Backend Billing Manager]
     PG[(PostgreSQL)]
-    RD[(Redis)]
+    RD[(Valkey)]
 
     FE -->|HTTP /api| BM
     FE -->|WS /billing| BM

@@ -66,7 +66,7 @@ Deployment guides and configuration:
 - [Environment Configuration](./deployment/environment-configuration.md) Complete environment variables reference
 - [Production Checklist](./deployment/production-checklist.md) Production deployment guide
 - [Operator Runbook](./deployment/operator-runbook.md) Install, day-2 ops, and disclosure checklists
-- [Background Jobs](./deployment/background-jobs.md) BullMQ queue roles, Redis, and job registry
+- [Background Jobs](./deployment/background-jobs.md) BullMQ queue roles, Valkey, and job registry
 
 ### [Security](./security/README.md)
 
