@@ -6,7 +6,7 @@ This guide will help you set up Agenstra and create your first client and agent.
 
 Before you begin, ensure you have:
 
-- **Node.js** 24.14.1 or higher
+- **Node.js** 24.22.1 or higher
 - **PostgreSQL** database (for backend applications)
 - **Docker** and **Docker Compose** (for containerized deployment)
 - **Keycloak** server (optional, for authentication - can use API key authentication instead)

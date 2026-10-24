@@ -6,7 +6,7 @@ This guide helps you run Decabill locally, connect the billing console to the bi
 
 Before you begin, ensure you have:
 
-- **Node.js** 24.14.1 or higher
+- **Node.js** 24.22.1 or higher
 - **Docker** and **Docker Compose** (recommended for Postgres, Redis, and Mailhog)
 - **Git** (to clone the monorepo)
 - **Keycloak** (optional, for OAuth2/OIDC login in the billing console)

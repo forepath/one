@@ -54,10 +54,10 @@ Agent **worker** containers dominate manager-host sizing. The manager API itself
 | **Host OS**                     | Linux amd64 or arm64                                           | Linux amd64 for manager hosts running many agents                                     |
 | **Docker**                      | 20.10+ on manager hosts                                        | 24+ with Compose v2                                                                   |
 | **Docker Compose**              | 2.0+                                                           | Latest stable                                                                         |
-| **Node.js** (local Nx dev only) | 24.14.1                                                        | Match container `NODE_VERSION`                                                        |
+| **Node.js** (local Nx dev only) | 24.22.1                                                        | Match container `NODE_VERSION`                                                        |
 | **Docker socket**               | Required on manager (and controller when provisioning locally) | Restrict permissions; see [Container image security](../security/container-images.md) |
 
-Container images use **Node.js 24.14.1** on **debian:trixie-slim**. API images run as `agenstra` (UID **10001**). Frontend servers run as `node` (UID **1000**).
+Container images use **Node.js 24.22.1** on **debian:trixie-slim**. API images run as `agenstra` (UID **10001**). Frontend servers run as `node` (UID **1000**).
 
 Host path **`/opt/agents`** must exist and be writable by UID **10001** on manager hosts (or rely on entrypoint `chown` after bind mount).
 

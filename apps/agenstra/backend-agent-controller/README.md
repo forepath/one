@@ -37,7 +37,7 @@ The application integrates the `@forepath/agenstra/backend/feature-agent-control
 
 ### Prerequisites
 
-- Node.js 24.14.1 or higher
+- Node.js 24.22.1 or higher
 - PostgreSQL database
 - Keycloak server (for HTTP authentication, optional if using API key authentication)
 - Docker (for server provisioning)

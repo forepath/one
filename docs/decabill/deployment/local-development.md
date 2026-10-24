@@ -6,7 +6,7 @@ Setting up Decabill for local development and testing.
 
 Before you begin, ensure you have:
 
-- **Node.js** 24.14.1 or higher
+- **Node.js** 24.22.1 or higher
 - **PostgreSQL** (running locally or in Docker)
 - **Redis** (running locally or in Docker; billing compose uses host port **6380** by default)
 - **Git** (optional, for repository checkout)

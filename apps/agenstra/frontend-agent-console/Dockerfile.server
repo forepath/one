@@ -2,7 +2,7 @@
 # Image:      agenstra-console-server
 # Project:    frontend-agent-console — Nx target `server-container-image`
 # Registry:   ghcr.io/forepath/agenstra-console-server
-# Base:       node:24.14.1-alpine
+# Base:       node:24.22.1-alpine
 # User:       node (APP_UID / APP_GID, default 1000)
 # Exposes:    4100 (Express static server)
 # Build:      npx nx run frontend-agent-console:server-container-image
@@ -10,7 +10,7 @@
 # Notes:      —
 # -----------------------------------------------------------------------------
 #
-FROM docker.io/node:24.14.1-alpine
+FROM docker.io/node:24.22.1-alpine
 
 ARG APP_UID=1000
 ARG APP_GID=1000

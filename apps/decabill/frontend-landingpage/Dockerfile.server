@@ -2,7 +2,7 @@
 # Image:      decabill-landingpage-server
 # Project:    decabill-frontend-landingpage — Nx target `server-container-image`
 # Registry:   ghcr.io/forepath/decabill-landingpage-server
-# Base:       node:24.14.1-alpine
+# Base:       node:24.22.1-alpine
 # User:       node (APP_UID / APP_GID, default 1000)
 # Exposes:    4200 (Express static server)
 # Build:      npx nx run decabill-frontend-landingpage:server-container-image
@@ -10,7 +10,7 @@
 # Notes:      —
 # -----------------------------------------------------------------------------
 #
-FROM docker.io/node:24.14.1-alpine
+FROM docker.io/node:24.22.1-alpine
 
 ARG APP_UID=1000
 ARG APP_GID=1000
