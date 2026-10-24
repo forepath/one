@@ -4,7 +4,7 @@ NestJS backend application for subscription billing, invoicing, payments, provis
 
 ## Purpose
 
-The billing manager is the authoritative service for Decabill. It exposes HTTP and WebSocket interfaces, persists data in PostgreSQL, enqueues work on Redis-backed BullMQ queues, integrates with Stripe, and optionally provisions cloud infrastructure when service plans require it.
+The billing manager is the authoritative service for Decabill. It exposes HTTP and WebSocket interfaces, persists data in PostgreSQL, enqueues work on Valkey-backed BullMQ queues, integrates with Stripe, and optionally provisions cloud infrastructure when service plans require it.
 
 The app module in `apps/decabill/backend-billing-manager` bootstraps shared queue role logic, runs migrations when acting as API, and imports the domain **`BillingManagerModule`** from `@forepath/decabill/backend`.
 
@@ -32,7 +32,7 @@ Built with:
 - **BullMQ** Queue name **`billing`** with coordinator and unit jobs
 - **Socket.IO** Shared with HTTP `PORT` (namespaces under `/socket/`)
 - **PostgreSQL** Primary datastore
-- **Redis** BullMQ connection
+- **Valkey** BullMQ connection
 
 Domain logic, OpenAPI source, and AsyncAPI source live in `libs/domains/decabill/backend/feature-billing-manager`.
 
@@ -97,7 +97,7 @@ cd apps/decabill/backend-billing-manager
 docker compose up -d
 ```
 
-Compose services: `postgres`, `redis`, `backend-billing-manager`, `backend-billing-manager-worker`, `backend-billing-manager-scheduler`, `mailhog`.
+Compose services: `postgres`, `valkey`, `backend-billing-manager`, `backend-billing-manager-worker`, `backend-billing-manager-scheduler`, `mailhog`.
 
 Volumes include `billing_file_data` mounted at `/data` (with `customer/`, `supplier/`, and `export/datev/` layout) and optional `./provider-plugins` for dynamic providers.
 

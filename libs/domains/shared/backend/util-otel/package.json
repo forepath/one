@@ -32,7 +32,8 @@
     "@opentelemetry/sdk-logs": "0.221.0",
     "@opentelemetry/sdk-node": "0.220.0",
     "@opentelemetry/semantic-conventions": "1.43.0",
-    "bullmq": "5.76.10",
+    "@valkey/valkey-glide": "2.5.3",
+    "bullmq": "5.81.5",
     "express": "4.21.2",
     "nestjs-otel": "8.1.0",
     "@opentelemetry/sdk-metrics": "2.10.0"

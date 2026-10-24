@@ -20,7 +20,7 @@ Common problems and their solutions:
 - Connection and CORS issues
 - Authentication and multi-tenancy problems
 - Stripe payment and webhook errors
-- Background job and Redis failures
+- Background job and Valkey failures
 - Database and migration issues
 
 ### [Debugging Guide](./debugging-guide.md)
@@ -47,7 +47,7 @@ Debugging strategies and tools:
 
 ### Background Jobs
 
-- Confirm Redis on port **6380** (compose default) is reachable
+- Confirm Valkey on port **6380** (compose default) is reachable
 - Ensure API container is healthy before worker starts
 - Open Bull Board at `http://localhost:3200/admin/queues`
 

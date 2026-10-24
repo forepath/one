@@ -28,20 +28,20 @@ mirrors the notifications/webhook extension pattern. Decabill registers it in
 - `controllerPath`: `admin/billing/updates`
 - Queue: `billing`
 
-State lives in **Redis** (same Redis as BullMQ, keyed under `REDIS_KEY_PREFIX`).
+State lives in **Valkey** (same Valkey as BullMQ, keyed under `VALKEY_KEY_PREFIX`).
 There are no TypeORM tables for update state.
 
 ```mermaid
 flowchart TD
   Scheduler[scheduler]
   GitHub[GitHub Releases API]
-  Redis[(Redis<br/>release snapshot + instance rows)]
+  Valkey[(Valkey<br/>release snapshot + instance rows)]
   Heartbeats[api / worker / scheduler heartbeats]
 
   Scheduler -->|daily update-check| GitHub
-  Scheduler --> Redis
-  GitHub --> Redis
-  Heartbeats --> Redis
+  Scheduler --> Valkey
+  GitHub --> Valkey
+  Heartbeats --> Valkey
 ```
 
 ## Instance identity
@@ -52,7 +52,7 @@ Each billing-manager process registers a heartbeat (~60s) with:
 - Role: `QUEUE_ROLE` (`api` / `worker` / `scheduler` / `all`)
 - Installed version: `VERSION` or `APP_VERSION` (baked into release images; runtime
   override optional)
-- Dependency health: Redis, BullMQ queue, database
+- Dependency health: Valkey, BullMQ queue, database
 - Hostname, uptime, environment
 
 ## Update check job
@@ -89,7 +89,7 @@ The Decabill UI shows **decabill + shared** entries only.
 | `GET`  | `/admin/billing/updates/status` | Compact summary (Admin badge)              |
 | `POST` | `/admin/billing/updates/check`  | Enqueue immediate check                    |
 
-## Redis flush
+## Valkey flush
 
 - Instance rows reappear as heartbeats resume (deterministic IDs stay stable).
 - Release/check snapshot returns after the next successful check.

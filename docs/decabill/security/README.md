@@ -6,7 +6,7 @@ For disclosure, supported versions, SBOM paths, and response-time commitments, s
 
 ## Overview
 
-Decabill spans browsers, a NestJS billing API, Express SSR frontends (billing console and docs), Redis-backed background jobs, and optional cloud provisioning for bundled product stacks. Security is enforced through authentication modes, tenant guards, sanitized logging, content security policy choices, **hardened container images** (non-root users, no default secrets in images), Stripe webhook verification, and **documented** residual risks where product or deployment constraints apply.
+Decabill spans browsers, a NestJS billing API, Express SSR frontends (billing console and docs), Valkey-backed background jobs, and optional cloud provisioning for bundled product stacks. Security is enforced through authentication modes, tenant guards, sanitized logging, content security policy choices, **hardened container images** (non-root users, no default secrets in images), Stripe webhook verification, and **documented** residual risks where product or deployment constraints apply.
 
 ## Documentation structure
 

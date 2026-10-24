@@ -2,7 +2,11 @@ import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nest
 import { Queue } from 'bullmq';
 
 import { OTEL_MODULE_OPTIONS, type OpenTelemetryModuleOptions } from './otel-module.options';
-import { readOtelRedisConnectionConfig, toOtelBullMqConnection } from './otel-redis-connection';
+import {
+  createOtelBullMqConnection,
+  readOtelRedisConnectionConfig,
+  type OtelBullMqConnectionHandle,
+} from './otel-redis-connection';
 import { getMeter } from './otel-sdk';
 
 const JOB_STATES = ['waiting', 'active', 'delayed', 'paused', 'completed', 'failed'] as const;
@@ -16,6 +20,7 @@ export class BullMqOtelMetricsCollector implements OnModuleInit, OnModuleDestroy
   private readonly queueMetrics = new Map<string, QueueJobCounts>();
   private interval: NodeJS.Timeout | undefined;
   private queues: Queue[] = [];
+  private connectionHandle: OtelBullMqConnectionHandle | undefined;
   private gaugesRegistered = false;
 
   constructor(@Inject(OTEL_MODULE_OPTIONS) private readonly options: OpenTelemetryModuleOptions) {}
@@ -28,7 +33,8 @@ export class BullMqOtelMetricsCollector implements OnModuleInit, OnModuleDestroy
     }
 
     const redis = readOtelRedisConnectionConfig();
-    const connection = toOtelBullMqConnection(redis);
+    this.connectionHandle = createOtelBullMqConnection(redis);
+    const { connection } = this.connectionHandle;
     const prefix = redis.keyPrefix;
 
     this.queues = queueNames.map(
@@ -55,6 +61,8 @@ export class BullMqOtelMetricsCollector implements OnModuleInit, OnModuleDestroy
 
     await Promise.all(this.queues.map((queue) => queue.close()));
     this.queues = [];
+    await this.connectionHandle?.close();
+    this.connectionHandle = undefined;
   }
 
   private registerGauges(): void {

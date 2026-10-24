@@ -19,10 +19,10 @@ import {
   buildPostgresComposeService,
 } from '../../utils/cloud-init/postgres-compose.utils';
 import {
-  REDIS_COMPOSE_DEPENDS_ON,
-  buildRedisBackendEnvLines,
-  buildRedisComposeService,
-} from '../../utils/cloud-init/redis-compose.utils';
+  VALKEY_COMPOSE_DEPENDS_ON,
+  buildValkeyBackendEnvLines,
+  buildValkeyComposeService,
+} from '../../utils/cloud-init/valkey-compose.utils';
 
 export interface AgentControllerCloudInitConfig {
   ssh: {
@@ -266,7 +266,7 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'socket/clients'}`,
     `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
     ...buildPostgresBackendEnvLines(config.backend?.database),
-    ...buildRedisBackendEnvLines('agenstra-controller'),
+    ...buildValkeyBackendEnvLines('agenstra-controller'),
     ...buildOpenSearchBackendEnvLines('agenstra'),
     `QUEUE_WORKER_CONCURRENCY: 5`,
     // Coordinator / worker scheduler intervals (shared across api, worker, scheduler)
@@ -382,8 +382,8 @@ ${buildPostgresComposeService({
   database: config.backend?.database?.database ?? 'postgres',
 })}
 
-${buildRedisComposeService({
-  containerName: 'agent-controller-redis',
+${buildValkeyComposeService({
+  containerName: 'agent-controller-valkey',
   network: 'agent-controller-network',
 })}
 
@@ -402,7 +402,7 @@ ${backendApiEnv}
       - '${config.backend?.port ?? '3100'}:${config.backend?.port ?? '3100'}'
     depends_on:
 ${POSTGRES_COMPOSE_DEPENDS_ON}
-${REDIS_COMPOSE_DEPENDS_ON}
+${VALKEY_COMPOSE_DEPENDS_ON}
 ${OPENSEARCH_COMPOSE_DEPENDS_ON}
     networks:
       - agent-controller-network
@@ -416,7 +416,7 @@ ${OPENSEARCH_COMPOSE_DEPENDS_ON}
 ${backendWorkerEnv}
     depends_on:
 ${POSTGRES_COMPOSE_DEPENDS_ON}
-${REDIS_COMPOSE_DEPENDS_ON}
+${VALKEY_COMPOSE_DEPENDS_ON}
 ${OPENSEARCH_COMPOSE_DEPENDS_ON}
     networks:
       - agent-controller-network
@@ -430,7 +430,7 @@ ${OPENSEARCH_COMPOSE_DEPENDS_ON}
 ${backendSchedulerEnv}
     depends_on:
 ${POSTGRES_COMPOSE_DEPENDS_ON}
-${REDIS_COMPOSE_DEPENDS_ON}
+${VALKEY_COMPOSE_DEPENDS_ON}
 ${OPENSEARCH_COMPOSE_DEPENDS_ON}
     networks:
       - agent-controller-network
@@ -458,7 +458,7 @@ ${buildNginxComposeService({
   dependsOn: ['frontend-agent-console-server', 'backend-agent-controller'],
 })}
 
-${buildComposeNamedVolumes(['postgres_data', 'redis_data', 'opensearch_data'])}
+${buildComposeNamedVolumes(['postgres_data', 'valkey_data', 'opensearch_data'])}
 
 ${buildComposeBridgeNetwork('agent-controller-network')}
 `;

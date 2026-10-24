@@ -15,7 +15,7 @@ graph TB
     subgraph "Application Tier"
         BM[Backend Billing Manager<br/>NestJS API + Socket.IO]
         PG[(PostgreSQL)]
-        RD[(Redis / BullMQ)]
+        RD[(Valkey / BullMQ)]
         ST[Stripe]
         CP[Cloud Providers<br/>Hetzner / DigitalOcean]
     end
@@ -109,14 +109,14 @@ Schedulers register coordinators; workers execute units; the API process serves 
 
 ### Local Development
 
-A single process with `QUEUE_ROLE=all` or Docker Compose with three manager containers plus Postgres, Redis, and Mailhog.
+A single process with `QUEUE_ROLE=all` or Docker Compose with three manager containers plus Postgres, Valkey, and Mailhog.
 
 ### Production
 
 - One or more **api** replicas behind TLS termination
 - Dedicated **worker** replicas sized for job volume
-- A single **scheduler** replica per Redis key prefix
-- Managed PostgreSQL and Redis
+- A single **scheduler** replica per Valkey key prefix
+- Managed PostgreSQL and Valkey (or Redis)
 - SSR billing console container (`decabill-billing-console-server`) with CSP connect-src allowing the public API origin
 
 ```mermaid
@@ -128,7 +128,7 @@ graph TB
     W1[decabill-billing-api worker]
     SCH[decabill-billing-api scheduler]
     PG[(PostgreSQL)]
-    RD[(Redis)]
+    RD[(Valkey)]
 
     U --> CDN
     CDN --> CON

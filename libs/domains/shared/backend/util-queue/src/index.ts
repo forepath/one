@@ -8,6 +8,7 @@ export * from './lib/job-id.util';
 export * from './lib/job-retention';
 export * from './lib/register-repeatable-coordinator-job';
 export * from './lib/queue-connection.config';
+export * from './lib/queue-client';
 export * from './lib/queue-role';
 export * from './lib/queue.module';
 export * from './lib/run-pending-migrations';

@@ -34,4 +34,4 @@ Some products are provisioned in a specific geography (Hetzner `location`, Digit
 
 ## Display labels
 
-Schema `enum` values for `location`/`region` remain technical slugs. UIs call `GET /service-types/providers/:providerId/locations` for human-readable option labels. Live server info may include `locationName` (Hetzner) or `regionName` (DigitalOcean) in `ServerInfoResponse.metadata`. Location catalog responses are cached in Redis (default TTL 24 hours via `PROVIDER_LOCATIONS_CACHE_TTL_SECONDS`).
+Schema `enum` values for `location`/`region` remain technical slugs. UIs call `GET /service-types/providers/:providerId/locations` for human-readable option labels. Live server info may include `locationName` (Hetzner) or `regionName` (DigitalOcean) in `ServerInfoResponse.metadata`. Location catalog responses are cached in Valkey (default TTL 24 hours via `PROVIDER_LOCATIONS_CACHE_TTL_SECONDS`).

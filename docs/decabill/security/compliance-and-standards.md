@@ -48,7 +48,7 @@ Formal IT-Grundschutz certification requires **organizational** processes; this 
 2. **Browser** to **billing WebSocket** (`/billing` namespace) for dashboard status (interactive auth only; API key clients do not receive dashboard streams).
 3. **Billing manager** to **Stripe** for payments and webhooks.
 4. **Billing manager** to **cloud provider APIs** (Hetzner, DigitalOcean) and **SSH** for provisioning (see **DR-001** in **[Accepted risks](./accepted-risks.md)**).
-5. **Worker processes** to **Redis**, **Postgres**, **SMTP**, and external APIs during background jobs.
+5. **Worker processes** to **Valkey**, **Postgres**, **SMTP**, and external APIs during background jobs.
 
 Detail: **[Container image security](./container-images.md)**, **[Operational hardening](./operational-hardening.md)**.
 

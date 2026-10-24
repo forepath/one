@@ -138,7 +138,7 @@ Webhook-only (no email). Emitted by the billing-manager update-check job and ins
 - `application.update_available` — a newer GitHub release was detected versus the previously stored latest
 - `application.update_check_failed` — GitHub Releases API unreachable or returned an error
 - `application.instance_outdated` — after a successful check, an instance transitioned to `update_available`
-- `application.dependency_health_changed` — Redis, queue, or database health flipped for a tracked instance
+- `application.dependency_health_changed` — Valkey, queue, or database health flipped for a tracked instance
 
 See [Application updates](./application-updates.md).
 

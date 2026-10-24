@@ -34,7 +34,7 @@ These are infrastructure or worker ports, not app HTTP listeners; their assignme
 | Agent worker VNC                 | 5901 (container-internal)                                  |
 | Agent worker VNC websocket proxy | 6080                                                       |
 | PostgreSQL                       | 5432 (container-internal)                                  |
-| Redis                            | 6379; Decabill Compose publishes host `6380`               |
+| Valkey / Redis                   | 6379; Decabill Compose publishes host `6380`               |
 | OpenSearch                       | 9200; Decabill Compose publishes host `9201`               |
 | Keycloak                         | host `8380` to container `8080`                            |
 | MailHog                          | controller host `1025`/`8025`; Decabill host `1026`/`8026` |

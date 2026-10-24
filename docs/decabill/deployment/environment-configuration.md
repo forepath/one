@@ -301,24 +301,27 @@ Runtime `/config` JSON may include `billing.urls.websocket` as a string or `{ de
 | `DEFAULT_LOCALE` | Default locale | `en`              |
 | `CSP_ENFORCE`    | Enforce CSP    | `true` in compose |
 
-## Redis and BullMQ (Background Jobs)
+## Valkey (or Redis) and BullMQ (Background Jobs)
+
+The bundled Compose stacks run **[Valkey](https://valkey.io)**, the open-source, Redis-compatible in-memory store. Valkey and Redis (7.2+) are interchangeable here. Configure the connection with the `VALKEY_*` variables or the legacy `REDIS_*` names. When both are set, the family matching `CACHE_CLIENT` wins (`glide`: `VALKEY_*`, `ioredis`: `REDIS_*`) and the other one is the fallback.
 
 Used by **backend billing manager only**. See **[Background Jobs](./background-jobs.md)**.
 
-| Variable                    | Description                            | Default                               |
-| --------------------------- | -------------------------------------- | ------------------------------------- |
-| `REDIS_HOST`                | Redis host                             | `localhost` (compose: `redis`)        |
-| `REDIS_PORT`                | Redis port inside container/network    | `6379`                                |
-| `REDIS_HOST_PORT`           | Host port published by compose         | `6380`                                |
-| `REDIS_PASSWORD`            | Optional password                      | empty                                 |
-| `REDIS_DB`                  | Redis DB index                         | `0`                                   |
-| `REDIS_KEY_PREFIX`          | Key prefix                             | `decabill-billing`                    |
-| `QUEUE_ROLE`                | `api`, `scheduler`, `worker`, or `all` | `all` locally; `api` in API container |
-| `QUEUE_WORKER_CONCURRENCY`  | Worker concurrency                     | `5`                                   |
-| `QUEUE_BULL_BOARD_ENABLED`  | Enable Bull Board on API / `all`       | `true` in dev API compose             |
-| `QUEUE_BULL_BOARD_PATH`     | Bull Board path                        | `/admin/queues`                       |
-| `QUEUE_BULL_BOARD_USERNAME` | Bull Board HTTP Basic user             | `admin`                               |
-| `QUEUE_BULL_BOARD_PASSWORD` | Bull Board HTTP Basic password         | required in production                |
+| Variable                    | Description                                                                                                          | Default                               |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `VALKEY_HOST`               | Valkey host                                                                                                          | `localhost` (compose: `valkey`)       |
+| `VALKEY_PORT`               | Valkey port inside container/network                                                                                 | `6379`                                |
+| `VALKEY_HOST_PORT`          | Host port published by compose                                                                                       | `6380`                                |
+| `VALKEY_PASSWORD`           | Optional password                                                                                                    | empty                                 |
+| `VALKEY_DB`                 | Valkey DB index                                                                                                      | `0`                                   |
+| `VALKEY_KEY_PREFIX`         | Key prefix                                                                                                           | `decabill-billing`                    |
+| `CACHE_CLIENT`              | Client library for all Valkey connections (BullMQ queues, caches, update state): `glide` (Valkey GLIDE) or `ioredis` | `glide`                               |
+| `QUEUE_ROLE`                | `api`, `scheduler`, `worker`, or `all`                                                                               | `all` locally; `api` in API container |
+| `QUEUE_WORKER_CONCURRENCY`  | Worker concurrency                                                                                                   | `5`                                   |
+| `QUEUE_BULL_BOARD_ENABLED`  | Enable Bull Board on API / `all`                                                                                     | `true` in dev API compose             |
+| `QUEUE_BULL_BOARD_PATH`     | Bull Board path                                                                                                      | `/admin/queues`                       |
+| `QUEUE_BULL_BOARD_USERNAME` | Bull Board HTTP Basic user                                                                                           | `admin`                               |
+| `QUEUE_BULL_BOARD_PASSWORD` | Bull Board HTTP Basic password                                                                                       | required in production                |
 
 ## OpenSearch (Search Indexes)
 

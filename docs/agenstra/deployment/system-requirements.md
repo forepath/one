@@ -6,7 +6,7 @@ Hardware and software requirements for running Agenstra components in developmen
 
 Agenstra has two backend stacks and the agent console frontend:
 
-1. **Agent controller** control plane with BullMQ roles (`api`, `worker`, `scheduler`), PostgreSQL with **pgvector**, Redis, and **OpenSearch**.
+1. **Agent controller** control plane with BullMQ roles (`api`, `worker`, `scheduler`), PostgreSQL with **pgvector**, Valkey, and **OpenSearch**.
 2. **Agent manager** per-workspace runtime on a **Docker host** that spawns agent workload containers (worker).
 
 The console talks only to the controller. The controller proxies agent operations to one or more manager instances.
@@ -22,7 +22,7 @@ graph TB
         C_WRK[Controller Worker]
         C_SCH[Controller Scheduler]
         C_PG[(PostgreSQL pgvector)]
-        C_RD[(Redis)]
+        C_RD[(Valkey)]
         C_OS[(OpenSearch 2)]
     end
 
@@ -89,9 +89,9 @@ Stores clients, tickets, knowledge embeddings, statistics, and egress events.
 
 Embedding reindex jobs increase CPU and I/O on Postgres during knowledge imports.
 
-### Redis 7
+### Valkey 9 (or Redis 7.2+)
 
-BullMQ for controller background jobs. AOF enabled in default Compose.
+BullMQ for controller background jobs. The default Compose file ships Valkey (the open-source Redis drop-in) with AOF enabled; a Redis 7.2+ server works equally well.
 
 | Profile         | vCPU | Memory  | Disk  | Notes                                          |
 | --------------- | ---- | ------- | ----- | ---------------------------------------------- |
@@ -131,7 +131,7 @@ Scale worker replicas horizontally. Keep **`QUEUE_WORKER_CONCURRENCY`** aligned 
 
 ### Controller Scheduler (`QUEUE_ROLE=scheduler`)
 
-Registers repeatable coordinators only. **One** scheduler per Redis key prefix.
+Registers repeatable coordinators only. **One** scheduler per Valkey key prefix.
 
 | Profile          | vCPU     | Memory limit   | Notes                    |
 | ---------------- | -------- | -------------- | ------------------------ |
@@ -195,7 +195,7 @@ Monaco Editor and chat run in the **browser**. Recommend **4 GiB+** client RAM f
 
 ## Mixed and Local Development Host
 
-Full local stack: controller Compose (API, worker, scheduler, Postgres, Redis), manager Compose (API, Postgres, Docker socket), frontend console, and **one** agent:
+Full local stack: controller Compose (API, worker, scheduler, Postgres, Valkey), manager Compose (API, Postgres, Docker socket), frontend console, and **one** agent:
 
 | Resource | Minimum     | Comfortable  |
 | -------- | ----------- | ------------ |
@@ -215,7 +215,7 @@ Use **`QUEUE_ROLE=all`** on the controller only for lightweight API testing; pre
 | Worker (1+ replicas)  | 2 each | 4 GiB each   |
 | Scheduler (1 replica) | 0.5    | 1 GiB        |
 | PostgreSQL pgvector   | 2      | 4 GiB        |
-| Redis                 | 1      | 1 GiB        |
+| Valkey                | 1      | 1 GiB        |
 | Agent console         | 0.5    | 1 GiB        |
 
 Managers run on separately provisioned hosts per client/workspace.
@@ -233,7 +233,7 @@ Managers run on separately provisioned hosts per client/workspace.
 | Dependency                 | Controller | Manager  | Notes                                                        |
 | -------------------------- | :--------: | :------: | ------------------------------------------------------------ |
 | PostgreSQL                 |    Yes     |   Yes    | Separate databases per stack                                 |
-| Redis                      |    Yes     |    No    | Controller BullMQ only                                       |
+| Valkey                     |    Yes     |    No    | Controller BullMQ only                                       |
 | Docker socket              |  Optional  |   Yes    | Required for agent lifecycle                                 |
 | Keycloak / API key         |  Optional  | Optional | Match `AUTHENTICATION_METHOD`                                |
 | SMTP                       |  Optional  |    -     | Mailhog in local controller compose                          |

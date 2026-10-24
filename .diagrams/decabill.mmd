@@ -52,7 +52,7 @@ flowchart TB
     Ssh["SSH executor<br/>docker compose pull / update, container stats + logs"]
     Queue["BullMQ queue billing (coordinator + unit jobs)<br/>subscription billing, provisioning, item update, config change,<br/>expiration, instant cancel, withdrawal, renewal reminder,<br/>invoice overdue, auto-payment, open-position invoice, bill now,<br/>backorder retry, meter + contributor collect, price recalc,<br/>plan price migrate, offer expiration + fulfillment,<br/>VAT id validation, DATEV export, search reindex"]
     BPg[("Postgres<br/>tenants, users, catalog, subscriptions + items, invoices,<br/>open positions, payments, offers, projects, suppliers,<br/>usage records, container stats, DATEV, audit log")]
-    Redis[("Redis<br/>BullMQ, caches, update state")]
+    Valkey[("Valkey<br/>BullMQ, caches, update state")]
     OpenSearch[("OpenSearch<br/>billing entity indexes")]
     Files[("File storage<br/>local or S3: invoice, offer, time report,<br/>supplier and DATEV documents")]
   end
@@ -81,8 +81,8 @@ flowchart TB
   BuiltIn --> Ssh
   Catalog & Subs & Invoicing & Payments & Offers & Projects & Suppliers & Profiles & Contributors --> BPg
   Search --> OpenSearch
-  Queue --> Redis
-  Notify --> Redis
+  Queue --> Valkey
+  Notify --> Valkey
   Queue -.jobs.-> Subs & Provisioning & Invoicing & Payments & Offers & Profiles & DatevExport & Search & Contributors & Notify
   Payments --> Stripe
   Payments -.loaded at runtime.-> PaymentPlugins

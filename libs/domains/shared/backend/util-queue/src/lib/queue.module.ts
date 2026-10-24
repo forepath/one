@@ -2,20 +2,27 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import { BullModule } from '@nestjs/bullmq';
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, Inject, Injectable, Module, OnApplicationShutdown } from '@nestjs/common';
 import type { QueueOptions } from 'bullmq';
 
 import { createBullBoardAuthMiddlewareFromEnv } from './bull-board-auth';
+import { createBullMqConnection, type BullMqConnectionHandle } from './queue-client';
 import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
 import { shouldEnableBullBoard, shouldRegisterRepeatableJobs, shouldRunQueueWorkers } from './queue-role';
-import {
-  readBullBoardPath,
-  readQueueWorkerConcurrency,
-  readRedisConnectionConfig,
-  toBullMqConnection,
-} from './queue-connection.config';
+import { readBullBoardPath, readQueueWorkerConcurrency, readRedisConnectionConfig } from './queue-connection.config';
 
 export const QUEUE_CONNECTION = 'QUEUE_CONNECTION';
+const QUEUE_CONNECTION_HANDLE = 'QUEUE_CONNECTION_HANDLE';
+
+/** Closes the shared GLIDE queue client after `@nestjs/bullmq` has shut down queues and workers (imported modules run their hooks first). */
+@Injectable()
+class QueueConnectionShutdown implements OnApplicationShutdown {
+  constructor(@Inject(QUEUE_CONNECTION_HANDLE) private readonly handle: BullMqConnectionHandle) {}
+
+  async onApplicationShutdown(): Promise<void> {
+    await this.handle.close();
+  }
+}
 
 export interface SharedQueueModuleOptions {
   /** Queue names to register (processors attach via @Processor in app modules). */
@@ -28,7 +35,8 @@ export interface SharedQueueModuleOptions {
 export class SharedQueueModule {
   static forRoot(options: SharedQueueModuleOptions): DynamicModule {
     const redis = readRedisConnectionConfig();
-    const connection = toBullMqConnection(redis);
+    const handle = createBullMqConnection(redis);
+    const { connection } = handle;
     const prefix = redis.keyPrefix;
     const concurrency = options.workerConcurrency ?? readQueueWorkerConcurrency();
 
@@ -84,6 +92,8 @@ export class SharedQueueModule {
           provide: QUEUE_CONNECTION,
           useValue: { connection, prefix, concurrency },
         },
+        { provide: QUEUE_CONNECTION_HANDLE, useValue: handle },
+        QueueConnectionShutdown,
       ],
     };
   }

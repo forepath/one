@@ -159,8 +159,8 @@
                         class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
                           dependencyHealthClass(instance.dependencies.redis)
                         }}"
-                        [attr.title]="dependencyStatusTitle('Redis', instance.dependencies.redis)"
-                        [attr.aria-label]="dependencyStatusTitle('Redis', instance.dependencies.redis)"
+                        [attr.title]="dependencyStatusTitle('Valkey / Redis', instance.dependencies.redis)"
+                        [attr.aria-label]="dependencyStatusTitle('Valkey / Redis', instance.dependencies.redis)"
                         role="img"
                       >
                         <i class="bi bi-memory" aria-hidden="true"></i>

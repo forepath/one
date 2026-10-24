@@ -21,6 +21,13 @@ jest.mock('@forepath/shared/backend/util-queue', () => ({
   toBullMqConnection: () => ({ host: 'localhost', port: 6379, db: 0 }),
 }));
 
+const closeConnection = jest.fn().mockResolvedValue(undefined);
+
+jest.mock('./otel-redis-connection', () => ({
+  readOtelRedisConnectionConfig: () => ({ host: 'localhost', port: 6379, db: 0, keyPrefix: 'test' }),
+  createOtelBullMqConnection: () => ({ connection: { host: 'localhost', port: 6379, db: 0 }, close: closeConnection }),
+}));
+
 const addCallback = jest.fn();
 const createObservableGauge = jest.fn(() => ({ addCallback }));
 
@@ -69,5 +76,6 @@ describe('BullMqOtelMetricsCollector', () => {
     await collector.onModuleDestroy();
 
     expect(close).toHaveBeenCalled();
+    expect(closeConnection).toHaveBeenCalled();
   });
 });

@@ -20,9 +20,9 @@ Comprehensive checklist for deploying Decabill to production.
 - [ ] Stripe keys and webhook secret configured for production mode
 - [ ] `STRIPE_CHECKOUT_SUCCESS_URL` and `STRIPE_CHECKOUT_CANCEL_URL` use HTTPS console URLs
 
-### Redis and Background Jobs
+### Valkey and Background Jobs
 
-- [ ] Redis reachable from API, worker, and scheduler with correct `REDIS_KEY_PREFIX`
+- [ ] Valkey reachable from API, worker, and scheduler with correct `VALKEY_KEY_PREFIX`
 - [ ] `QUEUE_ROLE=api` on API container only; separate worker and scheduler containers
 - [ ] API container healthy before workers start (migrations applied)
 - [ ] `QUEUE_BULL_BOARD_PASSWORD` set to a strong value if Bull Board is enabled
@@ -37,7 +37,7 @@ Comprehensive checklist for deploying Decabill to production.
 
 ### Security
 
-- [ ] All default passwords changed (database, Redis if password-protected, Bull Board)
+- [ ] All default passwords changed (database, Valkey if password-protected, Bull Board)
 - [ ] API keys are strong and stored in a secrets manager
 - [ ] HTTPS/WSS enabled for all browser and API traffic
 - [ ] CORS restricted to specific origins
@@ -62,7 +62,7 @@ Comprehensive checklist for deploying Decabill to production.
 ### Infrastructure
 
 - [ ] Container images from trusted registry tags (not `latest` in production unless policy allows)
-- [ ] Resource limits set on API, worker, scheduler, and Redis (see **[System Requirements](./system-requirements.md)**)
+- [ ] Resource limits set on API, worker, scheduler, and Valkey (see **[System Requirements](./system-requirements.md)**)
 - [ ] Centralized logging configured
 - [ ] Health checks and uptime monitoring on `/api/health`
 - [ ] Mailhog replaced with production SMTP
@@ -93,7 +93,7 @@ Comprehensive checklist for deploying Decabill to production.
 
 - Encrypt sensitive fields via `ENCRYPTION_KEY`
 - Protect invoice PDF storage path
-- Restrict database and Redis network access to application subnets
+- Restrict database and Valkey network access to application subnets
 - Restrict DATEV export ZIP storage to admin download path only (no raw path exposure in API)
 
 ## Performance Optimization
@@ -107,12 +107,12 @@ Comprehensive checklist for deploying Decabill to production.
 ### Application
 
 - Run workers with `QUEUE_WORKER_CONCURRENCY` tuned to CPU and external API rate limits
-- Scale worker replicas horizontally (multiple worker containers, same Redis)
+- Scale worker replicas horizontally (multiple worker containers, same Valkey)
 - Keep scheduler as a single logical coordinator per deployment (one scheduler container)
 
-### Redis
+### Valkey
 
-- Persist Redis with AOF or RDB per your recovery requirements
+- Persist Valkey with AOF or RDB per your recovery requirements
 - Monitor memory usage for BullMQ job history (jobs are not auto-removed)
 
 ## Monitoring Setup
@@ -128,7 +128,7 @@ Comprehensive checklist for deploying Decabill to production.
 
 - Container CPU and memory for API, worker, scheduler
 - Postgres connections and disk usage
-- Redis memory and persistence health
+- Valkey memory and persistence health
 - Invoice PDF volume disk usage
 - Billing file volume disk usage (`FILE_STORAGE_ROOT`, including DATEV exports)
 
@@ -164,7 +164,7 @@ Comprehensive checklist for deploying Decabill to production.
    - Review **[Accepted risks](../security/accepted-risks.md)** for operator obligations
    - Validate environment on staging with production-like `TENANTS` and Stripe test mode
 
-2. **Deployment** Deploy Postgres and Redis
+2. **Deployment** Deploy Postgres and Valkey
    - Deploy API; wait for healthy `/api/health`
    - Deploy scheduler and worker
    - Deploy frontends
@@ -173,7 +173,7 @@ Comprehensive checklist for deploying Decabill to production.
 3. **Post-deployment** Verify health endpoints
    - Create test subscription and invoice in staging tenant
    - Confirm coordinator jobs appear in Bull Board
-   - Monitor logs for migration or Redis connection errors
+   - Monitor logs for migration or Valkey connection errors
 
 ## Rollback Plan
 

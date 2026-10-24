@@ -312,34 +312,37 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 - `KEYCLOAK_REALM` - Keycloak realm
 - `KEYCLOAK_CLIENT_ID` - Keycloak client ID
 
-## Redis and BullMQ (background jobs)
+## Valkey (or Redis) and BullMQ (background jobs)
+
+The bundled Compose stacks run **[Valkey](https://valkey.io)**, the open-source, Redis-compatible in-memory store. Valkey and Redis (7.2+) are interchangeable here. Configure the connection with the `VALKEY_*` variables or the legacy `REDIS_*` names. When both are set, the family matching `CACHE_CLIENT` wins (`glide`: `VALKEY_*`, `ioredis`: `REDIS_*`) and the other one is the fallback.
 
 Used by **backend agent controller**. See [Background jobs](./background-jobs.md).
 
-| Variable                                   | Description                                                            | Default                                                                       |
-| ------------------------------------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `REDIS_HOST`                               | Redis host                                                             | `localhost` (compose: `redis`)                                                |
-| `REDIS_PORT`                               | Redis port                                                             | `6379`                                                                        |
-| `REDIS_HOST_PORT`                          | Host port published by compose                                         | `6379`                                                                        |
-| `REDIS_PASSWORD`                           | Optional password                                                      | empty                                                                         |
-| `REDIS_DB`                                 | Redis DB index                                                         | `0`                                                                           |
-| `REDIS_KEY_PREFIX`                         | Key prefix                                                             | `agenstra-controller`                                                         |
-| `QUEUE_ROLE`                               | `api`, `scheduler`, `worker`, or `all`                                 | `all` locally                                                                 |
-| `QUEUE_WORKER_CONCURRENCY`                 | Worker concurrency                                                     | `5`                                                                           |
-| `QUEUE_BULL_BOARD_ENABLED`                 | Enable Bull Board                                                      | `true` in dev for `all`/`scheduler`                                           |
-| `QUEUE_BULL_BOARD_PATH`                    | Bull Board path                                                        | `/admin/queues`                                                               |
-| `QUEUE_BULL_BOARD_USERNAME`                | Bull Board HTTP Basic user                                             | `admin`                                                                       |
-| `QUEUE_BULL_BOARD_PASSWORD`                | Bull Board HTTP Basic password                                         | required; `bullmq` in local compose                                           |
-| `OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS`   | models.dev catalog refresh interval                                    | `86400000` (24h); `0` disables repeatable job                                 |
-| `OPENCODE_PROVIDERS_MODELS_DEV_URL`        | Catalog JSON URL                                                       | `https://models.dev/api.json`                                                 |
-| `OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS` | MCP Registry catalog refresh interval                                  | `86400000` (24h); `0` disables repeatable job                                 |
-| `OPENCODE_MCP_REGISTRY_BASE_URL`           | Official MCP Registry base URL                                         | `https://registry.modelcontextprotocol.io`                                    |
-| `OPENCODE_CONFIG_SYNC_INTERVAL_MS`         | Durable OpenCode config sync interval                                  | `30000`                                                                       |
-| `OPENCODE_CONFIG_SYNC_BATCH_SIZE`          | Config sync targets per coordinator run                                | `10`                                                                          |
-| `OPENCODE_LAYER_FILES_SYNC_INTERVAL_MS`    | Layer-file emit retry interval                                         | `30000`                                                                       |
-| `OPENCODE_LAYER_FILES_SYNC_BATCH_SIZE`     | Layer-file targets per coordinator run                                 | `20`                                                                          |
-| `MCP_OAUTH_CALLBACK_SECRET`                | HMAC secret for public MCP OAuth callbacks                             | required for Environment MCP Authenticate; Decabill provisions a random value |
-| `MCP_OAUTH_PUBLIC_BASE_URL`                | Public controller origin for MCP OAuth redirects (non-privileged port) | e.g. `http://localhost:3100`; Decabill uses `http://{fqdn}:3100`              |
+| Variable                                   | Description                                                                                                          | Default                                                                       |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `VALKEY_HOST`                              | Valkey host                                                                                                          | `localhost` (compose: `valkey`)                                               |
+| `VALKEY_PORT`                              | Valkey port                                                                                                          | `6379`                                                                        |
+| `VALKEY_HOST_PORT`                         | Host port published by compose                                                                                       | `6379`                                                                        |
+| `VALKEY_PASSWORD`                          | Optional password                                                                                                    | empty                                                                         |
+| `VALKEY_DB`                                | Valkey DB index                                                                                                      | `0`                                                                           |
+| `VALKEY_KEY_PREFIX`                        | Key prefix                                                                                                           | `agenstra-controller`                                                         |
+| `CACHE_CLIENT`                             | Client library for all Valkey connections (BullMQ queues, caches, update state): `glide` (Valkey GLIDE) or `ioredis` | `glide`                                                                       |
+| `QUEUE_ROLE`                               | `api`, `scheduler`, `worker`, or `all`                                                                               | `all` locally                                                                 |
+| `QUEUE_WORKER_CONCURRENCY`                 | Worker concurrency                                                                                                   | `5`                                                                           |
+| `QUEUE_BULL_BOARD_ENABLED`                 | Enable Bull Board                                                                                                    | `true` in dev for `all`/`scheduler`                                           |
+| `QUEUE_BULL_BOARD_PATH`                    | Bull Board path                                                                                                      | `/admin/queues`                                                               |
+| `QUEUE_BULL_BOARD_USERNAME`                | Bull Board HTTP Basic user                                                                                           | `admin`                                                                       |
+| `QUEUE_BULL_BOARD_PASSWORD`                | Bull Board HTTP Basic password                                                                                       | required; `bullmq` in local compose                                           |
+| `OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS`   | models.dev catalog refresh interval                                                                                  | `86400000` (24h); `0` disables repeatable job                                 |
+| `OPENCODE_PROVIDERS_MODELS_DEV_URL`        | Catalog JSON URL                                                                                                     | `https://models.dev/api.json`                                                 |
+| `OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS` | MCP Registry catalog refresh interval                                                                                | `86400000` (24h); `0` disables repeatable job                                 |
+| `OPENCODE_MCP_REGISTRY_BASE_URL`           | Official MCP Registry base URL                                                                                       | `https://registry.modelcontextprotocol.io`                                    |
+| `OPENCODE_CONFIG_SYNC_INTERVAL_MS`         | Durable OpenCode config sync interval                                                                                | `30000`                                                                       |
+| `OPENCODE_CONFIG_SYNC_BATCH_SIZE`          | Config sync targets per coordinator run                                                                              | `10`                                                                          |
+| `OPENCODE_LAYER_FILES_SYNC_INTERVAL_MS`    | Layer-file emit retry interval                                                                                       | `30000`                                                                       |
+| `OPENCODE_LAYER_FILES_SYNC_BATCH_SIZE`     | Layer-file targets per coordinator run                                                                               | `20`                                                                          |
+| `MCP_OAUTH_CALLBACK_SECRET`                | HMAC secret for public MCP OAuth callbacks                                                                           | required for Environment MCP Authenticate; Decabill provisions a random value |
+| `MCP_OAUTH_PUBLIC_BASE_URL`                | Public controller origin for MCP OAuth redirects (non-privileged port)                                               | e.g. `http://localhost:3100`; Decabill uses `http://{fqdn}:3100`              |
 
 ## OpenSearch (search indexes)
 
@@ -419,7 +422,7 @@ Applies to **Backend Agent Controller** and **Backend Agent Manager**. See [Open
 - **[Local Development](./local-development.md)** Local setup
 - **[Docker Deployment](./docker-deployment.md)** Containerized deployment
 - **[Production Checklist](./production-checklist.md)** Production deployment
-- **[Background jobs](./background-jobs.md)** BullMQ roles, Redis, and coordinators
+- **[Background jobs](./background-jobs.md)** BullMQ roles, Valkey, and coordinators
 - **[Atlassian import](../features/atlassian-import.md)** Import feature, markers, and console entry points
 
 ---

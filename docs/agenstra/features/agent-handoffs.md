@@ -59,7 +59,7 @@ sequenceDiagram
     participant A as Agent A (OpenCode + agenstra MCP)
     participant M as Agent Manager
     participant C as Agent Controller
-    participant Q as BullMQ (Redis)
+    participant Q as BullMQ (Valkey)
     participant B as Agent B
 
     A->>M: POST /api/agent-context/handoffs (agent token)

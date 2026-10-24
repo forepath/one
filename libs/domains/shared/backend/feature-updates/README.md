@@ -1,6 +1,6 @@
 # shared-backend-feature-updates
 
-Shared NestJS module for application update checks (GitHub Releases → Redis state →
+Shared NestJS module for application update checks (GitHub Releases → Valkey state →
 admin REST + BullMQ job). Product apps register via `UpdatesModule.register(options)`.
 
 ## Usage
@@ -23,7 +23,7 @@ UpdatesModule.register({
 ## OpenTelemetry
 
 When OTEL is effectively enabled on the host app, `UpdatesMetricsCollector` polls
-Redis-backed update state every 60s and publishes gauges on meter `forepath.updates`
+Valkey-backed update state every 60s and publishes gauges on meter `forepath.updates`
 (see application-updates docs). No extra wiring is required beyond
 `UpdatesModule.register(...)`.
 

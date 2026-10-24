@@ -80,7 +80,7 @@ Common problems and their solutions in Decabill.
 - Check worker container is running (`QUEUE_ROLE=worker`)
 - Inspect failed jobs in Bull Board at `/admin/queues`
 
-## Background Jobs and Redis
+## Background Jobs and Valkey
 
 ### Jobs Not Running
 
@@ -88,8 +88,8 @@ Common problems and their solutions in Decabill.
 
 **Solutions**:
 
-- Confirm Redis is running (compose: port **6380** on host)
-- Verify `REDIS_HOST`, `REDIS_PORT`, and `REDIS_KEY_PREFIX=decabill-billing`
+- Confirm Valkey is running (compose: port **6380** on host)
+- Verify `VALKEY_HOST`, `VALKEY_PORT`, and `VALKEY_KEY_PREFIX=decabill-billing`
 - Ensure scheduler container is running with `QUEUE_ROLE=scheduler`
 - Ensure worker container is running with `QUEUE_ROLE=worker`
 - API must be healthy first (migrations applied)
@@ -105,15 +105,15 @@ Common problems and their solutions in Decabill.
 - Provide `QUEUE_BULL_BOARD_USERNAME` and `QUEUE_BULL_BOARD_PASSWORD`
 - In production, password is required when board is enabled
 
-### Redis Connection Errors in Worker Logs
+### Valkey Connection Errors in Worker Logs
 
-**Symptoms**: Worker or scheduler cannot connect to Redis
+**Symptoms**: Worker or scheduler cannot connect to Valkey
 
 **Solutions**:
 
-- From host dev: `REDIS_PORT=6380` when using compose Redis mapping
-- Inside compose network: `REDIS_HOST=redis`, `REDIS_PORT=6379`
-- Check Redis health: `docker compose exec redis redis-cli ping`
+- From host dev: `VALKEY_PORT=6380` when using compose Valkey mapping
+- Inside compose network: `VALKEY_HOST=valkey`, `VALKEY_PORT=6379`
+- Check Valkey health: `docker compose exec valkey valkey-cli ping`
 
 ## Database Issues
 

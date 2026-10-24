@@ -29,22 +29,22 @@ mirrors the notifications/webhook extension pattern. Agenstra registers it in
 - `controllerPath`: `admin/updates`
 - Queue: `agent-controller`
 
-State lives in **Redis** (same Redis as BullMQ, keyed under `REDIS_KEY_PREFIX`).
+State lives in **Valkey** (same Valkey as BullMQ, keyed under `VALKEY_KEY_PREFIX`).
 There are no TypeORM tables for update state.
 
 ```mermaid
 flowchart TD
   Scheduler[scheduler]
   GitHub[GitHub Releases API]
-  Redis[(Redis<br/>release snapshot + instance rows)]
+  Valkey[(Valkey<br/>release snapshot + instance rows)]
   Heartbeats[api / worker / scheduler heartbeats]
   Controller[agent-controller]
   Manager[agent-manager]
 
   Scheduler -->|daily update-check| GitHub
-  Scheduler --> Redis
-  GitHub --> Redis
-  Heartbeats --> Redis
+  Scheduler --> Valkey
+  GitHub --> Valkey
+  Heartbeats --> Valkey
   Controller -->|scrape GET /api/instance-status| Manager
 ```
 
@@ -56,12 +56,12 @@ Each process registers a heartbeat (~60s) with:
 - Role: `QUEUE_ROLE` (`api` / `worker` / `scheduler` / `all`) on the controller
 - Installed version: `VERSION` or `APP_VERSION` (baked into release images; runtime
   override optional)
-- Dependency health: Redis, BullMQ queue, database
+- Dependency health: Valkey, BullMQ queue, database
 - Hostname, uptime, environment
 
-Agent-manager processes (no Redis) expose `GET /api/instance-status`. The
+Agent-manager processes (no Valkey) expose `GET /api/instance-status`. The
 controller **API** (or `QUEUE_ROLE=all`) scrapes API-key workspace endpoints about
-every 60 seconds and on each `update-check`, then upserts rows into controller Redis
+every 60 seconds and on each `update-check`, then upserts rows into controller Valkey
 (same 5-minute TTL as heartbeats). Without the periodic scrape, managers disappear
 from `/updates` a few minutes after the last check. Keycloak workspaces are skipped.
 Manager roles use `AGENT_MANAGER_ROLE` when set.
@@ -100,7 +100,7 @@ The Agenstra UI shows **agenstra + shared** entries only.
 | `GET`  | `/admin/updates/status` | Compact summary (Admin badge)              |
 | `POST` | `/admin/updates/check`  | Enqueue immediate check                    |
 
-## Redis flush
+## Valkey flush
 
 - Instance rows reappear as heartbeats resume (deterministic IDs stay stable).
 - Release/check snapshot returns after the next successful check.

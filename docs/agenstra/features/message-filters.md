@@ -50,7 +50,7 @@ Workspace managers can author rules that run on every chat message, so patterns 
 
 ## Migration from filter rules
 
-The tables `regex_filter_rules` (manager) and the controller's global rule tables, the `filter-rules-sync` background jobs (`FILTER_RULES_SYNC_*`, their Redis repeatables are removed on startup), the `/filters` console page and the `filter_rules:write` PAT scope were removed.
+The tables `regex_filter_rules` (manager) and the controller's global rule tables, the `filter-rules-sync` background jobs (`FILTER_RULES_SYNC_*`, their Valkey repeatables are removed on startup), the `/filters` console page and the `filter_rules:write` PAT scope were removed.
 
 The database migrations move existing rules automatically:
 

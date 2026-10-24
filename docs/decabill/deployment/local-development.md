@@ -8,7 +8,7 @@ Before you begin, ensure you have:
 
 - **Node.js** 24.22.1 or higher
 - **PostgreSQL** (running locally or in Docker)
-- **Redis** (running locally or in Docker; billing compose uses host port **6380** by default)
+- **Valkey** or **Redis** (running locally or in Docker; billing compose uses host port **6380** by default)
 - **Git** (optional, for repository checkout)
 - **Keycloak** (optional; API key or users authentication work for local dev)
 
@@ -29,7 +29,7 @@ cd one
 npm install
 ```
 
-## Database and Redis Setup
+## Database and Valkey Setup
 
 ### Using Docker (Recommended)
 
@@ -43,16 +43,16 @@ docker run -d \
   -p 5432:5432 \
   postgres:16-alpine
 
-# Redis for BullMQ (host port 6380 to avoid clashing with other stacks)
+# Valkey (Redis-compatible) for BullMQ (host port 6380 to avoid clashing with other stacks)
 docker run -d \
-  --name decabill-redis \
+  --name decabill-valkey \
   -p 6380:6379 \
-  redis:7-alpine
+  docker.io/valkey/valkey:9.0.6-alpine
 ```
 
 ### Using the Billing Manager Compose Stack
 
-The billing manager `docker-compose.yaml` starts Postgres, Redis (published on **6380**), Mailhog, API, worker, and scheduler together. Copy the example env file and adjust:
+The billing manager `docker-compose.yaml` starts Postgres, Valkey (published on **6380**), Mailhog, API, worker, and scheduler together. Copy the example env file and adjust:
 
 ```bash
 cd apps/decabill/backend-billing-manager
@@ -74,10 +74,10 @@ DB_USERNAME=postgres
 DB_PASSWORD=postgres
 DB_DATABASE=postgres
 
-# Redis (when not using compose network)
-REDIS_HOST=localhost
-REDIS_PORT=6380
-REDIS_KEY_PREFIX=decabill-billing
+# Valkey (when not using compose network)
+VALKEY_HOST=localhost
+VALKEY_PORT=6380
+VALKEY_KEY_PREFIX=decabill-billing
 
 # Queue (local all-in-one)
 QUEUE_ROLE=all
@@ -218,14 +218,14 @@ See **[Background Jobs](./background-jobs.md)**.
 - Check credentials in `.env`
 - Ensure migrations ran (API container with `QUEUE_ROLE=api` or `all`)
 
-### Redis Connection Issues
+### Valkey Connection Issues
 
-- Confirm Redis is reachable on the configured host and port (**6380** on host when using compose defaults)
-- Check `REDIS_HOST` and `REDIS_PORT`
+- Confirm Valkey is reachable on the configured host and port (**6380** on host when using compose defaults)
+- Check `VALKEY_HOST` and `VALKEY_PORT`
 
 ### Port Conflicts
 
-- Billing API: **3200** (REST + Socket.IO), console: **4202**, docs: **4201**, Redis host port: **6380**. Change ports in `.env` if needed: `lsof -i :3200`
+- Billing API: **3200** (REST + Socket.IO), console: **4202**, docs: **4201**, Valkey host port: **6380**. Change ports in `.env` if needed: `lsof -i :3200`
 
 ## Related documentation
 

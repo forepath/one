@@ -34,7 +34,7 @@ Pass `X-Correlation-Id` or `X-Request-Id` on API requests to trace a single oper
 
 Common patterns to search for:
 
-- **Connection errors**: Database, Redis, SMTP, Stripe, cloud APIs
+- **Connection errors**: Database, Valkey, SMTP, Stripe, cloud APIs
 - **Authentication errors**: Invalid API key, expired JWT, tenant mismatch
 - **Queue errors**: BullMQ connection failures, job processor exceptions
 - **Payment errors**: Stripe signature failures, checkout session errors
@@ -72,15 +72,15 @@ docker exec -it billing-manager-worker /bin/sh
 docker stats billing-manager-api
 ```
 
-### Redis Debugging
+### Valkey Debugging
 
 ```bash
 # From host (compose default port)
-redis-cli -p 6380 ping
+valkey-cli -p 6380 ping   # redis-cli works as well
 
 # Inside compose network
-docker compose exec redis redis-cli ping
-docker compose exec redis redis-cli keys 'decabill-billing*'
+docker compose exec valkey valkey-cli ping
+docker compose exec valkey valkey-cli keys 'decabill-billing*'
 ```
 
 ### Database Debugging
@@ -164,7 +164,7 @@ Use browser DevTools Network tab or a Socket.IO client with:
 
 - Tune `QUEUE_WORKER_CONCURRENCY` for CPU and external API limits
 - Scale horizontally with additional worker containers
-- Watch Redis memory as job history accumulates (jobs are not auto-removed)
+- Watch Valkey memory as job history accumulates (jobs are not auto-removed)
 
 ### Database Performance
 

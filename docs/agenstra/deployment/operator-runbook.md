@@ -25,8 +25,8 @@ Map your intended profile to **[System Requirements](./system-requirements.md)**
 ### Controller stack
 
 - [ ] PostgreSQL (pgvector) sized for profile (local ≥2 GiB / production small ≥4 GiB RAM; disk per [System Requirements](./system-requirements.md#postgresql-pgvector))
-- [ ] Redis 7 sized for BullMQ history (production ≥1-2 GiB)
-- [ ] API, worker, and scheduler roles split for production (`QUEUE_ROLE`); **one** scheduler per Redis key prefix
+- [ ] Valkey 9 (or Redis 7.2+) sized for BullMQ history (production ≥1-2 GiB)
+- [ ] API, worker, and scheduler roles split for production (`QUEUE_ROLE`); **one** scheduler per Valkey key prefix
 - [ ] Worker concurrency (`QUEUE_WORKER_CONCURRENCY`) aligned with CPU and embedding provider rate limits
 - [ ] Container memory limits set on API (2-4 GiB), worker (4-8 GiB production), scheduler (≤1 GiB)
 
@@ -51,7 +51,7 @@ Run after Compose or orchestrated bring-up. Prefer staging before production.
 
 ### Bring-up order
 
-- [ ] Controller Postgres and Redis healthy
+- [ ] Controller Postgres and Valkey healthy
 - [ ] Controller API healthy (migrations applied); then worker and scheduler
 - [ ] Manager Postgres and API healthy; Docker socket usable from manager
 - [ ] Agent console reachable over intended URL (HTTPS in production)
@@ -78,7 +78,7 @@ Run after Compose or orchestrated bring-up. Prefer staging before production.
 ### Capacity and queues
 
 - [ ] Monitor controller worker CPU/memory during embedding reindex and import batches
-- [ ] Watch Redis memory growth from retained BullMQ history; trim or expand as needed
+- [ ] Watch Valkey memory growth from retained BullMQ history; trim or expand as needed
 - [ ] Monitor manager host Docker stats; stop idle agents to reclaim memory
 - [ ] Revisit host sizing when concurrent agent count or knowledge corpus grows
 - [ ] Keep `QUEUE_WORKER_CONCURRENCY` within embedding/provider rate limits
