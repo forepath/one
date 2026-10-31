@@ -1,5 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
+
 import type { ProjectTimeEntryResponse } from '../../types/projects.types';
 import { closeProjectTicketDetail } from '../project-tickets/project-tickets.actions';
 
@@ -16,7 +18,6 @@ import {
   loadProjectTicketTimeEntriesFailure,
   loadProjectTicketTimeEntriesSuccess,
   loadProjectTimeEntries,
-  loadProjectTimeEntriesBatch,
   loadProjectTimeEntriesFailure,
   loadProjectTimeEntriesSuccess,
   projectBoardTimeEntryRemoved,
@@ -37,7 +38,12 @@ export interface ProjectTicketTimeEntriesScope {
 
 export interface ProjectTimeEntriesState {
   projectId: string | null;
+  /** Current page of the project's time entries (replace-page). */
   entries: ProjectTimeEntryResponse[];
+  /** Server total, 1-based page and its size. */
+  total: number;
+  page: number;
+  pageSize: number;
   ticketScope: ProjectTicketTimeEntriesScope;
   loading: boolean;
   saving: boolean;
@@ -55,6 +61,9 @@ const initialTicketScope: ProjectTicketTimeEntriesScope = {
 export const initialProjectTimeEntriesState: ProjectTimeEntriesState = {
   projectId: null,
   entries: [],
+  total: 0,
+  page: 1,
+  pageSize: BILLING_LIST_PAGE_SIZE,
   ticketScope: initialTicketScope,
   loading: false,
   saving: false,
@@ -63,19 +72,23 @@ export const initialProjectTimeEntriesState: ProjectTimeEntriesState = {
 
 export const projectTimeEntriesReducer = createReducer(
   initialProjectTimeEntriesState,
-  on(loadProjectTimeEntries, (state, { projectId }) => ({
-    ...state,
-    projectId,
-    entries: [],
-    loading: true,
-    error: null,
-  })),
-  on(loadProjectTimeEntriesBatch, (state, { accumulatedEntries }) => ({
-    ...state,
-    entries: accumulatedEntries,
-    loading: true,
-  })),
-  on(loadProjectTimeEntriesSuccess, (state, { entries }) => ({ ...state, entries, loading: false })),
+  on(loadProjectTimeEntries, (state, { projectId, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.pageSize);
+    const sameProject = state.projectId === projectId;
+
+    return {
+      ...state,
+      projectId,
+      // Another project starts empty; the same project keeps its rows until the page arrives.
+      entries: sameProject ? state.entries : [],
+      total: sameProject ? state.total : 0,
+      page: window.page,
+      pageSize: window.pageSize,
+      loading: true,
+      error: null,
+    };
+  }),
+  on(loadProjectTimeEntriesSuccess, (state, { entries, total }) => ({ ...state, entries, total, loading: false })),
   on(loadProjectTimeEntriesFailure, (state, { error }) => ({ ...state, loading: false, error })),
   on(loadProjectTicketTimeEntries, (state, { projectId, ticketId }) => ({
     ...state,

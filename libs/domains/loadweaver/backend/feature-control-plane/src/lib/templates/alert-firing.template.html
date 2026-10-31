@@ -1,0 +1,14 @@
+{{#> email-layout}}
+<h1 class="email-title">{{title}}</h1>
+{{#if escalated}}
+<p><strong>Escalated:</strong> this alert is still unacknowledged.</p>
+{{/if}}
+<p>
+  <strong>Severity:</strong> {{severity}}<br /><strong>Since:</strong> {{since}}{{#if project}}<br /><strong
+    >Project:</strong
+  >
+  {{project}}{{/if}}{{#if entity}}<br /><strong>Affected:</strong> {{entity}}{{/if}}
+</p>
+<p>{{message}}</p>
+<p>Acknowledge or silence it in the Loadweaver console (Alerts).</p>
+{{/email-layout}}

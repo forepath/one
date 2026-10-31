@@ -41,6 +41,45 @@ describe('OffersCustomerService status guards', () => {
     jest.clearAllMocks();
   });
 
+  it('pages the pending offers of the caller (limit / offset / search passed, total returned)', async () => {
+    offersRepository.findPendingByUserId.mockResolvedValue({
+      items: [
+        {
+          id: 'offer-1',
+          userId: 'user-1',
+          status: OfferStatus.ARCHIVED,
+          currency: 'EUR',
+          totalGross: 119,
+          offerNumber: 'OFF-1',
+        },
+      ],
+      total: 12,
+    });
+
+    const result = await service.listPending('user-1', 10, 10, 'acme');
+
+    expect(offersRepository.findPendingByUserId).toHaveBeenCalledWith('user-1', {
+      limit: 10,
+      offset: 10,
+      search: 'acme',
+    });
+    expect(result).toEqual(expect.objectContaining({ total: 12, limit: 10, offset: 10 }));
+    expect(result.items.map((item) => item.id)).toEqual(['offer-1']);
+  });
+
+  it('pages the offer history of the caller only', async () => {
+    offersRepository.findHistoryByUserId.mockResolvedValue({ items: [], total: 0 });
+
+    const result = await service.listHistory('user-1', 25, 0);
+
+    expect(offersRepository.findHistoryByUserId).toHaveBeenCalledWith('user-1', {
+      limit: 25,
+      offset: 0,
+      search: undefined,
+    });
+    expect(result).toEqual({ items: [], total: 0, limit: 25, offset: 0 });
+  });
+
   it('rejects accept when offer is already accepted', async () => {
     offersRepository.findByIdOrThrow.mockResolvedValue({
       id: 'offer-1',

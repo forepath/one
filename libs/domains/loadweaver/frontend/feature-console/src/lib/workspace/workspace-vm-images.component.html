@@ -1,0 +1,318 @@
+@if (showList()) {
+  <!-- Project VM images (3.38): lanes Images | Imports with search; the import is the Images lane's primary action. -->
+  <fpc-tab-group
+    class="fpc-lane-tabs"
+    [activeId]="lane()"
+    (activeIdChange)="lane.set($any($event))"
+    [ariaLabel]="imagesTitle"
+  >
+    <fpc-tab id="images" [label]="registryTitle" />
+    <fpc-tab id="imports" [label]="importsTitle" />
+  </fpc-tab-group>
+  <fpc-section-row class="flex-grow-1 min-h-0" data-testid="workspace-vm-images">
+    <loadweaver-lane
+      [title]="registryTitle"
+      [flush]="true"
+      [off]="lane() !== 'images'"
+      data-testid="vms-registry-images"
+    >
+      @if (!fixedProject()) {
+        <div lwLaneToolbar class="px-3 py-2">
+          <label class="visually-hidden" for="lw-ws-images-project">{{ projectFilterLabel }}</label>
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-ws-images-project"
+            size="sm"
+            [ngModel]="project()"
+            (ngModelChange)="project.set($event)"
+            data-testid="workspace-vm-images-project"
+          >
+            @for (p of projects(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </fpc-form-control>
+        </div>
+      }
+      @if (registryImagesError(); as message) {
+        <fpc-alert [flush]="true" variant="danger" [message]="message" />
+      }
+      @if (!project()) {
+        <fpc-empty-state icon="folder" size="sm" [title]="pickProjectLabel" />
+      } @else {
+        <!-- Images → table (3.38 D1): image (repository:tag) · variants · guest agent · virtual size · firmware; no digest
+             (D11: ⋮ Copy reference). -->
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="registryTitle"
+          [columns]="imageColumns"
+          [rows]="visibleImages()"
+          [rowId]="imageId"
+          [loading]="registryImagesLoading() && registryImages().length === 0"
+          paging="client"
+          persistKey="lw-vm-images"
+          [(query)]="imagesSearch"
+          [searchPlaceholder]="imagesSearchLabel"
+          [rowMenu]="imageMenu"
+          (rowAction)="copy($event.row.reference)"
+          emptyIcon="hdd-stack"
+          data-testid="vm-images-table"
+        >
+          @if (importProjects().length > 0) {
+            <span fpcDataTableToolbar class="d-inline-flex gap-2">
+              <fpc-button
+                variant="dark"
+                size="sm"
+                iconOnly
+                [ariaLabel]="catalogLabel"
+                [title]="catalogLabel"
+                (clicked)="openCatalog()"
+                data-testid="workspace-vm-catalog"
+              >
+                <i class="bi bi-collection" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="primary"
+                size="sm"
+                iconOnly
+                [ariaLabel]="importLabel"
+                [title]="importLabel"
+                (clicked)="openImport()"
+                data-testid="workspace-vm-import"
+              >
+                <i class="bi bi-cloud-arrow-down" aria-hidden="true"></i>
+              </fpc-button>
+            </span>
+          }
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="hdd-stack"
+              size="sm"
+              i18n-title="@@lwConsoleVms-noRegistryImages"
+              title="No VM images in this project's registry"
+              i18n-message="@@lwConsoleVms-noRegistryImagesHint"
+              message="Push one with loadweaver vm-image push or import one."
+            />
+          </span>
+          <ng-template fpcTableCell="variants" let-row>
+            @for (v of row.variants; track v.arch) {
+              <span class="d-inline-flex align-items-center gap-1 me-2" data-testid="vm-image-variant">
+                <fpc-badge color="light" size="sm">{{ v.arch }}</fpc-badge>
+                <fpc-badge color="light" size="sm">{{ v.format }}</fpc-badge>
+              </span>
+            }
+          </ng-template>
+          <ng-template fpcTableCell="guestAgent" let-row>
+            @if (hasGuestAgent(row)) {
+              <fpc-badge tone="info" icon="robot" [iconOnly]="true" [label]="guestAgentLabel" />
+            }
+          </ng-template>
+        </fpc-data-table>
+      }
+    </loadweaver-lane>
+    <loadweaver-lane [title]="importsTitle" [flush]="true" [off]="lane() !== 'imports'" data-testid="vms-imports">
+      @if (importsError(); as message) {
+        <fpc-alert [flush]="true" variant="danger" [message]="message" />
+      }
+      @if (!project()) {
+        <fpc-empty-state icon="folder" size="sm" [title]="pickProjectLabel" />
+      } @else {
+        <!-- Imports → table (3.38 D1): State · image · step · arch · firmware · downloaded · virtual size · source · time ·
+             error; ⋮ Copy ID. -->
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="importsTitle"
+          [columns]="importColumns"
+          [rows]="visibleImports()"
+          [loading]="importsLoading() && imports().length === 0"
+          paging="client"
+          persistKey="lw-vm-imports"
+          [(query)]="importsSearch"
+          [searchPlaceholder]="importsSearchLabel"
+          [rowMenu]="importMenu"
+          (rowAction)="copy($event.row.id)"
+          emptyIcon="cloud-arrow-down"
+          data-testid="vm-imports-table"
+        >
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="cloud-arrow-down"
+              size="sm"
+              i18n-title="@@lwConsoleVms-noImports"
+              title="No VM image imports in this project"
+            />
+          </span>
+          <ng-template fpcTableCell="reference" let-row>
+            <span class="font-monospace">{{ row.reference }}</span>
+            @if (row.containerDisk) {
+              <fpc-badge class="ms-1" tone="info" i18n="@@lwConsoleVms-containerDisk">containerDisk</fpc-badge>
+            }
+          </ng-template>
+          <ng-template fpcTableCell="created" let-row>{{ row.createdAt | date: 'short' }}</ng-template>
+          <ng-template fpcTableCell="error" let-row>
+            @if (row.error) {
+              <span class="text-danger small text-break">{{ row.error }}</span>
+            }
+          </ng-template>
+        </fpc-data-table>
+      }
+    </loadweaver-lane>
+  </fpc-section-row>
+}
+
+<fpc-modal [open]="importOpen()" (openChange)="onImportOpenChange($event)" [title]="importTitle">
+  <p class="small" i18n="@@lwConsoleVms-importHint">
+    The control plane downloads the disk image (qcow2, raw, or a KubeVirt containerDisk archive), checks its SHA-256 or
+    SHA-512 and stores it as a VM image in the project's registry. Use the reference in a virtual machine's image.
+  </p>
+  <fpc-form-field forId="lw-vm-import-project" i18n-label="@@lwConsoleVms-importProject" label="Project">
+    <fpc-form-control controlType="select" controlId="lw-vm-import-project" size="sm" [(ngModel)]="importProject">
+      @for (p of importProjects(); track p) {
+        <option [value]="p">{{ p }}</option>
+      }
+    </fpc-form-control>
+  </fpc-form-field>
+  <fpc-form-field forId="lw-vm-import-url" i18n-label="@@lwConsoleVms-importUrl" label="Download URL (HTTPS)">
+    <fpc-form-control
+      controlId="lw-vm-import-url"
+      size="sm"
+      controlClass="font-monospace"
+      [ngModel]="importUrl"
+      (ngModelChange)="onImportUrlChange($event)"
+      data-testid="vms-import-url"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="lw-vm-import-sha" i18n-label="@@lwConsoleVms-importSha" label="SHA-256 or SHA-512 of the file">
+    <fpc-form-control
+      controlId="lw-vm-import-sha"
+      size="sm"
+      controlClass="font-monospace"
+      [(ngModel)]="importSha256"
+      data-testid="vms-import-sha"
+    />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="lw-vm-import-ref"
+    i18n-label="@@lwConsoleVms-importRef"
+    label="Image name and tag (repository:tag)"
+  >
+    <fpc-form-control
+      controlId="lw-vm-import-ref"
+      size="sm"
+      controlClass="font-monospace"
+      [(ngModel)]="importRef"
+      data-testid="vms-import-ref"
+    />
+  </fpc-form-field>
+  <div class="row g-3">
+    <div class="col-12 col-md-4">
+      <fpc-form-field forId="lw-vm-import-arch" i18n-label="@@lwConsoleVms-importArch" label="Architecture">
+        <fpc-form-control controlType="select" controlId="lw-vm-import-arch" size="sm" [(ngModel)]="importArch">
+          <option value="amd64">amd64</option>
+          <option value="arm64">arm64</option>
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-12 col-md-8 d-flex flex-wrap align-items-center gap-3">
+      <fpc-form-check checkId="lw-vm-import-uefi" label="UEFI" [(ngModel)]="importUefi" />
+      <fpc-form-check checkId="lw-vm-import-bios" label="BIOS" [(ngModel)]="importBios" />
+      <fpc-form-check
+        checkId="lw-vm-import-agent"
+        i18n-label="@@lwConsoleVms-importGuestAgent"
+        label="Guest agent installed"
+        [(ngModel)]="importGuestAgent"
+      />
+    </div>
+  </div>
+  @if (importInvalid()) {
+    <fpc-alert
+      variant="warning"
+      i18n-message="@@lwConsoleVms-importInvalid"
+      message="Enter an HTTPS URL, the SHA-256 (64 hex digits) or SHA-512 (128), a lowercase repository:tag and at least one firmware (BIOS is amd64 only)."
+    />
+  }
+  @if (importError(); as message) {
+    <fpc-alert variant="danger" [message]="message" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="onImportOpenChange(false)">
+      <span i18n="@@lwConsoleVms-cancel">Cancel</span>
+    </fpc-button>
+    <fpc-button variant="primary" [loading]="importing()" (clicked)="submitImport()" data-testid="vms-import-submit">
+      <span i18n="@@lwConsoleVms-startImport">Start import</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<!-- Import from catalog (3.42): pick a recommended / cluster / upstream image, import it as its suggested reference. -->
+<fpc-modal size="xl" [open]="catalogOpen()" (openChange)="onCatalogOpenChange($event)" [title]="catalogLabel">
+  <p class="small" i18n="@@lwConsoleVmCatalog-hint">
+    Recommended images ship with Loadweaver, the cluster's own are added by cluster admins; other versions are the
+    distributions' current builds. The import downloads the image, checks its published checksum and stores it in the
+    project's registry.
+  </p>
+  <fpc-form-field forId="lw-vm-catalog-project" i18n-label="@@lwConsoleVms-importProject" label="Project">
+    <fpc-form-control
+      controlType="select"
+      controlId="lw-vm-catalog-project"
+      size="sm"
+      [(ngModel)]="catalogProject"
+      data-testid="vm-catalog-project"
+    >
+      @for (p of importProjects(); track p) {
+        <option [value]="p">{{ p }}</option>
+      }
+    </fpc-form-control>
+  </fpc-form-field>
+  @if (catalogOpen()) {
+    <loadweaver-vm-image-catalog
+      idPrefix="lw-vm-catalog-tab"
+      [present]="catalogProject === project() ? presentRefs() : []"
+      [selectedId]="catalogEntry()?.id ?? null"
+      (picked)="pickCatalogEntry($event)"
+    />
+  }
+  @if (catalogEntry(); as entry) {
+    <div class="mt-3" data-testid="vm-catalog-picked">
+      <fpc-form-field
+        forId="lw-vm-catalog-ref"
+        i18n-label="@@lwConsoleVms-importRef"
+        label="Image name and tag (repository:tag)"
+      >
+        <fpc-form-control
+          controlId="lw-vm-catalog-ref"
+          size="sm"
+          controlClass="font-monospace"
+          [(ngModel)]="catalogRef"
+          data-testid="vm-catalog-ref"
+        />
+      </fpc-form-field>
+      <div class="small text-body-secondary text-break">
+        {{ entry.label }} · {{ entry.version }} · {{ entry.arch }} · <span class="font-monospace">{{ entry.url }}</span>
+      </div>
+    </div>
+  }
+  @if (catalogInvalid()) {
+    <fpc-alert
+      variant="warning"
+      i18n-message="@@lwConsoleVmCatalog-invalid"
+      message="Pick an image and enter a lowercase repository:tag."
+    />
+  }
+  @if (importError(); as message) {
+    <fpc-alert variant="danger" [message]="message" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="onCatalogOpenChange(false)">
+      <span i18n="@@lwConsoleVms-cancel">Cancel</span>
+    </fpc-button>
+    <fpc-button
+      variant="primary"
+      [disabled]="!catalogEntry()"
+      [loading]="importing()"
+      (clicked)="submitCatalogImport()"
+      data-testid="vm-catalog-submit"
+    >
+      <span i18n="@@lwConsoleVms-startImport">Start import</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

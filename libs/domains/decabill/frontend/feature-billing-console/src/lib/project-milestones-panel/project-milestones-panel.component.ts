@@ -1,28 +1,35 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, Input, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, Input, OnInit, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   ProjectMilestonesFacade,
+  ProjectMilestonesService,
   type CreateProjectMilestoneDto,
   type ProjectMilestoneResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
   FpcAlertComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
-  FpcListComponent,
   FpcConfirmDialogComponent,
-  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
-  FpcPageHeaderComponent,
-  FpcSpinnerComponent,
+  fpcRunBulk,
+  FpcTableCellDirective,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  type FpcTableState,
+  FpcDatePipe,
 } from '@forepath/shared/frontend/ui-components';
+import { firstValueFrom } from 'rxjs';
 
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { DB_DL_CANCEL, DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
 
 type MilestoneEditForm = {
   id: string;
@@ -35,21 +42,19 @@ type MilestoneEditForm = {
   selector: 'framework-project-milestones-panel',
   standalone: true,
   imports: [
+    FpcDatePipe,
     CommonModule,
     FormsModule,
     FpcAlertComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
+    FpcDataTableComponent,
     FpcEmptyStateComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcConfirmDialogComponent,
-    FpcListComponent,
-    FpcListItemComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
-    FpcPageHeaderComponent,
-    FpcSpinnerComponent,
+    FpcTableCellDirective,
   ],
   templateUrl: './project-milestones-panel.component.html',
   styleUrls: ['./project-milestones-panel.component.scss'],
@@ -63,15 +68,94 @@ export class ProjectMilestonesPanelComponent implements OnInit {
   readonly deleteModalOpen = signal(false);
 
   private readonly facade = inject(ProjectMilestonesFacade);
+  private readonly service = inject(ProjectMilestonesService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly pageTitle = $localize`:@@featureProjectMilestones-title:Milestones`;
+  readonly searchPlaceholder = $localize`:@@featureProjectMilestones-search:Search milestones`;
   readonly addTitle = $localize`:@@featureProjectMilestones-add:Add`;
 
   readonly milestones$ = this.facade.milestones$;
   readonly loading$ = this.facade.loading$;
   readonly saving$ = this.facade.saving$;
   readonly error$ = this.facade.error$;
+  readonly milestones = toSignal(this.facade.milestones$, { initialValue: [] as ProjectMilestoneResponse[] });
+  readonly loading = toSignal(this.facade.loading$, { initialValue: false });
+  readonly error = toSignal(this.facade.error$, { initialValue: null });
+
+  readonly editLabel = $localize`:@@featureProjectMilestones-edit:Edit`;
+  readonly lockLabel = $localize`:@@featureProjectMilestones-lock:Lock`;
+  readonly deleteLabel = DB_DL_DELETE;
+  readonly cancelLabel = DB_DL_CANCEL;
+  readonly bulkDeleteTitle = $localize`:@@featureProjectMilestones-bulkDeleteTitle:Delete milestones?`;
+
+  readonly columns: FpcTableColumn<ProjectMilestoneResponse>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureProjectMilestones-colState:State`,
+      type: 'state',
+      state: (milestone) => this.milestoneState(milestone),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureProjectMilestones-colMilestone:Milestone`,
+      value: (milestone) => milestone.name,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'progress',
+      label: $localize`:@@featureProjectMilestones-colProgress:Progress`,
+      value: (milestone) => milestone.progressPercent,
+      align: 'end',
+      priority: 1,
+    },
+    {
+      id: 'open',
+      label: $localize`:@@featureProjectMilestones-colOpen:Open`,
+      value: (milestone) => milestone.openTicketCount,
+      align: 'end',
+      priority: 2,
+    },
+    {
+      id: 'done',
+      label: $localize`:@@featureProjectMilestones-colDone:Done`,
+      value: (milestone) => milestone.doneTicketCount,
+      align: 'end',
+      priority: 2,
+    },
+    {
+      id: 'target',
+      label: $localize`:@@featureProjectMilestones-targetDateLabel:Target date`,
+      value: (milestone) => milestone.targetDate ?? '',
+      priority: 2,
+    },
+  ];
+
+  readonly selected = signal<readonly string[]>([]);
+  readonly confirmBulkDelete = signal(false);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  /** Locked milestones can neither be locked again nor deleted. */
+  readonly lockableSelection = computed(() => {
+    const ids = new Set(this.selected());
+
+    return this.milestones().filter((milestone) => ids.has(milestone.id) && !milestone.lockedAt);
+  });
+  readonly bulkDeleteMessage = computed(
+    () =>
+      $localize`:@@featureProjectMilestones-bulkDeleteMessage:${this.lockableSelection().length}:count: selected milestones will be deleted. This cannot be undone.`,
+  );
+
+  readonly rowMenu = (milestone: ProjectMilestoneResponse): FpcMenuItem[] => [
+    ...(this.isAdmin && !milestone.lockedAt
+      ? [
+          { id: 'edit', label: this.editLabel, icon: 'pencil' },
+          { id: 'lock', label: this.lockLabel, icon: 'lock' },
+          { id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true },
+        ]
+      : []),
+    dbCopyIdItem(),
+  ];
 
   createForm: CreateProjectMilestoneDto = { name: '' };
   editForm: MilestoneEditForm = { id: '', name: '', description: '', targetDate: '' };
@@ -138,28 +222,65 @@ export class ProjectMilestonesPanelComponent implements OnInit {
     this.facade.lock(this.projectId, id);
   }
 
-  openTicketsLabel(milestone: ProjectMilestoneResponse): string {
-    return $localize`:@@featureProjectMilestones-openTicketCount:${milestone.openTicketCount} open`;
-  }
-
-  doneTicketsLabel(milestone: ProjectMilestoneResponse): string {
-    return $localize`:@@featureProjectMilestones-doneTicketCount:${milestone.doneTicketCount} done`;
+  onRowAction(milestone: ProjectMilestoneResponse, action: string): void {
+    if (action === 'edit') this.openEditModal(milestone);
+    else if (action === 'lock') this.lockMilestone(milestone.id);
+    else if (action === 'delete') this.openDeleteModal(milestone);
+    else if (action === 'copy-id') fpcCopyText(milestone.id);
   }
 
   progressLabel(milestone: ProjectMilestoneResponse): string {
     return $localize`:@@featureProjectMilestones-progress:${milestone.progressPercent}%`;
   }
 
-  progressTextClass(milestone: ProjectMilestoneResponse): string {
-    if (milestone.progressPercent === 0) {
-      return 'text-danger';
+  targetDateOf(milestone: ProjectMilestoneResponse): string | null {
+    return milestone.targetDate ?? null;
+  }
+
+  /** Bulk Lock: one `POST …/milestones/:id/lock` per unlocked milestone. */
+  async lockSelected(): Promise<void> {
+    await this.runBulk((milestone) => firstValueFrom(this.service.lock(this.projectId, milestone.id)));
+  }
+
+  /** Bulk Delete: one `DELETE …/milestones/:id` per unlocked milestone. */
+  async deleteSelected(): Promise<void> {
+    await this.runBulk((milestone) => firstValueFrom(this.service.delete(this.projectId, milestone.id)));
+  }
+
+  private async runBulk(run: (milestone: ProjectMilestoneResponse) => Promise<unknown>): Promise<void> {
+    const milestones = this.lockableSelection();
+
+    if (!this.isAdmin || milestones.length === 0) return;
+
+    const result = await fpcRunBulk(milestones, run);
+
+    this.bulkResult.set(dbBulkSummary(result, (milestone) => milestone.name));
+    this.selected.set([]);
+    this.facade.load(this.projectId);
+  }
+
+  private milestoneState(milestone: ProjectMilestoneResponse): FpcTableState {
+    if (milestone.lockedAt) {
+      return { label: this.lockedLabel(), tone: 'neutral', icon: 'lock-fill' };
     }
 
     if (milestone.progressPercent >= 100) {
-      return 'text-success';
+      return { label: $localize`:@@featureProjectMilestones-stateCompleted:Completed`, tone: 'success' };
     }
 
-    return 'text-warning';
+    if (milestone.progressPercent > 0) {
+      return {
+        label: $localize`:@@featureProjectMilestones-stateInProgress:In progress`,
+        tone: 'warning',
+        icon: 'hourglass-split',
+      };
+    }
+
+    return {
+      label: $localize`:@@featureProjectMilestones-stateNotStarted:Not started`,
+      tone: 'danger',
+      icon: 'circle',
+    };
   }
 
   lockedLabel(): string {

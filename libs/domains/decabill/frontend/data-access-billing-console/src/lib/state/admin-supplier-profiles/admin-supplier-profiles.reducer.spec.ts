@@ -22,22 +22,26 @@ describe('adminSupplierProfilesReducer', () => {
   it('sets loading on loadAdminSupplierProfiles', () => {
     const state = adminSupplierProfilesReducer(
       { ...initialAdminSupplierProfilesState, profiles: [listItem] },
-      loadAdminSupplierProfiles({ search: 'acme' }),
+      loadAdminSupplierProfiles({ search: 'acme', page: 2, pageSize: 50 }),
     );
 
     expect(state.loading).toBe(true);
-    expect(state.profiles).toEqual([]);
+    // Replace-page: the current rows stay until the requested page arrives.
+    expect(state.profiles).toEqual([listItem]);
     expect(state.search).toBe('acme');
+    expect(state.page).toBe(2);
+    expect(state.pageSize).toBe(50);
   });
 
   it('stores profiles on loadAdminSupplierProfilesSuccess', () => {
     const state = adminSupplierProfilesReducer(
       { ...initialAdminSupplierProfilesState, loading: true },
-      loadAdminSupplierProfilesSuccess({ profiles: [listItem] }),
+      loadAdminSupplierProfilesSuccess({ profiles: [listItem], total: 77 }),
     );
 
     expect(state.loading).toBe(false);
     expect(state.profiles).toEqual([listItem]);
+    expect(state.total).toBe(77);
   });
 
   it('stores error on loadAdminSupplierProfilesFailure', () => {

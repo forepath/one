@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import { BILLING_LIST_PAGE_SIZE } from '../../constants/list-paging.constants';
 
 import type { ListParams, SubscriptionResponse, SubscriptionsSummaryResponse } from '../../types/billing.types';
 import { patchSubscriptionItemDisplayName } from '../../utils/patch-subscription-item-display-name.util';
@@ -21,9 +22,6 @@ import {
   loadSubscriptionsSummary,
   loadSubscriptionsSummaryFailure,
   loadSubscriptionsSummarySuccess,
-  loadMoreSubscriptions,
-  loadMoreSubscriptionsFailure,
-  loadMoreSubscriptionsSuccess,
   resumeSubscription,
   resumeSubscriptionFailure,
   resumeSubscriptionSuccess,
@@ -45,10 +43,10 @@ export interface SubscriptionsState {
   withdrawing: boolean;
   resuming: boolean;
   error: string | null;
+  /** Replace-page paging (the API has no total): whether a next page exists, 1-based page and its size. */
   hasMore: boolean;
-  nextOffset: number;
-  appendLoading: boolean;
-  appendError: string | null;
+  page: number;
+  pageSize: number;
   listParams: ListParams | null;
 }
 
@@ -66,9 +64,8 @@ export const initialSubscriptionsState: SubscriptionsState = {
   resuming: false,
   error: null,
   hasMore: false,
-  nextOffset: 0,
-  appendLoading: false,
-  appendError: null,
+  page: 1,
+  pageSize: BILLING_LIST_PAGE_SIZE,
   listParams: null,
 };
 
@@ -90,48 +87,31 @@ export const subscriptionsReducer = createReducer(
     summaryLoading: false,
     summaryError: error,
   })),
-  on(loadSubscriptions, (state, { params }) => ({
-    ...state,
-    entities: [],
-    loading: true,
-    error: null,
-    appendError: null,
-    appendLoading: false,
-    hasMore: false,
-    nextOffset: 0,
-    listParams: params ?? null,
-  })),
-  on(loadSubscriptionsSuccess, (state, { subscriptions, hasMore, nextOffset }) => ({
+  on(loadSubscriptions, (state, { params }) => {
+    const pageSize = params?.limit && params.limit > 0 ? params.limit : BILLING_LIST_PAGE_SIZE;
+
+    return {
+      ...state,
+      loading: true,
+      error: null,
+      page: Math.floor((params?.offset ?? 0) / pageSize) + 1,
+      pageSize,
+      listParams: params ?? null,
+    };
+  }),
+  on(loadSubscriptionsSuccess, (state, { subscriptions, hasMore }) => ({
     ...state,
     entities: subscriptions,
     hasMore,
-    nextOffset,
     loading: false,
     error: null,
   })),
   on(loadSubscriptionsFailure, (state, { error }) => ({
     ...state,
+    entities: [],
     loading: false,
     error,
     hasMore: false,
-  })),
-  on(loadMoreSubscriptions, (state) => ({
-    ...state,
-    appendLoading: true,
-    appendError: null,
-  })),
-  on(loadMoreSubscriptionsSuccess, (state, { subscriptions, hasMore, nextOffset }) => ({
-    ...state,
-    entities: [...state.entities, ...subscriptions],
-    hasMore,
-    nextOffset,
-    appendLoading: false,
-    appendError: null,
-  })),
-  on(loadMoreSubscriptionsFailure, (state, { error }) => ({
-    ...state,
-    appendLoading: false,
-    appendError: error,
   })),
   on(loadSubscription, (state) => ({
     ...state,

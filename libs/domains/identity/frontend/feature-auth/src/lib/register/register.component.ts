@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -11,7 +11,7 @@ import {
 } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { AuthenticationFacade, registerSuccess } from '@forepath/identity/frontend';
+import { AuthenticationFacade, AuthService, registerSuccess } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT, isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
 import {
   FpcAlertComponent,
@@ -23,8 +23,8 @@ import {
   FpcSectionRowComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
-import { Observable } from 'rxjs';
-import { take, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, take, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'identity-auth-register',
@@ -50,6 +50,13 @@ export class IdentityRegisterComponent implements OnInit {
   private readonly environment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT);
   private readonly actions$ = inject(Actions);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly authService = inject(AuthService);
+
+  /**
+   * True while the deployment requires the one-time admin claim token for its first account (opt-in through
+   * `IdentityAuthEnvironment.adminClaimStatusUrl`, e.g. Loadweaver Cloud); then the claim-token field is shown.
+   */
+  protected readonly adminClaimRequired = signal(false);
 
   registerForm!: FormGroup;
   registering$: Observable<boolean> = this.authFacade.registering$;
@@ -75,6 +82,7 @@ export class IdentityRegisterComponent implements OnInit {
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(8)]],
         passwordConfirmation: ['', [Validators.required]],
+        adminClaimToken: [''],
       },
       {
         validators: this.passwordMatchValidator,
@@ -86,9 +94,40 @@ export class IdentityRegisterComponent implements OnInit {
         ofType(registerSuccess),
         take(1),
         takeUntilDestroyed(this.destroyRef),
-        tap(() => this.registerForm.reset()),
+        tap(() => {
+          this.registerForm.reset();
+          // The first account exists now: no further registration needs the claim.
+          this.setAdminClaimRequired(false);
+        }),
       )
       .subscribe();
+
+    this.loadAdminClaimStatus();
+  }
+
+  private loadAdminClaimStatus(): void {
+    const url = this.environment.adminClaimStatusUrl;
+
+    if (!url || !this.isUsersAuth) {
+      return;
+    }
+
+    this.authService
+      .getAdminClaimStatus(url)
+      .pipe(
+        take(1),
+        catchError(() => of({ claimRequired: false })),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(({ claimRequired }) => this.setAdminClaimRequired(claimRequired === true));
+  }
+
+  private setAdminClaimRequired(required: boolean): void {
+    const control = this.registerForm.get('adminClaimToken');
+
+    this.adminClaimRequired.set(required);
+    control?.setValidators(required ? [Validators.required, Validators.maxLength(256)] : []);
+    control?.updateValueAndValidity();
   }
 
   private passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
@@ -106,8 +145,15 @@ export class IdentityRegisterComponent implements OnInit {
     if (this.registerForm.valid) {
       const email = this.registerForm.get('email')?.value;
       const password = this.registerForm.get('password')?.value;
+      const adminClaimToken = this.adminClaimRequired()
+        ? String(this.registerForm.get('adminClaimToken')?.value ?? '').trim()
+        : '';
 
-      this.authFacade.register(email, password);
+      if (adminClaimToken) {
+        this.authFacade.register(email, password, adminClaimToken);
+      } else {
+        this.authFacade.register(email, password);
+      }
     } else {
       Object.keys(this.registerForm.controls).forEach((key) => {
         this.registerForm.get(key)?.markAsTouched();

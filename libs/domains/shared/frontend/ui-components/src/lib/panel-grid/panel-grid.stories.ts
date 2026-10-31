@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
 
-import { FpcPaginationComponent } from '../pagination/pagination.component';
+import { FpcPagerComponent } from '../pager/pager.component';
 import { FpcPanelComponent } from '../panel/panel.component';
 import { FpcSearchFieldComponent } from '../search-field/search-field.component';
 import { FpcPanelGridComponent } from './panel-grid.component';
@@ -25,7 +25,7 @@ separated by hairlines like \`fpc-summary-bar\` instead of being boxed in cards.
   component: FpcPanelGridComponent,
   decorators: [
     moduleMetadata({
-      imports: [FpcPanelGridComponent, FpcPanelComponent, FpcSearchFieldComponent, FpcPaginationComponent],
+      imports: [FpcPanelGridComponent, FpcPanelComponent, FpcSearchFieldComponent, FpcPagerComponent],
     }),
   ],
   args: { columns: 3, bordered: true },
@@ -48,7 +48,7 @@ separated by hairlines like \`fpc-summary-bar\` instead of being boxed in cards.
         </div>
         <div fpcPanelFooter class="d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
           <small class="text-body-secondary">Showing 3 of 48</small>
-          <fpc-pagination size="sm" [page]="1" [totalPages]="16" />
+          <fpc-pager size="sm" [page]="1" [total]="400" [pageSize]="25" />
         </div>
       </fpc-panel>
     </fpc-panel-grid>`,

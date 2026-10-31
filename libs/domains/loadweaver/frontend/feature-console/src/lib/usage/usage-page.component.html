@@ -1,0 +1,253 @@
+<!-- Data filters: shared by the overview's drawer and the table's drawer (one tab renders at a time). -->
+<ng-template #scopeFields>
+  @if (!scope) {
+    <fpc-form-field forId="lw-usage-project" [label]="projectLabel">
+      <fpc-form-control
+        controlType="select"
+        controlId="lw-usage-project"
+        name="project"
+        size="sm"
+        [ngModel]="project()"
+        (ngModelChange)="project.set($event)"
+      >
+        @if (clusterWide()) {
+          <option value="" i18n="@@lwConsoleUsage-allProjects">All projects</option>
+        }
+        @for (p of projectOptions(); track p) {
+          <option [value]="p">{{ p }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+  }
+  <fpc-form-field forId="lw-usage-granularity" [label]="granularityLabel">
+    <fpc-form-control
+      controlType="select"
+      controlId="lw-usage-granularity"
+      name="granularity"
+      size="sm"
+      [ngModel]="granularity()"
+      (ngModelChange)="granularity.set($event)"
+    >
+      @for (g of granularities; track g) {
+        <option [value]="g">{{ granularityName(g) }}</option>
+      }
+    </fpc-form-control>
+  </fpc-form-field>
+  <fpc-form-field forId="lw-usage-from" [label]="fromLabel">
+    <fpc-form-control
+      controlId="lw-usage-from"
+      name="from"
+      inputType="datetime-local"
+      size="sm"
+      [ngModel]="fromInput()"
+      (ngModelChange)="fromInput.set($event)"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="lw-usage-to" [label]="toLabel">
+    <fpc-form-control
+      controlId="lw-usage-to"
+      name="to"
+      inputType="datetime-local"
+      size="sm"
+      [ngModel]="toInput()"
+      (ngModelChange)="toInput.set($event)"
+    />
+  </fpc-form-field>
+</ng-template>
+
+<ng-template #exportButton>
+  <fpc-button
+    variant="dark"
+    size="sm"
+    [iconOnly]="true"
+    [ariaLabel]="exportCsvLabel"
+    [title]="exportCsvLabel"
+    [loading]="exporting()"
+    (clicked)="export()"
+    data-testid="usage-export"
+  >
+    <i class="bi bi-filetype-csv" aria-hidden="true"></i>
+  </fpc-button>
+</ng-template>
+
+<div class="fpc-page">
+  @if (!scope) {
+    <fpc-page-header [title]="title" />
+  }
+
+  @if (report()) {
+    <fpc-summary-bar class="flex-shrink-0" [columns]="meters.length" data-testid="usage-totals">
+      @for (meter of meters; track meter) {
+        <fpc-summary-card [icon]="meterIcon(meter)" [label]="meterLabel(meter)" [value]="total(meter)" />
+      }
+    </fpc-summary-bar>
+  }
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (exportError(); as message) {
+    <fpc-alert
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="exportError.set(null)"
+    />
+  }
+  @if (report()?.truncated) {
+    <fpc-alert [flush]="true" variant="warning" data-testid="usage-truncated">
+      <span i18n="@@lwConsoleUsage-truncated"
+        >Only the first rows are shown. Narrow the time range, choose a project or a coarser resolution.</span
+      >
+    </fpc-alert>
+  }
+
+  @if (noProject()) {
+    <fpc-empty-state
+      icon="receipt"
+      i18n-title="@@lwConsoleUsage-noProjects"
+      title="You are not a member of any project"
+      data-testid="usage-no-projects"
+    />
+  } @else {
+    <fpc-tab-group
+      class="flex-shrink-0"
+      [activeId]="tab()"
+      (activeIdChange)="tab.set($event === 'lines' ? 'lines' : 'overview')"
+    >
+      <fpc-tab id="overview" [label]="tabOverview" icon="bar-chart" />
+      <fpc-tab id="lines" [label]="tabLines" icon="table" />
+    </fpc-tab-group>
+  }
+
+  @if (!noProject() && tab() === 'overview') {
+    <!-- Overview (3.38 decision 13): the drawer holds the data filters and which charts show. -->
+    <fpc-list-toolbar
+      [open]="filtersOpen()"
+      (openChange)="onOverviewFiltersOpen($event)"
+      [activeCount]="activeFilterCount() + hiddenMeters().length"
+      (applied)="applyOverview()"
+      (cleared)="reset()"
+      data-testid="usage-overview-filter"
+    >
+      <ng-container ngProjectAs="[fpcListToolbarActions]">
+        <fpc-button
+          variant="dark"
+          size="sm"
+          [iconOnly]="true"
+          [ariaLabel]="refreshLabel"
+          [title]="refreshLabel"
+          (clicked)="load()"
+          data-testid="usage-refresh"
+        >
+          <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+        </fpc-button>
+        <ng-container [ngTemplateOutlet]="exportButton" />
+      </ng-container>
+      <ng-container [ngTemplateOutlet]="scopeFields" />
+      @for (group of categories; track group.category) {
+        <fpc-form-check-group [label]="categoryLabel(group.category)" [legendId]="'lw-usage-charts-' + group.category">
+          @for (meter of group.meters; track meter) {
+            <fpc-form-check
+              [checkId]="'lw-usage-chart-' + meter"
+              [label]="meterLabel(meter)"
+              [checked]="isMeterShown(meter)"
+              (checkedChange)="toggleMeter(meter, $event)"
+            />
+          }
+        </fpc-form-check-group>
+      }
+    </fpc-list-toolbar>
+
+    <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0" data-testid="usage-overview">
+      @if (loading() && !report()) {
+        <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+      } @else if (chartGroups().length === 0) {
+        @if (!error()) {
+          <fpc-empty-state
+            icon="receipt"
+            i18n-title="@@lwConsoleUsage-empty"
+            title="No usage in this time range"
+            data-testid="usage-empty"
+          />
+        }
+      } @else {
+        @for (group of chartGroups(); track group.category) {
+          <section class="flex-shrink-0" [attr.data-category]="group.category" data-testid="usage-category">
+            <fpc-list-header [title]="group.label" />
+            <fpc-panel-grid [columns]="2">
+              @for (chart of group.charts; track chart.meter; let last = $last; let count = $count) {
+                <fpc-panel
+                  [title]="chart.unit ? chart.label + ' (' + chart.unit + ')' : chart.label"
+                  [span]="last && count % 2 === 1 ? 2 : 1"
+                  [attr.data-meter]="chart.meter"
+                  data-testid="usage-chart"
+                >
+                  <loadweaver-metric-chart type="bar" [series]="chart.series" [unit]="chart.unit" [height]="240" />
+                </fpc-panel>
+              }
+            </fpc-panel-grid>
+          </section>
+        }
+      }
+    </div>
+  } @else if (!noProject()) {
+    <!-- The table's strip carries the filters (Apply in the drawer), Refresh and the CSV export (3.38 R12). -->
+    <fpc-data-table
+      class="flex-grow-1 min-h-0"
+      [columns]="columns()"
+      [rows]="lines()"
+      [rowId]="rowId"
+      [ariaLabel]="title"
+      [searchable]="false"
+      [clientSort]="false"
+      [showFilterButton]="true"
+      [(filtersOpen)]="filtersOpen"
+      [filtersActive]="activeFilterCount()"
+      (filtersApplied)="load()"
+      (filtersCleared)="reset()"
+      [refreshable]="true"
+      [loading]="loading()"
+      (refresh)="load()"
+      paging="client"
+      [(page)]="page"
+      persistKey="lw-usage"
+      data-testid="usage-table"
+    >
+      <ng-container ngProjectAs="[fpcDataTableToolbar]">
+        <ng-container [ngTemplateOutlet]="exportButton" />
+      </ng-container>
+
+      <ng-container ngProjectAs="[fpcDataTableFilters]">
+        <ng-container [ngTemplateOutlet]="scopeFields" />
+      </ng-container>
+
+      <ng-template fpcTableCell="bucket" let-line>
+        {{ line.bucket | date: bucketFormat() : 'UTC' }}
+        @if (!line.final) {
+          <i
+            class="bi bi-hourglass-split text-body-secondary ms-1"
+            i18n-title="@@lwConsoleUsage-open"
+            title="Not final yet: values can still change"
+            data-testid="usage-open"
+          ></i>
+        }
+      </ng-template>
+
+      <div fpcDataTableEmpty class="w-100">
+        @if (loading()) {
+          <fpc-empty-state size="sm" [loading]="true" [title]="loadingLabel" />
+        } @else if (!error()) {
+          <fpc-empty-state
+            size="sm"
+            icon="receipt"
+            i18n-title="@@lwConsoleUsage-empty"
+            title="No usage in this time range"
+            data-testid="usage-empty"
+          />
+        }
+      </div>
+    </fpc-data-table>
+  }
+</div>

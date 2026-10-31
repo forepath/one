@@ -23,6 +23,14 @@ describe('AdminDatevExportsFacade', () => {
     expect(store.dispatch).toHaveBeenCalledWith(loadAdminDatevExports({ params: { scope: 'tenant', year: 2026 } }));
   });
 
+  it('loadPage converts the 1-based page into limit / offset', () => {
+    facade.loadPage({ scope: 'unified', search: 'jan', page: 3, pageSize: 50 });
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      loadAdminDatevExports({ params: { scope: 'unified', search: 'jan', limit: 50, offset: 100 } }),
+    );
+  });
+
   it('setScope dispatches load with scope only', () => {
     facade.setScope('unified');
 

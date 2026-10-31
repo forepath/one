@@ -3,9 +3,11 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import {
   catchError,
+  EMPTY,
   filter,
   interval,
   map,
+  merge,
   mergeMap,
   of,
   switchMap,
@@ -15,6 +17,7 @@ import {
   withLatestFrom,
 } from 'rxjs';
 
+import { BILLING_LIST_PAGE_SIZE } from '../../constants/list-paging.constants';
 import { AdminBillingService } from '../../services/admin-billing.service';
 import type { DatevExportScope } from '../../types/billing.types';
 
@@ -24,105 +27,55 @@ import {
   downloadDatevExportSuccess,
   expireQueuedDatevExports,
   loadAdminDatevExports,
-  loadAdminDatevExportsBatch,
   loadAdminDatevExportsFailure,
   loadAdminDatevExportsSuccess,
+  resolveQueuedDatevExports,
   triggerDatevExport,
   triggerDatevExportFailure,
   triggerDatevExportSuccess,
 } from './admin-datev-exports.actions';
+import type { AdminDatevExportsState } from './admin-datev-exports.reducer';
 import { selectAdminDatevExportsState } from './admin-datev-exports.selectors';
 
-const BATCH_SIZE = 10;
 export const QUEUED_POLL_INTERVAL_MS = 3000;
 export const QUEUED_POLL_TIMEOUT_MS = 5 * 60 * 1000;
+/** A year has at most 12 periods per scope: one request per queued (scope, year) resolves its placeholders. */
+const QUEUED_RESOLVE_LIMIT = 100;
 
 function resolveLoadedScope(params: { scope?: DatevExportScope }): DatevExportScope {
   return params.scope ?? 'tenant';
 }
 
+/** The current page again (scope, tenant view, search, year, window kept). */
+function reloadCurrentPage(state: AdminDatevExportsState) {
+  return loadAdminDatevExports({
+    params: {
+      scope: state.scope,
+      viewTenantId: state.viewTenantId ?? undefined,
+      search: state.search ?? undefined,
+      year: state.year ?? undefined,
+      limit: state.limit,
+      offset: state.offset,
+    },
+    preserveScope: true,
+  });
+}
+
+/** One page of exports (replace-page): `limit` / `offset` from the action, page size 25 by default. */
 export const loadAdminDatevExports$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(loadAdminDatevExports),
       switchMap(({ params }) => {
-        const requestParams = { ...params, limit: BATCH_SIZE, offset: 0 };
+        const limit = params.limit && params.limit > 0 ? params.limit : BILLING_LIST_PAGE_SIZE;
+        const offset = params.offset && params.offset > 0 ? params.offset : 0;
+        const requestParams = { ...params, limit, offset };
         const loadedScope = resolveLoadedScope(requestParams);
 
         return service.listDatevExports(requestParams).pipe(
-          switchMap((response) => {
-            if (response.items.length === 0) {
-              return of(
-                loadAdminDatevExportsSuccess({
-                  items: [],
-                  total: response.total,
-                  limit: BATCH_SIZE,
-                  offset: 0,
-                  loadedScope,
-                }),
-              );
-            }
-
-            if (response.items.length < BATCH_SIZE) {
-              return of(
-                loadAdminDatevExportsSuccess({
-                  items: response.items,
-                  total: response.total,
-                  limit: BATCH_SIZE,
-                  offset: 0,
-                  loadedScope,
-                }),
-              );
-            }
-
-            return of(
-              loadAdminDatevExportsBatch({
-                params: requestParams,
-                offset: BATCH_SIZE,
-                accumulatedItems: response.items,
-              }),
-            );
-          }),
-          catchError((error: Error) =>
-            of(loadAdminDatevExportsFailure({ error: error.message ?? 'Failed to load DATEV exports' })),
+          map((response) =>
+            loadAdminDatevExportsSuccess({ items: response.items, total: response.total, limit, offset, loadedScope }),
           ),
-        );
-      }),
-    ),
-  { functional: true },
-);
-
-export const loadAdminDatevExportsBatch$ = createEffect(
-  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
-    actions$.pipe(
-      ofType(loadAdminDatevExportsBatch),
-      switchMap(({ params, offset, accumulatedItems }) => {
-        const loadedScope = resolveLoadedScope(params);
-
-        return service.listDatevExports({ ...params, limit: BATCH_SIZE, offset }).pipe(
-          switchMap((response) => {
-            const newAccumulated = [...accumulatedItems, ...response.items];
-
-            if (response.items.length === 0 || response.items.length < BATCH_SIZE) {
-              return of(
-                loadAdminDatevExportsSuccess({
-                  items: newAccumulated,
-                  total: response.total,
-                  limit: BATCH_SIZE,
-                  offset: 0,
-                  loadedScope,
-                }),
-              );
-            }
-
-            return of(
-              loadAdminDatevExportsBatch({
-                params,
-                offset: offset + BATCH_SIZE,
-                accumulatedItems: newAccumulated,
-              }),
-            );
-          }),
           catchError((error: Error) =>
             of(loadAdminDatevExportsFailure({ error: error.message ?? 'Failed to load DATEV exports' })),
           ),
@@ -153,23 +106,17 @@ export const triggerDatevExportSuccessReload$ = createEffect(
     actions$.pipe(
       ofType(triggerDatevExportSuccess),
       withLatestFrom(store.select(selectAdminDatevExportsState)),
-      map(([, state]) =>
-        loadAdminDatevExports({
-          params: {
-            scope: state.scope,
-            viewTenantId: state.viewTenantId ?? undefined,
-            limit: BATCH_SIZE,
-            offset: 0,
-          },
-          preserveScope: true,
-        }),
-      ),
+      map(([, state]) => reloadCurrentPage(state)),
     ),
   { functional: true },
 );
 
+/**
+ * While exports are queued: every few seconds one request per queued (scope, year) — independent of the page the
+ * admin is on — resolves the placeholders; when one resolves, the current page reloads (replace-page).
+ */
 export const pollQueuedDatevExports$ = createEffect(
-  (actions$ = inject(Actions), store = inject(Store)) =>
+  (actions$ = inject(Actions), store = inject(Store), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(triggerDatevExportSuccess),
       filter(({ result }) => result.queued),
@@ -180,21 +127,39 @@ export const pollQueuedDatevExports$ = createEffect(
           ),
           withLatestFrom(store.select(selectAdminDatevExportsState)),
           mergeMap(([, state]) => {
-            const scopes = [...new Set(state.queuedExports.map((queued) => queued.scope))];
+            const keys = [...new Set(state.queuedExports.map((queued) => `${queued.scope}|${queued.periodYear}`))];
 
-            if (scopes.length === 0) {
-              return [];
-            }
+            return merge(
+              ...keys.map((key) => {
+                const [scope, year] = key.split('|') as [DatevExportScope, string];
 
-            return scopes.map((scope) =>
-              loadAdminDatevExports({
-                params: {
-                  scope,
-                  viewTenantId: state.viewTenantId ?? undefined,
-                  limit: BATCH_SIZE,
-                  offset: 0,
-                },
-                preserveScope: true,
+                return service
+                  .listDatevExports({
+                    scope,
+                    viewTenantId: scope === 'tenant' ? (state.viewTenantId ?? undefined) : undefined,
+                    year: Number(year),
+                    limit: QUEUED_RESOLVE_LIMIT,
+                    offset: 0,
+                  })
+                  .pipe(
+                    withLatestFrom(store.select(selectAdminDatevExportsState)),
+                    mergeMap(([response, current]) => {
+                      const resolved = current.queuedExports.some(
+                        (queued) =>
+                          queued.scope === scope &&
+                          response.items.some(
+                            (item) =>
+                              item.scope === queued.scope &&
+                              item.periodYear === queued.periodYear &&
+                              item.periodMonth === queued.periodMonth,
+                          ),
+                      );
+                      const resolveAction = resolveQueuedDatevExports({ items: response.items, loadedScope: scope });
+
+                      return resolved ? [resolveAction, reloadCurrentPage(current)] : [resolveAction];
+                    }),
+                    catchError(() => EMPTY),
+                  );
               }),
             );
           }),

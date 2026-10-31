@@ -4950,7 +4950,7 @@ paths:
           name: search
           schema:
             type: string
-          description: Case-insensitive search across run id, status, name, description, agentId
+          description: Case-insensitive search (trimmed, first 200 characters) across the agent's runs (name, status, conclusion, branch, commit SHA, workflow name, id); narrows the caller's client / agent scope only, `limit` / `offset` page the matches
       responses:
         '200':
           description: Array of deployment runs
@@ -6968,6 +6968,13 @@ components:
         password:
           type: string
           minLength: 8
+        adminClaimToken:
+          type: string
+          maxLength: 256
+          description: >-
+            One-time admin claim token. Only checked for the first account and only when the deployment sets
+            `ADMIN_CLAIM_TOKEN_SHA256` (e.g. Loadweaver Cloud); ignored otherwise. With that setting, registration is
+            closed once the first account exists (503, as with `DISABLE_SIGNUP`).
     ConfirmEmailDto:
       type: object
       required: [email, code]

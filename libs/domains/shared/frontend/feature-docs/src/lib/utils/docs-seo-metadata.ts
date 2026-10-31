@@ -3,6 +3,10 @@
  * each brand selects units by docs content root while reusing the same id naming scheme.
  */
 export function getDocsMetaDescriptionFallback(contentRoot: string): string {
+  if (contentRoot === 'loadweaver') {
+    return $localize`:@@featureDocsPage-metaDescriptionFallbackLoadweaver:Official Loadweaver documentation: install, deploy, secure, and operate resilient multi-site clusters, the encrypted network between sites, storage, ingress, policies, and the cluster console.`;
+  }
+
   if (contentRoot === 'decabill') {
     return $localize`:@@featureDocsPage-metaDescriptionFallbackDecabill:Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.`;
   }
@@ -11,6 +15,10 @@ export function getDocsMetaDescriptionFallback(contentRoot: string): string {
 }
 
 export function getDocsMetaKeywords(contentRoot: string): string {
+  if (contentRoot === 'loadweaver') {
+    return $localize`:@@featureDocsPage-metaKeywordsLoadweaver:Loadweaver, cluster, multi-site, WireGuard, BGP, network policies, replicated storage, ingress failover, self-hosted, control plane`;
+  }
+
   if (contentRoot === 'decabill') {
     return $localize`:@@featureDocsPage-metaKeywordsDecabill:Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing`;
   }
@@ -19,6 +27,10 @@ export function getDocsMetaKeywords(contentRoot: string): string {
 }
 
 export function getDocsSearchMetaDescription(contentRoot: string): string {
+  if (contentRoot === 'loadweaver') {
+    return $localize`:@@featureDocsSearchPage-metaDescriptionLoadweaver:Search Loadweaver docs for setup guides, API references, security hardening, network and policy configuration, deployment patterns, and troubleshooting.`;
+  }
+
   if (contentRoot === 'decabill') {
     return $localize`:@@featureDocsSearchPage-metaDescriptionDecabill:Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.`;
   }

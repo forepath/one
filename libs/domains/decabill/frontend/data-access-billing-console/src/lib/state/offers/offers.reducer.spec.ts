@@ -1,7 +1,9 @@
 import {
   acceptOfferSuccess,
+  loadHistoryOffers,
   loadHistoryOffersSuccess,
   loadOffersSummarySuccess,
+  loadPendingOffers,
   loadPendingOffersSuccess,
 } from './offers.actions';
 import { initialOffersState, offersReducer } from './offers.reducer';
@@ -27,12 +29,33 @@ describe('offersReducer', () => {
       }),
     );
 
-    state = offersReducer(state, loadPendingOffersSuccess({ offers: [offer] }));
-    state = offersReducer(state, loadHistoryOffersSuccess({ offers: [] }));
+    state = offersReducer(state, loadPendingOffersSuccess({ offers: [offer], total: 1 }));
+    state = offersReducer(state, loadHistoryOffersSuccess({ offers: [], total: 0 }));
 
     expect(state.summary?.pendingCount).toBe(1);
     expect(state.pendingList).toEqual([offer]);
+    expect(state.pendingTotal).toBe(1);
     expect(state.historyList).toEqual([]);
+  });
+
+  it('keeps the requested page / size / search and replaces the page rows', () => {
+    let state = offersReducer(
+      { ...initialOffersState, pendingList: [offer] },
+      loadPendingOffers({ page: 2, pageSize: 50, search: ' acme ' }),
+    );
+
+    expect(state).toEqual(
+      expect.objectContaining({ pendingPage: 2, pendingPageSize: 50, pendingSearch: 'acme', pendingListLoading: true }),
+    );
+
+    state = offersReducer(state, loadPendingOffersSuccess({ offers: [], total: 51 }));
+    expect(state.pendingList).toEqual([]);
+    expect(state.pendingTotal).toBe(51);
+
+    const silent = offersReducer(initialOffersState, loadHistoryOffers({ silent: true, page: 3 }));
+
+    expect(silent.historyPage).toBe(3);
+    expect(silent.historyListLoading).toBe(false);
   });
 
   it('stores accepted offer detail', () => {

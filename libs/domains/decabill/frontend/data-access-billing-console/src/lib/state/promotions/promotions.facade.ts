@@ -17,11 +17,13 @@ import {
 import {
   selectActivePromotions,
   selectActivePromotionsLoading,
+  selectActivePromotionsTotal,
   selectCanRedeemPromotion,
   selectPromotionRedeemError,
   selectPromotionRedeeming,
   selectPromotionRedemptions,
   selectPromotionRedemptionsLoading,
+  selectPromotionRedemptionsTotal,
   selectPromotionValidationErrorForContext,
   selectPromotionValidationLoadingForContext,
   selectPromotionValidationPreviewForContext,
@@ -45,6 +47,14 @@ export class PromotionsFacade {
 
   getRedemptionsLoading$() {
     return this.store.select(selectPromotionRedemptionsLoading);
+  }
+
+  getActiveTotal$() {
+    return this.store.select(selectActivePromotionsTotal);
+  }
+
+  getRedemptionsTotal$() {
+    return this.store.select(selectPromotionRedemptionsTotal);
   }
 
   getValidationPreview$(context: PromotionRedemptionContext) {
@@ -71,12 +81,18 @@ export class PromotionsFacade {
     return this.store.select(selectCanRedeemPromotion(request));
   }
 
-  loadActivePromotions(params?: { search?: string }): void {
-    this.store.dispatch(loadActivePromotions({ search: params?.search }));
+  /** One page of the active promotions (replace-page; page 1 by default). */
+  loadActivePromotions(params?: { search?: string; page?: number; pageSize?: number }): void {
+    this.store.dispatch(
+      loadActivePromotions({ search: params?.search, page: params?.page, pageSize: params?.pageSize }),
+    );
   }
 
-  loadRedemptions(params?: { search?: string }): void {
-    this.store.dispatch(loadPromotionRedemptions({ search: params?.search }));
+  /** One page of the redemption history (replace-page; page 1 by default). */
+  loadRedemptions(params?: { search?: string; page?: number; pageSize?: number }): void {
+    this.store.dispatch(
+      loadPromotionRedemptions({ search: params?.search, page: params?.page, pageSize: params?.pageSize }),
+    );
   }
 
   validatePromotion(request: ValidatePromotionRequest): void {

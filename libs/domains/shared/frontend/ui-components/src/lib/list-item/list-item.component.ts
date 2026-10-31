@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, booleanAttribute, input, output } from '@angular/core';
 
 export type FpcListItemVariant = 'default' | 'condensed';
+export type FpcListItemRole = 'listitem' | 'option';
 
 /**
  * List row with title, meta, and actions content slots.
@@ -23,9 +24,10 @@ export type FpcListItemVariant = 'default' | 'condensed';
     '[class.active]': 'active()',
     '[class.disabled]': 'disabled()',
     '[class.fpc-list-item--condensed]': 'variant() === "condensed"',
-    '[attr.role]': '"listitem"',
+    '[attr.role]': 'role()',
     '[attr.tabindex]': 'clickable() && !disabled() ? 0 : null',
-    '[attr.aria-current]': 'active() ? "true" : null',
+    '[attr.aria-current]': 'role() === "listitem" && active() ? "true" : null',
+    '[attr.aria-selected]': 'role() === "option" ? (active() ? "true" : "false") : null',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
   },
   template: `
@@ -55,6 +57,8 @@ export class FpcListItemComponent {
   /** Unsaved / drifted highlight on the title/actions row (not nested content). */
   readonly dirty = input(false, { transform: booleanAttribute });
   readonly variant = input<FpcListItemVariant>('default');
+  /** `option` inside `fpc-list role="listbox"`: `active` becomes `aria-selected` instead of `aria-current`. */
+  readonly role = input<FpcListItemRole>('listitem');
 
   readonly selected = output<void>();
 

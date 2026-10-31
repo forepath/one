@@ -404,15 +404,17 @@ describe('AdminBillingService', () => {
       createdAt: '2026-01-15T00:00:00Z',
     };
 
-    it('lists meter entries', (done) => {
-      service.listSubscriptionMeterEntries('sub-1').subscribe((entries) => {
-        expect(entries).toEqual([entry]);
+    it('lists one page of meter entries with limit / offset', (done) => {
+      const page = { items: [entry], total: 26, limit: 25, offset: 25 };
+
+      service.listSubscriptionMeterEntries('sub-1', { limit: 25, offset: 25 }).subscribe((response) => {
+        expect(response).toEqual(page);
         done();
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/admin/billing/subscriptions/sub-1/meter-entries`);
+      const req = httpMock.expectOne(`${apiUrl}/admin/billing/subscriptions/sub-1/meter-entries?limit=25&offset=25`);
       expect(req.request.method).toBe('GET');
-      req.flush([entry]);
+      req.flush(page);
     });
 
     it('creates a meter entry', (done) => {

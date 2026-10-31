@@ -115,6 +115,51 @@ describe('AddonLifecycleService', () => {
     ]);
   });
 
+  it('never copies admin-only module secrets into config snapshots', async () => {
+    subscriptionAddonsRepository.createMany.mockImplementation(async (rows: unknown[]) => rows);
+    addonModuleRegistry.get.mockReturnValue({
+      configFields: [
+        { key: 'LOADWEAVER_API_URL', label: 'URL', showInOrderForm: false },
+        { key: 'LOADWEAVER_API_TOKEN', label: 'Token', showInOrderForm: false, adminOnly: true },
+      ],
+    });
+
+    const addon = {
+      id: 'lw-1',
+      name: 'Loadweaver usage',
+      basePrice: '0',
+      implementationType: 'module',
+      moduleKey: 'loadweaver-usage',
+      configSchema: {
+        environmentVariables: [
+          { key: 'LOADWEAVER_API_URL', label: 'URL', showInOrderForm: false, hasDefault: true },
+          { key: 'LOADWEAVER_API_TOKEN', label: 'Token', showInOrderForm: false, hasDefault: true },
+        ],
+      },
+      configDefaultValues: { LOADWEAVER_API_URL: 'https://lw.example.com/api', LOADWEAVER_API_TOKEN: 'lw_pat_secret' },
+    };
+
+    await service.createPendingSubscriptionAddons({
+      subscriptionId: 'sub-1',
+      plan: { billingIntervalType: 'month', billingIntervalValue: 1 } as never,
+      addons: [addon as never],
+    });
+
+    expect(addonModuleRegistry.get).toHaveBeenCalledWith('loadweaver-usage');
+    expect(subscriptionAddonsRepository.createMany).toHaveBeenCalledWith([
+      expect.objectContaining({ configSnapshot: { LOADWEAVER_API_URL: 'https://lw.example.com/api' } }),
+    ]);
+
+    await expect(
+      service.createPendingSubscriptionAddons({
+        subscriptionId: 'sub-1',
+        plan: { billingIntervalType: 'month', billingIntervalValue: 1 } as never,
+        addonConfigs: { 'lw-1': { LOADWEAVER_API_TOKEN: 'customer-value' } },
+        addons: [addon as never],
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
   it('interpolates addon scripts from config snapshots', () => {
     const scripts = service.collectInterpolatedCloudInitScripts([
       {
@@ -130,6 +175,32 @@ describe('AddonLifecycleService', () => {
     ]);
 
     expect(scripts[0]).toContain('secret');
+  });
+
+  it('never interpolates the Loadweaver admin claim token (secret snapshot key) into addon scripts', () => {
+    const addon = (scriptTemplate: string) => ({
+      implementationType: 'cloud_init_script',
+      scriptTemplate,
+      configSchema: {
+        environmentVariables: [
+          { key: 'API_KEY', label: 'Key', showInOrderForm: false, hasDefault: true },
+          { key: 'loadweaverAdminClaimToken', label: 'Token', showInOrderForm: false, hasDefault: true },
+        ],
+      },
+    });
+    const snapshot = { API_KEY: 'k', loadweaverAdminClaimToken: 'lwc_secret-claim-token' };
+
+    expect(
+      service.collectInterpolatedCloudInitScripts([
+        { configSnapshot: snapshot, addon: addon('export K={{env.API_KEY}}') } as never,
+      ])[0],
+    ).not.toContain('lwc_secret-claim-token');
+    // A template that asks for it is refused instead of rendering the secret.
+    expect(() =>
+      service.collectInterpolatedCloudInitScripts([
+        { configSnapshot: snapshot, addon: addon('export T={{env.loadweaverAdminClaimToken}}') } as never,
+      ]),
+    ).toThrow(/placeholder/);
   });
 
   it('marks addon active and notifies after successful module provision', async () => {

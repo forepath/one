@@ -58,3 +58,13 @@ export const selectAdminDatevExportsTriggerError = createSelector(
   selectAdminDatevExportsState,
   (state) => state.triggerError,
 );
+
+export const selectAdminDatevExportsTotal = createSelector(selectAdminDatevExportsState, (state) => state.total);
+
+/** 1-based page of the current window. */
+export const selectAdminDatevExportsPage = createSelector(
+  selectAdminDatevExportsState,
+  (state) => Math.floor(state.offset / Math.max(1, state.limit)) + 1,
+);
+
+export const selectAdminDatevExportsPageSize = createSelector(selectAdminDatevExportsState, (state) => state.limit);

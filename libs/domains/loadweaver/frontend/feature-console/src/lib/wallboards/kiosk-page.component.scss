@@ -1,0 +1,126 @@
+// Full screen over the console's top bar: a wall display has no chrome. Bootstrap's variables follow the theme.
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 1090;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  font-size: clamp(1rem, 1.4vw, 1.75rem);
+}
+
+.kiosk__bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75em 1.25em;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.kiosk__scope {
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+.kiosk__headline {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  padding: 1em 1.25em;
+}
+
+.kiosk__state-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5em;
+  height: 3.5em;
+  border-radius: 50%;
+  font-size: 1.25em;
+  flex-shrink: 0;
+}
+
+.kiosk__state {
+  font-size: 2.25em;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.kiosk__message {
+  font-size: 1.15em;
+  color: var(--bs-secondary-color);
+}
+
+.kiosk__summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10em, 1fr));
+  gap: 1em;
+  padding: 0 1.25em 1em;
+}
+
+.kiosk__tile {
+  padding: 0.75em 1em;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  background: var(--bs-tertiary-bg);
+}
+
+.kiosk__tile-label {
+  font-size: 0.85em;
+  color: var(--bs-secondary-color);
+}
+
+.kiosk__tile-value {
+  font-size: 2.25em;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.kiosk__inbox {
+  flex: 1;
+  padding: 0 0 1em;
+
+  > h2 {
+    padding: 0 1.25rem;
+  }
+}
+
+// Inbox rows are `fpc-list-item`s; on a wall display their text follows the viewport-scaled font.
+.kiosk__list {
+  font-size: 1.15em;
+}
+
+.kiosk__footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5em 1.25em;
+  font-size: 0.85em;
+  color: var(--bs-secondary-color);
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.kiosk__notice {
+  margin: auto;
+  max-width: 40em;
+  padding: 2em;
+  text-align: center;
+}
+
+.kiosk__dots {
+  display: flex;
+  gap: 0.4em;
+}
+
+.kiosk__dot {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: var(--bs-border-color);
+
+  &--active {
+    background: var(--bs-primary);
+  }
+}

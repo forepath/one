@@ -32,7 +32,7 @@
             <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickMilestone(milestone, $event)">
               <span class="d-block small fw-medium text-truncate">{{ milestone.name }}</span>
               @if (milestone.targetDate) {
-                <span class="d-block text-body-secondary small">{{ milestone.targetDate | date: 'mediumDate' }}</span>
+                <span class="d-block text-body-secondary small">{{ milestone.targetDate | fpcDate }}</span>
               }
             </button>
           }

@@ -1,0 +1,330 @@
+<ng-template #recordActions>
+  <fpc-button
+    variant="dark"
+    size="sm"
+    iconOnly
+    [ariaLabel]="refreshLabel"
+    [title]="refreshLabel"
+    (clicked)="refresh()"
+    data-testid="dns-refresh"
+  >
+    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+  </fpc-button>
+</ng-template>
+
+<div class="fpc-page">
+  @if (!scope) {
+    <fpc-page-header [title]="title">
+      <loadweaver-saved-views fpcPageHeaderActions [scope]="viewsScope" [binding]="views" />
+      <span fpcPageHeaderActions class="d-inline-flex gap-2">
+        <ng-container *ngTemplateOutlet="recordActions" />
+      </span>
+    </fpc-page-header>
+  }
+
+  @for (message of errors(); track message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (actionError(); as message) {
+    <fpc-alert
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="dismissActionError()"
+    />
+  }
+
+  @if (!overview()) {
+    @if (loading()) {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+    }
+  } @else if (view !== 'records' && !infrastructure()) {
+    <fpc-empty-state icon="shield-lock" [title]="clusterOnlyTitle" data-testid="dns-cluster-only" />
+  } @else if (overview(); as o) {
+    @switch (view) {
+      @case ('zones') {
+        <!-- Managed zones | Providers as tabs (decision 4): one table at a time, the search shared. -->
+        <fpc-tab-group
+          class="flex-shrink-0"
+          [activeId]="zonesTab()"
+          (activeIdChange)="zonesTab.set($event === 'providers' ? 'providers' : 'zones')"
+          [ariaLabel]="title"
+          data-testid="dns-zones-tabs"
+        >
+          <fpc-tab id="zones" [label]="zonesLane" icon="globe2" />
+          <fpc-tab id="providers" [label]="providersTitle" icon="hdd-network" />
+        </fpc-tab-group>
+        @switch (zonesTab()) {
+          @case ('providers') {
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="providersTitle"
+              [columns]="providerColumns"
+              [rows]="filteredProviders()"
+              [rowId]="providerId"
+              [rowLink]="providerLink"
+              [filtered]="!!search().trim()"
+              paging="client"
+              persistKey="lw-dns-providers"
+              [(query)]="search"
+              [searchPlaceholder]="searchLabel"
+              emptyIcon="hdd-network"
+              data-testid="dns-providers"
+            >
+              <loadweaver-create-kind-button fpcDataTableToolbar kind="DnsProvider" />
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  icon="hdd-network"
+                  size="sm"
+                  i18n-title="@@lwConsoleDns-noProviders"
+                  title="No providers"
+                />
+              </span>
+            </fpc-data-table>
+          }
+          @default {
+            <!-- Zones (3.38 D1): State · Domain (link) · facts; the providers' sync in the row detail. -->
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="zonesLane"
+              [columns]="zoneColumns"
+              [rows]="filteredZones()"
+              [rowId]="zoneId"
+              [rowLink]="zoneLink"
+              [filtered]="!!search().trim()"
+              paging="client"
+              persistKey="lw-dns-zones"
+              [(query)]="search"
+              [searchPlaceholder]="searchLabel"
+              [expandedRowId]="expanded()"
+              (rowActivate)="toggle($event.zone)"
+              emptyIcon="globe2"
+              data-testid="dns-zones"
+            >
+              <loadweaver-create-kind-button fpcDataTableToolbar kind="DnsZone" />
+              <span fpcDataTableEmpty>
+                <fpc-empty-state icon="globe2" size="sm" i18n-title="@@lwConsoleDns-noZones" title="No managed zones" />
+              </span>
+              <ng-template fpcTableCell="dnssec" let-row>
+                @if (row.dnssec) {
+                  <fpc-badge tone="success" icon="shield-check" [iconOnly]="true" [label]="dnssecBadgeLabel" />
+                }
+              </ng-template>
+              <ng-template fpcTableCell="lastSync" let-row>{{ row.lastSync | date: 'short' }}</ng-template>
+              <ng-template fpcTableRowDetail let-row>
+                <fpc-data-table
+                  nested
+                  [ariaLabel]="zoneProvidersTitle"
+                  [columns]="zoneProviderColumns"
+                  [rows]="row.providers"
+                  [rowId]="providerRowId"
+                  [searchable]="false"
+                  [showColumnChooser]="false"
+                  [attr.data-testid]="'dns-zone-' + row.zone"
+                >
+                  <span fpcDataTableEmpty class="small text-body-secondary" i18n="@@lwConsoleDns-noStatus"
+                    >No sync yet</span
+                  >
+                  <ng-template fpcTableCell="syncedAt" let-s>{{ s.syncedAt | date: 'short' }}</ng-template>
+                  <ng-template fpcTableCell="message" let-s>
+                    @if (s.error) {
+                      <div class="small text-danger text-break">{{ s.error }}</div>
+                    }
+                    @if (s.drift) {
+                      <div class="small text-warning-emphasis">{{ s.drift }}</div>
+                    }
+                    @if (s.conflicts.length > 0) {
+                      <div class="small text-body-secondary">
+                        <span i18n="@@lwConsoleDns-conflictNames">Not owned by Loadweaver (left untouched):</span>
+                        <span class="font-monospace ms-1">{{ s.conflicts.join(', ') }}</span>
+                      </div>
+                    }
+                  </ng-template>
+                </fpc-data-table>
+              </ng-template>
+            </fpc-data-table>
+          }
+        }
+      }
+      @case ('dnssec') {
+        <!-- DNSSEC (3.38 D1): State (mode) · Zone · facts; keys + the DS records the parent should publish in the
+             row detail. -->
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="title"
+          [columns]="dnssecColumns"
+          [rows]="filteredDnssec()"
+          [rowId]="dnssecId"
+          [filtered]="!!search().trim()"
+          paging="client"
+          persistKey="lw-dns-dnssec"
+          [(query)]="search"
+          [searchPlaceholder]="searchLabel"
+          [expandedRowId]="expanded()"
+          (rowActivate)="toggle($event.name)"
+          emptyIcon="shield-lock"
+          data-testid="dns-dnssec"
+        >
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="shield-lock"
+              size="sm"
+              i18n-title="@@lwConsoleDns-noDnssec"
+              title="No signed zones"
+            />
+          </span>
+          <ng-template fpcTableCell="ds" let-row>
+            @if (dsComplete(row)) {
+              <fpc-badge tone="success" icon="check-circle" [iconOnly]="true" [label]="dsAtParentLabel" />
+            } @else {
+              <fpc-badge tone="warning" icon="exclamation-triangle" [iconOnly]="true" [label]="dsMissingLabel" />
+            }
+          </ng-template>
+          <ng-template fpcTableCell="rollover" let-row>{{ row.nextRolloverAt | date: 'mediumDate' }}</ng-template>
+          <ng-template fpcTableRowDetail let-row>
+            <fpc-data-table
+              nested
+              [ariaLabel]="keysTitle"
+              [columns]="keyColumns"
+              [rows]="row.keys"
+              [rowId]="keyId"
+              [searchable]="false"
+              [showColumnChooser]="false"
+              data-testid="dns-dnssec-keys"
+            >
+              <ng-template fpcTableCell="ds" let-k>
+                @if (k.dsAtParent) {
+                  <fpc-badge tone="success" icon="check-circle" [iconOnly]="true" [label]="dsAtParentLabel" />
+                } @else {
+                  <fpc-badge tone="warning" icon="exclamation-triangle" [iconOnly]="true" [label]="dsMissingLabel" />
+                }
+              </ng-template>
+              <ng-template fpcTableCell="checked" let-k>{{ k.dsCheckedAt | date: 'short' }}</ng-template>
+              <ng-template fpcTableCell="created" let-k>{{ k.createdAt | date: 'short' }}</ng-template>
+            </fpc-data-table>
+            @if (row.expectedDs.length > 0) {
+              <div class="small text-body-secondary mt-2" i18n="@@lwConsoleDns-expectedDs">
+                DS records the parent should publish:
+              </div>
+              @for (ds of row.expectedDs; track ds) {
+                <div class="small font-monospace text-break">{{ ds }}</div>
+              }
+            }
+          </ng-template>
+        </fpc-data-table>
+      }
+      @case ('failover') {
+        <!-- Failover (3.38 D1): State · Group · facts; endpoints in the row detail; ⋮ Confirm fail-back. -->
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="title"
+          [columns]="failoverColumns"
+          [rows]="filteredFailovers()"
+          [rowId]="failoverId"
+          [filtered]="!!search().trim()"
+          paging="client"
+          persistKey="lw-dns-failover"
+          [(query)]="search"
+          [searchPlaceholder]="searchLabel"
+          [expandedRowId]="expanded()"
+          (rowActivate)="toggle($event.name)"
+          [rowMenu]="failoverMenu"
+          (rowAction)="onFailoverAction($event.row, $event.item.id)"
+          emptyIcon="sign-turn-right"
+          data-testid="dns-failovers"
+        >
+          <loadweaver-create-kind-button fpcDataTableToolbar kind="DnsFailover" />
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="sign-turn-right"
+              size="sm"
+              i18n-title="@@lwConsoleDns-noFailovers"
+              title="No DNS failovers"
+            />
+          </span>
+          <ng-template fpcTableCell="propagation" let-row>
+            @if (row.propagation; as p) {
+              @if (p.done) {
+                <fpc-badge tone="success">{{ propagatedLabel }}</fpc-badge>
+              } @else {
+                <fpc-badge tone="warning">{{ laggingLabel }}: {{ p.lagging.join(', ') }}</fpc-badge>
+              }
+            }
+          </ng-template>
+          <ng-template fpcTableCell="switched" let-row>{{ row.switchedAt | date: 'short' }}</ng-template>
+          <ng-template fpcTableRowDetail let-row>
+            <fpc-data-table
+              nested
+              [ariaLabel]="endpointsTitle"
+              [columns]="endpointColumns"
+              [rows]="endpoints(row)"
+              [rowId]="endpointId"
+              [searchable]="false"
+              [showColumnChooser]="false"
+              data-testid="dns-failover-endpoints"
+            >
+              <ng-template fpcTableCell="since" let-e>{{ e.since | date: 'short' }}</ng-template>
+            </fpc-data-table>
+          </ng-template>
+        </fpc-data-table>
+      }
+      @default {
+        <!-- Records (3.38 D1): State (sync) · Name (link to the record) · type · values · TTL · project. -->
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="title"
+          [columns]="recordColumns"
+          [rows]="filteredRecords()"
+          [rowId]="recordId"
+          [rowLink]="recordLink"
+          [filtered]="!!search().trim()"
+          paging="client"
+          persistKey="lw-dns-records"
+          [(query)]="search"
+          [searchPlaceholder]="searchLabel"
+          [rowMenu]="recordMenu"
+          (rowAction)="openRecord($event.row)"
+          emptyIcon="signpost"
+          data-testid="dns-records"
+        >
+          <loadweaver-create-kind-button fpcDataTableToolbar kind="DnsRecord" />
+          @if (scope) {
+            <span fpcDataTableToolbar class="d-inline-flex gap-2">
+              <ng-container *ngTemplateOutlet="recordActions" />
+            </span>
+          }
+          <span fpcDataTableEmpty>
+            @if (site && scopedRecords().length === 0) {
+              <fpc-empty-state
+                icon="signpost"
+                size="sm"
+                [title]="noSiteRecordsTitle"
+                [message]="noSiteRecordsHint"
+                data-testid="dns-no-site-records"
+              />
+            } @else {
+              <fpc-empty-state
+                icon="signpost"
+                size="sm"
+                i18n-title="@@lwConsoleDns-noRecords"
+                title="No declared records"
+                [message]="createHint"
+              />
+            }
+          </span>
+        </fpc-data-table>
+      }
+    }
+  }
+</div>
+
+<fpc-confirm-dialog
+  [open]="failbackFor() !== null"
+  (openChange)="onFailbackOpenChange($event)"
+  [title]="failbackTitle"
+  [message]="failbackMessage"
+  [confirmLabel]="failbackConfirm"
+  [cancelLabel]="cancelLabel"
+  (confirmed)="confirmFailback()"
+/>

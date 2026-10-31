@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { contentHash, ensureDockerImage, ensureGoldenVolume } from '@forepath/shared/backend/util-vm-lab';
 
 import {
   buildIsolationLabGoldenUserData,
@@ -9,8 +9,6 @@ import {
   ISOLATION_LAB_UBUNTU_IMAGE,
 } from '../../lib/isolation-lab.config';
 
-import { docker } from './process';
-
 /** QEMU/KVM in a container (Docker Desktop on WSL2 and Linux Docker expose /dev/kvm with --device). */
 const QEMU_DOCKERFILE = `FROM ${ISOLATION_LAB_QEMU_BASE_IMAGE}
 RUN apt-get update \\
@@ -20,7 +18,8 @@ LABEL ${ISOLATION_LAB_LABEL}=image
 `;
 
 function shortHash(...parts: string[]): string {
-  return createHash('sha256').update(parts.join('\u0000')).digest('hex').slice(0, 12);
+  // The same hash as before the shared harness (sha256 of the NUL-joined parts): cached volumes keep their names.
+  return contentHash(...parts);
 }
 
 /** Tag of the QEMU image (content-addressed by its Dockerfile). */
@@ -30,14 +29,12 @@ export function qemuImageTag(): string {
 
 /** Build the QEMU image once (reused while the Dockerfile is unchanged). */
 export async function ensureQemuImage(): Promise<string> {
-  const tag = qemuImageTag();
-  const existing = await docker(['image', 'ls', '-q', tag]);
-
-  if (!existing.trim()) {
-    await docker(['build', '-t', tag, '-'], { input: QEMU_DOCKERFILE, timeoutMs: 15 * 60_000 });
-  }
-
-  return tag;
+  return await ensureDockerImage({
+    tag: qemuImageTag(),
+    dockerfile: QEMU_DOCKERFILE,
+    quiet: false,
+    timeoutMs: 15 * 60_000,
+  });
 }
 
 /** Volume holding the golden image (content-addressed by every pin and the provisioning). */
@@ -78,34 +75,24 @@ export async function ensureGoldenImage(): Promise<string> {
   const volume = goldenVolumeName();
   const image = await ensureQemuImage();
 
-  await docker(['volume', 'create', '--label', `${ISOLATION_LAB_LABEL}=golden`, volume]);
-  await docker(
-    [
-      'run',
-      '--rm',
-      '--label',
-      `${ISOLATION_LAB_LABEL}=golden`,
-      '--device',
-      '/dev/kvm',
-      '--memory',
-      '3g',
-      '-v',
-      `${volume}:/golden`,
-      '-e',
-      `LAB_IMAGE_URL=${ISOLATION_LAB_UBUNTU_IMAGE.url}`,
-      '-e',
-      `LAB_IMAGE_SHA256=${ISOLATION_LAB_UBUNTU_IMAGE.sha256}`,
-      '-e',
-      `LAB_USER_DATA=${Buffer.from(buildIsolationLabGoldenUserData()).toString('base64')}`,
-      '-e',
-      `LAB_GOLDEN_MARKER=${ISOLATION_LAB_GOLDEN_MARKER}`,
-      image,
-      'bash',
-      '-c',
-      GOLDEN_BUILD_SCRIPT,
-    ],
-    { timeoutMs: 45 * 60_000 },
-  );
+  await ensureGoldenVolume({
+    volume,
+    qemuImage: image,
+    mountPath: '/golden',
+    readyFile: 'golden.qcow2',
+    volumeLabels: { [ISOLATION_LAB_LABEL]: 'golden' },
+    buildLabels: { [ISOLATION_LAB_LABEL]: 'golden' },
+    script: GOLDEN_BUILD_SCRIPT,
+    shell: 'bash',
+    env: {
+      LAB_IMAGE_URL: ISOLATION_LAB_UBUNTU_IMAGE.url,
+      LAB_IMAGE_SHA256: ISOLATION_LAB_UBUNTU_IMAGE.sha256,
+      LAB_USER_DATA: Buffer.from(buildIsolationLabGoldenUserData()).toString('base64'),
+      LAB_GOLDEN_MARKER: ISOLATION_LAB_GOLDEN_MARKER,
+    },
+    memoryMb: 3072,
+    timeoutMs: 45 * 60_000,
+  });
 
   return volume;
 }

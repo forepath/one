@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.fpc-progress-row__main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'text aside'
+    'bar bar';
+  align-items: center;
+  column-gap: 0.5rem;
+  row-gap: 0.25rem;
+}
+
+.fpc-progress-row__text {
+  grid-area: text;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.fpc-progress-row__label {
+  min-width: 0;
+}
+
+.fpc-progress-row__value {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.fpc-progress-row__bar {
+  grid-area: bar;
+  min-width: 0;
+}
+
+.fpc-progress-row__aside {
+  grid-area: aside;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+
+  &:empty {
+    display: none;
+  }
+}
+
+/* Inline: status · bar · aside on one line from md; stacked again on phones. */
+@media (min-width: 768px) {
+  :host(.fpc-progress-row--inline) .fpc-progress-row__main {
+    grid-template-columns: minmax(0, 2fr) minmax(8rem, 3fr) auto;
+    grid-template-areas: 'text bar aside';
+  }
+}

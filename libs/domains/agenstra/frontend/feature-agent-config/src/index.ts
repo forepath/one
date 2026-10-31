@@ -7,3 +7,13 @@ export {
   isLocalEditorPath,
   resolveLayerEditorPath,
 } from './lib/path-list/path-list-value.util';
+export { ProviderModelSelectComponent } from './lib/provider-model-select/provider-model-select.component';
+export {
+  filterReferenceOptions,
+  isReferenceAccessDenied,
+  mergeReferenceOptions,
+  ReferenceComboboxComponent,
+  type ReferenceComboboxLoader,
+  type ReferenceComboboxOption,
+} from './lib/reference-combobox/reference-combobox.component';
+export { commandAgentLoader } from './lib/reference-combobox/reference-loaders';

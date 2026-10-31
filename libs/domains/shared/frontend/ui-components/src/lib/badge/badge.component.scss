@@ -162,3 +162,22 @@
   background-color: var(--bs-dark-bg-subtle);
   border-color: var(--bs-dark-border-subtle);
 }
+
+// Icon-only (3.38 D7): square at the badge's own height, centred glyph — same rule as icon-only buttons.
+:host(.fpc-badge--icon-only) {
+  aspect-ratio: 1;
+  // Explicit square (glyph 1em + 2 × 0.25rem padding + 2 borders): an auto-width table cell sizes to this instead of
+  // squeezing the badge (aspect-ratio alone gave a narrower intrinsic width). Never shrinks in a flex row either.
+  --fpc-badge-icon-square: calc(1em + 0.5rem + 2 * var(--bs-border-width, 1px));
+  width: var(--fpc-badge-icon-square);
+  min-width: var(--fpc-badge-icon-square);
+  height: var(--fpc-badge-icon-square);
+  flex-shrink: 0;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: var(--bs-border-radius);
+}
+
+:host(.fpc-badge--icon-only) .fpc-badge__icon {
+  line-height: 1;
+}

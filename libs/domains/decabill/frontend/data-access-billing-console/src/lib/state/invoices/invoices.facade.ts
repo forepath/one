@@ -22,6 +22,7 @@ import {
 } from './invoices.actions';
 import {
   selectHasInvoicesBySubscriptionId,
+  selectHistoryHasMore,
   selectHistoryList,
   selectHistoryListError,
   selectHistoryListLoading,
@@ -36,6 +37,7 @@ import {
   selectInvoicesSummary,
   selectInvoicesSummaryError,
   selectInvoicesSummaryLoading,
+  selectOpenOverdueHasMore,
   selectOpenOverdueList,
   selectOpenOverdueListError,
   selectOpenOverdueListLoading,
@@ -109,8 +111,20 @@ export class InvoicesFacade {
     return this.store.select(selectOpenOverdueListError);
   }
 
-  loadOpenOverdueInvoices(options?: { silent?: boolean; search?: string }): void {
-    this.store.dispatch(loadOpenOverdueInvoices({ silent: options?.silent === true, search: options?.search }));
+  getOpenOverdueHasMore$(): Observable<boolean> {
+    return this.store.select(selectOpenOverdueHasMore);
+  }
+
+  /** One page of the list (replace-page; page 1 by default; `silent` keeps the rows without a spinner). */
+  loadOpenOverdueInvoices(options?: { silent?: boolean; search?: string; page?: number; pageSize?: number }): void {
+    this.store.dispatch(
+      loadOpenOverdueInvoices({
+        silent: options?.silent === true,
+        search: options?.search,
+        page: options?.page,
+        pageSize: options?.pageSize,
+      }),
+    );
   }
 
   getHistoryList$(): Observable<InvoiceResponse[]> {
@@ -125,8 +139,20 @@ export class InvoicesFacade {
     return this.store.select(selectHistoryListError);
   }
 
-  loadHistoryInvoices(options?: { silent?: boolean; search?: string }): void {
-    this.store.dispatch(loadHistoryInvoices({ silent: options?.silent === true, search: options?.search }));
+  getHistoryHasMore$(): Observable<boolean> {
+    return this.store.select(selectHistoryHasMore);
+  }
+
+  /** One page of the list (replace-page; page 1 by default; `silent` keeps the rows without a spinner). */
+  loadHistoryInvoices(options?: { silent?: boolean; search?: string; page?: number; pageSize?: number }): void {
+    this.store.dispatch(
+      loadHistoryInvoices({
+        silent: options?.silent === true,
+        search: options?.search,
+        page: options?.page,
+        pageSize: options?.pageSize,
+      }),
+    );
   }
 
   getInvoicesCountBySubscriptionId$(subscriptionId: string): Observable<number> {

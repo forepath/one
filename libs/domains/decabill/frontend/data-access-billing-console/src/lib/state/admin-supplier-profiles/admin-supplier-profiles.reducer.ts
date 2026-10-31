@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 
 import type { AdminSupplierProfileListItem } from '../../types/suppliers.types';
 
@@ -10,7 +11,6 @@ import {
   deleteAdminSupplierProfileFailure,
   deleteAdminSupplierProfileSuccess,
   loadAdminSupplierProfiles,
-  loadAdminSupplierProfilesBatch,
   loadAdminSupplierProfilesFailure,
   loadAdminSupplierProfilesSuccess,
   saveAdminSupplierProfileCustomData,
@@ -23,6 +23,10 @@ import {
 
 export interface AdminSupplierProfilesState {
   profiles: AdminSupplierProfileListItem[];
+  /** Replace-page paging: server total, 1-based page and its size. */
+  total: number;
+  page: number;
+  pageSize: number;
   loading: boolean;
   creating: boolean;
   updating: boolean;
@@ -34,6 +38,9 @@ export interface AdminSupplierProfilesState {
 
 export const initialAdminSupplierProfilesState: AdminSupplierProfilesState = {
   profiles: [],
+  total: 0,
+  page: 1,
+  pageSize: BILLING_LIST_PAGE_SIZE,
   loading: false,
   creating: false,
   updating: false,
@@ -75,21 +82,22 @@ function mapDetailToListItem(profile: {
 
 export const adminSupplierProfilesReducer = createReducer(
   initialAdminSupplierProfilesState,
-  on(loadAdminSupplierProfiles, (state, { search }) => ({
-    ...state,
-    profiles: [],
-    loading: true,
-    error: null,
-    search: search?.trim() ? search.trim() : null,
-  })),
-  on(loadAdminSupplierProfilesBatch, (state, { accumulatedProfiles }) => ({
-    ...state,
-    profiles: accumulatedProfiles,
-    loading: true,
-  })),
-  on(loadAdminSupplierProfilesSuccess, (state, { profiles }) => ({
+  on(loadAdminSupplierProfiles, (state, { search, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.pageSize);
+
+    return {
+      ...state,
+      loading: true,
+      error: null,
+      page: window.page,
+      pageSize: window.pageSize,
+      search: search?.trim() ? search.trim() : null,
+    };
+  }),
+  on(loadAdminSupplierProfilesSuccess, (state, { profiles, total }) => ({
     ...state,
     profiles,
+    total,
     loading: false,
     error: null,
   })),

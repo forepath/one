@@ -13,3 +13,23 @@
   min-width: 0;
   overflow: hidden;
 }
+
+// Nested routed areas (section pages with their own sub-nav, object pages with tabs): put
+// `class="fpc-routed-outlet"` on the element that contains the inner `<router-outlet>`.
+.fpc-routed-outlet {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+
+  > router-outlet + * {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+  }
+}

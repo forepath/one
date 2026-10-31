@@ -92,3 +92,78 @@ describe('StatisticsRepository', () => {
     });
   });
 });
+
+describe('StatisticsRepository filter breakdowns', () => {
+  async function createRepository(dropsQb: ReturnType<typeof createMockQb>, flagsQb: ReturnType<typeof createMockQb>) {
+    const providers = entities.map((entity) => ({
+      provide: getRepositoryToken(entity),
+      useValue:
+        entity === StatisticsChatFilterDropEntity
+          ? createMockRepo(dropsQb)
+          : entity === StatisticsChatFilterFlagEntity
+            ? createMockRepo(flagsQb)
+            : createMockRepo(createMockQb()),
+    }));
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [StatisticsRepository, ...providers],
+    }).compile();
+
+    return module.get<StatisticsRepository>(StatisticsRepository);
+  }
+
+  it('returns the filter display name with each drop breakdown entry (chart legends)', async () => {
+    const dropsQb = createMockQb();
+
+    dropsQb.getCount.mockResolvedValue(3);
+    dropsQb.getRawMany
+      .mockResolvedValueOnce([
+        {
+          filterType: 'pii-email',
+          filterDisplayName: 'Personal data: email address',
+          direction: 'incoming',
+          count: '2',
+        },
+        { filterType: 'legacy', filterDisplayName: null, direction: 'outgoing', count: '1' },
+      ])
+      .mockResolvedValueOnce([{ filterType: 'pii-email' }, { filterType: 'legacy' }]);
+    const repository = await createRepository(dropsQb, createMockQb());
+    const result = await repository.queryFilterDropsAggregate({ statisticsClientIds: ['sc-1'] });
+
+    expect(dropsQb.addSelect).toHaveBeenCalledWith('MAX(fd.filter_display_name)', 'filterDisplayName');
+    expect(dropsQb.where).toHaveBeenCalledWith('fd.statistics_client_id IN (:...ids)', { ids: ['sc-1'] });
+    expect(result.filterTypesBreakdown).toEqual([
+      { filterType: 'pii-email', filterDisplayName: 'Personal data: email address', direction: 'incoming', count: 2 },
+      { filterType: 'legacy', filterDisplayName: null, direction: 'outgoing', count: 1 },
+    ]);
+  });
+
+  it('returns the filter display name with each flag breakdown entry', async () => {
+    const flagsQb = createMockQb();
+
+    flagsQb.getRawMany
+      .mockResolvedValueOnce([
+        { filter_type: 'pii-iban', filter_display_name: 'Bank account (IBAN)', direction: 'outgoing', count: '4' },
+      ])
+      .mockResolvedValueOnce([{ filter_type: 'pii-iban' }]);
+    const repository = await createRepository(createMockQb(), flagsQb);
+    const result = await repository.queryFilterFlagsAggregate({ statisticsClientIds: ['sc-1'] });
+
+    expect(flagsQb.addSelect).toHaveBeenCalledWith('MAX(ff.filter_display_name)', 'filter_display_name');
+    expect(flagsQb.where).toHaveBeenCalledWith('ff.statistics_client_id IN (:...ids)', { ids: ['sc-1'] });
+    expect(result.filterTypesBreakdown).toEqual([
+      { filterType: 'pii-iban', filterDisplayName: 'Bank account (IBAN)', direction: 'outgoing', count: 4 },
+    ]);
+  });
+
+  it('queries nothing without accessible statistics clients', async () => {
+    const dropsQb = createMockQb();
+    const repository = await createRepository(dropsQb, createMockQb());
+
+    await expect(repository.queryFilterDropsAggregate({ statisticsClientIds: [] })).resolves.toEqual({
+      filterDropCount: 0,
+      filterTypesBreakdown: [],
+      uniqueFilterTypes: [],
+    });
+    expect(dropsQb.getRawMany).not.toHaveBeenCalled();
+  });
+});

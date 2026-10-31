@@ -11,7 +11,7 @@ const meta: Meta<FpcListComponent> = {
       description: {
         component: `**When to use:** List hosts in sidebars, drawers, and settings (flush keeps last-row border).
 
-**Pairs with:** \`fpc-list-item\`, \`fpc-list-search\`, \`fpcInfiniteScroll\`.`,
+**Pairs with:** \`fpc-list-item\`, \`fpc-list-search\`. Record collections use \`fpc-data-table\` (3.38 D1).`,
       },
     },
   },

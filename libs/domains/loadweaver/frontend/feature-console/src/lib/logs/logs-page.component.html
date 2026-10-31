@@ -1,0 +1,299 @@
+<!-- Table actions (3.38 R8: exports and Clear `dark`): always in the table's toolbar strip. -->
+<ng-template #tableActions>
+  <fpc-button
+    variant="dark"
+    size="sm"
+    [iconOnly]="true"
+    [ariaLabel]="exportNdjsonLabel"
+    [title]="exportNdjsonLabel"
+    [loading]="exporting()"
+    (clicked)="export('ndjson')"
+  >
+    <i class="bi bi-filetype-json" aria-hidden="true"></i>
+  </fpc-button>
+  <fpc-button
+    variant="dark"
+    size="sm"
+    [iconOnly]="true"
+    [ariaLabel]="exportCsvLabel"
+    [title]="exportCsvLabel"
+    [loading]="exporting()"
+    (clicked)="export('csv')"
+  >
+    <i class="bi bi-filetype-csv" aria-hidden="true"></i>
+  </fpc-button>
+  @if (tailing()) {
+    <fpc-button
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="clearLabel"
+      [title]="clearLabel"
+      (clicked)="clearTail()"
+      data-testid="logs-tail-clear"
+    >
+      <i class="bi bi-eraser" aria-hidden="true"></i>
+    </fpc-button>
+  }
+</ng-template>
+
+<!-- The Follow / Stop toggle (primary, rightmost) with its status: in the page header when routed, in the table's
+     toolbar strip when embedded in an object tab. -->
+<ng-template #actions>
+  @if (tailing()) {
+    <fpc-badge size="sm" [tone]="tailConnected() ? 'success' : 'neutral'" data-testid="logs-tail-status">
+      @if (tailConnected()) {
+        <span i18n="@@lwConsoleLogs-tailOn">Following</span>
+      } @else {
+        <span i18n="@@lwConsoleLogs-tailConnecting">Connecting</span>
+      }
+    </fpc-badge>
+  }
+  <fpc-button
+    variant="primary"
+    size="sm"
+    [iconOnly]="true"
+    [ariaPressed]="tailing()"
+    [ariaLabel]="tailing() ? stopLabel : followLabel"
+    [title]="tailing() ? stopLabel : followLabel"
+    (clicked)="tailing() ? stopTail() : startTail()"
+    data-testid="logs-tail-toggle"
+  >
+    <i class="bi" [class.bi-stop-fill]="tailing()" [class.bi-play-fill]="!tailing()" aria-hidden="true"></i>
+  </fpc-button>
+</ng-template>
+
+<div class="fpc-page">
+  @if (!scope) {
+    <fpc-page-header [title]="title">
+      <loadweaver-saved-views fpcPageHeaderActions scope="logs" [binding]="views" />
+      <ng-container ngProjectAs="[fpcPageHeaderActions]">
+        <ng-container [ngTemplateOutlet]="actions" />
+      </ng-container>
+    </fpc-page-header>
+  }
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (tailing() && tailError(); as message) {
+    <fpc-alert [flush]="true" variant="warning" [message]="message" />
+  }
+  @if (exportError(); as message) {
+    <fpc-alert
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="exportError.set(null)"
+    />
+  }
+
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [columns]="columns"
+    [rows]="shown()"
+    [rowId]="rowId"
+    [ariaLabel]="title"
+    [clientSort]="false"
+    [searchPlaceholder]="labelPlaceholder('text')"
+    [query]="labels().text"
+    (queryChange)="onTextChange($event)"
+    [showFilterButton]="true"
+    [(filtersOpen)]="filtersOpen"
+    [filtersActive]="activeFilterCount()"
+    (filtersApplied)="search()"
+    (filtersCleared)="resetFilters()"
+    [loading]="loading()"
+    [expandedRowId]="expanded()"
+    (rowActivate)="toggle($event)"
+    [paging]="tailing() ? 'none' : 'server'"
+    [page]="page() + 1"
+    (pageChange)="onPage($event)"
+    [hasNext]="hasNext()"
+    [pageSize]="limit()"
+    (pageSizeChange)="onLimitChange($event)"
+    [pageSizes]="pageSizes"
+    persistKey="lw-logs"
+    data-testid="logs-table"
+  >
+    <ng-container ngProjectAs="[fpcDataTableToolbar]">
+      <ng-container [ngTemplateOutlet]="tableActions" />
+      @if (scope) {
+        <ng-container [ngTemplateOutlet]="actions" />
+      }
+    </ng-container>
+
+    <ng-container ngProjectAs="[fpcDataTableFilters]">
+      <fpc-form-field forId="lw-logs-range" [label]="rangeFilterLabel">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-logs-range"
+          name="range"
+          size="sm"
+          [ngModel]="range()"
+          (ngModelChange)="range.set($event)"
+        >
+          @for (r of ranges; track r) {
+            <option [value]="r">{{ rangeLabel(r) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+      @if (!fixed.has('project')) {
+        <fpc-form-field forId="lw-logs-project" [label]="labelPlaceholder('project')" data-testid="logs-project">
+          @if (projects().length > 0) {
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-logs-project"
+              name="project"
+              size="sm"
+              [ngModel]="labels().project"
+              (ngModelChange)="setLabel('project', $event)"
+            >
+              <option value="" i18n="@@lwConsoleLogs-allProjects">All projects</option>
+              @for (p of projects(); track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+              @if (labels().project && !projects().includes(labels().project)) {
+                <option [value]="labels().project">{{ labels().project }}</option>
+              }
+            </fpc-form-control>
+          } @else {
+            <fpc-form-control
+              controlId="lw-logs-project"
+              name="project"
+              size="sm"
+              [placeholder]="labelPlaceholder('project')"
+              [ngModel]="labels().project"
+              (ngModelChange)="setLabel('project', $event)"
+            />
+          }
+        </fpc-form-field>
+      }
+      @if (range() === 'custom') {
+        <fpc-form-field forId="lw-logs-from" [label]="fromLabel">
+          <fpc-form-control
+            controlId="lw-logs-from"
+            name="from"
+            inputType="datetime-local"
+            size="sm"
+            [ngModel]="customFrom()"
+            (ngModelChange)="customFrom.set($event)"
+          />
+        </fpc-form-field>
+        <fpc-form-field forId="lw-logs-to" [label]="toLabel">
+          <fpc-form-control
+            controlId="lw-logs-to"
+            name="to"
+            inputType="datetime-local"
+            size="sm"
+            [ngModel]="customTo()"
+            (ngModelChange)="customTo.set($event)"
+          />
+        </fpc-form-field>
+      }
+      @for (name of labelInputs; track name) {
+        <fpc-form-field [forId]="'lw-logs-' + name" [label]="labelPlaceholder(name)">
+          <fpc-form-control
+            [controlId]="'lw-logs-' + name"
+            [name]="name"
+            size="sm"
+            [placeholder]="labelPlaceholder(name)"
+            [ngModel]="labels()[name]"
+            (ngModelChange)="setLabel(name, $event)"
+            [ngModelOptions]="{ standalone: true }"
+          />
+        </fpc-form-field>
+      }
+      <fpc-form-field [label]="levelsLabel">
+        <div role="group" [attr.aria-label]="levelsLabel" data-testid="logs-levels">
+          @for (level of allLevels; track level) {
+            <fpc-form-check
+              [inline]="true"
+              [checkId]="'lw-logs-level-' + level"
+              [label]="levelLabel(level)"
+              [checked]="levels().has(level)"
+              (checkedChange)="toggleLevel(level)"
+            />
+          }
+        </div>
+      </fpc-form-field>
+      <fpc-form-field [label]="sourcesLabel">
+        <div role="group" [attr.aria-label]="sourcesLabel" data-testid="logs-sources">
+          @for (source of allSources; track source) {
+            <fpc-form-check
+              [inline]="true"
+              [checkId]="'lw-logs-source-' + source"
+              [label]="sourceLabel(source)"
+              [checked]="sources().has(source)"
+              (checkedChange)="toggleSource(source)"
+            />
+          }
+        </div>
+      </fpc-form-field>
+    </ng-container>
+
+    <ng-template fpcTableCell="at" let-line>
+      <span class="font-monospace">{{ line.at | date: 'MMM d, HH:mm:ss.SSS' }}</span>
+    </ng-template>
+    <ng-template fpcTableCell="where" let-line>
+      <span class="text-body-secondary"
+        >{{ line.labels['project'] ?? '' }}{{ line.labels['service'] ? '/' + line.labels['service'] : '' }}
+        <span class="ms-1"><i class="bi bi-hdd-network me-1" aria-hidden="true"></i>{{ line.node }}</span></span
+      >
+    </ng-template>
+
+    <ng-template fpcTableRowDetail let-line>
+      <div class="d-flex flex-column gap-2" data-testid="logs-line-details">
+        <div class="font-monospace text-break lw-logs__message">{{ line.message }}</div>
+        <div class="d-flex flex-wrap gap-1">
+          @for (entry of labelEntries(line); track entry.key) {
+            <fpc-badge size="sm" color="light"
+              ><span class="text-body-secondary">{{ entry.key }}=</span
+              ><span class="font-monospace">{{ entry.value }}</span></fpc-badge
+            >
+          }
+          @if (line.site) {
+            <fpc-badge size="sm" color="light"
+              ><span class="text-body-secondary">site=</span
+              ><span class="font-monospace">{{ line.site }}</span></fpc-badge
+            >
+          }
+        </div>
+        <div class="d-flex flex-wrap gap-3">
+          @if (line.labels['service'] && !fixed.has('service')) {
+            <a href="" (click)="$event.preventDefault(); narrow('service', line.labels['service'])"
+              ><i class="bi bi-funnel me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleLogs-onlyService">Only this service</span></a
+            >
+          }
+          @if (!fixed.has('node')) {
+            <a href="" (click)="$event.preventDefault(); narrow('node', line.node)"
+              ><i class="bi bi-funnel me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleLogs-onlyNode">Only this node</span></a
+            >
+          }
+          <a [routerLink]="['/observe/topology']" [queryParams]="mapParams(line)"
+            ><i class="bi bi-diagram-3 me-1" aria-hidden="true"></i
+            ><span i18n="@@lwConsoleLogs-mapAt">Map at this time</span></a
+          >
+        </div>
+      </div>
+    </ng-template>
+
+    <div fpcDataTableEmpty class="w-100">
+      @if (!tailing() && loading()) {
+        <fpc-empty-state size="sm" [loading]="true" [title]="loadingLabel" />
+      } @else if (tailing()) {
+        <fpc-empty-state
+          size="sm"
+          icon="hourglass-split"
+          i18n-title="@@lwConsoleLogs-tailEmpty"
+          title="Waiting for new lines"
+        />
+      } @else {
+        <fpc-empty-state size="sm" icon="journal-x" i18n-title="@@lwConsoleLogs-empty" title="No log lines match" />
+      }
+    </div>
+  </fpc-data-table>
+</div>

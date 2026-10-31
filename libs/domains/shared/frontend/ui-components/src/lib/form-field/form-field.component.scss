@@ -8,6 +8,13 @@
   margin-bottom: 0;
 }
 
+// Projected errors always show (no `.is-invalid` sibling needed). Not via `d-block`: that
+// utility is `!important` and would keep the empty slot's 0.25rem top margin under the control,
+// pushing fields off the shared control line in `align-items-end` toolbars.
+.fpc-form-field__error-slot {
+  display: block;
+}
+
 // Slot wrappers collapse when nothing is projected, so they never add stray spacing.
 .fpc-form-field__error-slot:empty,
 .fpc-form-field__hint-slot:empty {

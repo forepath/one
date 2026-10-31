@@ -37,6 +37,7 @@ export class ProjectTimeEntriesRepository {
     limit: number,
     offset: number,
     ticketId?: string | null,
+    search?: string | null,
   ): Promise<{ items: ProjectTimeEntryEntity[]; total: number }> {
     const qb = this.baseQuery('entry')
       .where('entry.project_id = :projectId', { projectId })
@@ -44,6 +45,18 @@ export class ProjectTimeEntriesRepository {
 
     if (ticketId) {
       qb.andWhere('entry.ticket_id = :ticketId', { ticketId });
+    }
+
+    const term = search?.trim();
+
+    if (term) {
+      // Search strip of the time-entries table (DB-12): entry description or ticket title, case-insensitive.
+      const pattern = `%${term.replace(/[\\%_]/g, (char) => `\\${char}`)}%`;
+
+      qb.leftJoin('entry.ticket', 'searchTicket').andWhere(
+        '(entry.description ILIKE :search OR searchTicket.title ILIKE :search)',
+        { search: pattern },
+      );
     }
 
     applyProjectTenantFilter(qb, 'project');

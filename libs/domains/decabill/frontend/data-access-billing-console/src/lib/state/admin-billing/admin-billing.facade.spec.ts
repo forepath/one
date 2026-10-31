@@ -90,9 +90,15 @@ describe('AdminBillingFacade', () => {
     );
   });
 
-  it('dispatches loadAuditLogs', () => {
-    facade.loadAuditLogs('inv-1', 20, 0);
+  it('dispatches loadAuditLogs for page 1 by default (25 per page)', () => {
+    facade.loadAuditLogs('inv-1');
 
-    expect(store.dispatch).toHaveBeenCalledWith(loadAdminAuditLogs({ invoiceRefId: 'inv-1', limit: 20, offset: 0 }));
+    expect(store.dispatch).toHaveBeenCalledWith(loadAdminAuditLogs({ invoiceRefId: 'inv-1', limit: 25, offset: 0 }));
+  });
+
+  it('maps an audit log page / size to limit + offset (replace-page)', () => {
+    facade.loadAuditLogs('inv-1', 3, 50);
+
+    expect(store.dispatch).toHaveBeenCalledWith(loadAdminAuditLogs({ invoiceRefId: 'inv-1', limit: 50, offset: 100 }));
   });
 });

@@ -3,6 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { catchError, filter, map, of, switchMap, withLatestFrom } from 'rxjs';
 
+import { billingPageWindow } from '../../constants/list-paging.constants';
 import { ProjectTimeEntriesService } from '../../services/project-time-entries.service';
 import type { ProjectTimeEntryResponse } from '../../types/projects.types';
 import { loadProjectSummary } from '../projects/projects.actions';
@@ -22,7 +23,6 @@ import {
   loadProjectTicketTimeEntriesFailure,
   loadProjectTicketTimeEntriesSuccess,
   loadProjectTimeEntries,
-  loadProjectTimeEntriesBatch,
   loadProjectTimeEntriesFailure,
   loadProjectTimeEntriesSuccess,
   updateProjectTimeEntry,
@@ -46,54 +46,14 @@ export const loadProjectTimeEntries$ = createEffect(
   (actions$ = inject(Actions), service = inject(ProjectTimeEntriesService)) =>
     actions$.pipe(
       ofType(loadProjectTimeEntries),
-      switchMap(({ projectId }) =>
-        service.list(projectId, { limit: BATCH_SIZE, offset: 0 }).pipe(
-          switchMap((response) => {
-            if (response.items.length === 0) return of(loadProjectTimeEntriesSuccess({ entries: [] }));
+      switchMap(({ projectId, page, pageSize, search }) => {
+        const { limit, offset } = billingPageWindow(page, pageSize);
 
-            if (response.items.length < BATCH_SIZE) {
-              return of(loadProjectTimeEntriesSuccess({ entries: response.items }));
-            }
-
-            return of(
-              loadProjectTimeEntriesBatch({
-                projectId,
-                offset: BATCH_SIZE,
-                accumulatedEntries: response.items,
-              }),
-            );
-          }),
+        return service.list(projectId, { limit, offset, search }).pipe(
+          map((response) => loadProjectTimeEntriesSuccess({ entries: response.items, total: response.total })),
           catchError((error) => of(loadProjectTimeEntriesFailure({ error: normalizeError(error) }))),
-        ),
-      ),
-    ),
-  { functional: true },
-);
-
-export const loadProjectTimeEntriesBatch$ = createEffect(
-  (actions$ = inject(Actions), service = inject(ProjectTimeEntriesService)) =>
-    actions$.pipe(
-      ofType(loadProjectTimeEntriesBatch),
-      switchMap(({ projectId, offset, accumulatedEntries }) =>
-        service.list(projectId, { limit: BATCH_SIZE, offset }).pipe(
-          switchMap((response) => {
-            const newAccumulated = [...accumulatedEntries, ...response.items];
-
-            if (response.items.length === 0 || response.items.length < BATCH_SIZE) {
-              return of(loadProjectTimeEntriesSuccess({ entries: newAccumulated }));
-            }
-
-            return of(
-              loadProjectTimeEntriesBatch({
-                projectId,
-                offset: offset + BATCH_SIZE,
-                accumulatedEntries: newAccumulated,
-              }),
-            );
-          }),
-          catchError((error) => of(loadProjectTimeEntriesFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     ),
   { functional: true },
 );

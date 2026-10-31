@@ -7,6 +7,7 @@ import {
 
 import {
   buildActivePromotionDisplay,
+  buildAdvantageAmounts,
   buildAdvantageSummary,
   calculatePromotionOverlapDiscount,
   computeBenefitWindow,
@@ -48,13 +49,28 @@ describe('buildAdvantageSummary', () => {
         advantageType: PromotionAdvantageType.FREE_DAYS,
         advantageConfig: { days: 3 } satisfies FreeDaysAdvantageConfig,
       } as never),
-    ).toBe('3 day(s) free');
+    ).toBe('3 days free');
     expect(
       buildAdvantageSummary({
         advantageType: PromotionAdvantageType.FREE_BILLING_PERIODS,
         advantageConfig: { periods: 2 } satisfies FreeBillingPeriodsAdvantageConfig,
       } as never),
-    ).toBe('2 billing period(s) free');
+    ).toBe('2 billing periods free');
+  });
+
+  it('uses the singular for one day / one billing period', () => {
+    expect(
+      buildAdvantageSummary({
+        advantageType: PromotionAdvantageType.FREE_DAYS,
+        advantageConfig: { days: 1 } satisfies FreeDaysAdvantageConfig,
+      } as never),
+    ).toBe('1 day free');
+    expect(
+      buildAdvantageSummary({
+        advantageType: PromotionAdvantageType.FREE_BILLING_PERIODS,
+        advantageConfig: { periods: 1 } satisfies FreeBillingPeriodsAdvantageConfig,
+      } as never),
+    ).toBe('1 billing period free');
   });
 });
 
@@ -117,6 +133,29 @@ describe('validateAdvantageConfig', () => {
     expect(() => validateAdvantageConfig('unknown' as PromotionAdvantageType, {} as never)).toThrow(
       'Unsupported advantage type',
     );
+  });
+});
+
+describe('buildAdvantageAmounts', () => {
+  it('returns the structured values of the advantage type only', () => {
+    expect(
+      buildAdvantageAmounts({
+        advantageType: PromotionAdvantageType.FIXED_AMOUNT_NET,
+        advantageConfig: { amountNet: 5 } as FixedAmountAdvantageConfig,
+      } as never),
+    ).toEqual({ amountNet: 5, currency: 'EUR' });
+    expect(
+      buildAdvantageAmounts({
+        advantageType: PromotionAdvantageType.FREE_DAYS,
+        advantageConfig: { days: 14 } as FreeDaysAdvantageConfig,
+      } as never),
+    ).toEqual({ days: 14 });
+    expect(
+      buildAdvantageAmounts({
+        advantageType: PromotionAdvantageType.FREE_BILLING_PERIODS,
+        advantageConfig: { periods: 1 } as FreeBillingPeriodsAdvantageConfig,
+      } as never),
+    ).toEqual({ periods: 1 });
   });
 });
 

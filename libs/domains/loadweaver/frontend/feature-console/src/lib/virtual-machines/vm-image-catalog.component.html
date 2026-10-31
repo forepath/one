@@ -1,0 +1,101 @@
+<div class="d-flex flex-wrap align-items-end gap-2 mb-2" data-testid="vm-catalog-filters">
+  <div>
+    <label class="form-label small mb-1" [for]="idPrefix() + '-distro'">{{ distroLabel }}</label>
+    <fpc-form-control
+      controlType="select"
+      [controlId]="idPrefix() + '-distro'"
+      size="sm"
+      [ngModel]="distro()"
+      (ngModelChange)="distro.set($event)"
+      data-testid="vm-catalog-distro"
+    >
+      <option value="">{{ allDistrosLabel }}</option>
+      @for (d of distros(); track d) {
+        <option [value]="d">{{ distroName(d) }}</option>
+      }
+    </fpc-form-control>
+  </div>
+  <div>
+    <label class="form-label small mb-1" [for]="idPrefix() + '-arch'">{{ archLabel }}</label>
+    <fpc-form-control
+      controlType="select"
+      [controlId]="idPrefix() + '-arch'"
+      size="sm"
+      [ngModel]="arch()"
+      (ngModelChange)="arch.set($event)"
+      data-testid="vm-catalog-arch"
+    >
+      <option value="amd64">amd64</option>
+      <option value="arm64">arm64</option>
+    </fpc-form-control>
+  </div>
+  @if (!showOther()) {
+    <fpc-button variant="dark" size="sm" (clicked)="showOtherVersions()" data-testid="vm-catalog-show-other">
+      <i class="bi bi-clock-history me-1" aria-hidden="true"></i
+      ><span i18n="@@lwConsoleVmCatalog-showOther">Show other versions</span>
+    </fpc-button>
+  }
+</div>
+@if (error(); as message) {
+  <fpc-alert variant="danger" [message]="message" />
+}
+@if (upstreamError(); as message) {
+  <fpc-alert variant="warning" [message]="message" data-testid="vm-catalog-upstream-error" />
+}
+@if (upstreamWarnings().length > 0) {
+  <fpc-alert
+    variant="warning"
+    i18n-heading="@@lwConsoleVmCatalog-warnings"
+    heading="Some distributions couldn't be read"
+    [message]="upstreamWarnings().join(' · ')"
+    data-testid="vm-catalog-warnings"
+  />
+}
+<!-- One table: Recommended, the cluster's own, other versions (groups); a row selection picks the image. -->
+<fpc-data-table
+  [ariaLabel]="title"
+  [columns]="columns"
+  [rows]="rows()"
+  [rowId]="rowId"
+  [loading]="loading() || upstreamLoading()"
+  selectable
+  selectionMode="single"
+  [selected]="selection()"
+  (selectedChange)="onSelection($event)"
+  [groupBy]="groupOf"
+  [groupLabel]="groupLabel"
+  [query]="query()"
+  (queryChange)="query.set($event)"
+  [searchPlaceholder]="searchLabel"
+  [showColumnChooser]="false"
+  emptyIcon="hdd-stack"
+  data-testid="vm-catalog-table"
+>
+  <span fpcDataTableEmpty>
+    <fpc-empty-state
+      icon="hdd-stack"
+      size="sm"
+      i18n-title="@@lwConsoleVmCatalog-empty"
+      title="No catalog images for this selection"
+    />
+  </span>
+  <ng-template fpcTableCell="image" let-row>
+    <span class="d-inline-flex flex-wrap align-items-center gap-1">
+      <span>{{ row.label }}</span>
+      @if (row.source === 'cluster') {
+        <fpc-badge tone="primary" size="sm" data-testid="vm-catalog-cluster-badge">{{ clusterBadge }}</fpc-badge>
+      }
+      @if (isPresent(row)) {
+        <fpc-badge tone="success" size="sm" data-testid="vm-catalog-present-badge">{{ presentLabel }}</fpc-badge>
+      }
+    </span>
+    @if (row.description) {
+      <div class="small text-body-secondary text-break">{{ row.description }}</div>
+    }
+  </ng-template>
+  <ng-template fpcTableCell="guestAgent" let-row>
+    @if (row.guestAgent) {
+      <fpc-badge tone="info" icon="robot" [iconOnly]="true" [label]="guestAgentLabel" />
+    }
+  </ng-template>
+</fpc-data-table>

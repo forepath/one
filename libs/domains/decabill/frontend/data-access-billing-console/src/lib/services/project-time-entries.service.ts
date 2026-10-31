@@ -40,6 +40,8 @@ export class ProjectTimeEntriesService {
 
     if (params?.ticketId) httpParams = httpParams.set('ticketId', params.ticketId);
 
+    if (params?.search?.trim()) httpParams = httpParams.set('search', params.search.trim());
+
     return this.http.get<PaginatedProjectTimeEntriesResponse>(this.timeEntriesUrl(projectId), {
       params: httpParams,
     });

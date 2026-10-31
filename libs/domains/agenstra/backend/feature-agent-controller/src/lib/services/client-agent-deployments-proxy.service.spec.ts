@@ -248,6 +248,116 @@ describe('ClientAgentDeploymentsProxyService', () => {
     });
   });
 
+  describe('listRuns', () => {
+    const runsUrl = 'https://example.com/api/api/agents/agent-uuid/deployments/runs';
+    const run = (id: string, runName: string, ref = 'main', sha = 'abc1234def') => ({
+      id,
+      configurationId: 'config-uuid',
+      providerRunId: id,
+      runName,
+      status: 'completed',
+      ref,
+      sha,
+    });
+    const agentRuns = [
+      run('run-1', 'Deploy production'),
+      run('run-2', 'Nightly build', 'release/2.0', 'feed42beef'),
+      run('run-3', 'Deploy staging'),
+      run('run-4', 'deploy hotfix', 'hotfix/x'),
+    ];
+
+    beforeEach(() => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockSearchIndex.isEnabled.mockReturnValue(false);
+    });
+
+    afterEach(() => {
+      mockSearchIndex.isEnabled.mockReturnValue(false);
+    });
+
+    it('passes limit / offset through without a search', async () => {
+      mockedAxios.request.mockResolvedValue({ data: agentRuns.slice(0, 2), status: 200 });
+
+      const result = await service.listRuns('client-uuid', 'agent-uuid', 2, 4, undefined);
+
+      expect(result).toEqual(agentRuns.slice(0, 2));
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'GET', url: `${runsUrl}?limit=2&offset=4` }),
+      );
+      expect(mockSearchIndex.searchIds).not.toHaveBeenCalled();
+    });
+
+    it('treats a blank search as no search', async () => {
+      mockedAxios.request.mockResolvedValue({ data: agentRuns, status: 200 });
+
+      await service.listRuns('client-uuid', 'agent-uuid', 50, 0, '   ');
+
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({ url: `${runsUrl}?limit=50&offset=0` }),
+      );
+    });
+
+    it('filters the agent runs case-insensitively (trimmed) and pages the matches', async () => {
+      mockedAxios.request.mockResolvedValue({ data: agentRuns, status: 200 });
+
+      const firstPage = await service.listRuns('client-uuid', 'agent-uuid', 2, 0, '  DEPLOY ');
+      const secondPage = await service.listRuns('client-uuid', 'agent-uuid', 2, 2, 'deploy');
+
+      expect(firstPage).toEqual([agentRuns[0], agentRuns[2]]);
+      expect(secondPage).toEqual([agentRuns[3]]);
+      // Only this client's agent is asked (its own runs endpoint); the search term never leaves the controller.
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'GET', url: `${runsUrl}?limit=1000&offset=0` }),
+      );
+      expect(clientsRepository.findByIdOrThrow).toHaveBeenCalledWith('client-uuid');
+    });
+
+    it('matches branch and commit SHA', async () => {
+      mockedAxios.request.mockResolvedValue({ data: agentRuns, status: 200 });
+
+      expect(await service.listRuns('client-uuid', 'agent-uuid', 50, 0, 'release/2')).toEqual([agentRuns[1]]);
+      expect(await service.listRuns('client-uuid', 'agent-uuid', 50, 0, 'feed42')).toEqual([agentRuns[1]]);
+    });
+
+    it('scopes the index lookup to the client and agent and drops ids that are not this agent runs', async () => {
+      mockSearchIndex.isEnabled.mockReturnValue(true);
+      mockSearchIndex.searchIds.mockResolvedValue({ ids: ['run-3', 'foreign-run', 'run-1'], total: 3 });
+      mockedAxios.request.mockResolvedValue({ data: agentRuns, status: 200 });
+
+      const result = await service.listRuns('client-uuid', 'agent-uuid', 10, 0, 'deploy');
+
+      expect(mockSearchIndex.searchIds).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'deployment-runs',
+          query: 'deploy',
+          clientIds: ['client-uuid'],
+          additionalFilters: { agentId: 'agent-uuid' },
+          limit: 10,
+          offset: 0,
+        }),
+      );
+      expect(result).toEqual([agentRuns[2], agentRuns[0]]);
+    });
+
+    it('returns an empty page when the index has matches but none on this page', async () => {
+      mockSearchIndex.isEnabled.mockReturnValue(true);
+      mockSearchIndex.searchIds.mockResolvedValue({ ids: [], total: 3 });
+
+      expect(await service.listRuns('client-uuid', 'agent-uuid', 10, 30, 'deploy')).toEqual([]);
+      expect(mockedAxios.request).not.toHaveBeenCalled();
+    });
+
+    it('caps the search term at 200 characters', async () => {
+      mockSearchIndex.isEnabled.mockReturnValue(true);
+      mockSearchIndex.searchIds.mockResolvedValue({ ids: [], total: 0 });
+      mockedAxios.request.mockResolvedValue({ data: agentRuns, status: 200 });
+
+      await service.listRuns('client-uuid', 'agent-uuid', 10, 0, 'x'.repeat(500));
+
+      expect(mockSearchIndex.searchIds.mock.calls[0][0].query).toHaveLength(200);
+    });
+  });
+
   describe('getRunStatus', () => {
     it('should get run status', async () => {
       const mockRun: DeploymentRunResponseDto = {

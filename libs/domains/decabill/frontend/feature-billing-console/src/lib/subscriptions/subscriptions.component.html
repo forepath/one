@@ -1,27 +1,5 @@
 <div class="subscriptions-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
-    <fpc-button
-      fpcPageHeaderActions
-      variant="primary"
-      size="sm"
-      iconOnly
-      (clicked)="openOrderPlanModal()"
-      [disabled]="(isCustomerProfileComplete$ | async) !== true"
-      [title]="orderPlanAriaLabel"
-      [ariaLabel]="orderPlanAriaLabel"
-    >
-      <i class="bi bi-cart" aria-hidden="true"></i>
-    </fpc-button>
-  </fpc-page-header>
-
-  <fpc-tab-group
-    class="d-md-none flex-shrink-0"
-    [activeId]="mobilePanel()"
-    (activeIdChange)="onMobilePanelTabChange($event)"
-  >
-    <fpc-tab id="subscriptions" [label]="mobilePanelLabel('subscriptions')" />
-    <fpc-tab id="backorders" [label]="mobilePanelLabel('backorders')" />
-  </fpc-tab-group>
+  <fpc-page-header [title]="pageTitle" />
 
   <fpc-section-container>
     @if (subscriptionsError$ | async; as err) {
@@ -32,7 +10,7 @@
     }
 
     <fpc-summary-bar [columns]="4">
-      <fpc-summary-card [label]="summaryTotalLabel">
+      <fpc-summary-card icon="stack" [label]="summaryTotalLabel">
         <span fpcSummaryCardValue>
           @if ((subscriptionsSummaryLoading$ | async) && summarySubscriptionsTotal() === 0) {
             <fpc-spinner size="sm" />
@@ -41,7 +19,7 @@
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="summaryActiveLabel">
+      <fpc-summary-card icon="check2-circle" [label]="summaryActiveLabel">
         <span fpcSummaryCardValue>
           @if ((subscriptionsSummaryLoading$ | async) && summaryActiveCount() === 0) {
             <fpc-spinner size="sm" />
@@ -50,12 +28,12 @@
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="customerProfileLabel">
+      <fpc-summary-card icon="person-vcard" [label]="customerProfileLabel">
         <span fpcSummaryCardValue>
           {{ profileCompleteLabel(isCustomerProfileComplete()) }}
         </span>
         <fpc-button
-          variant="warning"
+          variant="outline-secondary"
           size="sm"
           iconOnly
           fpcSummaryCardActions
@@ -67,7 +45,7 @@
           <i class="bi bi-pencil" aria-hidden="true"></i>
         </fpc-button>
       </fpc-summary-card>
-      <fpc-summary-card [label]="backordersLabel">
+      <fpc-summary-card icon="box-seam" [label]="backordersLabel">
         <span fpcSummaryCardValue>
           @if ((subscriptionsSummaryLoading$ | async) && summaryBackordersCount() === 0) {
             <fpc-spinner size="sm" />
@@ -78,6 +56,12 @@
       </fpc-summary-card>
     </fpc-summary-bar>
 
+    <!-- Summary first: it is the same for both tabs (user, 2026-10-29). -->
+    <fpc-tab-group class="flex-shrink-0" [activeId]="mobilePanel()" (activeIdChange)="onMobilePanelTabChange($event)">
+      <fpc-tab id="subscriptions" [label]="mobilePanelLabel('subscriptions')" />
+      <fpc-tab id="backorders" [label]="mobilePanelLabel('backorders')" />
+    </fpc-tab-group>
+
     @if ((isCustomerProfileComplete$ | async) !== true) {
       <fpc-alert [flush]="true" variant="warning"
         ><span i18n="@@featureSubscriptions-customerProfileHint">
@@ -87,351 +71,149 @@
       >
     }
 
-    <fpc-section-row [nowrap]="true">
-      <fpc-section-column
-        class="section__column--subscriptions d-md-flex flex-column min-h-0 border-end"
-        [class.d-none]="mobilePanel() !== 'subscriptions'"
-      >
-        <fpc-board-lane #subscriptionsLane="fpcBoardLane" class="h-100" listGroup>
-          <fpc-lane-header fpcBoardLaneHeader flush>
-            <span fpcLaneHeaderTitle i18n="@@featureAudit-chatIoTable">Subscriptions</span>
-          </fpc-lane-header>
-          <fpc-search-field
-            fpcBoardLaneSearch
-            inputId="subscriptionsSearchInput"
-            name="subscriptionsSearch"
-            [bordered]="false"
-            i18n-placeholder="@@featureSubscriptions-searchSubscriptions"
-            placeholder="Search subscriptions"
-            i18n-ariaLabel="@@featureSubscriptions-searchSubscriptions"
-            ariaLabel="Search subscriptions"
-            [(value)]="subscriptionsSearch"
-          />
-          @if (subscriptionsLoading$ | async) {
-            <div class="d-flex justify-content-center align-items-center p-4">
-              <fpc-spinner
-                variant="primary"
-                i18n-label="@@featureSubscriptions-loading"
-                label="Loading subscriptions..."
-              />
-            </div>
-          } @else if (subscriptions().length === 0 && !subscriptionsSearch()) {
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="subscriptions-bulk-result"
+      />
+    }
+    <!-- Tabs instead of two stacked lanes: Subscriptions (server paging) | Backorders. -->
+    @switch (mobilePanel()) {
+      @case ('subscriptions') {
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="subscriptionsLabel"
+          [columns]="subscriptionColumns"
+          [rows]="subscriptions()"
+          paging="server"
+          [hasNext]="subscriptionsHasMore()"
+          [total]="subscriptionsTotal()"
+          [(page)]="paging.page"
+          [(pageSize)]="paging.pageSize"
+          persistKey="decabill-subscriptions"
+          [(query)]="paging.search"
+          [searchPlaceholder]="searchSubscriptionsLabel"
+          [loading]="!!(subscriptionsLoading$ | async)"
+          selectable
+          [(selected)]="selectedSubscriptions"
+          [rowMenu]="subscriptionMenu"
+          (rowAction)="onSubscriptionAction($event.row, $event.item.id)"
+          [expandedRowId]="expandedSubscriptionId()"
+          (rowActivate)="toggleSubscription($event)"
+          emptyIcon="box-seam"
+          data-testid="subscriptions-list"
+        >
+          <fpc-button
+            fpcDataTableToolbar
+            variant="primary"
+            size="sm"
+            iconOnly
+            (clicked)="openOrderPlanModal()"
+            [disabled]="(isCustomerProfileComplete$ | async) !== true"
+            [title]="orderPlanAriaLabel"
+            [ariaLabel]="orderPlanAriaLabel"
+          >
+            <i class="bi bi-cart" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
+            fpcDataTableBatch
+            variant="dark"
+            size="sm"
+            [disabled]="resumableSelection().length === 0"
+            (clicked)="resumeSelected()"
+            data-testid="subscriptions-bulk-resume"
+            iconOnly
+            [ariaLabel]="resumeLabel"
+            [title]="resumeLabel"
+          >
+            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+          </fpc-button>
+          <span fpcDataTableEmpty>
             <fpc-empty-state
               size="sm"
+              icon="box-seam"
               message="No subscriptions yet"
               i18n-message="@@featureSubscriptions-noSubscriptions"
             />
-          } @else if (subscriptions().length === 0 && subscriptionsSearch()) {
-            <fpc-empty-state
-              size="sm"
-              icon="search"
-              message="No search results"
-              i18n-message="@@featureSubscriptions-noSearchResults"
-            />
-          } @else {
-            @if (servicePlans$ | async; as plans) {
-              @for (sub of subscriptions(); track sub.id) {
-                <ng-container
-                  *ngTemplateOutlet="subscriptionListItem; context: { $implicit: sub, plans: plans }"
-                ></ng-container>
+          </span>
+          <ng-template fpcTableRowDetail let-row>
+            <div class="d-flex flex-column gap-3 py-2">
+              @if (subscriptionItems(row).length > 0) {
+                <fpc-data-table
+                  nested
+                  [ariaLabel]="servicesLabel"
+                  [columns]="serviceColumns(row)"
+                  [rows]="subscriptionItems(row)"
+                  [rowLink]="serviceLinkFor(row)"
+                  [searchable]="false"
+                  data-testid="subscription-services"
+                />
               }
-            } @else {
-              @for (sub of subscriptions(); track sub.id) {
-                <ng-container
-                  *ngTemplateOutlet="subscriptionListItem; context: { $implicit: sub, plans: null }"
-                ></ng-container>
+              @if (hasSubscriptionMeters(row)) {
+                <fpc-data-table
+                  nested
+                  [ariaLabel]="usageMetersLabel"
+                  [columns]="meterColumns"
+                  [rows]="subscriptionMeters(row)"
+                  [rowId]="meterRowId"
+                  [searchable]="false"
+                  data-testid="subscription-meters"
+                />
               }
-            }
-            @if ((subscriptionsAppendLoading$ | async) || (subscriptionsAppendError$ | async)) {
-              <fpc-list-append-footer
-                [loading]="!!(subscriptionsAppendLoading$ | async)"
-                [error]="!!(subscriptionsAppendError$ | async)"
-                (retry)="loadMoreSubscriptions()"
-              />
-            }
-            <div
-              fpcInfiniteScroll
-              [root]="subscriptionsLane.scrollRoot"
-              [paused]="!!(subscriptionsAppendError$ | async)"
-              [disabled]="
-                (subscriptionsHasMore$ | async) === false ||
-                !!(subscriptionsAppendLoading$ | async) ||
-                !!(subscriptionsLoading$ | async)
-              "
-              (reachedEnd)="loadMoreSubscriptions()"
-              aria-hidden="true"
-            ></div>
-          }
-        </fpc-board-lane>
-      </fpc-section-column>
-
-      <fpc-section-column
-        class="section__column--backorders d-md-flex flex-column min-h-0"
-        [class.d-none]="mobilePanel() !== 'backorders'"
-      >
-        <fpc-board-lane class="h-100" listGroup>
-          <fpc-lane-header fpcBoardLaneHeader flush>
-            <span fpcLaneHeaderTitle i18n="@@featureSubscriptions-backorders">Backorders</span>
-          </fpc-lane-header>
-          <fpc-search-field
-            fpcBoardLaneSearch
-            inputId="backordersSearchInput"
-            name="backordersSearch"
-            [bordered]="false"
-            i18n-placeholder="@@featureSubscriptions-searchBackorders"
-            placeholder="Search backorders"
-            i18n-ariaLabel="@@featureSubscriptions-searchBackorders"
-            ariaLabel="Search backorders"
-            [(value)]="backordersSearch"
-          />
-          @if (backordersLoading$ | async) {
-            <div class="d-flex justify-content-center align-items-center p-4">
-              <fpc-spinner
-                variant="primary"
-                i18n-label="@@featureSubscriptions-loadingBackorders"
-                label="Loading backorders..."
-              />
             </div>
-          } @else if (backorders().length === 0 && !backordersSearch()) {
+          </ng-template>
+        </fpc-data-table>
+      }
+      @case ('backorders') {
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="backordersLabel"
+          [columns]="backorderColumns"
+          [rows]="backorders()"
+          paging="server"
+          [hasNext]="backordersHasMore()"
+          [(page)]="backordersPaging.page"
+          [(pageSize)]="backordersPaging.pageSize"
+          persistKey="decabill-backorders"
+          [(query)]="backordersPaging.search"
+          [searchPlaceholder]="searchBackordersLabel"
+          [loading]="!!(backordersLoading$ | async)"
+          selectable
+          [(selected)]="selectedBackorders"
+          [rowMenu]="backorderMenu"
+          (rowAction)="onBackorderAction($event.row, $event.item.id)"
+          data-testid="backorders-list"
+        >
+          <fpc-button
+            fpcDataTableBatch
+            variant="dark"
+            size="sm"
+            [disabled]="selectedBackorders().length === 0"
+            (clicked)="retrySelectedBackorders()"
+            data-testid="backorders-bulk-retry"
+            iconOnly
+            [ariaLabel]="retryBackorderLabel"
+            [title]="retryBackorderLabel"
+          >
+            <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+          </fpc-button>
+          <span fpcDataTableEmpty>
             <fpc-empty-state
               size="sm"
+              icon="hourglass-split"
               message="No pending backorders yet"
               i18n-message="@@featureSubscriptions-noBackorders"
             />
-          } @else if (backorders().length === 0 && backordersSearch()) {
-            <fpc-empty-state
-              size="sm"
-              icon="search"
-              message="No search results"
-              i18n-message="@@featureSubscriptions-noBackorderSearchResults"
-            />
-          } @else {
-            @if (servicePlans$ | async; as plans) {
-              @for (bo of backorders(); track bo.id) {
-                <ng-container
-                  *ngTemplateOutlet="backorderListItem; context: { $implicit: bo, plans: plans }"
-                ></ng-container>
-              }
-            } @else {
-              @for (bo of backorders(); track bo.id) {
-                <ng-container
-                  *ngTemplateOutlet="backorderListItem; context: { $implicit: bo, plans: null }"
-                ></ng-container>
-              }
-            }
-          }
-        </fpc-board-lane>
-      </fpc-section-column>
-    </fpc-section-row>
+          </span>
+        </fpc-data-table>
+      }
+    }
   </fpc-section-container>
 </div>
-
-<ng-template #subscriptionListItem let-sub let-plans="plans">
-  <fpc-list-item>
-    <div fpcListItemTitle class="fw-semibold">{{ subscriptionDisplayTitle(sub, plans) }}</div>
-    <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-      <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-        <fpc-badge
-          variant="info"
-          color="secondary"
-          class="me-2"
-          [ngClass]="subscriptionStatusBadgeClass(sub.status)"
-          [attr.title]="sub.status ?? undefined"
-        >
-          {{ subscriptionStatusLabel(sub.status) }}
-        </fpc-badge>
-        @if (showProvisioningStatusBadge(sub.id)) {
-          <fpc-badge
-            variant="info"
-            color="secondary"
-            class="me-2"
-            [ngClass]="provisioningStatusBadgeClass(provisioningStatusForSubscription(sub.id))"
-            [attr.title]="provisioningStatusForSubscription(sub.id) ?? undefined"
-          >
-            @if (provisioningStatusForSubscription(sub.id) === 'failed') {
-              <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
-            }
-            {{ provisioningStatusLabel(provisioningStatusForSubscription(sub.id)) }}
-          </fpc-badge>
-        }
-        @if (sub.number) {
-          <span class="me-2"> <i class="bi bi-upc-scan me-1" aria-hidden="true"></i>{{ sub.number }} </span>
-        }
-        <span class="me-2">
-          <i class="bi bi-calendar-range me-1" aria-hidden="true"></i>{{ formatSubscriptionPeriod(sub) }}
-        </span>
-        <span class="me-2">
-          <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(sub.nextBillingAt) }}
-        </span>
-        <span class="me-2">
-          <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatSubscriptionPeriodPrice(sub, plans) }}
-        </span>
-      </div>
-    </div>
-    <fpc-button-group
-      fpcListItemActions
-      size="sm"
-      ariaLabel="Subscription actions"
-      i18n-ariaLabel="@@featureSubscriptions-subscriptionActionsAria"
-    >
-      @if (sub.withdrawalEligibility?.canWithdraw) {
-        <fpc-button
-          iconOnly
-          size="sm"
-          variant="danger"
-          (clicked)="openWithdrawConfirm(sub)"
-          title="Withdraw subscription"
-          i18n-title="@@featureSubscriptions-withdrawButtonTitle"
-        >
-          <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
-        </fpc-button>
-      }
-      @if (canModifyConfiguration(sub)) {
-        <fpc-button
-          iconOnly
-          size="sm"
-          variant="primary"
-          (clicked)="openModifyConfigModal(sub)"
-          title="Upgrade or downgrade"
-          i18n-title="@@featureSubscriptions-modifyConfigButtonTitle"
-        >
-          <i class="bi bi-arrow-down-up" aria-hidden="true"></i>
-        </fpc-button>
-      }
-      @if (sub.status === 'active') {
-        <fpc-button
-          iconOnly
-          size="sm"
-          variant="danger"
-          (clicked)="openCancelConfirm(sub)"
-          title="Cancel subscription"
-          i18n-title="@@featureSubscriptions-cancelButtonTitle"
-        >
-          <i class="bi bi-x-circle" aria-hidden="true"></i>
-        </fpc-button>
-      }
-      @if (sub.status === 'pending_cancel') {
-        <fpc-button
-          iconOnly
-          size="sm"
-          variant="success"
-          (clicked)="openResumeConfirm(sub)"
-          title="Resume subscription"
-          i18n-title="@@featureSubscriptions-resumeButtonTitle"
-        >
-          <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-        </fpc-button>
-      }
-    </fpc-button-group>
-    @if (subscriptionItems(sub).length > 0 || hasSubscriptionMeters(sub)) {
-      <div class="row g-2">
-        @if (subscriptionItems(sub).length > 0) {
-          <div class="col-md">
-            <div class="small text-body-secondary h-100 bg-body-tertiary rounded border py-2 px-3">
-              <div class="fw-semibold mb-1" i18n="@@featureSubscriptions-services">Services</div>
-              <div class="d-flex flex-column gap-2">
-                @for (item of subscriptionItems(sub); track item.id) {
-                  <div class="d-flex flex-wrap align-items-center gap-2">
-                    <fpc-badge variant="info" color="secondary" [ngClass]="itemProvisioningStatusBadgeClass(sub, item)">
-                      {{ itemProvisioningStatusLabel(sub, item) }}
-                    </fpc-badge>
-                    <span class="fw-medium">{{ serviceDisplayLabel(item) }}</span>
-                    @if (isServiceDetailEligible(sub, item)) {
-                      <fpc-button
-                        variant="primary"
-                        size="sm"
-                        class="py-0 ms-auto"
-                        [routerLink]="serviceDetailLink(sub, item)"
-                        [queryParams]="{ from: 'subscriptions' }"
-                        title="Open details"
-                        i18n-title="@@featureSubscriptions-openServiceDetails"
-                        i18n-ariaLabel="@@featureSubscriptions-openServiceDetails"
-                        ariaLabel="Open details"
-                      >
-                        <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-                      </fpc-button>
-                    }
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-        }
-        @if (hasSubscriptionMeters(sub)) {
-          <div class="col-md">
-            <div class="small text-body-secondary h-100 bg-body-tertiary rounded border py-2 px-3">
-              <div class="fw-semibold mb-1" i18n="@@featureSubscriptions-usageMeters">Usage meters</div>
-              <div class="d-flex flex-column gap-1">
-                @for (
-                  meter of subscriptionMeters(sub);
-                  track meter.meterId + meter.attachmentType + (meter.addonId ?? '')
-                ) {
-                  <div class="d-flex flex-wrap align-items-center gap-2">
-                    <fpc-badge variant="info" color="secondary">{{ meter.name }}</fpc-badge>
-                    <span>{{ formatMeterValue(meter) }}</span>
-                    @if (hasMeterBillingDetails(meter)) {
-                      <span class="text-body-secondary small">{{ formatMeterBillingDetails(meter) }}</span>
-                    }
-                    <span class="ms-auto">{{ formatMeterCharge(meter.estimatedChargeNet) }}</span>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    }
-  </fpc-list-item>
-</ng-template>
-
-<ng-template #backorderListItem let-bo let-plans="plans">
-  <fpc-list-item>
-    <div fpcListItemTitle class="fw-semibold">{{ backorderDisplayTitle(bo, plans) }}</div>
-    <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-      <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-        <fpc-badge
-          variant="info"
-          color="secondary"
-          class="me-2"
-          [ngClass]="backorderStatusBadgeClass(bo.status)"
-          [attr.title]="bo.status ?? undefined"
-        >
-          {{ backorderStatusLabel(bo.status) }}
-        </fpc-badge>
-        <span class="me-2">
-          <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatBackorderPeriodPrice(bo, plans) }}
-        </span>
-      </div>
-    </div>
-    <fpc-button-group
-      fpcListItemActions
-      size="sm"
-      ariaLabel="Backorder actions"
-      i18n-ariaLabel="@@featureSubscriptions-backorderActionsAria"
-    >
-      <fpc-button
-        iconOnly
-        size="sm"
-        variant="primary"
-        (clicked)="retryBackorder(bo)"
-        title="Retry backorder"
-        i18n-title="@@featureSubscriptions-retryButtonTitle"
-      >
-        <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
-      </fpc-button>
-      <fpc-button
-        iconOnly
-        size="sm"
-        variant="danger"
-        (clicked)="openCancelBackorderConfirm(bo)"
-        title="Withdraw order"
-        i18n-title="@@featureSubscriptions-withdrawOrderButtonTitle"
-      >
-        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
-      </fpc-button>
-    </fpc-button-group>
-  </fpc-list-item>
-</ng-template>
 
 <!-- Order plan modal -->
 <fpc-modal
@@ -467,21 +249,23 @@
           <div class="row g-4 order-wizard__layout">
             <div class="col-lg-8 order-wizard__main">
               <nav class="order-stepper mb-4" aria-label="Order steps">
-                <ol class="order-stepper__steps px-3">
-                  @for (step of getOrderWizardSteps(); track step.id; let stepIndex = $index) {
-                    <li class="order-stepper__step">
-                      <span
-                        class="order-stepper__step-button"
-                        [class.order-stepper__step-button--active]="isOrderWizardStepActive(stepIndex)"
-                        [class.order-stepper__step-button--complete]="isOrderWizardStepComplete(stepIndex)"
-                        [attr.aria-current]="isOrderWizardStepActive(stepIndex) ? 'step' : null"
-                      >
-                        <span class="order-stepper__step-indicator">{{ stepIndex + 1 }}</span>
-                        <span class="order-stepper__step-label">{{ step.label }}</span>
-                      </span>
-                    </li>
-                  }
-                </ol>
+                <fpc-step-strip>
+                  <ol class="order-stepper__steps px-3" fpcStepStrip>
+                    @for (step of getOrderWizardSteps(); track step.id; let stepIndex = $index) {
+                      <li class="order-stepper__step">
+                        <span
+                          class="order-stepper__step-button"
+                          [class.order-stepper__step-button--active]="isOrderWizardStepActive(stepIndex)"
+                          [class.order-stepper__step-button--complete]="isOrderWizardStepComplete(stepIndex)"
+                          [attr.aria-current]="isOrderWizardStepActive(stepIndex) ? 'step' : null"
+                        >
+                          <span class="order-stepper__step-indicator">{{ stepIndex + 1 }}</span>
+                          <span class="order-stepper__step-label">{{ step.label }}</span>
+                        </span>
+                      </li>
+                    }
+                  </ol>
+                </fpc-step-strip>
               </nav>
 
               @switch (getActiveOrderWizardStepId()) {
@@ -517,11 +301,11 @@
                       @if (orderAddonsLoading) {
                         <div class="mt-3 text-body-secondary small d-flex align-items-center gap-2">
                           <fpc-spinner size="sm" />
-                          <span i18n="@@featureSubscriptions-loadingAddons">Loading addons...</span>
+                          <span i18n="@@featureSubscriptions-loadingAddons">Loading add-ons...</span>
                         </div>
                       } @else if (orderAddons.length > 0) {
                         <fieldset class="mt-3 border rounded bg-body p-3">
-                          <legend class="fs-6 mb-2" i18n="@@featureSubscriptions-addons">Addons</legend>
+                          <legend class="fs-6 mb-2" i18n="@@featureSubscriptions-addons">Add-ons</legend>
                           @for (addon of orderAddons; track addon.id) {
                             <div class="mb-2">
                               <fpc-form-check
@@ -588,7 +372,7 @@
                         </fieldset>
                         @if (hasInvalidSelectedOrderAddons()) {
                           <p class="small text-danger mt-2 mb-0" i18n="@@featureSubscriptions-orderInvalidAddonsHint">
-                            Some selected addons are not available for the chosen provider and will be omitted from the
+                            Some selected add-ons are not available for the chosen provider and will be omitted from the
                             order.
                           </p>
                         }
@@ -833,6 +617,22 @@
                                 </fpc-form-field>
                               }
                             }
+                          } @else if (
+                            showIntegratedOrderConfiguration(selectedPlan) &&
+                            orderRequestedConfig.service === 'loadweaver'
+                          ) {
+                            <fpc-alert
+                              variant="info"
+                              i18n-heading="@@featureSubscriptions-loadweaverOrderHeading"
+                              heading="Single-node Loadweaver cluster"
+                            >
+                              <span i18n="@@featureSubscriptions-loadweaverOrderInfo">
+                                The server becomes a complete Loadweaver cluster with control plane and console. Its
+                                secrets are generated on the server; the first account you register in the console
+                                becomes the administrator. Further nodes run on your own servers or provider accounts
+                                and are not billed here.
+                              </span>
+                            </fpc-alert>
                           } @else if (showIntegratedOrderConfiguration(selectedPlan)) {
                             <fpc-form-field
                               forId="orderAuthMethod"
@@ -1266,7 +1066,7 @@
                           }
                           @if (selectedOrderAddons().length > 0) {
                             <div class="d-flex justify-content-between gap-3">
-                              <dt class="text-body-secondary" i18n="@@featureSubscriptions-addons">Addons</dt>
+                              <dt class="text-body-secondary" i18n="@@featureSubscriptions-addons">Add-ons</dt>
                               <dd class="mb-0 text-end">{{ formatOrderAddonsSummary() }}</dd>
                             </div>
                           }
@@ -1373,7 +1173,7 @@
                           <fpc-alert class="mt-2 mb-3" [variant]="preview.valid ? 'success' : 'danger'">
                             @if (preview.valid) {
                               <span i18n="@@featurePromotions-validMessage">This code can be applied.</span>
-                              <div class="small">{{ preview.advantageSummary }}</div>
+                              <div class="small">{{ advantageText(preview) }}</div>
                               @if (!orderPromotionPricingAdjustment()) {
                                 <div
                                   class="small text-body-secondary mt-1"
@@ -1430,10 +1230,7 @@
                             </h6>
                             <div class="text-body-secondary small">
                               <span i18n="@@featureSubscriptions-withdrawalPeriodDays">Withdrawal period</span>
-                              <strong class="ms-2"
-                                >{{ plan.withdrawalPolicy.periodDays }}
-                                <span i18n="@@featureSubscriptions-days">days</span></strong
-                              >
+                              <strong class="ms-2">{{ durationLabel(plan.withdrawalPolicy.periodDays, 'day') }}</strong>
                             </div>
                             @if (plan.withdrawalPolicy.allowedAfterProvisioning) {
                               <p
@@ -1526,22 +1323,17 @@
                       <h6 class="mb-3" i18n="@@featureSubscriptions-orderTermsTitle">Runtime & terms</h6>
                       <div class="text-body-secondary small">
                         <span i18n="@@featureSubscriptions-billingInterval">Runtime</span>
-                        <strong class="ms-2"
-                          >{{ selectedPlan.billingIntervalValue }} {{ selectedPlan.billingIntervalType }}(s)</strong
-                        >
+                        <strong class="ms-2">{{
+                          durationLabel(selectedPlan.billingIntervalValue, selectedPlan.billingIntervalType)
+                        }}</strong>
                       </div>
                       <div class="text-body-secondary small mt-2">
                         <span i18n="@@featureSubscriptions-minCommitment">Min. commitment</span>
-                        <strong class="ms-2"
-                          >{{ selectedPlan.minCommitmentDays }}
-                          <span i18n="@@featureSubscriptions-days">days</span></strong
-                        >
+                        <strong class="ms-2">{{ durationLabel(selectedPlan.minCommitmentDays, 'day') }}</strong>
                       </div>
                       <div class="text-body-secondary small mt-2">
                         <span i18n="@@featureSubscriptions-noticeDays">Notice period</span>
-                        <strong class="ms-2"
-                          >{{ selectedPlan.noticeDays }} <span i18n="@@featureSubscriptions-days">days</span></strong
-                        >
+                        <strong class="ms-2">{{ durationLabel(selectedPlan.noticeDays, 'day') }}</strong>
                       </div>
                     </div>
                   </div>
@@ -1684,21 +1476,23 @@
                 aria-label="Configuration change steps"
                 i18n-aria-label="@@featureSubscriptions-configChangeStepsAria"
               >
-                <ol class="order-stepper__steps px-3">
-                  @for (step of getConfigChangeWizardSteps(); track step.id; let stepIndex = $index) {
-                    <li class="order-stepper__step">
-                      <span
-                        class="order-stepper__step-button"
-                        [class.order-stepper__step-button--active]="isConfigChangeStepActive(stepIndex)"
-                        [class.order-stepper__step-button--complete]="isConfigChangeStepComplete(stepIndex)"
-                        [attr.aria-current]="isConfigChangeStepActive(stepIndex) ? 'step' : null"
-                      >
-                        <span class="order-stepper__step-indicator">{{ stepIndex + 1 }}</span>
-                        <span class="order-stepper__step-label">{{ step.label }}</span>
-                      </span>
-                    </li>
-                  }
-                </ol>
+                <fpc-step-strip>
+                  <ol class="order-stepper__steps px-3" fpcStepStrip>
+                    @for (step of getConfigChangeWizardSteps(); track step.id; let stepIndex = $index) {
+                      <li class="order-stepper__step">
+                        <span
+                          class="order-stepper__step-button"
+                          [class.order-stepper__step-button--active]="isConfigChangeStepActive(stepIndex)"
+                          [class.order-stepper__step-button--complete]="isConfigChangeStepComplete(stepIndex)"
+                          [attr.aria-current]="isConfigChangeStepActive(stepIndex) ? 'step' : null"
+                        >
+                          <span class="order-stepper__step-indicator">{{ stepIndex + 1 }}</span>
+                          <span class="order-stepper__step-label">{{ step.label }}</span>
+                        </span>
+                      </li>
+                    }
+                  </ol>
+                </fpc-step-strip>
               </nav>
 
               @switch (getActiveConfigChangeStepId()) {
@@ -1759,11 +1553,11 @@
                       @if (configChangeAddonsLoading) {
                         <div class="text-body-secondary small d-flex align-items-center gap-2">
                           <fpc-spinner size="sm" />
-                          <span i18n="@@featureSubscriptions-loadingAddons">Loading addons...</span>
+                          <span i18n="@@featureSubscriptions-loadingAddons">Loading add-ons...</span>
                         </div>
                       } @else if (configChangeAddonOptions().length > 0) {
                         <fieldset class="border rounded bg-body p-3">
-                          <legend class="fs-6 mb-2" i18n="@@featureSubscriptions-addons">Addons</legend>
+                          <legend class="fs-6 mb-2" i18n="@@featureSubscriptions-addons">Add-ons</legend>
                           @for (addon of configChangeAddonOptions(); track addon.id) {
                             <div class="mb-3">
                               <fpc-form-check
@@ -1822,7 +1616,7 @@
                                   class="text-body-secondary small mb-0 mt-2 ms-4"
                                   i18n="@@featureSubscriptions-configChangeAddonConfigLocked"
                                 >
-                                  The configuration of this addon is locked and cannot be changed here.
+                                  The configuration of this add-on is locked and cannot be changed here.
                                 </p>
                               }
                               @if (showConfigChangeAddonFields(addon)) {
@@ -1858,7 +1652,7 @@
                         </fieldset>
                       } @else {
                         <div class="text-body-secondary small" i18n="@@featureSubscriptions-configChangeNoAddons">
-                          No addons are available for this plan.
+                          No add-ons are available for this plan.
                         </div>
                       }
                     </div>
@@ -2145,6 +1939,91 @@
   }
 </fpc-confirm-dialog>
 
+<!-- Loadweaver cluster: data-safe cancel / withdraw confirm -->
+<fpc-modal
+  [(open)]="loadweaverTeardownModalOpen"
+  size="lg"
+  [closable]="(subscriptionsCanceling$ | async) !== true && (subscriptionsWithdrawing$ | async) !== true"
+  [closeOnBackdrop]="false"
+  [closeOnEscape]="(subscriptionsCanceling$ | async) !== true && (subscriptionsWithdrawing$ | async) !== true"
+  i18n-title="@@featureSubscriptions-loadweaverTeardownTitle"
+  title="Delete the Loadweaver cluster?"
+>
+  @if (subscriptionsError$ | async; as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <fpc-alert
+    variant="danger"
+    i18n-heading="@@featureSubscriptions-loadweaverTeardownHeading"
+    heading="All cluster data on this server will be deleted"
+  >
+    @if (loadweaverTeardownAction() === 'withdraw') {
+      <span i18n="@@featureSubscriptions-loadweaverTeardownWithdraw">
+        Withdrawing ends the subscription immediately. The server with the control plane and console, its addresses and
+        DNS records are deleted right away, together with every volume, backup and secret stored on it.
+      </span>
+    } @else {
+      <span i18n="@@featureSubscriptions-loadweaverTeardownCancel">
+        The cluster keeps running until the end of the period and for a short grace period afterwards (not billed). Then
+        the server with the control plane and console, its addresses and DNS records are deleted, together with every
+        volume, backup and secret stored on it.
+      </span>
+    }
+  </fpc-alert>
+  <p class="small mb-2" i18n="@@featureSubscriptions-loadweaverTeardownStepsIntro">
+    Before you continue, in the Loadweaver console:
+  </p>
+  <ol class="small mb-3 ps-3">
+    <li i18n="@@featureSubscriptions-loadweaverTeardownStep1">
+      Run a final platform backup and copy it to your external target (Backups, Platform).
+    </li>
+    <li i18n="@@featureSubscriptions-loadweaverTeardownStep2">
+      Save the recovery kit and the disaster-recovery info file: without them the backups cannot be restored.
+    </li>
+    <li i18n="@@featureSubscriptions-loadweaverTeardownStep3">
+      Drain and remove, or keep, the nodes in your own provider accounts. They are not deleted here.
+    </li>
+  </ol>
+  <fpc-form-check
+    checkId="loadweaverTeardownConfirm"
+    [checked]="loadweaverTeardownConfirmed()"
+    (checkedChange)="loadweaverTeardownConfirmed.set($event)"
+  >
+    <label
+      class="form-check-label"
+      for="loadweaverTeardownConfirm"
+      i18n="@@featureSubscriptions-loadweaverTeardownCheckbox"
+    >
+      I have saved what I need. I understand that the cluster data on this server is deleted and cannot be recovered by
+      the provider.
+    </label>
+  </fpc-form-check>
+  <div *fpcModalFooter>
+    <fpc-button-group>
+      <fpc-button
+        variant="secondary"
+        [disabled]="(subscriptionsCanceling$ | async) === true || (subscriptionsWithdrawing$ | async) === true"
+        (clicked)="loadweaverTeardownModalOpen.set(false)"
+        i18n="@@featureSubscriptions-loadweaverTeardownKeep"
+      >
+        Keep the cluster
+      </fpc-button>
+      <fpc-button
+        variant="danger"
+        [disabled]="!loadweaverTeardownConfirmed()"
+        [loading]="(subscriptionsCanceling$ | async) === true || (subscriptionsWithdrawing$ | async) === true"
+        (clicked)="confirmLoadweaverTeardown()"
+      >
+        @if (loadweaverTeardownAction() === 'withdraw') {
+          <span i18n="@@featureSubscriptions-loadweaverTeardownConfirmWithdraw">Withdraw and delete</span>
+        } @else {
+          <span i18n="@@featureSubscriptions-loadweaverTeardownConfirmCancel">Cancel and delete</span>
+        }
+      </fpc-button>
+    </fpc-button-group>
+  </div>
+</fpc-modal>
+
 <!-- Resume subscription confirm -->
 <fpc-confirm-dialog
   [(open)]="resumeConfirmModalOpen"
@@ -2181,6 +2060,9 @@
   [closeOnEscape]="(customerProfileUpdating$ | async) !== true"
   i18n-title="@@featureSubscriptions-editProfileTitle"
   title="Edit customer profile"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+  [cancelDisabled]="!((customerProfileUpdating$ | async) !== true)"
 >
   <form (ngSubmit)="onSubmitProfile()">
     @if (customerProfileError$ | async; as err) {
@@ -2343,6 +2225,7 @@
             [(ngModel)]="profileForm.country"
             [disabled]="(customerProfileUpdating$ | async) === true"
           >
+            <option value="" i18n="@@featureBilling-selectCountry">Select country</option>
             @for (c of countryOptions; track c.code) {
               <option [value]="c.code">{{ c.name }}</option>
             }
@@ -2430,7 +2313,7 @@
         </div>
       }
     }
-    <div *fpcModalFooter>
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
       <fpc-button
         variant="primary"
         type="submit"

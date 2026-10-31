@@ -1,7 +1,39 @@
 <div class="meters-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="meters-bulk-result"
+    />
+  }
+
+  <!-- One data list: State · Meter · facts; ⋮ Edit / Delete / Copy ID; bulk Activate / Deactivate / Delete. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="meters()"
+    paging="client"
+    persistKey="decabill-meters"
+    [(query)]="searchQuery"
+    [searchPlaceholder]="searchPlaceholder"
+    [loading]="(loading$ | async) === true"
+    [error]="(error$ | async) ?? null"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    (rowActivate)="openEditModal($event)"
+    emptyIcon="speedometer2"
+    data-testid="meters-list"
+  >
     <fpc-button
-      fpcPageHeaderActions
+      fpcDataTableToolbar
       variant="primary"
       size="sm"
       iconOnly
@@ -12,113 +44,70 @@
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
     </fpc-button>
-  </fpc-page-header>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!selectedMeters().some((meter) => !meter.isActive)"
+      (clicked)="setActiveSelected(true)"
+      data-testid="meters-bulk-activate"
+      iconOnly
+      [ariaLabel]="activateLabel"
+      [title]="activateLabel"
+    >
+      <i class="bi bi-toggle-on" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!selectedMeters().some((meter) => meter.isActive)"
+      (clicked)="setActiveSelected(false)"
+      data-testid="meters-bulk-deactivate"
+      iconOnly
+      [ariaLabel]="deactivateLabel"
+      [title]="deactivateLabel"
+    >
+      <i class="bi bi-toggle-off" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="selectedMeters().length === 0"
+      (clicked)="confirmBulkDelete.set(true)"
+      data-testid="meters-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
 
-  <fpc-search-field
-    class="border-bottom"
-    name="search"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchPlaceholder"
-    [(value)]="searchQuery"
-  />
-  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @if (loading$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" i18n-label="@@featureMeters-loading" label="Loading..." />
-      </div>
-    } @else {
-      @if (error$ | async; as error) {
-        <fpc-alert class="m-3" variant="danger" [message]="error" />
-      }
-      @if (meters$ | async; as meters) {
-        @if (meters.length === 0) {
-          @if (searchQuery().trim()) {
-            <fpc-empty-state icon="search" message="No search results" i18n-message="@@featureMeters-noSearchResults" />
-          } @else {
-            <fpc-empty-state message="No meters yet" i18n-message="@@featureMeters-empty" />
-          }
-        } @else {
-          <fpc-list [flush]="true">
-            @for (meter of meters; track meter.id) {
-              <fpc-list-item>
-                <div fpcListItemTitle class="fw-semibold">{{ meter.name }}</div>
-                <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                    <span class="me-2" [ngClass]="activeStatusTextClass(meter.isActive)">
-                      @if (meter.isActive) {
-                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                      } @else {
-                        <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
-                      }
-                      {{ activeStatusLabel(meter.isActive) }}
-                    </span>
-                    <span class="me-2"> <i class="bi bi-key me-1" aria-hidden="true"></i>{{ meter.key }} </span>
-                    <span class="me-2">
-                      <i class="bi bi-bar-chart me-1" aria-hidden="true"></i>{{ aggregatorLabel(meter.aggregator) }}
-                    </span>
-                    @if (meter.unitLabel) {
-                      <span class="me-2">
-                        <i class="bi bi-rulers me-1" aria-hidden="true"></i>{{ meter.unitLabel }}
-                      </span>
-                    }
-                    <span class="me-2">
-                      <i class="bi bi-cash-stack me-1" aria-hidden="true"></i
-                      >{{ formatUnitPrice(meter.defaultUnitPriceNet) }}
-                    </span>
-                    @if (meter.defaultIncludedUsage > 0) {
-                      <span class="me-2">
-                        <i class="bi bi-gift me-1" aria-hidden="true"></i>{{ meter.defaultIncludedUsage }}
-                        @if (meter.unitLabel) {
-                          <span>{{ meter.unitLabel }}</span>
-                        }
-                      </span>
-                    }
-                  </div>
-                </div>
-                <fpc-button-group
-                  fpcListItemActions
-                  size="sm"
-                  ariaLabel="Meter actions"
-                  i18n-ariaLabel="@@featureMeters-actionsAria"
-                >
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="warning"
-                    (clicked)="openEditModal(meter)"
-                    [disabled]="(loadingAny$ | async) === true"
-                    title="Edit meter"
-                    i18n-title="@@featureMeters-edit"
-                    ariaLabel="Edit meter"
-                    i18n-ariaLabel="@@featureMeters-edit"
-                  >
-                    <i class="bi bi-pencil" aria-hidden="true"></i>
-                  </fpc-button>
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="danger"
-                    (clicked)="openDeleteConfirm(meter)"
-                    [disabled]="(loadingAny$ | async) === true"
-                    title="Delete meter"
-                    i18n-title="@@featureMeters-delete"
-                    ariaLabel="Delete meter"
-                    i18n-ariaLabel="@@featureMeters-delete"
-                  >
-                    <i class="bi bi-trash" aria-hidden="true"></i>
-                  </fpc-button>
-                </fpc-button-group>
-              </fpc-list-item>
-            }
-          </fpc-list>
-        }
-      }
-    }
-  </div>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state icon="speedometer2" size="sm" message="No meters yet" i18n-message="@@featureMeters-empty" />
+    </span>
+  </fpc-data-table>
 </div>
 
-<fpc-modal [(open)]="createModalOpen" size="lg" i18n-title="@@featureMeters-createTitle" title="Create meter">
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDelete"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelected()"
+/>
+
+<fpc-modal
+  [(open)]="createModalOpen"
+  size="lg"
+  i18n-title="@@featureMeters-createTitle"
+  title="Create meter"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <form (ngSubmit)="onSubmitCreate()">
     <ng-container
       *ngTemplateOutlet="meterForm; context: { form: createForm, prefix: 'create', disabled: (creating$ | async) }"
@@ -131,14 +120,21 @@
   </form>
 </fpc-modal>
 
-<fpc-modal [(open)]="editModalOpen" size="lg" i18n-title="@@featureMeters-editTitle" title="Edit meter">
+<fpc-modal
+  [(open)]="editModalOpen"
+  size="lg"
+  i18n-title="@@featureMeters-editTitle"
+  title="Edit meter"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <form (ngSubmit)="onSubmitEdit()">
     <ng-container
       *ngTemplateOutlet="meterForm; context: { form: editForm, prefix: 'edit', disabled: (updating$ | async) }"
     ></ng-container>
     <div *fpcModalFooter class="d-flex justify-content-end gap-2">
       <fpc-button variant="primary" type="submit" [disabled]="(updating$ | async) === true">
-        <span i18n="@@featureMeters-save">Save</span>
+        <span i18n="@@featureMeters-save">Save changes</span>
       </fpc-button>
     </div>
   </form>

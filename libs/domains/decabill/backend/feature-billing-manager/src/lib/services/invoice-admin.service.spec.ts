@@ -7,6 +7,7 @@ import { InvoiceAdminService } from './invoice-admin.service';
 describe('InvoiceAdminService', () => {
   const invoicesRepository = {
     findAllOpenOverdue: jest.fn(),
+    findAllForAdmin: jest.fn(),
     findByIdOrThrow: jest.fn(),
     update: jest.fn(),
   };
@@ -14,12 +15,14 @@ describe('InvoiceAdminService', () => {
   const auditLog = { log: jest.fn() };
   const usersRepository = { findByIdForTenant: jest.fn() };
   const customerTrustScoreService = { triggerRecomputeForUser: jest.fn() };
+  const customerProfilesRepository = { findByUserIds: jest.fn() };
   const service = new InvoiceAdminService(
     invoicesRepository as never,
     invoiceService as never,
     auditLog as never,
     usersRepository as never,
     customerTrustScoreService as never,
+    customerProfilesRepository as never,
   );
   const baseInvoice = {
     id: 'inv-1',
@@ -43,6 +46,25 @@ describe('InvoiceAdminService', () => {
       canPreview: true,
     });
     usersRepository.findByIdForTenant.mockResolvedValue({ email: 'user@example.com' });
+  });
+
+  it('listInvoices adds the billing-profile name next to the email (DB-18)', async () => {
+    invoicesRepository.findAllForAdmin.mockResolvedValue({
+      items: [baseInvoice, { ...baseInvoice, id: 'inv-2', userId: 'user-2' }],
+      total: 2,
+    });
+    customerProfilesRepository.findByUserIds.mockResolvedValue([
+      { userId: 'user-1', company: 'Fischer GmbH', firstName: 'Anna', lastName: 'Fischer' },
+    ]);
+
+    const result = await service.listInvoices({ limit: 25, offset: 0 });
+
+    expect(customerProfilesRepository.findByUserIds).toHaveBeenCalledWith(['user-1', 'user-2']);
+    expect(result.items[0]).toEqual(
+      expect.objectContaining({ userId: 'user-1', userEmail: 'user@example.com', customerName: 'Fischer GmbH' }),
+    );
+    expect(result.items[1].customerName).toBeUndefined();
+    expect(result.total).toBe(2);
   });
 
   it('markPaidManual updates status and logs audit', async () => {

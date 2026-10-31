@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 export type FpcSectionColumnVariant = 'default' | 'marketing' | 'form';
 
@@ -15,7 +15,9 @@ export type FpcSectionColumnVariant = 'default' | 'marketing' | 'form';
     '[class.section__column--scroll]': 'scroll()',
     '[class.section__column--marketing]': 'variant() === "marketing"',
     '[class.section__column--form]': 'variant() === "form"',
-    '[style.flex]': 'grow() === null ? null : grow()',
+    // A style map, not `[style.flex]`: a null `flex` binding removes the shorthand and with it a consumer's own
+    // `[style.flex-basis]` (the knowledge tree's resizable sidebar collapsed to 1 px).
+    '[style]': 'growStyle()',
   },
   template: `
     @if (title()) {
@@ -34,4 +36,10 @@ export class FpcSectionColumnComponent {
   readonly title = input<string | null>(null);
   /** Raw `flex` shorthand override, for example `0 0 320px` for a fixed sidebar column. */
   readonly grow = input<string | null>(null);
+
+  protected readonly growStyle = computed(() => {
+    const grow = this.grow();
+
+    return grow === null ? null : { flex: grow };
+  });
 }

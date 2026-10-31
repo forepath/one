@@ -15,6 +15,7 @@ import {
   signal,
   untracked,
   ViewChild,
+  LOCALE_ID,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -90,6 +91,7 @@ import {
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
+  FpcDataTableComponent,
   FpcDropdownComponent,
   FpcDropdownItemComponent,
   FpcEmptyStateComponent,
@@ -98,9 +100,7 @@ import {
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcFormSwitchComponent,
-  FpcInfiniteScrollDirective,
   FpcInputGroupComponent,
-  FpcListAppendFooterComponent,
   FpcListComponent,
   FpcListItemComponent,
   FpcModalComponent,
@@ -108,12 +108,20 @@ import {
   FpcNotificationIndicatorComponent,
   FpcPageHeaderComponent,
   FpcProgressComponent,
-  FpcSearchFieldComponent,
   FpcSpinnerComponent,
+  FpcTableCellDirective,
   FpcTypeaheadSelectComponent,
+  FPC_DEFAULT_PAGE_SIZE,
+  fpcCopyText,
   type FpcBadgeColor,
+  type FpcBadgeTone,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  type FpcTableState,
   type FpcProgressSegment,
   type FpcProgressVariant,
+  FpcDatePipe,
+  fpcFormatDateTime,
 } from '@forepath/shared/frontend/ui-components';
 import {
   catchError,
@@ -137,10 +145,12 @@ import {
   withLatestFrom,
 } from 'rxjs';
 
+import { deploymentStateLabel, deploymentTableState } from '../deployment-manager/deployment-labels';
 import { DeploymentManagerComponent } from '../deployment-manager/deployment-manager.component';
 import { resolveNamedDisplayLabel } from '../display-name.util';
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
+import { WorkspaceUserSelectComponent } from '../workspace-user-select/workspace-user-select.component';
 import {
   getGitRepositoryDisplayLabel,
   isLocalGitRepository as isLocalGitRepositoryMode,
@@ -186,6 +196,7 @@ import {
   ticketAutomationRunStatusLabel as ticketAutomationRunStatusLabelFn,
 } from '../tickets/ticket-automation-run-labels';
 import { ticketLaneStatusLabel } from '../tickets/ticket-lane-status-label';
+import { AG_DL_DELETE, agCopyIdItem, agOpenItem } from '../shared/data-list';
 import { VirtualDesktopComponent } from '../virtual-desktop/virtual-desktop.component';
 
 import {
@@ -249,6 +260,21 @@ type ChatMessageWithFilter = {
 
 type SlashCommandInputTarget = 'chat' | 'planRefine';
 
+/** Latest deployment run of an environment as a readable icon badge (rail table). */
+interface ChatDeploymentStatus {
+  status: string;
+  tone: FpcBadgeTone;
+  badgeIcon: string;
+}
+
+/** Row of the environments rail table: a listed environment or a create still provisioning. */
+interface ChatEnvironmentRailRow {
+  id: string;
+  name: string;
+  agent: AgentResponseDto | null;
+  pending: EnvironmentProgress | null;
+}
+
 /** Segment colors of the stacked workspace provisioning bar (cycled per environment). */
 const WORKSPACE_PROGRESS_SEGMENT_VARIANTS: FpcProgressVariant[] = [
   'primary',
@@ -261,6 +287,8 @@ const WORKSPACE_PROGRESS_SEGMENT_VARIANTS: FpcProgressVariant[] = [
 @Component({
   selector: 'framework-agent-console-chat',
   imports: [
+    WorkspaceUserSelectComponent,
+    FpcDatePipe,
     CommonModule,
     RouterModule,
     FormsModule,
@@ -276,6 +304,7 @@ const WORKSPACE_PROGRESS_SEGMENT_VARIANTS: FpcProgressVariant[] = [
     FpcButtonComponent,
     FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
+    FpcDataTableComponent,
     FpcDropdownComponent,
     FpcDropdownItemComponent,
     FpcEmptyStateComponent,
@@ -284,9 +313,7 @@ const WORKSPACE_PROGRESS_SEGMENT_VARIANTS: FpcProgressVariant[] = [
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormSwitchComponent,
-    FpcInfiniteScrollDirective,
     FpcInputGroupComponent,
-    FpcListAppendFooterComponent,
     FpcListComponent,
     FpcListItemComponent,
     FpcModalComponent,
@@ -294,8 +321,8 @@ const WORKSPACE_PROGRESS_SEGMENT_VARIANTS: FpcProgressVariant[] = [
     FpcNotificationIndicatorComponent,
     FpcPageHeaderComponent,
     FpcProgressComponent,
-    FpcSearchFieldComponent,
     FpcSpinnerComponent,
+    FpcTableCellDirective,
     FpcTypeaheadSelectComponent,
   ],
   styleUrls: ['./chat.component.scss'],
@@ -316,6 +343,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly describeAgentTaskSchedule = describeAgentTaskScheduleFn;
   readonly openAgentTaskFromChatButtonLabel = $localize`:@@featureChat-openAgentTaskFromRunCard:View task`;
   private readonly handoffNavigation = inject(AgentChatHandoffNavigationService);
+  private readonly locale = inject(LOCALE_ID);
   /** Parsed handoff cards per message text (the thread re-renders often). */
   private readonly handoffCardCache = new Map<string, AgentChatHandoffCardView | null>();
   readonly isolationLevels = ISOLATION_LEVELS_STRONGEST_FIRST;
@@ -335,8 +363,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly chatPlanEmptyMarkdown = $localize`:@@featureChat-planEmptyMarkdown:Plan content will appear here as the agent explores...`;
   readonly workspacesHeaderTitle = $localize`:@@featureChat-workspaces:Workspaces`;
   readonly environmentsHeaderTitle = $localize`:@@featureChat-environments:Environments`;
-  readonly addWorkspaceTitle = $localize`:@@featureChat-addWorkspaceTitle:Add Workspace`;
-  readonly addEnvironmentTitle = $localize`:@@featureChat-addEnvironmentTitle:Add Environment`;
+  readonly addWorkspaceTitle = $localize`:@@featureChat-addWorkspaceTitle:Create workspace`;
+  readonly addEnvironmentTitle = $localize`:@@featureChat-addEnvironmentTitle:Create environment`;
   readonly backToWorkspacesTitle = $localize`:@@featureChat-backToWorkspaces:Back to workspaces`;
   readonly searchWorkspacesPlaceholder = $localize`:@@featureChat-searchWorkspacesPlaceholder:Search workspaces`;
   readonly searchEnvironmentsPlaceholder = $localize`:@@featureChat-searchEnvironmentsPlaceholder:Search environments`;
@@ -400,10 +428,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   // Cache for deployment status observables (key: `${clientId}:${agentId}`)
-  private readonly deploymentStatusCache = new Map<
-    string,
-    Observable<{ status: string; icon: string; color: string } | null>
-  >();
+  private readonly deploymentStatusCache = new Map<string, Observable<ChatDeploymentStatus | null>>();
 
   // Search state
   readonly searchClientQuery = signal<string>('');
@@ -1016,6 +1041,376 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly activeClientSignal = toSignal(this.activeClient$, {
     initialValue: null as ClientResponseDto | null,
   });
+
+  // ---- Workspace / environment rails as tables (3.38 decision 7) ----
+  // The clients / agents stores are append-style (batches via "load more"); the rails page over them and load
+  // further batches until the current page (+ one row for "has next") is filled.
+
+  readonly workspaceRailPage = signal(1);
+  readonly workspaceRailPageSize = signal(FPC_DEFAULT_PAGE_SIZE);
+  readonly environmentRailPage = signal(1);
+  readonly environmentRailPageSize = signal(FPC_DEFAULT_PAGE_SIZE);
+
+  private readonly railClients = toSignal(this.clients$, { initialValue: [] as ClientResponseDto[] });
+  private readonly railClientsLoading = toSignal(this.clientsLoading$, { initialValue: false });
+  private readonly railClientsError = toSignal(this.clientsError$, { initialValue: null as string | null });
+  private readonly railClientsHasMore = toSignal(this.clientsHasMore$, { initialValue: false });
+  private readonly railClientsAppendLoading = toSignal(this.clientsAppendLoading$, { initialValue: false });
+  private readonly railClientsAppendError = toSignal(this.clientsAppendError$, { initialValue: null as string | null });
+  private readonly railWorkspaceErrors = toSignal(this.workspaceConnectionErrors$, {
+    initialValue: {} as Record<string, string>,
+  });
+  private readonly railWorkspaceProgress = toSignal(this.workspaceProgressBars$, {
+    initialValue: {} as Record<
+      string,
+      { average: number; count: number; segments: FpcProgressSegment[]; label: string }
+    >,
+  });
+
+  private readonly railAgents = toSignal(this.agents$, { initialValue: [] as AgentResponseDto[] });
+  private readonly railAgentsLoading = toSignal(this.agentsLoading$, { initialValue: false });
+  private readonly railAgentsHasMore = toSignal(this.agentsHasMore$, { initialValue: false });
+  private readonly railAgentsAppendLoading = toSignal(this.agentsAppendLoading$, { initialValue: false });
+  private readonly railAgentsAppendError = toSignal(this.agentsAppendError$, { initialValue: null as string | null });
+  private readonly railPendingEnvironments = toSignal(this.pendingEnvironmentProgress$, {
+    initialValue: [] as EnvironmentProgress[],
+  });
+  private readonly railEnvironmentProgress = toSignal(this.environmentProgressByAgentId$, {
+    initialValue: {} as Record<string, EnvironmentProgress>,
+  });
+
+  readonly activeClientIdForRail = computed(() => this.activeClientIdSignal());
+
+  readonly workspaceRailRows = computed(() => {
+    const size = this.workspaceRailPageSize();
+    const start = (this.workspaceRailPage() - 1) * size;
+
+    return this.railClients().slice(start, start + size);
+  });
+  readonly workspaceRailHasNext = computed(
+    () =>
+      this.railClients().length > this.workspaceRailPage() * this.workspaceRailPageSize() || this.railClientsHasMore(),
+  );
+  readonly workspaceRailLoading = computed(
+    () => this.railClientsLoading() || (this.railClientsAppendLoading() && this.workspaceRailRows().length === 0),
+  );
+  readonly workspaceRailError = computed(() => this.railClientsError() ?? this.railClientsAppendError());
+
+  readonly environmentRailRows = computed((): ChatEnvironmentRailRow[] => {
+    const page = this.environmentRailPage();
+    const size = this.environmentRailPageSize();
+    const start = (page - 1) * size;
+    const pending: ChatEnvironmentRailRow[] =
+      page === 1
+        ? this.railPendingEnvironments().map((progress) => ({
+            id: `pending:${progress.operationId}`,
+            name: progress.agentName,
+            agent: null,
+            pending: progress,
+          }))
+        : [];
+
+    return [
+      ...pending,
+      ...this.railAgents()
+        .slice(start, start + size)
+        .map((agent) => ({ id: agent.id, name: agent.name, agent, pending: null })),
+    ];
+  });
+  readonly environmentRailHasNext = computed(
+    () =>
+      this.railAgents().length > this.environmentRailPage() * this.environmentRailPageSize() ||
+      this.railAgentsHasMore(),
+  );
+  readonly environmentRailLoading = computed(
+    () => this.railAgentsLoading() || (this.railAgentsAppendLoading() && this.environmentRailRows().length === 0),
+  );
+  readonly environmentRailError = computed(() => this.railAgentsAppendError());
+
+  private readonly railCurrentWorkspaceLabel = $localize`:@@featureAgentConsoleWorkspaceSwitch-current:Current workspace`;
+  private readonly railAvailableLabel = $localize`:@@featureAgentConsoleWorkspaceSwitch-other:Available`;
+  private readonly railCurrentEnvironmentLabel = $localize`:@@featureChat-railCurrentEnvironment:Current environment`;
+  private readonly railUnreachableLabel = $localize`:@@featureChat-workspaceUnreachable:Workspace cannot be reached`;
+
+  readonly workspaceColumns: FpcTableColumn<ClientResponseDto>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureChat-railColState:State`,
+      type: 'state',
+      state: (client) => this.workspaceRailState(client),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureChat-railColWorkspace:Workspace`,
+      value: (client) => client.name,
+      required: true,
+      priority: 1,
+      sortable: false,
+    },
+    {
+      // Technical value: secondary (wide tables only), not the second most prominent column (AG-17).
+      id: 'host',
+      label: $localize`:@@featureChat-railColHost:Host`,
+      value: (client) => this.getHostname(client.endpoint),
+      priority: 3,
+      sortable: false,
+    },
+    {
+      // Mostly empty: off by default, available in the column chooser (AG-17).
+      id: 'repository',
+      label: $localize`:@@featureChat-railColRepository:Repository`,
+      value: (client) => this.getClientGitRepositoryLabel(client) ?? '',
+      priority: 3,
+      hidden: true,
+      sortable: false,
+    },
+    {
+      id: 'provider',
+      label: $localize`:@@featureChat-railColProvider:Provider`,
+      priority: 3,
+      hidden: true,
+    },
+    {
+      id: 'isolation',
+      label: $localize`:@@featureChat-railColIsolation:Isolation`,
+      value: (client) => this.workspaceIsolationIndicatorLabel(client) ?? '',
+      priority: 3,
+      hidden: true,
+      sortable: false,
+    },
+    {
+      id: 'description',
+      label: $localize`:@@featureChat-railColDescription:Description`,
+      value: (client) => client.description ?? '',
+      priority: 3,
+      hidden: true,
+      sortable: false,
+    },
+  ];
+
+  readonly environmentColumns: FpcTableColumn<ChatEnvironmentRailRow>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureChat-railColState:State`,
+      type: 'state',
+      state: (row) => this.environmentRailState(row),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureChat-railColEnvironment:Environment`,
+      value: (row) => row.name,
+      required: true,
+      priority: 1,
+      sortable: false,
+    },
+    {
+      id: 'deployment',
+      label: $localize`:@@featureChat-railColDeployment:Deployment`,
+      priority: 1,
+      width: '6rem',
+    },
+    {
+      id: 'container',
+      label: $localize`:@@featureChat-railColContainer:Container`,
+      value: (row) => (row.agent ? this.getContainerTypeDisplayName(row.agent.containerType) : ''),
+      priority: 2,
+      sortable: false,
+    },
+    {
+      id: 'isolation',
+      label: $localize`:@@featureChat-railColIsolation:Isolation`,
+      value: (row) => (row.agent ? this.isolationLevelLabel(this.environmentIsolationLevel(row.agent)) : ''),
+      priority: 3,
+      sortable: false,
+    },
+    {
+      id: 'repository',
+      label: $localize`:@@featureChat-railColRepository:Repository`,
+      value: (row) => (row.agent ? (this.getAgentGitRepositoryLabel(row.agent, this.activeClientSignal()) ?? '') : ''),
+      priority: 3,
+      hidden: true,
+      sortable: false,
+    },
+    {
+      id: 'description',
+      label: $localize`:@@featureChat-railColDescription:Description`,
+      value: (row) => row.agent?.description ?? '',
+      priority: 3,
+      hidden: true,
+      sortable: false,
+    },
+  ];
+
+  readonly workspaceRowMenu = (client: ClientResponseDto): FpcMenuItem[] => {
+    const items: FpcMenuItem[] = [agOpenItem(), { id: 'users', label: this.railManageUsersLabel, icon: 'people' }];
+
+    if (client.canManageWorkspaceConfiguration) {
+      items.push(
+        { id: 'workspace-config', label: this.railWorkspaceConfigLabel, icon: 'sliders' },
+        { id: 'agent-config', label: this.railAgentConfigLabel, icon: 'cpu' },
+        { id: 'edit', label: this.railEditWorkspaceLabel, icon: 'pencil' },
+      );
+    }
+
+    items.push(agCopyIdItem());
+
+    if (client.canManageWorkspaceConfiguration) {
+      items.push({ id: 'delete', label: AG_DL_DELETE, icon: 'trash', danger: true, dividerBefore: true });
+    }
+
+    return items;
+  };
+
+  readonly environmentRowMenu = (row: ChatEnvironmentRailRow): FpcMenuItem[] => {
+    if (!row.agent) {
+      return [];
+    }
+
+    const items: FpcMenuItem[] = [agOpenItem()];
+
+    if (this.activeClientSignal()?.canManageWorkspaceConfiguration) {
+      items.push(
+        { id: 'autonomy', label: this.railAutonomyLabel, icon: 'lightning-charge' },
+        { id: 'env-vars', label: this.railEnvVarsLabel, icon: 'sliders' },
+        { id: 'agent-config', label: this.railAgentConfigLabel, icon: 'cpu' },
+        { id: 'edit', label: this.railEditEnvironmentLabel, icon: 'pencil' },
+        agCopyIdItem(),
+        { id: 'delete', label: AG_DL_DELETE, icon: 'trash', danger: true, dividerBefore: true },
+      );
+    } else {
+      items.push(agCopyIdItem());
+    }
+
+    return items;
+  };
+
+  private readonly railManageUsersLabel = $localize`:@@featureChat-manageClientUsersTitle:Manage workspace users`;
+  private readonly railWorkspaceConfigLabel = $localize`:@@featureChat-manageWorkspaceConfigurationTitle:Manage workspace configuration`;
+  private readonly railAgentConfigLabel = $localize`:@@featureChat-manageOpencodeConfigTitle:Manage agent configuration`;
+  private readonly railEditWorkspaceLabel = $localize`:@@featureChat-editWorkspaceTitle:Edit workspace`;
+  private readonly railAutonomyLabel = $localize`:@@featureChat-ticketAutonomyButtonTitle:Prototype autonomy`;
+  private readonly railEnvVarsLabel = $localize`:@@featureChat-manageEnvVarsTitle:Manage Environment Variables`;
+  private readonly railEditEnvironmentLabel = $localize`:@@featureChat-editEnvironmentTitle:Edit environment`;
+
+  workspaceProgressFor(clientId: string) {
+    return this.railWorkspaceProgress()[clientId] ?? null;
+  }
+
+  environmentRowProgress(row: ChatEnvironmentRailRow): EnvironmentProgress | null {
+    return row.pending ?? (row.agent ? (this.railEnvironmentProgress()[row.agent.id] ?? null) : null);
+  }
+
+  private workspaceRailState(client: ClientResponseDto): FpcTableState {
+    const error = this.railWorkspaceErrors()[client.id];
+
+    if (error) {
+      return { label: `${this.railUnreachableLabel}: ${error}`, tone: 'danger', icon: 'exclamation-triangle-fill' };
+    }
+
+    const progress = this.railWorkspaceProgress()[client.id];
+
+    if (progress) {
+      return { label: `${progress.label} (${progress.average}%)`, tone: 'info', icon: 'arrow-repeat' };
+    }
+
+    return client.id === this.activeClientIdSignal()
+      ? { label: this.railCurrentWorkspaceLabel, tone: 'primary', icon: 'check2-circle', severity: 50 }
+      : { label: this.railAvailableLabel, tone: 'neutral', icon: 'building', severity: 60 };
+  }
+
+  private environmentRailState(row: ChatEnvironmentRailRow): FpcTableState {
+    const progress = this.environmentRowProgress(row);
+
+    if (progress) {
+      return {
+        label: `${this.environmentProgressOperationLabel(progress)}: ${this.environmentProgressStepLabel(progress.step)} (${Math.round(progress.progress)}%)`,
+        tone: 'info',
+        icon: 'hourglass-split',
+      };
+    }
+
+    return row.id === this.selectedAgentId()
+      ? { label: this.railCurrentEnvironmentLabel, tone: 'primary', icon: 'check2-circle', severity: 50 }
+      : { label: this.railAvailableLabel, tone: 'neutral', icon: 'box', severity: 60 };
+  }
+
+  onWorkspaceRowActivate(client: ClientResponseDto): void {
+    this.onClientSelect(client.id);
+  }
+
+  onEnvironmentRowActivate(row: ChatEnvironmentRailRow): void {
+    if (row.agent) {
+      this.onAgentSelect(row.agent.id);
+    }
+  }
+
+  onWorkspaceRowAction(client: ClientResponseDto, action: string): void {
+    switch (action) {
+      case 'open':
+        if (this.activeClientId !== client.id) {
+          this.onClientSelect(client.id);
+        }
+
+        break;
+      case 'users':
+        this.onManageClientUsersClick(client);
+        break;
+      case 'workspace-config':
+        this.onManageWorkspaceConfigurationClick(client);
+        break;
+      case 'agent-config':
+        this.onManageOpencodeConfigClick(client);
+        break;
+      case 'edit':
+        this.onEditClientClick(client);
+        break;
+      case 'copy-id':
+        fpcCopyText(client.id);
+        break;
+      case 'delete':
+        this.onDeleteClientClick(client.id, client.name);
+        break;
+    }
+  }
+
+  onEnvironmentRowAction(row: ChatEnvironmentRailRow, action: string): void {
+    const agent = row.agent;
+    const client = this.activeClientSignal();
+
+    if (!agent) {
+      return;
+    }
+
+    switch (action) {
+      case 'open':
+        if (this.selectedAgentId() !== agent.id) {
+          this.onAgentSelect(agent.id);
+        }
+
+        break;
+      case 'autonomy':
+        this.onManageTicketAutonomyClick(agent);
+        break;
+      case 'env-vars':
+        this.onManageEnvironmentVariablesClick(agent);
+        break;
+      case 'agent-config':
+        if (client) {
+          this.onManageOpencodeConfigClick(client, agent.id);
+        }
+
+        break;
+      case 'edit':
+        this.onEditAgentClick(agent);
+        break;
+      case 'copy-id':
+        fpcCopyText(agent.id);
+        break;
+      case 'delete':
+        this.onDeleteAgentClick(agent.id, agent.name);
+        break;
+    }
+  }
 
   /**
    * Isolation selection of the Add Environment modal: explicit radio choice (`null` = follow the host
@@ -1686,6 +2081,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   });
 
   readonly managingClientUsersClientId$ = toObservable(this.managingClientUsersClientId);
+  /**
+   * Global admins (user directory access) pick the user from a typeahead; everyone else types the email
+   * (2026-10-29). A 401 / 403 from the directory falls back to the email field with a hint.
+   */
+  readonly canSearchUserDirectory = toSignal(this.authFacade.canAccessUserManager$, { initialValue: false });
+  readonly userDirectoryDenied = signal(false);
   readonly clientUsers$: Observable<ClientUserResponseDto[]> = this.managingClientUsersClientId$.pipe(
     switchMap((clientId) => {
       if (!clientId) {
@@ -1780,6 +2181,39 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   constructor() {
+    // Rail tables: load further batches of the append-style stores until the current page (+1 row) is filled.
+    effect(() => {
+      const needed = this.workspaceRailPage() * this.workspaceRailPageSize() + 1;
+
+      if (
+        this.railClients().length < needed &&
+        this.railClientsHasMore() &&
+        !this.railClientsLoading() &&
+        !this.railClientsAppendLoading() &&
+        !this.railClientsAppendError()
+      ) {
+        untracked(() => this.onLoadMoreClients());
+      }
+    });
+    effect(() => {
+      const needed = this.environmentRailPage() * this.environmentRailPageSize() + 1;
+
+      if (
+        this.railAgents().length < needed &&
+        this.railAgentsHasMore() &&
+        !this.railAgentsLoading() &&
+        !this.railAgentsAppendLoading() &&
+        !this.railAgentsAppendError()
+      ) {
+        untracked(() => this.onLoadMoreAgents());
+      }
+    });
+    // A different workspace starts its environments rail on the first page.
+    effect(() => {
+      this.activeClientIdSignal();
+      untracked(() => this.environmentRailPage.set(1));
+    });
+
     // Pin the displayed capability revision; a change after an explicit choice requires a new selection.
     effect(() => {
       const isolation = this.activeClientSignal()?.isolation;
@@ -5397,7 +5831,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       case 'gitPrivateKey':
         return $localize`:@@featureChat-workspaceSettingTitleGitPrivateKey:Git private key (SSH)`;
       case 'agentDefaultImage':
-        return $localize`:@@featureChat-workspaceSettingTitleAgentImage:Agent default image`;
+        return $localize`:@@featureChat-workspaceSettingTitleAgentImage:Environment default image`;
       case 'autoEnrichEnabledGlobal':
         return $localize`:@@featureChat-workspaceSettingTitleAutoEnrichGlobal:Prompt auto-enrichment (workspace)`;
       case 'autoEnrichVectorMaxCosineDistance':
@@ -5555,8 +5989,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     });
   }
 
+  /** Chat-card timestamps: the shared date-time format, never seconds (AG-20, X-04). */
   formatTimestamp(timestamp: number): string {
-    return new Date(timestamp).toLocaleString();
+    return fpcFormatDateTime(timestamp, this.locale);
   }
 
   openTicketAutomationRunFromChat(payload: TicketAutomationRunChatEventPayload): void {
@@ -5587,7 +6022,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   handoffCardHeading(card: AgentChatHandoffCardView): string {
-    const agentName = card.agentName || $localize`:@@featureChat-handoffUnknownAgent:another agent`;
+    const agentName = card.agentName || $localize`:@@featureChat-handoffUnknownAgent:another environment`;
 
     return card.kind === 'request'
       ? $localize`:@@featureChat-handoffRequestHeading:Task handed over by ${agentName}:agentName:`
@@ -5782,10 +6217,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     return this.statsFacade.getContainerRunningStatus$(clientId, agentId);
   }
 
-  getAgentDeploymentStatus$(
-    clientId: string,
-    agentId: string,
-  ): Observable<{ status: string; icon: string; color: string } | null> {
+  getAgentDeploymentStatus$(clientId: string, agentId: string): Observable<ChatDeploymentStatus | null> {
     const cacheKey = `${clientId}:${agentId}`;
     // Return cached observable if it exists
     const cached = this.deploymentStatusCache.get(cacheKey);
@@ -5803,7 +6235,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
         // Get the latest run (limit=1, sorted by createdAt desc on backend)
         return this.deploymentsService.listRuns(clientId, agentId, 1, 0).pipe(
-          map((runs): { status: string; icon: string; color: string } | null => {
+          map((runs): ChatDeploymentStatus | null => {
             if (!runs || runs.length === 0) {
               return null;
             }
@@ -5829,30 +6261,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    * @param run - The deployment run
    * @returns Status info with icon, color, and status text
    */
-  private getDeploymentStatusInfo(run: DeploymentRun): { status: string; icon: string; color: string } {
-    // Use conclusion if available (completed runs), otherwise use status (in-progress runs)
-    const statusOrConclusion = run.conclusion || run.status;
+  private getDeploymentStatusInfo(run: DeploymentRun): ChatDeploymentStatus {
+    // Readable status of the latest run (conclusion when completed, status otherwise), shared with the runs table.
+    const state = deploymentTableState(run);
 
-    switch (statusOrConclusion) {
-      case 'success':
-        return { status: 'Successful', icon: 'bi-check', color: 'bg-success' };
-      case 'failure':
-        return { status: 'Failed', icon: 'bi-x', color: 'bg-danger' };
-      case 'cancelled':
-        return { status: 'Cancelled', icon: 'bi-x', color: 'bg-warning' };
-      case 'skipped':
-        return { status: 'Skipped', icon: 'bi-skip-forward', color: 'bg-secondary' };
-      case 'in_progress':
-      case 'running':
-        return { status: 'Running', icon: 'bi-play', color: 'bg-primary' };
-      case 'queued':
-        return { status: 'Queued', icon: 'bi-clock-history', color: 'bg-info' };
-      case 'completed':
-        // If status is completed but no conclusion, treat as success
-        return { status: 'Successful', icon: 'bi-check', color: 'bg-success' };
-      default:
-        return { status: statusOrConclusion || 'Unknown', icon: 'bi-question', color: 'bg-secondary' };
-    }
+    return {
+      status: deploymentStateLabel(run.conclusion || run.status) || state.label,
+      tone: state.tone,
+      badgeIcon: state.icon ?? 'question-circle',
+    };
   }
 
   onClientGitSetupModeChange(mode: 'clone' | 'empty'): void {

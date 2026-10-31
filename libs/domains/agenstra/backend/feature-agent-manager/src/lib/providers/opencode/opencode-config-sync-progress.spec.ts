@@ -6,7 +6,7 @@ import { AGENSTRA_TICKET_AUTOMATION_SKILL_ABS_DIR } from '@forepath/agenstra/sha
 import type { EnvironmentProgressDto } from '../../dto/environment-progress.dto';
 import type { AgentsRepository } from '../../repositories/agents.repository';
 import type { AgentRuntimeRefreshService } from '../../services/agent-runtime-refresh.service';
-import type { DockerService } from '../../services/docker.service';
+import type { AgentRuntime } from '../../runtime/agent-runtime';
 import { EnvironmentProgressService } from '../../services/environment-progress.service';
 
 import type { OpenCodeClientFactory } from './opencode-client.factory';
@@ -72,7 +72,7 @@ describe('OpenCodeConfigSyncService environment progress', () => {
     service = new OpenCodeConfigSyncService(
       agentsRepository as unknown as AgentsRepository,
       clientFactory as unknown as OpenCodeClientFactory,
-      dockerService as unknown as DockerService,
+      dockerService as unknown as AgentRuntime,
       progressService,
       runtimeRefresh as unknown as AgentRuntimeRefreshService,
     );

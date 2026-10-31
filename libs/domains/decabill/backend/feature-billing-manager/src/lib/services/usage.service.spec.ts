@@ -7,6 +7,7 @@ describe('UsageService', () => {
     findLatestForSubscription: jest.fn(),
     create: jest.fn(),
     findMeteredForSubscription: jest.fn(),
+    findMeteredForSubscriptionPage: jest.fn(),
     findByIdForSubscriptionOrThrow: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
@@ -179,5 +180,76 @@ describe('UsageService', () => {
     ).rejects.toThrow(BadRequestException);
 
     expect(usageRecordsRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('keeps the idempotency key when an admin replaces the usage payload of a meter entry', async () => {
+    subscriptionsRepository.findByIdOrThrow.mockResolvedValue({ id: 'sub-1', planId: 'plan-1' });
+    servicePlansRepository.findByIdOrThrow.mockResolvedValue({ id: 'plan-1', billInAdvance: false });
+    servicePlanMetersRepository.findByPlanAndMeter.mockResolvedValue({ id: 'link-1' });
+    usageRecordsRepository.findByIdForSubscriptionOrThrow.mockResolvedValue({
+      id: 'usage-3',
+      subscriptionId: 'sub-1',
+      meterId: 'meter-1',
+      attachmentType: 'plan',
+      addonId: null,
+      value: '4',
+      periodStart: new Date('2026-01-01T00:00:00Z'),
+      periodEnd: new Date('2026-01-01T01:00:00Z'),
+      usagePayload: { idempotencyKey: 'lw:cluster:project:2026-01-01T00', source: 'loadweaver' },
+    });
+    usageRecordsRepository.update.mockImplementation(async (entity: object, dto: object) => ({ ...entity, ...dto }));
+
+    await service.updateMeterEntry('sub-1', 'usage-3', {
+      value: 3,
+      usagePayload: { note: 'corrected', idempotencyKey: 'tampered' },
+    } as never);
+
+    expect(usageRecordsRepository.update).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        value: '3',
+        usagePayload: { note: 'corrected', idempotencyKey: 'lw:cluster:project:2026-01-01T00' },
+      }),
+    );
+
+    usageRecordsRepository.update.mockClear();
+    await service.updateMeterEntry('sub-1', 'usage-3', { value: 2 } as never);
+
+    expect(usageRecordsRepository.update).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        usagePayload: { idempotencyKey: 'lw:cluster:project:2026-01-01T00', source: 'loadweaver' },
+      }),
+    );
+  });
+
+  it('lists one page of meter entries with the total', async () => {
+    usageRecordsRepository.findMeteredForSubscriptionPage.mockResolvedValue({
+      items: [
+        {
+          id: 'usage-1',
+          subscriptionId: 'sub-1',
+          meterId: 'meter-1',
+          value: 3,
+          attachmentType: 'plan',
+          addonId: null,
+          periodStart: new Date('2026-01-01'),
+          periodEnd: new Date('2026-01-31'),
+          usageSource: 'admin',
+          usagePayload: {},
+          createdAt: new Date('2026-01-02'),
+        },
+      ],
+      total: 26,
+    });
+
+    const result = await service.listMeterEntries('sub-1', 25, 25);
+
+    expect(usageRecordsRepository.findMeteredForSubscriptionPage).toHaveBeenCalledWith('sub-1', 25, 25);
+    expect(result.total).toBe(26);
+    expect(result.limit).toBe(25);
+    expect(result.offset).toBe(25);
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toEqual(expect.objectContaining({ id: 'usage-1', meterId: 'meter-1', value: 3 }));
   });
 });

@@ -1,22 +1,13 @@
 <div class="offers-container border-top d-flex flex-column flex-grow-1 min-h-0">
   <fpc-page-header [title]="pageTitle" />
 
-  <fpc-tab-group
-    class="d-md-none flex-shrink-0"
-    [activeId]="mobilePanel()"
-    (activeIdChange)="onMobilePanelTabChange($event)"
-  >
-    <fpc-tab id="pending" [label]="mobilePanelLabel('pending')" />
-    <fpc-tab id="history" [label]="mobilePanelLabel('history')" />
-  </fpc-tab-group>
-
-  <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
+  <div class="flex-grow-1 d-flex flex-column min-h-0 w-100 h-100 overflow-hidden">
     @if (offersError$ | async; as err) {
       <fpc-alert [flush]="true" variant="danger" [message]="err" />
     }
 
     <fpc-summary-bar [columns]="4">
-      <fpc-summary-card [label]="pendingCountLabel">
+      <fpc-summary-card icon="hourglass-split" [label]="pendingCountLabel">
         <span fpcSummaryCardValue>
           @if (offersSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -27,7 +18,7 @@
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="actionRequiredCountLabel">
+      <fpc-summary-card icon="exclamation-circle" [label]="actionRequiredCountLabel">
         <span fpcSummaryCardValue>
           @if (offersSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -38,7 +29,7 @@
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="acceptedCountLabel">
+      <fpc-summary-card icon="check2-circle" [label]="acceptedCountLabel">
         <span fpcSummaryCardValue>
           @if (offersSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -49,7 +40,7 @@
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="historyCountLabel">
+      <fpc-summary-card icon="clock-history" [label]="historyCountLabel">
         <span fpcSummaryCardValue>
           @if (offersSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -62,155 +53,123 @@
       </fpc-summary-card>
     </fpc-summary-bar>
 
-    <div class="section__row flex-grow-1 min-h-0">
-      <div
-        class="section__column section__column--pending d-md-flex flex-column min-h-0 border-end"
-        [class.d-none]="mobilePanel() !== 'pending'"
-      >
-        <fpc-board-lane class="h-100">
-          <fpc-lane-header fpcBoardLaneHeader flush>
-            <span fpcLaneHeaderTitle i18n="@@featureOffers-pendingList">Pending offers</span>
-          </fpc-lane-header>
-          <fpc-search-field
-            fpcBoardLaneSearch
-            inputId="pendingOffersSearchInput"
-            name="pendingOffersSearch"
-            [bordered]="false"
-            i18n-placeholder="@@featureOffers-searchPending"
-            placeholder="Search pending offers"
-            i18n-ariaLabel="@@featureOffers-searchPending"
-            ariaLabel="Search pending offers"
-            [(value)]="pendingSearch"
-          />
-          @if (pendingListLoading$ | async) {
-            <div class="d-flex justify-content-center align-items-center p-4">
-              <fpc-spinner
-                variant="primary"
-                i18n-label="@@featureOffers-loadingPending"
-                label="Loading pending offers..."
-              />
-            </div>
-          } @else {
-            @if (pendingListError$ | async; as listErr) {
-              <fpc-alert class="m-3" variant="warning" [message]="listErr" />
-            }
-            @if (pendingList().length === 0) {
-              @if (pendingSearch().trim()) {
-                <fpc-empty-state
-                  size="sm"
-                  icon="search"
-                  message="No search results"
-                  i18n-message="@@featureOffers-noSearchResults"
-                />
-              } @else {
-                <fpc-empty-state size="sm" message="No pending offers yet" i18n-message="@@featureOffers-noPending" />
-              }
-            } @else {
-              <fpc-list [flush]="true">
-                @for (offer of pendingList(); track offer.id) {
-                  <ng-container *ngTemplateOutlet="offerListItem; context: { $implicit: offer }"></ng-container>
-                }
-              </fpc-list>
-            }
-          }
-        </fpc-board-lane>
-      </div>
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="offers-bulk-result"
+      />
+    }
 
-      <div
-        class="section__column section__column--history d-md-flex flex-column min-h-0"
-        [class.d-none]="mobilePanel() !== 'history'"
-      >
-        <fpc-board-lane class="h-100">
-          <fpc-lane-header fpcBoardLaneHeader flush>
-            <span fpcLaneHeaderTitle i18n="@@featureOffers-historyList">Offer history</span>
-          </fpc-lane-header>
-          <fpc-search-field
-            fpcBoardLaneSearch
-            inputId="historyOffersSearchInput"
-            name="historyOffersSearch"
-            [bordered]="false"
-            i18n-placeholder="@@featureOffers-searchHistory"
-            placeholder="Search offer history"
-            i18n-ariaLabel="@@featureOffers-searchHistory"
-            ariaLabel="Search offer history"
-            [(value)]="historySearch"
-          />
-          @if (historyListLoading$ | async) {
-            <div class="d-flex justify-content-center align-items-center p-4">
-              <fpc-spinner
-                variant="primary"
-                i18n-label="@@featureOffers-loadingHistory"
-                label="Loading offer history..."
-              />
-            </div>
-          } @else {
-            @if (historyListError$ | async; as listErr) {
-              <fpc-alert class="m-3" variant="warning" [message]="listErr" />
-            }
-            @if (historyList().length === 0) {
-              @if (historySearch().trim()) {
-                <fpc-empty-state
-                  size="sm"
-                  icon="search"
-                  message="No search results"
-                  i18n-message="@@featureOffers-noSearchResults"
-                />
-              } @else {
-                <fpc-empty-state size="sm" message="No offer history yet" i18n-message="@@featureOffers-noHistory" />
-              }
-            } @else {
-              <fpc-list [flush]="true">
-                @for (offer of historyList(); track offer.id) {
-                  <ng-container *ngTemplateOutlet="offerListItem; context: { $implicit: offer }"></ng-container>
-                }
-              </fpc-list>
-            }
-          }
-        </fpc-board-lane>
-      </div>
-    </div>
+    <fpc-tab-group class="flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="onTabChange($event)">
+      <fpc-tab id="pending" [label]="tabLabel('pending')" />
+      <fpc-tab id="history" [label]="tabLabel('history')" />
+    </fpc-tab-group>
+
+    <!-- One table per tab: State · Offer number · total · expiry; ⋮ Preview / Download PDF; bulk Download PDFs. -->
+    @switch (activeTab()) {
+      @case ('pending') {
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="tabLabel('pending')"
+          [columns]="columns"
+          [rows]="pendingList()"
+          paging="server"
+          [total]="pendingTotal()"
+          [(page)]="pendingPaging.page"
+          [(pageSize)]="pendingPaging.pageSize"
+          persistKey="decabill-offers-pending"
+          [(query)]="pendingPaging.search"
+          [searchPlaceholder]="searchPendingPlaceholder"
+          [loading]="(pendingListLoading$ | async) === true"
+          [error]="(pendingListError$ | async) ?? null"
+          selectable
+          [(selected)]="selected"
+          [rowMenu]="rowMenu"
+          (rowAction)="onRowAction($event.row, $event.item.id)"
+          (rowActivate)="openPreview($event)"
+          emptyIcon="file-earmark-text"
+          data-testid="offers-pending-list"
+        >
+          <fpc-button
+            fpcDataTableBatch
+            variant="secondary"
+            size="sm"
+            [disabled]="selectedOffers().length === 0"
+            (clicked)="downloadSelected()"
+            data-testid="offers-bulk-download"
+            iconOnly
+            [ariaLabel]="downloadPdfsLabel"
+            [title]="downloadPdfsLabel"
+          >
+            <i class="bi bi-download" aria-hidden="true"></i>
+          </fpc-button>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="file-earmark-text"
+              size="sm"
+              message="No pending offers yet"
+              i18n-message="@@featureOffers-noPending"
+            />
+          </span>
+          <ng-template fpcTableCell="total" let-row>{{ offerTotal(row) }}</ng-template>
+          <ng-template fpcTableCell="expires" let-row>{{ formatDate(offerExpiresAt(row)) }}</ng-template>
+        </fpc-data-table>
+      }
+      @case ('history') {
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="tabLabel('history')"
+          [columns]="columns"
+          [rows]="historyList()"
+          paging="server"
+          [total]="historyTotal()"
+          [(page)]="historyPaging.page"
+          [(pageSize)]="historyPaging.pageSize"
+          persistKey="decabill-offers-history"
+          [(query)]="historyPaging.search"
+          [searchPlaceholder]="searchHistoryPlaceholder"
+          [loading]="(historyListLoading$ | async) === true"
+          [error]="(historyListError$ | async) ?? null"
+          selectable
+          [(selected)]="selected"
+          [rowMenu]="rowMenu"
+          (rowAction)="onRowAction($event.row, $event.item.id)"
+          (rowActivate)="openPreview($event)"
+          emptyIcon="clock-history"
+          data-testid="offers-history-list"
+        >
+          <fpc-button
+            fpcDataTableBatch
+            variant="secondary"
+            size="sm"
+            [disabled]="selectedOffers().length === 0"
+            (clicked)="downloadSelected()"
+            data-testid="offers-bulk-download"
+            iconOnly
+            [ariaLabel]="downloadPdfsLabel"
+            [title]="downloadPdfsLabel"
+          >
+            <i class="bi bi-download" aria-hidden="true"></i>
+          </fpc-button>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="clock-history"
+              size="sm"
+              message="No offer history yet"
+              i18n-message="@@featureOffers-noHistory"
+            />
+          </span>
+          <ng-template fpcTableCell="total" let-row>{{ offerTotal(row) }}</ng-template>
+          <ng-template fpcTableCell="expires" let-row>{{ formatDate(offerExpiresAt(row)) }}</ng-template>
+        </fpc-data-table>
+      }
+    }
   </div>
 </div>
-
-<ng-template #offerListItem let-offer>
-  <fpc-list-item>
-    <div fpcListItemTitle class="fw-semibold">{{ offerDisplayTitle(offer) }}</div>
-    <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-      <fpc-badge variant="info" color="secondary" class="me-2" [ngClass]="offerStatusBadgeClass(offer.status)">
-        {{ offerStatusLabel(offer.status) }}
-      </fpc-badge>
-      <span class="me-2">
-        <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ offer.totalGross | number: '1.2-2' }}
-        {{ offer.currency }}
-      </span>
-      <span class="me-2">
-        <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(offer.expiresAt) }}
-      </span>
-    </div>
-    <fpc-button-group fpcListItemActions size="sm">
-      <fpc-button
-        iconOnly
-        size="sm"
-        variant="dark"
-        (clicked)="openPreview(offer)"
-        title="Preview offer"
-        i18n-title="@@featureOffers-previewButtonTitle"
-      >
-        <i class="bi bi-eye" aria-hidden="true"></i>
-      </fpc-button>
-      <fpc-button
-        iconOnly
-        size="sm"
-        variant="dark"
-        (clicked)="downloadOfferPdf(offer)"
-        title="Download PDF"
-        i18n-title="@@featureOffers-downloadButtonTitle"
-      >
-        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
-      </fpc-button>
-    </fpc-button-group>
-  </fpc-list-item>
-</ng-template>
 
 <fpc-modal
   class="offer-preview-modal"
@@ -228,12 +187,12 @@
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
       <div>
         <div class="fw-semibold">{{ offerDisplayTitle(detail) }}</div>
-        <fpc-badge variant="info" color="secondary" [ngClass]="offerStatusBadgeClass(detail.status)">
+        <fpc-badge [tone]="offerStatusBadgeTone(detail.status)">
           {{ offerStatusLabel(detail.status) }}
         </fpc-badge>
       </div>
       <div class="text-end">
-        <div class="fw-bold">{{ detail.totalGross | number: '1.2-2' }} {{ detail.currency }}</div>
+        <div class="fw-bold">{{ detail.totalGross | fpcMoney: detail.currency }}</div>
         <div class="small text-body-secondary" i18n="@@featureOffers-expiresAt">
           Expires {{ formatDate(detail.expiresAt) }}
         </div>
@@ -253,7 +212,7 @@
             <tr>
               <td class="text-break">{{ line.description }}</td>
               <td class="text-end">{{ line.quantity }}</td>
-              <td class="text-end">{{ line.lineGross | number: '1.2-2' }}</td>
+              <td class="text-end">{{ line.lineGross | fpcMoney: detail.currency }}</td>
             </tr>
           }
         </tbody>

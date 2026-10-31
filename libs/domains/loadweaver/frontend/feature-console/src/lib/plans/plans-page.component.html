@@ -1,0 +1,164 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="plans" [binding]="views" />
+    <fpc-badge fpcPageHeaderActions [color]="live() ? 'success' : 'secondary'" size="sm" data-testid="plans-live">
+      @if (live()) {
+        <span i18n="@@lwConsolePlans-live">Live</span>
+      } @else {
+        <span i18n="@@lwConsolePlans-offline">Not live</span>
+      }
+    </fpc-badge>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="plans-bulk-result"
+    />
+  }
+
+  <!-- One data list (3.38 D1): State · Plan (link) · facts; ⋮ row actions; bulk Discard on selection. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="title"
+    [columns]="columns"
+    [rows]="visible()"
+    [rowLink]="planLink"
+    [activeRowId]="openId()"
+    paging="client"
+    persistKey="lw-plans"
+    [(query)]="search"
+    [searchPlaceholder]="searchLabel"
+    showFilterButton
+    [(filtersOpen)]="filtersOpen"
+    [filtersActive]="filterState.activeCount()"
+    (filtersApplied)="filterState.apply()"
+    (filtersCleared)="filterState.clear()"
+    [loading]="loading()"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    emptyIcon="file-diff"
+    data-testid="plans-list"
+  >
+    <fpc-form-field fpcDataTableFilters forId="lw-plans-status" [label]="statusFilterLabel">
+      <fpc-form-control
+        controlType="select"
+        controlId="lw-plans-status"
+        size="sm"
+        [ngModel]="filterState.draft().status"
+        (ngModelChange)="filterState.patch({ status: $event })"
+      >
+        <option value="" i18n="@@lwConsolePlans-allStatuses">All statuses</option>
+        @for (s of statuses; track s) {
+          <option [value]="s">{{ statusLabel(s) }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+    @if (projects().length > 0) {
+      <fpc-form-field fpcDataTableFilters forId="lw-plans-project" [label]="projectFilterLabel">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-plans-project"
+          size="sm"
+          [ngModel]="filterState.draft().project"
+          (ngModelChange)="filterState.patch({ project: $event })"
+        >
+          <option value="" i18n="@@lwConsolePlans-allProjects">All projects</option>
+          @for (p of projects(); track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    }
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="!canDiscardSelection()"
+      [title]="discardHint"
+      (clicked)="confirmDiscard.set(true)"
+      data-testid="plans-bulk-discard"
+      iconOnly
+      [ariaLabel]="discardLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
+
+    <span fpcDataTableEmpty>
+      <fpc-empty-state icon="file-diff" size="sm" i18n-title="@@lwConsolePlans-empty" title="No plans" />
+    </span>
+
+    <!-- Plan: the touched resources, plus a meta line in the rail's stacked cards (LW-07 round 2): action · n changes
+         · author · exact time; wide tables show those as columns and hide the line. -->
+    <ng-template fpcTableCell="summary" let-row>
+      <span class="d-block text-truncate">{{ summary(row) }}</span>
+      <span class="lw-plan-meta small text-body-secondary text-truncate" data-testid="plan-meta">{{
+        metaOf(row)
+      }}</span>
+    </ng-template>
+    <!-- Relative in the feed ("2 hr. ago", LW-07); the exact time in the tooltip. -->
+    <ng-template fpcTableCell="created" let-row
+      ><span class="text-nowrap" [title]="row.createdAt | fpcDate: 'datetime'">{{
+        row.createdAt | fpcDate: 'relative'
+      }}</span></ng-template
+    >
+    <ng-template fpcTableCell="source" let-row>
+      @if (row.source) {
+        <loadweaver-plan-source [plan]="row" [compact]="true" />
+      }
+      @if (row.resolves) {
+        <fpc-badge class="ms-2" tone="info" icon="bandaid" [iconOnly]="true" [label]="fixForwardLabel" />
+      }
+    </ng-template>
+    <ng-template fpcTableCell="projects" let-row>
+      @for (p of projectsOf(row); track p) {
+        <fpc-badge color="light" size="sm" class="me-1">{{ p }}</fpc-badge>
+      }
+    </ng-template>
+    <ng-template fpcTableCell="progress" let-row>
+      @if (row.progress && (row.status === 'applying' || row.status === 'rolling-back')) {
+        <span class="d-flex align-items-center gap-2">
+          <fpc-progress
+            class="flex-grow-1"
+            [value]="row.progress.percent"
+            [variant]="row.progress.phase === 'rollback' ? 'warning' : 'primary'"
+            [striped]="true"
+            [animated]="true"
+            height="0.5rem"
+          />
+          <span>{{ row.progress.percent }} %</span>
+        </span>
+      }
+    </ng-template>
+  </fpc-data-table>
+</div>
+
+<fpc-confirm-dialog
+  [(open)]="confirmDiscard"
+  [title]="discardConfirmTitle"
+  [message]="discardConfirmMessage()"
+  [confirmLabel]="discardLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="discardSelected()"
+/>

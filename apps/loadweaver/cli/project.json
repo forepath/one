@@ -1,0 +1,86 @@
+{
+  "name": "loadweaver-cli",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/loadweaver/cli/src",
+  "projectType": "application",
+  "tags": ["domain:loadweaver", "type:app", "scope:cli"],
+  "targets": {
+    "copy-workspace-modules": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": ["{workspaceRoot}/dist/apps/loadweaver/cli/workspace_modules"],
+      "executor": "@nx/js:copy-workspace-modules",
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "prune": {
+      "dependsOn": ["build", "copy-workspace-modules"],
+      "executor": "nx:noop"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "loadweaver-cli:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "loadweaver-cli:build:development"
+        },
+        "production": {
+          "buildTarget": "loadweaver-cli:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/loadweaver/cli/jest.config.cts",
+        "passWithNoTests": true
+      }
+    },
+    "sea": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "commands": [
+          "npx nx run loadweaver-cli:build:sea --skip-nx-cache",
+          "node apps/loadweaver/backend-node-agent/scripts/build-sea.mjs --bundle dist/apps/loadweaver/cli/main.js --out dist/apps/loadweaver/cli/sea --name loadweaver"
+        ],
+        "parallel": false
+      }
+    },
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/loadweaver/cli",
+        "main": "apps/loadweaver/cli/src/main.ts",
+        "tsConfig": "apps/loadweaver/cli/tsconfig.app.json",
+        "assets": [],
+        "webpackConfig": "apps/loadweaver/cli/webpack.config.cjs",
+        "generatePackageJson": true
+      },
+      "configurations": {
+        "development": {
+          "outputHashing": "none"
+        },
+        "production": {},
+        "sea": {
+          "externalDependencies": "none",
+          "generatePackageJson": false,
+          "outputHashing": "none",
+          "sourceMap": false
+        }
+      }
+    }
+  }
+}

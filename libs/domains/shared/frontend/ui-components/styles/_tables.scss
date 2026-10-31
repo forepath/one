@@ -1,0 +1,296 @@
+// Uniform table head cells for every Bootstrap `.table` (plain console tables and `fpc-data-table`):
+// one font size / weight / colour / line height, no wrapping, tertiary background (also on sticky
+// heads, which read `--bs-table-bg`). Zero specificity (`:where`) so a component that really needs a
+// different head still wins; marketing tables (landing pricing / comparison matrix) opt out with
+// `.fpc-table--plain-head`. Cell padding stays Bootstrap's (`.table` / `.table-sm` / compact density).
+:where(.table:not(.fpc-table--plain-head)) > thead {
+  --bs-table-bg: var(--fpc-table-head-bg, var(--bs-tertiary-bg));
+}
+
+// Cell padding: one uniform value on all four sides for every body / foot cell (head: horizontal only), per global
+// density (0.5rem in both normal and `body.fpc-density-compact`, since 2026-10-29), the same for
+// plain tables (with or without `table-sm`) and `fpc-data-table`. Needs real specificity to beat
+// Bootstrap's / `table-sm`'s `.table > :not(caption) > * > *`. Edge insets (e.g. `fpc-panel flush`
+// first / last column) still apply on top.
+:root {
+  // The one horizontal edge inset (lane / panel headers, toolbar strips, list items, first / last table cells).
+  --fpc-edge-inset: 1rem;
+  --fpc-table-head-padding-y: 0.5rem;
+  --fpc-table-cell-padding-y: 0.5rem;
+  --fpc-table-cell-padding-x: 0.5rem;
+}
+
+// Compact density keeps the roomier cell padding too (user, 2026-10-29): the unstacked rows get the same 0.5rem as the
+// stacked cards, so a table reads the same when it narrows into cards; still dense enough.
+body.fpc-density-compact {
+  --fpc-table-cell-padding-y: 0.5rem;
+  --fpc-table-cell-padding-x: 0.5rem;
+}
+
+// Uniform body row height (user, 2026-10-28): every row is at least as tall as a row with an icon-only state badge,
+// state column or not. The badge is the square `fpc-badge iconOnly` (glyph at `--bs-badge-font-size` + 2 × 0.25rem
+// padding + 2 borders = 1.25rem + 2px); a row is the taller of one text line (`1lh`, resolved per cell) and that
+// square, plus the cell's block padding. Table cells treat `height` as a minimum, so wrapping content still grows.
+// Follows density (padding) and the badge / font tokens; no px constant.
+:root {
+  --fpc-badge-square: calc(var(--bs-badge-font-size, 0.75rem) + 0.5rem + 2 * var(--bs-border-width, 1px));
+}
+
+// Not for structural rows: virtual-scroll spacers (`.fpc-data-table__pad`) and expanded detail rows.
+.table:not(.fpc-table--plain-head) > tbody > tr:not(.fpc-data-table__pad, .fpc-data-table__detail) > :is(td, th) {
+  height: calc(max(1lh, var(--fpc-badge-square)) + 2 * var(--fpc-table-cell-padding-y));
+}
+
+.table:not(.fpc-table--plain-head) > :not(caption) > * > * {
+  padding: var(--fpc-table-cell-padding-y) var(--fpc-table-cell-padding-x);
+}
+
+// Inline chips in body cells never grow the row (round 2, 2026-10-29: rows with a text badge were 45 px, rows with a
+// monospace badge / code chip 42–43 px, plain rows 39 px). Text badges (`fpc-badge` info, Bootstrap `.badge`) and
+// `code` take compact metrics (line-height 1, small block padding), so the chip is no taller than the badge square and
+// sits inside the text line box; a small negative block margin keeps its border off the line-box height. Icon-only
+// squares already fit (`--fpc-badge-square`). Wrapping cells and stacked cards are unaffected (they grow with text).
+.table:not(.fpc-table--plain-head) > tbody > tr > td {
+  fpc-badge.fpc-badge--info:not(.fpc-badge--icon-only),
+  .badge {
+    line-height: 1 !important;
+    padding-block: 0.25rem;
+    margin-block: -0.125rem;
+    vertical-align: middle;
+  }
+
+  code {
+    line-height: 1;
+    padding-block: 0;
+    vertical-align: baseline;
+  }
+}
+
+// Head cells keep the roomier vertical padding in both densities; horizontal follows the mode.
+.table:not(.fpc-table--plain-head) > thead > tr > * {
+  padding: var(--fpc-table-head-padding-y) var(--fpc-table-cell-padding-x);
+}
+
+// One left edge per column (1 rem, like headers and list items): the first / last cells of
+// `fpc-data-table` and of plain tables sitting directly in a lane body (with or without a
+// `.table-responsive` wrapper). `fpc-panel flush` does the same for panel tables; `.fpc-table--inset`
+// opts in any other edge-to-edge table (e.g. one table per `fpc-list-header` group inside a lane).
+.fpc-data-table__table,
+.fpc-board-lane__body > .table,
+.fpc-board-lane__body > .table-responsive > .table,
+.table.fpc-table--inset {
+  > :not(caption) > tr > :first-child {
+    padding-left: var(--fpc-edge-inset, 1rem);
+  }
+
+  > :not(caption) > tr > :last-child {
+    padding-right: var(--fpc-edge-inset, 1rem);
+  }
+}
+
+:where(.table:not(.fpc-table--plain-head) > thead > tr) > th {
+  font-size: var(--fpc-table-head-font-size, 0.875rem);
+  font-weight: var(--fpc-table-head-font-weight, 600);
+  line-height: var(--fpc-table-head-line-height, 1.25rem);
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+// Sort control inside a head cell (`fpc-data-table`, or any plain table: `<th aria-sort="…"><button
+// class="fpc-table__sort">Label <i class="fpc-table__sort-icon bi …"></i></button></th>`). The button
+// inherits the cell's look completely; only the indicator differs. Its space is always reserved
+// (no column shift); it shows on hover / keyboard focus and stays while the column is sorted.
+.fpc-table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--bs-border-radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: inherit;
+  text-transform: inherit;
+  white-space: inherit;
+  vertical-align: top;
+  cursor: pointer;
+
+  &:focus {
+    outline: 0;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-focus-ring-color, var(--bs-primary));
+    outline-offset: 2px;
+  }
+}
+
+// End-aligned columns: the label stays flush with the cell edge (like the values below it).
+th.text-end > .fpc-table__sort {
+  flex-direction: row-reverse;
+}
+
+.fpc-table__sort-icon {
+  flex: none;
+  width: 1em;
+  box-sizing: content-box;
+  font-size: 0.75em;
+  line-height: 1;
+  padding-inline: 0.5em;
+  margin-inline-start: calc(0.125rem - 0.5em);
+  opacity: 0;
+  color: var(--bs-secondary-color);
+  transition: opacity 0.15s ease-in-out;
+
+  .fpc-table__sort:hover > &,
+  .fpc-table__sort:focus-visible > & {
+    opacity: 1;
+  }
+
+  th[aria-sort='ascending'] &,
+  th[aria-sort='descending'] & {
+    opacity: 1;
+    color: inherit;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+// Sticky table head / foot for plain Bootstrap `.table`s inside a scroll container (lane / panel
+// body, `.overflow-auto` wrapper). The scroll container must be the table's parent area, not the
+// page. Cells get an opaque background (striped / hover / dark mode keep their tint through
+// Bootstrap's `--bs-table-bg-state` / `--bs-table-bg-type` box-shadow layer) and keep their edge via
+// an inset shadow (borders of sticky cells scroll away with `border-collapse`). Layer:
+// `--fpc-z-sticky-local` so dropdowns, popovers and modals stay above.
+.fpc-table--sticky-head > thead > tr > *,
+.fpc-table--sticky-foot > tfoot > tr > * {
+  position: sticky;
+  z-index: var(--fpc-z-sticky-local, 2);
+  background-color: var(--bs-table-bg, var(--bs-body-bg));
+}
+
+.fpc-table--sticky-head > thead > tr > * {
+  top: 0;
+  box-shadow:
+    inset 0 calc(-1 * var(--bs-border-width)) 0 var(--bs-border-color),
+    inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg, transparent)));
+}
+
+.fpc-table--sticky-foot > tfoot > tr > * {
+  bottom: 0;
+  box-shadow:
+    inset 0 var(--bs-border-width) 0 var(--bs-border-color),
+    inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg, transparent)));
+}
+
+// A table head row that is already tinted (e.g. `table-light`) keeps its variant background.
+.fpc-table--sticky-head > thead.table-light > tr > *,
+.fpc-table--sticky-head > thead > tr.table-light > * {
+  background-color: var(--bs-table-bg);
+}
+
+// Wide comparisons: the first column stays readable while the table scrolls sideways.
+.fpc-table--sticky-first > :not(caption) > tr > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: var(--fpc-z-raised, 1);
+  background-color: var(--bs-table-bg, var(--bs-body-bg));
+  box-shadow:
+    inset calc(-1 * var(--bs-border-width)) 0 0 var(--bs-border-color),
+    inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg, transparent)));
+}
+
+// The head / foot corner cell sits above both the sticky column and the sticky rows.
+.fpc-table--sticky-first.fpc-table--sticky-head > thead > tr > :first-child,
+.fpc-table--sticky-first.fpc-table--sticky-foot > tfoot > tr > :first-child {
+  z-index: calc(var(--fpc-z-sticky-local, 2) + 1);
+}
+
+// Safety net: a `.table-responsive` (or any overflow) wrapper directly around a sticky table becomes
+// the table's scroll container. It never scrolls vertically (it is as tall as the table), so the head /
+// foot stuck to it and scrolled away with the page. Let such a wrapper stay a plain box; the lane /
+// panel / page area above is the scroller. Prefer dropping the wrapper (`fpc-panel scroll`,
+// `loadweaver-lane scrollX`, `.fpc-scroll-both`).
+.table-responsive:has(> .fpc-table--sticky-head, > .fpc-table--sticky-foot) {
+  overflow: visible;
+}
+
+// A scrolling lane body that holds a sticky table also scrolls sideways (wide tables are not cut off
+// once their `.table-responsive` wrapper no longer scrolls); same as `fpc-board-lane [scrollX]`.
+.fpc-board-lane > .fpc-board-lane__body--scroll:has(.fpc-table--sticky-head, .fpc-table--sticky-foot) {
+  overflow-x: auto;
+}
+
+// Long titles in `fpc-data-table` cells end in an ellipsis, never cut mid-word (X-09 / DB-20 / DB-11, round 2), in rows
+// and stacked cards alike. Global on purpose: cell templates belong to the consumer's component, so the data table's
+// encapsulated styles never reached their markup (Decabill's ticket title was clipped by the cell's `overflow: hidden`).
+// - Plain text and a plain name link: the cell (and the link, an inline-block capped at the cell) ellipsize the text.
+// - A rich wrapper (`d-flex` / `d-inline-flex`: hash + title + badge), directly in the cell or in the row link, never
+//   outgrows the cell; its text parts (`.text-truncate`, or a bare `<span>`) shrink and ellipsize, while badges,
+//   icons and `flex-shrink-0` parts keep their size.
+.fpc-data-table__table > tbody > tr > td {
+  > .fpc-data-table__link {
+    display: inline-block;
+    max-width: 100%;
+    vertical-align: top;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  > :is(.d-flex, .d-inline-flex),
+  > .fpc-data-table__link > :is(.d-flex, .d-inline-flex) {
+    max-width: 100%;
+    min-width: 0;
+    vertical-align: middle;
+
+    > :is(.text-truncate, span:not([class])) {
+      flex: 0 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .text-truncate {
+    min-width: 0;
+  }
+}
+
+// Links inside clickable `fpc-data-table` rows (row click / `rowLink`; consumer cell templates): the row hover background
+// is the cue and the row focus ring serves the keyboard, so a cell link never jumps colour or gains an underline on
+// hover. The name link (`.fpc-data-table__link`) keeps the text colour; secondary links to other targets keep a subtle
+// link style (link colour, faint underline that only strengthens on hover / focus).
+.fpc-data-table__row a:not(.btn, .fpc-data-table__link, .dropdown-item, .badge) {
+  color: var(--bs-link-color);
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--bs-link-color-rgb), 0.35);
+  text-underline-offset: 0.15em;
+
+  &:hover,
+  &:focus,
+  &:active {
+    color: var(--bs-link-color);
+    text-decoration-color: rgba(var(--bs-link-color-rgb), 0.75);
+  }
+}
+
+// Text-coloured links (`text-reset`, `text-body`, `link-body-emphasis` …) stay in the text colour.
+.fpc-data-table__row a:is(.text-reset, .text-body, .text-body-emphasis, .link-body-emphasis, .text-decoration-none) {
+  &,
+  &:hover,
+  &:focus,
+  &:active {
+    color: inherit;
+    text-decoration: none;
+  }
+}

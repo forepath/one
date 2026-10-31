@@ -105,8 +105,14 @@ export class BackorderService {
     });
   }
 
-  async listForUser(userId: string, limit: number, offset: number, search?: string): Promise<BackorderEntity[]> {
-    return await this.backordersRepository.findAllByUser(userId, limit, offset, search);
+  async listForUser(
+    userId: string,
+    limit: number,
+    offset: number,
+    search?: string,
+    statuses?: BackorderStatus[],
+  ): Promise<BackorderEntity[]> {
+    return await this.backordersRepository.findAllByUser(userId, limit, offset, search, statuses);
   }
 
   async cancel(backorderId: string): Promise<BackorderEntity> {
@@ -320,6 +326,18 @@ export class BackorderService {
 
         await this.subscriptionItemsRepository.updateSshPrivateKey(baseItem.id, privateKey);
         effectiveConfig.sshPublicKey = publicKey;
+        const stackSecrets = this.cloudInitDispatchService.prepareProvisioningConfig(
+          effectiveConfig.service as string | undefined,
+        );
+
+        if (Object.keys(stackSecrets).length > 0) {
+          Object.assign(effectiveConfig, stackSecrets);
+          await this.subscriptionItemsRepository.updateConfigSnapshot(baseItem.id, {
+            ...(baseItem.configSnapshot ?? {}),
+            ...stackSecrets,
+          });
+        }
+
         const baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
         const userData = this.cloudInitDispatchService.buildUserData({
           service: effectiveConfig.service as string | undefined,

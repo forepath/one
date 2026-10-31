@@ -2,9 +2,12 @@ import { createReducer, on } from '@ngrx/store';
 
 import {
   clearPromotionValidation,
+  loadActivePromotions,
   loadActivePromotionsFailure,
   loadActivePromotionsSuccess,
+  loadPromotionRedemptions,
   loadPromotionRedemptionsFailure,
+  loadPromotionRedemptionsSuccess,
   redeemPromotion,
   redeemPromotionFailure,
   redeemPromotionSuccess,
@@ -53,14 +56,40 @@ describe('promotionsReducer', () => {
     expect(cleared.validatedTargetKey).toBeNull();
   });
 
-  it('stores active promotions', () => {
-    const state = promotionsReducer(
-      initialPromotionsState,
-      loadActivePromotionsSuccess({ items: [{ id: 'r-1' } as never] }),
+  it('stores one page of active promotions (replace-page) with its total', () => {
+    const loading = promotionsReducer(
+      { ...initialPromotionsState, activePromotions: [{ id: 'old' } as never] },
+      loadActivePromotions({ page: 3, pageSize: 50, search: ' x ' }),
     );
 
-    expect(state.activePromotions).toHaveLength(1);
+    expect(loading.activePage).toBe(3);
+    expect(loading.activePageSize).toBe(50);
+    expect(loading.activeSearch).toBe('x');
+    expect(loading.loadingActive).toBe(true);
+
+    const state = promotionsReducer(
+      loading,
+      loadActivePromotionsSuccess({ items: [{ id: 'r-1' } as never], total: 101 }),
+    );
+
+    expect(state.activePromotions).toEqual([{ id: 'r-1' }]);
+    expect(state.activeTotal).toBe(101);
     expect(state.loadingActive).toBe(false);
+  });
+
+  it('stores one page of redemptions with its total', () => {
+    const loading = promotionsReducer(initialPromotionsState, loadPromotionRedemptions({ page: 2 }));
+
+    expect(loading.redemptionsPage).toBe(2);
+    expect(loading.redemptionsPageSize).toBe(25);
+
+    const state = promotionsReducer(
+      loading,
+      loadPromotionRedemptionsSuccess({ items: [{ id: 'r-2' } as never], total: 30 }),
+    );
+
+    expect(state.redemptions).toEqual([{ id: 'r-2' }]);
+    expect(state.redemptionsTotal).toBe(30);
   });
 
   it('tracks validation and redeem lifecycle states', () => {
@@ -89,7 +118,6 @@ describe('promotionsReducer', () => {
 
     const redeemed = promotionsReducer(redeeming, redeemPromotionSuccess({ redemption: { id: 'red-1' } as never }));
     expect(redeemed.redeeming).toBe(false);
-    expect(redeemed.activePromotions[0].id).toBe('red-1');
     expect(redeemed.validationPreview).toBeNull();
 
     const redeemFailed = promotionsReducer(redeeming, redeemPromotionFailure({ error: 'Redeem failed' }));

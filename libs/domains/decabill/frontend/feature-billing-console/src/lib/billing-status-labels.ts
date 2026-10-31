@@ -7,7 +7,9 @@ import type {
 } from '@forepath/decabill/frontend/data-access-billing-console';
 
 import { getCountryDisplayName } from './billing-country-options';
+import { formatBillingMoney } from './billing-format';
 import { getUnavailableLabel } from './named-label.util';
+import type { FpcBadgeTone } from '@forepath/shared/frontend/ui-components';
 
 export { getUnavailableLabel, resolveNamedLabel } from './named-label.util';
 
@@ -88,20 +90,20 @@ export function getProvisioningStatusLabel(status: string | null | undefined): s
 }
 
 /** Status chip modifier paired with `fpc-badge variant="info"`. */
-export function getProvisioningStatusBadgeClass(status: string | null | undefined): string {
+export function getProvisioningStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
   switch (status) {
     case 'pending':
-      return 'billing-admin__chip--status-partially-paid';
+      return 'info';
     case 'active':
-      return 'billing-admin__chip--status-paid';
+      return 'success';
     case 'failed':
-      return 'billing-admin__chip--status-overdue';
+      return 'danger';
     case 'removing':
-      return 'billing-admin__chip--status-partially-paid';
+      return 'info';
     case 'removed':
-      return 'billing-admin__chip--status-void';
+      return 'neutral';
     default:
-      return 'billing-admin__chip--status-unknown';
+      return 'neutral';
   }
 }
 
@@ -150,60 +152,60 @@ export function getInvoiceStatusLabel(status: string | null | undefined): string
 }
 
 /** Status chip modifier paired with `fpc-badge variant="info"`. */
-export function getSubscriptionStatusBadgeClass(status: string | null | undefined): string {
+export function getSubscriptionStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
   switch (status) {
     case 'active':
-      return 'billing-admin__chip--status-paid';
+      return 'success';
     case 'pending_cancel':
-      return 'billing-admin__chip--status-partially-paid';
+      return 'info';
     case 'pending_withdrawal':
-      return 'billing-admin__chip--status-partially-paid';
+      return 'info';
     case 'pending_instant_cancel':
-      return 'billing-admin__chip--status-overdue';
+      return 'danger';
     case 'pending_config_change':
-      return 'billing-admin__chip--status-issued';
+      return 'primary';
     case 'pending_backorder':
-      return 'billing-admin__chip--status-issued';
+      return 'primary';
     case 'canceled':
-      return 'billing-admin__chip--status-void';
+      return 'neutral';
     default:
-      return 'billing-admin__chip--status-unknown';
+      return 'neutral';
   }
 }
 
-export function getBackorderStatusBadgeClass(status: string | null | undefined): string {
+export function getBackorderStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
   switch (status) {
     case 'pending':
-      return 'billing-admin__chip--status-issued';
+      return 'primary';
     case 'retrying':
-      return 'billing-admin__chip--status-partially-paid';
+      return 'info';
     case 'fulfilled':
-      return 'billing-admin__chip--status-paid';
+      return 'success';
     case 'cancelled':
-      return 'billing-admin__chip--status-void';
+      return 'neutral';
     case 'failed':
-      return 'billing-admin__chip--status-overdue';
+      return 'danger';
     default:
-      return 'billing-admin__chip--status-unknown';
+      return 'neutral';
   }
 }
 
-export function getInvoiceStatusBadgeClass(status: string | null | undefined): string {
+export function getInvoiceStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
   switch (status) {
     case 'draft':
-      return 'billing-admin__chip--status-draft';
+      return 'neutral';
     case 'issued':
-      return 'billing-admin__chip--status-issued';
+      return 'primary';
     case 'partially_paid':
-      return 'billing-admin__chip--status-partially-paid';
+      return 'info';
     case 'paid':
-      return 'billing-admin__chip--status-paid';
+      return 'success';
     case 'overdue':
-      return 'billing-admin__chip--status-overdue';
+      return 'danger';
     case 'void':
-      return 'billing-admin__chip--status-void';
+      return 'neutral';
     default:
-      return 'billing-admin__chip--status-unknown';
+      return 'neutral';
   }
 }
 
@@ -307,24 +309,14 @@ export function getProjectStatusIconClass(status: string | null | undefined): st
   }
 }
 
+/** Project hourly rate (DB-03): the one money format + "/ h" (`€110.00 / h`). */
 export function formatProjectHourlyRate(amount: number, currency: string): string {
-  const formatted = Number.isFinite(amount) ? amount.toFixed(2) : '0.00';
-
-  if (currency === 'EUR') {
-    return `${formatted}€ / h`;
-  }
-
-  return `${formatted} ${currency} / h`;
+  return `${formatBillingMoney(Number.isFinite(amount) ? amount : 0, currency)} / h`;
 }
 
+/** Project open billable amount (DB-03): the one money format (`€1,210.00`). */
 export function formatProjectOpenBillableAmount(amount: number, currency: string): string {
-  const formatted = Number.isFinite(amount) ? amount.toFixed(2) : '0.00';
-
-  if (currency === 'EUR') {
-    return `${formatted}€`;
-  }
-
-  return `${formatted} ${currency}`;
+  return formatBillingMoney(Number.isFinite(amount) ? amount : 0, currency);
 }
 
 export function formatProjectMinutes(minutes: number): string {
@@ -354,18 +346,18 @@ export function getDatevExportStatusLabel(status: string | null | undefined): st
   }
 }
 
-export function getDatevExportStatusBadgeClass(status: string | null | undefined): string {
+export function getDatevExportStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
   switch (status) {
     case 'pending':
-      return 'billing-admin__chip--status-draft';
+      return 'neutral';
     case 'running':
-      return 'billing-admin__chip--status-partially-paid';
+      return 'info';
     case 'completed':
-      return 'billing-admin__chip--status-paid';
+      return 'success';
     case 'failed':
-      return 'billing-admin__chip--status-overdue';
+      return 'danger';
     default:
-      return 'billing-admin__chip--status-unknown';
+      return 'neutral';
   }
 }
 
@@ -552,6 +544,116 @@ export function getBillingIntervalLabel(value: number, type: BillingIntervalType
   return $localize`:@@featureBilling-intervalEveryMonths:Every ${value} months`;
 }
 
+/** Unit label for the plan's "Interval type" select (DB-08 b): never the raw enum. */
+export function getBillingIntervalTypeLabel(type: BillingIntervalType | string | null | undefined): string {
+  switch (type) {
+    case 'hour':
+      return $localize`:@@featureBilling-intervalTypeHour:Hours`;
+    case 'day':
+      return $localize`:@@featureBilling-intervalTypeDay:Days`;
+    case 'month':
+      return $localize`:@@featureBilling-intervalTypeMonth:Months`;
+    case 'year':
+      return $localize`:@@featureBilling-intervalTypeYear:Years`;
+    default:
+      return type ?? '';
+  }
+}
+
+/** A duration with a real plural form: "1 month", "3 months" (DB-04 / DB-27; replaces "1 month(s)"). */
+export function getBillingIntervalDurationLabel(value: number, type: BillingIntervalType | string): string {
+  const one = value === 1;
+
+  switch (type) {
+    case 'hour':
+      return one
+        ? $localize`:@@featureBilling-durationHourOne:1 hour`
+        : $localize`:@@featureBilling-durationHours:${value}:count: hours`;
+    case 'day':
+      return one
+        ? $localize`:@@featureBilling-durationDayOne:1 day`
+        : $localize`:@@featureBilling-durationDays:${value}:count: days`;
+    case 'year':
+      return one
+        ? $localize`:@@featureBilling-durationYearOne:1 year`
+        : $localize`:@@featureBilling-durationYears:${value}:count: years`;
+    default:
+      return one
+        ? $localize`:@@featureBilling-durationMonthOne:1 month`
+        : $localize`:@@featureBilling-durationMonths:${value}:count: months`;
+  }
+}
+
+/** "14 days free", "1 billing period free" (DB-27): plural forms instead of "day(s)". */
+export function getPromotionFreeDaysLabel(days: number): string {
+  return days === 1
+    ? $localize`:@@featureBilling-promotionFreeDayOne:1 day free`
+    : $localize`:@@featureBilling-promotionFreeDays:${days}:count: days free`;
+}
+
+/** Fixed-amount promotion credit (DB-03): the one money format, `€5.00 credit`. */
+export function getPromotionCreditLabel(amountNet: number, currency?: string | null): string {
+  const amount = formatBillingMoney(amountNet, currency);
+
+  return $localize`:@@featureBilling-promotionCredit:${amount}:amount: credit`;
+}
+
+export function getPromotionFreePeriodsLabel(periods: number): string {
+  return periods === 1
+    ? $localize`:@@featureBilling-promotionFreePeriodOne:1 billing period free`
+    : $localize`:@@featureBilling-promotionFreePeriods:${periods}:count: billing periods free`;
+}
+
+/**
+ * Localized advantage text for a promotion check / redemption; falls back to the server summary
+ * when the numbers are not part of the response.
+ */
+export function getPromotionAdvantageText(promotion: {
+  advantageType?: string | null;
+  advantageSummary?: string | null;
+  amountNet?: number | null;
+  currency?: string | null;
+  days?: number | null;
+  periods?: number | null;
+}): string {
+  if (promotion.advantageType === 'fixed_amount_net' && promotion.amountNet != null) {
+    return getPromotionCreditLabel(Number(promotion.amountNet), promotion.currency);
+  }
+
+  if (promotion.advantageType === 'free_days' && promotion.days != null) {
+    return getPromotionFreeDaysLabel(Number(promotion.days));
+  }
+
+  if (promotion.advantageType === 'free_billing_periods' && promotion.periods != null) {
+    return getPromotionFreePeriodsLabel(Number(promotion.periods));
+  }
+
+  return promotion.advantageSummary ?? '';
+}
+
+/**
+ * The one subscription price cell (DB-19), customer and admin: `€5.95 / Monthly`; postpaid rows without a period
+ * price but with usage meters read "Usage-based"; otherwise `-`. `formatAmount` formats the money part.
+ */
+export function formatSubscriptionPriceCell(
+  totalPrice: number | null | undefined,
+  interval: { value?: number | null; type?: BillingIntervalType | string | null } | null,
+  hasUsageMeters: boolean,
+  formatAmount: (amount: number) => string,
+): string {
+  if (totalPrice == null || !Number.isFinite(totalPrice)) {
+    return hasUsageMeters ? $localize`:@@featureBilling-priceUsageBased:Usage-based` : '-';
+  }
+
+  const price = formatAmount(totalPrice);
+
+  if (!interval?.type || interval.value == null) {
+    return price;
+  }
+
+  return `${price} / ${getBillingIntervalLabel(interval.value, interval.type as BillingIntervalType)}`;
+}
+
 export function getProviderDisplayName(
   providerId: string | null | undefined,
   providers: ProviderDetail[] | null | undefined,
@@ -589,22 +691,22 @@ export function getOfferStatusLabel(status: string | null | undefined): string {
 }
 
 /** Status chip modifier paired with `fpc-badge variant="info"`. */
-export function getOfferStatusBadgeClass(status: string | null | undefined): string {
+export function getOfferStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
   switch (status) {
     case 'draft':
-      return 'billing-admin__chip--status-draft';
+      return 'neutral';
     case 'archived':
-      return 'billing-admin__chip--status-issued';
+      return 'primary';
     case 'accepted':
-      return 'billing-admin__chip--status-paid';
+      return 'success';
     case 'declined':
-      return 'billing-admin__chip--status-void';
+      return 'neutral';
     case 'expired':
-      return 'billing-admin__chip--status-overdue';
+      return 'danger';
     case 'revoked':
-      return 'billing-admin__chip--status-unknown';
+      return 'neutral';
     default:
-      return 'billing-admin__chip--status-unknown';
+      return 'neutral';
   }
 }
 

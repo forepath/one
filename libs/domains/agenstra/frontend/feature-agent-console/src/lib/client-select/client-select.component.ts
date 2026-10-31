@@ -20,7 +20,7 @@ export class ClientSelectComponent {
   readonly disabled = input(false);
   readonly required = input(false);
   readonly inputId = input('clientSelect');
-  readonly placeholder = input($localize`:@@featureClientSelect-placeholder:Search by name or ID`);
+  readonly placeholder = input($localize`:@@featureClientSelect-placeholder:Search workspaces`);
   readonly showSuggestionsOnFocus = input(false);
   readonly suggestionLimit = input(20);
 

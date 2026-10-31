@@ -42,7 +42,7 @@
 .fpc-sidebar-popover {
   // Fixed so sidebar/workspace `overflow: hidden` does not clip the tile grid.
   position: fixed;
-  z-index: var(--bs-popover-zindex, 1070);
+  z-index: var(--fpc-z-popover, var(--bs-popover-zindex, 1070));
   box-sizing: border-box;
   background-color: var(--bs-tertiary-bg);
   border: var(--bs-border-width) solid var(--bs-border-color);

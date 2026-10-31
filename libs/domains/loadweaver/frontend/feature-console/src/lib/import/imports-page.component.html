@@ -1,0 +1,48 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="imports" [binding]="views" />
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+
+  <!-- One data list (3.38 D1): State · Host (link) · facts; ⋮ Open import. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="title"
+    [columns]="columns"
+    [rows]="filtered()"
+    [rowId]="hostId"
+    [rowLink]="importLink"
+    paging="client"
+    persistKey="lw-imports"
+    [(query)]="search"
+    [searchPlaceholder]="searchLabel"
+    [loading]="imports() === null && !error()"
+    [rowMenu]="rowMenu"
+    (rowAction)="open($event.row)"
+    emptyIcon="box-arrow-in-down"
+    data-testid="imports-list"
+  >
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="box-arrow-in-down"
+        i18n-title="@@lwConsoleImport-empty"
+        title="No host waits for an import"
+      >
+        <p class="small text-body-secondary mb-0" i18n="@@lwConsoleImport-listIntro">
+          Hosts that already run containers or compose projects (or were Loadweaver nodes before) join with
+          <code>install.sh --discover</code>: only the agent is installed, it discovers read-only and waits here.
+          Nothing on the host changes until its join plan is approved.
+        </p>
+      </fpc-empty-state>
+    </span>
+    <ng-template fpcTableCell="former" let-row>
+      @if (row.former !== 'none') {
+        <fpc-badge tone="warning" icon="clock-history" [iconOnly]="true" [label]="formerLabel" />
+      }
+    </ng-template>
+    <ng-template fpcTableCell="discovered" let-row>{{ row.discoveredAt | date: 'short' }}</ng-template>
+  </fpc-data-table>
+</div>

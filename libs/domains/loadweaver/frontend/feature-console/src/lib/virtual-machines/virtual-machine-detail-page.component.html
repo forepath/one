@@ -1,0 +1,407 @@
+<div class="fpc-page">
+  @if (part() === 'all') {
+    <fpc-page-header [title]="name() ?? title">
+      <fpc-button
+        fpcPageHeaderActions
+        variant="secondary"
+        size="sm"
+        iconOnly
+        [routerLink]="['/resources', 'cluster']"
+        [queryParams]="{ tab: 'contents', kind: 'VirtualMachine' }"
+        [ariaLabel]="backLabel"
+        [title]="backLabel"
+      >
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+      </fpc-button>
+      @if (name(); as n) {
+        <fpc-button
+          fpcPageHeaderActions
+          variant="secondary"
+          size="sm"
+          iconOnly
+          [routerLink]="['/resources', 'virtualmachine', project() ?? '-', n]"
+          [queryParams]="{ tab: 'spec' }"
+          [ariaLabel]="yamlLabel"
+          [title]="yamlLabel"
+          data-testid="vm-yaml"
+        >
+          <i class="bi bi-file-earmark-code" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      @if (vm()?.permissions?.edit && name()) {
+        <fpc-button
+          fpcPageHeaderActions
+          variant="secondary"
+          size="sm"
+          iconOnly
+          (clicked)="edit()"
+          [ariaLabel]="editLabel"
+          [title]="editLabel"
+          data-testid="vm-edit"
+        >
+          <i class="bi bi-pencil" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      @if (vm()?.permissions?.snapshot) {
+        <fpc-button
+          fpcPageHeaderActions
+          variant="secondary"
+          size="sm"
+          iconOnly
+          [ariaLabel]="snapshotLabel"
+          [title]="snapshotLabel"
+          [loading]="creatingSnapshot()"
+          (clicked)="openSnapshot()"
+          data-testid="vm-snapshot"
+        >
+          <i class="bi bi-camera" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      @for (action of powerActions(); track action) {
+        <fpc-button
+          fpcPageHeaderActions
+          [variant]="dangerous(action) ? 'danger' : 'primary'"
+          size="sm"
+          iconOnly
+          [ariaLabel]="actionLabel(action)"
+          [title]="actionLabel(action)"
+          [loading]="acting() === action"
+          [disabled]="acting() !== null"
+          (clicked)="ask(action)"
+          [attr.data-testid]="'vm-action-' + action"
+        >
+          <i class="bi {{ actionIcon(action) }}" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      <fpc-button
+        fpcPageHeaderActions
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="refreshLabel"
+        [title]="refreshLabel"
+        (clicked)="reload()"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+    </fpc-page-header>
+  }
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (actionError(); as message) {
+    <fpc-alert
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="dismissActionError()"
+    />
+  }
+
+  @if (vm(); as v) {
+    @if (part() === 'all') {
+      <fpc-tab-group class="flex-shrink-0" [activeId]="tab()" (activeIdChange)="selectTab($event)">
+        <fpc-tab id="overview" [label]="overviewTab" icon="info-circle" />
+        <fpc-tab id="serial" [label]="serialTab" icon="terminal" [disabled]="!v.consoles.serial.available" />
+        @if (v.graphical) {
+          <fpc-tab id="vnc" [label]="vncTab" icon="display" [disabled]="!v.consoles.vnc.available" />
+        }
+      </fpc-tab-group>
+    } @else if (part() === 'console' && v.graphical) {
+      <!-- One tab level (3.38 R2): the object tabs above; Serial | Graphical is a segmented switch. -->
+      <div class="lw-vm__console-switch flex-shrink-0 d-flex align-items-center px-3 py-2 border-bottom">
+        <fpc-button-group size="sm" [ariaLabel]="consoleSwitchLabel" data-testid="vm-console-switch">
+          <fpc-button
+            [variant]="tab() === 'serial' ? 'primary' : 'dark'"
+            size="sm"
+            [disabled]="!v.consoles.serial.available"
+            [attr.aria-pressed]="tab() === 'serial'"
+            (clicked)="selectTab('serial')"
+            data-testid="vm-console-serial"
+          >
+            <i class="bi bi-terminal me-1" aria-hidden="true"></i>{{ serialTab }}
+          </fpc-button>
+          <fpc-button
+            [variant]="tab() === 'vnc' ? 'primary' : 'dark'"
+            size="sm"
+            [disabled]="!v.consoles.vnc.available"
+            [attr.aria-pressed]="tab() === 'vnc'"
+            (clicked)="selectTab('vnc')"
+            data-testid="vm-console-vnc"
+          >
+            <i class="bi bi-display me-1" aria-hidden="true"></i>{{ vncTab }}
+          </fpc-button>
+        </fpc-button-group>
+      </div>
+    }
+
+    <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+      @if (tab() === 'overview' && part() !== 'console') {
+        @if (v.invalid) {
+          <fpc-alert [flush]="true" variant="danger" [message]="v.invalid" />
+        }
+        @if (!v.consoles.serial.available && v.consoles.serial.reason) {
+          <fpc-alert [flush]="true" variant="info" data-testid="vm-console-reason">
+            <span i18n="@@lwConsoleVmDetail-consoleUnavailable">Consoles unavailable:</span>
+            {{ v.consoles.serial.reason }}
+          </fpc-alert>
+        }
+        <fpc-tab-group
+          class="fpc-lane-tabs"
+          [activeId]="activeLane()"
+          (activeIdChange)="lane.set($any($event))"
+          [ariaLabel]="statusTitle"
+        >
+          @for (l of laneTabs(); track l.id) {
+            <fpc-tab [id]="l.id" [label]="l.label" />
+          }
+        </fpc-tab-group>
+        <fpc-section-row class="flex-grow-1 min-h-0" data-testid="vm-lanes">
+          @if (shows('summary')) {
+            <loadweaver-lane
+              [title]="statusTitle"
+              [flush]="true"
+              [off]="activeLane() !== 'status'"
+              data-testid="vm-lane-status"
+            >
+              <fpc-key-value-list class="px-3" [items]="statusFacts()" data-testid="vm-status">
+                <ng-template fpcKeyValue="phase">
+                  <span class="d-inline-flex flex-wrap align-items-center gap-1">
+                    <fpc-badge [tone]="phaseBadgeTone(v.status.phase)" data-testid="vm-phase">{{
+                      phaseLabel(v.status.phase)
+                    }}</fpc-badge>
+                    @if (v.invalid) {
+                      <fpc-badge tone="danger" i18n="@@lwConsoleVmDetail-invalid">Invalid spec</fpc-badge>
+                    }
+                  </span>
+                </ng-template>
+                <ng-template fpcKeyValue="import">
+                  @if (v.status.importProgress; as progress) {
+                    <loadweaver-vm-import-progress [progress]="progress" />
+                  }
+                </ng-template>
+                <ng-template fpcKeyValue="labels">
+                  <span class="d-inline-flex flex-wrap gap-1">
+                    @for (label of v.labels | keyvalue; track label.key) {
+                      <fpc-badge color="light" size="sm">{{ label.key }}={{ label.value }}</fpc-badge>
+                    } @empty {
+                      –
+                    }
+                  </span>
+                </ng-template>
+              </fpc-key-value-list>
+              <fpc-list-header [title]="machineTitle" />
+              <fpc-key-value-list class="px-3" [items]="machineFacts()" data-testid="vm-machine" />
+              @if (canReimage()) {
+                <fpc-list-header [title]="maintenanceTitle" />
+                <div class="px-3 py-2">
+                  <fpc-button
+                    variant="danger"
+                    size="sm"
+                    [loading]="acting() === 'reimage'"
+                    [disabled]="acting() !== null"
+                    (clicked)="ask('reimage')"
+                    aria-describedby="lw-vm-reimage-hint"
+                    data-testid="vm-action-reimage"
+                  >
+                    <i class="bi bi-hdd me-1" aria-hidden="true"></i>{{ actionLabel('reimage') }}
+                  </fpc-button>
+                  <div id="lw-vm-reimage-hint" class="form-text" i18n="@@lwConsoleVmDetail-reimageHint">
+                    Re-imaging writes the pinned image onto the boot disk again and runs first-boot configuration
+                    (cloud-init) once more. Other disks are kept.
+                  </div>
+                </div>
+              }
+            </loadweaver-lane>
+            <loadweaver-lane [title]="commandsTitle" [flush]="true" [off]="activeLane() !== 'commands'">
+              <!-- Feed → table (3.38 D1): State (command status) · action · node · requested by · time · error. -->
+              <fpc-data-table
+                class="flex-grow-1 min-h-0"
+                [ariaLabel]="commandsTitle"
+                [columns]="commandColumns"
+                [rows]="v.commands"
+                [searchable]="false"
+                paging="client"
+                persistKey="lw-vm-commands"
+                [rowMenu]="copyIdMenu"
+                (rowAction)="copyId($event.row.id)"
+                emptyIcon="send"
+                data-testid="vm-commands"
+              >
+                <span fpcDataTableEmpty>
+                  <fpc-empty-state
+                    icon="send"
+                    size="sm"
+                    i18n-title="@@lwConsoleVmDetail-noCommands"
+                    title="No node commands yet"
+                  />
+                </span>
+                <ng-template fpcTableCell="created" let-row>{{ row.createdAt | date: 'short' }}</ng-template>
+                <ng-template fpcTableCell="error" let-row>
+                  @if (row.error) {
+                    <span class="text-danger small text-break">{{ row.error }}</span>
+                  }
+                </ng-template>
+              </fpc-data-table>
+            </loadweaver-lane>
+          }
+          @if (shows('hardware')) {
+            <loadweaver-lane [title]="nicsTitle" [flush]="true" [off]="activeLane() !== 'nics'">
+              <!-- NICs → table (3.38 D1): name · addresses · MAC · groups · labels. -->
+              <fpc-data-table
+                class="flex-grow-1 min-h-0"
+                [ariaLabel]="nicsTitle"
+                [columns]="nicColumns"
+                [rows]="v.nicStatus"
+                [rowId]="nameId"
+                [searchable]="false"
+                paging="client"
+                persistKey="lw-vm-nics"
+                emptyIcon="ethernet"
+                data-testid="vm-nics"
+              >
+                <ng-template fpcTableCell="name" let-row>
+                  <span class="font-monospace">{{ row.name }}</span>
+                  @if (row.primary) {
+                    <fpc-badge class="ms-1" color="primary" size="sm" i18n="@@lwConsoleVmDetail-primaryNic"
+                      >Primary</fpc-badge
+                    >
+                  }
+                </ng-template>
+                <ng-template fpcTableCell="groups" let-row>
+                  @for (g of row.groups; track g) {
+                    <fpc-badge color="light" size="sm" class="me-1">{{ g }}</fpc-badge>
+                  }
+                </ng-template>
+              </fpc-data-table>
+            </loadweaver-lane>
+            <loadweaver-lane [title]="disksTitle" [flush]="true" [off]="activeLane() !== 'disks'">
+              <!-- Disks → table (3.38 D1): name (boot / not placed) · size · volume · bus · cache · placement. -->
+              <fpc-data-table
+                class="flex-grow-1 min-h-0"
+                [ariaLabel]="disksTitle"
+                [columns]="diskColumns"
+                [rows]="v.diskStatus"
+                [rowId]="nameId"
+                [searchable]="false"
+                paging="client"
+                persistKey="lw-vm-disks"
+                emptyIcon="device-hdd"
+                data-testid="vm-disks"
+              >
+                <ng-template fpcTableCell="name" let-row>
+                  {{ row.name }}
+                  @if (row.boot) {
+                    <fpc-badge class="ms-1" color="primary" size="sm" i18n="@@lwConsoleVmDetail-bootDisk"
+                      >Boot disk</fpc-badge
+                    >
+                  }
+                  @if (!row.primaryNode) {
+                    <fpc-badge class="ms-1" color="warning" size="sm" i18n="@@lwConsoleVmDetail-notPlaced"
+                      >Not placed</fpc-badge
+                    >
+                  }
+                </ng-template>
+                <ng-template fpcTableCell="size" let-row>{{ bytes(row.sizeBytes) }}</ng-template>
+              </fpc-data-table>
+            </loadweaver-lane>
+          }
+          @if (shows('snapshots')) {
+            <loadweaver-lane [title]="snapshotsTitle" [flush]="true" [off]="activeLane() !== 'snapshots'">
+              @if (snapshotsError(); as message) {
+                <fpc-alert [flush]="true" variant="danger" [message]="message" />
+              }
+              <!-- Snapshots → table (3.38 D1): State · taken (time) · consistency · description · disks (backups). -->
+              <fpc-data-table
+                class="flex-grow-1 min-h-0"
+                [ariaLabel]="snapshotsTitle"
+                [columns]="snapshotColumns"
+                [rows]="snapshots()"
+                [searchable]="false"
+                paging="client"
+                persistKey="lw-vm-snapshots"
+                [rowMenu]="copyIdMenu"
+                (rowAction)="copyId($event.row.id)"
+                emptyIcon="camera"
+                data-testid="vm-snapshots"
+              >
+                <span fpcDataTableEmpty>
+                  <fpc-empty-state
+                    icon="camera"
+                    size="sm"
+                    i18n-title="@@lwConsoleVmDetail-noSnapshots"
+                    title="No snapshots yet"
+                  />
+                </span>
+                <ng-template fpcTableCell="created" let-row>{{ row.createdAt | date: 'short' }}</ng-template>
+                <ng-template fpcTableCell="disks" let-row>
+                  <span class="d-inline-flex flex-wrap gap-2 small">
+                    @for (d of row.disks; track d.disk) {
+                      <a [routerLink]="['/operate/backups', d.backupId]"
+                        >{{ d.disk }}: {{ d.status ? backupStatus(d.status) : '–'
+                        }}{{ d.bytes ? ' (' + bytes(d.bytes) + ')' : '' }}</a
+                      >
+                    }
+                  </span>
+                </ng-template>
+              </fpc-data-table>
+            </loadweaver-lane>
+          }
+        </fpc-section-row>
+      }
+      @if (visited().has('serial')) {
+        <div class="flex-grow-1 d-flex flex-column min-h-0" [class.d-none]="tab() !== 'serial'">
+          <loadweaver-vm-serial-console [replica]="v.consoles.replica" [active]="tab() === 'serial'" />
+        </div>
+      }
+      @if (visited().has('vnc')) {
+        <div class="flex-grow-1 d-flex flex-column min-h-0" [class.d-none]="tab() !== 'vnc'">
+          <loadweaver-vm-vnc-console [replica]="v.consoles.replica" [active]="tab() === 'vnc'" />
+        </div>
+      }
+    </div>
+  } @else if (loading()) {
+    <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+  }
+</div>
+
+<fpc-confirm-dialog
+  [open]="pending() !== null"
+  (openChange)="onConfirmOpenChange($event)"
+  [title]="confirmTitle()"
+  [message]="confirmMessage()"
+  [confirmLabel]="confirmLabel()"
+  [cancelLabel]="cancelLabel"
+  [danger]="confirmDanger()"
+  [warning]="true"
+  (confirmed)="confirm()"
+/>
+
+<fpc-modal [open]="snapshotOpen()" (openChange)="snapshotOpen.set($event)" [title]="snapshotTitle">
+  <p class="small" i18n="@@lwConsoleVmDetail-snapshotHint">
+    Every disk is backed up now. Without the guest agent in the image the snapshot is crash-consistent (like pulling the
+    plug). Restore a disk through the backups page.
+  </p>
+  <fpc-form-field
+    forId="lw-vm-snapshot-description"
+    i18n-label="@@lwConsoleVmDetail-snapshotDescription"
+    label="Description"
+  >
+    <fpc-form-control
+      controlId="lw-vm-snapshot-description"
+      size="sm"
+      maxLength="1024"
+      [(ngModel)]="snapshotDescription"
+    />
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="snapshotOpen.set(false)">
+      <span i18n="@@lwConsoleVmDetail-cancelSnapshot">Cancel</span>
+    </fpc-button>
+    <fpc-button variant="primary" (clicked)="takeSnapshot()" data-testid="vm-snapshot-confirm">
+      <span i18n="@@lwConsoleVmDetail-takeSnapshot">Take snapshot</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

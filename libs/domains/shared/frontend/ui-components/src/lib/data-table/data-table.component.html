@@ -1,0 +1,693 @@
+@if (selectable() && !single() && selected().length > 0) {
+  <div
+    class="fpc-data-table__batch"
+    role="region"
+    [attr.aria-label]="selectedText()"
+    data-testid="fpc-data-table-batch"
+  >
+    <!-- "x selected" left; the batch actions and the icon-only clear on the right (user). -->
+    <span class="fw-semibold">{{ selectedText() }}</span>
+    <span class="flex-grow-1"></span>
+    <div class="fpc-data-table__batch-actions"><ng-content select="[fpcDataTableBatch]" /></div>
+    <!-- Same icon-only sm button as the batch actions (uniform bar, user). -->
+    <fpc-button
+      variant="secondary"
+      size="sm"
+      iconOnly
+      class="fpc-data-table__batch-clear"
+      [title]="text().clearSelection"
+      [ariaLabel]="text().clearSelection"
+      (clicked)="clearSelection()"
+      data-testid="fpc-data-table-batch-clear"
+    >
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </fpc-button>
+  </div>
+}
+
+<!-- One logical table in two <table>s (fixed head, scrolling body). Accessibility: both <table>s are
+     role="presentation" and every section / row / cell carries an explicit ARIA role (rowgroup / row / columnheader /
+     cell), so assistive tech sees ONE table — the `fpc-data-table__grid` wrapper (role="table", label, row count) — with
+     one header row (the visible, interactive head), the toolbar row and the data rows. The body's column-sizing copy of
+     the head (`fpc-data-table__sizer`) is aria-hidden and holds nothing focusable, so no header is read twice. -->
+<div
+  class="fpc-data-table__grid"
+  [class.fpc-data-table__grid--stackable]="!stickyFirstColumn()"
+  role="table"
+  [attr.aria-label]="ariaLabel()"
+  [attr.aria-rowcount]="rowCount()"
+  data-testid="fpc-data-table-grid"
+>
+  <!-- Fixed head block (never scrolls vertically): column heads, then the search / actions toolbar row (3.38 R11:
+       thead → search → rows). The head table scrolls sideways only, mirrored from the body (scrollLeft sync); its
+       frame reserves the body's vertical scrollbar width (`--fpc-data-table-gutter`, measured). -->
+  <div class="fpc-data-table__head" role="none" data-testid="fpc-data-table-head">
+    <div #headFrame class="fpc-data-table__head-frame" role="none">
+      <div #headScroller class="fpc-data-table__head-scroller" role="none">
+        <table
+          #headTable
+          role="presentation"
+          class="table mb-0 fpc-data-table__table fpc-data-table__head-table"
+          [class.fpc-data-table__table--compact]="compact()"
+          [class.fpc-table--sticky-first]="stickyFirstColumn()"
+          [class.fpc-table--sticky-head]="stickyFirstColumn()"
+        >
+          <colgroup>
+            @if (selectable()) {
+              <col class="fpc-data-table__col--check" />
+            }
+            @for (column of shownColumns(); track column.id) {
+              <col [attr.data-col-id]="column.id" />
+            }
+            @if (trailingColumn()) {
+              <col class="fpc-data-table__col--more" />
+            }
+          </colgroup>
+          <thead role="rowgroup">
+            <tr role="row">
+              @if (selectable()) {
+                <th scope="col" role="columnheader" class="fpc-data-table__check">
+                  @if (single()) {
+                    <!-- Single selection: no select-all; an invisible radio keeps the cell's width and the
+                         magnifier axis (syncStateAxis measures it). -->
+                    <span class="visually-hidden">{{ text().selectRow }}</span>
+                    <input
+                      type="radio"
+                      class="form-check-input fpc-data-table__check-ghost"
+                      tabindex="-1"
+                      disabled
+                      aria-hidden="true"
+                    />
+                  } @else {
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      [checked]="allSelected()"
+                      [indeterminate]="someSelected()"
+                      [attr.aria-label]="text().selectAll"
+                      (change)="toggleAll()"
+                      data-testid="fpc-data-table-select-all"
+                    />
+                  }
+                </th>
+              }
+              @for (column of shownColumns(); track column.id) {
+                <th
+                  scope="col"
+                  role="columnheader"
+                  [style.width]="column.width ?? null"
+                  [class]="cellClass(column)"
+                  [attr.aria-sort]="ariaSort(column)"
+                >
+                  @if (column.type === 'state' && column.iconOnly !== false) {
+                    <!-- State column (3.38 D1): narrow; the heading stays for screen readers, a sort click on the glyph. -->
+                    @if (isSortable(column)) {
+                      <button
+                        type="button"
+                        class="fpc-table__sort fpc-data-table__sort"
+                        (click)="onSortClick(column)"
+                        [attr.data-sort-column]="column.id"
+                        [title]="column.label || text().state"
+                      >
+                        <span class="visually-hidden">{{ column.label || text().state }}</span>
+                        <!-- A status glyph takes the label's place, so the head isn't empty; same sort icons as other columns. -->
+                        <span class="fpc-table__sort-label fpc-data-table__state-head" aria-hidden="true"
+                          ><i class="bi bi-circle-half"></i
+                        ></span>
+                        <i
+                          class="bi fpc-table__sort-icon"
+                          [class.bi-caret-up-fill]="sort()?.column === column.id && sort()?.direction === 'asc'"
+                          [class.bi-caret-down-fill]="sort()?.column === column.id && sort()?.direction === 'desc'"
+                          [class.bi-arrow-down-up]="sort()?.column !== column.id"
+                          aria-hidden="true"
+                        ></i>
+                      </button>
+                    } @else {
+                      <span class="visually-hidden">{{ column.label || text().state }}</span>
+                      <span class="fpc-data-table__state-head" [title]="column.label || text().state" aria-hidden="true"
+                        ><i class="bi bi-circle-half"></i
+                      ></span>
+                    }
+                  } @else if (isSortable(column)) {
+                    <button
+                      type="button"
+                      class="fpc-table__sort fpc-data-table__sort"
+                      (click)="onSortClick(column)"
+                      [attr.data-sort-column]="column.id"
+                    >
+                      <span class="fpc-table__sort-label">{{ column.label }}</span>
+                      <i
+                        class="bi fpc-table__sort-icon"
+                        [class.bi-caret-up-fill]="sort()?.column === column.id && sort()?.direction === 'asc'"
+                        [class.bi-caret-down-fill]="sort()?.column === column.id && sort()?.direction === 'desc'"
+                        [class.bi-arrow-down-up]="sort()?.column !== column.id"
+                        aria-hidden="true"
+                      ></i>
+                    </button>
+                  } @else {
+                    {{ column.label }}
+                  }
+                </th>
+              }
+              @if (trailingColumn()) {
+                <th
+                  scope="col"
+                  role="columnheader"
+                  class="fpc-data-table__more"
+                  [class.fpc-data-table__columns-cell]="chooserInHeader()"
+                >
+                  @if (chooserInHeader()) {
+                    <!-- Nothing else in the toolbar (the page owns search / filters): the chooser sits in the head corner
+                         instead of an otherwise empty toolbar row. -->
+                    <ng-container [ngTemplateOutlet]="columnChooser" />
+                  } @else {
+                    <span class="visually-hidden">{{ text().rowActions }}</span>
+                  }
+                </th>
+              }
+            </tr>
+          </thead>
+        </table>
+      </div>
+      @if (!nested()) {
+        <!-- Overflow indicators: small chevrons at the head's ends while the body scrolls sideways and has more columns
+             that way (shown / hidden by the component via frame classes, no change detection per scroll); a click pages
+             the body like the step strip's chevrons. A pointer convenience only: aria-hidden and out of the tab order
+             (keyboard focus moving into a clipped cell already scrolls it into view), so the ARIA table keeps only rows
+             as children; the tooltip names the action. -->
+        <button
+          type="button"
+          class="fpc-data-table__overflow fpc-data-table__overflow--start"
+          tabindex="-1"
+          aria-hidden="true"
+          [title]="text().previousColumns"
+          (mousedown)="$event.preventDefault()"
+          (click)="pageColumns(-1)"
+          data-testid="fpc-data-table-overflow-start"
+        >
+          <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        </button>
+        <button
+          type="button"
+          class="fpc-data-table__overflow fpc-data-table__overflow--end"
+          tabindex="-1"
+          aria-hidden="true"
+          [title]="text().nextColumns"
+          (mousedown)="$event.preventDefault()"
+          (click)="pageColumns(1)"
+          data-testid="fpc-data-table-overflow-end"
+        >
+          <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </button>
+      }
+    </div>
+    <!-- Toolbar strip (search lead, chips, Filters drawer + Apply, Clear all, actions: Views, columns, Refresh, the
+         consumer's toolbar slot) under the column heads, full visible width, outside the scrolling body; a page's own
+         toolbar for this table comes in through [fpcDataTableHeadToolbar]. -->
+    <div class="fpc-data-table__toolbar-row" role="row">
+      <div class="fpc-data-table__toolbar-cell" role="cell" [attr.aria-colspan]="colspan()">
+        <ng-content select="[fpcDataTableHeadToolbar]" />
+        <fpc-list-toolbar
+          class="fpc-data-table__toolbar"
+          role="toolbar"
+          [attr.aria-label]="ariaLabel()"
+          [filterable]="showFilterButton()"
+          [(open)]="filtersOpen"
+          [title]="text().filters"
+          [activeCount]="filtersActive()"
+          [chips]="chips()"
+          (applied)="filtersApplied.emit()"
+          (cleared)="onClearAll()"
+          (chipRemove)="removeChip.emit($event)"
+          data-testid="fpc-data-table-toolbar"
+        >
+          @if (searchable()) {
+            <fpc-search-field
+              fpcListToolbarLead
+              class="fpc-data-table__search"
+              [value]="query()"
+              (valueChange)="query.set($event)"
+              [placeholder]="searchPlaceholder() ?? text().search"
+              [ariaLabel]="searchPlaceholder() ?? text().search"
+              [title]="searchTitle()"
+            />
+          }
+          <ng-container ngProjectAs="[fpcListToolbarActions]">
+            @if (views(); as savedViews) {
+              <fpc-dropdown alignment="end" appendTo="body" data-testid="fpc-data-table-views">
+                <button fpcDropdownTrigger type="button" class="btn fpc-toolbar-btn dropdown-toggle">
+                  <i class="bi bi-bookmark" aria-hidden="true"></i>
+                  <span>{{ text().views }}</span>
+                </button>
+                @for (view of savedViews; track view.id) {
+                  <div
+                    class="dropdown-item d-flex align-items-center gap-2 fpc-data-table__view"
+                    [class.active]="view.id === activeViewId()"
+                  >
+                    <button
+                      type="button"
+                      class="btn btn-link btn-sm p-0 flex-grow-1 text-start text-reset text-decoration-none"
+                      (click)="viewSelect.emit(view)"
+                      [attr.data-view-id]="view.id"
+                    >
+                      {{ view.name }}
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-link btn-sm p-0 text-body-secondary"
+                      [attr.aria-label]="text().deleteView + ' ' + view.name"
+                      [title]="text().deleteView"
+                      (click)="viewDelete.emit(view)"
+                    >
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                } @empty {
+                  <span class="dropdown-item-text small text-body-secondary">{{ text().noViews }}</span>
+                }
+                <hr class="dropdown-divider" />
+                <button
+                  type="button"
+                  class="dropdown-item"
+                  (click)="viewSave.emit()"
+                  data-testid="fpc-data-table-save-view"
+                >
+                  {{ text().saveView }}
+                </button>
+              </fpc-dropdown>
+            }
+            @if (showColumnChooser() && !chooserInHeader()) {
+              <ng-container [ngTemplateOutlet]="columnChooser" />
+            }
+            @if (refreshable()) {
+              <button
+                type="button"
+                class="btn fpc-toolbar-btn fpc-icon-btn"
+                [title]="text().refresh"
+                [attr.aria-label]="text().refresh"
+                [disabled]="loading()"
+                (click)="refresh.emit()"
+                data-testid="fpc-data-table-refresh"
+              >
+                <i class="bi bi-arrow-clockwise" [class.fpc-data-table__spin]="loading()" aria-hidden="true"></i>
+              </button>
+            }
+            <ng-content select="[fpcDataTableToolbar]" />
+          </ng-container>
+          <ng-content select="[fpcDataTableFilters]" />
+        </fpc-list-toolbar>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scrolling body: only the rows (and the empty / no-matches state) scroll; the virtual-scroll viewport. With a
+       `dropGroup` also the drop zone (the whole body, an empty table included). -->
+  <div
+    #scroller
+    class="fpc-data-table__scroller"
+    role="none"
+    (scroll)="onScroll()"
+    (dragenter)="onDropZoneDragOver($event)"
+    (dragover)="onDropZoneDragOver($event)"
+    (dragleave)="onDropZoneDragLeave($event)"
+    (drop)="onDropZoneDrop($event)"
+    data-testid="fpc-data-table-scroller"
+  >
+    <table
+      #bodyTable
+      role="presentation"
+      class="table table-hover mb-0 fpc-data-table__table fpc-data-table__body-table"
+      [class.fpc-data-table__table--compact]="compact()"
+      [class.fpc-table--sticky-first]="stickyFirstColumn()"
+    >
+      <colgroup>
+        @if (selectable()) {
+          <col class="fpc-data-table__col--check" />
+        }
+        @for (column of shownColumns(); track column.id) {
+          <col [attr.data-col-id]="column.id" />
+        }
+        @if (trailingColumn()) {
+          <col class="fpc-data-table__col--more" />
+        }
+      </colgroup>
+      <!-- Column sizer: an invisible, zero-height copy of the head labels so the body's auto layout also fits the head
+           texts; its cells are measured (ResizeObserver) and copied into the head's <colgroup>. -->
+      <thead class="fpc-data-table__sizer" aria-hidden="true">
+        <tr>
+          @if (selectable()) {
+            <th class="fpc-data-table__check">
+              <div class="fpc-data-table__sizer-box">
+                <input [type]="single() ? 'radio' : 'checkbox'" class="form-check-input" tabindex="-1" disabled />
+              </div>
+            </th>
+          }
+          @for (column of shownColumns(); track column.id) {
+            <th [style.width]="column.width ?? null" [class]="cellClass(column)">
+              <div class="fpc-data-table__sizer-box">
+                @if (column.type === 'state' && column.iconOnly !== false) {
+                  <span class="fpc-table__sort">
+                    <span class="fpc-table__sort-label fpc-data-table__state-head"
+                      ><i class="bi bi-circle-half"></i
+                    ></span>
+                    @if (isSortable(column)) {
+                      <i class="bi fpc-table__sort-icon bi-arrow-down-up"></i>
+                    }
+                  </span>
+                } @else if (isSortable(column)) {
+                  <span class="fpc-table__sort"
+                    ><span class="fpc-table__sort-label">{{ column.label }}</span
+                    ><i class="bi fpc-table__sort-icon bi-arrow-down-up"></i
+                  ></span>
+                } @else {
+                  {{ column.label }}
+                }
+              </div>
+            </th>
+          }
+          @if (trailingColumn()) {
+            <th class="fpc-data-table__more" [class.fpc-data-table__columns-cell]="chooserInHeader()">
+              <div class="fpc-data-table__sizer-box">
+                @if (chooserInHeader()) {
+                  <span class="fpc-data-table__sizer-chooser"></span>
+                }
+              </div>
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @if (error(); as message) {
+          <tr class="fpc-data-table__error" role="row" data-testid="fpc-data-table-error">
+            <td role="cell" [attr.colspan]="colspan()">
+              <fpc-alert variant="danger" flush [message]="message" />
+            </td>
+          </tr>
+        }
+        @for (placeholder of skeleton(); track placeholder) {
+          <tr
+            class="fpc-data-table__skeleton placeholder-glow"
+            aria-hidden="true"
+            data-testid="fpc-data-table-skeleton"
+          >
+            @if (selectable()) {
+              <td class="fpc-data-table__check"></td>
+            }
+            @for (column of shownColumns(); track column.id) {
+              <td [class]="cellClass(column)"><span class="placeholder col-8"></span></td>
+            }
+            @if (trailingColumn()) {
+              <td class="fpc-data-table__more"></td>
+            }
+          </tr>
+        }
+        @if (pageRows().length > 0) {
+          @if (padTop() > 0) {
+            <tr aria-hidden="true" class="fpc-data-table__pad">
+              <td [attr.colspan]="colspan()" [style.height.px]="padTop()"></td>
+            </tr>
+          }
+          @for (entry of entries(); track trackEntry($index, entry); let index = $index) {
+            @if (entry.kind === 'group') {
+              <tr
+                class="fpc-data-table__group"
+                role="row"
+                data-testid="fpc-data-table-group"
+                [attr.data-group]="entry.key"
+              >
+                <td role="cell" [attr.colspan]="colspan()">
+                  <button
+                    type="button"
+                    class="fpc-data-table__group-toggle"
+                    [attr.aria-expanded]="!entry.collapsed"
+                    [attr.aria-label]="
+                      (entry.collapsed ? text().expandGroup : text().collapseGroup) + ' ' + entry.label
+                    "
+                    (click)="toggleGroup(entry.key)"
+                  >
+                    <i
+                      class="bi"
+                      [class.bi-chevron-right]="entry.collapsed"
+                      [class.bi-chevron-down]="!entry.collapsed"
+                      aria-hidden="true"
+                    ></i>
+                    <span class="fw-semibold">{{ entry.label }}</span>
+                    <fpc-badge tone="neutral">{{ entry.count }}</fpc-badge>
+                  </button>
+                </td>
+              </tr>
+            } @else {
+              @let row = entry.row;
+              <tr
+                tabindex="0"
+                role="row"
+                class="fpc-data-table__row"
+                [class.table-active]="rowId()(row) === activeRowId()"
+                [class.fpc-data-table__row--selected]="isSelected(row)"
+                [style.height.px]="virtual() ? rowHeight() : null"
+                [attr.aria-rowindex]="window().start + index + 2"
+                [attr.aria-selected]="selectable() ? isSelected(row) : null"
+                [attr.aria-expanded]="detailTemplate() ? rowId()(row) === expandedRowId() : null"
+                [attr.data-row-id]="rowId()(row)"
+                [attr.draggable]="canDrag(row) ? 'true' : null"
+                [class.fpc-data-table__row--draggable]="canDrag(row)"
+                [class.fpc-data-table__row--drag-source]="dragRowId() === rowId()(row)"
+                (dragstart)="onRowDragStart(row, $event)"
+                (dragend)="onRowDragEnd()"
+                (click)="onRowClick(row, $event)"
+                (dblclick)="onRowDblClick(row, $event)"
+                (keydown)="onRowKeydown(row, $event)"
+                (contextmenu)="onRowContextMenu(row, $event)"
+              >
+                @if (selectable()) {
+                  <td role="cell" class="fpc-data-table__check">
+                    @if (single()) {
+                      <input
+                        type="radio"
+                        class="form-check-input"
+                        [name]="radioName"
+                        [value]="rowId()(row)"
+                        [checked]="isSelected(row)"
+                        [attr.aria-checked]="isSelected(row)"
+                        [attr.aria-label]="rowLabel(row)"
+                        (change)="toggleRow(row)"
+                        data-testid="fpc-data-table-select-radio"
+                      />
+                    } @else {
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        [checked]="isSelected(row)"
+                        [attr.aria-label]="text().selectRow"
+                        (change)="toggleRow(row)"
+                      />
+                    }
+                  </td>
+                }
+                @for (column of shownColumns(); track column.id; let first = $first) {
+                  <td role="cell" [class]="cellClass(column)" [class.font-monospace]="column.mono">
+                    @if (cellTemplates().get(column.id); as template) {
+                      @if (column.id === leadColumnId() && linkOf(row); as link) {
+                        <!-- Rich name cell with a row link: the template renders inside the real link. -->
+                        <a
+                          class="fpc-data-table__link"
+                          [href]="hrefOf(link)"
+                          [attr.draggable]="dragEnabled() ? 'false' : null"
+                          (click)="onLinkClick(link, $event)"
+                        >
+                          <ng-container
+                            *ngTemplateOutlet="template; context: { $implicit: row, value: columnValue(column, row) }"
+                          />
+                        </a>
+                      } @else {
+                        <ng-container
+                          *ngTemplateOutlet="template; context: { $implicit: row, value: columnValue(column, row) }"
+                        />
+                      }
+                    } @else if (column.type === 'state') {
+                      @if (stateOf(column, row); as state) {
+                        <fpc-badge
+                          [tone]="state.tone"
+                          [icon]="state.icon"
+                          [iconOnly]="column.iconOnly !== false"
+                          [label]="state.label"
+                          data-testid="fpc-data-table-state"
+                          >{{ state.label }}</fpc-badge
+                        >
+                      }
+                    } @else if (column.id === leadColumnId() && linkOf(row); as link) {
+                      <a
+                        class="fpc-data-table__link"
+                        [href]="hrefOf(link)"
+                        [attr.draggable]="dragEnabled() ? 'false' : null"
+                        (click)="onLinkClick(link, $event)"
+                        >{{ value(column, row) }}</a
+                      >
+                    } @else {
+                      {{ value(column, row) }}
+                    }
+                    @if (first && rowMark()?.(row)) {
+                      <span class="fpc-data-table__mark" [title]="text().changed" aria-hidden="true">●</span>
+                      <span class="visually-hidden">{{ text().changed }}</span>
+                    }
+                  </td>
+                }
+                @if (trailingColumn()) {
+                  <td role="cell" class="fpc-data-table__more">
+                    <span class="fpc-data-table__actions">
+                      @for (action of rowInlineActions()?.(row) ?? []; track action.id) {
+                        <button
+                          type="button"
+                          class="btn btn-link btn-sm p-0 text-body-secondary"
+                          [class.text-danger]="action.danger"
+                          [attr.aria-label]="action.label"
+                          [title]="action.title ?? action.label"
+                          [disabled]="action.disabled"
+                          [attr.data-action-id]="action.id"
+                          (click)="rowAction.emit({ row, item: action })"
+                          data-testid="fpc-data-table-row-action"
+                        >
+                          <i class="bi" [class]="'bi-' + (action.icon ?? 'lightning')" aria-hidden="true"></i>
+                        </button>
+                      }
+                      @if (rowMenu()) {
+                        <button
+                          type="button"
+                          class="btn btn-link btn-sm p-0 text-body-secondary"
+                          [attr.aria-label]="text().more"
+                          [title]="text().more"
+                          aria-haspopup="menu"
+                          (click)="onMoreClick(row, $event)"
+                          data-testid="fpc-data-table-row-more"
+                        >
+                          <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+                        </button>
+                      }
+                    </span>
+                  </td>
+                }
+              </tr>
+              @if (detailTemplate(); as detail) {
+                @if (rowId()(row) === expandedRowId()) {
+                  <tr class="fpc-data-table__detail" role="row" data-testid="fpc-data-table-detail">
+                    <td role="cell" [attr.colspan]="colspan()">
+                      <ng-container *ngTemplateOutlet="detail; context: { $implicit: row }" />
+                    </td>
+                  </tr>
+                }
+              }
+            }
+          }
+          @if (padBottom() > 0) {
+            <tr aria-hidden="true" class="fpc-data-table__pad">
+              <td [attr.colspan]="colspan()" [style.height.px]="padBottom()"></td>
+            </tr>
+          }
+        }
+      </tbody>
+      @if (footerTemplate(); as footer) {
+        <tfoot class="fpc-data-table__foot" role="rowgroup" data-testid="fpc-data-table-foot">
+          <ng-container [ngTemplateOutlet]="footer" />
+        </tfoot>
+      }
+    </table>
+    @if (paging() === 'infinite') {
+      <div #sentinel class="fpc-data-table__sentinel" aria-hidden="true"></div>
+      @if (loadingMore()) {
+        <div class="fpc-data-table__loading-more text-body-secondary small" role="row">
+          <div class="fpc-data-table__loading-more-cell" role="cell">
+            <span class="fpc-data-table__loading-more-status" role="status">
+              <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+              {{ text().loadingMore }}
+            </span>
+          </div>
+        </div>
+      }
+    }
+    @if (pageRows().length === 0 && skeleton().length === 0 && !error()) {
+      <!-- Empty vs no matches: a search / chip / filter that leaves nothing says so; otherwise the consumer's
+           empty state (projected) or the default one. In the scrolling body below the (invisible) sizer head, outside
+           the body table: it fills the rest of the body area and centres (a colspan row stayed one short row). A row /
+           cell of the logical table (ARIA), so the wrapper's role="table" owns no stray content. -->
+      <div class="fpc-data-table__empty" role="row" [attr.data-empty-reason]="narrowed() ? 'no-matches' : 'empty'">
+        <div class="fpc-data-table__empty-cell" role="cell">
+          @if (narrowed()) {
+            <fpc-empty-state
+              size="sm"
+              icon="search"
+              [title]="text().noMatches"
+              [message]="text().noMatchesHint"
+              data-testid="fpc-data-table-no-matches"
+            />
+          } @else {
+            <ng-content select="[fpcDataTableEmpty]" />
+            <fpc-empty-state
+              class="fpc-data-table__empty-default"
+              size="sm"
+              [icon]="emptyIcon()"
+              [title]="text().empty"
+            />
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="fpc-data-table__pager">
+  @if (showPager()) {
+    <fpc-pager
+      size="sm"
+      [(page)]="page"
+      [(pageSize)]="pageSize"
+      [pageSizes]="pageSizes()"
+      [total]="pagerTotal()"
+      [itemCount]="pageRows().length"
+      [hasNext]="paging() === 'server' && pagerTotal() === null ? (hasNext() ?? false) : null"
+      [disabled]="loading()"
+      [ariaLabel]="text().pagination"
+      [previousLabel]="text().previousPage"
+      [nextLabel]="text().nextPage"
+      [pageSizeLabel]="text().pageSize"
+      [rangeLabel]="text().range"
+      [rangeOpenLabel]="text().rangeOpen"
+      data-testid="fpc-data-table-pager"
+    />
+  }
+  <ng-content select="[fpcDataTablePager]" />
+</div>
+
+<fpc-context-menu
+  [items]="menuItems()"
+  [position]="menuPosition()"
+  (positionChange)="menuPosition.set($event)"
+  [ariaLabel]="text().rowActions"
+  (itemSelect)="onMenuSelect($event)"
+/>
+
+<ng-template #columnChooser>
+  <fpc-dropdown alignment="end" appendTo="body" [closeOnSelect]="false" data-testid="fpc-data-table-columns">
+    <button
+      fpcDropdownTrigger
+      type="button"
+      class="btn fpc-toolbar-btn fpc-icon-btn"
+      [title]="text().columns"
+      [attr.aria-label]="text().columns"
+    >
+      <i class="bi bi-layout-three-columns" aria-hidden="true"></i>
+    </button>
+    @for (column of columns(); track column.id) {
+      <label class="dropdown-item d-flex align-items-center gap-2 mb-0">
+        <input
+          type="checkbox"
+          class="form-check-input mt-0"
+          [checked]="shownIds().has(column.id)"
+          [disabled]="column.required"
+          (change)="toggleColumn(column)"
+          [attr.data-column-id]="column.id"
+        />
+        {{ column.label }}
+      </label>
+    }
+  </fpc-dropdown>
+</ng-template>

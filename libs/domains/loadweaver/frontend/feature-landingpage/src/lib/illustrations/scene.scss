@@ -1,0 +1,186 @@
+// Shared look of the drawn Loadweaver scenes (dark canvas, gold accents). The scenes are decorative
+// SVG drawings with a single accessible label on the host (`role="img"`), not screenshots.
+
+:host {
+  display: block;
+  width: 100%;
+  border: var(--bs-border-width) solid rgb(255 255 255 / 0.1);
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.06) 1px, transparent 0) 0 0 / 24px 24px,
+    #121214;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.45);
+}
+
+:host(.lw-scene--rounded) {
+  border-radius: 1rem;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--bs-body-font-family);
+}
+
+.lw-mono {
+  font-family: var(--bs-font-monospace);
+}
+
+.lw-text {
+  fill: #e7e7ea;
+  font-size: 15px;
+}
+
+.lw-text--strong {
+  font-weight: 700;
+}
+
+.lw-text--muted {
+  fill: #9ca3af;
+  font-size: 13px;
+}
+
+.lw-text--small {
+  font-size: 12px;
+}
+
+.lw-text--gold {
+  fill: #ffc21a;
+}
+
+.lw-text--ok {
+  fill: #34d399;
+}
+
+.lw-text--warn {
+  fill: #fb923c;
+}
+
+.lw-text--danger {
+  fill: #f87171;
+}
+
+.lw-text--dark {
+  fill: #0f0f11;
+  font-weight: 700;
+}
+
+.lw-site {
+  fill: rgb(255 255 255 / 0.025);
+  stroke: rgb(255 255 255 / 0.14);
+  stroke-dasharray: 4 6;
+}
+
+.lw-card {
+  fill: #1b1b1f;
+  stroke: rgb(255 255 255 / 0.14);
+}
+
+.lw-card--gold {
+  stroke: #ffc21a;
+}
+
+.lw-card--down {
+  fill: #1b1416;
+  stroke: #f87171;
+  stroke-dasharray: 5 5;
+}
+
+.lw-card--muted {
+  opacity: 0.55;
+}
+
+.lw-pill {
+  fill: rgb(255 255 255 / 0.06);
+  stroke: rgb(255 255 255 / 0.12);
+}
+
+.lw-pill--gold {
+  fill: #ffc21a;
+  stroke: #ffc21a;
+}
+
+.lw-pill--gold-soft {
+  fill: rgb(255 194 26 / 0.14);
+  stroke: rgb(255 194 26 / 0.45);
+}
+
+.lw-pill--ok {
+  fill: rgb(52 211 153 / 0.14);
+  stroke: rgb(52 211 153 / 0.45);
+}
+
+.lw-pill--warn {
+  fill: rgb(251 146 60 / 0.14);
+  stroke: rgb(251 146 60 / 0.5);
+}
+
+.lw-pill--danger {
+  fill: rgb(248 113 113 / 0.14);
+  stroke: rgb(248 113 113 / 0.5);
+}
+
+.lw-edge {
+  fill: none;
+  stroke: rgb(255 255 255 / 0.22);
+  stroke-width: 2;
+}
+
+.lw-edge--gold {
+  stroke: #ffc21a;
+}
+
+.lw-edge--ok {
+  stroke: #34d399;
+}
+
+.lw-edge--warn {
+  stroke: #fb923c;
+}
+
+.lw-edge--blocked {
+  stroke: #f87171;
+  stroke-dasharray: 4 6;
+}
+
+.lw-edge--tunnel {
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+}
+
+// Live traffic: dashes travel along the edge. Static for visitors who prefer reduced motion.
+.lw-edge--flow {
+  stroke-dasharray: 8 10;
+  animation: lw-flow 1.4s linear infinite;
+}
+
+.lw-dot {
+  fill: #ffc21a;
+}
+
+.lw-dot--ok {
+  fill: #34d399;
+}
+
+.lw-dot--danger {
+  fill: #f87171;
+}
+
+.lw-dot--muted {
+  fill: #6b7280;
+}
+
+@keyframes lw-flow {
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lw-edge--flow {
+    animation: none;
+  }
+}

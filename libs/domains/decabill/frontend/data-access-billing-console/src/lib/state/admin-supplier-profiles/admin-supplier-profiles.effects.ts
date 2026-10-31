@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, concatMap, from, map, of, switchMap, toArray } from 'rxjs';
 
+import { billingPageWindow } from '../../constants/list-paging.constants';
 import { AdminSupplierProfilesService } from '../../services/admin-supplier-profiles.service';
 import type { AdminSupplierProfileDetail } from '../../types/suppliers.types';
 
@@ -13,7 +14,6 @@ import {
   deleteAdminSupplierProfileFailure,
   deleteAdminSupplierProfileSuccess,
   loadAdminSupplierProfiles,
-  loadAdminSupplierProfilesBatch,
   loadAdminSupplierProfilesFailure,
   loadAdminSupplierProfilesSuccess,
   saveAdminSupplierProfileCustomData,
@@ -33,8 +33,6 @@ function normalizeError(error: unknown): string {
 
   return 'An unexpected error occurred';
 }
-
-const BATCH_SIZE = 10;
 
 type CustomDataMutation =
   | { type: 'add'; key: string; value: string }
@@ -70,56 +68,14 @@ export const loadAdminSupplierProfiles$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminSupplierProfilesService)) =>
     actions$.pipe(
       ofType(loadAdminSupplierProfiles),
-      switchMap(({ search }) =>
-        service.list({ limit: BATCH_SIZE, offset: 0, search }).pipe(
-          switchMap((response) => {
-            if (response.items.length === 0) {
-              return of(loadAdminSupplierProfilesSuccess({ profiles: [] }));
-            }
+      switchMap(({ search, page, pageSize }) => {
+        const { limit, offset } = billingPageWindow(page, pageSize);
 
-            if (response.items.length < BATCH_SIZE) {
-              return of(loadAdminSupplierProfilesSuccess({ profiles: response.items }));
-            }
-
-            return of(
-              loadAdminSupplierProfilesBatch({
-                offset: BATCH_SIZE,
-                accumulatedProfiles: response.items,
-                search,
-              }),
-            );
-          }),
+        return service.list({ limit, offset, search }).pipe(
+          map((response) => loadAdminSupplierProfilesSuccess({ profiles: response.items, total: response.total })),
           catchError((error) => of(loadAdminSupplierProfilesFailure({ error: normalizeError(error) }))),
-        ),
-      ),
-    ),
-  { functional: true },
-);
-
-export const loadAdminSupplierProfilesBatch$ = createEffect(
-  (actions$ = inject(Actions), service = inject(AdminSupplierProfilesService)) =>
-    actions$.pipe(
-      ofType(loadAdminSupplierProfilesBatch),
-      switchMap(({ offset, accumulatedProfiles, search }) =>
-        service.list({ limit: BATCH_SIZE, offset, search }).pipe(
-          switchMap((response) => {
-            const newAccumulated = [...accumulatedProfiles, ...response.items];
-
-            if (response.items.length === 0 || response.items.length < BATCH_SIZE) {
-              return of(loadAdminSupplierProfilesSuccess({ profiles: newAccumulated }));
-            }
-
-            return of(
-              loadAdminSupplierProfilesBatch({
-                offset: offset + BATCH_SIZE,
-                accumulatedProfiles: newAccumulated,
-                search,
-              }),
-            );
-          }),
-          catchError((error) => of(loadAdminSupplierProfilesFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     ),
   { functional: true },
 );

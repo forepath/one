@@ -37,6 +37,8 @@ export interface ProjectsCatalogSummaryResponse {
 
 export interface AdminProjectListItem extends ProjectListItem {
   userEmail?: string;
+  /** Billing-profile name (company, else first + last name); shown instead of the email in admin lists. */
+  customerName?: string;
 }
 
 export interface PaginatedAdminProjectsResponse {

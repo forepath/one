@@ -31,6 +31,7 @@ import {
   logout,
   logoutFailure,
   logoutSuccess,
+  register,
   registerSuccess,
   requestPasswordResetSuccess,
   resetPasswordSuccess,
@@ -51,6 +52,7 @@ import {
   loginTwoFactorRequiredRedirect$,
   logout$,
   logoutSuccessRedirect$,
+  register$,
   registerSuccessRedirect$,
   requestPasswordResetSuccessRedirect$,
   resetPasswordSuccessRedirect$,
@@ -550,6 +552,37 @@ describe('AuthenticationEffects', () => {
           expect(window.localStorage.removeItem).toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
           done();
         });
+      });
+    });
+  });
+
+  describe('register$', () => {
+    const response = {
+      user: { id: 'u1', email: 'a@b.com', role: 'admin' },
+      message: 'ok',
+      emailConfirmed: true,
+    };
+
+    it('passes the admin claim token when given', (done) => {
+      const mockAuthService = { register: jest.fn().mockReturnValue(of(response)) };
+
+      actions$ = of(register({ email: 'a@b.com', password: 'secret123', adminClaimToken: 'lwc_token' }));
+
+      register$(actions$, mockAuthService as any).subscribe((result) => {
+        expect(mockAuthService.register).toHaveBeenCalledWith('a@b.com', 'secret123', 'lwc_token');
+        expect(result).toEqual(registerSuccess(response as any));
+        done();
+      });
+    });
+
+    it('registers with credentials only without a token', (done) => {
+      const mockAuthService = { register: jest.fn().mockReturnValue(of(response)) };
+
+      actions$ = of(register({ email: 'a@b.com', password: 'secret123' }));
+
+      register$(actions$, mockAuthService as any).subscribe(() => {
+        expect(mockAuthService.register).toHaveBeenCalledWith('a@b.com', 'secret123');
+        done();
       });
     });
   });

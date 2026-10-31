@@ -1,6 +1,43 @@
 :host {
   display: block;
   position: relative;
+  // Bordered strip: outer height = shared control tier (`styles/_controls.scss`), so the inner
+  // glyph / input / spinner / clear lose the two border widths.
+  --fpc-typeahead-height: var(--fpc-control-height-md, 2.25rem);
+  --fpc-typeahead-inner: calc(var(--fpc-typeahead-height) - 2 * var(--bs-border-width));
+}
+
+:host(.fpc-typeahead-select--sm) {
+  --fpc-typeahead-height: var(--fpc-control-height-sm, 1.875rem);
+}
+
+// Same rule as `fpc-search-field` (3.38 R11): in a lane search band or a list toolbar strip the strip is the chrome
+// (it owns the bottom edge), so the picker drops its border and takes the strip's md tier and font, whatever `size`
+// the call site passed. Elsewhere (forms, modals) it stays the bordered control at its size.
+:host-context(.fpc-board-lane__search),
+:host-context(.fpc-list-toolbar__lead) {
+  --fpc-typeahead-height: var(--fpc-control-height-md, 2.25rem);
+  --fpc-typeahead-inner: var(--fpc-typeahead-height);
+
+  .fpc-typeahead-select__input-group.border {
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .fpc-typeahead-select__input.form-control-sm {
+    font-size: var(--bs-body-font-size);
+  }
+
+  // Glyph on the shared inset (as `fpc-search-field`).
+  .fpc-typeahead-select__input-group > i.bi-search {
+    width: auto;
+    justify-content: flex-start;
+    padding-inline: var(--fpc-edge-inset, 1rem) 0.625rem;
+  }
+}
+
+:host-context(.fpc-list-toolbar__lead) .fpc-typeahead-select__input-group > i.bi-search {
+  padding-inline-start: 0;
 }
 
 .fpc-typeahead-select__selection:empty {
@@ -25,25 +62,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: var(--fpc-typeahead-inner);
+    height: var(--fpc-typeahead-inner);
     color: var(--bs-secondary-color);
     flex: 0 0 auto;
   }
 }
 
-:host(.fpc-typeahead-select--sm) .fpc-typeahead-select__input-group {
-  i.bi-search,
-  .fpc-typeahead-select__spinner,
-  .fpc-typeahead-select__clear {
-    width: 1.875rem;
-    height: 1.875rem;
-  }
-}
-
-.fpc-typeahead-select__input {
-  min-height: 2.25rem;
-  height: 2.25rem;
+// Doubled class: outranks the global control tier (`.form-control…form-control-sm` sets the full tier height, which
+// made the bordered strip two border widths taller than the fields beside it).
+.fpc-typeahead-select__input.fpc-typeahead-select__input.fpc-typeahead-select__input {
+  min-height: var(--fpc-typeahead-inner);
+  height: var(--fpc-typeahead-inner);
   padding-top: 0;
   padding-bottom: 0;
 
@@ -52,18 +82,9 @@
   }
 }
 
-:host(.fpc-typeahead-select--sm) .fpc-typeahead-select__input {
-  min-height: 1.875rem;
-  height: 1.875rem;
-}
-
 // Reserve end inset whenever clear is enabled so showing the × does not widen the strip.
 :host(.fpc-typeahead-select--clearable) .fpc-typeahead-select__input {
-  padding-right: 2.25rem;
-}
-
-:host(.fpc-typeahead-select--sm.fpc-typeahead-select--clearable) .fpc-typeahead-select__input {
-  padding-right: 1.875rem;
+  padding-right: var(--fpc-typeahead-inner);
 }
 
 .fpc-typeahead-select__spinner,
@@ -77,10 +98,10 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 2.25rem;
-  height: 2.25rem;
-  min-width: 2.25rem;
-  min-height: 2.25rem;
+  width: var(--fpc-typeahead-inner);
+  height: var(--fpc-typeahead-inner);
+  min-width: var(--fpc-typeahead-inner);
+  min-height: var(--fpc-typeahead-inner);
   padding: 0;
   margin: 0;
   line-height: 1;
@@ -94,11 +115,7 @@
 }
 
 :host(.fpc-typeahead-select--clearable) .fpc-typeahead-select__spinner {
-  right: 2.25rem;
-}
-
-:host(.fpc-typeahead-select--sm.fpc-typeahead-select--clearable) .fpc-typeahead-select__spinner {
-  right: 1.875rem;
+  right: var(--fpc-typeahead-inner);
 }
 
 .fpc-typeahead-select__clear:hover {
@@ -117,7 +134,7 @@
   // Fixed + body-portaled (see component) so modal overflow / transforms cannot clip results.
   // Above Bootstrap modal (1055) when the menu is on `document.body`.
   position: fixed;
-  z-index: 1080;
+  z-index: var(--fpc-z-popover, 1070);
   box-sizing: border-box;
   max-height: 18rem;
   // Width is set to the anchor; keep overflow vertical-only so nowrap Bootstrap items
@@ -172,5 +189,43 @@
     white-space: normal;
     overflow-wrap: anywhere;
     padding: var(--bs-list-group-item-padding-y, 0.5rem) var(--bs-list-group-item-padding-x, 1rem);
+  }
+}
+
+// Focus (3.38 + branched fix B): same as `fpc-search-field` — no glow on input / icon / spinner / clear, borders
+// (incl. the bottom edge) unchanged; keyboard focus = one ring around the whole field, never on mouse focus.
+.fpc-typeahead-select__input-group {
+  box-shadow: none !important;
+  outline: 0;
+
+  *,
+  *:focus,
+  *:focus-visible {
+    box-shadow: none !important;
+    outline: 0 !important;
+  }
+}
+
+.fpc-typeahead-select__input-group.fpc-field-kbd-focus:focus-within::after,
+.fpc-typeahead-select__input-group:has(> .fpc-typeahead-select__clear:focus-visible)::after {
+  content: '';
+  position: absolute;
+  // Border box of the bordered strip: the ring sits just outside the 1px border, which never changes.
+  inset: calc(-1 * var(--bs-border-width));
+  z-index: 6;
+  pointer-events: none;
+  border-radius: inherit;
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 0;
+}
+
+// Lane search band / list toolbar strip: borderless and edge-to-edge, ring just inside the strip (not clipped).
+:host-context(.fpc-board-lane__search),
+:host-context(.fpc-list-toolbar__lead) {
+  .fpc-typeahead-select__input-group.fpc-field-kbd-focus:focus-within::after,
+  .fpc-typeahead-select__input-group:has(> .fpc-typeahead-select__clear:focus-visible)::after {
+    inset: 0;
+    border-radius: 0;
+    outline-offset: -2px;
   }
 }

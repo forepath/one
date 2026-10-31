@@ -1,8 +1,9 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, OnInit, signal, untracked } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
+  AdminBillingService,
   AdminDatevExportsFacade,
   BillingCapabilitiesFacade,
   isQueuedDatevExportEntry,
@@ -15,31 +16,36 @@ import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/f
 import {
   FpcAlertComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
+  fpcRunBulk,
   FpcSpinnerComponent,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FpcTableCellDirective,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  type FpcTableState,
 } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/decabill/frontend/util-configuration';
-import { combineLatest, debounceTime, distinctUntilChanged, map, skip } from 'rxjs';
+import { combineLatest, firstValueFrom, map } from 'rxjs';
 
 import {
   getDatevExportScopeLabel,
-  getDatevExportStatusIconClass,
+  getDatevExportStatusBadgeTone,
   getDatevExportStatusLabel,
-  getDatevExportStatusTextClass,
 } from '../billing-status-labels';
-import { resolveBillingAdminUserIconClass, resolveBillingAdminUserLabel } from '../billing-user-select';
+import { resolveBillingAdminUserLabel } from '../billing-user-select';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
+import { dbServerPaging } from '../shared/server-paging';
+import { formatBillingDateTime } from '../billing-format';
 
 @Component({
   selector: 'framework-admin-datev-exports-page',
@@ -49,11 +55,9 @@ import { showBillingModal, watchBillingMutationModalClose } from '../billing-mod
     FormsModule,
     FpcAlertComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
+    FpcDataTableComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
-    FpcListItemComponent,
-    FpcListComponent,
     FpcEmptyStateComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
@@ -61,7 +65,7 @@ import { showBillingModal, watchBillingMutationModalClose } from '../billing-mod
     FpcSpinnerComponent,
     FpcTabComponent,
     FpcTabGroupComponent,
-    FpcSearchFieldComponent,
+    FpcTableCellDirective,
   ],
   providers: [DatePipe],
   templateUrl: './admin-datev-exports-page.component.html',
@@ -69,6 +73,7 @@ import { showBillingModal, watchBillingMutationModalClose } from '../billing-mod
 })
 export class AdminDatevExportsPageComponent implements OnInit {
   private readonly facade = inject(AdminDatevExportsFacade);
+  private readonly billingService = inject(AdminBillingService);
   private readonly capabilitiesFacade = inject(BillingCapabilitiesFacade);
   private readonly authFacade = inject(AuthenticationFacade);
   private readonly environment = inject<Environment>(ENVIRONMENT);
@@ -83,8 +88,28 @@ export class AdminDatevExportsPageComponent implements OnInit {
   readonly exportMonthAriaLabel = $localize`:@@featureAdminDatevExports-trigger:Export month`;
 
   readonly exportModalOpen = signal(false);
-  readonly searchQuery = signal('');
-  readonly searchQuery$ = toObservable(this.searchQuery);
+  /** Scope tab (home / viewed tenant or unified): a change reloads from page 1. */
+  private readonly viewScope = signal<DatevExportScope>('tenant');
+  private readonly viewTenant = signal(this.homeTenantId);
+  /**
+   * Scope + search + page + size → `GET /admin/billing/datev-exports?scope&viewTenantId&search&limit&offset`
+   * (replace-page; URL q / p / n).
+   */
+  readonly paging = dbServerPaging(
+    (query) => {
+      const scope = untracked(this.viewScope);
+
+      this.facade.loadPage({
+        scope,
+        viewTenantId: scope === 'tenant' ? untracked(this.viewTenant) : undefined,
+        search: query.search,
+        page: query.page,
+        pageSize: query.pageSize,
+      });
+    },
+    { url: '', filters: () => [this.viewScope(), this.viewTenant()] },
+  );
+  readonly total = toSignal(this.facade.total$, { initialValue: 0 });
   readonly items$ = this.facade.items$;
 
   readonly loading$ = this.facade.loading$;
@@ -111,6 +136,98 @@ export class AdminDatevExportsPageComponent implements OnInit {
   readonly viewableTenants = toSignal(this.viewableTenants$, { initialValue: [] as string[] });
   readonly users = toSignal(this.authFacade.users$, { initialValue: [] as UserResponseDto[] });
 
+  readonly columns: FpcTableColumn<AdminDatevExportListEntry>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureAdminDatevExports-colStatus:Status`,
+      type: 'state',
+      state: (item) => this.exportState(item),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureAdminDatevExports-colPeriod:Period`,
+      value: (item) => this.exportPrimaryTitle(item),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'file',
+      label: $localize`:@@featureAdminDatevExports-colFile:File`,
+      value: (item) =>
+        this.isQueuedExport(item) ? this.queuedExportMessage() : (this.exportSecondaryLine(item) ?? ''),
+      priority: 2,
+    },
+    {
+      id: 'scope',
+      label: $localize`:@@featureAdminDatevExports-colScope:Scope`,
+      value: (item) => this.exportScopeLabel(item.scope),
+      priority: 3,
+    },
+    {
+      id: 'bookings',
+      label: $localize`:@@featureAdminDatevExports-metaBookings:Bookings`,
+      value: (item) => this.exportItem(item)?.bookingCount ?? null,
+      align: 'end',
+      priority: 2,
+    },
+    {
+      id: 'invoices',
+      label: $localize`:@@featureAdminDatevExports-metaInvoices:Invoices`,
+      value: (item) => this.exportItem(item)?.invoiceCount ?? null,
+      align: 'end',
+      priority: 3,
+    },
+    {
+      id: 'debtors',
+      label: $localize`:@@featureAdminDatevExports-metaDebtors:Debtors`,
+      value: (item) => this.exportItem(item)?.debtorCount ?? null,
+      align: 'end',
+      priority: 3,
+    },
+    {
+      id: 'completed',
+      label: $localize`:@@featureAdminDatevExports-colCompleted:Completed`,
+      value: (item) => this.completedAt(item) ?? '',
+      priority: 1,
+    },
+    {
+      id: 'triggeredBy',
+      label: $localize`:@@featureAdminDatevExports-colTriggeredBy:Triggered by`,
+      value: (item) => {
+        const exportItem = this.exportItem(item);
+
+        return exportItem ? this.triggeredByLabel(exportItem.triggeredBy) : '';
+      },
+      priority: 3,
+    },
+  ];
+
+  readonly downloadLabel = $localize`:@@featureAdminDatevExports-downloadButtonTitle:Download export`;
+  readonly selected = signal<readonly string[]>([]);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  /** Selected exports that can be downloaded (completed ones). */
+  readonly selectedCompleted = computed(() => {
+    const ids = new Set(this.selected());
+
+    return this.items()
+      .filter((item) => ids.has(item.id))
+      .map((item) => this.exportItem(item))
+      .filter((item): item is AdminDatevExportListItem => item?.status === 'completed');
+  });
+  readonly rowInlineActions = (item: AdminDatevExportListEntry): FpcMenuItem[] =>
+    this.exportItem(item)?.status === 'completed'
+      ? [{ id: 'download', label: this.downloadLabel, icon: 'download' }]
+      : [];
+  readonly rowMenu = (item: AdminDatevExportListEntry): FpcMenuItem[] => [
+    {
+      id: 'download',
+      label: this.downloadLabel,
+      icon: 'download',
+      disabled: this.exportItem(item)?.status !== 'completed',
+    },
+    dbCopyIdItem(),
+  ];
+
   triggerYear = new Date().getFullYear();
   triggerMonth = new Date().getMonth() === 0 ? 12 : new Date().getMonth();
   triggerScope: DatevExportScope = 'tenant';
@@ -118,19 +235,73 @@ export class AdminDatevExportsPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.capabilitiesFacade.loadCapabilities();
-    this.facade.loadExports({ scope: 'tenant', viewTenantId: this.homeTenantId });
     this.authFacade.loadUsers();
     this.registerModalCloseWatcher();
+  }
 
-    this.searchQuery$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.facade.loadExports({
-          scope: this.scope(),
-          viewTenantId: this.scope() === 'tenant' ? (this.viewTenantId() ?? this.homeTenantId) : undefined,
-          search: search.trim() || undefined,
-        });
-      });
+  onRowAction(item: AdminDatevExportListEntry, action: string): void {
+    if (action === 'download' && this.exportItem(item)?.status === 'completed') this.downloadExport(item.id);
+    else if (action === 'copy-id') fpcCopyText(item.id);
+  }
+
+  /** Bulk Download: one `GET /admin/billing/datev-exports/:id/download` per completed export, saved one by one. */
+  async downloadSelected(): Promise<void> {
+    const exports = this.selectedCompleted();
+
+    if (exports.length === 0) return;
+
+    const viewTenantId = this.scope() === 'tenant' ? (this.viewTenantId() ?? this.homeTenantId) : undefined;
+    const result = await fpcRunBulk(
+      exports,
+      async (item) => {
+        const blob = await firstValueFrom(this.billingService.downloadDatevExport(item.id, viewTenantId));
+
+        this.saveBlob(blob, item.fileName?.trim() || `datev-export-${this.exportPrimaryTitle(item)}.zip`);
+      },
+      1,
+    );
+
+    this.bulkResult.set(dbBulkSummary(result, (item) => this.exportPrimaryTitle(item)));
+    this.selected.set([]);
+  }
+
+  exportState(item: AdminDatevExportListEntry): FpcTableState {
+    const exportItem = this.exportItem(item);
+
+    if (!exportItem) {
+      return {
+        label: $localize`:@@featureAdminDatevExports-statusQueued:Queued`,
+        tone: 'info',
+        icon: 'hourglass-split',
+      };
+    }
+
+    const icons: Record<string, string> = {
+      pending: 'clock',
+      running: 'arrow-repeat',
+      completed: 'check-circle-fill',
+      failed: 'x-circle-fill',
+    };
+
+    return {
+      label: getDatevExportStatusLabel(exportItem.status),
+      tone: getDatevExportStatusBadgeTone(exportItem.status),
+      icon: icons[exportItem.status],
+    };
+  }
+
+  completedAt(item: AdminDatevExportListEntry): string | undefined {
+    return this.exportItem(item)?.completedAt ?? undefined;
+  }
+
+  private saveBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   tenantTabLabel(tenantId: string): string {
@@ -155,13 +326,15 @@ export class AdminDatevExportsPageComponent implements OnInit {
       return;
     }
 
+    // The paging effect loads page 1 of the new scope (one request).
     if (tabId === 'unified') {
-      this.facade.setScope('unified');
+      this.viewScope.set('unified');
 
       return;
     }
 
-    this.facade.setScope('tenant', tabId);
+    this.viewTenant.set(tabId);
+    this.viewScope.set('tenant');
   }
 
   submitTriggerExport(): void {
@@ -200,18 +373,6 @@ export class AdminDatevExportsPageComponent implements OnInit {
     return null;
   }
 
-  exportStatusLabel(status: AdminDatevExportListItem['status']): string {
-    return getDatevExportStatusLabel(status);
-  }
-
-  exportStatusTextClass(status: AdminDatevExportListItem['status']): string {
-    return getDatevExportStatusTextClass(status);
-  }
-
-  exportStatusIconClass(status: AdminDatevExportListItem['status']): string {
-    return getDatevExportStatusIconClass(status);
-  }
-
   exportScopeLabel(scope: AdminDatevExportListEntry['scope']): string {
     if (scope === 'tenant') {
       return this.tenantTabLabel(this.viewTenantId() ?? this.homeTenantId);
@@ -237,19 +398,11 @@ export class AdminDatevExportsPageComponent implements OnInit {
       return '-';
     }
 
-    return this.datePipe.transform(value, 'medium') ?? '-';
-  }
-
-  formatCount(value: number): string {
-    return String(value);
+    return formatBillingDateTime(value, '-');
   }
 
   triggeredByLabel(triggeredBy?: string): string {
     return resolveBillingAdminUserLabel(triggeredBy, this.users());
-  }
-
-  triggeredByIconClass(triggeredBy?: string): string {
-    return resolveBillingAdminUserIconClass(triggeredBy);
   }
 
   formatPeriod(year: number, month: number): string {

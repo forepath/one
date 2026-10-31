@@ -21,7 +21,7 @@ import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.componen
       <fpc-page-header [title]="pageTitle">
         <fpc-button
           fpcPageHeaderActions
-          variant="secondary"
+          variant="dark"
           size="sm"
           iconOnly
           [disabled]="!editor() || (editor()?.loading() ?? true)"

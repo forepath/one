@@ -1,6 +1,7 @@
-<section class="section__row" [class.section__row--marketing-hidden]="!showAuthMarketingPanel">
-  <div
-    class="section__column section__column--marketing d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
+<fpc-section-row [nowrap]="true" [marketingHidden]="!showAuthMarketingPanel">
+  <fpc-section-column
+    class="d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
+    variant="marketing"
   >
     <div class="public-withdrawal__marketing p-4">
       <h1 class="display-5 fw-bold mb-3" i18n="@@featurePublicWithdrawal-title">Statutory Withdrawal</h1>
@@ -10,10 +11,10 @@
         }}
       </p>
     </div>
-  </div>
-  <div class="section__column section__column--form section__column--scroll d-flex align-items-center">
+  </fpc-section-column>
+  <fpc-section-column class="d-flex align-items-center" variant="form" [scroll]="true">
     <div class="public-withdrawal__form p-4 my-auto">
-      <h2 class="section__column-title mb-4 text-end" i18n="@@featurePublicWithdrawal-formTitle">Withdrawal Request</h2>
+      <h2 class="fs-5 fw-semibold mb-4 text-end" i18n="@@featurePublicWithdrawal-formTitle">Withdrawal Request</h2>
 
       @if (addresseeLoading$ | async) {
         <div class="card mb-4 bg-body-secondary">
@@ -335,5 +336,5 @@
         </div>
       }
     </div>
-  </div>
-</section>
+  </fpc-section-column>
+</fpc-section-row>

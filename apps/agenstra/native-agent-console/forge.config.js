@@ -22,8 +22,10 @@ module.exports = {
   packagerConfig: {
     asar: true,
     icon: resolveIconBasePath(),
+    // The SSR server ships once, as an extra resource (`process.resourcesPath/server`, what the packaged app loads);
+    // ignored for the asar so the bundle isn't duplicated inside it.
     extraResource: ['./server'],
-    ignore: [/^\/\.git/, /^\/node_modules\/\.cache/, /^\/\.vscode/, /^\/\.idea/, /^\/\.DS_Store/],
+    ignore: [/^\/server(\/|$)/, /^\/\.git/, /^\/node_modules\/\.cache/, /^\/\.vscode/, /^\/\.idea/, /^\/\.DS_Store/],
     prune: false,
   },
   makers: [

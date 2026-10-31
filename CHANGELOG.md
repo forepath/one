@@ -4,793 +4,684 @@ All notable changes to this project will be documented in this file.
 
 ## [4.1.0](https://github.com/forepath/one/compare/v4.0.0...v4.1.0) (2026-10-23)
 
-
 ### Features
 
-* **agenstra:** gvisor kvm-based isolation ([#695](https://github.com/forepath/one/issues/695)) ([6a049c3](https://github.com/forepath/one/commit/6a049c3240870803cc8923a9d89852ee71b8d099))
-* **agenstra:** qemu kvm-based isolation ([#696](https://github.com/forepath/one/issues/696)) ([5d11fa4](https://github.com/forepath/one/commit/5d11fa41b4397294f3a48cb7c085bf640ebb9584))
-
+- **agenstra:** gvisor kvm-based isolation ([#695](https://github.com/forepath/one/issues/695)) ([6a049c3](https://github.com/forepath/one/commit/6a049c3240870803cc8923a9d89852ee71b8d099))
+- **agenstra:** qemu kvm-based isolation ([#696](https://github.com/forepath/one/issues/696)) ([5d11fa4](https://github.com/forepath/one/commit/5d11fa41b4397294f3a48cb7c085bf640ebb9584))
 
 ### Bug Fixes
 
-* **agenstra:** pty resizing ([#698](https://github.com/forepath/one/issues/698)) ([0bc8445](https://github.com/forepath/one/commit/0bc84451e711d9818cec2f228e90b13c8681768d))
-
+- **agenstra:** pty resizing ([#698](https://github.com/forepath/one/issues/698)) ([0bc8445](https://github.com/forepath/one/commit/0bc84451e711d9818cec2f228e90b13c8681768d))
 
 ### Chores
 
-* **decabill:** components diagram ([#697](https://github.com/forepath/one/issues/697)) ([d501521](https://github.com/forepath/one/commit/d5015211d8689d54acfb3489f2e3cecb95b93a46))
+- **decabill:** components diagram ([#697](https://github.com/forepath/one/issues/697)) ([d501521](https://github.com/forepath/one/commit/d5015211d8689d54acfb3489f2e3cecb95b93a46))
 
 ## [4.0.0](https://github.com/forepath/one/compare/v3.5.1...v4.0.0) (2026-10-22)
 
-
 ### ⚠ BREAKING CHANGES
 
-* **agenstra:** consumers that listen to the old events no longer react properly until modified
+- **agenstra:** consumers that listen to the old events no longer react properly until modified
 
-* fix(agenstra): internal host resolution in offline mode
+- fix(agenstra): internal host resolution in offline mode
 
 allow to resolve internal hosts in offline mode to enable context mcp server communication with
 the agent manager service selectively
 
-* fix(agenstra): log storm and status reporting
+- fix(agenstra): log storm and status reporting
 
 avoid container log storms and report the correct container statuses to the frontend
 
-* fix(agenstra): custom mcp tool outputs
+- fix(agenstra): custom mcp tool outputs
 
 tool output mapping for custom mcp servers
 
-* fix(shared): failing ci pipelines
+- fix(shared): failing ci pipelines
 
 ### Features
 
-* **agenstra:** agent context mcp server ([#690](https://github.com/forepath/one/issues/690)) ([09952e4](https://github.com/forepath/one/commit/09952e46ea5bf789bfc78ed156910a6f8ee64f73))
-* **agenstra:** in-workspace agent tasks handover ([#693](https://github.com/forepath/one/issues/693)) ([486a499](https://github.com/forepath/one/commit/486a499bf6cbfc1b789139404740586d3e4c5c0c))
-* **agenstra:** task automation ([#691](https://github.com/forepath/one/issues/691)) ([f1553ff](https://github.com/forepath/one/commit/f1553ff3c6b6cd0bd547c54eb6d60afc75b5fcf0))
-
+- **agenstra:** agent context mcp server ([#690](https://github.com/forepath/one/issues/690)) ([09952e4](https://github.com/forepath/one/commit/09952e46ea5bf789bfc78ed156910a6f8ee64f73))
+- **agenstra:** in-workspace agent tasks handover ([#693](https://github.com/forepath/one/issues/693)) ([486a499](https://github.com/forepath/one/commit/486a499bf6cbfc1b789139404740586d3e4c5c0c))
+- **agenstra:** task automation ([#691](https://github.com/forepath/one/issues/691)) ([f1553ff](https://github.com/forepath/one/commit/f1553ff3c6b6cd0bd547c54eb6d60afc75b5fcf0))
 
 ### Bug Fixes
 
-* **agenstra:** mcp security ([#694](https://github.com/forepath/one/issues/694)) ([3a2ff8c](https://github.com/forepath/one/commit/3a2ff8cba72f72105c52fe76a2427314dbff4d69))
+- **agenstra:** mcp security ([#694](https://github.com/forepath/one/issues/694)) ([3a2ff8c](https://github.com/forepath/one/commit/3a2ff8cba72f72105c52fe76a2427314dbff4d69))
 
 ## [3.5.1](https://github.com/forepath/one/compare/v3.5.0...v3.5.1) (2026-10-20)
 
-
 ### Bug Fixes
 
-* **forepath:** unified product names ([#689](https://github.com/forepath/one/issues/689)) ([2e26416](https://github.com/forepath/one/commit/2e2641641b3e6fb468de7bc8c4ad06a8d929dfc1))
+- **forepath:** unified product names ([#689](https://github.com/forepath/one/issues/689)) ([2e26416](https://github.com/forepath/one/commit/2e2641641b3e6fb468de7bc8c4ad06a8d929dfc1))
 
 ## [3.5.0](https://github.com/forepath/one/compare/v3.4.0...v3.5.0) (2026-10-20)
 
-
 ### Features
 
-* **forepath:** industry landingpages ([#687](https://github.com/forepath/one/issues/687)) ([987c9f1](https://github.com/forepath/one/commit/987c9f10de0f751a628f46880dc83045295cb43d))
-
+- **forepath:** industry landingpages ([#687](https://github.com/forepath/one/issues/687)) ([987c9f1](https://github.com/forepath/one/commit/987c9f10de0f751a628f46880dc83045295cb43d))
 
 ### Bug Fixes
 
-* **forepath:** force blog to english locale ([#686](https://github.com/forepath/one/issues/686)) ([4f01da8](https://github.com/forepath/one/commit/4f01da809d194c9cf1f7dd9e83c59312b0c836f9))
-
+- **forepath:** force blog to english locale ([#686](https://github.com/forepath/one/issues/686)) ([4f01da8](https://github.com/forepath/one/commit/4f01da809d194c9cf1f7dd9e83c59312b0c836f9))
 
 ### Chores
 
-* **shared:** reworked readme ([#684](https://github.com/forepath/one/issues/684)) ([9332a9f](https://github.com/forepath/one/commit/9332a9f97327aacf5f8ed18ddceedd0176a404af))
+- **shared:** reworked readme ([#684](https://github.com/forepath/one/issues/684)) ([9332a9f](https://github.com/forepath/one/commit/9332a9f97327aacf5f8ed18ddceedd0176a404af))
 
 ## [3.4.0](https://github.com/forepath/one/compare/v3.3.1...v3.4.0) (2026-10-16)
 
-
 ### Features
 
-* **forepath:** granular service pages ([#683](https://github.com/forepath/one/issues/683)) ([cd93cd8](https://github.com/forepath/one/commit/cd93cd8fad8b80bbaca86c0511ea6b1eddcd2903))
+- **forepath:** granular service pages ([#683](https://github.com/forepath/one/issues/683)) ([cd93cd8](https://github.com/forepath/one/commit/cd93cd8fad8b80bbaca86c0511ea6b1eddcd2903))
 
 ## [3.3.1](https://github.com/forepath/one/compare/v3.3.0...v3.3.1) (2026-10-16)
 
-
 ### Bug Fixes
 
-* **agenstra:** landingpage subeading removal ([#682](https://github.com/forepath/one/issues/682)) ([2050ecb](https://github.com/forepath/one/commit/2050ecbec736bf0addc48dc4de9b2275df3e398e))
+- **agenstra:** landingpage subeading removal ([#682](https://github.com/forepath/one/issues/682)) ([2050ecb](https://github.com/forepath/one/commit/2050ecbec736bf0addc48dc4de9b2275df3e398e))
 
 ## [3.3.0](https://github.com/forepath/one/compare/v3.2.0...v3.3.0) (2026-10-16)
 
-
 ### Features
 
-* **agenstra:** container isolation levels with gvisor sandboxing ([#675](https://github.com/forepath/one/issues/675)) ([2f24974](https://github.com/forepath/one/commit/2f249741d5fc0e14d70b92fb3b83d562a6389547))
-* **agenstra:** how it works landing page with animated architecture scene ([#679](https://github.com/forepath/one/issues/679)) ([0f87bb0](https://github.com/forepath/one/commit/0f87bb0abe633eddd0dda7ecc604abe3efcd9b4e))
-* **agenstra:** proxy-based web traffic filters ([#671](https://github.com/forepath/one/issues/671)) ([c3df45a](https://github.com/forepath/one/commit/c3df45a0bf025107003425c38de8ce967ca39bd1))
-* **shared:** file upload support ([#670](https://github.com/forepath/one/issues/670)) ([36b0b1b](https://github.com/forepath/one/commit/36b0b1b2c87ad30b605d28b83940869d2b1c5da2))
-
+- **agenstra:** container isolation levels with gvisor sandboxing ([#675](https://github.com/forepath/one/issues/675)) ([2f24974](https://github.com/forepath/one/commit/2f249741d5fc0e14d70b92fb3b83d562a6389547))
+- **agenstra:** how it works landing page with animated architecture scene ([#679](https://github.com/forepath/one/issues/679)) ([0f87bb0](https://github.com/forepath/one/commit/0f87bb0abe633eddd0dda7ecc604abe3efcd9b4e))
+- **agenstra:** proxy-based web traffic filters ([#671](https://github.com/forepath/one/issues/671)) ([c3df45a](https://github.com/forepath/one/commit/c3df45a0bf025107003425c38de8ce967ca39bd1))
+- **shared:** file upload support ([#670](https://github.com/forepath/one/issues/670)) ([36b0b1b](https://github.com/forepath/one/commit/36b0b1b2c87ad30b605d28b83940869d2b1c5da2))
 
 ### Bug Fixes
 
-* **agenstra:** confine agent file api to the workspace ([#674](https://github.com/forepath/one/issues/674)) ([65d41a7](https://github.com/forepath/one/commit/65d41a7d4dbf43306afd5f54a91e6a35ff49adcf))
-* **agenstra:** consistent container names for workers and egress guards ([#676](https://github.com/forepath/one/issues/676)) ([b9483a8](https://github.com/forepath/one/commit/b9483a89ae0374623559b177d67bdcf087cdb79a))
-* **agenstra:** git over ssh behind the egress guard and agent network dns ([#678](https://github.com/forepath/one/issues/678)) ([8b5b4b0](https://github.com/forepath/one/commit/8b5b4b05cc28123d60dde830647cb4f3eb71f3d9))
-* **shared:** mermaid charts migration ([#680](https://github.com/forepath/one/issues/680)) ([ac412b5](https://github.com/forepath/one/commit/ac412b502a10fc9c8409e9b500ad1722a6f1f69c))
-* **shared:** unified ui concept ([#673](https://github.com/forepath/one/issues/673)) ([f5408f2](https://github.com/forepath/one/commit/f5408f286536266783c8810131f254b3a3c33415))
+- **agenstra:** confine agent file api to the workspace ([#674](https://github.com/forepath/one/issues/674)) ([65d41a7](https://github.com/forepath/one/commit/65d41a7d4dbf43306afd5f54a91e6a35ff49adcf))
+- **agenstra:** consistent container names for workers and egress guards ([#676](https://github.com/forepath/one/issues/676)) ([b9483a8](https://github.com/forepath/one/commit/b9483a89ae0374623559b177d67bdcf087cdb79a))
+- **agenstra:** git over ssh behind the egress guard and agent network dns ([#678](https://github.com/forepath/one/issues/678)) ([8b5b4b0](https://github.com/forepath/one/commit/8b5b4b05cc28123d60dde830647cb4f3eb71f3d9))
+- **shared:** mermaid charts migration ([#680](https://github.com/forepath/one/issues/680)) ([ac412b5](https://github.com/forepath/one/commit/ac412b502a10fc9c8409e9b500ad1722a6f1f69c))
+- **shared:** unified ui concept ([#673](https://github.com/forepath/one/issues/673)) ([f5408f2](https://github.com/forepath/one/commit/f5408f286536266783c8810131f254b3a3c33415))
 
 ## [3.2.0](https://github.com/forepath/one/compare/v3.1.0...v3.2.0) (2026-10-11)
 
-
 ### Features
 
-* **agenstra:** live agent environment updates ([#666](https://github.com/forepath/one/issues/666)) ([ab9ad35](https://github.com/forepath/one/commit/ab9ad35eeb90927e323be6bc1e0312c94f495111))
-* **agenstra:** plan mode ([#656](https://github.com/forepath/one/issues/656)) ([94c32ae](https://github.com/forepath/one/commit/94c32aef66aca38f984ce9df5a2366138d9cc88f))
-
+- **agenstra:** live agent environment updates ([#666](https://github.com/forepath/one/issues/666)) ([ab9ad35](https://github.com/forepath/one/commit/ab9ad35eeb90927e323be6bc1e0312c94f495111))
+- **agenstra:** plan mode ([#656](https://github.com/forepath/one/issues/656)) ([94c32ae](https://github.com/forepath/one/commit/94c32aef66aca38f984ce9df5a2366138d9cc88f))
 
 ### Bug Fixes
 
-* **agenstra:** output chat message timestamps with date ([#669](https://github.com/forepath/one/issues/669)) ([9de06d5](https://github.com/forepath/one/commit/9de06d594c226458d28597a55b8f2cb3e7bdea45))
-
+- **agenstra:** output chat message timestamps with date ([#669](https://github.com/forepath/one/issues/669)) ([9de06d5](https://github.com/forepath/one/commit/9de06d594c226458d28597a55b8f2cb3e7bdea45))
 
 ### Continuous Integration
 
-* speed up environment setup ([#650](https://github.com/forepath/one/issues/650)) ([01db5ac](https://github.com/forepath/one/commit/01db5ace6370fed47a273e90616dee0b4596288b))
+- speed up environment setup ([#650](https://github.com/forepath/one/issues/650)) ([01db5ac](https://github.com/forepath/one/commit/01db5ace6370fed47a273e90616dee0b4596288b))
 
 ## [3.1.0](https://github.com/forepath/one/compare/v3.0.0...v3.1.0) (2026-10-09)
 
-
 ### Features
 
-* **agenstra:** agent management improvement ([#665](https://github.com/forepath/one/issues/665)) ([ad4f740](https://github.com/forepath/one/commit/ad4f740495f9f12f7cf6f5d904014cb100039b87))
-* **shared:** service bootstrapping script ([#664](https://github.com/forepath/one/issues/664)) ([f33fc2b](https://github.com/forepath/one/commit/f33fc2b43fb3e8c22009880e9b0f6f271759306c))
-
+- **agenstra:** agent management improvement ([#665](https://github.com/forepath/one/issues/665)) ([ad4f740](https://github.com/forepath/one/commit/ad4f740495f9f12f7cf6f5d904014cb100039b87))
+- **shared:** service bootstrapping script ([#664](https://github.com/forepath/one/issues/664)) ([f33fc2b](https://github.com/forepath/one/commit/f33fc2b43fb3e8c22009880e9b0f6f271759306c))
 
 ### Bug Fixes
 
-* **agenstra:** ticket automation reliability ([#655](https://github.com/forepath/one/issues/655)) ([0d1ab60](https://github.com/forepath/one/commit/0d1ab60ebe6b1e5ac42780fc957392f854ec8bc7))
-* **shared:** docker test image cleanup ([#661](https://github.com/forepath/one/issues/661)) ([c837d84](https://github.com/forepath/one/commit/c837d84b3652328b276bea3d4067834d5a1b9fe4))
-
+- **agenstra:** ticket automation reliability ([#655](https://github.com/forepath/one/issues/655)) ([0d1ab60](https://github.com/forepath/one/commit/0d1ab60ebe6b1e5ac42780fc957392f854ec8bc7))
+- **shared:** docker test image cleanup ([#661](https://github.com/forepath/one/issues/661)) ([c837d84](https://github.com/forepath/one/commit/c837d84b3652328b276bea3d4067834d5a1b9fe4))
 
 ### Chores
 
-* **shared:** port assignments standardization ([#662](https://github.com/forepath/one/issues/662)) ([1e5a226](https://github.com/forepath/one/commit/1e5a22609dafbdf230a962f60c7a8fff8df159c8))
+- **shared:** port assignments standardization ([#662](https://github.com/forepath/one/issues/662)) ([1e5a226](https://github.com/forepath/one/commit/1e5a22609dafbdf230a962f60c7a8fff8df159c8))
 
 ## [3.0.0](https://github.com/forepath/one/compare/v2.33.0...v3.0.0) (2026-10-05)
 
-
 ### ⚠ BREAKING CHANGES
 
-* **decabill:** file signing is enabled by default and requires a
+- **decabill:** file signing is enabled by default and requires a
   secret key to be set upon rollout of the new application version
 
-* feat(decabill): document signature check
+- feat(decabill): document signature check
 
 allow checking any document signature by providing any file without
 actually saving it to the archive
 
-* feat(decabill): document download by id
-* **shared:** configuration structure changed causing existing remote configs to break
-* **shared:** port consolidation requires changes to the deployment files
+- feat(decabill): document download by id
+- **shared:** configuration structure changed causing existing remote configs to break
+- **shared:** port consolidation requires changes to the deployment files
 
 ### Features
 
-* **agenstra:** chat restore batching ([#634](https://github.com/forepath/one/issues/634)) ([6e9412d](https://github.com/forepath/one/commit/6e9412db761adc46706fa28d3d17e52a0f475dfc))
-* **agenstra:** empty opencode settings lock ([#637](https://github.com/forepath/one/issues/637)) ([00443fa](https://github.com/forepath/one/commit/00443fa12877f7a4f90126bc0f8aef539d798a40))
-* **agenstra:** mcp market ([#636](https://github.com/forepath/one/issues/636)) ([cb84302](https://github.com/forepath/one/commit/cb8430240c900a85d2e1ca03d60383a708fcc723))
-* **agenstra:** mcp market whitelist and blacklist ([#644](https://github.com/forepath/one/issues/644)) ([18ea9dd](https://github.com/forepath/one/commit/18ea9dd068e1acf77cd81caed45db24a467660b3))
-* **agenstra:** opencode harness lock-in ([#633](https://github.com/forepath/one/issues/633)) ([6d28331](https://github.com/forepath/one/commit/6d283311ef786ed0c32e6a4fe0c7229782d6ed24))
-* **agenstra:** worker vnc sessions ([#645](https://github.com/forepath/one/issues/645)) ([49fc78c](https://github.com/forepath/one/commit/49fc78cc63b910631fe16449e0a802db504e8d00))
-* **decabill:** file manager ([#654](https://github.com/forepath/one/issues/654)) ([d7297df](https://github.com/forepath/one/commit/d7297df43b620c661b4f097b7288e8a8900c2794))
-
+- **agenstra:** chat restore batching ([#634](https://github.com/forepath/one/issues/634)) ([6e9412d](https://github.com/forepath/one/commit/6e9412db761adc46706fa28d3d17e52a0f475dfc))
+- **agenstra:** empty opencode settings lock ([#637](https://github.com/forepath/one/issues/637)) ([00443fa](https://github.com/forepath/one/commit/00443fa12877f7a4f90126bc0f8aef539d798a40))
+- **agenstra:** mcp market ([#636](https://github.com/forepath/one/issues/636)) ([cb84302](https://github.com/forepath/one/commit/cb8430240c900a85d2e1ca03d60383a708fcc723))
+- **agenstra:** mcp market whitelist and blacklist ([#644](https://github.com/forepath/one/issues/644)) ([18ea9dd](https://github.com/forepath/one/commit/18ea9dd068e1acf77cd81caed45db24a467660b3))
+- **agenstra:** opencode harness lock-in ([#633](https://github.com/forepath/one/issues/633)) ([6d28331](https://github.com/forepath/one/commit/6d283311ef786ed0c32e6a4fe0c7229782d6ed24))
+- **agenstra:** worker vnc sessions ([#645](https://github.com/forepath/one/issues/645)) ([49fc78c](https://github.com/forepath/one/commit/49fc78cc63b910631fe16449e0a802db504e8d00))
+- **decabill:** file manager ([#654](https://github.com/forepath/one/issues/654)) ([d7297df](https://github.com/forepath/one/commit/d7297df43b620c661b4f097b7288e8a8900c2794))
 
 ### Bug Fixes
 
-* **agenstra:** container image hardening ([#643](https://github.com/forepath/one/issues/643)) ([623e84b](https://github.com/forepath/one/commit/623e84b1fe42e78487642197cf00b4d8a33ea721))
-* **decabill:** websocket tenant id fallback ([#649](https://github.com/forepath/one/issues/649)) ([48b7877](https://github.com/forepath/one/commit/48b7877fc16e9bc1726fa70f424f360cbe7aaa49))
-* **shared:** websocket cors origin fallthrough ([#652](https://github.com/forepath/one/issues/652)) ([0e2570a](https://github.com/forepath/one/commit/0e2570a2137d78eb4fe9f6869d22398f369bfaa6))
-
+- **agenstra:** container image hardening ([#643](https://github.com/forepath/one/issues/643)) ([623e84b](https://github.com/forepath/one/commit/623e84b1fe42e78487642197cf00b4d8a33ea721))
+- **decabill:** websocket tenant id fallback ([#649](https://github.com/forepath/one/issues/649)) ([48b7877](https://github.com/forepath/one/commit/48b7877fc16e9bc1726fa70f424f360cbe7aaa49))
+- **shared:** websocket cors origin fallthrough ([#652](https://github.com/forepath/one/issues/652)) ([0e2570a](https://github.com/forepath/one/commit/0e2570a2137d78eb4fe9f6869d22398f369bfaa6))
 
 ### Chores
 
-* **agenstra:** remove integrated ui mode ([#646](https://github.com/forepath/one/issues/646)) ([6d70a78](https://github.com/forepath/one/commit/6d70a78b95988fb508b9856582ac3675d58198b1))
-* **agenstra:** remove security-critical docker images ([#642](https://github.com/forepath/one/issues/642)) ([8d83eed](https://github.com/forepath/one/commit/8d83eeddf91ee86dbb5fa20b42949f4f74fd3cf2))
-* **shared:** environment definitions split ([#653](https://github.com/forepath/one/issues/653)) ([75afda8](https://github.com/forepath/one/commit/75afda842e667096ee46c72ccb3bcb322cf5504a))
-* **shared:** remove empty draft file ([#651](https://github.com/forepath/one/issues/651)) ([9eb6b25](https://github.com/forepath/one/commit/9eb6b25269113dc08cefa55ae52d6ef553160f71))
-* **shared:** websocket api consolidation ([#648](https://github.com/forepath/one/issues/648)) ([70a0ae0](https://github.com/forepath/one/commit/70a0ae0cc544114c88bae37d7ed5495fcc5c6385))
+- **agenstra:** remove integrated ui mode ([#646](https://github.com/forepath/one/issues/646)) ([6d70a78](https://github.com/forepath/one/commit/6d70a78b95988fb508b9856582ac3675d58198b1))
+- **agenstra:** remove security-critical docker images ([#642](https://github.com/forepath/one/issues/642)) ([8d83eed](https://github.com/forepath/one/commit/8d83eeddf91ee86dbb5fa20b42949f4f74fd3cf2))
+- **shared:** environment definitions split ([#653](https://github.com/forepath/one/issues/653)) ([75afda8](https://github.com/forepath/one/commit/75afda842e667096ee46c72ccb3bcb322cf5504a))
+- **shared:** remove empty draft file ([#651](https://github.com/forepath/one/issues/651)) ([9eb6b25](https://github.com/forepath/one/commit/9eb6b25269113dc08cefa55ae52d6ef553160f71))
+- **shared:** websocket api consolidation ([#648](https://github.com/forepath/one/issues/648)) ([70a0ae0](https://github.com/forepath/one/commit/70a0ae0cc544114c88bae37d7ed5495fcc5c6385))
 
 ## [2.33.0](https://github.com/forepath/one/compare/v2.32.0...v2.33.0) (2026-09-27)
 
-
 ### Features
 
-* **agenstra:** code index ([#631](https://github.com/forepath/one/issues/631)) ([8d0d301](https://github.com/forepath/one/commit/8d0d3011387e75ee98fd84be249a24efcf662558))
-* **agenstra:** extended file tree and knowledge tree actions ([#626](https://github.com/forepath/one/issues/626)) ([8319b0d](https://github.com/forepath/one/commit/8319b0d69ad767d8c2cc575632a2d9b267c11994))
-* **agenstra:** native file upload api ([#630](https://github.com/forepath/one/issues/630)) ([2ab6f80](https://github.com/forepath/one/commit/2ab6f806b238eac3401a7d3c8d09eaf0844a763d))
-* **shared:** ui components library ([#625](https://github.com/forepath/one/issues/625)) ([b4127c0](https://github.com/forepath/one/commit/b4127c0ffe659165c4da3961216dd04d4c0cdc69))
-
+- **agenstra:** code index ([#631](https://github.com/forepath/one/issues/631)) ([8d0d301](https://github.com/forepath/one/commit/8d0d3011387e75ee98fd84be249a24efcf662558))
+- **agenstra:** extended file tree and knowledge tree actions ([#626](https://github.com/forepath/one/issues/626)) ([8319b0d](https://github.com/forepath/one/commit/8319b0d69ad767d8c2cc575632a2d9b267c11994))
+- **agenstra:** native file upload api ([#630](https://github.com/forepath/one/issues/630)) ([2ab6f80](https://github.com/forepath/one/commit/2ab6f806b238eac3401a7d3c8d09eaf0844a763d))
+- **shared:** ui components library ([#625](https://github.com/forepath/one/issues/625)) ([b4127c0](https://github.com/forepath/one/commit/b4127c0ffe659165c4da3961216dd04d4c0cdc69))
 
 ### Bug Fixes
 
-* **agenstra:** context add typeahead without button suffix ([#629](https://github.com/forepath/one/issues/629)) ([15af27d](https://github.com/forepath/one/commit/15af27d9fbee09f85d9be28f955422270cc9eb8f))
-* **agenstra:** git file staging ([#632](https://github.com/forepath/one/issues/632)) ([23fb879](https://github.com/forepath/one/commit/23fb879306b2c85e9080632a097b6f0b327c340f))
-
+- **agenstra:** context add typeahead without button suffix ([#629](https://github.com/forepath/one/issues/629)) ([15af27d](https://github.com/forepath/one/commit/15af27d9fbee09f85d9be28f955422270cc9eb8f))
+- **agenstra:** git file staging ([#632](https://github.com/forepath/one/issues/632)) ([23fb879](https://github.com/forepath/one/commit/23fb879306b2c85e9080632a097b6f0b327c340f))
 
 ### Chores
 
-* **deps:** bump the github-actions-dependencies ([#580](https://github.com/forepath/one/issues/580)) ([6047d6b](https://github.com/forepath/one/commit/6047d6b1a9f5cb38029ed9f813786d60f08a47d4))
+- **deps:** bump the github-actions-dependencies ([#580](https://github.com/forepath/one/issues/580)) ([6047d6b](https://github.com/forepath/one/commit/6047d6b1a9f5cb38029ed9f813786d60f08a47d4))
 
 ## [2.32.0](https://github.com/forepath/one/compare/v2.31.5...v2.32.0) (2026-09-21)
 
-
 ### Features
 
-* **decabill:** customer offers ([#588](https://github.com/forepath/one/issues/588)) ([7d8822f](https://github.com/forepath/one/commit/7d8822f1fee1379cb59355d534556e00e8a1d1fe))
-
+- **decabill:** customer offers ([#588](https://github.com/forepath/one/issues/588)) ([7d8822f](https://github.com/forepath/one/commit/7d8822f1fee1379cb59355d534556e00e8a1d1fe))
 
 ### Bug Fixes
 
-* **decabill:** agenstra ai-agents documentation bleed ([#620](https://github.com/forepath/one/issues/620)) ([491a292](https://github.com/forepath/one/commit/491a292e80e22b40d0442f9bbecd4538226b0247))
-* **keycloak:** dynamic config values upon container start ([#599](https://github.com/forepath/one/issues/599)) ([bcb1499](https://github.com/forepath/one/commit/bcb1499d84177d8481bad8947224fbcb1c9da686))
+- **decabill:** agenstra ai-agents documentation bleed ([#620](https://github.com/forepath/one/issues/620)) ([491a292](https://github.com/forepath/one/commit/491a292e80e22b40d0442f9bbecd4538226b0247))
+- **keycloak:** dynamic config values upon container start ([#599](https://github.com/forepath/one/issues/599)) ([bcb1499](https://github.com/forepath/one/commit/bcb1499d84177d8481bad8947224fbcb1c9da686))
 
 ## [2.31.5](https://github.com/forepath/one/compare/v2.31.4...v2.31.5) (2026-09-16)
 
-
 ### Bug Fixes
 
-* **shared:** email confirmation race condition ([#624](https://github.com/forepath/one/issues/624)) ([7041f1b](https://github.com/forepath/one/commit/7041f1bcd56783e5b184d99fa872b21bc02ed2f3))
-
+- **shared:** email confirmation race condition ([#624](https://github.com/forepath/one/issues/624)) ([7041f1b](https://github.com/forepath/one/commit/7041f1bcd56783e5b184d99fa872b21bc02ed2f3))
 
 ### Chores
 
-* modify german forepath tagline ([#623](https://github.com/forepath/one/issues/623)) ([3d70794](https://github.com/forepath/one/commit/3d70794bbd19d2fe33c3a8a739429e4d11a4b5b5))
+- modify german forepath tagline ([#623](https://github.com/forepath/one/issues/623)) ([3d70794](https://github.com/forepath/one/commit/3d70794bbd19d2fe33c3a8a739429e4d11a4b5b5))
 
 ## [2.31.4](https://github.com/forepath/one/compare/v2.31.3...v2.31.4) (2026-09-14)
 
-
 ### Bug Fixes
 
-* **shared:** expressjs response mime type ([#619](https://github.com/forepath/one/issues/619)) ([cea1203](https://github.com/forepath/one/commit/cea120383d900aa34af31cda927f51430c1da164))
+- **shared:** expressjs response mime type ([#619](https://github.com/forepath/one/issues/619)) ([cea1203](https://github.com/forepath/one/commit/cea120383d900aa34af31cda927f51430c1da164))
 
 ## [2.31.3](https://github.com/forepath/one/compare/v2.31.2...v2.31.3) (2026-09-13)
 
-
 ### Bug Fixes
 
-* **shared:** navigation popover autoclose ([#616](https://github.com/forepath/one/issues/616)) ([af91f7a](https://github.com/forepath/one/commit/af91f7a7435d7ff3f095615daa205ceb7cb2f8a7))
-* **shared:** user session invalidation improvements ([#617](https://github.com/forepath/one/issues/617)) ([90e94d5](https://github.com/forepath/one/commit/90e94d5f58040120a10162377fa0affbc967f580))
+- **shared:** navigation popover autoclose ([#616](https://github.com/forepath/one/issues/616)) ([af91f7a](https://github.com/forepath/one/commit/af91f7a7435d7ff3f095615daa205ceb7cb2f8a7))
+- **shared:** user session invalidation improvements ([#617](https://github.com/forepath/one/issues/617)) ([90e94d5](https://github.com/forepath/one/commit/90e94d5f58040120a10162377fa0affbc967f580))
 
 ## [2.31.2](https://github.com/forepath/one/compare/v2.31.1...v2.31.2) (2026-09-13)
 
-
 ### Bug Fixes
 
-* **shared:** fingerprint gated cache policy ([a889e73](https://github.com/forepath/one/commit/a889e73bf1b32b8288eef5c21a1483b3aac6f8aa))
-* **shared:** remote config caching improvements ([#615](https://github.com/forepath/one/issues/615)) ([6f2348b](https://github.com/forepath/one/commit/6f2348be5c8ed0c33bd92a814246f4c76871e095))
+- **shared:** fingerprint gated cache policy ([a889e73](https://github.com/forepath/one/commit/a889e73bf1b32b8288eef5c21a1483b3aac6f8aa))
+- **shared:** remote config caching improvements ([#615](https://github.com/forepath/one/issues/615)) ([6f2348b](https://github.com/forepath/one/commit/6f2348be5c8ed0c33bd92a814246f4c76871e095))
 
 ## [2.31.1](https://github.com/forepath/one/compare/v2.31.0...v2.31.1) (2026-09-12)
 
-
 ### Bug Fixes
 
-* **shared:** expressjs content caching ([#614](https://github.com/forepath/one/issues/614)) ([f41505b](https://github.com/forepath/one/commit/f41505bd48e5eb2ac2f7e446393fe1ce91ee08f4))
+- **shared:** expressjs content caching ([#614](https://github.com/forepath/one/issues/614)) ([f41505b](https://github.com/forepath/one/commit/f41505bd48e5eb2ac2f7e446393fe1ce91ee08f4))
 
 ## [2.31.0](https://github.com/forepath/one/compare/v2.30.2...v2.31.0) (2026-09-12)
 
-
 ### Features
 
-* **shared:** landingpage portal links ([#611](https://github.com/forepath/one/issues/611)) ([89f33ae](https://github.com/forepath/one/commit/89f33aee7cb86d53d8a5d8adcb23faca4c2d1e8e))
-
+- **shared:** landingpage portal links ([#611](https://github.com/forepath/one/issues/611)) ([89f33ae](https://github.com/forepath/one/commit/89f33aee7cb86d53d8a5d8adcb23faca4c2d1e8e))
 
 ### Bug Fixes
 
-* **shared:** missing landingpage interval suffixes ([#612](https://github.com/forepath/one/issues/612)) ([d04feee](https://github.com/forepath/one/commit/d04feeeb7ff2da597174bdc04d897e535df9d3ec))
+- **shared:** missing landingpage interval suffixes ([#612](https://github.com/forepath/one/issues/612)) ([d04feee](https://github.com/forepath/one/commit/d04feeeb7ff2da597174bdc04d897e535df9d3ec))
 
 ## [2.30.2](https://github.com/forepath/one/compare/v2.30.1...v2.30.2) (2026-09-11)
 
-
 ### Bug Fixes
 
-* **shared:** missing portal cookieconsent styling ([#610](https://github.com/forepath/one/issues/610)) ([8456265](https://github.com/forepath/one/commit/84562655a7c38c00d2e64c78d7a156f7f84b2553))
+- **shared:** missing portal cookieconsent styling ([#610](https://github.com/forepath/one/issues/610)) ([8456265](https://github.com/forepath/one/commit/84562655a7c38c00d2e64c78d7a156f7f84b2553))
 
 ## [2.30.1](https://github.com/forepath/one/compare/v2.30.0...v2.30.1) (2026-09-11)
 
-
 ### Bug Fixes
 
-* **shared:** security settings alert positioning ([#609](https://github.com/forepath/one/issues/609)) ([f3c3a28](https://github.com/forepath/one/commit/f3c3a28a69188d4e447e3e3f07470053898eb55f))
+- **shared:** security settings alert positioning ([#609](https://github.com/forepath/one/issues/609)) ([f3c3a28](https://github.com/forepath/one/commit/f3c3a28a69188d4e447e3e3f07470053898eb55f))
 
 ## [2.30.0](https://github.com/forepath/one/compare/v2.29.0...v2.30.0) (2026-09-11)
 
-
 ### Features
 
-* **shared:** 2fa via email otp and totp ([#608](https://github.com/forepath/one/issues/608)) ([1f8e218](https://github.com/forepath/one/commit/1f8e21801d86d50fccbb5144cc75c7d9d2cc42e7))
-* **shared:** password change ([1ed1d3b](https://github.com/forepath/one/commit/1ed1d3bda8e8da8ba30f762e442f271d93c02b53))
+- **shared:** 2fa via email otp and totp ([#608](https://github.com/forepath/one/issues/608)) ([1f8e218](https://github.com/forepath/one/commit/1f8e21801d86d50fccbb5144cc75c7d9d2cc42e7))
+- **shared:** password change ([1ed1d3b](https://github.com/forepath/one/commit/1ed1d3bda8e8da8ba30f762e442f271d93c02b53))
 
 ## [2.29.0](https://github.com/forepath/one/compare/v2.28.4...v2.29.0) (2026-09-09)
 
-
 ### Features
 
-* **shared:** content reports ([#602](https://github.com/forepath/one/issues/602)) ([0704445](https://github.com/forepath/one/commit/07044452cd809eff8fe9c7e88c622c97fff5c299))
-* **shared:** vulnerability disclosure ([#601](https://github.com/forepath/one/issues/601)) ([9617cbe](https://github.com/forepath/one/commit/9617cbe529158f563814ee4b898937bf5061410e))
-
+- **shared:** content reports ([#602](https://github.com/forepath/one/issues/602)) ([0704445](https://github.com/forepath/one/commit/07044452cd809eff8fe9c7e88c622c97fff5c299))
+- **shared:** vulnerability disclosure ([#601](https://github.com/forepath/one/issues/601)) ([9617cbe](https://github.com/forepath/one/commit/9617cbe529158f563814ee4b898937bf5061410e))
 
 ### Bug Fixes
 
-* **shared:** form submission validity checks ([#606](https://github.com/forepath/one/issues/606)) ([5f4282e](https://github.com/forepath/one/commit/5f4282ede39792893942c26592a36da85c4b0c12))
-* **shared:** legal document product-name mixups ([#604](https://github.com/forepath/one/issues/604)) ([9b4a6a5](https://github.com/forepath/one/commit/9b4a6a5f78a8554ab1b1b7684adad69a00d265ed))
-* **shared:** legal page navigation targets ([#605](https://github.com/forepath/one/issues/605)) ([46c2cb7](https://github.com/forepath/one/commit/46c2cb727c0f5b2dcc55826ca87c90b624c21c89))
+- **shared:** form submission validity checks ([#606](https://github.com/forepath/one/issues/606)) ([5f4282e](https://github.com/forepath/one/commit/5f4282ede39792893942c26592a36da85c4b0c12))
+- **shared:** legal document product-name mixups ([#604](https://github.com/forepath/one/issues/604)) ([9b4a6a5](https://github.com/forepath/one/commit/9b4a6a5f78a8554ab1b1b7684adad69a00d265ed))
+- **shared:** legal page navigation targets ([#605](https://github.com/forepath/one/issues/605)) ([46c2cb7](https://github.com/forepath/one/commit/46c2cb727c0f5b2dcc55826ca87c90b624c21c89))
 
 ## [2.28.4](https://github.com/forepath/one/compare/v2.28.3...v2.28.4) (2026-09-07)
 
-
 ### Bug Fixes
 
-* **forepath:** blogpost download embed styling ([#598](https://github.com/forepath/one/issues/598)) ([c9641e4](https://github.com/forepath/one/commit/c9641e409c9fce60b320ae98986b604533e9498d))
+- **forepath:** blogpost download embed styling ([#598](https://github.com/forepath/one/issues/598)) ([c9641e4](https://github.com/forepath/one/commit/c9641e409c9fce60b320ae98986b604533e9498d))
 
 ## [2.28.3](https://github.com/forepath/one/compare/v2.28.2...v2.28.3) (2026-09-05)
 
-
 ### Bug Fixes
 
-* **forepath:** blog post content pre-rendering ([#597](https://github.com/forepath/one/issues/597)) ([689656e](https://github.com/forepath/one/commit/689656e4fc6d984ea0f61c9fc834e46bfb22d547))
+- **forepath:** blog post content pre-rendering ([#597](https://github.com/forepath/one/issues/597)) ([689656e](https://github.com/forepath/one/commit/689656e4fc6d984ea0f61c9fc834e46bfb22d547))
 
 ## [2.28.2](https://github.com/forepath/one/compare/v2.28.1...v2.28.2) (2026-09-04)
 
-
 ### Bug Fixes
 
-* **forepath:** link hover states ([#596](https://github.com/forepath/one/issues/596)) ([7bb0084](https://github.com/forepath/one/commit/7bb00845d188c1f1e51e1395e979344ec151c22a))
-* **shared:** cookie consent settings button ([#593](https://github.com/forepath/one/issues/593)) ([aacbe8f](https://github.com/forepath/one/commit/aacbe8fa159cd90b788c870927d554c918f9f955))
-
+- **forepath:** link hover states ([#596](https://github.com/forepath/one/issues/596)) ([7bb0084](https://github.com/forepath/one/commit/7bb00845d188c1f1e51e1395e979344ec151c22a))
+- **shared:** cookie consent settings button ([#593](https://github.com/forepath/one/issues/593)) ([aacbe8f](https://github.com/forepath/one/commit/aacbe8fa159cd90b788c870927d554c918f9f955))
 
 ### Chores
 
-* **forepath:** eu ai act compliance changes ([#594](https://github.com/forepath/one/issues/594)) ([82b0a03](https://github.com/forepath/one/commit/82b0a0349a5ddeb7b3f76c6c16b08f58cde8d71d))
+- **forepath:** eu ai act compliance changes ([#594](https://github.com/forepath/one/issues/594)) ([82b0a03](https://github.com/forepath/one/commit/82b0a0349a5ddeb7b3f76c6c16b08f58cde8d71d))
 
 ## [2.28.1](https://github.com/forepath/one/compare/v2.28.0...v2.28.1) (2026-09-03)
 
-
 ### Bug Fixes
 
-* **shared:** express server route cache bypass ([#592](https://github.com/forepath/one/issues/592)) ([755e775](https://github.com/forepath/one/commit/755e77576514969be398681a16102e98c058fb75))
+- **shared:** express server route cache bypass ([#592](https://github.com/forepath/one/issues/592)) ([755e775](https://github.com/forepath/one/commit/755e77576514969be398681a16102e98c058fb75))
 
 ## [2.28.0](https://github.com/forepath/one/compare/v2.27.0...v2.28.0) (2026-09-03)
 
-
 ### Features
 
-* **decabill:** payed at date marker ([#587](https://github.com/forepath/one/issues/587)) ([071b853](https://github.com/forepath/one/commit/071b853277f3460947d217987625df57b3328405))
-* **decabill:** supplier invoices ([#586](https://github.com/forepath/one/issues/586)) ([d8b82ee](https://github.com/forepath/one/commit/d8b82ee32b29a02168599f7cad96c31aed334c37))
-* **decabill:** usage-meter included usage ([#584](https://github.com/forepath/one/issues/584)) ([e3b003f](https://github.com/forepath/one/commit/e3b003f0a81b5ada2d9e4fb89d0fc09cc652aebb))
-* **forepath:** ghost blog integration ([#590](https://github.com/forepath/one/issues/590)) ([215d7be](https://github.com/forepath/one/commit/215d7be2b6f0e21f590a42a59adcf28687466052))
-* peristent storage providers ([#583](https://github.com/forepath/one/issues/583)) ([d376578](https://github.com/forepath/one/commit/d376578aba95da115fd8103e1aea43f01d1f2a2e))
-
+- **decabill:** payed at date marker ([#587](https://github.com/forepath/one/issues/587)) ([071b853](https://github.com/forepath/one/commit/071b853277f3460947d217987625df57b3328405))
+- **decabill:** supplier invoices ([#586](https://github.com/forepath/one/issues/586)) ([d8b82ee](https://github.com/forepath/one/commit/d8b82ee32b29a02168599f7cad96c31aed334c37))
+- **decabill:** usage-meter included usage ([#584](https://github.com/forepath/one/issues/584)) ([e3b003f](https://github.com/forepath/one/commit/e3b003f0a81b5ada2d9e4fb89d0fc09cc652aebb))
+- **forepath:** ghost blog integration ([#590](https://github.com/forepath/one/issues/590)) ([215d7be](https://github.com/forepath/one/commit/215d7be2b6f0e21f590a42a59adcf28687466052))
+- peristent storage providers ([#583](https://github.com/forepath/one/issues/583)) ([d376578](https://github.com/forepath/one/commit/d376578aba95da115fd8103e1aea43f01d1f2a2e))
 
 ### Chores
 
-* unified page styling ([#589](https://github.com/forepath/one/issues/589)) ([313dbb2](https://github.com/forepath/one/commit/313dbb21fb560694c1f0d8c97e2a64a493c0971a))
+- unified page styling ([#589](https://github.com/forepath/one/issues/589)) ([313dbb2](https://github.com/forepath/one/commit/313dbb21fb560694c1f0d8c97e2a64a493c0971a))
 
 ## [2.27.0](https://github.com/forepath/one/compare/v2.26.1...v2.27.0) (2026-08-27)
 
-
 ### Features
 
-* **decabill:** multi-provider plans ([#581](https://github.com/forepath/one/issues/581)) ([f436301](https://github.com/forepath/one/commit/f436301208d4e1bbe387c53cc30dc92f8f0aebaa))
-
+- **decabill:** multi-provider plans ([#581](https://github.com/forepath/one/issues/581)) ([f436301](https://github.com/forepath/one/commit/f436301208d4e1bbe387c53cc30dc92f8f0aebaa))
 
 ### Bug Fixes
 
-* **decabill:** addon compatibility marker ([#582](https://github.com/forepath/one/issues/582)) ([685a42b](https://github.com/forepath/one/commit/685a42baded76c8623bf139f18fe3bfde0e30ef3))
+- **decabill:** addon compatibility marker ([#582](https://github.com/forepath/one/issues/582)) ([685a42b](https://github.com/forepath/one/commit/685a42baded76c8623bf139f18fe3bfde0e30ef3))
 
 ## [2.26.1](https://github.com/forepath/one/compare/v2.26.0...v2.26.1) (2026-08-25)
 
-
 ### Bug Fixes
 
-* **agenstra:** acp session management ([#578](https://github.com/forepath/one/issues/578)) ([b728c38](https://github.com/forepath/one/commit/b728c38bfe24a4cf7101f256e87c8d1849c4dab3))
-* **agenstra:** new message marker persistence ([#577](https://github.com/forepath/one/issues/577)) ([7b9b2ae](https://github.com/forepath/one/commit/7b9b2aeba0565c575805f9b4b47efd372a2d58ab))
+- **agenstra:** acp session management ([#578](https://github.com/forepath/one/issues/578)) ([b728c38](https://github.com/forepath/one/commit/b728c38bfe24a4cf7101f256e87c8d1849c4dab3))
+- **agenstra:** new message marker persistence ([#577](https://github.com/forepath/one/issues/577)) ([7b9b2ae](https://github.com/forepath/one/commit/7b9b2aeba0565c575805f9b4b47efd372a2d58ab))
 
 ## [2.26.0](https://github.com/forepath/one/compare/v2.25.1...v2.26.0) (2026-08-21)
 
-
 ### Features
 
-* **agenstra:** drag to upload files ([#574](https://github.com/forepath/one/issues/574)) ([582268c](https://github.com/forepath/one/commit/582268cdafbe76842cc5d3ee3f45eea147c2fe9c))
-* **agenstra:** environment multichat support ([#576](https://github.com/forepath/one/issues/576)) ([5e15822](https://github.com/forepath/one/commit/5e15822ee7558658c9935fdd963973196e306a3f))
-
+- **agenstra:** drag to upload files ([#574](https://github.com/forepath/one/issues/574)) ([582268c](https://github.com/forepath/one/commit/582268cdafbe76842cc5d3ee3f45eea147c2fe9c))
+- **agenstra:** environment multichat support ([#576](https://github.com/forepath/one/issues/576)) ([5e15822](https://github.com/forepath/one/commit/5e15822ee7558658c9935fdd963973196e306a3f))
 
 ### Bug Fixes
 
-* **agenstra:** workspace filtering ([#573](https://github.com/forepath/one/issues/573)) ([7ec5266](https://github.com/forepath/one/commit/7ec52668d26a857542f9ca4db2186cd8b7876fd5))
+- **agenstra:** workspace filtering ([#573](https://github.com/forepath/one/issues/573)) ([7ec5266](https://github.com/forepath/one/commit/7ec52668d26a857542f9ca4db2186cd8b7876fd5))
 
 ## [2.25.1](https://github.com/forepath/one/compare/v2.25.0...v2.25.1) (2026-08-18)
 
-
 ### Bug Fixes
 
-* **shared:** requeue finished stable unit jobs ([#571](https://github.com/forepath/one/issues/571)) ([738236f](https://github.com/forepath/one/commit/738236f67cfb14c55595096e7609043352ccdf21))
-
+- **shared:** requeue finished stable unit jobs ([#571](https://github.com/forepath/one/issues/571)) ([738236f](https://github.com/forepath/one/commit/738236f67cfb14c55595096e7609043352ccdf21))
 
 ### Code Refactoring
 
-* **decabill:** unified built-in docker compose service generation ([#570](https://github.com/forepath/one/issues/570)) ([44cb7ac](https://github.com/forepath/one/commit/44cb7acd795b9b9734823ca602e1c3e049828e65))
+- **decabill:** unified built-in docker compose service generation ([#570](https://github.com/forepath/one/issues/570)) ([44cb7ac](https://github.com/forepath/one/commit/44cb7acd795b9b9734823ca602e1c3e049828e65))
 
 ## [2.25.0](https://github.com/forepath/one/compare/v2.24.0...v2.25.0) (2026-08-18)
 
-
 ### Features
 
-* **decabill:** addon module extension ([#566](https://github.com/forepath/one/issues/566)) ([ee825ca](https://github.com/forepath/one/commit/ee825ca2f1a66e5f6c2a83d11a10f7b39c748b9b))
-* **decabill:** cloud-init module extension ([#568](https://github.com/forepath/one/issues/568)) ([ad312aa](https://github.com/forepath/one/commit/ad312aa7741f3cba9dbdd03d2aa9fd9ad75aedc5))
-* **decabill:** service provider module extension ([#569](https://github.com/forepath/one/issues/569)) ([debe266](https://github.com/forepath/one/commit/debe26642bf4b90f1b2b29a5cad7256020dff1ca))
-* **shared:** performance improvements ([#564](https://github.com/forepath/one/issues/564)) ([6e72147](https://github.com/forepath/one/commit/6e7214769a85c80b455f3cb65c154cbe2c9b5cb8))
+- **decabill:** addon module extension ([#566](https://github.com/forepath/one/issues/566)) ([ee825ca](https://github.com/forepath/one/commit/ee825ca2f1a66e5f6c2a83d11a10f7b39c748b9b))
+- **decabill:** cloud-init module extension ([#568](https://github.com/forepath/one/issues/568)) ([ad312aa](https://github.com/forepath/one/commit/ad312aa7741f3cba9dbdd03d2aa9fd9ad75aedc5))
+- **decabill:** service provider module extension ([#569](https://github.com/forepath/one/issues/569)) ([debe266](https://github.com/forepath/one/commit/debe26642bf4b90f1b2b29a5cad7256020dff1ca))
+- **shared:** performance improvements ([#564](https://github.com/forepath/one/issues/564)) ([6e72147](https://github.com/forepath/one/commit/6e7214769a85c80b455f3cb65c154cbe2c9b5cb8))
 
 ## [2.24.0](https://github.com/forepath/one/compare/v2.23.0...v2.24.0) (2026-08-16)
 
-
 ### Features
 
-* decabill service administration ([#559](https://github.com/forepath/one/issues/559)) ([99f5dcb](https://github.com/forepath/one/commit/99f5dcbc8dd6cde658d9985910a95222449c107b))
-* **decabill:** globally unique number generation ([#561](https://github.com/forepath/one/issues/561)) ([8d6a47a](https://github.com/forepath/one/commit/8d6a47aa63df4156accbb133de7b940c85122892))
-* **decabill:** service addon tabs ([#560](https://github.com/forepath/one/issues/560)) ([735da4c](https://github.com/forepath/one/commit/735da4cbe424163c4105805ca9e3b754ac466bcd))
-
+- decabill service administration ([#559](https://github.com/forepath/one/issues/559)) ([99f5dcb](https://github.com/forepath/one/commit/99f5dcbc8dd6cde658d9985910a95222449c107b))
+- **decabill:** globally unique number generation ([#561](https://github.com/forepath/one/issues/561)) ([8d6a47a](https://github.com/forepath/one/commit/8d6a47aa63df4156accbb133de7b940c85122892))
+- **decabill:** service addon tabs ([#560](https://github.com/forepath/one/issues/560)) ([735da4c](https://github.com/forepath/one/commit/735da4cbe424163c4105805ca9e3b754ac466bcd))
 
 ### Bug Fixes
 
-* **decabill:** service accessibility checks ([#562](https://github.com/forepath/one/issues/562)) ([e38dd3c](https://github.com/forepath/one/commit/e38dd3c5fe0579753b6d21c06e53a79c4e72cc6c))
+- **decabill:** service accessibility checks ([#562](https://github.com/forepath/one/issues/562)) ([e38dd3c](https://github.com/forepath/one/commit/e38dd3c5fe0579753b6d21c06e53a79c4e72cc6c))
 
 ## [2.23.0](https://github.com/forepath/one/compare/v2.22.0...v2.23.0) (2026-08-10)
 
-
 ### Features
 
-* **agenstra:** acp support ([#555](https://github.com/forepath/one/issues/555)) ([8000989](https://github.com/forepath/one/commit/8000989a8dbebb45a45f3d09354c7d2076fdc8e9))
-* application update checker ([#545](https://github.com/forepath/one/issues/545)) ([4de4d05](https://github.com/forepath/one/commit/4de4d05915c258f7228571eb06fff704bf170ce9))
-* decabill billing provisioning provider ([#550](https://github.com/forepath/one/issues/550)) ([dcd2a55](https://github.com/forepath/one/commit/dcd2a5513503c18a84a9ab13b9b274128cfd66ea))
-* decabill customer profile additional data ([#543](https://github.com/forepath/one/issues/543)) ([9ad41b2](https://github.com/forepath/one/commit/9ad41b25ff42e493a2fef36ef70bd7f15b159246))
-* decabill github link ([#542](https://github.com/forepath/one/issues/542)) ([0217c2d](https://github.com/forepath/one/commit/0217c2db1b97f6174a18ce59445d5f40a7c625e1))
-* decabill noop subscriptions ([#553](https://github.com/forepath/one/issues/553)) ([a1d6c1a](https://github.com/forepath/one/commit/a1d6c1afa3dbfd200253c6ac41a40350f4346714))
-* **decabill:** usage metering ([#556](https://github.com/forepath/one/issues/556)) ([3fa8060](https://github.com/forepath/one/commit/3fa80605915f0e6286ea96d1f070fc0df9331b02))
-
+- **agenstra:** acp support ([#555](https://github.com/forepath/one/issues/555)) ([8000989](https://github.com/forepath/one/commit/8000989a8dbebb45a45f3d09354c7d2076fdc8e9))
+- application update checker ([#545](https://github.com/forepath/one/issues/545)) ([4de4d05](https://github.com/forepath/one/commit/4de4d05915c258f7228571eb06fff704bf170ce9))
+- decabill billing provisioning provider ([#550](https://github.com/forepath/one/issues/550)) ([dcd2a55](https://github.com/forepath/one/commit/dcd2a5513503c18a84a9ab13b9b274128cfd66ea))
+- decabill customer profile additional data ([#543](https://github.com/forepath/one/issues/543)) ([9ad41b2](https://github.com/forepath/one/commit/9ad41b25ff42e493a2fef36ef70bd7f15b159246))
+- decabill github link ([#542](https://github.com/forepath/one/issues/542)) ([0217c2d](https://github.com/forepath/one/commit/0217c2db1b97f6174a18ce59445d5f40a7c625e1))
+- decabill noop subscriptions ([#553](https://github.com/forepath/one/issues/553)) ([a1d6c1a](https://github.com/forepath/one/commit/a1d6c1afa3dbfd200253c6ac41a40350f4346714))
+- **decabill:** usage metering ([#556](https://github.com/forepath/one/issues/556)) ([3fa8060](https://github.com/forepath/one/commit/3fa80605915f0e6286ea96d1f070fc0df9331b02))
 
 ### Bug Fixes
 
-* decabill missing translations ([#544](https://github.com/forepath/one/issues/544)) ([0f4446b](https://github.com/forepath/one/commit/0f4446bc3252f787d7780863c2c84f8019234347))
+- decabill missing translations ([#544](https://github.com/forepath/one/issues/544)) ([0f4446b](https://github.com/forepath/one/commit/0f4446bc3252f787d7780863c2c84f8019234347))
 
 ## [2.22.0](https://github.com/forepath/one/compare/v2.21.0...v2.22.0) (2026-07-31)
 
-
 ### Features
 
-* decabill instant cancellations ([#536](https://github.com/forepath/one/issues/536)) ([9aab888](https://github.com/forepath/one/commit/9aab888f715e418d5cf54427009d24085aad494f))
-* decabill ssh key reveal with marker ([#534](https://github.com/forepath/one/issues/534)) ([7f5a348](https://github.com/forepath/one/commit/7f5a348463ce7cbfbececb3515838a0c3011d691))
-
+- decabill instant cancellations ([#536](https://github.com/forepath/one/issues/536)) ([9aab888](https://github.com/forepath/one/commit/9aab888f715e418d5cf54427009d24085aad494f))
+- decabill ssh key reveal with marker ([#534](https://github.com/forepath/one/issues/534)) ([7f5a348](https://github.com/forepath/one/commit/7f5a348463ce7cbfbececb3515838a0c3011d691))
 
 ### Bug Fixes
 
-* generator input and entrypoint mapping ([#537](https://github.com/forepath/one/issues/537)) ([1ae4d85](https://github.com/forepath/one/commit/1ae4d85cfdaaf3352eccd6ba075e7f0cdeaaef42))
-* login sections styling ([#538](https://github.com/forepath/one/issues/538)) ([70c5393](https://github.com/forepath/one/commit/70c53938ed51dbfaa694bb1c56750e2173bc99b7))
-
+- generator input and entrypoint mapping ([#537](https://github.com/forepath/one/issues/537)) ([1ae4d85](https://github.com/forepath/one/commit/1ae4d85cfdaaf3352eccd6ba075e7f0cdeaaef42))
+- login sections styling ([#538](https://github.com/forepath/one/issues/538)) ([70c5393](https://github.com/forepath/one/commit/70c53938ed51dbfaa694bb1c56750e2173bc99b7))
 
 ### Code Refactoring
 
-* change product keys ([#535](https://github.com/forepath/one/issues/535)) ([763c0e3](https://github.com/forepath/one/commit/763c0e3f4ab69cf7f0ba779a59743be59f26c978))
+- change product keys ([#535](https://github.com/forepath/one/issues/535)) ([763c0e3](https://github.com/forepath/one/commit/763c0e3f4ab69cf7f0ba779a59743be59f26c978))
 
 ## [2.21.0](https://github.com/forepath/one/compare/v2.20.0...v2.21.0) (2026-07-28)
 
-
 ### Features
 
-* open telemetry logs and metrics export ([#527](https://github.com/forepath/one/issues/527)) ([00e3aab](https://github.com/forepath/one/commit/00e3aab542a6c0a1bf8ae1f217a098966b4a3094))
-
+- open telemetry logs and metrics export ([#527](https://github.com/forepath/one/issues/527)) ([00e3aab](https://github.com/forepath/one/commit/00e3aab542a6c0a1bf8ae1f217a098966b4a3094))
 
 ### Bug Fixes
 
-* sync specs and docs ([#530](https://github.com/forepath/one/issues/530)) ([1de0c4b](https://github.com/forepath/one/commit/1de0c4b3ea005f52c171aea01e854ab9b88a5fac))
-
+- sync specs and docs ([#530](https://github.com/forepath/one/issues/530)) ([1de0c4b](https://github.com/forepath/one/commit/1de0c4b3ea005f52c171aea01e854ab9b88a5fac))
 
 ### Chores
 
-* improve documentation v2 ([#533](https://github.com/forepath/one/issues/533)) ([086a81e](https://github.com/forepath/one/commit/086a81e3e0990ebc76d34802820d29c2866183ed))
-* improve marketing copies ([#531](https://github.com/forepath/one/issues/531)) ([4fe9aa4](https://github.com/forepath/one/commit/4fe9aa4781dd4344159a06cad1ba340a58985fb4))
+- improve documentation v2 ([#533](https://github.com/forepath/one/issues/533)) ([086a81e](https://github.com/forepath/one/commit/086a81e3e0990ebc76d34802820d29c2866183ed))
+- improve marketing copies ([#531](https://github.com/forepath/one/issues/531)) ([4fe9aa4](https://github.com/forepath/one/commit/4fe9aa4781dd4344159a06cad1ba340a58985fb4))
 
 ## [2.20.0](https://github.com/forepath/one/compare/v2.19.0...v2.20.0) (2026-07-26)
 
-
 ### Features
 
-* decabill plan addons ([#523](https://github.com/forepath/one/issues/523)) ([db9f6cf](https://github.com/forepath/one/commit/db9f6cff0239fb7f0bbaf4d6c0e31fa81f87572b))
-* decabill plan upgrades and downgrades ([#524](https://github.com/forepath/one/issues/524)) ([6548706](https://github.com/forepath/one/commit/6548706a98ed9b019f46e122fd20a0683cfde346))
-* decabill price auto updates ([#525](https://github.com/forepath/one/issues/525)) ([7fb44f1](https://github.com/forepath/one/commit/7fb44f1afe01c076bd055d21dabf11c18707f57e))
-* graph mcp server ([#519](https://github.com/forepath/one/issues/519)) ([9b84d3a](https://github.com/forepath/one/commit/9b84d3aa7f7b6b8a3000a284d583431f5debf8ad))
-
+- decabill plan addons ([#523](https://github.com/forepath/one/issues/523)) ([db9f6cf](https://github.com/forepath/one/commit/db9f6cff0239fb7f0bbaf4d6c0e31fa81f87572b))
+- decabill plan upgrades and downgrades ([#524](https://github.com/forepath/one/issues/524)) ([6548706](https://github.com/forepath/one/commit/6548706a98ed9b019f46e122fd20a0683cfde346))
+- decabill price auto updates ([#525](https://github.com/forepath/one/issues/525)) ([7fb44f1](https://github.com/forepath/one/commit/7fb44f1afe01c076bd055d21dabf11c18707f57e))
+- graph mcp server ([#519](https://github.com/forepath/one/issues/519)) ([9b84d3a](https://github.com/forepath/one/commit/9b84d3aa7f7b6b8a3000a284d583431f5debf8ad))
 
 ### Bug Fixes
 
-* period scoped prepaid settlement gate ([#526](https://github.com/forepath/one/issues/526)) ([66f83a1](https://github.com/forepath/one/commit/66f83a129dacdb9f9b2a5434caf579aec1bd12bc))
+- period scoped prepaid settlement gate ([#526](https://github.com/forepath/one/issues/526)) ([66f83a1](https://github.com/forepath/one/commit/66f83a129dacdb9f9b2a5434caf579aec1bd12bc))
 
 ## [2.19.0](https://github.com/forepath/one/compare/v2.18.1...v2.19.0) (2026-07-23)
 
-
 ### Features
 
-* advance billing periods ([#511](https://github.com/forepath/one/issues/511)) ([1a11968](https://github.com/forepath/one/commit/1a1196828a179826a18aca61d1b351ac95a605fd))
-* static assets in-memory cache ([#512](https://github.com/forepath/one/issues/512)) ([3646f95](https://github.com/forepath/one/commit/3646f95488bcee922b179b8d82c5c2c9ed5ab5fd))
-
+- advance billing periods ([#511](https://github.com/forepath/one/issues/511)) ([1a11968](https://github.com/forepath/one/commit/1a1196828a179826a18aca61d1b351ac95a605fd))
+- static assets in-memory cache ([#512](https://github.com/forepath/one/issues/512)) ([3646f95](https://github.com/forepath/one/commit/3646f95488bcee922b179b8d82c5c2c9ed5ab5fd))
 
 ### Bug Fixes
 
-* add missing handlebars dependency ([#514](https://github.com/forepath/one/issues/514)) ([a9a5881](https://github.com/forepath/one/commit/a9a58817f5e0b6ca5a4f3bfb34f9e0ff04100a92))
-* solve cancel at period end ambiguity ([#510](https://github.com/forepath/one/issues/510)) ([e116780](https://github.com/forepath/one/commit/e116780530ebddc1b2e5720ec1222ad636356abe))
-
+- add missing handlebars dependency ([#514](https://github.com/forepath/one/issues/514)) ([a9a5881](https://github.com/forepath/one/commit/a9a58817f5e0b6ca5a4f3bfb34f9e0ff04100a92))
+- solve cancel at period end ambiguity ([#510](https://github.com/forepath/one/issues/510)) ([e116780](https://github.com/forepath/one/commit/e116780530ebddc1b2e5720ec1222ad636356abe))
 
 ### Chores
 
-* improve ai graph ([#513](https://github.com/forepath/one/issues/513)) ([d2a351d](https://github.com/forepath/one/commit/d2a351d7f6703af8afe5e1de079b4ae794a1e14f))
-
+- improve ai graph ([#513](https://github.com/forepath/one/issues/513)) ([d2a351d](https://github.com/forepath/one/commit/d2a351d7f6703af8afe5e1de079b4ae794a1e14f))
 
 ### Documentation
 
-* operator runbooks ([#509](https://github.com/forepath/one/issues/509)) ([7668f33](https://github.com/forepath/one/commit/7668f3312156fc69bec84823dfee0c384dadc515))
+- operator runbooks ([#509](https://github.com/forepath/one/issues/509)) ([7668f33](https://github.com/forepath/one/commit/7668f3312156fc69bec84823dfee0c384dadc515))
 
 ## [2.18.1](https://github.com/forepath/one/compare/v2.18.0...v2.18.1) (2026-07-22)
 
-
 ### Bug Fixes
 
-* redirect after login without email confirmation ([#508](https://github.com/forepath/one/issues/508)) ([fd1bdaf](https://github.com/forepath/one/commit/fd1bdaf3cad92035980ef4fc68eb380a2281dfa8))
+- redirect after login without email confirmation ([#508](https://github.com/forepath/one/issues/508)) ([fd1bdaf](https://github.com/forepath/one/commit/fd1bdaf3cad92035980ef4fc68eb380a2281dfa8))
 
 ## [2.18.0](https://github.com/forepath/one/compare/v2.17.1...v2.18.0) (2026-07-22)
 
-
 ### Features
 
-* customer trust scores ([#502](https://github.com/forepath/one/issues/502)) ([b666d73](https://github.com/forepath/one/commit/b666d73638eb514fd722c52aa664f4f63fb11753))
-* extended taxing logic ([#506](https://github.com/forepath/one/issues/506)) ([c2f7932](https://github.com/forepath/one/commit/c2f7932627dca48d4b06feacebfffc3c9f2ddaa2))
-* personal access token auth ([#500](https://github.com/forepath/one/issues/500)) ([d98b90f](https://github.com/forepath/one/commit/d98b90fa162d1fa494f96b4b7641405ddda4e280))
+- customer trust scores ([#502](https://github.com/forepath/one/issues/502)) ([b666d73](https://github.com/forepath/one/commit/b666d73638eb514fd722c52aa664f4f63fb11753))
+- extended taxing logic ([#506](https://github.com/forepath/one/issues/506)) ([c2f7932](https://github.com/forepath/one/commit/c2f7932627dca48d4b06feacebfffc3c9f2ddaa2))
+- personal access token auth ([#500](https://github.com/forepath/one/issues/500)) ([d98b90f](https://github.com/forepath/one/commit/d98b90fa162d1fa494f96b4b7641405ddda4e280))
 
 ## [2.17.1](https://github.com/forepath/one/compare/v2.17.0...v2.17.1) (2026-07-18)
 
-
 ### Bug Fixes
 
-* shared user webhook events ([#498](https://github.com/forepath/one/issues/498)) ([7129e77](https://github.com/forepath/one/commit/7129e77bc09600330b9a0f65d0a6f35d87d46ab3))
-
+- shared user webhook events ([#498](https://github.com/forepath/one/issues/498)) ([7129e77](https://github.com/forepath/one/commit/7129e77bc09600330b9a0f65d0a6f35d87d46ab3))
 
 ### Chores
 
-* improved ai context graph node groups ([#497](https://github.com/forepath/one/issues/497)) ([f56dd17](https://github.com/forepath/one/commit/f56dd174b58ed1cd2f247493ffaec5378a49cacd))
+- improved ai context graph node groups ([#497](https://github.com/forepath/one/issues/497)) ([f56dd17](https://github.com/forepath/one/commit/f56dd174b58ed1cd2f247493ffaec5378a49cacd))
 
 ## [2.17.0](https://github.com/forepath/one/compare/v2.16.0...v2.17.0) (2026-07-18)
 
-
 ### Features
 
-* ai knowledge graph generation ([#490](https://github.com/forepath/one/issues/490)) ([baf19ab](https://github.com/forepath/one/commit/baf19ab3ce2f1ab5edf07e97ab2a0fdba445848b))
-* autopayment support ([#495](https://github.com/forepath/one/issues/495)) ([03a1823](https://github.com/forepath/one/commit/03a18232d058fb853867e060eaeb7a531a7edf8b))
-
+- ai knowledge graph generation ([#490](https://github.com/forepath/one/issues/490)) ([baf19ab](https://github.com/forepath/one/commit/baf19ab3ce2f1ab5edf07e97ab2a0fdba445848b))
+- autopayment support ([#495](https://github.com/forepath/one/issues/495)) ([03a1823](https://github.com/forepath/one/commit/03a18232d058fb853867e060eaeb7a531a7edf8b))
 
 ### Bug Fixes
 
-* skip confirmation on first registration ([#492](https://github.com/forepath/one/issues/492)) ([34f5127](https://github.com/forepath/one/commit/34f512700ed3382058362ddacc28465cce55b9e6))
-
+- skip confirmation on first registration ([#492](https://github.com/forepath/one/issues/492)) ([34f5127](https://github.com/forepath/one/commit/34f512700ed3382058362ddacc28465cce55b9e6))
 
 ### Chores
 
-* display customer invoices without subscription filter ([#496](https://github.com/forepath/one/issues/496)) ([27b4c0b](https://github.com/forepath/one/commit/27b4c0b79eac088de37d1385c0d1b0d31f0dd68d))
-
+- display customer invoices without subscription filter ([#496](https://github.com/forepath/one/issues/496)) ([27b4c0b](https://github.com/forepath/one/commit/27b4c0b79eac088de37d1385c0d1b0d31f0dd68d))
 
 ### Code Refactoring
 
-* email sending logic through job queue ([#491](https://github.com/forepath/one/issues/491)) ([d46300e](https://github.com/forepath/one/commit/d46300ed443100a0e2bf499007bbb3d3a39a38dd))
+- email sending logic through job queue ([#491](https://github.com/forepath/one/issues/491)) ([d46300e](https://github.com/forepath/one/commit/d46300ed443100a0e2bf499007bbb3d3a39a38dd))
 
 ## [2.16.0](https://github.com/forepath/one/compare/v2.15.5...v2.16.0) (2026-07-17)
 
-
 ### Features
 
-* webhook support ([#484](https://github.com/forepath/one/issues/484)) ([d9b0d71](https://github.com/forepath/one/commit/d9b0d71c40c3763ea9de21591c637e671f8a0645))
-
+- webhook support ([#484](https://github.com/forepath/one/issues/484)) ([d9b0d71](https://github.com/forepath/one/commit/d9b0d71c40c3763ea9de21591c637e671f8a0645))
 
 ### Bug Fixes
 
-* auth pages configuration ([#486](https://github.com/forepath/one/issues/486)) ([8bec48c](https://github.com/forepath/one/commit/8bec48c44613c82adfa70a22d9a96ff07d71ee5a))
-* decabill usage recording endpoint ([#488](https://github.com/forepath/one/issues/488)) ([9687352](https://github.com/forepath/one/commit/9687352bb66901c6af1b1751f1dc99a41a791cac))
-
+- auth pages configuration ([#486](https://github.com/forepath/one/issues/486)) ([8bec48c](https://github.com/forepath/one/commit/8bec48c44613c82adfa70a22d9a96ff07d71ee5a))
+- decabill usage recording endpoint ([#488](https://github.com/forepath/one/issues/488)) ([9687352](https://github.com/forepath/one/commit/9687352bb66901c6af1b1751f1dc99a41a791cac))
 
 ### Chores
 
-* license cleanup ([#487](https://github.com/forepath/one/issues/487)) ([c490491](https://github.com/forepath/one/commit/c490491689d4a92271ae9caa077fb0dcbe66f166))
+- license cleanup ([#487](https://github.com/forepath/one/issues/487)) ([c490491](https://github.com/forepath/one/commit/c490491689d4a92271ae9caa077fb0dcbe66f166))
 
 ## [2.15.5](https://github.com/forepath/one/compare/v2.15.4...v2.15.5) (2026-07-14)
 
-
 ### Chores
 
-* stricter responsible disclosure rules ([#485](https://github.com/forepath/one/issues/485)) ([ae8ca1b](https://github.com/forepath/one/commit/ae8ca1b87e6d0b3cb0eaff855c2acebbc6397a2c))
+- stricter responsible disclosure rules ([#485](https://github.com/forepath/one/issues/485)) ([ae8ca1b](https://github.com/forepath/one/commit/ae8ca1b87e6d0b3cb0eaff855c2acebbc6397a2c))
 
 ## [2.15.4](https://github.com/forepath/one/compare/v2.15.3...v2.15.4) (2026-07-14)
 
-
 ### Chores
 
-* system requirements documentation ([#483](https://github.com/forepath/one/issues/483)) ([7410ab4](https://github.com/forepath/one/commit/7410ab49ffc3d161bbc52369fae90b04bfa13357))
+- system requirements documentation ([#483](https://github.com/forepath/one/issues/483)) ([7410ab4](https://github.com/forepath/one/commit/7410ab49ffc3d161bbc52369fae90b04bfa13357))
 
 ## [2.15.3](https://github.com/forepath/one/compare/v2.15.2...v2.15.3) (2026-07-13)
 
-
 ### Bug Fixes
 
-* billing-portal child frontends ([#481](https://github.com/forepath/one/issues/481)) ([8145f75](https://github.com/forepath/one/commit/8145f752fe1a177f290b6ab7e5747ba9c82b2d26))
+- billing-portal child frontends ([#481](https://github.com/forepath/one/issues/481)) ([8145f75](https://github.com/forepath/one/commit/8145f752fe1a177f290b6ab7e5747ba9c82b2d26))
 
 ## [2.15.2](https://github.com/forepath/one/compare/v2.15.1...v2.15.2) (2026-07-12)
 
-
 ### Bug Fixes
 
-* server side logouts ([#480](https://github.com/forepath/one/issues/480)) ([7644c90](https://github.com/forepath/one/commit/7644c90908793da0d2a39337f698bfae5d7d548b))
+- server side logouts ([#480](https://github.com/forepath/one/issues/480)) ([7644c90](https://github.com/forepath/one/commit/7644c90908793da0d2a39337f698bfae5d7d548b))
 
 ## [2.15.1](https://github.com/forepath/one/compare/v2.15.0...v2.15.1) (2026-07-12)
 
-
 ### Bug Fixes
 
-* decabill status labels ([#479](https://github.com/forepath/one/issues/479)) ([f2df3ac](https://github.com/forepath/one/commit/f2df3ac67415acdee34c2274bf4df3bf4c77547d))
+- decabill status labels ([#479](https://github.com/forepath/one/issues/479)) ([f2df3ac](https://github.com/forepath/one/commit/f2df3ac67415acdee34c2274bf4df3bf4c77547d))
 
 ## [2.15.0](https://github.com/forepath/one/compare/v2.14.1...v2.15.0) (2026-07-12)
 
-
 ### Features
 
-* admin sidebar collapse ([#468](https://github.com/forepath/one/issues/468)) ([b9f6964](https://github.com/forepath/one/commit/b9f69640e485274268005e1a31cbf878d8396941))
-* custom modal header ([#470](https://github.com/forepath/one/issues/470)) ([07b6f43](https://github.com/forepath/one/commit/07b6f43bbd54906af9d2a336bf37e01e372f1b09))
-* decabill dashboard order button ([#469](https://github.com/forepath/one/issues/469)) ([649c3a1](https://github.com/forepath/one/commit/649c3a1f58c3e732e3789be971db404111c04ae4))
-* decabill promotions support ([#476](https://github.com/forepath/one/issues/476)) ([1c8cae2](https://github.com/forepath/one/commit/1c8cae26906afc81ed6b62f79720f00fd203552e))
-* decabill subscription administration ([#477](https://github.com/forepath/one/issues/477)) ([5cbb7ec](https://github.com/forepath/one/commit/5cbb7ec82c48468d8d51e13f1cb00e76efdcaca5))
-* decabill withdrawal flow, tax rates, and provisioning catalog improvements ([#467](https://github.com/forepath/one/issues/467)) ([71e0a9a](https://github.com/forepath/one/commit/71e0a9a2949e48ed7ef3bcd4ed3a9ddc19f10fbd))
-* stripe fraud protection support ([#460](https://github.com/forepath/one/issues/460)) ([5a20494](https://github.com/forepath/one/commit/5a20494561e79386d797b35423d1ab497007dee2))
-* withdrawal with partial billing support ([#461](https://github.com/forepath/one/issues/461)) ([18b94f9](https://github.com/forepath/one/commit/18b94f9271b99ec96fe8674f6e53560a67944c1e))
-
+- admin sidebar collapse ([#468](https://github.com/forepath/one/issues/468)) ([b9f6964](https://github.com/forepath/one/commit/b9f69640e485274268005e1a31cbf878d8396941))
+- custom modal header ([#470](https://github.com/forepath/one/issues/470)) ([07b6f43](https://github.com/forepath/one/commit/07b6f43bbd54906af9d2a336bf37e01e372f1b09))
+- decabill dashboard order button ([#469](https://github.com/forepath/one/issues/469)) ([649c3a1](https://github.com/forepath/one/commit/649c3a1f58c3e732e3789be971db404111c04ae4))
+- decabill promotions support ([#476](https://github.com/forepath/one/issues/476)) ([1c8cae2](https://github.com/forepath/one/commit/1c8cae26906afc81ed6b62f79720f00fd203552e))
+- decabill subscription administration ([#477](https://github.com/forepath/one/issues/477)) ([5cbb7ec](https://github.com/forepath/one/commit/5cbb7ec82c48468d8d51e13f1cb00e76efdcaca5))
+- decabill withdrawal flow, tax rates, and provisioning catalog improvements ([#467](https://github.com/forepath/one/issues/467)) ([71e0a9a](https://github.com/forepath/one/commit/71e0a9a2949e48ed7ef3bcd4ed3a9ddc19f10fbd))
+- stripe fraud protection support ([#460](https://github.com/forepath/one/issues/460)) ([5a20494](https://github.com/forepath/one/commit/5a20494561e79386d797b35423d1ab497007dee2))
+- withdrawal with partial billing support ([#461](https://github.com/forepath/one/issues/461)) ([18b94f9](https://github.com/forepath/one/commit/18b94f9271b99ec96fe8674f6e53560a67944c1e))
 
 ### Bug Fixes
 
-* cta button styling ([#474](https://github.com/forepath/one/issues/474)) ([9cda4a2](https://github.com/forepath/one/commit/9cda4a21c5961c51ec354f80629121540c8fd4e4))
-* missing decabill ticket delete button ([#472](https://github.com/forepath/one/issues/472)) ([5d2cad5](https://github.com/forepath/one/commit/5d2cad588524d91b229f5e7fb6a713c06930b31f))
-* plan options persistence issue ([#463](https://github.com/forepath/one/issues/463)) ([f4bc8de](https://github.com/forepath/one/commit/f4bc8de6aa2602fb56d862b282c2d48f222803f1))
-
+- cta button styling ([#474](https://github.com/forepath/one/issues/474)) ([9cda4a2](https://github.com/forepath/one/commit/9cda4a21c5961c51ec354f80629121540c8fd4e4))
+- missing decabill ticket delete button ([#472](https://github.com/forepath/one/issues/472)) ([5d2cad5](https://github.com/forepath/one/commit/5d2cad588524d91b229f5e7fb6a713c06930b31f))
+- plan options persistence issue ([#463](https://github.com/forepath/one/issues/463)) ([f4bc8de](https://github.com/forepath/one/commit/f4bc8de6aa2602fb56d862b282c2d48f222803f1))
 
 ### Chores
 
-* project billing improvements ([#462](https://github.com/forepath/one/issues/462)) ([7bb3974](https://github.com/forepath/one/commit/7bb3974b8f5f127276b884fabfb8faffb6ee165b))
-* subtle region image ([#475](https://github.com/forepath/one/issues/475)) ([8ee8367](https://github.com/forepath/one/commit/8ee836788d9fd85f58ae922abc67e9cccdb07d37))
-* swap plus icons ([#473](https://github.com/forepath/one/issues/473)) ([b0b7ff0](https://github.com/forepath/one/commit/b0b7ff0c7a7aea7385acd29c91529d5be3c72bbd))
-* unified action element styling ([#471](https://github.com/forepath/one/issues/471)) ([9e342b2](https://github.com/forepath/one/commit/9e342b2c568663b160c17eba9446e15a8aa07d4e))
-
+- project billing improvements ([#462](https://github.com/forepath/one/issues/462)) ([7bb3974](https://github.com/forepath/one/commit/7bb3974b8f5f127276b884fabfb8faffb6ee165b))
+- subtle region image ([#475](https://github.com/forepath/one/issues/475)) ([8ee8367](https://github.com/forepath/one/commit/8ee836788d9fd85f58ae922abc67e9cccdb07d37))
+- swap plus icons ([#473](https://github.com/forepath/one/issues/473)) ([b0b7ff0](https://github.com/forepath/one/commit/b0b7ff0c7a7aea7385acd29c91529d5be3c72bbd))
+- unified action element styling ([#471](https://github.com/forepath/one/issues/471)) ([9e342b2](https://github.com/forepath/one/commit/9e342b2c568663b160c17eba9446e15a8aa07d4e))
 
 ### Code Refactoring
 
-* asynchronous service provisioning ([#465](https://github.com/forepath/one/issues/465)) ([350daf6](https://github.com/forepath/one/commit/350daf6637b8bdfcfaa048a4dafbb72333fc4e19))
-* move withdrawals to job ([#464](https://github.com/forepath/one/issues/464)) ([d45838c](https://github.com/forepath/one/commit/d45838c95c7c71c29ba57fb98fb64cf546f82183))
-* order form structure ([#478](https://github.com/forepath/one/issues/478)) ([0453aa5](https://github.com/forepath/one/commit/0453aa58dfe8a20389a7ec03744823ce27f2e486))
+- asynchronous service provisioning ([#465](https://github.com/forepath/one/issues/465)) ([350daf6](https://github.com/forepath/one/commit/350daf6637b8bdfcfaa048a4dafbb72333fc4e19))
+- move withdrawals to job ([#464](https://github.com/forepath/one/issues/464)) ([d45838c](https://github.com/forepath/one/commit/d45838c95c7c71c29ba57fb98fb64cf546f82183))
+- order form structure ([#478](https://github.com/forepath/one/issues/478)) ([0453aa5](https://github.com/forepath/one/commit/0453aa58dfe8a20389a7ec03744823ce27f2e486))
 
 ## [2.14.1](https://github.com/forepath/one/compare/v2.14.0...v2.14.1) (2026-07-04)
 
-
 ### Chores
 
-* archive configuration and fix success message position ([a2b631e](https://github.com/forepath/one/commit/a2b631ea354de3a47e4ce7e83ae1017cf2c616b7))
+- archive configuration and fix success message position ([a2b631e](https://github.com/forepath/one/commit/a2b631ea354de3a47e4ce7e83ae1017cf2c616b7))
 
 ## [2.14.0](https://github.com/forepath/one/compare/v2.13.0...v2.14.0) (2026-07-04)
 
-
 ### Features
 
-* communications service ([#456](https://github.com/forepath/one/issues/456)) ([066f619](https://github.com/forepath/one/commit/066f619f2bc8aa1a7ca2d0b9ee4c2f0fc1b62a1c))
-* dynamic pricing estimates based on local llm hosted through webgpu ([#455](https://github.com/forepath/one/issues/455)) ([2c165d3](https://github.com/forepath/one/commit/2c165d39777f5f69688285d9ef7f4ea987d56e62))
+- communications service ([#456](https://github.com/forepath/one/issues/456)) ([066f619](https://github.com/forepath/one/commit/066f619f2bc8aa1a7ca2d0b9ee4c2f0fc1b62a1c))
+- dynamic pricing estimates based on local llm hosted through webgpu ([#455](https://github.com/forepath/one/issues/455)) ([2c165d3](https://github.com/forepath/one/commit/2c165d39777f5f69688285d9ef7f4ea987d56e62))
 
 ## [2.13.0](https://github.com/forepath/one/compare/v2.12.0...v2.13.0) (2026-07-02)
 
-
 ### Features
 
-* custom cloud-init config support ([#448](https://github.com/forepath/one/issues/448)) ([32e9e63](https://github.com/forepath/one/commit/32e9e637356ddded0957954e5a2bc4a6840254e3))
-* decabill project management ([#449](https://github.com/forepath/one/issues/449)) ([a86079d](https://github.com/forepath/one/commit/a86079d7855240c0f3ebecb9b2aba04704d9bb88))
+- custom cloud-init config support ([#448](https://github.com/forepath/one/issues/448)) ([32e9e63](https://github.com/forepath/one/commit/32e9e637356ddded0957954e5a2bc4a6840254e3))
+- decabill project management ([#449](https://github.com/forepath/one/issues/449)) ([a86079d](https://github.com/forepath/one/commit/a86079d7855240c0f3ebecb9b2aba04704d9bb88))
 
 ## [2.12.0](https://github.com/forepath/one/compare/v2.11.0...v2.12.0) (2026-06-26)
 
-
 ### Features
 
-* forepath landingpage hardware rental feature ([#447](https://github.com/forepath/one/issues/447)) ([661174d](https://github.com/forepath/one/commit/661174da32d9f03535605adef920fb5d0ee34773))
+- forepath landingpage hardware rental feature ([#447](https://github.com/forepath/one/issues/447)) ([661174d](https://github.com/forepath/one/commit/661174da32d9f03535605adef920fb5d0ee34773))
 
 ## [2.11.0](https://github.com/forepath/one/compare/v2.10.0...v2.11.0) (2026-06-25)
 
-
 ### Features
 
-* billing datev export ([#446](https://github.com/forepath/one/issues/446)) ([8877aec](https://github.com/forepath/one/commit/8877aec6ea5705c8084a60578447bd351ae5ae76))
+- billing datev export ([#446](https://github.com/forepath/one/issues/446)) ([8877aec](https://github.com/forepath/one/commit/8877aec6ea5705c8084a60578447bd351ae5ae76))
 
 ## [2.10.0](https://github.com/forepath/one/compare/v2.9.0...v2.10.0) (2026-06-24)
 
-
 ### Features
 
-* allow disabling default billing tenant ([#445](https://github.com/forepath/one/issues/445)) ([7223bc7](https://github.com/forepath/one/commit/7223bc70ba6505d25d01b3b63cf340e7e4284fc4))
-* catch stripe async webhooks ([#444](https://github.com/forepath/one/issues/444)) ([4644ea4](https://github.com/forepath/one/commit/4644ea4a33f25b118a55bdbb237b6ee2dc3c7cf8))
-
+- allow disabling default billing tenant ([#445](https://github.com/forepath/one/issues/445)) ([7223bc7](https://github.com/forepath/one/commit/7223bc70ba6505d25d01b3b63cf340e7e4284fc4))
+- catch stripe async webhooks ([#444](https://github.com/forepath/one/issues/444)) ([4644ea4](https://github.com/forepath/one/commit/4644ea4a33f25b118a55bdbb237b6ee2dc3c7cf8))
 
 ### Chores
 
-* archive config presets ([#443](https://github.com/forepath/one/issues/443)) ([251204e](https://github.com/forepath/one/commit/251204e8cee5497b14fcaf5951eb326143e3b545))
+- archive config presets ([#443](https://github.com/forepath/one/issues/443)) ([251204e](https://github.com/forepath/one/commit/251204e8cee5497b14fcaf5951eb326143e3b545))
 
 ## [2.9.0](https://github.com/forepath/one/compare/v2.8.4...v2.9.0) (2026-06-24)
 
-
 ### Features
 
-* billing console manual invoice issue ([#427](https://github.com/forepath/one/issues/427)) ([58ecf7d](https://github.com/forepath/one/commit/58ecf7d6dc71a0ab8b9c7536b9139c1492b23548))
-* billing console multi-tenancy support ([#428](https://github.com/forepath/one/issues/428)) ([734a41a](https://github.com/forepath/one/commit/734a41a874a7b5497e9af74263239b00c4027f4d))
-* decabill documentation and provisioning ([#440](https://github.com/forepath/one/issues/440)) ([1974965](https://github.com/forepath/one/commit/1974965b915401aa1f83faf14677054e91332d7c))
-* decabill landingpage ([#442](https://github.com/forepath/one/issues/442)) ([087d53d](https://github.com/forepath/one/commit/087d53dfa2e6d4247bf399de7ea9c4feaa93e9e2))
-* dynamic module loading pattern ([#434](https://github.com/forepath/one/issues/434)) ([01aab4f](https://github.com/forepath/one/commit/01aab4f30f660885efd0b0a00bad50690457eb9b))
-
+- billing console manual invoice issue ([#427](https://github.com/forepath/one/issues/427)) ([58ecf7d](https://github.com/forepath/one/commit/58ecf7d6dc71a0ab8b9c7536b9139c1492b23548))
+- billing console multi-tenancy support ([#428](https://github.com/forepath/one/issues/428)) ([734a41a](https://github.com/forepath/one/commit/734a41a874a7b5497e9af74263239b00c4027f4d))
+- decabill documentation and provisioning ([#440](https://github.com/forepath/one/issues/440)) ([1974965](https://github.com/forepath/one/commit/1974965b915401aa1f83faf14677054e91332d7c))
+- decabill landingpage ([#442](https://github.com/forepath/one/issues/442)) ([087d53d](https://github.com/forepath/one/commit/087d53dfa2e6d4247bf399de7ea9c4feaa93e9e2))
+- dynamic module loading pattern ([#434](https://github.com/forepath/one/issues/434)) ([01aab4f](https://github.com/forepath/one/commit/01aab4f30f660885efd0b0a00bad50690457eb9b))
 
 ### Bug Fixes
 
-* agent-manager typeorm init logging ([#437](https://github.com/forepath/one/issues/437)) ([bd4c283](https://github.com/forepath/one/commit/bd4c283814576667bc5cba673ea5552d9af0fb8f))
-
+- agent-manager typeorm init logging ([#437](https://github.com/forepath/one/issues/437)) ([bd4c283](https://github.com/forepath/one/commit/bd4c283814576667bc5cba673ea5552d9af0fb8f))
 
 ### Code Refactoring
 
-* move billing to decabill domain ([#429](https://github.com/forepath/one/issues/429)) ([13ec81d](https://github.com/forepath/one/commit/13ec81d9c134544e99270ff3ecd12b1cd5f42435))
+- move billing to decabill domain ([#429](https://github.com/forepath/one/issues/429)) ([13ec81d](https://github.com/forepath/one/commit/13ec81d9c134544e99270ff3ecd12b1cd5f42435))
 
 ## [2.8.4](https://github.com/forepath/one/compare/v2.8.3...v2.8.4) (2026-06-17)
 
-
 ### Bug Fixes
 
-* forepath mobile image sizes ([#426](https://github.com/forepath/one/issues/426)) ([fe32896](https://github.com/forepath/one/commit/fe328963ffa3edbd5b51bb7ff5f84cd63cf6f536))
+- forepath mobile image sizes ([#426](https://github.com/forepath/one/issues/426)) ([fe32896](https://github.com/forepath/one/commit/fe328963ffa3edbd5b51bb7ff5f84cd63cf6f536))
 
 ## [2.8.3](https://github.com/forepath/one/compare/v2.8.2...v2.8.3) (2026-06-17)
 
-
 ### Bug Fixes
 
-* forepath og preview image ([#425](https://github.com/forepath/one/issues/425)) ([be21455](https://github.com/forepath/one/commit/be214555417476aa0210515c9665c4f8ce76db81))
+- forepath og preview image ([#425](https://github.com/forepath/one/issues/425)) ([be21455](https://github.com/forepath/one/commit/be214555417476aa0210515c9665c4f8ce76db81))
 
 ## [2.8.2](https://github.com/forepath/one/compare/v2.8.1...v2.8.2) (2026-06-17)
 
-
 ### Bug Fixes
 
-* add allowed hosts to ssr ([#424](https://github.com/forepath/one/issues/424)) ([31f2efd](https://github.com/forepath/one/commit/31f2efd25aeeaf54b4642f350934706ab0b8f1c5))
+- add allowed hosts to ssr ([#424](https://github.com/forepath/one/issues/424)) ([31f2efd](https://github.com/forepath/one/commit/31f2efd25aeeaf54b4642f350934706ab0b8f1c5))
 
 ## [2.8.1](https://github.com/forepath/one/compare/v2.8.0...v2.8.1) (2026-06-17)
 
-
 ### Bug Fixes
 
-* forepath landingpage delegation server ([#423](https://github.com/forepath/one/issues/423)) ([a8249e3](https://github.com/forepath/one/commit/a8249e31f49e66804c936c05fc737c66a43908e7))
+- forepath landingpage delegation server ([#423](https://github.com/forepath/one/issues/423)) ([a8249e3](https://github.com/forepath/one/commit/a8249e31f49e66804c936c05fc737c66a43908e7))
 
 ## [2.8.0](https://github.com/forepath/one/compare/v2.7.7...v2.8.0) (2026-06-17)
 
-
 ### Features
 
-* custom invoice issuer ([#405](https://github.com/forepath/one/issues/405)) ([c056e12](https://github.com/forepath/one/commit/c056e12c0ec9985bcbb01e5a02dce5b4ccacfa0c))
-* forepath landingpage ([#408](https://github.com/forepath/one/issues/408)) ([ae63cb5](https://github.com/forepath/one/commit/ae63cb59001b3462ae1addb9fc6360e167c10b59))
-* forepath landingpage tagmanager integration ([#420](https://github.com/forepath/one/issues/420)) ([292318e](https://github.com/forepath/one/commit/292318e1566c39c45e93a61af69ba0893bb27713))
-
+- custom invoice issuer ([#405](https://github.com/forepath/one/issues/405)) ([c056e12](https://github.com/forepath/one/commit/c056e12c0ec9985bcbb01e5a02dce5b4ccacfa0c))
+- forepath landingpage ([#408](https://github.com/forepath/one/issues/408)) ([ae63cb5](https://github.com/forepath/one/commit/ae63cb59001b3462ae1addb9fc6360e167c10b59))
+- forepath landingpage tagmanager integration ([#420](https://github.com/forepath/one/issues/420)) ([292318e](https://github.com/forepath/one/commit/292318e1566c39c45e93a61af69ba0893bb27713))
 
 ### Bug Fixes
 
-* ci silent fails ([#413](https://github.com/forepath/one/issues/413)) ([fcdaef9](https://github.com/forepath/one/commit/fcdaef9cb961dea0cda324de2820ab65ec922f0f))
-
+- ci silent fails ([#413](https://github.com/forepath/one/issues/413)) ([fcdaef9](https://github.com/forepath/one/commit/fcdaef9cb961dea0cda324de2820ab65ec922f0f))
 
 ### Chores
 
-* add technology logos ([#422](https://github.com/forepath/one/issues/422)) ([4050580](https://github.com/forepath/one/commit/4050580c3fdb0877df3837f9b8e3722133756a58))
-* readme badge grouping ([#419](https://github.com/forepath/one/issues/419)) ([213b9ce](https://github.com/forepath/one/commit/213b9cebbe4640485b33100c3424f67a3bc6d004))
-
+- add technology logos ([#422](https://github.com/forepath/one/issues/422)) ([4050580](https://github.com/forepath/one/commit/4050580c3fdb0877df3837f9b8e3722133756a58))
+- readme badge grouping ([#419](https://github.com/forepath/one/issues/419)) ([213b9ce](https://github.com/forepath/one/commit/213b9cebbe4640485b33100c3424f67a3bc6d004))
 
 ### Code Refactoring
 
-* application and library grouping ([#410](https://github.com/forepath/one/issues/410)) ([39aba55](https://github.com/forepath/one/commit/39aba556f4172a354800b7d7bb5c2c3b0ca42260))
+- application and library grouping ([#410](https://github.com/forepath/one/issues/410)) ([39aba55](https://github.com/forepath/one/commit/39aba556f4172a354800b7d7bb5c2c3b0ca42260))
 
 ## [2.7.7](https://github.com/forepath/one/compare/v2.7.6...v2.7.7) (2026-06-02)
 

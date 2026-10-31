@@ -1,0 +1,113 @@
+:host {
+  min-width: 0;
+}
+
+.lw-topology__host {
+  width: 14rem;
+}
+
+.lw-topology__slider {
+  width: 10rem;
+  /* Right = now: the range counts minutes back (inherited by the shared control's native input). */
+  direction: rtl;
+}
+
+.lw-topology__at {
+  width: 13rem;
+}
+
+.lw-topology__plan {
+  max-width: 22rem;
+}
+
+.lw-topology__slider,
+.lw-topology__at,
+.lw-topology__plan,
+.lw-topology__host {
+  display: inline-flex;
+  align-items: center;
+  /* Strip controls share the sm control height (styles/_controls.scss). */
+  min-height: var(--fpc-control-height-sm);
+}
+
+/* Status line under the strip (live state, legend, flow totals, matches): one calm row at the lane inset. */
+.lw-topology__status {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--fpc-control-height-sm);
+  padding: 0.25rem 1rem;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.lw-topology__status:empty {
+  display: none;
+}
+
+/* The map: a calm canvas in the body colour (the drawing brings its own panel-like containers). */
+.lw-topology__map {
+  background-color: var(--bs-body-bg);
+}
+
+/* Workbench inspector (3.37): a 360 px side lane with its own scroll; its divider is its left edge (3.38 R5). */
+.lw-topology__inspector {
+  flex: 0 0 360px;
+  max-width: 50%;
+  overflow: hidden;
+  border-left: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.lw-topology__scroll {
+  overflow: auto;
+}
+
+/* Hover card of a map element: the shared menu surface (`.dropdown-menu`, as `fpc-context-menu` / `fpc-dropdown`),
+   facts on top, actions as menu entries below a divider. */
+.lw-topology__popover {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  min-width: 14rem;
+  max-width: 20rem;
+  font-size: var(--bs-body-font-size-sm, 0.875rem);
+}
+
+.lw-topology__popover-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.25rem 1rem 0.375rem;
+}
+
+/* Phones: the inspector becomes a bottom sheet over the map; the popover docks at the bottom. */
+@media (max-width: 767.98px) {
+  .lw-topology__body {
+    flex-direction: column;
+  }
+
+  .lw-topology__inspector {
+    flex: 0 0 auto;
+    max-width: none;
+    max-height: 55vh;
+    border-left: 0;
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: 0.75rem 0.75rem 0 0;
+    box-shadow: 0 -0.25rem 1rem rgba(0, 0, 0, 0.12);
+  }
+
+  .lw-topology__popover {
+    position: fixed;
+    left: 0.5rem !important;
+    right: 0.5rem;
+    top: auto !important;
+    bottom: 0.5rem;
+    max-width: none;
+  }
+
+  .lw-topology__host {
+    width: 100%;
+    min-width: 0;
+  }
+}

@@ -43,20 +43,10 @@
       (darkChange)="themeService.toggleTheme()"
     />
     @if (isAuthenticated$ | async) {
-      <fpc-button
-        class="d-md-none"
-        variant="primary"
-        size="sm"
-        (clicked)="onLogoutClick()"
-        i18n="@@featureContainer-logout"
-        >Logout</fpc-button
-      >
-      <fpc-button
-        class="d-none d-md-inline-block"
-        variant="primary"
-        (clicked)="onLogoutClick()"
-        i18n="@@featureContainer-logout"
-        >Logout</fpc-button
+      <!-- Shared top-bar phone contract (X-01): icon-only square below 576 px, label above. -->
+      <fpc-button variant="primary" size="sm" mdSize="md" [title]="logoutLabel" (clicked)="onLogoutClick()"
+        ><i class="bi bi-box-arrow-right fpc-top-bar__phone-icon" aria-hidden="true"></i
+        ><span class="fpc-top-bar__label" i18n="@@featureContainer-logout">Logout</span></fpc-button
       >
     }
   </fpc-top-bar>
@@ -87,13 +77,13 @@
         routerLinkActive="active"
         class="sidebar__item position-relative"
         i18n-title="@@featureContainer-spacesTitle"
-        title="Spaces"
+        title="Workspaces"
       >
         <i class="bi bi-grid me-1"></i>
-        <span class="small" i18n="@@featureContainer-spaces">Spaces</span>
+        <span class="small" i18n="@@featureContainer-spaces">Workspaces</span>
         @if (spacesAttentionBadge$ | async; as attentionBadge) {
           <fpc-notification-indicator [kind]="attentionBadge" placement="absolute" />
-          <span class="visually-hidden" i18n="@@featureContainer-spacesAttention">Spaces need attention</span>
+          <span class="visually-hidden" i18n="@@featureContainer-spacesAttention">Workspaces need attention</span>
         }
       </a>
       <a
@@ -113,10 +103,10 @@
         [routerLinkActiveOptions]="{ exact: false }"
         class="sidebar__item"
         i18n-title="@@featureContainer-pagesTitle"
-        title="Pages"
+        title="Knowledge"
       >
         <i class="bi bi-journal-richtext me-1"></i>
-        <span class="small" i18n="@@featureContainer-pages">Pages</span>
+        <span class="small" i18n="@@featureContainer-pages">Knowledge</span>
       </a>
       <a
         [routerLink]="tasksSidebarLink()"
@@ -145,10 +135,10 @@
           routerLinkActive="active"
           class="sidebar__item"
           i18n-title="@@featureContainer-tokensTitle"
-          title="Access Tokens"
+          title="Personal access tokens"
         >
           <i class="bi bi-key me-1"></i>
-          <span class="small" i18n="@@featureContainer-tokens">Tokens</span>
+          <span class="small" i18n="@@featureContainer-tokens">Personal access tokens</span>
         </a>
       }
       @if (canAccessUserManager$ | async) {

@@ -1,9 +1,9 @@
 <div class="admin-file-explorer border-top d-flex flex-column flex-grow-1 min-h-0">
   <fpc-page-header [title]="pageTitle">
-    <fpc-button-group fpcPageHeaderActions size="sm">
-      @if (fileSigningEnabled$ | async) {
+    @if (fileSigningEnabled$ | async) {
+      <ng-container ngProjectAs="[fpcPageHeaderActions]">
         <fpc-button
-          variant="dark"
+          variant="outline-secondary"
           size="sm"
           iconOnly
           [ariaLabel]="searchAriaLabel"
@@ -13,7 +13,7 @@
           <i class="bi bi-search" aria-hidden="true"></i>
         </fpc-button>
         <fpc-button
-          variant="dark"
+          variant="outline-secondary"
           size="sm"
           iconOnly
           [ariaLabel]="verifyAriaLabel"
@@ -22,18 +22,19 @@
         >
           <i class="bi bi-shield-check" aria-hidden="true"></i>
         </fpc-button>
-      }
-      <fpc-button
-        variant="dark"
-        size="sm"
-        iconOnly
-        [ariaLabel]="refreshAriaLabel"
-        [title]="refreshAriaLabel"
-        (clicked)="refreshRoot()"
-      >
-        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
-      </fpc-button>
-    </fpc-button-group>
+      </ng-container>
+    }
+    <fpc-button
+      fpcPageHeaderActions
+      variant="outline-secondary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshAriaLabel"
+      [title]="refreshAriaLabel"
+      (clicked)="refreshRoot()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
   </fpc-page-header>
 
   @if (showViewTabs$ | async) {
@@ -56,7 +57,7 @@
       </div>
     } @else {
       @if (error$ | async; as err) {
-        <fpc-alert class="m-3" variant="danger" [message]="err" />
+        <fpc-alert flush variant="danger" [message]="err" />
       }
       @if (treeNodes().length === 0) {
         <fpc-empty-state message="No files" i18n-message="@@featureAdminFileExplorer-empty" />
@@ -148,7 +149,13 @@
   </div>
 </div>
 
-<fpc-modal [(open)]="verifyModalOpen" [title]="verifyModalTitle" (closed)="onVerifyModalClosed()">
+<fpc-modal
+  [(open)]="verifyModalOpen"
+  [title]="verifyModalTitle"
+  (closed)="onVerifyModalClosed()"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <fpc-form-field
     forId="fileExplorerVerifyDocument"
     i18n-label="@@featureAdminFileExplorer-verifyFileLabel"
@@ -205,7 +212,13 @@
   </div>
 </fpc-modal>
 
-<fpc-modal [(open)]="searchModalOpen" [title]="searchModalTitle" (closed)="onSearchModalClosed()">
+<fpc-modal
+  [(open)]="searchModalOpen"
+  [title]="searchModalTitle"
+  (closed)="onSearchModalClosed()"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <fpc-form-field
     forId="fileExplorerDocumentId"
     i18n-label="@@featureAdminFileExplorer-searchDocumentIdLabel"

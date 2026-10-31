@@ -13,7 +13,7 @@ import { AgentEnvironmentVariablesService } from './agent-environment-variables.
 import { AgentMessagesService } from './agent-messages.service';
 import { AgentRuntimeRefreshService } from './agent-runtime-refresh.service';
 import { AgentSessionHydrationService } from './agent-session-hydration.service';
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 import { EnvironmentProgressService } from './environment-progress.service';
 
 describe('AgentEnvironmentVariablesService', () => {
@@ -114,7 +114,7 @@ describe('AgentEnvironmentVariablesService', () => {
           useValue: mockAgentSessionHydrationService,
         },
         {
-          provide: DockerService,
+          provide: AgentRuntime,
           useValue: mockDockerService,
         },
         {

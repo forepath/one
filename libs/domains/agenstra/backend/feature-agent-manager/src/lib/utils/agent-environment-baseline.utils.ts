@@ -61,7 +61,7 @@ export function serializeAgentEnvironmentBaseline(baseline: AgentEnvironmentBase
  *   trusted, because the container may already carry previously applied agent-level values.
  * - Tracked keys (plus hinted removals for untracked agents) that are no longer desired fall back to
  *   their baseline value, or are removed (`undefined`) when the key did not exist before.
- * @returns The env change for `DockerService.updateContainer` and the new baseline
+ * @returns The env change for `AgentRuntime.updateContainer` and the new baseline
  */
 export function planAgentEnvironmentVariables(input: {
   desired: Record<string, string>;

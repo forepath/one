@@ -12,6 +12,8 @@ export interface OtelRuntimeConfig {
   metricsPath: string;
   serviceName: string;
   otlpEndpoint?: string;
+  /** OTLP HTTP endpoint for metrics (`OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`, e.g. `https://collector/v1/metrics`). */
+  otlpMetricsEndpoint?: string;
 }
 
 export function readOtelMetricsPath(env: NodeJS.ProcessEnv = process.env): string {
@@ -35,6 +37,7 @@ export function resolveOtelRuntimeConfig(
   const metricsPath = readOtelMetricsPath(env);
   const serviceName = env['OTEL_SERVICE_NAME']?.trim() || serviceNameFallback?.trim() || 'unknown-service';
   const otlpEndpoint = env['OTEL_EXPORTER_OTLP_ENDPOINT']?.trim() || undefined;
+  const otlpMetricsEndpoint = env['OTEL_EXPORTER_OTLP_METRICS_ENDPOINT']?.trim() || undefined;
 
   if (env['OTEL_ENABLED'] !== 'true') {
     return {
@@ -45,6 +48,7 @@ export function resolveOtelRuntimeConfig(
       metricsPath,
       serviceName,
       otlpEndpoint,
+      otlpMetricsEndpoint,
     };
   }
 
@@ -57,6 +61,7 @@ export function resolveOtelRuntimeConfig(
       metricsPath,
       serviceName,
       otlpEndpoint,
+      otlpMetricsEndpoint,
     };
   }
 
@@ -67,6 +72,7 @@ export function resolveOtelRuntimeConfig(
     metricsPath,
     serviceName,
     otlpEndpoint,
+    otlpMetricsEndpoint,
   };
 }
 

@@ -1,0 +1,26 @@
+{
+  "name": "loadweaver-shared-util-compose",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/loadweaver/shared/util-compose/src",
+  "projectType": "library",
+  "tags": ["domain:loadweaver", "scope:shared", "type:util"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/domains/loadweaver/shared/util-compose",
+        "main": "libs/domains/loadweaver/shared/util-compose/src/index.ts",
+        "tsConfig": "libs/domains/loadweaver/shared/util-compose/tsconfig.lib.json",
+        "assets": ["libs/domains/loadweaver/shared/util-compose/*.md"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/loadweaver/shared/util-compose/jest.config.cts"
+      }
+    }
+  }
+}

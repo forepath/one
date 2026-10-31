@@ -13,7 +13,6 @@ import {
   deleteAdminCustomerProfileFailure,
   deleteAdminCustomerProfileSuccess,
   loadAdminCustomerProfiles,
-  loadAdminCustomerProfilesBatch,
   loadAdminCustomerProfileTrustScore,
   loadAdminCustomerProfileTrustScoreFailure,
   loadAdminCustomerProfileTrustScoreSuccess,
@@ -33,7 +32,6 @@ import {
   createAdminCustomerProfile$,
   deleteAdminCustomerProfile$,
   loadAdminCustomerProfiles$,
-  loadAdminCustomerProfilesBatch$,
   loadAdminCustomerProfileTrustScore$,
   recomputeAdminCustomerProfileTrustScore$,
   saveAdminCustomerProfileCustomData$,
@@ -71,32 +69,25 @@ describe('AdminCustomerProfilesEffects', () => {
   });
 
   describe('loadAdminCustomerProfiles$', () => {
-    it('returns empty success when no profiles', (done) => {
+    it('returns an empty page with total 0', (done) => {
       actions$ = of(loadAdminCustomerProfiles());
-      service.list.mockReturnValue(of({ items: [], total: 0, limit: 10, offset: 0 }));
+      service.list.mockReturnValue(of({ items: [], total: 0, limit: 25, offset: 0 }));
 
       loadAdminCustomerProfiles$(actions$, service).subscribe((result) => {
-        expect(result).toEqual(loadAdminCustomerProfilesSuccess({ profiles: [] }));
+        expect(result).toEqual(loadAdminCustomerProfilesSuccess({ profiles: [], total: 0 }));
+        expect(service.list).toHaveBeenCalledWith({ limit: 25, offset: 0, search: undefined });
         done();
       });
     });
 
-    it('returns success for partial batch', (done) => {
-      actions$ = of(loadAdminCustomerProfiles());
-      service.list.mockReturnValue(of({ items: [profile], total: 1, limit: 10, offset: 0 }));
+    it('loads exactly the requested page with the total in one request (replace-page)', (done) => {
+      actions$ = of(loadAdminCustomerProfiles({ search: 'ada', page: 3, pageSize: 50 }));
+      service.list.mockReturnValue(of({ items: [profile], total: 101, limit: 50, offset: 100 }));
 
       loadAdminCustomerProfiles$(actions$, service).subscribe((result) => {
-        expect(result).toEqual(loadAdminCustomerProfilesSuccess({ profiles: [profile] }));
-        done();
-      });
-    });
-
-    it('chains batch when first page is full', (done) => {
-      actions$ = of(loadAdminCustomerProfiles());
-      service.list.mockReturnValue(of({ items: Array(10).fill(profile), total: 20, limit: 10, offset: 0 }));
-
-      loadAdminCustomerProfiles$(actions$, service).subscribe((result) => {
-        expect(result.type).toBe(loadAdminCustomerProfilesBatch.type);
+        expect(result).toEqual(loadAdminCustomerProfilesSuccess({ profiles: [profile] as never, total: 101 }));
+        expect(service.list).toHaveBeenCalledTimes(1);
+        expect(service.list).toHaveBeenCalledWith({ limit: 50, offset: 100, search: 'ada' });
         done();
       });
     });
@@ -117,38 +108,6 @@ describe('AdminCustomerProfilesEffects', () => {
 
       loadAdminCustomerProfiles$(actions$, service).subscribe((result) => {
         expect(result).toEqual(loadAdminCustomerProfilesFailure({ error: 'network' }));
-        done();
-      });
-    });
-  });
-
-  describe('loadAdminCustomerProfilesBatch$', () => {
-    it('accumulates invoices until partial page', (done) => {
-      actions$ = of(loadAdminCustomerProfilesBatch({ offset: 10, accumulatedProfiles: [profile] }));
-      service.list.mockReturnValue(of({ items: [profile], total: 2, limit: 10, offset: 10 }));
-
-      loadAdminCustomerProfilesBatch$(actions$, service).subscribe((result) => {
-        expect(result).toEqual(loadAdminCustomerProfilesSuccess({ profiles: [profile, profile] }));
-        done();
-      });
-    });
-
-    it('chains another batch when page is full', (done) => {
-      actions$ = of(loadAdminCustomerProfilesBatch({ offset: 10, accumulatedProfiles: [profile] }));
-      service.list.mockReturnValue(of({ items: Array(10).fill(profile), total: 30, limit: 10, offset: 10 }));
-
-      loadAdminCustomerProfilesBatch$(actions$, service).subscribe((result) => {
-        expect(result.type).toBe(loadAdminCustomerProfilesBatch.type);
-        done();
-      });
-    });
-
-    it('returns failure on batch error', (done) => {
-      actions$ = of(loadAdminCustomerProfilesBatch({ offset: 10, accumulatedProfiles: [profile] }));
-      service.list.mockReturnValue(throwError(() => ({ message: 'batch failed' })));
-
-      loadAdminCustomerProfilesBatch$(actions$, service).subscribe((result) => {
-        expect(result).toEqual(loadAdminCustomerProfilesFailure({ error: 'batch failed' }));
         done();
       });
     });

@@ -259,6 +259,24 @@ describe('invoicesReducer', () => {
   });
 
   describe('loadOpenOverdueInvoices', () => {
+    it('should keep the requested page / size / search (replace-page)', () => {
+      const newState = invoicesReducer(
+        initialInvoicesState,
+        loadOpenOverdueInvoices({ page: 4, pageSize: 50, search: ' acme ' }),
+      );
+
+      expect(newState.openOverduePage).toBe(4);
+      expect(newState.openOverduePageSize).toBe(50);
+      expect(newState.openOverdueSearch).toBe('acme');
+    });
+
+    it('should keep the page of a silent refresh without a spinner', () => {
+      const newState = invoicesReducer(initialInvoicesState, loadHistoryInvoices({ silent: true, page: 2 }));
+
+      expect(newState.historyPage).toBe(2);
+      expect(newState.historyListLoading).toBe(false);
+    });
+
     it('should set openOverdueListLoading to true and clear openOverdueListError', () => {
       const state: InvoicesState = { ...initialInvoicesState, openOverdueListError: 'Previous error' };
       const newState = invoicesReducer(state, loadOpenOverdueInvoices({}));
@@ -284,9 +302,10 @@ describe('invoicesReducer', () => {
     it('should set openOverdueList and clear loading', () => {
       const state: InvoicesState = { ...initialInvoicesState, openOverdueListLoading: true };
       const invoices = [mockInvoice];
-      const newState = invoicesReducer(state, loadOpenOverdueInvoicesSuccess({ invoices }));
+      const newState = invoicesReducer(state, loadOpenOverdueInvoicesSuccess({ invoices, hasMore: true }));
 
       expect(newState.openOverdueList).toEqual(invoices);
+      expect(newState.openOverdueHasMore).toBe(true);
       expect(newState.openOverdueListLoading).toBe(false);
       expect(newState.openOverdueListError).toBeNull();
     });
@@ -328,9 +347,10 @@ describe('invoicesReducer', () => {
     it('should set historyList and clear loading', () => {
       const state: InvoicesState = { ...initialInvoicesState, historyListLoading: true };
       const invoices = [mockInvoice];
-      const newState = invoicesReducer(state, loadHistoryInvoicesSuccess({ invoices }));
+      const newState = invoicesReducer(state, loadHistoryInvoicesSuccess({ invoices, hasMore: true }));
 
       expect(newState.historyList).toEqual(invoices);
+      expect(newState.historyHasMore).toBe(true);
       expect(newState.historyListLoading).toBe(false);
       expect(newState.historyListError).toBeNull();
     });

@@ -2,16 +2,28 @@ import type { ChangelogEntry, ProductScope, ScopedChangelog } from '../interface
 
 const BULLET_LINE_PATTERN = /^\s*(?:[-*]|\d+\.)\s+(.+)$/;
 
-const CONVENTIONAL_SCOPE_PATTERN = /(?:^|\s)(?:\w+)?\((agenstra|decabill)\)/i;
+const CONVENTIONAL_SCOPE_PATTERN = /(?:^|\s)(?:\w+)?\((agenstra|decabill|loadweaver)\)/i;
 
-const LEADING_PRODUCT_PATTERN = /^(agenstra|decabill)\b/i;
+const LEADING_PRODUCT_PATTERN = /^(agenstra|decabill|loadweaver)\b/i;
+
+/** Release-tool lines: `**scope:** text` / `**scope**: text`. */
+const BOLD_SCOPE_PATTERN = /^\*\*([a-z0-9_-]+)(?::\*\*|\*\*:)/i;
+
+/** Conventional-commit lines: `type(scope)!: text`. */
+const COMMIT_SCOPE_PATTERN = /^[a-z]+\(([a-z0-9_-]+)\)!?:/i;
+
+/**
+ * Products of the monorepo besides the three update-scoped ones: their entries belong to no product's changelog and
+ * never to "shared" (user, 2026-10-29: the shared changelog shows the `shared` scope and unscoped entries only).
+ */
+const OTHER_PRODUCTS = new Set(['forepath']);
 
 const SECTION_HEADER_PATTERN = /^#{1,6}\s+(.+)$/;
 
 function normalizeProduct(value: string): ProductScope | undefined {
   const normalized = value.trim().toLowerCase();
 
-  if (normalized === 'agenstra' || normalized === 'decabill') {
+  if (normalized === 'agenstra' || normalized === 'decabill' || normalized === 'loadweaver') {
     return normalized;
   }
 
@@ -19,12 +31,26 @@ function normalizeProduct(value: string): ProductScope | undefined {
 }
 
 function classifyChangelogLine(text: string): Pick<ChangelogEntry, 'scope' | 'product'> {
+  const explicit = (text.match(BOLD_SCOPE_PATTERN) ?? text.match(COMMIT_SCOPE_PATTERN))?.[1]?.toLowerCase();
+
+  if (explicit) {
+    const product = normalizeProduct(explicit);
+
+    if (product) return { scope: 'product', product };
+
+    // Another product's entry: no product changelog shows it (no `product`), and it isn't shared either.
+    if (OTHER_PRODUCTS.has(explicit)) return { scope: 'product' };
+  }
+
   const conventionalMatch = text.match(CONVENTIONAL_SCOPE_PATTERN);
   const conventionalProduct = conventionalMatch?.[1] ? normalizeProduct(conventionalMatch[1]) : undefined;
 
   if (conventionalProduct) {
     return { scope: 'product', product: conventionalProduct };
   }
+
+  // Another product named as the line's first word ("forepath landingpage …"): not shared either.
+  if (OTHER_PRODUCTS.has((text.match(/^([a-z0-9_-]+)\b/i)?.[1] ?? '').toLowerCase())) return { scope: 'product' };
 
   const leadingMatch = text.match(LEADING_PRODUCT_PATTERN);
   const leadingProduct = leadingMatch?.[1] ? normalizeProduct(leadingMatch[1]) : undefined;

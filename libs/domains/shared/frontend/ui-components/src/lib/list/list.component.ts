@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
+export type FpcListRole = 'list' | 'listbox';
+
 /**
  * Bootstrap list group container. Uses `role="list"` on a `div` (rather than a `ul`) so callers
  * can project components as children without producing invalid markup. Flush lists keep the last
@@ -13,7 +15,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     class: 'list-group fpc-list',
     '[class.list-group-flush]': 'flush()',
     '[class.fpc-list--borderless]': '!bordered()',
-    '[attr.role]': '"list"',
+    '[attr.role]': 'role()',
     '[attr.aria-label]': 'ariaLabel()',
   },
   template: `<ng-content />`,
@@ -23,4 +25,9 @@ export class FpcListComponent {
   readonly flush = input(false);
   readonly bordered = input(true);
   readonly ariaLabel = input<string | null>(null);
+  /**
+   * `listbox` for pickable result lists (search results, pickers): pair with `fpc-list-item role="option"`,
+   * whose `active` then maps to `aria-selected`.
+   */
+  readonly role = input<FpcListRole>('list');
 }

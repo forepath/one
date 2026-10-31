@@ -4,56 +4,61 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
+  AuthService,
   AuthenticationFacade,
   adminClearTotpSuccess,
+  getUserRoleLabel,
   createUserSuccess,
   updateUserSuccess,
-  UserRoleLabelPipe,
   type CreateUserDto,
   type UpdateUserDto,
   type UserResponseDto,
 } from '@forepath/identity/frontend';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import {
+  FpcDatePipe,
   FpcAlertComponent,
+  FpcBadgeComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
-  FpcSpinnerComponent,
+  FpcTableCellDirective,
+  fpcCopyText,
+  fpcRunBulk,
+  type FpcMenuItem,
+  type FpcTableColumn,
 } from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
+import { firstValueFrom } from 'rxjs';
 import { combineLatestWith, map } from 'rxjs/operators';
+
+import { SHARED_DL_DELETE, sharedBulkSummary, sharedCopyIdItem } from '../data-list';
 
 @Component({
   selector: 'identity-auth-user-manager',
   imports: [
     CommonModule,
+    FpcDatePipe,
     FormsModule,
     RouterModule,
-    UserRoleLabelPipe,
     FpcAlertComponent,
+    FpcBadgeComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
+    FpcDataTableComponent,
     FpcEmptyStateComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
-    FpcListComponent,
-    FpcListItemComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
-    FpcSpinnerComponent,
+    FpcTableCellDirective,
   ],
   templateUrl: './user-manager.component.html',
   styleUrls: ['./user-manager.component.scss'],
@@ -61,6 +66,7 @@ import { combineLatestWith, map } from 'rxjs/operators';
 })
 export class IdentityUserManagerComponent implements OnInit {
   private readonly authFacade = inject(AuthenticationFacade);
+  private readonly authService = inject(AuthService);
   private readonly actions$ = inject(Actions);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -71,10 +77,13 @@ export class IdentityUserManagerComponent implements OnInit {
   readonly deleteUserModalOpen = signal(false);
   readonly clearTotpModalOpen = signal(false);
 
-  readonly pageTitle = $localize`:@@featureUserManager-title:User Management`;
+  /** Modal footer Cancel (3.38 R14: [Cancel `dark`, Primary]); the shared identity unit exists in every console. */
+
+  readonly cancelLabel = $localize`:@@identityLogoutConfirm-cancel:Cancel`;
+
+  readonly pageTitle = $localize`:@@featureUserManager-title:User management`;
   readonly addUserTitle = $localize`:@@featureUserManager-addUserTitle:Add user`;
   readonly searchUsersPlaceholder = $localize`:@@featureUserManager-searchUsersPlaceholder:Search users`;
-  readonly loadingUsersLabel = $localize`:@@featureUserManager-loadingUsers:Loading users...`;
   readonly noOtherUsersMessage = $localize`:@@featureUserManager-noOtherUsers:No other users yet`;
 
   readonly searchUserQuery = signal<string>('');
@@ -86,7 +95,9 @@ export class IdentityUserManagerComponent implements OnInit {
         return users;
       }
 
-      return users.filter((user) => JSON.stringify(user).toLowerCase().includes(searchQuery.toLowerCase()));
+      const needle = searchQuery.trim().toLowerCase();
+
+      return users.filter((user) => `${user.email} ${getUserRoleLabel(user.role)}`.toLowerCase().includes(needle));
     }),
   );
   readonly usersLoading$ = this.authFacade.usersLoading$;
@@ -109,6 +120,93 @@ export class IdentityUserManagerComponent implements OnInit {
     return all.filter((u) => u.id !== self.id);
   });
   readonly usersError = toSignal(this.usersError$, { initialValue: null as string | null });
+
+  // Table (3.38: State column, ⋮ row actions, bulk Lock / Unlock / Delete via the single-user endpoints)
+  readonly lockLabel = $localize`:@@featureUserManager-lockUserButtonTitle:Lock user`;
+  readonly unlockLabel = $localize`:@@featureUserManager-unlockUserButtonTitle:Unlock user`;
+  readonly deleteLabel = SHARED_DL_DELETE;
+  readonly authenticatorLabel = $localize`:@@featureUserManager-totpEnabled:Authenticator`;
+  private readonly editLabel = $localize`:@@featureUserManager-editUserButtonTitle:Edit user`;
+  private readonly removeAuthenticatorLabel = $localize`:@@featureUserManager-removeAuthenticatorTitle:Remove authenticator`;
+
+  readonly selectedUserIds = signal<readonly string[]>([]);
+  readonly bulkBusy = signal(false);
+  readonly bulkDeleteOpen = signal(false);
+  readonly bulkResult = signal<{ tone: 'success' | 'warning' | 'danger'; message: string } | null>(null);
+
+  readonly selectedUsers = computed(() => {
+    const ids = new Set(this.selectedUserIds());
+
+    return this.usersExcludingSelf().filter((user) => ids.has(user.id));
+  });
+
+  readonly columns: FpcTableColumn<UserResponseDto>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureUserManager-colState:State`,
+      type: 'state',
+      state: (user) =>
+        user.lockedAt
+          ? { label: $localize`:@@featureUserManager-locked:Locked`, tone: 'danger', icon: 'lock-fill' }
+          : !user.emailConfirmedAt
+            ? {
+                label: $localize`:@@featureUserManager-stateUnconfirmed:Email not confirmed`,
+                tone: 'warning',
+                icon: 'envelope-exclamation',
+              }
+            : { label: $localize`:@@featureUserManager-unlocked:Active`, tone: 'success', icon: 'person-check' },
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureUserManager-emailLabel:Email`,
+      value: (user) => user.email,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'role',
+      label: $localize`:@@featureUserManager-colRole:Role`,
+      value: (user) => getUserRoleLabel(user.role),
+      priority: 1,
+    },
+    {
+      id: 'authenticator',
+      label: $localize`:@@featureUserManager-totpEnabled:Authenticator`,
+      priority: 2,
+      width: '7rem',
+      // Mostly empty (AG-17): hidden by default, still available in the column chooser.
+      hidden: true,
+    },
+    {
+      id: 'created',
+      label: $localize`:@@featureUserManager-colCreated:Created`,
+      value: (user) => user.createdAt,
+      priority: 2,
+    },
+  ];
+
+  readonly userRowMenu = (user: UserResponseDto): FpcMenuItem[] => {
+    const items: FpcMenuItem[] = [
+      { id: 'edit', label: this.editLabel, icon: 'pencil' },
+      user.lockedAt
+        ? { id: 'unlock', label: this.unlockLabel, icon: 'unlock' }
+        : { id: 'lock', label: this.lockLabel, icon: 'lock' },
+    ];
+
+    if (user.totpEnabled) {
+      items.push({ id: 'clear-totp', label: this.removeAuthenticatorLabel, icon: 'shield-x' });
+    }
+
+    items.push(sharedCopyIdItem(), {
+      id: 'delete',
+      label: this.deleteLabel,
+      icon: 'trash',
+      danger: true,
+      dividerBefore: true,
+    });
+
+    return items;
+  };
 
   createForm = {
     email: '',
@@ -244,13 +342,59 @@ export class IdentityUserManagerComponent implements OnInit {
     this.userToClearTotp = null;
   }
 
-  formatDate(iso: string | undefined): string {
-    if (!iso) return '-';
+  onUserAction(user: UserResponseDto, action: string): void {
+    switch (action) {
+      case 'edit':
+        this.onEditUser(user);
+        break;
+      case 'lock':
+        this.onLockUser(user);
+        break;
+      case 'unlock':
+        this.onUnlockUser(user);
+        break;
+      case 'clear-totp':
+        this.onClearTotp(user);
+        break;
+      case 'copy-id':
+        fpcCopyText(user.id);
+        break;
+      case 'delete':
+        this.onDeleteUser(user);
+        break;
+    }
+  }
+
+  /** Bulk Lock / Unlock: one call per selected user whose state changes (the server checks each). */
+  onBulkLock(lock: boolean): void {
+    void this.runBulk(
+      this.selectedUsers().filter((user) => !!user.lockedAt !== lock),
+      (user) => firstValueFrom(lock ? this.authService.lockUser(user.id) : this.authService.unlockUser(user.id)),
+    );
+  }
+
+  onConfirmBulkDelete(): void {
+    this.bulkDeleteOpen.set(false);
+    void this.runBulk(this.selectedUsers(), (user) => firstValueFrom(this.authService.deleteUser(user.id)));
+  }
+
+  /** Client fan-out over the single-user endpoints (3.38 D8), per-user result; failed / denied stay selected. */
+  private async runBulk(users: readonly UserResponseDto[], run: (user: UserResponseDto) => Promise<unknown>) {
+    if (users.length === 0) {
+      return;
+    }
+
+    this.bulkBusy.set(true);
+    this.bulkResult.set(null);
 
     try {
-      return new Date(iso).toLocaleString();
-    } catch {
-      return iso;
+      const result = await fpcRunBulk(users, run);
+
+      this.bulkResult.set(sharedBulkSummary(result, (user) => user.email));
+      this.selectedUserIds.set(result.failed.concat(result.denied).map((user) => user.id));
+      this.authFacade.loadUsers();
+    } finally {
+      this.bulkBusy.set(false);
     }
   }
 }

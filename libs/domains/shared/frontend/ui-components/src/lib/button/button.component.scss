@@ -1,3 +1,5 @@
+@use '../../../styles/brands/chrome';
+
 :host {
   display: inline-block;
 }
@@ -43,21 +45,27 @@
   gap: 0.375rem;
 }
 
-// Chip-as-control: `fpc-badge` already owns padding/radius. Bootstrap `.btn` / `.btn-link`
-// padding would stack on top and inflate parents (e.g. `fpc-page-header` row past sm icon height).
-// Host utilities like `p-0` never reach the inner control - drop chrome here instead.
-:host:has(fpc-badge) {
+// Chip-as-control: a lone `fpc-badge` as the whole label already owns padding/radius. Bootstrap
+// `.btn` / `.btn-link` padding would stack on top and inflate parents, so drop the chrome here
+// (host utilities like `p-0` never reach the inner control). Buttons that merely *contain* a count
+// badge next to a label (e.g. "Layers [2]") keep their normal button chrome.
+// The chip takes the `sm` control height so it lines up with the buttons in the same row.
+:host:has(.fpc-button__content > fpc-badge:only-child) {
   vertical-align: middle;
   line-height: 0;
 }
 
-:host:has(fpc-badge) .fpc-button__btn {
+:host:has(.fpc-button__content > fpc-badge:only-child) .fpc-button__btn {
   padding: 0;
   border-width: 0;
   line-height: 1;
   height: auto;
   min-height: 0;
   gap: 0;
+}
+
+:host:has(.fpc-button__content > fpc-badge:only-child) .fpc-button__content > ::ng-deep fpc-badge {
+  min-height: var(--fpc-control-height-sm, 2.025rem);
 }
 
 .fpc-button__spinner {
@@ -102,16 +110,17 @@
 // cannot pierce encapsulation to the inner `.btn`).
 :host-context(#cta) .fpc-button__btn--xl.btn-primary,
 :host-context(#fit) .fpc-button__btn--xl.btn-primary {
-  --bs-btn-color: #fff;
+  // `--fpc-primary-contrast`: dark ink for brands with a light primary (see brands/_extras.scss).
+  --bs-btn-color: var(--fpc-primary-contrast, #fff);
   --bs-btn-bg: color-mix(in srgb, var(--bs-primary) 88%, #000);
   --bs-btn-border-color: color-mix(in srgb, var(--bs-primary) 88%, #000);
-  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-color: var(--fpc-primary-contrast, #fff);
   --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 80%, #000);
   --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-primary) 80%, #000);
-  --bs-btn-active-color: #fff;
+  --bs-btn-active-color: var(--fpc-primary-contrast, #fff);
   --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 74%, #000);
   --bs-btn-active-border-color: color-mix(in srgb, var(--bs-primary) 74%, #000);
-  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-color: var(--fpc-primary-contrast, #fff);
   --bs-btn-disabled-bg: color-mix(in srgb, var(--bs-primary) 88%, #000);
   --bs-btn-disabled-border-color: color-mix(in srgb, var(--bs-primary) 88%, #000);
 }
@@ -138,45 +147,56 @@
   --bs-btn-disabled-border-color: var(--fpc-btn-hero-dark-bg);
 }
 
+// Icon-only: square at the shared control height of its size tier (see `styles/_controls.scss`).
+// Page / object headers remap `--fpc-control-height-sm` to the header tier; menus inside them
+// restore the regular `sm` tier, so no per-context overrides are needed here.
 .fpc-button__btn--icon {
+  --fpc-button-icon-size: var(--fpc-control-height-md, 2.5625rem);
   aspect-ratio: 1 / 1;
   padding: 0;
   line-height: 1;
-  width: 2.5625rem;
-  height: 2.5625rem;
-  min-width: 2.5625rem;
-  min-height: 2.5625rem;
+  width: var(--fpc-button-icon-size);
+  height: var(--fpc-button-icon-size);
+  min-width: var(--fpc-button-icon-size);
+  min-height: var(--fpc-button-icon-size);
   flex: 0 0 auto;
   align-self: center;
   box-sizing: border-box;
 
   &.btn-sm {
-    width: 2.025rem;
-    height: 2.025rem;
-    min-width: 2.025rem;
-    min-height: 2.025rem;
+    --fpc-button-icon-size: var(--fpc-control-height-sm, 2.025rem);
+  }
+
+  &.btn-lg {
+    --fpc-button-icon-size: var(--fpc-control-height-lg, 3.265625rem);
   }
 
   &.fpc-button__btn--xs {
-    width: 1.5rem;
-    height: 1.5rem;
-    min-width: 1.5rem;
-    min-height: 1.5rem;
+    --fpc-button-icon-size: 1.5rem;
   }
 }
 
-// Page-header chrome uses a taller control size so icon-only actions stay 1:1 with the bar.
-:host-context(.fpc-page-header) .fpc-button__btn--icon.btn-sm {
-  width: var(--fpc-page-header-control-size, 2.35rem);
-  height: var(--fpc-page-header-control-size, 2.35rem);
-  min-width: var(--fpc-page-header-control-size, 2.35rem);
-  min-height: var(--fpc-page-header-control-size, 2.35rem);
-}
+// Responsive size (`mdSize`): the control tier switches at the md breakpoint. Restates Bootstrap's
+// size variables (the derived padding in `styles/_controls.scss` follows `--fpc-control-h`).
+@media (min-width: 768px) {
+  .fpc-button__btn--md-sm {
+    --fpc-control-h: var(--fpc-control-height-sm);
+    --bs-btn-padding-x: #{chrome.$input-btn-padding-x-sm};
+    --bs-btn-font-size: #{chrome.$font-size-base * 0.875};
+    --bs-btn-border-radius: var(--bs-border-radius-sm);
+  }
 
-// Menus nested under the header (e.g. session switcher) keep compact sm, not chrome height.
-:host-context(.dropdown-menu) .fpc-button__btn--icon.btn-sm {
-  width: 2.025rem;
-  height: 2.025rem;
-  min-width: 2.025rem;
-  min-height: 2.025rem;
+  .fpc-button__btn--md-md {
+    --fpc-control-h: var(--fpc-control-height-md);
+    --bs-btn-padding-x: #{chrome.$input-btn-padding-x};
+    --bs-btn-font-size: #{chrome.$font-size-base};
+    --bs-btn-border-radius: var(--bs-border-radius);
+  }
+
+  .fpc-button__btn--md-lg {
+    --fpc-control-h: var(--fpc-control-height-lg);
+    --bs-btn-padding-x: #{chrome.$input-btn-padding-x-lg};
+    --bs-btn-font-size: #{chrome.$font-size-base * 1.25};
+    --bs-btn-border-radius: var(--bs-border-radius-lg);
+  }
 }

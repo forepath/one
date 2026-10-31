@@ -39,10 +39,10 @@ import {
       <div class="sai-col sai-col--grow">
         <fpc-page-header title="Overview" />
         <div class="overview-illustration__summary">
-          <fpc-summary-card label="Active plans" value="4" />
-          <fpc-summary-card label="Active projects" value="2" />
-          <fpc-summary-card label="Open and overdue invoices" value="1" tone="warning" />
-          <fpc-summary-card label="Revenue this month" value="€12,480.00" tone="success" />
+          <fpc-summary-card icon="stack" label="Active plans" value="4" />
+          <fpc-summary-card icon="kanban" label="Active projects" value="2" />
+          <fpc-summary-card icon="exclamation-circle" label="Open and overdue invoices" value="1" tone="warning" />
+          <fpc-summary-card icon="cash-coin" label="Revenue this month" value="€12,480.00" tone="success" />
         </div>
         <div class="d-flex flex-grow-1 min-h-0">
           <section class="sai-col sai-col--grow overview-illustration__services">

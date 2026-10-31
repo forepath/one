@@ -111,6 +111,29 @@ export class UsageRecordsRepository {
     return await qb.getMany();
   }
 
+  /** One page of a subscription's metered entries (newest first) with the total; tenant-scoped like the full list. */
+  async findMeteredForSubscriptionPage(
+    subscriptionId: string,
+    limit: number,
+    offset: number,
+  ): Promise<{ items: UsageRecordEntity[]; total: number }> {
+    const qb = this.repository
+      .createQueryBuilder('usage')
+      .innerJoin('usage.subscription', 'sub')
+      .innerJoin('users', 'user', 'user.id = sub.user_id')
+      .where('usage.subscription_id = :subscriptionId', { subscriptionId })
+      .andWhere('usage.meter_id IS NOT NULL')
+      .orderBy('usage.createdAt', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    applyUserTenantFilter(qb, 'user');
+
+    const [items, total] = await qb.getManyAndCount();
+
+    return { items, total };
+  }
+
   async findMeteredForSubscriptionInRange(subscriptionId: string, from: Date, to: Date): Promise<UsageRecordEntity[]> {
     const qb = this.repository
       .createQueryBuilder('usage')
@@ -155,5 +178,26 @@ export class UsageRecordsRepository {
     applyUserTenantFilter(qb, 'user');
 
     return await qb.getOne();
+  }
+
+  /** Whether a usage row with this idempotency key exists for the subscription and meter (collector dedupe). */
+  async existsByIdempotencyKey(params: {
+    subscriptionId: string;
+    meterId: string;
+    idempotencyKey: string;
+  }): Promise<boolean> {
+    const qb = this.repository
+      .createQueryBuilder('usage')
+      .innerJoin('usage.subscription', 'sub')
+      .innerJoin('users', 'user', 'user.id = sub.user_id')
+      .where('usage.subscription_id = :subscriptionId', { subscriptionId: params.subscriptionId })
+      .andWhere('usage.meter_id = :meterId', { meterId: params.meterId })
+      .andWhere("usage.usage_payload ->> 'idempotencyKey' = :idempotencyKey", {
+        idempotencyKey: params.idempotencyKey,
+      });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return (await qb.getCount()) > 0;
   }
 }

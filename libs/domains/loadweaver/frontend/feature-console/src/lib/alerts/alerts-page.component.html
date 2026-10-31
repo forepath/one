@@ -1,0 +1,195 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="alerts" [binding]="views" />
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="load()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <!-- Alerts | Silences are lanes (3.38): at ≥ xl the silences lane is the empty detail lane beside this list; below
+       xl these lane tabs switch this column between the two. -->
+  <fpc-tab-group
+    class="flex-shrink-0 d-xl-none"
+    [activeId]="lane()"
+    (activeIdChange)="lane.set($event === 'silences' ? 'silences' : 'alerts')"
+    [ariaLabel]="title"
+    data-testid="alerts-lane-tabs"
+  >
+    <fpc-tab id="alerts" [label]="tabAlerts" icon="bell" />
+    <fpc-tab id="silences" [label]="tabSilences" icon="volume-mute" />
+  </fpc-tab-group>
+
+  @if (lane() === 'silences') {
+    <loadweaver-alert-silences-lane class="d-xl-none" />
+  }
+
+  <div
+    class="flex-grow-1 flex-column min-h-0 d-xl-flex"
+    [class.d-flex]="lane() === 'alerts'"
+    [class.d-none]="lane() !== 'alerts'"
+    data-testid="alerts-lane"
+  >
+    @if (actionError(); as message) {
+      <fpc-alert
+        [flush]="true"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="dismissActionError()"
+      />
+    }
+    @if (exportError(); as message) {
+      <fpc-alert
+        [flush]="true"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="exportError.set(null)"
+      />
+    }
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="alerts-bulk-result"
+      />
+    }
+
+    <!-- One data list (3.38 D1): State · Alert (link) · facts; ⋮ row actions; bulk Acknowledge on selection. -->
+    <fpc-data-table
+      class="flex-grow-1 min-h-0"
+      [ariaLabel]="title"
+      [columns]="columns"
+      [rows]="filtered()"
+      [rowLink]="alertLink"
+      [activeRowId]="openId()"
+      paging="client"
+      persistKey="lw-alerts"
+      [(query)]="search"
+      [searchPlaceholder]="searchLabel"
+      showFilterButton
+      [(filtersOpen)]="filtersOpen"
+      [filtersActive]="filterState.activeCount()"
+      (filtersApplied)="filterState.apply()"
+      (filtersCleared)="filterState.clear()"
+      [loading]="loading() && alerts().length === 0"
+      [error]="error()"
+      selectable
+      [(selected)]="selected"
+      [rowMenu]="rowMenu"
+      (rowAction)="onRowAction($event.row, $event.item.id)"
+      emptyIcon="bell-slash"
+      data-testid="alerts-list"
+    >
+      <span fpcDataTableToolbar class="d-inline-flex gap-2">
+        <fpc-button
+          variant="dark"
+          size="sm"
+          [iconOnly]="true"
+          [ariaLabel]="exportCsvLabel"
+          [title]="exportCsvLabel"
+          [loading]="exporting()"
+          (clicked)="export('csv')"
+          data-testid="alerts-export-csv"
+        >
+          <i class="bi bi-filetype-csv" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="sm"
+          [iconOnly]="true"
+          [ariaLabel]="exportJsonLabel"
+          [title]="exportJsonLabel"
+          [loading]="exporting()"
+          (clicked)="export('json')"
+        >
+          <i class="bi bi-filetype-json" aria-hidden="true"></i>
+        </fpc-button>
+      </span>
+      <fpc-form-field fpcDataTableFilters forId="lw-alerts-state" [label]="stateFilterLabel">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-alerts-state"
+          size="sm"
+          [ngModel]="filterState.draft().state"
+          (ngModelChange)="filterState.patch({ state: $event })"
+        >
+          @for (s of states; track s) {
+            <option [value]="s">{{ stateName(s) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+      <fpc-form-field fpcDataTableFilters forId="lw-alerts-severity" [label]="severityFilterLabel">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-alerts-severity"
+          size="sm"
+          [ngModel]="filterState.draft().severity"
+          (ngModelChange)="filterState.patch({ severity: $event })"
+        >
+          <option value="" i18n="@@lwConsoleAlerts-allSeverities">All severities</option>
+          @for (s of severities; track s) {
+            <option [value]="s">{{ severityLabel(s) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+      @if (projects().length > 0) {
+        <fpc-form-field fpcDataTableFilters forId="lw-alerts-project" [label]="projectFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-alerts-project"
+            size="sm"
+            [ngModel]="filterState.draft().project"
+            (ngModelChange)="filterState.patch({ project: $event })"
+          >
+            <option value="" i18n="@@lwConsoleAlerts-allProjects">All projects</option>
+            @for (p of projects(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      }
+      <fpc-button
+        fpcDataTableBatch
+        variant="secondary"
+        size="sm"
+        [disabled]="acknowledgeable().length === 0"
+        (clicked)="acknowledgeSelected()"
+        data-testid="alerts-bulk-acknowledge"
+        iconOnly
+        [ariaLabel]="acknowledgeLabel"
+        [title]="acknowledgeLabel"
+      >
+        <i class="bi bi-check2" aria-hidden="true"></i>
+      </fpc-button>
+
+      <span fpcDataTableEmpty>
+        <fpc-empty-state icon="bell-slash" size="sm" i18n-title="@@lwConsoleAlerts-empty" title="No alerts" />
+      </span>
+
+      <ng-template fpcTableCell="silenced" let-row>
+        @if (row.silenced) {
+          <fpc-badge tone="neutral" icon="volume-mute" [iconOnly]="true" [label]="silencedLabel" />
+        }
+      </ng-template>
+      <ng-template fpcTableCell="severity" let-row>
+        <fpc-badge [tone]="severityToneOf(row)" size="sm">{{ severityLabel(row.severity) }}</fpc-badge>
+      </ng-template>
+      <ng-template fpcTableCell="started" let-row>{{ row.startedAt | date: 'short' }}</ng-template>
+      <ng-template fpcTableCell="resolved" let-row>{{
+        row.resolvedAt ? (row.resolvedAt | date: 'short') : ''
+      }}</ng-template>
+    </fpc-data-table>
+  </div>
+</div>

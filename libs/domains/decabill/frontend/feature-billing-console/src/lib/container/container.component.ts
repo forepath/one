@@ -56,6 +56,7 @@ import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from '../contributors/first-party-
   standalone: true,
 })
 export class BillingConsoleContainerComponent implements OnInit {
+  readonly logoutLabel = $localize`:@@featureContainer-logout:Logout`;
   private readonly authenticationFacade = inject(AuthenticationFacade);
   private readonly billingCapabilitiesFacade = inject(BillingCapabilitiesFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
@@ -330,8 +331,8 @@ export class BillingConsoleContainerComponent implements OnInit {
         routerLink: ['/administration/addons'],
         activePaths: ['/administration/addons'],
         icon: 'bi-puzzle',
-        title: $localize`:@@featureContainer-addonsTitle:Addons`,
-        label: $localize`:@@featureContainer-addons:Addons`,
+        title: $localize`:@@featureContainer-addonsTitle:Add-ons`,
+        label: $localize`:@@featureContainer-addons:Add-ons`,
       },
       {
         routerLink: ['/administration/meters'],
@@ -351,8 +352,8 @@ export class BillingConsoleContainerComponent implements OnInit {
         routerLink: ['/administration/subscriptions'],
         activePaths: ['/administration/subscriptions'],
         icon: 'bi-collection',
-        title: $localize`:@@featureContainer-adminSubscriptionsTitle:Contracts`,
-        label: $localize`:@@featureContainer-adminSubscriptions:Contracts`,
+        title: $localize`:@@featureContainer-adminSubscriptionsTitle:Subscriptions`,
+        label: $localize`:@@featureContainer-adminSubscriptions:Subscriptions`,
       },
       {
         routerLink: ['/administration/promotions'],

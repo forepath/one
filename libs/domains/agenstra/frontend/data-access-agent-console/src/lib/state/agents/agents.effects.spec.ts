@@ -53,6 +53,8 @@ import {
   updateClientAgentSuccess,
 } from './agents.actions';
 import {
+  CLIENT_AGENT_MODELS_TIMEOUT_MESSAGE,
+  CLIENT_AGENT_MODELS_TIMEOUT_MS,
   createClientAgent$,
   deleteClientAgent$,
   loadClientAgent$,
@@ -435,6 +437,30 @@ describe('AgentsEffects', () => {
         loadClientAgentModelsSuccess({ clientId, agentId: 'agent-1', models: { updated: 'updated' } }),
       ]);
       subscription.unsubscribe();
+    });
+    it('fails with a timeout when the agent does not answer (no endless "Loading models…")', () => {
+      jest.useFakeTimers();
+
+      try {
+        const requests = new Subject<ReturnType<typeof loadClientAgentModels>>();
+        const results: unknown[] = [];
+
+        agentsService.listClientAgentModels.mockReturnValueOnce(new Subject<Record<string, string>>());
+        const subscription = loadClientAgentModels$(requests, agentsService).subscribe((action) =>
+          results.push(action),
+        );
+
+        requests.next(loadClientAgentModels({ clientId, agentId: 'agent-1' }));
+        jest.advanceTimersByTime(CLIENT_AGENT_MODELS_TIMEOUT_MS - 1);
+        expect(results).toEqual([]);
+        jest.advanceTimersByTime(1);
+        expect(results).toEqual([
+          loadClientAgentModelsFailure({ clientId, agentId: 'agent-1', error: CLIENT_AGENT_MODELS_TIMEOUT_MESSAGE }),
+        ]);
+        subscription.unsubscribe();
+      } finally {
+        jest.useRealTimers();
+      }
     });
     const agentId = 'agent-1';
     const models = { a: 'A' };

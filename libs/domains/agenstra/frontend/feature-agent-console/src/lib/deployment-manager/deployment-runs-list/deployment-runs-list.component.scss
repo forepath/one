@@ -10,11 +10,6 @@
 .deployment-runs-list-container {
   flex: 1 1 0;
   min-height: 0;
-  overflow: auto;
   display: flex;
   flex-direction: column;
-}
-
-.list-group-item-action {
-  min-width: 0;
 }

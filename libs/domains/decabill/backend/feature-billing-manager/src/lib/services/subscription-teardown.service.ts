@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { SubscriptionStatus } from '../entities/subscription.entity';
+import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
@@ -48,6 +48,11 @@ export class SubscriptionTeardownService {
    */
   async processWithdrawal(subscriptionId: string): Promise<void> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
+
+    if (this.inTeardownGrace(subscription)) {
+      return;
+    }
+
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const withdrawnAt = subscription.withdrawnAt ?? new Date();
     const billInAdvance = plan.billInAdvance === true;
@@ -82,6 +87,11 @@ export class SubscriptionTeardownService {
    */
   async processInstantCancel(subscriptionId: string): Promise<void> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
+
+    if (this.inTeardownGrace(subscription)) {
+      return;
+    }
+
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const cutoff = subscription.instantCanceledAt ?? new Date();
     const billInAdvance = plan.billInAdvance === true;
@@ -109,6 +119,19 @@ export class SubscriptionTeardownService {
       billUntil: cutoff,
       skipOpenPosition: false,
     });
+  }
+
+  /** Loadweaver grace period (M4): the server must not be destroyed before `teardownNotBefore`. */
+  private inTeardownGrace(subscription: SubscriptionEntity): boolean {
+    if (!subscription.teardownNotBefore || new Date(subscription.teardownNotBefore).getTime() <= Date.now()) {
+      return false;
+    }
+
+    this.logger.log(
+      `Subscription ${subscription.id} is in its Loadweaver teardown grace period until ${new Date(subscription.teardownNotBefore).toISOString()}; skipping teardown`,
+    );
+
+    return true;
   }
 
   async teardownImmediate(subscriptionId: string, options: TeardownOptions = {}): Promise<void> {

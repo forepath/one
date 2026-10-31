@@ -1,0 +1,361 @@
+@if (loading() && !loaded()) {
+  <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+} @else if (status(); as s) {
+  @if (!openId()) {
+    <fpc-tab-group
+      class="fpc-lane-tabs"
+      [activeId]="activeLane()"
+      (activeIdChange)="selectLane($event)"
+      [ariaLabel]="title"
+    >
+      @if (!scope) {
+        <fpc-tab id="releases" [label]="tabReleases" />
+      }
+      <fpc-tab id="plans" [label]="tabPlans" />
+      <fpc-tab id="windows" [label]="tabWindows" />
+    </fpc-tab-group>
+  }
+  <fpc-section-row class="flex-grow-1 min-h-0">
+    @if (!openId() && !scope) {
+      <loadweaver-lane
+        [title]="tabReleases"
+        [flush]="true"
+        [off]="activeLane() !== 'releases'"
+        data-testid="updates-releases-lane"
+      >
+        @if (downloadError(); as message) {
+          <fpc-alert [flush]="true" variant="danger" [message]="message" />
+        }
+
+        <fpc-list-header [title]="policyTitle" />
+        <fpc-key-value-list class="px-3 py-2" [items]="policyFacts()" data-testid="updates-policy-facts" />
+
+        <!-- One data list (3.38 D1): releases grouped by channel; State · Version · facts; ⋮ Download / Plan update;
+             notes and components in the row detail. -->
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="tabReleases"
+          [columns]="releaseColumns"
+          [rows]="releaseRows()"
+          [rowId]="releaseId"
+          [groupBy]="releaseChannel"
+          [groupLabel]="channelLabel"
+          paging="client"
+          persistKey="lw-update-releases"
+          [(query)]="releaseSearch"
+          [searchPlaceholder]="releaseSearchLabel"
+          [rowMenu]="releaseMenu"
+          (rowAction)="onReleaseAction($event.row, $event.item.id)"
+          [expandedRowId]="expandedRelease()"
+          (rowActivate)="toggleRelease($event)"
+          emptyIcon="box-seam"
+          data-testid="updates-releases"
+        >
+          @if (isClusterAdmin()) {
+            <fpc-button
+              fpcDataTableToolbar
+              variant="primary"
+              size="sm"
+              iconOnly
+              [ariaLabel]="uploadTitle"
+              [title]="uploadTitle"
+              (clicked)="openUpload()"
+              data-testid="updates-upload"
+            >
+              <i class="bi bi-upload" aria-hidden="true"></i>
+            </fpc-button>
+          }
+          <span fpcDataTableEmpty>
+            <fpc-empty-state icon="box-seam" size="sm" i18n-title="@@lwConsoleUpdates-noReleases" title="No releases" />
+          </span>
+          <ng-template fpcTableCell="flags" let-row>
+            <span class="d-inline-flex gap-1">
+              @if (row.status !== 'announced') {
+                @if (row.signed) {
+                  <fpc-badge tone="success" icon="patch-check" [iconOnly]="true" [label]="signedLabel" />
+                } @else {
+                  <fpc-badge tone="danger" icon="exclamation-triangle" [iconOnly]="true" [label]="unsignedLabel" />
+                }
+              }
+              @if (row.version === s.clusterVersion) {
+                <fpc-badge tone="primary" icon="play-circle" [iconOnly]="true" [label]="runningLabel" />
+              }
+            </span>
+          </ng-template>
+          <ng-template fpcTableCell="published" let-row>{{
+            row.announcement?.publishedAt ? (row.announcement?.publishedAt | date: 'mediumDate') : ''
+          }}</ng-template>
+          <ng-template fpcTableCell="imported" let-row>{{
+            row.importedAt ? (row.importedAt | date: 'short') : ''
+          }}</ng-template>
+          <ng-template fpcTableCell="error" let-row>
+            @if (row.error) {
+              <span class="small text-danger text-break">{{ row.error }}</span>
+            }
+          </ng-template>
+          <ng-template fpcTableRowDetail let-row>
+            <div class="small d-flex flex-column gap-2 py-1">
+              @if (row.announcement?.htmlUrl; as url) {
+                <a [href]="url" target="_blank" rel="noopener noreferrer">
+                  <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
+                  ><span i18n="@@lwConsoleUpdates-releaseNotes">Release page</span>
+                </a>
+              }
+              @if (notesOf(row).length > 0) {
+                <div>
+                  <div class="fw-semibold" i18n="@@lwConsoleUpdates-notes">Notes</div>
+                  <ul class="mb-0">
+                    @for (note of notesOf(row); track $index) {
+                      <li>{{ note }}</li>
+                    }
+                  </ul>
+                </div>
+              }
+              @if (row.components.length > 0) {
+                <fpc-data-table
+                  nested
+                  [ariaLabel]="componentsLabel"
+                  [columns]="componentColumns"
+                  [rows]="row.components"
+                  [rowId]="componentId"
+                  [searchable]="false"
+                  [showColumnChooser]="false"
+                />
+              }
+            </div>
+          </ng-template>
+        </fpc-data-table>
+      </loadweaver-lane>
+    }
+
+    <loadweaver-lane
+      [title]="tabPlans"
+      [flush]="true"
+      [off]="!openId() && activeLane() !== 'plans'"
+      data-testid="updates-rollouts-lane"
+    >
+      @if (!scope) {
+        <loadweaver-saved-views lwLaneActions scope="updates" [binding]="views" />
+      }
+      <!-- One data list (3.38 D1): State · Update (link) · facts · progress. -->
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="tabPlans"
+        [columns]="rolloutColumns"
+        [rows]="shownRollouts()"
+        [rowLink]="rolloutLink"
+        [activeRowId]="openId()"
+        paging="client"
+        persistKey="lw-update-plans"
+        [(query)]="search"
+        [searchPlaceholder]="planSearchLabel"
+        [rowMenu]="rolloutMenu"
+        (rowAction)="onRolloutAction($event.row, $event.item.id)"
+        emptyIcon="list-check"
+        data-testid="updates-rollouts"
+      >
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            icon="list-check"
+            size="sm"
+            i18n-title="@@lwConsoleUpdates-noPlans"
+            title="No update plans yet"
+          />
+        </span>
+        <ng-template fpcTableCell="flags" let-row>
+          <span class="d-inline-flex gap-1">
+            @if (row.options.emergency) {
+              <fpc-badge tone="danger" icon="lightning" [iconOnly]="true" [label]="emergencyLabel" />
+            }
+            @if (row.options.automatic) {
+              <fpc-badge tone="info" icon="robot" [iconOnly]="true" [label]="automaticLabel" />
+            }
+            @if (row.warnings.length > 0) {
+              <fpc-badge tone="warning" icon="exclamation-triangle">{{ row.warnings.length }}</fpc-badge>
+            }
+          </span>
+        </ng-template>
+        <ng-template fpcTableCell="created" let-row>{{ row.createdAt | date: 'short' }}</ng-template>
+        <ng-template fpcTableCell="progress" let-row>
+          <span class="d-flex align-items-center gap-2">
+            <fpc-progress class="flex-grow-1" [value]="percent(row)" height="0.4rem" />
+            <span class="text-nowrap small">{{ row.progress.done }}/{{ row.progress.total }}</span>
+          </span>
+        </ng-template>
+      </fpc-data-table>
+    </loadweaver-lane>
+
+    @if (!openId()) {
+      <loadweaver-lane
+        [title]="tabWindows"
+        [flush]="true"
+        [off]="activeLane() !== 'windows'"
+        data-testid="updates-windows-lane"
+      >
+        <!-- Windows | Nodes as tabs (decision 4): one table at a time, the search shared. -->
+        <fpc-tab-group
+          class="flex-shrink-0"
+          [activeId]="windowsTab()"
+          (activeIdChange)="windowsTab.set($event === 'nodes' ? 'nodes' : 'windows')"
+          [ariaLabel]="tabWindows"
+          data-testid="updates-windows-tabs"
+        >
+          <fpc-tab id="windows" [label]="tabWindows" icon="calendar-week" />
+          <fpc-tab id="nodes" [label]="nodesTitle" icon="hdd-network" />
+        </fpc-tab-group>
+        @switch (windowsTab()) {
+          @case ('windows') {
+            @if (scopedWindows() === null) {
+              <fpc-alert
+                [flush]="true"
+                variant="warning"
+                i18n-message="@@lwConsoleUpdates-windowsUnavailable"
+                message="The maintenance windows couldn't be loaded."
+              />
+            } @else {
+              <fpc-data-table
+                class="flex-grow-1 min-h-0"
+                [ariaLabel]="tabWindows"
+                [columns]="windowColumns"
+                [rows]="shownWindows()"
+                [rowId]="windowId"
+                [rowLink]="windowLink"
+                paging="client"
+                persistKey="lw-update-windows"
+                [(query)]="windowSearch"
+                [searchPlaceholder]="windowSearchLabel"
+                [rowMenu]="windowMenu"
+                (rowAction)="onWindowAction($event.row, $event.item.id)"
+                emptyIcon="calendar-week"
+                data-testid="updates-windows"
+              >
+                <loadweaver-create-kind-button fpcDataTableToolbar kind="MaintenanceWindow" />
+                <span fpcDataTableEmpty>
+                  <fpc-empty-state
+                    icon="calendar-week"
+                    size="sm"
+                    i18n-title="@@lwConsoleUpdates-noWindows"
+                    title="No maintenance windows"
+                    [message]="noWindowsMessage"
+                  />
+                </span>
+              </fpc-data-table>
+            }
+          }
+          @case ('nodes') {
+            @if (nodesWithoutWindow() > 0) {
+              <fpc-alert [flush]="true" variant="warning">
+                {{ nodesWithoutWindow() }}
+                <span i18n="@@lwConsoleUpdates-nodesWithoutWindow">nodes have no maintenance window.</span>
+              </fpc-alert>
+            }
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="nodesTitle"
+              [columns]="nodeColumns"
+              [rows]="shownNodes()"
+              [rowId]="nodeId"
+              paging="client"
+              persistKey="lw-update-nodes"
+              [(query)]="windowSearch"
+              [searchPlaceholder]="windowSearchLabel"
+              emptyIcon="hdd-network"
+              data-testid="updates-nodes"
+            >
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  icon="hdd-network"
+                  size="sm"
+                  i18n-title="@@lwConsoleUpdates-noNodes"
+                  title="No nodes"
+                />
+              </span>
+              <ng-template fpcTableCell="flags" let-row>
+                <span class="d-inline-flex flex-wrap gap-1">
+                  @if (row.controlPlane) {
+                    <fpc-badge tone="primary" icon="diagram-3" [iconOnly]="true" [label]="controlPlaneLabel" />
+                  }
+                  @if (row.rebootRequired) {
+                    <fpc-badge tone="warning" icon="arrow-clockwise" [iconOnly]="true" [label]="rebootRequiredLabel" />
+                  }
+                  @if (!row.components) {
+                    <fpc-badge tone="neutral" icon="cpu" [iconOnly]="true" [label]="agentOnlyLabel" />
+                  }
+                </span>
+              </ng-template>
+              <ng-template fpcTableCell="target" let-row>{{
+                row.target && row.target !== row.release ? '→ ' + row.target : ''
+              }}</ng-template>
+              <ng-template fpcTableCell="window" let-row>
+                <span [attr.data-testid]="'updates-node-window-' + row.name">
+                  @if (row.window.open) {
+                    <span i18n="@@lwConsoleUpdates-windowOpen">Window open</span>
+                    @if (row.window.closesAt) {
+                      <span i18n="@@lwConsoleUpdates-windowUntil">until</span>
+                      {{ row.window.closesAt | date: 'short' }}
+                    }
+                  } @else if (row.window.opensAt) {
+                    <span i18n="@@lwConsoleUpdates-windowNext">Next window</span>
+                    {{ row.window.opensAt | date: 'short' }}
+                  } @else {
+                    <span i18n="@@lwConsoleUpdates-windowNone">No maintenance window</span>
+                  }
+                </span>
+              </ng-template>
+            </fpc-data-table>
+          }
+        }
+      </loadweaver-lane>
+    }
+  </fpc-section-row>
+}
+
+<fpc-modal [open]="uploadOpen()" (openChange)="uploadOpen.set($event)" [title]="uploadTitle">
+  <fpc-form-field forId="lw-bundle-file" i18n-label="@@lwConsoleUpdates-bundleFile" label="Bundle file">
+    <fpc-form-control
+      controlId="lw-bundle-file"
+      inputType="file"
+      size="sm"
+      accept=".tar,application/x-tar"
+      [disabled]="upload() !== null"
+      (filesChange)="onBundleSelected($event)"
+      data-testid="updates-upload-file"
+    />
+  </fpc-form-field>
+  @if (upload(); as u) {
+    <div class="small" data-testid="updates-upload-progress">
+      <fpc-progress [value]="uploadPercent()" height="0.5rem" [striped]="true" [animated]="true" />
+      <div class="text-body-secondary mt-1 d-flex flex-wrap align-items-center gap-2">
+        <span>{{ u.fileName }}: {{ bytes(u.loaded) }} / {{ bytes(u.total) }} ({{ uploadPercent() }} %)</span>
+        @if (uploadPercent() >= 100) {
+          <fpc-badge tone="info" i18n="@@lwConsoleUpdates-uploadVerifying">verifying and importing…</fpc-badge>
+        }
+      </div>
+    </div>
+  }
+  @if (uploadError(); as message) {
+    <fpc-alert class="d-block mt-3" variant="danger" [message]="message" />
+  }
+  @if (uploaded(); as r) {
+    <fpc-alert class="d-block mt-3" variant="success">
+      <span i18n="@@lwConsoleUpdates-uploaded">Imported release</span> {{ r.version }}
+    </fpc-alert>
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    @if (upload()) {
+      <fpc-button variant="dark" (clicked)="cancelUpload()">
+        <span i18n="@@lwConsoleUpdates-uploadCancel">Cancel upload</span>
+      </fpc-button>
+    } @else {
+      <fpc-button variant="dark" (clicked)="uploadOpen.set(false)">{{ closeLabel }}</fpc-button>
+      <fpc-button
+        variant="primary"
+        [disabled]="!bundleFile()"
+        (clicked)="startUpload()"
+        data-testid="updates-upload-start"
+      >
+        <i class="bi bi-upload me-1" aria-hidden="true"></i><span i18n="@@lwConsoleUpdates-uploadStart">Upload</span>
+      </fpc-button>
+    }
+  </div>
+</fpc-modal>

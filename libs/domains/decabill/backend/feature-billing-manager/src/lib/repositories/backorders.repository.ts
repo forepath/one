@@ -31,13 +31,20 @@ export class BackordersRepository {
     return entity;
   }
 
-  async findAllByUser(userId: string, limit = 10, offset = 0, search?: string): Promise<BackorderEntity[]> {
+  /** One page of the user's backorders (newest first); `statuses` narrows it (e.g. only pending / retrying). */
+  async findAllByUser(
+    userId: string,
+    limit = 10,
+    offset = 0,
+    search?: string,
+    statuses?: BackorderStatus[],
+  ): Promise<BackorderEntity[]> {
     if (search?.trim() && this.billingSearchIndexService) {
       const lookup = await this.billingSearchIndexService.searchIds('backorders', search.trim(), {
         tenantId: getRequiredTenantId(),
         limit,
         offset,
-        extraFilters: { userId },
+        extraFilters: statuses?.length ? { userId, status: statuses } : { userId },
       });
       const hydrated = await hydrateEntitiesBySearchIds(this.repository, lookup);
 
@@ -55,6 +62,10 @@ export class BackordersRepository {
       .skip(offset);
 
     applyUserTenantFilter(qb, 'user');
+
+    if (statuses?.length) {
+      qb.andWhere('backorder.status IN (:...statuses)', { statuses });
+    }
 
     if (search?.trim()) {
       applyBillingSearchIlike(qb, 'backorders', 'backorder', search);

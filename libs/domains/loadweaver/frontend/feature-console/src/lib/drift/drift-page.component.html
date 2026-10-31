@@ -1,0 +1,252 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (report(); as r) {
+      <fpc-tab-group
+        class="fpc-lane-tabs"
+        [activeId]="activeLane()"
+        (activeIdChange)="lane.set($any($event))"
+        [ariaLabel]="title"
+      >
+        @for (l of lanes(); track l.id) {
+          <fpc-tab [id]="l.id" [label]="l.label" />
+        }
+      </fpc-tab-group>
+      <fpc-section-row class="flex-grow-1 min-h-0">
+        @if (gitAhead().length > 0) {
+          <loadweaver-lane
+            [title]="gitAheadTitle"
+            [flush]="true"
+            [off]="activeLane() !== 'git'"
+            data-testid="drift-git-lane"
+          >
+            <!-- State (commit state) · Scope (link) · commit · reason · since; ⋮ Open plan / Connection. -->
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="gitAheadTitle"
+              [columns]="gitColumns"
+              [rows]="gitAhead()"
+              [rowId]="gitId"
+              [rowLink]="gitLink"
+              [searchable]="false"
+              paging="client"
+              persistKey="lw-drift-git"
+              [rowMenu]="gitMenu"
+              (rowAction)="onGitAction($event.row, $event.item.id)"
+              data-testid="drift-git-ahead"
+            >
+              <ng-template fpcTableCell="commit" let-row>
+                @if (commitUrl(row); as url) {
+                  <a class="font-monospace" [href]="url" target="_blank" rel="noopener noreferrer">{{
+                    shortSha(row.commit)
+                  }}</a>
+                } @else {
+                  <span class="font-monospace">{{ shortSha(row.commit) }}</span>
+                }
+              </ng-template>
+              <ng-template fpcTableCell="reason" let-row>
+                @if (row.reason) {
+                  <span
+                    class="text-break small"
+                    [class.text-danger-emphasis]="row.state === 'rejected'"
+                    data-testid="drift-git-reason"
+                    >{{ row.reason }}</span
+                  >
+                }
+              </ng-template>
+              <ng-template fpcTableCell="since" let-row>{{ row.since | date: 'short' }}</ng-template>
+            </fpc-data-table>
+          </loadweaver-lane>
+        }
+        <loadweaver-lane
+          [title]="inconsistentTitle"
+          [flush]="true"
+          [off]="activeLane() !== 'rollbacks'"
+          data-testid="drift-rollbacks-lane"
+        >
+          <!-- State · Failed rollback (link to its plan) · fix-forward; ⋮ Open plan / fix-forward / Copy ID. -->
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="inconsistentTitle"
+            [columns]="rollbackColumns"
+            [rows]="filteredRollbacks()"
+            [rowId]="rollbackId"
+            [rowLink]="rollbackLink"
+            paging="client"
+            persistKey="lw-drift-rollbacks"
+            [(query)]="rollbackSearch"
+            [searchPlaceholder]="rollbackSearchLabel"
+            [rowMenu]="rollbackMenu"
+            (rowAction)="onRollbackAction($event.row, $event.item.id)"
+            emptyIcon="check2-circle"
+            data-testid="drift-inconsistent"
+          >
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                icon="check2-circle"
+                size="sm"
+                i18n-title="@@lwConsoleDrift-noInconsistent"
+                title="No failed rollbacks"
+              />
+            </span>
+            <ng-template fpcTableCell="fixForward" let-row>
+              @if (row.fixForward) {
+                <a [routerLink]="['/activity/plans', row.fixForward]">{{ openFixForwardLabel }}</a>
+              } @else {
+                <span class="text-body-secondary" i18n="@@lwConsoleDrift-noFixForward"
+                  >No fix-forward plan pending</span
+                >
+              }
+            </ng-template>
+          </fpc-data-table>
+        </loadweaver-lane>
+
+        <loadweaver-lane
+          [title]="containersTitle"
+          [flush]="true"
+          [off]="activeLane() !== 'containers'"
+          data-testid="drift-containers-lane"
+        >
+          <!-- State · Container · image · node · ports · reported; ⋮ Propose plan / Copy ID. -->
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="containersTitle"
+            [columns]="containerColumns"
+            [rows]="filteredContainers()"
+            [rowId]="containerId"
+            paging="client"
+            persistKey="lw-drift-containers"
+            [(query)]="containerSearch"
+            [searchPlaceholder]="containerSearchLabel"
+            [rowMenu]="containerMenu"
+            (rowAction)="onContainerAction($event.row, $event.item.id)"
+            emptyIcon="check2-circle"
+            data-testid="drift-containers"
+          >
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                icon="check2-circle"
+                size="sm"
+                i18n-title="@@lwConsoleDrift-noContainers"
+                title="No foreign containers"
+              />
+            </span>
+            <ng-template fpcTableCell="reported" let-row>{{ row.reportedAt | date: 'short' }}</ng-template>
+          </fpc-data-table>
+        </loadweaver-lane>
+
+        @if ((r.delegated ?? []).length > 0) {
+          <loadweaver-lane
+            [title]="delegatedTitle"
+            [flush]="true"
+            [off]="activeLane() !== 'delegated'"
+            data-testid="drift-delegated-lane"
+          >
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="delegatedTitle"
+              [columns]="delegatedColumns"
+              [rows]="filteredDelegated()"
+              [rowId]="containerId"
+              paging="client"
+              persistKey="lw-drift-delegated"
+              [(query)]="delegatedSearch"
+              [searchPlaceholder]="delegatedSearchLabel"
+              [rowMenu]="delegatedMenu"
+              (rowAction)="onContainerAction($event.row, $event.item.id)"
+              data-testid="drift-delegated"
+            />
+          </loadweaver-lane>
+        }
+      </fpc-section-row>
+    } @else if (loading()) {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+    }
+  </div>
+</div>
+
+<fpc-modal [open]="proposeFor() !== null" (openChange)="onProposeOpenChange($event)" [title]="proposeTitle">
+  @if (proposeFor(); as c) {
+    <p class="small" i18n="@@lwConsoleDrift-proposeHint">
+      The plan adds a Deployment with the same image and published ports. Environment and volumes are not copied; add
+      what is missing before applying. The foreign container is never removed by Loadweaver.
+    </p>
+    <p class="small text-body-secondary" i18n="@@lwConsoleGitDrift-proposeGit">
+      In a scope managed in Git (authoritative), the proposal becomes a pull request in its repository instead.
+    </p>
+    <div class="small mb-3 d-flex flex-wrap align-items-center gap-3">
+      <span><i class="bi bi-hdd-rack me-1" aria-hidden="true"></i>{{ c.node }}</span>
+      <span class="fw-semibold">{{ c.name }}</span>
+      <span class="font-monospace text-body-secondary">{{ c.image }}</span>
+    </div>
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-drift-project" i18n-label="@@lwConsoleDrift-project" label="Project">
+          <fpc-typeahead-select
+            inputId="lw-drift-project"
+            listboxId="lw-drift-projects"
+            size="sm"
+            [placeholder]="null"
+            [query]="project"
+            (queryChange)="project = $event"
+            [(open)]="projectSuggestionsOpen"
+          >
+            <div fpcTypeaheadSuggestions>
+              @for (p of projectSuggestions(); track p) {
+                <button type="button" class="dropdown-item small" (mousedown)="pickProject(p, $event)">
+                  {{ p }}
+                </button>
+              }
+            </div>
+          </fpc-typeahead-select>
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-drift-deployment" i18n-label="@@lwConsoleDrift-deployment" label="Deployment">
+          <fpc-form-control
+            controlId="lw-drift-deployment"
+            name="deployment"
+            size="sm"
+            controlClass="font-monospace"
+            [(ngModel)]="deployment"
+          />
+        </fpc-form-field>
+      </div>
+    </div>
+    @if (invalid()) {
+      <fpc-alert
+        class="mt-3"
+        variant="warning"
+        i18n-message="@@lwConsoleDrift-invalidName"
+        message="Project and deployment need lowercase names (letters, digits, dashes)."
+      />
+    }
+    @if (proposeError(); as message) {
+      <fpc-alert class="mt-3" variant="danger" [message]="message" />
+    }
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="proposeFor.set(null)">
+      <span i18n="@@lwConsoleDrift-cancel">Cancel</span>
+    </fpc-button>
+    <fpc-button variant="primary" [loading]="proposing()" (clicked)="propose()" data-testid="drift-propose-submit">
+      <span i18n="@@lwConsoleDrift-proposeSubmit">Propose plan</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

@@ -28,8 +28,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  // Match `fpc-button` size="sm" icon-only so title-only and action rows share one height.
-  min-height: 2.025rem;
+  // Shared `sm` control height (`styles/_controls.scss`) so title-only and action rows match.
+  min-height: var(--fpc-control-height-sm, 2.025rem);
   flex-wrap: nowrap;
 }
 

@@ -1,0 +1,47 @@
+:host {
+  display: block;
+  // Narrow containers (rails, lanes, phone) stack label over value instead of squeezing the value column (LW-20).
+  container: fpc-key-value-list / inline-size;
+}
+
+.fpc-key-value-list__list {
+  display: grid;
+  grid-template-columns: 1fr;
+  column-gap: 1.5rem;
+}
+
+:host(.fpc-key-value-list--two) .fpc-key-value-list__list {
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.fpc-key-value-list__row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 35%) 1fr;
+  gap: 0.75rem;
+  padding: var(--fpc-density-row-py, 0.5rem) 0;
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+  font-size: 0.875rem;
+  min-width: 0;
+}
+
+.fpc-key-value-list__label {
+  font-weight: 500;
+}
+
+.fpc-key-value-list__value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@container fpc-key-value-list (max-width: 22rem) {
+  .fpc-key-value-list__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.125rem;
+  }
+
+  .fpc-key-value-list__label {
+    color: var(--bs-secondary-color);
+  }
+}

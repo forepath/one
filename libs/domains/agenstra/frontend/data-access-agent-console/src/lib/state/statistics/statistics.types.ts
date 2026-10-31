@@ -1,6 +1,8 @@
 /** Filter types breakdown item */
 export interface StatisticsFilterTypesBreakdownItem {
   filterType: string;
+  /** Human-readable rule name (as on the filter rows); `null` / missing for legacy rows. */
+  filterDisplayName?: string | null;
   direction: 'incoming' | 'outgoing';
   count: number;
 }

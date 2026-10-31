@@ -57,6 +57,11 @@ export interface PromotionRedemptionResponse {
   redeemedAt: string;
   advantageType: PromotionAdvantageType;
   advantageSummary: string;
+  /** Structured advantage (fixed amount + currency, free days or periods); newer API versions only. */
+  amountNet?: number;
+  currency?: string;
+  days?: number;
+  periods?: number;
   validFrom: string;
   validTo?: string;
   remainingMonetaryNet?: number;

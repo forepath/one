@@ -15,7 +15,7 @@ export const loadSubscriptions = createAction('[Subscriptions] Load Subscription
 
 export const loadSubscriptionsSuccess = createAction(
   '[Subscriptions] Load Subscriptions Success',
-  props<{ subscriptions: SubscriptionResponse[]; hasMore: boolean; nextOffset: number }>(),
+  props<{ subscriptions: SubscriptionResponse[]; hasMore: boolean }>(),
 );
 
 export const loadSubscriptionsFailure = createAction(
@@ -32,21 +32,6 @@ export const loadSubscriptionsSummarySuccess = createAction(
 
 export const loadSubscriptionsSummaryFailure = createAction(
   '[Subscriptions] Load Summary Failure',
-  props<{ error: string }>(),
-);
-
-export const loadMoreSubscriptions = createAction(
-  '[Subscriptions] Load More Subscriptions',
-  props<{ offset: number; params?: ListParams }>(),
-);
-
-export const loadMoreSubscriptionsSuccess = createAction(
-  '[Subscriptions] Load More Subscriptions Success',
-  props<{ subscriptions: SubscriptionResponse[]; hasMore: boolean; nextOffset: number }>(),
-);
-
-export const loadMoreSubscriptionsFailure = createAction(
-  '[Subscriptions] Load More Subscriptions Failure',
   props<{ error: string }>(),
 );
 

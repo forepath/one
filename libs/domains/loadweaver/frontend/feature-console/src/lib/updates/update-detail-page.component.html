@@ -1,0 +1,320 @@
+<div class="fpc-page">
+  <fpc-page-header
+    [title]="current() ? title + ' ' + version(current()!.fromVersion) + ' → ' + current()!.toVersion : title"
+  >
+    <!-- Back sits left above the title, below xl only (3.38 R8). -->
+    <a
+      fpcPageHeaderBreadcrumbs
+      class="fpc-md__back small text-decoration-none align-items-center"
+      routerLink="/delivery/updates"
+      data-testid="update-back"
+    >
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
+    </a>
+    @if (current(); as r) {
+      @for (action of actions(); track action) {
+        <fpc-button
+          fpcPageHeaderActions
+          [variant]="actionVariant(action)"
+          size="sm"
+          iconOnly
+          [ariaLabel]="actionLabel(action)"
+          [title]="actionLabel(action)"
+          [loading]="acting()?.id === r.id && acting()?.action === action"
+          [disabled]="acting() !== null"
+          (clicked)="request(action)"
+          [attr.data-testid]="'update-action-' + action"
+        >
+          <i class="bi {{ actionIcon[action] }}" aria-hidden="true"></i>
+        </fpc-button>
+      }
+    }
+  </fpc-page-header>
+
+  @if (current(); as r) {
+    <fpc-summary-bar class="flex-shrink-0" [columns]="3">
+      <fpc-summary-card icon="circle-half" [label]="statusTitle" [value]="statusLabel(r.status)" />
+      <fpc-summary-card icon="bookmark" [label]="kindTitle" [value]="kindLabel(r.kind)" />
+      <fpc-summary-card
+        icon="list-check"
+        [label]="progressTitle"
+        [value]="r.progress.done + ' / ' + r.progress.total"
+      />
+    </fpc-summary-bar>
+  }
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" data-testid="update-action-error" />
+    }
+
+    @if (loading() && !current()) {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+    } @else if (current(); as r) {
+      @for (warning of r.warnings; track $index) {
+        <fpc-alert [flush]="true" variant="warning" [message]="warning" />
+      }
+
+      <fpc-tab-group
+        class="fpc-lane-tabs"
+        [activeId]="lane()"
+        (activeIdChange)="lane.set($any($event))"
+        [ariaLabel]="wavesTitle"
+      >
+        <fpc-tab id="rollout" [label]="wavesTitle" />
+        <fpc-tab id="changes" [label]="diffTitle" />
+      </fpc-tab-group>
+      <fpc-section-row class="flex-grow-1 min-h-0" data-testid="update-lanes">
+        <loadweaver-lane [title]="wavesTitle" grow="3 1 0" [flush]="true" [off]="lane() !== 'rollout'">
+          <div class="px-3 py-2" data-testid="update-summary">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+              <fpc-badge [tone]="statusTone[r.status]">{{ statusLabel(r.status) }}</fpc-badge>
+              @if (r.options.host) {
+                <fpc-badge tone="info" i18n="@@lwConsoleUpdateDetail-hostBadge">Host updates</fpc-badge>
+              }
+              @if (r.options.osUpgrade) {
+                <fpc-badge tone="info" i18n="@@lwConsoleUpdateDetail-osUpgradeBadge">Full OS upgrade</fpc-badge>
+              }
+              @if (r.options.emergency || r.options.windows === 'ignore') {
+                <fpc-badge tone="danger" i18n="@@lwConsoleUpdateDetail-emergencyBadge"
+                  >Emergency: outside maintenance windows</fpc-badge
+                >
+              }
+              @if (r.options.automatic) {
+                <fpc-badge tone="neutral" i18n="@@lwConsoleUpdateDetail-automaticBadge"
+                  >Created by the update policy</fpc-badge
+                >
+              }
+              @if (r.options.snapshot) {
+                <span class="small text-body-secondary"
+                  ><span i18n="@@lwConsoleUpdateDetail-snapshot">OS snapshot</span>
+                  <span class="font-monospace">{{ r.options.snapshot }}</span></span
+                >
+              }
+            </div>
+            <fpc-progress
+              [value]="percent(r)"
+              height="0.6rem"
+              [striped]="r.status === 'running'"
+              [animated]="r.status === 'running'"
+              [variant]="
+                r.status === 'rollback-failed'
+                  ? 'danger'
+                  : r.status === 'paused' || r.status === 'rolling-back'
+                    ? 'warning'
+                    : r.status === 'completed'
+                      ? 'success'
+                      : 'primary'
+              "
+            />
+            <fpc-key-value-list class="d-block mt-2" [columns]="2" [items]="timeline()" />
+            @if (r.pauseReason && (r.status === 'paused' || r.status === 'rolling-back')) {
+              <fpc-alert
+                class="d-block mt-2"
+                variant="warning"
+                [message]="r.pauseReason"
+                data-testid="update-pause-reason"
+              />
+            }
+            @if (r.status === 'rollback-failed') {
+              <fpc-alert
+                class="d-block mt-2"
+                variant="danger"
+                i18n-message="@@lwConsoleUpdateDetail-rollbackFailed"
+                message="The rollback failed: the steps below show the real state of every node. Fix forward with a new update plan."
+              />
+            }
+            @if (r.status === 'planned' && !isClusterAdmin()) {
+              <div class="small text-body-secondary mt-2" i18n="@@lwConsoleUpdateDetail-waitsForAdmin">
+                The plan waits for a cluster admin's approval.
+              </div>
+            }
+          </div>
+          <!-- Wave failure analysis above the steps (one alert per wave that has risks or failing gates). -->
+          @for (wave of waves(); track wave.wave) {
+            @if (wave.risk.length > 0 || failedGates(wave) > 0) {
+              <fpc-alert
+                [flush]="true"
+                [variant]="failedGates(wave) > 0 ? 'danger' : 'warning'"
+                [showIcon]="true"
+                [attr.data-testid]="'update-wave-risk-' + wave.wave"
+              >
+                <div class="fw-semibold">
+                  {{ waveLabel(wave.wave, wave.phase) }}:
+                  <span i18n="@@lwConsoleUpdateDetail-risk">At risk while this wave runs</span>
+                </div>
+                <ul class="small mb-0">
+                  @for (risk of wave.risk; track $index) {
+                    <li>{{ risk }}</li>
+                  }
+                </ul>
+                @if (failedGates(wave) > 0) {
+                  <div class="small">
+                    {{ failedGates(wave) }} <span i18n="@@lwConsoleUpdateDetail-failedGates">health gates fail</span>
+                  </div>
+                }
+              </fpc-alert>
+            }
+          }
+          <!-- The wave steps as one table grouped by wave (decision 2): State · Node · facts · gates. -->
+          <fpc-data-table
+            nested
+            [ariaLabel]="wavesTitle"
+            [columns]="stepColumns"
+            [rows]="steps()"
+            [rowId]="stepId"
+            [groupBy]="stepWave"
+            [groupLabel]="waveGroupLabel"
+            [searchable]="false"
+            paging="client"
+            persistKey="lw-update-steps"
+            emptyIcon="list-check"
+            data-testid="update-steps"
+          >
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                size="sm"
+                icon="list-check"
+                i18n-title="@@lwConsoleUpdateDetail-noSteps"
+                title="No steps"
+              />
+            </span>
+            <ng-template fpcTableCell="started" let-row>
+              @if (row.startedAt) {
+                {{ row.startedAt | date: 'short' }}
+                @if (row.finishedAt) {
+                  – {{ row.finishedAt | date: 'shortTime' }}
+                }
+              }
+            </ng-template>
+            <ng-template fpcTableCell="gates" let-row>
+              <span class="d-flex flex-wrap gap-1">
+                @for (gate of gatesOf(row); track gate.name) {
+                  <fpc-badge [tone]="gate.ok ? 'success' : 'danger'" [attr.title]="gate.message">
+                    <i class="bi me-1" [class]="gate.ok ? 'bi-check-lg' : 'bi-x-lg'" aria-hidden="true"></i
+                    >{{ gate.name }}
+                  </fpc-badge>
+                  @if (!gate.ok && gate.message) {
+                    <span class="text-danger small">{{ gate.message }}</span>
+                  }
+                }
+              </span>
+            </ng-template>
+            <ng-template fpcTableCell="error" let-row>
+              @if (row.error) {
+                <span class="text-danger text-break small">{{ row.error }}</span>
+              }
+            </ng-template>
+          </fpc-data-table>
+        </loadweaver-lane>
+        <loadweaver-lane scrollX [title]="diffTitle" grow="2 1 0" [flush]="true" [off]="lane() !== 'changes'">
+          @if (r.diff.length > 0) {
+            <!-- View switch inside a lane = segmented button group in the lane toolbar (3.38 R2). -->
+            <div lwLaneToolbar class="px-3 py-2" data-testid="update-diff-by">
+              <fpc-button-group size="sm" [ariaLabel]="diffTitle">
+                <fpc-button
+                  size="sm"
+                  [variant]="diffBy() === 'node' ? 'primary' : 'dark'"
+                  [attr.aria-pressed]="diffBy() === 'node'"
+                  (clicked)="selectDiff('node')"
+                  data-testid="update-diff-by-node"
+                  ><i class="bi bi-hdd-network me-1" aria-hidden="true"></i>{{ byNode }}</fpc-button
+                >
+                <fpc-button
+                  size="sm"
+                  [variant]="diffBy() === 'component' ? 'primary' : 'dark'"
+                  [attr.aria-pressed]="diffBy() === 'component'"
+                  (clicked)="selectDiff('component')"
+                  data-testid="update-diff-by-component"
+                  ><i class="bi bi-boxes me-1" aria-hidden="true"></i>{{ byComponent }}</fpc-button
+                >
+              </fpc-button-group>
+            </div>
+          }
+          @if (r.notes.length > 0) {
+            <fpc-list-header [title]="notesTitle" />
+            <ul class="small mb-0 px-3 py-2 ps-4" data-testid="update-notes">
+              @for (note of r.notes; track $index) {
+                <li>{{ note }}</li>
+              }
+            </ul>
+          }
+          @if (r.diff.length === 0) {
+            <fpc-empty-state
+              icon="file-diff"
+              size="sm"
+              i18n-title="@@lwConsoleUpdateDetail-noDiff"
+              title="No changes"
+            />
+          } @else {
+            <!-- The diff as one table grouped by node / component (3.38 D1; was a raw <table> per group). -->
+            <fpc-data-table
+              nested
+              [ariaLabel]="diffTitle"
+              [columns]="diffColumns()"
+              [rows]="diffRows()"
+              [rowId]="diffId"
+              [groupBy]="diffGroupOf"
+              [searchable]="false"
+              paging="client"
+              persistKey="lw-update-diff"
+              data-testid="update-diff"
+            />
+          }
+        </loadweaver-lane>
+      </fpc-section-row>
+    } @else if (!error()) {
+      <fpc-empty-state
+        icon="cloud-arrow-down"
+        i18n-title="@@lwConsoleUpdateDetail-notFound"
+        title="Update plan not found"
+      />
+    }
+  </div>
+</div>
+
+<fpc-confirm-dialog
+  [open]="approveOpen()"
+  (openChange)="approveOpen.set($event)"
+  [title]="approveTitle"
+  [confirmLabel]="emergency() ? approveEmergencyLabel : approveLabel"
+  [cancelLabel]="keepLabel"
+  [danger]="emergency()"
+  (confirmed)="approve()"
+  data-testid="update-approve-confirm"
+>
+  <p class="small" i18n="@@lwConsoleUpdateDetail-approveHint">
+    The rollout starts in the next maintenance window of each node: control plane first, then a canary node, then waves.
+    A failing health gate pauses it and rolls that step back.
+  </p>
+  <fpc-form-check
+    checkId="lw-update-emergency"
+    [checked]="emergency()"
+    (checkedChange)="emergency.set($event)"
+    data-testid="update-emergency"
+    i18n-label="@@lwConsoleUpdateDetail-emergency"
+    label="Emergency: run outside maintenance windows"
+  />
+  @if (emergency()) {
+    <fpc-alert
+      class="d-block mt-2"
+      variant="danger"
+      i18n-message="@@lwConsoleUpdateDetail-emergencyWarning"
+      message="Nodes restart, drain and reboot right away, whatever their maintenance windows say. Use this only for urgent security fixes."
+    />
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [open]="confirmAction() !== null"
+  (openChange)="onConfirmOpenChange($event)"
+  [title]="confirm()?.title ?? ''"
+  [message]="confirm()?.message ?? null"
+  [confirmLabel]="confirmAction() ? actionLabel(confirmAction()!) : ''"
+  [cancelLabel]="keepLabel"
+  [danger]="confirm()?.danger ?? false"
+  (confirmed)="confirmed()"
+/>

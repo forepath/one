@@ -1,14 +1,18 @@
 import { ChangeDetectionStrategy, Component, ElementRef, booleanAttribute, input, viewChild } from '@angular/core';
 
 /**
- * Column of a kanban-style board or console list lane. Four slots, all optional except the body:
+ * Column of a kanban-style board or console list lane. Five slots, all optional except the body:
  *
  * - `[fpcBoardLaneHeader]` - prefer `<fpc-lane-header flush>` for the title strip
- * - `[fpcBoardLaneSearch]` - lane filter, usually an `fpc-search-field`
- * - default content - the scrollable lane body
- * - `[fpcBoardLaneFooter]` - append footer, totals
+ * - `[fpcBoardLaneSearch]` - lane search strip: an `fpc-search-field` (unbordered here) or an
+ *   `fpc-list-toolbar` (search + filters)
+ * - `[fpcBoardLaneToolbar]` - pinned lane toolbar under the search (breadcrumbs, segmented view
+ *   switch, time range, upload): never put toolbars inside the scrolling body
+ * - default content - the scrollable lane body, always a flex column: an `fpc-empty-state` fills and
+ *   centres in it; lists / tables / editors sit flush, forms / prose use `padded`
+ * - `[fpcBoardLaneFooter]` - pinned footer: pager, totals, batch bar
  *
- * Export as `fpcBoardLane` and bind `[root]="lane.scrollRoot"` for `fpcInfiniteScroll` when
+ * Export as `fpcBoardLane` and bind `[root]="lane.scrollRoot"` for scroll observers when
  * `scrollBody` is true.
  */
 @Component({
@@ -29,10 +33,16 @@ import { ChangeDetectionStrategy, Component, ElementRef, booleanAttribute, input
       <ng-content select="[fpcBoardLaneSearch]" />
     </div>
 
+    <div class="fpc-board-lane__toolbar">
+      <ng-content select="[fpcBoardLaneToolbar]" />
+    </div>
+
     <div
       #bodyEl
       class="fpc-board-lane__body"
       [class.fpc-board-lane__body--scroll]="scrollBody()"
+      [class.fpc-board-lane__body--scroll-x]="scrollBody() && scrollX()"
+      [class.fpc-board-lane__body--padded]="padded()"
       [class.list-group]="listGroup()"
       [class.list-group-flush]="listGroup()"
     >
@@ -51,10 +61,17 @@ export class FpcBoardLaneComponent {
   readonly scrollBody = input(true, { transform: booleanAttribute });
   /** Adds Bootstrap list-group classes on the body for direct list-group-item children. */
   readonly listGroup = input(false, { transform: booleanAttribute });
+  /**
+   * The body scrolls sideways too (one scroll container for both axes): wide tables scroll inside the
+   * lane and their sticky head / foot stick to the lane body. Drop `.table-responsive` wrappers then.
+   */
+  readonly scrollX = input(false, { transform: booleanAttribute });
+  /** Forms and prose: the body gets the lane inset (`.75rem 1rem`, compact `.5rem 1rem`). Lists stay flush. */
+  readonly padded = input(false, { transform: booleanAttribute });
 
   private readonly bodyEl = viewChild.required<ElementRef<HTMLElement>>('bodyEl');
 
-  /** Element to pass as `fpcInfiniteScroll` `[root]` when `scrollBody` is enabled. */
+  /** Element to pass as an IntersectionObserver root when `scrollBody` is enabled. */
   get scrollRoot(): HTMLElement {
     return this.bodyEl().nativeElement;
   }

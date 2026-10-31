@@ -5,13 +5,13 @@ import {
   ProjectMilestonesService,
   type ProjectMilestoneResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { FpcBadgeComponent, FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
+import { FpcBadgeComponent, FpcTypeaheadSelectComponent, FpcDatePipe } from '@forepath/shared/frontend/ui-components';
 import { catchError, debounceTime, distinctUntilChanged, of, skip, switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'framework-project-milestone-select',
   standalone: true,
-  imports: [CommonModule, FpcBadgeComponent, FpcTypeaheadSelectComponent],
+  imports: [FpcDatePipe, CommonModule, FpcBadgeComponent, FpcTypeaheadSelectComponent],
   templateUrl: './project-milestone-select.component.html',
   styleUrls: ['./project-milestone-select.component.scss'],
 })

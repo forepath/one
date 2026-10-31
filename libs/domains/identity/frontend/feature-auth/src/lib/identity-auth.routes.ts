@@ -132,19 +132,19 @@ export const identityAuthRoutes: Route[] = [
     path: 'users',
     canActivate: [authGuard, adminGuard],
     component: IdentityUserManagerComponent,
-    title: () => buildPageTitle($localize`:@@featureAuth-usersPage:User Management`),
+    title: () => buildPageTitle($localize`:@@featureAuth-usersPage:User management`),
   },
   {
     path: 'settings/tokens',
     canActivate: [authGuard, patUiGuard],
     component: IdentityTokenManagerComponent,
-    title: () => buildPageTitle($localize`:@@featureAuth-tokensPage:Personal Access Tokens`),
+    title: () => buildPageTitle($localize`:@@featureAuth-tokensPage:Personal access tokens`),
   },
   {
     path: 'settings/security',
     canActivate: [authGuard],
     component: IdentitySecuritySettingsComponent,
-    title: () => buildPageTitle($localize`:@@featureAuth-securityPage:Security Settings`),
+    title: () => buildPageTitle($localize`:@@featureAuth-securityPage:Security settings`),
   },
 ];
 

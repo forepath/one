@@ -150,6 +150,40 @@ describe('SubscriptionTeardownService', () => {
     expect(openPositionsRepository.create).not.toHaveBeenCalled();
   });
 
+  describe('Loadweaver teardown grace (M4)', () => {
+    it('does not destroy the server before teardownNotBefore on withdrawal or instant cancel', async () => {
+      subscriptionsRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'sub-1',
+        userId: 'user-1',
+        planId: 'plan-1',
+        withdrawPhase: 'withdrawal_period',
+        withdrawnAt: new Date(),
+        teardownNotBefore: new Date(Date.now() + 60_000),
+      });
+
+      await service.processWithdrawal('sub-1');
+      await service.processInstantCancel('sub-1');
+
+      expect(provisioningService.deprovision).not.toHaveBeenCalled();
+      expect(subscriptionsRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('tears down once the grace period has passed', async () => {
+      subscriptionsRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'sub-1',
+        number: 'SUB-001',
+        userId: 'user-1',
+        planId: 'plan-1',
+        status: SubscriptionStatus.PENDING_INSTANT_CANCEL,
+        teardownNotBefore: new Date(Date.now() - 1000),
+      });
+
+      await service.processInstantCancel('sub-1');
+
+      expect(provisioningService.deprovision).toHaveBeenCalled();
+    });
+  });
+
   describe('processWithdrawal', () => {
     it('applies refund and tears down when phase is withdrawal_period', async () => {
       const withdrawnAt = new Date('2024-06-01T12:00:00Z');

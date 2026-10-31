@@ -19,9 +19,6 @@ import {
   loadSubscriptionsFailure,
   loadSubscriptionsSuccess,
   loadSubscriptionSuccess,
-  loadMoreSubscriptions,
-  loadMoreSubscriptionsFailure,
-  loadMoreSubscriptionsSuccess,
   resumeSubscription,
   resumeSubscriptionFailure,
   resumeSubscriptionSuccess,
@@ -34,7 +31,6 @@ import {
   createSubscription$,
   loadSubscription$,
   loadSubscriptions$,
-  loadMoreSubscriptions$,
   resumeSubscription$,
   withdrawSubscription$,
 } from './subscriptions.effects';
@@ -77,7 +73,7 @@ describe('SubscriptionsEffects', () => {
   describe('loadSubscriptions$', () => {
     it('should return loadSubscriptionsSuccess when batch is empty', (done) => {
       const action = loadSubscriptions({ params: {} });
-      const outcome = loadSubscriptionsSuccess({ subscriptions: [], hasMore: false, nextOffset: 0 });
+      const outcome = loadSubscriptionsSuccess({ subscriptions: [], hasMore: false });
 
       actions$ = of(action);
       subscriptionsService.listSubscriptions.mockReturnValue(of([]));
@@ -85,7 +81,7 @@ describe('SubscriptionsEffects', () => {
       loadSubscriptions$(actions$, subscriptionsService).subscribe((result) => {
         expect(result).toEqual(outcome);
         expect(subscriptionsService.listSubscriptions).toHaveBeenCalledWith(
-          expect.objectContaining({ limit: 10, offset: 0 }),
+          expect.objectContaining({ limit: 26, offset: 0 }),
         );
         done();
       });
@@ -94,7 +90,7 @@ describe('SubscriptionsEffects', () => {
     it('should return loadSubscriptionsSuccess when batch is partial', (done) => {
       const subscriptions = [mockSubscription];
       const action = loadSubscriptions({ params: {} });
-      const outcome = loadSubscriptionsSuccess({ subscriptions, hasMore: false, nextOffset: 1 });
+      const outcome = loadSubscriptionsSuccess({ subscriptions, hasMore: false });
 
       actions$ = of(action);
       subscriptionsService.listSubscriptions.mockReturnValue(of(subscriptions));
@@ -105,13 +101,16 @@ describe('SubscriptionsEffects', () => {
       });
     });
 
-    it('should set hasMore when batch is full', (done) => {
-      const subscriptions = Array(10).fill(mockSubscription);
-      actions$ = of(loadSubscriptions({ params: {} }));
+    it('should request one extra row and set hasMore when a next page exists', (done) => {
+      const subscriptions = Array(11).fill(mockSubscription);
+      actions$ = of(loadSubscriptions({ params: { limit: 10, offset: 20 } }));
       subscriptionsService.listSubscriptions.mockReturnValue(of(subscriptions));
 
       loadSubscriptions$(actions$, subscriptionsService).subscribe((result) => {
-        expect(result).toEqual(loadSubscriptionsSuccess({ subscriptions, hasMore: true, nextOffset: 10 }));
+        expect(result).toEqual(loadSubscriptionsSuccess({ subscriptions: subscriptions.slice(0, 10), hasMore: true }));
+        expect(subscriptionsService.listSubscriptions).toHaveBeenCalledWith(
+          expect.objectContaining({ limit: 11, offset: 20 }),
+        );
         done();
       });
     });
@@ -126,34 +125,6 @@ describe('SubscriptionsEffects', () => {
 
       loadSubscriptions$(actions$, subscriptionsService).subscribe((result) => {
         expect(result).toEqual(outcome);
-        done();
-      });
-    });
-  });
-
-  describe('loadMoreSubscriptions$', () => {
-    it('should append and clear hasMore on partial page', (done) => {
-      actions$ = of(loadMoreSubscriptions({ offset: 10 }));
-      subscriptionsService.listSubscriptions.mockReturnValue(of([mockSubscription]));
-
-      loadMoreSubscriptions$(actions$, subscriptionsService).subscribe((result) => {
-        expect(result).toEqual(
-          loadMoreSubscriptionsSuccess({
-            subscriptions: [mockSubscription],
-            hasMore: false,
-            nextOffset: 11,
-          }),
-        );
-        done();
-      });
-    });
-
-    it('should return loadMoreSubscriptionsFailure on error', (done) => {
-      actions$ = of(loadMoreSubscriptions({ offset: 10 }));
-      subscriptionsService.listSubscriptions.mockReturnValue(throwError(() => new Error('Load failed')));
-
-      loadMoreSubscriptions$(actions$, subscriptionsService).subscribe((result) => {
-        expect(result).toEqual(loadMoreSubscriptionsFailure({ error: 'Load failed' }));
         done();
       });
     });

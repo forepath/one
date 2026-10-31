@@ -1,0 +1,350 @@
+<div class="fpc-page">
+  @if (!scope) {
+    <fpc-page-header [title]="title">
+      @if (openCount() > 0) {
+        <fpc-badge fpcPageHeaderActions size="sm" tone="success" data-testid="terminals-open-count">
+          {{ openCount() }} {{ runningLabel }}
+        </fpc-badge>
+      }
+      <fpc-button
+        fpcPageHeaderActions
+        variant="dark"
+        size="sm"
+        [loading]="targetsLoading()"
+        (clicked)="reloadTargets()"
+        [title]="reloadLabel"
+        [ariaLabel]="reloadLabel"
+        [iconOnly]="true"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+      <fpc-button
+        fpcPageHeaderActions
+        variant="primary"
+        size="sm"
+        (clicked)="pickerOpen.set(true)"
+        data-testid="terminals-open-picker"
+      >
+        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>{{ openLabel }}
+      </fpc-button>
+    </fpc-page-header>
+  }
+  @if (scopeNode && nodeShellOff()) {
+    <!-- The node's Shell tab: the cluster refuses node shells while the switch is off (2026-10-29). -->
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      variant="warning"
+      icon="terminal-x"
+      [heading]="nodeShellOffLabel"
+      data-testid="terminals-node-shell-off-tab"
+    >
+      {{ nodeShellOffAdminHint }}
+      @if (isClusterAdmin()) {
+        <fpc-button fpcAlertActions variant="link" size="sm" (clicked)="enableNodeShells()">{{
+          enableNodeShellsLabel
+        }}</fpc-button>
+      }
+    </fpc-alert>
+  }
+
+  @if (scope) {
+    <!-- Embedded (object tab): the routed header's state, reload and Open sit in a strip above the terminals. -->
+    <div class="flex-shrink-0 d-flex align-items-center gap-2 px-3 py-2 border-bottom" data-testid="terminals-strip">
+      @if (openCount() > 0) {
+        <fpc-badge size="sm" tone="success" data-testid="terminals-open-count">
+          {{ openCount() }} {{ runningLabel }}
+        </fpc-badge>
+      }
+      <fpc-button
+        class="ms-auto"
+        variant="dark"
+        size="sm"
+        [loading]="targetsLoading()"
+        (clicked)="reloadTargets()"
+        [title]="reloadLabel"
+        [ariaLabel]="reloadLabel"
+        [iconOnly]="true"
+        data-testid="terminals-reload"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+      <fpc-button variant="primary" size="sm" (clicked)="pickerOpen.set(true)" data-testid="terminals-open-picker">
+        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>{{ openLabel }}
+      </fpc-button>
+    </div>
+  }
+
+  @if (targetsError(); as message) {
+    <fpc-alert class="flex-shrink-0" [flush]="true" variant="warning" [message]="message" />
+  }
+  @if (connectionError(); as message) {
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="connectionError.set(null)"
+    />
+  }
+  @if (socketError(); as message) {
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      variant="warning"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="socketError.set(null)"
+    />
+  }
+
+  @if (tabs().length === 0) {
+    <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+      <fpc-empty-state
+        icon="terminal"
+        i18n-title="@@lwConsoleTerminals-empty"
+        title="No terminal open"
+        i18n-message="@@lwConsoleTerminals-emptyHintOpen"
+        message="Choose Open terminal, or open one from the map. Every session is audited."
+      />
+    </div>
+  } @else {
+    <fpc-tab-group class="flex-shrink-0" [activeId]="active()" [ariaLabel]="title" data-testid="terminals-tabs">
+      @for (tab of tabs(); track tab.id) {
+        <fpc-tab
+          [id]="tab.id"
+          [label]="tab.label"
+          [icon]="tabIcon(tab)"
+          actionIcon="x-lg"
+          [actionAriaLabel]="closeTabLabel"
+          (selected)="select(tab)"
+          (action)="closeTab(tab)"
+        />
+      }
+    </fpc-tab-group>
+
+    @if (activeTab(); as tab) {
+      @if (tab.recorded && tab.status === 'open') {
+        <fpc-alert
+          class="flex-shrink-0 small"
+          [flush]="true"
+          variant="danger"
+          icon="record-circle"
+          data-testid="terminals-recorded"
+        >
+          <span i18n="@@lwConsoleTerminals-recorded"
+            >This session is recorded: everything shown in it is stored and can be replayed by auditors.</span
+          >
+        </fpc-alert>
+      }
+      @if (tab.status === 'failed') {
+        <fpc-alert
+          class="flex-shrink-0 small"
+          [flush]="true"
+          variant="danger"
+          icon="x-octagon"
+          data-testid="terminals-failed"
+        >
+          <span><span i18n="@@lwConsoleTerminals-failed">Could not open the terminal</span>: {{ tab.error }}</span>
+          @if ('node' in tab.target && refusedAsOff(tab.error)) {
+            <span class="text-body-secondary ms-1">{{ nodeShellOffAdminHint }}</span>
+            @if (isClusterAdmin()) {
+              <fpc-button fpcAlertActions variant="link" size="sm" (clicked)="enableNodeShells()">{{
+                enableNodeShellsLabel
+              }}</fpc-button>
+            }
+          } @else if ('node' in tab.target) {
+            <span class="text-body-secondary ms-1" i18n="@@lwConsoleTerminals-nodeShellRefused"
+              >(node shells need the cluster admin role and nodeShellEnabled)</span
+            >
+          }
+          <fpc-button fpcAlertActions variant="link" size="sm" (clicked)="reopen(tab)">{{ retryLabel }}</fpc-button>
+        </fpc-alert>
+      }
+      @if (tab.status === 'closed') {
+        <fpc-alert
+          class="flex-shrink-0 small"
+          [flush]="true"
+          variant="secondary"
+          icon="stop-circle"
+          data-testid="terminals-closed"
+        >
+          <span i18n="@@lwConsoleTerminals-ended">Session ended</span>
+          @if (tab.exitCode !== null) {
+            (<span i18n="@@lwConsoleTerminals-exitCode">exit code</span> {{ tab.exitCode }})
+          }
+          @if (tab.error) {
+            : {{ tab.error }}
+          }
+          <fpc-button fpcAlertActions variant="link" size="sm" (clicked)="reopen(tab)">{{ reconnectLabel }}</fpc-button>
+        </fpc-alert>
+      }
+      @if (tab.status === 'open' && tab.error) {
+        <fpc-alert class="flex-shrink-0 small" [flush]="true" variant="warning" [message]="tab.error" />
+      }
+    }
+
+    <div class="flex-grow-1 position-relative min-h-0">
+      @for (tab of tabs(); track tab.id) {
+        <fpc-terminal
+          class="position-absolute top-0 start-0 w-100 h-100"
+          [class.d-none]="tab.id !== active()"
+          [visible]="tab.id === active()"
+          [ariaLabel]="tab.label"
+          (data)="onInput(tab, $event)"
+          (sizeChange)="onResize(tab, $event)"
+        />
+      }
+    </div>
+  }
+</div>
+
+<fpc-confirm-dialog
+  [open]="pendingNode() !== null && !nodeShellOff()"
+  (openChange)="onPendingNodeOpenChange($event)"
+  [title]="nodeConfirmTitle"
+  [message]="nodeConfirmMessage()"
+  [confirmLabel]="nodeConfirmLabel"
+  [cancelLabel]="cancelLabel"
+  [warning]="true"
+  (confirmed)="confirmPendingNode()"
+  data-testid="terminals-node-confirm"
+/>
+
+<!-- Picking a terminal target is a modal (3.38 decision 12): kind, project, replica / node, shell → Open. -->
+<fpc-modal [open]="pickerOpen()" (openChange)="pickerOpen.set($event)" [title]="openLabel">
+  <form class="d-flex flex-column gap-3" (ngSubmit)="open()" data-testid="terminals-picker">
+    @if (isClusterAdmin() && !scope) {
+      <fpc-button-group class="align-self-start" size="sm" [ariaLabel]="kindLabel">
+        <fpc-button
+          size="sm"
+          [variant]="mode() === 'replica' ? 'secondary' : 'outline-secondary'"
+          [ariaPressed]="mode() === 'replica'"
+          (clicked)="mode.set('replica')"
+          data-testid="terminals-mode-replica"
+          >{{ kindReplicaLabel }}</fpc-button
+        >
+        <fpc-button
+          size="sm"
+          [variant]="mode() === 'node' ? 'secondary' : 'outline-secondary'"
+          [ariaPressed]="mode() === 'node'"
+          (clicked)="mode.set('node')"
+          data-testid="terminals-mode-node"
+          >{{ kindNodeLabel }}</fpc-button
+        >
+      </fpc-button-group>
+    }
+
+    @if (mode() === 'replica') {
+      @if (!scopeProject) {
+        <fpc-form-field class="mb-0" forId="lw-terminals-project" [label]="projectLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-terminals-project"
+            name="project"
+            size="sm"
+            [ngModel]="project()"
+            (ngModelChange)="onProjectChange($event)"
+          >
+            <option value="" i18n="@@lwConsoleTerminals-allProjects">All projects</option>
+            @for (p of projects(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      }
+      <fpc-form-field class="mb-0" forId="lw-terminals-replica" [label]="replicaFieldLabel">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-terminals-replica"
+          name="replica"
+          size="sm"
+          data-testid="terminals-replica"
+          [ngModel]="replica()"
+          (ngModelChange)="replica.set($event)"
+        >
+          <option value="" disabled i18n="@@lwConsoleTerminals-chooseReplica">Choose a replica</option>
+          @for (group of groups(); track group.label) {
+            <optgroup [label]="group.label">
+              @for (r of group.replicas; track r.id) {
+                <option [value]="r.id">{{ replicaLabel(r) }}</option>
+              }
+            </optgroup>
+          }
+          @if (replica() && !groups().length) {
+            <option [value]="replica()">{{ replica() }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    } @else if (!scopeNode) {
+      <fpc-form-field class="mb-0" forId="lw-terminals-node" [label]="nodeLabel">
+        @if (nodes().length > 0) {
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-terminals-node"
+            name="node"
+            size="sm"
+            data-testid="terminals-node"
+            [ngModel]="node()"
+            (ngModelChange)="node.set($event)"
+          >
+            <option value="" disabled i18n="@@lwConsoleTerminals-chooseNode">Choose a node</option>
+            @for (n of nodes(); track n) {
+              <option [value]="n">{{ n }}</option>
+            }
+          </fpc-form-control>
+        } @else {
+          <fpc-form-control
+            controlId="lw-terminals-node"
+            name="node"
+            size="sm"
+            data-testid="terminals-node"
+            [ngModel]="node()"
+            (ngModelChange)="node.set($event)"
+          />
+        }
+      </fpc-form-field>
+    }
+
+    <fpc-form-field class="mb-0" forId="lw-terminals-shell" [label]="shellLabel">
+      <fpc-form-control
+        controlId="lw-terminals-shell"
+        name="shell"
+        size="sm"
+        controlClass="font-monospace"
+        placeholder="/bin/bash"
+        [invalid]="!shellValid()"
+        [ngModel]="shell()"
+        (ngModelChange)="shell.set($event)"
+      />
+    </fpc-form-field>
+    @if (mode() === 'node' && nodeShellOff()) {
+      <fpc-alert
+        variant="warning"
+        icon="terminal-x"
+        [heading]="nodeShellOffLabel"
+        data-testid="terminals-node-shell-off"
+      >
+        {{ nodeShellOffAdminHint }}
+        @if (isClusterAdmin()) {
+          <fpc-button fpcAlertActions variant="link" size="sm" (clicked)="enableNodeShells()">{{
+            enableNodeShellsLabel
+          }}</fpc-button>
+        }
+      </fpc-alert>
+    }
+    @if (mode() === 'node') {
+      <p class="small text-body-secondary mb-0" i18n="@@lwConsoleTerminals-nodeShellHint">
+        A node shell is a root shell on the host, always recorded. It needs the cluster admin role and
+        <code>nodeShellEnabled</code> on the Cluster resource.
+      </p>
+    }
+  </form>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="pickerOpen.set(false)">{{ cancelLabel }}</fpc-button>
+    <fpc-button variant="primary" [disabled]="!canOpen()" (clicked)="open()" data-testid="terminals-open">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>{{ openLabel }}
+    </fpc-button>
+  </div>
+</fpc-modal>

@@ -11,14 +11,13 @@ import {
   cancelBackorderFailure,
   cancelBackorderSuccess,
   loadBackorders,
-  loadBackordersBatch,
   loadBackordersFailure,
   loadBackordersSuccess,
   retryBackorder,
   retryBackorderFailure,
   retryBackorderSuccess,
 } from './backorders.actions';
-import { cancelBackorder$, loadBackorders$, loadBackordersBatch$, retryBackorder$ } from './backorders.effects';
+import { cancelBackorder$, loadBackorders$, retryBackorder$ } from './backorders.effects';
 
 describe('BackordersEffects', () => {
   let actions$: Actions;
@@ -56,7 +55,24 @@ describe('BackordersEffects', () => {
       backordersService.listBackorders.mockReturnValue(of([]));
 
       loadBackorders$(actions$, backordersService).subscribe((result) => {
-        expect(result).toEqual(loadBackordersSuccess({ backorders: [] }));
+        expect(result).toEqual(loadBackordersSuccess({ backorders: [], hasMore: false }));
+        expect(backordersService.listBackorders).toHaveBeenCalledWith({ limit: 26, offset: 0 });
+        done();
+      });
+    });
+
+    it('requests one extra row for the page and reports hasMore (replace-page, status kept)', (done) => {
+      actions$ = of(loadBackorders({ params: { limit: 1, offset: 2, search: 'x', status: ['pending'] } }));
+      backordersService.listBackorders.mockReturnValue(of([mockBackorder, mockBackorder]));
+
+      loadBackorders$(actions$, backordersService).subscribe((result) => {
+        expect(result).toEqual(loadBackordersSuccess({ backorders: [mockBackorder], hasMore: true }));
+        expect(backordersService.listBackorders).toHaveBeenCalledWith({
+          limit: 2,
+          offset: 2,
+          search: 'x',
+          status: ['pending'],
+        });
         done();
       });
     });
@@ -67,20 +83,6 @@ describe('BackordersEffects', () => {
 
       loadBackorders$(actions$, backordersService).subscribe((result) => {
         expect(result).toEqual(loadBackordersFailure({ error: 'Load failed' }));
-        done();
-      });
-    });
-  });
-
-  describe('loadBackordersBatch$', () => {
-    it('should return loadBackordersSuccess when batch is empty', (done) => {
-      const accumulated = [mockBackorder];
-
-      actions$ = of(loadBackordersBatch({ offset: 10, accumulatedBackorders: accumulated }));
-      backordersService.listBackorders.mockReturnValue(of([]));
-
-      loadBackordersBatch$(actions$, backordersService).subscribe((result) => {
-        expect(result).toEqual(loadBackordersSuccess({ backorders: accumulated }));
         done();
       });
     });

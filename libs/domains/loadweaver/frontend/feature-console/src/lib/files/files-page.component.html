@@ -1,0 +1,503 @@
+<div class="fpc-page">
+  @if (!scope) {
+    <fpc-page-header [title]="title">
+      <loadweaver-saved-views fpcPageHeaderActions scope="files" [binding]="views" />
+    </fpc-page-header>
+  }
+  <input
+    #uploadInput
+    type="file"
+    multiple
+    class="d-none"
+    data-testid="files-upload"
+    [disabled]="uploading()"
+    (change)="onFilesSelected($any($event.target))"
+  />
+
+  @if (showPicker()) {
+    <div class="flex-shrink-0 px-3 py-2 border-bottom" data-testid="files-picker">
+      <fpc-form-field class="mb-0" forId="lw-files-target" [label]="targetLabel">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-files-target"
+          size="sm"
+          data-testid="files-target"
+          [ngModel]="target() ?? ''"
+          (ngModelChange)="onTargetChange($event)"
+        >
+          <option value="" disabled i18n="@@lwConsoleFiles-chooseTarget">Choose a replica or a volume</option>
+          @for (group of targetOptions(); track group.project) {
+            <optgroup [label]="group.project">
+              @for (r of group.replicas; track r.id) {
+                <option [value]="'replica:' + r.id">{{ r.id }}</option>
+              }
+              @for (v of group.volumes; track v.id) {
+                <option [value]="'volume:' + v.id" i18n="@@lwConsoleFiles-volumeOption">{{ v.id }} (volume)</option>
+              }
+            </optgroup>
+          }
+          @if (target(); as current) {
+            <option [value]="current" hidden>{{ current }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+  }
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (targetsError(); as message) {
+      <fpc-alert class="flex-shrink-0" [flush]="true" variant="warning" [message]="message" />
+    }
+    @if (warning(); as message) {
+      <fpc-alert
+        class="flex-shrink-0"
+        [flush]="true"
+        variant="warning"
+        icon="exclamation-triangle"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="dismissMessages()"
+        data-testid="files-warning"
+      />
+    } @else if (isReplica()) {
+      <fpc-alert class="flex-shrink-0 small" [flush]="true" variant="secondary" icon="info-circle">
+        <span i18n="@@lwConsoleFiles-replicaHint"
+          >This is the container's own filesystem: changes are lost when the replica restarts or moves. Use a volume for
+          anything that must stay.</span
+        >
+      </fpc-alert>
+    }
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        class="flex-shrink-0"
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="files-bulk-result"
+      />
+    }
+    @if (operationError(); as message) {
+      <fpc-alert
+        class="flex-shrink-0"
+        [flush]="true"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="dismissMessages()"
+      />
+    }
+    @if (downloadError(); as message) {
+      <fpc-alert
+        class="flex-shrink-0"
+        [flush]="true"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="downloadError.set(null)"
+      />
+    }
+
+    @if (!target()) {
+      <fpc-empty-state
+        icon="folder2-open"
+        i18n-title="@@lwConsoleFiles-empty"
+        title="Choose a replica or a volume"
+        i18n-message="@@lwConsoleFiles-emptyHint"
+        message="Browse a replica's container filesystem or a volume. Every change is audited."
+      />
+    } @else {
+      <fpc-tab-group
+        class="fpc-lane-tabs"
+        [activeId]="activeLane()"
+        (activeIdChange)="lane.set($any($event))"
+        [ariaLabel]="browserTitle"
+      >
+        <fpc-tab id="browser" [label]="browserTitle" />
+        @if (preview(); as p) {
+          <fpc-tab id="preview" [label]="p.path" />
+        }
+      </fpc-tab-group>
+      <fpc-section-row class="flex-grow-1 min-h-0">
+        <loadweaver-lane
+          [title]="browserTitle"
+          [flush]="true"
+          [off]="activeLane() !== 'browser'"
+          data-testid="files-browser-lane"
+        >
+          <!-- Pinned lane toolbar (3.38 R3): parent, breadcrumbs, the path field, refresh. -->
+          <div lwLaneToolbar class="d-flex flex-wrap align-items-center gap-2 w-100 min-w-0">
+            <fpc-button
+              variant="dark"
+              size="sm"
+              [iconOnly]="true"
+              [ariaLabel]="upLabel"
+              [title]="upLabel"
+              [disabled]="path() === '/'"
+              (clicked)="up()"
+              data-testid="files-up"
+            >
+              <i class="bi bi-arrow-up" aria-hidden="true"></i>
+            </fpc-button>
+            <nav aria-label="breadcrumb" class="small min-w-0 flex-grow-1">
+              <ol class="breadcrumb mb-0 font-monospace" data-testid="files-crumbs">
+                @for (crumb of crumbs(); track crumb.path; let last = $last) {
+                  <li class="breadcrumb-item" [class.active]="last">
+                    @if (last) {
+                      {{ crumb.label }}
+                    } @else {
+                      <a href="" (click)="$event.preventDefault(); go(crumb.path)">{{ crumb.label }}</a>
+                    }
+                  </li>
+                }
+              </ol>
+            </nav>
+            <form class="lw-files__path" (ngSubmit)="go(pathInput())" data-testid="files-path">
+              <label class="visually-hidden" for="lw-files-path">{{ pathLabel }}</label>
+              <fpc-input-group size="sm">
+                <span fpcInputGroupPrefix class="input-group-text"
+                  ><i class="bi bi-folder2" aria-hidden="true"></i
+                ></span>
+                <fpc-form-control
+                  controlId="lw-files-path"
+                  name="path"
+                  size="sm"
+                  controlClass="font-monospace"
+                  [placeholder]="pathLabel"
+                  [ngModel]="pathInput()"
+                  (ngModelChange)="pathInput.set($event)"
+                />
+              </fpc-input-group>
+            </form>
+            <fpc-button
+              variant="dark"
+              size="sm"
+              [iconOnly]="true"
+              [ariaLabel]="refreshLabel"
+              [title]="refreshLabel"
+              [loading]="loading() || busy()"
+              (clicked)="refresh()"
+              data-testid="files-refresh"
+            >
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </fpc-button>
+          </div>
+
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [columns]="columns"
+            [rows]="visibleEntries()"
+            [loading]="loading() && entries().length === 0"
+            [error]="error()"
+            [rowId]="entryId"
+            [activeRowId]="activeEntry()"
+            [ariaLabel]="browserTitle"
+            [labels]="tableLabels"
+            [(query)]="search"
+            [searchPlaceholder]="searchLabel"
+            [showColumnChooser]="false"
+            paging="client"
+            persistKey="lw-files"
+            selectable
+            [(selected)]="selected"
+            [rowMenu]="rowMenu"
+            (rowAction)="onRowAction($event.row, $event.item.id)"
+            (rowActivate)="activate($event)"
+            data-testid="files-table"
+          >
+            <span fpcDataTableToolbar class="d-inline-flex gap-2">
+              <fpc-button
+                variant="dark"
+                size="sm"
+                [iconOnly]="true"
+                [ariaLabel]="newDirectoryLabel"
+                [title]="newDirectoryLabel"
+                (clicked)="openCreate('directory')"
+                data-testid="files-new-dir"
+              >
+                <i class="bi bi-folder-plus" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="dark"
+                size="sm"
+                [iconOnly]="true"
+                [ariaLabel]="newFileLabel"
+                [title]="newFileLabel"
+                (clicked)="openCreate('file')"
+                data-testid="files-new-file"
+              >
+                <i class="bi bi-file-earmark-plus" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="primary"
+                size="sm"
+                [iconOnly]="true"
+                [ariaLabel]="uploadLabel"
+                [title]="uploadLabel"
+                [disabled]="uploading()"
+                (clicked)="uploadInput.click()"
+                data-testid="files-upload-button"
+              >
+                <i class="bi bi-upload" aria-hidden="true"></i>
+              </fpc-button>
+            </span>
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                icon="folder"
+                size="sm"
+                i18n-title="@@lwConsoleFiles-emptyDirectory"
+                title="This directory is empty"
+              />
+            </span>
+            <fpc-button
+              fpcDataTableBatch
+              variant="danger"
+              size="sm"
+              (clicked)="confirmBulkDelete.set(true)"
+              data-testid="files-bulk-delete"
+              iconOnly
+              [ariaLabel]="deleteLabel"
+              [title]="deleteLabel"
+            >
+              <i class="bi bi-trash" aria-hidden="true"></i>
+            </fpc-button>
+            <ng-template fpcTableCell="name" let-row>
+              <span class="font-monospace text-break"
+                ><i class="bi me-1" [ngClass]="'bi-' + fileIcon(row.name, row.type)" aria-hidden="true"></i
+                >{{ row.name }}</span
+              >
+            </ng-template>
+            <ng-template fpcTableCell="size" let-row>{{
+              row.type === 'directory' ? '' : formatBytes(row.size)
+            }}</ng-template>
+            <ng-template fpcTableCell="modified" let-row>
+              <span class="text-nowrap text-body-secondary">{{ row.modifiedAt | date: 'MMM d, y HH:mm' }}</span>
+            </ng-template>
+            <ng-template fpcTableCell="mode" let-row>
+              <span class="text-body-secondary">{{ formatMode(row.mode) }}</span>
+            </ng-template>
+          </fpc-data-table>
+
+          @if (uploads().length > 0) {
+            <!-- Uploads = lane footer (3.38 R3: progress outside the scroll body). -->
+            <div lwLaneFooter class="px-3 py-2 lw-files__uploads" data-testid="files-uploads">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="small fw-semibold">{{ uploadsTitle }}</span>
+                @if (!uploading()) {
+                  <fpc-button
+                    class="ms-auto"
+                    variant="dark"
+                    size="sm"
+                    iconOnly
+                    [ariaLabel]="clearUploadsLabel"
+                    [title]="clearUploadsLabel"
+                    (clicked)="clearUploads()"
+                    data-testid="files-uploads-clear"
+                  >
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                  </fpc-button>
+                }
+              </div>
+              <div class="d-flex flex-column gap-2">
+                @for (u of uploads(); track $index) {
+                  <div class="d-flex align-items-center gap-2 small">
+                    <span class="font-monospace text-truncate w-25">{{ u.name }}</span>
+                    <fpc-progress
+                      class="flex-grow-1"
+                      height="0.5rem"
+                      [value]="u.sent"
+                      [max]="u.total || 1"
+                      [variant]="u.status === 'failed' ? 'danger' : u.status === 'done' ? 'success' : 'primary'"
+                      [striped]="u.status === 'uploading'"
+                      [animated]="u.status === 'uploading'"
+                      [ariaLabel]="u.name"
+                    />
+                    <span class="text-nowrap text-body-secondary"
+                      >{{ formatBytes(u.sent) }} / {{ formatBytes(u.total) }}</span
+                    >
+                    @if (u.error) {
+                      <span class="text-danger">{{ u.error }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </loadweaver-lane>
+
+        @if (preview(); as p) {
+          <loadweaver-lane
+            [title]="p.path"
+            [flush]="true"
+            [off]="activeLane() !== 'preview'"
+            data-testid="files-preview"
+          >
+            <fpc-badge lwLaneActions size="sm" color="light">{{ formatBytes(p.size) }}</fpc-badge>
+            <fpc-button
+              lwLaneActions
+              variant="dark"
+              size="sm"
+              [iconOnly]="true"
+              [ariaLabel]="downloadLabel"
+              [title]="downloadLabel"
+              [loading]="downloading() === p.path"
+              (clicked)="download(null, p.path)"
+            >
+              <i class="bi bi-download" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              lwLaneActions
+              variant="dark"
+              size="sm"
+              [iconOnly]="true"
+              [ariaLabel]="closePreviewLabel"
+              [title]="closePreviewLabel"
+              (clicked)="closePreview()"
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </fpc-button>
+            @if (p.loading) {
+              <fpc-empty-state size="sm" [loading]="true" [title]="loadingPreviewLabel" />
+            } @else if (p.error) {
+              <fpc-alert [flush]="true" variant="danger" [message]="p.error" />
+            } @else if (p.kind === 'text') {
+              @if (p.partial) {
+                <fpc-alert
+                  [flush]="true"
+                  variant="info"
+                  i18n-message="@@lwConsoleFiles-partial"
+                  message="Only the first 512 KiB are shown. Download the file for all of it."
+                />
+              }
+              <!-- The editor fills the lane (3.38: preview editor flex 1). -->
+              <fpc-code-editor
+                class="flex-grow-1 min-h-0"
+                [value]="p.text"
+                [language]="language(p.path)"
+                [readOnly]="true"
+                height="16rem"
+              />
+            } @else if (p.kind === 'image' && p.imageUrl) {
+              <div class="p-3 text-center">
+                <img [src]="p.imageUrl" [alt]="p.path" class="img-fluid" data-testid="files-image" />
+              </div>
+            } @else {
+              <fpc-empty-state
+                icon="file-earmark-binary"
+                size="sm"
+                i18n-title="@@lwConsoleFiles-noPreview"
+                title="No preview for this file"
+                i18n-message="@@lwConsoleFiles-noPreviewHint"
+                message="Download it to look inside."
+              />
+            }
+          </loadweaver-lane>
+        }
+      </fpc-section-row>
+    }
+  </div>
+</div>
+
+<fpc-modal [open]="createOpen()" (openChange)="createOpen.set($event)" [title]="createTitle">
+  <form (ngSubmit)="submitCreate()" data-testid="files-create-form">
+    <fpc-form-field [label]="typeLabel">
+      <div role="radiogroup" [attr.aria-label]="typeLabel">
+        <fpc-form-check
+          type="radio"
+          name="lw-files-create-type"
+          checkId="lw-files-type-directory"
+          value="directory"
+          [inline]="true"
+          i18n-label="@@lwConsoleFiles-typeDirectory"
+          label="Folder"
+          [checked]="createType() === 'directory'"
+          (valueSelect)="createType.set('directory')"
+        />
+        <fpc-form-check
+          type="radio"
+          name="lw-files-create-type"
+          checkId="lw-files-type-file"
+          value="file"
+          [inline]="true"
+          i18n-label="@@lwConsoleFiles-typeFile"
+          label="Empty file"
+          [checked]="createType() === 'file'"
+          (valueSelect)="createType.set('file')"
+        />
+      </div>
+    </fpc-form-field>
+    <fpc-form-field forId="lw-files-create-name" i18n-label="@@lwConsoleFiles-name" label="Name in {{ path() }}">
+      <fpc-form-control
+        controlId="lw-files-create-name"
+        name="name"
+        size="sm"
+        controlClass="font-monospace"
+        [ngModel]="createName()"
+        (ngModelChange)="createName.set($event)"
+      />
+    </fpc-form-field>
+  </form>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="createOpen.set(false)">{{ cancelLabel }}</fpc-button>
+    <fpc-button
+      variant="primary"
+      [disabled]="!createValid()"
+      (clicked)="submitCreate()"
+      data-testid="files-create-submit"
+    >
+      <span i18n="@@lwConsoleFiles-createSubmit">Create</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal [open]="moveOpen()" (openChange)="moveOpen.set($event)" [title]="moveTitle()">
+  <form (ngSubmit)="submitMove()" data-testid="files-move-form">
+    <p class="small text-body-secondary mb-3 font-monospace">{{ moveSource() }}</p>
+    <fpc-form-field forId="lw-files-destination" i18n-label="@@lwConsoleFiles-destination" label="Destination path">
+      <fpc-form-control
+        controlId="lw-files-destination"
+        name="destination"
+        size="sm"
+        controlClass="font-monospace"
+        [ngModel]="moveDestination()"
+        (ngModelChange)="moveDestination.set($event)"
+      />
+    </fpc-form-field>
+    <fpc-form-check
+      checkId="lw-files-overwrite"
+      name="overwrite"
+      i18n-label="@@lwConsoleFiles-overwrite"
+      label="Overwrite an existing entry"
+      [checked]="moveOverwrite()"
+      (checkedChange)="moveOverwrite.set($event)"
+    />
+  </form>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="moveOpen.set(false)">{{ cancelLabel }}</fpc-button>
+    <fpc-button variant="primary" (clicked)="submitMove()" data-testid="files-move-submit">
+      {{ moveMode() === 'copy' ? copyLabel : renameLabel }}
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDelete"
+  [title]="deleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelected()"
+/>
+
+<fpc-confirm-dialog
+  [open]="deleteOpen()"
+  (openChange)="deleteOpen.set($event)"
+  [title]="deleteTitle"
+  [message]="deleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="confirmDelete()"
+/>

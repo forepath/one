@@ -66,7 +66,10 @@ export const checkAuthenticationFailure = createAction(
 
 // --- Users auth (non-admin) ---
 
-export const register = createAction('[Authentication] Register', props<{ email: string; password: string }>());
+export const register = createAction(
+  '[Authentication] Register',
+  props<{ email: string; password: string; adminClaimToken?: string }>(),
+);
 
 export const registerSuccess = createAction(
   '[Authentication] Register Success',

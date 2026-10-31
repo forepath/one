@@ -19,6 +19,27 @@
   }
 }
 
+// Git notices (Git-authoritative scopes, pull requests): Bootstrap's subtle-tone recipe on the Git logo colour
+// #F1502F — light: 20 % tint background, 40 % border, 60 % shade text; dark: the same mixed towards black / white.
+.alert-git {
+  --fpc-alert-git: #f1502f;
+  --bs-alert-color: color-mix(in srgb, var(--fpc-alert-git) 40%, #000);
+  --bs-alert-bg: color-mix(in srgb, var(--fpc-alert-git) 20%, #fff);
+  --bs-alert-border-color: color-mix(in srgb, var(--fpc-alert-git) 40%, #fff);
+  --bs-alert-link-color: var(--bs-alert-color);
+}
+
+// Links in the projected content (scope names, pull requests) read in the alert's ink, not the brand link colour.
+.alert-git ::ng-deep a:not(.btn) {
+  color: var(--bs-alert-link-color);
+}
+
+:host-context([data-bs-theme='dark']) .alert-git {
+  --bs-alert-color: color-mix(in srgb, var(--fpc-alert-git) 60%, #fff);
+  --bs-alert-bg: color-mix(in srgb, var(--fpc-alert-git) 20%, #000);
+  --bs-alert-border-color: color-mix(in srgb, var(--fpc-alert-git) 60%, #000);
+}
+
 .fpc-alert__icon {
   flex: 0 0 auto;
   font-size: 1.125rem;
@@ -28,6 +49,82 @@
 .fpc-alert__content {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+// Projected lists and expandable sections (e.g. the plan page's Git notes): aligned with the text column, a small
+// marker dot in the alert's ink instead of the browser's indented bullets; `<details>` with the console's chevron
+// (turns when open) and the opened content indented under the toggle text with a hairline in the alert's border colour.
+.fpc-alert__content ::ng-deep {
+  ul:not(.list-unstyled) {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0.375rem 0 0;
+    padding: 0;
+    list-style: none;
+
+    > li {
+      position: relative;
+      padding-inline-start: 0.875rem;
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset-inline-start: 0.125rem;
+        top: 0.6em;
+        width: 0.3125rem;
+        height: 0.3125rem;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.55;
+      }
+    }
+  }
+
+  details {
+    margin-top: 0.5rem;
+
+    > summary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      cursor: pointer;
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      &::before {
+        content: '\f285'; // bi-chevron-right
+        font-family: bootstrap-icons !important;
+        font-size: 0.75em;
+        line-height: 1;
+        transition: transform 0.15s ease-in-out;
+      }
+
+      &:focus-visible {
+        outline: 0;
+        border-radius: var(--bs-border-radius-sm);
+        box-shadow: 0 0 0 var(--bs-focus-ring-width) var(--bs-focus-ring-color);
+      }
+    }
+
+    &[open] > summary::before {
+      transform: rotate(90deg);
+    }
+
+    > :not(summary) {
+      margin: 0.375rem 0 0 0.3rem;
+      padding-inline-start: 0.875rem;
+      border-inline-start: 1px solid var(--bs-alert-border-color, var(--bs-border-color));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fpc-alert__content ::ng-deep details > summary::before {
+    transition: none;
+  }
 }
 
 .fpc-alert__actions {

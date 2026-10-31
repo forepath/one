@@ -46,7 +46,7 @@ export class DocsSearchPageComponent implements OnInit {
   protected readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   readonly pageTitle = $localize`:@@featureDocsSearchPage-title:Search Documentation`;
-  readonly searchPlaceholder = $localize`:@@featureDocsSearch-searchPlaceholder:Search documentation...`;
+  readonly searchPlaceholder = $localize`:@@featureDocsSearch-searchPlaceholder:Search documentation`;
   readonly enterQueryHint = $localize`:@@featureDocsSearchPage-enterQueryHint:No search query yet`;
   readonly resultsAriaLabel = $localize`:@@featureDocsSearchPage-resultsAriaLabel:Search results`;
 

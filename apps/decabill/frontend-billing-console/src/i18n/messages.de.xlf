@@ -66,14 +66,6 @@
         <source>Month</source>
         <target>Monat</target>
       </trans-unit>
-      <trans-unit id="featureAdminBilling-apply" datatype="html">
-        <source> Apply </source>
-        <target> Anwenden </target>
-      </trans-unit>
-      <trans-unit id="featureAdminBilling-reset" datatype="html">
-        <source> Reset </source>
-        <target> Zurücksetzen </target>
-      </trans-unit>
       <trans-unit id="featureAdminBilling-noChartData" datatype="html">
         <source> No turnover data for selected period. </source>
         <target> Keine Umsatzdaten für den ausgewählten Zeitraum. </target>
@@ -90,25 +82,9 @@
         <source>Invoices</source>
         <target>Rechnungen</target>
       </trans-unit>
-      <trans-unit id="featureAdminInvoices-searchPlaceholder" datatype="html">
-        <source> Search invoices </source>
-        <target> Rechnungen suchen </target>
-      </trans-unit>
-      <trans-unit id="featureAdminInvoices-loading" datatype="html">
-        <source>Loading invoices...</source>
-        <target>Rechnungen werden geladen...</target>
-      </trans-unit>
-      <trans-unit id="featureAdminInvoices-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featureAdminInvoices-empty" datatype="html">
         <source>No invoices yet</source>
         <target>Noch keine Rechnungen</target>
-      </trans-unit>
-      <trans-unit id="featureAdminInvoices-invoiceActionsAria" datatype="html">
-        <source>Invoice actions</source>
-        <target>Rechnungsaktionen</target>
       </trans-unit>
       <trans-unit id="featureAdminInvoices-editButtonTitle" datatype="html">
         <source>Edit draft</source>
@@ -310,10 +286,6 @@
         <source>Turnover</source>
         <target>Umsatz</target>
       </trans-unit>
-      <trans-unit id="featureAdminProfiles-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featureAdminBilling-chartExpensesTitle" datatype="html">
         <source>Expenses over time</source>
         <target>Ausgaben im Zeitverlauf</target>
@@ -335,8 +307,8 @@
         <target>Umsatz nach Land</target>
       </trans-unit>
       <trans-unit id="featureAdminProfiles-title" datatype="html">
-        <source>Billing Profiles</source>
-        <target>Abrechnungsprofile</target>
+        <source>Customer profiles</source>
+        <target>Kundenprofile</target>
       </trans-unit>
       <trans-unit id="featureAdminProfiles-add" datatype="html">
         <source>Add</source>
@@ -349,10 +321,6 @@
       <trans-unit id="featureAdminProfiles-empty" datatype="html">
         <source>No billing profiles yet</source>
         <target>Noch keine Abrechnungsprofile</target>
-      </trans-unit>
-      <trans-unit id="featureAdminProfiles-profileActionsAria" datatype="html">
-        <source>Profile actions</source>
-        <target>Profilaktionen</target>
       </trans-unit>
       <trans-unit id="featureAdminProfiles-editButtonTitle" datatype="html">
         <source>Edit profile</source>
@@ -401,10 +369,6 @@
       <trans-unit id="featureAdminProfiles-customDataSave" datatype="html">
         <source> Save </source>
         <target>Speichern</target>
-      </trans-unit>
-      <trans-unit id="featureAdminProfiles-deleteButtonTitle" datatype="html">
-        <source>Delete profile</source>
-        <target>Profil löschen</target>
       </trans-unit>
       <trans-unit id="featureAdminProfiles-trustModalTitle" datatype="html">
         <source>Customer trust score</source>
@@ -471,36 +435,24 @@
         <target>Nicht bewertet</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-title" datatype="html">
-        <source>Contracts</source>
-        <target>Verträge</target>
+        <source>Subscriptions</source>
+        <target>Abonnements</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-summaryTotal" datatype="html">
-        <source> Contracts </source>
-        <target>Verträge</target>
+        <source>Subscriptions</source>
+        <target>Abonnements</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-summaryActive" datatype="html">
         <source>Active</source>
         <target>Aktiv</target>
       </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-search" datatype="html">
-        <source> Search contracts </source>
-        <target>Verträge durchsuchen</target>
-      </trans-unit>
       <trans-unit id="featureAdminSubscriptions-searchPlaceholder" datatype="html">
-        <source>Search by number, email, plan, or status</source>
-        <target>Nach Nummer, E-Mail, Plan oder Status suchen</target>
-      </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-loading" datatype="html">
-        <source>Loading contracts...</source>
-        <target>Verträge werden geladen...</target>
-      </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
+        <source>Search subscriptions</source>
+        <target>Abonnements suchen</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-empty" datatype="html">
-        <source>No contracts yet</source>
-        <target>Noch keine Verträge</target>
+        <source>No subscriptions yet</source>
+        <target>Noch keine Abonnements</target>
       </trans-unit>
       <trans-unit id="featureAdminProjects-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -522,14 +474,6 @@
         <source>Search exports</source>
         <target>Exporte durchsuchen</target>
       </trans-unit>
-      <trans-unit id="featureAdminDatevExports-loading" datatype="html">
-        <source>Loading DATEV exports...</source>
-        <target>DATEV-Exporte werden geladen...</target>
-      </trans-unit>
-      <trans-unit id="featureAdminDatevExports-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featureAdminDatevExports-empty" datatype="html">
         <source>No DATEV exports yet</source>
         <target>Noch keine DATEV-Exporte</target>
@@ -549,10 +493,6 @@
       <trans-unit id="featureAdminDatevExports-metaDebtors" datatype="html">
         <source>Debtors</source>
         <target>Debitoren</target>
-      </trans-unit>
-      <trans-unit id="featureAdminDatevExports-exportActionsAria" datatype="html">
-        <source>Export actions</source>
-        <target>Exportaktionen</target>
       </trans-unit>
       <trans-unit id="featureAdminDatevExports-downloadButtonTitle" datatype="html">
         <source>Download export</source>
@@ -623,15 +563,15 @@
         <target>Rechnungen</target>
       </trans-unit>
       <trans-unit id="featureContainer-serviceTypesPage" datatype="html">
-        <source>Service Providers</source>
-        <target>Service-Anbieter</target>
+        <source>Service providers</source>
+        <target>Serviceanbieter</target>
       </trans-unit>
       <trans-unit id="featureContainer-cloudInitConfigsPage" datatype="html">
-        <source>Configs</source>
-        <target>Konfigurationen</target>
+        <source>Cloud-init configs</source>
+        <target>Cloud-init-Konfigurationen</target>
       </trans-unit>
       <trans-unit id="featureContainer-servicePlansPage" datatype="html">
-        <source>Service Plans</source>
+        <source>Service plans</source>
         <target>Servicepläne</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminBillingPage" datatype="html">
@@ -639,23 +579,23 @@
         <target>Abrechnung</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminProfilesPage" datatype="html">
-        <source>Billing Profiles</source>
-        <target>Abrechnungsprofile</target>
+        <source>Customer profiles</source>
+        <target>Kundenprofile</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminSupplierProfilesPage" datatype="html">
-        <source>Supplier Profiles</source>
+        <source>Supplier profiles</source>
         <target>Lieferantenprofile</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminSubscriptionsPage" datatype="html">
-        <source>Contracts</source>
-        <target>Verträge</target>
+        <source>Subscriptions</source>
+        <target>Abonnements</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminDatevExportsPage" datatype="html">
-        <source>DATEV Exports</source>
+        <source>DATEV exports</source>
         <target>DATEV-Exporte</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminFileExplorerPage" datatype="html">
-        <source>File Explorer</source>
+        <source>File explorer</source>
         <target>Datei-Explorer</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminFileExplorerTitle" datatype="html">
@@ -667,7 +607,7 @@
         <target>Dateien</target>
       </trans-unit>
       <trans-unit id="featureAdminFileExplorer-title" datatype="html">
-        <source>File Explorer</source>
+        <source>File explorer</source>
         <target>Datei-Explorer</target>
       </trans-unit>
       <trans-unit id="featureAdminFileExplorer-tabUnified" datatype="html">
@@ -1003,43 +943,35 @@
         <target>System</target>
       </trans-unit>
       <trans-unit id="featureAddons-title" datatype="html">
-        <source>Addons</source>
+        <source>Add-ons</source>
         <target>Add-ons</target>
       </trans-unit>
       <trans-unit id="featureAddons-add" datatype="html">
-        <source>Add addon</source>
+        <source>Add add-on</source>
         <target>Add-on hinzufügen</target>
       </trans-unit>
       <trans-unit id="featureAddons-searchPlaceholder" datatype="html">
-        <source>Search addons</source>
+        <source>Search add-ons</source>
         <target>Add-ons durchsuchen</target>
       </trans-unit>
-      <trans-unit id="featureAddons-loading" datatype="html">
-        <source>Loading...</source>
-        <target>Laden...</target>
-      </trans-unit>
-      <trans-unit id="featureAddons-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featureAddons-empty" datatype="html">
-        <source>No addons yet</source>
+        <source>No add-ons yet</source>
         <target>Noch keine Add-ons</target>
       </trans-unit>
       <trans-unit id="featureAddons-edit" datatype="html">
-        <source>Edit addon</source>
+        <source>Edit add-on</source>
         <target>Add-on bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureAddons-delete" datatype="html">
-        <source>Delete addon</source>
+        <source>Delete add-on</source>
         <target>Add-on löschen</target>
       </trans-unit>
       <trans-unit id="featureAddons-createTitle" datatype="html">
-        <source>Add addon</source>
-        <target>Add-on hinzufügen</target>
+        <source>Create add-on</source>
+        <target>Add-on erstellen</target>
       </trans-unit>
       <trans-unit id="featureAddons-editTitle" datatype="html">
-        <source>Edit addon</source>
+        <source>Edit add-on</source>
         <target>Add-on bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureAddons-key" datatype="html">
@@ -1063,8 +995,8 @@
         <target>Kompatible Anbieter</target>
       </trans-unit>
       <trans-unit id="featureAddons-compatibleProvidersHelp" datatype="html">
-        <source> Hold Ctrl/Cmd to select multiple. Leave empty for all addon-capable providers. </source>
-        <target>Mit Strg/Cmd mehrere auswählen. Für alle Add-on-fähigen Anbieter leer lassen.</target>
+        <source>Leave empty for all add-on-capable providers.</source>
+        <target>Leer lassen für alle Add-on-fähigen Anbieter.</target>
       </trans-unit>
       <trans-unit id="featureAddons-moduleKey" datatype="html">
         <source>Module key</source>
@@ -1095,15 +1027,15 @@
         <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureAddons-save" datatype="html">
-        <source>Save</source>
-        <target>Speichern</target>
+        <source>Save changes</source>
+        <target>Änderungen speichern</target>
       </trans-unit>
       <trans-unit id="featureAddons-deleteTitle" datatype="html">
-        <source>Delete addon</source>
+        <source>Delete add-on</source>
         <target>Add-on löschen</target>
       </trans-unit>
       <trans-unit id="featureAddons-deleteConfirm" datatype="html">
-        <source>Delete addon &quot;<x id="INTERPOLATION" equiv-text="{{ addonToDelete.name }}"/>&quot;?</source>
+        <source>Delete add-on &quot;<x id="INTERPOLATION" equiv-text="{{ addonToDelete.name }}"/>&quot;?</source>
         <target>Add-on &quot;<x id="INTERPOLATION" equiv-text="{{ addonToDelete.name }}"/>&quot; löschen?</target>
       </trans-unit>
       <trans-unit id="featureAddons-cannotUndo" datatype="html">
@@ -1178,36 +1110,28 @@
         <source>Order</source>
         <target>Bestellung</target>
       </trans-unit>
-      <trans-unit id="featureAddons-configFieldCount" datatype="html">
-        <source><x id="INTERPOLATION" equiv-text="{{ configFieldCount(addon) }}"/> config fields</source>
-        <target><x id="INTERPOLATION" equiv-text="{{ configFieldCount(addon) }}"/> Konfigurationsfelder</target>
-      </trans-unit>
       <trans-unit id="featureAddons-allProviders" datatype="html">
         <source>All providers</source>
         <target>Alle Anbieter</target>
       </trans-unit>
-      <trans-unit id="featureAddons-addonActionsAria" datatype="html">
-        <source>Addon actions</source>
-        <target>Add-on-Aktionen</target>
-      </trans-unit>
       <trans-unit id="featureContainer-addonsPage" datatype="html">
-        <source>Addons</source>
+        <source>Add-ons</source>
         <target>Add-ons</target>
       </trans-unit>
       <trans-unit id="featureContainer-addonsTitle" datatype="html">
-        <source>Addons</source>
+        <source>Add-ons</source>
         <target>Add-ons</target>
       </trans-unit>
       <trans-unit id="featureContainer-addons" datatype="html">
-        <source>Addons</source>
+        <source>Add-ons</source>
         <target>Add-ons</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-addons" datatype="html">
-        <source>Customer-selectable addons</source>
+        <source>Customer-selectable add-ons</source>
         <target>Vom Kunden auswählbare Add-ons</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-addonsHelp" datatype="html">
-        <source> Choose which addons customers may add when ordering this plan. </source>
+        <source> Choose which add-ons customers may add when ordering this plan. </source>
         <target>Wählen Sie, welche Add-ons Kunden bei der Bestellung dieses Plans hinzufügen dürfen.</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-mandatoryAddon" datatype="html">
@@ -1215,23 +1139,23 @@
         <target>Pflicht</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-mandatoryAddonHelp" datatype="html">
-        <source>Customers cannot deselect this addon when ordering.</source>
+        <source>Customers cannot deselect this add-on when ordering.</source>
         <target>Kunden können dieses Add-on bei der Bestellung nicht abwählen.</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-loadingAddons" datatype="html">
-        <source>Loading addons...</source>
+        <source>Loading add-ons...</source>
         <target>Add-ons werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-addons" datatype="html">
-        <source>Addons</source>
+        <source>Add-ons</source>
         <target>Add-ons</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-addonConfigCardTitle" datatype="html">
-        <source>Addon: <x id="addonName" equiv-text="addonName"/></source>
+        <source>Add-on: <x id="addonName" equiv-text="addonName"/></source>
         <target>Add-on: <x id="addonName" equiv-text="addonName"/></target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-addonsTotal" datatype="html">
-        <source> Addons total </source>
+        <source>Add-ons total</source>
         <target>Add-ons gesamt</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-mandatoryAddonBadge" datatype="html">
@@ -1247,20 +1171,20 @@
         <target>Für den gewählten Anbieter nicht verfügbar</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-orderInvalidAddonsHint" datatype="html">
-        <source> Some selected addons are not available for the chosen provider and will be omitted from the order. </source>
+        <source> Some selected add-ons are not available for the chosen provider and will be omitted from the order. </source>
         <target>Einige ausgewählte Add-ons sind für den gewählten Anbieter nicht verfügbar und werden aus der Bestellung entfernt.</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-grandTotal" datatype="html">
-        <source> Plan and addons </source>
+        <source>Plan and add-ons</source>
         <target>Plan und Add-ons</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-orderStepPlanAddons" datatype="html">
-        <source>Plan &amp; addons</source>
+        <source>Plan &amp; add-ons</source>
         <target>Plan &amp; Add-ons</target>
       </trans-unit>
       <trans-unit id="featureCloudInitConfigs-title" datatype="html">
-        <source>CloudInit Configs</source>
-        <target>CloudInit-Konfigurationen</target>
+        <source>Cloud-init configs</source>
+        <target>Cloud-init-Konfigurationen</target>
       </trans-unit>
       <trans-unit id="featureCloudInitConfigs-add" datatype="html">
         <source>Add config</source>
@@ -1270,25 +1194,13 @@
         <source>Search configs</source>
         <target>Konfigurationen durchsuchen</target>
       </trans-unit>
-      <trans-unit id="featureCloudInitConfigs-loading" datatype="html">
-        <source>Loading...</source>
-        <target>Laden...</target>
-      </trans-unit>
-      <trans-unit id="featureCloudInitConfigs-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featureCloudInitConfigs-empty" datatype="html">
-        <source>No CloudInit configs yet</source>
-        <target>Noch keine CloudInit-Konfigurationen</target>
-      </trans-unit>
-      <trans-unit id="featureCloudInitConfigs-envVarCount" datatype="html">
-        <source><x id="INTERPOLATION" equiv-text="{{ envVarCount(config) }}"/> env vars</source>
-        <target><x id="INTERPOLATION" equiv-text="{{ envVarCount(config) }}"/> Umgebungsvariablen</target>
+        <source>No cloud-init configs yet</source>
+        <target>Noch keine Cloud-init-Konfigurationen</target>
       </trans-unit>
       <trans-unit id="featureCloudInitConfigs-createTitle" datatype="html">
-        <source>Add CloudInit config</source>
-        <target>CloudInit-Konfiguration hinzufügen</target>
+        <source>Create cloud-init config</source>
+        <target>Cloud-init-Konfiguration erstellen</target>
       </trans-unit>
       <trans-unit id="featureCloudInitConfigs-key" datatype="html">
         <source>Key</source>
@@ -1343,16 +1255,16 @@
         <target> Speichern </target>
       </trans-unit>
       <trans-unit id="featureCloudInitConfigs-editTitle" datatype="html">
-        <source>Edit CloudInit config</source>
-        <target>CloudInit-Konfiguration bearbeiten</target>
+        <source>Edit cloud-init config</source>
+        <target>Cloud-init-Konfiguration bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureCloudInitConfigs-deleteTitle" datatype="html">
         <source>Delete config</source>
         <target>Konfiguration löschen</target>
       </trans-unit>
       <trans-unit id="featureCloudInitConfigs-deleteConfirm" datatype="html">
-        <source>Delete CloudInit config &quot;<x id="INTERPOLATION" equiv-text="{{ configToDelete.name }}"/>&quot;?</source>
-        <target>CloudInit-Konfiguration &quot;<x id="INTERPOLATION" equiv-text="{{ configToDelete.name }}"/>&quot; löschen?</target>
+        <source>Delete cloud-init config &quot;<x id="INTERPOLATION" equiv-text="{{ configToDelete.name }}"/>&quot;?</source>
+        <target>Cloud-init-Konfiguration &quot;<x id="INTERPOLATION" equiv-text="{{ configToDelete.name }}"/>&quot; löschen?</target>
       </trans-unit>
       <trans-unit id="featureCloudInitConfigs-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -1487,7 +1399,7 @@
         <target>Offener Gesamtbetrag</target>
       </trans-unit>
       <trans-unit id="featureAdminSupplierProfiles-title" datatype="html">
-        <source>Supplier Profiles</source>
+        <source>Supplier profiles</source>
         <target>Lieferantenprofile</target>
       </trans-unit>
       <trans-unit id="featureAdminSupplierProfiles-add" datatype="html">
@@ -1502,10 +1414,6 @@
         <source>No supplier profiles yet</source>
         <target>Noch keine Lieferantenprofile</target>
       </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-profileActionsAria" datatype="html">
-        <source>Supplier profile actions</source>
-        <target>Aktionen für Lieferantenprofile</target>
-      </trans-unit>
       <trans-unit id="featureAdminSupplierProfiles-customDataButtonTitle" datatype="html">
         <source>Edit custom data</source>
         <target>Benutzerdefinierte Daten bearbeiten</target>
@@ -1513,10 +1421,6 @@
       <trans-unit id="featureAdminSupplierProfiles-editButtonTitle" datatype="html">
         <source>Edit profile</source>
         <target>Profil bearbeiten</target>
-      </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-deleteButtonTitle" datatype="html">
-        <source>Delete profile</source>
-        <target>Profil löschen</target>
       </trans-unit>
       <trans-unit id="featureAdminSupplierProfiles-createTitle" datatype="html">
         <source>Create supplier profile</source>
@@ -1678,13 +1582,29 @@
         <source>No contracts found.</source>
         <target>Keine Verträge gefunden.</target>
       </trans-unit>
+      <trans-unit id="featureBillingAdminPromotionSelect-placeholder" datatype="html">
+        <source>Search by code or name</source>
+        <target>Nach Code oder Name suchen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingAdminPromotionSelect-noPromotions" datatype="html">
+        <source>No promotions found.</source>
+        <target>Keine Aktionen gefunden.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingAdminPromotionSelect-clearSelectionAria" datatype="html">
+        <source>Clear selected promotion</source>
+        <target>Ausgewählte Aktion entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingAdminPromotionSelect-accessDeniedHint" datatype="html">
+        <source>You can't list promotions. Type the promotion code.</source>
+        <target>Sie können keine Aktionen auflisten. Geben Sie den Aktionscode ein.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingAdminSupplierContractSelect-accessDeniedHint" datatype="html">
+        <source>You can't list this supplier's contracts. Type the contract number.</source>
+        <target>Sie können die Verträge dieses Lieferanten nicht auflisten. Geben Sie die Vertragsnummer ein.</target>
+      </trans-unit>
       <trans-unit id="featureAdminSupplierInvoices-searchPlaceholder" datatype="html">
         <source>Search supplier invoices</source>
         <target>Lieferantenrechnungen suchen</target>
-      </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureAdminSupplierInvoices-empty" datatype="html">
         <source>No supplier invoices yet</source>
@@ -1727,12 +1647,12 @@
         <target>Rechnungstyp</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminSubscriptionsTitle" datatype="html">
-        <source>Contracts</source>
-        <target>Verträge</target>
+        <source>Subscriptions</source>
+        <target>Abonnements</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminSubscriptions" datatype="html">
-        <source>Contracts</source>
-        <target>Verträge</target>
+        <source>Subscriptions</source>
+        <target>Abonnements</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminBillingTitle" datatype="html">
         <source>Billing</source>
@@ -1799,24 +1719,12 @@
         <target>Offene und überfällige Rechnungen</target>
       </trans-unit>
       <trans-unit id="featureInvoices-searchOpenOverdue" datatype="html">
-        <source> Search open and overdue invoices </source>
-        <target> Offene und überfällige Rechnungen suchen </target>
-      </trans-unit>
-      <trans-unit id="featureInvoices-loadingOpenOverdue" datatype="html">
-        <source>Loading open and overdue invoices...</source>
-        <target>Offene und überfällige Rechnungen werden geladen...</target>
+        <source>Search invoices</source>
+        <target>Rechnungen suchen</target>
       </trans-unit>
       <trans-unit id="featureInvoices-noOpenOverdue" datatype="html">
         <source>No open or overdue invoices yet</source>
         <target>Noch keine offenen oder überfälligen Rechnungen</target>
-      </trans-unit>
-      <trans-unit id="featureInvoices-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
-      <trans-unit id="featureInvoices-invoiceActionsAria" datatype="html">
-        <source>Invoice actions</source>
-        <target>Rechnungsaktionen</target>
       </trans-unit>
       <trans-unit id="featureInvoices-previewButtonTitle" datatype="html">
         <source>Preview invoice</source>
@@ -1927,8 +1835,8 @@
         <target>Das Abonnement ist abgeschlossen; es können keine weiteren Rechnungen erstellt werden.</target>
       </trans-unit>
       <trans-unit id="featureInvoices-mobileOpenOverdue" datatype="html">
-        <source>Open &amp; overdue</source>
-        <target>Offen &amp; überfällig</target>
+        <source>Open and overdue</source>
+        <target>Offen und überfällig</target>
       </trans-unit>
       <trans-unit id="featureServiceDetail-backToSubscriptions" datatype="html">
         <source>Back to subscriptions</source>
@@ -2046,10 +1954,6 @@
         <source>Search containers</source>
         <target>Container suchen</target>
       </trans-unit>
-      <trans-unit id="featureContainerManager-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featureContainerManager-statusRunning" datatype="html">
         <source>Running</source>
         <target>Läuft</target>
@@ -2089,10 +1993,6 @@
       <trans-unit id="featureContainerManager-collectedAt" datatype="html">
         <source>Collected</source>
         <target>Erfasst</target>
-      </trans-unit>
-      <trans-unit id="featureContainerManager-loadingContainers" datatype="html">
-        <source>Loading containers...</source>
-        <target>Container werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureContainerManager-noContainers" datatype="html">
         <source> No containers found on this host. </source>
@@ -2266,14 +2166,6 @@
         <source>Month</source>
         <target>Monat</target>
       </trans-unit>
-      <trans-unit id="featureServiceDetail-applyFilters" datatype="html">
-        <source> Apply </source>
-        <target>Anwenden</target>
-      </trans-unit>
-      <trans-unit id="featureServiceDetail-resetFilters" datatype="html">
-        <source> Reset </source>
-        <target>Zurücksetzen</target>
-      </trans-unit>
       <trans-unit id="featureServiceDetail-meterTotalLabel" datatype="html">
         <source>Total:</source>
         <target>Gesamt:</target>
@@ -2342,25 +2234,9 @@
         <source> Search cloud instances </source>
         <target> Cloud-Instanzen suchen </target>
       </trans-unit>
-      <trans-unit id="featureOverview-loadingServerInfo" datatype="html">
-        <source>Loading server info...</source>
-        <target>Serverinformationen werden geladen...</target>
-      </trans-unit>
       <trans-unit id="featureOverview-noInstances" datatype="html">
         <source>No cloud instances yet</source>
         <target>Noch keine Cloud-Instanzen</target>
-      </trans-unit>
-      <trans-unit id="featureOverview-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
-      <trans-unit id="featureOverview-viewServiceDetails" datatype="html">
-        <source>View service details</source>
-        <target>Dienstdetails anzeigen</target>
-      </trans-unit>
-      <trans-unit id="featureOverview-serverActionsAria" datatype="html">
-        <source>Server actions</source>
-        <target>Serveraktionen</target>
       </trans-unit>
       <trans-unit id="featureOverview-serverStartButtonTitle" datatype="html">
         <source>Start server</source>
@@ -2434,10 +2310,6 @@
         <source>Could not retrieve the SSH access key. Please try again or contact support.</source>
         <target>Der SSH-Zugangsschlüssel konnte nicht abgerufen werden. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.</target>
       </trans-unit>
-      <trans-unit id="featureOverview-serverStatusUpdating" datatype="html">
-        <source>Server status updating...</source>
-        <target>Serverstatus wird aktualisiert...</target>
-      </trans-unit>
       <trans-unit id="featureOverview-openConsoleButtonTitle" datatype="html">
         <source>Open console</source>
         <target>Konsole öffnen</target>
@@ -2458,16 +2330,8 @@
         <source>Updating</source>
         <target>Wird aktualisiert</target>
       </trans-unit>
-      <trans-unit id="featureOverview-provisioningPendingHint" datatype="html">
-        <source> Your server is being set up. This usually takes less than a minute. </source>
-        <target>Ihr Server wird eingerichtet. Das dauert in der Regel weniger als eine Minute.</target>
-      </trans-unit>
-      <trans-unit id="featureOverview-provisioningFailedHint" datatype="html">
-        <source> Server setup did not complete. Check backorders or contact support if this persists. </source>
-        <target>Die Servereinrichtung wurde nicht abgeschlossen. Prüfen Sie Rückstände oder kontaktieren Sie den Support, wenn das Problem bestehen bleibt.</target>
-      </trans-unit>
       <trans-unit id="featureServicePlans-title" datatype="html">
-        <source>Service Plans</source>
+        <source>Service plans</source>
         <target>Servicepläne</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-add" datatype="html">
@@ -2482,29 +2346,17 @@
         <source>Loading...</source>
         <target>Wird geladen...</target>
       </trans-unit>
-      <trans-unit id="featureServicePlans-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featureServicePlans-empty" datatype="html">
         <source>No service plans.</source>
         <target>Keine Servicepläne.</target>
-      </trans-unit>
-      <trans-unit id="featureServicePlans-planActionsAria" datatype="html">
-        <source>Plan actions</source>
-        <target>Planaktionen</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-editButtonTitle" datatype="html">
         <source>Edit plan</source>
         <target>Plan bearbeiten</target>
       </trans-unit>
-      <trans-unit id="featureServicePlans-deleteButtonTitle" datatype="html">
-        <source>Delete plan</source>
-        <target>Plan löschen</target>
-      </trans-unit>
       <trans-unit id="featureServicePlans-createTitle" datatype="html">
-        <source> Add service plan </source>
-        <target>Serviceplan hinzufügen</target>
+        <source>Create service plan</source>
+        <target>Serviceplan erstellen</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-serviceType" datatype="html">
         <source>Service type</source>
@@ -2603,8 +2455,8 @@
         <target>Vom Kunden wählbare Optionen</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-provisioningOptionsHelp" datatype="html">
-        <source> Choose which integrated stacks and CloudInit configs customers may pick when ordering this plan. </source>
-        <target> Wählen Sie, welche integrierten Stacks und CloudInit-Konfigurationen Kunden bei der Bestellung auswählen dürfen.</target>
+        <source> Choose which integrated stacks and cloud-init configs customers may pick when ordering this plan. </source>
+        <target> Wählen Sie, welche integrierten Stacks und Cloud-init-Konfigurationen Kunden bei der Bestellung auswählen dürfen.</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-productDefaults" datatype="html">
         <source>Product defaults</source>
@@ -2619,8 +2471,8 @@
         <target>Anzeigen</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-productDefaultsHelp" datatype="html">
-        <source> Defaults for integrated stacks and CloudInit environment variables required by the selected customer options. </source>
-        <target> Standardwerte für integrierte Stacks und CloudInit-Umgebungsvariablen, die dieser Plan benötigt.</target>
+        <source> Defaults for integrated stacks and cloud-init environment variables required by the selected customer options. </source>
+        <target> Standardwerte für integrierte Stacks und Cloud-init-Umgebungsvariablen, die dieser Plan benötigt.</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEnd" datatype="html">
         <source>Cancel at period end</source>
@@ -2647,8 +2499,8 @@
         <target>Serviceplan bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-inactiveCustomConfigWarning" datatype="html">
-        <source>This plan referenced inactive CloudInit configs. They were removed from provisioning options. Save to apply the change.</source>
-        <target>Dieser Plan verwies auf inaktive CloudInit-Konfigurationen. Sie wurden aus den Bereitstellungsoptionen entfernt.</target>
+        <source>This plan referenced inactive cloud-init configs. They were removed from provisioning options. Save to apply the change.</source>
+        <target>Dieser Plan verwies auf inaktive Cloud-init-Konfigurationen. Sie wurden aus den Bereitstellungsoptionen entfernt.</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-save" datatype="html">
         <source> Save </source>
@@ -2679,7 +2531,7 @@
         <target><x id="PH" equiv-text="count"/> highlights</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-title" datatype="html">
-        <source>Service Providers</source>
+        <source>Service providers</source>
         <target>Serviceanbieter</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-add" datatype="html">
@@ -2694,29 +2546,17 @@
         <source>Loading...</source>
         <target>Wird geladen...</target>
       </trans-unit>
-      <trans-unit id="featureServiceTypes-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featureServiceTypes-empty" datatype="html">
         <source>No service types yet</source>
         <target>Noch keine Servicetypen</target>
-      </trans-unit>
-      <trans-unit id="featureServiceTypes-serviceTypeActionsAria" datatype="html">
-        <source>Service provider actions</source>
-        <target>Aktionen für Serviceanbieter</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-editButtonTitle" datatype="html">
         <source>Edit service provider</source>
         <target>Serviceanbieter bearbeiten</target>
       </trans-unit>
-      <trans-unit id="featureServiceTypes-deleteButtonTitle" datatype="html">
-        <source>Delete service provider</source>
-        <target>Serviceanbieter löschen</target>
-      </trans-unit>
       <trans-unit id="featureServiceTypes-createTitle" datatype="html">
-        <source> Add service provider </source>
-        <target>Serviceanbieter hinzufügen</target>
+        <source>Create service provider</source>
+        <target>Serviceanbieter erstellen</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-key" datatype="html">
         <source>Key</source>
@@ -2799,7 +2639,7 @@
         <target>Löschen</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-title" datatype="html">
-        <source>Plans &amp; Subscriptions</source>
+        <source>Plans &amp; subscriptions</source>
         <target>Pläne &amp; Abonnements</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-orderPlanButton" datatype="html">
@@ -2822,53 +2662,21 @@
         <source>Edit billing profile</source>
         <target>Abrechnungsprofil bearbeiten</target>
       </trans-unit>
-      <trans-unit id="featureSubscriptions-backorders" datatype="html">
-        <source>Backorders</source>
-        <target>Rückstände</target>
-      </trans-unit>
       <trans-unit id="featureSubscriptions-customerProfileHint" datatype="html">
         <source> A complete billing profile is required for invoicing. Add your first name, last name, email, address, city, and country. </source>
         <target>Für die Rechnungsstellung ist ein vollständiges Rechnungsprofil erforderlich. Bitte Vornamen, Nachnamen, E-Mail, Adresse, Stadt und Land angeben.</target>
       </trans-unit>
-      <trans-unit id="featureAudit-chatIoTable" datatype="html">
+      <trans-unit id="featureSubscriptions-laneTitle" datatype="html">
         <source>Subscriptions</source>
         <target>Abonnements</target>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-searchSubscriptions" datatype="html">
-        <source> Search subscriptions </source>
-        <target> Abonnements suchen </target>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-loading" datatype="html">
-        <source>Loading subscriptions...</source>
-        <target>Abonnements werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-noSubscriptions" datatype="html">
         <source>No subscriptions yet</source>
         <target>Noch keine Abonnements</target>
       </trans-unit>
-      <trans-unit id="featureSubscriptions-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-searchBackorders" datatype="html">
-        <source> Search backorders </source>
-        <target> Rückstände suchen </target>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-loadingBackorders" datatype="html">
-        <source>Loading backorders...</source>
-        <target>Rückstände werden geladen...</target>
-      </trans-unit>
       <trans-unit id="featureSubscriptions-noBackorders" datatype="html">
         <source>No pending backorders yet</source>
         <target>Noch keine ausstehenden Rückstände</target>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-noBackorderSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-subscriptionActionsAria" datatype="html">
-        <source>Subscription actions</source>
-        <target>Abonnementaktionen</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-cancelButtonTitle" datatype="html">
         <source>Cancel subscription</source>
@@ -2877,10 +2685,6 @@
       <trans-unit id="featureSubscriptions-resumeButtonTitle" datatype="html">
         <source>Resume subscription</source>
         <target>Abonnement fortsetzen</target>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-backorderActionsAria" datatype="html">
-        <source>Backorder actions</source>
-        <target>Rückstandsaktionen</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-retryButtonTitle" datatype="html">
         <source>Retry backorder</source>
@@ -3455,11 +3259,11 @@
         <target>E-Mail bestätigen</target>
       </trans-unit>
       <trans-unit id="featureAuth-usersPage" datatype="html">
-        <source>User Management</source>
+        <source>User management</source>
         <target>Benutzerverwaltung</target>
       </trans-unit>
       <trans-unit id="featureAuth-tokensPage" datatype="html">
-        <source>Personal Access Tokens</source>
+        <source>Personal access tokens</source>
         <target>Persönliche Zugriffstoken</target>
       </trans-unit>
       <trans-unit id="featureLogin-title" datatype="html">
@@ -3593,6 +3397,22 @@
       <trans-unit id="featureRegister-passwordsMismatch" datatype="html">
         <source> Passwords do not match. </source>
         <target> Passwörter stimmen nicht überein. </target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenLabel" datatype="html">
+        <source>Admin claim token</source>
+        <target>Admin-Claim-Token</target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenPlaceholder" datatype="html">
+        <source>Paste the admin claim token</source>
+        <target>Admin-Claim-Token einfügen</target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenHint" datatype="html">
+        <source> This installation has no account yet. The first account becomes the administrator and needs the one-time admin claim token from your provider (for Loadweaver Cloud: the Cluster tab of your service). </source>
+        <target> Diese Installation hat noch kein Konto. Das erste Konto wird Administrator und benötigt das einmalige Admin-Claim-Token Ihres Anbieters (bei Loadweaver Cloud: der Tab „Cluster“ Ihres Service). </target>
+      </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenRequired" datatype="html">
+        <source> The admin claim token is required. </source>
+        <target> Das Admin-Claim-Token ist erforderlich. </target>
       </trans-unit>
       <trans-unit id="featureRegister-legalHintPrefix" datatype="html">
         <source>By registering, you acknowledge our</source>
@@ -3851,7 +3671,7 @@
         <target>Zurück zur Anmeldung</target>
       </trans-unit>
       <trans-unit id="featureUserManager-title" datatype="html">
-        <source>User Management</source>
+        <source>User management</source>
         <target>Benutzerverwaltung</target>
       </trans-unit>
       <trans-unit id="featureUserManager-addUserTitle" datatype="html">
@@ -3861,10 +3681,6 @@
       <trans-unit id="featureUserManager-searchUsersPlaceholder" datatype="html">
         <source>Search users</source>
         <target>Benutzer suchen</target>
-      </trans-unit>
-      <trans-unit id="featureUserManager-loadingUsers" datatype="html">
-        <source>Loading users...</source>
-        <target>Benutzer werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureUserManager-noOtherUsers" datatype="html">
         <source>No other users yet</source>
@@ -3878,14 +3694,6 @@
         <source>Active</source>
         <target>Aktiv</target>
       </trans-unit>
-      <trans-unit id="featureUserManager-confirmed" datatype="html">
-        <source>Confirmed</source>
-        <target>Bestätigt</target>
-      </trans-unit>
-      <trans-unit id="featureUserManager-pending" datatype="html">
-        <source>Pending</source>
-        <target>Ausstehend</target>
-      </trans-unit>
       <trans-unit id="featureUserManager-unlockUserButtonTitle" datatype="html">
         <source>Unlock user</source>
         <target>Benutzer entsperren</target>
@@ -3898,12 +3706,8 @@
         <source>Edit user</source>
         <target>Benutzer bearbeiten</target>
       </trans-unit>
-      <trans-unit id="featureUserManager-deleteUserButtonTitle" datatype="html">
-        <source>Delete user</source>
-        <target>Benutzer löschen</target>
-      </trans-unit>
       <trans-unit id="featureUserManager-createUserTitle" datatype="html">
-        <source>Create User</source>
+        <source>Create user</source>
         <target>Benutzer erstellen</target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailLabel" datatype="html">
@@ -3931,7 +3735,7 @@
         <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureUserManager-editUserModalTitle" datatype="html">
-        <source>Edit User</source>
+        <source>Edit user</source>
         <target>Benutzer bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureUserManager-newPasswordLabel" datatype="html">
@@ -3947,8 +3751,8 @@
         <target>Leer lassen, um das aktuelle Passwort zu behalten</target>
       </trans-unit>
       <trans-unit id="featureUserManager-update" datatype="html">
-        <source>Update</source>
-        <target>Aktualisieren</target>
+        <source>Save changes</source>
+        <target>Änderungen speichern</target>
       </trans-unit>
       <trans-unit id="featureUserManager-deleteUserModalTitle" datatype="html">
         <source> Delete User </source>
@@ -3969,7 +3773,7 @@
         <target>Löschen</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-title" datatype="html">
-        <source>Personal Access Tokens</source>
+        <source>Personal access tokens</source>
         <target>Persönliche Zugriffstoken</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-addTokenTitle" datatype="html">
@@ -3980,17 +3784,9 @@
         <source>Search tokens</source>
         <target>Token suchen</target>
       </trans-unit>
-      <trans-unit id="featureTokenManager-loading" datatype="html">
-        <source>Loading tokens...</source>
-        <target>Token werden geladen...</target>
-      </trans-unit>
       <trans-unit id="featureTokenManager-empty" datatype="html">
         <source>No personal access tokens yet</source>
         <target>Noch keine persönlichen Zugriffstoken</target>
-      </trans-unit>
-      <trans-unit id="featureUserManager-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-scopes" datatype="html">
         <source>scopes</source>
@@ -4107,8 +3903,8 @@
         <target>Navigation ein-/ausblenden</target>
       </trans-unit>
       <trans-unit id="featureDocsSearch-searchPlaceholder" datatype="html">
-        <source>Search documentation...</source>
-        <target>Dokumentation durchsuchen...</target>
+        <source>Search documentation</source>
+        <target>Dokumentation durchsuchen</target>
       </trans-unit>
       <trans-unit id="featureDocsSearch-viewAllResults" datatype="html">
         <source> View all results </source>
@@ -4154,6 +3950,10 @@
         <source>Search Documentation</source>
         <target>Dokumentation durchsuchen</target>
       </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackLoadweaver" datatype="html">
+        <source>Official Loadweaver documentation: install, deploy, secure, and operate resilient multi-site clusters, the encrypted network between sites, storage, ingress, policies, and the cluster console.</source>
+        <target>Offizielle Loadweaver-Dokumentation: Installation, Deployment, Sicherheit und Betrieb ausfallsicherer Multi-Site-Cluster, des verschlüsselten Netzwerks zwischen Standorten, von Storage, Ingress, Policies und der Cluster-Konsole.</target>
+      </trans-unit>
       <trans-unit id="featureDocsPage-metaDescriptionFallbackDecabill" datatype="html">
         <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
         <target>Offizielle Decabill-Dokumentation: Installation, Deployment, Sicherheit und Betrieb von Billing-APIs, Abonnements, Zahlungsanbietern und der Billing-Konsole für Plattformteams.</target>
@@ -4161,6 +3961,10 @@
       <trans-unit id="featureDocsPage-metaDescriptionFallback" datatype="html">
         <source>Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.</source>
         <target>Offizielle Agenstra-Dokumentation: Installation, Deployment, Sicherheit und Betrieb von Agent-Hosts, Workspaces, Tickets, APIs und Integrationen für Plattformteams.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsLoadweaver" datatype="html">
+        <source>Loadweaver, cluster, multi-site, WireGuard, BGP, network policies, replicated storage, ingress failover, self-hosted, control plane</source>
+        <target>Loadweaver, Cluster, Multi-Site, WireGuard, BGP, Netzwerk-Policies, replizierter Storage, Ingress-Failover, Self-Hosted, Control Plane</target>
       </trans-unit>
       <trans-unit id="featureDocsPage-metaKeywordsDecabill" datatype="html">
         <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
@@ -4170,6 +3974,10 @@
         <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
         <target>Agenstra, KI-Agents, Agent-Verwaltung, verteilte Systeme, KI-Agent-Infrastruktur, Agent-Plattform, KI-Agent-Konsole, Container-Verwaltung, WebSocket-Agents, Docker-Agents</target>
       </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionLoadweaver" datatype="html">
+        <source>Search Loadweaver docs for setup guides, API references, security hardening, network and policy configuration, deployment patterns, and troubleshooting.</source>
+        <target>Durchsuchen Sie die Loadweaver-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Netzwerk- und Policy-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
+      </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaDescriptionDecabill" datatype="html">
         <source>Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.</source>
         <target>Durchsuchen Sie die Decabill-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Billing-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
@@ -4177,6 +3985,62 @@
       <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
         <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
         <target>Durchsuchen Sie die Agenstra-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Agent-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-role" datatype="html">
+        <source>Founder and CEO</source>
+        <target>Gründer und CEO</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-photoAlt" datatype="html">
+        <source>Portrait of Marcel Menk</source>
+        <target>Porträt von Marcel Menk</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-linkedInLabel" datatype="html">
+        <source>Marcel Menk on LinkedIn</source>
+        <target>Marcel Menk auf LinkedIn</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageForepath" datatype="html">
+        <source>We work with AI every day, because it makes us faster and our results better.</source>
+        <target>Wir arbeiten jeden Tag mit KI, weil sie uns schneller und unsere Ergebnisse besser macht.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageAgenstra" datatype="html">
+        <source>We build Agenstra with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Agenstra jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageDecabill" datatype="html">
+        <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Decabill jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageLoadweaver" datatype="html">
+        <source>We build Loadweaver with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Loadweaver jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaRole" datatype="html">
+        <source>Virtual Customer Success</source>
+        <target>Virtuelle Support-Agentin</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaPhotoAlt" datatype="html">
+        <source>AI-generated portrait of Maya Keller, our virtual team member</source>
+        <target>KI-generiertes Porträt von Maya Keller, unserem virtuellen Teammitglied</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageForepath" datatype="html">
+        <source>I am part of that, but your message still reaches real people on our team, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen in unserem Team, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageAgenstra" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Agenstra, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Agenstra kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Decabill kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageLoadweaver" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Loadweaver, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Loadweaver kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
+        <source>AI</source>
+        <target>KI</target>
       </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>
@@ -4259,11 +4123,11 @@
         <target>Wird entfernt</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeAddonConfigLocked" datatype="html">
-        <source> The configuration of this addon is locked and cannot be changed here. </source>
+        <source> The configuration of this add-on is locked and cannot be changed here. </source>
         <target> Die Konfiguration dieses Add-ons ist gesperrt und kann hier nicht geändert werden. </target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeNoAddons" datatype="html">
-        <source> No addons are available for this plan. </source>
+        <source> No add-ons are available for this plan. </source>
         <target> Für diesen Plan sind keine Add-ons verfügbar. </target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeSummaryTitle" datatype="html">
@@ -4271,7 +4135,7 @@
         <target>Ihre Änderungen</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeNoChanges" datatype="html">
-        <source> You have not selected any changes yet. Go back and pick a different server type or adjust your addons. </source>
+        <source> You have not selected any changes yet. Go back and pick a different server type or adjust your add-ons. </source>
         <target> Sie haben noch keine Änderungen ausgewählt. Gehen Sie zurück und wählen Sie einen anderen Servertyp oder passen Sie Ihre Add-ons an. </target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeSummaryServerType" datatype="html">
@@ -4335,7 +4199,7 @@
         <target>Servertyp</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeStepAddons" datatype="html">
-        <source>Addons</source>
+        <source>Add-ons</source>
         <target>Add-ons</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeStepSummary" datatype="html">
@@ -4359,11 +4223,11 @@
         <target>Der ausgewählte Servertyp kostet genauso viel wie Ihr aktueller. Wählen Sie einen größeren oder kleineren Servertyp.</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeErrorAddonInvalid" datatype="html">
-        <source>One of the selected addons is not available for this subscription.</source>
+        <source>One of the selected add-ons is not available for this subscription.</source>
         <target>Eines der ausgewählten Add-ons ist für dieses Abonnement nicht verfügbar.</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeErrorAddonConfigImmutable" datatype="html">
-        <source>The configuration of an addon that is already active cannot be changed here.</source>
+        <source>The configuration of an add-on that is already active cannot be changed here.</source>
         <target>Die Konfiguration eines bereits aktiven Add-ons kann hier nicht geändert werden.</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeErrorFailed" datatype="html">
@@ -4490,14 +4354,6 @@
         <source>No promotions yet</source>
         <target>Noch keine Aktionen</target>
       </trans-unit>
-      <trans-unit id="featureAdminPromotions-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
-      <trans-unit id="featureAdminPromotions-redemptionCount" datatype="html">
-        <source><x id="INTERPOLATION" equiv-text="{{ promotion.redemptionCount }}"/> redemptions</source>
-        <target><x id="INTERPOLATION" equiv-text="{{ promotion.redemptionCount }}"/> Einlösungen</target>
-      </trans-unit>
       <trans-unit id="featureAdminPromotions-edit" datatype="html">
         <source>Edit</source>
         <target>Bearbeiten</target>
@@ -4615,8 +4471,8 @@
         <target>Kostenlose Abrechnungszeiträume</target>
       </trans-unit>
       <trans-unit id="featureAdminPromotions-advantageAmountNet" datatype="html">
-        <source><x id="PH" equiv-text="Number(config[&apos;amountNet&apos;] ?? 0)"/> net credit</source>
-        <target><x id="PH" equiv-text="Number(config[&apos;amountNet&apos;] ?? 0)"/> Netto-Gutschrift</target>
+        <source><x id="PH" equiv-text="amount"/> net credit</source>
+        <target><x id="PH" equiv-text="amount"/> Netto-Gutschrift</target>
       </trans-unit>
       <trans-unit id="featureAdminPromotions-advantageFreeDays" datatype="html">
         <source><x id="PH" equiv-text="Number(config[&apos;days&apos;] ?? 0)"/> free days</source>
@@ -4798,10 +4654,6 @@
         <source> Search invoice history </source>
         <target>Rechnungsverlauf suchen</target>
       </trans-unit>
-      <trans-unit id="featureInvoices-loadingHistory" datatype="html">
-        <source>Loading invoice history...</source>
-        <target>Rechnungsverlauf wird geladen...</target>
-      </trans-unit>
       <trans-unit id="featureInvoices-noHistory" datatype="html">
         <source>No invoice history yet</source>
         <target>Noch kein Rechnungsverlauf</target>
@@ -4825,14 +4677,6 @@
       <trans-unit id="featureProjectBoard-title" datatype="html">
         <source>Board</source>
         <target>Board</target>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-globalSearchOpenTitle" datatype="html">
-        <source>Search tickets (Ctrl+F)</source>
-        <target>Tickets suchen (Strg+F)</target>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-globalSearchOpenAria" datatype="html">
-        <source>Search tickets</source>
-        <target>Tickets suchen</target>
       </trans-unit>
       <trans-unit id="featureProjectBoard-add" datatype="html">
         <source>Add</source>
@@ -4942,10 +4786,6 @@
         <source>No subtasks yet.</source>
         <target>Noch keine Teilaufgaben.</target>
       </trans-unit>
-      <trans-unit id="featureProjectBoard-openSubtaskTitle" datatype="html">
-        <source>Open subtask</source>
-        <target>Teilaufgabe öffnen</target>
-      </trans-unit>
       <trans-unit id="featureProjectBoard-timeEntriesHeading" datatype="html">
         <source>Time entries</source>
         <target>Zeiteinträge</target>
@@ -5022,28 +4862,8 @@
         <source> Create </source>
         <target>Erstellen</target>
       </trans-unit>
-      <trans-unit id="featureProjectBoard-globalSearchTitle" datatype="html">
-        <source> Search tickets </source>
-        <target>Tickets suchen</target>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-globalSearchInputLabel" datatype="html">
-        <source>Search tickets</source>
-        <target>Tickets suchen</target>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-globalSearchPlaceholder" datatype="html">
-        <source>Search by title, description, or id</source>
-        <target>Nach Titel, Beschreibung oder ID suchen</target>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-globalSearchHint" datatype="html">
-        <source> Type to search all tickets in this project, including done and closed. </source>
-        <target>Durchsucht alle Tickets in diesem Projekt, auch erledigte und geschlossene.</target>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-globalSearchNoResults" datatype="html">
-        <source>No matching tickets</source>
-        <target>Keine passenden Tickets</target>
-      </trans-unit>
       <trans-unit id="featureProjectBoard-createTimeEntryTitle" datatype="html">
-        <source>New time entry</source>
+        <source>Create time entry</source>
         <target>Neuer Zeiteintrag</target>
       </trans-unit>
       <trans-unit id="featureProjectBoard-timeStartLabel" datatype="html">
@@ -5155,7 +4975,7 @@
         <target>Löschen</target>
       </trans-unit>
       <trans-unit id="featureProjectDetail-createTimeTitle" datatype="html">
-        <source>New time entry</source>
+        <source>Create time entry</source>
         <target>Neuer Zeiteintrag</target>
       </trans-unit>
       <trans-unit id="featureProjectDetail-startLabel" datatype="html">
@@ -5295,7 +5115,7 @@
         <target>Löschen</target>
       </trans-unit>
       <trans-unit id="featureProjectMilestones-createTitle" datatype="html">
-        <source>New milestone</source>
+        <source>Create milestone</source>
         <target>Neuer Meilenstein</target>
       </trans-unit>
       <trans-unit id="featureProjectMilestones-nameLabel" datatype="html">
@@ -5333,14 +5153,6 @@
       <trans-unit id="featureProjectMilestones-deleteConfirm" datatype="html">
         <source> Delete milestone &quot;<x id="INTERPOLATION" equiv-text="{{ milestone.name }}"/>&quot;? This cannot be undone. </source>
         <target>Meilenstein "<x id="INTERPOLATION" equiv-text="{{ milestone.name }}"/>" löschen? Diese Aktion kann nicht rückgängig gemacht werden.</target>
-      </trans-unit>
-      <trans-unit id="featureProjectMilestones-openTicketCount" datatype="html">
-        <source><x id="PH" equiv-text="milestone.openTicketCount"/> open</source>
-        <target><x id="PH" equiv-text="milestone.openTicketCount"/> offen</target>
-      </trans-unit>
-      <trans-unit id="featureProjectMilestones-doneTicketCount" datatype="html">
-        <source><x id="PH" equiv-text="milestone.doneTicketCount"/> done</source>
-        <target><x id="PH" equiv-text="milestone.doneTicketCount"/> erledigt</target>
       </trans-unit>
       <trans-unit id="featureProjectMilestones-progress" datatype="html">
         <source><x id="PH" equiv-text="milestone.progressPercent"/>%</source>
@@ -5426,10 +5238,6 @@
         <source>No projects yet</source>
         <target>Noch keine Projekte</target>
       </trans-unit>
-      <trans-unit id="featureProjects-noMatching" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featurePromotions-duringFreeDaysUntil" datatype="html">
         <source>Until <x id="date" equiv-text="benefitEndsLabel"/></source>
         <target>Bis <x id="date" equiv-text="benefitEndsLabel"/></target>
@@ -5514,29 +5322,13 @@
         <source> Period pricing is not available for this subscription. </source>
         <target>Für dieses Abonnement ist kein Zeitraumpreis verfügbar.</target>
       </trans-unit>
-      <trans-unit id="featurePromotions-activeTitle" datatype="html">
-        <source>Active promotions</source>
-        <target>Aktive Aktionen</target>
-      </trans-unit>
       <trans-unit id="featurePromotions-searchActive" datatype="html">
         <source> Search active promotions </source>
         <target>Aktive Aktionen suchen</target>
       </trans-unit>
-      <trans-unit id="featurePromotions-loading" datatype="html">
-        <source>Loading...</source>
-        <target>Wird geladen...</target>
-      </trans-unit>
-      <trans-unit id="featurePromotions-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featurePromotions-noActive" datatype="html">
         <source>No active promotions yet</source>
         <target>Noch keine aktiven Aktionen</target>
-      </trans-unit>
-      <trans-unit id="featurePromotions-historyTitle" datatype="html">
-        <source>Redemption history</source>
-        <target>Einlösungsverlauf</target>
       </trans-unit>
       <trans-unit id="featurePromotions-searchHistory" datatype="html">
         <source> Search redemption history </source>
@@ -5579,7 +5371,7 @@
         <target>Basispreis-, Margen- und MwSt.-Änderungen auf bestehende Abonnements anwenden</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-migrateExistingSubscriptionsHelp" datatype="html">
-        <source> When checked, changing base price, margins, or VAT rate queues a job that migrates eligible subscriptions (differential billing, statutory withdrawal restart, and customer email). Leave unchecked to update the catalog only for new orders. </source>
+        <source>When checked, changing base price, margins, or VAT rate queues a job that migrates eligible subscriptions (differential billing, statutory withdrawal restart, and customer email). Leave unchecked to update the catalog only for new orders.</source>
         <target>Wenn aktiviert, reiht eine Änderung von Basispreis, Margen oder MwSt.-Satz einen Job ein, der berechtigte Abonnements migriert (Differenzabrechnung, Neustart des gesetzlichen Widerrufsrechts und Kunden-E-Mail). Deaktiviert lassen, um nur den Katalog für neue Bestellungen zu aktualisieren.</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-disallowStatutoryWithdrawal" datatype="html">
@@ -5723,8 +5515,8 @@
         <target>Persönlichen Zugriffstoken bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-update" datatype="html">
-        <source>Update</source>
-        <target>Aktualisieren</target>
+        <source>Save changes</source>
+        <target>Änderungen speichern</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us </source>
@@ -5866,25 +5658,9 @@
         <source>Search webhooks</source>
         <target>Webhooks suchen</target>
       </trans-unit>
-      <trans-unit id="featureNotifications-loading" datatype="html">
-        <source>Loading webhooks...</source>
-        <target>Webhooks werden geladen...</target>
-      </trans-unit>
-      <trans-unit id="featureNotifications-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featureNotifications-empty" datatype="html">
         <source>No webhooks yet</source>
         <target>Noch keine Webhooks</target>
-      </trans-unit>
-      <trans-unit id="featureNotifications-events" datatype="html">
-        <source>events</source>
-        <target>Ereignisse</target>
-      </trans-unit>
-      <trans-unit id="featureNotifications-failures" datatype="html">
-        <source>failures</source>
-        <target>Fehler</target>
       </trans-unit>
       <trans-unit id="featureNotifications-viewDeliveriesTitle" datatype="html">
         <source>View deliveries</source>
@@ -5897,10 +5673,6 @@
       <trans-unit id="featureNotifications-editWebhookTitle" datatype="html">
         <source>Edit webhook</source>
         <target>Webhook bearbeiten</target>
-      </trans-unit>
-      <trans-unit id="featureNotifications-deleteWebhookTitle" datatype="html">
-        <source>Delete webhook</source>
-        <target>Webhook löschen</target>
       </trans-unit>
       <trans-unit id="featureNotifications-createWebhookTitle" datatype="html">
         <source> Create webhook </source>
@@ -5927,8 +5699,8 @@
         <target>Webhook bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureNotifications-update" datatype="html">
-        <source>Update</source>
-        <target>Aktualisieren</target>
+        <source>Save changes</source>
+        <target>Änderungen speichern</target>
       </trans-unit>
       <trans-unit id="featureNotifications-nameLabel" datatype="html">
         <source>Name</source>
@@ -6020,10 +5792,6 @@
         <source> Recent deliveries </source>
         <target>Letzte Zustellungen</target>
       </trans-unit>
-      <trans-unit id="featureNotifications-loadingDeliveries" datatype="html">
-        <source>Loading deliveries...</source>
-        <target>Zustellungen werden geladen...</target>
-      </trans-unit>
       <trans-unit id="featureNotifications-noDeliveries" datatype="html">
         <source>No deliveries yet</source>
         <target>Noch keine Zustellungen</target>
@@ -6044,10 +5812,6 @@
         <source>Attempt</source>
         <target>Versuch</target>
       </trans-unit>
-      <trans-unit id="featureNotifications-deliveryDetails" datatype="html">
-        <source>Details</source>
-        <target>Details</target>
-      </trans-unit>
       <trans-unit id="featureNotifications-deliverySuccess" datatype="html">
         <source>Success</source>
         <target>Erfolgreich</target>
@@ -6067,14 +5831,6 @@
       <trans-unit id="featureNotifications-deliveryResponse" datatype="html">
         <source> Response </source>
         <target>Antwort</target>
-      </trans-unit>
-      <trans-unit id="featureNotifications-moreDeliveries" datatype="html">
-        <source> More deliveries exist than shown. </source>
-        <target>Es gibt mehr Zustellungen als angezeigt.</target>
-      </trans-unit>
-      <trans-unit id="featureNotifications-totalDeliveries" datatype="html">
-        <source>total deliveries</source>
-        <target>Zustellungen insgesamt</target>
       </trans-unit>
       <trans-unit id="featureNotifications-allClients" datatype="html">
         <source>All clients</source>
@@ -6147,22 +5903,6 @@
       <trans-unit id="featureUpdates-instancesTitle" datatype="html">
         <source> Service instances </source>
         <target>Service-Instanzen</target>
-      </trans-unit>
-      <trans-unit id="featureUpdates-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
-      <trans-unit id="featureUpdates-mobilePanelInstances" datatype="html">
-        <source>Instances</source>
-        <target>Instanzen</target>
-      </trans-unit>
-      <trans-unit id="featureUpdates-mobilePanelProduct" datatype="html">
-        <source>Product</source>
-        <target>Produkt</target>
-      </trans-unit>
-      <trans-unit id="featureUpdates-mobilePanelShared" datatype="html">
-        <source>Shared</source>
-        <target>Geteilt</target>
       </trans-unit>
       <trans-unit id="featureUpdates-searchInstancesPlaceholder" datatype="html">
         <source>Search instances</source>
@@ -6288,16 +6028,12 @@
         <source>Breaking changes</source>
         <target>Breaking Changes</target>
       </trans-unit>
-      <trans-unit id="featureAddons-metersBadge" datatype="html">
-        <source>meters</source>
-        <target>Zähler</target>
-      </trans-unit>
       <trans-unit id="featureAddons-meters" datatype="html">
         <source>Usage meters</source>
         <target>Nutzungszähler</target>
       </trans-unit>
       <trans-unit id="featureAddons-metersHelp" datatype="html">
-        <source> Attach usage meters to this addon with optional unit price and included usage overrides. </source>
+        <source> Attach usage meters to this add-on with optional unit price and included usage overrides. </source>
         <target> Hängen Sie Nutzungszähler an dieses Add-on an, optional mit Stückpreis- und enthaltene-Nutzung-Overrides. </target>
       </trans-unit>
       <trans-unit id="featureAddons-metersLoading" datatype="html">
@@ -6325,7 +6061,7 @@
         <target>Erforderlich</target>
       </trans-unit>
       <trans-unit id="featureAddons-noMetersAttached" datatype="html">
-        <source> No meters attached to this addon yet. </source>
+        <source> No meters attached to this add-on yet. </source>
         <target> Noch keine Zähler an dieses Add-on angehängt. </target>
       </trans-unit>
       <trans-unit id="featureAddons-attachMeter" datatype="html">
@@ -6353,16 +6089,12 @@
         <target> Keine aktiven Zähler im Katalog. Legen Sie zuerst Zähler unter Administration > Nutzungszähler an. </target>
       </trans-unit>
       <trans-unit id="featureAddons-allMetersAttached" datatype="html">
-        <source> All active catalog meters are already attached to this addon. </source>
+        <source> All active catalog meters are already attached to this add-on. </source>
         <target> Alle aktiven Katalogzähler sind bereits an dieses Add-on angehängt. </target>
       </trans-unit>
       <trans-unit id="featureAddons-metersCatalogLoading" datatype="html">
         <source> Loading meter catalog... </source>
         <target>Zählerkatalog wird geladen...</target>
-      </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-hasMeters" datatype="html">
-        <source>Has usage meters</source>
-        <target>Hat Nutzungszähler</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-services" datatype="html">
         <source>Services</source>
@@ -6379,14 +6111,6 @@
       <trans-unit id="featureAdminSubscriptions-meterBillableValue" datatype="html">
         <source><x id="PH" equiv-text="summary.billableValue"/><x id="value" equiv-text="unit"/> billable</source>
         <target><x id="PH" equiv-text="summary.billableValue"/><x id="value" equiv-text="unit"/> abrechenbar</target>
-      </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-openServiceDetails" datatype="html">
-        <source>Open details</source>
-        <target>Details öffnen</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-manageMetersTitle" datatype="html">
         <source>Manage usage meters</source>
@@ -6457,15 +6181,15 @@
         <target>Tarif</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-attachmentAddon" datatype="html">
-        <source>Addon</source>
+        <source>Add-on</source>
         <target>Add-on</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-entryAddonMeter" datatype="html">
-        <source>Addon meter</source>
+        <source>Add-on meter</source>
         <target>Add-on-Zähler</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-selectAddonMeter" datatype="html">
-        <source>Select addon meter</source>
+        <source>Select add-on meter</source>
         <target>Add-on-Zähler auswählen</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-entryPeriodStart" datatype="html">
@@ -6536,21 +6260,9 @@
         <source>Search meters</source>
         <target>Zähler suchen</target>
       </trans-unit>
-      <trans-unit id="featureMeters-loading" datatype="html">
-        <source>Loading...</source>
-        <target>Laden...</target>
-      </trans-unit>
-      <trans-unit id="featureMeters-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
-      </trans-unit>
       <trans-unit id="featureMeters-empty" datatype="html">
         <source>No meters yet</source>
         <target>Noch keine Zähler</target>
-      </trans-unit>
-      <trans-unit id="featureMeters-actionsAria" datatype="html">
-        <source>Meter actions</source>
-        <target>Zähleraktionen</target>
       </trans-unit>
       <trans-unit id="featureMeters-edit" datatype="html">
         <source>Edit meter</source>
@@ -6573,8 +6285,8 @@
         <target>Zähler bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureMeters-save" datatype="html">
-        <source>Save</source>
-        <target>Speichern</target>
+        <source>Save changes</source>
+        <target>Änderungen speichern</target>
       </trans-unit>
       <trans-unit id="featureMeters-key" datatype="html">
         <source>Key</source>
@@ -6647,10 +6359,6 @@
       <trans-unit id="featureMeters-aggregatorSumPositiveDeltas" datatype="html">
         <source>Sum of positive deltas</source>
         <target>Summe positiver Deltas</target>
-      </trans-unit>
-      <trans-unit id="featureServicePlans-metersBadge" datatype="html">
-        <source>meters</source>
-        <target>Zähler</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-noneType" datatype="html">
         <source>None (no deployment)</source>
@@ -6769,12 +6477,12 @@
         <target>Zähler auswählen</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-attachMeterPrice" datatype="html">
-        <source>Override price (optional)</source>
-        <target>Override-Preis (optional)</target>
+        <source>Price override</source>
+        <target>Preis überschreiben</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-attachMeterIncludedUsage" datatype="html">
-        <source>Override included usage (optional)</source>
-        <target>Override für enthaltene Nutzung (optional)</target>
+        <source>Included usage override</source>
+        <target>Inklusivnutzung überschreiben</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-attachMeterAction" datatype="html">
         <source>Attach meter</source>
@@ -6803,10 +6511,6 @@
       <trans-unit id="featureSubscriptions-meterBillableValue" datatype="html">
         <source><x id="PH" equiv-text="meter.billableValue"/><x id="value" equiv-text="unit"/> billable</source>
         <target><x id="PH" equiv-text="meter.billableValue"/><x id="value" equiv-text="unit"/> abrechenbar</target>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-openServiceDetails" datatype="html">
-        <source>Open details</source>
-        <target>Details öffnen</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-planMeters" datatype="html">
         <source> Plan usage meters </source>
@@ -6905,7 +6609,7 @@
         <target>Zwei-Faktor-Authentifizierung</target>
       </trans-unit>
       <trans-unit id="featureAuth-securityPage" datatype="html">
-        <source>Security Settings</source>
+        <source>Security settings</source>
         <target>Sicherheitseinstellungen</target>
       </trans-unit>
       <trans-unit id="featureContainer-customerNumberAria" datatype="html">
@@ -6995,10 +6699,6 @@
       <trans-unit id="featureSecuritySettings-authNotAvailable" datatype="html">
         <source> Two-factor authentication settings are only available for users authentication. </source>
         <target> Zwei-Faktor-Authentifizierungseinstellungen sind nur für die Benutzer-Authentifizierung verfügbar. </target>
-      </trans-unit>
-      <trans-unit id="featureTokenManager-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureSecuritySettings-confirmDisableTotp" datatype="html">
         <source> Disable authenticator </source>
@@ -7113,7 +6813,7 @@
         <target> Authenticator einrichten </target>
       </trans-unit>
       <trans-unit id="featureSecuritySettings-title" datatype="html">
-        <source>Security Settings</source>
+        <source>Security settings</source>
         <target>Sicherheitseinstellungen</target>
       </trans-unit>
       <trans-unit id="featureSecuritySettings-totpConfirmLabel" datatype="html">
@@ -7153,8 +6853,8 @@
         <target>Erlaubte Anbieter</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-allowedProvidersHelp" datatype="html">
-        <source> Hold Ctrl/Cmd to select. First selected is the default provider at checkout. </source>
-        <target> Mit Strg/Cmd auswählen. Der zuerst ausgewählte ist der Standardanbieter beim Checkout. </target>
+        <source>The first selected provider is the default at checkout.</source>
+        <target>Der erste ausgewählte Anbieter ist der Standard beim Checkout.</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-geographyByProviderHelp" datatype="html">
         <source> Choose a default location or region for each provider. </source>
@@ -7181,8 +6881,8 @@
         <target> Standardwerte für <x id="INTERPOLATION" equiv-text="{{ group.label }}"/> </target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-providersMultiHelp" datatype="html">
-        <source> Hold Ctrl/Cmd to select multiple compatible providers. First selected is primary. Choose None for no cloud provider. </source>
-        <target> Mit Strg/Cmd mehrere kompatible Anbieter auswählen. Der zuerst ausgewählte ist primär. Wählen Sie „Keine“ für keinen Cloud-Anbieter. </target>
+        <source> Select compatible providers; the first one is primary. Choose None for no cloud provider. </source>
+        <target>Kompatible Anbieter auswählen; der erste ist primär. „Keiner“ für keinen Cloud-Anbieter wählen.</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-providersPrimaryPlusCount" datatype="html">
         <source><x id="primary" equiv-text="primaryLabel"/> (+<x id="extraCount" equiv-text="extraCount"/>)</source>
@@ -7278,37 +6978,17 @@
         <source>History</source>
         <target>Verlauf</target>
       </trans-unit>
-      <trans-unit id="featureOffers-pendingList" datatype="html">
-        <source>Pending offers</source>
-        <target>Ausstehende Angebote</target>
-      </trans-unit>
       <trans-unit id="featureOffers-searchPending" datatype="html">
         <source>Search pending offers</source>
         <target>Ausstehende Angebote suchen</target>
-      </trans-unit>
-      <trans-unit id="featureOffers-loadingPending" datatype="html">
-        <source>Loading pending offers...</source>
-        <target>Ausstehende Angebote werden geladen...</target>
-      </trans-unit>
-      <trans-unit id="featureOffers-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureOffers-noPending" datatype="html">
         <source>No pending offers yet</source>
         <target>Noch keine ausstehenden Angebote</target>
       </trans-unit>
-      <trans-unit id="featureOffers-historyList" datatype="html">
-        <source>Offer history</source>
-        <target>Angebotsverlauf</target>
-      </trans-unit>
       <trans-unit id="featureOffers-searchHistory" datatype="html">
         <source>Search offer history</source>
         <target>Angebotsverlauf suchen</target>
-      </trans-unit>
-      <trans-unit id="featureOffers-loadingHistory" datatype="html">
-        <source>Loading offer history...</source>
-        <target>Angebotsverlauf wird geladen...</target>
       </trans-unit>
       <trans-unit id="featureOffers-noHistory" datatype="html">
         <source>No offer history yet</source>
@@ -7426,10 +7106,6 @@
         <source>Create offer</source>
         <target>Angebot erstellen</target>
       </trans-unit>
-      <trans-unit id="featureAdminOffers-mobileOverview" datatype="html">
-        <source>Overview</source>
-        <target>Übersicht</target>
-      </trans-unit>
       <trans-unit id="featureAdminOffers-mobileOffers" datatype="html">
         <source>Offers</source>
         <target>Angebote</target>
@@ -7453,10 +7129,6 @@
       <trans-unit id="featureAdminOffers-statisticsTitle" datatype="html">
         <source>Statistics</source>
         <target>Statistik</target>
-      </trans-unit>
-      <trans-unit id="featureAdminOffers-listTitle" datatype="html">
-        <source>Offers</source>
-        <target>Angebote</target>
       </trans-unit>
       <trans-unit id="featureAdminOffers-filters" datatype="html">
         <source>Filters</source>
@@ -7486,14 +7158,6 @@
         <source>Customer</source>
         <target>Kunde</target>
       </trans-unit>
-      <trans-unit id="featureAdminOffers-applyFilters" datatype="html">
-        <source>Apply</source>
-        <target>Anwenden</target>
-      </trans-unit>
-      <trans-unit id="featureAdminOffers-resetFilters" datatype="html">
-        <source>Reset</source>
-        <target>Zurücksetzen</target>
-      </trans-unit>
       <trans-unit id="featureAdminOffers-noStatistics" datatype="html">
         <source>No statistics for the selected period.</source>
         <target>Keine Statistik für den gewählten Zeitraum.</target>
@@ -7501,10 +7165,6 @@
       <trans-unit id="featureAdminOffers-searchPlaceholder" datatype="html">
         <source>Search offers</source>
         <target>Angebote suchen</target>
-      </trans-unit>
-      <trans-unit id="featureAdminOffers-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureAdminOffers-empty" datatype="html">
         <source>No offers yet</source>
@@ -7574,10 +7234,6 @@
         <source>No audit entries.</source>
         <target>Keine Audit-Einträge.</target>
       </trans-unit>
-      <trans-unit id="featureAdminOffers-loadMoreAudit" datatype="html">
-        <source>Load more</source>
-        <target>Mehr laden</target>
-      </trans-unit>
       <trans-unit id="featureAdminOffers-chartArchived" datatype="html">
         <source>Archived</source>
         <target>Archiviert</target>
@@ -7589,10 +7245,6 @@
       <trans-unit id="featureAdminOffers-chartDeclined" datatype="html">
         <source>Declined</source>
         <target>Abgelehnt</target>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-noSearchResults" datatype="html">
-        <source>No search results</source>
-        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureAdminOffers-chartTitle" datatype="html">
         <source>Offer activity over time</source>
@@ -7681,6 +7333,1546 @@
       <trans-unit id="featureProjectBoard-subtaskProgressAria" datatype="html">
         <source>Subtask progress</source>
         <target>Fortschritt bei Unteraufgaben</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-channel" datatype="html">
+        <source>Channel</source>
+        <target>Kanal</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-channelBeta" datatype="html">
+        <source>Beta</source>
+        <target>Beta</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-channelStable" datatype="html">
+        <source>Stable</source>
+        <target>Stabil</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-confirmLoadweaverTeardown" datatype="html">
+        <source> Delete Loadweaver cluster data: required when this subscription runs a Loadweaver cluster. Its server, volumes, backups and secrets are deleted. </source>
+        <target> Loadweaver-Clusterdaten löschen: erforderlich, wenn dieses Abonnement einen Loadweaver-Cluster betreibt. Server, Volumes, Backups und Secrets werden gelöscht. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-addNodesIntro" datatype="html">
+        <source> This subscription includes the first node with control plane and console. Further nodes run on your own servers or provider accounts: you pay the provider directly, they are not provisioned or billed here. </source>
+        <target> Dieses Abonnement umfasst den ersten Node mit Control Plane und Konsole. Weitere Nodes laufen auf Ihren eigenen Servern oder Provider-Konten: Sie bezahlen den Provider direkt, sie werden hier weder bereitgestellt noch abgerechnet. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-addNodesStep1" datatype="html">
+        <source>Create a join token in the console (Nodes, Add node).</source>
+        <target>Erstellen Sie in der Konsole ein Join-Token (Nodes, Node hinzufügen).</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-addNodesStep2" datatype="html">
+        <source> Run the installer on the new server (Debian 12 / 13, Ubuntu 22.04 / 24.04): </source>
+        <target> Führen Sie den Installer auf dem neuen Server aus (Debian 12 / 13, Ubuntu 22.04 / 24.04): </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-addNodesTitle" datatype="html">
+        <source>Add nodes</source>
+        <target>Nodes hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-api" datatype="html">
+        <source>API</source>
+        <target>API</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-beforeCancelIntro" datatype="html">
+        <source> Cancelling deletes this server, its addresses and DNS records together with all cluster data on it. Nodes in your own provider accounts are not deleted. </source>
+        <target> Eine Kündigung löscht diesen Server, seine Adressen und DNS-Einträge zusammen mit allen Clusterdaten darauf. Nodes in Ihren eigenen Provider-Konten werden nicht gelöscht. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-beforeCancelStep1" datatype="html">
+        <source> Run a final platform backup and copy it to your external target. </source>
+        <target> Führen Sie ein letztes Plattform-Backup aus und kopieren Sie es auf Ihr externes Ziel. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-beforeCancelStep2" datatype="html">
+        <source> Save the recovery kit and the disaster-recovery info file (Backups, Keys and Platform). </source>
+        <target> Sichern Sie das Recovery-Kit und die Disaster-Recovery-Infodatei (Backups, Schlüssel und Plattform). </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-beforeCancelStep3" datatype="html">
+        <source>Drain and remove or keep your own nodes.</source>
+        <target>Leeren und entfernen oder behalten Sie Ihre eigenen Nodes.</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-beforeCancelTitle" datatype="html">
+        <source>Before you cancel</source>
+        <target>Vor der Kündigung</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-checkedAt" datatype="html">
+        <source>Checked</source>
+        <target>Geprüft</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-console" datatype="html">
+        <source>Console</source>
+        <target>Konsole</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-endpointTitle" datatype="html">
+        <source>Endpoint</source>
+        <target>Endpunkt</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-firstAccountHint" datatype="html">
+        <source> The first account registered in the console becomes the cluster administrator; it needs the one-time admin claim token. Loadweaver updates itself through its own rollout (Updates in the console). </source>
+        <target> Das erste in der Konsole registrierte Konto wird Cluster-Administrator; dafür ist das einmalige Admin-Claim-Token nötig. Loadweaver aktualisiert sich über seinen eigenen Rollout (Updates in der Konsole). </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-claimHeading" datatype="html">
+        <source>Claim your cluster</source>
+        <target>Cluster übernehmen</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-claimIntro" datatype="html">
+        <source> Register the first console account now: it becomes the cluster administrator. The registration asks for this one-time admin claim token; without it nobody can register until the first account exists. </source>
+        <target> Registrieren Sie jetzt das erste Konsolen-Konto: Es wird Cluster-Administrator. Die Registrierung fragt nach diesem einmaligen Admin-Claim-Token; ohne es kann sich niemand registrieren, bis das erste Konto existiert. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-claimTokenLabel" datatype="html">
+        <source>Admin claim token</source>
+        <target>Admin-Claim-Token</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-claimKeepSecret" datatype="html">
+        <source> Keep the token secret. It is removed from here once the cluster reports its first account. </source>
+        <target> Halten Sie das Token geheim. Es wird hier entfernt, sobald der Cluster sein erstes Konto meldet. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-claimPendingAdmin" datatype="html">
+        <source> The cluster has no account yet. The customer registers the first account with the admin claim token from this tab. </source>
+        <target> Der Cluster hat noch kein Konto. Der Kunde registriert das erste Konto mit dem Admin-Claim-Token aus diesem Tab. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-graceHint" datatype="html">
+        <source> After the cancellation takes effect the cluster keeps running for <x id="INTERPOLATION" equiv-text="{{ c.teardown.graceDays }}"/> more days (not billed) before the server is deleted. </source>
+        <target> Nach Wirksamwerden der Kündigung läuft der Cluster noch <x id="INTERPOLATION" equiv-text="{{ c.teardown.graceDays }}"/> Tage weiter (nicht abgerechnet), bevor der Server gelöscht wird. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthDegraded" datatype="html">
+        <source>Console unavailable</source>
+        <target>Konsole nicht erreichbar</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthFailed" datatype="html">
+        <source>Provisioning failed</source>
+        <target>Bereitstellung fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthHealthy" datatype="html">
+        <source>Healthy</source>
+        <target>Gesund</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthProvisioning" datatype="html">
+        <source>Provisioning</source>
+        <target>Wird bereitgestellt</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthRemoved" datatype="html">
+        <source>Removed</source>
+        <target>Entfernt</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthStarting" datatype="html">
+        <source>Starting</source>
+        <target>Startet</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-healthUnreachable" datatype="html">
+        <source>Unreachable</source>
+        <target>Nicht erreichbar</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-initialVersion" datatype="html">
+        <source>Provisioned release</source>
+        <target>Bereitgestelltes Release</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-loadError" datatype="html">
+        <source>The cluster status could not be loaded.</source>
+        <target>Der Clusterstatus konnte nicht geladen werden.</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-loading" datatype="html">
+        <source>Loading cluster status...</source>
+        <target>Clusterstatus wird geladen...</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-noEndpoint" datatype="html">
+        <source> The endpoint is available once provisioning has finished. </source>
+        <target> Der Endpunkt ist verfügbar, sobald die Bereitstellung abgeschlossen ist. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-openNodes" datatype="html">
+        <source> Open nodes </source>
+        <target> Nodes öffnen </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-openPlatformBackups" datatype="html">
+        <source> Platform backups </source>
+        <target> Plattform-Backups </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-openRecoveryKit" datatype="html">
+        <source> Recovery kit </source>
+        <target> Recovery-Kit </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-refresh" datatype="html">
+        <source> Refresh </source>
+        <target> Aktualisieren </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-teardownScheduled" datatype="html">
+        <source> This subscription is cancelled. The server and all cluster data are deleted on or after <x id="INTERPOLATION" equiv-text="{{ deletion | date: &apos;medium&apos; }}"/>. Run a final backup to your external target and save the recovery kit before then. </source>
+        <target> Dieses Abonnement ist gekündigt. Der Server und alle Clusterdaten werden am oder nach dem <x id="INTERPOLATION" equiv-text="{{ deletion | date: &apos;medium&apos; }}"/> gelöscht. Führen Sie vorher ein letztes Backup auf Ihr externes Ziel aus und sichern Sie das Recovery-Kit. </target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-teardownScheduledHeading" datatype="html">
+        <source>Cluster deletion scheduled</source>
+        <target>Löschung des Clusters geplant</target>
+      </trans-unit>
+      <trans-unit id="featureLoadweaverCluster-title" datatype="html">
+        <source>Loadweaver cluster</source>
+        <target>Loadweaver-Cluster</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverOrderHeading" datatype="html">
+        <source>Single-node Loadweaver cluster</source>
+        <target>Loadweaver-Cluster mit einem Node</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverOrderInfo" datatype="html">
+        <source> The server becomes a complete Loadweaver cluster with control plane and console. Its secrets are generated on the server; the first account you register in the console becomes the administrator. Further nodes run on your own servers or provider accounts and are not billed here. </source>
+        <target> Der Server wird ein vollständiger Loadweaver-Cluster mit Control Plane und Konsole. Seine Secrets werden auf dem Server erzeugt; das erste Konto, das Sie in der Konsole registrieren, wird Administrator. Weitere Nodes laufen auf Ihren eigenen Servern oder Provider-Konten und werden hier nicht abgerechnet. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownCancel" datatype="html">
+        <source> The cluster keeps running until the end of the period and for a short grace period afterwards (not billed). Then the server with the control plane and console, its addresses and DNS records are deleted, together with every volume, backup and secret stored on it. </source>
+        <target> Der Cluster läuft bis zum Ende des Zeitraums und eine kurze Kulanzfrist darüber hinaus (nicht abgerechnet). Danach werden der Server mit Control Plane und Konsole, seine Adressen und DNS-Einträge gelöscht, zusammen mit allen darauf gespeicherten Volumes, Backups und Secrets. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownCheckbox" datatype="html">
+        <source> I have saved what I need. I understand that the cluster data on this server is deleted and cannot be recovered by the provider. </source>
+        <target> Ich habe gesichert, was ich benötige. Mir ist bewusst, dass die Clusterdaten auf diesem Server gelöscht werden und vom Anbieter nicht wiederhergestellt werden können. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownConfirmCancel" datatype="html">
+        <source>Cancel and delete</source>
+        <target>Kündigen und löschen</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownConfirmWithdraw" datatype="html">
+        <source>Withdraw and delete</source>
+        <target>Widerrufen und löschen</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownHeading" datatype="html">
+        <source>All cluster data on this server will be deleted</source>
+        <target>Alle Clusterdaten auf diesem Server werden gelöscht</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownKeep" datatype="html">
+        <source> Keep the cluster </source>
+        <target> Cluster behalten </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownStep1" datatype="html">
+        <source> Run a final platform backup and copy it to your external target (Backups, Platform). </source>
+        <target> Führen Sie ein letztes Plattform-Backup aus und kopieren Sie es auf Ihr externes Ziel (Backups, Plattform). </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownStep2" datatype="html">
+        <source> Save the recovery kit and the disaster-recovery info file: without them the backups cannot be restored. </source>
+        <target> Sichern Sie das Recovery-Kit und die Disaster-Recovery-Infodatei: ohne sie lassen sich die Backups nicht wiederherstellen. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownStep3" datatype="html">
+        <source> Drain and remove, or keep, the nodes in your own provider accounts. They are not deleted here. </source>
+        <target> Leeren und entfernen oder behalten Sie die Nodes in Ihren eigenen Provider-Konten. Sie werden hier nicht gelöscht. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownStepsIntro" datatype="html">
+        <source> Before you continue, in the Loadweaver console: </source>
+        <target>Bevor Sie fortfahren, in der Loadweaver-Konsole:</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownTitle" datatype="html">
+        <source>Delete the Loadweaver cluster?</source>
+        <target>Loadweaver-Cluster löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadweaverTeardownWithdraw" datatype="html">
+        <source> Withdrawing ends the subscription immediately. The server with the control plane and console, its addresses and DNS records are deleted right away, together with every volume, backup and secret stored on it. </source>
+        <target> Mit dem Widerruf endet das Abonnement sofort. Der Server mit Control Plane und Konsole, seine Adressen und DNS-Einträge werden umgehend gelöscht, zusammen mit allen darauf gespeicherten Volumes, Backups und Secrets. </target>
+      </trans-unit>
+      <trans-unit id="fpcListToolbar-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="fpcListToolbar-apply" datatype="html">
+        <source>Apply</source>
+        <target>Anwenden</target>
+      </trans-unit>
+      <trans-unit id="fpcListToolbar-clearAll" datatype="html">
+        <source>Clear all</source>
+        <target>Alle zurücksetzen</target>
+      </trans-unit>
+      <trans-unit id="fpcListToolbar-activeFilters" datatype="html">
+        <source>Active filters</source>
+        <target>Aktive Filter</target>
+      </trans-unit>
+      <trans-unit id="fpcListToolbar-removeFilter" datatype="html">
+        <source>Remove filter</source>
+        <target>Filter entfernen</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-search" datatype="html">
+        <source>Search</source>
+        <target>Suchen</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-views" datatype="html">
+        <source>Views</source>
+        <target>Ansichten</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-saveView" datatype="html">
+        <source>Save current view…</source>
+        <target>Aktuelle Ansicht speichern…</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-deleteView" datatype="html">
+        <source>Delete view</source>
+        <target>Ansicht löschen</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-noViews" datatype="html">
+        <source>No saved views</source>
+        <target>Keine gespeicherten Ansichten</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-columns" datatype="html">
+        <source>Columns</source>
+        <target>Spalten</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-refresh" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-selectAll" datatype="html">
+        <source>Select all</source>
+        <target>Alle auswählen</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-selectRow" datatype="html">
+        <source>Select row</source>
+        <target>Zeile auswählen</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-selected" datatype="html">
+        <source>{count} selected</source>
+        <target>{count} ausgewählt</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-clearSelection" datatype="html">
+        <source>Clear selection</source>
+        <target>Auswahl aufheben</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-more" datatype="html">
+        <source>More</source>
+        <target>Mehr</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-empty" datatype="html">
+        <source>Nothing to show</source>
+        <target>Nichts anzuzeigen</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-noMatches" datatype="html">
+        <source>No matches</source>
+        <target>Keine Treffer</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-noMatchesHint" datatype="html">
+        <source>Nothing matches the search or filters.</source>
+        <target>Nichts passt zur Suche oder zu den Filtern.</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-rowActions" datatype="html">
+        <source>Row actions</source>
+        <target>Zeilenaktionen</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-sortAscending" datatype="html">
+        <source>Sorted ascending</source>
+        <target>Aufsteigend sortiert</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-sortDescending" datatype="html">
+        <source>Sorted descending</source>
+        <target>Absteigend sortiert</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-changed" datatype="html">
+        <source>Changed in the draft</source>
+        <target>Im Entwurf geändert</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-state" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-pagination" datatype="html">
+        <source>Pagination</source>
+        <target>Seitennavigation</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-previousPage" datatype="html">
+        <source>Previous page</source>
+        <target>Vorherige Seite</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-nextPage" datatype="html">
+        <source>Next page</source>
+        <target>Nächste Seite</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-pageSize" datatype="html">
+        <source>Rows per page</source>
+        <target>Zeilen pro Seite</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-range" datatype="html">
+        <source>{from}–{to} of {total}</source>
+        <target>{from}–{to} von {total}</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-rangeOpen" datatype="html">
+        <source>{from}–{to}</source>
+        <target>{from}–{to}</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-loadingMore" datatype="html">
+        <source>Loading more…</source>
+        <target>Weitere werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-collapseGroup" datatype="html">
+        <source>Collapse group</source>
+        <target>Gruppe einklappen</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-expandGroup" datatype="html">
+        <source>Expand group</source>
+        <target>Gruppe ausklappen</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-previousColumns" datatype="html">
+        <source>Previous columns</source>
+        <target>Vorherige Spalten</target>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-nextColumns" datatype="html">
+        <source>Next columns</source>
+        <target>Weitere Spalten</target>
+      </trans-unit>
+      <trans-unit id="featureDataList-open" datatype="html">
+        <source>Open</source>
+        <target>Öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureDataList-copyId" datatype="html">
+        <source>Copy ID</source>
+        <target>ID kopieren</target>
+      </trans-unit>
+      <trans-unit id="featureDataList-delete" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureDataList-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="featureDataList-bulkSucceeded" datatype="html">
+        <source>{count} done</source>
+        <target>{count} erledigt</target>
+      </trans-unit>
+      <trans-unit id="featureDataList-bulkDenied" datatype="html">
+        <source>{count} not allowed</source>
+        <target>{count} nicht erlaubt</target>
+      </trans-unit>
+      <trans-unit id="featureDataList-bulkFailed" datatype="html">
+        <source>{count} failed</source>
+        <target>{count} fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureProjects-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureProjects-colProject" datatype="html">
+        <source>Project</source>
+        <target>Projekt</target>
+      </trans-unit>
+      <trans-unit id="featureProjects-colHourlyRate" datatype="html">
+        <source>Hourly rate</source>
+        <target>Stundensatz</target>
+      </trans-unit>
+      <trans-unit id="featureProjects-colUnbilledTime" datatype="html">
+        <source>Unbilled time</source>
+        <target>Nicht abgerechnete Zeit</target>
+      </trans-unit>
+      <trans-unit id="featureProjects-colOpenAmount" datatype="html">
+        <source>Open amount</source>
+        <target>Offener Betrag</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-colCustomer" datatype="html">
+        <source>Customer</source>
+        <target>Kunde</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-archiveSelected" datatype="html">
+        <source>Archive</source>
+        <target>Archivieren</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-bulkDeleteTitle" datatype="html">
+        <source>Delete projects?</source>
+        <target>Projekte löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-bulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedProjects().length"/> selected projects will be deleted. Projects with unbilled time are reported and left as they are.</source>
+        <target><x id="count" equiv-text="this.selectedProjects().length"/> ausgewählte Projekte werden gelöscht. Projekte mit nicht abgerechneter Zeit werden gemeldet und bleiben unverändert.</target>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-bulkDeleteTitle" datatype="html">
+        <source>Delete milestones?</source>
+        <target>Meilensteine löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-bulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="this.lockableSelection().length"/> selected milestones will be deleted. This cannot be undone.</source>
+        <target><x id="count" equiv-text="this.lockableSelection().length"/> ausgewählte Meilensteine werden gelöscht. Das kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-colState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-colMilestone" datatype="html">
+        <source>Milestone</source>
+        <target>Meilenstein</target>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-colProgress" datatype="html">
+        <source>Progress</source>
+        <target>Fortschritt</target>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-colOpen" datatype="html">
+        <source>Open</source>
+        <target>Offen</target>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-colDone" datatype="html">
+        <source>Done</source>
+        <target>Erledigt</target>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-stateCompleted" datatype="html">
+        <source>Completed</source>
+        <target>Abgeschlossen</target>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-stateInProgress" datatype="html">
+        <source>In progress</source>
+        <target>In Arbeit</target>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-stateNotStarted" datatype="html">
+        <source>Not started</source>
+        <target>Nicht begonnen</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-timeBulkDeleteTitle" datatype="html">
+        <source>Delete time entries?</source>
+        <target>Zeiteinträge löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-timeBulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="this.deletableTimeSelection().length"/> selected unbilled time entries will be deleted. This cannot be undone.</source>
+        <target><x id="count" equiv-text="this.deletableTimeSelection().length"/> ausgewählte, nicht abgerechnete Zeiteinträge werden gelöscht. Das kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-colBilling" datatype="html">
+        <source>Billing</source>
+        <target>Abrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-colEntry" datatype="html">
+        <source>Entry</source>
+        <target>Eintrag</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-colDate" datatype="html">
+        <source>Date</source>
+        <target>Datum</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-colTime" datatype="html">
+        <source>Time</source>
+        <target>Uhrzeit</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-colDuration" datatype="html">
+        <source>Duration</source>
+        <target>Dauer</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-colTicket" datatype="html">
+        <source>Ticket</source>
+        <target>Ticket</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-colPriority" datatype="html">
+        <source>Priority</source>
+        <target>Priorität</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-colAction" datatype="html">
+        <source>Action</source>
+        <target>Aktion</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-colActor" datatype="html">
+        <source>Actor</source>
+        <target>Ausgeführt von</target>
+      </trans-unit>
+      <trans-unit id="featureContainerManager-colState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureContainerManager-colContainer" datatype="html">
+        <source>Container</source>
+        <target>Container</target>
+      </trans-unit>
+      <trans-unit id="featureContainerManager-colImage" datatype="html">
+        <source>Image</source>
+        <target>Image</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-colState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-colInstance" datatype="html">
+        <source>Instance</source>
+        <target>Instanz</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-colService" datatype="html">
+        <source>Service</source>
+        <target>Dienst</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-colServer" datatype="html">
+        <source>Server</source>
+        <target>Server</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-colHostname" datatype="html">
+        <source>Hostname</source>
+        <target>Hostname</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-colPublicIp" datatype="html">
+        <source>Public IP</source>
+        <target>Öffentliche IP</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-colPrivateIp" datatype="html">
+        <source>Private IP</source>
+        <target>Private IP</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-bulkStopTitle" datatype="html">
+        <source>Stop servers?</source>
+        <target>Server stoppen?</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-bulkStopMessage" datatype="html">
+        <source><x id="count" equiv-text="this.bulkTargets('stop').length"/> selected servers will be stopped. Servers you may not stop are reported and left as they are.</source>
+        <target><x id="count" equiv-text="this.bulkTargets('stop').length"/> ausgewählte Server werden gestoppt. Server, die nicht gestoppt werden dürfen, werden gemeldet und bleiben unverändert.</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-downloadSelected" datatype="html">
+        <source>Download PDFs</source>
+        <target>PDFs herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-colInvoice" datatype="html">
+        <source>Invoice</source>
+        <target>Rechnung</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-colSubscription" datatype="html">
+        <source>Subscription</source>
+        <target>Abonnement</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-colTotal" datatype="html">
+        <source>Total</source>
+        <target>Gesamt</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-colBalance" datatype="html">
+        <source>Balance</source>
+        <target>Offener Betrag</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-colCreated" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-colDue" datatype="html">
+        <source>Due</source>
+        <target>Fällig</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colContract" datatype="html">
+        <source>Subscription</source>
+        <target>Abonnement</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colCustomer" datatype="html">
+        <source>Customer</source>
+        <target>Kunde</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colNumber" datatype="html">
+        <source>Number</source>
+        <target>Nummer</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colPeriod" datatype="html">
+        <source>Period</source>
+        <target>Zeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colNextBilling" datatype="html">
+        <source>Next billing</source>
+        <target>Nächste Abrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colPrice" datatype="html">
+        <source>Price</source>
+        <target>Preis</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colMeter" datatype="html">
+        <source>Meter</source>
+        <target>Zähler</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colValue" datatype="html">
+        <source>Value</source>
+        <target>Wert</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colBilling" datatype="html">
+        <source>Billing</source>
+        <target>Abrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colCharge" datatype="html">
+        <source>Estimated charge</source>
+        <target>Geschätzte Kosten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colProvisioning" datatype="html">
+        <source>Provisioning</source>
+        <target>Bereitstellung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colService" datatype="html">
+        <source>Service</source>
+        <target>Dienst</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-deleteDraftsSelected" datatype="html">
+        <source>Delete drafts</source>
+        <target>Entwürfe löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-colCustomer" datatype="html">
+        <source>Customer</source>
+        <target>Kunde</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-colSupplier" datatype="html">
+        <source>Supplier</source>
+        <target>Lieferant</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-colProcess" datatype="html">
+        <source>Process</source>
+        <target>Vorgang</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-colMessage" datatype="html">
+        <source>Message</source>
+        <target>Meldung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-bulkVoidTitle" datatype="html">
+        <source>Void invoices?</source>
+        <target>Rechnungen stornieren?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-bulkDeleteTitle" datatype="html">
+        <source>Delete drafts?</source>
+        <target>Entwürfe löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-bulkVoidMessage" datatype="html">
+        <source><x id="count" equiv-text="count"/> selected invoices will be voided (a credit note is issued for each). This cannot be undone.</source>
+        <target><x id="count" equiv-text="count"/> ausgewählte Rechnungen werden storniert (für jede wird eine Gutschrift erstellt). Das kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-bulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="count"/> selected drafts will be deleted. This cannot be undone.</source>
+        <target><x id="count" equiv-text="count"/> ausgewählte Entwürfe werden gelöscht. Das kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-searchPlaceholder" datatype="html">
+        <source>Search invoices</source>
+        <target>Rechnungen suchen</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-colSubscription" datatype="html">
+        <source>Subscription</source>
+        <target>Abonnement</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-colOrder" datatype="html">
+        <source>Order</source>
+        <target>Bestellung</target>
+      </trans-unit>
+      <trans-unit id="featureContainerManager-containersLabel" datatype="html">
+        <source>Containers</source>
+        <target>Container</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-backorders" datatype="html">
+        <source>Pending backorders</source>
+        <target>Ausstehende Rückstände</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-searchSubscriptions" datatype="html">
+        <source>Search subscriptions</source>
+        <target>Abonnements suchen</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-searchBackorders" datatype="html">
+        <source>Search backorders</source>
+        <target>Rückstände suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-colName" datatype="html">
+        <source>Add-on</source>
+        <target>Add-on</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-colKey" datatype="html">
+        <source>Key</source>
+        <target>Schlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-colType" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-colPrice" datatype="html">
+        <source>Price</source>
+        <target>Preis</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-colProviders" datatype="html">
+        <source>Providers</source>
+        <target>Anbieter</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-colConfigFields" datatype="html">
+        <source>Config fields</source>
+        <target>Konfigurationsfelder</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-colMeters" datatype="html">
+        <source>Meters</source>
+        <target>Zähler</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-bulkDeleteTitle" datatype="html">
+        <source>Delete add-ons?</source>
+        <target>Add-ons löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-bulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedAddons().length"/> selected add-ons will be deleted. Add-ons that are still booked are reported and left as they are.</source>
+        <target><x id="count" equiv-text="this.selectedAddons().length"/> ausgewählte Add-ons werden gelöscht. Noch gebuchte Add-ons werden gemeldet und bleiben unverändert.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-colCreated" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-bulkDeleteDrafts" datatype="html">
+        <source>Delete drafts</source>
+        <target>Entwürfe löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-bulkRevokeTitle" datatype="html">
+        <source>Revoke offers?</source>
+        <target>Angebote widerrufen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-bulkDeleteTitle" datatype="html">
+        <source>Delete draft offers?</source>
+        <target>Angebotsentwürfe löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-bulkRevokeMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedPendingResponse().length"/> offers awaiting a response will be revoked. Customers can no longer accept them.</source>
+        <target><x id="count" equiv-text="this.selectedPendingResponse().length"/> Angebote, die auf eine Antwort warten, werden widerrufen. Kunden können sie dann nicht mehr annehmen.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-bulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedDrafts().length"/> draft offers will be deleted. This action cannot be undone.</source>
+        <target><x id="count" equiv-text="this.selectedDrafts().length"/> Angebotsentwürfe werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminPromotions-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAdminPromotions-colPromotion" datatype="html">
+        <source>Promotion</source>
+        <target>Aktion</target>
+      </trans-unit>
+      <trans-unit id="featureAdminPromotions-colPeriod" datatype="html">
+        <source>Redeemable</source>
+        <target>Einlösbar</target>
+      </trans-unit>
+      <trans-unit id="featureAdminPromotions-colAdvantage" datatype="html">
+        <source>Advantage</source>
+        <target>Vorteil</target>
+      </trans-unit>
+      <trans-unit id="featureAdminPromotions-colSubscription" datatype="html">
+        <source>Subscription</source>
+        <target>Abonnement</target>
+      </trans-unit>
+      <trans-unit id="featureAdminPromotions-colRedeemedAt" datatype="html">
+        <source>Redeemed</source>
+        <target>Eingelöst</target>
+      </trans-unit>
+      <trans-unit id="featureAdminPromotions-colPlan" datatype="html">
+        <source>Plan</source>
+        <target>Plan</target>
+      </trans-unit>
+      <trans-unit id="featureAdminPromotions-colContext" datatype="html">
+        <source>Context</source>
+        <target>Kontext</target>
+      </trans-unit>
+      <trans-unit id="featureAdminPromotions-periodRange" datatype="html">
+        <source><x id="from" equiv-text="this.formatDate(promotion.redeemableFrom)"/> to <x id="to" equiv-text="this.formatDate(promotion.redeemableTo)"/></source>
+        <target><x id="from" equiv-text="this.formatDate(promotion.redeemableFrom)"/> bis <x id="to" equiv-text="this.formatDate(promotion.redeemableTo)"/></target>
+      </trans-unit>
+      <trans-unit id="featureAdminPromotions-bulkDeactivateTitle" datatype="html">
+        <source>Deactivate promotions?</source>
+        <target>Aktionen deaktivieren?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminPromotions-bulkDeactivateMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedActivePromotions().length"/> active promotions will be deactivated. Their codes can no longer be redeemed.</source>
+        <target><x id="count" equiv-text="this.selectedActivePromotions().length"/> aktive Aktionen werden deaktiviert. Ihre Codes können nicht mehr eingelöst werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-colAttachment" datatype="html">
+        <source>Attached to</source>
+        <target>Zugeordnet zu</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-deleteEntryAction" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-bulkDeleteEntriesTitle" datatype="html">
+        <source>Delete meter entries?</source>
+        <target>Zählereinträge löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-bulkDeleteEntriesMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedEntries().length"/> selected meter entries will be deleted. This action cannot be undone.</source>
+        <target><x id="count" equiv-text="this.selectedEntries().length"/> ausgewählte Zählereinträge werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-bulkCancelTitle" datatype="html">
+        <source>Cancel subscriptions?</source>
+        <target>Abonnements kündigen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-bulkCancelMessage" datatype="html">
+        <source>Cancel <x id="count" equiv-text="this.cancelDialogCount()"/> selected subscriptions? Each remains active until the end of its current period.</source>
+        <target><x id="count" equiv-text="this.cancelDialogCount()"/> ausgewählte Abonnements kündigen? Jedes bleibt bis zum Ende seiner aktuellen Periode aktiv.</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-colName" datatype="html">
+        <source>Config</source>
+        <target>Konfiguration</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-colMode" datatype="html">
+        <source>Mode</source>
+        <target>Modus</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-colImage" datatype="html">
+        <source>Image</source>
+        <target>Image</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-colEnvVars" datatype="html">
+        <source>Env vars</source>
+        <target>Umgebungsvariablen</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-edit" datatype="html">
+        <source>Edit config</source>
+        <target>Konfiguration bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-modeSimple" datatype="html">
+        <source>Simple (single Docker image)</source>
+        <target>Einfach (ein Docker-Image)</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-modeCompose" datatype="html">
+        <source>Docker Compose template</source>
+        <target>Docker-Compose-Vorlage</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-modeUserData" datatype="html">
+        <source>Full cloud-init user-data</source>
+        <target>Vollständige cloud-init-User-Data</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-noImage" datatype="html">
+        <source>No image</source>
+        <target>Kein Image</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-bulkDeleteTitle" datatype="html">
+        <source>Delete configs?</source>
+        <target>Konfigurationen löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-bulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedConfigs().length"/> selected configs will be deleted. Configs still used by service plans are reported and left as they are.</source>
+        <target><x id="count" equiv-text="this.selectedConfigs().length"/> ausgewählte Konfigurationen werden gelöscht. Noch von Serviceplänen verwendete Konfigurationen werden gemeldet und bleiben unverändert.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-colTrust" datatype="html">
+        <source>Trust</source>
+        <target>Vertrauen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-colCustomer" datatype="html">
+        <source>Customer</source>
+        <target>Kunde</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-colCustomerNumber" datatype="html">
+        <source>Customer no.</source>
+        <target>Kundennr.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-colProfile" datatype="html">
+        <source>Profile</source>
+        <target>Profil</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-colUser" datatype="html">
+        <source>User</source>
+        <target>Benutzer</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-colContact" datatype="html">
+        <source>Contact</source>
+        <target>Ansprechpartner</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-colCountry" datatype="html">
+        <source>Country</source>
+        <target>Land</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-colUpdated" datatype="html">
+        <source>Updated</source>
+        <target>Aktualisiert</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustFactors" datatype="html">
+        <source>Trust factors</source>
+        <target>Vertrauensfaktoren</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-colFactor" datatype="html">
+        <source>Factor</source>
+        <target>Faktor</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-colDescription" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-colPoints" datatype="html">
+        <source>Points</source>
+        <target>Punkte</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-bulkRecompute" datatype="html">
+        <source>Recompute trust</source>
+        <target>Vertrauen neu berechnen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-bulkDeleteTitle" datatype="html">
+        <source>Delete billing profiles?</source>
+        <target>Abrechnungsprofile löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-bulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedProfiles().length"/> selected billing profiles will be deleted. This action cannot be undone.</source>
+        <target><x id="count" equiv-text="this.selectedProfiles().length"/> ausgewählte Abrechnungsprofile werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-colPeriod" datatype="html">
+        <source>Period</source>
+        <target>Zeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-colFile" datatype="html">
+        <source>File</source>
+        <target>Datei</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-colScope" datatype="html">
+        <source>Scope</source>
+        <target>Umfang</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-colCompleted" datatype="html">
+        <source>Completed</source>
+        <target>Abgeschlossen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-colTriggeredBy" datatype="html">
+        <source>Triggered by</source>
+        <target>Ausgelöst von</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-bulkActivate" datatype="html">
+        <source>Activate</source>
+        <target>Aktivieren</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-bulkDeactivate" datatype="html">
+        <source>Deactivate</source>
+        <target>Deaktivieren</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-bulkDeleteTitle" datatype="html">
+        <source>Delete meters?</source>
+        <target>Zähler löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-bulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedMeters().length"/> selected meters will be deleted. This action cannot be undone.</source>
+        <target><x id="count" equiv-text="this.selectedMeters().length"/> ausgewählte Zähler werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-colOffer" datatype="html">
+        <source>Offer</source>
+        <target>Angebot</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-colTotal" datatype="html">
+        <source>Total (gross)</source>
+        <target>Summe (brutto)</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-colExpires" datatype="html">
+        <source>Expires</source>
+        <target>Läuft ab</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-bulkDownload" datatype="html">
+        <source>Download PDFs</source>
+        <target>PDFs herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featurePromotions-colValid" datatype="html">
+        <source>Valid</source>
+        <target>Gültig</target>
+      </trans-unit>
+      <trans-unit id="featurePromotions-validRange" datatype="html">
+        <source><x id="from" equiv-text="this.formatDate(item.validFrom)"/> to <x id="to" equiv-text="this.formatDate(item.validTo)"/></source>
+        <target><x id="from" equiv-text="this.formatDate(item.validFrom)"/> bis <x id="to" equiv-text="this.formatDate(item.validTo)"/></target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-colName" datatype="html">
+        <source>Plan</source>
+        <target>Plan</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-colInterval" datatype="html">
+        <source>Billing interval</source>
+        <target>Abrechnungsintervall</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-colTaxRate" datatype="html">
+        <source>Tax rate</source>
+        <target>Steuersatz</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-colHighlights" datatype="html">
+        <source>Highlights</source>
+        <target>Highlights</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-bulkDeleteTitle" datatype="html">
+        <source>Delete plans?</source>
+        <target>Pläne löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-bulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedPlans().length"/> selected plans will be deleted. Plans with subscriptions are reported and left as they are.</source>
+        <target><x id="count" equiv-text="this.selectedPlans().length"/> ausgewählte Pläne werden gelöscht. Pläne mit Abonnements werden gemeldet und bleiben unverändert.</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-colName" datatype="html">
+        <source>Service provider</source>
+        <target>Serviceanbieter</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-bulkDeleteTitle" datatype="html">
+        <source>Delete service providers?</source>
+        <target>Serviceanbieter löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-bulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedServiceTypes().length"/> selected service providers will be deleted. Providers still used by service plans are reported and left as they are.</source>
+        <target><x id="count" equiv-text="this.selectedServiceTypes().length"/> ausgewählte Serviceanbieter werden gelöscht. Noch von Serviceplänen verwendete Anbieter werden gemeldet und bleiben unverändert.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-colSupplier" datatype="html">
+        <source>Supplier</source>
+        <target>Lieferant</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-colSupplierNumber" datatype="html">
+        <source>Supplier no.</source>
+        <target>Lieferantennr.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-colEmail" datatype="html">
+        <source>Email</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-bulkDeleteTitle" datatype="html">
+        <source>Delete supplier profiles?</source>
+        <target>Lieferantenprofile löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-bulkDeleteMessage" datatype="html">
+        <source><x id="count" equiv-text="this.selectedProfiles().length"/> selected supplier profiles will be deleted. This action cannot be undone.</source>
+        <target><x id="count" equiv-text="this.selectedProfiles().length"/> ausgewählte Lieferantenprofile werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="sharedDataList-copyId" datatype="html">
+        <source>Copy ID</source>
+        <target>ID kopieren</target>
+      </trans-unit>
+      <trans-unit id="sharedDataList-delete" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="sharedDataList-bulkSucceeded" datatype="html">
+        <source>{count} done</source>
+        <target>{count} erledigt</target>
+      </trans-unit>
+      <trans-unit id="sharedDataList-bulkDenied" datatype="html">
+        <source>{count} not allowed</source>
+        <target>{count} nicht erlaubt</target>
+      </trans-unit>
+      <trans-unit id="sharedDataList-bulkFailed" datatype="html">
+        <source>{count} failed</source>
+        <target>{count} fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-bulkDeleteTitle" datatype="html">
+        <source>Delete users</source>
+        <target>Benutzer löschen</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-bulkDeleteBody" datatype="html">
+        <source>Delete the selected users? They lose access immediately. This cannot be undone.</source>
+        <target>Ausgewählte Benutzer löschen? Sie verlieren sofort den Zugang. Dies kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-colCreated" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-colRole" datatype="html">
+        <source>Role</source>
+        <target>Rolle</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-colState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-stateUnconfirmed" datatype="html">
+        <source>Email not confirmed</source>
+        <target>E-Mail nicht bestätigt</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-bulkRevokeTitle" datatype="html">
+        <source>Revoke tokens</source>
+        <target>Tokens widerrufen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-bulkRevokeBody" datatype="html">
+        <source>Revoke the selected tokens? Scripts and integrations using them stop working. This cannot be undone.</source>
+        <target>Ausgewählte Tokens widerrufen? Skripte und Integrationen, die sie verwenden, funktionieren dann nicht mehr. Dies kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-colCreated" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-colExpires" datatype="html">
+        <source>Expires</source>
+        <target>Läuft ab</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-colLastUsed" datatype="html">
+        <source>Last used</source>
+        <target>Zuletzt verwendet</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-colState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-stateActive" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-stateExpired" datatype="html">
+        <source>Expired</source>
+        <target>Abgelaufen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-stateRevoked" datatype="html">
+        <source>Revoked</source>
+        <target>Widerrufen</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-bulkDeleteTitle" datatype="html">
+        <source>Delete webhooks</source>
+        <target>Webhooks löschen</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-bulkDeleteBody" datatype="html">
+        <source>Delete the selected webhooks? Their delivery history is removed too. This cannot be undone.</source>
+        <target>Ausgewählte Webhooks löschen? Ihr Zustellverlauf wird ebenfalls entfernt. Dies kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colEvents" datatype="html">
+        <source>Events</source>
+        <target>Ereignisse</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colHttpStatus" datatype="html">
+        <source>HTTP status</source>
+        <target>HTTP-Status</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colMethod" datatype="html">
+        <source>Method</source>
+        <target>Methode</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colUpdated" datatype="html">
+        <source>Updated</source>
+        <target>Aktualisiert</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-disable" datatype="html">
+        <source>Disable</source>
+        <target>Deaktivieren</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-enable" datatype="html">
+        <source>Enable</source>
+        <target>Aktivieren</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-stateFailing" datatype="html">
+        <source>Failing (<x id="count" equiv-text="endpoint.consecutiveFailures"/> failures)</source>
+        <target>Fehlerhaft (<x id="count" equiv-text="endpoint.consecutiveFailures"/> Fehler)</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colClient" datatype="html">
+        <source>Client</source>
+        <target>Client</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-categoryOther" datatype="html">
+        <source>Other</source>
+        <target>Sonstiges</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colCategory" datatype="html">
+        <source>Category</source>
+        <target>Kategorie</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colChange" datatype="html">
+        <source>Change</source>
+        <target>Änderung</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colDependencies" datatype="html">
+        <source>Dependencies</source>
+        <target>Abhängigkeiten</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colHeartbeat" datatype="html">
+        <source>Last heartbeat</source>
+        <target>Letztes Lebenszeichen</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colHost" datatype="html">
+        <source>Host</source>
+        <target>Host</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colRole" datatype="html">
+        <source>Role</source>
+        <target>Rolle</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colService" datatype="html">
+        <source>Service</source>
+        <target>Dienst</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colVersion" datatype="html">
+        <source>Version</source>
+        <target>Version</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-dependencyDatabase" datatype="html">
+        <source>Database</source>
+        <target>Datenbank</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-dependencyQueue" datatype="html">
+        <source>Queue</source>
+        <target>Warteschlange</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-viewSwitch" datatype="html">
+        <source>View</source>
+        <target>Ansicht</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-viewTable" datatype="html">
+        <source>Table view</source>
+        <target>Tabellenansicht</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-viewLanes" datatype="html">
+        <source>Lanes view</source>
+        <target>Board-Ansicht</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-filterStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-filterPriority" datatype="html">
+        <source>Priority</source>
+        <target>Priorität</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-filterPriorityAll" datatype="html">
+        <source>All priorities</source>
+        <target>Alle Prioritäten</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-filterStatusBoard" datatype="html">
+        <source>On the board (without closed)</source>
+        <target>Auf dem Board (ohne geschlossene)</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-filterStatusAll" datatype="html">
+        <source>All statuses</source>
+        <target>Alle Status</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-bulkStatus" datatype="html">
+        <source>Set status…</source>
+        <target>Status setzen…</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-bulkPriority" datatype="html">
+        <source>Set priority…</source>
+        <target>Priorität setzen…</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-bulkDeleteTitle" datatype="html">
+        <source>Delete tickets</source>
+        <target>Tickets löschen</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-bulkDeleteOne" datatype="html">
+        <source>Delete "<x id="title" equiv-text="pending[0].title"/>"? This cannot be undone.</source>
+        <target>„<x id="title" equiv-text="pending[0].title"/>“ löschen? Dies kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-bulkDeleteMany" datatype="html">
+        <source>Delete <x id="count" equiv-text="pending.length"/> tickets? Subtasks of deleted tickets are deleted too. This cannot be undone.</source>
+        <target><x id="count" equiv-text="pending.length"/> Tickets löschen? Teilaufgaben gelöschter Tickets werden ebenfalls gelöscht. Dies kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-moveTo" datatype="html">
+        <source>Move to</source>
+        <target>Verschieben nach</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-colMilestone" datatype="html">
+        <source>Milestone</source>
+        <target>Meilenstein</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-colSubtasks" datatype="html">
+        <source>Subtasks</source>
+        <target>Teilaufgaben</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-colCreatedBy" datatype="html">
+        <source>Created by</source>
+        <target>Erstellt von</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-colUpdated" datatype="html">
+        <source>Updated</source>
+        <target>Aktualisiert</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-empty" datatype="html">
+        <source>No tickets yet</source>
+        <target>Noch keine Tickets</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-emptyCreate" datatype="html">
+        <source>New ticket</source>
+        <target>Neues Ticket</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-moreMatchesOne" datatype="html">
+        <source>and 1 more</source>
+        <target>und 1 weiteres</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-moreMatchesMany" datatype="html">
+        <source>and <x id="count" equiv-text="count"/> more</source>
+        <target>und <x id="count" equiv-text="count"/> weitere</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-moreMatchesTitle" datatype="html">
+        <source>Matches in other statuses (for example closed tickets) — show them in the table with all statuses</source>
+        <target>Treffer in anderen Status (zum Beispiel geschlossene Tickets) – in der Tabelle mit allen Status anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingModal-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineTitle" datatype="html">
+        <source>Line <x id="position" equiv-text="lineIndex + 1"/></source>
+        <target>Position <x id="position" equiv-text="lineIndex + 1"/></target>
+      </trans-unit>
+      <trans-unit id="featureBilling-intervalTypeHour" datatype="html">
+        <source>Hours</source>
+        <target>Stunden</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-intervalTypeDay" datatype="html">
+        <source>Days</source>
+        <target>Tage</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-intervalTypeMonth" datatype="html">
+        <source>Months</source>
+        <target>Monate</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-intervalTypeYear" datatype="html">
+        <source>Years</source>
+        <target>Jahre</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-durationHourOne" datatype="html">
+        <source>1 hour</source>
+        <target>1 Stunde</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-durationHours" datatype="html">
+        <source><x id="count" equiv-text="value"/> hours</source>
+        <target><x id="count" equiv-text="value"/> Stunden</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-durationDayOne" datatype="html">
+        <source>1 day</source>
+        <target>1 Tag</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-durationDays" datatype="html">
+        <source><x id="count" equiv-text="value"/> days</source>
+        <target><x id="count" equiv-text="value"/> Tage</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-durationYearOne" datatype="html">
+        <source>1 year</source>
+        <target>1 Jahr</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-durationYears" datatype="html">
+        <source><x id="count" equiv-text="value"/> years</source>
+        <target><x id="count" equiv-text="value"/> Jahre</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-durationMonthOne" datatype="html">
+        <source>1 month</source>
+        <target>1 Monat</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-durationMonths" datatype="html">
+        <source><x id="count" equiv-text="value"/> months</source>
+        <target><x id="count" equiv-text="value"/> Monate</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-promotionFreeDayOne" datatype="html">
+        <source>1 day free</source>
+        <target>1 kostenloser Tag</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-promotionFreeDays" datatype="html">
+        <source><x id="count" equiv-text="days"/> days free</source>
+        <target><x id="count" equiv-text="days"/> kostenlose Tage</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-promotionCredit" datatype="html">
+        <source><x id="amount" equiv-text="amount"/> credit</source>
+        <target><x id="amount" equiv-text="amount"/> Guthaben</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-promotionFreePeriodOne" datatype="html">
+        <source>1 billing period free</source>
+        <target>1 kostenloser Abrechnungszeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-promotionFreePeriods" datatype="html">
+        <source><x id="count" equiv-text="periods"/> billing periods free</source>
+        <target><x id="count" equiv-text="periods"/> kostenlose Abrechnungszeiträume</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-selectCountry" datatype="html">
+        <source>Select country</source>
+        <target>Land auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-colIssued" datatype="html">
+        <source>Issued</source>
+        <target>Ausgestellt</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-unnumberedOffer" datatype="html">
+        <source>Draft offer</source>
+        <target>Angebotsentwurf</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-unnumberedInvoice" datatype="html">
+        <source>Draft invoice</source>
+        <target>Rechnungsentwurf</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-priceUsageBased" datatype="html">
+        <source>Usage-based</source>
+        <target>Nutzungsbasiert</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-dateRangeFrom" datatype="html">
+        <source>from {date}</source>
+        <target>ab {date}</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-dateRangeUntil" datatype="html">
+        <source>until {date}</source>
+        <target>bis {date}</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-assigneeTitle" datatype="html">
+        <source>Assignee: <x id="email" equiv-text="email"/></source>
+        <target>Zugewiesen an: <x id="email" equiv-text="email"/></target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-backToProjects" datatype="html">
+        <source>Back to projects</source>
+        <target>Zurück zu Projekten</target>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-copyFullSha" datatype="html">
+        <source>Copy full hash</source>
+        <target>Vollständigen Hash kopieren</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-searchTimeEntries" datatype="html">
+        <source>Search time entries</source>
+        <target>Zeiteinträge suchen</target>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-search" datatype="html">
+        <source>Search milestones</source>
+        <target>Meilensteine suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-perspective" datatype="html">
+        <source>Perspective</source>
+        <target>Perspektive</target>
+      </trans-unit>
+      <trans-unit id="featureBillingMultiSelect-search" datatype="html">
+        <source>Search options</source>
+        <target>Optionen suchen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingMultiSelect-remove" datatype="html">
+        <source>Remove {label}</source>
+        <target>{label} entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingMultiSelect-empty" datatype="html">
+        <source>No matches</source>
+        <target>Keine Treffer</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-scopeByMonth" datatype="html">
+        <source>By month</source>
+        <target>Nach Monat</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-scopeByDay" datatype="html">
+        <source>By day</source>
+        <target>Nach Tag</target>
+      </trans-unit>
+      <trans-unit id="fpcTabGroup-more" datatype="html">
+        <source>More</source>
+        <target>Mehr</target>
+      </trans-unit>
+      <trans-unit id="fpcStepStrip-previous" datatype="html">
+        <source>Earlier steps</source>
+        <target>Frühere Schritte</target>
+      </trans-unit>
+      <trans-unit id="fpcStepStrip-next" datatype="html">
+        <source>Later steps</source>
+        <target>Spätere Schritte</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-breaking" datatype="html">
+        <source>Breaking change</source>
+        <target>Breaking Change</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-scopeGeneral" datatype="html">
+        <source>general</source>
+        <target>allgemein</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-scopeGeneralTitle" datatype="html">
+        <source>No scope given</source>
+        <target>Kein Bereich angegeben</target>
       </trans-unit>
     </body>
   </file>

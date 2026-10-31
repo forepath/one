@@ -39,6 +39,7 @@ import {
   loadOpenOverdueInvoices$,
   reloadInvoicesAfterCreate$,
 } from './invoices.effects';
+import { initialInvoicesState } from './invoices.reducer';
 
 describe('InvoicesEffects', () => {
   let actions$: Actions;
@@ -104,8 +105,25 @@ describe('InvoicesEffects', () => {
       invoicesService.getOpenOverdueInvoices.mockReturnValue(of(invoices));
 
       loadOpenOverdueInvoices$(actions$, invoicesService).subscribe((result) => {
-        expect(result).toEqual(loadOpenOverdueInvoicesSuccess({ invoices }));
-        expect(invoicesService.getOpenOverdueInvoices).toHaveBeenCalled();
+        expect(result).toEqual(loadOpenOverdueInvoicesSuccess({ invoices, hasMore: false }));
+        expect(invoicesService.getOpenOverdueInvoices).toHaveBeenCalledWith({
+          search: undefined,
+          limit: 26,
+          offset: 0,
+        });
+        done();
+      });
+    });
+
+    it('requests one extra row for the page and reports hasMore (replace-page)', (done) => {
+      const rows = Array.from({ length: 11 }, (_, index) => ({ ...mockInvoice, id: `inv-${index}` }));
+
+      actions$ = of(loadOpenOverdueInvoices({ search: 'acme', page: 3, pageSize: 10 }));
+      invoicesService.getOpenOverdueInvoices.mockReturnValue(of(rows));
+
+      loadOpenOverdueInvoices$(actions$, invoicesService).subscribe((result) => {
+        expect(result).toEqual(loadOpenOverdueInvoicesSuccess({ invoices: rows.slice(0, 10), hasMore: true }));
+        expect(invoicesService.getOpenOverdueInvoices).toHaveBeenCalledWith({ search: 'acme', limit: 11, offset: 20 });
         done();
       });
     });
@@ -129,8 +147,21 @@ describe('InvoicesEffects', () => {
       invoicesService.getHistoryInvoices.mockReturnValue(of(invoices));
 
       loadHistoryInvoices$(actions$, invoicesService).subscribe((result) => {
-        expect(result).toEqual(loadHistoryInvoicesSuccess({ invoices }));
-        expect(invoicesService.getHistoryInvoices).toHaveBeenCalled();
+        expect(result).toEqual(loadHistoryInvoicesSuccess({ invoices, hasMore: false }));
+        expect(invoicesService.getHistoryInvoices).toHaveBeenCalledWith({ search: undefined, limit: 26, offset: 0 });
+        done();
+      });
+    });
+
+    it('requests one extra row for the page and reports hasMore (replace-page)', (done) => {
+      const rows = Array.from({ length: 11 }, (_, index) => ({ ...mockInvoice, id: `inv-${index}` }));
+
+      actions$ = of(loadHistoryInvoices({ search: 'acme', page: 3, pageSize: 10 }));
+      invoicesService.getHistoryInvoices.mockReturnValue(of(rows));
+
+      loadHistoryInvoices$(actions$, invoicesService).subscribe((result) => {
+        expect(result).toEqual(loadHistoryInvoicesSuccess({ invoices: rows.slice(0, 10), hasMore: true }));
+        expect(invoicesService.getHistoryInvoices).toHaveBeenCalledWith({ search: 'acme', limit: 11, offset: 20 });
         done();
       });
     });
@@ -147,19 +178,30 @@ describe('InvoicesEffects', () => {
   });
 
   describe('reloadInvoicesAfterCreate$', () => {
-    it('should reload subscription, history, open/overdue, and summary lists', (done) => {
+    it('should reload subscription, the current history / open pages, and summary', (done) => {
       const emitted: unknown[] = [];
 
       actions$ = of(createInvoiceSuccess({ subscriptionId, response: { id: 'inv-1' } as never }));
 
-      reloadInvoicesAfterCreate$(actions$).subscribe({
+      const store = {
+        select: () =>
+          of({
+            ...initialInvoicesState,
+            historyPage: 2,
+            historySearch: 'acme',
+            openOverduePage: 3,
+            openOverduePageSize: 50,
+          }),
+      };
+
+      reloadInvoicesAfterCreate$(actions$, store as never).subscribe({
         next: (result) => {
           emitted.push(result);
           if (emitted.length === 4) {
             expect(emitted).toEqual([
               loadInvoices({ subscriptionId }),
-              loadHistoryInvoices(),
-              loadOpenOverdueInvoices(),
+              loadHistoryInvoices({ search: 'acme', page: 2, pageSize: 25 }),
+              loadOpenOverdueInvoices({ search: undefined, page: 3, pageSize: 50 }),
               loadInvoicesSummary(),
             ]);
             done();

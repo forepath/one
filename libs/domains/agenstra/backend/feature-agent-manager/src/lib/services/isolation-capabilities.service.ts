@@ -31,7 +31,7 @@ import {
   strongestAvailableIsolationLevel,
 } from '../utils/container-isolation.utils';
 
-import { DockerService, type IsolationProbeResult } from './docker.service';
+import { AgentRuntime, type IsolationProbeResult } from '../runtime/agent-runtime';
 
 type CapabilityLevels = HostIsolationCapabilitiesDto['levels'];
 
@@ -71,7 +71,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
   private readonly consecutiveRuntimeFailures = new Map<Exclude<IsolationLevel, 'standard'>, number>();
   static readonly ON_DEMAND_MIN_AGE_MS = 30_000;
 
-  constructor(private readonly dockerService: DockerService) {
+  constructor(private readonly runtime: AgentRuntime) {
     this.capabilities = this.buildInitialCapabilities();
   }
 
@@ -80,7 +80,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
   }
 
   onApplicationBootstrap(): void {
-    void this.dockerService
+    void this.runtime
       .removeStaleIsolationProbes()
       .catch(() => 0)
       .then(() => this.probe())
@@ -227,10 +227,10 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
       ),
       microvm: { rank: ISOLATION_LEVEL_RANK.microvm, runtime: STANDARD_ISOLATION_RUNTIME, state: 'unsupported' },
     } as CapabilityLevels;
-    let hostInfo: Awaited<ReturnType<DockerService['getDockerHostInfo']>> | null = null;
+    let hostInfo: Awaited<ReturnType<AgentRuntime['getDockerHostInfo']>> | null = null;
 
     try {
-      hostInfo = await this.dockerService.getDockerHostInfo();
+      hostInfo = await this.runtime.getDockerHostInfo();
     } catch (error) {
       this.logger.error(`Docker daemon unavailable for isolation probe: ${(error as Error).message}`);
       levels.standard = this.failed(
@@ -255,7 +255,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
     const standardRuntime = hostInfo.defaultRuntime || STANDARD_ISOLATION_RUNTIME;
 
     levels.standard = { ...levels.standard, runtime: standardRuntime };
-    const standardResult = await this.dockerService.runIsolationProbe({
+    const standardResult = await this.runtime.runIsolationProbe({
       expectedRuntime: standardRuntime,
       image,
       timeoutMs,
@@ -295,8 +295,8 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
     }
 
     const microvmPrecheck = this.microvmPrecheck(levels.microvm, levels.standard.state === 'ready');
-    const probeImageId = await this.dockerService.getImageId(image).catch(() => null);
-    const microvmImageId = await this.dockerService.getImageId(resolveMicrovmImage(this.env)).catch(() => null);
+    const probeImageId = await this.runtime.getImageId(image).catch(() => null);
+    const microvmImageId = await this.runtime.getImageId(resolveMicrovmImage(this.env)).catch(() => null);
 
     this.lastFacts = {
       dockerVersion: hostInfo.serverVersion,
@@ -364,7 +364,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
       );
     }
 
-    const microvmImageId = await this.dockerService.getImageId(resolveMicrovmImage(this.env)).catch(() => null);
+    const microvmImageId = await this.runtime.getImageId(resolveMicrovmImage(this.env)).catch(() => null);
 
     this.lastFacts = { ...this.lastFacts, microvmImageId };
 
@@ -388,7 +388,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
     capability: IsolationLevelCapabilityDto,
     probeImage: string,
   ): Promise<IsolationLevelCapabilityDto> {
-    const result = await this.dockerService.runMicrovmProbe({
+    const result = await this.runtime.runMicrovmProbe({
       image: resolveMicrovmImage(this.env),
       ownerImage: probeImage,
       timeoutMs: resolveMicrovmProbeTimeoutMs(this.env),
@@ -415,7 +415,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
     capability: IsolationLevelCapabilityDto,
     context: {
       runtimes: GvisorLevelRuntimes;
-      hostInfo: Awaited<ReturnType<DockerService['getDockerHostInfo']>>;
+      hostInfo: Awaited<ReturnType<AgentRuntime['getDockerHostInfo']>>;
       guarded: boolean;
       probeImageUnavailable: boolean;
       standardReady: boolean;
@@ -483,7 +483,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
       );
     }
 
-    const result = await this.dockerService.runIsolationProbe({
+    const result = await this.runtime.runIsolationProbe({
       runtime: runtimes.runtime,
       image: context.image,
       timeoutMs: context.timeoutMs,
@@ -507,7 +507,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
   private misconfiguredRuntime(
     level: GvisorIsolationLevel,
     runtimes: GvisorLevelRuntimes,
-    hostInfo: Awaited<ReturnType<DockerService['getDockerHostInfo']>>,
+    hostInfo: Awaited<ReturnType<AgentRuntime['getDockerHostInfo']>>,
     guarded: boolean,
     allRuntimes: Record<GvisorIsolationLevel, GvisorLevelRuntimes>,
   ): string | null {

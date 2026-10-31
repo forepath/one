@@ -1,0 +1,326 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="current() ? title + ': ' + current()!.resource : title">
+    <!-- Back sits left above the title, below xl only (the list lane is beside the detail from xl; 3.38 R8). -->
+    <a
+      fpcPageHeaderBreadcrumbs
+      class="fpc-md__back small text-decoration-none align-items-center"
+      routerLink="/operate/backups"
+      data-testid="backup-back"
+    >
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
+    </a>
+    <ng-container ngProjectAs="[fpcPageHeaderActions]">
+      @if (current() && available()) {
+        <fpc-button
+          variant="dark"
+          size="sm"
+          iconOnly
+          [ariaLabel]="compareLabel"
+          [title]="compareLabel"
+          [disabled]="others().length === 0"
+          (clicked)="openDiff()"
+          data-testid="backup-compare"
+        >
+          <i class="bi bi-file-diff" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      @if (current() && available() && mayOperate()) {
+        <fpc-button
+          variant="dark"
+          size="sm"
+          iconOnly
+          [ariaLabel]="testNowLabel"
+          [title]="testNowLabel"
+          [loading]="testing().includes(current()!.id)"
+          [disabled]="current()!.restoreTest?.status === 'running'"
+          (clicked)="testNow()"
+          data-testid="backup-test"
+        >
+          <i class="bi bi-clipboard-check" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      <fpc-button
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="refreshLabel"
+        [title]="refreshLabel"
+        (clicked)="refresh()"
+        data-testid="backup-refresh"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+      @if (current() && available() && mayRestore()) {
+        <fpc-button
+          variant="primary"
+          size="sm"
+          iconOnly
+          [ariaLabel]="restoreBackupLabel"
+          [title]="restoreBackupLabel"
+          (clicked)="openRestore(null)"
+          data-testid="backup-restore"
+        >
+          <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+        </fpc-button>
+      }
+    </ng-container>
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert class="flex-shrink-0" [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (actionError(); as message) {
+    <fpc-alert class="flex-shrink-0" [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (current(); as b) {
+    @if (b.error) {
+      <fpc-alert class="flex-shrink-0" [flush]="true" variant="danger" [message]="b.error" />
+    }
+    @if (b.deletedAt) {
+      <fpc-alert class="flex-shrink-0" [flush]="true" variant="secondary">
+        <span i18n="@@lwConsoleBackupDetail-deletedAt">This backup was deleted on</span>
+        {{ b.deletedAt | date: 'medium' }}.
+      </fpc-alert>
+    }
+
+    <fpc-summary-bar class="flex-shrink-0" [columns]="4">
+      <fpc-summary-card
+        icon="circle-half"
+        [label]="statusTitle"
+        [value]="statusLabel(b.status)"
+        [tone]="b.status === 'failed' ? 'danger' : b.status === 'running' ? 'info' : 'success'"
+      />
+      <fpc-summary-card icon="device-hdd" [label]="sizeTitle" [value]="bytes(b.bytes)" />
+      <fpc-summary-card icon="cloud-upload" [label]="addedTitle" [value]="bytes(b.uploadedBytes)" />
+      <fpc-summary-card icon="files" [label]="filesTitle" [value]="'' + b.files" />
+    </fpc-summary-bar>
+  }
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (loading() && !current()) {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+    } @else if (current(); as b) {
+      @if (available()) {
+        <fpc-tab-group
+          class="fpc-lane-tabs"
+          [activeId]="lane()"
+          (activeIdChange)="lane.set($any($event))"
+          [ariaLabel]="title"
+        >
+          <fpc-tab id="browser" [label]="browserTitle" />
+          <fpc-tab id="details" [label]="detailsTitle" />
+        </fpc-tab-group>
+      }
+      <fpc-section-row class="flex-grow-1 min-h-0">
+        @if (available()) {
+          <loadweaver-lane
+            [title]="browserTitle"
+            [flush]="true"
+            [off]="lane() !== 'browser'"
+            data-testid="backup-browser-lane"
+          >
+            <!-- Pinned lane toolbar (3.38 R3): breadcrumbs + restore this directory. -->
+            <div lwLaneToolbar class="d-flex flex-wrap align-items-center gap-2 w-100 min-w-0">
+              <nav aria-label="breadcrumb" class="small min-w-0 flex-grow-1">
+                <ol class="breadcrumb mb-0 font-monospace" data-testid="backup-crumbs">
+                  @for (crumb of crumbs(); track crumb.path; let last = $last) {
+                    <li class="breadcrumb-item" [class.active]="last">
+                      @if (last) {
+                        {{ crumb.label }}
+                      } @else {
+                        <a href="" (click)="$event.preventDefault(); go(crumb.path)">{{ crumb.label }}</a>
+                      }
+                    </li>
+                  }
+                </ol>
+              </nav>
+              @if (path() && mayRestore()) {
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  (clicked)="openRestore(path())"
+                  data-testid="backup-restore-directory"
+                  iconOnly
+                  [ariaLabel]="restoreDirectoryLabel"
+                  [title]="restoreDirectoryLabel"
+                >
+                  <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                </fpc-button>
+              }
+            </div>
+
+            @if (downloadError(); as message) {
+              <fpc-alert [flush]="true" variant="danger" [message]="message" />
+            }
+
+            @if (filesError(); as message) {
+              <fpc-alert [flush]="true" variant="danger" [message]="message" />
+            } @else if (filesLoading() && entries().length === 0) {
+              <fpc-empty-state size="sm" [loading]="true" [title]="loadingFilesLabel" />
+            } @else if (entries().length === 0) {
+              <fpc-empty-state
+                icon="folder"
+                size="sm"
+                i18n-title="@@lwConsoleBackupDetail-emptyDirectory"
+                title="This directory is empty"
+              />
+            } @else {
+              @if (bulkResult(); as result) {
+                <fpc-alert
+                  [flush]="true"
+                  [variant]="result.tone"
+                  [message]="result.message"
+                  [dismissible]="true"
+                  (closed)="bulkResult.set(null)"
+                  data-testid="backup-files-bulk-result"
+                />
+              }
+              <!-- Files (3.38 D1): Name · size · modified · mode; download inline, ⋮ download / restore; bulk download. -->
+              <fpc-data-table
+                class="flex-grow-1 min-h-0"
+                [columns]="fileColumns"
+                [rows]="entries()"
+                [rowId]="entryId"
+                [ariaLabel]="browserTitle"
+                [searchable]="false"
+                [clientSort]="false"
+                paging="client"
+                persistKey="lw-backup-files"
+                selectable
+                [(selected)]="selectedFiles"
+                [rowMenu]="fileMenu"
+                [rowInlineActions]="fileInline"
+                (rowAction)="onFileAction($event.row, $event.item.id)"
+                (rowActivate)="activate($event)"
+                data-testid="backup-files"
+              >
+                <fpc-button
+                  fpcDataTableBatch
+                  variant="primary"
+                  size="sm"
+                  [disabled]="!canDownloadSelection()"
+                  (clicked)="downloadSelected()"
+                  data-testid="backup-files-bulk-download"
+                  iconOnly
+                  [ariaLabel]="downloadLabel"
+                  [title]="downloadLabel"
+                >
+                  <i class="bi bi-download" aria-hidden="true"></i>
+                </fpc-button>
+                <ng-template fpcTableCell="name" let-row>
+                  <span class="font-monospace text-break"
+                    ><i
+                      class="bi me-1"
+                      [ngClass]="row.directory ? 'bi-folder' : 'bi-file-earmark'"
+                      aria-hidden="true"
+                    ></i
+                    >{{ row.name }}</span
+                  >
+                </ng-template>
+                <ng-template fpcTableCell="size" let-row>{{ row.directory ? '' : bytes(row.size) }}</ng-template>
+                <ng-template fpcTableCell="modified" let-row>
+                  <span class="text-nowrap text-body-secondary">{{ row.modified }}</span>
+                </ng-template>
+              </fpc-data-table>
+            }
+          </loadweaver-lane>
+        }
+
+        <loadweaver-lane
+          [title]="detailsTitle"
+          [grow]="available() ? '0 0 360px' : null"
+          [off]="available() && lane() !== 'details'"
+          data-testid="backup-details-lane"
+        >
+          <fpc-key-value-list [items]="facts()" data-testid="backup-details">
+            <ng-template fpcKeyValue="time">
+              {{ b.startedAt | date: 'medium' }}
+              @if (b.finishedAt) {
+                – {{ b.finishedAt | date: 'mediumTime' }}
+              }
+            </ng-template>
+            <ng-template fpcKeyValue="encryption">
+              <i class="bi bi-shield-lock me-1" aria-hidden="true"></i>{{ encryptedLabel }} {{ b.keyGeneration }}
+            </ng-template>
+            <ng-template fpcKeyValue="keep">
+              <span class="d-inline-flex flex-wrap gap-1">
+                @for (k of b.keep; track k) {
+                  <fpc-badge color="light" size="sm">{{ keepLabel(k) }}</fpc-badge>
+                } @empty {
+                  –
+                }
+              </span>
+            </ng-template>
+            <ng-template fpcKeyValue="restoreTest">
+              @if (b.restoreTest; as t) {
+                <fpc-badge [tone]="testTone[t.status]">{{ testLabel(t.status) }}</fpc-badge>
+                @if (t.finishedAt) {
+                  <span class="ms-1 text-body-secondary">{{ t.finishedAt | date: 'short' }}</span>
+                }
+              } @else {
+                –
+              }
+            </ng-template>
+            <ng-template fpcKeyValue="immutable">
+              @if (b.lockedUntil) {
+                <i
+                  class="bi me-1"
+                  [ngClass]="locked(b.lockedUntil) ? 'bi-lock-fill text-success' : 'bi-unlock'"
+                  aria-hidden="true"
+                ></i
+                >{{ b.lockedUntil | date: 'medium' }}
+              } @else {
+                {{ notLockedLabel }}
+              }
+            </ng-template>
+            <ng-template fpcKeyValue="targets">
+              @for (t of b.targets; track t.target) {
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <span class="font-monospace">{{ t.target }}</span>
+                  <span class="text-body-secondary">{{ t.copiedAt | date: 'short' }}</span>
+                  @if (t.lockedUntil) {
+                    <span class="text-body-secondary"
+                      ><i class="bi bi-lock me-1" aria-hidden="true"></i>{{ t.lockedUntil | date: 'shortDate' }}</span
+                    >
+                  }
+                </div>
+              } @empty {
+                –
+              }
+            </ng-template>
+          </fpc-key-value-list>
+        </loadweaver-lane>
+      </fpc-section-row>
+    }
+  </div>
+</div>
+
+<loadweaver-backup-restore-modal
+  [(open)]="restoreOpen"
+  [backup]="current()"
+  [candidates]="volumeBackups()"
+  [path]="restorePath()"
+  [volumes]="liveVolumes()"
+/>
+
+<fpc-modal [open]="diffOpen()" (openChange)="diffOpen.set($event)" [title]="diffTitle">
+  <fpc-form-field
+    forId="lw-backup-diff-other"
+    i18n-label="@@lwConsoleBackupDetail-diffOther"
+    label="Other backup of the volume"
+  >
+    <fpc-form-control controlType="select" controlId="lw-backup-diff-other" size="sm" [(ngModel)]="diffOther">
+      @for (o of others(); track o.id) {
+        <option [value]="o.id">{{ o.startedAt | date: 'medium' }} ({{ bytes(o.bytes) }})</option>
+      }
+    </fpc-form-control>
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="diffOpen.set(false)">
+      <span i18n="@@lwConsoleBackupDetail-diffCancel">Cancel</span>
+    </fpc-button>
+    <fpc-button variant="primary" [disabled]="!diffOther" (clicked)="compare()" data-testid="backup-diff-open">
+      <span i18n="@@lwConsoleBackupDetail-diffOpen">Compare</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

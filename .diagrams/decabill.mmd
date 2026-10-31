@@ -16,6 +16,8 @@ flowchart TB
   Datev(["DATEV<br/>EXTF CSV + document ZIP import"])
   Registry(["ghcr.io/forepath<br/>decabill-billing-api, decabill-billing-console-server,<br/>decabill-docs-server, Agenstra images"])
   AgenstraFrontends(["Agenstra landing page + billing console build<br/>public plan offerings, portal"])
+  LoadweaverClusters(["Hosters' own Loadweaver clusters<br/>GET /usage (hourly buckets)"])
+  LoadweaverFleet(["Loadweaver fleet service<br/>LOADWEAVER_FLEET_URL / _TOKEN"])
 
   subgraph Frontends["Frontends (Angular SSR, Express)"]
     Console["Billing console (:4202)<br/>dashboard + server control, plan order wizard, subscriptions,<br/>service details (contributor tabs), invoices, offers, projects + board,<br/>promotions, usage, customer profile + auto-billing, /withdrawal (public);<br/>administration: catalog, meters, addons, cloud-init configs, billing,<br/>customer + supplier profiles, supplier invoices, DATEV, file explorer, updates"]
@@ -48,7 +50,9 @@ flowchart TB
     Search["Search<br/>OpenSearch indexes, SQL ILIKE fallback"]
     Notify["Notifications + updates<br/>email templates, webhooks, release checks"]
     Contributors["Contributor host<br/>provider, addon, integrated stack and cloud-init module registries;<br/>dynamic plugins via DYNAMIC_* env, contributor jobs + migrations"]
-    BuiltIn["First-party contributors<br/>providers: Hetzner, DigitalOcean;<br/>integrated stacks: Agenstra controller, Agenstra manager, Decabill billing;<br/>addon: Container Manager"]
+    BuiltIn["First-party contributors<br/>providers: Hetzner, DigitalOcean;<br/>integrated stacks: Agenstra controller, Agenstra manager, Decabill billing,<br/>Loadweaver (single-node cluster, cluster details per item);<br/>addons: Container Manager, Loadweaver usage"]
+    LwTeardown["Loadweaver Cloud teardown<br/>grace of a cancelled subscription:<br/>final backup + read-only through the fleet (idempotent)"]
+    LwUsage["Loadweaver usage collector<br/>catalog addon per resold cluster (admin defaults only:<br/>API URL + auditor PAT usage:read), final hours into meters"]
     Ssh["SSH executor<br/>docker compose pull / update, container stats + logs"]
     Queue["BullMQ queue billing (coordinator + unit jobs)<br/>subscription billing, provisioning, item update, config change,<br/>expiration, instant cancel, withdrawal, renewal reminder,<br/>invoice overdue, auto-payment, open-position invoice, bill now,<br/>backorder retry, meter + contributor collect, price recalc,<br/>plan price migrate, offer expiration + fulfillment,<br/>VAT id validation, DATEV export, search reindex"]
     BPg[("Postgres<br/>tenants, users, catalog, subscriptions + items, invoices,<br/>open positions, payments, offers, projects, suppliers,<br/>usage records, container stats, DATEV, audit log")]
@@ -78,6 +82,9 @@ flowchart TB
   Invoicing & Offers & Projects & Suppliers & DatevExport --> Files
   Provisioning --> Contributors
   Contributors --> BuiltIn
+  BuiltIn --> LwTeardown & LwUsage
+  LwTeardown -.final backup, read-only.-> LoadweaverFleet
+  LwUsage -.hourly pull.-> LoadweaverClusters
   BuiltIn --> Ssh
   Catalog & Subs & Invoicing & Payments & Offers & Projects & Suppliers & Profiles & Contributors --> BPg
   Search --> OpenSearch
@@ -97,7 +104,7 @@ flowchart TB
 
   subgraph Provisioned["Provisioned customer server (one per subscription item)"]
     CloudInit["cloud-init user data<br/>Docker, Let's Encrypt, stack compose,<br/>appended addon scripts"]
-    Stack["Workload<br/>integrated stack (Agenstra controller / manager, Decabill billing)<br/>or custom cloud-init config (image, compose or user-data template)"]
+    Stack["Workload<br/>integrated stack (Agenstra controller / manager, Decabill billing,<br/>Loadweaver single-node cluster) or custom cloud-init config<br/>(image, compose or user-data template)"]
     DockerHost[("Docker host<br/>containers, networks, stats")]
   end
 

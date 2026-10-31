@@ -28,6 +28,8 @@ export const selectOpenOverdueListLoading = createSelector(
 );
 export const selectOpenOverdueListError = createSelector(selectInvoicesState, (state) => state.openOverdueListError);
 
+export const selectOpenOverdueHasMore = createSelector(selectInvoicesState, (state) => state.openOverdueHasMore);
+
 export const selectHistoryList = createSelector(selectInvoicesState, (state) => state.historyList);
 export const selectHistoryListLoading = createSelector(selectInvoicesState, (state) => state.historyListLoading);
 export const selectHistoryListError = createSelector(selectInvoicesState, (state) => state.historyListError);
@@ -48,3 +50,4 @@ export const selectInvoicesCountBySubscriptionId = (subscriptionId: string) =>
 
 export const selectHasInvoicesBySubscriptionId = (subscriptionId: string) =>
   createSelector(selectInvoicesBySubscriptionId(subscriptionId), (invoices) => invoices.length > 0);
+export const selectHistoryHasMore = createSelector(selectInvoicesState, (state) => state.historyHasMore);

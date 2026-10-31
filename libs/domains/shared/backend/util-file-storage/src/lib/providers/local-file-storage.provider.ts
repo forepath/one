@@ -51,4 +51,8 @@ export class LocalFileStorageProvider implements FileStorageProvider {
       return false;
     }
   }
+
+  async deleteFile(root: string, storageKey: string): Promise<void> {
+    await fs.promises.rm(this.resolveAbsolutePath(root, storageKey), { force: true });
+  }
 }

@@ -1,0 +1,157 @@
+x-backend-fleet-environment: &backend-fleet-environment
+  HOST: ${HOST:-0.0.0.0}
+  PORT: ${PORT:-3500}
+  NODE_ENV: ${NODE_ENV:-development}
+  DB_HOST: ${DB_HOST:-postgres}
+  DB_PORT: ${DB_PORT:-5432}
+  DB_USERNAME: ${DB_USERNAME:-postgres}
+  DB_PASSWORD: ${DB_PASSWORD:-postgres}
+  DB_DATABASE: ${DB_DATABASE:-loadweaver_fleet}
+  TYPEORM_LOGGING: ${TYPEORM_LOGGING:-}
+  CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4602}
+  WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-}
+  FLEET_CONSOLE_URL: ${FLEET_CONSOLE_URL:-}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY:-MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=}
+  AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
+  DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
+  DISABLE_FORCE_LOGIN_2FA: ${DISABLE_FORCE_LOGIN_2FA:-false}
+  STATIC_API_KEY: ${STATIC_API_KEY:-local-development-loadweaver-fleet-api-key}
+  JWT_SECRET: ${JWT_SECRET:-local-development-loadweaver-fleet-jwt-secret-change-before-deployment}
+  PRODUCT_NAME: ${PRODUCT_NAME:-Loadweaver Fleet}
+  KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL:-}
+  KEYCLOAK_AUTH_SERVER_URL: ${KEYCLOAK_AUTH_SERVER_URL:-}
+  KEYCLOAK_REALM: ${KEYCLOAK_REALM:-}
+  KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-}
+  KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
+  KEYCLOAK_TOKEN_VALIDATION: ${KEYCLOAK_TOKEN_VALIDATION:-online}
+  RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
+  RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}
+  RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}
+  FLEET_CLUSTER_ENDPOINT_ALLOWED_HOSTS: ${FLEET_CLUSTER_ENDPOINT_ALLOWED_HOSTS:-}
+  FLEET_CLUSTER_ENDPOINT_ALLOW_INTERNAL_HOST: ${FLEET_CLUSTER_ENDPOINT_ALLOW_INTERNAL_HOST:-false}
+  FLEET_CLUSTER_ENDPOINT_ALLOW_INSECURE_HTTP: ${FLEET_CLUSTER_ENDPOINT_ALLOW_INSECURE_HTTP:-false}
+  FLEET_CLUSTER_TLS_REJECT_UNAUTHORIZED: ${FLEET_CLUSTER_TLS_REJECT_UNAUTHORIZED:-true}
+  FLEET_CLUSTER_REQUEST_TIMEOUT_MS: ${FLEET_CLUSTER_REQUEST_TIMEOUT_MS:-10000}
+  FLEET_RELAY_TIMEOUT_MS: ${FLEET_RELAY_TIMEOUT_MS:-60000}
+  FLEET_RELAY_MAX_REQUEST_BYTES: ${FLEET_RELAY_MAX_REQUEST_BYTES:-11534336}
+  FLEET_RELAY_MAX_RESPONSE_BYTES: ${FLEET_RELAY_MAX_RESPONSE_BYTES:-1073741824}
+  FLEET_TRANSFER_TIMEOUT_MS: ${FLEET_TRANSFER_TIMEOUT_MS:-21600000}
+  FLEET_CACHE_TTL_MS: ${FLEET_CACHE_TTL_MS:-30000}
+  FLEET_HEALTH_POLL_CRON: '${FLEET_HEALTH_POLL_CRON:-* * * * *}'
+  FLEET_OPERATIONS_CRON: '${FLEET_OPERATIONS_CRON:-* * * * *}'
+  LOADWEAVER_FLEET_WEBSOCKET_NAMESPACE: ${LOADWEAVER_FLEET_WEBSOCKET_NAMESPACE:-socket/fleet}
+  VALKEY_HOST: ${VALKEY_HOST:-${REDIS_HOST:-valkey}}
+  REDIS_HOST: ${REDIS_HOST:-${VALKEY_HOST:-valkey}}
+  VALKEY_PORT: ${VALKEY_PORT:-${REDIS_PORT:-6379}}
+  REDIS_PORT: ${REDIS_PORT:-${VALKEY_PORT:-6379}}
+  VALKEY_PASSWORD: ${VALKEY_PASSWORD:-${REDIS_PASSWORD:-}}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-${VALKEY_PASSWORD:-}}
+  VALKEY_DB: ${VALKEY_DB:-${REDIS_DB:-0}}
+  REDIS_DB: ${REDIS_DB:-${VALKEY_DB:-0}}
+  VALKEY_KEY_PREFIX: ${VALKEY_KEY_PREFIX:-${REDIS_KEY_PREFIX:-loadweaver-fleet}}
+  REDIS_KEY_PREFIX: ${REDIS_KEY_PREFIX:-${VALKEY_KEY_PREFIX:-loadweaver-fleet}}
+  CACHE_CLIENT: ${CACHE_CLIENT:-glide}
+  QUEUE_ROLE: ${QUEUE_ROLE:-all}
+  QUEUE_WORKER_CONCURRENCY: ${QUEUE_WORKER_CONCURRENCY:-5}
+  QUEUE_BULL_BOARD_ENABLED: ${QUEUE_BULL_BOARD_ENABLED:-true}
+  QUEUE_BULL_BOARD_PATH: ${QUEUE_BULL_BOARD_PATH:-/admin/queues}
+  QUEUE_BULL_BOARD_USERNAME: ${QUEUE_BULL_BOARD_USERNAME:-admin}
+  QUEUE_BULL_BOARD_PASSWORD: ${QUEUE_BULL_BOARD_PASSWORD:-local-development-bull-board-password}
+  SMTP_HOST: ${SMTP_HOST:-mailhog}
+  SMTP_PORT: ${SMTP_PORT:-1025}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  EMAIL_FROM: ${EMAIL_FROM:-noreply@localhost}
+  EMAIL_COMPANY_NAME: ${EMAIL_COMPANY_NAME:-}
+  EMAIL_COMPANY_ADDRESS_LINE1: ${EMAIL_COMPANY_ADDRESS_LINE1:-}
+  EMAIL_COMPANY_POSTAL_CODE: ${EMAIL_COMPANY_POSTAL_CODE:-}
+  EMAIL_COMPANY_CITY: ${EMAIL_COMPANY_CITY:-}
+  EMAIL_COMPANY_COUNTRY: ${EMAIL_COMPANY_COUNTRY:-}
+  EMAIL_COMPANY_VAT_ID: ${EMAIL_COMPANY_VAT_ID:-}
+  EMAIL_COMPANY_EMAIL: ${EMAIL_COMPANY_EMAIL:-}
+  WEBHOOK_ALLOW_INSECURE_HTTP: ${WEBHOOK_ALLOW_INSECURE_HTTP:-false}
+  WEBHOOK_ALLOW_INTERNAL_HOST: ${WEBHOOK_ALLOW_INTERNAL_HOST:-false}
+  WEBHOOK_CHAT_THROTTLE_MS: ${WEBHOOK_CHAT_THROTTLE_MS:-}
+  WEBHOOK_DELIVERY_LOG_MAX_ENTRIES: ${WEBHOOK_DELIVERY_LOG_MAX_ENTRIES:-}
+  WEBHOOK_DELIVERY_LOG_RETENTION_DAYS: ${WEBHOOK_DELIVERY_LOG_RETENTION_DAYS:-}
+  WEBHOOK_DELIVERY_RETENTION_INTERVAL_MS: ${WEBHOOK_DELIVERY_RETENTION_INTERVAL_MS:-}
+  OTEL_ENABLED: ${OTEL_ENABLED:-false}
+  OTEL_USERNAME: ${OTEL_USERNAME:-}
+  OTEL_PASSWORD: ${OTEL_PASSWORD:-}
+  OTEL_METRICS_PATH: ${OTEL_METRICS_PATH:-/otel/metrics}
+  OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-}
+  OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+  OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-}
+  VERSION: ${VERSION:-}
+  INSTANCE_ID: ${INSTANCE_ID:-}
+
+services:
+  postgres:
+    image: docker.io/library/postgres:16.10-alpine@sha256:029660641a0cfc575b14f336ba448fb8a75fd595d42e1fa316b9fb4378742297
+    container_name: loadweaver-fleet-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: loadweaver_fleet
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - loadweaver-fleet-network
+    restart: unless-stopped
+
+  valkey:
+    image: docker.io/valkey/valkey:9.0.6-alpine@sha256:187679e3bd4036959631e3f03983ab2ba503ab21e6fd0454d508e909db2ee989
+    container_name: loadweaver-fleet-valkey
+    command: ['valkey-server', '--appendonly', 'yes']
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - loadweaver-fleet-network
+    restart: unless-stopped
+
+  backend-fleet:
+    image: ghcr.io/forepath/loadweaver-fleet-api:latest
+    pull_policy: never
+    container_name: loadweaver-fleet-api
+    environment:
+      <<: *backend-fleet-environment
+    ports:
+      - '${PORT:-3500}:${PORT:-3500}'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - loadweaver-fleet-network
+    restart: unless-stopped
+
+  mailhog:
+    image: docker.io/mailhog/mailhog:latest@sha256:8d76a3d4ffa32a3661311944007a415332c4bb855657f4f6c57996405c009bea
+    container_name: loadweaver-fleet-mailhog
+    ports:
+      - '${SMTP_HOST_PORT:-1028}:${SMTP_PORT:-1025}'
+      - '${MAILHOG_HOST_PORT:-8028}:8025'
+    networks:
+      - loadweaver-fleet-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  valkey_data:
+
+networks:
+  loadweaver-fleet-network:
+    driver: bridge

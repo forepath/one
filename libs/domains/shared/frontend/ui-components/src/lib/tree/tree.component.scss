@@ -1,0 +1,111 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.fpc-tree__viewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  outline: none;
+
+  &:focus-visible .fpc-tree__row--active {
+    box-shadow: inset 0 0 0 2px var(--bs-primary);
+  }
+}
+
+.fpc-tree__spacer {
+  position: relative;
+  min-width: 100%;
+}
+
+.fpc-tree__row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding-right: 0.5rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background-color: var(--bs-tertiary-bg);
+  }
+}
+
+.fpc-tree__row--selected,
+.fpc-tree__row--selected:hover {
+  background-color: var(--bs-primary-bg-subtle);
+  color: var(--bs-primary-text-emphasis);
+}
+
+.fpc-tree__row--disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.fpc-tree__twisty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 1rem;
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+.fpc-tree__twisty--hidden {
+  visibility: hidden;
+}
+
+.fpc-tree__status {
+  flex: 0 0 auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+@each $tone in success, warning, danger, info, secondary {
+  .fpc-tree__status--#{$tone} {
+    background-color: var(--bs-#{$tone});
+  }
+}
+
+.fpc-tree__icon {
+  flex: 0 0 auto;
+  color: var(--bs-secondary-color);
+}
+
+.fpc-tree__label {
+  // The name keeps its width; a long hint gives way first (it only gets the space left over).
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.fpc-tree__mark {
+  flex: 0 0 auto;
+  color: var(--bs-warning);
+  font-size: 0.625rem;
+}
+
+.fpc-tree__hint {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 0.75rem;
+}
+
+.fpc-tree__badge {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--bs-secondary-color);
+  background-color: var(--bs-secondary-bg);
+}

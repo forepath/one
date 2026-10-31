@@ -1,0 +1,255 @@
+import { z } from 'zod';
+
+import { clusterRemoteAccessSchema } from './remote-access';
+import { clusterObservabilitySchema } from './observability';
+import { clusterIngressSchema } from './edge';
+import { clusterGitSchema } from './git';
+import { clusterUpdatesSchema } from './updates';
+import { clusterBackupsSchema } from './platform-backups';
+import { clusterVmImagesSchema } from './vm-image-catalog';
+
+import { cidrStringSchema } from './policy';
+import { labelsSchema, resourceNameSchema } from '../metadata';
+import { selectorSchema } from '../selector';
+
+export const siteSpecSchema = z
+  .object({
+    description: z.string().max(1024).optional(),
+    /** Free-form location for the fleet world map (3.25). */
+    location: z
+      .object({
+        latitude: z.number().min(-90).max(90),
+        longitude: z.number().min(-180).max(180),
+        label: z.string().max(128).optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+export type SiteSpec = z.infer<typeof siteSpecSchema>;
+
+/**
+ * Isolation levels Loadweaver manages per node (3.1, Agenstra's names), in ladder order (weakest first):
+ * `runc` (standard), `sandboxed` (gVisor `--platform=systrap`), `sandboxed-kvm` (gVisor `--platform=kvm`),
+ * `microvm` (QEMU microVM in the launcher, 3.35).
+ *
+ * Exact-level semantics: a workload always runs at exactly its declared level; the scheduler never upgrades or
+ * downgrades it (`microvm` and `sandboxed-kvm` change semantics). The strength order (`RUNTIME_RANK`, `atLeast`,
+ * `runtimesAtLeast`) is only used for node selectors (derived labels such as "can do at least sandboxed-kvm"),
+ * capability views (Agenstra's aggregation) and plan output — never for placement.
+ */
+export const RUNTIMES = ['runc', 'sandboxed', 'sandboxed-kvm', 'microvm'] as const;
+export const runtimeSchema = z.enum(RUNTIMES);
+export type Runtime = z.infer<typeof runtimeSchema>;
+
+/** Strength of each level (ladder order = rank). For selectors, capability views and plan output only. */
+export const RUNTIME_RANK: Readonly<Record<Runtime, number>> = Object.freeze({
+  runc: 1,
+  sandboxed: 2,
+  'sandboxed-kvm': 3,
+  microvm: 4,
+});
+
+export function isRuntime(value: unknown): value is Runtime {
+  return typeof value === 'string' && (RUNTIMES as readonly string[]).includes(value);
+}
+
+/**
+ * Whether `level` is at least as strong as `min`. Not a placement rule (placement needs the exact level): used for
+ * selectors such as `runtime ≥ sandboxed-kvm`, capability aggregation and plan output.
+ */
+export function atLeast(level: Runtime, min: Runtime): boolean {
+  return RUNTIME_RANK[level] >= RUNTIME_RANK[min];
+}
+
+/** Every level at least as strong as `min`, in ladder order (the `In` values a `runtime ≥ min` selector expands to). */
+export function runtimesAtLeast(min: Runtime): Runtime[] {
+  return RUNTIMES.filter((level) => atLeast(level, min));
+}
+
+/** The strongest of the given levels (e.g. a node's ready levels → `loadweaver.com/runtime`); null when empty. */
+export function strongestRuntime(levels: Iterable<Runtime>): Runtime | null {
+  let best: Runtime | null = null;
+
+  for (const level of levels) if (best === null || RUNTIME_RANK[level] > RUNTIME_RANK[best]) best = level;
+
+  return best;
+}
+
+/** Levels that need a usable `/dev/kvm` on the node (none of them on nodes with `virtualization.kvm: disabled`). */
+export const KVM_RUNTIMES: readonly Runtime[] = ['sandboxed-kvm', 'microvm'];
+
+/** Probe state of one isolation level on a node (Agenstra's names). */
+export const ISOLATION_STATES = [
+  'ready',
+  'unsupported',
+  'installation-failed',
+  'probe-failed',
+  'disabled-by-admin',
+] as const;
+export const isolationStateSchema = z.enum(ISOLATION_STATES);
+export type IsolationState = z.infer<typeof isolationStateSchema>;
+
+/**
+ * Per-node virtualization settings (3.1). `kvm: disabled` opts the node out of KVM: no KVM host preparation, no
+ * KVM levels (`sandboxed-kvm`, `microvm`), no microVMs and no full VMs on the node.
+ */
+export const nodeVirtualizationSchema = z.object({ kvm: z.enum(['auto', 'disabled']).default('auto') }).strict();
+export type NodeVirtualization = z.infer<typeof nodeVirtualizationSchema>;
+
+/**
+ * Declarative part of a node. Nodes are registered by joining (3.21); their spec only carries what
+ * an operator decides: site, labels, schedulability.
+ */
+export const nodeSpecSchema = z
+  .object({
+    site: resourceNameSchema,
+    labels: labelsSchema.optional(),
+    /** Cordoned nodes get no new workloads (drain sets this first). */
+    unschedulable: z.boolean().default(false),
+    /** Witness nodes only vote in etcd / Patroni and never run workloads (3.2). */
+    witness: z.boolean().default(false),
+    /** KVM opt-out (3.1); absent: `auto` (KVM levels where the probe passes). */
+    virtualization: nodeVirtualizationSchema.optional(),
+  })
+  .strict();
+export type NodeSpec = z.infer<typeof nodeSpecSchema>;
+
+/** How members of one group treat each other ("nodes in the same group share networking", 3.3). */
+export const intraGroupSchema = z.enum(['allow', 'isolate']);
+
+export const nodeGroupSpecSchema = z
+  .object({
+    description: z.string().max(1024).optional(),
+    selector: selectorSchema,
+    intraGroup: intraGroupSchema.default('allow'),
+  })
+  .strict();
+export type NodeGroupSpec = z.infer<typeof nodeGroupSpecSchema>;
+
+export const workloadGroupSpecSchema = z
+  .object({
+    description: z.string().max(1024).optional(),
+    /** Selector over service labels within the owning project. */
+    selector: selectorSchema,
+    intraGroup: intraGroupSchema.default('allow'),
+    /** Discoverable by other projects, which may request access (3.17). */
+    exposed: z.boolean().default(false),
+  })
+  .strict();
+export type WorkloadGroupSpec = z.infer<typeof workloadGroupSpecSchema>;
+
+/** Cluster-wide network settings (3.4, 3.23). Dual-stack: at least one family is required. */
+export const clusterNetworkSchema = z
+  .object({
+    /** Pool the per-node container subnets are carved from. */
+    podPoolV4: cidrStringSchema.optional(),
+    podPoolV6: cidrStringSchema.optional(),
+    nodePrefixV4: z.number().int().min(16).max(28).default(24),
+    nodePrefixV6: z.number().int().min(48).max(120).default(80),
+    /** Pool for stable service IPs that follow a service across nodes. */
+    servicePoolV4: cidrStringSchema.optional(),
+    servicePoolV6: cidrStringSchema.optional(),
+    /** Overlay addresses of the WireGuard interfaces. */
+    overlayPoolV4: cidrStringSchema.optional(),
+    overlayPoolV6: cidrStringSchema.optional(),
+    /** Private ASN used for iBGP between nodes (3.4). */
+    asn: z.number().int().min(1).max(4294967295).default(4200000000),
+    /** Route reflectors are introduced above this node count (3.34). */
+    routeReflectorThreshold: z.number().int().min(4).default(16),
+    dnsDomain: z
+      .string()
+      .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/)
+      .default('lw'),
+  })
+  .strict()
+  .superRefine((net, ctx) => {
+    if (!net.podPoolV4 && !net.podPoolV6)
+      ctx.addIssue({ code: 'custom', message: 'at least one pod pool (IPv4 or IPv6) is required' });
+
+    if (!net.servicePoolV4 && !net.servicePoolV6)
+      ctx.addIssue({ code: 'custom', message: 'at least one service pool is required' });
+  });
+export type ClusterNetwork = z.infer<typeof clusterNetworkSchema>;
+
+/** Upstream registries the built-in registry mirrors as pull-through cache (3.22). */
+export const DEFAULT_REGISTRY_MIRRORS = [
+  { host: 'docker.io', remoteUrl: 'https://registry-1.docker.io' },
+  { host: 'ghcr.io', remoteUrl: 'https://ghcr.io' },
+  { host: 'quay.io', remoteUrl: 'https://quay.io' },
+  { host: 'registry.k8s.io', remoteUrl: 'https://registry.k8s.io' },
+  { host: 'gcr.io', remoteUrl: 'https://gcr.io' },
+  { host: 'mcr.microsoft.com', remoteUrl: 'https://mcr.microsoft.com' },
+  { host: 'public.ecr.aws', remoteUrl: 'https://public.ecr.aws' },
+];
+/** Bounded by the registry port range of the built-in policies. */
+export const MAX_REGISTRY_MIRRORS = 16;
+/** Private images of a project are `registry.lw/<project>/<repository>` (3.22). */
+export const PRIVATE_REGISTRY_HOST = 'registry.lw';
+
+const registryHostSchema = z
+  .string()
+  .max(253)
+  .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(:\d{1,5})?$/, 'invalid registry host')
+  .refine((h) => h !== PRIVATE_REGISTRY_HOST, `${PRIVATE_REGISTRY_HOST} is the built-in private registry`);
+
+export const clusterRegistrySchema = z
+  .object({
+    /** Pull-through caches; images from other registries are pulled by the nodes directly. */
+    mirrors: z
+      .array(z.object({ host: registryHostSchema, remoteUrl: z.url({ protocol: /^https$/ }).max(512) }).strict())
+      .max(MAX_REGISTRY_MIRRORS)
+      .refine((m) => new Set(m.map((x) => x.host)).size === m.length, 'mirror hosts must be unique')
+      .default(DEFAULT_REGISTRY_MIRRORS),
+  })
+  .strict();
+export type ClusterRegistry = z.infer<typeof clusterRegistrySchema>;
+
+export const clusterSpecSchema = z
+  .object({
+    network: clusterNetworkSchema,
+    /** Failure domain default (3.12): node, or site (opt-in, needs ≥ 3 sites). */
+    failureDomain: z.enum(['node', 'site']).default('node'),
+    /** Desired control-plane quorum size once enough nodes exist (3.2). */
+    controlPlaneSize: z.union([z.literal(3), z.literal(5)]).default(3),
+    /** Node shell is root on the host: off by default, cluster admins only (3.19). */
+    nodeShellEnabled: z.boolean().default(false),
+    /**
+     * Terminal recording (3.19): input / output of sessions in replicas, for all projects (`on`) or only projects that
+     * enable it (`off`); node shells are always recorded. Kept this many days.
+     */
+    terminalRecording: z.enum(['off', 'on']).default('off'),
+    terminalRecordingRetentionDays: z.number().int().min(1).max(3650).default(90),
+    /** Built-in registry (3.22). */
+    registry: clusterRegistrySchema.default({ mirrors: DEFAULT_REGISTRY_MIRRORS }),
+    /** Public ingress (3.6); without it, nothing is exposed publicly. */
+    ingress: clusterIngressSchema.optional(),
+    /** Remote access for people, machines and offices (3.31). */
+    remoteAccess: clusterRemoteAccessSchema.optional(),
+    /** Logs and metrics: retention (3.14, 3.18). */
+    observability: clusterObservabilitySchema.optional(),
+    /** Plan bot (GitHub App, GitLab) and Git account linking (3.30). */
+    git: clusterGitSchema.optional(),
+    /**
+     * Egress filtering through the node proxies (3.7), like Agenstra's: `off`, `monitor` (record would-be blocks),
+     * `enforce` (hostname allow / deny lists from policies with hostname destinations; deny wins; no allow list means
+     * unrestricted), `offline` (no web egress at all).
+     */
+    egress: z
+      .object({
+        mode: z.enum(['off', 'monitor', 'enforce', 'offline']).default('off'),
+        blockPrivateNetworks: z.boolean().default(true),
+        blockIpLiterals: z.boolean().default(false),
+        logAllowed: z.boolean().default(true),
+      })
+      .strict()
+      .default({ mode: 'off', blockPrivateNetworks: true, blockIpLiterals: false, logAllowed: true }),
+    /** Update policy, channel and bundle source (3.26); maintenance windows are their own resources. */
+    updates: clusterUpdatesSchema.optional(),
+    /** Backups; `platform`: the control plane's own data (3.20). */
+    backups: clusterBackupsSchema.optional(),
+    /** The cluster's own VM image catalog entries (3.42), listed next to the shipped ones. */
+    vmImages: clusterVmImagesSchema.optional(),
+  })
+  .strict();
+export type ClusterSpec = z.infer<typeof clusterSpecSchema>;

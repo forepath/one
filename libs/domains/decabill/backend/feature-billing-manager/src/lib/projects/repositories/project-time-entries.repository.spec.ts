@@ -18,6 +18,7 @@ describe('ProjectTimeEntriesRepository', () => {
 
   const mockQueryBuilder = {
     innerJoin: jest.fn().mockReturnThis(),
+    leftJoin: jest.fn().mockReturnThis(),
     where: mockWhere.mockReturnThis(),
     andWhere: mockAndWhere.mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
@@ -87,6 +88,33 @@ describe('ProjectTimeEntriesRepository', () => {
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('entry.ticket_id = :ticketId', { ticketId: 't1' });
       expect(result).toEqual({ items: entries, total: 1 });
+    });
+
+    it('searches description and ticket title with escaped wildcards (DB-12)', async () => {
+      mockGetCount.mockResolvedValue(0);
+      mockGetMany.mockResolvedValue([]);
+
+      const repository = new ProjectTimeEntriesRepository(mockRepository as never);
+
+      await runWithTenantId('default', () => repository.findAllByProject('p1', 25, 0, null, ' 50%_dns '));
+
+      expect(mockQueryBuilder.leftJoin).toHaveBeenCalledWith('entry.ticket', 'searchTicket');
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        '(entry.description ILIKE :search OR searchTicket.title ILIKE :search)',
+        { search: '%50\\%\\_dns%' },
+      );
+    });
+
+    it('skips the search join without a term', async () => {
+      mockQueryBuilder.leftJoin.mockClear();
+      mockGetCount.mockResolvedValue(0);
+      mockGetMany.mockResolvedValue([]);
+
+      const repository = new ProjectTimeEntriesRepository(mockRepository as never);
+
+      await runWithTenantId('default', () => repository.findAllByProject('p1', 25, 0, null, '  '));
+
+      expect(mockQueryBuilder.leftJoin).not.toHaveBeenCalled();
     });
   });
 

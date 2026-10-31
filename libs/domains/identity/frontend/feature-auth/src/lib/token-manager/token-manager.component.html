@@ -1,7 +1,39 @@
 <div class="token-manager-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="token-manager-bulk-result"
+    />
+  }
+
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="tokens()"
+    paging="client"
+    persistKey="shared-access-tokens"
+    [(query)]="searchQuery"
+    [searchPlaceholder]="searchPlaceholder"
+    [filtered]="!!searchQuery().trim()"
+    [loading]="(loading$ | async) === true && tokens().length === 0"
+    [error]="error()"
+    selectable
+    [(selected)]="selectedTokenIds"
+    [rowMenu]="tokenRowMenu"
+    (rowAction)="onTokenAction($event.row, $event.item.id)"
+    (rowActivate)="onEditToken($event)"
+    emptyIcon="key"
+    data-testid="token-manager-table"
+  >
     <fpc-button
-      fpcPageHeaderActions
+      fpcDataTableToolbar
       variant="primary"
       size="sm"
       iconOnly
@@ -12,108 +44,64 @@
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
     </fpc-button>
-  </fpc-page-header>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="bulkBusy()"
+      (clicked)="bulkRevokeOpen.set(true)"
+      data-testid="token-manager-bulk-revoke"
+      iconOnly
+      [ariaLabel]="revokeLabel"
+      [title]="revokeLabel"
+    >
+      <i class="bi bi-x-octagon" aria-hidden="true"></i>
+    </fpc-button>
 
-  <fpc-search-field
-    class="border-bottom flex-shrink-0"
-    name="search"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchPlaceholder"
-    [(value)]="searchQuery"
-  />
+    <span fpcDataTableEmpty>
+      <fpc-empty-state icon="key" [message]="emptyMessage" />
+    </span>
 
-  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @if (loading$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" [label]="loadingLabel" />
-      </div>
-    } @else {
-      @if (error(); as errorMessage) {
-        <fpc-alert class="m-3" variant="danger" [message]="errorMessage" />
-      }
-
-      @if (tokens().length === 0) {
-        @if (searchQuery().trim()) {
-          <fpc-empty-state
-            icon="search"
-            message="No search results"
-            i18n-message="@@featureTokenManager-noSearchResults"
-          />
-        } @else {
-          <fpc-empty-state [message]="emptyMessage" />
-        }
+    <ng-template fpcTableCell="scopes" let-row>
+      <fpc-tooltip
+        [text]="scopesText(row)"
+        placement="top"
+        appearance="panel"
+        [nativeTitle]="false"
+        [tooltipId]="'token-scopes-' + rowKey(row)"
+      >
+        <fpc-badge variant="info" color="secondary" tabindex="0">
+          {{ scopeCount(row) }}
+          <ng-container i18n="@@featureTokenManager-scopes">scopes</ng-container>
+        </fpc-badge>
+      </fpc-tooltip>
+    </ng-template>
+    <ng-template fpcTableCell="created" let-row>{{ row.createdAt | fpcDate: 'datetime' }}</ng-template>
+    <ng-template fpcTableCell="expires" let-row>
+      @if (row.expiresAt) {
+        {{ row.expiresAt | fpcDate: 'datetime' }}
       } @else {
-        <fpc-list [flush]="true">
-          @for (token of tokens(); track token.id) {
-            <fpc-list-item>
-              <div fpcListItemTitle class="fw-semibold">{{ token.name }}</div>
-              <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                <fpc-tooltip
-                  [text]="token.scopes.join('\n')"
-                  placement="top"
-                  appearance="panel"
-                  [nativeTitle]="false"
-                  [tooltipId]="'token-scopes-' + token.id"
-                >
-                  <fpc-badge variant="info" color="secondary" tabindex="0">
-                    {{ token.scopes.length }}
-                    <ng-container i18n="@@featureTokenManager-scopes">scopes</ng-container>
-                  </fpc-badge>
-                </fpc-tooltip>
-                <span>
-                  <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>{{ formatDate(token.createdAt) }}
-                </span>
-                @if (token.expiresAt) {
-                  <span>
-                    <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>{{ formatDate(token.expiresAt) }}
-                  </span>
-                } @else {
-                  <span>
-                    <i class="bi bi-infinity me-1" aria-hidden="true"></i>
-                    <ng-container i18n="@@featureTokenManager-noExpiry">No expiry</ng-container>
-                  </span>
-                }
-                @if (token.lastUsedAt) {
-                  <span>
-                    <i class="bi bi-clock-history me-1" aria-hidden="true"></i>{{ formatDate(token.lastUsedAt) }}
-                  </span>
-                }
-              </div>
-              <fpc-button-group fpcListItemActions size="sm">
-                <fpc-button
-                  variant="warning"
-                  size="sm"
-                  iconOnly
-                  (clicked)="onEditToken(token)"
-                  i18n-title="@@featureTokenManager-editButtonTitle"
-                  title="Edit token"
-                  i18n-ariaLabel="@@featureTokenManager-editButtonTitle"
-                  ariaLabel="Edit token"
-                >
-                  <i class="bi bi-pencil"></i>
-                </fpc-button>
-                <fpc-button
-                  variant="danger"
-                  size="sm"
-                  iconOnly
-                  (clicked)="onRevokeToken(token)"
-                  [disabled]="(revoking$ | async) === true"
-                  i18n-title="@@featureTokenManager-revokeTitle"
-                  title="Revoke token"
-                  i18n-ariaLabel="@@featureTokenManager-revokeTitle"
-                  ariaLabel="Revoke token"
-                >
-                  <i class="bi bi-trash"></i>
-                </fpc-button>
-              </fpc-button-group>
-            </fpc-list-item>
-          }
-        </fpc-list>
+        <span class="text-body-secondary" i18n="@@featureTokenManager-noExpiry">No expiry</span>
       }
-    }
-  </div>
+    </ng-template>
+    <ng-template fpcTableCell="lastUsed" let-row>{{ row.lastUsedAt | fpcDate: 'datetime' }}</ng-template>
+  </fpc-data-table>
 </div>
+
+<fpc-confirm-dialog
+  [(open)]="bulkRevokeOpen"
+  i18n-title="@@featureTokenManager-bulkRevokeTitle"
+  title="Revoke tokens"
+  i18n-confirmLabel="@@featureTokenManager-revoke"
+  confirmLabel="Revoke"
+  [danger]="true"
+  [busy]="bulkBusy()"
+  (confirmed)="onConfirmBulkRevoke()"
+>
+  <p class="mb-0" i18n="@@featureTokenManager-bulkRevokeBody">
+    Revoke the selected tokens? Scripts and integrations using them stop working. This cannot be undone.
+  </p>
+</fpc-confirm-dialog>
 
 <fpc-modal
   [(open)]="createTokenModalOpen"
@@ -121,6 +109,8 @@
   title="Create personal access token"
   size="lg"
   [closable]="(saving$ | async) !== true"
+  [cancelLabel]="lastCreatedPlaintext() ? null : cancelLabel"
+  [cancelDisabled]="(saving$ | async) === true"
   (closed)="onCreateDone()"
 >
   @if (lastCreatedPlaintext(); as plaintext) {
@@ -216,6 +206,8 @@
   title="Edit personal access token"
   size="lg"
   [closable]="(saving$ | async) !== true"
+  [cancelLabel]="cancelLabel"
+  [cancelDisabled]="(saving$ | async) === true"
   (closed)="cancelEditToken()"
 >
   <form (ngSubmit)="onSubmitEditToken()">
@@ -259,7 +251,7 @@
         [disabled]="(saving$ | async) === true || !isFormValid(editForm)"
         [loading]="(saving$ | async) === true"
       >
-        <span i18n="@@featureTokenManager-update">Update</span>
+        <span i18n="@@featureTokenManager-update">Save changes</span>
       </fpc-button>
     </div>
   </form>

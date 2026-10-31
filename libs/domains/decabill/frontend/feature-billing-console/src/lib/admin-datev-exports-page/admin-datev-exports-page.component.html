@@ -1,18 +1,5 @@
 <div class="admin-datev-exports border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
-    <fpc-button
-      fpcPageHeaderActions
-      variant="primary"
-      size="sm"
-      iconOnly
-      [disabled]="(triggerLoading$ | async) === true"
-      [ariaLabel]="exportMonthAriaLabel"
-      [title]="exportMonthAriaLabel"
-      (clicked)="openExportModal()"
-    >
-      <i class="bi bi-calendar-plus" aria-hidden="true"></i>
-    </fpc-button>
-  </fpc-page-header>
+  <fpc-page-header [title]="pageTitle" />
 
   @if (showViewTabs$ | async) {
     <fpc-tab-group
@@ -29,126 +16,85 @@
     </fpc-tab-group>
   }
 
-  <fpc-search-field
-    class="border-bottom"
-    inputId="datevExportSearch"
-    name="datevExportSearch"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchPlaceholder"
-    [(value)]="searchQuery"
-  />
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="datev-exports-bulk-result"
+    />
+  }
 
-  <div class="flex-grow-1 overflow-auto min-h-0 d-flex flex-column">
-    @if ((loading$ | async) && items().length === 0) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner
-          variant="primary"
-          i18n-label="@@featureAdminDatevExports-loading"
-          label="Loading DATEV exports..."
-        />
-      </div>
-    } @else {
-      @if (error$ | async; as err) {
-        <fpc-alert class="m-3" variant="danger" [message]="err" />
-      }
-      @if (items().length === 0) {
-        @if (searchQuery().trim()) {
-          <fpc-empty-state
-            icon="search"
-            message="No search results"
-            i18n-message="@@featureAdminDatevExports-noSearchResults"
-          />
-        } @else {
-          <fpc-empty-state message="No DATEV exports yet" i18n-message="@@featureAdminDatevExports-empty" />
-        }
-      } @else {
-        <fpc-list [flush]="true">
-          @for (item of items(); track item.id) {
-            <fpc-list-item [active]="isQueuedExport(item)">
-              <div fpcListItemTitle>
-                <div class="fw-semibold">{{ exportPrimaryTitle(item) }}</div>
-                @if (isQueuedExport(item)) {
-                  <div class="small">{{ queuedExportMessage() }}</div>
-                } @else if (exportItem(item); as exportItem) {
-                  @if (exportSecondaryLine(exportItem); as secondary) {
-                    <div class="small text-body-secondary">{{ secondary }}</div>
-                  }
-                }
-              </div>
-              <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                @if (isQueuedExport(item)) {
-                  <span class="me-2 d-inline-flex align-items-center">
-                    <fpc-spinner class="me-1" size="sm" />
-                    <span i18n="@@featureAdminDatevExports-statusQueued">Queued</span>
-                  </span>
-                  <span class="me-2">
-                    <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ exportScopeLabel(item.scope) }}
-                  </span>
-                } @else if (exportItem(item); as exportItem) {
-                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                    <span class="me-2" [ngClass]="exportStatusTextClass(exportItem.status)">
-                      <i class="bi me-1" [ngClass]="exportStatusIconClass(exportItem.status)" aria-hidden="true"></i>
-                      {{ exportStatusLabel(exportItem.status) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ exportScopeLabel(exportItem.scope) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-journal-text me-1" aria-hidden="true"></i
-                      ><span i18n="@@featureAdminDatevExports-metaBookings">Bookings</span>:
-                      {{ formatCount(exportItem.bookingCount) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-receipt me-1" aria-hidden="true"></i
-                      ><span i18n="@@featureAdminDatevExports-metaInvoices">Invoices</span>:
-                      {{ formatCount(exportItem.invoiceCount) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-people me-1" aria-hidden="true"></i
-                      ><span i18n="@@featureAdminDatevExports-metaDebtors">Debtors</span>:
-                      {{ formatCount(exportItem.debtorCount) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-calendar-check me-1" aria-hidden="true"></i
-                      >{{ formatDate(exportItem.completedAt) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi me-1" [ngClass]="triggeredByIconClass(exportItem.triggeredBy)" aria-hidden="true"></i
-                      >{{ triggeredByLabel(exportItem.triggeredBy) }}
-                    </span>
-                  </div>
-                }
-              </div>
-              @if (exportItem(item); as exportItem) {
-                <fpc-button-group
-                  fpcListItemActions
-                  size="sm"
-                  ariaLabel="Export actions"
-                  i18n-ariaLabel="@@featureAdminDatevExports-exportActionsAria"
-                >
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="dark"
-                    (clicked)="downloadExport(exportItem.id)"
-                    [disabled]="exportItem.status !== 'completed'"
-                    title="Download export"
-                    i18n-title="@@featureAdminDatevExports-downloadButtonTitle"
-                  >
-                    <i class="bi bi-download" aria-hidden="true"></i>
-                  </fpc-button>
-                </fpc-button-group>
-              }
-            </fpc-list-item>
-          }
-        </fpc-list>
-      }
-    }
-  </div>
+  <!-- One data list: State · Period · file / scope / counts; inline + ⋮ Download; bulk Download. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="items()"
+    paging="server"
+    [total]="total()"
+    [(page)]="paging.page"
+    [(pageSize)]="paging.pageSize"
+    persistKey="decabill-datev-exports"
+    [(query)]="paging.search"
+    [searchPlaceholder]="searchPlaceholder"
+    [loading]="(loading$ | async) === true"
+    [error]="(error$ | async) ?? null"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    [rowInlineActions]="rowInlineActions"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    emptyIcon="file-earmark-zip"
+    data-testid="datev-exports-list"
+  >
+    <fpc-button
+      fpcDataTableToolbar
+      variant="primary"
+      size="sm"
+      iconOnly
+      [disabled]="(triggerLoading$ | async) === true"
+      [ariaLabel]="exportMonthAriaLabel"
+      [title]="exportMonthAriaLabel"
+      (clicked)="openExportModal()"
+    >
+      <i class="bi bi-calendar-plus" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="selectedCompleted().length === 0"
+      (clicked)="downloadSelected()"
+      data-testid="datev-exports-bulk-download"
+      iconOnly
+      [ariaLabel]="downloadLabel"
+      [title]="downloadLabel"
+    >
+      <i class="bi bi-download" aria-hidden="true"></i>
+    </fpc-button>
+
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="file-earmark-zip"
+        size="sm"
+        message="No DATEV exports yet"
+        i18n-message="@@featureAdminDatevExports-empty"
+      />
+    </span>
+    <ng-template fpcTableCell="completed" let-row>{{ formatDate(completedAt(row)) }}</ng-template>
+  </fpc-data-table>
 </div>
 
-<fpc-modal [(open)]="exportModalOpen" i18n-title="@@featureAdminDatevExports-exportModalTitle" title="Export month">
+<fpc-modal
+  [(open)]="exportModalOpen"
+  i18n-title="@@featureAdminDatevExports-exportModalTitle"
+  title="Export month"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <fpc-form-field forId="datevYear" i18n-label="@@featureAdminDatevExports-year" label="Year">
     <fpc-form-control controlId="datevYear" inputType="number" [(ngModel)]="triggerYear" name="datevYear" />
   </fpc-form-field>

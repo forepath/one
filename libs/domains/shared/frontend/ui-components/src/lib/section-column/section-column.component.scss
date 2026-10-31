@@ -25,3 +25,11 @@
   font-size: 1.25rem;
   font-weight: 600;
 }
+
+// Lane columns side by side (≥ md): every column but the last owns its right edge (one 1 px divider,
+// no gap). Auth split layouts (`marketing` / `form`) draw no divider.
+@media (min-width: 768px) {
+  :host(:not(:last-child):not(.section__column--marketing):not(.section__column--form)) {
+    border-right: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}

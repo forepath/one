@@ -11,6 +11,8 @@ import {
   loadTickets,
   migrateTicket,
   openTicketDetail,
+  ticketBoardTicketRemoved,
+  ticketBoardTicketUpsert,
   updateTicket,
 } from './tickets.actions';
 import { TicketsFacade } from './tickets.facade';
@@ -212,6 +214,18 @@ describe('TicketsFacade', () => {
     it('dispatches deleteTicket with releaseExternalSyncMarker', () => {
       facade.remove('ticket-1', true);
       expect(store.dispatch).toHaveBeenCalledWith(deleteTicket({ id: 'ticket-1', releaseExternalSyncMarker: true }));
+    });
+
+    it('merges a ticket saved by a bulk action', () => {
+      const ticket = { id: 'ticket-1', clientId: 'client-1' } as TicketResponseDto;
+
+      facade.applyTicketUpsert(ticket);
+      expect(store.dispatch).toHaveBeenCalledWith(ticketBoardTicketUpsert({ ticket }));
+    });
+
+    it('drops a ticket deleted by a bulk action', () => {
+      facade.applyTicketRemoved('ticket-1', 'client-1');
+      expect(store.dispatch).toHaveBeenCalledWith(ticketBoardTicketRemoved({ id: 'ticket-1', clientId: 'client-1' }));
     });
 
     it('dispatches addTicketComment', () => {

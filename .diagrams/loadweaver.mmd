@@ -1,0 +1,158 @@
+%% Loadweaver - full architecture (control plane, node agents, isolation levels incl. microVMs, full VMs, fleet, frontends)
+flowchart TB
+  Users(["Users<br/>browser, CLI (SEA, vm-image push), API, PATs,<br/>Terraform provider (loadweaver_virtual_machine)"])
+  Visitors(["Visitors<br/>marketing site, docs, pricing"])
+  Keycloak(["Keycloak / OIDC<br/>or built-in users (JWT) / static API key"])
+  GitHosts(["Git hosts<br/>GitHub App, GitLab: config repos, plan bot"])
+  Releases(["Signed release bundles<br/>ghcr.io/forepath, or air-gap import"])
+  Upstreams(["Upstream archives<br/>Debian / Ubuntu, Docker apt repos"])
+  Providers(["Server providers<br/>Hetzner, DigitalOcean, plugins<br/>failover IPs"])
+  Cloudflare(["Cloudflare DNS<br/>provider / secondary"])
+  Upstream(["Upstreams, IXP route servers<br/>own ASN + prefixes, RPKI"])
+  Clients(["External clients<br/>HTTP/HTTPS + TCP/UDP port forwards"])
+  RemoteUsers(["Remote users + offices<br/>WireGuard clients, posture reports"])
+  Posture(["MDM / EDR integrations<br/>Intune, Jamf, Kandji, Defender, CrowdStrike, SentinelOne"])
+  Receivers(["Email, webhooks"])
+  External(["Prometheus / OTLP / SIEM<br/>syslog, webhooks, Grafana data source"])
+  BackupExt[("External backup targets<br/>S3-compatible, SFTP, object lock")]
+  Decabill(["Decabill billing manager<br/>service kind loadweaver (initial node),<br/>usage meters for hosters' own clusters"])
+  AgentMgr(["Agenstra agent manager<br/>Loadweaver runtime per workspace"])
+  DockerHost(["Existing Docker host<br/>or former Loadweaver node"])
+  VmImageUrls(["VM image URLs + distro checksum lists<br/>cloud images: qcow2, raw, KubeVirt containerDisk;<br/>allow-listed SHA256SUMS / SHA512SUMS / releases.json"])
+  StatusVisitors(["Status page visitors<br/>public status pages via the ingress"])
+  RecoveryKit(["Recovery kit<br/>Shamir shares of the backup key, optional KMS escrow"])
+  Witness(["Optional witness node<br/>tie-breaker vote for 2-member control planes"])
+
+  subgraph Frontends["Frontends (Angular SSR, Express)"]
+    Console["Console (:4602)<br/>function rail: Resources, Activity, Observe, Operate, Delivery, Access;<br/>resource tree + object pages with tabs (landing: cluster summary), Workspace map / table,<br/>Create ▾ + resource modal (form or YAML) → draft tray → preview → plan, task dock,<br/>health tree, plans, logs, metrics + dashboards, alerts, SLOs, terminals + files,<br/>backups, updates, nodes + sites, import, Git + SOPS, secrets (project tab, Delivery › Secrets),<br/>access, saved views, virtual machines (serial console, noVNC, image catalog),<br/>fleet mode (same features per grant, as the verified person)"]
+    Landing["Landing page (:4600)<br/>home, how it works (isolation ladder, virtual machines),<br/>remote access, pricing, cloud"]
+    Docs["Docs (:4603)<br/>markdown + OpenAPI / AsyncAPI renderers"]
+    BillingConsole["Billing console (:4601)<br/>Loadweaver build of the Decabill console"]
+  end
+
+  Users --> Console
+  Visitors --> Landing
+  Visitors --> Docs
+  Visitors --> BillingConsole
+  BillingConsole -.REST + socket/billing.-> Decabill
+  Decabill -.cloud-init: single-node cluster,<br/>operator SMTP settings as bootstrap env.-> Providers
+
+  subgraph CP["Control plane (NestJS :3400, 1 member up to 3 / 5, Patroni + etcd)"]
+    Auth["Authentication<br/>api-key, users + 2FA, Keycloak, PATs with scopes"]
+    Api["REST API /api<br/>projects, roles, quotas, approvals, resources,<br/>nodes (runtime filters, isolation-probe), join tokens,<br/>drafts, plans (dry-run preview), deployments, volumes, backups, DNS, ingress,<br/>virtual machines (power, snapshots, reimage), VM image imports,<br/>VM image catalog (shipped, cluster, upstream)"]
+    Gateways["Socket.IO namespaces<br/>plans + drafts, logs, topology (flows, structure changes),<br/>terminals, exec, tunnels, consoles"]
+    Plans["Plan / approve / apply<br/>per-resource locks, failure analysis, pins,<br/>rollback, drift, GitOps sync, plan bot"]
+    Sched["Scheduler + autoscaler<br/>exact isolation level, at-least selectors,<br/>KVM usable / opt-out, launcher overhead,<br/>capacity, quotas, N+1, jobs + cron"]
+    Images["Image resolver<br/>digest pins, microVM guest layers per arch,<br/>VM image artifacts, signatures, scan results, image policies"]
+    Compiler["Policy compiler<br/>groups + allow-only policies to WireGuard,<br/>BIRD, nftables, Envoy xDS, DNS"]
+    Ipam["IPAM + public addresses<br/>pod subnets, kept addresses, IP pools, PTR"]
+    Updater["Update orchestrator<br/>apt snapshots, canary + waves, health gates<br/>(incl. kvm gate), rollback"]
+    Ops["Alerting, health, SLOs, status pages, reports, usage<br/>built-in alerts incl. node-protocol-refused"]
+    RemoteAccess["Remote access<br/>client groups, enrollment, expiring keys,<br/>posture conditions, sessions; VPN gateways (vpn node group)"]
+    DnsFo["DNS failover + steering<br/>multi-site probes, hysteresis, fail-back;<br/>failover, multi-value, weighted, geo, latency"]
+    VmSvc["Virtual machines<br/>VirtualMachine compiler (lw-vm, per-NIC addresses,<br/>cloud-init seed), power state + node commands,<br/>snapshots, VM image import job (SSRF-checked, sha256 / sha512),<br/>image catalog: pinned per release + Cluster vmImages + live lookup"]
+    Secrets["Secrets + KMS<br/>envelope encryption, master key / Vault;<br/>write-only versioned values, pinned per plan (Roll out = plan with refresh),<br/>listed for project admins / operators + cluster admins,<br/>delete refused (409) while referenced, answers no-store"]
+    Builtin["Built-in control-plane member (in-process, no node)<br/>seal key on the CP state volume; sole master-key holder<br/>with 0 members, else in-sync standby (takeover at 0); never runs workloads"]
+    DbHandover["Database handover (external control plane only)<br/>own Postgres until the first member's Patroni leader is up:<br/>freeze, copy, switch; then logical-replication copy<br/>(Patroni permanent slot; re-copy keeps the old copy),<br/>read-only fallback (write-only jobs paused); fenced takeover after 2 min without a primary<br/>(epoch +1, old member data moved aside, re-seeded by a new handover);<br/>back to it at 0 members"]
+    Queue[("Valkey lw-queue<br/>BullMQ: notification deliveries, jobs<br/>(QUEUE_ROLE api / worker)")]
+    TrustedFleets["Trusted fleets /api/trusted-fleets<br/>Ed25519 keys per fleet issuer, registered automatically by the fleet<br/>(cluster:admin credential, proof of possession, pinned cluster id;<br/>listing / removal native), claim verification + nonce table,<br/>acting person fleet:iss:sub (approvals, person-scoped routes, secrets)"]
+    Acme["ACME + workload CA<br/>certificates, mTLS identities"]
+    AgentStream["Agent stream (gRPC :7443, mTLS)<br/>desired state, protocol feature gates<br/>(strip or refuse), live relay"]
+    State[("Postgres + TimescaleDB<br/>desired state, plans, audit chain,<br/>metrics, flows, events")]
+    Logs[("OpenSearch<br/>logs + audit mirror")]
+    Registry[("Built-in registry + object store<br/>Distribution, Garage, pull-through cache")]
+  end
+
+  Console -->|"REST /api"| Api
+  Console <-->|"Socket.IO"| Gateways
+  Users -->|"REST, CLI, Terraform"| Api
+  Api --> Auth
+  Gateways --> Auth
+  Auth -.OIDC.-> Keycloak
+  Api --> Plans & Secrets & Ipam
+  Plans --> Sched & Images & Compiler & VmSvc
+  Api --> VmSvc
+  VmSvc --> AgentStream
+  VmSvc -.push OCI VM image.-> Registry
+  VmImageUrls -.HTTPS download, checksum lookup.-> VmSvc
+  Plans <-.config repos, PR comments.-> GitHosts
+  Compiler --> AgentStream
+  Sched --> AgentStream
+  Gateways <-.live sessions.-> AgentStream
+  Plans & Sched & Ops --> State
+  Builtin -.holds / unseals the master key.-> Secrets
+  DbHandover -.copy, then subscribe.-> State
+  Logs --> Ops
+  Ops --> Queue
+  Queue -.deliveries.-> Receivers
+  Api -.export.-> External
+  Releases -.verify + import.-> Registry
+  Updater -.apt snapshot.-> Upstreams
+  Updater --> AgentStream
+  Api -.order nodes, failover IPs.-> Providers
+  Compiler -.records.-> Cloudflare
+  Decabill -.hourly usage pull GET /usage<br/>(auditor PAT usage:read).-> Api
+  AgentMgr -.environments as deployments at their level,<br/>isolation-capabilities, machine exec.-> Api
+  DockerHost -.discover, import wizard, join plan.-> Api
+  Posture -.groups, compliance.-> RemoteAccess
+  Api --> RemoteAccess
+  RemoteAccess -.client groups + posture into policies.-> Compiler
+  DnsFo -.switch records.-> Cloudflare & Bind
+  Compiler -.zones.-> Bind
+  StatusVisitors --> Envoy
+  Envoy -.status pages: /api/public/status.-> Api
+  Secrets -.backup key hierarchy.-> RecoveryKit
+  Witness -.etcd vote.-> State
+
+  subgraph Fleet["Fleet service (NestJS :3500, BUSL)"]
+    FleetApi["Cluster connections, grants, automatic trust,<br/>REST + socket relay (full cluster parity per grant,<br/>signed per-user identity claims (Ed25519) for approvals,<br/>person-scoped routes, personal data and project secrets<br/>(value only streamed, never logged / stored),<br/>also on a delegating cluster API key,<br/>favourites + views per person, streamed bundle upload,<br/>on-behalf-of audit, join tokens for fleet admins),<br/>cross-cluster restore + cloning, teardown (final backup, read-only)"]
+    FleetState[("Postgres + Valkey<br/>connections, grants, operations, audit; jobs")]
+  end
+  FleetApi --> FleetState
+  Decabill -.cancelled Loadweaver Cloud: final backup + read-only.-> FleetApi
+  Console -.fleet mode.-> FleetApi
+  FleetApi -.relays.-> Api
+  FleetApi -.registers its keys (auto trust), signed identity claims.-> TrustedFleets
+
+  subgraph Node["Every node (systemd + Docker, Debian / Ubuntu, amd64 / arm64)"]
+    Agent["Node agent (TypeScript SEA, systemd)<br/>reconciler, isolation probes (every level),<br/>KVM opt-out, host updates, live sessions"]
+    Runc["runc containers<br/>optional /dev/kvm device (allow-list)"]
+    Gvisor["gVisor runsc<br/>runsc-systrap (sandboxed),<br/>runsc-kvm (sandboxed-kvm)"]
+    subgraph MicroVM["MicroVM replica (microvm)"]
+      Launcher["Hardened runc launcher<br/>libvirt session + QEMU / KVM + virtiofsd,<br/>caps dropped, no-new-privileges, uid 10930"]
+      Guest["Guest: own kernel<br/>image root via virtio-fs, workload IP,<br/>vm-exec bridge (exec, TTY, stats)"]
+    end
+    subgraph FullVM["Full VM (VirtualMachine, replica lw-vm/name/0)"]
+      VmLauncher["Hardened runc launcher (launch-vm)<br/>libvirt session + QEMU / KVM, UEFI or BIOS,<br/>vm-ctl power + fsfreeze, vm-console serial / VNC"]
+      VmGuest["Guest OS from a VM image<br/>cloud-init NoCloud seed (tmpfs, secret refs),<br/>one tap per NIC, own addresses + groups"]
+    end
+    VmImageCache[("VM image cache<br/>/var/lib/loadweaver/vmimages: layers by digest")]
+    VmRoot[("Guest-root cache<br/>/var/lib/loadweaver/vmroot: layers by diffID,<br/>per-replica writable layer (thin LV / file)")]
+    Net["nftables, WireGuard, BIRD, node DNS<br/>pod bridge lwbr0, tap + tc redirect"]
+    Envoy["Envoy node proxy + ingress<br/>egress, mesh mTLS, L7 rules, WAF"]
+    Drbd[("DRBD 9 volumes<br/>LVM thin, LUKS2; block mode for VM disks<br/>(virtio-blk, dual-primary during live migration)")]
+    Scanner["Trivy scans<br/>incl. nested rootfs (io.forepath.scan.nested-rootfs)"]
+    Bind[("bind9 (default: control-plane members)<br/>authoritative zones, DNSSEC")]
+  end
+
+  AgentStream <-->|"outbound gRPC stream (mTLS)"| Agent
+  Registry -.images, agent, components.-> Agent
+  Agent --> Runc & Gvisor & Launcher & VmLauncher
+  VmLauncher --> VmGuest
+  Agent -.pull + verify, qemu-img convert to the boot disk.-> VmImageCache
+  Drbd -.block devices.-> VmLauncher
+  Net -.NIC addresses in the guest.-> VmGuest
+  Agent -.consoleOpen: serial / VNC (vm-console).-> VmLauncher
+  Agent -.unpack confined, overlay.-> VmRoot
+  VmRoot -.guest root.-> Guest
+  Launcher --> Guest
+  Agent --> Net & Envoy & Drbd & Scanner
+  Net -.workload IP in the guest.-> Guest
+  Agent -.metrics + guest metrics, flows, logs.-> State & Logs
+  Clients --> Envoy
+  RemoteUsers -->|"WireGuard"| Net
+  Net <-.eBGP.-> Upstream
+  Drbd -.Kopia backups (VM disks: raw, fsfreeze).-> Registry
+  Agent <-.QEMU live migration over WireGuard (vm-live).-> Agent
+  Registry -.secondary copy.-> BackupExt
+  Api -.SMTP via control-plane env (SMTP_*, EMAIL_FROM, EMAIL_COMPANY_*),<br/>like Agenstra / Decabill; email 2FA only with SMTP.-> Receivers

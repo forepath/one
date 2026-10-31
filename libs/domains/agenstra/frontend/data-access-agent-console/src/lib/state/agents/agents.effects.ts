@@ -2,7 +2,20 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { catchError, exhaustMap, filter, from, groupBy, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
+import {
+  catchError,
+  exhaustMap,
+  filter,
+  from,
+  groupBy,
+  map,
+  mergeMap,
+  of,
+  switchMap,
+  throwError,
+  timeout,
+  withLatestFrom,
+} from 'rxjs';
 
 import { AgentsService } from '../../services/agents.service';
 import {
@@ -282,6 +295,10 @@ export const loadClientAgent$ = createEffect(
   { functional: true },
 );
 
+/** Upper bound for one model catalog request; afterwards the request fails with a timeout error. */
+export const CLIENT_AGENT_MODELS_TIMEOUT_MS = 20_000;
+export const CLIENT_AGENT_MODELS_TIMEOUT_MESSAGE = 'The agent did not return its models in time.';
+
 export const loadClientAgentModels$ = createEffect(
   (actions$ = inject(Actions), agentsService = inject(AgentsService)) => {
     return actions$.pipe(
@@ -291,6 +308,11 @@ export const loadClientAgentModels$ = createEffect(
         requests$.pipe(
           switchMap(({ clientId, agentId }) =>
             agentsService.listClientAgentModels(clientId, agentId).pipe(
+              // A stopped / unreachable agent must not leave pickers on "Loading models…" forever (AG-05).
+              timeout({
+                first: CLIENT_AGENT_MODELS_TIMEOUT_MS,
+                with: () => throwError(() => new Error(CLIENT_AGENT_MODELS_TIMEOUT_MESSAGE)),
+              }),
               map((models) => loadClientAgentModelsSuccess({ clientId, agentId, models })),
               catchError((error) =>
                 of(loadClientAgentModelsFailure({ clientId, agentId, error: normalizeError(error) })),

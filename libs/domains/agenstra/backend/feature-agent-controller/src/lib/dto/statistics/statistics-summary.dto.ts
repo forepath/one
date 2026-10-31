@@ -14,9 +14,10 @@ export class StatisticsSummaryDto {
   autoEnrichmentContexts!: number;
   autoEnrichmentChars!: number;
   filterDropCount!: number;
-  filterTypesBreakdown!: { filterType: string; direction: string; count: number }[];
+  /** `filterDisplayName`: the rule's human-readable name (as on the filter rows), `null` for legacy rows. */
+  filterTypesBreakdown!: { filterType: string; filterDisplayName?: string | null; direction: string; count: number }[];
   filterFlagCount!: number;
-  filterFlagsBreakdown!: { filterType: string; direction: string; count: number }[];
+  filterFlagsBreakdown!: { filterType: string; filterDisplayName?: string | null; direction: string; count: number }[];
   series?: { period: string; count: number; wordCount: number; charCount: number }[];
   /** Egress guard decisions (sum of aggregated counts) by decision. */
   egressAllowedCount!: number;

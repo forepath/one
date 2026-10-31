@@ -16,7 +16,7 @@ How public documentation relates to **CRA** (Regulation (EU) 2024/2847) and **BS
 
 ### [Accepted risks (register)](./accepted-risks.md)
 
-Register **AR-001** through **AR-005**: native desktop signing and update posture, frontend CSP, backend authentication method resolution, Electron window-open policy, and Trivy unfixed-CVE gating. Includes acceptance dates, review cadence, mitigations, and withdrawal paths.
+Register **AR-001** through **AR-005**: native desktop signing and update posture (AR-001 retired once the desktop signing secrets are configured), frontend CSP, backend authentication method resolution, Electron window-open policy, and Trivy unfixed-CVE gating. Includes acceptance dates, review cadence, mitigations, and withdrawal paths.
 
 ### [Container image security](./container-images.md)
 

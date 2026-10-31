@@ -66,6 +66,15 @@ Web-based IDE and chat interface built with Angular and NgRx.
 - Development: `4100` (default)
 - Production: Configurable
 
+### [Agenstra Desktop](./native-agent-console.md)
+
+Electron shell around the agent console (`native-agent-console`), released for macOS, Windows and Linux.
+
+**Key Features**:
+
+- Signed builds (Developer ID + notarization, Authenticode, GPG-signed deb / rpm repositories) once the release signing secrets are configured
+- In-app updates on stable / beta channels, verified against the signed release manifest, never downgrading
+
 ## Application Relationships
 
 ```mermaid

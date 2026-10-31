@@ -27,12 +27,16 @@ let nextSwitchId = 0;
         [disabled]="isDisabled()"
         [attr.aria-label]="label() ? null : ariaLabel()"
         (change)="onToggle($event)"
+        [attr.aria-describedby]="hint() ? hintId() : null"
         (blur)="onBlur()"
       />
       @if (label()) {
         <label class="form-check-label" [for]="resolvedId()">{{ label() }}</label>
       }
       <ng-content />
+      @if (hint()) {
+        <div class="fpc-form-switch__hint form-text mt-0" [id]="hintId()">{{ hint() }}</div>
+      }
     </div>
   `,
   styleUrl: './form-switch.component.scss',
@@ -43,6 +47,8 @@ export class FpcFormSwitchComponent implements ControlValueAccessor {
   readonly label = input<string | null>(null);
   readonly switchId = input<string | null>(null);
   readonly ariaLabel = input<string | null>(null);
+  /** Helper text under the label (linked via `aria-describedby`); replaces hand-rolled hint paragraphs. */
+  readonly hint = input<string | null>(null);
 
   private readonly fallbackId = `fpc-form-switch-${nextSwitchId++}`;
   private readonly cvaDisabled = signal(false);
@@ -50,6 +56,7 @@ export class FpcFormSwitchComponent implements ControlValueAccessor {
   private onTouched: () => void = () => undefined;
 
   protected readonly resolvedId = computed(() => this.switchId() ?? this.fallbackId);
+  protected readonly hintId = computed(() => `${this.resolvedId()}-hint`);
   protected readonly isDisabled = computed(() => this.disabled() || this.cvaDisabled());
 
   writeValue(value: boolean | null): void {

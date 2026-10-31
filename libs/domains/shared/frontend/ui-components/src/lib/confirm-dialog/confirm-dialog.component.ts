@@ -50,7 +50,7 @@ import { FpcModalAccent, FpcModalComponent, FpcModalSize } from '../modal/modal.
 
       <div *fpcModalFooter>
         <fpc-button-group>
-          <fpc-button variant="secondary" [disabled]="busy()" (clicked)="onCancel()">
+          <fpc-button variant="dark" [disabled]="busy()" (clicked)="onCancel()">
             {{ cancelLabel() }}
           </fpc-button>
           <fpc-button [variant]="confirmVariant()" [loading]="busy()" (clicked)="onConfirm()">

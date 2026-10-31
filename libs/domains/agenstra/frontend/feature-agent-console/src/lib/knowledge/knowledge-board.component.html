@@ -1,21 +1,13 @@
 <div class="section__content-wrapper d-flex flex-column border-top">
-  <fpc-page-header>
-    <div fpcPageHeaderTitle class="d-flex align-items-center flex-wrap gap-3 min-w-0">
-      <h1 class="fpc-page-header__title h5 mb-0 fw-semibold">{{ pageTitle }}</h1>
-      @if (effectiveWorkspace(); as ew) {
-        <fpc-button
-          variant="link"
-          btnClass="text-decoration-none text-body"
-          (clicked)="openWorkspaceSwitchModal()"
-          [title]="switchWorkspaceTitle"
-        >
-          <fpc-badge variant="info" color="secondary">
-            <i class="bi bi-building" aria-hidden="true"></i>
-            <span class="text-truncate">{{ workspaceDisplayName(ew.name) }}</span>
-          </fpc-badge>
-        </fpc-button>
-      }
-    </div>
+  <fpc-page-header [title]="pageTitle">
+    @if (effectiveWorkspace(); as ew) {
+      <framework-workspace-chip
+        fpcPageHeaderContext
+        [name]="workspaceDisplayName(ew.name)"
+        [title]="switchWorkspaceTitle"
+        (switch)="openWorkspaceSwitchModal()"
+      />
+    }
     @if (effectiveClientId() !== null) {
       <fpc-button
         fpcPageHeaderActions
@@ -45,7 +37,7 @@
           routerLink="/clients"
           i18n="@@featureKnowledgeBoard-goToSpaces"
         >
-          Go to Spaces
+          Go to workspaces
         </fpc-button>
       </fpc-empty-state>
     } @else {
@@ -70,12 +62,8 @@
       <fpc-alert variant="danger" [flush]="true" [message]="err" />
     }
 
-    <section class="section__row flex-grow-1 d-flex">
-      <div
-        #knowledgeTreeSidebar
-        class="section__column knowledge-tree-sidebar border-end"
-        [style.flex-basis.px]="sidebarWidth()"
-      >
+    <fpc-section-row class="flex-grow-1" [stacked]="true">
+      <fpc-section-column class="knowledge-tree-sidebar" #knowledgeTreeSidebar [style.flex-basis.px]="sidebarWidth()">
         <framework-knowledge-tree
           [workspaceId]="effectiveClientId()"
           [nodes]="tree()"
@@ -88,11 +76,11 @@
           (renameNode)="onRenameNode($event)"
           (moveNode)="onMoveNode($event)"
         ></framework-knowledge-tree>
-      </div>
+      </fpc-section-column>
 
       <div class="resize-handle" (mousedown)="onResizeStart($event)" (touchstart)="onResizeStart($event)"></div>
 
-      <div class="section__column d-flex flex-column flex-grow-1">
+      <fpc-section-column class="d-flex flex-grow-1">
         @if (selectedNode()?.nodeType === 'page') {
           <fpc-page-header>
             <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-width-0 flex-grow-1">
@@ -102,8 +90,9 @@
               @if (selectedNodeTitleEditing()) {
                 <fpc-form-control
                   #selectedNodeTitleInput
+                  class="flex-grow-1 min-width-0"
                   size="sm"
-                  controlClass="flex-grow-1 min-width-0"
+                  controlClass="w-100"
                   [ngModel]="selectedNodeTitleDraft()"
                   (ngModelChange)="selectedNodeTitleDraft.set($event)"
                   (focusout)="onSavePageTitle()"
@@ -138,7 +127,9 @@
               </div>
 
               <div>
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <div
+                  class="fpc-lane-header__actions d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2"
+                >
                   <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-attachmentsHeading">Attachments</h3>
                   <input
                     #pageAttachmentInput
@@ -165,47 +156,18 @@
                     No attachments yet.
                   </p>
                 } @else {
-                  <fpc-list [flush]="true" class="border rounded small mb-0">
-                    @for (attachment of selectedNode()?.attachments ?? []; track attachment.id) {
-                      <fpc-list-item>
-                        <div fpcListItemTitle class="text-truncate" [title]="attachment.fileName">
-                          <i class="bi bi-paperclip me-1" aria-hidden="true"></i>{{ attachment.fileName }}
-                        </div>
-                        <div fpcListItemMeta>{{ attachment.byteSize | number }} B</div>
-                        <span fpcListItemActions class="d-inline-flex align-items-center gap-1">
-                          <fpc-button
-                            variant="outline-secondary"
-                            size="sm"
-                            iconOnly
-                            (clicked)="downloadPageAttachment(attachment)"
-                            i18n-title="@@featureKnowledgeBoard-downloadAttachment"
-                            title="Download attachment"
-                            i18n-ariaLabel="@@featureKnowledgeBoard-downloadAttachment"
-                            ariaLabel="Download attachment"
-                          >
-                            <i class="bi bi-download" aria-hidden="true"></i>
-                          </fpc-button>
-                          <fpc-button
-                            variant="outline-danger"
-                            size="sm"
-                            iconOnly
-                            (clicked)="deletePageAttachment(selectedNode(), attachment)"
-                            i18n-title="@@featureKnowledgeBoard-deleteAttachment"
-                            title="Delete attachment"
-                            i18n-ariaLabel="@@featureKnowledgeBoard-deleteAttachment"
-                            ariaLabel="Delete attachment"
-                          >
-                            <i class="bi bi-trash" aria-hidden="true"></i>
-                          </fpc-button>
-                        </span>
-                      </fpc-list-item>
-                    }
-                  </fpc-list>
+                  <framework-attachment-chips
+                    [attachments]="selectedNode()?.attachments ?? []"
+                    (download)="downloadPageAttachment($event)"
+                    (remove)="deletePageAttachment(selectedNode(), $event)"
+                  />
                 }
               </div>
 
               <div>
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <div
+                  class="fpc-lane-header__actions d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2"
+                >
                   <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-relationsHeading">Relations</h3>
                   <fpc-button
                     variant="dark"
@@ -299,14 +261,10 @@
                     @for (ev of activity(); track ev.id) {
                       <li class="mb-2 pb-2 border-bottom border-opacity-50">
                         <div class="d-flex flex-wrap align-items-center column-gap-2 row-gap-1 small">
-                          <fpc-badge
-                            variant="info"
-                            color="secondary"
-                            [ngClass]="activityActionBadgeClass(ev.actionType)"
-                            [attr.title]="ev.actionType"
-                            >{{ activityActionLabel(ev.actionType) }}</fpc-badge
-                          >
-                          <span class="text-body-secondary">{{ ev.occurredAt | date: 'MMM d, y, h:mm a' }}</span>
+                          <fpc-badge [tone]="activityActionBadgeTone(ev.actionType)" [attr.title]="ev.actionType">{{
+                            activityActionLabel(ev.actionType)
+                          }}</fpc-badge>
+                          <span class="text-body-secondary">{{ ev.occurredAt | fpcDate: 'datetime' }}</span>
                           @if (ev.actorEmail) {
                             <span class="text-body-secondary text-truncate">{{ ev.actorEmail }}</span>
                           } @else {
@@ -337,8 +295,8 @@
             i18n-message="@@featureKnowledgeBoard-selectPageHint"
           />
         }
-      </div>
-    </section>
+      </fpc-section-column>
+    </fpc-section-row>
   }
 </div>
 
@@ -403,6 +361,8 @@
 </fpc-modal>
 
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="relationsModalOpen"
   i18n-title="@@featureKnowledgeBoard-relationsModalTitle"
   title="Add relations"
@@ -499,49 +459,15 @@
         i18n="@@featureKnowledgeBoard-goToSpaces"
         (clicked)="goToSpaces($event)"
       >
-        Go to Spaces
+        Go to workspaces
       </fpc-button>
     </fpc-empty-state>
   } @else {
-    <fpc-search-field
-      class="mb-3"
-      inputId="workspaceSwitchSearch"
-      [value]="workspaceSwitchSearch()"
-      (valueChange)="workspaceSwitchSearch.set($event)"
-      i18n-placeholder="@@featureKnowledgeBoard-searchWorkspacesPlaceholder"
-      placeholder="Search workspaces"
+    <framework-workspace-switch-table
+      [clients]="clients()"
+      [currentId]="activeClientId()"
+      [(query)]="workspaceSwitchSearch"
+      (selectWorkspace)="onSelectWorkspaceForKnowledge($event)"
     />
-    @if (clients().length === 0) {
-      <fpc-empty-state
-        size="sm"
-        icon="search"
-        message="No search results"
-        i18n-message="@@featureKnowledgeBoard-noSearchResults"
-      />
-    } @else {
-      <fpc-list [flush]="true" class="border rounded">
-        @for (c of clients(); track c.id) {
-          <fpc-list-item
-            [active]="c.id === activeClientId()"
-            [clickable]="true"
-            (selected)="onSelectWorkspaceForKnowledge(c)"
-          >
-            <div fpcListItemTitle class="text-truncate text-start">{{ workspaceDisplayName(c.name) }}</div>
-            @if (c.id === activeClientId()) {
-              <div fpcListItemActions>
-                <fpc-badge
-                  color="light"
-                  [pill]="true"
-                  class="flex-shrink-0"
-                  i18n="@@featureKnowledgeBoard-currentWorkspace"
-                >
-                  Current
-                </fpc-badge>
-              </div>
-            }
-          </fpc-list-item>
-        }
-      </fpc-list>
-    }
   }
 </fpc-modal>

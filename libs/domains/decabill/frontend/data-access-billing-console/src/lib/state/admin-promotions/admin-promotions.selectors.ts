@@ -18,3 +18,10 @@ export const selectAdminPromotionsDeactivating = createSelector(
   (state) => state.deactivating,
 );
 export const selectAdminPromotionsError = createSelector(selectAdminPromotionsState, (state) => state.error);
+export const selectAdminPromotionsTotal = createSelector(selectAdminPromotionsState, (state) => state.total);
+export const selectAdminPromotionsPage = createSelector(selectAdminPromotionsState, (state) => state.page);
+export const selectAdminPromotionsPageSize = createSelector(selectAdminPromotionsState, (state) => state.pageSize);
+export const selectAdminPromotionRedemptionsTotal = createSelector(
+  selectAdminPromotionsState,
+  (state) => state.redemptionsTotal,
+);
