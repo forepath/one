@@ -50,20 +50,13 @@
       (darkChange)="themeService.toggleTheme()"
     />
     @if (isAuthenticated$ | async) {
-      <fpc-button
-        class="d-md-none"
-        variant="primary"
-        size="sm"
-        (clicked)="onLogoutClick()"
-        i18n="@@featureContainer-logout"
-        >Logout</fpc-button
+      <fpc-button class="d-md-none" variant="primary" size="sm" [title]="logoutLabel" (clicked)="onLogoutClick()"
+        ><i class="bi bi-box-arrow-right fpc-top-bar__phone-icon" aria-hidden="true"></i
+        ><span class="fpc-top-bar__label" i18n="@@featureContainer-logout">Logout</span></fpc-button
       >
-      <fpc-button
-        class="d-none d-md-inline-block"
-        variant="primary"
-        (clicked)="onLogoutClick()"
-        i18n="@@featureContainer-logout"
-        >Logout</fpc-button
+      <fpc-button class="d-none d-md-inline-block" variant="primary" [title]="logoutLabel" (clicked)="onLogoutClick()"
+        ><i class="bi bi-box-arrow-right fpc-top-bar__phone-icon" aria-hidden="true"></i
+        ><span class="fpc-top-bar__label" i18n="@@featureContainer-logout">Logout</span></fpc-button
       >
     }
   </fpc-top-bar>

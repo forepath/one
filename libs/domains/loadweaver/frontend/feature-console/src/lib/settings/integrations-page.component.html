@@ -1,0 +1,55 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title" />
+
+  @if (lastTest(); as t) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="t.outcome.ok ? 'success' : 'danger'"
+      [dismissible]="true"
+      (closed)="lastTest.set(null)"
+      data-testid="integrations-test-result"
+    >
+      <span class="fw-semibold">{{ t.row.name }}</span
+      >: {{ t.outcome.message }}
+      @if (t.outcome.durationMs) {
+        <span class="text-body-secondary">({{ t.outcome.durationMs }} ms)</span>
+      }
+    </fpc-alert>
+  }
+
+  <!-- One grouped list (3.41): State · Integration · Type · Details; ⋮ Edit / Set up / Test connection / Open. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [columns]="columns"
+    [rows]="visibleRows()"
+    [rowId]="rowId"
+    [groupBy]="groupBy"
+    [groupLabel]="groupLabel"
+    [ariaLabel]="title"
+    [(query)]="query"
+    [searchPlaceholder]="searchLabel"
+    [refreshable]="true"
+    (refresh)="reload()"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    (rowActivate)="onRowActivate($event)"
+    persistKey="lw-integrations"
+    emptyIcon="plug"
+    data-testid="integrations-table"
+  >
+    <ng-template fpcTableCell="details" let-row>
+      @if (row.error) {
+        <span class="text-danger-emphasis" [title]="row.error">{{ row.error }}</span>
+      } @else {
+        <span class="text-body-secondary" [title]="row.details">{{ row.details }}</span>
+      }
+    </ng-template>
+    <fpc-empty-state
+      fpcDataTableEmpty
+      icon="plug"
+      size="sm"
+      i18n-title="@@lwConsoleIntegrations-empty"
+      title="No integration matches the search"
+    />
+  </fpc-data-table>
+</div>

@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 
 import type {
   AdminProjectDetailResponse,
@@ -26,12 +27,6 @@ import {
   loadAdminProjects,
   loadAdminProjectsFailure,
   loadAdminProjectsSuccess,
-  loadMoreAdminProjects,
-  loadMoreAdminProjectsFailure,
-  loadMoreAdminProjectsSuccess,
-  loadMoreProjects,
-  loadMoreProjectsFailure,
-  loadMoreProjectsSuccess,
   loadProjectDetail,
   loadProjectDetailFailure,
   loadProjectDetailSuccess,
@@ -65,14 +60,14 @@ export interface ProjectsState {
   deleting: boolean;
   billing: boolean;
   error: string | null;
-  hasMore: boolean;
-  nextOffset: number;
-  appendLoading: boolean;
-  appendError: string | null;
-  adminHasMore: boolean;
-  adminNextOffset: number;
-  adminAppendLoading: boolean;
-  adminAppendError: string | null;
+  /** Replace-page paging of the customer list: server total, 1-based page and its size. */
+  total: number;
+  page: number;
+  pageSize: number;
+  /** Replace-page paging of the admin list. */
+  adminTotal: number;
+  adminPage: number;
+  adminPageSize: number;
   adminSearch: string | null;
   adminUserId: string | null;
   customerSearch: string | null;
@@ -93,14 +88,12 @@ export const initialProjectsState: ProjectsState = {
   deleting: false,
   billing: false,
   error: null,
-  hasMore: false,
-  nextOffset: 0,
-  appendLoading: false,
-  appendError: null,
-  adminHasMore: false,
-  adminNextOffset: 0,
-  adminAppendLoading: false,
-  adminAppendError: null,
+  total: 0,
+  page: 1,
+  pageSize: BILLING_LIST_PAGE_SIZE,
+  adminTotal: 0,
+  adminPage: 1,
+  adminPageSize: BILLING_LIST_PAGE_SIZE,
   adminSearch: null,
   adminUserId: null,
   customerSearch: null,
@@ -130,85 +123,56 @@ export const projectsReducer = createReducer(
     catalogSummaryLoading: false,
     error,
   })),
-  on(loadProjects, (state, { search }) => ({
-    ...state,
-    projects: [],
-    loading: true,
-    error: null,
-    appendError: null,
-    appendLoading: false,
-    hasMore: false,
-    nextOffset: 0,
-    customerSearch: search?.trim() ? search.trim() : null,
-  })),
-  on(loadAdminProjects, (state, { search, userId }) => ({
-    ...state,
-    adminProjects: [],
-    loading: true,
-    error: null,
-    adminAppendError: null,
-    adminAppendLoading: false,
-    adminHasMore: false,
-    adminNextOffset: 0,
-    adminSearch: search?.trim() ? search.trim() : null,
-    adminUserId: userId ?? null,
-  })),
-  on(loadProjectsSuccess, (state, { projects, hasMore, nextOffset }) => ({
+  on(loadProjects, (state, { search, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.pageSize);
+
+    return {
+      ...state,
+      loading: true,
+      error: null,
+      page: window.page,
+      pageSize: window.pageSize,
+      customerSearch: search?.trim() ? search.trim() : null,
+    };
+  }),
+  on(loadAdminProjects, (state, { search, userId, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.adminPageSize);
+
+    return {
+      ...state,
+      loading: true,
+      error: null,
+      adminPage: window.page,
+      adminPageSize: window.pageSize,
+      adminSearch: search?.trim() ? search.trim() : null,
+      adminUserId: userId ?? null,
+    };
+  }),
+  on(loadProjectsSuccess, (state, { projects, total }) => ({
     ...state,
     projects,
-    hasMore,
-    nextOffset,
+    total,
     loading: false,
   })),
-  on(loadAdminProjectsSuccess, (state, { adminProjects, hasMore, nextOffset }) => ({
+  on(loadAdminProjectsSuccess, (state, { adminProjects, total }) => ({
     ...state,
     adminProjects,
-    adminHasMore: hasMore,
-    adminNextOffset: nextOffset,
+    adminTotal: total,
     loading: false,
   })),
-  on(loadProjectsFailure, loadAdminProjectsFailure, (state, { error }) => ({
+  on(loadProjectsFailure, (state, { error }) => ({
     ...state,
+    projects: [],
+    total: 0,
     loading: false,
     error,
-    hasMore: false,
-    adminHasMore: false,
   })),
-  on(loadMoreProjects, (state) => ({
+  on(loadAdminProjectsFailure, (state, { error }) => ({
     ...state,
-    appendLoading: true,
-    appendError: null,
-  })),
-  on(loadMoreProjectsSuccess, (state, { projects, hasMore, nextOffset }) => ({
-    ...state,
-    projects: [...state.projects, ...projects],
-    hasMore,
-    nextOffset,
-    appendLoading: false,
-    appendError: null,
-  })),
-  on(loadMoreProjectsFailure, (state, { error }) => ({
-    ...state,
-    appendLoading: false,
-    appendError: error,
-  })),
-  on(loadMoreAdminProjects, (state) => ({
-    ...state,
-    adminAppendLoading: true,
-    adminAppendError: null,
-  })),
-  on(loadMoreAdminProjectsSuccess, (state, { adminProjects, hasMore, nextOffset }) => ({
-    ...state,
-    adminProjects: [...state.adminProjects, ...adminProjects],
-    adminHasMore: hasMore,
-    adminNextOffset: nextOffset,
-    adminAppendLoading: false,
-    adminAppendError: null,
-  })),
-  on(loadMoreAdminProjectsFailure, (state, { error }) => ({
-    ...state,
-    adminAppendLoading: false,
-    adminAppendError: error,
+    adminProjects: [],
+    adminTotal: 0,
+    loading: false,
+    error,
   })),
   on(loadProjectDetail, loadAdminProjectDetail, (state) => ({
     ...state,

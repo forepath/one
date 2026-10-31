@@ -165,6 +165,14 @@ describe('AuthenticationFacade', () => {
       expect(store.dispatch).toHaveBeenCalledWith(register({ email: 'user@example.com', password: 'password123' }));
     });
 
+    it('should dispatch register with the admin claim token', () => {
+      facade.register('user@example.com', 'password123', 'lwc_token');
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        register({ email: 'user@example.com', password: 'password123', adminClaimToken: 'lwc_token' }),
+      );
+    });
+
     it('should dispatch loadUsers action', () => {
       facade.loadUsers();
 

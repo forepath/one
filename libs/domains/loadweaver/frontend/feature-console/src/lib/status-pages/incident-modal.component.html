@@ -1,0 +1,81 @@
+<fpc-modal [open]="open()" (openChange)="open.set($event)" [title]="incident() ? updateTitle : createTitle">
+  <form (ngSubmit)="submit()" data-testid="incident-form">
+    <div class="row g-3">
+      @if (incident(); as current) {
+        <div class="col-12">
+          <p class="small mb-0">
+            <span class="fw-semibold">{{ current.title }}</span>
+            <span class="text-body-secondary ms-2">{{ project() }}</span>
+          </p>
+        </div>
+      } @else {
+        <div class="col-12">
+          <fpc-form-field
+            forId="lw-incident-title"
+            i18n-label="@@lwConsoleIncident-title"
+            label="Title"
+            required
+            i18n-hint="@@lwConsoleIncident-titleHint"
+            hint="Shown publicly on every status page of {{ project() }}."
+          >
+            <fpc-form-control
+              controlId="lw-incident-title"
+              name="title"
+              size="sm"
+              required
+              [maxLength]="maxTitle"
+              [(ngModel)]="title"
+            />
+          </fpc-form-field>
+        </div>
+      }
+      <div class="col-12">
+        <fpc-form-field forId="lw-incident-status" i18n-label="@@lwConsoleIncident-status" label="Status">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-incident-status"
+            name="status"
+            size="sm"
+            [(ngModel)]="status"
+          >
+            @for (s of statuses; track s) {
+              <option [value]="s">{{ statusLabel(s) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-12">
+        <fpc-form-field forId="lw-incident-message" i18n-label="@@lwConsoleIncident-message" label="Note" required>
+          <fpc-form-control
+            controlType="textarea"
+            controlId="lw-incident-message"
+            name="message"
+            size="sm"
+            [rows]="4"
+            required
+            [maxLength]="maxMessage"
+            [(ngModel)]="message"
+          />
+        </fpc-form-field>
+      </div>
+    </div>
+    @if (invalid(); as message) {
+      <fpc-alert class="mt-3" variant="warning" [message]="message" />
+    }
+    @if (error(); as message) {
+      <fpc-alert class="mt-3" variant="danger" [message]="message" />
+    }
+  </form>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="secondary" (clicked)="open.set(false)">
+      <span i18n="@@lwConsoleIncident-cancel">Cancel</span>
+    </fpc-button>
+    <fpc-button variant="primary" [loading]="saving()" (clicked)="submit()" data-testid="incident-submit">
+      @if (incident()) {
+        <span i18n="@@lwConsoleIncident-post">Post update</span>
+      } @else {
+        <span i18n="@@lwConsoleIncident-create">Open incident</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>

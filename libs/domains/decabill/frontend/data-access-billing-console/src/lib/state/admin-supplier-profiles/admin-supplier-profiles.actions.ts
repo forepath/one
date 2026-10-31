@@ -9,15 +9,11 @@ import type {
 
 export const loadAdminSupplierProfiles = createAction(
   '[AdminSupplierProfiles] Load Profiles',
-  props<{ search?: string }>(),
-);
-export const loadAdminSupplierProfilesBatch = createAction(
-  '[AdminSupplierProfiles] Load Profiles Batch',
-  props<{ offset: number; accumulatedProfiles: AdminSupplierProfileListItem[]; search?: string }>(),
+  props<{ search?: string; page?: number; pageSize?: number }>(),
 );
 export const loadAdminSupplierProfilesSuccess = createAction(
   '[AdminSupplierProfiles] Load Profiles Success',
-  props<{ profiles: AdminSupplierProfileListItem[] }>(),
+  props<{ profiles: AdminSupplierProfileListItem[]; total: number }>(),
 );
 export const loadAdminSupplierProfilesFailure = createAction(
   '[AdminSupplierProfiles] Load Profiles Failure',

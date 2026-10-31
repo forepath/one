@@ -105,7 +105,7 @@ Admins can force-remove access immediately via `POST /admin/billing/subscription
 
 Flow (mirrors statutory withdrawal job wiring):
 
-1. Allowed statuses: `active`, `pending_cancel`, `pending_backorder`
+1. Allowed statuses: `active`, `pending_cancel`, `pending_backorder`. A `pending_cancel` subscription whose `cancelEffectiveAt` has passed (only Loadweaver subscriptions stay there, in their data grace period) is refused with `400 SUBSCRIPTION_CANCELLATION_EFFECTIVE`, like resume — the term already ended. Withdrawal never applies in that state (the withdrawal policy refuses `pending_cancel`).
 2. Sets `status=pending_instant_cancel`, `instantRemoval=true`, `instantCanceledAt=now`
 3. Emits webhook `subscription.updated`
 4. `subscription-instant-cancel` coordinator/unit runs `processInstantCancel`

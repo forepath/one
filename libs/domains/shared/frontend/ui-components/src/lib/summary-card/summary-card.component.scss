@@ -11,6 +11,36 @@
   background: var(--bs-body-bg);
 }
 
+// Faint background glyph: large, anchored right, vertically centred, behind label / value / actions. Only a hint of
+// the emphasis colour so it never competes with the figures (also in dark mode); never clipped content, never
+// interactive.
+:host(.fpc-summary-card--with-icon) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  &:hover .fpc-summary-card__icon {
+    transform: scale(1.1) rotate(5deg);
+  }
+}
+
+.fpc-summary-card__icon {
+  position: absolute;
+  z-index: -1;
+  top: 0.5rem;
+  right: -1rem;
+  font-size: 5rem;
+  line-height: 1;
+  color: var(--bs-emphasis-color);
+  opacity: 0.04;
+  pointer-events: none;
+  transition: transform 0.3s ease-in-out;
+}
+
+:host-context([data-bs-theme='dark']) .fpc-summary-card__icon {
+  opacity: 0.025;
+}
+
 .fpc-summary-card__label {
   font-size: 0.8125rem;
   letter-spacing: 0.02em;
@@ -37,7 +67,12 @@
   // Match Bootstrap `fs-4` / `fw-semibold` (also applied by `fpcSummaryCardValue`).
   font-size: 1.5rem;
   font-weight: 600;
-  overflow-wrap: anywhere;
+  // One line: a long text value (a policy, "0 core-hours" in a narrow column) truncates with its full text as the
+  // tooltip instead of wrapping the figure over several lines and stretching the whole summary row.
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fpc-summary-card__actions {

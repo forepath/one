@@ -59,38 +59,46 @@ describe('OffersService', () => {
   });
 
   it('gets pending offers without search param when empty', (done) => {
+    const page = { items: [mockListItem], total: 1, limit: 10, offset: 0 };
+
     service.getPendingOffers().subscribe((res) => {
-      expect(res).toEqual([mockListItem]);
+      expect(res).toEqual(page);
       done();
     });
 
     const req = httpMock.expectOne(`${apiUrl}/offers/pending`);
     expect(req.request.params.has('search')).toBe(false);
-    req.flush([mockListItem]);
+    req.flush(page);
   });
 
   it('gets pending offers with trimmed search param', (done) => {
-    service.getPendingOffers('  OFF-2026  ').subscribe((res) => {
-      expect(res).toEqual([mockListItem]);
+    const page = { items: [mockListItem], total: 1, limit: 25, offset: 25 };
+
+    service.getPendingOffers({ search: '  OFF-2026  ', limit: 25, offset: 25 }).subscribe((res) => {
+      expect(res).toEqual(page);
       done();
     });
 
     const req = httpMock.expectOne((request) => request.url === `${apiUrl}/offers/pending`);
     expect(req.request.params.get('search')).toBe('OFF-2026');
-    req.flush([mockListItem]);
+    expect(req.request.params.get('limit')).toBe('25');
+    expect(req.request.params.get('offset')).toBe('25');
+    req.flush(page);
   });
 
   it('gets history offers with search param', (done) => {
     const historyItem = { ...mockListItem, status: 'accepted' as const };
 
-    service.getHistoryOffers('customer@example.com').subscribe((res) => {
-      expect(res).toEqual([historyItem]);
+    const page = { items: [historyItem], total: 1, limit: 25, offset: 0 };
+
+    service.getHistoryOffers({ search: 'customer@example.com' }).subscribe((res) => {
+      expect(res).toEqual(page);
       done();
     });
 
     const req = httpMock.expectOne((request) => request.url === `${apiUrl}/offers/history`);
     expect(req.request.params.get('search')).toBe('customer@example.com');
-    req.flush([historyItem]);
+    req.flush(page);
   });
 
   it('gets offer detail', (done) => {

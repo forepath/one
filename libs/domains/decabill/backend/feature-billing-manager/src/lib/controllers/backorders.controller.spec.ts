@@ -81,10 +81,26 @@ describe('BackordersController', () => {
       ] as never);
       const result = await controller.list(10, 0, undefined, reqWithUser as never);
 
-      expect(backorderService.listForUser).toHaveBeenCalledWith(userId, 10, 0, undefined);
+      expect(backorderService.listForUser).toHaveBeenCalledWith(userId, 10, 0, undefined, undefined);
       expect(backorderService.mapManyToResponses).toHaveBeenCalledWith([backorderOwnedByUser]);
       expect(result).toHaveLength(1);
       expect(result[0].periodTotalPrice).toBe(12.5);
+    });
+
+    it("pages the caller's own backorders filtered by status (limit capped at 100)", async () => {
+      backorderService.listForUser.mockResolvedValue([] as never);
+      backorderService.mapManyToResponses.mockResolvedValue([] as never);
+
+      await controller.list(5000, 26, 'acme', reqWithUser as never, 'pending, retrying');
+
+      expect(backorderService.listForUser).toHaveBeenCalledWith(userId, 100, 26, 'acme', ['pending', 'retrying']);
+    });
+
+    it('rejects unknown status filters', async () => {
+      await expect(controller.list(10, 0, undefined, reqWithUser as never, 'bogus')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(backorderService.listForUser).not.toHaveBeenCalled();
     });
 
     it('throws BadRequestException when user not authenticated', async () => {

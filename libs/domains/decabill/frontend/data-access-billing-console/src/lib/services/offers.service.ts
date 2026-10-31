@@ -4,7 +4,19 @@ import type { Environment } from '@forepath/decabill/frontend/util-configuration
 import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
-import type { CustomerOfferDetailResponse, CustomerOfferListItem, OffersSummaryResponse } from '../types/offers.types';
+import type {
+  CustomerOfferDetailResponse,
+  CustomerOfferListItem,
+  OffersSummaryResponse,
+  PaginatedOffersResponse,
+} from '../types/offers.types';
+
+/** One page of the caller's offers (`limit` / `offset` / `search`). */
+export interface CustomerOffersListParams {
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -21,15 +33,15 @@ export class OffersService {
     return this.http.get<OffersSummaryResponse>(`${this.apiUrl}/offers/summary`);
   }
 
-  getPendingOffers(search?: string): Observable<CustomerOfferListItem[]> {
-    return this.http.get<CustomerOfferListItem[]>(`${this.apiUrl}/offers/pending`, {
-      params: this.buildSearchParams(search),
+  getPendingOffers(params?: CustomerOffersListParams): Observable<PaginatedOffersResponse<CustomerOfferListItem>> {
+    return this.http.get<PaginatedOffersResponse<CustomerOfferListItem>>(`${this.apiUrl}/offers/pending`, {
+      params: this.buildListParams(params),
     });
   }
 
-  getHistoryOffers(search?: string): Observable<CustomerOfferListItem[]> {
-    return this.http.get<CustomerOfferListItem[]>(`${this.apiUrl}/offers/history`, {
-      params: this.buildSearchParams(search),
+  getHistoryOffers(params?: CustomerOffersListParams): Observable<PaginatedOffersResponse<CustomerOfferListItem>> {
+    return this.http.get<PaginatedOffersResponse<CustomerOfferListItem>>(`${this.apiUrl}/offers/history`, {
+      params: this.buildListParams(params),
     });
   }
 
@@ -49,11 +61,19 @@ export class OffersService {
     return this.http.post<CustomerOfferDetailResponse>(`${this.apiUrl}/offers/${id}/decline`, {});
   }
 
-  private buildSearchParams(search?: string): HttpParams {
+  private buildListParams(options?: CustomerOffersListParams): HttpParams {
     let params = new HttpParams();
 
-    if (search?.trim()) {
-      params = params.set('search', search.trim());
+    if (options?.search?.trim()) {
+      params = params.set('search', options.search.trim());
+    }
+
+    if (options?.limit !== undefined) {
+      params = params.set('limit', String(options.limit));
+    }
+
+    if (options?.offset !== undefined) {
+      params = params.set('offset', String(options.offset));
     }
 
     return params;

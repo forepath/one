@@ -6,6 +6,8 @@ import { AGENSTRA_MANAGER_NEST_REGISTRATION } from '../contributors/agenstra-man
 import { DECABILL_BILLING_NEST_REGISTRATION } from '../contributors/decabill-billing/decabill-billing.contributor.module';
 import { DIGITAL_OCEAN_NEST_REGISTRATION } from '../contributors/digital-ocean/digital-ocean.contributor.module';
 import { HETZNER_NEST_REGISTRATION } from '../contributors/hetzner/hetzner.contributor.module';
+import { LOADWEAVER_NEST_REGISTRATION } from '../contributors/loadweaver/loadweaver.contributor.module';
+import { LOADWEAVER_USAGE_NEST_REGISTRATION } from '../contributors/loadweaver-usage/loadweaver-usage.contributor.module';
 import { registerContributorNestModules, type RegisteredContributorNestModule } from './contributor-nest.types';
 
 const FIRST_PARTY_CONTRIBUTOR_NEST_REGISTRATIONS: RegisteredContributorNestModule[] = [
@@ -15,6 +17,8 @@ const FIRST_PARTY_CONTRIBUTOR_NEST_REGISTRATIONS: RegisteredContributorNestModul
   AGENSTRA_CONTROLLER_NEST_REGISTRATION,
   AGENSTRA_MANAGER_NEST_REGISTRATION,
   DECABILL_BILLING_NEST_REGISTRATION,
+  LOADWEAVER_NEST_REGISTRATION,
+  LOADWEAVER_USAGE_NEST_REGISTRATION,
 ];
 
 export function resolveContributorNestImports(extra: RegisteredContributorNestModule[] = []): Type<unknown>[] {

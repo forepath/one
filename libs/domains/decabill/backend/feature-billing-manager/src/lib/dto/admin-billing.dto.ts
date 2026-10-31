@@ -26,6 +26,8 @@ export class AdminBillNowResponseDto {
 export class AdminInvoiceListItemDto extends InvoiceResponseDto {
   userId!: string;
   userEmail?: string;
+  /** Billing-profile name (company, else first + last name); admin lists show it instead of the email. */
+  customerName?: string;
 }
 
 export class PaginatedAdminInvoicesResponseDto {
@@ -37,7 +39,12 @@ export class PaginatedAdminInvoicesResponseDto {
 
 export class AdminSubscriptionListItemDto extends SubscriptionResponseDto {
   userEmail?: string;
+  /** Billing-profile name (company, else first + last name). */
+  customerName?: string;
   planName?: string;
+  /** Plan billing interval, so the price cell reads like the customer's (`€5.95 / Monthly`). */
+  billingIntervalType?: string;
+  billingIntervalValue?: number;
 }
 
 export class PaginatedAdminSubscriptionsResponseDto {

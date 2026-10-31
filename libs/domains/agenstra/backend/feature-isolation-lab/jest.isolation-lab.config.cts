@@ -15,6 +15,9 @@ module.exports = {
   moduleNameMapper: {
     '^archiver$': '<rootDir>/src/integration/harness/stubs/esm-only.stub.cjs',
   },
+  // Heavy + VM-lab locks once per run (each spec file has its own environment; see harness/global-setup.ts).
+  globalSetup: '<rootDir>/src/integration/harness/global-setup.ts',
+  globalTeardown: '<rootDir>/src/integration/harness/global-teardown.ts',
   testTimeout: 30 * 60_000,
   coverageDirectory:
     '../../../../../coverage/libs/domains/agenstra/backend/feature-isolation-lab-lab',

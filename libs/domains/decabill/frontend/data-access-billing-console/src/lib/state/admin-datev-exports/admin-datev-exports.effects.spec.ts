@@ -12,9 +12,9 @@ import {
   downloadDatevExportSuccess,
   expireQueuedDatevExports,
   loadAdminDatevExports,
-  loadAdminDatevExportsBatch,
   loadAdminDatevExportsFailure,
   loadAdminDatevExportsSuccess,
+  resolveQueuedDatevExports,
   triggerDatevExport,
   triggerDatevExportFailure,
   triggerDatevExportSuccess,
@@ -22,7 +22,7 @@ import {
 import {
   downloadDatevExport$,
   loadAdminDatevExports$,
-  loadAdminDatevExportsBatch$,
+  pollQueuedDatevExports$,
   triggerDatevExport$,
   triggerDatevExportSuccessReload$,
   expireQueuedDatevExports$,
@@ -75,45 +75,40 @@ describe('AdminDatevExportsEffects', () => {
   });
 
   describe('loadAdminDatevExports$', () => {
-    it('returns empty success when no exports', (done) => {
+    it('loads page 1 with the default page size when no window is given', (done) => {
       actions$ = of(loadAdminDatevExports({ params: { scope: 'tenant' } }));
-      service.listDatevExports.mockReturnValue(of({ items: [], total: 0, limit: 10, offset: 0 }));
+      service.listDatevExports.mockReturnValue(of({ items: [], total: 0, limit: 25, offset: 0 }));
 
       loadAdminDatevExports$(actions$, service as AdminBillingService).subscribe((result) => {
         expect(result).toEqual(
-          loadAdminDatevExportsSuccess({ items: [], total: 0, limit: 10, offset: 0, loadedScope: 'tenant' }),
+          loadAdminDatevExportsSuccess({ items: [], total: 0, limit: 25, offset: 0, loadedScope: 'tenant' }),
         );
-        expect(service.listDatevExports).toHaveBeenCalledWith({ scope: 'tenant', limit: 10, offset: 0 });
+        expect(service.listDatevExports).toHaveBeenCalledWith({ scope: 'tenant', limit: 25, offset: 0 });
         done();
       });
     });
 
-    it('returns success when first page is partial', (done) => {
-      actions$ = of(loadAdminDatevExports({ params: { scope: 'tenant' } }));
-      service.listDatevExports.mockReturnValue(of({ items: [listItem], total: 1, limit: 10, offset: 0 }));
+    it('loads exactly the requested page with the total in one request (replace-page)', (done) => {
+      actions$ = of(loadAdminDatevExports({ params: { scope: 'unified', search: '2026', limit: 50, offset: 100 } }));
+      service.listDatevExports.mockReturnValue(of({ items: [listItem], total: 101, limit: 50, offset: 100 }));
 
       loadAdminDatevExports$(actions$, service as AdminBillingService).subscribe((result) => {
         expect(result).toEqual(
-          loadAdminDatevExportsSuccess({ items: [listItem], total: 1, limit: 10, offset: 0, loadedScope: 'tenant' }),
-        );
-        done();
-      });
-    });
-
-    it('chains batch when first page is full', (done) => {
-      actions$ = of(loadAdminDatevExports({ params: { scope: 'tenant' } }));
-      service.listDatevExports.mockReturnValue(
-        of({ items: Array(10).fill(listItem), total: 20, limit: 10, offset: 0 }),
-      );
-
-      loadAdminDatevExports$(actions$, service as AdminBillingService).subscribe((result) => {
-        expect(result).toEqual(
-          loadAdminDatevExportsBatch({
-            params: { scope: 'tenant', limit: 10, offset: 0 },
-            offset: 10,
-            accumulatedItems: Array(10).fill(listItem),
+          loadAdminDatevExportsSuccess({
+            items: [listItem],
+            total: 101,
+            limit: 50,
+            offset: 100,
+            loadedScope: 'unified',
           }),
         );
+        expect(service.listDatevExports).toHaveBeenCalledTimes(1);
+        expect(service.listDatevExports).toHaveBeenCalledWith({
+          scope: 'unified',
+          search: '2026',
+          limit: 50,
+          offset: 100,
+        });
         done();
       });
     });
@@ -129,69 +124,61 @@ describe('AdminDatevExportsEffects', () => {
     });
   });
 
-  describe('loadAdminDatevExportsBatch$', () => {
-    it('finishes when batch page is partial', (done) => {
-      actions$ = of(
-        loadAdminDatevExportsBatch({
-          params: { scope: 'tenant', limit: 10, offset: 0 },
-          offset: 10,
-          accumulatedItems: Array(10).fill(listItem),
-        }),
-      );
-      service.listDatevExports.mockReturnValue(of({ items: [listItem], total: 11, limit: 10, offset: 10 }));
+  describe('pollQueuedDatevExports$', () => {
+    it('resolves queued exports by their year (any page) and then reloads the current page', (done) => {
+      jest.useFakeTimers();
+      const current = {
+        ...initialAdminDatevExportsState,
+        scope: 'tenant' as const,
+        viewTenantId: 'default',
+        search: 'jan',
+        limit: 25,
+        offset: 50,
+        queuedExports: [
+          { clientId: 'tenant-2025-1-0', scope: 'tenant' as const, periodYear: 2025, periodMonth: 1, queuedAt: 'x' },
+        ],
+      };
 
-      loadAdminDatevExportsBatch$(actions$, service as AdminBillingService).subscribe((result) => {
-        expect(result).toEqual(
-          loadAdminDatevExportsSuccess({
-            items: [...Array(10).fill(listItem), listItem],
-            total: 11,
-            limit: 10,
-            offset: 0,
-            loadedScope: 'tenant',
-          }),
-        );
-        done();
-      });
-    });
-
-    it('chains another batch when page is full', (done) => {
-      actions$ = of(
-        loadAdminDatevExportsBatch({
-          params: { scope: 'tenant', limit: 10, offset: 0 },
-          offset: 10,
-          accumulatedItems: Array(10).fill(listItem),
-        }),
-      );
+      store.overrideSelector(selectAdminDatevExportsState, current);
       service.listDatevExports.mockReturnValue(
-        of({ items: Array(10).fill(listItem), total: 30, limit: 10, offset: 10 }),
+        of({ items: [{ ...listItem, periodYear: 2025 }], total: 1, limit: 100, offset: 0 }),
       );
-
-      loadAdminDatevExportsBatch$(actions$, service as AdminBillingService).subscribe((result) => {
-        expect(result).toEqual(
-          loadAdminDatevExportsBatch({
-            params: { scope: 'tenant', limit: 10, offset: 0 },
-            offset: 20,
-            accumulatedItems: Array(20).fill(listItem),
-          }),
-        );
-        done();
-      });
-    });
-
-    it('maps batch failures', (done) => {
       actions$ = of(
-        loadAdminDatevExportsBatch({
-          params: { scope: 'tenant' },
-          offset: 10,
-          accumulatedItems: [listItem],
+        triggerDatevExportSuccess({
+          result: { queued: true, scope: 'tenant', year: 2025, month: 1 },
+          queuedAt: '2026-02-01T00:00:00Z',
         }),
       );
-      service.listDatevExports.mockReturnValue(throwError(() => new Error('batch failed')));
+      const results: unknown[] = [];
+      const subscription = pollQueuedDatevExports$(actions$, store, service as AdminBillingService).subscribe(
+        (result) => {
+          results.push(result);
 
-      loadAdminDatevExportsBatch$(actions$, service as AdminBillingService).subscribe((result) => {
-        expect(result).toEqual(loadAdminDatevExportsFailure({ error: 'batch failed' }));
-        done();
-      });
+          if (results.length < 2) return;
+
+          expect(service.listDatevExports).toHaveBeenCalledWith({
+            scope: 'tenant',
+            viewTenantId: 'default',
+            year: 2025,
+            limit: 100,
+            offset: 0,
+          });
+          expect(results[0]).toEqual(
+            resolveQueuedDatevExports({ items: [{ ...listItem, periodYear: 2025 }], loadedScope: 'tenant' }),
+          );
+          expect(results[1]).toEqual(
+            loadAdminDatevExports({
+              params: { scope: 'tenant', viewTenantId: 'default', search: 'jan', limit: 25, offset: 50 },
+              preserveScope: true,
+            }),
+          );
+          subscription.unsubscribe();
+          jest.useRealTimers();
+          done();
+        },
+      );
+
+      jest.advanceTimersByTime(3000);
     });
   });
 
@@ -223,7 +210,7 @@ describe('AdminDatevExportsEffects', () => {
   });
 
   describe('triggerDatevExportSuccessReload$', () => {
-    it('reloads exports for the active scope without switching tabs', (done) => {
+    it('reloads the current page of the active scope without switching tabs', (done) => {
       actions$ = of(
         triggerDatevExportSuccess({
           result: { queued: true, scope: 'unified', year: 2026, month: 2 },
@@ -234,7 +221,7 @@ describe('AdminDatevExportsEffects', () => {
       triggerDatevExportSuccessReload$(actions$, store).subscribe((result) => {
         expect(result).toEqual(
           loadAdminDatevExports({
-            params: { scope: 'tenant', viewTenantId: 'default', limit: 10, offset: 0 },
+            params: { scope: 'tenant', viewTenantId: 'default', limit: 25, offset: 0 },
             preserveScope: true,
           }),
         );

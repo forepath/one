@@ -1,7 +1,22 @@
+@use '../../../styles/contours' as *;
+
 :host {
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+// Phone lane switch (`class="fpc-lane-tabs"`): shown below md only. The rule lives here because the
+// component's own `:host { display: flex }` beats a global `.fpc-lane-tabs { display: none }` (same
+// specificity, injected later), which showed the lane bar on desktop above every lane page.
+@media (min-width: 768px) {
+  :host(.fpc-lane-tabs) {
+    display: none;
+  }
+}
+
+:host(.fpc-lane-tabs) {
+  flex: 0 0 auto;
 }
 
 :host(.fpc-tab-group--vertical) {
@@ -12,6 +27,9 @@
 .fpc-tab-group__bar {
   flex: 0 0 auto;
   border-radius: 0;
+  // Bootstrap raises `.btn-group > .btn:hover / .active / :focus` to `z-index: 1`; keep that local to
+  // the bar so tab bars never paint over menus, popovers or dialogs of the surrounding frame.
+  isolation: isolate;
 }
 
 :host(.fpc-tab-group--vertical) .fpc-tab-group__bar {
@@ -22,6 +40,20 @@
   max-width: 14rem;
   overflow-y: auto;
   border-right: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+// A side nav in a resizable column (`stretch`): the list fills the column, the column's edge is the border.
+:host(.fpc-tab-group--vertical.fpc-tab-group--stretch) {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+:host(.fpc-tab-group--vertical.fpc-tab-group--stretch) .fpc-tab-group__bar {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  border-right: 0;
 }
 
 // Phones: a fixed 14rem rail leaves almost no room for the panel; cap it at 40% of the group.
@@ -37,8 +69,8 @@
   padding: 0.5rem 0.75rem;
   font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  // Sentence case like every other label (AG-19 / LW-10); no letter-spacing needed without capitals.
+  text-transform: none;
   color: var(--bs-secondary-color);
   background-color: var(--bs-tertiary-bg);
   border-bottom: var(--bs-border-width) solid var(--bs-border-color);
@@ -57,6 +89,51 @@
   border-bottom: var(--bs-border-width) solid var(--bs-border-color);
 }
 
+// Horizontal bars: equal columns while every label fits; a tab never shrinks below its label (an object page with ten
+// tabs showed "Sum…", "Cont…", "Mem…"). The tabs that don't fit move into the trailing "More ▾" item (LW-11, measured in
+// the component), so the bar never scrolls sideways. `contain: inline-size`: the bar takes its container's width and
+// never widens it (the measuring pass lays every tab out at its natural width inside the clipped bar).
+:host(.fpc-tab-group--horizontal) {
+  min-width: 0;
+}
+
+:host(.fpc-tab-group--horizontal) .fpc-tab-group__bar {
+  overflow: hidden;
+  contain: inline-size;
+}
+
+:host(.fpc-tab-group--horizontal) .fpc-tab-group__item {
+  min-width: max-content;
+}
+
+:host(.fpc-tab-group--horizontal) .fpc-tab-group__item--overflow,
+:host(.fpc-tab-group--horizontal) .fpc-tab-group__bar:not(.fpc-tab-group__bar--overflowing) .fpc-tab-group__item--more {
+  display: none;
+}
+
+// Measuring pass (synchronous, never painted): every item, the More item included, at its content width.
+:host(.fpc-tab-group--horizontal) .fpc-tab-group__bar--measuring .fpc-tab-group__item {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+// "More ▾": a tab item at its content width (same height, right / bottom borders); the dropdown fills it.
+:host(.fpc-tab-group--horizontal) .fpc-tab-group__item--more {
+  flex: 0 0 auto;
+
+  ::ng-deep > fpc-dropdown,
+  ::ng-deep > fpc-dropdown > .fpc-dropdown__trigger {
+    display: flex;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+.fpc-tab-group__more-caret {
+  font-size: 0.75em;
+}
+
 // Full-bleed segmented control: equal-width options. Drop top/left so edges do not double against
 // surrounding chrome or neighboring tabs; keep right/bottom as the shared separators.
 .btn-group-options {
@@ -69,9 +146,9 @@
     --bs-btn-hover-bg: var(--bs-tertiary-bg);
     --bs-btn-hover-color: var(--bs-body-color);
     --bs-btn-hover-border-color: transparent;
-    --bs-btn-active-color: var(--bs-white);
-    --bs-btn-active-bg: var(--bs-primary);
-    --bs-btn-active-border-color: var(--bs-primary);
+    --bs-btn-active-color: var(--fpc-primary-contrast, #fff);
+    --bs-btn-active-bg: var(--fpc-primary-fill, var(--bs-primary));
+    --bs-btn-active-border-color: var(--fpc-primary-fill, var(--bs-primary));
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -83,8 +160,8 @@
     min-width: 0;
 
     &.active {
-      color: var(--bs-white);
-      background-color: var(--bs-primary);
+      color: var(--fpc-primary-contrast, #fff);
+      background-color: var(--fpc-primary-fill, var(--bs-primary));
       font-weight: 600;
     }
 
@@ -126,19 +203,89 @@
   }
 }
 
-:host(.fpc-tab-group--horizontal) .fpc-tab-group__item--active {
-  background-color: var(--bs-primary);
+// Active tab, and (user, 2026-10-29) a tab with keyboard focus: the same look (primary fill, chrome shade, elevation
+// pattern, on-primary label); the focus state needs no extra ring on top.
+// Ink: `--fpc-primary-contrast`, the brand's on-primary colour (the `btn-primary` label: white, dark on Loadweaver gold)
+// for the label, icon, count badge and pattern lines. Fill: `--fpc-primary-fill`, the primary shifted just enough for
+// that ink to reach 4.5 : 1 (brands/_chrome.scss; unchanged for Agenstra / Loadweaver, a touch deeper for Decabill /
+// ForePath green / orange).
+:host(.fpc-tab-group--horizontal) {
+  // A plain selector list (not `:is()` around a `:has()`): Angular's style encapsulation rewrites it reliably.
+  .fpc-tab-group__item--active,
+  .fpc-tab-group__item:has(> .btn-options:focus-visible),
+  .fpc-tab-group__item:has(> .btn-options:active),
+  .fpc-tab-group__item--more:has(.btn-options:focus-visible),
+  .fpc-tab-group__item--more:has(.btn-options:active) {
+    background-color: var(--fpc-primary-fill, var(--bs-primary));
+    // Own edges see-through (not the translucent divider colour, which rendered as a dark line over primary): fill, shade
+    // and pattern run through the border area, so the bottom edge continues the pattern instead of a flat strip.
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    background-origin: border-box;
 
-  .fpc-tab-group__action {
-    color: var(--bs-white);
-
-    &.text-warning {
-      color: var(--bs-warning);
+    // Keyboard focus and the pressed state (mouse down, where Bootstrap paints a translucent primary on the button
+    // itself): the item's fill / shade / pattern show through instead.
+    > .btn-options:focus-visible,
+    > .btn-options:active,
+    .fpc-tab-group__more:focus-visible,
+    .fpc-tab-group__more:active {
+      color: var(--fpc-primary-contrast, #fff);
+      // Bootstrap paints the hover background on focus; the item's fill / shade / pattern show through instead.
+      background-color: transparent;
+      box-shadow: none;
     }
 
-    &:hover,
-    &:focus-visible {
-      background-color: color-mix(in srgb, var(--bs-white) 16%, transparent);
+    // Same shade as the top bar's chrome (user, 2026-10-29): a black wash fading out by mid-width over the solid primary
+    // fill, so the active tab reads as part of the same chrome family. On the item, so the tab and its trailing action
+    // share one continuous wash; the active button itself turns see-through below.
+    // Light mode: a soft lift away from the ink (`--fpc-primary-fill-tone`: white under dark ink on Loadweaver gold, the
+    // sidebar's light-mode language; a light black wash under white ink, so the wash never lowers the label contrast);
+    // dark mode: the top bar's black wash.
+    --fpc-tab-active-shade: color-mix(in srgb, var(--fpc-primary-fill-tone, #fff) 18%, transparent);
+    background-image: linear-gradient(65deg, var(--fpc-tab-active-shade) 0%, transparent 55%);
+
+    .btn-options.active {
+      color: var(--fpc-primary-contrast, #fff);
+      background-color: transparent;
+    }
+
+    // Count badge: an inverted pill (on-primary ink fill, primary-fill digits), same contrast as the label.
+    .fpc-tab-group__badge {
+      color: var(--fpc-primary-fill, var(--bs-primary)) !important;
+      background-color: var(--fpc-primary-contrast, #fff) !important;
+    }
+
+    // Elevation pattern (user, 2026-10-29): the topographic contour illustration of the marketing surfaces
+    // (`styles/_contours.scss`), faint on-primary lines (white, dark on gold) masked by the tile and intersected with the same 65° fade, so the
+    // pattern only shows toward the start of the tab and dissolves into the solid fill. Behind the label / action.
+    position: relative;
+    isolation: isolate;
+
+    &::before {
+      content: '';
+      position: absolute;
+      // Over the (transparent) right / bottom border too, so the pattern reaches the tab's outer edge.
+      inset: 0 calc(-1 * var(--bs-border-width)) calc(-1 * var(--bs-border-width)) 0;
+      z-index: -1;
+      pointer-events: none;
+      background-color: color-mix(in srgb, var(--fpc-primary-contrast, #fff) 22%, transparent);
+      mask:
+        $fpc-contour-tile 0 0 / 240px 240px repeat,
+        linear-gradient(65deg, #000 0%, transparent 70%);
+      mask-composite: intersect;
+    }
+
+    .fpc-tab-group__action {
+      color: var(--fpc-primary-contrast, #fff);
+
+      &.text-warning {
+        color: var(--bs-warning);
+      }
+
+      &:hover,
+      &:focus-visible {
+        background-color: color-mix(in srgb, var(--fpc-primary-contrast, #fff) 16%, transparent);
+      }
     }
   }
 }
@@ -148,7 +295,7 @@
 :host(.fpc-tab-group--vertical) .fpc-tab-group__section-title {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--fpc-z-raised, 1);
   flex: 0 0 auto;
 }
 
@@ -194,4 +341,29 @@
 // shrinking to the viewport. Otherwise sticky headings inside it are pushed off after one screen.
 :host(.fpc-tab-group--vertical) ::ng-deep .fpc-tab-group__panels > fpc-tab {
   flex-shrink: 0;
+}
+
+.fpc-tab-group__badge {
+  // Counters are 1:1 (user, 2026-10-29): height = min-width, digits centred; one digit is a circle, more digits
+  // grow into a pill of the same height.
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 1.8em;
+  height: 1.8em;
+  padding: 0 0.45em;
+  margin-inline-start: 0.375rem;
+  font-size: 0.7em;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+// Only read by the horizontal active rule above.
+:host-context(html[data-bs-theme='dark']) .fpc-tab-group__item--active,
+:host-context(html[data-bs-theme='dark']) .fpc-tab-group__item:has(> .btn-options:focus-visible),
+:host-context(html[data-bs-theme='dark']) .fpc-tab-group__item:has(> .btn-options:active),
+:host-context(html[data-bs-theme='dark']) .fpc-tab-group__item--more:has(.btn-options:focus-visible),
+:host-context(html[data-bs-theme='dark']) .fpc-tab-group__item--more:has(.btn-options:active) {
+  --fpc-tab-active-shade: color-mix(in srgb, var(--bs-black) 28%, transparent);
 }

@@ -1,0 +1,38 @@
+# -----------------------------------------------------------------------------
+# Image:      loadweaver-console-server
+# Project:    frontend-console — Nx target `server-container-image`
+# Registry:   ghcr.io/forepath/loadweaver-console-server
+# Base:       node:24.22.1-alpine
+# User:       node (APP_UID / APP_GID, default 1000)
+# Exposes:    4602 (Express static server)
+# Build:      npx nx run frontend-console:server-container-image
+# Run:        nx docker:run loadweaver-frontend-console -p 4602:4602
+# Notes:      Optional runtime env CONFIG=<url> for GET /config JSON merge
+# -----------------------------------------------------------------------------
+#
+FROM docker.io/node:24.22.1-alpine
+
+ARG APP_UID=1000
+ARG APP_GID=1000
+ARG VERSION=0.0.0
+ENV VERSION=${VERSION}
+
+ENV HOST=0.0.0.0
+ENV PORT=4602
+
+WORKDIR /app
+
+EXPOSE ${PORT}
+
+# CVE-2026-59873: upgrade npm so nested tar is >= 7.5.19
+RUN npm install -g npm@11.18.0 && npm cache clean --force
+
+COPY --chown=${APP_UID}:${APP_GID} package*.json ./
+
+RUN npm i --omit=dev && npm cache clean --force && chown -R "${APP_UID}:${APP_GID}" /app
+
+COPY --chown=${APP_UID}:${APP_GID} . /app
+
+USER ${APP_UID}:${APP_GID}
+
+CMD [ "node", "server.cjs" ]

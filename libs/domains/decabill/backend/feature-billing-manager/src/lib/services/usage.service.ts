@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
 import type { UpdateUsageMeterEntryDto } from '../dto/create-usage-record.dto';
-import type { UsageMeterEntryResponseDto } from '../dto/meter-response.dto';
+import type { PaginatedUsageMeterEntriesResponseDto, UsageMeterEntryResponseDto } from '../dto/meter-response.dto';
 import type { UsageAttachmentType, UsageRecordEntity } from '../entities/usage-record.entity';
 import { AddonMetersRepository } from '../repositories/addon-meters.repository';
 import { ServicePlanMetersRepository } from '../repositories/service-plan-meters.repository';
@@ -34,10 +34,19 @@ export class UsageService {
     return await this.usageRecordsRepository.findLatestForSubscription(subscriptionId);
   }
 
-  async listMeterEntries(subscriptionId: string): Promise<UsageMeterEntryResponseDto[]> {
-    const rows = await this.usageRecordsRepository.findMeteredForSubscription(subscriptionId);
+  /** One page of a subscription's metered entries (newest first) with the total. */
+  async listMeterEntries(
+    subscriptionId: string,
+    limit: number,
+    offset: number,
+  ): Promise<PaginatedUsageMeterEntriesResponseDto> {
+    const { items, total } = await this.usageRecordsRepository.findMeteredForSubscriptionPage(
+      subscriptionId,
+      limit,
+      offset,
+    );
 
-    return rows.map((row) => this.mapEntry(row));
+    return { items: items.map((row) => this.mapEntry(row)), total, limit, offset };
   }
 
   async createUsage(dto: {
@@ -172,11 +181,18 @@ export class UsageService {
       addonId,
     );
 
+    // The collector dedupes on `usagePayload.idempotencyKey`: an admin edit must keep it, or the window would be
+    // collected (and billed) again.
+    const idempotencyKey = existing.usagePayload?.['idempotencyKey'];
+    const usagePayload =
+      dto.usagePayload !== undefined
+        ? { ...dto.usagePayload, ...(idempotencyKey !== undefined ? { idempotencyKey } : {}) }
+        : existing.usagePayload;
     const updated = await this.usageRecordsRepository.update(existing, {
       periodStart: dto.periodStart ? new Date(dto.periodStart) : existing.periodStart,
       periodEnd: dto.periodEnd ? new Date(dto.periodEnd) : existing.periodEnd,
       value: dto.value !== undefined ? String(dto.value) : existing.value,
-      usagePayload: dto.usagePayload ?? existing.usagePayload,
+      usagePayload,
       meterId,
       attachmentType,
       addonId,

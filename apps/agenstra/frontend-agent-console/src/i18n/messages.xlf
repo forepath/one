@@ -81,13 +81,13 @@
         <source>Sharing</source>
         </trans-unit>
       <trans-unit id="featureAgentConfig-fieldShareHelp" datatype="html">
-        <source>manual, auto, or disabled</source>
+        <source>Share sessions manually, automatically, or never</source>
         </trans-unit>
       <trans-unit id="featureAgentConfig-fieldUpdate" datatype="html">
         <source>Updates</source>
         </trans-unit>
       <trans-unit id="featureAgentConfig-fieldUpdateHelp" datatype="html">
-        <source>true, false, or notify</source>
+        <source>Install updates automatically, only notify, or turn them off</source>
         </trans-unit>
       <trans-unit id="featureAgentConfig-fieldSnapshots" datatype="html">
         <source>Snapshots</source>
@@ -777,13 +777,13 @@
         <source>Manager :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featureAgentSelect-clearSelectionAria" datatype="html">
-        <source>Clear selected agent</source>
+        <source>Clear selected environment</source>
         </trans-unit>
       <trans-unit id="featureAgentSelect-noAgents" datatype="html">
-        <source>No agents found.</source>
+        <source>No environments found.</source>
         </trans-unit>
       <trans-unit id="featureAgentSelect-placeholder" datatype="html">
-        <source>Search agents by name</source>
+        <source>Search environments by name</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-runStatusRunning" datatype="html">
         <source>Running</source>
@@ -828,7 +828,7 @@
         <source>No workspaces yet</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-goToSpaces" datatype="html">
-        <source> Go to Spaces </source>
+        <source>Go to workspaces</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-noWorkspaceSelected" datatype="html">
         <source>No workspace selected yet</source>
@@ -867,7 +867,7 @@
         <source>The agent created or changed this task. Runs are unattended with every permission allowed, so the task only runs after you reviewed its prompt, model and schedule and approved it.</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-pendingApprovalHandoffHint" datatype="html">
-        <source>Once approved, this task can hand off work to these agents without asking: <x id="INTERPOLATION" equiv-text="{{ handoffAgents.join(&apos;, &apos;) }}"/></source>
+        <source>Once approved, this task can hand off work to these environments without asking: <x id="INTERPOLATION" equiv-text="{{ handoffAgents.join(&apos;, &apos;) }}"/></source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-approve" datatype="html">
         <source>Approve</source>
@@ -930,10 +930,13 @@
         <source>Time zone</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-noOtherAgents" datatype="html">
-        <source> This workspace has no other agents. </source>
+        <source> This workspace has no other environments. </source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-save" datatype="html">
-        <source> Save </source>
+        <source>Save changes</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-createSubmit" datatype="html">
+        <source>Create task</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-deleteConfirmTitle" datatype="html">
         <source>Delete task</source>
@@ -947,15 +950,6 @@
       <trans-unit id="featureAgentTasks-switchWorkspaceModalTitle" datatype="html">
         <source>Switch workspace</source>
         </trans-unit>
-      <trans-unit id="featureAgentTasks-searchWorkspacesPlaceholder" datatype="html">
-        <source>Search workspaces</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-noSearchResults" datatype="html">
-        <source>No search results</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-currentWorkspace" datatype="html">
-        <source> Current </source>
-        </trans-unit>
       <trans-unit id="featureAgentTasks-title" datatype="html">
         <source>Tasks</source>
         </trans-unit>
@@ -963,7 +957,7 @@
         <source>Switch workspace</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-newTaskTitle" datatype="html">
-        <source>New task</source>
+        <source>Create task</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-runNowTitle" datatype="html">
         <source>Run now</source>
@@ -978,16 +972,16 @@
         <source>Refresh</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-allowedHandoffAgentsLabel" datatype="html">
-        <source>Allowed handoff agents</source>
+        <source>Allowed handoff environments</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-allowedHandoffAgentsHint" datatype="html">
-        <source>Runs may hand off work to these agents of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.</source>
+        <source>Runs may hand off work to these environments of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-openHandoffChat" datatype="html">
         <source>Open handoff chat</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-handoffUnknownAgent" datatype="html">
-        <source>another agent</source>
+        <source>another environment</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-handoffResponseHeading" datatype="html">
         <source>Response from <x id="agentName" equiv-text="agentName"/></source>
@@ -1007,38 +1001,14 @@
       <trans-unit id="featureAtlassianImportAdmin-connectionTestFailed" datatype="html">
         <source>Failed</source>
         </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-add" datatype="html">
-        <source>Add</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-noSearchResults" datatype="html">
-        <source>No search results</source>
-        </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-noConnectionsYet" datatype="html">
         <source>No connections yet</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-connectionActionsAria" datatype="html">
-        <source>Connection actions</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-testConnectionTitle" datatype="html">
         <source>Test connection</source>
         </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editConnectionTitle" datatype="html">
-        <source>Edit connection</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionTitle" datatype="html">
-        <source>Delete connection</source>
-        </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-noConfigsYet" datatype="html">
         <source>No import configs yet</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-badgeOn" datatype="html">
-        <source>On</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-badgeOff" datatype="html">
-        <source>Off</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-configActionsAria" datatype="html">
-        <source>Import config actions</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-runImportTitle" datatype="html">
         <source>Run import now</source>
@@ -1046,20 +1016,11 @@
       <trans-unit id="featureAtlassianImportAdmin-clearMarkersTitle" datatype="html">
         <source>Clear sync markers</source>
         </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editConfigTitle" datatype="html">
-        <source>Edit import config</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConfigTitle" datatype="html">
-        <source>Delete import config</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-connectionToWorkspace" datatype="html">
-        <source>to</source>
-        </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-neverRun" datatype="html">
         <source>Never run</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-newConnectionTitle" datatype="html">
-        <source>New connection</source>
+        <source>Create connection</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-newConnLabel" datatype="html">
         <source>Label (optional)</source>
@@ -1076,11 +1037,14 @@
       <trans-unit id="featureAtlassianImportAdmin-newConnApiToken" datatype="html">
         <source>API token</source>
         </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-create" datatype="html">
-        <source> Create </source>
+      <trans-unit id="featureAtlassianImportAdmin-createConnectionSubmit" datatype="html">
+        <source> Create connection </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-createConfigSubmit" datatype="html">
+        <source> Create import config </source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-newConfigTitle" datatype="html">
-        <source>New import config</source>
+        <source>Create import config</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-fieldConnection" datatype="html">
         <source>Connection</source>
@@ -1170,7 +1134,7 @@
         <source>New API token (optional)</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-save" datatype="html">
-        <source> Save </source>
+        <source> Save changes </source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-editConfigHeading" datatype="html">
         <source> Edit import config (<x id="INTERPOLATION" equiv-text="{{ cfg.importKind }}"/>) </source>
@@ -1232,23 +1196,11 @@
       <trans-unit id="featureAtlassianImportAdmin-dismiss" datatype="html">
         <source>Dismiss</source>
         </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-searchConnectionsLabel" datatype="html">
-        <source>Search site connections</source>
-        </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-searchConnectionsPlaceholder" datatype="html">
         <source>Search connections</source>
         </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-loadingConnections" datatype="html">
-        <source>Loading connections...</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-searchConfigsLabel" datatype="html">
-        <source>Search import configs</source>
-        </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-searchConfigsPlaceholder" datatype="html">
         <source>Search import configs</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-loadingConfigs" datatype="html">
-        <source>Loading configs...</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-swimlaneDraft" datatype="html">
         <source>Draft</source>
@@ -1341,7 +1293,7 @@
         <source>Guard</source>
         </trans-unit>
       <trans-unit id="featureAudit-clientLabel" datatype="html">
-        <source>Client</source>
+        <source>Workspace</source>
         </trans-unit>
       <trans-unit id="featureAudit-fromDateLabel" datatype="html">
         <source>From</source>
@@ -1358,12 +1310,6 @@
       <trans-unit id="featureAudit-groupByHour" datatype="html">
         <source>Hour</source>
         </trans-unit>
-      <trans-unit id="featureAudit-apply" datatype="html">
-        <source> Apply </source>
-        </trans-unit>
-      <trans-unit id="featureAudit-reset" datatype="html">
-        <source> Reset </source>
-        </trans-unit>
       <trans-unit id="featureAudit-chatIoTable" datatype="html">
         <source>Chat I/O</source>
         </trans-unit>
@@ -1374,7 +1320,7 @@
         <source>User</source>
         </trans-unit>
       <trans-unit id="featureAudit-agent" datatype="html">
-        <source>Agent</source>
+        <source>Environment</source>
         </trans-unit>
       <trans-unit id="featureAudit-direction" datatype="html">
         <source>Direction</source>
@@ -1385,15 +1331,9 @@
       <trans-unit id="featureAudit-chars" datatype="html">
         <source>Chars</source>
         </trans-unit>
-      <trans-unit id="featureAudit-noRows" datatype="html">
-        <source> No rows </source>
-        </trans-unit>
-      <trans-unit id="featureAudit-showingOf" datatype="html">
-        <source>Showing <x id="INTERPOLATION" equiv-text="{{ list.data.length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ list.total }}"/></source>
-        </trans-unit>
       <trans-unit id="featureAudit-filterDropsTable" datatype="html">
-        <source>Filter Drops</source>
-        </trans-unit>
+        <source>Filter drops</source>
+      </trans-unit>
       <trans-unit id="featureAudit-filterType" datatype="html">
         <source>Filter</source>
         </trans-unit>
@@ -1401,11 +1341,11 @@
         <source>Reason</source>
         </trans-unit>
       <trans-unit id="featureAudit-filterFlagsTable" datatype="html">
-        <source>Filter Flags</source>
-        </trans-unit>
+        <source>Filter flags</source>
+      </trans-unit>
       <trans-unit id="featureAudit-egressEventsTable" datatype="html">
-        <source>Web Traffic</source>
-        </trans-unit>
+        <source>Web traffic</source>
+      </trans-unit>
       <trans-unit id="featureAudit-egressDecisionFilter" datatype="html">
         <source>Decision</source>
         </trans-unit>
@@ -1431,8 +1371,8 @@
         <source>Transfer</source>
         </trans-unit>
       <trans-unit id="featureAudit-entityEventsTable" datatype="html">
-        <source>Entity Events</source>
-        </trans-unit>
+        <source>Entity events</source>
+      </trans-unit>
       <trans-unit id="featureAudit-entityType" datatype="html">
         <source>Type</source>
         </trans-unit>
@@ -1451,29 +1391,23 @@
       <trans-unit id="featureAudit-filtersTitle" datatype="html">
         <source>Filters</source>
         </trans-unit>
-      <trans-unit id="featureAudit-resetFiltersTitle" datatype="html">
-        <source>Reset filters to defaults</source>
-        </trans-unit>
-      <trans-unit id="featureAudit-searchPlaceholder" datatype="html">
-        <source>Search</source>
-        </trans-unit>
       <trans-unit id="featureAudit-loading" datatype="html">
-        <source>Loading statistics...</source>
-        </trans-unit>
+        <source>Loading statistics</source>
+      </trans-unit>
       <trans-unit id="featureAudit-totalMessages" datatype="html">
-        <source>Total messages</source>
+        <source>Messages</source>
         </trans-unit>
       <trans-unit id="featureAudit-totalWords" datatype="html">
-        <source>Total words</source>
+        <source>Words</source>
         </trans-unit>
       <trans-unit id="featureAudit-avgWordsPerMessage" datatype="html">
-        <source>Avg words/message</source>
+        <source>Words / message</source>
         </trans-unit>
       <trans-unit id="featureAudit-totalTokens" datatype="html">
-        <source>Total tokens</source>
+        <source>Tokens</source>
         </trans-unit>
       <trans-unit id="featureAudit-totalCost" datatype="html">
-        <source>Total cost (USD)</source>
+        <source>Cost (USD)</source>
         </trans-unit>
       <trans-unit id="featureAudit-filterFlags" datatype="html">
         <source>Filter flags</source>
@@ -1482,10 +1416,10 @@
         <source>Filter drops</source>
         </trans-unit>
       <trans-unit id="featureAudit-egressBlocked" datatype="html">
-        <source>Blocked destinations</source>
+        <source>Blocked</source>
         </trans-unit>
       <trans-unit id="featureAudit-egressObserved" datatype="html">
-        <source>Would-be blocks</source>
+        <source>Observed</source>
         </trans-unit>
       <trans-unit id="featureAudit-egressAllowed" datatype="html">
         <source>Allowed requests</source>
@@ -1515,7 +1449,7 @@
         <source>Blocked destinations</source>
         </trans-unit>
       <trans-unit id="featureAudit-seriesEgressObserved" datatype="html">
-        <source>Would-be blocks</source>
+        <source>Observed (would block)</source>
         </trans-unit>
       <trans-unit id="featureAudit-chartSecurityOverTimeTitle" datatype="html">
         <source>Security events over time</source>
@@ -1545,13 +1479,13 @@
         <source>User</source>
         </trans-unit>
       <trans-unit id="featureAudit-entityTypeClient" datatype="html">
-        <source>Client</source>
+        <source>Workspace</source>
         </trans-unit>
       <trans-unit id="featureAudit-entityTypeAgent" datatype="html">
-        <source>Agent</source>
+        <source>Environment</source>
         </trans-unit>
       <trans-unit id="featureAudit-entityTypeClientUser" datatype="html">
-        <source>Client user</source>
+        <source>Workspace member</source>
         </trans-unit>
       <trans-unit id="featureAudit-entityTypeProvisioningReference" datatype="html">
         <source>Provisioning reference</source>
@@ -1722,13 +1656,13 @@
         <source>Run task now</source>
         </trans-unit>
       <trans-unit id="featureChat-toolDisplayHandoffAgents" datatype="html">
-        <source>List agents</source>
+        <source>List environments</source>
         </trans-unit>
       <trans-unit id="featureChat-toolDisplayHandoffCreate" datatype="html">
         <source>Hand off task</source>
         </trans-unit>
       <trans-unit id="featureChat-toolDisplayHandoffProfileGet" datatype="html">
-        <source>Read agent profile</source>
+        <source>Read environment profile</source>
         </trans-unit>
       <trans-unit id="featureChat-toolDisplayHandoffProfileUpdate" datatype="html">
         <source>Update own profile</source>
@@ -1812,7 +1746,7 @@
         <source>Search reported an error</source>
         </trans-unit>
       <trans-unit id="featureChat-toolEmbedHandoff" datatype="html">
-        <source>Handed over to another agent</source>
+        <source>Handed over to another environment</source>
         </trans-unit>
       <trans-unit id="featureChat-toolEmbedHandoffPending" datatype="html">
         <source>The response arrives here once the agent is done.</source>
@@ -1892,12 +1826,6 @@
       <trans-unit id="featureChat-studio" datatype="html">
         <source>Studio</source>
         </trans-unit>
-      <trans-unit id="featureChat-loadingWorkspaces" datatype="html">
-        <source>Loading workspaces...</source>
-        </trans-unit>
-      <trans-unit id="featureChat-noSearchResults" datatype="html">
-        <source>No search results</source>
-        </trans-unit>
       <trans-unit id="featureChat-noWorkspaces" datatype="html">
         <source>No workspaces yet</source>
         </trans-unit>
@@ -1919,14 +1847,8 @@
       <trans-unit id="featureChat-editWorkspaceTitle" datatype="html">
         <source>Edit workspace</source>
         </trans-unit>
-      <trans-unit id="featureChat-deleteWorkspaceTitle" datatype="html">
-        <source>Delete Workspace</source>
-        </trans-unit>
       <trans-unit id="featureChat-workspaceUnreachableTitle" datatype="html">
         <source>Workspace cannot be reached</source>
-        </trans-unit>
-      <trans-unit id="featureChat-loadingEnvironments" datatype="html">
-        <source>Loading environments...</source>
         </trans-unit>
       <trans-unit id="featureChat-noEnvironments" datatype="html">
         <source>No environments yet</source>
@@ -1937,14 +1859,8 @@
       <trans-unit id="featureChat-manageEnvVarsTitle" datatype="html">
         <source>Manage Environment Variables</source>
         </trans-unit>
-      <trans-unit id="featureChat-manageOpencodeConfigEnvironmentTitle" datatype="html">
-        <source>Manage agent configuration</source>
-        </trans-unit>
       <trans-unit id="featureChat-editEnvironmentTitle" datatype="html">
         <source>Edit environment</source>
-        </trans-unit>
-      <trans-unit id="featureChat-deleteEnvironmentTitle" datatype="html">
-        <source>Delete Environment</source>
         </trans-unit>
       <trans-unit id="featureVirtualDesktop-header" datatype="html">
         <source>Virtual Desktop</source>
@@ -1959,7 +1875,7 @@
         <source>(primary)</source>
         </trans-unit>
       <trans-unit id="featureChat-chatSessionHandoffBadgeTitle" datatype="html">
-        <source>Task handed over by another agent</source>
+        <source>Task handed over by another environment</source>
         </trans-unit>
       <trans-unit id="featureChat-chatSessionHandoffBadge" datatype="html">
         <source>(handoff)</source>
@@ -2112,7 +2028,7 @@
         <source>Refine plan</source>
         </trans-unit>
       <trans-unit id="featureChat-deleteWorkspaceModalTitle" datatype="html">
-        <source>Delete Workspace</source>
+        <source>Delete workspace</source>
         </trans-unit>
       <trans-unit id="featureChat-delete" datatype="html">
         <source>Delete</source>
@@ -2131,36 +2047,39 @@
         <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureChat-deleteEnvironmentModalTitle" datatype="html">
-        <source>Delete Environment</source>
+        <source>Delete environment</source>
         </trans-unit>
       <trans-unit id="featureChat-deleteEnvironmentConfirm" datatype="html">
         <source> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
     &gt;"/>? </source>
         </trans-unit>
       <trans-unit id="featureChat-deleteChatSessionModalTitle" datatype="html">
-        <source>Delete Chat Session</source>
+        <source>Delete chat session</source>
         </trans-unit>
       <trans-unit id="featureChat-deleteChatSessionConfirm" datatype="html">
         <source> Are you sure you want to delete the chat session <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ chatSessionToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
     &gt;"/>? </source>
         </trans-unit>
       <trans-unit id="featureChat-renameChatSessionModalTitle" datatype="html">
-        <source>Rename Chat Session</source>
+        <source>Rename chat session</source>
         </trans-unit>
       <trans-unit id="featureChat-nameLabel" datatype="html">
         <source>Name</source>
         </trans-unit>
       <trans-unit id="featureChat-renameChatSessionSave" datatype="html">
-        <source>Save</source>
+        <source>Rename</source>
         </trans-unit>
       <trans-unit id="featureChat-addWorkspaceTitle" datatype="html">
-        <source>Add Workspace</source>
+        <source>Create workspace</source>
         </trans-unit>
       <trans-unit id="featureChat-existingWorkspace" datatype="html">
         <source>Existing Workspace</source>
         </trans-unit>
       <trans-unit id="featureChat-provisionServer" datatype="html">
-        <source>Provision Server</source>
+        <source>Provision server</source>
+        </trans-unit>
+      <trans-unit id="featureChat-provisionServerSubmit" datatype="html">
+        <source>Provision server</source>
         </trans-unit>
       <trans-unit id="featureChat-descriptionLabel" datatype="html">
         <source>Description</source>
@@ -2232,7 +2151,7 @@
         <source>https://github.com/user/repo.git</source>
         </trans-unit>
       <trans-unit id="featureChat-workspaceGitRepoUrlHint" datatype="html">
-        <source>Git repository URL for agent workspace</source>
+        <source>Git repository URL for the environment's workspace</source>
         </trans-unit>
       <trans-unit id="featureChat-gitUsernameLabel" datatype="html">
         <source>Git Username</source>
@@ -2267,10 +2186,10 @@
         <source>SSH private key for cloning repositories via SSH (alternative to username/token)</source>
         </trans-unit>
       <trans-unit id="featureChat-createWorkspace" datatype="html">
-        <source>Create</source>
+        <source>Create workspace</source>
         </trans-unit>
       <trans-unit id="featureChat-addEnvironmentTitle" datatype="html">
-        <source>Add Environment</source>
+        <source>Create environment</source>
         </trans-unit>
       <trans-unit id="featureChat-containerTypeLabel" datatype="html">
         <source>Container Type</source>
@@ -2282,7 +2201,7 @@
         <source>Generic</source>
         </trans-unit>
       <trans-unit id="featureChat-containerTypeHint" datatype="html">
-        <source>The type of content this agent holds. Defaults to Generic if not specified.</source>
+        <source>The type of content this environment holds. Defaults to Generic if not specified.</source>
         </trans-unit>
       <trans-unit id="featureChat-isolationLabel" datatype="html">
         <source>Container isolation</source>
@@ -2318,10 +2237,10 @@
         <source>Optional. Defaults to workspace Git repository URL if not specified.</source>
         </trans-unit>
       <trans-unit id="featureChat-createEnvironment" datatype="html">
-        <source>Create</source>
+        <source>Create environment</source>
         </trans-unit>
       <trans-unit id="featureChat-updateWorkspaceTitle" datatype="html">
-        <source>Update Workspace</source>
+        <source>Edit workspace</source>
         </trans-unit>
       <trans-unit id="featureChat-apiKeyKeepCurrentPlaceholder" datatype="html">
         <source>Leave empty to keep current or auto-generate</source>
@@ -2345,28 +2264,28 @@
         <source> Isolation support has not been checked yet. </source>
         </trans-unit>
       <trans-unit id="featureChat-updateWorkspace" datatype="html">
-        <source>Save</source>
+        <source>Save changes</source>
         </trans-unit>
       <trans-unit id="featureChat-updateEnvironmentTitle" datatype="html">
-        <source>Update Environment</source>
+        <source>Edit environment</source>
         </trans-unit>
       <trans-unit id="featureChat-handoffProfileLabel" datatype="html">
         <source>Handoff profile</source>
         </trans-unit>
       <trans-unit id="featureChat-handoffProfileHelp" datatype="html">
-        <source>What this environment is responsible for and which tasks other agents of the workspace can hand over to it. The agent can also maintain it itself.</source>
+        <source>What this environment is responsible for and which tasks other environments of the workspace can hand over to it. The agent can also maintain it itself.</source>
         </trans-unit>
       <trans-unit id="featureChat-containerTypeHintShort" datatype="html">
-        <source>The type of content this agent holds.</source>
+        <source>The type of content this environment holds.</source>
         </trans-unit>
       <trans-unit id="featureChat-isolationFixedHint" datatype="html">
         <source>The isolation level is fixed when the environment is created.</source>
         </trans-unit>
       <trans-unit id="featureChat-updateEnvironment" datatype="html">
-        <source>Save</source>
+        <source>Save changes</source>
         </trans-unit>
       <trans-unit id="featureChat-manageWorkspaceConfiguration" datatype="html">
-        <source>Manage Workspace Configuration</source>
+        <source>Manage workspace configuration</source>
         </trans-unit>
       <trans-unit id="featureChat-workspaceConfigurationSettings" datatype="html">
         <source>Workspace Configuration Settings</source>
@@ -2390,7 +2309,7 @@
         <source>Edit layer file</source>
         </trans-unit>
       <trans-unit id="featureChat-manageEnvVarsModalTitle" datatype="html">
-        <source>Manage Environment Variables</source>
+        <source>Manage environment variables</source>
         </trans-unit>
       <trans-unit id="featureChat-addEnvVar" datatype="html">
         <source>Add New Environment Variable</source>
@@ -2438,7 +2357,7 @@
         <source>Loading...</source>
         </trans-unit>
       <trans-unit id="featureTicketAutonomyManager-intro" datatype="html">
-        <source> Control whether this agent may run autonomous ticket prototyping, including scope and safety limits. </source>
+        <source> Control whether this environment may run autonomous ticket prototyping, including scope and safety limits. </source>
         </trans-unit>
       <trans-unit id="featureTicketAutonomyManager-enabled" datatype="html">
         <source>Autonomy enabled</source>
@@ -2462,10 +2381,10 @@
         <source>Reset</source>
         </trans-unit>
       <trans-unit id="featureTicketAutonomyManager-save" datatype="html">
-        <source>Save</source>
+        <source>Save changes</source>
         </trans-unit>
       <trans-unit id="featureChat-manageClientUsersModalTitle" datatype="html">
-        <source>Manage Workspace Users</source>
+        <source>Manage workspace users</source>
         </trans-unit>
       <trans-unit id="featureChat-addClientUser" datatype="html">
         <source>Add User to Workspace</source>
@@ -2669,7 +2588,7 @@
         <source>Git private key (SSH)</source>
         </trans-unit>
       <trans-unit id="featureChat-workspaceSettingTitleAgentImage" datatype="html">
-        <source>Agent default image</source>
+        <source>Environment default image</source>
         </trans-unit>
       <trans-unit id="featureChat-workspaceSettingTitleAutoEnrichGlobal" datatype="html">
         <source>Prompt auto-enrichment (workspace)</source>
@@ -2687,7 +2606,7 @@
         <source>Unset</source>
         </trans-unit>
       <trans-unit id="featureChat-handoffUnknownAgent" datatype="html">
-        <source>another agent</source>
+        <source>another environment</source>
         </trans-unit>
       <trans-unit id="featureChat-handoffRequestHeading" datatype="html">
         <source>Task handed over by <x id="agentName" equiv-text="agentName"/></source>
@@ -2711,7 +2630,7 @@
         <source>No clients found.</source>
         </trans-unit>
       <trans-unit id="featureClientSelect-placeholder" datatype="html">
-        <source>Search by name or ID</source>
+        <source>Search workspaces</source>
         </trans-unit>
       <trans-unit id="featureContainer-brandAlt" datatype="html">
         <source>Agenstra</source>
@@ -2729,13 +2648,13 @@
         <source>Logout</source>
         </trans-unit>
       <trans-unit id="featureContainer-spacesTitle" datatype="html">
-        <source>Spaces</source>
+        <source>Workspaces</source>
         </trans-unit>
       <trans-unit id="featureContainer-spaces" datatype="html">
-        <source>Spaces</source>
+        <source>Workspaces</source>
         </trans-unit>
       <trans-unit id="featureContainer-spacesAttention" datatype="html">
-        <source>Spaces need attention</source>
+        <source>Workspaces need attention</source>
         </trans-unit>
       <trans-unit id="featureContainer-ticketsTitle" datatype="html">
         <source>Tickets</source>
@@ -2744,10 +2663,10 @@
         <source>Tickets</source>
         </trans-unit>
       <trans-unit id="featureContainer-pagesTitle" datatype="html">
-        <source>Pages</source>
+        <source>Knowledge</source>
         </trans-unit>
       <trans-unit id="featureContainer-pages" datatype="html">
-        <source>Pages</source>
+        <source>Knowledge</source>
         </trans-unit>
       <trans-unit id="featureContainer-tasksTitle" datatype="html">
         <source>Tasks</source>
@@ -2762,10 +2681,10 @@
         <source>Audit</source>
         </trans-unit>
       <trans-unit id="featureContainer-tokensTitle" datatype="html">
-        <source>Access Tokens</source>
+        <source>Personal access tokens</source>
         </trans-unit>
       <trans-unit id="featureContainer-tokens" datatype="html">
-        <source>Tokens</source>
+        <source>Personal access tokens</source>
         </trans-unit>
       <trans-unit id="featureContainer-adminTitle" datatype="html">
         <source>Admin</source>
@@ -2801,19 +2720,19 @@
         <source>Webhooks</source>
         </trans-unit>
       <trans-unit id="featureContainer-userManagementTitle" datatype="html">
-        <source>User Management</source>
+        <source>User management</source>
         </trans-unit>
       <trans-unit id="featureContainer-users" datatype="html">
-        <source>Users</source>
+        <source>User management</source>
         </trans-unit>
       <trans-unit id="featureContainer-agentConfigTitle" datatype="html">
         <source>Agent configuration</source>
         </trans-unit>
       <trans-unit id="featureContainer-agentConfig" datatype="html">
-        <source>Config</source>
+        <source>Agent configuration</source>
         </trans-unit>
       <trans-unit id="featureContainer-importTitle" datatype="html">
-        <source>Import</source>
+        <source>Atlassian import (Jira &amp; Confluence)</source>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
@@ -2840,7 +2759,7 @@
         <source>Repository</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-defaultBranchLabel" datatype="html">
-        <source>Default Branch</source>
+        <source>Default branch</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-workflowLabel" datatype="html">
         <source>Workflow</source>
@@ -2879,16 +2798,16 @@
         <source>Remove input</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-addInputButton" datatype="html">
-        <source>Add Input</source>
+        <source>Add input</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-triggerWorkflowButton" datatype="html">
-        <source>Trigger Workflow</source>
+        <source>Trigger workflow</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-noConfigMessage" datatype="html">
         <source>No deployment configuration yet</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-createConfigButton" datatype="html">
-        <source> Create Configuration </source>
+        <source>Create configuration</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-providerTypeLabel" datatype="html">
         <source>Provider Type</source>
@@ -2909,7 +2828,7 @@
         <source>Format: owner/repository-name</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-defaultBranchFormLabel" datatype="html">
-        <source>Default Branch (optional)</source>
+        <source>Default branch (optional)</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-branchPlaceholder" datatype="html">
         <source>main</source>
@@ -2930,10 +2849,10 @@
         <source>Leave empty for GitLab.com</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-save" datatype="html">
-        <source>Save</source>
+        <source>Save changes</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-create" datatype="html">
-        <source>Create</source>
+        <source>Create configuration</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-deleteConfirmModalTitle" datatype="html">
         <source>Delete deployment configuration</source>
@@ -2948,10 +2867,10 @@
         <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-editModalTitle" datatype="html">
-        <source>Edit Deployment Configuration</source>
+        <source>Edit deployment configuration</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-createModalTitle" datatype="html">
-        <source>Create Deployment Configuration</source>
+        <source>Create deployment configuration</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-githubTokenLabel" datatype="html">
         <source>GitHub Token</source>
@@ -2972,19 +2891,19 @@
         <source>Enter token</source>
         </trans-unit>
       <trans-unit id="featureDeploymentManager-selectWorkspaceAgent" datatype="html">
-        <source> Please select a workspace and agent </source>
+        <source> Please select a workspace and environment </source>
         </trans-unit>
       <trans-unit id="featureDeploymentManager-noRunSelected" datatype="html">
         <source>No run selected yet</source>
         </trans-unit>
       <trans-unit id="featureDeploymentManager-configurationHeader" datatype="html">
-        <source>Deployment Configuration</source>
+        <source>Deployment configuration</source>
         </trans-unit>
       <trans-unit id="featureDeploymentManager-runsHeader" datatype="html">
-        <source>Deployment Runs</source>
+        <source>Deployment runs</source>
         </trans-unit>
       <trans-unit id="featureDeploymentManager-runDetailsHeader" datatype="html">
-        <source>Run Details</source>
+        <source>Run details</source>
         </trans-unit>
       <trans-unit id="featureDeploymentManager-closeConfigurationTitle" datatype="html">
         <source>Close Configuration</source>
@@ -2993,10 +2912,10 @@
         <source>Close Runs List</source>
         </trans-unit>
       <trans-unit id="featureDeploymentManager-closeRunDetailsTitle" datatype="html">
-        <source>Close Run Details</source>
+        <source>Close run details</source>
         </trans-unit>
       <trans-unit id="featureDeploymentManager-refreshRunsTitle" datatype="html">
-        <source>Refresh Runs</source>
+        <source>Refresh runs</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-loadingRunDetails" datatype="html">
         <source>Loading run details...</source>
@@ -3011,25 +2930,16 @@
         <source>Updated</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-cancelRunButton" datatype="html">
-        <source>Cancel Run</source>
+        <source>Cancel run</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-jobsHeader" datatype="html">
         <source>Jobs</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-viewRunLogsButton" datatype="html">
-        <source>View Run Logs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-loadingJobs" datatype="html">
-        <source>Loading jobs...</source>
+        <source>View run logs</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-noJobs" datatype="html">
         <source>No jobs available</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-startedAt" datatype="html">
-        <source>Started: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.startedAt) }}"/></source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-completedAt" datatype="html">
-        <source> Completed: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.completedAt) }}"/> </source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-loadingLogs" datatype="html">
         <source>Loading logs...</source>
@@ -3053,28 +2963,22 @@
         <source>This cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-untitledRun" datatype="html">
-        <source>Untitled Run</source>
+        <source>Untitled run</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-runLogsHeader" datatype="html">
-        <source>Run Logs</source>
+        <source>Run logs</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-jobLogsHeader" datatype="html">
-        <source>Job Logs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-loadingRuns" datatype="html">
-        <source>Loading runs...</source>
+        <source>Job logs</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunsList-searchPlaceholder" datatype="html">
         <source>Search deployment runs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-noSearchResults" datatype="html">
-        <source>No search results</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunsList-noRunsFound" datatype="html">
         <source>No deployment runs yet</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunsList-untitledRun" datatype="html">
-        <source>Untitled Run</source>
+        <source>Untitled run</source>
         </trans-unit>
       <trans-unit id="featureAgentConsole-notAvailable" datatype="html">
         <source>N/A</source>
@@ -3104,7 +3008,7 @@
         <source>Version Control</source>
         </trans-unit>
       <trans-unit id="featureFileEditor-selectWorkspaceAgent" datatype="html">
-        <source>Please select a workspace and agent</source>
+        <source>Please select a workspace and environment</source>
         </trans-unit>
       <trans-unit id="featureFileEditor-closeTabAriaLabel" datatype="html">
         <source>Close tab</source>
@@ -3137,7 +3041,7 @@
         <source>Terminal</source>
         </trans-unit>
       <trans-unit id="featureFileEditor-externalChangesTitle" datatype="html">
-        <source>External File Changes Detected</source>
+        <source>External file changes detected</source>
         </trans-unit>
       <trans-unit id="featureFileEditor-externalChangesMessage" datatype="html">
         <source> The file <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ fileUpdateNotification()?.filePath }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> has been updated by another user while you have unsaved changes. </source>
@@ -3158,7 +3062,7 @@
         <source> Accept </source>
         </trans-unit>
       <trans-unit id="featureFileEditor-overrideNewerTitle" datatype="html">
-        <source>Override Newer Changes?</source>
+        <source>Override newer changes?</source>
         </trans-unit>
       <trans-unit id="featureFileEditor-save" datatype="html">
         <source>Save</source>
@@ -3356,9 +3260,6 @@
       <trans-unit id="featureGitBranchModal-localBranchesLabel" datatype="html">
         <source>Local Branches</source>
         </trans-unit>
-      <trans-unit id="featureGitBranchModal-loadingBranches" datatype="html">
-        <source>Loading branches...</source>
-        </trans-unit>
       <trans-unit id="featureGitBranchModal-noLocalBranches" datatype="html">
         <source> No local branches </source>
         </trans-unit>
@@ -3376,9 +3277,6 @@
         </trans-unit>
       <trans-unit id="featureGitBranchModal-checkoutRemoteTitle" datatype="html">
         <source>Checkout and create local tracking branch</source>
-        </trans-unit>
-      <trans-unit id="featureGitBranchModal-checkoutButton" datatype="html">
-        <source>Checkout</source>
         </trans-unit>
       <trans-unit id="featureGitBranchModal-createBranchLabel" datatype="html">
         <source>Create New Branch</source>
@@ -3603,11 +3501,11 @@
         <source>Files</source>
         </trans-unit>
       <trans-unit id="featureWorkspaceSearch-queryPlaceholder" datatype="html">
-        <source>Search files and content...</source>
-        </trans-unit>
+        <source>Search files and content</source>
+      </trans-unit>
       <trans-unit id="featureWorkspaceSearch-queryPlaceholderFiles" datatype="html">
-        <source>Search by file path...</source>
-        </trans-unit>
+        <source>Search file paths</source>
+      </trans-unit>
       <trans-unit id="featureChat-isolationLevelMicrovm" datatype="html">
         <source>MicroVM (KVM)</source>
         </trans-unit>
@@ -3696,7 +3594,7 @@
         <source>No workspaces yet</source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-goToSpaces" datatype="html">
-        <source> Go to Spaces </source>
+        <source>Go to workspaces</source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-noWorkspaceSelected" datatype="html">
         <source>No workspace selected yet</source>
@@ -3715,12 +3613,6 @@
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-attachmentsEmpty" datatype="html">
         <source> No attachments yet. </source>
-        </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-downloadAttachment" datatype="html">
-        <source>Download attachment</source>
-        </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-deleteAttachment" datatype="html">
-        <source>Delete attachment</source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-relationsHeading" datatype="html">
         <source>Relations</source>
@@ -3784,15 +3676,6 @@
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-switchWorkspaceModalTitle" datatype="html">
         <source>Switch workspace</source>
-        </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-searchWorkspacesPlaceholder" datatype="html">
-        <source>Search workspaces</source>
-        </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-noSearchResults" datatype="html">
-        <source>No search results</source>
-        </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-currentWorkspace" datatype="html">
-        <source> Current </source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-title" datatype="html">
         <source>Knowledge</source>
@@ -4041,7 +3924,7 @@
         <source>No workspaces yet</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-goToSpaces" datatype="html">
-        <source> Go to Spaces </source>
+        <source>Go to workspaces</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-noWorkspaceSelected" datatype="html">
         <source>No workspace selected yet</source>
@@ -4049,17 +3932,8 @@
       <trans-unit id="featureTicketsBoard-chooseWorkspaceButton" datatype="html">
         <source> Choose workspace... </source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-dropHere" datatype="html">
-        <source>Drop tickets here</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-noMatchingTickets" datatype="html">
-        <source>No search results</source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-automationEligibleTitle" datatype="html">
         <source>Autonomous prototyping enabled</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-subtaskCountTitle" datatype="html">
-        <source>Direct subtasks (done / total)</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-modalLoadingTitle" datatype="html">
         <source>Ticket</source>
@@ -4086,10 +3960,10 @@
         <source>Priority</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-agentLabel" datatype="html">
-        <source> Agent for chat / AI </source>
+        <source> Environment for chat / AI </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-agentPlaceholder" datatype="html">
-        <source>Select agent...</source>
+        <source>Select environment...</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-modelLabel" datatype="html">
         <source> Model for chat / AI </source>
@@ -4117,7 +3991,7 @@
         <source>Description</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-generateBodyTitle" datatype="html">
-        <source>Generate description with AI (uses selected agent)</source>
+        <source>Generate description with AI (uses the selected environment)</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-descriptionLabel" datatype="html">
         <source>Ticket description</source>
@@ -4134,12 +4008,6 @@
       <trans-unit id="featureTicketsBoard-attachmentsEmpty" datatype="html">
         <source> No attachments yet. </source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-downloadAttachment" datatype="html">
-        <source>Download attachment</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-deleteAttachment" datatype="html">
-        <source>Delete attachment</source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-subtasksHeading" datatype="html">
         <source>Subtasks</source>
         </trans-unit>
@@ -4148,9 +4016,6 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-subtasksEmpty" datatype="html">
         <source> No subtasks yet. </source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-openSubtaskTitle" datatype="html">
-        <source>Open subtask</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-relationsHeading" datatype="html">
         <source>Relations</source>
@@ -4192,22 +4057,22 @@
         <source>Configuration changes may require approval before runs execute.</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationAllowedAgents" datatype="html">
-        <source>Allowed agents</source>
+        <source>Allowed environments</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationAllowedAgentsHint" datatype="html">
-        <source> If none are selected, every agent with prototype autonomy enabled for this workspace may run this ticket. Select specific agents to restrict who can pick it up. </source>
+        <source> If none are selected, every environment with prototype autonomy enabled for this workspace may run this ticket. Select specific environments to restrict who can pick it up. </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationLoadingAgents" datatype="html">
-        <source>Loading agents...</source>
+        <source>Loading environments...</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationNoAgents" datatype="html">
-        <source> No agents in this workspace. </source>
+        <source> No environments in this workspace. </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationNoAutonomyAgents" datatype="html">
-        <source> No agents have prototype autonomy enabled for this workspace. Enable it for an agent in chat under Prototype autonomy. Only those agents can run autonomous ticket work. </source>
+        <source> No environments have prototype autonomy enabled for this workspace. Enable it for an environment in chat under Prototype autonomy. Only those environments can run autonomous ticket work. </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationOrphanAgentsHeading" datatype="html">
-        <source> Allowed agents not listed above. Uncheck to remove them (e.g. autonomy off or agent removed). </source>
+        <source> Allowed environments not listed above. Uncheck to remove them (e.g. autonomy off or environment removed). </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationPreferredModel" datatype="html">
         <source>Model for automation</source>
@@ -4304,9 +4169,6 @@
       <trans-unit id="featureTicketsBoard-automationVerifyFail" datatype="html">
         <source>Verify: failed</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-automationOpenDetailTitle" datatype="html">
-        <source>Open details</source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-automationCancelRunTitle" datatype="html">
         <source>Cancel run</source>
         </trans-unit>
@@ -4377,7 +4239,7 @@
         <source>Branch</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunAgent" datatype="html">
-        <source>Agent</source>
+        <source>Environment</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunIterations" datatype="html">
         <source>Iterations</source>
@@ -4422,10 +4284,10 @@
         <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createSubtaskModalTitle" datatype="html">
-        <source>New subtask</source>
+        <source>Create subtask</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createModalTitle" datatype="html">
-        <source>New ticket</source>
+        <source>Create ticket</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createTitleLabel" datatype="html">
         <source>Title</source>
@@ -4440,10 +4302,10 @@
         <source>Optional details</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createTemplateLabel" datatype="html">
-        <source>Type</source>
+        <source>Template</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createTemplateEmpty" datatype="html">
-        <source>Empty</source>
+        <source>None</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createTemplateSpecification" datatype="html">
         <source>Specification</source>
@@ -4455,22 +4317,10 @@
         <source>Priority</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-create" datatype="html">
-        <source> Create </source>
+        <source>Create ticket</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-globalSearchTitle" datatype="html">
-        <source>Search tickets</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-globalSearchInputLabel" datatype="html">
-        <source>Search tickets</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-globalSearchPlaceholder" datatype="html">
-        <source>Search by title, description, or id</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-globalSearchNoResults" datatype="html">
-        <source>No matching tickets</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-globalSearchHint" datatype="html">
-        <source> Type to search all tickets in this workspace, including done and closed. </source>
+      <trans-unit id="featureTicketsBoard-createSubtaskSubmit" datatype="html">
+        <source>Create subtask</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherTitle" datatype="html">
         <source>Switch workspace</source>
@@ -4478,40 +4328,16 @@
       <trans-unit id="featureTicketsBoard-workspaceSwitcherLoading" datatype="html">
         <source>Loading workspaces...</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-workspaceSwitcherSearchLabel" datatype="html">
-        <source>Search workspaces</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-workspaceSwitcherSearchPlaceholder" datatype="html">
-        <source>Search workspaces</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-noSearchResults" datatype="html">
-        <source>No search results</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-workspaceSwitcherCurrent" datatype="html">
-        <source>Current</source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-title" datatype="html">
         <source>Tickets</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceBadgeSwitchTitle" datatype="html">
         <source>Switch workspace</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-globalSearchOpenTitle" datatype="html">
-        <source>Search tickets (Ctrl+F)</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-globalSearchOpenAria" datatype="html">
-        <source>Search tickets</source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-newTicket" datatype="html">
         <source>Add</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-loading" datatype="html">
-        <source>Loading tickets...</source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-searchLanePlaceholder" datatype="html">
-        <source>Search tickets</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-searchLaneLabel" datatype="html">
         <source>Search tickets</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-bodyGenMissingContext" datatype="html">
@@ -4611,7 +4437,7 @@
         <source>Unknown activity</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationChatAgentLockTitle" datatype="html">
-        <source>Matches Agent for chat / AI. Change the chat agent to allow unchecking.</source>
+        <source>Matches Environment for chat / AI. Change the chat environment to allow unchecking.</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createNeedClient" datatype="html">
         <source>Select a space before creating a ticket.</source>
@@ -4620,10 +4446,10 @@
         <source>Title is required.</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-prototypeNeedAgent" datatype="html">
-        <source>Select an environment and agent for chat.</source>
+        <source>Select an environment for chat.</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-bodyGenNeedAgent" datatype="html">
-        <source>Select an agent and ensure a ticket is open.</source>
+        <source>Select an environment and ensure a ticket is open.</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-requestFailed" datatype="html">
         <source>Request failed</source>
@@ -4719,13 +4545,13 @@
         <source>Confirm Email</source>
         </trans-unit>
       <trans-unit id="featureAuth-usersPage" datatype="html">
-        <source>User Management</source>
+        <source>User management</source>
         </trans-unit>
       <trans-unit id="featureAuth-tokensPage" datatype="html">
-        <source>Personal Access Tokens</source>
+        <source>Personal access tokens</source>
         </trans-unit>
       <trans-unit id="featureAuth-securityPage" datatype="html">
-        <source>Security Settings</source>
+        <source>Security settings</source>
         </trans-unit>
       <trans-unit id="featureLogin2fa-title" datatype="html">
         <source>Two-Factor Authentication</source>
@@ -4905,6 +4731,18 @@
         </trans-unit>
       <trans-unit id="featureRegister-passwordsMismatch" datatype="html">
         <source>Passwords do not match.</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenLabel" datatype="html">
+        <source>Admin claim token</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenPlaceholder" datatype="html">
+        <source>Paste the admin claim token</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenHint" datatype="html">
+        <source> This installation has no account yet. The first account becomes the administrator and needs the one-time admin claim token from your provider (for Loadweaver Cloud: the Cluster tab of your service). </source>
+        </trans-unit>
+      <trans-unit id="featureRegister-adminClaimTokenRequired" datatype="html">
+        <source> The admin claim token is required. </source>
         </trans-unit>
       <trans-unit id="featureRegister-legalHintPrefix" datatype="html">
         <source>By registering, you acknowledge our</source>
@@ -5201,16 +5039,13 @@
         <source>Set up authenticator</source>
         </trans-unit>
       <trans-unit id="featureSecuritySettings-title" datatype="html">
-        <source>Security Settings</source>
+        <source>Security settings</source>
         </trans-unit>
       <trans-unit id="featureSecuritySettings-loading" datatype="html">
         <source>Loading...</source>
         </trans-unit>
       <trans-unit id="featureSecuritySettings-authNotAvailable" datatype="html">
         <source>Two-factor authentication settings are only available for users authentication.</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-noSearchResults" datatype="html">
-        <source>No search results</source>
         </trans-unit>
       <trans-unit id="featureTokenManager-scopes" datatype="html">
         <source>scopes</source>
@@ -5267,7 +5102,7 @@
         <source>Edit personal access token</source>
         </trans-unit>
       <trans-unit id="featureTokenManager-update" datatype="html">
-        <source>Update</source>
+        <source>Save changes</source>
         </trans-unit>
       <trans-unit id="featureTokenManager-revokeModalTitle" datatype="html">
         <source>Revoke token</source>
@@ -5283,7 +5118,7 @@
         <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureTokenManager-title" datatype="html">
-        <source>Personal Access Tokens</source>
+        <source>Personal access tokens</source>
         </trans-unit>
       <trans-unit id="featureTokenManager-addTokenTitle" datatype="html">
         <source>Create token</source>
@@ -5291,26 +5126,14 @@
       <trans-unit id="featureTokenManager-searchPlaceholder" datatype="html">
         <source>Search tokens</source>
         </trans-unit>
-      <trans-unit id="featureTokenManager-loading" datatype="html">
-        <source>Loading tokens...</source>
-        </trans-unit>
       <trans-unit id="featureTokenManager-empty" datatype="html">
         <source>No personal access tokens yet</source>
-        </trans-unit>
-      <trans-unit id="featureUserManager-noSearchResults" datatype="html">
-        <source>No search results</source>
         </trans-unit>
       <trans-unit id="featureUserManager-locked" datatype="html">
         <source>Locked</source>
         </trans-unit>
       <trans-unit id="featureUserManager-unlocked" datatype="html">
         <source>Active</source>
-        </trans-unit>
-      <trans-unit id="featureUserManager-confirmed" datatype="html">
-        <source>Confirmed</source>
-        </trans-unit>
-      <trans-unit id="featureUserManager-pending" datatype="html">
-        <source>Pending</source>
         </trans-unit>
       <trans-unit id="featureUserManager-totpEnabled" datatype="html">
         <source>Authenticator</source>
@@ -5327,11 +5150,8 @@
       <trans-unit id="featureUserManager-editUserButtonTitle" datatype="html">
         <source>Edit user</source>
         </trans-unit>
-      <trans-unit id="featureUserManager-deleteUserButtonTitle" datatype="html">
-        <source>Delete user</source>
-        </trans-unit>
       <trans-unit id="featureUserManager-createUserTitle" datatype="html">
-        <source>Create User</source>
+        <source>Create user</source>
         </trans-unit>
       <trans-unit id="featureUserManager-emailLabel" datatype="html">
         <source>Email</source>
@@ -5352,7 +5172,7 @@
         <source>Create</source>
         </trans-unit>
       <trans-unit id="featureUserManager-editUserModalTitle" datatype="html">
-        <source>Edit User</source>
+        <source>Edit user</source>
         </trans-unit>
       <trans-unit id="featureUserManager-newPasswordLabel" datatype="html">
         <source>New Password</source>
@@ -5364,7 +5184,7 @@
         <source> Leave empty to keep the current password </source>
         </trans-unit>
       <trans-unit id="featureUserManager-update" datatype="html">
-        <source>Update</source>
+        <source>Save changes</source>
         </trans-unit>
       <trans-unit id="featureUserManager-deleteUserModalTitle" datatype="html">
         <source>Delete User</source>
@@ -5390,16 +5210,13 @@
       &gt;"/>? They can set up a new authenticator afterwards. </source>
         </trans-unit>
       <trans-unit id="featureUserManager-title" datatype="html">
-        <source>User Management</source>
+        <source>User management</source>
         </trans-unit>
       <trans-unit id="featureUserManager-addUserTitle" datatype="html">
         <source>Add user</source>
         </trans-unit>
       <trans-unit id="featureUserManager-searchUsersPlaceholder" datatype="html">
         <source>Search users</source>
-        </trans-unit>
-      <trans-unit id="featureUserManager-loadingUsers" datatype="html">
-        <source>Loading users...</source>
         </trans-unit>
       <trans-unit id="featureUserManager-noOtherUsers" datatype="html">
         <source>No other users yet</source>
@@ -5429,8 +5246,8 @@
         <source>Toggle navigation</source>
         </trans-unit>
       <trans-unit id="featureDocsSearch-searchPlaceholder" datatype="html">
-        <source>Search documentation...</source>
-        </trans-unit>
+        <source>Search documentation</source>
+      </trans-unit>
       <trans-unit id="featureDocsSearch-noResults" datatype="html">
         <source>No search results</source>
         </trans-unit>
@@ -5464,17 +5281,26 @@
       <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
         <source>Search Documentation</source>
         </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackLoadweaver" datatype="html">
+        <source>Official Loadweaver documentation: install, deploy, secure, and operate resilient multi-site clusters, the encrypted network between sites, storage, ingress, policies, and the cluster console.</source>
+        </trans-unit>
       <trans-unit id="featureDocsPage-metaDescriptionFallbackDecabill" datatype="html">
         <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
         </trans-unit>
       <trans-unit id="featureDocsPage-metaDescriptionFallback" datatype="html">
         <source>Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.</source>
         </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsLoadweaver" datatype="html">
+        <source>Loadweaver, cluster, multi-site, WireGuard, BGP, network policies, replicated storage, ingress failover, self-hosted, control plane</source>
+        </trans-unit>
       <trans-unit id="featureDocsPage-metaKeywordsDecabill" datatype="html">
         <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
         </trans-unit>
       <trans-unit id="featureDocsPage-metaKeywords" datatype="html">
         <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionLoadweaver" datatype="html">
+        <source>Search Loadweaver docs for setup guides, API references, security hardening, network and policy configuration, deployment patterns, and troubleshooting.</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaDescriptionDecabill" datatype="html">
         <source>Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.</source>
@@ -5500,6 +5326,9 @@
       <trans-unit id="sharedFeatureLandingpageContactPerson-messageDecabill" datatype="html">
         <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
         </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageLoadweaver" datatype="html">
+        <source>We build Loadweaver with AI every day, because it makes the product better and lets us ship faster.</source>
+        </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-mayaRole" datatype="html">
         <source>Virtual Customer Success</source>
         </trans-unit>
@@ -5514,6 +5343,9 @@
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
         <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageLoadweaver" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Loadweaver, and a person takes responsibility for every answer.</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
         <source>AI</source>
@@ -5614,20 +5446,8 @@
       <trans-unit id="featureNotifications-testFailed" datatype="html">
         <source>Test delivery failed.</source>
         </trans-unit>
-      <trans-unit id="featureNotifications-loading" datatype="html">
-        <source>Loading webhooks...</source>
-        </trans-unit>
-      <trans-unit id="featureNotifications-noSearchResults" datatype="html">
-        <source>No search results</source>
-        </trans-unit>
       <trans-unit id="featureNotifications-empty" datatype="html">
         <source>No webhooks yet</source>
-        </trans-unit>
-      <trans-unit id="featureNotifications-events" datatype="html">
-        <source>events</source>
-        </trans-unit>
-      <trans-unit id="featureNotifications-failures" datatype="html">
-        <source>failures</source>
         </trans-unit>
       <trans-unit id="featureNotifications-viewDeliveriesTitle" datatype="html">
         <source>View deliveries</source>
@@ -5637,9 +5457,6 @@
         </trans-unit>
       <trans-unit id="featureNotifications-editWebhookTitle" datatype="html">
         <source>Edit webhook</source>
-        </trans-unit>
-      <trans-unit id="featureNotifications-deleteWebhookTitle" datatype="html">
-        <source>Delete webhook</source>
         </trans-unit>
       <trans-unit id="featureNotifications-createWebhookTitle" datatype="html">
         <source>Create webhook</source>
@@ -5660,7 +5477,7 @@
         <source>Edit webhook</source>
         </trans-unit>
       <trans-unit id="featureNotifications-update" datatype="html">
-        <source>Update</source>
+        <source>Save changes</source>
         </trans-unit>
       <trans-unit id="featureNotifications-nameLabel" datatype="html">
         <source>Name</source>
@@ -5729,9 +5546,6 @@
       <trans-unit id="featureNotifications-deliveriesTitle" datatype="html">
         <source>Recent deliveries</source>
         </trans-unit>
-      <trans-unit id="featureNotifications-loadingDeliveries" datatype="html">
-        <source>Loading deliveries...</source>
-        </trans-unit>
       <trans-unit id="featureNotifications-noDeliveries" datatype="html">
         <source>No deliveries yet</source>
         </trans-unit>
@@ -5747,9 +5561,6 @@
       <trans-unit id="featureNotifications-deliveryAttempt" datatype="html">
         <source>Attempt</source>
         </trans-unit>
-      <trans-unit id="featureNotifications-deliveryDetails" datatype="html">
-        <source>Details</source>
-        </trans-unit>
       <trans-unit id="featureNotifications-deliverySuccess" datatype="html">
         <source>Success</source>
         </trans-unit>
@@ -5764,12 +5575,6 @@
         </trans-unit>
       <trans-unit id="featureNotifications-deliveryResponse" datatype="html">
         <source>Response</source>
-        </trans-unit>
-      <trans-unit id="featureNotifications-moreDeliveries" datatype="html">
-        <source> More deliveries exist than shown. </source>
-        </trans-unit>
-      <trans-unit id="featureNotifications-totalDeliveries" datatype="html">
-        <source>total deliveries</source>
         </trans-unit>
       <trans-unit id="featureNotifications-title" datatype="html">
         <source>Webhooks</source>
@@ -5807,9 +5612,6 @@
       <trans-unit id="featureUpdates-instancesTitle" datatype="html">
         <source>Service instances</source>
         </trans-unit>
-      <trans-unit id="featureUpdates-noSearchResults" datatype="html">
-        <source>No search results</source>
-        </trans-unit>
       <trans-unit id="featureUpdates-noInstances" datatype="html">
         <source>No service instances yet</source>
         </trans-unit>
@@ -5846,6 +5648,12 @@
       <trans-unit id="featureUpdates-frontendVersion" datatype="html">
         <source>Frontend version</source>
         </trans-unit>
+      <trans-unit id="featureUpdates-channel" datatype="html">
+        <source>Channel</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-channelBeta" datatype="html">
+        <source>Beta</source>
+        </trans-unit>
       <trans-unit id="featureUpdates-searchInstancesPlaceholder" datatype="html">
         <source>Search instances</source>
         </trans-unit>
@@ -5855,14 +5663,8 @@
       <trans-unit id="featureUpdates-searchSharedChangelogPlaceholder" datatype="html">
         <source>Search shared changelog</source>
         </trans-unit>
-      <trans-unit id="featureUpdates-mobilePanelInstances" datatype="html">
-        <source>Instances</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-mobilePanelProduct" datatype="html">
-        <source>Product</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-mobilePanelShared" datatype="html">
-        <source>Shared</source>
+      <trans-unit id="featureUpdates-channelStable" datatype="html">
+        <source>Stable</source>
         </trans-unit>
       <trans-unit id="featureUpdates-statusUpdateAvailable" datatype="html">
         <source>Update available</source>
@@ -5960,6 +5762,906 @@
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
         </trans-unit>
+      <trans-unit id="fpcListToolbar-filters" datatype="html">
+        <source>Filters</source>
+      </trans-unit>
+      <trans-unit id="fpcListToolbar-apply" datatype="html">
+        <source>Apply</source>
+      </trans-unit>
+      <trans-unit id="fpcListToolbar-clearAll" datatype="html">
+        <source>Clear all</source>
+      </trans-unit>
+      <trans-unit id="fpcListToolbar-activeFilters" datatype="html">
+        <source>Active filters</source>
+      </trans-unit>
+      <trans-unit id="fpcListToolbar-removeFilter" datatype="html">
+        <source>Remove filter</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-searchChatIo" datatype="html">
+        <source>Search messages</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-searchFilterDrops" datatype="html">
+        <source>Search filter drops</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-searchFilterFlags" datatype="html">
+        <source>Search filter flags</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-searchWebTraffic" datatype="html">
+        <source>Search web traffic</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-searchEntityEvents" datatype="html">
+        <source>Search entity events</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-search" datatype="html">
+        <source>Search</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-filters" datatype="html">
+        <source>Filters</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-views" datatype="html">
+        <source>Views</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-saveView" datatype="html">
+        <source>Save current view…</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-deleteView" datatype="html">
+        <source>Delete view</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-noViews" datatype="html">
+        <source>No saved views</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-columns" datatype="html">
+        <source>Columns</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-refresh" datatype="html">
+        <source>Refresh</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-selectAll" datatype="html">
+        <source>Select all</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-selectRow" datatype="html">
+        <source>Select row</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-selected" datatype="html">
+        <source>{count} selected</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-clearSelection" datatype="html">
+        <source>Clear selection</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-more" datatype="html">
+        <source>More</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-empty" datatype="html">
+        <source>Nothing to show</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-noMatches" datatype="html">
+        <source>No matches</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-noMatchesHint" datatype="html">
+        <source>Nothing matches the search or filters.</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-rowActions" datatype="html">
+        <source>Row actions</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-sortAscending" datatype="html">
+        <source>Sorted ascending</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-sortDescending" datatype="html">
+        <source>Sorted descending</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-changed" datatype="html">
+        <source>Changed in the draft</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-state" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-pagination" datatype="html">
+        <source>Pagination</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-previousPage" datatype="html">
+        <source>Previous page</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-nextPage" datatype="html">
+        <source>Next page</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-pageSize" datatype="html">
+        <source>Rows per page</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-range" datatype="html">
+        <source>{from}–{to} of {total}</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-rangeOpen" datatype="html">
+        <source>{from}–{to}</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-loadingMore" datatype="html">
+        <source>Loading more…</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-collapseGroup" datatype="html">
+        <source>Collapse group</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-expandGroup" datatype="html">
+        <source>Expand group</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-previousColumns" datatype="html">
+        <source>Previous columns</source>
+      </trans-unit>
+      <trans-unit id="fpcDataTable-nextColumns" datatype="html">
+        <source>Next columns</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-tabOverview" datatype="html">
+        <source>Overview</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-openChat" datatype="html">
+        <source>Open environment chat</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-openEntity" datatype="html">
+        <source>Open</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleDataList-open" datatype="html">
+        <source>Open</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleDataList-copyId" datatype="html">
+        <source>Copy ID</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleDataList-delete" datatype="html">
+        <source>Delete</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleDataList-cancel" datatype="html">
+        <source>Cancel</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleDataList-bulkSucceeded" datatype="html">
+        <source>{count} done</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleDataList-bulkDenied" datatype="html">
+        <source>{count} not allowed</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleDataList-bulkFailed" datatype="html">
+        <source>{count} failed</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleAttachments-list" datatype="html">
+        <source>Attachments</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleAttachments-download" datatype="html">
+        <source>Download</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleAttachments-delete" datatype="html">
+        <source>Delete attachment</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleWorkspaceSwitch-title" datatype="html">
+        <source>Workspaces</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleWorkspaceSwitch-search" datatype="html">
+        <source>Search workspaces</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleWorkspaceSwitch-empty" datatype="html">
+        <source>No workspaces yet</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleWorkspaceSwitch-current" datatype="html">
+        <source>Current workspace</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleWorkspaceSwitch-other" datatype="html">
+        <source>Available</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleWorkspaceSwitch-colState" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleWorkspaceSwitch-colName" datatype="html">
+        <source>Workspace</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleWorkspaceSwitch-colDescription" datatype="html">
+        <source>Description</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-filterStatus" datatype="html">
+        <source>Status</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-filterStatusOpen" datatype="html">
+        <source>Open (draft to prototype)</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-filterStatusAll" datatype="html">
+        <source>All statuses</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-filterPriority" datatype="html">
+        <source>Priority</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-filterPriorityAll" datatype="html">
+        <source>All priorities</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-colStatus" datatype="html">
+        <source>Status</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-colTicket" datatype="html">
+        <source>Ticket</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-colPriority" datatype="html">
+        <source>Priority</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-colSubtasks" datatype="html">
+        <source>Subtasks</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-colCreatedBy" datatype="html">
+        <source>Created by</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-colUpdated" datatype="html">
+        <source>Updated</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-bulkStatus" datatype="html">
+        <source>Set status…</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-bulkPriority" datatype="html">
+        <source>Set priority…</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-bulkDeleteTitle" datatype="html">
+        <source>Delete tickets</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-bulkDeleteCancel" datatype="html">
+        <source>Cancel</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-bulkDeleteOne" datatype="html">
+        <source>Delete "<x id="title" equiv-text="pending[0].title"/>"? This cannot be undone.</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-bulkDeleteMany" datatype="html">
+        <source>Delete <x id="count" equiv-text="pending.length"/> tickets? Subtasks of deleted tickets are deleted too. This cannot be undone.</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-moveTo" datatype="html">
+        <source>Move to</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-empty" datatype="html">
+        <source>No tickets yet</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-emptyCreate" datatype="html">
+        <source>Create ticket</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-colRunStatus" datatype="html">
+        <source>Status</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-colRunStarted" datatype="html">
+        <source>Started</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-colRunPhase" datatype="html">
+        <source>Phase</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-colRunVerification" datatype="html">
+        <source>Verification</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-colRunBranch" datatype="html">
+        <source>Branch</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-tasksTable" datatype="html">
+        <source>Tasks</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-searchTasks" datatype="html">
+        <source>Search tasks</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-bulkPause" datatype="html">
+        <source>Pause</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-bulkResume" datatype="html">
+        <source>Resume</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-bulkDeleteTitle" datatype="html">
+        <source>Delete tasks</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-colState" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-colTask" datatype="html">
+        <source>Task</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-colEnvironment" datatype="html">
+        <source>Environment</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-colSchedule" datatype="html">
+        <source>Schedule</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-colLastRun" datatype="html">
+        <source>Last run</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-colNextRun" datatype="html">
+        <source>Next run</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-colStarted" datatype="html">
+        <source>Started</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-colTrigger" datatype="html">
+        <source>Trigger</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-colFinished" datatype="html">
+        <source>Finished</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-showTranscript" datatype="html">
+        <source>Show transcript</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-hideTranscript" datatype="html">
+        <source>Hide transcript</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runsTable" datatype="html">
+        <source>Runs</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-bulkDeleteMessage" datatype="html">
+        <source>Delete <x id="count" equiv-text="this.selectedTasks().length"/> tasks and their run history? The agents stop running them.</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-queued" datatype="html">
+        <source>Queued</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-pending" datatype="html">
+        <source>Pending</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-waiting" datatype="html">
+        <source>Waiting</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-requested" datatype="html">
+        <source>Requested</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-inProgress" datatype="html">
+        <source>In progress</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-running" datatype="html">
+        <source>Running</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-completed" datatype="html">
+        <source>Completed</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-success" datatype="html">
+        <source>Succeeded</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-failure" datatype="html">
+        <source>Failed</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-cancelled" datatype="html">
+        <source>Cancelled</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-skipped" datatype="html">
+        <source>Skipped</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-neutral" datatype="html">
+        <source>Neutral</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-timedOut" datatype="html">
+        <source>Timed out</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-actionRequired" datatype="html">
+        <source>Action required</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentLabels-stale" datatype="html">
+        <source>Stale</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-title" datatype="html">
+        <source>Deployment runs</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-openInProvider" datatype="html">
+        <source>Open in provider</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-cancelRun" datatype="html">
+        <source>Cancel run</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-colState" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-colRun" datatype="html">
+        <source>Run</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-colBranch" datatype="html">
+        <source>Branch</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-colCommit" datatype="html">
+        <source>Commit</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-colWorkflow" datatype="html">
+        <source>Workflow</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-colCreated" datatype="html">
+        <source>Created</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-bulkCancelTitle" datatype="html">
+        <source>Cancel runs</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-bulkCancelBody" datatype="html">
+        <source>Cancel the selected queued or running runs? In-progress jobs may be stopped. This cannot be undone.</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-commitLabel" datatype="html">
+        <source>Commit</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-viewJobLogs" datatype="html">
+        <source>View logs</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-colState" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-colJob" datatype="html">
+        <source>Job</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-colCompleted" datatype="html">
+        <source>Completed</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-addConfig" datatype="html">
+        <source>Add import config</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-addConnection" datatype="html">
+        <source>Add connection</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-bulkDeleteConfigsTitle" datatype="html">
+        <source>Delete import configs</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-bulkDeleteConfigsBody" datatype="html">
+        <source>Delete the selected import configs? This cannot be undone.</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-bulkDeleteConnectionsTitle" datatype="html">
+        <source>Delete connections</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-bulkDeleteConnectionsBody" datatype="html">
+        <source>Delete the selected site connections? This cannot be undone.</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-colAccount" datatype="html">
+        <source>Account</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-colConnection" datatype="html">
+        <source>Connection</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-colImport" datatype="html">
+        <source>Import</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-colLastRun" datatype="html">
+        <source>Last run</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-colSite" datatype="html">
+        <source>Site</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-colState" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-colTarget" datatype="html">
+        <source>Ticket status</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-colWorkspace" datatype="html">
+        <source>Workspace</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-confluenceSpaceName" datatype="html">
+        <source>Confluence space <x id="space" equiv-text="cfg.confluenceSpaceKey"/></source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-jiraBoardName" datatype="html">
+        <source>Jira board <x id="board" equiv-text="cfg.jiraBoardId"/></source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-disable" datatype="html">
+        <source>Disable</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-enable" datatype="html">
+        <source>Enable</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-edit" datatype="html">
+        <source>Edit</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-kindConfluence" datatype="html">
+        <source>Confluence</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-kindJira" datatype="html">
+        <source>Jira</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-queryCql" datatype="html">
+        <source>CQL</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-queryJql" datatype="html">
+        <source>JQL</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-stateDisabled" datatype="html">
+        <source>Disabled</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-stateEnabled" datatype="html">
+        <source>Enabled</source>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-stateLastRunFailed" datatype="html">
+        <source>Last run failed</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-bulkDeleteTitle" datatype="html">
+        <source>Delete branches</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-bulkDeleteBody" datatype="html">
+        <source>Delete the selected local branches? Commits that exist only on them may be lost.</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-colBranch" datatype="html">
+        <source>Branch</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-colCommit" datatype="html">
+        <source>Commit</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-colMessage" datatype="html">
+        <source>Last commit</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-colRemote" datatype="html">
+        <source>Remote</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-colState" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-colSync" datatype="html">
+        <source>Ahead / behind</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-searchBranches" datatype="html">
+        <source>Search branches</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-stateAhead" datatype="html">
+        <source>Ahead</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-stateBehind" datatype="html">
+        <source>Behind</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-stateCurrent" datatype="html">
+        <source>Current branch</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-stateLocal" datatype="html">
+        <source>Local branch</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-stateRemote" datatype="html">
+        <source>Remote branch</source>
+      </trans-unit>
+      <trans-unit id="featureChat-railCurrentEnvironment" datatype="html">
+        <source>Current environment</source>
+      </trans-unit>
+      <trans-unit id="featureChat-railColState" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="featureChat-railColWorkspace" datatype="html">
+        <source>Workspace</source>
+      </trans-unit>
+      <trans-unit id="featureChat-railColHost" datatype="html">
+        <source>Host</source>
+      </trans-unit>
+      <trans-unit id="featureChat-railColRepository" datatype="html">
+        <source>Repository</source>
+      </trans-unit>
+      <trans-unit id="featureChat-railColProvider" datatype="html">
+        <source>Provider</source>
+      </trans-unit>
+      <trans-unit id="featureChat-railColIsolation" datatype="html">
+        <source>Isolation</source>
+      </trans-unit>
+      <trans-unit id="featureChat-railColDescription" datatype="html">
+        <source>Description</source>
+      </trans-unit>
+      <trans-unit id="featureChat-railColEnvironment" datatype="html">
+        <source>Environment</source>
+      </trans-unit>
+      <trans-unit id="featureChat-railColDeployment" datatype="html">
+        <source>Deployment</source>
+      </trans-unit>
+      <trans-unit id="featureChat-railColContainer" datatype="html">
+        <source>Container</source>
+      </trans-unit>
+      <trans-unit id="sharedDataList-copyId" datatype="html">
+        <source>Copy ID</source>
+      </trans-unit>
+      <trans-unit id="sharedDataList-delete" datatype="html">
+        <source>Delete</source>
+      </trans-unit>
+      <trans-unit id="sharedDataList-bulkSucceeded" datatype="html">
+        <source>{count} done</source>
+      </trans-unit>
+      <trans-unit id="sharedDataList-bulkDenied" datatype="html">
+        <source>{count} not allowed</source>
+      </trans-unit>
+      <trans-unit id="sharedDataList-bulkFailed" datatype="html">
+        <source>{count} failed</source>
+      </trans-unit>
+      <trans-unit id="featureUserManager-bulkDeleteTitle" datatype="html">
+        <source>Delete users</source>
+      </trans-unit>
+      <trans-unit id="featureUserManager-bulkDeleteBody" datatype="html">
+        <source>Delete the selected users? They lose access immediately. This cannot be undone.</source>
+      </trans-unit>
+      <trans-unit id="featureUserManager-colCreated" datatype="html">
+        <source>Created</source>
+      </trans-unit>
+      <trans-unit id="featureUserManager-colRole" datatype="html">
+        <source>Role</source>
+      </trans-unit>
+      <trans-unit id="featureUserManager-colState" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="featureUserManager-stateUnconfirmed" datatype="html">
+        <source>Email not confirmed</source>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-bulkRevokeTitle" datatype="html">
+        <source>Revoke tokens</source>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-bulkRevokeBody" datatype="html">
+        <source>Revoke the selected tokens? Scripts and integrations using them stop working. This cannot be undone.</source>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-colCreated" datatype="html">
+        <source>Created</source>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-colExpires" datatype="html">
+        <source>Expires</source>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-colLastUsed" datatype="html">
+        <source>Last used</source>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-colState" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-stateActive" datatype="html">
+        <source>Active</source>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-stateExpired" datatype="html">
+        <source>Expired</source>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-stateRevoked" datatype="html">
+        <source>Revoked</source>
+      </trans-unit>
+      <trans-unit id="featureNotifications-bulkDeleteTitle" datatype="html">
+        <source>Delete webhooks</source>
+      </trans-unit>
+      <trans-unit id="featureNotifications-bulkDeleteBody" datatype="html">
+        <source>Delete the selected webhooks? Their delivery history is removed too. This cannot be undone.</source>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colEvents" datatype="html">
+        <source>Events</source>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colHttpStatus" datatype="html">
+        <source>HTTP status</source>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colMethod" datatype="html">
+        <source>Method</source>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colState" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colUpdated" datatype="html">
+        <source>Updated</source>
+      </trans-unit>
+      <trans-unit id="featureNotifications-disable" datatype="html">
+        <source>Disable</source>
+      </trans-unit>
+      <trans-unit id="featureNotifications-enable" datatype="html">
+        <source>Enable</source>
+      </trans-unit>
+      <trans-unit id="featureNotifications-stateFailing" datatype="html">
+        <source>Failing (<x id="count" equiv-text="endpoint.consecutiveFailures"/> failures)</source>
+      </trans-unit>
+      <trans-unit id="featureNotifications-colClient" datatype="html">
+        <source>Client</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-categoryOther" datatype="html">
+        <source>Other</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colCategory" datatype="html">
+        <source>Category</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colChange" datatype="html">
+        <source>Change</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colDependencies" datatype="html">
+        <source>Dependencies</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colHeartbeat" datatype="html">
+        <source>Last heartbeat</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colHost" datatype="html">
+        <source>Host</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colRole" datatype="html">
+        <source>Role</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colService" datatype="html">
+        <source>Service</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colState" datatype="html">
+        <source>State</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-colVersion" datatype="html">
+        <source>Version</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-dependencyDatabase" datatype="html">
+        <source>Database</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-dependencyQueue" datatype="html">
+        <source>Queue</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-loading" datatype="html">
+        <source>Loading tickets...</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-searchLaneLabel" datatype="html">
+        <source>Search tickets</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-dropHere" datatype="html">
+        <source>Drop tickets here</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-noMatchingTickets" datatype="html">
+        <source>No search results</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-subtaskCountTitle" datatype="html">
+        <source>Direct subtasks (done / total)</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-viewSwitch" datatype="html">
+        <source>View</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-viewTable" datatype="html">
+        <source>Table view</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-viewLanes" datatype="html">
+        <source>Lanes view</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-moreMatchesOne" datatype="html">
+        <source>and 1 more</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-moreMatchesMany" datatype="html">
+        <source>and <x id="count" equiv-text="count"/> more</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-moreMatchesTitle" datatype="html">
+        <source>Matches in other statuses or hidden lanes (done, closed) — show them in the table with all statuses</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentManager-noRunsYet" datatype="html">
+        <source>No runs yet</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentManager-noRunsYetHint" datatype="html">
+        <source>Runs appear here once a configuration exists.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-backToTasks" datatype="html">
+        <source>Back to tasks</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConsoleDataList-close" datatype="html">
+        <source>Close</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-modelSelectAgentFirst" datatype="html">
+        <source>Select an environment to load models</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-modelLoading" datatype="html">
+        <source>Loading models…</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-modelUnavailable" datatype="html">
+        <source>Models unavailable (environment not reachable)</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-modelNone" datatype="html">
+        <source>No models available</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-allWorkspaces" datatype="html">
+        <source>All workspaces</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressObservedHint" datatype="html">
+        <source>Requests an observe-only egress policy let through that enforcing it would block</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressBlockedHint" datatype="html">
+        <source>Requests to destinations the egress policy blocked</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-emptyChatIo" datatype="html">
+        <source>No messages in this period</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-emptyFilterDrops" datatype="html">
+        <source>No filter drops in this period</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-emptyFilterFlags" datatype="html">
+        <source>No filter flags in this period</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-emptyWebTraffic" datatype="html">
+        <source>No web traffic in this period</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-emptyEntityEvents" datatype="html">
+        <source>No entity events in this period</source>
+      </trans-unit>
+      <trans-unit id="featureAudit-emptyPeriodHint" datatype="html">
+        <source>Change the time range or workspace in Filters.</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-closedInTable" datatype="html">
+        <source>Done / closed: in the table</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-closedInTableTitle" datatype="html">
+        <source>Lanes show the open workflow (draft to prototype). Show all statuses in the table</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-moreActions" datatype="html">
+        <source>More actions</source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-scheduleHourlyAt" datatype="html">
+        <source>Every hour at :<x id="minute" equiv-text="at"/></source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-scheduleDailyAt" datatype="html">
+        <source>Every day at <x id="time" equiv-text="time"/></source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-scheduleWeeklyAt" datatype="html">
+        <source>Every <x id="weekday" equiv-text="day"/> at <x id="time" equiv-text="time"/></source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-scheduleMonthlyAt" datatype="html">
+        <source>Monthly on day <x id="day" equiv-text="dayOfMonth"/> at <x id="time" equiv-text="time"/></source>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-scheduleYearlyAt" datatype="html">
+        <source>Every year on <x id="date" equiv-text="date"/> at <x id="time" equiv-text="time"/></source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-optionDefault" datatype="html">
+        <source>Default (inherited)</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-shareManual" datatype="html">
+        <source>Manual</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-shareAuto" datatype="html">
+        <source>Automatic</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-shareDisabled" datatype="html">
+        <source>Disabled</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-updateAuto" datatype="html">
+        <source>Install automatically</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-updateOff" datatype="html">
+        <source>Off</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-updateNotify" datatype="html">
+        <source>Notify only</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-agentModeAll" datatype="html">
+        <source>Primary and subagent</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-agentModePrimary" datatype="html">
+        <source>Primary only</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-agentModeSubagent" datatype="html">
+        <source>Subagent only</source>
+      </trans-unit>
+      <trans-unit id="fpcTabGroup-more" datatype="html">
+        <source>More</source>
+      </trans-unit>
+      <trans-unit id="featureReferenceCombobox-empty" datatype="html">
+        <source>Nothing found.</source>
+      </trans-unit>
+      <trans-unit id="featureReferenceCombobox-typeAnyway" datatype="html">
+        <source>You can still type a value.</source>
+      </trans-unit>
+      <trans-unit id="featureReferenceCombobox-denied" datatype="html">
+        <source>You can't list these here. Type the value.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-commandAgentFromConfig" datatype="html">
+        <source>Defined in this configuration</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-commandAgentBuiltIn" datatype="html">
+        <source>Built-in agent</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-commandAgentPlaceholder" datatype="html">
+        <source>Search agents or type a name</source>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-commandAgentEmpty" datatype="html">
+        <source>No agents found.</source>
+      </trans-unit>
+      <trans-unit id="featureGitBranchModal-noBranchesFound" datatype="html">
+        <source>No branches found.</source>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationBranchEmpty" datatype="html">
+        <source>No branches found in this environment.</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentConfig-privateRepository" datatype="html">
+        <source>Private</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentConfig-defaultBranchDetail" datatype="html">
+        <source>Default branch</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentConfig-noRepositoriesFound" datatype="html">
+        <source>No repositories found.</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentConfig-noBranchesFound" datatype="html">
+        <source>No branches found.</source>
+      </trans-unit>
+      <trans-unit id="featureDeploymentConfig-noWorkflowsFound" datatype="html">
+        <source>No workflows found.</source>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceUserSelect-clearAria" datatype="html">
+        <source>Clear selected user</source>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceUserSelect-noUsers" datatype="html">
+        <source>No users found.</source>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceUserSelect-placeholder" datatype="html">
+        <source>Search users by email</source>
+      </trans-unit>
+      <trans-unit id="featureChat-clientUserLabel" datatype="html">
+        <source>User</source>
+      </trans-unit>
+      <trans-unit id="featureChat-clientUserDirectoryDenied" datatype="html">
+        <source>You can't search the user directory. Type the user's email.</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-breaking" datatype="html">
+        <source>Breaking change</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-scopeGeneral" datatype="html">
+        <source>general</source>
+      </trans-unit>
+      <trans-unit id="featureUpdates-scopeGeneralTitle" datatype="html">
+        <source>No scope given</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

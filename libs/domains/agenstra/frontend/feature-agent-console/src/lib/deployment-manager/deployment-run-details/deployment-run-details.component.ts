@@ -1,32 +1,41 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { DeploymentsFacade } from '@forepath/agenstra/frontend/data-access-agent-console';
+import { DeploymentsFacade, type Job } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
   FpcConfirmDialogComponent,
+  FpcDataTableComponent,
+  FpcEmptyStateComponent,
   FpcLaneHeaderComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcSpinnerComponent,
-  type FpcBadgeColor,
+  FpcTableCellDirective,
+  fpcCopyText,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  FpcDatePipe,
 } from '@forepath/shared/frontend/ui-components';
 import { of, switchMap } from 'rxjs';
+
+import { agCopyIdItem } from '../../shared/data-list';
+import { deploymentIsActive, deploymentTableState } from '../deployment-labels';
 
 @Component({
   selector: 'framework-deployment-run-details',
   imports: [
-    CommonModule,
+    FpcDatePipe,
+    AsyncPipe,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
     FpcConfirmDialogComponent,
+    FpcDataTableComponent,
+    FpcEmptyStateComponent,
     FpcLaneHeaderComponent,
-    FpcListComponent,
-    FpcListItemComponent,
     FpcSpinnerComponent,
+    FpcTableCellDirective,
   ],
   templateUrl: './deployment-run-details.component.html',
   styleUrls: ['./deployment-run-details.component.scss'],
@@ -91,8 +100,58 @@ export class DeploymentRunDetailsComponent {
     return this.runJobs().find((job) => job.id === jobId) || null;
   });
 
+  /** Readable status / conclusion of the run (header badge). */
+  readonly runState = computed(() => {
+    const run = this.currentRunStatus();
+
+    return run ? deploymentTableState(run) : null;
+  });
+
+  protected readonly jobsLabel = $localize`:@@featureDeploymentRunDetails-jobsHeader:Jobs`;
+  private readonly viewJobLogsLabel = $localize`:@@featureDeploymentRunDetails-viewJobLogs:View logs`;
+
+  /** Jobs of the run as a nested table: State · Job · Started · Completed (row click opens the job logs). */
+  readonly jobColumns: FpcTableColumn<Job>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureDeploymentRunDetails-colState:State`,
+      type: 'state',
+      state: (job) => deploymentTableState(job),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureDeploymentRunDetails-colJob:Job`,
+      value: (job) => job.name,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'started',
+      label: $localize`:@@featureDeploymentRunDetails-startedLabel:Started`,
+      priority: 1,
+    },
+    {
+      id: 'completed',
+      label: $localize`:@@featureDeploymentRunDetails-colCompleted:Completed`,
+      priority: 2,
+    },
+  ];
+
+  readonly jobRowMenu = (): FpcMenuItem[] => [
+    { id: 'logs', label: this.viewJobLogsLabel, icon: 'file-text' },
+    agCopyIdItem(),
+  ];
+
+  onJobAction(job: Job, action: string): void {
+    if (action === 'copy-id') {
+      fpcCopyText(job.id);
+    } else {
+      this.onLoadJobLogs(job.id);
+    }
+  }
+
   getRunDisplayName(runName: string | null | undefined): string {
-    return runName || $localize`:@@featureDeploymentRunDetails-untitledRun:Untitled Run`;
+    return runName || $localize`:@@featureDeploymentRunDetails-untitledRun:Untitled run`;
   }
 
   constructor() {
@@ -241,89 +300,15 @@ export class DeploymentRunDetailsComponent {
     }
   }
 
-  getStatusBadgeColor(status: string): FpcBadgeColor {
-    switch (status.toLowerCase()) {
-      case 'completed':
-      case 'success':
-        return 'success';
-      case 'in_progress':
-      case 'running':
-      case 'queued':
-        return 'primary';
-      case 'failed':
-      case 'failure':
-      case 'cancelled':
-        return 'danger';
-      default:
-        return 'secondary';
-    }
-  }
-
-  getStatusIcon(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'completed':
-      case 'success':
-        return 'bi-check-circle';
-      case 'in_progress':
-      case 'running':
-        return 'bi-arrow-repeat';
-      case 'queued':
-        return 'bi-clock';
-      case 'failed':
-      case 'failure':
-        return 'bi-x-circle';
-      case 'cancelled':
-        return 'bi-stop-circle';
-      default:
-        return 'bi-question-circle';
-    }
-  }
-
-  getJobStatusBadgeColor(status: string): FpcBadgeColor {
-    switch (status.toLowerCase()) {
-      case 'completed':
-      case 'success':
-        return 'success';
-      case 'in_progress':
-      case 'running':
-        return 'primary';
-      case 'failed':
-      case 'failure':
-        return 'danger';
-      case 'cancelled':
-        return 'warning';
-      default:
-        return 'secondary';
-    }
-  }
-
-  formatDate(date: Date | string): string {
-    const d = typeof date === 'string' ? new Date(date) : date;
-
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    }).format(d);
-  }
-
   canCancelRun(): boolean {
-    const status = this.currentRunStatus();
+    const run = this.currentRunStatus();
 
-    if (!status) {
-      return false;
-    }
-
-    const statusLower = status.status.toLowerCase();
-
-    return statusLower === 'in_progress' || statusLower === 'running' || statusLower === 'queued';
+    return !!run && deploymentIsActive(run);
   }
 
   getLogsHeader(): string {
     return this.showRunLogs()
-      ? $localize`:@@featureDeploymentRunDetails-runLogsHeader:Run Logs`
-      : $localize`:@@featureDeploymentRunDetails-jobLogsHeader:Job Logs`;
+      ? $localize`:@@featureDeploymentRunDetails-runLogsHeader:Run logs`
+      : $localize`:@@featureDeploymentRunDetails-jobLogsHeader:Job logs`;
   }
 }

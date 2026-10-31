@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -7,6 +7,7 @@ import {
   AtlassianContextImportFacade,
   clearExternalImportMarkersSuccess,
   ClientsFacade,
+  ContextImportAdminService,
   createAtlassianConnectionSuccess,
   createExternalImportConfigSuccess,
   deleteAtlassianConnectionSuccess,
@@ -29,28 +30,29 @@ import {
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
   FpcAlertComponent,
-  FpcBadgeComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcFormSwitchComponent,
-  FpcLaneHeaderComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
-  FpcSpinnerComponent,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FpcTableCellDirective,
+  FpcTableRowDetailDirective,
   FpcTypeaheadSelectComponent,
+  fpcCopyText,
+  fpcRunBulk,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  FpcDatePipe,
 } from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
-import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
+import { debounceTime, distinctUntilChanged, firstValueFrom, skip } from 'rxjs';
 
 import { DEFAULT_ATLASSIAN_CONFLUENCE_CQL, DEFAULT_ATLASSIAN_JIRA_JQL } from './atlassian-import-defaults';
 import {
@@ -60,6 +62,7 @@ import {
 } from './atlassian-import-parent-suggest.utils';
 import { buildConfluenceImportSearchCql } from './confluence-import-search-cql.util';
 import { resolveNamedDisplayLabel } from '../display-name.util';
+import { AG_DL_DELETE, agBulkSummary, agCopyIdItem } from '../shared/data-list';
 
 export type AtlassianImportAdminLane = 'connections' | 'configs';
 
@@ -67,28 +70,25 @@ export type AtlassianImportAdminLane = 'connections' | 'configs';
   selector: 'framework-atlassian-import-admin',
   standalone: true,
   imports: [
+    FpcDatePipe,
     CommonModule,
     FormsModule,
     RouterModule,
     FpcAlertComponent,
-    FpcBadgeComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
+    FpcDataTableComponent,
     FpcEmptyStateComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormSwitchComponent,
-    FpcLaneHeaderComponent,
-    FpcListComponent,
-    FpcListItemComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
-    FpcSpinnerComponent,
     FpcTabComponent,
     FpcTabGroupComponent,
+    FpcTableCellDirective,
+    FpcTableRowDetailDirective,
     FpcTypeaheadSelectComponent,
   ],
   templateUrl: './atlassian-import-admin.component.html',
@@ -104,6 +104,7 @@ export class AtlassianImportAdminComponent implements OnInit {
   readonly clearMarkersModalOpen = signal(false);
 
   private readonly facade = inject(AtlassianContextImportFacade);
+  private readonly adminService = inject(ContextImportAdminService);
   private readonly clientsFacade = inject(ClientsFacade);
   private readonly ticketsFacade = inject(TicketsFacade);
   private readonly knowledgeFacade = inject(KnowledgeFacade);
@@ -113,12 +114,8 @@ export class AtlassianImportAdminComponent implements OnInit {
   readonly pageTitle = $localize`:@@featureAtlassianImportAdmin-pageTitle:Atlassian import (Jira & Confluence)`;
   readonly refreshTitle = $localize`:@@featureAtlassianImportAdmin-refresh:Refresh`;
   readonly dismissAriaLabel = $localize`:@@featureAtlassianImportAdmin-dismiss:Dismiss`;
-  readonly searchConnectionsLabel = $localize`:@@featureAtlassianImportAdmin-searchConnectionsLabel:Search site connections`;
   readonly searchConnectionsPlaceholder = $localize`:@@featureAtlassianImportAdmin-searchConnectionsPlaceholder:Search connections`;
-  readonly loadingConnectionsLabel = $localize`:@@featureAtlassianImportAdmin-loadingConnections:Loading connections...`;
-  readonly searchConfigsLabel = $localize`:@@featureAtlassianImportAdmin-searchConfigsLabel:Search import configs`;
   readonly searchConfigsPlaceholder = $localize`:@@featureAtlassianImportAdmin-searchConfigsPlaceholder:Search import configs`;
-  readonly loadingConfigsLabel = $localize`:@@featureAtlassianImportAdmin-loadingConfigs:Loading configs...`;
 
   readonly connections = toSignal(this.facade.connections$, { initialValue: [] as AtlassianSiteConnectionDto[] });
   readonly configs = toSignal(this.facade.configs$, { initialValue: [] as ExternalImportConfigDto[] });
@@ -135,6 +132,136 @@ export class AtlassianImportAdminComponent implements OnInit {
   readonly lastConnectionTest$ = this.facade.lastConnectionTest$;
 
   readonly adminLanes: AtlassianImportAdminLane[] = ['connections', 'configs'];
+
+  // Tables (3.38: tabs instead of side-by-side lanes, ⋮ row actions, bulk actions on selection)
+  readonly addConnectionLabel = $localize`:@@featureAtlassianImportAdmin-addConnection:Add connection`;
+  readonly addConfigLabel = $localize`:@@featureAtlassianImportAdmin-addConfig:Add import config`;
+  readonly testConnectionLabel = $localize`:@@featureAtlassianImportAdmin-testConnectionTitle:Test connection`;
+  readonly runNowLabel = $localize`:@@featureAtlassianImportAdmin-runImportTitle:Run import now`;
+  readonly enableLabel = $localize`:@@featureAtlassianImportAdmin-enable:Enable`;
+  readonly disableLabel = $localize`:@@featureAtlassianImportAdmin-disable:Disable`;
+  readonly deleteLabel = AG_DL_DELETE;
+  private readonly editLabel = $localize`:@@featureAtlassianImportAdmin-edit:Edit`;
+  private readonly clearMarkersLabel = $localize`:@@featureAtlassianImportAdmin-clearMarkersTitle:Clear sync markers`;
+  private readonly connectionTestFailedLabel = $localize`:@@featureAtlassianImportAdmin-connectionTestFailed:Failed`;
+
+  readonly selectedConnectionIds = signal<readonly string[]>([]);
+  readonly selectedConfigIds = signal<readonly string[]>([]);
+  readonly expandedConfigId = signal<string | null>(null);
+  readonly bulkBusy = signal(false);
+  readonly bulkResult = signal<{ tone: 'success' | 'warning' | 'danger'; message: string } | null>(null);
+  readonly bulkDeleteConnectionsOpen = signal(false);
+  readonly bulkDeleteConfigsOpen = signal(false);
+
+  readonly selectedConnections = computed(() => {
+    const ids = new Set(this.selectedConnectionIds());
+
+    return this.connections().filter((c) => ids.has(c.id));
+  });
+  readonly selectedConfigs = computed(() => {
+    const ids = new Set(this.selectedConfigIds());
+
+    return this.configs().filter((c) => ids.has(c.id));
+  });
+  readonly selectedEnabledConfigs = computed(() => this.selectedConfigs().filter((c) => c.enabled));
+
+  readonly connectionColumns: FpcTableColumn<AtlassianSiteConnectionDto>[] = [
+    {
+      id: 'name',
+      label: $localize`:@@featureAtlassianImportAdmin-colConnection:Connection`,
+      value: (c) => this.connectionLabel(c) || this.unnamedConnectionLabel(),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'site',
+      label: $localize`:@@featureAtlassianImportAdmin-colSite:Site`,
+      value: (c) => this.connectionHostname(c),
+      priority: 1,
+    },
+    {
+      id: 'account',
+      label: $localize`:@@featureAtlassianImportAdmin-colAccount:Account`,
+      value: (c) => c.accountEmail,
+      priority: 2,
+    },
+  ];
+
+  readonly configColumns: FpcTableColumn<ExternalImportConfigDto>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureAtlassianImportAdmin-colState:State`,
+      type: 'state',
+      state: (cfg) =>
+        cfg.lastError
+          ? {
+              label: $localize`:@@featureAtlassianImportAdmin-stateLastRunFailed:Last run failed`,
+              tone: 'danger',
+              icon: 'exclamation-octagon',
+            }
+          : cfg.enabled
+            ? {
+                label: $localize`:@@featureAtlassianImportAdmin-stateEnabled:Enabled`,
+                tone: 'success',
+                icon: 'check-circle',
+              }
+            : {
+                label: $localize`:@@featureAtlassianImportAdmin-stateDisabled:Disabled`,
+                tone: 'neutral',
+                icon: 'pause-circle',
+              },
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureAtlassianImportAdmin-colImport:Import`,
+      value: (cfg) => this.configName(cfg),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'workspace',
+      label: $localize`:@@featureAtlassianImportAdmin-colWorkspace:Workspace`,
+      value: (cfg) => this.clientName(cfg.clientId),
+      priority: 1,
+    },
+    {
+      id: 'connection',
+      label: $localize`:@@featureAtlassianImportAdmin-colConnection:Connection`,
+      value: (cfg) => this.connectionNameForConfig(cfg),
+      priority: 2,
+    },
+    {
+      id: 'target',
+      label: $localize`:@@featureAtlassianImportAdmin-colTarget:Ticket status`,
+      value: (cfg) => (cfg.importKind === 'jira' ? this.jiraImportTargetLabel(cfg.importTargetTicketStatus) : ''),
+      priority: 3,
+      hidden: true,
+    },
+    {
+      id: 'lastRun',
+      label: $localize`:@@featureAtlassianImportAdmin-colLastRun:Last run`,
+      value: (cfg) => cfg.lastRunAt ?? '',
+      priority: 2,
+    },
+  ];
+
+  readonly connectionRowMenu = (): FpcMenuItem[] => [
+    { id: 'test', label: this.testConnectionLabel, icon: 'lightning-charge' },
+    { id: 'edit', label: this.editLabel, icon: 'pencil' },
+    agCopyIdItem(),
+    { id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true },
+  ];
+
+  readonly configRowMenu = (cfg: ExternalImportConfigDto): FpcMenuItem[] => [
+    { id: 'run', label: this.runNowLabel, icon: 'play-fill', disabled: !cfg.enabled },
+    cfg.enabled
+      ? { id: 'disable', label: this.disableLabel, icon: 'pause-circle' }
+      : { id: 'enable', label: this.enableLabel, icon: 'play-circle' },
+    { id: 'clear-markers', label: this.clearMarkersLabel, icon: 'arrow-counterclockwise' },
+    { id: 'edit', label: this.editLabel, icon: 'pencil' },
+    agCopyIdItem(),
+    { id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true },
+  ];
   readonly selectedLane = signal<AtlassianImportAdminLane>('connections');
 
   readonly connectionsSearchQuery = signal('');
@@ -766,6 +893,168 @@ export class AtlassianImportAdminComponent implements OnInit {
 
   runConfig(id: string): void {
     this.facade.runConfig(id);
+  }
+
+  /** Readable name of an import config: product plus board / space (no internal ids). */
+  configName(cfg: ExternalImportConfigDto): string {
+    if (cfg.importKind === 'jira') {
+      return cfg.jiraBoardId != null
+        ? $localize`:@@featureAtlassianImportAdmin-jiraBoardName:Jira board ${cfg.jiraBoardId}:board:`
+        : $localize`:@@featureAtlassianImportAdmin-kindJira:Jira`;
+    }
+
+    return cfg.confluenceSpaceKey?.trim()
+      ? $localize`:@@featureAtlassianImportAdmin-confluenceSpaceName:Confluence space ${cfg.confluenceSpaceKey}:space:`
+      : $localize`:@@featureAtlassianImportAdmin-kindConfluence:Confluence`;
+  }
+
+  configQueryLabel(cfg: ExternalImportConfigDto): string {
+    return cfg.importKind === 'jira'
+      ? $localize`:@@featureAtlassianImportAdmin-queryJql:JQL`
+      : $localize`:@@featureAtlassianImportAdmin-queryCql:CQL`;
+  }
+
+  configQuery(cfg: ExternalImportConfigDto): string {
+    if (cfg.importKind === 'jira') {
+      return (cfg.jql ?? '').trim() ? (cfg.jql as string) : this.emptyFieldMarker();
+    }
+
+    return this.displayConfluenceSearchCql(cfg);
+  }
+
+  toggleConfigDetail(id: string): void {
+    this.expandedConfigId.update((current) => (current === id ? null : id));
+  }
+
+  onConnectionAction(c: AtlassianSiteConnectionDto, action: string): void {
+    switch (action) {
+      case 'test':
+        this.testConnection(c.id);
+        break;
+      case 'edit':
+        this.openEditConnection(c);
+        break;
+      case 'copy-id':
+        fpcCopyText(c.id);
+        break;
+      case 'delete':
+        this.openDeleteConnectionConfirm(c);
+        break;
+    }
+  }
+
+  onConfigAction(cfg: ExternalImportConfigDto, action: string): void {
+    switch (action) {
+      case 'run':
+        this.runConfig(cfg.id);
+        break;
+      case 'enable':
+      case 'disable':
+        this.facade.updateConfig(cfg.id, { enabled: action === 'enable' });
+        break;
+      case 'clear-markers':
+        this.openClearMarkersConfirm(cfg);
+        break;
+      case 'edit':
+        this.openEditConfig(cfg);
+        break;
+      case 'copy-id':
+        fpcCopyText(cfg.id);
+        break;
+      case 'delete':
+        this.openDeleteConfigConfirm(cfg);
+        break;
+    }
+  }
+
+  /** Bulk Test: one test call per connection; a failed test counts as failed (with the provider message). */
+  onBulkTestConnections(): void {
+    void this.runBulk(
+      this.selectedConnections(),
+      async (c) => {
+        const result = await firstValueFrom(this.adminService.testConnection(c.id));
+
+        if (!result.ok) {
+          throw new Error(result.message || this.connectionTestFailedLabel);
+        }
+      },
+      (c) => this.connectionLabel(c),
+      this.selectedConnectionIds,
+      false,
+    );
+  }
+
+  onConfirmBulkDeleteConnections(): void {
+    this.bulkDeleteConnectionsOpen.set(false);
+    void this.runBulk(
+      this.selectedConnections(),
+      (c) => firstValueFrom(this.adminService.deleteConnection(c.id)),
+      (c) => this.connectionLabel(c),
+      this.selectedConnectionIds,
+    );
+  }
+
+  onBulkRunConfigs(): void {
+    void this.runBulk(
+      this.selectedEnabledConfigs(),
+      (cfg) => firstValueFrom(this.adminService.runConfig(cfg.id)),
+      (cfg) => this.configName(cfg),
+      this.selectedConfigIds,
+    );
+  }
+
+  onBulkSetConfigsEnabled(enabled: boolean): void {
+    void this.runBulk(
+      this.selectedConfigs().filter((cfg) => cfg.enabled !== enabled),
+      (cfg) => firstValueFrom(this.adminService.updateConfig(cfg.id, { enabled })),
+      (cfg) => this.configName(cfg),
+      this.selectedConfigIds,
+    );
+  }
+
+  onConfirmBulkDeleteConfigs(): void {
+    this.bulkDeleteConfigsOpen.set(false);
+    void this.runBulk(
+      this.selectedConfigs(),
+      (cfg) => firstValueFrom(this.adminService.deleteConfig(cfg.id)),
+      (cfg) => this.configName(cfg),
+      this.selectedConfigIds,
+    );
+  }
+
+  /**
+   * Bulk action as a client fan-out over the single-item endpoints (3.38 D8: the server checks every item); the
+   * lists reload afterwards (unless `reload` is false), failed / denied items stay selected.
+   */
+  private async runBulk<T extends { id: string }>(
+    items: readonly T[],
+    run: (item: T) => Promise<unknown>,
+    name: (item: T) => string,
+    selection: { set(ids: readonly string[]): void },
+    reload = true,
+  ): Promise<void> {
+    if (items.length === 0) {
+      return;
+    }
+
+    this.bulkBusy.set(true);
+    this.bulkResult.set(null);
+
+    try {
+      const result = await fpcRunBulk(items, run);
+
+      this.bulkResult.set(agBulkSummary(result, name));
+      selection.set(result.failed.concat(result.denied).map((item) => item.id));
+
+      if (reload) {
+        this.facade.load({
+          connectionsSearch: this.connectionsSearchQuery().trim() || undefined,
+          configsSearch: this.configsSearchQuery().trim() || undefined,
+        });
+      }
+    } finally {
+      this.bulkBusy.set(false);
+    }
   }
 
   private hostnameFromBaseUrl(baseUrl: string): string {

@@ -38,129 +38,111 @@
     </fpc-alert>
   }
 
-  <fpc-search-field
-    class="border-bottom flex-shrink-0"
-    name="search"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchPlaceholder"
-    [(value)]="searchQuery"
-  />
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="webhook-manager-bulk-result"
+    />
+  }
 
-  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @if (endpointsLoading$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" i18n-label="@@featureNotifications-loading" label="Loading webhooks..." />
-      </div>
-    } @else {
-      @if (endpointsError(); as error) {
-        <fpc-alert class="m-3" variant="danger" [message]="error" />
-      }
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="endpoints()"
+    paging="client"
+    persistKey="shared-webhooks"
+    [(query)]="searchQuery"
+    [searchPlaceholder]="searchPlaceholder"
+    [filtered]="!!searchQuery().trim()"
+    [loading]="(endpointsLoading$ | async) === true && endpoints().length === 0"
+    [error]="endpointsError()"
+    selectable
+    [(selected)]="selectedEndpointIds"
+    [rowMenu]="endpointRowMenu"
+    (rowAction)="onEndpointAction($event.row, $event.item.id)"
+    (rowActivate)="onEditWebhook($event)"
+    emptyIcon="broadcast"
+    data-testid="webhook-manager-table"
+  >
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="bulkBusy() || selectedEnabledEndpoints().length === 0"
+      (clicked)="onBulkTest()"
+      data-testid="webhook-manager-bulk-test"
+      iconOnly
+      [ariaLabel]="testLabel"
+      [title]="testLabel"
+    >
+      <i class="bi bi-send" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="bulkBusy()"
+      (clicked)="onBulkSetEnabled(true)"
+      data-testid="webhook-manager-bulk-enable"
+      iconOnly
+      [ariaLabel]="enableLabel"
+      [title]="enableLabel"
+    >
+      <i class="bi bi-toggle-on" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="bulkBusy()"
+      (clicked)="onBulkSetEnabled(false)"
+      data-testid="webhook-manager-bulk-disable"
+      iconOnly
+      [ariaLabel]="disableLabel"
+      [title]="disableLabel"
+    >
+      <i class="bi bi-toggle-off" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="bulkBusy()"
+      (clicked)="bulkDeleteOpen.set(true)"
+      data-testid="webhook-manager-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
 
-      @if (endpoints().length === 0) {
-        @if (searchQuery().trim()) {
-          <fpc-empty-state
-            icon="search"
-            message="No search results"
-            i18n-message="@@featureNotifications-noSearchResults"
-          />
-        } @else {
-          <fpc-empty-state message="No webhooks yet" i18n-message="@@featureNotifications-empty" />
-        }
-      } @else {
-        <fpc-list [flush]="true">
-          @for (endpoint of endpoints(); track endpoint.id) {
-            <fpc-list-item>
-              <div fpcListItemTitle>
-                <div class="fw-semibold">{{ endpoint.name }}</div>
-                <div class="small text-body-secondary text-break">{{ endpoint.url }}</div>
-              </div>
-              <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                <fpc-badge variant="info" color="secondary">{{ endpoint.httpMethod }}</fpc-badge>
-                <span [ngClass]="enabledStatusTextClass(endpoint)">
-                  @if (endpoint.enabled) {
-                    <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                  } @else {
-                    <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
-                  }
-                  {{ statusLabel(endpoint) }}
-                </span>
-                @if (clientFilterEnabled) {
-                  <fpc-badge variant="info" color="secondary">{{ clientLabel(endpoint.clientId) }}</fpc-badge>
-                }
-                <span>
-                  <i class="bi bi-broadcast me-1" aria-hidden="true"></i>{{ endpoint.subscribedEvents.length }}
-                  <ng-container i18n="@@featureNotifications-events">events</ng-container>
-                </span>
-                @if (endpoint.consecutiveFailures > 0) {
-                  <span class="text-danger">
-                    <i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>
-                    {{ endpoint.consecutiveFailures }}
-                    <ng-container i18n="@@featureNotifications-failures">failures</ng-container>
-                  </span>
-                }
-                <span>
-                  <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(endpoint.updatedAt) }}
-                </span>
-              </div>
-              <fpc-button-group fpcListItemActions size="sm">
-                <fpc-button
-                  variant="dark"
-                  size="sm"
-                  iconOnly
-                  (clicked)="onViewDeliveries(endpoint)"
-                  i18n-title="@@featureNotifications-viewDeliveriesTitle"
-                  title="View deliveries"
-                  i18n-ariaLabel="@@featureNotifications-viewDeliveriesTitle"
-                  ariaLabel="View deliveries"
-                >
-                  <i class="bi bi-list-ul"></i>
-                </fpc-button>
-                <fpc-button
-                  variant="dark"
-                  size="sm"
-                  iconOnly
-                  (clicked)="onTestWebhook(endpoint)"
-                  [disabled]="(testing$ | async) === true || !endpoint.enabled"
-                  i18n-title="@@featureNotifications-testWebhookTitle"
-                  title="Send test delivery"
-                  i18n-ariaLabel="@@featureNotifications-testWebhookTitle"
-                  ariaLabel="Send test delivery"
-                >
-                  <i class="bi bi-lightning"></i>
-                </fpc-button>
-                <fpc-button
-                  variant="warning"
-                  size="sm"
-                  iconOnly
-                  (clicked)="onEditWebhook(endpoint)"
-                  i18n-title="@@featureNotifications-editWebhookTitle"
-                  title="Edit webhook"
-                  i18n-ariaLabel="@@featureNotifications-editWebhookTitle"
-                  ariaLabel="Edit webhook"
-                >
-                  <i class="bi bi-pencil"></i>
-                </fpc-button>
-                <fpc-button
-                  variant="danger"
-                  size="sm"
-                  iconOnly
-                  (clicked)="onDeleteWebhook(endpoint)"
-                  i18n-title="@@featureNotifications-deleteWebhookTitle"
-                  title="Delete webhook"
-                  i18n-ariaLabel="@@featureNotifications-deleteWebhookTitle"
-                  ariaLabel="Delete webhook"
-                >
-                  <i class="bi bi-trash"></i>
-                </fpc-button>
-              </fpc-button-group>
-            </fpc-list-item>
-          }
-        </fpc-list>
-      }
-    }
-  </div>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state icon="broadcast" message="No webhooks yet" i18n-message="@@featureNotifications-empty" />
+    </span>
+
+    <ng-template fpcTableCell="updated" let-row>{{ row.updatedAt | fpcDate: 'datetime' }}</ng-template>
+  </fpc-data-table>
 </div>
+
+<fpc-confirm-dialog
+  [(open)]="bulkDeleteOpen"
+  i18n-title="@@featureNotifications-bulkDeleteTitle"
+  title="Delete webhooks"
+  [confirmLabel]="deleteLabel"
+  [danger]="true"
+  [busy]="bulkBusy()"
+  (confirmed)="onConfirmBulkDelete()"
+>
+  <p class="mb-0" i18n="@@featureNotifications-bulkDeleteBody">
+    Delete the selected webhooks? Their delivery history is removed too. This cannot be undone.
+  </p>
+</fpc-confirm-dialog>
 
 <fpc-modal
   [(open)]="createWebhookModalOpen"
@@ -168,6 +150,8 @@
   title="Create webhook"
   size="lg"
   [closable]="(saving$ | async) !== true"
+  [cancelLabel]="lastCreatedSigningSecret() ? null : cancelLabel"
+  [cancelDisabled]="(saving$ | async) === true"
   (closed)="onCreateDone()"
 >
   @if (lastCreatedSigningSecret(); as signingSecret) {
@@ -211,6 +195,8 @@
   title="Edit webhook"
   size="lg"
   [closable]="(saving$ | async) !== true"
+  [cancelLabel]="cancelLabel"
+  [cancelDisabled]="(saving$ | async) === true"
   (closed)="cancelEditWebhook()"
 >
   <form (ngSubmit)="onSubmitEditWebhook()">
@@ -232,7 +218,7 @@
         [disabled]="(saving$ | async) === true || !isEditFormValid()"
         [loading]="(saving$ | async) === true"
       >
-        <span i18n="@@featureNotifications-update">Update</span>
+        <span i18n="@@featureNotifications-update">Save changes</span>
       </fpc-button>
     </div>
   </form>
@@ -451,79 +437,51 @@
   [scrollable]="true"
   (closed)="onCloseDeliveries()"
 >
-  @if (deliveriesLoading$ | async) {
-    <div class="d-flex justify-content-center p-4">
-      <fpc-spinner
-        variant="primary"
-        i18n-label="@@featureNotifications-loadingDeliveries"
-        label="Loading deliveries..."
-      />
-    </div>
-  } @else {
-    @if (deliveriesError$ | async; as deliveriesError) {
-      <fpc-alert variant="danger" [message]="deliveriesError" />
-    }
-    @if ((deliveries$ | async)?.length === 0) {
+  <!-- Deliveries as a nested table with server paging (total from the API); payload / response in the row detail. -->
+  <fpc-data-table
+    nested
+    [ariaLabel]="deliveriesTitle"
+    [columns]="deliveryColumns"
+    [rows]="deliveries()"
+    [searchable]="false"
+    paging="server"
+    [(page)]="deliveriesPage"
+    [(pageSize)]="deliveriesPageSize"
+    [total]="deliveriesTotal()"
+    persistKey="shared-webhook-deliveries"
+    [loading]="deliveriesLoading()"
+    [error]="deliveriesError()"
+    [expandedRowId]="expandedDeliveryId()"
+    (rowActivate)="toggleDelivery($event.id)"
+    emptyIcon="send"
+    data-testid="webhook-deliveries-table"
+  >
+    <span fpcDataTableEmpty>
       <fpc-empty-state size="sm" message="No deliveries yet" i18n-message="@@featureNotifications-noDeliveries" />
-    } @else {
-      <div class="table-responsive">
-        <table class="table table-sm align-middle">
-          <thead>
-            <tr>
-              <th i18n="@@featureNotifications-deliveryTime">Time</th>
-              <th i18n="@@featureNotifications-deliveryEvent">Event</th>
-              <th i18n="@@featureNotifications-deliveryStatus">Status</th>
-              <th i18n="@@featureNotifications-deliveryAttempt">Attempt</th>
-              <th i18n="@@featureNotifications-deliveryDetails">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (delivery of deliveries$ | async; track delivery.id) {
-              <tr>
-                <td>{{ formatDate(delivery.createdAt) }}</td>
-                <td>{{ delivery.eventType }}</td>
-                <td>
-                  @if (delivery.success) {
-                    <span class="text-success" i18n="@@featureNotifications-deliverySuccess">Success</span>
-                  } @else {
-                    <span class="text-danger" i18n="@@featureNotifications-deliveryFailed">Failed</span>
-                  }
-                  @if (delivery.httpStatus) {
-                    <span class="text-body-secondary ms-1">({{ delivery.httpStatus }})</span>
-                  }
-                </td>
-                <td>{{ delivery.attempt }}</td>
-                <td class="delivery-details-cell">
-                  @if (delivery.errorMessage) {
-                    <div class="delivery-detail-error small text-danger mb-2">
-                      <span class="fw-semibold" i18n="@@featureNotifications-deliveryError">Error</span>:
-                      {{ delivery.errorMessage }}
-                    </div>
-                  }
-                  <div class="delivery-detail-block">
-                    <div class="delivery-detail-label" i18n="@@featureNotifications-deliveryPayload">Payload</div>
-                    <pre class="delivery-detail-content">{{ formatDeliveryPayload(delivery.payload) }}</pre>
-                  </div>
-                  <div class="delivery-detail-block">
-                    <div class="delivery-detail-label" i18n="@@featureNotifications-deliveryResponse">Response</div>
-                    <pre class="delivery-detail-content">{{ formatDeliveryResponse(delivery.responseBody) }}</pre>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+    </span>
+
+    <ng-template fpcTableCell="name" let-row>{{ row.createdAt | fpcDate: 'datetime' }}</ng-template>
+    <ng-template fpcTableCell="event" let-row>
+      <span class="font-monospace small" [title]="eventTypeDescription(row)">{{ row.eventType }}</span>
+    </ng-template>
+
+    <ng-template fpcTableRowDetail let-row>
+      <div class="p-3">
+        @if (row.errorMessage) {
+          <div class="delivery-detail-error small text-danger mb-2">
+            <span class="fw-semibold" i18n="@@featureNotifications-deliveryError">Error</span>:
+            {{ row.errorMessage }}
+          </div>
+        }
+        <div class="delivery-detail-block">
+          <div class="delivery-detail-label" i18n="@@featureNotifications-deliveryPayload">Payload</div>
+          <pre class="delivery-detail-content">{{ formatDeliveryPayload(row.payload) }}</pre>
+        </div>
+        <div class="delivery-detail-block">
+          <div class="delivery-detail-label" i18n="@@featureNotifications-deliveryResponse">Response</div>
+          <pre class="delivery-detail-content">{{ formatDeliveryResponse(row.responseBody) }}</pre>
+        </div>
       </div>
-      @if (deliveriesHasMore$ | async) {
-        <div class="text-body-secondary small" i18n="@@featureNotifications-moreDeliveries">
-          More deliveries exist than shown.
-        </div>
-      }
-      @if (deliveriesTotal$ | async; as total) {
-        <div class="text-body-secondary small">
-          {{ total }} <ng-container i18n="@@featureNotifications-totalDeliveries">total deliveries</ng-container>
-        </div>
-      }
-    }
-  }
+    </ng-template>
+  </fpc-data-table>
 </fpc-modal>

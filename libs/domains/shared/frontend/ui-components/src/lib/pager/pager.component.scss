@@ -1,0 +1,33 @@
+:host {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// Arrows, the "Page x" label and the page-size select share one control height per size (see
+// `styles/_controls.scss`: `.pagination-sm .page-link` and `.form-select-sm` both resolve to
+// `--fpc-control-height-sm`).
+.page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fpc-pager__page {
+  white-space: nowrap;
+}
+
+// Inside a narrow data table (phones, rails): range + current page + arrows on one line; the page-size select and
+// the other numbered pages hide (the size stays as chosen on wider screens).
+@container fpc-data-table-host (max-width: 36rem) {
+  :host {
+    flex-wrap: nowrap;
+  }
+
+  .fpc-pager__size,
+  .page-item:has(.fpc-pager__gap),
+  .page-item:has(.fpc-pager__number):not(.active) {
+    display: none;
+  }
+}

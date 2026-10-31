@@ -13,25 +13,26 @@
     <div class="p-3 border-bottom">
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
         <h6 class="mb-0 fw-semibold">{{ getRunDisplayName(currentRunStatus()!.runName) }}</h6>
-        <fpc-badge [color]="getStatusBadgeColor(currentRunStatus()!.status)" [attr.title]="currentRunStatus()!.status">
-          <i class="bi" [ngClass]="getStatusIcon(currentRunStatus()!.status)"></i>
-          {{ currentRunStatus()!.status }}
-        </fpc-badge>
+        @if (runState(); as state) {
+          <fpc-badge [tone]="state.tone" [icon]="state.icon ?? null" data-testid="deployment-run-state">{{
+            state.label
+          }}</fpc-badge>
+        }
       </div>
       <dl class="row mb-0 small">
         <dt class="col-sm-4" i18n="@@featureDeploymentRunDetails-branchLabel">Branch</dt>
         <dd class="col-sm-8">
           <code>{{ currentRunStatus()!.ref }}</code>
         </dd>
-        <dt class="col-sm-4">Commit</dt>
+        <dt class="col-sm-4" i18n="@@featureDeploymentRunDetails-commitLabel">Commit</dt>
         <dd class="col-sm-8">
           <code class="small">{{ currentRunStatus()!.sha.substring(0, 7) }}</code>
         </dd>
         <dt class="col-sm-4" i18n="@@featureDeploymentRunDetails-startedLabel">Started</dt>
-        <dd class="col-sm-8">{{ formatDate(currentRunStatus()!.createdAt) }}</dd>
+        <dd class="col-sm-8">{{ currentRunStatus()!.createdAt | fpcDate: 'datetime' }}</dd>
         @if (currentRunStatus()!.updatedAt) {
           <dt class="col-sm-4" i18n="@@featureDeploymentRunDetails-updatedLabel">Updated</dt>
-          <dd class="col-sm-8">{{ formatDate(currentRunStatus()!.updatedAt) }}</dd>
+          <dd class="col-sm-8">{{ currentRunStatus()!.updatedAt | fpcDate: 'datetime' }}</dd>
         }
       </dl>
       @if (canCancelRun()) {
@@ -44,7 +45,7 @@
             (clicked)="onOpenCancelRunConfirm()"
           >
             <i class="bi bi-stop-circle me-1"></i>
-            <span i18n="@@featureDeploymentRunDetails-cancelRunButton">Cancel Run</span>
+            <span i18n="@@featureDeploymentRunDetails-cancelRunButton">Cancel run</span>
           </fpc-button>
         </div>
       }
@@ -64,60 +65,41 @@
             [disabled]="!!(loadingRunLogs$ | async)"
             (clicked)="onLoadRunLogs()"
             i18n-title="@@featureDeploymentRunDetails-viewRunLogsButton"
-            title="View Run Logs"
+            title="View run logs"
             i18n-ariaLabel="@@featureDeploymentRunDetails-viewRunLogsButton"
-            ariaLabel="View Run Logs"
+            ariaLabel="View run logs"
           >
             <i class="bi bi-file-text" aria-hidden="true"></i>
           </fpc-button>
         </fpc-lane-header>
         <div class="min-h-0 flex-grow-1 overflow-auto">
-          @if (loadingRunJobs$ | async) {
-            <div class="d-flex justify-content-center p-2">
-              <fpc-spinner
+          <fpc-data-table
+            nested
+            [ariaLabel]="jobsLabel"
+            [columns]="jobColumns"
+            [rows]="runJobs()"
+            [searchable]="false"
+            paging="client"
+            persistKey="agenstra-deployment-run-jobs"
+            [loading]="(loadingRunJobs$ | async) === true"
+            [rowMenu]="jobRowMenu"
+            (rowAction)="onJobAction($event.row, $event.item.id)"
+            (rowActivate)="onLoadJobLogs($event.id)"
+            emptyIcon="list-task"
+            data-testid="deployment-run-jobs-table"
+          >
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
                 size="sm"
-                variant="primary"
-                i18n-label="@@featureDeploymentRunDetails-loadingJobs"
-                label="Loading jobs..."
+                icon="list-task"
+                message="No jobs available"
+                i18n-message="@@featureDeploymentRunDetails-noJobs"
               />
-            </div>
-          } @else if (runJobs().length === 0) {
-            <p class="text-body-secondary small mb-0" i18n="@@featureDeploymentRunDetails-noJobs">No jobs available</p>
-          } @else {
-            <fpc-list [flush]="true">
-              @for (job of runJobs(); track job.id) {
-                <fpc-list-item>
-                  <div fpcListItemTitle class="d-flex align-items-center gap-2">
-                    <fpc-badge [color]="getJobStatusBadgeColor(job.status)" [attr.title]="job.status">
-                      {{ job.status }}
-                    </fpc-badge>
-                    <span class="fw-semibold">{{ job.name }}</span>
-                  </div>
-                  <div fpcListItemMeta class="small">
-                    @if (job.startedAt) {
-                      <div i18n="@@featureDeploymentRunDetails-startedAt">Started: {{ formatDate(job.startedAt) }}</div>
-                    }
-                    @if (job.completedAt) {
-                      <div i18n="@@featureDeploymentRunDetails-completedAt">
-                        Completed: {{ formatDate(job.completedAt) }}
-                      </div>
-                    }
-                  </div>
-                  <div fpcListItemActions>
-                    <fpc-button
-                      variant="dark"
-                      size="sm"
-                      [iconOnly]="true"
-                      [disabled]="!!(loadingJobLogs$ | async)"
-                      (clicked)="onLoadJobLogs(job.id)"
-                    >
-                      <i class="bi bi-file-text"></i>
-                    </fpc-button>
-                  </div>
-                </fpc-list-item>
-              }
-            </fpc-list>
-          }
+            </span>
+
+            <ng-template fpcTableCell="started" let-row>{{ row.startedAt | fpcDate: 'time' }}</ng-template>
+            <ng-template fpcTableCell="completed" let-row>{{ row.completedAt | fpcDate: 'time' }}</ng-template>
+          </fpc-data-table>
         </div>
       </div>
     }
@@ -175,7 +157,7 @@
   }
 
   @if (error() && !hasLoadedOnce()) {
-    <fpc-alert class="m-3" variant="danger" [message]="error()" />
+    <fpc-alert flush variant="danger" [message]="error()" />
   }
 
   <fpc-confirm-dialog

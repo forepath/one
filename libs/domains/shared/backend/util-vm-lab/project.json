@@ -1,0 +1,27 @@
+{
+  "name": "shared-backend-util-vm-lab",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/shared/backend/util-vm-lab/src",
+  "projectType": "library",
+  "tags": ["domain:shared", "scope:backend", "type:util"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/shared/backend/util-vm-lab/jest.config.cts"
+      }
+    },
+    "vm-lab-cleanup": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "bash libs/domains/shared/backend/util-vm-lab/scripts/cleanup.sh --label org.forepath.loadweaver.vm-lab --ready-marker ready --prune-unfinished-golden",
+          "bash libs/domains/shared/backend/util-vm-lab/scripts/cleanup.sh --label io.agenstra.isolation-lab"
+        ],
+        "parallel": false
+      },
+      "cache": false
+    }
+  }
+}

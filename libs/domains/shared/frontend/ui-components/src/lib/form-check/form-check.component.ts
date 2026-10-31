@@ -48,12 +48,16 @@ let nextCheckId = 0;
         [attr.aria-label]="label() ? null : ariaLabel()"
         [attr.aria-invalid]="invalid() ? 'true' : null"
         (change)="onNativeChange($event)"
+        [attr.aria-describedby]="hint() ? hintId() : null"
         (blur)="onBlur()"
       />
       @if (label()) {
         <label class="form-check-label" [for]="resolvedId()">{{ label() }}</label>
       }
       <ng-content />
+      @if (hint()) {
+        <div class="fpc-form-check__hint form-text mt-0" [id]="hintId()">{{ hint() }}</div>
+      }
     </div>
   `,
   styleUrl: './form-check.component.scss',
@@ -71,6 +75,8 @@ export class FpcFormCheckComponent implements ControlValueAccessor {
   /** Radio option value (also useful as a stable token for checkbox lists). */
   readonly value = input<string | null>(null);
   readonly ariaLabel = input<string | null>(null);
+  /** Helper text under the label (linked via `aria-describedby`); replaces hand-rolled hint paragraphs. */
+  readonly hint = input<string | null>(null);
   /** Extra classes on the native input (e.g. `font-monospace`). */
   readonly inputClass = input<string | null>(null);
 
@@ -83,6 +89,7 @@ export class FpcFormCheckComponent implements ControlValueAccessor {
   private onTouched: () => void = () => undefined;
 
   protected readonly resolvedId = computed(() => this.checkId() ?? this.fallbackId);
+  protected readonly hintId = computed(() => `${this.resolvedId()}-hint`);
   protected readonly isDisabled = computed(() => this.disabled() || this.cvaDisabled());
   protected readonly inputClasses = computed(() => {
     const extra = this.inputClass()?.trim();

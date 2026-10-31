@@ -36,3 +36,5 @@ export const selectPendingBackorders = createSelector(selectBackordersEntities, 
 );
 
 export const selectHasBackorders = createSelector(selectBackordersEntities, (entities) => entities.length > 0);
+
+export const selectBackordersHasMore = createSelector(selectBackordersState, (state) => state.hasMore);

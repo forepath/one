@@ -1,5 +1,5 @@
 import { UsersRepository } from '@forepath/identity/backend';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { OfferFulfillmentStatus } from '../constants/offer-fulfillment-status.constants';
@@ -32,6 +32,8 @@ import { OfferArchiveService } from './offer-archive.service';
 import { OfferPdfService } from './offer-pdf.service';
 import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
+import { CustomerProfilesRepository } from '../../repositories/customer-profiles.repository';
+import { resolveCustomerNamesByUserId } from '../../utils/customer-display-name.util';
 import { resolvePlanTaxCategory } from '../../utils/plan-tax.utils';
 import { assertOfferDeletable, assertOfferDraftEditable } from '../utils/offer-mutability.util';
 import {
@@ -67,6 +69,7 @@ export class OffersAdminService {
     private readonly offerPdfService: OfferPdfService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingSearchIndexService: BillingSearchIndexService,
+    @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
   ) {}
 
   async list(
@@ -78,7 +81,7 @@ export class OffersAdminService {
     const { items, total } = await this.offersRepository.findAllForAdmin({ limit, offset, search, userId });
 
     return {
-      items: await Promise.all(items.map((item) => this.mapListItem(item))),
+      items: await this.mapListItems(items),
       total,
       limit,
       offset,
@@ -435,13 +438,23 @@ export class OffersAdminService {
     };
   }
 
-  private async mapListItem(offer: OfferEntity): Promise<AdminOfferListItemDto> {
+  private async mapListItems(offers: OfferEntity[]): Promise<AdminOfferListItemDto[]> {
+    const customerNameById = await resolveCustomerNamesByUserId(
+      this.customerProfilesRepository,
+      offers.map((offer) => offer.userId),
+    );
+
+    return await Promise.all(offers.map((offer) => this.mapListItem(offer, customerNameById.get(offer.userId))));
+  }
+
+  private async mapListItem(offer: OfferEntity, customerName?: string): Promise<AdminOfferListItemDto> {
     const user = await this.usersRepository.findByIdForTenant(offer.userId);
 
     return {
       id: offer.id,
       userId: offer.userId,
       userEmail: user?.email,
+      customerName,
       offerNumber: offer.offerNumber ?? null,
       status: offer.status,
       currency: offer.currency,

@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
@@ -16,13 +17,20 @@ import {
 
 import { CreateUsageRecordDto, UpdateUsageMeterEntryDto } from '../dto/create-usage-record.dto';
 import { SubscriptionMeterHistoryDto } from '../dto/meter-history.dto';
-import { SubscriptionMeterSummaryDto, UsageMeterEntryResponseDto } from '../dto/meter-response.dto';
+import {
+  PaginatedUsageMeterEntriesResponseDto,
+  SubscriptionMeterSummaryDto,
+  UsageMeterEntryResponseDto,
+} from '../dto/meter-response.dto';
 import { SubscriptionMeterHistoryQueryDto } from '../dto/subscription-meter-history-query.dto';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { MeterBillingService } from '../services/meter-billing.service';
 import { UsageService } from '../services/usage.service';
 import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 import { parseMeterHistoryDateRange } from '../utils/meter-history-date.util';
+
+/** Largest page of `GET :id/meter-entries`. */
+const METER_ENTRIES_MAX_LIMIT = 100;
 
 @Controller('admin/billing/subscriptions')
 @KeycloakRoles(UserRole.ADMIN)
@@ -77,12 +85,18 @@ export class AdminSubscriptionMetersController {
   async listEntries(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req?: RequestWithUser,
-  ): Promise<UsageMeterEntryResponseDto[]> {
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+  ): Promise<PaginatedUsageMeterEntriesResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
     ensureAdmin(userInfo);
     await this.subscriptionsRepository.findByIdOrThrow(id);
 
-    return await this.usageService.listMeterEntries(id);
+    return await this.usageService.listMeterEntries(
+      id,
+      Math.min(Math.max(limit ?? 10, 1), METER_ENTRIES_MAX_LIMIT),
+      Math.max(offset ?? 0, 0),
+    );
   }
 
   @Post(':id/meter-entries')

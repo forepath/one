@@ -1,0 +1,17 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+//
+// Vendored unchanged (apart from this note) by Loadweaver from
+// https://github.com/hashicorp/go-plugin/blob/v1.7.0/internal/plugin/grpc_controller.proto
+
+syntax = "proto3";
+package plugin;
+option go_package = "./plugin";
+
+message Empty {
+}
+
+// The GRPCController is responsible for telling the plugin server to shutdown.
+service GRPCController {
+    rpc Shutdown(Empty) returns (Empty);
+}

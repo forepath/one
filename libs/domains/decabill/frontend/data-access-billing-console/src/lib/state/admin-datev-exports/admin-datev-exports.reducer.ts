@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import { BILLING_LIST_PAGE_SIZE } from '../../constants/list-paging.constants';
 
 import type { AdminDatevExportListItem, DatevExportScope, QueuedDatevExport } from '../../types/billing.types';
 
@@ -8,9 +9,9 @@ import {
   downloadDatevExportSuccess,
   expireQueuedDatevExports,
   loadAdminDatevExports,
-  loadAdminDatevExportsBatch,
   loadAdminDatevExportsFailure,
   loadAdminDatevExportsSuccess,
+  resolveQueuedDatevExports,
   triggerDatevExport,
   triggerDatevExportFailure,
   triggerDatevExportSuccess,
@@ -19,9 +20,12 @@ import {
 export interface AdminDatevExportsState {
   items: AdminDatevExportListItem[];
   queuedExports: QueuedDatevExport[];
+  /** Replace-page paging: server total and the current page window (`limit` = page size). */
   total: number;
   limit: number;
   offset: number;
+  search: string | null;
+  year: number | null;
   scope: DatevExportScope;
   viewTenantId: string | null;
   loading: boolean;
@@ -35,8 +39,10 @@ export const initialAdminDatevExportsState: AdminDatevExportsState = {
   items: [],
   queuedExports: [],
   total: 0,
-  limit: 20,
+  limit: BILLING_LIST_PAGE_SIZE,
   offset: 0,
+  search: null,
+  year: null,
   scope: 'tenant',
   viewTenantId: null,
   loading: false,
@@ -84,17 +90,17 @@ export const adminDatevExportsReducer = createReducer(
     return {
       ...state,
       items: scopeChanged || viewTenantChanged ? [] : state.items,
+      total: scopeChanged || viewTenantChanged ? 0 : state.total,
       loading: true,
       error: null,
       scope: nextScope,
       viewTenantId: nextViewTenantId,
+      limit: params.limit && params.limit > 0 ? params.limit : BILLING_LIST_PAGE_SIZE,
+      offset: params.offset && params.offset > 0 ? params.offset : 0,
+      search: params.search?.trim() ? params.search.trim() : null,
+      year: params.year ?? null,
     };
   }),
-  on(loadAdminDatevExportsBatch, (state, { accumulatedItems }) => ({
-    ...state,
-    items: accumulatedItems,
-    loading: true,
-  })),
   on(loadAdminDatevExportsSuccess, (state, { items, total, limit, offset, loadedScope }) => ({
     ...state,
     items: loadedScope === state.scope ? items : state.items,
@@ -102,6 +108,10 @@ export const adminDatevExportsReducer = createReducer(
     limit: loadedScope === state.scope ? limit : state.limit,
     offset: loadedScope === state.scope ? offset : state.offset,
     loading: false,
+    queuedExports: pruneResolvedQueuedExports(state.queuedExports, items, loadedScope),
+  })),
+  on(resolveQueuedDatevExports, (state, { items, loadedScope }) => ({
+    ...state,
     queuedExports: pruneResolvedQueuedExports(state.queuedExports, items, loadedScope),
   })),
   on(loadAdminDatevExportsFailure, (state, { error }) => ({

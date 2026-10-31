@@ -1,0 +1,5 @@
+Resolved: {{title}}
+
+{{#if project}}Project: {{project}}
+{{/if}}{{#if entity}}Affected: {{entity}}
+{{/if}}Firing since {{since}}, resolved at {{resolvedAt}}.

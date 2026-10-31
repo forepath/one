@@ -1,0 +1,57 @@
+<div class="comparison-matrix-table shadow-sm border rounded-3 overflow-hidden">
+  <table class="table fpc-table--plain-head table-hover mb-0 align-middle" [attr.aria-label]="tableLabel()">
+    <thead>
+      <tr>
+        <th
+          scope="col"
+          class="comparison-matrix-col-capability p-3"
+          i18n="@@featureLoadweaverComparison-matrixColCapability"
+        >
+          Capability
+        </th>
+        <th
+          scope="col"
+          class="text-center comparison-matrix-col-vendor bg-body-tertiary p-3"
+          i18n="@@featureLoadweaverComparison-matrixColLoadweaver"
+        >
+          Loadweaver
+        </th>
+        <th scope="col" class="text-center comparison-matrix-col-vendor p-3">{{ competitorColumnLabel() }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.dimension) {
+        <tr>
+          <th scope="row" class="px-3 px-md-4 py-3 fw-normal">
+            <div class="fw-semibold">{{ row.dimension }}</div>
+            <div class="small text-body-secondary mt-1 comparison-matrix-question">{{ row.question }}</div>
+          </th>
+          <td class="text-center bg-body-tertiary px-2 px-md-4 py-3">
+            @let lw = matrixStrengthVisual(row.loadweaver);
+            <span
+              class="comparison-matrix-icon d-inline-flex justify-content-center"
+              [attr.title]="row.loadweaverTooltip"
+              role="img"
+              [attr.aria-label]="lw.label + '. Loadweaver. ' + row.dimension + ': ' + row.loadweaverTooltip"
+            >
+              <i class="bi fs-4" [ngClass]="[lw.iconClass, lw.colorClass]" aria-hidden="true"></i>
+            </span>
+          </td>
+          <td class="text-center px-2 px-md-4 py-3">
+            @let co = matrixStrengthVisual(row.competitor);
+            <span
+              class="comparison-matrix-icon d-inline-flex justify-content-center"
+              [attr.title]="row.competitorTooltip"
+              role="img"
+              [attr.aria-label]="
+                co.label + '. ' + competitorColumnLabel() + '. ' + row.dimension + ': ' + row.competitorTooltip
+              "
+            >
+              <i class="bi fs-4" [ngClass]="[co.iconClass, co.colorClass]" aria-hidden="true"></i>
+            </span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

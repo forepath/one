@@ -20,10 +20,14 @@ export const loadSubscriptionMetersFailure = createAction(
   props<{ error: string }>(),
 );
 
-export const loadMeterEntries = createAction('[SubscriptionMeters] Load Entries', props<{ subscriptionId: string }>());
+/** One page of a subscription's meter entries (replace-page; 1-based page, `BILLING_LIST_PAGE_SIZE` by default). */
+export const loadMeterEntries = createAction(
+  '[SubscriptionMeters] Load Entries',
+  props<{ subscriptionId: string; page?: number; pageSize?: number }>(),
+);
 export const loadMeterEntriesSuccess = createAction(
   '[SubscriptionMeters] Load Entries Success',
-  props<{ subscriptionId: string; entries: UsageMeterEntryResponse[] }>(),
+  props<{ subscriptionId: string; entries: UsageMeterEntryResponse[]; total: number }>(),
 );
 export const loadMeterEntriesFailure = createAction(
   '[SubscriptionMeters] Load Entries Failure',

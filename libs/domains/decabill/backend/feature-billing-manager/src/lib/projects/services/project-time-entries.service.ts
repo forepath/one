@@ -36,6 +36,7 @@ export class ProjectTimeEntriesService {
     offset: number,
     userInfo: UserInfoFromRequest,
     ticketId?: string | null,
+    search?: string | null,
   ): Promise<PaginatedProjectTimeEntriesResponseDto> {
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
 
@@ -49,7 +50,13 @@ export class ProjectTimeEntriesService {
       }
     }
 
-    const { items, total } = await this.timeEntriesRepository.findAllByProject(projectId, limit, offset, ticketId);
+    const { items, total } = await this.timeEntriesRepository.findAllByProject(
+      projectId,
+      limit,
+      offset,
+      ticketId,
+      search,
+    );
 
     return {
       items: items.map((e) => this.mapEntry(e)),

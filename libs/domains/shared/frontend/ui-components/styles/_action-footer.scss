@@ -1,0 +1,44 @@
+// Action footer chrome shared by `fpc-modal` (`.modal-footer`) and the `fpc-list-toolbar` filter drawer: top border,
+// tertiary strip with a soft lift on the actions side, right-aligned buttons; dark theme = top-bar chrome.
+// Component styles `@use` this partial (it emits nothing by itself).
+
+@mixin action-footer($padding: 1rem, $gap: calc(#{$padding} / 2)) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: $gap;
+  padding: $padding;
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+  position: relative;
+  // Keep the shade in this stacking context so `z-index: -1` does not escape behind the container.
+  isolation: isolate;
+  background-color: var(--bs-tertiary-bg);
+  --fpc-action-footer-shade: color-mix(in srgb, var(--bs-white) 36%, transparent);
+  --fpc-action-footer-shade-angle: 295deg;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    // Behind projected actions (they lack the component's `_ngcontent`, so a `> *` z-index bump would not apply).
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(
+      var(--fpc-action-footer-shade-angle),
+      var(--fpc-action-footer-shade) 0%,
+      transparent 55%
+    );
+  }
+
+  > * {
+    margin: 0;
+  }
+}
+
+@mixin action-footer-dark {
+  background-color: var(--bs-dark);
+  color: var(--bs-white);
+  --fpc-action-footer-shade: color-mix(in srgb, var(--bs-black) 28%, transparent);
+  --fpc-action-footer-shade-angle: 65deg;
+}

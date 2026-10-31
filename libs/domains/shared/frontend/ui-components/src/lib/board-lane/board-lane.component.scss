@@ -1,6 +1,11 @@
+// The lane fills the column it sits in (`fpc-section-column` / any flex column). Content-sized, the
+// body (`flex: 1 1 0`) would get no height at all: Chromium sizes an auto-height column flexbox from
+// its items' flex basis, so the body collapsed to 0 px, its content was clipped and nothing in it
+// (tables with sticky heads included) could scroll.
 :host {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
   border-radius: 0;
@@ -10,9 +15,21 @@
   flex: 0 0 auto;
 }
 
+// Search band in the body colour (it reads as part of the list; the lane header stays tertiary).
 .fpc-board-lane__search {
   flex: 0 0 auto;
-  background: var(--bs-tertiary-bg);
+  background: var(--bs-body-bg);
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+// Pinned lane toolbar (breadcrumbs, segmented views, time range): one row at the lane inset.
+.fpc-board-lane__toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
   border-bottom: var(--bs-border-width) solid var(--bs-border-color);
 }
 
@@ -23,9 +40,28 @@
   min-height: 0;
 }
 
+// Forms / prose. Lists, tables and editors stay flush (no padding).
+.fpc-board-lane__body--padded {
+  padding: var(--fpc-lane-body-padding-y, 0.75rem) 1rem;
+}
+
 .fpc-board-lane__body--scroll {
   overflow-x: hidden;
   overflow-y: auto;
+  // No reserved gutter (user decision, 2026-10-29, X-11): section bands and content run flush to the lane edge; when the
+  // lane scrolls, the scrollbar itself is the edge. Sideways overflow can't appear (overflow-x: hidden).
+  scrollbar-gutter: auto;
+}
+
+// One scroller per column: in a scrolling body the blocks keep their natural height (a
+// `.table-responsive` or any other overflow box would otherwise shrink into a nested scroller);
+// `fpc-empty-state` (basis 0) still grows into the free space.
+.fpc-board-lane__body--scroll > ::ng-deep * {
+  flex-shrink: 0;
+}
+
+.fpc-board-lane__body--scroll-x {
+  overflow-x: auto;
 }
 
 .fpc-board-lane__footer {
@@ -36,6 +72,7 @@
 // Empty slots must not contribute borders or padding to the lane.
 .fpc-board-lane__header:empty,
 .fpc-board-lane__search:empty,
+.fpc-board-lane__toolbar:empty,
 .fpc-board-lane__footer:empty {
   display: none;
 }

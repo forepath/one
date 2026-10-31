@@ -8,6 +8,8 @@ import {
 import { FpcBadgeComponent, FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
 import { catchError, debounceTime, distinctUntilChanged, of, skip, switchMap, tap } from 'rxjs';
 
+import { isAccessDeniedError } from '../billing-access-denied.util';
+
 @Component({
   selector: 'framework-billing-admin-supplier-contract-select',
   standalone: true,
@@ -37,6 +39,8 @@ export class BillingAdminSupplierContractSelectComponent {
   readonly suggestionsOpen = signal(false);
   readonly searchResults = signal<SupplierContractResponse[]>([]);
   readonly searchLoading = signal(false);
+  /** Set once the contracts API answered 401 / 403: the number is typed as plain text from then on. */
+  readonly accessDenied = signal(false);
   /** Keeps the picked contract visible after search results are cleared. */
   private readonly selectedContractCache = signal<SupplierContractResponse | null>(null);
 
@@ -52,7 +56,9 @@ export class BillingAdminSupplierContractSelectComponent {
     return (
       this.contracts().find((contract) => contract.contractNumber === selectedNumber) ??
       this.searchResults().find((contract) => contract.contractNumber === selectedNumber) ??
-      (this.selectedContractCache()?.contractNumber === selectedNumber ? this.selectedContractCache() : null)
+      (this.selectedContractCache()?.contractNumber === selectedNumber ? this.selectedContractCache() : null) ??
+      // A stored number that was never searched (e.g. an existing draft) still shows as the chip.
+      ({ contractNumber: selectedNumber } as Pick<SupplierContractResponse, 'contractNumber'>)
     );
   });
 
@@ -73,9 +79,16 @@ export class BillingAdminSupplierContractSelectComponent {
             return of([] as SupplierContractResponse[]);
           }
 
-          return this.profilesService
-            .listContracts(supplierId, term)
-            .pipe(catchError(() => of([] as SupplierContractResponse[])));
+          return this.profilesService.listContracts(supplierId, term).pipe(
+            catchError((error: unknown) => {
+              if (isAccessDeniedError(error)) {
+                this.accessDenied.set(true);
+                this.selectedContractNumber.set(term);
+              }
+
+              return of([] as SupplierContractResponse[]);
+            }),
+          );
         }),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -114,6 +127,11 @@ export class BillingAdminSupplierContractSelectComponent {
       this.searchLoading.set(false);
       this.searchResults.set([]);
     }
+  }
+
+  /** Fallback (no access): the typed text is the contract number. */
+  onPlainInput(value: string): void {
+    this.selectedContractNumber.set(value);
   }
 
   pickContract(contract: SupplierContractResponse, event: Event): void {

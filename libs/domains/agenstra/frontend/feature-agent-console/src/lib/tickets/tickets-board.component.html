@@ -1,59 +1,43 @@
 <div class="section__content-wrapper d-flex flex-column border-top">
-  <fpc-page-header>
-    <div fpcPageHeaderTitle class="d-flex align-items-center flex-wrap gap-3 min-width-0">
-      <h1 class="fpc-page-header__title h5 mb-0 fw-semibold">{{ pageTitle }}</h1>
-      @if (effectiveWorkspace(); as ew) {
-        <fpc-button
-          variant="link"
-          btnClass="text-decoration-none text-body"
-          class="tickets-board__workspace-badge-btn"
-          (clicked)="openWorkspaceSwitchModal()"
-          [title]="workspaceBadgeSwitchTitle"
-        >
-          <fpc-badge variant="info" color="secondary">
-            <i class="bi bi-building" aria-hidden="true"></i>
-            <span class="text-truncate tickets-board__workspace-badge-label">{{ effectiveWorkspaceTitle(ew) }}</span>
-          </fpc-badge>
-        </fpc-button>
-      }
-    </div>
-    @if (effectiveClientId() !== null) {
-      <fpc-button
-        fpcPageHeaderActions
-        variant="dark"
-        size="sm"
-        iconOnly
-        [ariaLabel]="globalSearchAriaLabel"
-        [title]="globalSearchTitle"
-        (clicked)="openGlobalSearchModal()"
-      >
-        <i class="bi bi-search" aria-hidden="true"></i>
-      </fpc-button>
+  <fpc-page-header [title]="pageTitle">
+    @if (effectiveWorkspace(); as ew) {
+      <framework-workspace-chip
+        fpcPageHeaderContext
+        [name]="effectiveWorkspaceTitle(ew)"
+        [title]="workspaceBadgeSwitchTitle"
+        (switch)="openWorkspaceSwitchModal()"
+      />
     }
     @if (effectiveClientId() !== null) {
-      <fpc-button
-        fpcPageHeaderActions
-        variant="primary"
-        size="sm"
-        iconOnly
-        [ariaLabel]="newTicketAriaLabel"
-        [title]="newTicketAriaLabel"
-        (clicked)="showCreateTicketModal()"
-      >
-        <i class="bi bi-plus" aria-hidden="true"></i>
-      </fpc-button>
+      <!-- Table | Lanes (URL view=, remembered per user; default table). -->
+      <fpc-button-group fpcPageHeaderActions size="sm" [ariaLabel]="viewSwitchLabel" data-testid="tickets-view-switch">
+        <fpc-button
+          [variant]="view() === 'table' ? 'primary' : 'dark'"
+          size="sm"
+          iconOnly
+          [ariaLabel]="tableViewLabel"
+          [title]="tableViewLabel"
+          [ariaPressed]="view() === 'table'"
+          (clicked)="setView('table')"
+          data-testid="tickets-view-table"
+        >
+          <i class="bi bi-table" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          [variant]="view() === 'lanes' ? 'primary' : 'dark'"
+          size="sm"
+          iconOnly
+          [ariaLabel]="lanesViewLabel"
+          [title]="lanesViewLabel"
+          [ariaPressed]="view() === 'lanes'"
+          (clicked)="setView('lanes')"
+          data-testid="tickets-view-lanes"
+        >
+          <i class="bi bi-kanban" aria-hidden="true"></i>
+        </fpc-button>
+      </fpc-button-group>
     }
   </fpc-page-header>
-
-  <fpc-tab-group
-    class="d-md-none flex-shrink-0"
-    [activeId]="selectedLane()"
-    (activeIdChange)="onSelectedLaneTabChange($event)"
-  >
-    @for (status of lanes; track status) {
-      <fpc-tab [id]="status" [label]="laneLabel(status)" />
-    }
-  </fpc-tab-group>
 
   @if (effectiveClientId() === null) {
     @if (clients$ | async; as bannerClients) {
@@ -70,7 +54,7 @@
             routerLink="/clients"
             i18n="@@featureTicketsBoard-goToSpaces"
           >
-            Go to Spaces
+            Go to workspaces
           </fpc-button>
         </fpc-empty-state>
       } @else {
@@ -95,135 +79,411 @@
     @if (listError$ | async; as err) {
       <fpc-alert variant="danger" [flush]="true" [message]="err" />
     }
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="tickets-bulk-result"
+      />
+    }
 
-    @if (loadingList$ | async) {
-      <div class="d-flex justify-content-center py-5">
-        <fpc-spinner variant="primary" [label]="loadingLabel" />
-      </div>
-    } @else if (ticketsBoardRowsByStatus$ | async; as byStatus) {
-      <section class="section__row flex-grow-1 min-h-0">
+    @if (view() === 'lanes') {
+      <fpc-tab-group
+        class="d-md-none flex-shrink-0"
+        [activeId]="selectedLane()"
+        (activeIdChange)="onSelectedLaneTabChange($event)"
+      >
         @for (status of lanes; track status) {
-          @let laneRows = filteredLaneRows(status, byStatus[status]);
-          <div
-            class="section__column d-md-flex flex-column border-end min-h-0"
-            [class.d-none]="selectedLane() !== status"
-          >
-            <fpc-board-lane class="h-100" [scrollBody]="false" [ariaLabel]="laneLabel(status)">
-              <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up" [title]="laneLabel(status)" />
-              <fpc-search-field
-                fpcBoardLaneSearch
-                [inputId]="'tickets-lane-search-' + status"
-                [name]="'lane-search-' + status"
-                [bordered]="false"
-                [placeholder]="laneSearchPlaceholder"
-                [ariaLabel]="laneSearchAriaLabel"
-                [value]="laneSearchQueries()[status]"
-                (valueChange)="setLaneSearchQuery(status, $event)"
-              />
-              <div
-                class="tickets-board__lane-dropzone list-group list-group-flush flex-grow-1 min-h-0 d-flex flex-column"
-                [class.tickets-board__lane-dropzone--over]="isLaneDragHighlight(status)"
-                (dragover)="onLaneDragOver($event, status)"
-                (dragenter)="onLaneDragEnter($event, status)"
-                (dragleave)="onLaneDragLeave($event, status)"
-                (drop)="onLaneDrop($event, status)"
-              >
-                @if (byStatus[status].length === 0) {
-                  <fpc-empty-state
-                    class="tickets-board__empty-lane"
-                    size="sm"
-                    icon="arrow-down-circle"
-                    message="Drop tickets here"
-                    i18n-message="@@featureTicketsBoard-dropHere"
-                  />
-                } @else if (laneRows.length === 0) {
-                  <fpc-empty-state
-                    class="tickets-board__empty-lane"
-                    size="sm"
-                    icon="search"
-                    message="No search results"
-                    i18n-message="@@featureTicketsBoard-noMatchingTickets"
-                  />
-                } @else {
-                  <cdk-virtual-scroll-viewport
-                    class="tickets-board__viewport"
-                    [itemSize]="laneVirtualItemSize"
-                    [minBufferPx]="laneVirtualItemSize * 4"
-                    [maxBufferPx]="laneVirtualItemSize * 8"
-                  >
-                    <div
-                      *cdkVirtualFor="let row of laneRows; trackBy: trackLaneRowByTicketId"
-                      class="list-group-item tickets-board__card border-bottom"
-                      [class.tickets-board__card--nested]="row.depth > 0"
-                      [style.--tickets-board-nest-depth]="row.depth"
-                      draggable="true"
-                      [class.tickets-board__card--dragging]="draggedTicket()?.id === row.ticket.id"
-                      (dragstart)="onTicketDragStart($event, row.ticket)"
-                      (dragend)="onTicketDragEnd()"
-                      (click)="onTicketCardClick(row.ticket)"
-                      (keyup.enter)="onTicketCardClick(row.ticket)"
-                      tabindex="0"
-                      role="button"
-                    >
-                      <div class="tickets-board__card-content">
-                        <div class="d-flex align-items-center gap-2 min-width-0 w-100">
-                          <div class="fw-medium text-truncate flex-grow-1 min-width-0" [title]="row.ticket.title">
-                            @if (row.ticket.shas.short) {
-                              <small class="text-body-secondary small">{{ row.ticket.shas.short }}</small>
-                            }
-                            {{ row.ticket.title }}
-                          </div>
-                          @if (row.ticket.automationEligible) {
-                            <small class="flex-shrink-0">
-                              <i
-                                class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
-                                i18n-title="@@featureTicketsBoard-automationEligibleTitle"
-                                title="Autonomous prototyping enabled"
-                              ></i>
-                            </small>
-                          }
-                        </div>
-                        <div class="tickets-board__meta-chips d-flex flex-wrap align-items-center gap-1 mt-1">
-                          <fpc-badge
-                            variant="info"
-                            color="secondary"
-                            [ngClass]="ticketPriorityBadgeClass(row.ticket.priority)"
-                            [attr.title]="row.ticket.priority"
-                            >{{ priorityLabel(row.ticket.priority) }}</fpc-badge
-                          >
-                          <fpc-badge
-                            variant="info"
-                            color="secondary"
-                            [ngClass]="ticketStatusBadgeClass(row.ticket.status)"
-                            [attr.title]="row.ticket.status"
-                            >{{ laneLabel(row.ticket.status) }}</fpc-badge
-                          >
-                          @if (row.ticket.subtaskCounts; as sc) {
-                            @if (sc.open + sc.done > 0) {
-                              <fpc-badge
-                                variant="info"
-                                color="secondary"
-                                i18n-title="@@featureTicketsBoard-subtaskCountTitle"
-                                title="Direct subtasks (done / total)"
-                                >{{ sc.done }}/{{ sc.open + sc.done }}</fpc-badge
-                              >
-                            }
-                          }
-                        </div>
-                      </div>
-                    </div>
-                  </cdk-virtual-scroll-viewport>
-                }
-              </div>
-            </fpc-board-lane>
-          </div>
+          <fpc-tab [id]="status" [label]="laneLabel(status)" />
         }
-      </section>
+      </fpc-tab-group>
+
+      <!-- Lanes view (user): lane names → one sticky search / filter strip for all lanes → lane bodies
+           (like a table: thead → search → rows). Search + filters are the table view's query state. -->
+      <div class="tickets-board__lanes d-flex flex-column flex-grow-1 min-h-0" data-testid="tickets-lanes-view">
+        <fpc-section-row
+          class="tickets-board__lane-heads d-none d-md-flex"
+          [nowrap]="true"
+          data-testid="tickets-lane-heads"
+        >
+          @for (status of lanes; track status) {
+            <fpc-section-column>
+              <fpc-lane-header flush [title]="laneLabel(status)" />
+            </fpc-section-column>
+          }
+        </fpc-section-row>
+        <fpc-list-toolbar
+          class="tickets-board__lanes-toolbar flex-shrink-0"
+          [(open)]="ticketFiltersOpen"
+          [activeCount]="laneFiltersActive()"
+          [chips]="laneChips()"
+          (chipRemove)="removeTicketChip($event)"
+          (applied)="ticketFilterState.apply()"
+          (cleared)="ticketFilterState.clear()"
+          data-testid="tickets-lanes-toolbar"
+        >
+          <fpc-search-field
+            fpcListToolbarLead
+            inputId="tickets-lanes-search"
+            name="tickets-lanes-search"
+            [bordered]="false"
+            [placeholder]="laneSearchPlaceholder"
+            [ariaLabel]="laneSearchAriaLabel"
+            [value]="ticketSearch()"
+            (valueChange)="ticketSearch.set($event)"
+          />
+          <fpc-form-field forId="ticketsLanesFilterPriority" [label]="priorityFilterLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="ticketsLanesFilterPriority"
+              size="sm"
+              [ngModel]="ticketFilterState.draft().priority"
+              (ngModelChange)="ticketFilterState.patch({ priority: $event })"
+            >
+              <option value="" i18n="@@featureTicketsBoard-filterPriorityAll">All priorities</option>
+              @for (p of priorityOptions; track p) {
+                <option [value]="p">{{ priorityLabel(p) }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+          @if (hiddenMatchCount() > 0) {
+            <fpc-button
+              fpcListToolbarActions
+              variant="link"
+              size="sm"
+              btnClass="text-body-secondary text-nowrap"
+              [title]="hiddenMatchesTitle"
+              (clicked)="showHiddenMatches()"
+              data-testid="tickets-more-matches"
+              >{{ hiddenMatchLabel() }}</fpc-button
+            >
+          } @else {
+            <!-- The lanes are the open workflow; say where Done / Closed went (AG-11). -->
+            <fpc-button
+              fpcListToolbarActions
+              variant="link"
+              size="sm"
+              btnClass="text-body-secondary text-nowrap"
+              [title]="closedInTableTitle"
+              (clicked)="showHiddenMatches()"
+              data-testid="tickets-closed-in-table"
+              >{{ closedInTableLabel }}</fpc-button
+            >
+          }
+          <!-- Create sits in the head of the lanes (their shared toolbar strip), like the table view's toolbar. -->
+          <fpc-button
+            fpcListToolbarActions
+            variant="primary"
+            size="sm"
+            iconOnly
+            [ariaLabel]="newTicketAriaLabel"
+            [title]="newTicketAriaLabel"
+            (clicked)="showCreateTicketModal()"
+          >
+            <i class="bi bi-plus" aria-hidden="true"></i>
+          </fpc-button>
+        </fpc-list-toolbar>
+
+        @if (loadingList$ | async) {
+          <div class="d-flex justify-content-center py-5">
+            <fpc-spinner variant="primary" [label]="loadingLabel" />
+          </div>
+        } @else if (ticketsBoardRowsByStatus$ | async; as byStatus) {
+          <fpc-section-row class="flex-grow-1" [nowrap]="true" data-testid="tickets-lanes">
+            @for (status of lanes; track status) {
+              <fpc-section-column class="d-md-flex" [class.d-none]="selectedLane() !== status">
+                <fpc-board-lane class="h-100" [scrollBody]="false" [ariaLabel]="laneLabel(status)">
+                  <!-- One stacked data table per lane (shared table pattern): State · Ticket / Priority · Subtasks,
+                       ⋮ row menu like the table view; cards drag between lanes (`dropGroup`), the whole lane body
+                       (an empty one too) is the drop zone. The lane body scrolls only when its cards overflow. -->
+                  <fpc-data-table
+                    class="tickets-board__lane-table flex-grow-1 min-h-0"
+                    [ariaLabel]="laneLabel(status)"
+                    [columns]="laneColumns"
+                    [rows]="laneTableRows()[status]"
+                    [rowId]="ticketRowId"
+                    [activeRowId]="detail()?.id ?? null"
+                    stacked
+                    [searchable]="false"
+                    [showColumnChooser]="false"
+                    [clientSort]="false"
+                    [filtered]="false"
+                    [virtualThreshold]="laneVirtualThreshold"
+                    [rowMenu]="ticketRowMenu"
+                    (rowAction)="onTicketRowAction($event.row, $event.item.id)"
+                    (rowActivate)="onLaneRowActivate($event)"
+                    [dropGroup]="laneDropGroup"
+                    [dropData]="status"
+                    (rowDrop)="onLaneRowDrop($event)"
+                    [attr.data-lane]="status"
+                    data-testid="tickets-lane-table"
+                  >
+                    <div fpcDataTableEmpty class="tickets-board__empty-lane">
+                      @if (byStatus[status].length === 0) {
+                        <fpc-empty-state
+                          size="sm"
+                          icon="arrow-down-circle"
+                          message="Drop tickets here"
+                          i18n-message="@@featureTicketsBoard-dropHere"
+                        />
+                      } @else {
+                        <fpc-empty-state
+                          size="sm"
+                          icon="search"
+                          message="No search results"
+                          i18n-message="@@featureTicketsBoard-noMatchingTickets"
+                        />
+                      }
+                    </div>
+                    <ng-template fpcTableCell="ticket" let-row>
+                      <span
+                        class="tickets-board__ticket-cell d-inline-flex align-items-center gap-2 min-width-0 mw-100"
+                        [class.tickets-board__ticket-cell--nested]="row.depth > 0"
+                        [title]="row.ticket.title"
+                      >
+                        @if (row.depth > 0) {
+                          <i class="bi bi-arrow-return-right text-body-secondary" aria-hidden="true"></i>
+                        }
+                        @if (row.ticket.shas.short) {
+                          <small class="text-body-secondary flex-shrink-0">{{ row.ticket.shas.short }}</small>
+                        }
+                        <span class="text-truncate">{{ row.ticket.title }}</span>
+                        @if (row.ticket.automationEligible) {
+                          <fpc-badge
+                            tone="primary"
+                            icon="lightning-charge-fill"
+                            [iconOnly]="true"
+                            [label]="automationEligibleLabel"
+                          />
+                        }
+                      </span>
+                    </ng-template>
+                    <ng-template fpcTableCell="priority" let-row>
+                      <fpc-badge [tone]="ticketPriorityBadgeTone(row.ticket.priority)">{{
+                        priorityLabel(row.ticket.priority)
+                      }}</fpc-badge>
+                    </ng-template>
+                    <ng-template fpcTableCell="subtasks" let-row>
+                      @if (row.ticket.subtaskCounts; as sc) {
+                        @if (sc.open + sc.done > 0) {
+                          <span [title]="subtaskCountTitle"
+                            ><i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>{{ sc.done }}/{{
+                              sc.open + sc.done
+                            }}</span
+                          >
+                        }
+                      }
+                    </ng-template>
+                  </fpc-data-table>
+                </fpc-board-lane>
+              </fpc-section-column>
+            }
+          </fpc-section-row>
+        }
+      </div>
+    } @else {
+      <!-- One data list (3.38 D1; the only infinite-scroll table): State · Ticket · Priority · facts; ⋮ row actions;
+         bulk status / priority / delete on selection. Replaces the former swimlanes + drag and drop. -->
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="pageTitle"
+        [columns]="mainTicketColumns"
+        [rows]="ticketTableRows()"
+        [rowId]="ticketRowId"
+        [rowLink]="ticketRowLink"
+        [activeRowId]="detail()?.id ?? null"
+        paging="infinite"
+        [hasMore]="ticketTableHasMore()"
+        (loadMore)="onLoadMoreTickets()"
+        persistKey="agenstra-tickets"
+        [clientSort]="false"
+        [(sort)]="ticketSort"
+        [(query)]="ticketSearch"
+        [searchPlaceholder]="laneSearchPlaceholder"
+        showFilterButton
+        [(filtersOpen)]="ticketFiltersOpen"
+        [filtersActive]="ticketFilterState.activeCount()"
+        [chips]="ticketChips()"
+        (removeChip)="removeTicketChip($event)"
+        (filtersApplied)="ticketFilterState.apply()"
+        (filtersCleared)="ticketFilterState.clear()"
+        [loading]="(loadingList$ | async) === true && ticketTableRows().length === 0"
+        selectable
+        [(selected)]="selectedTicketIds"
+        [rowMenu]="ticketRowMenu"
+        (rowAction)="onTicketRowAction($event.row, $event.item.id)"
+        emptyIcon="kanban"
+        data-testid="tickets-table"
+      >
+        <fpc-form-field fpcDataTableFilters forId="ticketsFilterStatus" [label]="statusFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="ticketsFilterStatus"
+            size="sm"
+            [ngModel]="ticketFilterState.draft().status"
+            (ngModelChange)="ticketFilterState.patch({ status: $event })"
+          >
+            @for (option of ticketStatusFilterOptions; track option) {
+              <option [value]="option">{{ statusFilterOptionLabel(option) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+        <fpc-form-field fpcDataTableFilters forId="ticketsFilterPriority" [label]="priorityFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="ticketsFilterPriority"
+            size="sm"
+            [ngModel]="ticketFilterState.draft().priority"
+            (ngModelChange)="ticketFilterState.patch({ priority: $event })"
+          >
+            <option value="" i18n="@@featureTicketsBoard-filterPriorityAll">All priorities</option>
+            @for (p of priorityOptions; track p) {
+              <option [value]="p">{{ priorityLabel(p) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+
+        <fpc-dropdown
+          fpcDataTableBatch
+          appendTo="body"
+          alignment="end"
+          [disabled]="bulkBusy()"
+          data-testid="tickets-bulk-status"
+        >
+          <fpc-button
+            fpcDropdownTrigger
+            variant="dark"
+            size="sm"
+            iconOnly
+            ariaHaspopup="menu"
+            [ariaLabel]="bulkStatusLabel"
+            [title]="bulkStatusLabel"
+            [disabled]="bulkBusy()"
+          >
+            <i class="bi bi-arrow-right-circle" aria-hidden="true"></i>
+          </fpc-button>
+          @for (s of statusOptions; track s) {
+            <fpc-dropdown-item (selected)="onBulkStatusValue(s)">{{ laneLabel(s) }}</fpc-dropdown-item>
+          }
+        </fpc-dropdown>
+        <fpc-dropdown
+          fpcDataTableBatch
+          appendTo="body"
+          alignment="end"
+          [disabled]="bulkBusy()"
+          data-testid="tickets-bulk-priority"
+        >
+          <fpc-button
+            fpcDropdownTrigger
+            variant="dark"
+            size="sm"
+            iconOnly
+            ariaHaspopup="menu"
+            [ariaLabel]="bulkPriorityLabel"
+            [title]="bulkPriorityLabel"
+            [disabled]="bulkBusy()"
+          >
+            <i class="bi bi-flag" aria-hidden="true"></i>
+          </fpc-button>
+          @for (p of priorityOptions; track p) {
+            <fpc-dropdown-item (selected)="onBulkPriorityValue(p)">{{ priorityLabel(p) }}</fpc-dropdown-item>
+          }
+        </fpc-dropdown>
+        <fpc-button
+          fpcDataTableBatch
+          variant="danger"
+          size="sm"
+          iconOnly
+          [ariaLabel]="deleteLabel"
+          [title]="deleteLabel"
+          [disabled]="bulkBusy()"
+          (clicked)="requestBulkDelete()"
+          data-testid="tickets-bulk-delete"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+
+        @if (hiddenMatchCount() > 0) {
+          <fpc-button
+            fpcDataTableToolbar
+            variant="link"
+            size="sm"
+            btnClass="text-body-secondary text-nowrap"
+            [title]="hiddenMatchesTitle"
+            (clicked)="showHiddenMatches()"
+            data-testid="tickets-more-matches"
+            >{{ hiddenMatchLabel() }}</fpc-button
+          >
+        }
+        <fpc-button
+          fpcDataTableToolbar
+          variant="primary"
+          size="sm"
+          iconOnly
+          [ariaLabel]="newTicketAriaLabel"
+          [title]="newTicketAriaLabel"
+          (clicked)="showCreateTicketModal()"
+        >
+          <i class="bi bi-plus" aria-hidden="true"></i>
+        </fpc-button>
+
+        <span fpcDataTableEmpty>
+          <fpc-empty-state icon="kanban" size="sm" i18n-message="@@featureTicketsBoard-empty" message="No tickets yet">
+            <fpc-button
+              fpcEmptyStateActions
+              variant="primary"
+              size="sm"
+              (clicked)="showCreateTicketModal()"
+              i18n="@@featureTicketsBoard-emptyCreate"
+              >Create ticket</fpc-button
+            >
+          </fpc-empty-state>
+        </span>
+
+        <ng-template fpcTableCell="ticket" let-row>
+          <span
+            class="tickets-board__ticket-cell d-inline-flex align-items-center gap-2 min-width-0 mw-100"
+            [class.tickets-board__ticket-cell--nested]="row.depth > 0"
+            [title]="row.ticket.title"
+          >
+            @if (row.depth > 0) {
+              <i class="bi bi-arrow-return-right text-body-secondary" aria-hidden="true"></i>
+            }
+            @if (row.ticket.shas.short) {
+              <small class="text-body-secondary flex-shrink-0">{{ row.ticket.shas.short }}</small>
+            }
+            <span class="text-truncate">{{ row.ticket.title }}</span>
+            @if (ticketSubtaskText(row.ticket); as subtasks) {
+              <small class="text-body-secondary text-nowrap flex-shrink-0" [title]="subtaskCountTitle"
+                ><i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>{{ subtasks }}</small
+              >
+            }
+            @if (row.ticket.automationEligible) {
+              <fpc-badge
+                tone="primary"
+                icon="lightning-charge-fill"
+                [iconOnly]="true"
+                [label]="automationEligibleLabel"
+              />
+            }
+          </span>
+        </ng-template>
+        <ng-template fpcTableCell="priority" let-row>
+          <fpc-badge [tone]="ticketPriorityBadgeTone(row.ticket.priority)">{{
+            priorityLabel(row.ticket.priority)
+          }}</fpc-badge>
+        </ng-template>
+        <ng-template fpcTableCell="updated" let-row>{{ row.ticket.updatedAt | fpcDate: 'datetime' }}</ng-template>
+      </fpc-data-table>
     }
   }
 </div>
 
 <fpc-modal
+  #ticketDetailModal
   class="tickets-board__ticket-detail-modal"
   [(open)]="ticketDetailModalOpen"
   size="xl"
@@ -241,8 +501,9 @@
         @if (detailTitleEditing()) {
           <fpc-form-control
             #detailTitleInput
+            class="flex-grow-1 min-width-0"
             size="sm"
-            controlClass="flex-grow-1 min-width-0"
+            controlClass="w-100"
             [ngModel]="detailTitleDraft()"
             (ngModelChange)="detailTitleDraft.set($event)"
             [disabled]="ticketsSaving()"
@@ -279,28 +540,29 @@
       <div
         class="tickets-board__ticket-detail-toolbar d-flex w-100 flex-wrap align-items-center gap-2 px-3 pt-2 pb-2 flex-shrink-0 min-width-0"
       >
-        <div class="tickets-board__hierarchy-box flex-grow-1 min-width-0 border rounded px-3">
-          <fpc-breadcrumbs
-            size="sm"
-            divider="›"
-            i18n-ariaLabel="@@featureTicketsBoard-breadcrumbNavAria"
-            ariaLabel="Ticket hierarchy"
-          >
-            @for (crumb of detailBreadcrumb$ | async; track crumb.id) {
-              @if (crumb.id === d.id) {
-                <fpc-breadcrumb-item [label]="crumb.title" [title]="crumb.title" [active]="true" />
-              } @else {
-                <fpc-breadcrumb-item
-                  [label]="crumb.title"
-                  [title]="crumb.title"
-                  href="#"
-                  (selected)="onHierarchyBreadcrumbSelected($event, crumb.id)"
-                />
+        <!-- Parent tickets only: the open ticket's own title is the modal title (AG-05: no second, truncated copy). -->
+        @if (detailBreadcrumb().length > 1) {
+          <div class="tickets-board__hierarchy-box flex-grow-1 min-width-0 px-1">
+            <fpc-breadcrumbs
+              size="sm"
+              divider="›"
+              i18n-ariaLabel="@@featureTicketsBoard-breadcrumbNavAria"
+              ariaLabel="Ticket hierarchy"
+            >
+              @for (crumb of detailBreadcrumb(); track crumb.id) {
+                @if (crumb.id !== d.id) {
+                  <fpc-breadcrumb-item
+                    [label]="crumb.title"
+                    [title]="crumb.title"
+                    href="#"
+                    (selected)="onHierarchyBreadcrumbSelected($event, crumb.id)"
+                  />
+                }
               }
-            }
-          </fpc-breadcrumbs>
-        </div>
-        <div class="d-flex align-items-center gap-1 flex-shrink-0 align-self-center">
+            </fpc-breadcrumbs>
+          </div>
+        }
+        <div class="fpc-lane-header__actions d-flex align-items-center gap-1 flex-shrink-0 align-self-center ms-auto">
           <fpc-button
             variant="primary"
             size="sm"
@@ -337,18 +599,12 @@
             <div class="col-lg-7 tickets-board__ticket-detail-pane p-3">
               <dl class="row small mb-3 align-items-center">
                 @if (d.shas.short || d.shas.long) {
+                  <!-- D11: the short hash only; the full one is in the tooltip (and copyable from the row menu). -->
                   <dt class="col-sm-3 mb-2" i18n="@@featureTicketsBoard-fieldShas">SHAs</dt>
                   <dd class="col-sm-9 mb-2 d-flex align-items-center gap-2">
-                    @if (d.shas.short) {
-                      <fpc-badge variant="info" color="secondary" class="tickets-board__chip--activity-muted">{{
-                        d.shas.short
-                      }}</fpc-badge>
-                    }
-                    @if (d.shas.long) {
-                      <fpc-badge variant="info" color="secondary" class="tickets-board__chip--activity-muted">{{
-                        d.shas.long
-                      }}</fpc-badge>
-                    }
+                    <fpc-badge tone="neutral" [attr.title]="d.shas.long || d.shas.short">{{
+                      d.shas.short || (d.shas.long ?? '').slice(0, 7)
+                    }}</fpc-badge>
                   </dd>
                 }
                 <dt class="col-sm-3" i18n="@@featureTicketsBoard-fieldStatus">Status</dt>
@@ -378,7 +634,7 @@
                   </fpc-form-control>
                 </dd>
                 <dt class="col-sm-3 mt-2" id="ticketAgentSelectLabel" i18n="@@featureTicketsBoard-agentLabel">
-                  Agent for chat / AI
+                  Environment for chat / AI
                 </dt>
                 <dd class="col-sm-9 mt-2 mb-0">
                   <framework-agent-select
@@ -389,7 +645,7 @@
                     [selectedAgentId]="selectedAgentForAi()"
                     (selectedAgentIdChange)="onPreferredChatAgentChange(d, $event)"
                     i18n-placeholder="@@featureTicketsBoard-agentPlaceholder"
-                    placeholder="Select agent..."
+                    placeholder="Select environment..."
                   />
                 </dd>
                 <dt class="col-sm-3 mt-2" id="ticketModelSelectLabel" i18n="@@featureTicketsBoard-modelLabel">
@@ -407,9 +663,7 @@
                     [attr.aria-labelledby]="'ticketModelSelectLabel'"
                   >
                     @if (ticketAiModelOptions().length === 0) {
-                      <option value="" i18n="@@featureTicketsBoard-modelPlaceholder">
-                        {{ ticketAiModelsLoading() ? 'Loading models...' : 'Select agent to load models...' }}
-                      </option>
+                      <option value="">{{ ticketAiModelPlaceholder() }}</option>
                     }
                     @for (model of ticketAiModelOptions(); track model.value) {
                       <option [value]="model.value">{{ model.label }}</option>
@@ -463,7 +717,9 @@
 
               <div class="d-flex flex-column gap-3">
                 <div>
-                  <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+                  <div
+                    class="fpc-lane-header__actions d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2"
+                  >
                     <h3 class="h6 mb-0" i18n="@@featureTicketsBoard-descriptionHeading">Description</h3>
                     <fpc-button
                       variant="dark"
@@ -473,7 +729,7 @@
                       (clicked)="onGenerateBody()"
                       [disabled]="bodyGenInProgress()"
                       i18n-title="@@featureTicketsBoard-generateBodyTitle"
-                      title="Generate description with AI (uses selected agent)"
+                      title="Generate description with AI (uses the selected environment)"
                       i18n-ariaLabel="@@featureTicketsBoard-generateBodyTitle"
                       ariaLabel="Generate description with AI (uses selected agent)"
                     >
@@ -496,7 +752,9 @@
                 </div>
 
                 <div>
-                  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                  <div
+                    class="fpc-lane-header__actions d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2"
+                  >
                     <h3 class="h6 mb-0" i18n="@@featureTicketsBoard-attachmentsHeading">Attachments</h3>
                     <input
                       #ticketAttachmentInput
@@ -523,47 +781,18 @@
                       No attachments yet.
                     </p>
                   } @else {
-                    <fpc-list [flush]="true" class="border rounded small mb-0">
-                      @for (attachment of d.attachments ?? []; track attachment.id) {
-                        <fpc-list-item>
-                          <div fpcListItemTitle class="text-truncate" [title]="attachment.fileName">
-                            <i class="bi bi-paperclip me-1" aria-hidden="true"></i>{{ attachment.fileName }}
-                          </div>
-                          <div fpcListItemMeta>{{ attachment.byteSize | number }} B</div>
-                          <span fpcListItemActions class="d-inline-flex align-items-center gap-1">
-                            <fpc-button
-                              variant="outline-secondary"
-                              size="sm"
-                              iconOnly
-                              (clicked)="downloadTicketAttachment(attachment)"
-                              i18n-title="@@featureTicketsBoard-downloadAttachment"
-                              title="Download attachment"
-                              i18n-ariaLabel="@@featureTicketsBoard-downloadAttachment"
-                              ariaLabel="Download attachment"
-                            >
-                              <i class="bi bi-download" aria-hidden="true"></i>
-                            </fpc-button>
-                            <fpc-button
-                              variant="outline-danger"
-                              size="sm"
-                              iconOnly
-                              (clicked)="deleteTicketAttachment(d, attachment)"
-                              i18n-title="@@featureTicketsBoard-deleteAttachment"
-                              title="Delete attachment"
-                              i18n-ariaLabel="@@featureTicketsBoard-deleteAttachment"
-                              ariaLabel="Delete attachment"
-                            >
-                              <i class="bi bi-trash" aria-hidden="true"></i>
-                            </fpc-button>
-                          </span>
-                        </fpc-list-item>
-                      }
-                    </fpc-list>
+                    <framework-attachment-chips
+                      [attachments]="d.attachments ?? []"
+                      (download)="downloadTicketAttachment($event)"
+                      (remove)="deleteTicketAttachment(d, $event)"
+                    />
                   }
                 </div>
 
                 <div>
-                  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                  <div
+                    class="fpc-lane-header__actions d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2"
+                  >
                     <h3 class="h6 mb-0" i18n="@@featureTicketsBoard-subtasksHeading">Subtasks</h3>
                     <fpc-button
                       variant="dark"
@@ -584,68 +813,53 @@
                       No subtasks yet.
                     </p>
                   } @else {
-                    <ul
-                      class="list-group list-group-flush tickets-board__detail-subtasks border rounded small mb-0"
-                      role="list"
+                    <fpc-data-table
+                      nested
+                      [searchable]="false"
+                      [showColumnChooser]="false"
+                      [ariaLabel]="subtasksLabel"
+                      [columns]="subtaskColumns"
+                      [rows]="detailSubtaskRows()"
+                      [rowId]="ticketRowId"
+                      [rowMenu]="subtaskRowMenu"
+                      (rowAction)="onTicketRowAction($event.row, $event.item.id)"
+                      (rowActivate)="openTicketDetailFlow($event.ticket.id)"
+                      paging="client"
+                      persistKey="agenstra-ticket-subtasks"
+                      data-testid="ticket-subtasks-table"
                     >
-                      @for (row of detailSubtaskRows(); track row.ticket.id) {
-                        <li
-                          class="list-group-item tickets-board__detail-subtask-row py-2 px-3 position-relative"
-                          [class.tickets-board__detail-subtask--nested]="row.depth > 0"
-                          [style.--tickets-board-nest-depth]="row.depth"
-                          role="listitem"
-                        >
-                          <fpc-button
-                            variant="link"
-                            [block]="true"
-                            btnClass="p-0 text-start text-decoration-none justify-content-start"
-                            class="tickets-board__detail-subtask-btn"
-                            (clicked)="openTicketDetailFlow(row.ticket.id)"
-                            i18n-title="@@featureTicketsBoard-openSubtaskTitle"
-                            title="Open subtask"
-                          >
-                            <span class="d-flex align-items-center gap-2 w-100 min-width-0">
-                              @if (row.ticket.shas.short) {
-                                <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
-                                  row.ticket.shas.short
-                                }}</small>
-                              }
-                              <span class="fw-medium text-break flex-grow-1 min-width-0">{{ row.ticket.title }}</span>
-                              @if (row.ticket.automationEligible) {
-                                <small class="flex-shrink-0">
-                                  <i
-                                    class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
-                                    i18n-title="@@featureTicketsBoard-automationEligibleTitle"
-                                    title="Autonomous prototyping enabled"
-                                  ></i>
-                                </small>
-                              }
-                            </span>
-                          </fpc-button>
-                          <div class="tickets-board__meta-chips d-flex flex-wrap align-items-center gap-1 mt-1">
+                      <ng-template fpcTableCell="ticket" let-row>
+                        <span class="d-inline-flex align-items-center gap-2 min-width-0" [title]="row.ticket.title">
+                          @if (row.ticket.shas.short) {
+                            <small class="text-body-secondary flex-shrink-0">{{ row.ticket.shas.short }}</small>
+                          }
+                          <span class="text-truncate">{{ row.ticket.title }}</span>
+                          @if (row.ticket.automationEligible) {
                             <fpc-badge
-                              variant="info"
-                              color="secondary"
-                              [ngClass]="ticketPriorityBadgeClass(row.ticket.priority)"
-                              [attr.title]="row.ticket.priority"
-                              >{{ priorityLabel(row.ticket.priority) }}</fpc-badge
-                            >
-                            <fpc-badge
-                              variant="info"
-                              color="secondary"
-                              [ngClass]="ticketStatusBadgeClass(row.ticket.status)"
-                              [attr.title]="row.ticket.status"
-                              >{{ laneLabel(row.ticket.status) }}</fpc-badge
-                            >
-                          </div>
-                        </li>
-                      }
-                    </ul>
+                              tone="primary"
+                              icon="lightning-charge-fill"
+                              [iconOnly]="true"
+                              [label]="automationEligibleLabel"
+                            />
+                          }
+                        </span>
+                      </ng-template>
+                      <ng-template fpcTableCell="priority" let-row>
+                        <fpc-badge [tone]="ticketPriorityBadgeTone(row.ticket.priority)">{{
+                          priorityLabel(row.ticket.priority)
+                        }}</fpc-badge>
+                      </ng-template>
+                      <ng-template fpcTableCell="updated" let-row>{{
+                        row.ticket.updatedAt | fpcDate: 'datetime'
+                      }}</ng-template>
+                    </fpc-data-table>
                   }
                 </div>
 
                 <div>
-                  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                  <div
+                    class="fpc-lane-header__actions d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2"
+                  >
                     <h3 class="h6 mb-0" i18n="@@featureTicketsBoard-relationsHeading">Relations</h3>
                     <fpc-button
                       variant="dark"
@@ -807,7 +1021,7 @@
                                 <div class="fw-semibold mb-1" i18n="@@featureTicketsBoard-automationApprovedHeading">
                                   Approved for automation
                                 </div>
-                                <div class="text-break">{{ acfg.approvedAt | date: activityOccurredAtFormat }}</div>
+                                <div class="text-break">{{ acfg.approvedAt | fpcDate: 'datetime' }}</div>
                               </fpc-alert>
                             } @else {
                               <fpc-alert variant="warning" class="mb-3">
@@ -822,15 +1036,16 @@
                               class="fw-semibold d-block mb-1"
                               id="ticketAutomationAgentsLabel"
                               i18n="@@featureTicketsBoard-automationAllowedAgents"
-                              >Allowed agents</span
+                              >Allowed environments</span
                             >
                             @if (automationTicketAutomationAgentChoices().length > 0) {
                               <p
                                 class="text-body-secondary small mb-2"
                                 i18n="@@featureTicketsBoard-automationAllowedAgentsHint"
                               >
-                                If none are selected, every agent with prototype autonomy enabled for this workspace may
-                                run this ticket. Select specific agents to restrict who can pick it up.
+                                If none are selected, every environment with prototype autonomy enabled for this
+                                workspace may run this ticket. Select specific environments to restrict who can pick it
+                                up.
                               </p>
                             }
                             @if (
@@ -839,7 +1054,9 @@
                             ) {
                               <div class="text-body-secondary d-flex align-items-center gap-2 py-1">
                                 <fpc-spinner size="sm" variant="primary" />
-                                <span i18n="@@featureTicketsBoard-automationLoadingAgents">Loading agents...</span>
+                                <span i18n="@@featureTicketsBoard-automationLoadingAgents"
+                                  >Loading environments...</span
+                                >
                               </div>
                             } @else if (automationAgentChoices().length === 0) {
                               <div
@@ -847,7 +1064,7 @@
                                 i18n="@@featureTicketsBoard-automationNoAgents"
                                 role="status"
                               >
-                                No agents in this workspace.
+                                No environments in this workspace.
                               </div>
                             } @else if (automationTicketAutomationAgentChoices().length === 0) {
                               <div
@@ -855,8 +1072,9 @@
                                 i18n="@@featureTicketsBoard-automationNoAutonomyAgents"
                                 role="status"
                               >
-                                No agents have prototype autonomy enabled for this workspace. Enable it for an agent in
-                                chat under Prototype autonomy. Only those agents can run autonomous ticket work.
+                                No environments have prototype autonomy enabled for this workspace. Enable it for an
+                                agent in chat under Prototype autonomy. Only those environments can run autonomous
+                                ticket work.
                               </div>
                             } @else {
                               <ul
@@ -896,8 +1114,8 @@
                                   class="fw-semibold mb-2"
                                   i18n="@@featureTicketsBoard-automationOrphanAgentsHeading"
                                 >
-                                  Allowed agents not listed above. Uncheck to remove them (e.g. autonomy off or agent
-                                  removed).
+                                  Allowed environments not listed above. Uncheck to remove them (e.g. autonomy off or
+                                  agent removed).
                                 </div>
                                 @for (oid of automationOrphanAllowedAgentIds(); track oid) {
                                   <div
@@ -950,11 +1168,7 @@
                               [attr.aria-labelledby]="'ticketAutomationModelLabel'"
                             >
                               @if (ticketAiModelOptions().length === 0) {
-                                <option value="" i18n="@@featureTicketsBoard-automationModelPlaceholder">
-                                  {{
-                                    ticketAiModelsLoading() ? 'Loading models...' : 'Select an agent to load models...'
-                                  }}
-                                </option>
+                                <option value="">{{ ticketAiModelPlaceholder() }}</option>
                               }
                               @for (model of ticketAiModelOptions(); track model.value) {
                                 <option [value]="model.value">{{ model.label }}</option>
@@ -1039,14 +1253,17 @@
                             i18n-label="@@featureTicketsBoard-automationDefaultBranch"
                             label="Default branch override"
                           >
-                            <fpc-form-control
-                              controlId="ticketAutomationBranch"
+                            <agenstra-reference-combobox
+                              inputId="ticketAutomationBranch"
                               size="sm"
-                              controlClass="font-monospace"
-                              [ngModel]="automationDraftDefaultBranch()"
-                              (ngModelChange)="automationDraftDefaultBranch.set($event)"
+                              [monospace]="true"
+                              [value]="automationDraftDefaultBranch()"
+                              (valueChange)="automationDraftDefaultBranch.set($event)"
+                              [loader]="automationBranchLoader()"
+                              [emptyText]="automationBranchEmpty"
                               i18n-placeholder="@@featureTicketsBoard-automationDefaultBranchPh"
                               placeholder="Optional. Leave empty to use the repository default."
+                              data-testid="ticket-automation-branch"
                             />
                           </fpc-form-field>
                           <fpc-form-field
@@ -1202,7 +1419,7 @@
                               }
                               @if (acfg.nextRetryAt) {
                                 <div i18n="@@featureTicketsBoard-automationNextRetry">
-                                  Next retry: {{ acfg.nextRetryAt | date: activityOccurredAtFormat }}
+                                  Next retry: {{ acfg.nextRetryAt | fpcDate: 'datetime' }}
                                 </div>
                               }
                             </fpc-alert>
@@ -1227,73 +1444,35 @@
                               No runs yet.
                             </p>
                           } @else {
-                            <fpc-list [flush]="true" class="border rounded mb-3">
-                              @for (run of automationSortedRuns(); track run.id) {
-                                <fpc-list-item>
-                                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-1">
-                                    <fpc-badge
-                                      [color]="ticketAutomationRunStatusBadgeColor(run.status)"
-                                      [attr.title]="automationRunStatusLabel(run.status)"
-                                      >{{ automationRunStatusLabel(run.status) }}</fpc-badge
-                                    >
-                                    <fpc-badge color="light" [attr.title]="automationRunPhaseLabel(run.phase)">{{
-                                      automationRunPhaseLabel(run.phase)
-                                    }}</fpc-badge>
-                                    @if (run.verificationPassed === true) {
-                                      <fpc-badge color="success" i18n="@@featureTicketsBoard-automationVerifyOk"
-                                        >Verify: passed</fpc-badge
-                                      >
-                                    }
-                                    @if (run.verificationPassed === false) {
-                                      <fpc-badge color="warning" i18n="@@featureTicketsBoard-automationVerifyFail"
-                                        >Verify: failed</fpc-badge
-                                      >
-                                    }
-                                  </div>
-                                  <div
-                                    fpcListItemMeta
-                                    class="d-flex flex-wrap align-items-center column-gap-3 row-gap-1"
+                            <fpc-data-table
+                              class="mb-3"
+                              nested
+                              [searchable]="false"
+                              [ariaLabel]="automationRunsLabel"
+                              [columns]="automationRunColumns"
+                              [rows]="automationSortedRuns()"
+                              [rowMenu]="automationRunMenu"
+                              (rowAction)="onAutomationRunAction($event.row, $event.item.id)"
+                              (rowActivate)="openTicketAutomationRunDetailModal($event.id)"
+                              paging="client"
+                              persistKey="agenstra-ticket-automation-runs"
+                              data-testid="ticket-automation-runs-table"
+                            >
+                              <ng-template fpcTableCell="started" let-row>{{
+                                row.startedAt | fpcDate: 'datetime'
+                              }}</ng-template>
+                              <ng-template fpcTableCell="verification" let-row>
+                                @if (row.verificationPassed === true) {
+                                  <fpc-badge tone="success" i18n="@@featureTicketsBoard-automationVerifyOk"
+                                    >Verify: passed</fpc-badge
                                   >
-                                    <span
-                                      ><i class="bi bi-clock me-1" aria-hidden="true"></i
-                                      >{{ run.startedAt | date: activityOccurredAtFormat }}</span
-                                    >
-                                    @if (run.branchName) {
-                                      <span class="text-break"
-                                        ><i class="bi bi-git me-1" aria-hidden="true"></i>{{ run.branchName }}</span
-                                      >
-                                    }
-                                  </div>
-                                  <div fpcListItemActions>
-                                    <fpc-button-group size="sm">
-                                      <fpc-button
-                                        variant="dark"
-                                        size="sm"
-                                        [iconOnly]="true"
-                                        (clicked)="openTicketAutomationRunDetailModal(run.id)"
-                                        i18n-title="@@featureTicketsBoard-automationOpenDetailTitle"
-                                        title="Open details"
-                                      >
-                                        <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
-                                      </fpc-button>
-                                      @if (ticketAutomationRunCanCancel(run)) {
-                                        <fpc-button
-                                          variant="danger"
-                                          size="sm"
-                                          [iconOnly]="true"
-                                          (clicked)="onCancelTicketAutomationRun(run)"
-                                          [disabled]="ticketAutomationSaving()"
-                                          i18n-title="@@featureTicketsBoard-automationCancelRunTitle"
-                                          title="Cancel run"
-                                        >
-                                          <i class="bi bi-stop-circle" aria-hidden="true"></i>
-                                        </fpc-button>
-                                      }
-                                    </fpc-button-group>
-                                  </div>
-                                </fpc-list-item>
-                              }
-                            </fpc-list>
+                                } @else if (row.verificationPassed === false) {
+                                  <fpc-badge tone="warning" i18n="@@featureTicketsBoard-automationVerifyFail"
+                                    >Verify: failed</fpc-badge
+                                  >
+                                }
+                              </ng-template>
+                            </fpc-data-table>
                           }
                         }
                       </div>
@@ -1345,7 +1524,7 @@
                     <div
                       class="tickets-board__activity-line d-flex flex-wrap align-items-center column-gap-2 row-gap-1 mb-1 small"
                     >
-                      <span class="text-body-secondary">{{ c.createdAt | date: activityOccurredAtFormat }}</span>
+                      <span class="text-body-secondary">{{ c.createdAt | fpcDate: 'datetime' }}</span>
                       @if (c.authorEmail) {
                         <span class="text-body-secondary text-truncate tickets-board__activity-actor">{{
                           c.authorEmail
@@ -1372,14 +1551,10 @@
                     <div
                       class="tickets-board__activity-line d-flex flex-wrap align-items-center column-gap-2 row-gap-1 small"
                     >
-                      <fpc-badge
-                        variant="info"
-                        color="secondary"
-                        [ngClass]="activityActionBadgeClass(ev.actionType)"
-                        [attr.title]="ev.actionType"
-                        >{{ activityActionLabel(ev.actionType) }}</fpc-badge
-                      >
-                      <span class="text-body-secondary">{{ ev.occurredAt | date: activityOccurredAtFormat }}</span>
+                      <fpc-badge [tone]="activityActionBadgeTone(ev.actionType)" [attr.title]="ev.actionType">{{
+                        activityActionLabel(ev.actionType)
+                      }}</fpc-badge>
+                      <span class="text-body-secondary">{{ ev.occurredAt | fpcDate: 'datetime' }}</span>
                       @if (ev.actorEmail) {
                         <span class="text-body-secondary text-truncate tickets-board__activity-actor">{{
                           ev.actorEmail
@@ -1395,11 +1570,12 @@
       }
     </div>
   </div>
+  <!-- Fields save as they change; the footer closes (right) and keeps the destructive action apart (left, outline). -->
   <div *fpcModalFooter class="d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
     <div>
       @if (detail(); as del) {
         <fpc-button
-          variant="danger"
+          variant="outline-danger"
           iconOnly
           (clicked)="onRequestDeleteTicket(del)"
           [disabled]="!!(saving$ | async)"
@@ -1412,10 +1588,15 @@
         </fpc-button>
       }
     </div>
+    <fpc-button variant="dark" (clicked)="ticketDetailModal.requestClose()" data-testid="ticket-detail-close">{{
+      closeLabel
+    }}</fpc-button>
   </div>
 </fpc-modal>
 
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="ticketRelationsModalOpen"
   i18n-title="@@featureTicketsBoard-relationsModalTitle"
   title="Add relations"
@@ -1498,6 +1679,8 @@
 </fpc-modal>
 
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="ticketMigrateModalOpen"
   i18n-title="@@featureTicketsBoard-migrateModalTitle"
   title="Move ticket to workspace"
@@ -1566,7 +1749,7 @@
         </dd>
         <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunBranch">Branch</dt>
         <dd class="col-sm-8 mt-2 mb-0 text-break">{{ ar.branchName ?? '-' }}</dd>
-        <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunAgent">Agent</dt>
+        <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunEnvironment">Agent</dt>
         <dd class="col-sm-8 mt-2 mb-0 font-monospace text-break">{{ ar.agentId }}</dd>
         <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunIterations">Iterations</dt>
         <dd class="col-sm-8 mt-2 mb-0">{{ ar.iterationCount }}</dd>
@@ -1704,6 +1887,8 @@
 </fpc-confirm-dialog>
 
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="createTicketModalOpen"
   size="xl"
   [scrollable]="true"
@@ -1712,9 +1897,9 @@
 >
   <div fpcModalTitle>
     @if (createTicketParentId()) {
-      <span i18n="@@featureTicketsBoard-createSubtaskModalTitle">New subtask</span>
+      <span i18n="@@featureTicketsBoard-createSubtaskModalTitle">Create subtask</span>
     } @else {
-      <span i18n="@@featureTicketsBoard-createModalTitle">New ticket</span>
+      <span i18n="@@featureTicketsBoard-createModalTitle">Create ticket</span>
     }
   </div>
   @if (createTicketError(); as cte) {
@@ -1743,7 +1928,7 @@
     <fpc-form-field
       forId="createTicketCreationTemplate"
       i18n-label="@@featureTicketsBoard-createTemplateLabel"
-      label="Type"
+      label="Template"
     >
       <fpc-form-control
         controlId="createTicketCreationTemplate"
@@ -1752,7 +1937,7 @@
         [ngModel]="createTicketCreationTemplate()"
         (ngModelChange)="createTicketCreationTemplate.set($event)"
       >
-        <option value="empty" i18n="@@featureTicketsBoard-createTemplateEmpty">Empty</option>
+        <option value="empty" i18n="@@featureTicketsBoard-createTemplateEmpty">None</option>
         <option value="specification" i18n="@@featureTicketsBoard-createTemplateSpecification">Specification</option>
       </fpc-form-control>
     </fpc-form-field>
@@ -1794,83 +1979,14 @@
     </div>
   </div>
   <div *fpcModalFooter>
-    <fpc-button variant="primary" (clicked)="onSubmitCreateTicket()" i18n="@@featureTicketsBoard-create">
-      Create
+    <fpc-button variant="primary" (clicked)="onSubmitCreateTicket()">
+      @if (createTicketParentId()) {
+        <span i18n="@@featureTicketsBoard-createSubtaskSubmit">Create subtask</span>
+      } @else {
+        <span i18n="@@featureTicketsBoard-create">Create ticket</span>
+      }
     </fpc-button>
   </div>
-</fpc-modal>
-
-<fpc-modal
-  [(open)]="globalSearchModalOpen"
-  i18n-title="@@featureTicketsBoard-globalSearchTitle"
-  title="Search tickets"
-  [scrollable]="true"
-  (closed)="onCloseGlobalSearchModal()"
->
-  <label class="visually-hidden" for="globalSearchInput" i18n="@@featureTicketsBoard-globalSearchInputLabel"
-    >Search tickets</label
-  >
-  <fpc-typeahead-select
-    #globalSearchInput
-    inputId="globalSearchInput"
-    listboxId="globalSearchInput-listbox"
-    variant="inline"
-    [openOnFocus]="false"
-    [loading]="globalSearchLoading()"
-    i18n-placeholder="@@featureTicketsBoard-globalSearchPlaceholder"
-    placeholder="Search by title, description, or id"
-    i18n-ariaLabel="@@featureTicketsBoard-globalSearchInputLabel"
-    ariaLabel="Search tickets"
-    [query]="globalSearchQuery()"
-    (queryChange)="onGlobalSearchQueryChange($event)"
-    [open]="globalSearchSuggestionsOpen()"
-    (openChange)="onGlobalSearchSuggestionsOpenChange($event)"
-    (cleared)="onGlobalSearchQueryChange('')"
-  >
-    <div fpcTypeaheadSuggestions>
-      @if (globalSearchHits().length > 0) {
-        @for (ticket of globalSearchHits(); track ticket.id) {
-          <button
-            type="button"
-            class="dropdown-item py-2 text-start"
-            (mousedown)="onGlobalSearchResultClick(ticket, $event)"
-          >
-            <span class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
-              @if (ticket.shas?.short) {
-                <span class="font-monospace text-body-secondary small flex-shrink-0">{{ ticket.shas.short }}</span>
-              }
-              <span class="fw-medium text-break flex-grow-1 min-width-0">{{ ticket.title }}</span>
-              @if (ticket.automationEligible) {
-                <small class="flex-shrink-0">
-                  <i
-                    class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
-                    i18n-title="@@featureTicketsBoard-automationEligibleTitle"
-                    title="Autonomous prototyping enabled"
-                  ></i>
-                </small>
-              }
-              <fpc-badge
-                variant="info"
-                color="secondary"
-                class="flex-shrink-0"
-                [ngClass]="ticketStatusBadgeClass(ticket.status)"
-                >{{ laneLabel(ticket.status) }}</fpc-badge
-              >
-            </span>
-          </button>
-        }
-      } @else if (globalSearchQuery().trim()) {
-        <span class="dropdown-item-text text-body-secondary small" i18n="@@featureTicketsBoard-globalSearchNoResults"
-          >No matching tickets</span
-        >
-      }
-    </div>
-  </fpc-typeahead-select>
-  @if (globalSearchQuery().trim() === '') {
-    <p class="text-body-secondary small mb-0 mt-2" i18n="@@featureTicketsBoard-globalSearchHint">
-      Type to search all tickets in this workspace, including done and closed.
-    </p>
-  }
 </fpc-modal>
 
 <fpc-modal
@@ -1903,56 +2019,28 @@
             i18n="@@featureTicketsBoard-goToSpaces"
             (clicked)="goToSpaces($event)"
           >
-            Go to Spaces
+            Go to workspaces
           </fpc-button>
         </fpc-empty-state>
       } @else {
-        <label
-          class="visually-hidden"
-          for="workspaceSwitchSearch"
-          i18n="@@featureTicketsBoard-workspaceSwitcherSearchLabel"
-          >Search workspaces</label
-        >
-        <fpc-search-field
-          class="mb-3"
-          inputId="workspaceSwitchSearch"
-          [value]="workspaceSwitchSearch()"
-          (valueChange)="workspaceSwitchSearch.set($event)"
-          i18n-placeholder="@@featureTicketsBoard-workspaceSwitcherSearchPlaceholder"
-          placeholder="Search workspaces"
+        <framework-workspace-switch-table
+          [clients]="clientList"
+          [currentId]="effectiveClientId()"
+          [(query)]="workspaceSwitchSearch"
+          (selectWorkspace)="onSelectWorkspaceForTickets($event)"
         />
-        @if (clientList.length === 0) {
-          <fpc-empty-state
-            size="sm"
-            icon="search"
-            message="No search results"
-            i18n-message="@@featureTicketsBoard-noSearchResults"
-          />
-        } @else {
-          <fpc-list [flush]="true" class="tickets-board__workspace-switch-list border rounded">
-            @for (c of clientList; track c.id) {
-              <fpc-list-item
-                [active]="c.id === effectiveClientId()"
-                [clickable]="true"
-                (selected)="onSelectWorkspaceForTickets(c)"
-              >
-                <div fpcListItemTitle class="text-truncate text-start">{{ c.name }}</div>
-                @if (c.id === effectiveClientId()) {
-                  <div fpcListItemActions>
-                    <fpc-badge
-                      color="light"
-                      [pill]="true"
-                      class="tickets-board__workspace-current-badge flex-shrink-0"
-                      i18n="@@featureTicketsBoard-workspaceSwitcherCurrent"
-                      >Current</fpc-badge
-                    >
-                  </div>
-                }
-              </fpc-list-item>
-            }
-          </fpc-list>
-        }
       }
     }
   }
 </fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="bulkDeleteConfirmOpen"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="onConfirmBulkDelete()"
+  (cancelled)="ticketsPendingBulkDelete.set([])"
+/>

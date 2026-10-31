@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
 
+import { BILLING_LIST_PAGE_SIZE } from '../../constants/list-paging.constants';
 import { BackordersService } from '../../services/backorders.service';
 
 import {
@@ -9,7 +10,6 @@ import {
   cancelBackorderFailure,
   cancelBackorderSuccess,
   loadBackorders,
-  loadBackordersBatch,
   loadBackordersFailure,
   loadBackordersSuccess,
   retryBackorder,
@@ -27,50 +27,22 @@ function normalizeError(error: unknown): string {
   return 'An unexpected error occurred';
 }
 
-const BATCH_SIZE = 10;
-
+/**
+ * One page of backorders (replace-page). The API returns an array without a total, so one extra row is requested to
+ * tell whether a next page exists.
+ */
 export const loadBackorders$ = createEffect(
   (actions$ = inject(Actions), backordersService = inject(BackordersService)) => {
     return actions$.pipe(
       ofType(loadBackorders),
       switchMap(({ params }) => {
-        const batchParams = { limit: BATCH_SIZE, offset: 0, ...params };
+        const limit = params?.limit && params.limit > 0 ? params.limit : BILLING_LIST_PAGE_SIZE;
+        const pageParams = { ...params, limit: limit + 1, offset: params?.offset ?? 0 };
 
-        return backordersService.listBackorders(batchParams).pipe(
-          switchMap((backorders) => {
-            if (backorders.length === 0) return of(loadBackordersSuccess({ backorders: [] }));
-
-            if (backorders.length < BATCH_SIZE) return of(loadBackordersSuccess({ backorders }));
-
-            return of(loadBackordersBatch({ offset: BATCH_SIZE, accumulatedBackorders: backorders, params }));
-          }),
-          catchError((error) => of(loadBackordersFailure({ error: normalizeError(error) }))),
-        );
-      }),
-    );
-  },
-  { functional: true },
-);
-
-export const loadBackordersBatch$ = createEffect(
-  (actions$ = inject(Actions), backordersService = inject(BackordersService)) => {
-    return actions$.pipe(
-      ofType(loadBackordersBatch),
-      switchMap(({ offset, accumulatedBackorders, params }) => {
-        const batchParams = { limit: BATCH_SIZE, offset, ...params };
-
-        return backordersService.listBackorders(batchParams).pipe(
-          switchMap((backorders) => {
-            const newAccumulated = [...accumulatedBackorders, ...backorders];
-
-            if (backorders.length === 0 || backorders.length < BATCH_SIZE) {
-              return of(loadBackordersSuccess({ backorders: newAccumulated }));
-            }
-
-            return of(
-              loadBackordersBatch({ offset: offset + BATCH_SIZE, accumulatedBackorders: newAccumulated, params }),
-            );
-          }),
+        return backordersService.listBackorders(pageParams).pipe(
+          map((backorders) =>
+            loadBackordersSuccess({ backorders: backorders.slice(0, limit), hasMore: backorders.length > limit }),
+          ),
           catchError((error) => of(loadBackordersFailure({ error: normalizeError(error) }))),
         );
       }),

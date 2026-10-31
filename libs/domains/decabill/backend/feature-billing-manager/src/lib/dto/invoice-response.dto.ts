@@ -10,6 +10,8 @@ export class InvoiceResponseDto {
   totalGross?: number;
   subscriptionNumber?: string;
   createdAt!: Date;
+  /** When the invoice was issued (null for drafts); lists show it as "Issued" instead of the record date. */
+  issuedAt?: Date | null;
   dueDate?: Date;
   paidAt?: Date | null;
   canPay!: boolean;

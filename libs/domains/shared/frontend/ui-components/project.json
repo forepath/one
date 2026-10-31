@@ -47,6 +47,7 @@
           "libs/domains/shared/frontend/ui-components/.storybook/brands/decabill.scss",
           "libs/domains/shared/frontend/ui-components/.storybook/brands/agenstra.scss",
           "libs/domains/shared/frontend/ui-components/.storybook/brands/forepath.scss",
+          "libs/domains/shared/frontend/ui-components/.storybook/brands/loadweaver.scss",
           "libs/domains/shared/frontend/ui-components/styles/index.scss"
         ]
       },
@@ -73,6 +74,7 @@
           "libs/domains/shared/frontend/ui-components/.storybook/brands/decabill.scss",
           "libs/domains/shared/frontend/ui-components/.storybook/brands/agenstra.scss",
           "libs/domains/shared/frontend/ui-components/.storybook/brands/forepath.scss",
+          "libs/domains/shared/frontend/ui-components/.storybook/brands/loadweaver.scss",
           "libs/domains/shared/frontend/ui-components/styles/index.scss"
         ]
       },

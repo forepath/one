@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
 
+import { BILLING_LIST_PAGE_SIZE } from '../../constants/list-paging.constants';
 import { SubscriptionsService } from '../../services/subscriptions.service';
 import { cancelBackorderSuccess, retryBackorderSuccess } from '../backorders/backorders.actions';
 
@@ -21,9 +22,6 @@ import {
   loadSubscriptionsSummary,
   loadSubscriptionsSummaryFailure,
   loadSubscriptionsSummarySuccess,
-  loadMoreSubscriptions,
-  loadMoreSubscriptionsFailure,
-  loadMoreSubscriptionsSuccess,
   resumeSubscription,
   resumeSubscriptionFailure,
   resumeSubscriptionSuccess,
@@ -48,8 +46,6 @@ function normalizeError(error: unknown): string {
   return 'An unexpected error occurred';
 }
 
-const BATCH_SIZE = 10;
-
 export const loadSubscriptionsSummary$ = createEffect(
   (actions$ = inject(Actions), subscriptionsService = inject(SubscriptionsService)) => {
     return actions$.pipe(
@@ -65,45 +61,26 @@ export const loadSubscriptionsSummary$ = createEffect(
   { functional: true },
 );
 
+/**
+ * One page of the customer's subscriptions (replace-page). The API returns a plain array without a total: one extra
+ * row is requested to tell whether a next page exists.
+ */
 export const loadSubscriptions$ = createEffect(
   (actions$ = inject(Actions), subscriptionsService = inject(SubscriptionsService)) => {
     return actions$.pipe(
       ofType(loadSubscriptions),
       switchMap(({ params }) => {
-        const batchParams = { limit: BATCH_SIZE, offset: 0, ...params };
+        const limit = params?.limit && params.limit > 0 ? params.limit : BILLING_LIST_PAGE_SIZE;
+        const pageParams = { ...params, limit: limit + 1, offset: params?.offset ?? 0 };
 
-        return subscriptionsService.listSubscriptions(batchParams).pipe(
+        return subscriptionsService.listSubscriptions(pageParams).pipe(
           map((subscriptions) =>
             loadSubscriptionsSuccess({
-              subscriptions,
-              hasMore: subscriptions.length === BATCH_SIZE,
-              nextOffset: subscriptions.length,
+              subscriptions: subscriptions.slice(0, limit),
+              hasMore: subscriptions.length > limit,
             }),
           ),
           catchError((error) => of(loadSubscriptionsFailure({ error: normalizeError(error) }))),
-        );
-      }),
-    );
-  },
-  { functional: true },
-);
-
-export const loadMoreSubscriptions$ = createEffect(
-  (actions$ = inject(Actions), subscriptionsService = inject(SubscriptionsService)) => {
-    return actions$.pipe(
-      ofType(loadMoreSubscriptions),
-      switchMap(({ offset, params }) => {
-        const batchParams = { limit: BATCH_SIZE, offset, ...params };
-
-        return subscriptionsService.listSubscriptions(batchParams).pipe(
-          map((subscriptions) =>
-            loadMoreSubscriptionsSuccess({
-              subscriptions,
-              hasMore: subscriptions.length === BATCH_SIZE,
-              nextOffset: offset + subscriptions.length,
-            }),
-          ),
-          catchError((error) => of(loadMoreSubscriptionsFailure({ error: normalizeError(error) }))),
         );
       }),
     );

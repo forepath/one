@@ -1,5 +1,4 @@
 @import '../invoices/invoices.component.scss';
-@import '../section.scss';
 
 .project-detail-container {
   min-height: 0;
@@ -30,4 +29,15 @@
 
 :host ::ng-deep .customer-billing__summary-progress--over .progress:last-child .progress-bar {
   background-color: color-mix(in srgb, var(--bs-primary) 72%, var(--bs-body-color)) !important;
+}
+
+// DB-11: the progress bar is the card's footer line and takes no row of its own, so every card in the bar keeps the
+// value on the same baseline (cards with and without a bar). The cards carry an icon, so they are `position: relative`.
+:host ::ng-deep fpc-summary-card .customer-billing__summary-progress {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.3125rem;
+  width: auto !important;
+  margin: 0 !important;
 }

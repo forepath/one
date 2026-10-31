@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 
 import type {
   AdminCustomerProfileListItem,
@@ -14,7 +15,6 @@ import {
   deleteAdminCustomerProfileFailure,
   deleteAdminCustomerProfileSuccess,
   loadAdminCustomerProfiles,
-  loadAdminCustomerProfilesBatch,
   loadAdminCustomerProfileTrustScore,
   loadAdminCustomerProfileTrustScoreFailure,
   loadAdminCustomerProfileTrustScoreSuccess,
@@ -33,6 +33,10 @@ import {
 
 export interface AdminCustomerProfilesState {
   profiles: AdminCustomerProfileListItem[];
+  /** Replace-page paging: server total, 1-based page and its size. */
+  total: number;
+  page: number;
+  pageSize: number;
   loading: boolean;
   creating: boolean;
   updating: boolean;
@@ -47,6 +51,9 @@ export interface AdminCustomerProfilesState {
 
 export const initialAdminCustomerProfilesState: AdminCustomerProfilesState = {
   profiles: [],
+  total: 0,
+  page: 1,
+  pageSize: BILLING_LIST_PAGE_SIZE,
   loading: false,
   creating: false,
   updating: false,
@@ -103,21 +110,23 @@ function applyTrustDetail(
 
 export const adminCustomerProfilesReducer = createReducer(
   initialAdminCustomerProfilesState,
-  on(loadAdminCustomerProfiles, (state) => ({
-    ...state,
-    profiles: [],
-    loading: true,
-    trustScoreDetail: null,
-    error: null,
-  })),
-  on(loadAdminCustomerProfilesBatch, (state, { accumulatedProfiles }) => ({
-    ...state,
-    profiles: accumulatedProfiles,
-    loading: true,
-  })),
-  on(loadAdminCustomerProfilesSuccess, (state, { profiles }) => ({
+  on(loadAdminCustomerProfiles, (state, { search, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.pageSize);
+
+    return {
+      ...state,
+      loading: true,
+      trustScoreDetail: null,
+      error: null,
+      page: window.page,
+      pageSize: window.pageSize,
+      search: search?.trim() ? search.trim() : null,
+    };
+  }),
+  on(loadAdminCustomerProfilesSuccess, (state, { profiles, total }) => ({
     ...state,
     profiles,
+    total,
     loading: false,
     error: null,
   })),
@@ -157,6 +166,7 @@ export const adminCustomerProfilesReducer = createReducer(
     ...state,
     deleting: false,
     profiles: state.profiles.filter((profile) => profile.id !== id),
+    total: Math.max(0, state.total - (state.profiles.some((profile) => profile.id === id) ? 1 : 0)),
   })),
   on(deleteAdminCustomerProfileFailure, (state, { error }) => ({ ...state, deleting: false, error })),
   on(loadAdminCustomerProfileTrustScore, (state) => ({

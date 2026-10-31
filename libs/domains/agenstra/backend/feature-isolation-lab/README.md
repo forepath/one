@@ -34,14 +34,20 @@ selection, probes and guard configuration use the production code paths.
 
 ```bash
 npx nx run agenstra-backend-feature-isolation-lab:isolation-lab                                  # every *.isolation-lab.spec.ts (slow, explicit only)
-npx nx run agenstra-backend-feature-isolation-lab:isolation-lab -- --testPathPattern=networking   # one spec
+npx nx run agenstra-backend-feature-isolation-lab:isolation-lab -- networking                    # one spec (Jest path pattern)
+npx nx run agenstra-backend-feature-isolation-lab:isolation-lab -- --case 'idempotent' host-prep # single cases (Jest -t)
+npx nx run agenstra-backend-feature-isolation-lab:isolation-lab -- --keep microvm                # keep the VM, re-attach next run (dev only)
 npx nx run agenstra-backend-feature-isolation-lab:isolation-lab-cleanup                          # leftovers of aborted runs
 bash libs/domains/agenstra/backend/feature-isolation-lab/src/integration/cleanup.sh --golden     # also golden + QEMU images
 npx nx test agenstra-backend-feature-isolation-lab                                               # unit tests of the lab configuration only
 ```
 
 The lab target is deliberately not called `e2e`, because PR CI runs every `e2e` target automatically. It runs
-in band and is never cached.
+in band and is never cached. Since 2026-10-26 it uses the shared runner `run-lab.sh` like Loadweaver's VM labs
+(heavy lock, memory / disk checks, watchdog, timeout, cleanup by label) and shares their fast-run model: focused
+cases (`--case`), keep-alive (`--keep`, keys `isolation-lab-<vm name>`), image archives cached by image ID, a
+`LabRecorder` result per VM start (`isolation-lab-<vm name>-<ts>.json` in `$VM_LAB_RESULTS_DIR`). See the shared
+harness README ("Fast runs").
 
 ## Specs
 
@@ -63,6 +69,13 @@ in band and is never cached.
   - **Selected options:** `-cpu host` exposes nested virtualization; `exposeVirtualization: false` (`host,-vmx,-svm`) simulates an ordinary cloud VM.
 - **Manager services:** the specs use the agent manager's `DockerService`, bound to a local unix socket. Each connection to it is bridged to `docker system dial-stdio` in the guest over SSH. The egress guard image is built from `apps/agenstra/backend-agent-manager/Dockerfile.egress-guard` and loaded into the guest.
 - **Cleanup:** everything carries the label `io.agenstra.isolation-lab` (`run`, `golden`, `image`).
+- **Shared harness (M7.6):** process helpers, the QEMU / golden image builders, the VM itself (`startUserNetVm`), the
+  Docker socket tunnel and the cleanup script come from the shared VM-lab harness
+  [`libs/domains/shared/backend/util-vm-lab`](../../../shared/backend/util-vm-lab/README.md), which Loadweaver's VM lab
+  uses too. The lab's pins, cloud-init, QEMU arguments and names stay here (same golden / image names as before). A
+  lab run takes the machine's heavy lock (`/tmp/lw-3a.lock`) and the VM-lab lock (`/tmp/lw-vmlab.lock`), checks the
+  host's available memory, keeps all VMs of the process within 7 GiB, and removes its containers on exit
+  (also on Ctrl+C).
 
 ## Notes
 

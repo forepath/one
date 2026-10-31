@@ -1,0 +1,330 @@
+<!-- Top bar (3.38 R13), left → right: [cluster chip] search · Create + · draft · running tasks · security · language ·
+     theme · Logout. One row on every width, like Agenstra / Decabill (2026-10-29: no phone second row). Density is fixed
+     (compact, R14). -->
+<fpc-top-bar brandSrc="assets/images/icon_light.svg" [brandAlt]="productName">
+  @if (showChrome() && (isAuthenticated$ | async)) {
+    @if (showClusterSection() && activeClusterName(); as clusterName) {
+      <fpc-badge
+        variant="info"
+        color="secondary"
+        size="sm"
+        class="fpc-top-bar__chip d-none d-lg-inline-flex"
+        [attr.title]="clusterName"
+        data-testid="console-cluster-chip"
+      >
+        <i class="bi bi-hdd-network" aria-hidden="true"></i>
+        <span>{{ clusterName }}</span>
+      </fpc-badge>
+    }
+    <!-- Global search and command palette (3.25 / 3.37); Ctrl / Cmd + K or "/" opens it too. -->
+    <button
+      type="button"
+      class="fpc-top-bar__search"
+      i18n-title="@@lwConsoleContainer-searchTitle"
+      title="Search (Ctrl / ⌘ + K)"
+      [attr.aria-label]="searchLabel"
+      (click)="searchPalette.show()"
+      data-testid="console-search"
+    >
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <span class="fpc-top-bar__search-text d-none d-lg-inline">{{ searchLabel }}</span>
+      <kbd class="fpc-top-bar__search-key d-none d-lg-inline">Ctrl K</kbd>
+    </button>
+    @if (!navigation.atFleetRoot()) {
+      @if (mayCreate()) {
+        <fpc-dropdown #createMenu alignment="end" data-testid="console-create">
+          <fpc-button
+            fpcDropdownTrigger
+            variant="primary"
+            size="sm"
+            iconOnly
+            ariaHaspopup="menu"
+            [ariaExpanded]="createMenu.open()"
+            [ariaControls]="createMenu.open() ? createMenu.menuId() : null"
+            i18n-ariaLabel="@@lwConsoleContainer-createTitle"
+            ariaLabel="Create a resource (goes into a draft)"
+            i18n-title="@@lwConsoleContainer-createTitle"
+            title="Create a resource (goes into a draft)"
+          >
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          </fpc-button>
+          @for (entry of createKinds; track entry.label) {
+            <fpc-dropdown-item
+              [icon]="entry.icon.replace('bi-', '')"
+              [attr.data-testid]="'console-create-' + (entry.kind ?? 'other')"
+              (selected)="openCreate(entry.kind)"
+              >{{ entry.label }}</fpc-dropdown-item
+            >
+          }
+        </fpc-dropdown>
+      }
+      <loadweaver-draft-tray />
+      @if (tasks.running() > 0) {
+        <fpc-button
+          variant="link"
+          size="sm"
+          class="fpc-top-bar__action"
+          [title]="runningTitle"
+          [ariaLabel]="runningTitle + ': ' + tasks.running()"
+          (clicked)="tasks.open.set(!tasks.open())"
+          data-testid="console-running-badge"
+        >
+          <fpc-spinner size="sm" [label]="runningTitle" />
+          <span>{{ tasks.running() }}</span>
+        </fpc-button>
+      }
+    }
+  }
+  @if (isUsersAuth && (isAuthenticated$ | async)) {
+    <fpc-button
+      routerLink="/settings/security"
+      routerLinkActive="active"
+      variant="link"
+      size="sm"
+      iconOnly
+      class="fpc-top-bar__action position-relative"
+      i18n-title="@@lwConsoleContainer-securityTitle"
+      title="Security"
+      i18n-ariaLabel="@@lwConsoleContainer-security"
+      ariaLabel="Security"
+    >
+      <i class="bi bi-shield-lock" aria-hidden="true"></i>
+      @if (showSecurityAuthenticatorBadge$ | async) {
+        <fpc-notification-indicator kind="security-warning" placement="absolute" />
+        <span class="visually-hidden" i18n="@@lwConsoleContainer-securityAuthenticatorSuggested"
+          >Authenticator app is not enabled</span
+        >
+      }
+    </fpc-button>
+  }
+  <fpc-language-switcher
+    data-bs-theme="dark"
+    [locales]="localeService.getAvailableLocales()"
+    [locale]="localeService.getCurrentLocale()"
+    [ariaLabel]="languageSwitcherAriaLabel"
+    (localeChange)="onLocaleChange($event)"
+  />
+  <fpc-theme-switcher
+    [dark]="themeService.isDarkMode()"
+    [ariaLabel]="toggleDarkModeTitle"
+    (darkChange)="themeService.toggleTheme()"
+  />
+  @if (isAuthenticated$ | async) {
+    <!-- Phone contract (X-01 / LW-01): icon-only square below 576 px, label above. -->
+    <fpc-button
+      variant="primary"
+      size="sm"
+      mdSize="md"
+      [title]="logoutLabel"
+      [ariaLabel]="logoutLabel"
+      (clicked)="onLogoutClick()"
+      ><i class="bi bi-box-arrow-right fpc-top-bar__phone-icon" aria-hidden="true"></i
+      ><span class="fpc-top-bar__label" i18n="@@lwConsoleContainer-logout">Logout</span></fpc-button
+    >
+  }
+</fpc-top-bar>
+<!-- Every width, phones included (2026-10-29): the shared Agenstra / Decabill navigation — the fpc-sidebar icon rail
+     (items scroll, Account / Admin pinned as fpc-sidebar-popover tile grids in the footer). -->
+<div class="d-flex justify-content-end flex-grow-1 overflow-hidden" [class.border-top]="!showChrome()">
+  @if (showChrome() && (isAuthenticated$ | async)) {
+    <fpc-sidebar [ariaLabel]="sidebarAriaLabel">
+      @if (showClusterSection()) {
+        <!-- Fleet mode with an open cluster (3.37 P7): the fleet level as a tile (no "Back" swap), then the open
+             cluster's name above its functions. -->
+        <!-- Two-step (2026-10-28): the first click arms the tile (danger, "Confirm"), a second one within ~3 s leaves the
+             cluster; it reverts after ~3 s, on blur, Escape or route change. A button: Enter / Space natively. -->
+        <button
+          type="button"
+          class="sidebar__item position-relative"
+          [class.sidebar__item--confirm]="leaveConfirmArmed()"
+          [title]="leaveConfirmArmed() ? leaveConfirmTitle : backToFleetTitle"
+          [attr.aria-label]="leaveConfirmArmed() ? leaveConfirmTitle : backToFleetTitle"
+          data-testid="console-nav-fleet-level"
+          (click)="onFleetTileClick()"
+          (blur)="cancelLeaveConfirm()"
+          (keydown.escape)="cancelLeaveConfirm()"
+        >
+          @if (leaveConfirmArmed()) {
+            <i class="bi bi-box-arrow-left me-1" aria-hidden="true"></i>
+            <span class="small">{{ leaveConfirmLabel }}</span>
+          } @else {
+            <i class="bi bi-globe2 me-1" aria-hidden="true"></i>
+            <span class="small" i18n="@@lwConsoleContainer-fleetLevel">Fleet</span>
+          }
+        </button>
+        <div
+          class="sidebar__heading border-top border-bottom bg-body-secondary text-truncate"
+          role="heading"
+          aria-level="2"
+          [title]="activeClusterName() ?? ''"
+          data-testid="console-nav-cluster-heading"
+        >
+          {{ activeClusterName() ?? clusterLabel }}
+        </div>
+      }
+      <!-- The function rail (3.37): one click per tile; sections have their own sub-nav. -->
+      @for (tile of rail(); track tile.key) {
+        <a
+          [routerLink]="tile.path"
+          class="sidebar__item position-relative"
+          [class.active]="isTileActive(tile)"
+          [attr.aria-current]="isTileActive(tile) ? 'page' : null"
+          [title]="tile.title"
+          [attr.aria-label]="tile.title"
+          [attr.data-testid]="tile.testId ?? null"
+        >
+          <i class="bi {{ tile.icon }} me-1" aria-hidden="true"></i>
+          <span class="small">{{ tile.label }}</span>
+        </a>
+      }
+      <div fpcSidebarFooter>
+        @if (accountNavItems().length > 0) {
+          <fpc-sidebar-popover
+            [open]="openPopover() === 'account'"
+            (openChange)="onPopoverOpenChange('account', $event)"
+            [ariaLabel]="accountPopoverAriaLabel"
+            data-testid="console-nav-group-account"
+          >
+            <span
+              fpcSidebarPopoverTrigger
+              class="sidebar__item border-top position-relative"
+              [class.active]="isAccountRouteActive()"
+              tabindex="0"
+              role="button"
+              aria-haspopup="dialog"
+              [attr.aria-expanded]="openPopover() === 'account'"
+              [title]="accountPopoverAriaLabel"
+              [attr.aria-label]="accountPopoverAriaLabel"
+              (keydown.enter)="onPopoverTriggerKey('account', $event)"
+              (keydown.space)="onPopoverTriggerKey('account', $event)"
+            >
+              <i class="bi bi-person-circle me-1" aria-hidden="true"></i>
+              <span class="small" i18n="@@lwConsoleNav-groupAccount">Account</span>
+            </span>
+            @for (item of accountNavItems(); track item.path) {
+              <ng-container *ngTemplateOutlet="navLink; context: { $implicit: item, popover: true }" />
+            }
+            <button
+              type="button"
+              class="sidebar__item btn btn-link text-reset text-decoration-none w-100"
+              [title]="shortcutHelpLabel"
+              (click)="closePopover(); shortcutHelpOpen.set(true)"
+              data-testid="console-shortcut-help"
+            >
+              <i class="bi bi-keyboard me-1" aria-hidden="true"></i>
+              <span class="small">{{ shortcutHelpLabel }}</span>
+            </button>
+          </fpc-sidebar-popover>
+        }
+        @if (adminNavItems().length > 0) {
+          <fpc-sidebar-popover
+            [open]="openPopover() === 'admin'"
+            (openChange)="onPopoverOpenChange('admin', $event)"
+            [ariaLabel]="adminPopoverAriaLabel"
+            data-testid="console-nav-group-admin"
+          >
+            <span
+              fpcSidebarPopoverTrigger
+              class="sidebar__item border-top position-relative"
+              [class.active]="isAdminRouteActive()"
+              tabindex="0"
+              role="button"
+              aria-haspopup="dialog"
+              [attr.aria-expanded]="openPopover() === 'admin'"
+              i18n-title="@@lwConsoleContainer-adminTitle"
+              title="Admin"
+              i18n-aria-label="@@lwConsoleContainer-adminTitle"
+              aria-label="Admin"
+              (keydown.enter)="onPopoverTriggerKey('admin', $event)"
+              (keydown.space)="onPopoverTriggerKey('admin', $event)"
+            >
+              <i class="bi bi-gear me-1" aria-hidden="true"></i>
+              <span class="small" i18n="@@lwConsoleContainer-admin">Admin</span>
+              @if (updatesAttentionBadge$ | async) {
+                <fpc-notification-indicator placement="absolute" />
+                <span class="visually-hidden" i18n="@@lwConsoleContainer-updatesAttention">Updates need attention</span>
+              }
+            </span>
+            @for (item of adminNavItems(); track item.path) {
+              <ng-container *ngTemplateOutlet="navLink; context: { $implicit: item, popover: true }" />
+            }
+          </fpc-sidebar-popover>
+        }
+      </div>
+    </fpc-sidebar>
+  }
+  <!-- One divider between the top bar and every page (like the Agenstra / Decabill page wrappers' border-top). -->
+  <fpc-section-container [class.lw-console__content--divided]="showChrome()">
+    @if (showChrome() && (isAuthenticated$ | async) && (showEmailNotConfiguredBanner$ | async)) {
+      <fpc-alert
+        variant="warning"
+        flush
+        [message]="emailNotConfiguredMessage"
+        data-testid="console-email-not-configured"
+      >
+        <a
+          fpcAlertActions
+          class="alert-link small"
+          href="https://docs.loadweaver.com/loadweaver/console#email-and-two-factor-login"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="console-email-not-configured-link"
+          i18n="@@lwConsoleContainer-emailNotConfiguredLink"
+          >How to configure SMTP</a
+        >
+      </fpc-alert>
+    }
+    @if (showChrome() && clusterPaused(); as paused) {
+      <!-- 3.43 (2026-10-31): changes to the open fleet cluster are paused while it is unreachable / read-only. -->
+      <fpc-alert
+        [variant]="paused.state === 'unreachable' ? 'danger' : 'warning'"
+        flush
+        [heading]="paused.state === 'unreachable' ? pausedUnreachableHeading : pausedReadOnlyHeading"
+        [message]="pausedMessage(paused)"
+        [attr.data-state]="paused.state"
+        data-testid="console-cluster-paused"
+      />
+    }
+    <router-outlet></router-outlet>
+    @if (showChrome() && (isAuthenticated$ | async)) {
+      <loadweaver-task-dock class="lw-task-dock" />
+    }
+  </fpc-section-container>
+</div>
+
+<ng-template #navLink let-item let-popover="popover">
+  <a
+    [routerLink]="item.path"
+    class="sidebar__item position-relative"
+    [class.active]="item.path === activePath()"
+    [attr.aria-current]="item.path === activePath() ? 'page' : null"
+    [title]="item.title"
+    [attr.aria-label]="item.title"
+    [attr.data-testid]="item.testId ?? null"
+    (click)="popover && closePopover()"
+  >
+    <i class="bi {{ item.icon }} me-1" aria-hidden="true"></i>
+    <span class="small">{{ item.label }}</span>
+    @if (item.badge === 'updates' && (updatesAttentionBadge$ | async)) {
+      <fpc-notification-indicator placement="absolute" />
+      <span class="visually-hidden" i18n="@@lwConsoleContainer-updatesAttention">Updates need attention</span>
+    }
+  </a>
+</ng-template>
+
+<identity-logout-confirm-modal (confirmed)="onLogoutConfirmed($event)" />
+
+<loadweaver-shortcut-help [(open)]="shortcutHelpOpen" />
+<!-- Resource create / edit modal (2026-10-29): opened from Create ▾, headers, lists, row menus, `e`. -->
+<loadweaver-resource-modal />
+
+<loadweaver-search-palette
+  #searchPalette
+  [enabled]="showChrome() && !!(isAuthenticated$ | async)"
+  (document:keydown)="onShortcutKey($event, searchPalette)"
+/>
+
+<!-- Fleet tile confirm (2026-10-28): announces the armed state of the sidebar tile. -->
+<span class="visually-hidden" aria-live="polite" data-testid="console-nav-fleet-level-live">{{
+  leaveConfirmArmed() ? leaveConfirmTitle : ''
+}}</span>

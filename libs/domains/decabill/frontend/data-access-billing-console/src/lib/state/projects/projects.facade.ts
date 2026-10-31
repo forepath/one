@@ -11,8 +11,6 @@ import {
   deleteAdminProject,
   loadAdminProjectDetail,
   loadAdminProjects,
-  loadMoreAdminProjects,
-  loadMoreProjects,
   loadProjectDetail,
   loadProjects,
   loadProjectsCatalogSummary,
@@ -21,24 +19,24 @@ import {
 } from './projects.actions';
 import {
   selectAdminProjects,
-  selectAdminProjectsAppendError,
-  selectAdminProjectsAppendLoading,
-  selectAdminProjectsHasMore,
+  selectAdminProjectsPage,
+  selectAdminProjectsPageSize,
+  selectAdminProjectsTotal,
   selectCustomerProjects,
   selectProjectSummary,
-  selectProjectsAppendError,
-  selectProjectsAppendLoading,
   selectProjectsBilling,
   selectProjectsCatalogSummary,
   selectProjectsCatalogSummaryLoading,
   selectProjectsCreating,
   selectProjectsDeleting,
   selectProjectsError,
-  selectProjectsHasMore,
   selectProjectsLoading,
   selectProjectsLoadingDetail,
   selectProjectsLoadingSummary,
+  selectProjectsPage,
+  selectProjectsPageSize,
   selectProjectsState,
+  selectProjectsTotal,
   selectProjectsUpdating,
   selectSelectedProject,
 } from './projects.selectors';
@@ -61,35 +59,32 @@ export class ProjectsFacade {
   readonly deleting$ = this.store.select(selectProjectsDeleting);
   readonly billing$ = this.store.select(selectProjectsBilling);
   readonly error$ = this.store.select(selectProjectsError);
-  readonly hasMore$ = this.store.select(selectProjectsHasMore);
-  readonly appendLoading$ = this.store.select(selectProjectsAppendLoading);
-  readonly appendError$ = this.store.select(selectProjectsAppendError);
-  readonly adminHasMore$ = this.store.select(selectAdminProjectsHasMore);
-  readonly adminAppendLoading$ = this.store.select(selectAdminProjectsAppendLoading);
-  readonly adminAppendError$ = this.store.select(selectAdminProjectsAppendError);
+  readonly total$ = this.store.select(selectProjectsTotal);
+  readonly page$ = this.store.select(selectProjectsPage);
+  readonly pageSize$ = this.store.select(selectProjectsPageSize);
+  readonly adminTotal$ = this.store.select(selectAdminProjectsTotal);
+  readonly adminPage$ = this.store.select(selectAdminProjectsPage);
+  readonly adminPageSize$ = this.store.select(selectAdminProjectsPageSize);
 
-  loadProjects(params?: { search?: string }): void {
-    this.store.dispatch(loadProjects({ search: params?.search }));
+  /** Customer projects, page 1 (or the given page); the page replaces the current rows. */
+  loadProjects(params?: { search?: string; page?: number; pageSize?: number }): void {
+    this.store.dispatch(loadProjects({ search: params?.search, page: params?.page, pageSize: params?.pageSize }));
   }
 
   loadCatalogSummary(): void {
     this.store.dispatch(loadProjectsCatalogSummary());
   }
 
-  loadMore(): void {
+  /** Another page of the customer projects (current search, replace-page). */
+  loadPage(page: number, pageSize?: number): void {
     this.store
       .select(selectProjectsState)
       .pipe(take(1))
-      .subscribe((state) => {
-        if (!state.hasMore || state.appendLoading || state.loading) return;
-
+      .subscribe((state) =>
         this.store.dispatch(
-          loadMoreProjects({
-            offset: state.nextOffset,
-            search: state.customerSearch ?? undefined,
-          }),
-        );
-      });
+          loadProjects({ search: state.customerSearch ?? undefined, page, pageSize: pageSize ?? state.pageSize }),
+        ),
+      );
   }
 
   loadProjectDetail(projectId: string): void {
@@ -100,25 +95,26 @@ export class ProjectsFacade {
     this.store.dispatch(loadProjectSummary({ projectId }));
   }
 
-  loadAdminProjects(params?: { search?: string; userId?: string }): void {
+  /** Admin projects, page 1 (or the given page); the page replaces the current rows. */
+  loadAdminProjects(params?: { search?: string; userId?: string; page?: number; pageSize?: number }): void {
     this.store.dispatch(loadAdminProjects(params ?? {}));
   }
 
-  loadMoreAdminProjects(): void {
+  /** Another page of the admin projects (current filter, replace-page). */
+  loadAdminPage(page: number, pageSize?: number): void {
     this.store
       .select(selectProjectsState)
       .pipe(take(1))
-      .subscribe((state) => {
-        if (!state.adminHasMore || state.adminAppendLoading || state.loading) return;
-
+      .subscribe((state) =>
         this.store.dispatch(
-          loadMoreAdminProjects({
-            offset: state.adminNextOffset,
+          loadAdminProjects({
             search: state.adminSearch ?? undefined,
             userId: state.adminUserId ?? undefined,
+            page,
+            pageSize: pageSize ?? state.adminPageSize,
           }),
-        );
-      });
+        ),
+      );
   }
 
   loadAdminProjectDetail(projectId: string): void {

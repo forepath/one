@@ -1,0 +1,124 @@
+<ng-template #actions>
+  <fpc-button
+    variant="dark"
+    size="sm"
+    iconOnly
+    [ariaLabel]="refreshLabel"
+    [title]="refreshLabel"
+    (clicked)="refresh()"
+    data-testid="git-refresh"
+  >
+    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+  </fpc-button>
+</ng-template>
+
+<div class="fpc-page">
+  @if (!scope) {
+    <fpc-page-header [title]="title">
+      <loadweaver-saved-views fpcPageHeaderActions scope="git" [binding]="views" />
+      <span fpcPageHeaderActions class="d-inline-flex gap-2">
+        <ng-container *ngTemplateOutlet="actions" />
+      </span>
+    </fpc-page-header>
+  }
+
+  @if (fleetGap()) {
+    <fpc-alert [flush]="true" variant="info" [message]="fleetGapHint()" data-testid="git-fleet-hint" />
+  }
+  @if (error(); as message) {
+    @if (fleetGap() !== 'read') {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    }
+  }
+  @if (deleteError(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" [dismissible]="true" (closed)="dismissError()" />
+  }
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="git-bulk-result"
+    />
+  }
+
+  <!-- One data list (3.38 D1): State (sync) · Scope (link) · facts; ⋮ row actions; bulk Sync on selection. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="title"
+    [columns]="columns"
+    [rows]="filtered()"
+    [rowLink]="connectionLink"
+    [activeRowId]="openId()"
+    paging="client"
+    persistKey="lw-git"
+    [(query)]="search"
+    [searchPlaceholder]="searchLabel"
+    [loading]="loading() && scoped().length === 0"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    emptyIcon="git"
+    data-testid="git-connections"
+  >
+    <span fpcDataTableToolbar class="d-inline-flex gap-2">
+      @if (scope) {
+        <ng-container *ngTemplateOutlet="actions" />
+      }
+      @if (freeScopes().length > 0) {
+        <fpc-button
+          variant="primary"
+          size="sm"
+          iconOnly
+          [ariaLabel]="connectLabel"
+          [title]="connectLabel"
+          (clicked)="openCreate()"
+          data-testid="git-connect"
+        >
+          <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        </fpc-button>
+      }
+    </span>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="syncable().length === 0"
+      (clicked)="syncSelected()"
+      data-testid="git-bulk-sync"
+      iconOnly
+      [ariaLabel]="syncLabel"
+      [title]="syncLabel"
+    >
+      <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+    </fpc-button>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state icon="git" size="sm" i18n-title="@@lwConsoleGit-empty" title="No repository connected">
+        @if (freeScopes().length === 0) {
+          <span class="small" i18n="@@lwConsoleGit-emptyHint"
+            >Cluster admins connect the cluster scope, project admins their projects.</span
+          >
+        }
+      </fpc-empty-state>
+    </span>
+    <ng-template fpcTableCell="mode" let-row>
+      <fpc-badge [tone]="row.mode === 'authoritative' ? 'primary' : 'info'">{{ modeLabel(row.mode) }}</fpc-badge>
+    </ng-template>
+    <ng-template fpcTableCell="provider" let-row>
+      <i class="bi {{ providerIconOf(row) }} me-1" aria-hidden="true"></i>{{ providerLabel(row.provider) }}
+    </ng-template>
+    <ng-template fpcTableCell="lastSync" let-row>{{
+      row.lastSyncAt ? (row.lastSyncAt | date: 'short') : ''
+    }}</ng-template>
+  </fpc-data-table>
+</div>
+
+<loadweaver-git-connection-modal
+  [(open)]="editOpen"
+  [connection]="null"
+  [scopes]="freeScopes()"
+  [clusterAdmin]="isClusterAdmin()"
+/>

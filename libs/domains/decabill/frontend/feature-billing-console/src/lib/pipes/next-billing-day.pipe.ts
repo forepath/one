@@ -1,20 +1,25 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-function ordinalSuffix(n: number): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
+import { formatBillingDate } from '../billing-format';
 
-  if (mod10 === 1 && mod100 !== 11) return 'st';
+/** Next occurrence of a billing day (1-28) from `now`; `null` outside 1-28. */
+export function nextBillingDate(value: number, now: Date = new Date()): Date | null {
+  const day = Math.floor(value);
 
-  if (mod10 === 2 && mod100 !== 12) return 'nd';
+  if (day < 1 || day > 28) {
+    return null;
+  }
 
-  if (mod10 === 3 && mod100 !== 13) return 'rd';
+  const currentDay = Math.min(now.getDate(), 28);
 
-  return 'th';
+  return currentDay < day
+    ? new Date(now.getFullYear(), now.getMonth(), day)
+    : new Date(now.getFullYear(), now.getMonth() + 1, day);
 }
 
 /**
- * Transforms a billing day (1-28) into the next occurrence as a label in US format, e.g. "March 28th, 2026".
+ * Transforms a billing day (1-28) into its next occurrence in the one table date format (DB-05): `Nov 28, 2026` /
+ * `28.11.2026` (was a US-only long date with an ordinal, "November 28th, 2026").
  */
 @Pipe({ name: 'nextBillingDay', standalone: true })
 export class NextBillingDayPipe implements PipeTransform {
@@ -23,20 +28,8 @@ export class NextBillingDayPipe implements PipeTransform {
       return '';
     }
 
-    const day = Math.floor(value);
+    const next = nextBillingDate(value);
 
-    if (day < 1 || day > 28) {
-      return String(day);
-    }
-
-    const now = new Date();
-    const currentDay = Math.min(now.getDate(), 28);
-    const next =
-      currentDay < day
-        ? new Date(now.getFullYear(), now.getMonth(), day)
-        : new Date(now.getFullYear(), now.getMonth() + 1, day);
-    const monthName = next.toLocaleDateString('en-US', { month: 'long' });
-
-    return `${monthName} ${day}${ordinalSuffix(day)}, ${next.getFullYear()}`;
+    return next ? formatBillingDate(next) : String(Math.floor(value));
   }
 }

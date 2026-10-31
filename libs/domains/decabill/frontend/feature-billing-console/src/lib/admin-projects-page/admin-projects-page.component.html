@@ -1,7 +1,42 @@
 <div class="admin-projects-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="admin-projects-bulk-result"
+    />
+  }
+
+  <!-- One data list: State · Project (link to the board) · facts · customer; ⋮ Edit / Delete; bulk Archive / Delete. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="projects()"
+    [rowLink]="projectLink"
+    paging="server"
+    [total]="total()"
+    [(page)]="paging.page"
+    [(pageSize)]="paging.pageSize"
+    persistKey="decabill-admin-projects"
+    [(query)]="paging.search"
+    [searchPlaceholder]="searchPlaceholder"
+    [loading]="loading()"
+    [error]="error()"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    emptyIcon="kanban"
+    data-testid="admin-projects-list"
+  >
     <fpc-button
-      fpcPageHeaderActions
+      fpcDataTableToolbar
       variant="primary"
       size="sm"
       iconOnly
@@ -12,116 +47,49 @@
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
     </fpc-button>
-  </fpc-page-header>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!canArchiveSelection()"
+      (clicked)="archiveSelected()"
+      data-testid="admin-projects-bulk-archive"
+      iconOnly
+      [ariaLabel]="archiveLabel"
+      [title]="archiveLabel"
+    >
+      <i class="bi bi-archive" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="selectedProjects().length === 0"
+      (clicked)="confirmBulkDelete.set(true)"
+      data-testid="admin-projects-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
 
-  <fpc-search-field
-    class="border-bottom"
-    name="search"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchPlaceholder"
-    [(value)]="searchQuery"
-  />
-
-  <div #scrollRoot class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @if (loading$ | async) {
-      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
-    } @else {
-      @if (error$ | async; as error) {
-        <fpc-alert class="m-3" variant="danger" [message]="error" />
-      }
-      @if (projects().length === 0) {
-        @if (searchQuery().trim()) {
-          <fpc-empty-state
-            icon="search"
-            message="No search results"
-            i18n-message="@@featureAdminProjects-noSearchResults"
-          />
-        } @else {
-          <fpc-empty-state message="No projects yet" i18n-message="@@featureAdminProjects-empty" />
-        }
-      } @else {
-        <fpc-list [flush]="true">
-          @for (project of projects(); track project.id) {
-            <fpc-list-item>
-              <a
-                fpcListItemTitle
-                [routerLink]="[project.id, 'board']"
-                [relativeTo]="projectsRoute"
-                class="text-decoration-none text-body"
-              >
-                <div class="fw-semibold">{{ project.name }}</div>
-              </a>
-              <a
-                fpcListItemMeta
-                [routerLink]="[project.id, 'board']"
-                [relativeTo]="projectsRoute"
-                class="small d-flex align-items-center gap-3 flex-wrap text-decoration-none"
-              >
-                <span [ngClass]="projectStatusTextClass(project.status)">
-                  <i class="bi me-1" [ngClass]="projectStatusIconClass(project.status)" aria-hidden="true"></i
-                  >{{ projectStatusLabel(project.status) }}
-                </span>
-                <span
-                  ><i class="bi bi-cash me-1" aria-hidden="true"></i
-                  >{{ hourlyRateLabel(project.hourlyRateNet, project.currency) }}</span
-                >
-                <span
-                  ><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
-                  >{{ unbilledTimeLabel(project.unbilledMinutes) }}</span
-                >
-                <span
-                  ><i class="bi bi-cash-stack me-1" aria-hidden="true"></i
-                  >{{ openBillableLabel(project.openBillableAmountNet, project.currency) }}</span
-                >
-                <span><i class="bi bi-person me-1" aria-hidden="true"></i>{{ projectOwnerLabel(project) }}</span>
-              </a>
-              <fpc-button-group fpcListItemActions size="sm">
-                <fpc-button
-                  iconOnly
-                  size="sm"
-                  variant="warning"
-                  (clicked)="$event.preventDefault(); $event.stopPropagation(); openEditModal(project)"
-                  i18n-title="@@featureAdminProjects-edit"
-                  title="Edit"
-                >
-                  <i class="bi bi-pencil" aria-hidden="true"></i>
-                </fpc-button>
-                <fpc-button
-                  iconOnly
-                  size="sm"
-                  variant="danger"
-                  (clicked)="$event.preventDefault(); $event.stopPropagation(); openDeleteModal(project)"
-                  i18n-title="@@featureAdminProjects-delete"
-                  title="Delete"
-                >
-                  <i class="bi bi-trash" aria-hidden="true"></i>
-                </fpc-button>
-              </fpc-button-group>
-            </fpc-list-item>
-          }
-        </fpc-list>
-        @if ((appendLoading$ | async) || (appendError$ | async)) {
-          <fpc-list-append-footer
-            [loading]="!!(appendLoading$ | async)"
-            [error]="!!(appendError$ | async)"
-            (retry)="facade.loadMoreAdminProjects()"
-          />
-        }
-        <div
-          fpcInfiniteScroll
-          [root]="scrollRoot"
-          [paused]="!!(appendError$ | async)"
-          [disabled]="(hasMore$ | async) === false || !!(appendLoading$ | async) || !!(loading$ | async)"
-          (reachedEnd)="facade.loadMoreAdminProjects()"
-          aria-hidden="true"
-        ></div>
-      }
-    }
-  </div>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state icon="kanban" size="sm" message="No projects yet" i18n-message="@@featureAdminProjects-empty" />
+    </span>
+    <ng-template fpcTableCell="customer" let-row
+      ><span [attr.title]="customerTitle(row)">{{ customerLabel(row) }}</span></ng-template
+    >
+  </fpc-data-table>
 </div>
 
-<fpc-modal [(open)]="createModalOpen" i18n-title="@@featureAdminProjects-createTitle" title="Create project">
+<fpc-modal
+  [(open)]="createModalOpen"
+  i18n-title="@@featureAdminProjects-createTitle"
+  title="Create project"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <framework-billing-admin-user-select
     #createUserSelect
     inputId="createProjectUser"
@@ -176,7 +144,13 @@
   </div>
 </fpc-modal>
 
-<fpc-modal [(open)]="editModalOpen" i18n-title="@@featureAdminProjects-editTitle" title="Edit project">
+<fpc-modal
+  [(open)]="editModalOpen"
+  i18n-title="@@featureAdminProjects-editTitle"
+  title="Edit project"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <fpc-form-field forId="editProjectName" i18n-label="@@featureAdminProjects-nameLabel" label="Name">
     <fpc-form-control controlId="editProjectName" [(ngModel)]="editForm.name" name="editName" />
   </fpc-form-field>
@@ -245,3 +219,13 @@
     <span i18n="@@featureAdminProjects-cannotUndo">This action cannot be undone.</span>
   </p>
 </fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDelete"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelected()"
+/>

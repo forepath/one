@@ -1,0 +1,119 @@
+<!-- Policy Summary (3.38): facts as a key-value list, rules under a list header, peers as flush lists per side. -->
+<div class="fpc-page">
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+
+  @if (policy(); as p) {
+    <fpc-tab-group
+      class="fpc-lane-tabs"
+      [activeId]="lane()"
+      (activeIdChange)="lane.set($any($event))"
+      [ariaLabel]="overviewTitle"
+    >
+      <fpc-tab id="overview" [label]="overviewTitle" />
+      @for (side of sides(); track side.id) {
+        <fpc-tab [id]="side.id" [label]="side.title" />
+      }
+    </fpc-tab-group>
+    <fpc-section-row class="flex-grow-1 min-h-0" data-testid="policy-lanes">
+      <loadweaver-lane [title]="overviewTitle" [flush]="true" [off]="lane() !== 'overview'">
+        <fpc-key-value-list class="px-3" [items]="facts()" data-testid="policy-overview">
+          <ng-template fpcKeyValue="project">
+            @if (p.metadata.project) {
+              {{ p.metadata.project }}
+            } @else {
+              <span i18n="@@lwConsolePolicyDetail-clusterWide">Cluster-wide</span>
+            }
+          </ng-template>
+          <ng-template fpcKeyValue="mode">
+            @if (p.spec.mode === 'monitor') {
+              <fpc-badge tone="warning" i18n="@@lwConsolePolicyDetail-monitor">Monitor</fpc-badge>
+            } @else {
+              <fpc-badge tone="success" i18n="@@lwConsolePolicyDetail-enforce">Enforce</fpc-badge>
+            }
+          </ng-template>
+          <ng-template fpcKeyValue="action">
+            @if (p.spec.action === 'deny') {
+              <fpc-badge tone="danger" i18n="@@lwConsolePolicyDetail-deny">Deny (L7)</fpc-badge>
+            } @else {
+              <fpc-badge tone="primary" i18n="@@lwConsolePolicyDetail-allow">Allow</fpc-badge>
+            }
+          </ng-template>
+          <ng-template fpcKeyValue="egress">
+            @if (p.spec.egress; as egress) {
+              <span class="font-monospace">{{ egress.pools.join(', ') }}</span>
+              @if (egress.reverseDns) {
+                <div class="font-monospace">{{ egress.reverseDns }}</div>
+              }
+            }
+          </ng-template>
+        </fpc-key-value-list>
+        <fpc-list-header [title]="rulesTitle" />
+        <!-- Rules → table (3.38 D1): protocol · ports · HTTP methods · paths · hosts. -->
+        <fpc-data-table
+          [nested]="true"
+          [ariaLabel]="rulesTitle"
+          [columns]="ruleColumns"
+          [rows]="p.spec.rules"
+          [rowId]="ruleId"
+          [searchable]="false"
+          paging="client"
+          persistKey="lw-policy-rules"
+          emptyIcon="list-check"
+          data-testid="policy-rules"
+        >
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="list-check"
+              size="sm"
+              i18n-title="@@lwConsolePolicyDetail-noRules"
+              title="No rules"
+            />
+          </span>
+        </fpc-data-table>
+      </loadweaver-lane>
+      @for (side of sides(); track side.id) {
+        <loadweaver-lane [title]="side.title" [flush]="true" [off]="lane() !== side.id">
+          <!-- Peers → table (3.38 D1): peer (link for groups) · members. -->
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="side.title"
+            [columns]="peerColumns"
+            [rows]="side.peers"
+            [rowId]="peerId"
+            [rowLink]="peerLink"
+            [searchable]="false"
+            paging="client"
+            [persistKey]="'lw-policy-' + side.id"
+            emptyIcon="diagram-3"
+            [attr.data-testid]="'policy-' + side.id"
+          >
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                icon="diagram-3"
+                size="sm"
+                i18n-title="@@lwConsolePolicyDetail-noPeers"
+                title="No peers"
+              />
+            </span>
+            <ng-template fpcTableCell="peer" let-row>
+              <i class="bi {{ peerIcon(row) }} me-1 text-body-secondary" aria-hidden="true"></i>{{ peerLabel(row) }}
+            </ng-template>
+            <ng-template fpcTableCell="members" let-row>
+              @if (memberCount(row); as count) {
+                {{ count }}
+              } @else if (memberCount(row) === 0) {
+                <fpc-badge tone="warning" i18n="@@lwConsolePolicyDetail-noMembers">no members</fpc-badge>
+              }
+            </ng-template>
+          </fpc-data-table>
+        </loadweaver-lane>
+      }
+    </fpc-section-row>
+  } @else if (loading()) {
+    <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+  } @else if (!error()) {
+    <fpc-empty-state icon="shield-x" i18n-title="@@lwConsolePolicyDetail-notFound" title="Policy not found" />
+  }
+</div>

@@ -427,6 +427,19 @@ export class InvoicesRepository {
     return await qb.getMany();
   }
 
+  /** Count of the customer's invoice history (same scope as {@link findHistoryByUserId} without search). */
+  async countHistoryByUserId(userId: string): Promise<number> {
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.user_id = :userId', { userId })
+      .andWhere('inv.status IN (:...statuses)', { statuses: HISTORY_INVOICE_STATUSES });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getCount();
+  }
+
   async findOpenOverdueSummaryByUserId(userId: string): Promise<OpenOverdueSummary> {
     const qb = this.repository
       .createQueryBuilder('inv')

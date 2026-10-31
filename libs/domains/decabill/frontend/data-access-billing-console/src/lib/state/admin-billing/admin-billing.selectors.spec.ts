@@ -5,6 +5,7 @@ import {
   selectAdminAuditLogsByInvoice,
   selectAdminAuditLogsError,
   selectAdminAuditLogsLoading,
+  selectAdminAuditLogsTotalByInvoice,
   selectAdminBillingSummary,
   selectAdminBillingSummaryError,
   selectAdminBillingSummaryLoading,
@@ -109,5 +110,6 @@ describe('adminBillingSelectors', () => {
     expect(selectAdminAuditLogsByInvoice.projector(state)).toEqual({ 'inv-1': [] });
     expect(selectAdminAuditLogsLoading.projector(state)).toBe(true);
     expect(selectAdminAuditLogsError.projector(state)).toBe('audit err');
+    expect(selectAdminAuditLogsTotalByInvoice.projector(state)).toEqual({ 'inv-1': 0 });
   });
 });

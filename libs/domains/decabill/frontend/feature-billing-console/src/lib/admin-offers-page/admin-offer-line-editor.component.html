@@ -1,6 +1,23 @@
 @for (line of lines; track $index; let i = $index) {
-  <div class="mb-3">
-    <div class="admin-offer-line-card border rounded p-3">
+  <section class="mb-3">
+    <fpc-list-header class="d-block mb-2" [title]="lineTitle(i)" [sticky]="false">
+      @if (lines.length > 1) {
+        <fpc-button
+          fpcListHeaderActions
+          variant="dark"
+          size="sm"
+          iconOnly
+          (clicked)="removeLine(i)"
+          title="Remove line"
+          i18n-title="@@featureAdminInvoices-removeLine"
+          ariaLabel="Remove line"
+          i18n-ariaLabel="@@featureAdminInvoices-removeLine"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+      }
+    </fpc-list-header>
+    <div>
       <div class="mb-3">
         <fpc-form-check-group
           inline
@@ -38,7 +55,7 @@
       </fpc-form-field>
 
       @if (line.lineType === 'standard') {
-        <div class="row g-2">
+        <div class="row g-2 mb-3">
           <div class="col-sm-4">
             <fpc-form-field
               [forId]="prefix + 'LineQty' + i"
@@ -147,7 +164,7 @@
             [(ngModel)]="line.projectDescription"
           />
         </fpc-form-field>
-        <div class="row g-2">
+        <div class="row g-2 mb-3">
           <div class="col-sm-6">
             <fpc-form-field
               [forId]="prefix + 'LineHourlyRate' + i"
@@ -213,10 +230,9 @@
           i18n-label="@@featureAdminOffers-promotionCode"
           label="Promotion code (optional)"
         >
-          <fpc-form-control
-            [controlId]="prefix + 'LinePromo' + i"
-            [name]="prefix + 'LinePromo' + i"
-            [(ngModel)]="line.promotionCode"
+          <framework-billing-admin-promotion-select
+            [inputId]="prefix + 'LinePromo' + i"
+            [(selectedCode)]="line.promotionCode"
           />
         </fpc-form-field>
         @if (line.planId.trim()) {
@@ -245,43 +261,21 @@
           />
         </fpc-form-field>
       }
-
-      @if (lines.length > 1) {
-        <fpc-button
-          variant="danger"
-          size="sm"
-          iconOnly
-          (clicked)="removeLine(i)"
-          title="Remove line"
-          i18n-title="@@featureAdminInvoices-removeLine"
-          ariaLabel="Remove line"
-          i18n-ariaLabel="@@featureAdminInvoices-removeLine"
-          class="mt-2"
-        >
-          <i class="bi bi-trash" aria-hidden="true"></i>
-        </fpc-button>
-      }
     </div>
 
-    <div class="mt-1">
-      <framework-pricing-totals-summary
-        [summary]="lineSummary(line, i)"
-        [leadingRows]="lineLeadingRows(line, i)"
-        [loading]="linePricingLoading(line, i)"
-      ></framework-pricing-totals-summary>
-    </div>
-  </div>
+    @if (showLineSummary(line, i)) {
+      <div class="mt-2">
+        <framework-pricing-totals-summary
+          [summary]="lineSummary(line, i)"
+          [leadingRows]="lineLeadingRows(line, i)"
+          [loading]="linePricingLoading(line, i)"
+        ></framework-pricing-totals-summary>
+      </div>
+    }
+  </section>
 }
 
-<fpc-button
-  variant="dark"
-  size="sm"
-  iconOnly
-  (clicked)="addLine()"
-  title="Add line item"
-  i18n-title="@@featureAdminInvoices-addLineItem"
-  ariaLabel="Add line item"
-  i18n-ariaLabel="@@featureAdminInvoices-addLineItem"
->
-  <i class="bi bi-plus" aria-hidden="true"></i>
+<fpc-button variant="outline-secondary" size="sm" (clicked)="addLine()">
+  <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+  <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
 </fpc-button>

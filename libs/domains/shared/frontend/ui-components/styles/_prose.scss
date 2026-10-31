@@ -1,0 +1,85 @@
+// Prose / markdown scale (X-05 / DB-14c / AG-05 / AG-06b, 2026-10-29).
+//
+// Markdown inside the console (ticket descriptions, knowledge pages, changelog text) is body content, not page chrome:
+// headings stay below the page title (h1 ≤ 1.25 rem), the body inset is the shared 1 rem, and there is no empty band
+// above the first block.
+//
+// - `.fpc-prose`: rendered markdown / HTML (apply on the container).
+// - Milkdown Crepe editors (`.milkdown .ProseMirror`, Agenstra tickets / knowledge, Decabill project tickets): the same
+//   scale over Crepe's document-sized defaults (h1 42 px, `padding: 60px 120px`). The `html` prefix outranks the Crepe
+//   theme, which apps load after the shared styles. Editable documents keep a narrow start inset for Crepe's block
+//   handle (+ / drag, made a size smaller here); read-only documents use the plain 1 rem.
+
+$_prose-headings: (
+  h1: 1.25rem,
+  h2: 1.125rem,
+  h3: 1rem,
+  h4: 0.9375rem,
+  h5: 0.875rem,
+  h6: 0.875rem,
+);
+
+@mixin fpc-prose-headings {
+  @each $tag, $size in $_prose-headings {
+    #{$tag} {
+      font-size: $size;
+      line-height: 1.35;
+      font-weight: 600;
+      margin-top: 1.25em;
+      margin-bottom: 0.5em;
+      padding: 0;
+    }
+  }
+
+  > :first-child {
+    margin-top: 0;
+  }
+}
+
+.fpc-prose {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  @include fpc-prose-headings;
+
+  p,
+  ul,
+  ol,
+  pre,
+  blockquote,
+  table {
+    margin-bottom: 0.75rem;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+html .milkdown .ProseMirror {
+  padding: 1rem 1rem 1rem 3.25rem;
+
+  @include fpc-prose-headings;
+
+  p {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+}
+
+html .milkdown .ProseMirror[contenteditable='false'] {
+  padding-inline-start: 1rem;
+}
+
+// Crepe's block handle (+ / drag) sits in the start inset: two 24 px items instead of 32 px.
+html .milkdown .milkdown-block-handle .operation-item {
+  width: 24px;
+  height: 24px;
+  padding: 2px;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}

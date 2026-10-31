@@ -1,0 +1,105 @@
+// The host only stacks the two parts: the head (crumbs + title row) is one padded, tinted group;
+// the tab slot below it is full-bleed so the tab bar spans the whole content width (like a sibling
+// `fpc-tab-group` under `fpc-page-header`). Spacing mirrors `fpc-page-header` (1rem default,
+// 0.625rem block padding in compact density, shared control height for icon-only actions).
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  min-width: 0;
+  --fpc-page-header-control-size: var(--fpc-control-height-header, 2.35rem);
+}
+
+.fpc-object-header__head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: var(--bs-tertiary-bg);
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+:host(.fpc-object-header--compact) {
+  .fpc-object-header__head {
+    gap: 0.375rem;
+    padding: 0.625rem 1rem;
+  }
+
+  .fpc-object-header__title {
+    font-size: 1rem;
+  }
+}
+
+.fpc-object-header__tabs {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  &:empty,
+  &:not(:has(> *)) {
+    display: none;
+  }
+}
+
+// The trail's look, truncation and "…" collapse come from `fpc-breadcrumbs` / `fpc-breadcrumb-item`; the header only
+// lets it shrink inside the head column.
+.fpc-object-header__crumbs {
+  display: block;
+  min-width: 0;
+}
+
+.fpc-object-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: var(--fpc-page-header-control-size);
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+}
+
+.fpc-object-header__titles {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.fpc-object-header__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.fpc-object-header__mark {
+  color: var(--bs-warning);
+  font-size: 0.75rem;
+}
+
+.fpc-object-header__badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.fpc-object-header__subtitle {
+  font-size: 0.875rem;
+  min-width: 0;
+}
+
+.fpc-object-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-inline-start: auto;
+
+  &:empty {
+    display: none;
+  }
+}

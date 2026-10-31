@@ -75,6 +75,9 @@ import { DeploymentConfigurationsRepository } from '../repositories/deployment-c
 import { DeploymentRunsRepository } from '../repositories/deployment-runs.repository';
 import { AgentEgressEventsRepository } from '../repositories/agent-egress-events.repository';
 import { WorkspaceConfigurationOverridesRepository } from '../repositories/workspace-configuration-overrides.repository';
+import { AgentRuntime, resolveAgentRuntimeKind } from '../runtime/agent-runtime';
+import { LoadweaverClient, loadweaverRuntimeConfig } from '../runtime/loadweaver/loadweaver-client';
+import { LoadweaverRuntime } from '../runtime/loadweaver/loadweaver.runtime';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentContextAccessService } from '../services/agent-context-access.service';
 import { AgentContextApiService } from '../services/agent-context-api.service';
@@ -201,6 +204,17 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     DeploymentConfigurationsRepository,
     DeploymentRunsRepository,
     DockerService,
+    // Runtime of agent environments, per manager (= per workspace) by AGENT_RUNTIME; consumers inject AgentRuntime
+    // only. `docker`: this Docker host (DockerService, unchanged); `loadweaver`: deployments in the workspace's
+    // Loadweaver project (LOADWEAVER_URL, LOADWEAVER_PROJECT, LOADWEAVER_TOKEN_FILE).
+    {
+      provide: AgentRuntime,
+      useFactory: (docker: DockerService): AgentRuntime =>
+        resolveAgentRuntimeKind() === 'loadweaver'
+          ? new LoadweaverRuntime(new LoadweaverClient(loadweaverRuntimeConfig()))
+          : docker,
+      inject: [DockerService],
+    },
     OpenCodeClientFactory,
     OpenCodeSessionService,
     OpenCodeEventBridge,

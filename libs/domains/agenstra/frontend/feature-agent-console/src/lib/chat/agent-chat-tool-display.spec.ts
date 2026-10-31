@@ -40,7 +40,10 @@ describe('resolveAgentChatToolDisplay', () => {
   });
 
   it('maps the platform handoff tools and their embed kinds to readable labels', () => {
-    expect(resolveAgentChatToolDisplay('agenstra_handoff_agents')).toEqual({ label: 'List agents', icon: 'people' });
+    expect(resolveAgentChatToolDisplay('agenstra_handoff_agents')).toEqual({
+      label: 'List environments',
+      icon: 'people',
+    });
     expect(resolveAgentChatToolDisplay('agenstra_handoff_create')).toEqual({
       label: 'Hand off task',
       icon: 'arrow-left-right',
@@ -51,7 +54,7 @@ describe('resolveAgentChatToolDisplay', () => {
     });
     expect(resolveAgentChatToolDisplay('agenstra_handoff_respond')).toEqual({ label: 'Answer handoff', icon: 'reply' });
     expect(resolveAgentChatToolDisplay('agenstra_handoff_profile_get')).toEqual({
-      label: 'Read agent profile',
+      label: 'Read environment profile',
       icon: 'person-vcard',
     });
     expect(resolveAgentChatToolDisplay('agenstra_handoff_profile_update')).toEqual({

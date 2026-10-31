@@ -1,0 +1,187 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="status-pages" [binding]="views" />
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <!-- Status pages | Incidents as tabs (decision 4): one table at a time. -->
+  <fpc-tab-group
+    class="flex-shrink-0"
+    [activeId]="lane()"
+    (activeIdChange)="lane.set($event === 'incidents' ? 'incidents' : 'pages')"
+    [ariaLabel]="title"
+  >
+    <fpc-tab id="pages" [label]="tabPages" icon="broadcast-pin" />
+    <fpc-tab id="incidents" [label]="tabIncidents" icon="exclamation-octagon" />
+  </fpc-tab-group>
+
+  @if (actionError(); as message) {
+    @if (!modalOpen()) {
+      <fpc-alert
+        [flush]="true"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="dismissActionError()"
+      />
+    }
+  }
+
+  @switch (lane()) {
+    @case ('incidents') {
+      @if (incidentsError(); as message) {
+        <fpc-alert [flush]="true" variant="danger" [message]="message" />
+      }
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="tabIncidents"
+        [columns]="incidentColumns"
+        [rows]="shownIncidents()"
+        [filtered]="!!search().trim()"
+        [loading]="incidentsLoading() && incidents().length === 0"
+        paging="client"
+        persistKey="lw-incidents"
+        [(query)]="search"
+        [searchPlaceholder]="incidentsSearchLabel"
+        [showFilterButton]="projects().length > 0"
+        [(filtersOpen)]="filtersOpen"
+        (filtersApplied)="filterState.apply()"
+        [rowMenu]="incidentMenu"
+        (rowAction)="onIncidentAction($event.row, $event.item.id)"
+        [expandedRowId]="expanded()"
+        (rowActivate)="toggle($event)"
+        emptyIcon="check2-circle"
+        data-testid="incidents-list"
+      >
+        <!-- Incidents are per project: the project is the drawer's filter (it always names one). -->
+        <fpc-form-field fpcDataTableFilters forId="lw-incidents-project" [label]="projectLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-incidents-project"
+            size="sm"
+            [ngModel]="filterState.draft().project"
+            (ngModelChange)="filterState.patch({ project: $event })"
+          >
+            @for (p of projects(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+        <span fpcDataTableToolbar class="d-inline-flex align-items-center gap-2">
+          @if (openCount() > 0) {
+            <fpc-badge tone="danger" size="sm"
+              >{{ openCount() }} <span i18n="@@lwConsoleStatusPages-open">open</span></fpc-badge
+            >
+          }
+          @if (mayWrite()) {
+            <fpc-button
+              variant="primary"
+              size="sm"
+              [iconOnly]="true"
+              [ariaLabel]="newIncidentLabel"
+              [title]="newIncidentLabel"
+              (clicked)="newIncident()"
+              data-testid="incident-new"
+            >
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </fpc-button>
+          }
+        </span>
+        <span fpcDataTableEmpty>
+          @if (!project()) {
+            <fpc-empty-state
+              icon="folder"
+              size="sm"
+              i18n-title="@@lwConsoleStatusPages-noProject"
+              title="No project to show"
+            />
+          } @else {
+            <fpc-empty-state
+              icon="check2-circle"
+              size="sm"
+              i18n-title="@@lwConsoleStatusPages-noIncidents"
+              title="No incidents"
+            />
+          }
+        </span>
+        <ng-template fpcTableCell="created" let-i>{{ i.createdAt | date: 'short' }}</ng-template>
+        <ng-template fpcTableCell="resolved" let-i>{{ i.resolvedAt | date: 'short' }}</ng-template>
+        <ng-template fpcTableRowDetail let-i>
+          <!-- The timeline (newest first) in the row detail. -->
+          <fpc-data-table
+            nested
+            [ariaLabel]="updatesTitle"
+            [columns]="updateColumns"
+            [rows]="updatesOf(i)"
+            [rowId]="updateId"
+            [searchable]="false"
+            [showColumnChooser]="false"
+            data-testid="incident-updates"
+          >
+            <ng-template fpcTableCell="at" let-u>{{ u.at | date: 'short' }}</ng-template>
+            <ng-template fpcTableCell="message" let-u>
+              <!-- textContent: the message keeps its line breaks (pre-wrap) without template whitespace. -->
+              <div class="lw-incident-message small text-body text-break" [textContent]="u.message"></div>
+            </ng-template>
+          </fpc-data-table>
+        </ng-template>
+      </fpc-data-table>
+    }
+    @default {
+      @if (pagesError(); as message) {
+        <fpc-alert [flush]="true" variant="danger" [message]="message" />
+      }
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="tabPages"
+        [columns]="pageColumns"
+        [rows]="shownPages()"
+        [rowId]="pageId"
+        [rowLink]="pageRowLink"
+        [filtered]="!!pagesSearch().trim()"
+        [loading]="pagesLoading() && pages().length === 0"
+        paging="client"
+        persistKey="lw-status-pages"
+        [(query)]="pagesSearch"
+        [searchPlaceholder]="searchLabel"
+        [rowMenu]="pageMenu"
+        (rowAction)="onPageAction($event.row, $event.item.id)"
+        emptyIcon="broadcast-pin"
+        data-testid="status-pages-list"
+      >
+        <loadweaver-create-kind-button fpcDataTableToolbar kind="StatusPage" [project]="project() || null" />
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            icon="broadcast-pin"
+            size="sm"
+            i18n-title="@@lwConsoleStatusPages-noPages"
+            title="No status pages"
+            [message]="createHint"
+          />
+        </span>
+        <ng-template fpcTableCell="uptime" let-p>
+          @if (p.spec.showUptime !== false) {
+            <fpc-badge tone="success" icon="calendar-check" [iconOnly]="true" [label]="showsUptimeLabel" />
+          }
+        </ng-template>
+      </fpc-data-table>
+    }
+  }
+</div>
+
+<loadweaver-incident-modal
+  [open]="modalOpen()"
+  (openChange)="modalOpen.set($event)"
+  [project]="project()"
+  [incident]="modalIncident()"
+/>

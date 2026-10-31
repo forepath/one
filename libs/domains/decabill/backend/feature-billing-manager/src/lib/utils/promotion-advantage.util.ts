@@ -59,15 +59,37 @@ export function buildAdvantageSummary(promotion: PromotionEntity, currency = 'EU
     case PromotionAdvantageType.FREE_DAYS: {
       const days = (config as FreeDaysAdvantageConfig).days;
 
-      return `${days} day(s) free`;
+      return days === 1 ? '1 day free' : `${days} days free`;
     }
     case PromotionAdvantageType.FREE_BILLING_PERIODS: {
       const periods = (config as FreeBillingPeriodsAdvantageConfig).periods;
 
-      return `${periods} billing period(s) free`;
+      return periods === 1 ? '1 billing period free' : `${periods} billing periods free`;
     }
     default:
       return 'Promotion benefit';
+  }
+}
+
+/**
+ * Structured advantage values (DB-03 / DB-27): the numbers behind `buildAdvantageSummary`, so clients format money
+ * and plurals in their own locale. Only the fields of the promotion's advantage type are set.
+ */
+export function buildAdvantageAmounts(
+  promotion: PromotionEntity,
+  currency = 'EUR',
+): { amountNet?: number; currency?: string; days?: number; periods?: number } {
+  const config = promotion.advantageConfig;
+
+  switch (promotion.advantageType) {
+    case PromotionAdvantageType.FIXED_AMOUNT_NET:
+      return { amountNet: Number((config as FixedAmountAdvantageConfig).amountNet), currency };
+    case PromotionAdvantageType.FREE_DAYS:
+      return { days: Number((config as FreeDaysAdvantageConfig).days) };
+    case PromotionAdvantageType.FREE_BILLING_PERIODS:
+      return { periods: Number((config as FreeBillingPeriodsAdvantageConfig).periods) };
+    default:
+      return {};
   }
 }
 

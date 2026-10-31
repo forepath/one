@@ -1,5 +1,5 @@
 import { UsersRepository } from '@forepath/identity/backend';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import type {
@@ -8,7 +8,9 @@ import type {
   PaginatedAdminInvoicesResponseDto,
 } from '../dto/admin-billing.dto';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
+import { resolveCustomerNamesByUserId } from '../utils/customer-display-name.util';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
@@ -25,6 +27,7 @@ export class InvoiceAdminService {
     private readonly auditLog: BillingAuditLogService,
     private readonly usersRepository: UsersRepository,
     private readonly customerTrustScoreService: CustomerTrustScoreService,
+    @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
   ) {}
 
   async listInvoices(params: {
@@ -36,6 +39,7 @@ export class InvoiceAdminService {
     const { items, total } = await this.invoicesRepository.findAllForAdmin(params);
     const userIds = [...new Set(items.map((item) => item.userId))];
     const userEmailById = new Map<string, string>();
+    const customerNameById = await resolveCustomerNamesByUserId(this.customerProfilesRepository, userIds);
 
     await Promise.all(
       userIds.map(async (userId) => {
@@ -52,6 +56,7 @@ export class InvoiceAdminService {
         ...this.invoiceService.mapToResponse(invoice, invoice.subscription?.number),
         userId: invoice.userId,
         userEmail: userEmailById.get(invoice.userId),
+        customerName: customerNameById.get(invoice.userId),
       })),
       total,
       limit: params.limit,

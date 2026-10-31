@@ -2,6 +2,7 @@ import { createReducer, on } from '@ngrx/store';
 
 import type { AdminSubscriptionListItem } from '../../types/billing.types';
 import { patchSubscriptionItemDisplayName } from '../../utils/patch-subscription-item-display-name.util';
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 import { updateDisplayNameSuccess } from '../service-detail/service-detail.actions';
 
 import {
@@ -20,9 +21,6 @@ import {
   loadAdminSubscriptions,
   loadAdminSubscriptionsFailure,
   loadAdminSubscriptionsSuccess,
-  loadMoreAdminSubscriptions,
-  loadMoreAdminSubscriptionsFailure,
-  loadMoreAdminSubscriptionsSuccess,
 } from './admin-subscriptions.actions';
 
 export interface AdminSubscriptionsState {
@@ -33,10 +31,10 @@ export interface AdminSubscriptionsState {
   instantCanceling: boolean;
   resuming: boolean;
   error: string | null;
-  hasMore: boolean;
-  nextOffset: number;
-  appendLoading: boolean;
-  appendError: string | null;
+  /** Replace-page paging: total of the server list, 1-based page and its size. */
+  total: number;
+  page: number;
+  pageSize: number;
   search: string | null;
   userId: string | null;
 }
@@ -49,10 +47,9 @@ export const initialAdminSubscriptionsState: AdminSubscriptionsState = {
   instantCanceling: false,
   resuming: false,
   error: null,
-  hasMore: false,
-  nextOffset: 0,
-  appendLoading: false,
-  appendError: null,
+  total: 0,
+  page: 1,
+  pageSize: BILLING_LIST_PAGE_SIZE,
   search: null,
   userId: null,
 };
@@ -72,49 +69,32 @@ function upsertSubscription(
 
 export const adminSubscriptionsReducer = createReducer(
   initialAdminSubscriptionsState,
-  on(loadAdminSubscriptions, (state, { search, userId }) => ({
-    ...state,
-    subscriptions: [],
-    loading: true,
-    error: null,
-    appendError: null,
-    appendLoading: false,
-    hasMore: false,
-    nextOffset: 0,
-    search: search?.trim() ? search.trim() : null,
-    userId: userId ?? null,
-  })),
-  on(loadAdminSubscriptionsSuccess, (state, { subscriptions, hasMore, nextOffset }) => ({
+  on(loadAdminSubscriptions, (state, { search, userId, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.pageSize);
+
+    return {
+      ...state,
+      loading: true,
+      error: null,
+      page: window.page,
+      pageSize: window.pageSize,
+      search: search?.trim() ? search.trim() : null,
+      userId: userId ?? null,
+    };
+  }),
+  on(loadAdminSubscriptionsSuccess, (state, { subscriptions, total }) => ({
     ...state,
     subscriptions,
-    hasMore,
-    nextOffset,
+    total,
     loading: false,
     error: null,
   })),
   on(loadAdminSubscriptionsFailure, (state, { error }) => ({
     ...state,
+    subscriptions: [],
+    total: 0,
     loading: false,
     error,
-    hasMore: false,
-  })),
-  on(loadMoreAdminSubscriptions, (state) => ({
-    ...state,
-    appendLoading: true,
-    appendError: null,
-  })),
-  on(loadMoreAdminSubscriptionsSuccess, (state, { subscriptions, hasMore, nextOffset }) => ({
-    ...state,
-    subscriptions: [...state.subscriptions, ...subscriptions],
-    hasMore,
-    nextOffset,
-    appendLoading: false,
-    appendError: null,
-  })),
-  on(loadMoreAdminSubscriptionsFailure, (state, { error }) => ({
-    ...state,
-    appendLoading: false,
-    appendError: error,
   })),
   on(adminCancelSubscription, (state) => ({
     ...state,

@@ -16,6 +16,7 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import {
   buildActivePromotionDisplay,
+  buildAdvantageAmounts,
   buildAdvantageSummary,
   computeBenefitWindow,
   normalizePromotionCode,
@@ -231,6 +232,7 @@ export class PromotionRedemptionService {
       redeemedAt: redemption.redeemedAt.toISOString(),
       advantageType: promotion.advantageType,
       advantageSummary: buildAdvantageSummary(promotion),
+      ...buildAdvantageAmounts(promotion),
       validFrom: display.validFrom.toISOString(),
       validTo: display.validTo?.toISOString(),
       remainingMonetaryNet: display.remainingMonetaryNet,

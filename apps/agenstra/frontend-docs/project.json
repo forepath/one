@@ -212,7 +212,7 @@
     "postbuild": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cp dist/apps/agenstra/frontend-docs-delegating-server/server/delegating-server.js dist/apps/agenstra/frontend-docs/server/server.mjs && cp -r dist/apps/agenstra/frontend-docs/browser dist/apps/agenstra/frontend-docs/server/browser"
+        "command": "cp dist/apps/agenstra/frontend-docs-delegating-server/server/delegating-server.js dist/apps/agenstra/frontend-docs/server/server.mjs && rm -rf dist/apps/agenstra/frontend-docs/server/browser && cp -r dist/apps/agenstra/frontend-docs/browser dist/apps/agenstra/frontend-docs/server/browser"
       },
       "dependsOn": ["build", "build-delegating-server"]
     },

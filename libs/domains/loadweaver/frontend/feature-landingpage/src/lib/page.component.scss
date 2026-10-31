@@ -1,0 +1,158 @@
+section {
+  scroll-margin-top: 80px;
+}
+
+// Hero background (contour field) lives in the shared `ui-components/styles/_landing.scss`.
+#hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-title {
+  color: rgba(245, 245, 245, 0.85);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.hero-lead,
+.hero-cta-line {
+  color: rgba(245, 245, 245, 0.85);
+}
+
+.hero-container {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-lead {
+  max-width: 720px;
+  line-height: 1.6;
+}
+
+.hero-feature-badges {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+}
+
+// Drawn scene below the hero copy.
+.hero-illustration {
+  position: relative;
+  z-index: 3;
+  max-width: 68rem;
+  margin: 3rem auto 0;
+}
+
+// Closing call to action: the gold box carries dark ink (gold is a light fill, 11.8:1 with #0f0f11).
+.cta-box {
+  color: var(--bs-dark);
+}
+
+.cta-lead {
+  max-width: 700px;
+  color: rgb(15 15 17 / 0.9);
+}
+
+.cta-sub {
+  max-width: 600px;
+  color: rgb(15 15 17 / 0.85);
+}
+
+.section-title-lg {
+  max-width: 800px;
+}
+
+.section-lead {
+  max-width: 700px;
+}
+
+.max-w-650 {
+  max-width: 650px;
+}
+
+.max-w-750 {
+  max-width: 750px;
+}
+
+.icon-md {
+  font-size: 1.5rem;
+}
+
+.icon-lg {
+  font-size: 2rem;
+}
+
+.icon-xl {
+  font-size: 2.5rem;
+}
+
+.letter-spacing-wide {
+  letter-spacing: 0.08em;
+}
+
+// Numbered step badge (gold disc, dark digit).
+.step-num {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--bs-dark);
+  background-color: var(--bs-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.375rem color-mix(in srgb, var(--bs-primary) 18%, transparent);
+}
+
+// Plain brand-coloured icon (no tinted tile).
+.plain-icon {
+  width: fit-content;
+  height: auto;
+  background: none;
+}
+
+// YAML / CLI samples.
+.code-sample {
+  margin: 0;
+  line-height: 1.6;
+  border-radius: 0;
+
+  code {
+    padding: 0;
+    color: inherit;
+    background: none;
+  }
+}
+
+.code-sample__added {
+  color: #4ade80;
+}
+
+.code-sample__changed {
+  color: var(--bs-primary);
+}
+
+.code-sample__warning {
+  color: #fb923c;
+}
+
+// Pre-launch note under hero CTAs.
+.prelaunch-note {
+  color: rgba(245, 245, 245, 0.7);
+}
+
+@media (max-width: 991.98px) {
+  .stack-on-mobile > .border-end {
+    border-right: 0 !important;
+    border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}

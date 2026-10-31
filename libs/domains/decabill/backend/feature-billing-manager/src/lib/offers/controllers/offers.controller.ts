@@ -6,6 +6,7 @@ import {
   Get,
   Header,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
@@ -15,11 +16,21 @@ import {
 
 import type {
   CustomerOfferDetailResponseDto,
-  CustomerOfferListItemDto,
   OffersSummaryResponseDto,
+  PaginatedCustomerOffersResponseDto,
 } from '../dto/offer.dto';
 import { OffersCustomerService } from '../services/offers-customer.service';
 import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
+
+/** Largest page of the customer offer lists. */
+const MAX_CUSTOMER_OFFERS_LIMIT = 100;
+
+function customerOffersWindow(limit?: number, offset?: number): { limit: number; offset: number } {
+  return {
+    limit: Math.min(Math.max(limit ?? 10, 1), MAX_CUSTOMER_OFFERS_LIMIT),
+    offset: Math.max(offset ?? 0, 0),
+  };
+}
 
 @Controller('offers')
 export class OffersController {
@@ -42,14 +53,18 @@ export class OffersController {
   async listPending(
     @Req() req: RequestWithUser,
     @Query('search') search?: string,
-  ): Promise<CustomerOfferListItemDto[]> {
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+  ): Promise<PaginatedCustomerOffersResponseDto> {
     const user = getUserFromRequest(req);
 
     if (!user.userId) {
       throw new BadRequestException('User not authenticated');
     }
 
-    return await this.offersCustomerService.listPending(user.userId, search);
+    const window = customerOffersWindow(limit, offset);
+
+    return await this.offersCustomerService.listPending(user.userId, window.limit, window.offset, search);
   }
 
   @Get('history')
@@ -57,14 +72,18 @@ export class OffersController {
   async listHistory(
     @Req() req: RequestWithUser,
     @Query('search') search?: string,
-  ): Promise<CustomerOfferListItemDto[]> {
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+  ): Promise<PaginatedCustomerOffersResponseDto> {
     const user = getUserFromRequest(req);
 
     if (!user.userId) {
       throw new BadRequestException('User not authenticated');
     }
 
-    return await this.offersCustomerService.listHistory(user.userId, search);
+    const window = customerOffersWindow(limit, offset);
+
+    return await this.offersCustomerService.listHistory(user.userId, window.limit, window.offset, search);
   }
 
   @Get(':offerRefId')

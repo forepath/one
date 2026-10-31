@@ -31,6 +31,12 @@ describe('AdminCustomerProfilesFacade', () => {
     expect(store.dispatch).toHaveBeenCalledWith(loadAdminCustomerProfiles());
   });
 
+  it('loadProfiles requests the given page with the search', () => {
+    facade.loadProfiles({ search: 'ada', page: 2, pageSize: 50 });
+
+    expect(store.dispatch).toHaveBeenCalledWith(loadAdminCustomerProfiles({ search: 'ada', page: 2, pageSize: 50 }));
+  });
+
   it('createProfile dispatches createAdminCustomerProfile', () => {
     const dto = { userId: 'u-1', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.com' };
 

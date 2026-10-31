@@ -48,7 +48,8 @@ import {
   FpcBadgeComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
-  FpcCollapsibleFilterPanelComponent,
+  FpcListToolbarComponent,
+  fpcListQueryState,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcLaneHeaderComponent,
@@ -61,14 +62,18 @@ import {
   FpcTabComponent,
   FpcTabGroupComponent,
   FPC_CHART_AREA_FILL,
-  FPC_CHART_AXIS,
   FPC_CHART_GRID,
   FPC_CHART_LABEL_STYLE,
   fpcChart,
   fpcChartColor,
+  type FpcBadgeTone,
+  FpcBoardLaneComponent,
+  FpcEmptyStateComponent,
 } from '@forepath/shared/frontend/ui-components';
 import type { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexStroke, ApexXAxis } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
+
+import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
 import {
   catchError,
   distinctUntilChanged,
@@ -83,7 +88,7 @@ import {
 } from 'rxjs';
 
 import { hideBillingModal, showBillingModal } from '../billing-modal';
-import { getProvisioningStatusBadgeClass, getProvisioningStatusLabel } from '../billing-status-labels';
+import { getProvisioningStatusBadgeTone, getProvisioningStatusLabel } from '../billing-status-labels';
 import { resolveServiceDetailAddonTabComponent } from './service-detail-addon-tab.registry';
 import {
   DETAILS_TAB_ID,
@@ -138,6 +143,8 @@ function isDashboardUrl(url: string | null | undefined): boolean {
   selector: 'framework-service-detail-page',
   standalone: true,
   imports: [
+    FpcBoardLaneComponent,
+    FpcEmptyStateComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -146,7 +153,7 @@ function isDashboardUrl(url: string | null | undefined): boolean {
     FpcBadgeComponent,
     FpcButtonComponent,
     FpcButtonGroupComponent,
-    FpcCollapsibleFilterPanelComponent,
+    FpcListToolbarComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcLaneHeaderComponent,
@@ -192,6 +199,21 @@ export class ServiceDetailPageComponent implements OnInit {
   readonly fromDate = signal('');
   readonly toDate = signal('');
   readonly groupBy = signal<'day' | 'month'>('day');
+  readonly filtersOpen = computed(() => !this.filtersCollapsed());
+  /** Applied range / grouping (+ party) in the URL (`?f=`); the drawer edits a draft until Apply (3.38 R12). */
+  readonly filterState = fpcListQueryState({
+    filters: { from: this.fromDate, to: this.toDate, groupBy: this.groupBy },
+    open: this.filtersOpen,
+    changed: () => this.onApplyFilters(),
+  });
+  /** Defaults of the date range (set with the page), so a custom range counts as one applied filter. */
+  private readonly defaultDates = signal({ from: '', to: '' });
+  readonly activeFilterCount = computed(() => {
+    const f = this.filterState.applied();
+    const d = this.defaultDates();
+
+    return [f.from !== d.from || f.to !== d.to, f.groupBy !== 'day'].filter(Boolean).length;
+  });
   readonly titleEditing = signal(false);
   readonly titleDraft = signal('');
   readonly sshRevealLoading = signal(false);
@@ -526,8 +548,8 @@ export class ServiceDetailPageComponent implements OnInit {
     return getProvisioningStatusLabel(status);
   }
 
-  provisioningStatusBadgeClass(status: string | null | undefined): string {
-    return getProvisioningStatusBadgeClass(status);
+  provisioningStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
+    return getProvisioningStatusBadgeTone(status);
   }
 
   serverStatusLabel(serverInfo: ServerInfoResponse): string {
@@ -542,16 +564,16 @@ export class ServiceDetailPageComponent implements OnInit {
     return $localize`:@@featureServiceDetail-serverStatusUpdating:Updating`;
   }
 
-  serverStatusBadgeClass(serverInfo: ServerInfoResponse): string {
+  serverStatusBadgeTone(serverInfo: ServerInfoResponse): FpcBadgeTone {
     if (isBillingServerOnline(serverInfo)) {
-      return 'billing-admin__chip--status-paid';
+      return 'success';
     }
 
     if (isBillingServerOff(serverInfo)) {
-      return 'billing-admin__chip--status-overdue';
+      return 'danger';
     }
 
-    return 'billing-admin__chip--status-partially-paid';
+    return 'info';
   }
 
   serverStatusIconClass(serverInfo: ServerInfoResponse): string {
@@ -873,6 +895,11 @@ export class ServiceDetailPageComponent implements OnInit {
   private restoreFilters(): void {
     const defaults = createDefaultMeterHistoryFilters();
 
+    this.defaultDates.set({ from: defaults.from, to: defaults.to });
+
+    // Filters from the URL (shared links, reload) win over the stored ones.
+    if (this.route.snapshot.queryParamMap.has('f')) return;
+
     this.fromDate.set(defaults.from);
     this.toDate.set(defaults.to);
     this.groupBy.set(defaults.groupBy);
@@ -939,11 +966,9 @@ export class ServiceDetailPageComponent implements OnInit {
       stroke: { curve: 'smooth', width: 2 } as ApexStroke,
       fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
-      xaxis: {
-        ...FPC_CHART_AXIS,
-        categories: series.map((point) => this.datePipe.transform(point.period, axisDateFormat) ?? point.period),
-        labels: { style: FPC_CHART_LABEL_STYLE },
-      } as ApexXAxis,
+      xaxis: billingChartTimeAxis(
+        series.map((point) => this.datePipe.transform(point.period, axisDateFormat) ?? point.period),
+      ) as ApexXAxis,
       yaxis: {
         labels: {
           style: FPC_CHART_LABEL_STYLE,
@@ -951,6 +976,7 @@ export class ServiceDetailPageComponent implements OnInit {
         },
       },
       grid: FPC_CHART_GRID,
+      responsive: BILLING_CHART_RESPONSIVE,
     };
   }
 }

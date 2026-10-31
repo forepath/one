@@ -28,22 +28,36 @@ export class InvoicesService {
     return this.http.get<InvoicesSummaryResponse>(`${this.apiUrl}/invoices/summary`);
   }
 
-  getOpenOverdueInvoices(search?: string): Observable<InvoiceResponse[]> {
+  /** One page of the caller's open-overdue invoices (`limit` / `offset` / `search`; array response, no total). */
+  getOpenOverdueInvoices(options?: {
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Observable<InvoiceResponse[]> {
     let params = new HttpParams();
 
-    if (search?.trim()) {
-      params = params.set('search', search.trim());
+    if (options?.search?.trim()) {
+      params = params.set('search', options.search.trim());
     }
+
+    if (options?.limit !== undefined) params = params.set('limit', String(options.limit));
+
+    if (options?.offset !== undefined) params = params.set('offset', String(options.offset));
 
     return this.http.get<InvoiceResponse[]>(`${this.apiUrl}/invoices/open-overdue`, { params });
   }
 
-  getHistoryInvoices(search?: string): Observable<InvoiceResponse[]> {
+  /** One page of the caller's history invoices (`limit` / `offset` / `search`; array response, no total). */
+  getHistoryInvoices(options?: { search?: string; limit?: number; offset?: number }): Observable<InvoiceResponse[]> {
     let params = new HttpParams();
 
-    if (search?.trim()) {
-      params = params.set('search', search.trim());
+    if (options?.search?.trim()) {
+      params = params.set('search', options.search.trim());
     }
+
+    if (options?.limit !== undefined) params = params.set('limit', String(options.limit));
+
+    if (options?.offset !== undefined) params = params.set('offset', String(options.offset));
 
     return this.http.get<InvoiceResponse[]>(`${this.apiUrl}/invoices/history`, { params });
   }

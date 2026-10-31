@@ -115,4 +115,22 @@
   .apexcharts-text-nodata {
     fill: var(--bs-secondary-color);
   }
+
+  // Axis / legend text in dark mode (DB-17g, 2026-10-29): charts built without the shared label style kept ApexCharts'
+  // fixed dark grey (#373d3f) on the black surface. Fixed light-theme fills follow the theme tokens instead.
+  .apexcharts-xaxis-label,
+  .apexcharts-yaxis-label,
+  .apexcharts-xaxis-title-text,
+  .apexcharts-yaxis-title-text {
+    &[fill='#373d3f'],
+    // The shared label style passes `var(--bs-secondary-color)`; as an SVG attribute browsers don't resolve it (the
+    // text falls back to black). As a CSS property it does.
+    &[fill^='var('] {
+      fill: var(--bs-secondary-color);
+    }
+  }
+
+  .apexcharts-legend-text[style*='rgb(55, 61, 63)'] {
+    color: var(--bs-body-color) !important;
+  }
 }

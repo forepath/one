@@ -11,29 +11,16 @@ import type {
 
 export const loadAdminInvoiceManager = createAction(
   '[AdminInvoiceManager] Load Invoices',
-  props<{ search?: string; userId?: string }>(),
+  props<{ search?: string; userId?: string; page?: number; pageSize?: number }>(),
 );
 export const loadAdminInvoiceManagerSuccess = createAction(
   '[AdminInvoiceManager] Load Invoices Success',
-  props<{ invoices: AdminInvoiceListItem[]; hasMore: boolean; nextOffset: number }>(),
+  props<{ invoices: AdminInvoiceListItem[]; total: number }>(),
 );
 export const loadAdminInvoiceManagerFailure = createAction(
   '[AdminInvoiceManager] Load Invoices Failure',
   props<{ error: string }>(),
 );
-export const loadMoreAdminInvoiceManager = createAction(
-  '[AdminInvoiceManager] Load More Invoices',
-  props<{ offset: number; search?: string; userId?: string }>(),
-);
-export const loadMoreAdminInvoiceManagerSuccess = createAction(
-  '[AdminInvoiceManager] Load More Invoices Success',
-  props<{ invoices: AdminInvoiceListItem[]; hasMore: boolean; nextOffset: number }>(),
-);
-export const loadMoreAdminInvoiceManagerFailure = createAction(
-  '[AdminInvoiceManager] Load More Invoices Failure',
-  props<{ error: string }>(),
-);
-
 export const createManualInvoice = createAction(
   '[AdminInvoiceManager] Create Manual Invoice',
   props<{ dto: CreateManualInvoiceDto }>(),

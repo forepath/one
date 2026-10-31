@@ -8,6 +8,9 @@ export const selectProjectTimeEntries = createSelector(selectProjectTimeEntriesS
 export const selectProjectTimeEntriesLoading = createSelector(selectProjectTimeEntriesState, (s) => s.loading);
 export const selectProjectTimeEntriesSaving = createSelector(selectProjectTimeEntriesState, (s) => s.saving);
 export const selectProjectTimeEntriesError = createSelector(selectProjectTimeEntriesState, (s) => s.error);
+export const selectProjectTimeEntriesTotal = createSelector(selectProjectTimeEntriesState, (s) => s.total);
+export const selectProjectTimeEntriesPage = createSelector(selectProjectTimeEntriesState, (s) => s.page);
+export const selectProjectTimeEntriesPageSize = createSelector(selectProjectTimeEntriesState, (s) => s.pageSize);
 
 export const selectUnbilledProjectTimeEntries = createSelector(selectProjectTimeEntries, (entries) =>
   entries.filter((e) => !e.invoiceId),

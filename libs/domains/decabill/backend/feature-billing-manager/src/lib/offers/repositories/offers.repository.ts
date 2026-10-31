@@ -17,6 +17,20 @@ export interface AdminOfferListParams {
   userId?: string;
 }
 
+export interface CustomerOfferListParams {
+  limit?: number;
+  offset?: number;
+  search?: string;
+}
+
+export interface OfferListPage {
+  items: OfferEntity[];
+  total: number;
+}
+
+/** Most index hits a customer offer search considers (the page is cut in SQL afterwards). */
+const CUSTOMER_OFFER_SEARCH_ID_CAP = 1000;
+
 @Injectable()
 export class OffersRepository {
   constructor(
@@ -99,27 +113,43 @@ export class OffersRepository {
     return { items, total };
   }
 
-  async findPendingByUserId(userId: string, search?: string): Promise<OfferEntity[]> {
-    return await this.findByUserIdAndStatuses(userId, PENDING_OFFER_STATUSES, search, (qb) => {
+  /** One page of the customer's pending offers (newest first) with the total; always scoped to `userId`. */
+  async findPendingByUserId(userId: string, params: CustomerOfferListParams = {}): Promise<OfferListPage> {
+    return await this.findByUserIdAndStatuses(userId, PENDING_OFFER_STATUSES, params, (qb) => {
       qb.andWhere('(offer.expires_at IS NULL OR offer.expires_at > NOW())');
     });
   }
 
-  async findHistoryByUserId(userId: string, search?: string): Promise<OfferEntity[]> {
-    return await this.findByUserIdAndStatuses(userId, HISTORY_OFFER_STATUSES, search);
+  /** One page of the customer's offer history (newest first) with the total; always scoped to `userId`. */
+  async findHistoryByUserId(userId: string, params: CustomerOfferListParams = {}): Promise<OfferListPage> {
+    return await this.findByUserIdAndStatuses(userId, HISTORY_OFFER_STATUSES, params);
   }
 
   private async findByUserIdAndStatuses(
     userId: string,
     statuses: OfferStatus[],
-    search?: string,
+    params: CustomerOfferListParams,
     extra?: (qb: ReturnType<Repository<OfferEntity>['createQueryBuilder']>) => void,
-  ): Promise<OfferEntity[]> {
-    const trimmedSearch = search?.trim();
+  ): Promise<OfferListPage> {
+    const trimmedSearch = params.search?.trim();
+    const page = async (qb: ReturnType<Repository<OfferEntity>['createQueryBuilder']>): Promise<OfferListPage> => {
+      const total = await qb.getCount();
+
+      qb.orderBy('offer.createdAt', 'DESC');
+
+      if (params.limit !== undefined) qb.take(params.limit);
+
+      if (params.offset) qb.skip(params.offset);
+
+      return { items: await qb.getMany(), total };
+    };
 
     if (trimmedSearch && this.billingSearchIndexService) {
+      // The index matches the text; the page (and the expiry rule) is applied in SQL on the matching ids.
       const lookup = await this.billingSearchIndexService.searchIds('offers', trimmedSearch, {
         tenantId: getRequiredTenantId(),
+        limit: CUSTOMER_OFFER_SEARCH_ID_CAP,
+        offset: 0,
         extraFilters: { userId, status: statuses },
       });
 
@@ -136,7 +166,7 @@ export class OffersRepository {
         applyUserTenantFilter(qb, 'user');
         extra?.(qb);
 
-        return await qb.orderBy('offer.createdAt', 'DESC').getMany();
+        return await page(qb);
       }
     }
 
@@ -153,7 +183,7 @@ export class OffersRepository {
       applyBillingSearchIlike(qb, 'offers', 'offer', trimmedSearch);
     }
 
-    return await qb.orderBy('offer.createdAt', 'DESC').getMany();
+    return await page(qb);
   }
 
   async countByUserAndStatus(userId: string, statuses: OfferStatus[]): Promise<number> {

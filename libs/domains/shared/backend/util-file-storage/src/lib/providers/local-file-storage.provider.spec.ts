@@ -34,4 +34,12 @@ describe('LocalFileStorageProvider', () => {
   it('returns false from fileExists for missing files', async () => {
     expect(await provider.fileExists(tempDir, 'missing.pdf')).toBe(false);
   });
+
+  it('deletes files, and missing ones without an error', async () => {
+    await provider.writeFile(tempDir, 'old/rec.cast', Buffer.from('x'));
+    await provider.deleteFile(tempDir, 'old/rec.cast');
+    expect(await provider.fileExists(tempDir, 'old/rec.cast')).toBe(false);
+    await expect(provider.deleteFile(tempDir, 'old/rec.cast')).resolves.toBeUndefined();
+    await expect(provider.deleteFile(tempDir, '../outside')).rejects.toThrow(FILE_STORAGE_INVALID_PATH_ERROR);
+  });
 });

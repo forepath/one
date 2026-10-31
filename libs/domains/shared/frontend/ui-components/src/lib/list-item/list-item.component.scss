@@ -37,7 +37,8 @@
 
 :host(.fpc-list-item--condensed) {
   // Align with `fpc-accordion-item` condensed headers (incl. `fpc-badge size="sm"`).
-  padding: 0.25rem 0.75rem;
+  // Horizontal inset = the shared edge inset (headers, strips, table cells line up with condensed rows too).
+  padding: 0.25rem var(--fpc-edge-inset, 1rem);
   min-height: 2.25rem;
   color: var(--bs-body-color);
 }

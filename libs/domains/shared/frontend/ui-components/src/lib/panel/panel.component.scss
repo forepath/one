@@ -18,7 +18,7 @@
 .fpc-panel__header {
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: var(--fpc-z-sticky-local, 2);
   border-bottom: var(--bs-border-width) solid var(--bs-border-color);
 }
 
@@ -26,6 +26,20 @@
   flex: 1 1 auto;
   min-width: 0;
   padding: 0.75rem 1rem;
+}
+
+// A body that holds an empty state directly becomes a flex column, so the empty state fills the
+// panel's height (e.g. in a `fill` panel grid) instead of staying content-sized.
+:host ::ng-deep .fpc-panel__body:has(> .fpc-empty-state) {
+  display: flex;
+  flex-direction: column;
+}
+
+// Grow, never shrink: the empty state's own `flex: 1 1 0; min-height: 0` would collapse it to
+// nothing in a content-sized panel (no `fill` grid), and the grid clips the overflow.
+:host ::ng-deep .fpc-panel__body > .fpc-empty-state {
+  flex: 1 0 auto;
+  min-height: auto;
 }
 
 :host(.fpc-panel--flush) .fpc-panel__body {
@@ -58,8 +72,26 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-top: var(--bs-border-width) solid var(--bs-border-color);
+  // Text-only footers are as tall as footers carrying `sm` controls (pager, buttons).
+  min-height: calc(var(--fpc-control-height-sm, 2.025rem) + 1rem + var(--bs-border-width));
 }
 
-.fpc-panel__footer:empty {
+.fpc-panel__footer:empty,
+.fpc-panel__footer:not(:has(> *)) {
   display: none;
+}
+
+// Scroll panel: the body scrolls in both axes; the sticky header stays above it.
+:host(.fpc-panel--scroll) {
+  min-height: 0;
+
+  .fpc-panel__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: var(--fpc-panel-scroll-max-height, none);
+    overflow: auto;
+    // Classic (non-overlay) scrollbars: reserve the gutter, so a table at 100 % never overflows sideways once the
+    // body starts scrolling vertically.
+    scrollbar-gutter: stable;
+  }
 }

@@ -1,21 +1,21 @@
 import { createAction, props } from '@ngrx/store';
 
-import type { BackorderCancelDto, BackorderRetryDto, ListParams, BackorderResponse } from '../../types/billing.types';
+import type {
+  BackorderCancelDto,
+  BackorderRetryDto,
+  BackordersListParams,
+  BackorderResponse,
+} from '../../types/billing.types';
 
-// Load Backorders Actions
-export const loadBackorders = createAction('[Backorders] Load Backorders', props<{ params?: ListParams }>());
+// Load Backorders Actions (one page, replace-page: `limit` = page size, `offset` = page start)
+export const loadBackorders = createAction('[Backorders] Load Backorders', props<{ params?: BackordersListParams }>());
 
 export const loadBackordersSuccess = createAction(
   '[Backorders] Load Backorders Success',
-  props<{ backorders: BackorderResponse[] }>(),
+  props<{ backorders: BackorderResponse[]; hasMore: boolean }>(),
 );
 
 export const loadBackordersFailure = createAction('[Backorders] Load Backorders Failure', props<{ error: string }>());
-
-export const loadBackordersBatch = createAction(
-  '[Backorders] Load Backorders Batch',
-  props<{ offset: number; accumulatedBackorders: BackorderResponse[]; params?: ListParams }>(),
-);
 
 // Retry Backorder Actions
 export const retryBackorder = createAction(

@@ -1,0 +1,125 @@
+<div class="fpc-page">
+  <!-- Object header (3.38 Appendix A): crumbs back to the list, state + severity tone badges, the message. -->
+  <fpc-object-header
+    [title]="alert()?.title ?? title"
+    [crumbs]="crumbs()"
+    [subtitle]="alert()?.message ?? null"
+    data-testid="alert-header"
+  >
+    @if (alert(); as a) {
+      <span fpcObjectHeaderBadges class="d-inline-flex align-items-center gap-1">
+        <fpc-badge [tone]="stateTone[a.state]" size="sm" data-testid="alert-state">{{ stateLabel(a.state) }}</fpc-badge>
+        <fpc-badge [tone]="severityTone[a.severity]" size="sm">{{ severityLabel(a.severity) }}</fpc-badge>
+        @if (a.silenced) {
+          <fpc-badge tone="neutral" size="sm" i18n="@@lwConsoleAlertDetail-silenced">Silenced</fpc-badge>
+        }
+      </span>
+    }
+    <ng-container ngProjectAs="[fpcObjectHeaderActions]">
+      @if (alert(); as a) {
+        @if (a.state !== 'resolved') {
+          <fpc-button
+            variant="dark"
+            size="sm"
+            [iconOnly]="true"
+            [ariaLabel]="silenceLabel"
+            [title]="silenceLabel"
+            (clicked)="silenceOpen.set(true)"
+            data-testid="alert-silence"
+          >
+            <i class="bi bi-volume-mute" aria-hidden="true"></i>
+          </fpc-button>
+        }
+        @if (mayAcknowledge(a)) {
+          <fpc-button
+            variant="primary"
+            size="sm"
+            [iconOnly]="true"
+            [ariaLabel]="acknowledgeLabel"
+            [title]="acknowledgeLabel"
+            [loading]="acknowledging() === a.id"
+            (clicked)="acknowledge()"
+            data-testid="alert-acknowledge"
+          >
+            <i class="bi bi-check2" aria-hidden="true"></i>
+          </fpc-button>
+        }
+      }
+    </ng-container>
+  </fpc-object-header>
+
+  @if (error(); as message) {
+    <fpc-alert class="flex-shrink-0" [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (actionError(); as message) {
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="dismissActionError()"
+    />
+  }
+
+  @if (alert(); as a) {
+    <fpc-tab-group
+      class="fpc-lane-tabs"
+      [activeId]="lane()"
+      (activeIdChange)="lane.set($any($event))"
+      [ariaLabel]="detailsTitle"
+    >
+      <fpc-tab id="details" [label]="detailsTitle" />
+      <fpc-tab id="timeline" [label]="timelineTitle" />
+    </fpc-tab-group>
+    <fpc-section-row class="flex-grow-1 min-h-0" data-testid="alert-lanes">
+      <loadweaver-lane [title]="detailsTitle" [off]="lane() !== 'details'">
+        <fpc-key-value-list [items]="facts()" data-testid="alert-facts">
+          <ng-template fpcKeyValue="key">
+            @if (isHealthKey(a.key)) {
+              <a class="font-monospace" [routerLink]="healthLink(a.key)">{{ a.key }}</a>
+            } @else {
+              <span class="font-monospace">{{ a.key }}</span>
+            }
+          </ng-template>
+          <ng-template fpcKeyValue="acknowledged">
+            <span data-testid="alert-acknowledged">
+              @if (a.acknowledgedBy) {
+                <span class="d-inline-flex flex-wrap align-items-center gap-2">
+                  <span>{{ a.acknowledgedBy }}</span>
+                  <span class="text-body-secondary">{{ a.acknowledgedAt | date: 'medium' }}</span>
+                </span>
+              } @else {
+                –
+              }
+            </span>
+          </ng-template>
+        </fpc-key-value-list>
+      </loadweaver-lane>
+      <loadweaver-lane [title]="timelineTitle" [flush]="true" [off]="lane() !== 'timeline'">
+        <!-- The timeline as a nested table (decision 2): State (event) · when · by. -->
+        <fpc-data-table
+          nested
+          [ariaLabel]="timelineTitle"
+          [columns]="timelineColumns"
+          [rows]="timeline()"
+          [rowId]="timelineId"
+          [searchable]="false"
+          [showColumnChooser]="false"
+          data-testid="alert-timeline"
+        >
+          <ng-template fpcTableCell="at" let-row>{{ row.at | date: 'medium' }}</ng-template>
+        </fpc-data-table>
+      </loadweaver-lane>
+    </fpc-section-row>
+  } @else if (loading()) {
+    <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+  }
+</div>
+
+<loadweaver-alert-silence-modal
+  [open]="silenceOpen()"
+  (openChange)="silenceOpen.set($event)"
+  [projects]="projects()"
+  [prefill]="prefill()"
+/>

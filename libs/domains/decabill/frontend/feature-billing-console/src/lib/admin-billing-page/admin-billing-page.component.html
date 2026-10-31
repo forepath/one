@@ -1,34 +1,24 @@
 <div class="admin-billing-container border-top d-flex flex-column h-100">
   <fpc-page-header [title]="pageTitle">
-    <fpc-button
-      fpcPageHeaderActions
-      variant="primary"
+    <!-- Phone: the perspective is a select in the header, so only one tab level remains (DB-15). -->
+    <label fpcPageHeaderContext class="visually-hidden" for="adminBillingPerspective">{{ perspectiveLabel }}</label>
+    <fpc-form-control
+      fpcPageHeaderContext
+      class="d-md-none admin-billing__perspective-select"
+      controlType="select"
       size="sm"
-      iconOnly
-      [disabled]="(invoicesCreating$ | async) === true"
-      [ariaLabel]="addInvoiceAriaLabel"
-      [title]="addInvoiceAriaLabel"
-      (clicked)="openCreateModal()"
+      controlId="adminBillingPerspective"
+      name="adminBillingPerspective"
+      [ngModel]="billingPerspective()"
+      (ngModelChange)="onBillingPerspectiveTabChange($event)"
     >
-      <i class="bi bi-plus" aria-hidden="true"></i>
-    </fpc-button>
-    <fpc-button
-      fpcPageHeaderActions
-      variant="primary"
-      size="sm"
-      iconOnly
-      [class.d-none]="billingPerspective() === 'supplier'"
-      [disabled]="billingPerspective() === 'supplier'"
-      [ariaLabel]="billNowAriaLabel"
-      [title]="billNowAriaLabel"
-      (clicked)="openBillNowModal()"
-    >
-      <i class="bi bi-cash-coin" aria-hidden="true"></i>
-    </fpc-button>
+      <option value="customer">{{ customerTabLabel }}</option>
+      <option value="supplier">{{ supplierTabLabel }}</option>
+    </fpc-form-control>
   </fpc-page-header>
 
   <fpc-tab-group
-    class="flex-shrink-0"
+    class="flex-shrink-0 d-none d-md-block"
     [activeId]="billingPerspective()"
     (activeIdChange)="onBillingPerspectiveTabChange($event)"
   >
@@ -36,23 +26,25 @@
     <fpc-tab id="supplier" [label]="supplierTabLabel" />
   </fpc-tab-group>
 
-  <fpc-tab-group
-    class="d-md-none flex-shrink-0"
-    [activeId]="mobilePanel()"
-    (activeIdChange)="onMobilePanelTabChange($event)"
-  >
-    <fpc-tab id="overview" [label]="mobilePanelLabel('overview')" />
-    <fpc-tab id="invoices" [label]="mobilePanelLabel('invoices')" />
-  </fpc-tab-group>
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="admin-billing-bulk-result"
+    />
+  }
 
-  <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
+  <div class="flex-grow-1 d-flex flex-column min-h-0 overflow-hidden">
     @if (billingPerspective() === 'customer') {
       @if (summaryError$ | async; as err) {
-        <fpc-alert variant="danger" [message]="err" />
+        <fpc-alert flush variant="danger" [message]="err" />
       }
 
       <fpc-summary-bar [columns]="4">
-        <fpc-summary-card [label]="activeSubscriptionsLabel">
+        <fpc-summary-card icon="stack" [label]="activeSubscriptionsLabel">
           <span fpcSummaryCardValue>
             @if (summaryLoading$ | async) {
               <fpc-spinner size="sm" />
@@ -61,7 +53,7 @@
             }
           </span>
         </fpc-summary-card>
-        <fpc-summary-card [label]="openOverdueCountLabel">
+        <fpc-summary-card icon="exclamation-circle" [label]="openOverdueCountLabel">
           <span fpcSummaryCardValue>
             @if (summaryLoading$ | async) {
               <fpc-spinner size="sm" />
@@ -70,430 +62,290 @@
             }
           </span>
         </fpc-summary-card>
-        <fpc-summary-card [label]="openOverdueTotalLabel">
+        <fpc-summary-card icon="cash-coin" [label]="openOverdueTotalLabel">
           <span fpcSummaryCardValue>
             @if (summaryLoading$ | async) {
               <fpc-spinner size="sm" />
             } @else if (summary$ | async; as summary) {
-              {{ summary.openOverdueTotal | number: '1.2-2' }}€
+              {{ summary.openOverdueTotal | fpcMoney }}
             }
           </span>
         </fpc-summary-card>
-        <fpc-summary-card [label]="unbilledTotalLabel">
+        <fpc-summary-card icon="hourglass-split" [label]="unbilledTotalLabel">
           <span fpcSummaryCardValue>
             @if (summaryLoading$ | async) {
               <fpc-spinner size="sm" />
             } @else if (summary$ | async; as summary) {
-              {{ summary.unbilledTotal | number: '1.2-2' }}€
+              {{ summary.unbilledTotal | fpcMoney }}
             }
           </span>
         </fpc-summary-card>
       </fpc-summary-bar>
 
-      <div class="section__row flex-grow-1 min-h-0">
-        <div
-          class="section__column section__column--overview d-flex flex-column min-h-0"
-          [class.d-none]="mobilePanel() !== 'overview'"
-        >
-          @if (statisticsError$ | async; as err) {
-            <fpc-alert variant="danger" [message]="err" />
-          }
+      <!-- Summary first: it is the same for both tabs (user, 2026-10-29). -->
+      <fpc-tab-group
+        class="d-md-none flex-shrink-0"
+        [activeId]="mobilePanel()"
+        (activeIdChange)="onMobilePanelTabChange($event)"
+      >
+        <fpc-tab id="overview" [label]="mobilePanelLabel('overview')" />
+        <fpc-tab id="invoices" [label]="mobilePanelLabel('invoices')" />
+      </fpc-tab-group>
 
-          <div class="admin-billing__statistics-lane card flex-grow-1 border-0 d-flex flex-column min-h-0">
-            <fpc-lane-header flush>
+      <fpc-section-row class="flex-grow-1 min-h-0" [nowrap]="true">
+        <fpc-section-column class="d-flex" [class.d-none]="mobilePanel() !== 'overview'">
+          <fpc-board-lane class="h-100">
+            <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
               <span fpcLaneHeaderTitle i18n="@@featureAdminBilling-statisticsTitle">Statistics</span>
             </fpc-lane-header>
-            <fpc-collapsible-filter-panel
+            <fpc-list-toolbar
+              fpcBoardLaneSearch
               [open]="!filtersCollapsed()"
               (openChange)="onFiltersOpenChange($event)"
               [title]="filtersPanelTitle"
-              [showClear]="false"
+              [activeCount]="activeFilterCount()"
+              (applied)="filterState.apply()"
+              (cleared)="onResetFilters()"
             >
-              <div class="row g-3 mb-0 w-100">
-                <div class="col-12">
-                  <fpc-form-field
-                    forId="adminBillingUser"
-                    i18n-label="@@featureAdminBilling-userFilter"
-                    label="Customer"
-                  >
-                    <framework-billing-admin-user-select
-                      inputId="adminBillingUser"
-                      [size]="'sm'"
-                      [users]="users()"
-                      [selectedUserId]="selectedUserId() ?? ''"
-                      (selectedUserIdChange)="selectedUserId.set($event || null)"
-                    />
-                  </fpc-form-field>
-                </div>
-                <div class="col-12 col-md-6">
-                  <fpc-form-field forId="adminBillingFrom" i18n-label="@@featureAdminBilling-fromDate" label="From">
-                    <fpc-form-control
-                      controlId="adminBillingFrom"
-                      inputType="date"
-                      size="sm"
-                      name="adminBillingFrom"
-                      [ngModel]="fromDate()"
-                      (ngModelChange)="fromDate.set($event)"
-                    />
-                  </fpc-form-field>
-                </div>
-                <div class="col-12 col-md-6">
-                  <fpc-form-field forId="adminBillingTo" i18n-label="@@featureAdminBilling-toDate" label="To">
-                    <fpc-form-control
-                      controlId="adminBillingTo"
-                      inputType="date"
-                      size="sm"
-                      name="adminBillingTo"
-                      [ngModel]="toDate()"
-                      (ngModelChange)="toDate.set($event)"
-                    />
-                  </fpc-form-field>
-                </div>
-                <div class="col-12">
-                  <fpc-form-field
-                    forId="adminBillingGroupBy"
-                    i18n-label="@@featureAdminBilling-groupBy"
-                    label="Group by"
-                  >
-                    <fpc-form-control
-                      controlType="select"
-                      controlId="adminBillingGroupBy"
-                      size="sm"
-                      name="adminBillingGroupBy"
-                      [ngModel]="groupBy()"
-                      (ngModelChange)="groupBy.set($event)"
-                    >
-                      <option value="day" i18n="@@featureAdminBilling-groupByDay">Day</option>
-                      <option value="month" i18n="@@featureAdminBilling-groupByMonth">Month</option>
-                    </fpc-form-control>
-                  </fpc-form-field>
-                </div>
-                <div class="col-12 d-flex gap-2">
-                  <fpc-button
-                    variant="primary"
-                    size="sm"
-                    (clicked)="onApplyFilters()"
-                    i18n="@@featureAdminBilling-apply"
-                  >
-                    Apply
-                  </fpc-button>
-                  <fpc-button variant="dark" size="sm" (clicked)="onResetFilters()" i18n="@@featureAdminBilling-reset">
-                    Reset
-                  </fpc-button>
-                </div>
-              </div>
-            </fpc-collapsible-filter-panel>
-            <div class="admin-billing__statistics-body">
-              <fpc-panel-grid [columns]="1" [bordered]="false">
-                <fpc-panel [title]="turnoverChartTitle">
-                  @if (seriesChartOptions(); as chart) {
-                    <apx-chart
-                      [series]="chart.series"
-                      [chart]="chart.chart"
-                      [colors]="chart.colors"
-                      [stroke]="chart.stroke"
-                      [fill]="chart.fill"
-                      [dataLabels]="chart.dataLabels"
-                      [xaxis]="chart.xaxis"
-                      [yaxis]="chart.yaxis"
-                      [grid]="chart.grid"
-                    ></apx-chart>
-                  } @else if (statisticsSummaryLoading$ | async) {
-                    <div class="text-center py-4"><fpc-spinner size="sm" /></div>
-                  } @else {
-                    <p class="text-body-secondary small mb-0" i18n="@@featureAdminBilling-noChartData">
-                      No turnover data for selected period.
-                    </p>
-                  }
-                </fpc-panel>
-                <fpc-panel [title]="productChartTitle">
-                  @if (donutChartOptions(); as chart) {
-                    <apx-chart
-                      [series]="chart.series"
-                      [chart]="chart.chart"
-                      [labels]="chart.labels"
-                      [colors]="chart.colors"
-                      [dataLabels]="chart.dataLabels"
-                      [legend]="chart.legend"
-                      [tooltip]="chart.tooltip"
-                    ></apx-chart>
-                  } @else if (statisticsByProductLoading$ | async) {
-                    <div class="text-center py-4"><fpc-spinner size="sm" /></div>
-                  } @else {
-                    <p class="text-body-secondary small mb-0" i18n="@@featureAdminBilling-noProductData">
-                      No product breakdown for selected period.
-                    </p>
-                  }
-                </fpc-panel>
-                <fpc-panel [title]="countryChartTitle">
-                  @if (countryDonutChartOptions(); as chart) {
-                    <apx-chart
-                      [series]="chart.series"
-                      [chart]="chart.chart"
-                      [labels]="chart.labels"
-                      [colors]="chart.colors"
-                      [dataLabels]="chart.dataLabels"
-                      [legend]="chart.legend"
-                      [tooltip]="chart.tooltip"
-                    ></apx-chart>
-                  } @else if (statisticsByCountryLoading$ | async) {
-                    <div class="text-center py-4"><fpc-spinner size="sm" /></div>
-                  } @else {
-                    <p class="text-body-secondary small mb-0" i18n="@@featureAdminBilling-noCountryData">
-                      No country breakdown for selected period.
-                    </p>
-                  }
-                </fpc-panel>
-              </fpc-panel-grid>
-            </div>
-          </div>
-        </div>
+              <!-- DB-17 e: the strip states the applied scope (period · grouping · customer) next to the Filters toggle. -->
+              <span
+                fpcListToolbarLead
+                class="admin-billing__statistics-scope small text-body-secondary text-truncate"
+                >{{ statisticsScopeLabel() }}</span
+              >
+              <fpc-form-field forId="adminBillingUser" i18n-label="@@featureAdminBilling-userFilter" label="Customer">
+                <framework-billing-admin-user-select
+                  inputId="adminBillingUser"
+                  [size]="'sm'"
+                  [users]="users()"
+                  [selectedUserId]="filterState.draft().user ?? ''"
+                  (selectedUserIdChange)="filterState.patch({ user: $event || null })"
+                />
+              </fpc-form-field>
+              <fpc-form-field forId="adminBillingFrom" i18n-label="@@featureAdminBilling-fromDate" label="From">
+                <fpc-form-control
+                  controlId="adminBillingFrom"
+                  inputType="date"
+                  size="sm"
+                  name="adminBillingFrom"
+                  [ngModel]="filterState.draft().from"
+                  (ngModelChange)="filterState.patch({ from: $event })"
+                />
+              </fpc-form-field>
+              <fpc-form-field forId="adminBillingTo" i18n-label="@@featureAdminBilling-toDate" label="To">
+                <fpc-form-control
+                  controlId="adminBillingTo"
+                  inputType="date"
+                  size="sm"
+                  name="adminBillingTo"
+                  [ngModel]="filterState.draft().to"
+                  (ngModelChange)="filterState.patch({ to: $event })"
+                />
+              </fpc-form-field>
+              <fpc-form-field forId="adminBillingGroupBy" i18n-label="@@featureAdminBilling-groupBy" label="Group by">
+                <fpc-form-control
+                  controlType="select"
+                  controlId="adminBillingGroupBy"
+                  size="sm"
+                  name="adminBillingGroupBy"
+                  [ngModel]="filterState.draft().groupBy"
+                  (ngModelChange)="filterState.patch({ groupBy: $event })"
+                >
+                  <option value="day" i18n="@@featureAdminBilling-groupByDay">Day</option>
+                  <option value="month" i18n="@@featureAdminBilling-groupByMonth">Month</option>
+                </fpc-form-control>
+              </fpc-form-field>
+            </fpc-list-toolbar>
+            @if (statisticsError$ | async; as err) {
+              <fpc-alert flush variant="danger" [message]="err" />
+            }
 
-        <div
-          class="section__column section__column--invoices d-md-flex flex-column border-start"
-          [class.d-none]="mobilePanel() !== 'invoices'"
-        >
-          <div class="admin-billing__invoices-lane card h-100 border-0 d-flex flex-column">
-            <fpc-lane-header flush visibility="md-up">
-              <span fpcLaneHeaderTitle i18n="@@featureAdminBilling-invoicesTitle">Invoices</span>
-              <span fpcLaneHeaderActions class="admin-lane-header-spacer invisible" aria-hidden="true">&nbsp;</span>
-            </fpc-lane-header>
-            <form class="admin-billing__invoices-search" (ngSubmit)="$event.preventDefault()">
-              <label for="invoiceSearchInput" class="visually-hidden" i18n="@@featureAdminInvoices-searchPlaceholder">
-                Search invoices
-              </label>
-              <fpc-search-field
-                class="border-bottom"
-                inputId="invoiceSearchInput"
-                name="invoiceSearch"
-                [bordered]="false"
-                i18n-placeholder="@@featureAdminInvoices-searchPlaceholder"
-                placeholder="Search invoices"
-                [(value)]="invoiceSearch"
-              />
-            </form>
-
-            <div #invoicesScrollRoot class="admin-billing__invoices-list flex-grow-1">
-              @if (invoicesLoading$ | async) {
-                <div class="d-flex justify-content-center align-items-center p-4">
-                  <fpc-spinner
-                    variant="primary"
-                    i18n-label="@@featureAdminInvoices-loading"
-                    label="Loading invoices..."
-                  />
-                </div>
-              } @else {
-                @if (invoicesError$ | async; as error) {
-                  <fpc-alert class="m-3" variant="danger" [message]="error" />
-                }
-                @if (invoices().length === 0) {
-                  @if (invoiceSearch().trim()) {
-                    <fpc-empty-state
-                      size="sm"
-                      icon="search"
-                      message="No search results"
-                      i18n-message="@@featureAdminInvoices-noSearchResults"
-                    />
-                  } @else {
-                    <fpc-empty-state size="sm" message="No invoices yet" i18n-message="@@featureAdminInvoices-empty" />
-                  }
+            <fpc-panel-grid [columns]="1" [bordered]="false">
+              <fpc-panel [title]="turnoverChartTitle">
+                @if (seriesChartOptions(); as chart) {
+                  <apx-chart
+                    [series]="chart.series"
+                    [chart]="chart.chart"
+                    [colors]="chart.colors"
+                    [stroke]="chart.stroke"
+                    [fill]="chart.fill"
+                    [dataLabels]="chart.dataLabels"
+                    [xaxis]="chart.xaxis"
+                    [yaxis]="chart.yaxis"
+                    [grid]="chart.grid"
+                    [responsive]="chart.responsive"
+                  ></apx-chart>
+                } @else if (statisticsSummaryLoading$ | async) {
+                  <fpc-empty-state size="sm" loading />
                 } @else {
-                  <fpc-list [flush]="true">
-                    @for (invoice of invoices(); track invoice.id) {
-                      <fpc-list-item>
-                        <div fpcListItemTitle class="fw-semibold">{{ invoiceDisplayTitle(invoice) }}</div>
-                        <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                          <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                            <fpc-badge
-                              variant="info"
-                              color="secondary"
-                              class="me-2"
-                              [ngClass]="invoiceStatusBadgeClass(invoice.status)"
-                              [attr.title]="invoice.status ?? undefined"
-                            >
-                              {{ invoiceStatusLabel(invoice.status) }}
-                            </fpc-badge>
-                            <span class="me-2">
-                              <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ invoiceUserLabel(invoice) }}
-                            </span>
-                            <span class="me-2">
-                              <i class="bi bi-cash-stack me-1" aria-hidden="true"></i
-                              >{{ invoice.totalGross ?? invoice.balance ?? 0 | number: '1.2-2' }} EUR
-                            </span>
-                            <span class="me-2">
-                              <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(invoice.createdAt) }}
-                            </span>
-                          </div>
-                        </div>
-                        <fpc-button-group
-                          fpcListItemActions
-                          size="sm"
-                          ariaLabel="Invoice actions"
-                          i18n-ariaLabel="@@featureAdminInvoices-invoiceActionsAria"
-                        >
-                          @if (isDraft(invoice)) {
-                            <fpc-button
-                              iconOnly
-                              size="sm"
-                              variant="warning"
-                              (clicked)="openEditModal(invoice)"
-                              title="Edit draft"
-                              i18n-title="@@featureAdminInvoices-editButtonTitle"
-                            >
-                              <i class="bi bi-pencil" aria-hidden="true"></i>
-                            </fpc-button>
-                            <fpc-button
-                              iconOnly
-                              size="sm"
-                              variant="dark"
-                              (clicked)="openIssueModal(invoice)"
-                              title="Issue invoice"
-                              i18n-title="@@featureAdminInvoices-issueButtonTitle"
-                            >
-                              <i class="bi bi-send" aria-hidden="true"></i>
-                            </fpc-button>
-                            <fpc-button
-                              size="sm"
-                              variant="danger"
-                              iconOnly
-                              (clicked)="openDeleteModal(invoice)"
-                              title="Delete draft"
-                              i18n-title="@@featureAdminInvoices-deleteButtonTitle"
-                            >
-                              <i class="bi bi-trash" aria-hidden="true"></i>
-                            </fpc-button>
-                          } @else {
-                            @if (canPreviewInvoice(invoice)) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="openPreview(invoice)"
-                                title="Preview invoice"
-                                i18n-title="@@featureInvoices-previewButtonTitle"
-                              >
-                                <i class="bi bi-eye" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            @if (canVoid(invoice)) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="openActionModal('void', invoice)"
-                                title="Void invoice"
-                                i18n-title="@@featureAdminInvoices-voidButtonTitle"
-                              >
-                                <i class="bi bi-x-circle" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            @if (canMarkPaid(invoice)) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="openActionModal('markPaid', invoice)"
-                                title="Mark as paid"
-                                i18n-title="@@featureAdminInvoices-markPaidButtonTitle"
-                              >
-                                <i class="bi bi-check-circle" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            @if (canMarkUnpaid(invoice)) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="openActionModal('markUnpaid', invoice)"
-                                title="Mark as unpaid"
-                                i18n-title="@@featureAdminInvoices-markUnpaidButtonTitle"
-                              >
-                                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            @if (invoice.canDownload) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="downloadInvoice(invoice)"
-                                title="Download PDF"
-                                i18n-title="@@featureAdminInvoices-downloadPdfButtonTitle"
-                              >
-                                <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            @if (invoice.canDownloadVoidDocument) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="downloadVoidDocument(invoice)"
-                                title="Download void PDF"
-                                i18n-title="@@featureAdminInvoices-downloadVoidPdfButtonTitle"
-                              >
-                                <i class="bi bi-file-earmark-x" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            @if (invoice.canDownloadTimeReport) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="downloadTimeReport(invoice)"
-                                title="Download time report"
-                                i18n-title="@@featureAdminInvoices-downloadTimeReportButtonTitle"
-                              >
-                                <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            <fpc-button
-                              size="sm"
-                              variant="dark"
-                              iconOnly
-                              (clicked)="openAuditHistory(invoice)"
-                              title="View history"
-                              i18n-title="@@featureAdminInvoices-historyButtonTitle"
-                            >
-                              <i class="bi bi-clock-history" aria-hidden="true"></i>
-                            </fpc-button>
-                          }
-                        </fpc-button-group>
-                      </fpc-list-item>
-                    }
-                  </fpc-list>
-                  @if ((invoicesAppendLoading$ | async) || (invoicesAppendError$ | async)) {
-                    <fpc-list-append-footer
-                      [loading]="!!(invoicesAppendLoading$ | async)"
-                      [error]="!!(invoicesAppendError$ | async)"
-                      (retry)="invoiceManagerFacade.loadMore()"
-                    />
-                  }
-                  <div
-                    fpcInfiniteScroll
-                    [root]="invoicesScrollRoot"
-                    [paused]="!!(invoicesAppendError$ | async)"
-                    [disabled]="
-                      (invoicesHasMore$ | async) === false ||
-                      !!(invoicesAppendLoading$ | async) ||
-                      !!(invoicesLoading$ | async)
-                    "
-                    (reachedEnd)="invoiceManagerFacade.loadMore()"
-                    aria-hidden="true"
-                  ></div>
+                  <fpc-empty-state
+                    size="sm"
+                    message="No turnover data for selected period."
+                    i18n-message="@@featureAdminBilling-noChartData"
+                  />
                 }
-              }
-            </div>
-          </div>
-        </div>
-      </div>
+              </fpc-panel>
+              <fpc-panel [title]="productChartTitle">
+                @if (donutChartOptions(); as chart) {
+                  <apx-chart
+                    [series]="chart.series"
+                    [chart]="chart.chart"
+                    [labels]="chart.labels"
+                    [colors]="chart.colors"
+                    [dataLabels]="chart.dataLabels"
+                    [legend]="chart.legend"
+                    [tooltip]="chart.tooltip"
+                    [responsive]="chart.responsive"
+                  ></apx-chart>
+                } @else if (statisticsByProductLoading$ | async) {
+                  <fpc-empty-state size="sm" loading />
+                } @else {
+                  <fpc-empty-state
+                    size="sm"
+                    message="No product breakdown for selected period."
+                    i18n-message="@@featureAdminBilling-noProductData"
+                  />
+                }
+              </fpc-panel>
+              <fpc-panel [title]="countryChartTitle">
+                @if (countryDonutChartOptions(); as chart) {
+                  <apx-chart
+                    [series]="chart.series"
+                    [chart]="chart.chart"
+                    [labels]="chart.labels"
+                    [colors]="chart.colors"
+                    [dataLabels]="chart.dataLabels"
+                    [legend]="chart.legend"
+                    [tooltip]="chart.tooltip"
+                    [responsive]="chart.responsive"
+                  ></apx-chart>
+                } @else if (statisticsByCountryLoading$ | async) {
+                  <fpc-empty-state size="sm" loading />
+                } @else {
+                  <fpc-empty-state
+                    size="sm"
+                    message="No country breakdown for selected period."
+                    i18n-message="@@featureAdminBilling-noCountryData"
+                  />
+                }
+              </fpc-panel>
+            </fpc-panel-grid>
+          </fpc-board-lane>
+        </fpc-section-column>
+
+        <fpc-section-column class="d-md-flex" [class.d-none]="mobilePanel() !== 'invoices'">
+          <fpc-board-lane #invoicesLane="fpcBoardLane" class="h-100">
+            <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+              <span fpcLaneHeaderTitle i18n="@@featureAdminBilling-invoicesTitle">Invoices</span>
+            </fpc-lane-header>
+            <!-- Invoices: State · Invoice · customer · amount · created; server paging; ⋮ actions; bulk Mark paid / Void / Delete drafts. -->
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="invoicesTitle"
+              [columns]="invoiceColumns"
+              [rows]="invoices()"
+              paging="server"
+              [total]="invoicesTotal()"
+              [(page)]="invoicePaging.page"
+              [(pageSize)]="invoicePaging.pageSize"
+              persistKey="decabill-admin-invoices"
+              [(query)]="invoicePaging.search"
+              [searchPlaceholder]="invoiceSearchPlaceholder"
+              [loading]="!!(invoicesLoading$ | async)"
+              [error]="invoicesError()"
+              selectable
+              [(selected)]="selectedInvoices"
+              [rowMenu]="invoiceMenu"
+              (rowAction)="onInvoiceAction($event.row, $event.item.id)"
+              emptyIcon="receipt"
+              data-testid="admin-invoices-list"
+            >
+              <span fpcDataTableToolbar class="d-inline-flex gap-2">
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  iconOnly
+                  [class.d-none]="billingPerspective() === 'supplier'"
+                  [disabled]="billingPerspective() === 'supplier'"
+                  [ariaLabel]="billNowAriaLabel"
+                  [title]="billNowAriaLabel"
+                  (clicked)="openBillNowModal()"
+                >
+                  <i class="bi bi-cash-coin" aria-hidden="true"></i>
+                </fpc-button>
+                <fpc-button
+                  variant="primary"
+                  size="sm"
+                  iconOnly
+                  [disabled]="(invoicesCreating$ | async) === true"
+                  [ariaLabel]="addInvoiceAriaLabel"
+                  [title]="addInvoiceAriaLabel"
+                  (clicked)="openCreateModal()"
+                >
+                  <i class="bi bi-plus" aria-hidden="true"></i>
+                </fpc-button>
+              </span>
+              <fpc-button
+                fpcDataTableBatch
+                variant="dark"
+                size="sm"
+                [disabled]="invoiceBulkTargets('markPaid').length === 0"
+                (clicked)="runInvoiceBulk('markPaid')"
+                data-testid="admin-invoices-bulk-mark-paid"
+                iconOnly
+                [ariaLabel]="markPaidLabel"
+                [title]="markPaidLabel"
+              >
+                <i class="bi bi-cash-coin" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                fpcDataTableBatch
+                variant="danger"
+                size="sm"
+                [disabled]="invoiceBulkTargets('void').length === 0"
+                (clicked)="pendingBulk.set('void')"
+                data-testid="admin-invoices-bulk-void"
+                iconOnly
+                [ariaLabel]="voidLabel"
+                [title]="voidLabel"
+              >
+                <i class="bi bi-file-earmark-x" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                fpcDataTableBatch
+                variant="danger"
+                size="sm"
+                [disabled]="invoiceBulkTargets('delete').length === 0"
+                (clicked)="pendingBulk.set('delete')"
+                data-testid="admin-invoices-bulk-delete"
+                iconOnly
+                [ariaLabel]="deleteDraftsLabel"
+                [title]="deleteDraftsLabel"
+              >
+                <i class="bi bi-trash" aria-hidden="true"></i>
+              </fpc-button>
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="receipt"
+                  message="No invoices yet"
+                  i18n-message="@@featureAdminInvoices-empty"
+                />
+              </span>
+              <ng-template fpcTableCell="customer" let-row
+                ><span [attr.title]="customerTitle(row)">{{ customerLabel(row) }}</span></ng-template
+              >
+            </fpc-data-table>
+          </fpc-board-lane>
+        </fpc-section-column>
+      </fpc-section-row>
     } @else {
       @if (supplierSummaryError$ | async; as err) {
-        <fpc-alert variant="danger" [message]="err" />
+        <fpc-alert flush variant="danger" [message]="err" />
       }
 
       <fpc-summary-bar [columns]="4">
-        <fpc-summary-card [label]="supplierInvoiceCountLabel">
+        <fpc-summary-card icon="receipt" [label]="supplierInvoiceCountLabel">
           <span fpcSummaryCardValue>
             @if (supplierSummaryLoading$ | async) {
               <fpc-spinner size="sm" />
@@ -502,7 +354,7 @@
             }
           </span>
         </fpc-summary-card>
-        <fpc-summary-card [label]="supplierOpenCountLabel">
+        <fpc-summary-card icon="exclamation-circle" [label]="supplierOpenCountLabel">
           <span fpcSummaryCardValue>
             @if (supplierSummaryLoading$ | async) {
               <fpc-spinner size="sm" />
@@ -511,356 +363,224 @@
             }
           </span>
         </fpc-summary-card>
-        <fpc-summary-card [label]="supplierOpenTotalLabel">
+        <fpc-summary-card icon="cash-coin" [label]="supplierOpenTotalLabel">
           <span fpcSummaryCardValue>
             @if (supplierSummaryLoading$ | async) {
               <fpc-spinner size="sm" />
             } @else if (supplierSummary(); as summary) {
-              {{ summary.openGross | number: '1.2-2' }}€
+              {{ summary.openGross | fpcMoney }}
             }
           </span>
         </fpc-summary-card>
-        <fpc-summary-card [label]="supplierExpenseTotalLabel">
+        <fpc-summary-card icon="wallet2" [label]="supplierExpenseTotalLabel">
           <span fpcSummaryCardValue>
             @if (supplierSummaryLoading$ | async) {
               <fpc-spinner size="sm" />
             } @else if (supplierSummary(); as summary) {
-              {{ summary.totalGross | number: '1.2-2' }}€
+              {{ summary.totalGross | fpcMoney }}
             }
           </span>
         </fpc-summary-card>
       </fpc-summary-bar>
 
-      <div class="section__row flex-grow-1 min-h-0">
-        <div
-          class="section__column section__column--overview d-flex flex-column min-h-0"
-          [class.d-none]="mobilePanel() !== 'overview'"
-        >
-          <div class="admin-billing__statistics-lane card flex-grow-1 border-0 d-flex flex-column min-h-0">
-            <fpc-lane-header flush>
+      <!-- Summary first: it is the same for both tabs (user, 2026-10-29). -->
+      <fpc-tab-group
+        class="d-md-none flex-shrink-0"
+        [activeId]="mobilePanel()"
+        (activeIdChange)="onMobilePanelTabChange($event)"
+      >
+        <fpc-tab id="overview" [label]="mobilePanelLabel('overview')" />
+        <fpc-tab id="invoices" [label]="mobilePanelLabel('invoices')" />
+      </fpc-tab-group>
+
+      <fpc-section-row class="flex-grow-1 min-h-0" [nowrap]="true">
+        <fpc-section-column class="d-flex" [class.d-none]="mobilePanel() !== 'overview'">
+          <fpc-board-lane class="h-100">
+            <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
               <span fpcLaneHeaderTitle i18n="@@featureAdminBilling-statisticsTitle">Statistics</span>
             </fpc-lane-header>
-            <fpc-collapsible-filter-panel
+            <fpc-list-toolbar
+              fpcBoardLaneSearch
               [open]="!filtersCollapsed()"
               (openChange)="onFiltersOpenChange($event)"
               [title]="filtersPanelTitle"
-              [showClear]="false"
+              [activeCount]="activeFilterCount()"
+              (applied)="filterState.apply()"
+              (cleared)="onResetFilters()"
             >
-              <div class="row g-3 mb-0 w-100">
-                <div class="col-12">
-                  <fpc-form-field
-                    forId="adminSupplierBillingSupplier"
-                    i18n-label="@@featureAdminBilling-supplierFilter"
-                    label="Supplier"
-                  >
-                    <framework-billing-admin-supplier-select
-                      inputId="adminSupplierBillingSupplier"
-                      [size]="'sm'"
-                      [suppliers]="supplierFilterOptions()"
-                      [selectedSupplierId]="selectedSupplierId() ?? ''"
-                      (selectedSupplierIdChange)="selectedSupplierId.set($event || null)"
-                    />
-                  </fpc-form-field>
-                </div>
-                <div class="col-12 col-md-6">
-                  <fpc-form-field
-                    forId="adminSupplierBillingFrom"
-                    i18n-label="@@featureAdminBilling-fromDate"
-                    label="From"
-                  >
-                    <fpc-form-control
-                      controlId="adminSupplierBillingFrom"
-                      inputType="date"
-                      size="sm"
-                      name="adminSupplierBillingFrom"
-                      [ngModel]="fromDate()"
-                      (ngModelChange)="fromDate.set($event)"
-                    />
-                  </fpc-form-field>
-                </div>
-                <div class="col-12 col-md-6">
-                  <fpc-form-field forId="adminSupplierBillingTo" i18n-label="@@featureAdminBilling-toDate" label="To">
-                    <fpc-form-control
-                      controlId="adminSupplierBillingTo"
-                      inputType="date"
-                      size="sm"
-                      name="adminSupplierBillingTo"
-                      [ngModel]="toDate()"
-                      (ngModelChange)="toDate.set($event)"
-                    />
-                  </fpc-form-field>
-                </div>
-                <div class="col-12">
-                  <fpc-form-field
-                    forId="adminSupplierBillingGroupBy"
-                    i18n-label="@@featureAdminBilling-groupBy"
-                    label="Group by"
-                  >
-                    <fpc-form-control
-                      controlType="select"
-                      controlId="adminSupplierBillingGroupBy"
-                      size="sm"
-                      name="adminSupplierBillingGroupBy"
-                      [ngModel]="groupBy()"
-                      (ngModelChange)="groupBy.set($event)"
-                    >
-                      <option value="day" i18n="@@featureAdminBilling-groupByDay">Day</option>
-                      <option value="month" i18n="@@featureAdminBilling-groupByMonth">Month</option>
-                    </fpc-form-control>
-                  </fpc-form-field>
-                </div>
-                <div class="col-12 d-flex gap-2">
-                  <fpc-button
-                    variant="primary"
-                    size="sm"
-                    (clicked)="onApplyFilters()"
-                    i18n="@@featureAdminBilling-apply"
-                  >
-                    Apply
-                  </fpc-button>
-                  <fpc-button variant="dark" size="sm" (clicked)="onResetFilters()" i18n="@@featureAdminBilling-reset">
-                    Reset
-                  </fpc-button>
-                </div>
-              </div>
-            </fpc-collapsible-filter-panel>
-            <div class="admin-billing__statistics-body">
-              <fpc-panel-grid [columns]="1" [bordered]="false">
-                <fpc-panel [title]="expensesChartTitle">
-                  @if (expenseSeriesChartOptions(); as chart) {
-                    <apx-chart
-                      [series]="chart.series"
-                      [chart]="chart.chart"
-                      [colors]="chart.colors"
-                      [stroke]="chart.stroke"
-                      [fill]="chart.fill"
-                      [dataLabels]="chart.dataLabels"
-                      [xaxis]="chart.xaxis"
-                      [yaxis]="chart.yaxis"
-                      [grid]="chart.grid"
-                    ></apx-chart>
-                  } @else if (supplierSummaryLoading$ | async) {
-                    <div class="text-center py-4"><fpc-spinner size="sm" /></div>
-                  } @else {
-                    <p class="text-body-secondary small mb-0" i18n="@@featureAdminBilling-noExpenseSeries">
-                      No expense data for selected period.
-                    </p>
-                  }
-                </fpc-panel>
-              </fpc-panel-grid>
-            </div>
-          </div>
-        </div>
+              <fpc-form-field
+                forId="adminSupplierBillingSupplier"
+                i18n-label="@@featureAdminBilling-supplierFilter"
+                label="Supplier"
+              >
+                <framework-billing-admin-supplier-select
+                  inputId="adminSupplierBillingSupplier"
+                  [size]="'sm'"
+                  [suppliers]="supplierFilterOptions()"
+                  [selectedSupplierId]="filterState.draft().supplier ?? ''"
+                  (selectedSupplierIdChange)="filterState.patch({ supplier: $event || null })"
+                />
+              </fpc-form-field>
+              <fpc-form-field forId="adminSupplierBillingFrom" i18n-label="@@featureAdminBilling-fromDate" label="From">
+                <fpc-form-control
+                  controlId="adminSupplierBillingFrom"
+                  inputType="date"
+                  size="sm"
+                  name="adminSupplierBillingFrom"
+                  [ngModel]="filterState.draft().from"
+                  (ngModelChange)="filterState.patch({ from: $event })"
+                />
+              </fpc-form-field>
+              <fpc-form-field forId="adminSupplierBillingTo" i18n-label="@@featureAdminBilling-toDate" label="To">
+                <fpc-form-control
+                  controlId="adminSupplierBillingTo"
+                  inputType="date"
+                  size="sm"
+                  name="adminSupplierBillingTo"
+                  [ngModel]="filterState.draft().to"
+                  (ngModelChange)="filterState.patch({ to: $event })"
+                />
+              </fpc-form-field>
+              <fpc-form-field
+                forId="adminSupplierBillingGroupBy"
+                i18n-label="@@featureAdminBilling-groupBy"
+                label="Group by"
+              >
+                <fpc-form-control
+                  controlType="select"
+                  controlId="adminSupplierBillingGroupBy"
+                  size="sm"
+                  name="adminSupplierBillingGroupBy"
+                  [ngModel]="filterState.draft().groupBy"
+                  (ngModelChange)="filterState.patch({ groupBy: $event })"
+                >
+                  <option value="day" i18n="@@featureAdminBilling-groupByDay">Day</option>
+                  <option value="month" i18n="@@featureAdminBilling-groupByMonth">Month</option>
+                </fpc-form-control>
+              </fpc-form-field>
+            </fpc-list-toolbar>
 
-        <div
-          class="section__column section__column--invoices d-md-flex flex-column border-start"
+            <fpc-panel-grid [columns]="1" [bordered]="false">
+              <fpc-panel [title]="expensesChartTitle">
+                @if (expenseSeriesChartOptions(); as chart) {
+                  <apx-chart
+                    [series]="chart.series"
+                    [chart]="chart.chart"
+                    [colors]="chart.colors"
+                    [stroke]="chart.stroke"
+                    [fill]="chart.fill"
+                    [dataLabels]="chart.dataLabels"
+                    [xaxis]="chart.xaxis"
+                    [yaxis]="chart.yaxis"
+                    [grid]="chart.grid"
+                    [responsive]="chart.responsive"
+                  ></apx-chart>
+                } @else if (supplierSummaryLoading$ | async) {
+                  <fpc-empty-state size="sm" loading />
+                } @else {
+                  <fpc-empty-state
+                    size="sm"
+                    message="No expense data for selected period."
+                    i18n-message="@@featureAdminBilling-noExpenseSeries"
+                  />
+                }
+              </fpc-panel>
+            </fpc-panel-grid>
+          </fpc-board-lane>
+        </fpc-section-column>
+
+        <fpc-section-column
+          class="d-md-flex"
           [class.d-none]="mobilePanel() !== 'invoices'"
           [class.d-flex]="mobilePanel() === 'invoices'"
         >
-          <div class="admin-billing__invoices-lane card h-100 border-0 d-flex flex-column">
-            <fpc-lane-header flush visibility="md-up">
+          <fpc-board-lane #supplierInvoicesLane="fpcBoardLane" class="h-100">
+            <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
               <span fpcLaneHeaderTitle i18n="@@featureAdminBilling-invoicesTitle">Invoices</span>
-              <span fpcLaneHeaderActions class="admin-lane-header-spacer invisible" aria-hidden="true">&nbsp;</span>
             </fpc-lane-header>
-            <form class="admin-billing__invoices-search" (ngSubmit)="$event.preventDefault()">
-              <fpc-search-field
-                class="border-bottom"
-                name="supplierInvoiceSearch"
-                [bordered]="false"
-                i18n-placeholder="@@featureAdminSupplierInvoices-searchPlaceholder"
-                placeholder="Search supplier invoices"
-                [(value)]="supplierInvoiceSearch"
-              />
-            </form>
-            <div
-              #supplierInvoicesScrollRoot
-              class="admin-billing__invoices-list flex-grow-1 overflow-auto d-flex flex-column min-h-0"
+            <!-- Supplier invoices: State · Invoice · supplier · amount · issue / due date; server paging; bulk Mark paid / Delete drafts. -->
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="invoicesTitle"
+              [columns]="supplierInvoiceColumns"
+              [rows]="supplierInvoices()"
+              paging="server"
+              [total]="supplierInvoicesTotal()"
+              [(page)]="supplierInvoicePaging.page"
+              [(pageSize)]="supplierInvoicePaging.pageSize"
+              persistKey="decabill-admin-supplier-invoices"
+              [(query)]="supplierInvoicePaging.search"
+              [searchPlaceholder]="supplierInvoiceSearchPlaceholder"
+              [loading]="!!(supplierInvoicesLoading$ | async)"
+              [error]="supplierInvoicesError()"
+              selectable
+              [(selected)]="selectedSupplierInvoices"
+              [rowMenu]="supplierInvoiceMenu"
+              (rowAction)="onSupplierInvoiceAction($event.row, $event.item.id)"
+              emptyIcon="truck"
+              data-testid="admin-supplier-invoices-list"
             >
-              @if (supplierInvoicesLoading$ | async) {
-                <div class="d-flex justify-content-center align-items-center p-4">
-                  <fpc-spinner variant="primary" />
-                </div>
-              } @else {
-                @if (supplierInvoicesError$ | async; as error) {
-                  <fpc-alert class="m-3" variant="danger" [message]="error" />
-                }
-                @if (supplierInvoices().length === 0) {
-                  @if (supplierInvoiceSearch().trim()) {
-                    <fpc-empty-state
-                      size="sm"
-                      icon="search"
-                      message="No search results"
-                      i18n-message="@@featureAdminSupplierInvoices-noSearchResults"
-                    />
-                  } @else {
-                    <fpc-empty-state
-                      size="sm"
-                      message="No supplier invoices yet"
-                      i18n-message="@@featureAdminSupplierInvoices-empty"
-                    />
-                  }
-                } @else {
-                  <fpc-list [flush]="true">
-                    @for (invoice of supplierInvoices(); track invoice.id) {
-                      <fpc-list-item>
-                        <div fpcListItemTitle class="fw-semibold">{{ supplierInvoiceDisplayTitle(invoice) }}</div>
-                        <div fpcListItemMeta class="small d-flex flex-wrap gap-3 align-items-center">
-                          <fpc-badge
-                            variant="info"
-                            color="secondary"
-                            [ngClass]="invoiceStatusBadgeClass(invoice.status)"
-                          >
-                            {{ invoiceStatusLabel(invoice.status) }}
-                          </fpc-badge>
-                          <span
-                            ><i class="bi bi-truck me-1" aria-hidden="true"></i
-                            >{{ supplierInvoiceLabel(invoice) }}</span
-                          >
-                          <span
-                            ><i class="bi bi-cash-stack me-1" aria-hidden="true"></i
-                            >{{ invoice.totalGross | number: '1.2-2' }} EUR</span
-                          >
-                          @if (invoice.issueDate) {
-                            <span title="Issue date" i18n-title="@@featureAdminSupplierInvoices-issueDate"
-                              ><i class="bi bi-calendar-event me-1" aria-hidden="true"></i
-                              >{{ formatDate(invoice.issueDate) }}</span
-                            >
-                          }
-                          @if (invoice.dueDate) {
-                            <span title="Due date" i18n-title="@@featureAdminSupplierInvoices-dueDate"
-                              ><i class="bi bi-calendar3 me-1" aria-hidden="true"></i
-                              >{{ formatDate(invoice.dueDate) }}</span
-                            >
-                          }
-                        </div>
-                        <fpc-button-group fpcListItemActions size="sm">
-                          @if (isDraft(invoice)) {
-                            <fpc-button iconOnly size="sm" variant="warning" (clicked)="openEditSupplierModal(invoice)">
-                              <i class="bi bi-pencil" aria-hidden="true"></i>
-                            </fpc-button>
-                            <fpc-button
-                              iconOnly
-                              size="sm"
-                              variant="dark"
-                              (clicked)="openIssueSupplierModal(invoice)"
-                              title="Archive expense"
-                              i18n-title="@@featureAdminSupplierInvoices-archiveButtonTitle"
-                            >
-                              <i class="bi bi-archive" aria-hidden="true"></i>
-                            </fpc-button>
-                            @if (canDownloadSupplierInvoice(invoice)) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="downloadSupplierInvoice(invoice)"
-                                title="Download document"
-                                i18n-title="@@featureAdminSupplierInvoices-downloadButtonTitle"
-                              >
-                                <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            <fpc-button
-                              size="sm"
-                              variant="danger"
-                              iconOnly
-                              (clicked)="openDeleteSupplierModal(invoice)"
-                            >
-                              <i class="bi bi-trash" aria-hidden="true"></i>
-                            </fpc-button>
-                          } @else {
-                            @if (canPreviewSupplierInvoice(invoice)) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="openSupplierPreview(invoice)"
-                                title="Preview invoice"
-                                i18n-title="@@featureInvoices-previewButtonTitle"
-                              >
-                                <i class="bi bi-eye" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            @if (canVoid(invoice)) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="openSupplierActionModal('void', invoice)"
-                              >
-                                <i class="bi bi-x-circle" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            @if (canMarkPaid(invoice)) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="openSupplierActionModal('markPaid', invoice)"
-                              >
-                                <i class="bi bi-check-circle" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            @if (canMarkUnpaid(invoice)) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="openSupplierActionModal('markUnpaid', invoice)"
-                              >
-                                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            @if (canDownloadSupplierInvoice(invoice)) {
-                              <fpc-button
-                                size="sm"
-                                variant="dark"
-                                iconOnly
-                                (clicked)="downloadSupplierInvoice(invoice)"
-                                title="Download document"
-                                i18n-title="@@featureAdminSupplierInvoices-downloadButtonTitle"
-                              >
-                                <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
-                              </fpc-button>
-                            }
-                            <fpc-button size="sm" variant="dark" iconOnly (clicked)="openSupplierAuditHistory(invoice)">
-                              <i class="bi bi-clock-history" aria-hidden="true"></i>
-                            </fpc-button>
-                          }
-                        </fpc-button-group>
-                      </fpc-list-item>
-                    }
-                  </fpc-list>
-                  @if ((supplierInvoicesAppendLoading$ | async) || (supplierInvoicesAppendError$ | async)) {
-                    <fpc-list-append-footer
-                      [loading]="!!(supplierInvoicesAppendLoading$ | async)"
-                      [error]="!!(supplierInvoicesAppendError$ | async)"
-                      (retry)="supplierInvoiceManagerFacade.loadMore()"
-                    />
-                  }
-                  <div
-                    fpcInfiniteScroll
-                    [root]="supplierInvoicesScrollRoot"
-                    [paused]="!!(supplierInvoicesAppendError$ | async)"
-                    [disabled]="
-                      (supplierInvoicesHasMore$ | async) === false ||
-                      !!(supplierInvoicesAppendLoading$ | async) ||
-                      !!(supplierInvoicesLoading$ | async)
-                    "
-                    (reachedEnd)="supplierInvoiceManagerFacade.loadMore()"
-                    aria-hidden="true"
-                  ></div>
-                }
-              }
-            </div>
-          </div>
-        </div>
-      </div>
+              <fpc-button
+                fpcDataTableToolbar
+                variant="primary"
+                size="sm"
+                iconOnly
+                [disabled]="(invoicesCreating$ | async) === true"
+                [ariaLabel]="addInvoiceAriaLabel"
+                [title]="addInvoiceAriaLabel"
+                (clicked)="openCreateModal()"
+              >
+                <i class="bi bi-plus" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                fpcDataTableBatch
+                variant="dark"
+                size="sm"
+                [disabled]="supplierBulkTargets('markPaid').length === 0"
+                (clicked)="runSupplierBulk('markPaid')"
+                data-testid="admin-supplier-invoices-bulk-mark-paid"
+                iconOnly
+                [ariaLabel]="markPaidLabel"
+                [title]="markPaidLabel"
+              >
+                <i class="bi bi-cash-coin" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                fpcDataTableBatch
+                variant="danger"
+                size="sm"
+                [disabled]="supplierBulkTargets('delete').length === 0"
+                (clicked)="pendingBulk.set('supplier-delete')"
+                data-testid="admin-supplier-invoices-bulk-delete"
+                iconOnly
+                [ariaLabel]="deleteDraftsLabel"
+                [title]="deleteDraftsLabel"
+              >
+                <i class="bi bi-trash" aria-hidden="true"></i>
+              </fpc-button>
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="truck"
+                  message="No supplier invoices yet"
+                  i18n-message="@@featureAdminSupplierInvoices-empty"
+                />
+              </span>
+            </fpc-data-table>
+          </fpc-board-lane>
+        </fpc-section-column>
+      </fpc-section-row>
     }
   </div>
 </div>
 
-<fpc-modal [(open)]="billNowModalOpen" i18n-title="@@featureAdminBilling-billNowTitle" title="Bill now">
+<fpc-modal
+  [(open)]="billNowModalOpen"
+  i18n-title="@@featureAdminBilling-billNowTitle"
+  title="Bill now"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <fpc-form-check-group class="mb-3">
     <fpc-form-check
       class="mb-2"
@@ -903,7 +623,7 @@
       >
     </fpc-alert>
   }
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="submitBillNow()"
@@ -922,6 +642,8 @@
   [(open)]="actionConfirmModalOpen"
   i18n-title="@@featureAdminBilling-confirmActionTitle"
   title="Confirm action"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   @if (pendingAction() === 'markPaid') {
     <fpc-form-field
@@ -957,7 +679,7 @@
   @if (pendingSupplierInvoice() ? (supplierInvoicesError$ | async) : (actionError$ | async); as err) {
     <fpc-alert class="mt-2" variant="danger" [message]="err" />
   }
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="confirmAction()"
@@ -976,27 +698,24 @@
   i18n-title="@@featureAdminBilling-auditHistoryTitle"
   title="Audit history"
 >
-  @if (auditLogsLoading$ | async; as loading) {
-    @if (loading && !supplierAuditInvoiceId()) {
-      <div class="text-center py-3"><fpc-spinner size="sm" /></div>
-    }
-  }
-  @if (supplierAuditLogsLoading()) {
-    <div class="text-center py-3"><fpc-spinner size="sm" /></div>
-  } @else if ((auditLogsLoading$ | async) === false || supplierAuditInvoiceId()) {
-    <fpc-list [flush]="true">
-      @for (log of selectedAuditLogs(); track log.id) {
-        <fpc-list-item class="px-0">
-          <strong fpcListItemTitle>{{ log.process }}</strong>
-          <span fpcListItemActions class="text-body-secondary small">{{ log.createdAt | date: 'medium' }}</span>
-          <div class="small">{{ log.message }}</div>
-        </fpc-list-item>
-      } @empty {
-        <fpc-list-item class="text-body-secondary">
-          <span i18n="@@featureAdminBilling-noAuditLogs">No audit entries.</span>
-        </fpc-list-item>
-      }
-    </fpc-list>
+  @if (auditInvoiceId() || supplierAuditInvoiceId()) {
+    <fpc-data-table
+      nested
+      [ariaLabel]="auditHistoryLabel"
+      [columns]="auditColumns"
+      [rows]="selectedAuditLogs()"
+      paging="server"
+      [total]="auditLogsTotal()"
+      [(page)]="auditPage"
+      [(pageSize)]="auditPageSize"
+      persistKey="decabill-invoice-audit"
+      [searchable]="false"
+      [loading]="auditLoading()"
+      data-testid="admin-invoice-audit"
+    >
+      <span fpcDataTableEmpty i18n="@@featureAdminBilling-noAuditLogs">No audit entries.</span>
+      <ng-template fpcTableCell="time" let-row>{{ auditTime(row) | fpcDate: 'datetime' }}</ng-template>
+    </fpc-data-table>
   }
 </fpc-modal>
 
@@ -1020,12 +739,7 @@
           <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
             <div>
               <h6 class="card-title fs-5 mb-2">{{ detail.title }}</h6>
-              <fpc-badge
-                variant="info"
-                color="secondary"
-                class="d-inline-flex align-self-start"
-                [ngClass]="invoiceStatusBadgeClass(detail.status)"
-              >
+              <fpc-badge class="d-inline-flex align-self-start" [tone]="invoiceStatusBadgeTone(detail.status)">
                 {{ invoiceStatusLabel(detail.status) }}
               </fpc-badge>
             </div>
@@ -1054,7 +768,7 @@
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
             <thead>
-              <tr class="small text-body-secondary">
+              <tr>
                 <th scope="col" i18n="@@featureInvoices-lineDescription">Description</th>
                 <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineQty">Qty</th>
                 <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineUnitNet">Unit (net)</th>
@@ -1068,14 +782,14 @@
                 <tr>
                   <td class="text-break">{{ line.description }}</td>
                   <td class="text-end text-nowrap">{{ line.quantity | number: '1.0-2' }}</td>
-                  <td class="text-end text-nowrap">{{ line.unitPriceNet | number: '1.2-2' }} €</td>
-                  <td class="text-end text-nowrap">{{ line.lineNet | number: '1.2-2' }} €</td>
+                  <td class="text-end text-nowrap">{{ line.unitPriceNet | fpcMoney }}</td>
+                  <td class="text-end text-nowrap">{{ line.lineNet | fpcMoney }}</td>
                   <td class="text-end">
-                    <span class="text-nowrap">{{ line.lineTax | number: '1.2-2' }} €</span>
+                    <span class="text-nowrap">{{ line.lineTax | fpcMoney }}</span>
                     <br />
                     <small class="text-body-secondary">{{ line.taxRate | number: '1.0-1' }}%</small>
                   </td>
-                  <td class="text-end text-nowrap">{{ line.lineGross | number: '1.2-2' }} €</td>
+                  <td class="text-end text-nowrap">{{ line.lineGross | fpcMoney }}</td>
                 </tr>
               }
             </tbody>
@@ -1090,16 +804,7 @@
               <fpc-lane-header>
                 <span fpcLaneHeaderTitle i18n="@@featureInvoices-taxBreakdown">Tax breakdown</span>
               </fpc-lane-header>
-              <fpc-list [flush]="true">
-                @for (tax of detail.taxBreakdown; track $index) {
-                  <fpc-list-item class="bg-transparent">
-                    <div class="d-flex justify-content-between gap-2 text-nowrap">
-                      <span>{{ tax.taxRate | number: '1.0-1' }}%</span>
-                      <span class="fw-medium">{{ tax.taxAmount | number: '1.2-2' }} €</span>
-                    </div>
-                  </fpc-list-item>
-                }
-              </fpc-list>
+              <fpc-key-value-list class="d-block p-3" [items]="taxItems(detail)" />
             </div>
           </div>
         }
@@ -1109,32 +814,7 @@
             <fpc-lane-header>
               <span fpcLaneHeaderTitle i18n="@@featureInvoices-summary">Summary</span>
             </fpc-lane-header>
-            <fpc-list [flush]="true">
-              <fpc-list-item class="bg-transparent">
-                <div class="d-flex justify-content-between gap-2">
-                  <span i18n="@@featureInvoices-subtotalNet">Subtotal (net)</span>
-                  <span class="text-nowrap">{{ detail.subtotalNet | number: '1.2-2' }} €</span>
-                </div>
-              </fpc-list-item>
-              <fpc-list-item class="bg-transparent">
-                <div class="d-flex justify-content-between gap-2">
-                  <span i18n="@@featureInvoices-taxTotal">Tax total</span>
-                  <span class="text-nowrap">{{ detail.taxTotal | number: '1.2-2' }} €</span>
-                </div>
-              </fpc-list-item>
-              <fpc-list-item class="fw-semibold">
-                <div class="d-flex justify-content-between gap-2">
-                  <span i18n="@@featureInvoices-totalGross">Total</span>
-                  <span class="text-nowrap">{{ detail.totalGross | number: '1.2-2' }} €</span>
-                </div>
-              </fpc-list-item>
-              <fpc-list-item class="text-body-secondary small bg-transparent">
-                <div class="d-flex justify-content-between gap-2">
-                  <span i18n="@@featureInvoices-balanceDue">Balance due</span>
-                  <span class="text-nowrap">{{ detail.balanceDue | number: '1.2-2' }} €</span>
-                </div>
-              </fpc-list-item>
-            </fpc-list>
+            <fpc-key-value-list class="d-block p-3" [items]="summaryItems(detail)" />
           </div>
         </div>
       </div>
@@ -1224,8 +904,9 @@
         "
       ></ng-container>
     }
-    <fpc-button variant="dark" size="sm" iconOnly (clicked)="addLineItem('create')">
-      <i class="bi bi-plus" aria-hidden="true"></i>
+    <fpc-button variant="outline-secondary" size="sm" (clicked)="addLineItem('create')">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+      <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
     </fpc-button>
   } @else {
     <fpc-form-field forId="createSupplier" i18n-label="@@featureAdminSupplierInvoices-supplier" label="Supplier">
@@ -1263,7 +944,7 @@
         placeholder="Leave blank to auto-assign on archive"
       />
     </fpc-form-field>
-    <div class="row g-2">
+    <div class="row g-2 mb-3">
       <div class="col-md-6">
         <fpc-form-field
           forId="createIssueDate"
@@ -1321,8 +1002,9 @@
         "
       ></ng-container>
     }
-    <fpc-button variant="dark" size="sm" iconOnly (clicked)="addLineItem('createSupplier')">
-      <i class="bi bi-plus" aria-hidden="true"></i>
+    <fpc-button variant="outline-secondary" size="sm" (clicked)="addLineItem('createSupplier')">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+      <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
     </fpc-button>
   }
   <div *fpcModalFooter class="d-flex flex-column align-items-stretch gap-3 w-100">
@@ -1330,7 +1012,15 @@
       variant="primary"
       [summary]="draftTotalsSummary(createInvoiceType === 'supplier' ? createSupplierLineItems : createLineItems)"
     ></framework-pricing-totals-summary>
-    <div class="d-flex justify-content-end w-100">
+    <div class="d-flex justify-content-end gap-2 w-100">
+      <fpc-button
+        variant="dark"
+        type="button"
+        (clicked)="createModalOpen.set(false)"
+        i18n="@@featureBillingModal-cancel"
+      >
+        Cancel
+      </fpc-button>
       <fpc-button
         variant="primary"
         (clicked)="submitCreate()"
@@ -1357,10 +1047,10 @@
       i18n-label="@@featureAdminSupplierInvoices-contractOptional"
       label="Contract (optional)"
     >
-      <fpc-form-control
-        controlId="editSupplierContract"
-        name="editSupplierContract"
-        [(ngModel)]="editSupplierContractNumber"
+      <framework-billing-admin-supplier-contract-select
+        inputId="editSupplierContract"
+        [supplierId]="editSupplierId"
+        [(selectedContractNumber)]="editSupplierContractNumber"
       />
     </fpc-form-field>
     <fpc-form-field
@@ -1422,8 +1112,9 @@
         "
       ></ng-container>
     }
-    <fpc-button variant="dark" size="sm" iconOnly (clicked)="addLineItem('editSupplier')">
-      <i class="bi bi-plus" aria-hidden="true"></i>
+    <fpc-button variant="outline-secondary" size="sm" (clicked)="addLineItem('editSupplier')">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+      <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
     </fpc-button>
   } @else {
     @for (line of editLineItems; track $index; let i = $index) {
@@ -1434,17 +1125,9 @@
         "
       ></ng-container>
     }
-    <fpc-button
-      variant="dark"
-      size="sm"
-      iconOnly
-      (clicked)="addLineItem('edit')"
-      title="Add line item"
-      i18n-title="@@featureAdminInvoices-addLineItem"
-      ariaLabel="Add line item"
-      i18n-ariaLabel="@@featureAdminInvoices-addLineItem"
-    >
-      <i class="bi bi-plus" aria-hidden="true"></i>
+    <fpc-button variant="outline-secondary" size="sm" (clicked)="addLineItem('edit')">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+      <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
     </fpc-button>
   }
   <div *fpcModalFooter class="d-flex flex-column align-items-stretch gap-3 w-100">
@@ -1452,7 +1135,10 @@
       variant="primary"
       [summary]="draftTotalsSummary(editSupplierInvoiceId ? editSupplierLineItems : editLineItems)"
     ></framework-pricing-totals-summary>
-    <div class="d-flex justify-content-end w-100">
+    <div class="d-flex justify-content-end gap-2 w-100">
+      <fpc-button variant="dark" type="button" (clicked)="editModalOpen.set(false)" i18n="@@featureBillingModal-cancel">
+        Cancel
+      </fpc-button>
       <fpc-button
         variant="primary"
         (clicked)="submitEdit()"
@@ -1466,7 +1152,13 @@
   </div>
 </fpc-modal>
 
-<fpc-modal [(open)]="issueModalOpen" i18n-title="@@featureAdminInvoices-issueTitle" title="Issue invoice">
+<fpc-modal
+  [(open)]="issueModalOpen"
+  i18n-title="@@featureAdminInvoices-issueTitle"
+  title="Issue invoice"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   @if (issueSupplierInvoiceId) {
     <fpc-form-field
       forId="issueSupplierInvoiceNumber"
@@ -1524,7 +1216,7 @@
       />
     </fpc-form-field>
   }
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="success"
       (clicked)="submitIssue()"
@@ -1562,8 +1254,25 @@
   let-target="target"
   let-itemCount="itemCount"
 >
-  <div class="mb-3">
-    <div class="border rounded p-3">
+  <section class="mb-3">
+    <fpc-list-header class="d-block mb-2" [title]="lineTitle(i)" [sticky]="false">
+      @if (itemCount > 1) {
+        <fpc-button
+          fpcListHeaderActions
+          variant="dark"
+          size="sm"
+          iconOnly
+          (clicked)="removeLineItem(target, i)"
+          title="Remove line"
+          i18n-title="@@featureAdminInvoices-removeLine"
+          ariaLabel="Remove line"
+          i18n-ariaLabel="@@featureAdminInvoices-removeLine"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+      }
+    </fpc-list-header>
+    <div>
       <fpc-form-field
         [forId]="prefix + 'LineDesc' + i"
         i18n-label="@@featureAdminInvoices-lineDescription"
@@ -1651,24 +1360,22 @@
           </div>
         }
       </div>
-      @if (itemCount > 1) {
-        <fpc-button
-          variant="danger"
-          size="sm"
-          iconOnly
-          (clicked)="removeLineItem(target, i)"
-          title="Remove line"
-          i18n-title="@@featureAdminInvoices-removeLine"
-          ariaLabel="Remove line"
-          i18n-ariaLabel="@@featureAdminInvoices-removeLine"
-          class="mt-2"
-        >
-          <i class="bi bi-trash" aria-hidden="true"></i>
-        </fpc-button>
-      }
     </div>
-    <div class="mt-1">
-      <framework-pricing-totals-summary [summary]="lineItemSummary(line)"></framework-pricing-totals-summary>
-    </div>
-  </div>
+    @if (itemCount > 1) {
+      <div class="mt-2">
+        <framework-pricing-totals-summary [summary]="lineItemSummary(line)"></framework-pricing-totals-summary>
+      </div>
+    }
+  </section>
 </ng-template>
+
+<fpc-confirm-dialog
+  [open]="pendingBulk() !== null"
+  (openChange)="!$event && pendingBulk.set(null)"
+  [title]="bulkConfirmTitle()"
+  [message]="bulkConfirmMessage()"
+  [confirmLabel]="bulkConfirmLabel()"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="confirmPendingBulk()"
+/>

@@ -1,7 +1,7 @@
 <div class="overview-container border-top d-flex flex-column flex-grow-1 min-h-0">
   <fpc-page-header [title]="pageTitle" />
 
-  <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
+  <div class="flex-grow-1 d-flex flex-column min-h-0 w-100 h-100 overflow-hidden">
     @if (subscriptionsError$ | async; as error) {
       <fpc-alert [flush]="true" variant="danger" [message]="error" />
     }
@@ -13,7 +13,7 @@
     }
 
     <fpc-summary-bar [columns]="5">
-      <fpc-summary-card [label]="activePlansLabel">
+      <fpc-summary-card icon="stack" [label]="activePlansLabel">
         <span fpcSummaryCardValue>
           @if (subscriptionsSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -24,7 +24,7 @@
         <ng-container ngProjectAs="[fpcSummaryCardActions]">
           <fpc-button
             routerLink="/subscriptions"
-            variant="dark"
+            variant="outline-secondary"
             size="sm"
             iconOnly
             title="View plans"
@@ -36,7 +36,7 @@
             <fpc-button
               routerLink="/subscriptions"
               [queryParams]="{ order: 'true' }"
-              variant="primary"
+              variant="outline-secondary"
               size="sm"
               iconOnly
               title="Place order"
@@ -46,7 +46,7 @@
             </fpc-button>
           } @else {
             <fpc-button
-              variant="dark"
+              variant="outline-secondary"
               size="sm"
               iconOnly
               disabled
@@ -58,7 +58,7 @@
           }
         </ng-container>
       </fpc-summary-card>
-      <fpc-summary-card [label]="activeProjectsLabel">
+      <fpc-summary-card icon="kanban" [label]="activeProjectsLabel">
         <span fpcSummaryCardValue>
           @if (projectsCatalogSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -69,7 +69,7 @@
         <fpc-button
           fpcSummaryCardActions
           routerLink="/projects"
-          variant="dark"
+          variant="outline-secondary"
           size="sm"
           iconOnly
           title="View projects"
@@ -78,7 +78,7 @@
           <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
         </fpc-button>
       </fpc-summary-card>
-      <fpc-summary-card [label]="backordersLabel">
+      <fpc-summary-card icon="box-seam" [label]="backordersLabel">
         <span fpcSummaryCardValue>
           @if (subscriptionsSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -87,7 +87,7 @@
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="openOverdueInvoicesLabel">
+      <fpc-summary-card icon="exclamation-circle" [label]="openOverdueInvoicesLabel">
         <span fpcSummaryCardValue>
           @if (invoicesSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -100,7 +100,7 @@
         <fpc-button
           fpcSummaryCardActions
           routerLink="/invoices"
-          variant="dark"
+          variant="outline-secondary"
           size="sm"
           iconOnly
           title="View invoices"
@@ -109,7 +109,7 @@
           <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
         </fpc-button>
       </fpc-summary-card>
-      <fpc-summary-card [label]="billingProfileLabel">
+      <fpc-summary-card icon="person-vcard" [label]="billingProfileLabel">
         <span fpcSummaryCardValue>
           @if (customerProfileLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -121,7 +121,7 @@
           fpcSummaryCardActions
           routerLink="/subscriptions"
           [queryParams]="{ profile: 'true' }"
-          variant="warning"
+          variant="outline-secondary"
           size="sm"
           iconOnly
           title="Edit billing profile"
@@ -154,222 +154,103 @@
       <fpc-alert [flush]="true" variant="warning" [message]="error" />
     }
 
-    <div class="section__row flex-grow-1 min-h-0">
-      <div class="section__column section__column--instances d-flex flex-column min-h-0">
-        <fpc-board-lane class="h-100" i18n-ariaLabel="@@featureOverview-cloudInstances" ariaLabel="Cloud instances">
-          <fpc-lane-header fpcBoardLaneHeader flush>
-            <span fpcLaneHeaderTitle i18n="@@featureOverview-cloudInstances">Cloud instances</span>
-          </fpc-lane-header>
-          <fpc-search-field
-            fpcBoardLaneSearch
-            name="instancesSearch"
-            inputId="instancesSearchInput"
-            [bordered]="false"
-            [placeholder]="searchInstancesPlaceholder"
-            [ariaLabel]="searchInstancesPlaceholder"
-            [(value)]="instancesSearch"
-          />
-          @if (overviewServerInfoLoading$ | async) {
-            <div class="d-flex justify-content-center align-items-center p-4">
-              <fpc-spinner
-                variant="primary"
-                i18n-label="@@featureOverview-loadingServerInfo"
-                label="Loading server info..."
-              />
-            </div>
-          } @else if (subscriptionsWithServerInfo().length === 0) {
-            @if (instancesSearch().trim()) {
-              <fpc-empty-state
-                size="sm"
-                icon="search"
-                message="No search results"
-                i18n-message="@@featureOverview-noSearchResults"
-              />
-            } @else {
-              <fpc-empty-state
-                size="sm"
-                message="No cloud instances yet"
-                i18n-message="@@featureOverview-noInstances"
-              />
-            }
-          } @else {
-            <fpc-list [flush]="true">
-              @for (item of subscriptionsWithServerInfo(); track item.subscription.id) {
-                <fpc-list-item>
-                  @if (item.itemId && isInstanceReady(item)) {
-                    <a
-                      fpcListItemTitle
-                      [routerLink]="['/subscriptions', item.subscription.id, 'services', item.itemId]"
-                      [queryParams]="{ from: 'dashboard' }"
-                      class="text-decoration-none text-body"
-                      title="View service details"
-                      i18n-title="@@featureOverview-viewServiceDetails"
-                    >
-                      <ng-container *ngTemplateOutlet="instanceMain; context: { $implicit: item }" />
-                    </a>
-                  } @else {
-                    <div fpcListItemTitle>
-                      <ng-container *ngTemplateOutlet="instanceMain; context: { $implicit: item }" />
-                    </div>
-                  }
-                  <div fpcListItemActions class="d-flex align-items-center gap-2">
-                    @if (isInstanceReady(item)) {
-                      @if (
-                        (serverActionInProgressMap$ | async)?.[item.subscription.id] === undefined &&
-                        !isServerStatusTransitional(item.serverInfo!)
-                      ) {
-                        <fpc-button-group
-                          size="sm"
-                          ariaLabel="Server actions"
-                          i18n-ariaLabel="@@featureOverview-serverActionsAria"
-                        >
-                          @if (isServerStartable(item.serverInfo!)) {
-                            <fpc-button
-                              variant="dark"
-                              size="sm"
-                              iconOnly
-                              (clicked)="serverInfoFacade.startServer(item.subscription.id, item.itemId)"
-                              title="Start server"
-                              i18n-title="@@featureOverview-serverStartButtonTitle"
-                            >
-                              <i class="bi bi-play-fill" aria-hidden="true"></i>
-                            </fpc-button>
-                          }
-                          @if (isServerOnline(item.serverInfo!)) {
-                            <fpc-button
-                              variant="dark"
-                              size="sm"
-                              iconOnly
-                              (clicked)="serverInfoFacade.stopServer(item.subscription.id, item.itemId)"
-                              title="Stop server"
-                              i18n-title="@@featureOverview-serverStopButtonTitle"
-                            >
-                              <i class="bi bi-stop-fill" aria-hidden="true"></i>
-                            </fpc-button>
-                            <fpc-button
-                              variant="dark"
-                              size="sm"
-                              iconOnly
-                              (clicked)="serverInfoFacade.restartServer(item.subscription.id, item.itemId)"
-                              title="Restart server"
-                              i18n-title="@@featureOverview-serverRestartButtonTitle"
-                            >
-                              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
-                            </fpc-button>
-                          }
-                        </fpc-button-group>
-                      } @else {
-                        <div class="d-flex align-items-center gap-2 text-body-secondary" aria-live="polite">
-                          <fpc-spinner size="sm" />
-                          <span class="visually-hidden" i18n="@@featureOverview-serverStatusUpdating"
-                            >Server status updating...</span
-                          >
-                        </div>
-                      }
-                      <fpc-button
-                        variant="dark"
-                        size="sm"
-                        iconOnly
-                        (clicked)="$event.preventDefault(); $event.stopPropagation(); openSshAccessConfirm(item)"
-                        [disabled]="item.sshAccessGranted"
-                        [title]="item.sshAccessGranted ? sshAccessGrantedButtonTitle : sshAccessButtonTitle"
-                        [ariaLabel]="item.sshAccessGranted ? sshAccessGrantedButtonTitle : sshAccessButtonTitle"
-                      >
-                        <i class="bi bi-key" aria-hidden="true"></i>
-                      </fpc-button>
-                      @if (item.service === 'agenstra-controller' || item.service === 'decabill-billing') {
-                        <fpc-button
-                          size="sm"
-                          variant="dark"
-                          iconOnly
-                          [href]="'https://' + (item.serverInfo!.hostnameFqdn || item.serverInfo!.publicIp)"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          [disabled]="!isServerOnline(item.serverInfo!)"
-                          title="Open console"
-                          i18n-title="@@featureOverview-openConsoleButtonTitle"
-                        >
-                          <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-                        </fpc-button>
-                      }
-                    }
-                  </div>
-                </fpc-list-item>
-              }
-            </fpc-list>
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="overview-bulk-result"
+      />
+    }
+
+    <!-- Cloud instances: State (server / provisioning) · Instance (link) · facts; ⋮ server actions; bulk start / stop / restart. -->
+    <fpc-data-table
+      class="flex-grow-1 min-h-0"
+      [ariaLabel]="cloudInstancesLabel"
+      [columns]="instanceColumns"
+      [rows]="subscriptionsWithServerInfo()"
+      [rowId]="instanceRowId"
+      [rowLink]="instanceLink"
+      paging="server"
+      [hasNext]="instancesHasNext()"
+      [(page)]="paging.page"
+      [(pageSize)]="paging.pageSize"
+      persistKey="decabill-overview-instances"
+      [(query)]="paging.search"
+      [searchPlaceholder]="searchInstancesPlaceholder"
+      [loading]="!!(overviewServerInfoLoading$ | async)"
+      selectable
+      [(selected)]="selected"
+      [rowMenu]="instanceMenu"
+      (rowAction)="onInstanceAction($event.row, $event.item.id)"
+      emptyIcon="hdd-rack"
+      data-testid="overview-instances"
+    >
+      <fpc-button
+        fpcDataTableBatch
+        variant="dark"
+        size="sm"
+        [disabled]="bulkTargets('start').length === 0"
+        (clicked)="runServerBulk('start')"
+        data-testid="overview-bulk-start"
+        iconOnly
+        [ariaLabel]="startLabel"
+        [title]="startLabel"
+      >
+        <i class="bi bi-play-fill" aria-hidden="true"></i>
+      </fpc-button>
+      <fpc-button
+        fpcDataTableBatch
+        variant="dark"
+        size="sm"
+        [disabled]="bulkTargets('stop').length === 0"
+        (clicked)="confirmBulkStop.set(true)"
+        data-testid="overview-bulk-stop"
+        iconOnly
+        [ariaLabel]="stopLabel"
+        [title]="stopLabel"
+      >
+        <i class="bi bi-stop-fill" aria-hidden="true"></i>
+      </fpc-button>
+      <fpc-button
+        fpcDataTableBatch
+        variant="dark"
+        size="sm"
+        [disabled]="bulkTargets('restart').length === 0"
+        (clicked)="runServerBulk('restart')"
+        data-testid="overview-bulk-restart"
+        iconOnly
+        [ariaLabel]="restartLabel"
+        [title]="restartLabel"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+      <span fpcDataTableEmpty>
+        <fpc-empty-state size="sm" message="No cloud instances yet" i18n-message="@@featureOverview-noInstances" />
+      </span>
+      <ng-template fpcTableCell="name" let-row>
+        <span class="d-inline-flex align-items-center gap-2 mw-100" [title]="instanceDisplayTitle(row)">
+          <span class="fw-semibold text-truncate">{{ instanceDisplayTitle(row) }}</span>
+          @if (instanceSshGranted(row)) {
+            <fpc-badge tone="warning" icon="key" [iconOnly]="true" [label]="sshGrantedLabel" />
           }
-        </fpc-board-lane>
-      </div>
-    </div>
+        </span>
+      </ng-template>
+    </fpc-data-table>
   </div>
 </div>
 
-<ng-template #instanceMain let-item>
-  <div class="fw-semibold mb-1">{{ instanceDisplayTitle(item) }}</div>
-  <div class="small text-body-secondary d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-    <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-      @if (isProvisioningPending(item) || isProvisioningFailed(item)) {
-        <fpc-badge
-          variant="info"
-          color="secondary"
-          class="me-2"
-          [ngClass]="provisioningStatusBadgeClass(item.provisioningStatus)"
-        >
-          {{ provisioningStatusLabel(item.provisioningStatus) }}
-        </fpc-badge>
-        <span class="me-2">
-          <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ serviceTypeLabel(item.service) }}
-        </span>
-        @if (isProvisioningPending(item)) {
-          <span class="me-2" i18n="@@featureOverview-provisioningPendingHint">
-            Your server is being set up. This usually takes less than a minute.
-          </span>
-        } @else {
-          <span class="me-2" i18n="@@featureOverview-provisioningFailedHint">
-            Server setup did not complete. Check backorders or contact support if this persists.
-          </span>
-        }
-      } @else if (item.serverInfo; as serverInfo) {
-        <fpc-badge variant="info" color="secondary" class="me-2" [ngClass]="serverStatusBadgeClass(serverInfo)">
-          <i class="bi me-1" [ngClass]="serverStatusIconClass(serverInfo)" aria-hidden="true"></i>
-          {{ serverStatusLabel(serverInfo) }}
-        </fpc-badge>
-        @if (item.sshAccessGranted) {
-          <fpc-badge
-            variant="info"
-            color="secondary"
-            class="me-2 billing-admin__chip--status-warning"
-            title="SSH access granted"
-            i18n-title="@@featureOverview-sshAccessGrantedBadgeTitle"
-          >
-            <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
-            <span i18n="@@featureOverview-sshAccessGrantedBadge">SSH access granted</span>
-          </fpc-badge>
-        }
-        <span class="me-2">
-          <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ serviceTypeLabel(item.service) }}
-        </span>
-        @if (item.serviceTypeName) {
-          <span class="me-2">
-            <i class="bi bi-hdd-rack me-1" aria-hidden="true"></i>{{ item.serviceTypeName }}
-            @if (serverLocationLabel(serverInfo.metadata); as loc) {
-              <span class="text-body-secondary ms-1">({{ loc }})</span>
-            }
-          </span>
-        } @else if (serverLocationLabel(serverInfo.metadata); as loc) {
-          <span class="me-2"> <i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ loc }} </span>
-        }
-        @if (serverInfo.hostnameFqdn) {
-          <span class="me-2"> <i class="bi bi-globe me-1" aria-hidden="true"></i>{{ serverInfo.hostnameFqdn }} </span>
-        }
-        <span class="me-2"> <i class="bi bi-ethernet me-1" aria-hidden="true"></i>{{ serverInfo.publicIp }} </span>
-        @if (serverInfo.privateIp) {
-          <span class="me-2"> <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>{{ serverInfo.privateIp }} </span>
-        }
-      }
-    </div>
-  </div>
-</ng-template>
+<fpc-confirm-dialog
+  [(open)]="confirmBulkStop"
+  [title]="bulkStopTitle"
+  [message]="bulkStopMessage()"
+  [confirmLabel]="stopLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="runServerBulk('stop')"
+/>
 
 <fpc-modal
   [(open)]="sshAccessConfirmModalOpen"

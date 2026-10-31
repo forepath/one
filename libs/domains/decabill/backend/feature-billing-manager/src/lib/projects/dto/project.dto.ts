@@ -111,6 +111,8 @@ export class ProjectListItemDto extends ProjectResponseDto {
 
 export class AdminProjectListItemDto extends ProjectListItemDto {
   userEmail?: string;
+  /** Billing-profile name (company, else first + last name). */
+  customerName?: string;
 }
 
 export class PaginatedProjectsResponseDto {

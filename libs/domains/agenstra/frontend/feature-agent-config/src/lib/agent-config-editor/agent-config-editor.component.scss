@@ -135,8 +135,7 @@
   padding: 0.5rem 1rem;
   font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  // Sentence case like every other group header (AG-19); muted small label.
   color: var(--bs-secondary-color);
   background-color: var(--bs-tertiary-bg);
   border-bottom: var(--bs-border-width) solid var(--bs-border-color);
@@ -193,8 +192,6 @@
   padding: 0.5rem 1rem;
   font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--bs-secondary-color);
   background-color: var(--bs-tertiary-bg);
   border-bottom: var(--bs-border-width) solid var(--bs-border-color);

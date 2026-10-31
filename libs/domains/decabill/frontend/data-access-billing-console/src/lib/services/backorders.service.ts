@@ -4,7 +4,12 @@ import type { Environment } from '@forepath/decabill/frontend/util-configuration
 import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
-import type { BackorderCancelDto, BackorderResponse, BackorderRetryDto, ListParams } from '../types/billing.types';
+import type {
+  BackorderCancelDto,
+  BackorderResponse,
+  BackorderRetryDto,
+  BackordersListParams,
+} from '../types/billing.types';
 
 @Injectable({
   providedIn: 'root',
@@ -21,9 +26,9 @@ export class BackordersService {
   }
 
   /**
-   * List all backorders for the current user with optional pagination.
+   * One page of the current user's backorders (`limit` / `offset` / `search`; `status` narrows it, e.g. pending).
    */
-  listBackorders(params?: ListParams): Observable<BackorderResponse[]> {
+  listBackorders(params?: BackordersListParams): Observable<BackorderResponse[]> {
     let httpParams = new HttpParams();
 
     if (params?.limit !== undefined) {
@@ -36,6 +41,10 @@ export class BackordersService {
 
     if (params?.search?.trim()) {
       httpParams = httpParams.set('search', params.search.trim());
+    }
+
+    if (params?.status?.length) {
+      httpParams = httpParams.set('status', params.status.join(','));
     }
 
     return this.http.get<BackorderResponse[]>(`${this.apiUrl}/backorders`, {

@@ -1,156 +1,80 @@
 <div class="promotions-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
-    <fpc-button
-      fpcPageHeaderActions
-      variant="primary"
-      size="sm"
-      iconOnly
-      [ariaLabel]="applyPromoAriaLabel"
-      [title]="applyPromoAriaLabel"
-      (clicked)="openApplyModal()"
-    >
-      <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
-    </fpc-button>
-  </fpc-page-header>
+  <fpc-page-header [title]="pageTitle" />
 
-  <fpc-tab-group
-    class="d-md-none flex-shrink-0"
-    [activeId]="mobilePanel()"
-    (activeIdChange)="onMobilePanelTabChange($event)"
-  >
-    <fpc-tab id="active" [label]="mobilePanelLabel('active')" />
-    <fpc-tab id="history" [label]="mobilePanelLabel('history')" />
+  <fpc-tab-group class="flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="onTabChange($event)">
+    <fpc-tab id="active" [label]="tabLabel('active')" />
+    <fpc-tab id="history" [label]="tabLabel('history')" />
   </fpc-tab-group>
 
-  <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
-    <div class="section__row flex-grow-1 min-h-0">
-      <div
-        class="section__column section__column--active d-md-flex flex-column min-h-0 border-end"
-        [class.d-none]="mobilePanel() !== 'active'"
+  @switch (activeTab()) {
+    @case ('active') {
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="tabLabel('active')"
+        [columns]="activeColumns"
+        [rows]="activePromotions()"
+        paging="server"
+        [total]="activeTotal()"
+        [(page)]="activePaging.page"
+        [(pageSize)]="activePaging.pageSize"
+        persistKey="decabill-promotions-active"
+        [(query)]="activePaging.search"
+        [searchPlaceholder]="searchActivePlaceholder"
+        [loading]="(loadingActive$ | async) === true"
+        emptyIcon="ticket-perforated"
+        data-testid="promotions-active-list"
       >
-        <fpc-board-lane class="h-100">
-          <fpc-lane-header fpcBoardLaneHeader flush>
-            <span fpcLaneHeaderTitle i18n="@@featurePromotions-activeTitle">Active promotions</span>
-          </fpc-lane-header>
-          <fpc-search-field
-            fpcBoardLaneSearch
-            inputId="activePromotionsSearchInput"
-            name="activePromotionsSearch"
-            [bordered]="false"
-            i18n-placeholder="@@featurePromotions-searchActive"
-            placeholder="Search active promotions"
-            i18n-ariaLabel="@@featurePromotions-searchActive"
-            ariaLabel="Search active promotions"
-            [(value)]="activeSearch"
+        <fpc-button
+          fpcDataTableToolbar
+          variant="primary"
+          size="sm"
+          iconOnly
+          [ariaLabel]="applyPromoAriaLabel"
+          [title]="applyPromoAriaLabel"
+          (clicked)="openApplyModal()"
+        >
+          <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+        </fpc-button>
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            icon="ticket-perforated"
+            size="sm"
+            message="No active promotions yet"
+            i18n-message="@@featurePromotions-noActive"
           />
-          @if (loadingActive$ | async) {
-            <div class="d-flex justify-content-center align-items-center p-4">
-              <fpc-spinner variant="primary" i18n-label="@@featurePromotions-loading" label="Loading..." />
-            </div>
-          } @else if (activePromotions().length === 0) {
-            @if (activeSearch().trim()) {
-              <fpc-empty-state
-                size="sm"
-                icon="search"
-                message="No search results"
-                i18n-message="@@featurePromotions-noSearchResults"
-              />
-            } @else {
-              <fpc-empty-state
-                size="sm"
-                message="No active promotions yet"
-                i18n-message="@@featurePromotions-noActive"
-              />
-            }
-          } @else {
-            <fpc-list [flush]="true">
-              @for (item of activePromotions(); track item.id) {
-                <fpc-list-item>
-                  <div fpcListItemTitle class="fw-semibold">{{ item.promotionName }} ({{ item.code }})</div>
-                  <div fpcListItemMeta class="small">{{ item.advantageSummary }}</div>
-                  <div class="small text-body-secondary d-flex align-items-center gap-3 flex-wrap mt-1">
-                    <span
-                      ><i class="bi bi-calendar-range me-1" aria-hidden="true"></i>{{ formatDate(item.validFrom) }} to
-                      {{ formatDate(item.validTo) }}</span
-                    >
-                    @if (item.planName) {
-                      <span><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ item.planName }}</span>
-                    }
-                  </div>
-                </fpc-list-item>
-              }
-            </fpc-list>
-          }
-        </fpc-board-lane>
-      </div>
-
-      <div
-        class="section__column section__column--history d-md-flex flex-column min-h-0"
-        [class.d-none]="mobilePanel() !== 'history'"
+        </span>
+        <ng-template fpcTableCell="valid" let-row>{{ validRange(row) }}</ng-template>
+      </fpc-data-table>
+    }
+    @case ('history') {
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="tabLabel('history')"
+        [columns]="historyColumns"
+        [rows]="redemptions()"
+        paging="server"
+        [total]="redemptionsTotal()"
+        [(page)]="historyPaging.page"
+        [(pageSize)]="historyPaging.pageSize"
+        persistKey="decabill-promotions-history"
+        [(query)]="historyPaging.search"
+        [searchPlaceholder]="searchHistoryPlaceholder"
+        [loading]="(loadingRedemptions$ | async) === true"
+        emptyIcon="clock-history"
+        data-testid="promotions-history-list"
       >
-        <fpc-board-lane class="h-100">
-          <fpc-lane-header fpcBoardLaneHeader flush>
-            <span fpcLaneHeaderTitle i18n="@@featurePromotions-historyTitle">Redemption history</span>
-          </fpc-lane-header>
-          <fpc-search-field
-            fpcBoardLaneSearch
-            inputId="redemptionHistorySearchInput"
-            name="redemptionHistorySearch"
-            [bordered]="false"
-            i18n-placeholder="@@featurePromotions-searchHistory"
-            placeholder="Search redemption history"
-            i18n-ariaLabel="@@featurePromotions-searchHistory"
-            ariaLabel="Search redemption history"
-            [(value)]="historySearch"
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            icon="clock-history"
+            size="sm"
+            message="No redemptions yet"
+            i18n-message="@@featurePromotions-noHistory"
           />
-          @if (loadingRedemptions$ | async) {
-            <div class="d-flex justify-content-center align-items-center p-4">
-              <fpc-spinner variant="primary" i18n-label="@@featurePromotions-loading" label="Loading..." />
-            </div>
-          } @else if (redemptions().length === 0) {
-            @if (historySearch().trim()) {
-              <fpc-empty-state
-                size="sm"
-                icon="search"
-                message="No search results"
-                i18n-message="@@featurePromotions-noSearchResults"
-              />
-            } @else {
-              <fpc-empty-state size="sm" message="No redemptions yet" i18n-message="@@featurePromotions-noHistory" />
-            }
-          } @else {
-            <fpc-list [flush]="true">
-              @for (item of redemptions(); track trackRedemption($index, item)) {
-                <fpc-list-item>
-                  <div fpcListItemTitle class="fw-semibold">{{ item.code }}</div>
-                  <div fpcListItemMeta class="small">{{ item.advantageSummary }}</div>
-                  <div class="small text-body-secondary d-flex align-items-center gap-3 flex-wrap mt-1">
-                    <span [ngClass]="redemptionStatusTextClass(item.status)">
-                      <i class="bi me-1" [ngClass]="redemptionStatusIconClass(item.status)" aria-hidden="true"></i
-                      >{{ redemptionStatusLabel(item.status) }}
-                    </span>
-                    <span
-                      ><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ formatDateTime(item.redeemedAt) }}</span
-                    >
-                    <span
-                      ><i class="bi bi-box me-1" aria-hidden="true"></i>{{ redemptionSubscriptionLabel(item) }}</span
-                    >
-                    @if (item.planName) {
-                      <span><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ item.planName }}</span>
-                    }
-                    <span
-                      ><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i
-                      >{{ redemptionContextLabel(item.redemptionContext) }}</span
-                    >
-                  </div>
-                </fpc-list-item>
-              }
-            </fpc-list>
-          }
-        </fpc-board-lane>
-      </div>
-    </div>
-  </div>
+        </span>
+        <ng-template fpcTableCell="redeemedAt" let-row>{{ formatDateTime(redeemedAt(row)) }}</ng-template>
+      </fpc-data-table>
+    }
+  }
 </div>
 
 <fpc-modal
@@ -194,7 +118,7 @@
     <fpc-alert class="mt-3 mb-0" [variant]="preview.valid ? 'success' : 'danger'">
       @if (preview.valid) {
         <div i18n="@@featurePromotions-validMessage">This code can be applied.</div>
-        <div class="small mt-1">{{ preview.advantageSummary }}</div>
+        <div class="small mt-1">{{ advantageText(preview) }}</div>
         @if (promotionPeriodPricing(); as pricing) {
           <div class="mt-3 p-3 bg-body border rounded small">
             <dl class="mb-0">

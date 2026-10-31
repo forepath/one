@@ -1,0 +1,123 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.fpc-list-editor__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.fpc-list-editor__count {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+.fpc-list-editor__items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+// Inline rows: the control grows, the row actions sit at its end.
+.fpc-list-editor__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.fpc-list-editor__item-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+// Card rows: a bordered panel on the body surface with a title line.
+.fpc-list-editor__item--card {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-body-bg);
+
+  .fpc-list-editor__item-body {
+    padding: 0.75rem 1rem 1rem;
+  }
+}
+
+.fpc-list-editor__item-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 1rem;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color-translucent);
+}
+
+.fpc-list-editor__item-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.fpc-list-editor__actions {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 0.125rem;
+}
+
+// Quiet square icon buttons (the header action tier).
+.fpc-list-editor__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: var(--bs-secondary-color);
+  background: transparent;
+  border: 0;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    color: var(--bs-emphasis-color);
+    background-color: var(--bs-tertiary-bg);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+  }
+}
+
+.fpc-list-editor__action--remove:hover:not(:disabled) {
+  color: var(--bs-danger-text-emphasis);
+}
+
+:host(.fpc-list-editor--inline) {
+  .fpc-list-editor__item {
+    align-items: center;
+  }
+
+  .fpc-list-editor__action {
+    height: 2.375rem;
+  }
+}
+
+.fpc-list-editor__add {
+  align-self: flex-start;
+  color: var(--bs-body-color);
+  background-color: var(--bs-tertiary-bg);
+  border: var(--bs-border-width) dashed var(--bs-border-color);
+
+  &:hover:not(:disabled) {
+    border-color: var(--bs-primary);
+  }
+}

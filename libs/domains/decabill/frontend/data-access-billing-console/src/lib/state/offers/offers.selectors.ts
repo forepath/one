@@ -12,9 +12,13 @@ export const selectPendingOffersList = createSelector(selectOffersState, (state)
 export const selectPendingOffersListLoading = createSelector(selectOffersState, (state) => state.pendingListLoading);
 export const selectPendingOffersListError = createSelector(selectOffersState, (state) => state.pendingListError);
 
+export const selectPendingOffersTotal = createSelector(selectOffersState, (state) => state.pendingTotal);
+
 export const selectHistoryOffersList = createSelector(selectOffersState, (state) => state.historyList);
 export const selectHistoryOffersListLoading = createSelector(selectOffersState, (state) => state.historyListLoading);
 export const selectHistoryOffersListError = createSelector(selectOffersState, (state) => state.historyListError);
+
+export const selectHistoryOffersTotal = createSelector(selectOffersState, (state) => state.historyTotal);
 
 export const selectOfferDetailsLoading = createSelector(selectOffersState, (state) => state.detailsLoading);
 export const selectRespondingOfferId = createSelector(selectOffersState, (state) => state.respondingOfferId);

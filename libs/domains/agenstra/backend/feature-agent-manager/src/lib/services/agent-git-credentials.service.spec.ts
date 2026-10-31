@@ -9,7 +9,7 @@ import {
   resolveLegacyEncodedPrivateKey,
   touchesGitCredentialEnvironment,
 } from './agent-git-credentials.service';
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 
 describe('AgentGitCredentialsService', () => {
   let service: AgentGitCredentialsService;
@@ -25,7 +25,7 @@ describe('AgentGitCredentialsService', () => {
     dockerService.getContainerHomeDirectory.mockResolvedValue('/home/agenstra');
 
     const module = await Test.createTestingModule({
-      providers: [AgentGitCredentialsService, { provide: DockerService, useValue: dockerService }],
+      providers: [AgentGitCredentialsService, { provide: AgentRuntime, useValue: dockerService }],
     }).compile();
 
     service = module.get(AgentGitCredentialsService);

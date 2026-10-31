@@ -1,11 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  LOCALE_ID,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   AgentTasksFacade,
+  AgentTasksService,
   AgentsFacade,
   ClientsFacade,
   ContainerSocketFacade,
@@ -17,26 +28,32 @@ import {
   type ClientResponseDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
-  FpcAccordionComponent,
-  FpcAccordionItemComponent,
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
   FpcConfirmDialogComponent,
+  FpcDataTableComponent,
+  FpcTableCellDirective,
+  FpcTableRowDetailDirective,
+  fpcCopyText,
+  fpcRunBulk,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  FPC_DEFAULT_PAGE_SIZE,
+  fpcFormatDateTime,
+  FpcDropdownComponent,
+  FpcDropdownItemComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormCheckGroupComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcFormSwitchComponent,
-  FpcInfiniteScrollDirective,
-  FpcListAppendFooterComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
+  FpcSectionRowComponent,
+  FpcSectionColumnComponent,
 } from '@forepath/shared/frontend/ui-components';
 import {
   EMPTY,
@@ -45,6 +62,7 @@ import {
   debounceTime,
   distinctUntilChanged,
   filter,
+  firstValueFrom,
   map,
   of,
   pairwise,
@@ -58,12 +76,17 @@ import { AgentChatHandoffNavigationService } from '../chat/agent-chat-handoff-na
 import type { AgentChatHandoffCardView, AgentChatHandoffLink } from '../chat/agent-chat-handoff-view';
 import { sanitizeAndTrustMarkdownHtml } from '../chat/chat-markdown-html';
 import { resolveNamedDisplayLabel } from '../display-name.util';
+import { agBulkSummary, agCopyIdItem, agOpenItem, AG_DL_CANCEL, AG_DL_DELETE } from '../shared/data-list';
+import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
+import { WorkspaceSwitchTableComponent } from '../shared/workspace-switch-table.component';
 
 import {
+  agentTaskRunState,
   agentTaskRunStatusBadgeColor,
   agentTaskRunStatusLabel,
   agentTaskRunTriggerLabel,
   agentTaskSchedulePresets,
+  agentTaskState,
   describeAgentTaskSchedule,
 } from './agent-task-labels';
 import { buildAgentTaskTranscriptSegments } from './agent-task-transcript-view';
@@ -85,30 +108,32 @@ const RUNNING_HISTORY_REFRESH_MS = 10_000;
   selector: 'framework-agent-tasks-board',
   standalone: true,
   imports: [
+    FpcSectionRowComponent,
+    FpcSectionColumnComponent,
     CommonModule,
     FormsModule,
     RouterModule,
     AgentChatEventRowComponent,
-    FpcAccordionComponent,
-    FpcAccordionItemComponent,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
     FpcConfirmDialogComponent,
+    FpcDataTableComponent,
+    FpcTableCellDirective,
+    FpcTableRowDetailDirective,
+    WorkspaceChipComponent,
+    WorkspaceSwitchTableComponent,
+    FpcDropdownComponent,
+    FpcDropdownItemComponent,
     FpcEmptyStateComponent,
     FpcFormCheckComponent,
     FpcFormCheckGroupComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormSwitchComponent,
-    FpcInfiniteScrollDirective,
-    FpcListAppendFooterComponent,
-    FpcListComponent,
-    FpcListItemComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
   ],
   templateUrl: './agent-tasks-board.component.html',
   styleUrls: ['./agent-tasks-board.component.scss'],
@@ -116,7 +141,7 @@ const RUNNING_HISTORY_REFRESH_MS = 10_000;
 export class AgentTasksBoardComponent implements AfterViewInit {
   readonly pageTitle = $localize`:@@featureAgentTasks-title:Tasks`;
   readonly switchWorkspaceTitle = $localize`:@@featureAgentTasks-switchWorkspaceTitle:Switch workspace`;
-  readonly newTaskTitle = $localize`:@@featureAgentTasks-newTaskTitle:New task`;
+  readonly newTaskTitle = $localize`:@@featureAgentTasks-newTaskTitle:Create task`;
   readonly runNowTitle = $localize`:@@featureAgentTasks-runNowTitle:Run now`;
   readonly editTitle = $localize`:@@featureAgentTasks-editTitle:Edit task`;
   readonly deleteTitle = $localize`:@@featureAgentTasks-deleteTitle:Delete task`;
@@ -127,13 +152,121 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   readonly runTriggerLabel = agentTaskRunTriggerLabel;
   readonly describeSchedule = describeAgentTaskSchedule;
   readonly isRunActive = isAgentTaskRunActive;
-  readonly allowedHandoffAgentsLabel = $localize`:@@featureAgentTasks-allowedHandoffAgentsLabel:Allowed handoff agents`;
-  readonly allowedHandoffAgentsHint = $localize`:@@featureAgentTasks-allowedHandoffAgentsHint:Runs may hand off work to these agents of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.`;
+  readonly allowedHandoffAgentsLabel = $localize`:@@featureAgentTasks-allowedHandoffAgentsLabel:Allowed handoff environments`;
+  readonly allowedHandoffAgentsHint = $localize`:@@featureAgentTasks-allowedHandoffAgentsHint:Runs may hand off work to these environments of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.`;
   readonly openHandoffChatLabel = $localize`:@@featureAgentTasks-openHandoffChat:Open handoff chat`;
+  readonly tasksLabel = $localize`:@@featureAgentTasks-tasksTable:Tasks`;
+  readonly taskSearchPlaceholder = $localize`:@@featureAgentTasks-searchTasks:Search tasks`;
+  readonly environmentFilterLabel = $localize`:@@featureAgentTasks-agentFilterLabel:Environment`;
+  readonly runNowLabel = $localize`:@@featureAgentTasks-runNowTitle:Run now`;
+  readonly pauseLabel = $localize`:@@featureAgentTasks-bulkPause:Pause`;
+  readonly resumeLabel = $localize`:@@featureAgentTasks-bulkResume:Resume`;
+  readonly deleteLabel = AG_DL_DELETE;
+  readonly cancelLabel = AG_DL_CANCEL;
+  readonly bulkDeleteTitle = $localize`:@@featureAgentTasks-bulkDeleteTitle:Delete tasks`;
+  readonly moreActionsTitle = $localize`:@@featureAgentTasks-moreActions:More actions`;
+  readonly backToTasksTitle = $localize`:@@featureAgentTasks-backToTasks:Back to tasks`;
+  readonly sessionHistoryLabel = $localize`:@@featureAgentTasks-runsTable:Runs`;
+
+  /** Rail table (decision 7): State (approval / paused / last run) · Task · Environment · Schedule · Last / next run. */
+  readonly taskColumns: FpcTableColumn<AgentTaskResponseDto>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureAgentTasks-colState:State`,
+      type: 'state',
+      state: (task) => agentTaskState(task),
+    },
+    {
+      id: 'title',
+      label: $localize`:@@featureAgentTasks-colTask:Task`,
+      value: (task) => task.title,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'environment',
+      label: $localize`:@@featureAgentTasks-colEnvironment:Environment`,
+      value: (task) => this.agentName(task.agentId),
+      priority: 1,
+    },
+    {
+      id: 'schedule',
+      label: $localize`:@@featureAgentTasks-colSchedule:Schedule`,
+      value: (task) => describeAgentTaskSchedule(task.cronExpression, task.timezone),
+      priority: 2,
+    },
+    {
+      id: 'lastRun',
+      label: $localize`:@@featureAgentTasks-colLastRun:Last run`,
+      value: (task) => (task.lastRunAt ? this.formatDate(task.lastRunAt) : ''),
+      priority: 3,
+      hidden: true,
+    },
+    {
+      id: 'nextRun',
+      label: $localize`:@@featureAgentTasks-colNextRun:Next run`,
+      value: (task) => (task.nextRunAt ? this.formatDate(task.nextRunAt) : ''),
+      priority: 3,
+      hidden: true,
+    },
+  ];
+  readonly taskRowMenu = (task: AgentTaskResponseDto): FpcMenuItem[] => [
+    agOpenItem(),
+    { id: 'run', label: this.runNowLabel, icon: 'play-fill', disabled: this.isRunRequested(task.id) },
+    task.enabled
+      ? { id: 'pause', label: this.pauseLabel, icon: 'pause-circle' }
+      : { id: 'resume', label: this.resumeLabel, icon: 'play-circle' },
+    ...(task.approvalStatus === 'pending'
+      ? [{ id: 'approve', label: $localize`:@@featureAgentTasks-approve:Approve`, icon: 'check2-circle' }]
+      : []),
+    { id: 'edit', label: this.editTitle, icon: 'pencil' },
+    agCopyIdItem(),
+    { id: 'delete', label: this.deleteTitle, icon: 'trash', danger: true },
+  ];
+  readonly runColumns: FpcTableColumn<AgentTaskRunResponseDto>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureAgentTasks-colState:State`,
+      type: 'state',
+      state: (run) => agentTaskRunState(run.status),
+    },
+    {
+      id: 'started',
+      label: $localize`:@@featureAgentTasks-colStarted:Started`,
+      value: (run) => run.startedAt,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'trigger',
+      label: $localize`:@@featureAgentTasks-colTrigger:Trigger`,
+      value: (run) => agentTaskRunTriggerLabel(run.trigger),
+      priority: 1,
+    },
+    {
+      id: 'finished',
+      label: $localize`:@@featureAgentTasks-colFinished:Finished`,
+      value: (run) => (run.finishedAt ? this.formatDate(run.finishedAt) : ''),
+      priority: 3,
+    },
+  ];
+  readonly runRowMenu = (run: AgentTaskRunResponseDto): FpcMenuItem[] => [
+    {
+      id: 'toggle',
+      label:
+        this.expandedRunId() === run.id
+          ? $localize`:@@featureAgentTasks-hideTranscript:Hide transcript`
+          : $localize`:@@featureAgentTasks-showTranscript:Show transcript`,
+      icon: 'chat-left-text',
+    },
+    agCopyIdItem(),
+  ];
 
   private readonly clientsFacade = inject(ClientsFacade);
+  private readonly locale = inject(LOCALE_ID);
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly agentTasksFacade = inject(AgentTasksFacade);
+  private readonly agentTasksService = inject(AgentTasksService);
   private readonly socketsFacade = inject(ContainerSocketFacade);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -167,11 +300,44 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   /** Agent filter (`?agentId=`); `null` shows the tasks of every agent. */
   readonly agentFilter = signal<string | null>(null);
   readonly selectedTaskId = signal<string | null>(null);
+  readonly taskSearch = signal('');
+  readonly selectedTaskIds = signal<readonly string[]>([]);
+  readonly bulkBusy = signal(false);
+  readonly bulkResult = signal<{ tone: 'success' | 'warning' | 'danger'; message: string } | null>(null);
+  readonly bulkDeleteConfirmOpen = signal(false);
+  readonly bulkDeleteMessage = computed(
+    () =>
+      $localize`:@@featureAgentTasks-bulkDeleteMessage:Delete ${this.selectedTasks().length}:count: tasks and their run history? The agents stop running them.`,
+  );
+  /** Runs table: page / size over the loaded history (the store appends API pages of 10 on demand). */
+  readonly runPage = signal(1);
+  /** D4: 25 per page like every other table (AG-13). */
+  readonly runPageSize = signal(FPC_DEFAULT_PAGE_SIZE);
 
   readonly visibleTasks = computed(() => {
     const agentId = this.agentFilter();
 
     return agentId ? this.tasks().filter((task) => task.agentId === agentId) : this.tasks();
+  });
+  readonly searchedTasks = computed(() => {
+    const needle = this.taskSearch().trim().toLowerCase();
+
+    if (!needle) {
+      return this.visibleTasks();
+    }
+
+    return this.visibleTasks().filter((task) =>
+      [task.title, this.agentName(task.agentId), describeAgentTaskSchedule(task.cronExpression, task.timezone)]
+        .join(' ')
+        .toLowerCase()
+        .includes(needle),
+    );
+  });
+  /** Selected tasks that are still listed. */
+  readonly selectedTasks = computed(() => {
+    const ids = new Set(this.selectedTaskIds());
+
+    return this.tasks().filter((task) => ids.has(task.id));
   });
   readonly selectedTask = computed(() => this.tasks().find((task) => task.id === this.selectedTaskId()) ?? null);
   readonly selectedTaskRuns = toSignal(
@@ -200,8 +366,28 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   readonly requestedRunId = signal<string | null>(null);
   /** Run to scroll to once it is rendered (cleared after scrolling). */
   readonly focusRunId = signal<string | null>(null);
-  /** Expanded by default: the requested run, otherwise the newest one. */
-  readonly expandedRunId = computed(() => this.requestedRunId() ?? this.sessionHistory()[0]?.run.id ?? null);
+  /** Run the user opened / closed in the table (`undefined`: the default below). */
+  readonly toggledRunId = signal<string | null | undefined>(undefined);
+  /** Collapsed on load (user, 2026-10-29); only a run requested from a chat card (`?openRunId=`) opens by itself. */
+  readonly expandedRunId = computed(() => {
+    const toggled = this.toggledRunId();
+
+    return toggled !== undefined ? toggled : this.requestedRunId();
+  });
+  private readonly runSegmentsById = computed(
+    () => new Map(this.sessionHistory().map((entry) => [entry.run.id, entry.segments] as const)),
+  );
+  readonly runPageRows = computed(() => {
+    const size = this.runPageSize();
+    const start = (this.runPage() - 1) * size;
+
+    return this.selectedTaskRuns().slice(start, start + size);
+  });
+  /** Known once every run of the task is loaded (no further batch): the pager shows "1–n of N" then. */
+  readonly runTotal = computed(() => (this.sessionHasMore() ? null : this.selectedTaskRuns().length));
+  readonly runHasNext = computed(
+    () => this.selectedTaskRuns().length > this.runPage() * this.runPageSize() || this.sessionHasMore(),
+  );
   readonly effectiveWorkspace = computed(() => {
     const id = this.effectiveClientId();
 
@@ -333,6 +519,20 @@ export class AgentTasksBoardComponent implements AfterViewInit {
       }
     });
 
+    // Runs table: fetch further history pages until the shown page is filled (or the history ends).
+    effect(() => {
+      const needed = this.runPage() * this.runPageSize();
+
+      if (
+        this.selectedTaskRuns().length < needed &&
+        this.sessionHasMore() &&
+        !this.sessionAppendLoading() &&
+        !this.sessionAppendError()
+      ) {
+        untracked(() => this.onLoadMoreRuns());
+      }
+    });
+
     void import('marked').then((module) => this.markdownParser.set(module.marked));
 
     effect(() => {
@@ -402,7 +602,7 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   }
 
   handoffResponseHeading(card: AgentChatHandoffCardView): string {
-    const agentName = card.agentName || $localize`:@@featureAgentTasks-handoffUnknownAgent:another agent`;
+    const agentName = card.agentName || $localize`:@@featureAgentTasks-handoffUnknownAgent:another environment`;
 
     return $localize`:@@featureAgentTasks-handoffResponseHeading:Response from ${agentName}:agentName:`;
   }
@@ -419,6 +619,115 @@ export class AgentTasksBoardComponent implements AfterViewInit {
 
   isRunRequested(taskId: string): boolean {
     return this.runRequestTaskIds().includes(taskId);
+  }
+
+  runSegments(run: AgentTaskRunResponseDto) {
+    return this.runSegmentsById().get(run.id) ?? [];
+  }
+
+  onToggleRun(run: AgentTaskRunResponseDto): void {
+    this.toggledRunId.set(this.expandedRunId() === run.id ? null : run.id);
+  }
+
+  onRunRowAction(run: AgentTaskRunResponseDto, action: string): void {
+    if (action === 'toggle') {
+      this.onToggleRun(run);
+    } else if (action === 'copy-id') {
+      fpcCopyText(run.id);
+    }
+  }
+
+  onTaskRowAction(task: AgentTaskResponseDto, action: string): void {
+    switch (action) {
+      case 'open':
+        this.onSelectTask(task);
+        break;
+      case 'run':
+        this.onRunNow(task);
+        break;
+      case 'pause':
+        this.onToggleEnabled(task, false);
+        break;
+      case 'resume':
+        this.onToggleEnabled(task, true);
+        break;
+      case 'approve':
+        this.onApprove(task);
+        break;
+      case 'edit':
+        this.openEditEditor(task);
+        break;
+      case 'copy-id':
+        fpcCopyText(task.id);
+        break;
+      case 'delete':
+        this.onRequestDelete(task);
+        break;
+    }
+  }
+
+  onBulkRunNow(): void {
+    void this.runTaskBulk(this.selectedTasks(), (clientId, task) =>
+      firstValueFrom(this.agentTasksService.runNow(clientId, task.agentId, task.id)),
+    );
+  }
+
+  onBulkEnabled(enabled: boolean): void {
+    void this.runTaskBulk(
+      this.selectedTasks().filter((task) => task.enabled !== enabled),
+      (clientId, task) =>
+        firstValueFrom(this.agentTasksService.updateTask(clientId, task.agentId, task.id, { enabled })),
+    );
+  }
+
+  onConfirmBulkDelete(): void {
+    const tasks = this.selectedTasks();
+
+    if (tasks.some((task) => task.id === this.selectedTaskId())) {
+      this.selectedTaskId.set(null);
+    }
+
+    void this.runTaskBulk(tasks, (clientId, task) =>
+      firstValueFrom(this.agentTasksService.deleteTask(clientId, task.agentId, task.id)),
+    );
+  }
+
+  /**
+   * Bulk action as a client fan-out over the single-task endpoints (3.38 D8: the server checks every task); the list
+   * reloads afterwards, the result shows per task.
+   */
+  private async runTaskBulk(
+    tasks: readonly AgentTaskResponseDto[],
+    run: (clientId: string, task: AgentTaskResponseDto) => Promise<unknown>,
+  ): Promise<void> {
+    const clientId = this.effectiveClientId();
+
+    if (!clientId || tasks.length === 0) {
+      return;
+    }
+
+    this.bulkBusy.set(true);
+    this.bulkResult.set(null);
+
+    try {
+      const result = await fpcRunBulk(tasks, (task) => run(clientId, task));
+
+      this.bulkResult.set(agBulkSummary(result, (task) => task.title));
+      this.selectedTaskIds.set(result.failed.concat(result.denied).map((task) => task.id));
+      this.agentTasksFacade.load(clientId);
+    } finally {
+      this.bulkBusy.set(false);
+    }
+  }
+
+  /** Runs table refresh: reloads the newest history page (further pages follow on demand). */
+  onRefreshRuns(): void {
+    const clientId = this.effectiveClientId();
+    const task = this.selectedTask();
+
+    if (clientId && task) {
+      this.agentTasksFacade.loadRuns(clientId, task.agentId, task.id, { refresh: true });
+    }
   }
 
   onLoadMoreRuns(): void {
@@ -455,7 +764,8 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   }
 
   formatDate(value: string | null): string {
-    return value ? new Date(value).toLocaleString() : '—';
+    // Shared date-time format, never seconds (AG-20, X-04).
+    return fpcFormatDateTime(value, this.locale, '—');
   }
 
   openWorkspaceSwitchModal(): void {
@@ -486,8 +796,26 @@ export class AgentTasksBoardComponent implements AfterViewInit {
     this.selectedTaskId.set(null);
   }
 
+  /** Closes the open task (phone back button): the list becomes the view again; drops a deep-linked `openTaskId`. */
+  onCloseTask(): void {
+    this.selectedTaskId.set(null);
+    this.requestedRunId.set(null);
+    this.toggledRunId.set(undefined);
+
+    if (this.route.snapshot.queryParamMap.has('openTaskId') || this.route.snapshot.queryParamMap.has('openRunId')) {
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { openTaskId: null, openRunId: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    }
+  }
+
   onSelectTask(task: AgentTaskResponseDto): void {
     this.requestedRunId.set(null);
+    this.toggledRunId.set(undefined);
+    this.runPage.set(1);
     this.selectedTaskId.set(task.id);
   }
 

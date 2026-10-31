@@ -1,0 +1,89 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.fpc-stepper__strip {
+  // One row, scrolled sideways (`fpcStepStrip`), chevrons while it overflows (`fpc-step-strip`).
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  background-color: var(--bs-tertiary-bg);
+}
+
+.fpc-stepper__steps {
+  display: flex;
+  gap: 0.25rem 1rem;
+  padding: 0.25rem 0.5rem;
+  margin-block: 0;
+}
+
+.fpc-stepper__step-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border: 0;
+  background: none;
+  color: var(--bs-secondary-color);
+  font-size: 0.875rem;
+
+  &:disabled {
+    opacity: 0.55;
+  }
+}
+
+.fpc-stepper__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--bs-border-color);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.fpc-stepper__step-button--active {
+  color: var(--bs-emphasis-color);
+  font-weight: 600;
+
+  .fpc-stepper__number {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: var(--bs-white);
+  }
+}
+
+.fpc-stepper__step-button--done .fpc-stepper__number {
+  border-color: var(--bs-success);
+  color: var(--bs-success);
+}
+
+.fpc-stepper__step-button--invalid .fpc-stepper__number {
+  border-color: var(--bs-danger);
+  color: var(--bs-danger);
+}
+
+.fpc-stepper__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.fpc-stepper__footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--bs-border-color);
+}
+
+@media (max-width: 575.98px) {
+  .fpc-stepper__steps {
+    flex-direction: column;
+  }
+}

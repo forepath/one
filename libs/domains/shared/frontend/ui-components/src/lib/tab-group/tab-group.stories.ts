@@ -61,6 +61,26 @@ export const FallsBackToFirstEnabledTab: Story = {
   args: { activeId: null },
 };
 
+/** More tabs than fit: the rest go into the trailing "More ▾" item; picking one brings it into the bar. */
+export const Overflow: Story = {
+  args: { activeId: 'summary', ariaLabel: 'Project' },
+  render: (args) => ({
+    props: args,
+    template: `<div style="width: 640px; resize: horizontal; overflow: hidden; border: 1px dashed var(--bs-border-color)">
+      <fpc-tab-group [activeId]="activeId" [ariaLabel]="ariaLabel" (activeIdChange)="activeIdChange($event)">
+        <fpc-tab id="summary" label="Summary" icon="grid"><p class="p-3 mb-0">Summary</p></fpc-tab>
+        <fpc-tab id="contents" label="Contents"><p class="p-3 mb-0">Contents</p></fpc-tab>
+        <fpc-tab id="members" label="Members" badge="4"><p class="p-3 mb-0">Members</p></fpc-tab>
+        <fpc-tab id="requests" label="Requests" badge="2"><p class="p-3 mb-0">Requests</p></fpc-tab>
+        <fpc-tab id="quotas" label="Quotas"><p class="p-3 mb-0">Quotas</p></fpc-tab>
+        <fpc-tab id="policies" label="Policies"><p class="p-3 mb-0">Policies</p></fpc-tab>
+        <fpc-tab id="history" label="History"><p class="p-3 mb-0">History</p></fpc-tab>
+        <fpc-tab id="tasks" label="Task history" icon="list-task"><p class="p-3 mb-0">Task history</p></fpc-tab>
+      </fpc-tab-group>
+    </div>`,
+  }),
+};
+
 export const VerticalWithSections: Story = {
   args: { activeId: 'general', ariaLabel: 'Agent configuration' },
   render: (args) => ({

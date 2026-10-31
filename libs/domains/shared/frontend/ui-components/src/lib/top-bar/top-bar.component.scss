@@ -1,10 +1,17 @@
 :host {
+  // Outlined top-bar controls (chip, search, language switcher) carry a faint fill matching their edge, so they read as
+  // controls of the same size and weight as the filled buttons (user, 2026-10-29). Inherited by projected controls.
+  --fpc-top-bar-control-bg: rgba(var(--bs-white-rgb), 0.06);
+  --fpc-top-bar-control-bg-hover: rgba(var(--bs-white-rgb), 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
   position: relative;
-  isolation: isolate;
+  // An explicit chrome layer instead of `isolation: isolate`: an isolated context without z-index
+  // paints at level 0, so later content with `z-index: 1` (active tab buttons, search icons, sticky
+  // heads) covered the top-bar menus, the draft tray and dialogs declared in here.
+  z-index: var(--fpc-z-top-bar, 1032);
   background-color: var(--bs-dark);
   color: var(--bs-white);
   flex-shrink: 0;
@@ -22,6 +29,9 @@
 }
 
 :host(.fpc-top-bar--compact) {
+  // A compact strip below a main bar sits one layer lower, so menus of the main bar (Create ▾ …) open over it
+  // instead of being painted over by the later sibling at the same layer.
+  z-index: calc(var(--fpc-z-top-bar, 1032) - 1);
   justify-content: flex-end;
   gap: 1rem;
   padding: 0.5rem;
@@ -80,12 +90,25 @@
   padding-inline-end: 0;
 }
 
-// Meta chips on the dark bar (e.g. customer number): transparent fill, muted white label.
-// Prefer `fpc-badge size="sm"` for btn-sm height parity with language switcher.
+// Meta chips on the dark bar (e.g. customer number, cluster context): transparent fill, muted white label.
+// Exactly the sm control height of the other top-bar actions (shared tier; md from 768 px, `_controls.scss`), centred.
 :host ::ng-deep .fpc-top-bar__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  box-sizing: border-box;
+  height: var(--fpc-control-height-sm, 1.875rem);
+  padding-block: 0;
+  // `!important` like the chip colours: the badge's own `info sm` padding is more specific.
+  padding-inline: var(--fpc-top-bar-control-padding-x, 0.5rem) !important;
+  line-height: 1;
   color: rgba(var(--bs-white-rgb), 0.5) !important;
-  background-color: transparent !important;
-  border-color: rgba(var(--bs-secondary-rgb), 0.5) !important;
+  background-color: var(--fpc-top-bar-control-bg) !important;
+  // The badge clips its fill to the padding box; like search / language the fill runs under the edge, so the chip gets
+  // the same visible border.
+  background-clip: border-box !important;
+  // Neutral white edge: the bar is always dark, and brand secondaries are tinted (Decabill's is green).
+  border-color: rgba(var(--bs-white-rgb), 0.06) !important;
 }
 
 // Icon / link actions on the dark bar (e.g. security settings). Lock light chrome so
@@ -111,4 +134,128 @@
 
 :host ::ng-deep .fpc-top-bar__action.active .fpc-button__btn {
   color: var(--bs-white);
+}
+
+// Top-bar actions as `fpc-button` (`variant="link" size="sm" iconOnly class="fpc-top-bar__action"`):
+// every item sits on the sm control tier; spacing comes from `.fpc-top-bar__actions` only (no `ms-*`).
+// A count next to the icon is an `fpc-badge pill` inside the button.
+:host ::ng-deep .fpc-top-bar__action .fpc-button__btn .fpc-badge {
+  font-size: 0.6875rem;
+  line-height: 1;
+  padding: 0.1875rem 0.375rem;
+}
+
+// State, not navigation (e.g. a draft with changes): a warning-tone outline chip.
+:host ::ng-deep .fpc-top-bar__action--attention .fpc-button__btn {
+  --bs-btn-color: var(--bs-warning);
+  --bs-btn-hover-color: var(--bs-warning);
+  color: var(--bs-warning);
+  border-color: rgba(var(--bs-warning-rgb), 0.6);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-warning);
+    background-color: rgba(var(--bs-warning-rgb), 0.12);
+  }
+}
+
+// Field-like global search trigger: `<button class="fpc-top-bar__search">` with a leading
+// `bi-search`, a `.fpc-top-bar__search-text` label and a `<kbd class="fpc-top-bar__search-key">`.
+// sm control height, chip border, muted white label; icon-only below md, 14 rem wide from lg.
+:host ::ng-deep .fpc-top-bar__search {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: var(--fpc-control-height-sm, 1.875rem);
+  height: var(--fpc-control-height-sm, 1.875rem);
+  padding: 0 var(--fpc-top-bar-control-padding-x, 0.5rem);
+  // Neutral white edge (brand-independent, see the chip).
+  border: var(--bs-border-width) solid rgba(var(--bs-white-rgb), 0.06);
+  box-sizing: border-box;
+  border-radius: var(--bs-border-radius-sm, var(--bs-border-radius));
+  background-color: var(--fpc-top-bar-control-bg);
+  color: rgba(var(--bs-white-rgb), 0.5);
+  font-size: 0.875rem;
+  line-height: 1;
+
+  &:hover,
+  &:focus-visible {
+    color: rgba(var(--bs-white-rgb), 0.75);
+    border-color: rgba(var(--bs-white-rgb), 0.15);
+    background-color: var(--fpc-top-bar-control-bg-hover);
+  }
+
+  @media (min-width: 992px) {
+    min-width: 14rem;
+  }
+}
+
+:host ::ng-deep .fpc-top-bar__search-text {
+  flex: 1 1 auto;
+  text-align: start;
+}
+
+:host ::ng-deep .fpc-top-bar__search-key {
+  padding: 0.125rem 0.25rem;
+  font-size: 0.6875rem;
+  background-color: rgba(var(--bs-white-rgb), 0.12);
+  color: inherit;
+}
+
+// --- Phones (< 576 px): one row that always fits (X-01 / DB-01 / LW-01, 2026-10-29) -------------------------------
+// The bar carries brand, context chip, search, Create, state chips, security, language, theme and Logout. Below sm the
+// labels give way to their icons so Logout is never clipped:
+// - meta chips (`.fpc-top-bar__chip`) show only their icon (the label stays the chip's `title` / accessible name);
+// - the language switcher drops its translate glyph (the locale code says it);
+// - `.fpc-top-bar__label` inside an action (e.g. Logout: `<i class="bi bi-box-arrow-right fpc-top-bar__phone-icon">`
+//   + `<span class="fpc-top-bar__label">Logout</span>`) becomes visually hidden, `.fpc-top-bar__phone-icon` shows,
+//   and the button turns square;
+// - gaps tighten to .375 rem and the actions may shrink (the brand tile never does).
+.fpc-top-bar__actions ::ng-deep .fpc-top-bar__phone-icon {
+  display: none;
+}
+
+@media (max-width: 575.98px) {
+  .fpc-top-bar__brand {
+    flex-shrink: 0;
+  }
+
+  :host(:not(.fpc-top-bar--compact)) .fpc-top-bar__actions {
+    gap: 0.375rem;
+    padding-inline-end: 0.375rem;
+  }
+
+  :host ::ng-deep .fpc-top-bar__chip {
+    > span:not(.visually-hidden) {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+  }
+
+  :host ::ng-deep .fpc-language-switcher__trigger .fpc-button__btn > .fpc-button__content > i.bi {
+    display: none;
+  }
+
+  .fpc-top-bar__actions ::ng-deep .fpc-top-bar__phone-icon {
+    display: inline-block;
+  }
+
+  .fpc-top-bar__actions ::ng-deep .fpc-top-bar__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .fpc-top-bar__actions ::ng-deep .fpc-button__btn:has(.fpc-top-bar__label) {
+    min-width: var(--fpc-control-height-sm, 1.875rem);
+    padding-inline: 0;
+    justify-content: center;
+  }
 }

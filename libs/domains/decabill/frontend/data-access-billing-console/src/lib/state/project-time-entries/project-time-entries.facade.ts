@@ -17,7 +17,10 @@ import {
   selectProjectTimeEntries,
   selectProjectTimeEntriesError,
   selectProjectTimeEntriesLoading,
+  selectProjectTimeEntriesPage,
+  selectProjectTimeEntriesPageSize,
   selectProjectTimeEntriesSaving,
+  selectProjectTimeEntriesTotal,
   selectUnbilledProjectTimeEntries,
 } from './project-time-entries.selectors';
 
@@ -30,13 +33,17 @@ export class ProjectTimeEntriesFacade {
   readonly loading$ = this.store.select(selectProjectTimeEntriesLoading);
   readonly saving$ = this.store.select(selectProjectTimeEntriesSaving);
   readonly error$ = this.store.select(selectProjectTimeEntriesError);
+  readonly total$ = this.store.select(selectProjectTimeEntriesTotal);
+  readonly page$ = this.store.select(selectProjectTimeEntriesPage);
+  readonly pageSize$ = this.store.select(selectProjectTimeEntriesPageSize);
 
   readonly ticketEntries$ = this.store.select(selectProjectTicketTimeEntries);
   readonly ticketLoading$ = this.store.select(selectProjectTicketTimeEntriesLoading);
   readonly ticketError$ = this.store.select(selectProjectTicketTimeEntriesError);
 
-  load(projectId: string): void {
-    this.store.dispatch(loadProjectTimeEntries({ projectId }));
+  /** Loads one page of the project's time entries (page 1 by default); the page replaces the current rows. */
+  load(projectId: string, page?: number, pageSize?: number, search?: string): void {
+    this.store.dispatch(loadProjectTimeEntries({ projectId, page, pageSize, search: search?.trim() || undefined }));
   }
 
   loadForTicket(projectId: string, ticketId: string): void {

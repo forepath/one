@@ -22,6 +22,7 @@ import {
   selectHistoryOffersList,
   selectHistoryOffersListError,
   selectHistoryOffersListLoading,
+  selectHistoryOffersTotal,
   selectOfferDetailById,
   selectOfferDetailsLoading,
   selectOffersError,
@@ -32,6 +33,7 @@ import {
   selectPendingOffersList,
   selectPendingOffersListError,
   selectPendingOffersListLoading,
+  selectPendingOffersTotal,
   selectRespondingOfferId,
 } from './offers.selectors';
 
@@ -74,8 +76,20 @@ export class OffersFacade {
     return this.store.select(selectPendingOffersListError);
   }
 
-  loadPendingOffers(options?: { silent?: boolean; search?: string }): void {
-    this.store.dispatch(loadPendingOffers({ silent: options?.silent === true, search: options?.search }));
+  getPendingTotal$(): Observable<number> {
+    return this.store.select(selectPendingOffersTotal);
+  }
+
+  /** One page of the pending offers (replace-page; page 1 by default). */
+  loadPendingOffers(options?: { silent?: boolean; search?: string; page?: number; pageSize?: number }): void {
+    this.store.dispatch(
+      loadPendingOffers({
+        silent: options?.silent === true,
+        search: options?.search,
+        page: options?.page,
+        pageSize: options?.pageSize,
+      }),
+    );
   }
 
   getHistoryList$(): Observable<CustomerOfferListItem[]> {
@@ -90,8 +104,20 @@ export class OffersFacade {
     return this.store.select(selectHistoryOffersListError);
   }
 
-  loadHistoryOffers(options?: { silent?: boolean; search?: string }): void {
-    this.store.dispatch(loadHistoryOffers({ silent: options?.silent === true, search: options?.search }));
+  getHistoryTotal$(): Observable<number> {
+    return this.store.select(selectHistoryOffersTotal);
+  }
+
+  /** One page of the history offers (replace-page; page 1 by default). */
+  loadHistoryOffers(options?: { silent?: boolean; search?: string; page?: number; pageSize?: number }): void {
+    this.store.dispatch(
+      loadHistoryOffers({
+        silent: options?.silent === true,
+        search: options?.search,
+        page: options?.page,
+        pageSize: options?.pageSize,
+      }),
+    );
   }
 
   getOfferDetailsLoading$(): Observable<boolean> {

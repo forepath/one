@@ -1,0 +1,87 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <!-- Back left above the title (3.38 R8). -->
+    <a
+      fpcPageHeaderBreadcrumbs
+      class="small text-decoration-none d-inline-flex align-items-center"
+      routerLink="/operate/backups"
+      data-testid="backup-diff-back"
+    >
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
+    </a>
+    <!-- The compared pair is the page's context (3.38: from → to strip → header context). -->
+    <ng-container ngProjectAs="[fpcPageHeaderContext]">
+      @if (!error() && !loading() && result(); as r) {
+        <span class="small d-inline-flex flex-wrap align-items-center gap-1" data-testid="backup-diff-pair">
+          <fpc-badge color="light" size="sm" class="font-monospace">{{ r.from.resource }}</fpc-badge>
+          <a [routerLink]="['/operate/backups', r.from.id]">{{ r.from.startedAt | date: 'medium' }}</a>
+          <span aria-hidden="true">→</span>
+          <a [routerLink]="['/operate/backups', r.to.id]">{{ r.to.startedAt | date: 'medium' }}</a>
+        </span>
+      }
+    </ng-container>
+  </fpc-page-header>
+
+  @if (!error() && !loading() && result(); as r) {
+    <fpc-summary-bar class="flex-shrink-0" [columns]="4">
+      <fpc-summary-card
+        icon="plus-circle"
+        [label]="addedTitle"
+        [value]="r.diff.added.length + ' (' + bytes(addedBytes()) + ')'"
+        tone="success"
+      />
+      <fpc-summary-card
+        icon="dash-circle"
+        [label]="removedTitle"
+        [value]="r.diff.removed.length + ' (' + bytes(removedBytes()) + ')'"
+        tone="danger"
+      />
+      <fpc-summary-card icon="pencil-square" [label]="changedTitle" [value]="'' + r.diff.changed.length" tone="info" />
+      <fpc-summary-card icon="plus-slash-minus" [label]="sizeChangeTitle" [value]="signed(r.to.bytes - r.from.bytes)" />
+    </fpc-summary-bar>
+  }
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" data-testid="backup-diff-error" />
+    } @else if (loading() || !result()) {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+    } @else if (result(); as r) {
+      @if (r.diff.added.length + r.diff.removed.length + r.diff.changed.length === 0) {
+        <fpc-empty-state
+          icon="check2-circle"
+          i18n-title="@@lwConsoleBackupDiff-same"
+          title="No files changed between these backups"
+        />
+      } @else {
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="title"
+          [columns]="columns"
+          [rows]="visibleRows()"
+          [rowId]="rowId"
+          [groupBy]="groupOf"
+          [groupLabel]="groupLabel"
+          [filtered]="!!search().trim()"
+          [(query)]="search"
+          [searchPlaceholder]="searchLabel"
+          paging="client"
+          persistKey="lw-backup-diff"
+          emptyIcon="check2-circle"
+          data-testid="backup-diff-changes"
+        >
+          <span fpcDataTableEmpty>
+            <fpc-empty-state icon="check2-circle" size="sm" [title]="noneTitle" />
+          </span>
+          <ng-template fpcTableCell="before" let-row>{{ row.before !== null ? bytes(row.before) : '' }}</ng-template>
+          <ng-template fpcTableCell="after" let-row>{{ row.after !== null ? bytes(row.after) : '' }}</ng-template>
+          <ng-template fpcTableCell="delta" let-row>
+            @if (row.kind === 'changed') {
+              {{ signed(delta(row.before, row.after)) }}
+            }
+          </ng-template>
+        </fpc-data-table>
+      }
+    }
+  </div>
+</div>

@@ -1,0 +1,266 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="reports" [binding]="views" />
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <!-- Runs | Files as tabs (decision 4): one table at a time. -->
+  <fpc-tab-group
+    class="flex-shrink-0"
+    [activeId]="lane()"
+    (activeIdChange)="lane.set($event === 'files' ? 'files' : 'runs')"
+    [ariaLabel]="title"
+  >
+    <fpc-tab id="runs" [label]="tabRuns" icon="clock-history" />
+    <fpc-tab id="files" [label]="tabFiles" icon="folder2-open" />
+  </fpc-tab-group>
+
+  @if (queued()) {
+    <fpc-alert
+      [flush]="true"
+      variant="success"
+      [message]="queuedMessage"
+      [dismissible]="true"
+      (closed)="dismissRunResult()"
+    />
+  }
+  @if (!runOpen() && runError(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" [dismissible]="true" (closed)="dismissRunResult()" />
+  }
+  @if (fileError(); as message) {
+    <fpc-alert
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="fileError.set(null)"
+    />
+  }
+
+  @switch (lane()) {
+    @case ('files') {
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="tabFiles"
+        [columns]="entryColumns"
+        [rows]="filteredEntries()"
+        [rowId]="entryId"
+        [filtered]="!!filesSearch().trim()"
+        [loading]="entriesLoading() && entries().length === 0"
+        [error]="entriesError()"
+        paging="client"
+        persistKey="lw-report-files"
+        [(query)]="filesSearch"
+        [searchPlaceholder]="filesSearchLabel"
+        [rowInlineActions]="entryInline"
+        [rowMenu]="entryMenu"
+        (rowAction)="onEntryAction($event.row, $event.item.id)"
+        (rowActivate)="openEntry($event)"
+        emptyIcon="folder"
+        data-testid="report-entries"
+      >
+        <!-- Folder navigation heads the table: Up + breadcrumbs + ZIP of the folder. -->
+        <div fpcDataTableHeadToolbar class="d-flex align-items-center gap-2 px-3 py-1">
+          <fpc-button
+            variant="secondary"
+            size="sm"
+            iconOnly
+            [disabled]="!path()"
+            [ariaLabel]="upLabel"
+            [title]="upLabel"
+            (clicked)="up()"
+          >
+            <i class="bi bi-arrow-up" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-breadcrumbs
+            size="sm"
+            class="font-monospace min-w-0 flex-grow-1"
+            [ariaLabel]="breadcrumbsLabel"
+            data-testid="report-breadcrumbs"
+          >
+            <fpc-breadcrumb-item
+              [label]="rootLabel"
+              [active]="!path()"
+              [href]="path() ? '#' : null"
+              (selected)="$event.preventDefault(); openFolder('')"
+            />
+            @for (crumb of crumbs(); track crumb.path; let last = $last) {
+              <fpc-breadcrumb-item
+                [label]="crumb.label"
+                [active]="last"
+                [href]="last ? null : '#'"
+                (selected)="$event.preventDefault(); openFolder(crumb.path)"
+              />
+            }
+          </fpc-breadcrumbs>
+          @if (path()) {
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              [ariaLabel]="archiveLabel"
+              [title]="archiveLabel"
+              [loading]="busyPath() === path()"
+              (clicked)="downloadFolder(path())"
+              data-testid="report-archive-current"
+            >
+              <i class="bi bi-file-earmark-zip" aria-hidden="true"></i>
+            </fpc-button>
+          }
+        </div>
+        <span fpcDataTableEmpty>
+          <fpc-empty-state icon="folder" size="sm" i18n-title="@@lwConsoleReports-emptyFolder" title="Nothing here" />
+        </span>
+        <ng-template fpcTableCell="name" let-entry>
+          <span class="d-inline-flex align-items-center gap-2">
+            <i
+              class="bi"
+              [class.bi-folder-fill]="entry.type === 'folder'"
+              [class.text-warning]="entry.type === 'folder'"
+              [class.bi-filetype-html]="entry.type === 'file' && entry.name.endsWith('.html')"
+              [class.bi-filetype-json]="entry.type === 'file' && entry.name.endsWith('.json')"
+              [class.bi-file-earmark]="
+                entry.type === 'file' && !entry.name.endsWith('.html') && !entry.name.endsWith('.json')
+              "
+              aria-hidden="true"
+            ></i>
+            <span class="font-monospace">{{ entry.name }}</span>
+          </span>
+        </ng-template>
+        <ng-template fpcTableCell="size" let-entry>{{
+          entry.bytes !== undefined ? bytes(entry.bytes) : ''
+        }}</ng-template>
+        <ng-template fpcTableCell="updated" let-entry>{{ entry.updatedAt | date: 'short' }}</ng-template>
+      </fpc-data-table>
+    }
+    @default {
+      <!-- Runs (3.38 D1): State · Scope · month · facts; click opens a finished report, ⋮ open / show files. -->
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="tabRuns"
+        [columns]="runColumns"
+        [rows]="filteredReports()"
+        [filtered]="!!search().trim()"
+        [loading]="loading() && reports().length === 0"
+        [error]="error()"
+        paging="client"
+        persistKey="lw-reports"
+        [(query)]="search"
+        [searchPlaceholder]="searchLabel"
+        [rowMenu]="runMenu"
+        (rowAction)="onRunAction($event.row, $event.item.id)"
+        (rowActivate)="activateRun($event)"
+        emptyIcon="file-earmark-bar-graph"
+        data-testid="reports-list"
+      >
+        @if (scopes().length > 0) {
+          <fpc-button
+            fpcDataTableToolbar
+            variant="primary"
+            size="sm"
+            iconOnly
+            [ariaLabel]="runLabel"
+            [title]="runLabel"
+            (clicked)="openRun()"
+            data-testid="report-run-open"
+          >
+            <i class="bi bi-play-fill" aria-hidden="true"></i>
+          </fpc-button>
+        }
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            icon="file-earmark-bar-graph"
+            size="sm"
+            i18n-title="@@lwConsoleReports-empty"
+            title="No reports yet"
+            i18n-message="@@lwConsoleReports-emptyMessage"
+            message="Reports are written on the 1st of every month for the month that ended."
+          />
+        </span>
+        <ng-template fpcTableCell="scope" let-r>
+          <span
+            ><i
+              class="bi me-1"
+              [class.bi-diagram-3]="r.scope === 'cluster'"
+              [class.bi-folder]="r.scope !== 'cluster'"
+              aria-hidden="true"
+            ></i
+            >{{ r.scope === 'cluster' ? clusterLabel : r.scope }}</span
+          >
+        </ng-template>
+        <ng-template fpcTableCell="completed" let-r>{{ r.completedAt | date: 'short' }}</ng-template>
+        <ng-template fpcTableCell="error" let-r>
+          @if (r.error) {
+            <span class="text-danger">{{ r.error }}</span>
+          }
+        </ng-template>
+      </fpc-data-table>
+    }
+  }
+</div>
+
+<fpc-modal [(open)]="runOpen" [title]="runLabel">
+  <form (ngSubmit)="run()" data-testid="report-run-form">
+    @if (runError(); as message) {
+      <fpc-alert class="d-block mb-3" variant="danger" [message]="message" />
+    }
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-report-scope" i18n-label="@@lwConsoleReports-scope" label="Scope">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-report-scope"
+            name="scope"
+            size="sm"
+            [ngModel]="scope()"
+            (ngModelChange)="scope.set($event)"
+          >
+            @for (s of scopes(); track s) {
+              <option [value]="s">{{ s === 'cluster' ? clusterLabel : s }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-report-month" i18n-label="@@lwConsoleReports-month" label="Month">
+          <fpc-form-control
+            controlId="lw-report-month"
+            name="month"
+            inputType="month"
+            size="sm"
+            min="2020-01"
+            [max]="maxMonth"
+            [invalid]="!monthValid()"
+            [ngModel]="month()"
+            (ngModelChange)="month.set($event)"
+          />
+        </fpc-form-field>
+      </div>
+    </div>
+    <p class="small text-body-secondary mb-0" i18n="@@lwConsoleReports-runHint">
+      Replaces the files of a report that already exists.
+    </p>
+  </form>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="runOpen.set(false)">{{ cancelLabel }}</fpc-button>
+    <fpc-button
+      variant="primary"
+      [loading]="running()"
+      [disabled]="!monthValid() || !scope()"
+      (clicked)="run()"
+      data-testid="report-run"
+    >
+      <i class="bi bi-play-fill me-1" aria-hidden="true"></i><span i18n="@@lwConsoleReports-run">Run report</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

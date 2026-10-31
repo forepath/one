@@ -48,7 +48,7 @@ import {
 import { AgentContextMcpService } from '../../services/agent-context-mcp.service';
 import { AgentMessageFiltersService } from '../../services/agent-message-filters.service';
 import { AgentRuntimeRefreshService } from '../../services/agent-runtime-refresh.service';
-import { DockerService } from '../../services/docker.service';
+import { AgentRuntime } from '../../runtime/agent-runtime';
 import {
   CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS,
   CONFIG_SYNC_RESTART_ENVIRONMENT_PROGRESS_STEPS,
@@ -263,7 +263,7 @@ export class OpenCodeConfigSyncService {
   constructor(
     private readonly agentsRepository: AgentsRepository,
     private readonly clientFactory: OpenCodeClientFactory,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
     @Optional()
     private readonly environmentProgress?: EnvironmentProgressService,
     @Optional()
@@ -581,7 +581,7 @@ export class OpenCodeConfigSyncService {
 
     // Validate ancestors top-down before touching the formerly worker-owned skill directory.
     // Once its parent is trusted, taking ownership and atomically replacing the file cannot follow worker links.
-    await this.dockerService.sendCommandToContainer(
+    await this.runtime.sendCommandToContainer(
       containerId,
       [
         '/usr/bin/env',
@@ -656,7 +656,7 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
     const base64 = Buffer.from(skillMarkdown, 'utf8').toString('base64');
     const parentList = parents.map((parent) => JSON.stringify(parent)).join(' ');
 
-    await this.dockerService.sendCommandToContainer(
+    await this.runtime.sendCommandToContainer(
       containerId,
       [
         '/usr/bin/env',
@@ -755,14 +755,14 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
 
     if (desiredEnv.NODE_EXTRA_CA_CERTS && isPemCertificateMaterial(desiredEnv.NODE_EXTRA_CA_CERTS)) {
       try {
-        const home = await this.dockerService.getContainerHomeDirectory(containerId);
+        const home = await this.runtime.getContainerHomeDirectory(containerId);
         const certPath = `${home.replace(/\/$/, '')}/${NETWORK_CA_CERT_RELATIVE_PATH}`;
         const certDir = certPath.slice(0, certPath.lastIndexOf('/'));
         const pem = desiredEnv.NODE_EXTRA_CA_CERTS;
         const base64Content = Buffer.from(pem, 'utf-8').toString('base64');
 
-        await this.dockerService.sendCommandToContainer(containerId, `mkdir -p ${escapeForShell(certDir)}`);
-        await this.dockerService.sendCommandToContainer(
+        await this.runtime.sendCommandToContainer(containerId, `mkdir -p ${escapeForShell(certDir)}`);
+        await this.runtime.sendCommandToContainer(
           containerId,
           `echo ${escapeForShell(base64Content)} | base64 -d > ${escapeForShell(certPath)}`,
         );
@@ -800,7 +800,7 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
       });
     }
 
-    const currentEnv = await this.dockerService.getContainerEnvironmentMap(containerId);
+    const currentEnv = await this.runtime.getContainerEnvironmentMap(containerId);
     let changed = false;
 
     for (const key of Object.keys(desiredEnv)) {
@@ -829,7 +829,7 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
       // Containers with the mounted environment are restarted in place; legacy ones are recreated once.
       const strategy = joinGuardId
         ? 'recreate'
-        : await this.dockerService.getEnvironmentApplyStrategy(containerId, ...isolationRuntimeArgs(agent));
+        : await this.runtime.getEnvironmentApplyStrategy(containerId, ...isolationRuntimeArgs(agent));
 
       progressRef.tracker = this.environmentProgress?.start({
         agentId,
@@ -841,7 +841,7 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
             : CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS,
       });
       progressRef.tracker?.advance(strategy === 'restart' ? 'restartingContainer' : 'recreatingContainer');
-      const newContainerId = await this.dockerService.updateContainer(containerId, {
+      const newContainerId = await this.runtime.updateContainer(containerId, {
         env: desiredEnv,
         ...isolationRuntimeOptions(agent),
         ...(joinGuardId ? { sharedNetworkContainerId: joinGuardId, capDrop: [...EGRESS_GUARDED_AGENT_CAP_DROP] } : {}),

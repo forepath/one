@@ -1,0 +1,115 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  min-height: 0;
+  border-top: 1px solid var(--bs-border-color);
+  background-color: var(--bs-body-bg);
+}
+
+:host(.fpc-dock-panel--dragging) {
+  user-select: none;
+  cursor: row-resize;
+}
+
+.fpc-dock-panel__gutter {
+  position: relative;
+  height: 0;
+  cursor: row-resize;
+  outline: none;
+  touch-action: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -4px 0;
+  }
+
+  &:hover,
+  &:focus-visible {
+    box-shadow: 0 0 0 1px var(--bs-primary);
+  }
+}
+
+// One toolbar row (title, header slot, actions) with vertical breathing room; wraps when narrow so
+// tabs / filters never get clipped.
+.fpc-dock-panel__header {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  min-height: 2.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--bs-tertiary-bg);
+  font-size: 0.875rem;
+}
+
+.fpc-dock-panel__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.25rem;
+  color: var(--bs-emphasis-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.fpc-dock-panel__header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fpc-dock-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+  min-width: 0;
+}
+
+// Plain block scroll container: as a flex column its projected children (min-height: 0 hosts such as
+// tab groups) shrank to 0 once the content overflowed - they must keep their size and scroll instead.
+.fpc-dock-panel__body {
+  display: block;
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+// A data table in the body (task / event docks; `fill`, or detected): the table is the single scroller - the body becomes
+// a flex column without its own overflow, padding or gutter, the table fills it (thead + tfoot / pager footer stay pinned
+// in every dock size and the phone sheet). `::ng-deep`: projected children carry the consumer's content attribute.
+:host(.fpc-dock-panel--fill) .fpc-dock-panel__body,
+:host ::ng-deep .fpc-dock-panel__body:has(> fpc-data-table) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  scrollbar-gutter: auto;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+:host(.fpc-dock-panel--fill) ::ng-deep .fpc-dock-panel__body > *,
+:host ::ng-deep .fpc-dock-panel__body:has(> fpc-data-table) > * {
+  flex: 0 0 auto;
+}
+
+:host(.fpc-dock-panel--fill) ::ng-deep .fpc-dock-panel__body > fpc-data-table,
+:host ::ng-deep .fpc-dock-panel__body > fpc-data-table {
+  flex: 1 1 0;
+  min-height: 0;
+  height: auto;
+}

@@ -1,0 +1,26 @@
+// Loadweaver node agent <-> control plane protocol (3.19).
+// One persistent, outbound, mutually authenticated (mTLS) stream per node. Terminals, file transfers,
+// live flows and log tails are multiplexed over it via `channel`, so nodes need no inbound management port.
+// Payloads are JSON documents validated on both sides by the shared schemas in
+// @forepath/loadweaver/shared/util-agent-protocol (one source of TypeScript types for control plane,
+// agent, CLI and MCP server).
+syntax = "proto3";
+
+package loadweaver.agent.v1;
+
+service NodeAgent {
+  rpc Connect(stream Envelope) returns (stream Envelope);
+}
+
+message Envelope {
+  // Message type, e.g. "hello", "desiredState", "applyReport".
+  string type = 1;
+  // Unique id of this message.
+  string id = 2;
+  // Id of the request this message answers, if any.
+  string correlation_id = 3;
+  // Multiplexed session (terminal, file transfer, log tail); empty for control messages.
+  string channel = 4;
+  // JSON payload.
+  bytes payload = 5;
+}

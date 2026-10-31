@@ -1,0 +1,637 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="selected() ? scopeLabel(selected()!.project) : title">
+    <!-- Back sits left above the title, below xl only (3.38 R8). -->
+    <a
+      fpcPageHeaderBreadcrumbs
+      class="fpc-md__back small text-decoration-none align-items-center"
+      routerLink="/delivery/git"
+      data-testid="git-back"
+    >
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
+    </a>
+    @if (selected(); as c) {
+      <ng-container ngProjectAs="[fpcPageHeaderActions]">
+        @if (canAdminSelected()) {
+          <span class="d-inline-flex align-items-center gap-2" data-testid="git-actions">
+            <fpc-dropdown #moreMenu alignment="end" data-testid="git-more">
+              <fpc-button
+                fpcDropdownTrigger
+                variant="dark"
+                size="sm"
+                iconOnly
+                ariaHaspopup="menu"
+                [ariaExpanded]="moreMenu.open()"
+                [ariaLabel]="moreLabel"
+                [title]="moreLabel"
+              >
+                <i class="bi bi-three-dots" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-dropdown-item
+                icon="box-arrow-up"
+                [disabled]="acting() !== null"
+                (selected)="openExport(c)"
+                data-testid="git-export"
+                >{{ exportLabel }}</fpc-dropdown-item
+              >
+              @if (c.hostKey || selectedIsSsh()) {
+                <fpc-dropdown-item
+                  icon="key"
+                  [disabled]="acting() !== null || !c.hostKey"
+                  (selected)="resetFor.set(c)"
+                  data-testid="git-reset-host-key"
+                  >{{ resetHostKeyLabel }}</fpc-dropdown-item
+                >
+              }
+              <fpc-dropdown-item icon="trash" [danger]="true" (selected)="deleteFor.set(c)" data-testid="git-delete">{{
+                deleteLabel
+              }}</fpc-dropdown-item>
+            </fpc-dropdown>
+            <fpc-button
+              variant="warning"
+              size="sm"
+              iconOnly
+              [ariaLabel]="editLabel"
+              [title]="editLabel"
+              (clicked)="openEdit()"
+              data-testid="git-edit"
+            >
+              <i class="bi bi-pencil" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              [ariaLabel]="testLabel"
+              [title]="testLabel"
+              [loading]="isActing(c, 'test')"
+              [disabled]="acting() !== null"
+              (clicked)="run(c, 'test')"
+              data-testid="git-test"
+            >
+              <i class="bi bi-plug" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              variant="primary"
+              size="sm"
+              iconOnly
+              [ariaLabel]="syncLabel"
+              [title]="syncLabel"
+              [loading]="isActing(c, 'sync') || deleting() === c.id"
+              [disabled]="acting() !== null"
+              (clicked)="run(c, 'sync')"
+              data-testid="git-sync"
+            >
+              <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+            </fpc-button>
+          </span>
+        }
+      </ng-container>
+    }
+  </fpc-page-header>
+
+  @if (selected(); as c) {
+    <fpc-tab-group class="fpc-lane-tabs" [activeId]="activeLane()" (activeIdChange)="activeLane.set($event)">
+      <fpc-tab id="connection" [label]="connectionLane" />
+      <fpc-tab id="commits" [label]="commitsTitle" />
+    </fpc-tab-group>
+
+    <!-- State only (3.38 R8): results of the last action and the connection's last error. -->
+    @if (c.lastError) {
+      <fpc-alert
+        [flush]="true"
+        variant="danger"
+        i18n-heading="@@lwConsoleGit-lastError"
+        heading="Last error"
+        [message]="c.lastError"
+        data-testid="git-last-error"
+      />
+    }
+    @if (selectedActionError(); as message) {
+      <fpc-alert
+        [flush]="true"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="dismissResult()"
+        data-testid="git-action-error"
+      />
+    }
+    @if (result(); as r) {
+      <div data-testid="git-action-result">
+        @switch (r.action) {
+          @case ('test') {
+            @if (r.result.ok) {
+              <fpc-alert
+                [flush]="true"
+                variant="success"
+                [dismissible]="true"
+                (closed)="dismissResult()"
+                i18n-heading="@@lwConsoleGit-testOk"
+                heading="The repository is reachable"
+              >
+                <div class="small">
+                  <div class="d-flex flex-wrap align-items-center gap-3">
+                    @if (r.result.head) {
+                      <span
+                        ><span i18n="@@lwConsoleGit-testHead">Branch head</span>
+                        <span class="font-monospace ms-1">{{ shortSha(r.result.head) }}</span></span
+                      >
+                    } @else {
+                      <span i18n="@@lwConsoleGit-testNoBranch">The branch doesn't exist yet.</span>
+                    }
+                    @if (r.result.defaultBranch) {
+                      <span
+                        ><span i18n="@@lwConsoleGit-testDefaultBranch">Default branch</span>
+                        <span class="font-monospace ms-1">{{ r.result.defaultBranch }}</span></span
+                      >
+                    }
+                  </div>
+                  @if (r.result.hostKey) {
+                    <div class="text-break">
+                      <span i18n="@@lwConsoleGit-testHostKey">Pinned SSH host key:</span>
+                      <span class="font-monospace ms-1">{{ r.result.hostKey }}</span>
+                    </div>
+                  }
+                </div>
+              </fpc-alert>
+            } @else {
+              <fpc-alert
+                [flush]="true"
+                variant="danger"
+                [dismissible]="true"
+                (closed)="dismissResult()"
+                i18n-heading="@@lwConsoleGit-testFailed"
+                heading="The repository isn't reachable"
+                [message]="r.result.error ?? null"
+              />
+            }
+          }
+          @case ('sync') {
+            <fpc-alert
+              [flush]="true"
+              [variant]="r.result.state === 'error' || r.result.state === 'rejected' ? 'danger' : 'info'"
+              [dismissible]="true"
+              (closed)="dismissResult()"
+            >
+              <div class="small">
+                @if (r.result.state === 'unchanged') {
+                  <span i18n="@@lwConsoleGit-syncUnchanged">The branch head is synced already.</span>
+                } @else if (r.result.state === 'error') {
+                  <span i18n="@@lwConsoleGit-syncError">The sync failed:</span> {{ r.result.reason }}
+                } @else {
+                  <span i18n="@@lwConsoleGit-syncDone">Synced commit</span>
+                  <span class="font-monospace ms-1">{{ shortSha(r.result.commit) }}</span
+                  >:
+                  {{ stateLabel(r.result.state) }}
+                  @if (r.result.reason) {
+                    <div>{{ r.result.reason }}</div>
+                  }
+                  @if (r.result.planId) {
+                    <a
+                      [routerLink]="['/activity/plans', r.result.planId]"
+                      class="ms-1"
+                      i18n="@@lwConsoleGit-syncOpenPlan"
+                      >Open the plan</a
+                    >
+                  }
+                }
+              </div>
+            </fpc-alert>
+          }
+          @case ('export') {
+            <fpc-alert [flush]="true" variant="success" [dismissible]="true" (closed)="dismissResult()">
+              <div class="small">
+                @if (r.result.changed) {
+                  <span i18n="@@lwConsoleGit-exportDone">Exported {{ r.result.resources }} resources as commit</span>
+                  <span class="font-monospace ms-1">{{ shortSha(r.result.commit) }}</span>
+                } @else {
+                  <span i18n="@@lwConsoleGit-exportUnchanged"
+                    >The repository matches the scope already ({{ r.result.resources }} resources).</span
+                  >
+                }
+              </div>
+            </fpc-alert>
+            @if (r.result.skipped?.length) {
+              <fpc-alert
+                [flush]="true"
+                variant="warning"
+                i18n-heading="@@lwConsoleGit-exportSkipped"
+                heading="Not exported: resources from SOPS-encrypted files"
+                data-testid="git-export-skipped"
+              >
+                <p class="small mb-1" i18n="@@lwConsoleGit-exportSkippedHint">
+                  They would be written in clear, so the export left them out. Keep them encrypted in the repository
+                  yourself.
+                </p>
+                <ul class="small mb-0 font-monospace">
+                  @for (name of r.result.skipped; track name) {
+                    <li>{{ name }}</li>
+                  }
+                </ul>
+              </fpc-alert>
+            }
+          }
+          @default {
+            <fpc-alert
+              [flush]="true"
+              variant="success"
+              [dismissible]="true"
+              (closed)="dismissResult()"
+              i18n-message="@@lwConsoleGit-resetDone"
+              message="The SSH host key was reset; the next contact pins the server's key."
+            />
+          }
+        }
+      </div>
+    }
+
+    <fpc-section-row class="flex-grow-1 min-h-0">
+      <loadweaver-lane
+        [title]="connectionLane"
+        [flush]="true"
+        [off]="activeLane() !== 'connection'"
+        data-testid="git-detail"
+      >
+        <div class="px-3 py-2">
+          <fpc-key-value-list [items]="facts()">
+            <ng-template fpcKeyValue="repository">
+              <span class="font-monospace text-break">
+                @if (repoWebUrl(c); as web) {
+                  <a [href]="web" target="_blank" rel="noopener noreferrer">{{ c.repoUrl }}</a>
+                } @else {
+                  {{ c.repoUrl }}
+                }
+              </span>
+            </ng-template>
+            <ng-template fpcKeyValue="branchPath">
+              <span class="font-monospace d-flex flex-wrap align-items-center gap-2">
+                <span><i class="bi bi-signpost-split me-1" aria-hidden="true"></i>{{ c.branch }}</span>
+                <span><i class="bi bi-folder2 me-1" aria-hidden="true"></i>/{{ c.path }}</span>
+              </span>
+            </ng-template>
+            <ng-template fpcKeyValue="mode">
+              <fpc-badge [tone]="c.mode === 'authoritative' ? 'primary' : 'info'" [title]="modeHint(c.mode)">{{
+                modeLabel(c.mode)
+              }}</fpc-badge>
+            </ng-template>
+            <ng-template fpcKeyValue="credentials">
+              @if (c.credentials) {
+                <span class="font-monospace">{{ c.credentials }}</span>
+              } @else {
+                <span class="text-body-secondary" i18n="@@lwConsoleGit-noCredentials">None (public)</span>
+              }
+            </ng-template>
+            <ng-template fpcKeyValue="options">
+              <span class="d-flex flex-wrap gap-1">
+                @if (c.approvalByMergeReview) {
+                  <fpc-badge tone="neutral" i18n="@@lwConsoleGit-optReview">Merge review approves</fpc-badge>
+                }
+                @if (c.autoMerge) {
+                  <fpc-badge tone="neutral" i18n="@@lwConsoleGit-optAutoMerge">Auto-merge after apply</fpc-badge>
+                }
+                @if (c.membershipsFromGit) {
+                  <fpc-badge tone="neutral" i18n="@@lwConsoleGit-optMemberships">Memberships from Git</fpc-badge>
+                }
+                @if (c.sops) {
+                  <fpc-badge tone="neutral" i18n="@@lwConsoleGit-optSops">SOPS</fpc-badge>
+                }
+                @if (c.githubApp) {
+                  <fpc-badge tone="neutral" i18n="@@lwConsoleGit-optGithubApp">Cluster GitHub App</fpc-badge>
+                }
+                @if (c.caCertificate) {
+                  <fpc-badge tone="neutral" i18n="@@lwConsoleGit-optCa">Private CA</fpc-badge>
+                }
+                @if (c.apiUrl) {
+                  <fpc-badge tone="neutral">API {{ c.apiUrl }}</fpc-badge>
+                }
+              </span>
+            </ng-template>
+            <ng-template fpcKeyValue="lastSynced">
+              @if (c.lastSyncedCommit) {
+                @if (commitUrl(c, c.lastSyncedCommit); as url) {
+                  <a class="font-monospace" [href]="url" target="_blank" rel="noopener noreferrer">{{
+                    shortSha(c.lastSyncedCommit)
+                  }}</a>
+                } @else {
+                  <span class="font-monospace">{{ shortSha(c.lastSyncedCommit) }}</span>
+                }
+                @if (c.lastSyncAt) {
+                  <span class="text-body-secondary ms-2">{{ c.lastSyncAt | date: 'medium' }}</span>
+                }
+              } @else {
+                <span class="text-body-secondary" i18n="@@lwConsoleGit-neverSyncedLong">Not synced yet</span>
+              }
+            </ng-template>
+            <ng-template fpcKeyValue="hostKey">
+              @if (c.hostKey) {
+                <span class="font-monospace text-break">{{ c.hostKey }}</span>
+              } @else {
+                <span class="text-body-secondary" i18n="@@lwConsoleGit-hostKeyNone"
+                  >Not pinned yet (pinned on first contact)</span
+                >
+              }
+            </ng-template>
+          </fpc-key-value-list>
+        </div>
+
+        <fpc-list-header [title]="webhookTitle" data-testid="git-webhook" />
+        <div class="px-3 py-2">
+          @if (c.webhook) {
+            <fpc-form-field
+              forId="lw-git-webhook-url"
+              i18n-label="@@lwConsoleGit-webhookUrl"
+              label="Payload URL to configure at the provider"
+            >
+              <fpc-input-group size="sm">
+                <fpc-form-control
+                  controlId="lw-git-webhook-url"
+                  size="sm"
+                  controlClass="font-monospace"
+                  readOnly
+                  [value]="selectedWebhookUrl()"
+                  data-testid="git-webhook-url"
+                />
+                <fpc-button
+                  fpcInputGroupSuffix
+                  variant="dark"
+                  size="sm"
+                  (clicked)="copy(selectedWebhookUrl())"
+                  iconOnly
+                  ariaLabel="Copy"
+                  i18n-ariaLabel="@@lwConsoleGit-copy"
+                  title="Copy"
+                  i18n-title="@@lwConsoleGit-copy"
+                >
+                  <i class="bi bi-clipboard" aria-hidden="true"></i>
+                </fpc-button>
+              </fpc-input-group>
+            </fpc-form-field>
+            <p class="small text-body-secondary">{{ webhookHint(c.provider) }}</p>
+            @if (canAdminSelected()) {
+              @if (shownSecret(); as secret) {
+                @if (shownSecretRotated()) {
+                  <fpc-alert
+                    variant="warning"
+                    i18n-heading="@@lwConsoleGit-rotatedHeading"
+                    heading="New webhook secret: update the provider now"
+                    i18n-message="@@lwConsoleGit-rotatedMessage"
+                    message="The previous secret no longer works. Copy this one into the provider's webhook settings; it is shown only now. The rotation was recorded in the audit log."
+                    data-testid="git-webhook-rotated"
+                  />
+                } @else {
+                  <fpc-alert
+                    variant="warning"
+                    i18n-message="@@lwConsoleGit-secretWarning"
+                    message="Sensitive: keep it in the provider's webhook settings only. This read was recorded in the audit log."
+                  />
+                }
+                <fpc-input-group size="sm" class="d-block my-2">
+                  <fpc-form-control
+                    size="sm"
+                    controlClass="font-monospace"
+                    readOnly
+                    [value]="secret"
+                    data-testid="git-webhook-secret"
+                  />
+                  <fpc-button
+                    fpcInputGroupSuffix
+                    variant="dark"
+                    size="sm"
+                    (clicked)="copy(secret)"
+                    iconOnly
+                    ariaLabel="Copy"
+                    i18n-ariaLabel="@@lwConsoleGit-copySecret"
+                    title="Copy"
+                    i18n-title="@@lwConsoleGit-copySecret"
+                  >
+                    <i class="bi bi-clipboard" aria-hidden="true"></i>
+                  </fpc-button>
+                  <fpc-button fpcInputGroupSuffix variant="dark" size="sm" (clicked)="hideSecret()">
+                    <i class="bi bi-eye-slash me-1" aria-hidden="true"></i><span i18n="@@lwConsoleGit-hide">Hide</span>
+                  </fpc-button>
+                </fpc-input-group>
+              } @else {
+                <div class="d-flex flex-wrap gap-2">
+                  <fpc-button
+                    variant="warning"
+                    size="sm"
+                    [loading]="webhookSecretLoading() === c.id"
+                    [disabled]="webhookSecretRotating() !== null"
+                    (clicked)="revealFor.set(c)"
+                    data-testid="git-reveal-secret"
+                  >
+                    <i class="bi bi-eye me-1" aria-hidden="true"></i
+                    ><span i18n="@@lwConsoleGit-revealSecret">Show webhook secret</span>
+                  </fpc-button>
+                  <fpc-button
+                    variant="danger"
+                    size="sm"
+                    [loading]="webhookSecretRotating() === c.id"
+                    [disabled]="webhookSecretLoading() !== null"
+                    (clicked)="rotateFor.set(c)"
+                    data-testid="git-rotate-secret"
+                  >
+                    <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i
+                    ><span i18n="@@lwConsoleGit-rotateSecret">Rotate webhook secret</span>
+                  </fpc-button>
+                </div>
+              }
+              @if (c.webhookGeneration > 0) {
+                <p class="small text-body-secondary mt-2 mb-0" data-testid="git-webhook-generation">
+                  <span i18n="@@lwConsoleGit-webhookGeneration"
+                    >Secret rotations so far: {{ c.webhookGeneration }}</span
+                  >
+                </p>
+              }
+              @if (webhookSecretError(); as message) {
+                <fpc-alert class="mt-2" variant="danger" [message]="message" />
+              }
+            }
+          } @else {
+            <p class="small text-body-secondary mb-0" i18n="@@lwConsoleGit-webhookOff">
+              Webhooks are off for this connection; the branch is polled.
+            </p>
+          }
+        </div>
+      </loadweaver-lane>
+
+      <loadweaver-lane
+        [title]="commitsTitle"
+        grow="2 1 0"
+        [flush]="true"
+        [off]="activeLane() !== 'commits'"
+        data-testid="git-commits-panel"
+      >
+        @if (commitsError(); as message) {
+          <fpc-alert [flush]="true" variant="danger" [message]="message" />
+        }
+        @if (commitsLoading() === c.id && commits().length === 0) {
+          <fpc-empty-state [loading]="true" size="sm" [title]="commitsLoadingLabel" />
+        } @else if (commits().length === 0) {
+          <fpc-empty-state icon="git" size="sm" i18n-title="@@lwConsoleGit-noCommits" title="No commits handled yet" />
+        } @else {
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [columns]="commitColumns"
+            [rows]="commits()"
+            [rowId]="commitId"
+            [searchable]="false"
+            paging="client"
+            persistKey="lw-git-commits"
+            [rowMenu]="commitMenu"
+            (rowAction)="onCommitAction($event.row, $event.item.id)"
+            [ariaLabel]="commitsTitle"
+            data-testid="git-commits"
+          >
+            <ng-template fpcTableCell="commit" let-commit>
+              <span class="text-nowrap">
+                @if (commitUrl(c, commit.sha); as url) {
+                  <a class="font-monospace" [href]="url" target="_blank" rel="noopener noreferrer">{{
+                    shortSha(commit.sha)
+                  }}</a>
+                } @else {
+                  <span class="font-monospace">{{ shortSha(commit.sha) }}</span>
+                }
+              </span>
+              <div class="small text-body-secondary font-monospace">{{ shortRef(commit.ref) }}</div>
+            </ng-template>
+            <ng-template fpcTableCell="reason" let-commit>
+              @if (commit.reportedState && commit.reportedState !== commit.state) {
+                <div class="small text-body-secondary">
+                  <span i18n="@@lwConsoleGit-reported">Status reported:</span>
+                  {{ stateLabel(commit.reportedState) }}
+                </div>
+              }
+              @if (commit.reason) {
+                <div
+                  class="small text-break font-monospace"
+                  [class.text-danger-emphasis]="commit.state === 'rejected' || commit.state === 'failed'"
+                  data-testid="git-commit-reason"
+                >
+                  {{ commit.reason }}
+                </div>
+              }
+            </ng-template>
+            <ng-template fpcTableCell="plan" let-commit>
+              <span class="text-nowrap">
+                @if (commit.planId) {
+                  <a [routerLink]="['/activity/plans', commit.planId]">{{ openPlanLabel }}</a>
+                }
+                @if (prUrl(c, commit); as pr) {
+                  <div>
+                    <a [href]="pr" target="_blank" rel="noopener noreferrer"
+                      ><i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
+                      ><span i18n="@@lwConsoleGit-pullRequest">Pull request</span>
+                      @if (commit.prNumber) {
+                        #{{ commit.prNumber }}
+                      }
+                    </a>
+                  </div>
+                }
+              </span>
+            </ng-template>
+            <ng-template fpcTableCell="author" let-commit>
+              <span class="text-break">
+                @if (commit.author) {
+                  <div>{{ commit.author }}</div>
+                }
+                @if (commit.message) {
+                  <div class="small text-body-secondary">{{ commit.message }}</div>
+                }
+              </span>
+            </ng-template>
+            <ng-template fpcTableCell="time" let-commit>
+              <span class="text-nowrap">{{ commit.createdAt | date: 'short' }}</span>
+            </ng-template>
+          </fpc-data-table>
+        }
+      </loadweaver-lane>
+    </fpc-section-row>
+  } @else if (routedMissing()) {
+    <fpc-alert
+      [flush]="true"
+      variant="warning"
+      i18n-message="@@lwConsoleGit-notFound"
+      message="This connection doesn't exist (anymore), or you may not see it."
+      data-testid="git-not-found"
+    />
+  } @else if (loading() || !loaded()) {
+    <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+  }
+</div>
+
+<loadweaver-git-connection-modal [(open)]="editOpen" [connection]="selected()" [clusterAdmin]="isClusterAdmin()" />
+
+<fpc-confirm-dialog
+  [open]="deleteFor() !== null"
+  (openChange)="$event || deleteFor.set(null)"
+  [title]="deleteTitle"
+  [message]="deleteMessage"
+  [confirmLabel]="deleteConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="confirmDelete()"
+/>
+
+<fpc-confirm-dialog
+  [open]="exportFor() !== null"
+  (openChange)="$event || exportFor.set(null)"
+  [title]="exportTitle"
+  [message]="exportMessage"
+  [confirmLabel]="exportConfirm"
+  [cancelLabel]="keepLabel"
+  [warning]="exportForce()"
+  (confirmed)="confirmExport()"
+>
+  <fpc-form-check
+    class="d-block mt-2"
+    checkId="lw-git-export-force"
+    [checked]="exportForce()"
+    (checkedChange)="exportForce.set($event)"
+    data-testid="git-export-force"
+    i18n-label="@@lwConsoleGit-exportForce"
+    label="Replace the resource files already in the path (force)"
+  />
+  @if (exportForce()) {
+    <fpc-alert
+      class="d-block mt-2"
+      variant="danger"
+      i18n-message="@@lwConsoleGit-exportForceWarning"
+      message="Force overwrites and removes the YAML files below the path in one commit. Whatever exists only in Git there is lost from the branch (it stays in the history)."
+      data-testid="git-export-force-warning"
+    />
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [open]="resetFor() !== null"
+  (openChange)="$event || resetFor.set(null)"
+  [title]="resetTitle"
+  [message]="resetMessage"
+  [confirmLabel]="resetConfirm"
+  [cancelLabel]="keepLabel"
+  [warning]="true"
+  (confirmed)="confirmReset()"
+/>
+
+<fpc-confirm-dialog
+  [open]="revealFor() !== null"
+  (openChange)="$event || revealFor.set(null)"
+  [title]="revealTitle"
+  [message]="revealMessage"
+  [confirmLabel]="revealConfirm"
+  [cancelLabel]="keepLabel"
+  [warning]="true"
+  (confirmed)="confirmReveal()"
+/>
+
+<fpc-confirm-dialog
+  [open]="rotateFor() !== null"
+  (openChange)="$event || rotateFor.set(null)"
+  [title]="rotateTitle"
+  [message]="rotateMessage"
+  [confirmLabel]="rotateConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="confirmRotate()"
+/>

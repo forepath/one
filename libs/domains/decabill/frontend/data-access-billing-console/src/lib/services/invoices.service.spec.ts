@@ -60,11 +60,15 @@ describe('InvoicesService', () => {
   });
 
   it('should get open overdue invoices', (done) => {
-    service.getOpenOverdueInvoices().subscribe((res) => {
+    service.getOpenOverdueInvoices({ search: ' acme ', limit: 26, offset: 25 }).subscribe((res) => {
       expect(res).toEqual([mockInvoice]);
       done();
     });
-    const req = httpMock.expectOne(`${apiUrl}/invoices/open-overdue`);
+    const req = httpMock.expectOne((request) => request.url === `${apiUrl}/invoices/open-overdue`);
+
+    expect(req.request.params.get('search')).toBe('acme');
+    expect(req.request.params.get('limit')).toBe('26');
+    expect(req.request.params.get('offset')).toBe('25');
 
     req.flush([mockInvoice]);
   });

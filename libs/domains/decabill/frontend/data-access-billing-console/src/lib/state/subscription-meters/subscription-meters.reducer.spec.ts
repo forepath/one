@@ -63,12 +63,39 @@ describe('subscriptionMetersReducer', () => {
     const loadingEntries = subscriptionMetersReducer(loadedSummaries, loadMeterEntries({ subscriptionId: 'sub-1' }));
     const loadedEntries = subscriptionMetersReducer(
       loadingEntries,
-      loadMeterEntriesSuccess({ subscriptionId: 'sub-1', entries: [entry] }),
+      loadMeterEntriesSuccess({ subscriptionId: 'sub-1', entries: [entry], total: 1 }),
     );
 
     expect(loadingSummaries.loadingSummaries).toBe(true);
     expect(loadedSummaries.summaries).toEqual([summary]);
     expect(loadedEntries.entries).toEqual([entry]);
+    expect(loadedEntries.entriesTotal).toBe(1);
+  });
+
+  it('pages the entries (replace-page with total; another subscription starts empty)', () => {
+    const loaded = subscriptionMetersReducer(
+      subscriptionMetersReducer(
+        initialSubscriptionMetersState,
+        loadMeterEntries({ subscriptionId: 'sub-1', page: 2, pageSize: 50 }),
+      ),
+      loadMeterEntriesSuccess({ subscriptionId: 'sub-1', entries: [entry], total: 80 }),
+    );
+    const nextPage = subscriptionMetersReducer(loaded, loadMeterEntries({ subscriptionId: 'sub-1', page: 1 }));
+    const replaced = subscriptionMetersReducer(
+      nextPage,
+      loadMeterEntriesSuccess({ subscriptionId: 'sub-1', entries: [{ ...entry, id: 'entry-9' }], total: 80 }),
+    );
+    const other = subscriptionMetersReducer(replaced, loadMeterEntries({ subscriptionId: 'sub-2' }));
+
+    expect(loaded.entriesPage).toBe(2);
+    expect(loaded.entriesPageSize).toBe(50);
+    expect(loaded.entriesTotal).toBe(80);
+    expect(nextPage.entries).toEqual([entry]);
+    expect(nextPage.entriesPageSize).toBe(50);
+    expect(replaced.entries.map((e) => e.id)).toEqual(['entry-9']);
+    expect(other.entries).toEqual([]);
+    expect(other.entriesTotal).toBe(0);
+    expect(other.entriesPage).toBe(1);
   });
 
   it('stores failures', () => {
@@ -88,7 +115,7 @@ describe('subscriptionMetersReducer', () => {
   it('creates, updates, and deletes entries', () => {
     const withEntry = subscriptionMetersReducer(
       initialSubscriptionMetersState,
-      loadMeterEntriesSuccess({ subscriptionId: 'sub-1', entries: [entry] }),
+      loadMeterEntriesSuccess({ subscriptionId: 'sub-1', entries: [entry], total: 1 }),
     );
     const creating = subscriptionMetersReducer(
       withEntry,
@@ -119,9 +146,11 @@ describe('subscriptionMetersReducer', () => {
     const deleteFailed = subscriptionMetersReducer(deleting, deleteMeterEntryFailure({ error: 'Delete failed' }));
     const cleared = subscriptionMetersReducer(updated, clearSubscriptionMeters());
 
-    expect(created.entries).toHaveLength(2);
+    // Create no longer appends (the page is reloaded by an effect); delete removes the row at once.
+    expect(created.entries).toHaveLength(1);
+    expect(created.creating).toBe(false);
     expect(updated.entries[0].value).toBe(60);
-    expect(deleted.entries).toHaveLength(1);
+    expect(deleted.entries).toHaveLength(0);
     expect(createFailed.creating).toBe(false);
     expect(updateFailed.updating).toBe(false);
     expect(deleteFailed.deleting).toBe(false);

@@ -42,6 +42,7 @@ function statusFromFullState(fullState: UpdatesFullState): UpdatesStatusSummary 
     lastCheckStatus: fullState.lastCheckStatus,
     instanceCount: fullState.instanceCount,
     outdatedInstanceCount: fullState.outdatedInstanceCount,
+    ...(fullState.channel ? { channel: fullState.channel } : {}),
   };
 }
 

@@ -19,13 +19,14 @@ describe('adminOffers effects', () => {
     });
   });
 
-  it('loads admin offers in one batch when total fits', (done) => {
-    service.list.mockReturnValue(of({ items: [{ id: 'offer-1' }], total: 1, limit: 10, offset: 0 }));
-    actions$ = of(loadAdminOffers({}));
+  it('loads one page of admin offers with the total (replace-page)', (done) => {
+    service.list.mockReturnValue(of({ items: [{ id: 'offer-1' }], total: 26, limit: 25, offset: 25 }));
+    actions$ = of(loadAdminOffers({ page: 2 }));
 
     TestBed.runInInjectionContext(() => {
       loadAdminOffers$(actions$, service as never).subscribe((action) => {
-        expect(action).toEqual(loadAdminOffersSuccess({ offers: [{ id: 'offer-1' }] }));
+        expect(action).toEqual(loadAdminOffersSuccess({ offers: [{ id: 'offer-1' }] as never, total: 26 }));
+        expect(service.list).toHaveBeenCalledWith(expect.objectContaining({ limit: 25, offset: 25 }));
         done();
       });
     });

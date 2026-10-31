@@ -1,0 +1,83 @@
+@for (section of sections(); track section.id) {
+  <div [attr.data-testid]="'search-section-' + section.id">
+    <fpc-list-header [title]="section.label" [count]="section.entries.length" [sticky]="false">
+      <i fpcListHeaderTitle class="bi {{ section.icon }} text-body-secondary order-first" aria-hidden="true"></i>
+    </fpc-list-header>
+    <fpc-list role="listbox" [flush]="true" [ariaLabel]="section.label">
+      @for (entry of section.entries; track entry.id) {
+        <fpc-list-item
+          role="option"
+          variant="condensed"
+          [clickable]="true"
+          [attr.id]="domId(entry)"
+          [active]="activeId() === entry.id"
+          (selected)="picked.emit(entry)"
+          data-testid="search-entry"
+        >
+          <span fpcListItemTitle class="d-flex align-items-center gap-2 min-w-0">
+            @switch (entry.type) {
+              @case ('action') {
+                <i
+                  class="bi"
+                  [class.bi-lightning-charge]="entry.action.kind === 'api'"
+                  [class.bi-arrow-right-circle]="entry.action.kind !== 'api'"
+                  aria-hidden="true"
+                ></i>
+                <span class="text-truncate">{{ entry.action.title }}</span>
+              }
+              @case ('result') {
+                <i class="bi {{ kindIcon(entry.result.kind) }}" aria-hidden="true"></i>
+                <span class="text-truncate">{{ resultTitle(entry.result) }}</span>
+                @if (resultStatus(entry.result); as status) {
+                  <fpc-badge size="sm" [tone]="statusTone[status]">{{ statusLabel(status) }}</fpc-badge>
+                }
+              }
+              @case ('favourite') {
+                <i class="bi {{ kindIcon(splitItem(entry.item).kind) }}" aria-hidden="true"></i>
+                <span class="text-truncate"
+                  >{{ kindSingular(splitItem(entry.item).kind) }}
+                  <span class="font-monospace">{{ splitItem(entry.item).key }}</span></span
+                >
+              }
+            }
+          </span>
+          <span fpcListItemActions class="d-flex align-items-center gap-2">
+            @if (entry.type === 'action' && entry.action.kind === 'api') {
+              <code class="small text-nowrap">{{ actionRequest(entry.action) }}</code>
+            }
+            @if (entry.type === 'result') {
+              @if (entry.result.project) {
+                <span class="small text-body-secondary text-nowrap"
+                  ><i class="bi bi-folder me-1" aria-hidden="true"></i>{{ entry.result.project }}</span
+                >
+              }
+              @if (starrable()) {
+                <fpc-button
+                  variant="link"
+                  size="sm"
+                  [iconOnly]="true"
+                  [btnClass]="entry.result.favourite ? 'text-warning' : 'text-body-secondary'"
+                  [ariaLabel]="entry.result.favourite ? unstarLabel : starLabel"
+                  [title]="entry.result.favourite ? unstarLabel : starLabel"
+                  [ariaPressed]="entry.result.favourite"
+                  (clicked)="star(entry.result, $event)"
+                  data-testid="search-star"
+                >
+                  <i
+                    class="bi"
+                    [class.bi-star-fill]="entry.result.favourite"
+                    [class.bi-star]="!entry.result.favourite"
+                    aria-hidden="true"
+                  ></i>
+                </fpc-button>
+              }
+            }
+          </span>
+        </fpc-list-item>
+      }
+    </fpc-list>
+  </div>
+}
+@if (!starrable() && starHint(); as hint) {
+  <p class="small text-body-secondary px-3 py-2 mb-0" data-testid="search-star-hint">{{ hint }}</p>
+}

@@ -1,5 +1,7 @@
+import { createHash } from 'node:crypto';
+
 import { UserRole, createConfirmationCode, validateConfirmationCode } from '@forepath/identity/backend';
-import { ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 import * as totpUtils from '../utils/totp.utils';
@@ -376,6 +378,109 @@ describe('AuthService', () => {
     });
   });
 
+  describe('opt-in admin claim (ADMIN_CLAIM_TOKEN_SHA256)', () => {
+    const token = 'lwc_claim-token-with-plenty-of-entropy-0123456789';
+    const hash = createHash('sha256').update(token).digest('hex');
+
+    afterEach(() => {
+      delete process.env.ADMIN_CLAIM_TOKEN_SHA256;
+    });
+
+    beforeEach(() => {
+      mockUsersService.create.mockResolvedValue({
+        id: 'admin-1',
+        email: 'admin@example.com',
+        role: UserRole.ADMIN,
+        emailConfirmedAt: '2026-01-01T00:00:00.000Z',
+      });
+    });
+
+    it('is not required and not checked when unset (unchanged default)', async () => {
+      mockUsersRepository.countByTenant.mockResolvedValue(0);
+
+      await expect(service.isAdminClaimRequired()).resolves.toBe(false);
+      await expect(service.register('admin@example.com', 'password123')).resolves.toMatchObject({
+        user: { role: UserRole.ADMIN },
+      });
+    });
+
+    it('requires the token for the first account', async () => {
+      process.env.ADMIN_CLAIM_TOKEN_SHA256 = hash;
+      mockUsersRepository.countByTenant.mockResolvedValue(0);
+
+      await expect(service.isAdminClaimRequired()).resolves.toBe(true);
+      await expect(service.register('admin@example.com', 'password123')).rejects.toThrow(ForbiddenException);
+      await expect(service.register('admin@example.com', 'password123', 'wrong-token', '1.2.3.4')).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(mockUsersService.create).not.toHaveBeenCalled();
+
+      await expect(service.register('admin@example.com', 'password123', token, '1.2.3.4')).resolves.toMatchObject({
+        user: { role: UserRole.ADMIN },
+      });
+    });
+
+    it('closes registration once the claimed account exists (behaves as DISABLE_SIGNUP)', async () => {
+      process.env.ADMIN_CLAIM_TOKEN_SHA256 = hash;
+      mockUsersRepository.countByTenant.mockResolvedValue(1);
+
+      await expect(service.isAdminClaimRequired()).resolves.toBe(false);
+      await expect(service.adminClaimStatus()).resolves.toEqual({ claimConfigured: true, claimRequired: false });
+      await expect(service.register('user@example.com', 'password123', 'anything')).rejects.toThrow(
+        ServiceUnavailableException,
+      );
+      await expect(service.register('user@example.com', 'password123', token)).rejects.toThrow(
+        ServiceUnavailableException,
+      );
+      expect(mockUsersService.create).not.toHaveBeenCalled();
+    });
+
+    it('keeps open signup after the first account without the claim (Agenstra / Decabill unchanged)', async () => {
+      mockUsersRepository.countByTenant.mockResolvedValue(1);
+      mockUsersService.create.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        role: UserRole.USER,
+        emailConfirmedAt: null,
+      });
+
+      await expect(service.adminClaimStatus()).resolves.toEqual({ claimConfigured: false, claimRequired: false });
+      await expect(service.register('user@example.com', 'password123', 'anything')).resolves.toMatchObject({
+        user: { role: UserRole.USER },
+      });
+    });
+
+    it('reports a pending claim', async () => {
+      process.env.ADMIN_CLAIM_TOKEN_SHA256 = hash;
+      mockUsersRepository.countByTenant.mockResolvedValue(0);
+
+      await expect(service.adminClaimStatus()).resolves.toEqual({ claimConfigured: true, claimRequired: true });
+    });
+
+    it('rate-limits failed claims per client', async () => {
+      process.env.ADMIN_CLAIM_TOKEN_SHA256 = hash;
+      mockUsersRepository.countByTenant.mockResolvedValue(0);
+
+      for (let i = 0; i < 10; i++) {
+        await expect(service.register('a@example.com', 'password123', 'wrong', '9.9.9.9')).rejects.toThrow(
+          ForbiddenException,
+        );
+      }
+
+      await expect(service.register('a@example.com', 'password123', token, '9.9.9.9')).rejects.toMatchObject({
+        status: 429,
+      });
+      await expect(service.register('a@example.com', 'password123', token, '8.8.8.8')).resolves.toBeDefined();
+    });
+
+    it('fails closed on a malformed hash', async () => {
+      process.env.ADMIN_CLAIM_TOKEN_SHA256 = 'not-a-hash';
+      mockUsersRepository.countByTenant.mockResolvedValue(0);
+
+      await expect(service.register('admin@example.com', 'password123', token)).rejects.toThrow(ForbiddenException);
+    });
+  });
+
   it('returns emailConfirmed false for subsequent registrations', async () => {
     mockUsersRepository.countByTenant.mockResolvedValue(1);
     mockUsersService.create.mockResolvedValue({
@@ -701,6 +806,123 @@ describe('AuthService', () => {
       }
 
       expect(mockJwtService.sign).not.toHaveBeenCalled();
+    });
+  });
+  describe('email login 2FA only with email delivery (opt-in isDeliveryConfigured)', () => {
+    const confirmedUser = (extra: Record<string, unknown> = {}) => ({
+      id: 'user-smtp',
+      email: 'smtp@example.com',
+      role: UserRole.ADMIN,
+      emailConfirmedAt: new Date('2026-01-01T00:00:00.000Z'),
+      lockedAt: null,
+      passwordHash: '$2b$12$hash',
+      tokenVersion: 0,
+      ...extra,
+    });
+    const withDispatcher = (dispatcher: Record<string, unknown>) =>
+      new AuthService(
+        mockUsersRepository as any,
+        mockRevokedUserTokensRepository as any,
+        mockUsersService as any,
+        mockJwtService as any,
+        mockPersonalAccessTokenService as any,
+        dispatcher as any,
+      );
+
+    beforeEach(() => {
+      delete process.env.DISABLE_FORCE_LOGIN_2FA;
+      mockUsersService.validatePassword.mockResolvedValue(true);
+      mockUsersRepository.update.mockResolvedValue({});
+    });
+
+    afterEach(() => delete process.env.DISABLE_FORCE_LOGIN_2FA);
+
+    it('keeps enforcing for apps whose dispatcher does not opt in (no isDeliveryConfigured)', async () => {
+      const warn = jest.spyOn((service as any).logger, 'warn');
+
+      mockUsersRepository.findByEmail.mockResolvedValue(confirmedUser());
+      service.onModuleInit();
+
+      expect(service.isEmailLogin2faSuspended()).toBe(false);
+      expect(warn).not.toHaveBeenCalled();
+      await expect(service.login('smtp@example.com', 'password123')).rejects.toMatchObject({
+        response: expect.objectContaining({ code: 'LOGIN_2FA_REQUIRED', method: 'email' }),
+      });
+      expect(mockEmailDispatcher.publishEmail).toHaveBeenCalled();
+    });
+
+    it('enforces forced email 2FA when delivery is configured', async () => {
+      const opted = withDispatcher({ ...mockEmailDispatcher, isDeliveryConfigured: () => true });
+      const warn = jest.spyOn((opted as any).logger, 'warn');
+
+      mockUsersRepository.findByEmail.mockResolvedValue(confirmedUser());
+      opted.onModuleInit();
+
+      expect(opted.isEmailLogin2faSuspended()).toBe(false);
+      expect(warn).not.toHaveBeenCalled();
+      await expect(opted.login('smtp@example.com', 'password123')).rejects.toMatchObject({
+        response: expect.objectContaining({ code: 'LOGIN_2FA_REQUIRED', method: 'email' }),
+      });
+      expect(mockEmailDispatcher.publishEmail).toHaveBeenCalled();
+    });
+
+    it('does not enforce forced email 2FA without delivery and warns at boot', async () => {
+      const opted = withDispatcher({ ...mockEmailDispatcher, isDeliveryConfigured: () => false });
+      const warn = jest.spyOn((opted as any).logger, 'warn');
+
+      mockUsersRepository.findByEmail.mockResolvedValue(confirmedUser());
+      opted.onModuleInit();
+
+      expect(opted.isEmailLogin2faSuspended()).toBe(true);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('NOT enforced'));
+      await expect(opted.login('smtp@example.com', 'password123')).resolves.toEqual(
+        expect.objectContaining({ access_token: 'jwt-token' }),
+      );
+      expect(mockEmailDispatcher.publishEmail).not.toHaveBeenCalled();
+    });
+
+    it('does not enforce user-enabled email 2FA without delivery, but still enforces TOTP', async () => {
+      const opted = withDispatcher({ ...mockEmailDispatcher, isDeliveryConfigured: () => false });
+
+      mockUsersRepository.findByEmail.mockResolvedValue(confirmedUser({ email2faEnabledAt: new Date() }));
+      await expect(opted.login('smtp@example.com', 'password123')).resolves.toEqual(
+        expect.objectContaining({ access_token: 'jwt-token' }),
+      );
+
+      mockUsersRepository.findByEmail.mockResolvedValue(
+        confirmedUser({ totpEnabledAt: new Date(), totpSecret: 'secret' }),
+      );
+      await expect(opted.login('smtp@example.com', 'password123')).rejects.toMatchObject({
+        response: expect.objectContaining({ code: 'LOGIN_2FA_REQUIRED', method: 'totp' }),
+      });
+    });
+
+    it('reports the effective policy in the 2FA status and refuses to enable email 2FA without delivery', async () => {
+      const opted = withDispatcher({ ...mockEmailDispatcher, isDeliveryConfigured: () => false });
+
+      mockUsersRepository.findByIdOrThrow.mockResolvedValue(confirmedUser({ email2faEnabledAt: new Date() }));
+
+      await expect(opted.getTwoFactorStatus('user-smtp')).resolves.toEqual({
+        forceEnabled: false,
+        emailEnabled: true,
+        totpEnabled: false,
+        method: null,
+      });
+
+      mockUsersRepository.findByIdOrThrow.mockResolvedValue(confirmedUser());
+      await expect(opted.beginOrConfirmEmail2fa('user-smtp')).rejects.toThrow('Email is not configured');
+      expect(mockEmailDispatcher.publishEmail).not.toHaveBeenCalled();
+    });
+
+    it('is not suspended when forced 2FA is disabled anyway (DISABLE_FORCE_LOGIN_2FA=true)', () => {
+      process.env.DISABLE_FORCE_LOGIN_2FA = 'true';
+      const opted = withDispatcher({ ...mockEmailDispatcher, isDeliveryConfigured: () => false });
+      const warn = jest.spyOn((opted as any).logger, 'warn');
+
+      opted.onModuleInit();
+
+      expect(opted.isEmailLogin2faSuspended()).toBe(false);
+      expect(warn).not.toHaveBeenCalled();
     });
   });
 });

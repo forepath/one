@@ -22,6 +22,7 @@ describe('InvoicesController', () => {
       | 'findOpenOverdueByUserId'
       | 'findHistoryByUserId'
       | 'findOpenOverdueSummaryByUserId'
+      | 'countHistoryByUserId'
       | 'findByIdForUser'
       | 'findByIdAndSubscriptionId'
     >
@@ -57,6 +58,7 @@ describe('InvoicesController', () => {
       findOpenOverdueByUserId: jest.fn().mockResolvedValue([]),
       findHistoryByUserId: jest.fn().mockResolvedValue([]),
       findOpenOverdueSummaryByUserId: jest.fn().mockResolvedValue({ count: 0, totalBalance: 0 }),
+      countHistoryByUserId: jest.fn().mockResolvedValue(0),
       findByIdForUser: jest.fn(),
       findByIdAndSubscriptionId: jest.fn(),
     };
@@ -118,6 +120,7 @@ describe('InvoicesController', () => {
       invoicesRepository.findOpenOverdueSummaryByUserId.mockResolvedValue({ count: 2, totalBalance: 50 });
       usersBillingDayRepository.getEffectiveBillingDayForUser.mockResolvedValue(12);
       invoiceCreationService.getUnbilledTotalForUser.mockResolvedValue(10);
+      invoicesRepository.countHistoryByUserId.mockResolvedValue(7);
 
       const result = await controller.getSummary(reqWithUser as never);
 
@@ -128,7 +131,9 @@ describe('InvoicesController', () => {
         unbilledTotal: 10,
         minCheckoutPaymentAmount: 1,
         pendingOffersCount: 3,
+        historyCount: 7,
       });
+      expect(invoicesRepository.countHistoryByUserId).toHaveBeenCalledWith(userId);
     });
 
     it('throws when user not authenticated', async () => {

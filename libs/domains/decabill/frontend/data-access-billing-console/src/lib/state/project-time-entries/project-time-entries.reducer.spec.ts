@@ -11,7 +11,6 @@ import {
   loadProjectTicketTimeEntriesFailure,
   loadProjectTicketTimeEntriesSuccess,
   loadProjectTimeEntries,
-  loadProjectTimeEntriesBatch,
   loadProjectTimeEntriesFailure,
   loadProjectTimeEntriesSuccess,
   projectBoardTimeEntryRemoved,
@@ -46,16 +45,40 @@ describe('projectTimeEntriesReducer', () => {
     expect(state.entries).toEqual([]);
   });
 
-  it('accumulates batch and stores success', () => {
-    const batched = projectTimeEntriesReducer(
+  it('requests a page and stores it with the total (replace-page)', () => {
+    const loading = projectTimeEntriesReducer(
       initialProjectTimeEntriesState,
-      loadProjectTimeEntriesBatch({ accumulatedEntries: [entry] }),
+      loadProjectTimeEntries({ projectId: 'p-1', page: 3, pageSize: 50 }),
     );
-    const done = projectTimeEntriesReducer(batched, loadProjectTimeEntriesSuccess({ entries: [entry, otherEntry] }));
 
-    expect(batched.entries).toEqual([entry]);
-    expect(done.entries).toEqual([entry, otherEntry]);
+    expect(loading.page).toBe(3);
+    expect(loading.pageSize).toBe(50);
+
+    const done = projectTimeEntriesReducer(loading, loadProjectTimeEntriesSuccess({ entries: [entry], total: 120 }));
+    const next = projectTimeEntriesReducer(done, loadProjectTimeEntries({ projectId: 'p-1', page: 4 }));
+    const replaced = projectTimeEntriesReducer(
+      next,
+      loadProjectTimeEntriesSuccess({ entries: [otherEntry], total: 120 }),
+    );
+
+    expect(done.entries).toEqual([entry]);
+    expect(done.total).toBe(120);
     expect(done.loading).toBe(false);
+    // Same project: rows stay until the next page replaces them (no append).
+    expect(next.entries).toEqual([entry]);
+    expect(next.pageSize).toBe(50);
+    expect(replaced.entries).toEqual([otherEntry]);
+  });
+
+  it('starts empty on another project', () => {
+    const loaded = projectTimeEntriesReducer(
+      { ...initialProjectTimeEntriesState, projectId: 'p-1', entries: [entry], total: 1 },
+      loadProjectTimeEntries({ projectId: 'p-2' }),
+    );
+
+    expect(loaded.entries).toEqual([]);
+    expect(loaded.total).toBe(0);
+    expect(loaded.page).toBe(1);
   });
 
   it('stores load failure', () => {

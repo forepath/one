@@ -26,29 +26,16 @@ export const loadAdminSupplierInvoiceSummaryFailure = createAction(
 
 export const loadAdminSupplierInvoiceManager = createAction(
   '[AdminSupplierInvoiceManager] Load Invoices',
-  props<{ search?: string; status?: string }>(),
+  props<{ search?: string; status?: string; page?: number; pageSize?: number }>(),
 );
 export const loadAdminSupplierInvoiceManagerSuccess = createAction(
   '[AdminSupplierInvoiceManager] Load Invoices Success',
-  props<{ invoices: AdminSupplierInvoiceListItem[]; hasMore: boolean; nextOffset: number }>(),
+  props<{ invoices: AdminSupplierInvoiceListItem[]; total: number }>(),
 );
 export const loadAdminSupplierInvoiceManagerFailure = createAction(
   '[AdminSupplierInvoiceManager] Load Invoices Failure',
   props<{ error: string }>(),
 );
-export const loadMoreAdminSupplierInvoiceManager = createAction(
-  '[AdminSupplierInvoiceManager] Load More Invoices',
-  props<{ offset: number; search?: string; status?: string }>(),
-);
-export const loadMoreAdminSupplierInvoiceManagerSuccess = createAction(
-  '[AdminSupplierInvoiceManager] Load More Invoices Success',
-  props<{ invoices: AdminSupplierInvoiceListItem[]; hasMore: boolean; nextOffset: number }>(),
-);
-export const loadMoreAdminSupplierInvoiceManagerFailure = createAction(
-  '[AdminSupplierInvoiceManager] Load More Invoices Failure',
-  props<{ error: string }>(),
-);
-
 export const parseSupplierInvoiceDocument = createAction(
   '[AdminSupplierInvoiceManager] Parse Document',
   props<{ file: File }>(),

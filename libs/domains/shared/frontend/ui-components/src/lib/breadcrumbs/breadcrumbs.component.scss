@@ -1,14 +1,239 @@
+// Breadcrumb trail (Loadweaver 3.38 look, all apps): ancestors are quiet chips (small radius, faint emphasis tint,
+// secondary text; stronger tint + body text on hover), the current item is plain semibold body text, separators are
+// muted (`›` → small `bi-chevron-right`, any other divider as text, e.g. `/` for path-style trails). One line of
+// small-control height; crumbs truncate (full name in `title`), middle crumbs collapse into the "…" menu (see the
+// component). Everything comes from tokens, so light / dark themes and compact density (`--fpc-control-height-sm`
+// steps down) follow automatically. The crumb rules use `::ng-deep` so hand-written crumbs
+// (`.fpc-breadcrumb-item` with an `<a>` / `<span>` child, e.g. `fpc-object-header`) share the look.
 :host {
+  --fpc-breadcrumb-height: var(--fpc-control-height-sm, 2rem);
+  --fpc-breadcrumb-chip-height: calc(var(--fpc-breadcrumb-height) - 0.375rem);
+  --fpc-breadcrumb-chip-px: 0.5rem;
+  --fpc-breadcrumb-chip-radius: var(--bs-border-radius-sm, 0.25rem);
+  --fpc-breadcrumb-chip-color: var(--bs-secondary-color);
+  --fpc-breadcrumb-chip-bg: color-mix(in srgb, var(--bs-emphasis-color) 5%, transparent);
+  --fpc-breadcrumb-chip-hover-color: var(--bs-body-color);
+  --fpc-breadcrumb-chip-hover-bg: color-mix(in srgb, var(--bs-emphasis-color) 10%, transparent);
+  --fpc-breadcrumb-chip-pressed-bg: color-mix(in srgb, var(--bs-emphasis-color) 14%, transparent);
+  --fpc-breadcrumb-icon-color: var(--bs-tertiary-color);
+  --fpc-breadcrumb-current-color: var(--bs-body-color);
+  --fpc-breadcrumb-divider-color: var(--bs-tertiary-color);
+  --fpc-breadcrumb-divider-gap: 0.25rem;
+  --fpc-breadcrumb-item-max: 16rem;
+
   display: block;
+  min-width: 0;
 }
 
 :host(.fpc-breadcrumbs--sm) {
+  --fpc-breadcrumb-chip-px: 0.4375rem;
+  --fpc-breadcrumb-item-max: 14rem;
+
   font-size: 0.875rem;
   line-height: 1.25;
 }
 
+:host(.fpc-breadcrumbs--chevron) {
+  --fpc-breadcrumb-divider-gap: 0.3125rem;
+}
+
 .fpc-breadcrumbs__list {
+  --bs-breadcrumb-padding-x: 0;
+  --bs-breadcrumb-padding-y: 0;
+  --bs-breadcrumb-margin-bottom: 0;
+  --bs-breadcrumb-item-padding-x: 0;
+  --bs-breadcrumb-divider-color: var(--fpc-breadcrumb-divider-color);
+  --bs-breadcrumb-item-active-color: var(--fpc-breadcrumb-current-color);
+
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
+  min-width: 0;
+  min-height: var(--fpc-breadcrumb-height);
+  // One line; the measured collapse keeps it short, truncation handles the rest.
+  overflow: hidden;
+}
+
+:host ::ng-deep .fpc-breadcrumbs__list {
+  // Visual order: first crumb, "…" (DOM-last), the remaining crumbs.
+  > * {
+    order: 2;
+  }
+
+  > :first-child {
+    order: 0;
+  }
+
+  > .fpc-breadcrumbs__overflow {
+    order: 1;
+  }
+
+  > .fpc-breadcrumb-item {
+    display: inline-flex;
+    flex: 0 1 auto;
+    align-items: center;
+    min-width: 0;
+    max-width: var(--fpc-breadcrumb-item-max);
+    color: var(--fpc-breadcrumb-chip-color);
+
+    &.active {
+      flex-shrink: 0.25;
+      color: var(--fpc-breadcrumb-current-color);
+    }
+  }
+
+  > .fpc-breadcrumb-item--collapsed {
+    display: none;
+  }
+
+  // Separators (Bootstrap draws them on `.breadcrumb-item + .breadcrumb-item`; the "…" item needs its own).
+  > .fpc-breadcrumb-item + .fpc-breadcrumb-item::before,
+  > .fpc-breadcrumbs__overflow::before {
+    flex: 0 0 auto;
+    float: none;
+    padding: 0;
+    margin-inline: var(--fpc-breadcrumb-divider-gap);
+    color: var(--fpc-breadcrumb-divider-color);
+    content: var(--bs-breadcrumb-divider, '/');
+  }
+
+  // While measuring, crumbs keep their natural (capped) width so overflow is detectable.
+  &.fpc-breadcrumbs__list--measuring > .fpc-breadcrumb-item,
+  &.fpc-breadcrumbs__list--measuring > .fpc-breadcrumb-item.active {
+    flex-shrink: 0;
+  }
+}
+
+:host(.fpc-breadcrumbs--chevron) ::ng-deep .fpc-breadcrumbs__list {
+  > .fpc-breadcrumb-item + .fpc-breadcrumb-item::before,
+  > .fpc-breadcrumbs__overflow::before {
+    content: '\f285';
+    font-family: 'bootstrap-icons';
+    font-size: 0.625rem;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+// Ancestor chips: component crumbs (`a` / `button`), hand-written `<a>` crumbs and the "…" trigger.
+:host ::ng-deep {
+  .fpc-breadcrumb-item:not(.active) > a,
+  .fpc-breadcrumb-item:not(.active) > button,
+  .fpc-breadcrumbs__more {
+    // One height for every crumb (chips, current, plain, "…"), content centred both ways (user, 2026-10-29); the label
+    // truncates in its own span, the icon sits on the centre line instead of the text baseline.
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+    max-width: 100%;
+    height: var(--fpc-breadcrumb-chip-height);
+    padding: 0 var(--fpc-breadcrumb-chip-px);
+    overflow: hidden;
+    line-height: 1.25;
+    color: var(--fpc-breadcrumb-chip-color);
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    background-color: var(--fpc-breadcrumb-chip-bg);
+    border: 0;
+    border-radius: var(--fpc-breadcrumb-chip-radius);
+    transition:
+      background-color 0.15s ease-in-out,
+      color 0.15s ease-in-out;
+
+    &:hover {
+      color: var(--fpc-breadcrumb-chip-hover-color);
+      text-decoration: none;
+      background-color: var(--fpc-breadcrumb-chip-hover-bg);
+
+      .fpc-breadcrumb-item__icon {
+        color: var(--fpc-breadcrumb-chip-color);
+      }
+    }
+
+    &:active,
+    &[aria-expanded='true'] {
+      color: var(--fpc-breadcrumb-chip-hover-color);
+      background-color: var(--fpc-breadcrumb-chip-pressed-bg);
+    }
+
+    // Shared keyboard ring; inset because trails (and object-header crumbs) clip their overflow.
+    &:focus-visible {
+      outline: 2px solid var(--bs-focus-ring-color, var(--bs-primary));
+      outline-offset: -2px;
+      text-decoration: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  // Plain-text crumbs: the current page (semibold body text) and link-less ancestors (muted, no chip).
+  .fpc-breadcrumb-item > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+    max-width: 100%;
+    height: var(--fpc-breadcrumb-chip-height);
+    // No own inline padding: the separator's equal margins alone set the gap on both sides of a chevron (a text crumb
+    // after a chevron sat ~3.5px further away than a chip did; user, 2026-10-29).
+    padding-inline: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .fpc-breadcrumb-item__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Icon-only crumbs (e.g. the "home" house) and the "…" trigger: exact squares at the chip height, glyph centred.
+  .fpc-breadcrumb-item.fpc-breadcrumb-item--icon-only:not(.active) > a,
+  .fpc-breadcrumb-item.fpc-breadcrumb-item--icon-only:not(.active) > button,
+  .fpc-breadcrumb-item.fpc-breadcrumb-item--icon-only > span,
+  .fpc-breadcrumbs__more.fpc-breadcrumbs__more {
+    justify-content: center;
+    width: var(--fpc-breadcrumb-chip-height);
+    padding: 0;
+  }
+
+  .fpc-breadcrumb-item.active > span {
+    font-weight: 600;
+    color: var(--fpc-breadcrumb-current-color);
+  }
+
+  .fpc-breadcrumb-item__icon {
+    flex: none;
+    font-size: 0.875em;
+    line-height: 1;
+    color: var(--fpc-breadcrumb-icon-color);
+  }
+
+  .fpc-breadcrumbs__overflow {
+    display: none;
+    flex: 0 0 auto;
+    align-items: center;
+
+    &.fpc-breadcrumbs__overflow--shown {
+      display: inline-flex;
+    }
+
+    .fpc-dropdown__trigger {
+      display: flex;
+    }
+  }
+
+  .fpc-breadcrumbs__more {
+    .bi {
+      line-height: 1;
+    }
+  }
 }

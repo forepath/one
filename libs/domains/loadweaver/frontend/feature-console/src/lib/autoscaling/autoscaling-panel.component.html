@@ -1,0 +1,77 @@
+<ng-template #servicesList>
+  <!-- The autoscaled services as a nested table (3.38 D1): State (scaling action) · Service · replicas · metric ·
+       last evaluation · last scaling. -->
+  <fpc-data-table
+    nested
+    [ariaLabel]="title"
+    [columns]="columns"
+    [rows]="services()"
+    [searchable]="false"
+    paging="client"
+    persistKey="lw-autoscaling"
+  >
+    <ng-template fpcTableCell="service" let-row>
+      <span class="fw-semibold font-monospace" [attr.data-testid]="'autoscaling-' + row.service">{{
+        row.service
+      }}</span>
+    </ng-template>
+    <ng-template fpcTableCell="replicas" let-row>
+      <span class="text-nowrap" i18n="@@lwConsoleAutoscaling-replicas"
+        >{{ row.replicas }} replicas ({{ row.min }}..{{ row.max }})</span
+      >
+    </ng-template>
+    <ng-template fpcTableCell="metric" let-row>
+      <span class="font-monospace">{{ metricName(row) }}</span> {{ value(row) }}
+      <span class="text-body-secondary" i18n="@@lwConsoleAutoscaling-target">target {{ target(row) }}</span>
+      @if (row.status?.blocked; as blocked) {
+        <div class="small text-warning-emphasis" data-testid="autoscaling-blocked">
+          <span i18n="@@lwConsoleAutoscaling-blockedReason">Scale-up blocked: {{ blocked }}</span>
+        </div>
+      }
+    </ng-template>
+    <ng-template fpcTableCell="evaluation" let-row>
+      @if (row.status; as st) {
+        {{ st.reason }}
+        <span class="text-body-secondary text-nowrap">({{ st.evaluatedAt | date: 'short' }})</span>
+      }
+    </ng-template>
+    <ng-template fpcTableCell="lastScale" let-row>
+      @if (row.lastScaleAt) {
+        <span class="d-inline-flex flex-wrap align-items-center gap-2">
+          <span class="text-nowrap">{{ row.lastScaleAt | date: 'short' }}</span>
+          @if (row.lastReason) {
+            <span class="text-body-secondary">{{ row.lastReason }}</span>
+          }
+        </span>
+      } @else {
+        <span i18n="@@lwConsoleAutoscaling-never">never</span>
+      }
+    </ng-template>
+  </fpc-data-table>
+</ng-template>
+
+@if (lane()) {
+  <!-- Object page "Autoscaling" tab (3.38): one lane, flush alert, centred empty / loading states. -->
+  <fpc-section-row class="flex-grow-1 min-h-0">
+    <loadweaver-lane [title]="title" [flush]="true">
+      @if (error(); as message) {
+        <fpc-alert [flush]="true" variant="danger" [message]="message" />
+      } @else if (services().length > 0) {
+        <div data-testid="autoscaling-panel"><ng-container [ngTemplateOutlet]="servicesList" /></div>
+      } @else if (loading()) {
+        <fpc-empty-state [loading]="true" size="sm" [title]="loadingLabel" />
+      } @else {
+        <fpc-empty-state icon="arrows-angle-expand" size="sm" [title]="emptyLabel" data-testid="autoscaling-empty" />
+      }
+    </loadweaver-lane>
+  </fpc-section-row>
+} @else if (error(); as message) {
+  <fpc-alert [flush]="true" variant="danger" [message]="message" />
+} @else if (services().length > 0) {
+  <section class="lw-autoscaling" data-testid="autoscaling-panel">
+    <fpc-list-header [title]="title" [sticky]="false" />
+    <ng-container [ngTemplateOutlet]="servicesList" />
+  </section>
+} @else if (loading()) {
+  <fpc-empty-state [loading]="true" size="sm" [title]="loadingLabel" />
+}

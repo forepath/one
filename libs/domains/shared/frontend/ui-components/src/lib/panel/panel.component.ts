@@ -16,6 +16,7 @@ import { FpcLaneHeaderComponent } from '../lane-header/lane-header.component';
   host: {
     class: 'fpc-panel',
     '[class.fpc-panel--flush]': 'flush()',
+    '[class.fpc-panel--scroll]': 'scroll()',
     '[style.--fpc-panel-span]': 'resolvedSpan()',
   },
   template: `
@@ -35,6 +36,12 @@ export class FpcPanelComponent {
   readonly span = input(1);
   /** Drop body padding, e.g. for tables that should reach the panel edges. */
   readonly flush = input(false, { transform: booleanAttribute });
+  /**
+   * The body is the panel's scroll container in both axes (wide tables scroll sideways inside it, their
+   * sticky head / foot stick to it). Height: the panel's flex share (`flex-grow-1 min-h-0` on the host)
+   * or `--fpc-panel-scroll-max-height`; drop `.table-responsive` wrappers.
+   */
+  readonly scroll = input(false, { transform: booleanAttribute });
 
   protected readonly resolvedSpan = computed(() => Math.min(12, Math.max(1, Math.round(this.span()))));
 }

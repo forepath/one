@@ -117,4 +117,29 @@ describe('UsageRecordsRepository', () => {
     expect(mockAndWhere).toHaveBeenCalledWith('usage.period_end <= :to', { to });
     expect(mockAndWhere).toHaveBeenCalledWith('user.tenant_id = :tenantId', { tenantId: 'default' });
   });
+
+  it('findMeteredForSubscriptionPage pages with take / skip, counts the total and stays tenant-scoped', async () => {
+    const mockSkip = jest.fn().mockReturnThis();
+    const mockGetManyAndCount = jest.fn().mockResolvedValue([[{ id: 'usage-1' }], 42]);
+    const mockRepository = {
+      create: jest.fn(),
+      save: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue({
+        ...createQueryBuilderReturn,
+        skip: mockSkip,
+        getManyAndCount: mockGetManyAndCount,
+      }),
+    };
+    const repository = new UsageRecordsRepository(mockRepository as never);
+
+    const result = await runWithTenantId('default', () => repository.findMeteredForSubscriptionPage('sub-1', 25, 50));
+
+    expect(mockWhere).toHaveBeenCalledWith('usage.subscription_id = :subscriptionId', { subscriptionId: 'sub-1' });
+    expect(mockAndWhere).toHaveBeenCalledWith('usage.meter_id IS NOT NULL');
+    expect(mockAndWhere).toHaveBeenCalledWith('user.tenant_id = :tenantId', { tenantId: 'default' });
+    expect(mockOrderBy).toHaveBeenCalledWith('usage.createdAt', 'DESC');
+    expect(mockTake).toHaveBeenCalledWith(25);
+    expect(mockSkip).toHaveBeenCalledWith(50);
+    expect(result).toEqual({ items: [{ id: 'usage-1' }], total: 42 });
+  });
 });

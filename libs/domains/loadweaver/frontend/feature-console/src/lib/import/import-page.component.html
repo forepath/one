@@ -1,0 +1,368 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title()">
+    <ng-container ngProjectAs="[fpcPageHeaderActions]">
+      @if (detail()?.lifecycle === 'pending') {
+        <fpc-button
+          fpcPageHeaderActions
+          variant="secondary"
+          size="sm"
+          [iconOnly]="true"
+          [ariaLabel]="discoverLabel"
+          [title]="discoverLabel"
+          (clicked)="discover()"
+          data-testid="import-discover"
+        >
+          <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          fpcPageHeaderActions
+          variant="danger"
+          size="sm"
+          [iconOnly]="true"
+          [ariaLabel]="discardLabel"
+          [title]="discardLabel"
+          (clicked)="discard()"
+          data-testid="import-discard"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+      }
+    </ng-container>
+  </fpc-page-header>
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="flex-shrink-0" [flush]="true" variant="danger" [message]="message" />
+    }
+
+    @if (detail(); as d) {
+      <fpc-tab-group
+        class="fpc-lane-tabs"
+        [activeId]="lane()"
+        (activeIdChange)="lane.set($any($event))"
+        [ariaLabel]="title()"
+      >
+        <fpc-tab id="items" [label]="itemsTitle" />
+        <fpc-tab id="plan" [label]="planTitle" />
+      </fpc-tab-group>
+      <fpc-section-row class="flex-grow-1 min-h-0">
+        <loadweaver-lane [title]="itemsTitle" [flush]="true" [off]="lane() !== 'items'" data-testid="import-items-lane">
+          <fpc-search-field
+            lwLaneSearch
+            inputId="lw-import-search"
+            [placeholder]="searchLabel"
+            [ariaLabel]="searchLabel"
+            [value]="search()"
+            (valueChange)="search.set($event)"
+            data-testid="import-search"
+          />
+          @if (d.items.length === 0) {
+            <fpc-empty-state icon="box" size="sm" [title]="noItemsLabel" />
+          } @else if (filteredItems().length === 0) {
+            <fpc-empty-state
+              icon="search"
+              size="sm"
+              [title]="noMatchesTitle"
+              [message]="noMatchesHint"
+              data-testid="import-no-matches"
+            />
+          } @else {
+            <fpc-list [flush]="true" data-testid="import-items">
+              @for (item of filteredItems(); track item.id) {
+                @let s = selectionOf(item);
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <fpc-badge color="light" size="sm">{{ item.kind }}</fpc-badge>
+                    <span class="fw-semibold">{{ item.name }}</span>
+                    <span class="small text-body-secondary">{{ item.services.join(', ') }}</span>
+                    @if (item.stateful) {
+                      <fpc-badge tone="info" i18n="@@lwConsoleImport-stateful">data</fpc-badge>
+                    }
+                  </div>
+                  <div fpcListItemMeta class="d-flex flex-column gap-2 mt-2">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                      <label
+                        class="visually-hidden"
+                        [for]="'lw-import-choice-' + item.id"
+                        i18n="@@lwConsoleImport-choice"
+                        >What happens to it</label
+                      >
+                      <fpc-form-control
+                        controlType="select"
+                        size="sm"
+                        controlClass="w-auto"
+                        [controlId]="'lw-import-choice-' + item.id"
+                        [disabled]="!editable()"
+                        [ngModel]="s.choice"
+                        (ngModelChange)="update(item, { choice: $event })"
+                        [attr.data-testid]="'import-choice-' + item.id"
+                      >
+                        <option value="ignore" i18n="@@lwConsoleImport-ignore">Leave unmanaged (drift)</option>
+                        <option value="import" i18n="@@lwConsoleImport-import">Import as a deployment here</option>
+                        <option value="migrate" [disabled]="item.stateful" i18n="@@lwConsoleImport-migrate">
+                          Migrate to other nodes
+                        </option>
+                      </fpc-form-control>
+                      @if (s.choice !== 'ignore') {
+                        <label
+                          class="visually-hidden"
+                          [for]="'lw-import-project-' + item.id"
+                          i18n="@@lwConsoleImport-project"
+                          >Target project</label
+                        >
+                        <fpc-form-control
+                          controlType="select"
+                          size="sm"
+                          controlClass="w-auto"
+                          [controlId]="'lw-import-project-' + item.id"
+                          [disabled]="!editable()"
+                          [ngModel]="s.project ?? ''"
+                          (ngModelChange)="update(item, { project: $event || undefined })"
+                        >
+                          <option value="" i18n="@@lwConsoleImport-chooseProject">Project…</option>
+                          @for (p of d.projects; track p) {
+                            <option [value]="p">{{ p }}</option>
+                          }
+                        </fpc-form-control>
+                        <label
+                          class="visually-hidden"
+                          [for]="'lw-import-deployment-' + item.id"
+                          i18n="@@lwConsoleImport-deployment"
+                          >Deployment name</label
+                        >
+                        <fpc-form-control
+                          size="sm"
+                          controlClass="w-auto"
+                          [controlId]="'lw-import-deployment-' + item.id"
+                          [disabled]="!editable()"
+                          [ngModel]="s.deployment"
+                          (ngModelChange)="update(item, { deployment: $event })"
+                        />
+                      }
+                    </div>
+                    @if (s.choice !== 'ignore') {
+                      @for (p of item.ports; track p.hostPort + p.protocol) {
+                        <div class="d-flex flex-wrap gap-2 align-items-center small">
+                          <code>{{ p.hostPort }}/{{ p.protocol }} → {{ p.service }}:{{ p.containerPort }}</code>
+                          <label
+                            class="visually-hidden"
+                            [for]="'lw-import-host-' + item.id + '-' + p.hostPort + '-' + p.protocol"
+                            i18n="@@lwConsoleImport-hostname"
+                            >Hostname served by the ingress</label
+                          >
+                          <fpc-form-control
+                            size="sm"
+                            controlClass="w-auto"
+                            [controlId]="'lw-import-host-' + item.id + '-' + p.hostPort + '-' + p.protocol"
+                            [disabled]="!editable()"
+                            [ngModel]="s.http?.[p.hostPort] ?? ''"
+                            (ngModelChange)="setHostname(item, p.hostPort, $event)"
+                            [placeholder]="needsHostname(p) ? 'shop.example.com' : ''"
+                          />
+                          <span class="text-body-secondary">
+                            @if (needsHostname(p)) {
+                              <span i18n="@@lwConsoleImport-hostnameNeeded"
+                                >the HTTP ingress takes this port over by hostname</span
+                              >
+                            } @else {
+                              <span i18n="@@lwConsoleImport-forward"
+                                >empty: forwarded by the ingress on the same port</span
+                              >
+                            }
+                          </span>
+                        </div>
+                      }
+                      @for (m of item.mounts; track m.key + m.destination) {
+                        <div class="d-flex flex-wrap gap-2 align-items-center small">
+                          <code>{{ m.type === 'volume' ? m.key.slice(7) : m.source }} → {{ m.destination }}</code>
+                          <span class="text-body-secondary">{{ formatBytes(m.sizeBytes) }}</span>
+                          <label
+                            class="visually-hidden"
+                            [for]="'lw-import-volume-' + item.id + '-' + $index"
+                            i18n="@@lwConsoleImport-volume"
+                            >Data</label
+                          >
+                          <fpc-form-control
+                            controlType="select"
+                            size="sm"
+                            controlClass="w-auto"
+                            [controlId]="'lw-import-volume-' + item.id + '-' + $index"
+                            [disabled]="!editable()"
+                            [ngModel]="s.volumes?.[m.key] ?? 'copy'"
+                            (ngModelChange)="setVolume(item, m.key, $event)"
+                          >
+                            <option value="copy" i18n="@@lwConsoleImport-copy">Copy into a replicated volume</option>
+                            <option value="empty" i18n="@@lwConsoleImport-emptyVolume">
+                              Start with an empty volume
+                            </option>
+                            @if (m.type === 'bind') {
+                              <option value="keep" i18n="@@lwConsoleImport-keep">Keep the host path</option>
+                            }
+                          </fpc-form-control>
+                        </div>
+                      }
+                    }
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </loadweaver-lane>
+
+        <loadweaver-lane
+          [title]="planTitle"
+          grow="0 0 360px"
+          [flush]="true"
+          [off]="lane() !== 'plan'"
+          data-testid="import-plan-lane"
+        >
+          <!-- Groups in the lane (3.38 R2 / R5): fpc-list-header rows own the dividers. -->
+          <section class="flex-shrink-0">
+            <fpc-list-header [title]="hostTitle" />
+            <div class="small d-flex flex-column gap-1 px-3 py-2" data-testid="import-host">
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="fw-semibold">{{ d.discovery.report.hostname }}</span>
+                <fpc-badge color="light" size="sm">{{ d.lifecycle }}</fpc-badge>
+                <span class="text-body-secondary"
+                  ><span i18n="@@lwConsoleImport-discovered">discovered</span>
+                  {{ d.discovery.receivedAt | date: 'short' }}</span
+                >
+              </div>
+              <div>
+                <span i18n="@@lwConsoleImport-docker">Docker</span>:
+                {{ d.discovery.report.docker.available ? d.discovery.report.docker.version : '–' }}
+              </div>
+              @if (d.discovery.report.vpns.length) {
+                <div>
+                  <span i18n="@@lwConsoleImport-tunnels">Existing tunnels (bootstrap path, ignored afterwards)</span>:
+                  @for (v of d.discovery.report.vpns; track v.interface) {
+                    <code class="me-2">{{ v.interface }} ({{ v.kind }})</code>
+                  }
+                </div>
+              }
+              @for (w of d.discovery.report.warnings; track w) {
+                <div class="text-warning-emphasis">{{ w }}</div>
+              }
+            </div>
+            @if (d.discovery.report.former; as f) {
+              <fpc-alert [flush]="true" variant="warning" data-testid="import-former">
+                <span i18n="@@lwConsoleImport-former">Former Loadweaver node</span>
+                <span>: {{ f.drbdResources.length }} </span>
+                <span i18n="@@lwConsoleImport-formerVolumes">DRBD volume(s) found.</span>
+              </fpc-alert>
+            }
+          </section>
+
+          @if (sensitiveVariables().length) {
+            <section class="flex-shrink-0">
+              <fpc-list-header [title]="variablesTitle" />
+              <div class="px-3 py-2">
+                <p class="small text-body-secondary" i18n="@@lwConsoleImport-variablesHint">
+                  Discovery never sends secrets: these values were redacted on the host. Give the ones the compose file
+                  needs.
+                </p>
+                @for (v of sensitiveVariables(); track v.project + v.name) {
+                  <fpc-form-field [forId]="'lw-import-var-' + $index" [label]="v.project + ' / ' + v.name">
+                    <fpc-form-control
+                      inputType="password"
+                      autocomplete="off"
+                      size="sm"
+                      controlClass="font-monospace"
+                      [controlId]="'lw-import-var-' + $index"
+                      [disabled]="!editable()"
+                      [ngModel]="variableOf(v.project, v.name)"
+                      (ngModelChange)="setVariable(v.project, v.name, $event)"
+                    />
+                  </fpc-form-field>
+                }
+              </div>
+            </section>
+          }
+
+          <section class="flex-shrink-0" data-testid="import-plan">
+            <fpc-list-header [title]="planSectionTitle">
+              <ng-container ngProjectAs="[fpcListHeaderActions]">
+                @if (editable()) {
+                  <fpc-button
+                    [variant]="preview() ? 'dark' : 'primary'"
+                    size="sm"
+                    [loading]="busy()"
+                    (clicked)="buildPlan()"
+                    data-testid="import-build"
+                  >
+                    <span i18n="@@lwConsoleImport-build">Build the join plan</span>
+                  </fpc-button>
+                  @if (preview(); as p) {
+                    <fpc-button
+                      variant="primary"
+                      size="sm"
+                      [disabled]="p.joinPlan.errors.length > 0 || busy()"
+                      (clicked)="createPlan()"
+                      data-testid="import-create-plan"
+                    >
+                      <span i18n="@@lwConsoleImport-createPlan">Create the plan</span>
+                    </fpc-button>
+                  }
+                }
+              </ng-container>
+            </fpc-list-header>
+            @if (preview()?.error; as message) {
+              <fpc-alert [flush]="true" variant="danger" [message]="message" />
+            }
+            <div class="d-flex flex-column gap-2 small px-3 py-2">
+              @if (editable() && d.discovery.report.former) {
+                <fpc-form-check
+                  class="d-block small"
+                  checkId="lw-import-wipe"
+                  i18n-label="@@lwConsoleImport-wipe"
+                  label="Discard the identity and keys of the former cluster (needed when it belonged to another cluster)"
+                  [ngModel]="wipeFormerIdentity()"
+                  (ngModelChange)="wipeFormerIdentity.set($event)"
+                  data-testid="import-wipe"
+                />
+              }
+              @if (preview(); as p) {
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <fpc-badge [tone]="statusTone[p.status]">{{ statusLabel(p.status) }}</fpc-badge>
+                  @if (p.planId) {
+                    <a [routerLink]="['/activity/plans', p.planId]" i18n="@@lwConsoleImport-openPlan">Open the plan</a>
+                  }
+                </div>
+                @for (e of p.joinPlan.errors; track e) {
+                  <div class="text-danger" data-testid="import-plan-error">{{ e }}</div>
+                }
+                @for (c of p.joinPlan.conflicts; track c.kind + c.subject) {
+                  <div class="d-flex flex-wrap align-items-center gap-2">
+                    <fpc-badge [tone]="conflictTone[c.severity]">{{ conflictLabel(c.severity) }}</fpc-badge>
+                    <span>{{ c.reason }}</span>
+                    @if (c.resolution) {
+                      <span class="text-body-secondary">— {{ c.resolution }}</span>
+                    }
+                  </div>
+                }
+                @for (w of p.joinPlan.warnings; track w) {
+                  <div class="text-warning-emphasis">{{ w }}</div>
+                }
+                <!-- The join plan's steps as a nested table (decision 2): State · Step · message. -->
+                <fpc-data-table
+                  class="mx-n3"
+                  nested
+                  [ariaLabel]="stepsLabel"
+                  [columns]="stepColumns"
+                  [rows]="stepRows()"
+                  [searchable]="false"
+                  [showColumnChooser]="false"
+                  data-testid="import-steps"
+                />
+              } @else if (!editable()) {
+                <span class="text-body-secondary">–</span>
+              }
+            </div>
+          </section>
+        </loadweaver-lane>
+      </fpc-section-row>
+    } @else if (!error()) {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+    }
+  </div>
+</div>

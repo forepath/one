@@ -1,7 +1,38 @@
 <div class="addons-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
+  <fpc-page-header [title]="pageTitle" />
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="addons-bulk-result"
+    />
+  }
+
+  <!-- One data list: State · Addon · facts; ⋮ Edit / Delete / Copy ID; bulk Activate / Deactivate / Delete. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="addons()"
+    paging="client"
+    persistKey="decabill-addons"
+    [(query)]="searchQuery"
+    [searchPlaceholder]="searchPlaceholder"
+    [loading]="(loading$ | async) === true"
+    [error]="(error$ | async) ?? null"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    (rowActivate)="openEditModal($event)"
+    emptyIcon="puzzle"
+    data-testid="addons-list"
+  >
     <fpc-button
-      fpcPageHeaderActions
+      fpcDataTableToolbar
       variant="primary"
       size="sm"
       iconOnly
@@ -12,116 +43,70 @@
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
     </fpc-button>
-  </fpc-page-header>
-  <fpc-search-field
-    class="border-bottom"
-    name="search"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchPlaceholder"
-    [(value)]="searchQuery"
-  />
-  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @if (loading$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" i18n-label="@@featureAddons-loading" label="Loading..." />
-      </div>
-    } @else {
-      @if (error$ | async; as error) {
-        <fpc-alert class="m-3" variant="danger" [message]="error" />
-      }
-      @if (addons$ | async; as addons) {
-        @if (addons.length === 0) {
-          @if (searchQuery().trim()) {
-            <fpc-empty-state icon="search" message="No search results" i18n-message="@@featureAddons-noSearchResults" />
-          } @else {
-            <fpc-empty-state message="No addons yet" i18n-message="@@featureAddons-empty" />
-          }
-        } @else {
-          <fpc-list [flush]="true">
-            @for (addon of addons; track addon.id) {
-              <fpc-list-item>
-                <div fpcListItemTitle class="fw-semibold">{{ addon.name }}</div>
-                <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                    <span class="me-2" [ngClass]="activeStatusTextClass(addon.isActive)">
-                      @if (addon.isActive) {
-                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                      } @else {
-                        <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
-                      }
-                      {{ activeStatusLabel(addon.isActive) }}
-                    </span>
-                    <span class="me-2"> <i class="bi bi-key me-1" aria-hidden="true"></i>{{ addon.key }} </span>
-                    <span class="me-2">
-                      @if (addon.implementationType === 'module') {
-                        <i class="bi bi-puzzle me-1" aria-hidden="true"></i>
-                      } @else {
-                        <i class="bi bi-file-code me-1" aria-hidden="true"></i>
-                      }
-                      {{ implementationTypeLabel(addon.implementationType) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatPrice(addon) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-hdd-stack me-1" aria-hidden="true"></i>{{ compatibleProvidersLabel(addon) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-sliders me-1" aria-hidden="true"></i
-                      ><span i18n="@@featureAddons-configFieldCount">{{ configFieldCount(addon) }} config fields</span>
-                    </span>
-                    @if (addonMeterCount(addon) > 0) {
-                      <span class="me-2">
-                        <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>{{ addonMeterCount(addon) }}
-                        <span i18n="@@featureAddons-metersBadge">meters</span>
-                      </span>
-                    }
-                  </div>
-                </div>
-                <fpc-button-group
-                  fpcListItemActions
-                  size="sm"
-                  ariaLabel="Addon actions"
-                  i18n-ariaLabel="@@featureAddons-addonActionsAria"
-                >
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="warning"
-                    (clicked)="openEditModal(addon)"
-                    [disabled]="(loadingAny$ | async) === true"
-                    title="Edit addon"
-                    i18n-title="@@featureAddons-edit"
-                    ariaLabel="Edit addon"
-                    i18n-ariaLabel="@@featureAddons-edit"
-                  >
-                    <i class="bi bi-pencil" aria-hidden="true"></i>
-                  </fpc-button>
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="danger"
-                    (clicked)="openDeleteConfirm(addon)"
-                    [disabled]="(loadingAny$ | async) === true"
-                    title="Delete addon"
-                    i18n-title="@@featureAddons-delete"
-                    ariaLabel="Delete addon"
-                    i18n-ariaLabel="@@featureAddons-delete"
-                  >
-                    <i class="bi bi-trash" aria-hidden="true"></i>
-                  </fpc-button>
-                </fpc-button-group>
-              </fpc-list-item>
-            }
-          </fpc-list>
-        }
-      }
-    }
-  </div>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!selectedAddons().some((addon) => !addon.isActive)"
+      (clicked)="setActiveSelected(true)"
+      data-testid="addons-bulk-activate"
+      iconOnly
+      [ariaLabel]="activateLabel"
+      [title]="activateLabel"
+    >
+      <i class="bi bi-toggle-on" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!selectedAddons().some((addon) => addon.isActive)"
+      (clicked)="setActiveSelected(false)"
+      data-testid="addons-bulk-deactivate"
+      iconOnly
+      [ariaLabel]="deactivateLabel"
+      [title]="deactivateLabel"
+    >
+      <i class="bi bi-toggle-off" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="selectedAddons().length === 0"
+      (clicked)="confirmBulkDelete.set(true)"
+      data-testid="addons-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
+
+    <span fpcDataTableEmpty>
+      <fpc-empty-state icon="puzzle" size="sm" message="No add-ons yet" i18n-message="@@featureAddons-empty" />
+    </span>
+  </fpc-data-table>
 </div>
 
-<fpc-modal [(open)]="createModalOpen" size="xl" i18n-title="@@featureAddons-createTitle" title="Add addon">
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDelete"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelected()"
+/>
+
+<fpc-modal
+  [(open)]="createModalOpen"
+  size="xl"
+  i18n-title="@@featureAddons-createTitle"
+  title="Create add-on"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <form (ngSubmit)="onSubmitCreate()">
     <ng-container
       *ngTemplateOutlet="addonForm; context: { form: createForm, prefix: 'create', disabled: (creating$ | async) }"
@@ -134,14 +119,21 @@
   </form>
 </fpc-modal>
 
-<fpc-modal [(open)]="editModalOpen" size="xl" i18n-title="@@featureAddons-editTitle" title="Edit addon">
+<fpc-modal
+  [(open)]="editModalOpen"
+  size="xl"
+  i18n-title="@@featureAddons-editTitle"
+  title="Edit add-on"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <form (ngSubmit)="onSubmitEdit()">
     <ng-container
       *ngTemplateOutlet="addonForm; context: { form: editForm, prefix: 'edit', disabled: (updating$ | async) }"
     ></ng-container>
     <div *fpcModalFooter class="d-flex justify-content-end gap-2">
       <fpc-button variant="primary" type="submit" [disabled]="(updating$ | async) === true">
-        <span i18n="@@featureAddons-save">Save</span>
+        <span i18n="@@featureAddons-save">Save changes</span>
       </fpc-button>
     </div>
   </form>
@@ -213,25 +205,19 @@
         i18n-label="@@featureAddons-compatibleProviders"
         label="Compatible providers"
         i18n-hint="@@featureAddons-compatibleProvidersHelp"
-        hint="Hold Ctrl/Cmd to select multiple. Leave empty for all addon-capable providers."
+        hint="Leave empty for all add-on-capable providers."
       >
-        <select
-          class="form-select"
-          [id]="prefix + 'AddonProviders'"
-          multiple
-          size="4"
+        <fpc-multi-select
+          [controlId]="prefix + 'AddonProviders'"
+          [name]="prefix + 'AddonProviders'"
+          [options]="addonProviderOptions((providerOptions$ | async) ?? [])"
           [ngModel]="form.compatibleProviders"
           (ngModelChange)="onCompatibleProvidersChange(form, $event)"
-          [compareWith]="compareProviderId"
-          [name]="prefix + 'AddonProviders'"
           [disabled]="disabled"
-        >
-          @if (providerOptions$ | async; as providers) {
-            @for (provider of providers; track provider.id) {
-              <option [ngValue]="provider.id">{{ providerOptionLabel(provider) }}</option>
-            }
-          }
-        </select>
+          [searchPlaceholder]="multiSelectSearchLabel"
+          [removeLabel]="multiSelectRemoveLabel"
+          [emptyLabel]="multiSelectEmptyLabel"
+        />
       </fpc-form-field>
     </div>
     @if (form.implementationType === 'module') {
@@ -253,8 +239,13 @@
       </div>
       @if (showModuleDefaultsSection(form)) {
         <div class="col-12">
-          <div class="border rounded p-3 bg-body-secondary">
-            <h6 class="mb-0" i18n="@@featureAddons-moduleDefaults">Module defaults</h6>
+          <div>
+            <fpc-list-header
+              class="d-block mb-2"
+              title="Module defaults"
+              i18n-title="@@featureAddons-moduleDefaults"
+              [sticky]="false"
+            />
             <p class="form-text text-body-secondary small mb-3 mt-2" i18n="@@featureAddons-moduleDefaultsHelp">
               Defaults for module environment variables. Schema is defined by the registered module; leave blank when
               unused.
@@ -314,23 +305,29 @@
         </fpc-form-field>
       </div>
       <div class="col-12">
-        <div class="border rounded p-3 bg-body-secondary">
-          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-            <span class="fw-semibold" i18n="@@featureAddons-envVariables">Environment variables</span>
-            <fpc-button
-              variant="primary"
-              size="sm"
-              iconOnly
-              (clicked)="addEnvVariable(form)"
-              [disabled]="disabled"
-              title="Add line"
-              i18n-title="@@featureAddons-addEnvVar"
-              ariaLabel="Add line"
-              i18n-ariaLabel="@@featureAddons-addEnvVar"
-            >
-              <i class="bi bi-plus" aria-hidden="true"></i>
-            </fpc-button>
-          </div>
+        <div class="">
+          <fpc-list-header
+            class="d-block mb-2"
+            title="Environment variables"
+            i18n-title="@@featureAddons-envVariables"
+            [sticky]="false"
+          >
+            <span fpcListHeaderActions class="d-flex align-items-center gap-1">
+              <fpc-button
+                variant="primary"
+                size="sm"
+                iconOnly
+                (clicked)="addEnvVariable(form)"
+                [disabled]="disabled"
+                title="Add line"
+                i18n-title="@@featureAddons-addEnvVar"
+                ariaLabel="Add line"
+                i18n-ariaLabel="@@featureAddons-addEnvVar"
+              >
+                <i class="bi bi-plus" aria-hidden="true"></i>
+              </fpc-button>
+            </span>
+          </fpc-list-header>
           @for (row of form.environmentVariableRows; track $index; let i = $index) {
             <div class="row g-2 mb-2 align-items-end">
               <div class="col-12 col-md-2">
@@ -526,10 +523,15 @@
       </fpc-form-field>
     </div>
     <div class="col-12">
-      <div class="border rounded p-3 bg-body-secondary">
-        <h6 class="mb-2" i18n="@@featureAddons-meters">Usage meters</h6>
+      <div>
+        <fpc-list-header
+          class="d-block mb-2"
+          title="Usage meters"
+          i18n-title="@@featureAddons-meters"
+          [sticky]="false"
+        />
         <p class="form-text text-body-secondary small mb-3" i18n="@@featureAddons-metersHelp">
-          Attach usage meters to this addon with optional unit price and included usage overrides.
+          Attach usage meters to this add-on with optional unit price and included usage overrides.
         </p>
         @if (prefix === 'edit' && addonMeterAttachError) {
           <fpc-alert class="py-2" variant="danger" [message]="addonMeterAttachError" />
@@ -545,7 +547,7 @@
                 <span class="font-monospace text-break">{{ attached.key }}</span>
                 <span class="text-body-secondary">{{ attached.aggregator }}</span>
                 <span class="text-body-secondary"
-                  >€{{ attached.effectiveUnitPriceNet }}
+                  >{{ attached.effectiveUnitPriceNet | fpcMoney: null : { unitPrice: true } }}
                   @if (attached.unitLabel) {
                     / {{ attached.unitLabel }}
                   }
@@ -636,14 +638,15 @@
         } @empty {
           @if (prefix === 'create' || !addonMeterAttachLoading) {
             <p class="text-body-secondary small mb-3" i18n="@@featureAddons-noMetersAttached">
-              No meters attached to this addon yet.
+              No meters attached to this add-on yet.
             </p>
           }
         }
         @if (activeMeters$ | async; as meters) {
           @if (availableMetersForAddonAttach(meters, prefix); as availableMeters) {
             @if (availableMeters.length > 0) {
-              <div class="row g-2 align-items-end">
+              <!-- DB-07 / DB-08 d: one control line (gutter-grid fields have no bottom margin), so the "+" carries none either; the row spaces itself. -->
+              <div class="row g-2 gy-3 mb-3 align-items-end">
                 <div class="col-12 col-md-5">
                   <fpc-form-field
                     [forId]="prefix + 'AttachAddonMeter'"
@@ -682,7 +685,7 @@
                   </fpc-form-field>
                 </div>
                 <div class="col-12 col-md-5">
-                  <div class="row g-2">
+                  <div class="row g-2 gy-3">
                     <div class="col-12 col-md-6">
                       <fpc-form-field
                         [forId]="prefix + 'AttachAddonMeterPrice'"
@@ -773,7 +776,7 @@
               </p>
             } @else {
               <p class="text-body-secondary small mb-0" i18n="@@featureAddons-allMetersAttached">
-                All active catalog meters are already attached to this addon.
+                All active catalog meters are already attached to this add-on.
               </p>
             }
           }
@@ -800,7 +803,7 @@
 <fpc-confirm-dialog
   [(open)]="deleteConfirmModalOpen"
   i18n-title="@@featureAddons-deleteTitle"
-  title="Delete addon"
+  title="Delete add-on"
   i18n-confirmLabel="@@featureAddons-delete"
   confirmLabel="Delete"
   [danger]="true"
@@ -808,7 +811,7 @@
   (confirmed)="confirmDelete()"
 >
   @if (addonToDelete) {
-    <p i18n="@@featureAddons-deleteConfirm">Delete addon "{{ addonToDelete.name }}"?</p>
+    <p i18n="@@featureAddons-deleteConfirm">Delete add-on "{{ addonToDelete.name }}"?</p>
     <p class="text-danger mb-0" i18n="@@featureAddons-cannotUndo">This action cannot be undone.</p>
   }
 </fpc-confirm-dialog>

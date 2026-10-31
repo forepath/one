@@ -27,7 +27,8 @@ export type FpcFormControlSize = 'sm' | 'md' | 'lg' | 'xl';
  *
  * Multi-selects that need array `ngModel` / `compareWith` / `[ngValue]` should stay native -
  * use `multiple` only for simple string / `(valuesChange)` flows. File inputs use
- * `(filesChange)` because the CVA string path cannot carry a `FileList`.
+ * `(filesChange)` because the CVA string path cannot carry a `FileList`. `inputType="range"` renders a
+ * Bootstrap `form-range` slider (value as string, `min` / `max` / `step`).
  */
 @Component({
   selector: 'fpc-form-control',
@@ -51,6 +52,7 @@ export type FpcFormControlSize = 'sm' | 'md' | 'lg' | 'xl';
           [disabled]="isDisabled()"
           [attr.aria-invalid]="invalid() ? 'true' : null"
           [attr.aria-describedby]="ariaDescribedBy()"
+          [attr.aria-label]="ariaLabel()"
           [attr.required]="required() ? '' : null"
           [attr.multiple]="multiple() ? '' : null"
           [attr.size]="htmlSize()"
@@ -72,6 +74,7 @@ export type FpcFormControlSize = 'sm' | 'md' | 'lg' | 'xl';
           [attr.placeholder]="placeholder()"
           [attr.aria-invalid]="invalid() ? 'true' : null"
           [attr.aria-describedby]="ariaDescribedBy()"
+          [attr.aria-label]="ariaLabel()"
           [attr.required]="required() ? '' : null"
           [attr.maxlength]="maxLength()"
           [value]="value()"
@@ -93,6 +96,7 @@ export type FpcFormControlSize = 'sm' | 'md' | 'lg' | 'xl';
           [attr.multiple]="multiple() ? '' : null"
           [attr.aria-invalid]="invalid() ? 'true' : null"
           [attr.aria-describedby]="ariaDescribedBy()"
+          [attr.aria-label]="ariaLabel()"
           [attr.required]="required() ? '' : null"
           [attr.min]="min()"
           [attr.max]="max()"
@@ -127,6 +131,8 @@ export class FpcFormControlComponent implements ControlValueAccessor {
   readonly invalid = input(false, { transform: booleanAttribute });
   readonly multiple = input(false, { transform: booleanAttribute });
   readonly ariaDescribedBy = input<string | null>(null);
+  /** Accessible name when the control has no visible label (e.g. a row of a list editor). */
+  readonly ariaLabel = input<string | null>(null);
   /** Extra classes appended to the native control (e.g. `font-monospace`, `flex-grow-1`). */
   readonly controlClass = input<string | null>(null);
   readonly min = input<string | number | null>(null);
@@ -149,6 +155,11 @@ export class FpcFormControlComponent implements ControlValueAccessor {
   protected readonly isFileInput = computed(() => this.controlType() === 'input' && this.inputType() === 'file');
 
   protected readonly controlClasses = computed(() => {
+    if (this.controlType() === 'input' && this.inputType() === 'range') {
+      // Sliders use Bootstrap's `form-range` (no size tiers); `controlClass` still applies.
+      return ['form-range', this.controlClass()?.trim()].filter(Boolean).join(' ');
+    }
+
     const classes = [this.controlType() === 'select' ? 'form-select' : 'form-control'];
     const size = this.size();
 

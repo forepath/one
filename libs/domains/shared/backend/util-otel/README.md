@@ -49,13 +49,14 @@ When disabled, `OpenTelemetryModule.register()` returns an empty module (no prov
 
 ## Environment variables
 
-| Variable                          | Description                                                                         |
-| --------------------------------- | ----------------------------------------------------------------------------------- |
-| `OTEL_ENABLED`                    | Must be exactly `true` to enable                                                    |
-| `OTEL_USERNAME` / `OTEL_PASSWORD` | HTTP Basic auth for the metrics scrape endpoint (both required when enabled)        |
-| `OTEL_METRICS_PATH`               | Prometheus scrape path on the HTTP root (default `/otel/metrics`)                   |
-| `OTEL_SERVICE_NAME`               | Service name resource attribute (falls back to `applicationId` from module options) |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`     | Optional OTLP HTTP endpoint for traces and logs (uses same Basic auth)              |
+| Variable                              | Description                                                                                                                                                                       |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OTEL_ENABLED`                        | Must be exactly `true` to enable                                                                                                                                                  |
+| `OTEL_USERNAME` / `OTEL_PASSWORD`     | HTTP Basic auth for the metrics scrape endpoint (both required when enabled)                                                                                                      |
+| `OTEL_METRICS_PATH`                   | Prometheus scrape path on the HTTP root (default `/otel/metrics`)                                                                                                                 |
+| `OTEL_SERVICE_NAME`                   | Service name resource attribute (falls back to `applicationId` from module options)                                                                                               |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`         | Optional OTLP HTTP endpoint for traces and logs (uses same Basic auth)                                                                                                            |
+| `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` | Optional OTLP HTTP endpoint for metrics (full URL, e.g. `https://collector:4318/v1/metrics`); pushes every 60 s in addition to the Prometheus scrape route (uses same Basic auth) |
 
 Example (disabled by default):
 
@@ -66,6 +67,7 @@ OTEL_PASSWORD=
 # OTEL_METRICS_PATH=/otel/metrics
 # OTEL_SERVICE_NAME=
 # OTEL_EXPORTER_OTLP_ENDPOINT=
+# OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=
 ```
 
 ## Metrics endpoint

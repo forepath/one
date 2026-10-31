@@ -16,24 +16,18 @@
     @if (detail(); as detailValue) {
       <div fpcPageHeaderTitle class="min-w-0 flex-grow-1">
         <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-          <fpc-badge
-            variant="info"
-            color="secondary"
-            [ngClass]="provisioningStatusBadgeClass(detailValue.provisioningStatus)"
-          >
+          <fpc-badge [tone]="provisioningStatusBadgeTone(detailValue.provisioningStatus)">
             {{ provisioningStatusLabel(detailValue.provisioningStatus) }}
           </fpc-badge>
           @if (detailValue.serverInfo; as serverInfo) {
-            <fpc-badge variant="info" color="secondary" [ngClass]="serverStatusBadgeClass(serverInfo)">
+            <fpc-badge [tone]="serverStatusBadgeTone(serverInfo)">
               <i class="bi me-1" [ngClass]="serverStatusIconClass(serverInfo)" aria-hidden="true"></i>
               {{ serverStatusLabel(serverInfo) }}
             </fpc-badge>
           }
           @if (detailValue.sshAccessGranted) {
             <fpc-badge
-              variant="info"
-              color="secondary"
-              class="billing-admin__chip--status-warning"
+              tone="warning"
               title="SSH access granted"
               i18n-title="@@featureOverview-sshAccessGrantedBadgeTitle"
             >
@@ -214,65 +208,65 @@
           [class.d-none]="showUsageMetersSection() && mobilePanel() !== 'info'"
           [class.border-bottom]="showUsageMetersSection()"
         >
-          <div class="card h-100 border-0 rounded-0 d-flex flex-column min-h-0">
-            <div class="card-body service-detail-page__lane-body">
-              @if (detail(); as detailValue) {
-                <dl class="row mb-0 small">
-                  <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-serviceType">Service type</dt>
-                  <dd class="col-sm-9">{{ productServiceLabel(detailValue) }}</dd>
-                  @if (providerLabel(detailValue); as providerName) {
-                    <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-provider">Provider</dt>
-                    <dd class="col-sm-9">{{ providerName }}</dd>
+          <fpc-board-lane class="h-100" padded>
+            @if (detail(); as detailValue) {
+              <dl class="row mb-0 small">
+                <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-serviceType">Service type</dt>
+                <dd class="col-sm-9">{{ productServiceLabel(detailValue) }}</dd>
+                @if (providerLabel(detailValue); as providerName) {
+                  <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-provider">Provider</dt>
+                  <dd class="col-sm-9">{{ providerName }}</dd>
+                }
+                @if (detailValue.serverInfo; as serverInfo) {
+                  @if (serverInfo.publicIp) {
+                    <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-publicIp">Public IP</dt>
+                    <dd class="col-sm-9">{{ serverInfo.publicIp }}</dd>
                   }
-                  @if (detailValue.serverInfo; as serverInfo) {
-                    @if (serverInfo.publicIp) {
-                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-publicIp">Public IP</dt>
-                      <dd class="col-sm-9">{{ serverInfo.publicIp }}</dd>
-                    }
-                    @if (serverInfo.privateIp) {
-                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-privateIp">Private IP</dt>
-                      <dd class="col-sm-9">{{ serverInfo.privateIp }}</dd>
-                    }
-                    @if (serverInfo.hostname) {
-                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-hostname">Hostname</dt>
-                      <dd class="col-sm-9 text-break">{{ serverInfo.hostname }}</dd>
-                    }
-                    @if (serverInfo.hostnameFqdn) {
-                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-hostnameFqdn">FQDN</dt>
-                      <dd class="col-sm-9 text-break">{{ serverInfo.hostnameFqdn }}</dd>
-                    }
-                    <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-runtimeStatus">
-                      Runtime status
-                    </dt>
-                    <dd class="col-sm-9">
-                      <fpc-badge
-                        variant="info"
-                        color="secondary"
-                        class="d-inline-flex"
-                        [ngClass]="serverStatusBadgeClass(serverInfo)"
-                      >
-                        <i class="bi me-1" [ngClass]="serverStatusIconClass(serverInfo)" aria-hidden="true"></i>
-                        {{ serverStatusLabel(serverInfo) }}
-                      </fpc-badge>
-                    </dd>
-                    @if (serverLocationLabel(serverInfo.metadata, locationCatalog()); as locationLabel) {
-                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-location">Location</dt>
-                      <dd class="col-sm-9">{{ locationLabel }}</dd>
-                    }
-                  } @else if (detailValue.hostname) {
+                  @if (serverInfo.privateIp) {
+                    <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-privateIp">Private IP</dt>
+                    <dd class="col-sm-9">{{ serverInfo.privateIp }}</dd>
+                  }
+                  @if (serverInfo.hostname) {
                     <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-hostname">Hostname</dt>
-                    <dd class="col-sm-9 text-break">{{ detailValue.hostname }}</dd>
+                    <dd class="col-sm-9 text-break">{{ serverInfo.hostname }}</dd>
                   }
-                </dl>
-              } @else if (loadingDetail$ | async) {
-                <p class="text-body-secondary small mb-0" i18n="@@featureServiceDetail-loading">Loading service...</p>
-              } @else {
-                <p class="text-body-secondary small mb-0" i18n="@@featureServiceDetail-noServerInfo">
-                  Server details are not available yet.
-                </p>
-              }
-            </div>
-          </div>
+                  @if (serverInfo.hostnameFqdn) {
+                    <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-hostnameFqdn">FQDN</dt>
+                    <dd class="col-sm-9 text-break">{{ serverInfo.hostnameFqdn }}</dd>
+                  }
+                  <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-runtimeStatus">
+                    Runtime status
+                  </dt>
+                  <dd class="col-sm-9">
+                    <fpc-badge class="d-inline-flex" [tone]="serverStatusBadgeTone(serverInfo)">
+                      <i class="bi me-1" [ngClass]="serverStatusIconClass(serverInfo)" aria-hidden="true"></i>
+                      {{ serverStatusLabel(serverInfo) }}
+                    </fpc-badge>
+                  </dd>
+                  @if (serverLocationLabel(serverInfo.metadata, locationCatalog()); as locationLabel) {
+                    <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-location">Location</dt>
+                    <dd class="col-sm-9">{{ locationLabel }}</dd>
+                  }
+                } @else if (detailValue.hostname) {
+                  <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-hostname">Hostname</dt>
+                  <dd class="col-sm-9 text-break">{{ detailValue.hostname }}</dd>
+                }
+              </dl>
+            } @else if (loadingDetail$ | async) {
+              <fpc-empty-state
+                size="sm"
+                loading
+                i18n-title="@@featureServiceDetail-loading"
+                title="Loading service..."
+              />
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                message="Server details are not available yet."
+                i18n-message="@@featureServiceDetail-noServerInfo"
+              />
+            }
+          </fpc-board-lane>
         </div>
 
         @if (showUsageMetersSection()) {
@@ -280,116 +274,90 @@
             class="service-detail-page__lane service-detail-page__lane--meters d-md-flex flex-column min-h-0"
             [class.d-none]="mobilePanel() !== 'meters'"
           >
-            <div class="card h-100 border-0 rounded-0 d-flex flex-column min-h-0">
-              <fpc-lane-header flush visibility="md-up">
+            <fpc-board-lane class="h-100">
+              <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
                 <span fpcLaneHeaderTitle i18n="@@featureServiceDetail-usageMetersTitle">Usage meters</span>
               </fpc-lane-header>
-              <fpc-collapsible-filter-panel
+              <fpc-list-toolbar
+                fpcBoardLaneSearch
                 [open]="!filtersCollapsed()"
                 (openChange)="onFiltersOpenChange($event)"
                 [title]="filtersPanelTitle"
-                [showClear]="false"
+                [activeCount]="activeFilterCount()"
+                (applied)="filterState.apply()"
+                (cleared)="onResetFilters()"
               >
-                <div class="row g-3 mb-0 w-100">
-                  <div class="col-12 col-md-6">
-                    <fpc-form-field forId="serviceDetailFrom" i18n-label="@@featureServiceDetail-fromDate" label="From">
-                      <fpc-form-control
-                        controlId="serviceDetailFrom"
-                        inputType="date"
-                        size="sm"
-                        [ngModel]="fromDate()"
-                        (ngModelChange)="fromDate.set($event)"
-                      />
-                    </fpc-form-field>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <fpc-form-field forId="serviceDetailTo" i18n-label="@@featureServiceDetail-toDate" label="To">
-                      <fpc-form-control
-                        controlId="serviceDetailTo"
-                        inputType="date"
-                        size="sm"
-                        [ngModel]="toDate()"
-                        (ngModelChange)="toDate.set($event)"
-                      />
-                    </fpc-form-field>
-                  </div>
-                  <div class="col-12">
-                    <fpc-form-field
-                      forId="serviceDetailGroupBy"
-                      i18n-label="@@featureServiceDetail-groupBy"
-                      label="Group by"
-                    >
-                      <fpc-form-control
-                        controlType="select"
-                        controlId="serviceDetailGroupBy"
-                        size="sm"
-                        [ngModel]="groupBy()"
-                        (ngModelChange)="groupBy.set($event)"
-                      >
-                        <option value="day" i18n="@@featureServiceDetail-groupByDay">Day</option>
-                        <option value="month" i18n="@@featureServiceDetail-groupByMonth">Month</option>
-                      </fpc-form-control>
-                    </fpc-form-field>
-                  </div>
-                  <div class="col-12 d-flex gap-2">
-                    <fpc-button
-                      variant="primary"
-                      size="sm"
-                      (clicked)="onApplyFilters()"
-                      i18n="@@featureServiceDetail-applyFilters"
-                    >
-                      Apply
-                    </fpc-button>
-                    <fpc-button
-                      variant="dark"
-                      size="sm"
-                      (clicked)="onResetFilters()"
-                      i18n="@@featureServiceDetail-resetFilters"
-                    >
-                      Reset
-                    </fpc-button>
-                  </div>
-                </div>
-              </fpc-collapsible-filter-panel>
+                <fpc-form-field forId="serviceDetailFrom" i18n-label="@@featureServiceDetail-fromDate" label="From">
+                  <fpc-form-control
+                    controlId="serviceDetailFrom"
+                    inputType="date"
+                    size="sm"
+                    [ngModel]="filterState.draft().from"
+                    (ngModelChange)="filterState.patch({ from: $event })"
+                  />
+                </fpc-form-field>
+                <fpc-form-field forId="serviceDetailTo" i18n-label="@@featureServiceDetail-toDate" label="To">
+                  <fpc-form-control
+                    controlId="serviceDetailTo"
+                    inputType="date"
+                    size="sm"
+                    [ngModel]="filterState.draft().to"
+                    (ngModelChange)="filterState.patch({ to: $event })"
+                  />
+                </fpc-form-field>
+                <fpc-form-field
+                  forId="serviceDetailGroupBy"
+                  i18n-label="@@featureServiceDetail-groupBy"
+                  label="Group by"
+                >
+                  <fpc-form-control
+                    controlType="select"
+                    controlId="serviceDetailGroupBy"
+                    size="sm"
+                    [ngModel]="filterState.draft().groupBy"
+                    (ngModelChange)="filterState.patch({ groupBy: $event })"
+                  >
+                    <option value="day" i18n="@@featureServiceDetail-groupByDay">Day</option>
+                    <option value="month" i18n="@@featureServiceDetail-groupByMonth">Month</option>
+                  </fpc-form-control>
+                </fpc-form-field>
+              </fpc-list-toolbar>
 
-              <div class="service-detail-page__lane-body d-flex flex-column">
-                @if (loadingHistory()) {
-                  <div class="text-center py-4">
-                    <fpc-spinner size="sm" />
-                  </div>
-                } @else {
-                  <fpc-panel-grid [columns]="1" [bordered]="false">
-                    @for (
-                      entry of meterCharts();
-                      track entry.meter.meterId + entry.meter.attachmentType + (entry.meter.addonId ?? '')
-                    ) {
-                      <fpc-panel [title]="entry.meter.name">
-                        @if (entry.options; as chart) {
-                          <apx-chart
-                            [series]="chart.series"
-                            [chart]="chart.chart"
-                            [colors]="chart.colors"
-                            [stroke]="chart.stroke"
-                            [fill]="chart.fill"
-                            [dataLabels]="chart.dataLabels"
-                            [xaxis]="chart.xaxis"
-                            [yaxis]="chart.yaxis"
-                            [grid]="chart.grid"
-                          ></apx-chart>
+              @if (loadingHistory()) {
+                <fpc-empty-state size="sm" loading />
+              } @else {
+                <fpc-panel-grid [columns]="1" [bordered]="false">
+                  @for (
+                    entry of meterCharts();
+                    track entry.meter.meterId + entry.meter.attachmentType + (entry.meter.addonId ?? '')
+                  ) {
+                    <fpc-panel [title]="entry.meter.name">
+                      @if (entry.options; as chart) {
+                        <apx-chart
+                          [series]="chart.series"
+                          [chart]="chart.chart"
+                          [colors]="chart.colors"
+                          [stroke]="chart.stroke"
+                          [fill]="chart.fill"
+                          [dataLabels]="chart.dataLabels"
+                          [xaxis]="chart.xaxis"
+                          [yaxis]="chart.yaxis"
+                          [grid]="chart.grid"
+                          [responsive]="chart.responsive"
+                        ></apx-chart>
+                      }
+                      <p fpcPanelFooter class="small text-body-secondary mb-0">
+                        <span i18n="@@featureServiceDetail-meterTotalLabel">Total:</span>
+                        {{ formatMeterTotal(entry.meter) }}
+                        @if (entry.summary && hasMeterBillingDetails(entry.summary)) {
+                          <span class="ms-1">({{ formatMeterBillingDetails(entry.summary) }})</span>
                         }
-                        <p fpcPanelFooter class="small text-body-secondary mb-0">
-                          <span i18n="@@featureServiceDetail-meterTotalLabel">Total:</span>
-                          {{ formatMeterTotal(entry.meter) }}
-                          @if (entry.summary && hasMeterBillingDetails(entry.summary)) {
-                            <span class="ms-1">({{ formatMeterBillingDetails(entry.summary) }})</span>
-                          }
-                        </p>
-                      </fpc-panel>
-                    }
-                  </fpc-panel-grid>
-                }
-              </div>
-            </div>
+                      </p>
+                    </fpc-panel>
+                  }
+                </fpc-panel-grid>
+              }
+            </fpc-board-lane>
           </div>
         }
       </div>

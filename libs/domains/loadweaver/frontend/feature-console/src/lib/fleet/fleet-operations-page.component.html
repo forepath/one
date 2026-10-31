@@ -1,0 +1,421 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="fleet-operations" [binding]="views" />
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      [loading]="loading()"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="fleet-ops-bulk-result"
+    />
+  }
+
+  <!-- One table (3.38 D1): State · Operation · clusters · step · progress; the steps as a nested table in the row
+       detail (decision 2); ⋮ Cancel. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="title"
+    [columns]="columns"
+    [rows]="filtered()"
+    [filtered]="!!search().trim() || filterState.activeCount() > 0"
+    [loading]="loading() && operations().length === 0"
+    paging="client"
+    persistKey="lw-fleet-operations"
+    [(query)]="search"
+    [searchPlaceholder]="searchLabel"
+    showFilterButton
+    [(filtersOpen)]="filtersOpen"
+    [filtersActive]="filterState.activeCount()"
+    (filtersApplied)="filterState.apply()"
+    (filtersCleared)="filterState.clear()"
+    [expandedRowId]="expanded()"
+    [activeRowId]="expanded()"
+    (rowActivate)="toggle($event)"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    emptyIcon="arrow-left-right"
+    data-testid="fleet-ops-list"
+  >
+    <fpc-button
+      fpcDataTableToolbar
+      variant="primary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="newLabel"
+      [title]="newLabel"
+      (clicked)="openWizard()"
+      data-testid="fleet-ops-new"
+    >
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="!canCancelSelection()"
+      (clicked)="confirmBulkCancel.set(true)"
+      data-testid="fleet-ops-bulk-cancel"
+      iconOnly
+      [ariaLabel]="cancelConfirm"
+      [title]="cancelConfirm"
+    >
+      <i class="bi bi-slash-circle" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-form-field
+      fpcDataTableFilters
+      forId="lw-fleet-ops-cluster"
+      i18n-label="@@lwConsoleFleetOps-cluster"
+      label="Cluster"
+    >
+      <fpc-form-control
+        controlType="select"
+        controlId="lw-fleet-ops-cluster"
+        size="sm"
+        [ngModel]="filterState.draft().cluster"
+        (ngModelChange)="filterState.patch({ cluster: $event })"
+      >
+        <option value="" i18n="@@lwConsoleFleetOps-allClusters">All clusters</option>
+        @for (c of clusters(); track c.id) {
+          <option [value]="c.id">{{ c.name }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+    @if (!error()) {
+      <span fpcDataTableEmpty>
+        <fpc-empty-state
+          icon="arrow-left-right"
+          size="sm"
+          i18n-title="@@lwConsoleFleetOps-empty"
+          title="No fleet operations yet"
+          i18n-message="@@lwConsoleFleetOps-emptyHint"
+          message="Restore a backup of one cluster into another, or clone a deployment with its data."
+        />
+      </span>
+    }
+    <ng-template fpcTableCell="progress" let-op>
+      <fpc-progress
+        class="d-block"
+        height="0.4rem"
+        [value]="progress(op)"
+        [striped]="active(op)"
+        [animated]="active(op)"
+        [variant]="op.status === 'failed' ? 'danger' : 'primary'"
+      />
+    </ng-template>
+    <ng-template fpcTableCell="created" let-op>{{ op.createdAt | date: 'short' }}</ng-template>
+    <ng-template fpcTableCell="error" let-op>
+      @if (op.error) {
+        <span class="text-danger text-break">{{ op.error }}</span>
+      }
+    </ng-template>
+    <ng-template fpcTableRowDetail let-op>
+      <fpc-data-table
+        nested
+        [ariaLabel]="stepsTitle"
+        [columns]="stepColumns"
+        [rows]="op.steps"
+        [rowId]="stepId"
+        [searchable]="false"
+        [showColumnChooser]="false"
+        [clientSort]="false"
+        data-testid="fleet-op-steps"
+      >
+        <ng-template fpcTableCell="finished" let-step>{{ step.finishedAt | date: 'short' }}</ng-template>
+        <ng-template fpcTableCell="detail" let-step>
+          @if (detail(step.detail); as d) {
+            <span class="font-monospace text-break">{{ d }}</span>
+          }
+          @if (step.error) {
+            <div class="text-danger text-break">{{ step.error }}</div>
+          }
+        </ng-template>
+      </fpc-data-table>
+    </ng-template>
+  </fpc-data-table>
+</div>
+
+<fpc-modal [open]="wizardOpen()" (openChange)="wizardOpen.set($event)" [title]="wizardTitle" size="lg" scrollable>
+  @if (wizardError(); as message) {
+    <fpc-alert class="mb-3" variant="danger" [message]="message" />
+  }
+  @if (saveError(); as message) {
+    <fpc-alert class="mb-3" variant="danger" [message]="message" data-testid="fleet-ops-save-error" />
+  }
+
+  <fpc-form-check-group class="d-block mb-3" i18n-label="@@lwConsoleFleetOps-kind" label="What" inline>
+    <fpc-form-check
+      type="radio"
+      checkId="lw-fleet-op-restore"
+      name="kind"
+      value="cross-cluster-restore"
+      i18n-label="@@lwConsoleFleetOps-kindRestore"
+      label="Restore into an existing deployment"
+      [checked]="form.kind === 'cross-cluster-restore'"
+      (valueSelect)="form.kind = 'cross-cluster-restore'"
+    />
+    <fpc-form-check
+      type="radio"
+      checkId="lw-fleet-op-clone"
+      name="kind"
+      value="clone"
+      i18n-label="@@lwConsoleFleetOps-kindClone"
+      label="Clone a deployment with its data"
+      [checked]="form.kind === 'clone'"
+      (valueSelect)="form.kind = 'clone'"
+    />
+  </fpc-form-check-group>
+
+  <fpc-list-header [title]="sourceTitle" [sticky]="false" />
+  <div class="row g-3 mb-2">
+    <div class="col-12 col-md-6">
+      <fpc-form-field
+        forId="lw-fleet-op-source"
+        i18n-label="@@lwConsoleFleetOps-sourceCluster"
+        label="Source cluster"
+        required
+      >
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-fleet-op-source"
+          size="sm"
+          [(ngModel)]="form.sourceClusterId"
+          (ngModelChange)="onSourceChange()"
+          data-testid="fleet-op-source"
+        >
+          <option value="" i18n="@@lwConsoleFleetOps-choose">Choose…</option>
+          @for (c of sources(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-12 col-md-6">
+      <fpc-form-field
+        forId="lw-fleet-op-source-project"
+        i18n-label="@@lwConsoleFleetOps-sourceProject"
+        label="Project (filters the backups)"
+      >
+        <div class="d-flex gap-2">
+          <fpc-form-control
+            class="flex-grow-1"
+            controlId="lw-fleet-op-source-project"
+            size="sm"
+            controlClass="font-monospace"
+            [(ngModel)]="form.sourceProject"
+          />
+          <fpc-button
+            variant="dark"
+            size="sm"
+            [disabled]="!form.sourceClusterId"
+            [loading]="backupsLoading()"
+            (clicked)="loadBackups()"
+            data-testid="fleet-op-load-backups"
+          >
+            <span i18n="@@lwConsoleFleetOps-loadBackups">Load backups</span>
+          </fpc-button>
+        </div>
+      </fpc-form-field>
+    </div>
+  </div>
+  @if (backupsError(); as message) {
+    <fpc-alert class="mb-2" variant="danger" [message]="message" />
+  }
+  @if (backupsLoaded() && backups().length === 0) {
+    <div class="small text-body-secondary mb-2" i18n="@@lwConsoleFleetOps-noBackups">
+      No succeeded backups found on the source cluster.
+    </div>
+  }
+  @if (backups().length > 0) {
+    <fpc-data-table
+      class="d-block mb-3"
+      [columns]="backupColumns"
+      [rows]="backups()"
+      [rowId]="backupRowId"
+      [ariaLabel]="backupsLabel"
+      [searchable]="false"
+      [showColumnChooser]="false"
+      [stickyHeader]="false"
+      data-testid="fleet-op-backups"
+    >
+      <ng-template fpcTableCell="pick" let-row>
+        <fpc-form-check
+          [checkId]="'lw-fleet-op-backup-' + row.backup.id"
+          [checked]="row.selected"
+          (checkedChange)="setBackupFor(row, { selected: $event })"
+          [ariaLabel]="row.backup.resource"
+        />
+      </ng-template>
+      <ng-template fpcTableCell="backup" let-row>
+        <div class="font-monospace text-break">{{ row.backup.resource }}</div>
+        <div class="small text-body-secondary text-nowrap">{{ row.backup.startedAt | date: 'short' }}</div>
+      </ng-template>
+      <ng-template fpcTableCell="volume" let-row>
+        <fpc-form-control
+          size="sm"
+          controlClass="font-monospace"
+          [disabled]="!row.selected"
+          [ngModel]="row.volume"
+          (ngModelChange)="setBackupFor(row, { volume: $event })"
+        />
+      </ng-template>
+    </fpc-data-table>
+  }
+  @if (form.kind === 'clone') {
+    <div class="row g-3 mb-2">
+      <div class="col-12 col-md-6">
+        <fpc-form-field
+          forId="lw-fleet-op-clone-project"
+          i18n-label="@@lwConsoleFleetOps-cloneProject"
+          label="Source project"
+          required
+        >
+          <fpc-form-control
+            controlId="lw-fleet-op-clone-project"
+            size="sm"
+            controlClass="font-monospace"
+            [(ngModel)]="form.cloneProject"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-6">
+        <fpc-form-field
+          forId="lw-fleet-op-clone-deployment"
+          i18n-label="@@lwConsoleFleetOps-cloneDeployment"
+          label="Source deployment"
+          required
+        >
+          <fpc-form-control
+            controlId="lw-fleet-op-clone-deployment"
+            size="sm"
+            controlClass="font-monospace"
+            [(ngModel)]="form.cloneDeployment"
+          />
+        </fpc-form-field>
+      </div>
+    </div>
+  }
+
+  <fpc-list-header class="d-block mt-3" [title]="targetTitle" [sticky]="false" />
+  <div class="row g-3">
+    <div class="col-12">
+      <fpc-form-field
+        forId="lw-fleet-op-target"
+        i18n-label="@@lwConsoleFleetOps-targetCluster"
+        label="Target cluster"
+        required
+      >
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-fleet-op-target"
+          size="sm"
+          [(ngModel)]="form.targetClusterId"
+          data-testid="fleet-op-target"
+        >
+          <option value="" i18n="@@lwConsoleFleetOps-choose">Choose…</option>
+          @for (c of targets(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-12 col-md-6">
+      <fpc-form-field
+        forId="lw-fleet-op-target-project"
+        i18n-label="@@lwConsoleFleetOps-targetProject"
+        label="Target project"
+        required
+      >
+        <fpc-form-control
+          controlId="lw-fleet-op-target-project"
+          size="sm"
+          controlClass="font-monospace"
+          [(ngModel)]="form.targetProject"
+          data-testid="fleet-op-target-project"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-12 col-md-6">
+      <fpc-form-field
+        forId="lw-fleet-op-target-deployment"
+        i18n-label="@@lwConsoleFleetOps-targetDeployment"
+        label="Target deployment"
+        required
+      >
+        <fpc-form-control
+          controlId="lw-fleet-op-target-deployment"
+          size="sm"
+          controlClass="font-monospace"
+          [(ngModel)]="form.targetDeployment"
+          data-testid="fleet-op-target-deployment"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-12 col-md-6">
+      <fpc-form-field forId="lw-fleet-op-mode" i18n-label="@@lwConsoleFleetOps-mode" label="Restore mode">
+        <fpc-form-control controlType="select" controlId="lw-fleet-op-mode" size="sm" [(ngModel)]="form.mode">
+          <option value="replace" i18n="@@lwConsoleFleetOps-modeReplace">Replace the volume content</option>
+          <option value="merge" i18n="@@lwConsoleFleetOps-modeMerge">Merge into the volume</option>
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-12">
+      <fpc-form-switch
+        switchId="lw-fleet-op-apply"
+        i18n-label="@@lwConsoleFleetOps-apply"
+        label="Apply the plans on the target"
+        i18n-hint="@@lwConsoleFleetOps-applyHint"
+        hint="Without apply, the plans wait in the target cluster for its operators. With apply, the target's approval rules still hold them until they are approved (through the fleet when the target trusts it)."
+        [(checked)]="form.apply"
+      />
+    </div>
+  </div>
+
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" size="sm" (clicked)="wizardOpen.set(false)">{{ closeLabel }}</fpc-button>
+    <fpc-button variant="primary" size="sm" [loading]="saving()" (clicked)="submit()" data-testid="fleet-op-submit">
+      <span i18n="@@lwConsoleFleetOps-start">Start</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="cancelFor() !== null"
+  (openChange)="onCancelOpenChange($event)"
+  [title]="cancelTitle"
+  [message]="cancelMessage"
+  [confirmLabel]="cancelConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="confirmCancel()"
+/>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkCancel"
+  [title]="cancelTitle"
+  [message]="bulkCancelMessage()"
+  [confirmLabel]="cancelConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="cancelSelected()"
+/>

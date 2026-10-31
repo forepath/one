@@ -1,0 +1,49 @@
+<!-- 3.38 D1: State (accepted / waiting) · requesting project · policy · source; ⋮ Open plan / Accept / Copy version;
+     bulk Accept on selection (no version hash as data, D11). -->
+<fpc-data-table
+  class="flex-grow-1 min-h-0"
+  [ariaLabel]="requestsLabel"
+  [columns]="columns"
+  [rows]="visible()"
+  [rowId]="key"
+  [rowLink]="planLink"
+  paging="client"
+  persistKey="lw-access-requests"
+  [(query)]="search"
+  [searchPlaceholder]="searchLabel()"
+  [selectable]="mayAccept()"
+  [(selected)]="selected"
+  [rowMenu]="rowMenu"
+  (rowAction)="onRowAction($event.row, $event.item.id)"
+  emptyIcon="inbox"
+  data-testid="access-requests"
+>
+  <fpc-button
+    fpcDataTableBatch
+    variant="success"
+    size="sm"
+    [disabled]="changing() || !canAcceptSelection()"
+    (clicked)="acceptSelected()"
+    data-testid="access-requests-bulk-accept"
+    iconOnly
+    [ariaLabel]="acceptLabel"
+    [title]="acceptLabel"
+  >
+    <i class="bi bi-check2-circle" aria-hidden="true"></i>
+  </fpc-button>
+  <span fpcDataTableEmpty>
+    <fpc-empty-state
+      icon="inbox"
+      size="sm"
+      i18n-title="@@lwConsoleAccess-requestsEmpty"
+      title="No requests from other projects"
+    />
+  </span>
+  <ng-template fpcTableCell="source" let-row>
+    @if (row.planId) {
+      <fpc-badge tone="info" i18n="@@lwConsoleAccess-requestPending">Pending plan</fpc-badge>
+    } @else {
+      <fpc-badge tone="neutral" i18n="@@lwConsoleAccess-requestApplied">Applied policy</fpc-badge>
+    }
+  </ng-template>
+</fpc-data-table>

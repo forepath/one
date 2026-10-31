@@ -1,4 +1,5 @@
-import type { FpcBadgeColor } from '@forepath/shared/frontend/ui-components';
+import type { AgentTaskResponseDto } from '@forepath/agenstra/frontend/data-access-agent-console';
+import type { FpcBadgeColor, FpcTableState } from '@forepath/shared/frontend/ui-components';
 
 /** Operator-facing label for an agent task run status (chat card + `/tasks` page). */
 export function agentTaskRunStatusLabel(status: string | null | undefined): string {
@@ -29,6 +30,43 @@ export function agentTaskRunStatusBadgeColor(status: string | null | undefined):
     default:
       return 'secondary';
   }
+}
+
+/** State cell of a task run (runs table): readable status + tone + icon. */
+export function agentTaskRunState(status: string | null | undefined): FpcTableState {
+  const label = agentTaskRunStatusLabel(status);
+
+  switch (status) {
+    case 'running':
+      return { label, tone: 'primary', icon: 'arrow-repeat' };
+    case 'awaiting_handoff':
+      return { label, tone: 'info', icon: 'arrow-left-right' };
+    case 'succeeded':
+      return { label, tone: 'success', icon: 'check-circle-fill' };
+    case 'failed':
+      return { label, tone: 'danger', icon: 'x-circle-fill' };
+    default:
+      return { label, tone: 'neutral', icon: 'dash-circle' };
+  }
+}
+
+/** State cell of a task (tasks table): awaiting approval, paused, otherwise the last run's status. */
+export function agentTaskState(
+  task: Pick<AgentTaskResponseDto, 'approvalStatus' | 'enabled' | 'lastRunStatus'>,
+): FpcTableState {
+  if (task.approvalStatus === 'pending') {
+    return {
+      label: $localize`:@@featureAgentTasks-pendingApproval:Awaiting approval`,
+      tone: 'warning',
+      icon: 'hourglass-split',
+    };
+  }
+
+  if (!task.enabled) {
+    return { label: $localize`:@@featureAgentTasks-paused:Paused`, tone: 'neutral', icon: 'pause-circle', severity: 5 };
+  }
+
+  return agentTaskRunState(task.lastRunStatus);
 }
 
 export function agentTaskRunTriggerLabel(trigger: string): string {
@@ -82,7 +120,99 @@ function everyMinutesStep(cronExpression: string): number | null {
     : null;
 }
 
-/** Human-readable schedule: preset label, "Every N minutes", otherwise the expression itself. */
+function cronNumber(field: string, min: number, max: number): number | null {
+  if (!/^\d{1,2}$/.test(field)) {
+    return null;
+  }
+
+  const value = Number(field);
+
+  return value >= min && value <= max ? value : null;
+}
+
+function currentLocale(): string {
+  return (globalThis as { $localize?: { locale?: string } }).$localize?.locale || 'en-US';
+}
+
+/**
+ * Fixed-time schedules beyond the presets (D7, AG-13: chat cards showed `3 3 1 1 * (Europe/Berlin)`): hourly at a
+ * minute, daily / weekly / monthly / yearly at a time; `null` for anything else (ranges, lists, steps).
+ */
+function describeFixedTimeSchedule(cronExpression: string): string | null {
+  const fields = cronExpression.trim().split(/\s+/);
+
+  if (fields.length !== 5) {
+    return null;
+  }
+
+  const [minuteField, hourField, dayField, monthField, weekdayField] = fields;
+  const minute = cronNumber(minuteField, 0, 59);
+
+  if (minute === null) {
+    return null;
+  }
+
+  if (hourField === '*' && dayField === '*' && monthField === '*' && weekdayField === '*') {
+    const at = String(minute).padStart(2, '0');
+
+    return $localize`:@@featureAgentTasks-scheduleHourlyAt:Every hour at :${at}:minute:`;
+  }
+
+  const hour = cronNumber(hourField, 0, 23);
+
+  if (hour === null) {
+    return null;
+  }
+
+  const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  const locale = currentLocale();
+
+  if (dayField === '*' && monthField === '*') {
+    if (weekdayField === '*') {
+      return $localize`:@@featureAgentTasks-scheduleDailyAt:Every day at ${time}:time:`;
+    }
+
+    const weekday = cronNumber(weekdayField, 0, 7);
+
+    if (weekday === null) {
+      return null;
+    }
+
+    // 2024-01-07 is a Sunday (cron 0 and 7).
+    const day = new Intl.DateTimeFormat(locale, { weekday: 'long', timeZone: 'UTC' }).format(
+      new Date(Date.UTC(2024, 0, 7 + (weekday % 7))),
+    );
+
+    return $localize`:@@featureAgentTasks-scheduleWeeklyAt:Every ${day}:weekday: at ${time}:time:`;
+  }
+
+  const dayOfMonth = cronNumber(dayField, 1, 31);
+
+  if (dayOfMonth === null || weekdayField !== '*') {
+    return null;
+  }
+
+  if (monthField === '*') {
+    return $localize`:@@featureAgentTasks-scheduleMonthlyAt:Monthly on day ${dayOfMonth}:day: at ${time}:time:`;
+  }
+
+  const month = cronNumber(monthField, 1, 12);
+
+  if (month === null) {
+    return null;
+  }
+
+  const date = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(2024, month - 1, dayOfMonth)),
+  );
+
+  return $localize`:@@featureAgentTasks-scheduleYearlyAt:Every year on ${date}:date: at ${time}:time:`;
+}
+
+/**
+ * Human-readable schedule: preset label, "Every N minutes", fixed times (daily / weekly / monthly / yearly),
+ * otherwise the expression itself. Show the raw expression in a tooltip only.
+ */
 export function describeAgentTaskSchedule(cronExpression: string, timezone: string): string {
   const preset = agentTaskSchedulePresets().find((entry) => entry.cron === cronExpression.trim());
   const minutes = preset ? null : everyMinutesStep(cronExpression);
@@ -90,7 +220,7 @@ export function describeAgentTaskSchedule(cronExpression: string, timezone: stri
     ? preset.label
     : minutes !== null
       ? $localize`:@@featureAgentTasks-scheduleEveryMinutes:Every ${minutes}:minutes: minutes`
-      : cronExpression;
+      : (describeFixedTimeSchedule(cronExpression) ?? cronExpression);
 
   return `${label} (${timezone})`;
 }

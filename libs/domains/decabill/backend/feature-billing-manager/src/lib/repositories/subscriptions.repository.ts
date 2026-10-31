@@ -241,12 +241,18 @@ export class SubscriptionsRepository {
     return await qb.getMany();
   }
 
+  /**
+   * Pending cancellations whose effective teardown time has passed: `teardownNotBefore` (Loadweaver grace period) when
+   * set, else `cancelEffectiveAt`. Subscriptions still in a grace period are filtered out here so they never occupy
+   * batch slots ahead of due ones; ordering stays by effective date.
+   */
   async findDueForCancellation(now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
     const qb = this.repository
       .createQueryBuilder('subscription')
       .innerJoin('users', 'user', 'user.id = subscription.user_id')
       .where('subscription.status = :status', { status: 'pending_cancel' })
       .andWhere('subscription.cancelEffectiveAt <= :now', { now })
+      .andWhere('COALESCE(subscription.teardownNotBefore, subscription.cancelEffectiveAt) <= :now', { now })
       .orderBy('subscription.cancelEffectiveAt', 'ASC')
       .take(limit);
 
@@ -261,6 +267,8 @@ export class SubscriptionsRepository {
       .innerJoin('users', 'user', 'user.id = subscription.user_id')
       .where('subscription.status = :status', { status: 'pending_withdrawal' })
       .andWhere('subscription.withdrawnAt <= :now', { now })
+      // Loadweaver withdrawals keep the server for the teardown grace period (M4).
+      .andWhere('COALESCE(subscription.teardownNotBefore, subscription.withdrawnAt) <= :now', { now })
       .orderBy('subscription.withdrawnAt', 'ASC')
       .take(limit);
 
@@ -276,6 +284,8 @@ export class SubscriptionsRepository {
       .where('subscription.status = :status', { status: 'pending_instant_cancel' })
       .andWhere('subscription.instantRemoval = :instantRemoval', { instantRemoval: true })
       .andWhere('subscription.instantCanceledAt <= :now', { now })
+      // Loadweaver instant cancels keep the server for the teardown grace period (M4).
+      .andWhere('COALESCE(subscription.teardownNotBefore, subscription.instantCanceledAt) <= :now', { now })
       .orderBy('subscription.instantCanceledAt', 'ASC')
       .take(limit);
 

@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
 
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 import { AdminOffersService } from '../../services/admin-offers.service';
 
 import {
@@ -21,12 +22,8 @@ import {
   loadAdminOfferStatisticsFailure,
   loadAdminOfferStatisticsSuccess,
   loadAdminOffers,
-  loadAdminOffersBatch,
   loadAdminOffersFailure,
   loadAdminOffersSuccess,
-  loadMoreAdminOfferAuditLogs,
-  loadMoreAdminOfferAuditLogsFailure,
-  loadMoreAdminOfferAuditLogsSuccess,
   revokeAdminOffer,
   revokeAdminOfferFailure,
   revokeAdminOfferSuccess,
@@ -45,65 +42,18 @@ function normalizeError(error: unknown): string {
   return 'An unexpected error occurred';
 }
 
-const BATCH_SIZE = 10;
-const AUDIT_LOG_BATCH_SIZE = 10;
-
 export const loadAdminOffers$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminOffersService)) =>
     actions$.pipe(
       ofType(loadAdminOffers),
-      switchMap(({ search, userId }) =>
-        service.list({ limit: BATCH_SIZE, offset: 0, search, userId }).pipe(
-          switchMap((response) => {
-            if (response.items.length === 0) {
-              return of(loadAdminOffersSuccess({ offers: [] }));
-            }
+      switchMap(({ search, userId, page, pageSize }) => {
+        const { limit, offset } = billingPageWindow(page, pageSize);
 
-            if (response.items.length < BATCH_SIZE) {
-              return of(loadAdminOffersSuccess({ offers: response.items }));
-            }
-
-            return of(
-              loadAdminOffersBatch({
-                offset: BATCH_SIZE,
-                accumulated: response.items,
-                search,
-                userId,
-              }),
-            );
-          }),
+        return service.list({ limit, offset, search, userId }).pipe(
+          map((response) => loadAdminOffersSuccess({ offers: response.items, total: response.total })),
           catchError((error) => of(loadAdminOffersFailure({ error: normalizeError(error) }))),
-        ),
-      ),
-    ),
-  { functional: true },
-);
-
-export const loadAdminOffersBatch$ = createEffect(
-  (actions$ = inject(Actions), service = inject(AdminOffersService)) =>
-    actions$.pipe(
-      ofType(loadAdminOffersBatch),
-      switchMap(({ offset, accumulated, search, userId }) =>
-        service.list({ limit: BATCH_SIZE, offset, search, userId }).pipe(
-          switchMap((response) => {
-            const newAccumulated = [...accumulated, ...response.items];
-
-            if (response.items.length === 0 || response.items.length < BATCH_SIZE) {
-              return of(loadAdminOffersSuccess({ offers: newAccumulated }));
-            }
-
-            return of(
-              loadAdminOffersBatch({
-                offset: offset + BATCH_SIZE,
-                accumulated: newAccumulated,
-                search,
-                userId,
-              }),
-            );
-          }),
-          catchError((error) => of(loadAdminOffersFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     ),
   { functional: true },
 );
@@ -212,37 +162,16 @@ export const loadAdminOfferAuditLogs$ = createEffect(
     actions$.pipe(
       ofType(loadAdminOfferAuditLogs),
       switchMap(({ offerId, limit, offset }) =>
-        service.listAuditLogs(offerId, { limit: limit ?? AUDIT_LOG_BATCH_SIZE, offset: offset ?? 0 }).pipe(
+        service.listAuditLogs(offerId, { limit: limit ?? BILLING_LIST_PAGE_SIZE, offset: offset ?? 0 }).pipe(
           map((response) =>
             loadAdminOfferAuditLogsSuccess({
               offerId,
               items: response.items,
               total: response.total,
-              offset: (offset ?? 0) + response.items.length,
+              offset: offset ?? 0,
             }),
           ),
           catchError((error) => of(loadAdminOfferAuditLogsFailure({ error: normalizeError(error) }))),
-        ),
-      ),
-    ),
-  { functional: true },
-);
-
-export const loadMoreAdminOfferAuditLogs$ = createEffect(
-  (actions$ = inject(Actions), service = inject(AdminOffersService)) =>
-    actions$.pipe(
-      ofType(loadMoreAdminOfferAuditLogs),
-      switchMap(({ offerId, offset, limit }) =>
-        service.listAuditLogs(offerId, { limit: limit ?? AUDIT_LOG_BATCH_SIZE, offset }).pipe(
-          map((response) =>
-            loadMoreAdminOfferAuditLogsSuccess({
-              offerId,
-              items: response.items,
-              total: response.total,
-              offset: offset + response.items.length,
-            }),
-          ),
-          catchError((error) => of(loadMoreAdminOfferAuditLogsFailure({ error: normalizeError(error) }))),
         ),
       ),
     ),

@@ -1,6 +1,16 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, model, output } from '@angular/core';
 
-export type FpcAlertVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'light' | 'dark';
+/** Bootstrap's tones plus `git`: notices about the Git workflow (Git-authoritative scopes), in the Git logo colour. */
+export type FpcAlertVariant =
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'danger'
+  | 'warning'
+  | 'info'
+  | 'light'
+  | 'dark'
+  | 'git';
 
 const VARIANT_ICONS: Record<FpcAlertVariant, string> = {
   primary: 'info-circle',
@@ -11,6 +21,7 @@ const VARIANT_ICONS: Record<FpcAlertVariant, string> = {
   info: 'info-circle',
   light: 'info-circle',
   dark: 'info-circle',
+  git: 'git',
 };
 
 /**

@@ -38,6 +38,8 @@ export class InvoicesSummaryResponseDto {
   unbilledTotal!: number;
   minCheckoutPaymentAmount!: number;
   pendingOffersCount!: number;
+  /** Size of the invoice history (pager total when no search is applied). */
+  historyCount!: number;
 }
 
 @Controller('invoices')
@@ -62,11 +64,12 @@ export class InvoicesController {
       throw new BadRequestException('User not authenticated');
     }
 
-    const [summary, billingDayOfMonth, unbilledTotal, offerCounts] = await Promise.all([
+    const [summary, billingDayOfMonth, unbilledTotal, offerCounts, historyCount] = await Promise.all([
       this.invoicesRepository.findOpenOverdueSummaryByUserId(userInfo.userId),
       this.usersBillingDayRepository.getEffectiveBillingDayForUser(userInfo.userId),
       this.invoiceCreationService.getUnbilledTotalForUser(userInfo.userId),
       this.offerProfileSummaryService.getCustomerCounts(userInfo.userId),
+      this.invoicesRepository.countHistoryByUserId(userInfo.userId),
     ]);
 
     return {
@@ -76,6 +79,7 @@ export class InvoicesController {
       unbilledTotal,
       minCheckoutPaymentAmount: getMinCheckoutPaymentAmount(),
       pendingOffersCount: offerCounts.pendingOffersCount,
+      historyCount,
     };
   }
 

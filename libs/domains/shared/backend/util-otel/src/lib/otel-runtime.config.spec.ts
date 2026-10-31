@@ -59,6 +59,18 @@ describe('resolveOtelRuntimeConfig', () => {
     expect(isOtelEffectivelyEnabled(config)).toBe(true);
   });
 
+  it('reads an optional OTLP metrics endpoint', () => {
+    const config = resolveOtelRuntimeConfig({
+      OTEL_ENABLED: 'true',
+      OTEL_USERNAME: 'otel',
+      OTEL_PASSWORD: 'secret',
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ' http://otel-collector:4318/v1/metrics ',
+    });
+
+    expect(config.otlpMetricsEndpoint).toBe('http://otel-collector:4318/v1/metrics');
+    expect(resolveOtelRuntimeConfig({}).otlpMetricsEndpoint).toBeUndefined();
+  });
+
   it('readOtelMetricsPath defaults to /otel/metrics', () => {
     expect(readOtelMetricsPath({})).toBe('/otel/metrics');
   });

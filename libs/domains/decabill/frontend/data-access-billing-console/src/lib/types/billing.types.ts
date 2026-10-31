@@ -199,13 +199,13 @@ export interface CloudInitConfigOrderField {
 }
 
 export type PlanProvisioningOption =
-  | { type: 'integrated'; service: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' }
+  | { type: 'integrated'; service: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'loadweaver' }
   | { type: 'custom'; cloudInitConfigId: string };
 
 export interface OrderProvisioningOption {
   optionKey: string;
   type: 'integrated' | 'custom';
-  service?: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing';
+  service?: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'loadweaver';
   cloudInitConfigId?: string;
   label: string;
   description?: string | null;
@@ -446,6 +446,14 @@ export interface UsageMeterEntryResponse {
   createdAt: string;
 }
 
+/** `GET /admin/billing/subscriptions/:id/meter-entries?limit&offset` (newest first). */
+export interface PaginatedUsageMeterEntriesResponse {
+  items: UsageMeterEntryResponse[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface CreateUsageMeterEntryDto {
   meterId: string;
   value: number;
@@ -671,7 +679,12 @@ export interface GitConfig {
 }
 
 /** Provisioned product service kind on a subscription item or cloud-init request. */
-export type ProvisioningServiceKind = 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'custom';
+export type ProvisioningServiceKind =
+  | 'agenstra-controller'
+  | 'agenstra-manager'
+  | 'decabill-billing'
+  | 'loadweaver'
+  | 'custom';
 
 /** Cloud-init related part of requestedConfig (authentication, SMTP, optional provisioning tokens). */
 export interface RequestedConfigCloudInit {
@@ -704,10 +717,14 @@ export interface CreateSubscriptionDto {
 
 export interface CancelSubscriptionDto {
   reason?: string;
+  /** Required when the subscription runs a Loadweaver cluster (its data is deleted). */
+  confirmDataTeardown?: boolean;
 }
 
 export interface WithdrawSubscriptionDto {
   reason?: string;
+  /** Required when the subscription runs a Loadweaver cluster (its data is deleted). */
+  confirmDataTeardown?: boolean;
 }
 
 export interface ResumeSubscriptionDto {
@@ -1096,6 +1113,8 @@ export interface InvoiceResponse {
   totalGross?: number | null;
   subscriptionNumber?: string | null;
   createdAt: string;
+  /** Issue date (null for drafts). */
+  issuedAt?: string | null;
   dueDate?: string | null;
   paidAt?: string | null;
   canPay: boolean;
@@ -1171,6 +1190,8 @@ export interface InvoicesSummaryResponse {
   /** Minimum balance due required for Checkout / payment-method charges. */
   minCheckoutPaymentAmount?: number;
   pendingOffersCount?: number;
+  /** Size of the invoice history (pager total without search). */
+  historyCount?: number;
 }
 
 /** Catalog counts for the current user (independent of list pagination / search). */
@@ -1295,6 +1316,11 @@ export interface ListParams {
   search?: string;
 }
 
+/** Backorder list query: `status` = only these statuses (e.g. `['pending', 'retrying']`). */
+export interface BackordersListParams extends ListParams {
+  status?: string[];
+}
+
 // Admin Billing
 export interface AdminBillingSummaryResponse {
   subscriptionsCount: number;
@@ -1317,6 +1343,8 @@ export interface AdminBillNowResponse {
 export interface AdminInvoiceListItem extends InvoiceResponse {
   userId: string;
   userEmail?: string;
+  /** Billing-profile name (company, else first + last name); shown instead of the email in admin lists. */
+  customerName?: string;
 }
 
 export interface PaginatedAdminInvoicesResponse {
@@ -1328,7 +1356,12 @@ export interface PaginatedAdminInvoicesResponse {
 
 export interface AdminSubscriptionListItem extends SubscriptionResponse {
   userEmail?: string;
+  /** Billing-profile name (company, else first + last name); shown instead of the email in admin lists. */
+  customerName?: string;
   planName?: string;
+  /** Plan billing interval (price cell `€5.95 / Monthly`). */
+  billingIntervalType?: BillingIntervalType | string;
+  billingIntervalValue?: number;
 }
 
 export interface AdminSubscriptionsListParams {
@@ -1683,4 +1716,43 @@ export interface TriggerDatevExportResponse {
   scope: DatevExportScope;
   year: number;
   month: number;
+}
+
+/** Ending-subscription confirmation for admin actions (required when the subscription runs a Loadweaver cluster). */
+export interface AdminSubscriptionTeardownOptions {
+  confirmDataTeardown?: boolean;
+}
+
+export type LoadweaverClusterHealth =
+  | 'provisioning'
+  | 'starting'
+  | 'healthy'
+  | 'degraded'
+  | 'unreachable'
+  | 'failed'
+  | 'removed';
+
+/** Decabill-provisioned Loadweaver cluster (service-detail tab "Cluster"). */
+export interface LoadweaverClusterInfo {
+  itemId: string;
+  consoleUrl: string | null;
+  apiUrl: string | null;
+  installerUrl: string | null;
+  health: LoadweaverClusterHealth;
+  checkedAt: string;
+  initialVersion: string | null;
+  links: {
+    platformBackups: string | null;
+    recoveryKit: string | null;
+    nodes: string | null;
+  };
+  /** One-time admin claim of the fresh cluster; the token only for the owning customer and only until claimed. */
+  adminClaim: {
+    status: 'pending' | 'claimed' | 'unknown';
+    token: string | null;
+  };
+  teardown: {
+    graceDays: number;
+    deletionNotBefore: string | null;
+  };
 }

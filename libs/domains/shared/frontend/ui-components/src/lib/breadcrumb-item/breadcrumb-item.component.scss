@@ -1,21 +1,15 @@
+// Layout basics only; the chip / current-item / separator look lives in `fpc-breadcrumbs` so hand-written crumbs
+// (`.fpc-breadcrumb-item` with an `<a>` / `<span>` child, e.g. `fpc-object-header`) share it.
 :host {
   display: inline-flex;
   align-items: center;
   min-width: 0;
 }
 
-.fpc-breadcrumb-item__text,
 .fpc-breadcrumb-item__link {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.fpc-breadcrumb-item__link {
-  text-decoration: none;
-
-  &:hover,
-  &:focus-visible {
-    text-decoration: none;
-  }
+  // `<button>` crumbs (no href / routerLink) look exactly like link crumbs.
+  font: inherit;
+  text-align: start;
+  border: 0;
+  appearance: none;
 }

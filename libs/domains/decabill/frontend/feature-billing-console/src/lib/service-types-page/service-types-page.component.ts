@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   MetersFacade,
@@ -20,26 +20,30 @@ import {
 import {
   FpcAlertComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcConfirmDialogComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcFormSwitchComponent,
-  FpcListComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
-  FpcListItemComponent,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
-  FpcSpinnerComponent,
+  fpcRunBulk,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  FpcListHeaderComponent,
+  FpcMoneyPipe,
+  FpcMultiSelectComponent,
+  type FpcMultiSelectOption,
 } from '@forepath/shared/frontend/ui-components';
 import {
   catchError,
-  combineLatest,
   debounceTime,
   distinctUntilChanged,
+  firstValueFrom,
   forkJoin,
   map,
   of,
@@ -48,9 +52,12 @@ import {
   take,
 } from 'rxjs';
 
-import { getActiveStatusLabel, getActiveStatusTextClass, getProviderDisplayName } from '../billing-status-labels';
+import { getProviderDisplayName } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { optionalNumberInputValue } from '../optional-number-input.util';
+import { DB_DL_CANCEL, DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
+import { activeState } from '../shared/table-states';
+import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
 
 type ServiceTypeFormMode = 'create' | 'edit';
 
@@ -61,11 +68,14 @@ const NONE_PROVIDER_SENTINEL = '';
   selector: 'framework-billing-service-types-page',
   standalone: true,
   imports: [
+    FpcMultiSelectComponent,
+    FpcMoneyPipe,
+    FpcListHeaderComponent,
     CommonModule,
     FormsModule,
     FpcAlertComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
+    FpcDataTableComponent,
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
@@ -73,12 +83,8 @@ const NONE_PROVIDER_SENTINEL = '';
     FpcFormSwitchComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
-    FpcListItemComponent,
-    FpcListComponent,
     FpcEmptyStateComponent,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
-    FpcSpinnerComponent,
   ],
   templateUrl: './service-types-page.component.html',
   styleUrls: ['./service-types-page.component.scss'],
@@ -88,7 +94,7 @@ export class ServiceTypesPageComponent implements OnInit {
   readonly editModalOpen = signal(false);
   readonly deleteConfirmModalOpen = signal(false);
 
-  readonly pageTitle = $localize`:@@featureServiceTypes-title:Service Providers`;
+  readonly pageTitle = $localize`:@@featureServiceTypes-title:Service providers`;
   readonly addServiceProviderAriaLabel = $localize`:@@featureServiceTypes-add:Add service provider`;
   readonly searchPlaceholder = $localize`:@@featureServiceTypes-searchPlaceholder:Search providers`;
 
@@ -106,9 +112,10 @@ export class ServiceTypesPageComponent implements OnInit {
   readonly noneProviderLabel = $localize`:@@featureServiceTypes-noneProvider:None`;
   readonly noneProviderValue = NONE_PROVIDER_SENTINEL;
   readonly editProviderDefaultsTouched = signal(false);
-  readonly serviceTypes$ = combineLatest([this.facade.getServiceTypes$(), this.facade.getProviderDetails$()]).pipe(
-    map(([serviceTypes, providerDetails]) => ({ serviceTypes, providerDetails })),
-  );
+  readonly serviceTypes = toSignal(this.facade.getServiceTypes$(), { initialValue: [] as ServiceTypeResponse[] });
+  private readonly providerDetails = toSignal(this.facade.getProviderDetails$(), {
+    initialValue: [] as ProviderDetail[],
+  });
   readonly providerDetails$ = this.facade.getProviderDetails$();
   readonly providerDetailsLoading$ = this.facade.getProviderDetailsLoading$();
   readonly loading$ = this.facade.getServiceTypesLoading$();
@@ -120,6 +127,54 @@ export class ServiceTypesPageComponent implements OnInit {
   readonly activeMeters$ = this.metersFacade
     .getMeters$()
     .pipe(map((meters) => meters.filter((meter) => meter.isActive)));
+
+  readonly columns: FpcTableColumn<ServiceTypeResponse>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureServiceTypes-colStatus:Status`,
+      type: 'state',
+      state: (st) => activeState(st.isActive),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureServiceTypes-colName:Service provider`,
+      value: (st) => st.name,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'providers',
+      label: $localize`:@@featureAddons-colProviders:Providers`,
+      value: (st) => this.providersListLabel(st, this.providerDetails()),
+      priority: 1,
+    },
+    { id: 'key', label: $localize`:@@featureAddons-colKey:Key`, value: (st) => st.key, mono: true, priority: 3 },
+  ];
+
+  readonly editLabel = $localize`:@@featureServiceTypes-editButtonTitle:Edit service provider`;
+  readonly deleteLabel = DB_DL_DELETE;
+  readonly cancelLabel = DB_DL_CANCEL;
+  readonly activateLabel = $localize`:@@featureMeters-bulkActivate:Activate`;
+  readonly deactivateLabel = $localize`:@@featureMeters-bulkDeactivate:Deactivate`;
+  readonly bulkDeleteTitle = $localize`:@@featureServiceTypes-bulkDeleteTitle:Delete service providers?`;
+
+  readonly selected = signal<readonly string[]>([]);
+  readonly confirmBulkDelete = signal(false);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly selectedServiceTypes = computed(() => {
+    const ids = new Set(this.selected());
+
+    return this.serviceTypes().filter((st) => ids.has(st.id));
+  });
+  readonly bulkDeleteMessage = computed(
+    () =>
+      $localize`:@@featureServiceTypes-bulkDeleteMessage:${this.selectedServiceTypes().length}:count: selected service providers will be deleted. Providers still used by service plans are reported and left as they are.`,
+  );
+  readonly rowMenu = (): FpcMenuItem[] => [
+    { id: 'edit', label: this.editLabel, icon: 'pencil' },
+    { id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true },
+    dbCopyIdItem(),
+  ];
 
   /** Multi-select model; includes None sentinel or real provider ids (first = primary). */
   createSelectedProviders: string[] = [NONE_PROVIDER_SENTINEL];
@@ -234,12 +289,42 @@ export class ServiceTypesPageComponent implements OnInit {
     return $localize`:@@featureServiceTypes-providersPrimaryPlusCount:${primaryLabel}:primary: (+${extraCount}:extraCount:)`;
   }
 
-  activeStatusLabel(isActive: boolean): string {
-    return getActiveStatusLabel(isActive);
+  onRowAction(st: ServiceTypeResponse, action: string): void {
+    if (action === 'edit') this.openEditModal(st);
+    else if (action === 'delete') this.openDeleteConfirm(st);
+    else if (action === 'copy-id') fpcCopyText(st.id);
   }
 
-  activeStatusTextClass(isActive: boolean): string {
-    return getActiveStatusTextClass(isActive);
+  /** Bulk Activate / Deactivate: one `updateServiceType` per provider whose state changes (same call as Edit). */
+  async setActiveSelected(isActive: boolean): Promise<void> {
+    const serviceTypes = this.selectedServiceTypes().filter((st) => st.isActive !== isActive);
+
+    if (serviceTypes.length === 0) return;
+
+    const result = await fpcRunBulk(serviceTypes, (st) =>
+      firstValueFrom(this.serviceTypesService.updateServiceType(st.id, { isActive })),
+    );
+
+    this.finishBulk(dbBulkSummary(result, (st) => st.name));
+  }
+
+  /** Bulk Delete: one `deleteServiceType` per provider. */
+  async deleteSelected(): Promise<void> {
+    const serviceTypes = this.selectedServiceTypes();
+
+    if (serviceTypes.length === 0) return;
+
+    const result = await fpcRunBulk(serviceTypes, (st) =>
+      firstValueFrom(this.serviceTypesService.deleteServiceType(st.id)),
+    );
+
+    this.finishBulk(dbBulkSummary(result, (st) => st.name));
+  }
+
+  private finishBulk(result: DbBulkResult): void {
+    this.bulkResult.set(result);
+    this.selected.set([]);
+    this.facade.loadServiceTypes({ search: this.searchQuery().trim() || undefined });
   }
 
   selectedProvidersFor(mode: ServiceTypeFormMode): string[] {
@@ -255,6 +340,25 @@ export class ServiceTypesPageComponent implements OnInit {
   }
 
   compareProviderId = (left: string | null | undefined, right: string | null | undefined): boolean => left === right;
+
+  readonly multiSelectSearchLabel = BILLING_MULTI_SELECT_LABELS.search;
+  readonly multiSelectRemoveLabel = BILLING_MULTI_SELECT_LABELS.remove;
+  readonly multiSelectEmptyLabel = BILLING_MULTI_SELECT_LABELS.empty;
+
+  /** "None" first, then the providers; incompatible ones are disabled (same rule as before). */
+  providerMultiOptions(
+    mode: ServiceTypeFormMode,
+    providers: ProviderDetail[] | null | undefined,
+  ): FpcMultiSelectOption[] {
+    return [
+      { value: NONE_PROVIDER_SENTINEL, label: $localize`:@@featureServiceTypes-noneProvider:None` },
+      ...(providers ?? []).map((provider) => ({
+        value: provider.id,
+        label: provider.displayName,
+        disabled: this.isProviderOptionDisabled(mode, provider, providers),
+      })),
+    ];
+  }
 
   isProviderOptionDisabled(
     mode: ServiceTypeFormMode,

@@ -1,8 +1,8 @@
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   AdminProjectsService,
   ProjectsFacade,
@@ -14,34 +14,39 @@ import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/f
 import {
   FpcAlertComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcFormControlComponent,
   FpcFormFieldComponent,
-  FpcInfiniteScrollDirective,
-  FpcListAppendFooterComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
-  FpcSpinnerComponent,
+  fpcRunBulk,
+  type FpcMenuItem,
+  type FpcTableColumn,
 } from '@forepath/shared/frontend/ui-components';
-import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
 import {
   formatProjectHourlyRate,
   formatProjectMinutes,
   formatProjectOpenBillableAmount,
-  getProjectStatusIconClass,
-  getProjectStatusLabel,
-  getProjectStatusTextClass,
-  resolveNamedLabel,
 } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import {
+  DB_DL_CANCEL,
+  DB_DL_DELETE,
+  dbBulkSummary,
+  dbCopyIdItem,
+  dbOpenItem,
+  type DbBulkResult,
+} from '../shared/data-list';
+import { dbServerPaging } from '../shared/server-paging';
+import { projectState } from '../shared/table-states';
+import { getCustomerLabel, getCustomerSecondaryLabel, type CustomerLabelSource } from '../named-label.util';
 
 @Component({
   selector: 'framework-admin-projects-page',
@@ -53,20 +58,14 @@ import { showBillingModal, watchBillingMutationModalClose } from '../billing-mod
     BillingAdminUserSelectComponent,
     FpcAlertComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
+    FpcDataTableComponent,
     FpcFormControlComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcFormFieldComponent,
-    FpcListItemComponent,
-    FpcListComponent,
     FpcEmptyStateComponent,
-    FpcInfiniteScrollDirective,
-    FpcListAppendFooterComponent,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
-    FpcSpinnerComponent,
   ],
   providers: [DecimalPipe],
   templateUrl: './admin-projects-page.component.html',
@@ -88,19 +87,95 @@ export class AdminProjectsPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly projectsRoute = inject(ActivatedRoute);
 
-  readonly searchQuery = signal('');
-  readonly searchQuery$ = toObservable(this.searchQuery);
+  private readonly router = inject(Router);
 
   readonly loading$ = this.facade.loading$;
   readonly creating$ = this.facade.creating$;
   readonly updating$ = this.facade.updating$;
   readonly deleting$ = this.facade.deleting$;
   readonly error$ = this.facade.error$;
-  readonly hasMore$ = this.facade.adminHasMore$;
-  readonly appendLoading$ = this.facade.adminAppendLoading$;
-  readonly appendError$ = this.facade.adminAppendError$;
-
   readonly projects = toSignal(this.facade.adminProjects$, { initialValue: [] as AdminProjectListItem[] });
+  readonly total = toSignal(this.facade.adminTotal$, { initialValue: 0 });
+  readonly loading = toSignal(this.facade.loading$, { initialValue: false });
+  readonly error = toSignal(this.facade.error$, { initialValue: null });
+
+  /** Search + page + page size → `GET /admin/projects?limit&offset&search` (replace-page). */
+  readonly paging = dbServerPaging((query) => this.facade.loadAdminProjects(query));
+
+  readonly columns: FpcTableColumn<AdminProjectListItem>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureProjects-colStatus:Status`,
+      type: 'state',
+      state: (project) => projectState(project.status),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureProjects-colProject:Project`,
+      value: (project) => project.name,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'customer',
+      label: $localize`:@@featureAdminProjects-colCustomer:Customer`,
+      value: (project) => getCustomerLabel(project),
+      priority: 1,
+    },
+    {
+      id: 'rate',
+      label: $localize`:@@featureProjects-colHourlyRate:Hourly rate`,
+      value: (project) => formatProjectHourlyRate(project.hourlyRateNet, project.currency),
+      align: 'end',
+      priority: 2,
+    },
+    {
+      id: 'unbilled',
+      label: $localize`:@@featureProjects-colUnbilledTime:Unbilled time`,
+      value: (project) => formatProjectMinutes(project.unbilledMinutes),
+      align: 'end',
+      priority: 2,
+    },
+    {
+      id: 'open',
+      label: $localize`:@@featureProjects-colOpenAmount:Open amount`,
+      value: (project) => formatProjectOpenBillableAmount(project.openBillableAmountNet, project.currency),
+      align: 'end',
+      priority: 3,
+    },
+  ];
+
+  readonly editLabel = $localize`:@@featureAdminProjects-edit:Edit`;
+  readonly deleteLabel = DB_DL_DELETE;
+  readonly cancelLabel = DB_DL_CANCEL;
+  readonly archiveLabel = $localize`:@@featureAdminProjects-archiveSelected:Archive`;
+  readonly bulkDeleteTitle = $localize`:@@featureAdminProjects-bulkDeleteTitle:Delete projects?`;
+
+  readonly selected = signal<readonly string[]>([]);
+  readonly confirmBulkDelete = signal(false);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly selectedProjects = computed(() => {
+    const ids = new Set(this.selected());
+
+    return this.projects().filter((project) => ids.has(project.id));
+  });
+  readonly canArchiveSelection = computed(
+    () =>
+      this.selectedProjects().length > 0 && this.selectedProjects().some((project) => project.status !== 'archived'),
+  );
+  readonly bulkDeleteMessage = computed(
+    () =>
+      $localize`:@@featureAdminProjects-bulkDeleteMessage:${this.selectedProjects().length}:count: selected projects will be deleted. Projects with unbilled time are reported and left as they are.`,
+  );
+
+  readonly projectLink = (project: AdminProjectListItem): string =>
+    this.router.serializeUrl(this.router.createUrlTree([project.id, 'board'], { relativeTo: this.projectsRoute }));
+  readonly rowMenu = (): FpcMenuItem[] => [
+    dbOpenItem(),
+    { id: 'edit', label: this.editLabel, icon: 'pencil' },
+    { id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true },
+    dbCopyIdItem(),
+  ];
   readonly users = toSignal(this.authFacade.users$, { initialValue: [] as UserResponseDto[] });
 
   readonly usersWithoutProject = computed(() => this.users());
@@ -111,20 +186,54 @@ export class AdminProjectsPageComponent implements OnInit {
   createTargetHoursInput: number | null = null;
   projectToDelete: AdminProjectListItem | null = null;
 
-  ngOnInit(): void {
-    this.facade.loadAdminProjects();
-    this.authFacade.loadUsers();
-    this.registerModalCloseWatchers();
-
-    this.searchQuery$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.facade.loadAdminProjects({ search: search.trim() || undefined });
-      });
+  customerLabel(row: CustomerLabelSource): string {
+    return getCustomerLabel(row);
   }
 
-  onSearchChange(value: string): void {
-    this.searchQuery.set(value);
+  customerTitle(row: CustomerLabelSource): string | null {
+    return getCustomerSecondaryLabel(row);
+  }
+
+  ngOnInit(): void {
+    this.authFacade.loadUsers();
+    this.registerModalCloseWatchers();
+  }
+
+  onRowAction(project: AdminProjectListItem, action: string): void {
+    if (action === 'open') void this.router.navigateByUrl(this.projectLink(project));
+    else if (action === 'edit') this.openEditModal(project);
+    else if (action === 'delete') this.openDeleteModal(project);
+    else if (action === 'copy-id') fpcCopyText(project.id);
+  }
+
+  /** Bulk Archive: one `PUT /admin/projects/:id` per active project (same endpoint + authorization as Edit). */
+  async archiveSelected(): Promise<void> {
+    const projects = this.selectedProjects().filter((project) => project.status !== 'archived');
+
+    if (projects.length === 0) return;
+
+    const result = await fpcRunBulk(projects, (project) =>
+      firstValueFrom(this.adminService.update(project.id, { status: 'archived' })),
+    );
+
+    this.finishBulk(dbBulkSummary(result, (project) => project.name));
+  }
+
+  /** Bulk Delete: one `DELETE /admin/projects/:id` per project (the server refuses projects with unbilled time). */
+  async deleteSelected(): Promise<void> {
+    const projects = this.selectedProjects();
+
+    if (projects.length === 0) return;
+
+    const result = await fpcRunBulk(projects, (project) => firstValueFrom(this.adminService.delete(project.id)));
+
+    this.finishBulk(dbBulkSummary(result, (project) => project.name));
+  }
+
+  private finishBulk(result: DbBulkResult): void {
+    this.bulkResult.set(result);
+    this.selected.set([]);
+    this.paging.reload();
   }
 
   openCreateModal(): void {
@@ -184,34 +293,6 @@ export class AdminProjectsPageComponent implements OnInit {
     this.facade.deleteAdminProject(this.projectToDelete.id);
   }
 
-  projectStatusLabel(status: string): string {
-    return getProjectStatusLabel(status);
-  }
-
-  projectStatusTextClass(status: string): string {
-    return getProjectStatusTextClass(status);
-  }
-
-  projectStatusIconClass(status: string): string {
-    return getProjectStatusIconClass(status);
-  }
-
-  hourlyRateLabel(amount: number, currency: string): string {
-    return formatProjectHourlyRate(amount, currency);
-  }
-
-  unbilledTimeLabel(minutes: number): string {
-    return formatProjectMinutes(minutes);
-  }
-
-  openBillableLabel(amount: number, currency: string): string {
-    return formatProjectOpenBillableAmount(amount, currency);
-  }
-
-  projectOwnerLabel(project: AdminProjectListItem): string {
-    return resolveNamedLabel(project.userEmail);
-  }
-
   private emptyCreateForm(): CreateAdminProjectDto {
     return { userId: '', name: '', hourlyRateNet: 100, currency: 'EUR' };
   }
@@ -225,7 +306,7 @@ export class AdminProjectsPageComponent implements OnInit {
   }
 
   private registerModalCloseWatchers(): void {
-    const reload = (): void => this.facade.loadAdminProjects({ search: this.searchQuery().trim() || undefined });
+    const reload = (): void => this.paging.reload();
 
     watchBillingMutationModalClose({
       loading$: this.creating$,

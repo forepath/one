@@ -14,7 +14,7 @@ import type {
 export class ChangelogEntryDto implements ChangelogEntry {
   text!: string;
   scope!: 'product' | 'shared';
-  product?: 'agenstra' | 'decabill';
+  product?: 'agenstra' | 'decabill' | 'loadweaver';
   category?: string;
 }
 
@@ -49,6 +49,7 @@ export class ReleaseSnapshotDto implements ReleaseSnapshot {
   publishedAt!: string;
   changelog!: ChangelogEntryDto[];
   scopedChangelog!: ScopedChangelogDto;
+  prerelease?: boolean;
 }
 
 export class UpdatesStatusSummaryDto implements UpdatesStatusSummary {
@@ -59,6 +60,7 @@ export class UpdatesStatusSummaryDto implements UpdatesStatusSummary {
   lastCheckStatus!: 'success' | 'failed' | 'pending' | 'unknown';
   instanceCount!: number;
   outdatedInstanceCount!: number;
+  channel?: 'stable' | 'beta';
 }
 
 export class UpdatesFullStateDto implements UpdatesFullState {
