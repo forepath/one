@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.1](https://github.com/forepath/one/compare/v4.2.0...v4.2.1) (2026-11-02)
+
+
+### Bug Fixes
+
+* **forepath:** landingpage hero animation background ([#705](https://github.com/forepath/one/issues/705)) ([081aeae](https://github.com/forepath/one/commit/081aeaeef0c993c155e39b7d5ffb786f52208615))
+
 ## [4.2.0](https://github.com/forepath/one/compare/v4.1.0...v4.2.0) (2026-11-02)
 
 
