@@ -53,6 +53,7 @@ export interface ChatwootCreateConversationPayload {
   status: 'open' | 'resolved' | 'pending';
   message?: {
     content: string;
+    message_type?: 'incoming' | 'outgoing';
   };
 }
 

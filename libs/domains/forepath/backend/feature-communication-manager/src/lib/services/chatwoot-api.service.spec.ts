@@ -74,9 +74,23 @@ describe('ChatwootApiService', () => {
       expect.objectContaining({
         method: 'POST',
         url: 'https://chat.example.com/api/v1/accounts/1/conversations',
-        data: expect.objectContaining({ inbox_id: 7, source_id: 'src-1' }),
+        data: expect.objectContaining({
+          inbox_id: 7,
+          source_id: 'src-1',
+          message: { content: 'Hello', message_type: 'incoming' },
+        }),
       }),
     );
+  });
+
+  it('creates conversation without message when none is provided', async () => {
+    mockedAxios.request.mockResolvedValue({ status: 200, data: { id: 100 } });
+
+    const service = new ChatwootApiService();
+
+    await service.createConversation({ source_id: 'src-1', contact_id: 5, status: 'open' });
+
+    expect(mockedAxios.request.mock.calls[0]?.[0].data).not.toHaveProperty('message');
   });
 
   it('creates contact inbox for an existing contact', async () => {
