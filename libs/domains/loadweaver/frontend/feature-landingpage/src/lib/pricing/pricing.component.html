@@ -1,0 +1,445 @@
+<!-- Hero -->
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white position-relative overflow-hidden grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center">
+      <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureLoadweaverPricing-heroTitle">
+        Choose your <span class="text-primary">license</span>
+      </h1>
+      <p class="lead mb-0 mx-auto hero-lead section-lead" i18n="@@featureLoadweaverPricing-heroDescription">
+        Every feature is public source, and the license is set per component. A single-site cluster is open source;
+        multi-site needs a business license that is free for smaller companies. Prices are flat per tier.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Self-hosted tiers -->
+<section id="self-hosted" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featureLoadweaverPricing-tiersTitle">License tiers</h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverPricing-tiersLead">
+        Run Loadweaver on your own servers. The line between the tiers is drawn at multi-site, not at the number of
+        nodes, clusters or sites. Swipe or use the arrows to review Startup, Business, and Enterprise.
+      </p>
+    </div>
+    <div class="position-relative">
+      <div class="pricing-carousel-scroll-buttons d-none d-lg-flex justify-content-between align-items-center">
+        <fpc-button
+          variant="dark"
+          iconOnly
+          btnClass="pricing-carousel-scroll-button-left"
+          (clicked)="scrollPricingCarousel('left')"
+          [disabled]="!isLastCardVisible()"
+          ariaLabel="Previous plans"
+          i18n-ariaLabel="@@featureLoadweaverPricing-scrollPrev"
+        >
+          <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          iconOnly
+          btnClass="pricing-carousel-scroll-button-right"
+          (clicked)="scrollPricingCarousel('right')"
+          [disabled]="isLastCardVisible()"
+          ariaLabel="Next plans"
+          i18n-ariaLabel="@@featureLoadweaverPricing-scrollNext"
+        >
+          <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </fpc-button>
+      </div>
+      <div
+        class="row g-4 flex-lg-nowrap overflow-x-hidden position-relative pb-2 pb-lg-5 pricing-tiers-row"
+        #pricingCarousel
+      >
+        <div class="col-lg-4 flex-shrink-0 pricing-tier-col">
+          <article class="card h-100 border rounded-3 shadow-sm">
+            <div class="card-body p-4 p-lg-5 d-flex flex-column">
+              <div class="text-center mb-4">
+                <h3 class="h4 m-0" i18n="@@featureLoadweaverPricing-openSourceTitle">Open Source</h3>
+                <fpc-badge color="primary" class="my-2" i18n="@@featureLoadweaverPricing-selfHostedBadge"
+                  >Self-Hosted</fpc-badge
+                >
+                <div class="pricing-price p-3 my-3">
+                  <div class="display-6 fw-bold text-primary mb-1" i18n="@@featureLoadweaverPricing-freePrice">
+                    Free
+                  </div>
+                  <p class="text-muted small mb-0" i18n="@@featureLoadweaverPricing-openSourceLicense">
+                    AGPL-3.0 License
+                  </p>
+                </div>
+              </div>
+              <ul class="list-unstyled mb-4 flex-grow-1 small">
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-openSourceFeature1"
+                    ><strong>Full single-site cluster</strong> including high availability</span
+                  >
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-openSourceFeature2"
+                    >Groups and policies, Compose deployments, migration</span
+                  >
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-openSourceFeature3">Topology map and logs</span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-openSourceFeature4">Remote access within a site</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-info-circle-fill text-muted mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span class="text-muted" i18n="@@featureLoadweaverPricing-openSourceNote"
+                    >Must share modifications if used as a service (AGPL requirement)</span
+                  >
+                </li>
+              </ul>
+              <fpc-button
+                routerLink="/contact"
+                variant="outline-primary"
+                block
+                [loadweaverEarlyAccess]="earlyAccessMessage"
+                i18n="@@featureLoadweaverPricing-requestEarlyAccess"
+                >Request early access</fpc-button
+              >
+            </div>
+          </article>
+        </div>
+
+        <div class="col-lg-4 flex-shrink-0 pricing-tier-col">
+          <article class="card h-100 border rounded-3 shadow-sm">
+            <div class="card-body p-4 p-lg-5 d-flex flex-column">
+              <div class="text-center mb-4">
+                <h3 class="h4 m-0" i18n="@@featureLoadweaverPricing-startupTitle">Startup</h3>
+                <fpc-badge color="primary" class="my-2" i18n="@@featureLoadweaverPricing-selfHostedBadge"
+                  >Self-Hosted</fpc-badge
+                >
+                <div class="pricing-price p-3 my-3">
+                  <div class="display-6 fw-bold text-primary mb-1" i18n="@@featureLoadweaverPricing-freePrice">
+                    Free
+                  </div>
+                  <p class="text-muted small mb-0" i18n="@@featureLoadweaverPricing-buslLicense">
+                    BUSL-1.1 with Additional Use Grant
+                  </p>
+                </div>
+              </div>
+              <ul class="list-unstyled mb-4 flex-grow-1 small">
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-startupFeature1"><strong>Includes Open Source</strong></span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-startupFeature2"
+                    ><strong>Multi-site</strong> with cross-site BGP and site failover</span
+                  >
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-startupFeature3">Own ASN, multi-homing and anycast</span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-startupFeature4">Cross-site storage replication</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-info-circle-fill text-muted mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span class="text-muted" i18n="@@featureLoadweaverPricing-startupNote"
+                    >For businesses with total finances &lt; €2,000,000 per year</span
+                  >
+                </li>
+              </ul>
+              <fpc-button
+                routerLink="/contact"
+                variant="outline-primary"
+                block
+                [loadweaverEarlyAccess]="earlyAccessMessage"
+                i18n="@@featureLoadweaverPricing-requestEarlyAccess"
+                >Request early access</fpc-button
+              >
+            </div>
+          </article>
+        </div>
+
+        <div class="col-lg-4 flex-shrink-0 pricing-tier-col">
+          <article class="card h-100 border-primary border-2 rounded-3 shadow position-relative">
+            <div class="position-absolute top-0 start-50 translate-middle">
+              <span
+                class="bg-primary px-3 py-2 rounded-3 small fw-semibold text-nowrap pricing-featured-label"
+                i18n="@@featureLoadweaverPricing-mostPopularBadge"
+                >Most Popular</span
+              >
+            </div>
+            <div class="card-body p-4 p-lg-5 d-flex flex-column">
+              <div class="text-center mb-4">
+                <h3 class="h4 m-0" i18n="@@featureLoadweaverPricing-businessTitle">Business</h3>
+                <fpc-badge color="primary" class="my-2" i18n="@@featureLoadweaverPricing-selfHostedBadge"
+                  >Self-Hosted</fpc-badge
+                >
+                <div class="pricing-price p-3 my-3">
+                  <div class="display-6 fw-bold text-primary mb-1" i18n="@@featureLoadweaverPricing-businessPrice">
+                    €499/mo
+                  </div>
+                  <p class="text-muted small mb-0" i18n="@@featureLoadweaverPricing-buslLicense">
+                    BUSL-1.1 with Additional Use Grant
+                  </p>
+                </div>
+              </div>
+              <ul class="list-unstyled mb-4 flex-grow-1 small">
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-businessFeature1"><strong>Includes Startup</strong></span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-businessFeature2">Onboarding</span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-businessFeature3">Standard support</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-info-circle-fill text-muted mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span class="text-muted" i18n="@@featureLoadweaverPricing-businessNote"
+                    >For businesses with total finances ≥ €2,000,000 per year</span
+                  >
+                </li>
+              </ul>
+              <fpc-button
+                routerLink="/contact"
+                variant="primary"
+                block
+                [loadweaverEarlyAccess]="earlyAccessMessage"
+                i18n="@@featureLoadweaverPricing-requestEarlyAccess"
+                >Request early access</fpc-button
+              >
+            </div>
+          </article>
+        </div>
+
+        <div class="col-lg-4 flex-shrink-0 pricing-tier-col" #enterpriseCard>
+          <article class="card h-100 border rounded-3 shadow-sm">
+            <div class="card-body p-4 p-lg-5 d-flex flex-column">
+              <div class="text-center mb-4">
+                <h3 class="h4 m-0" i18n="@@featureLoadweaverPricing-enterpriseTitle">Enterprise</h3>
+                <fpc-badge color="primary" class="my-2" i18n="@@featureLoadweaverPricing-selfHostedBadge"
+                  >Self-Hosted</fpc-badge
+                >
+                <div class="pricing-price p-3 my-3">
+                  <div class="display-6 fw-bold text-primary mb-1" i18n="@@featureLoadweaverPricing-enterprisePrice">
+                    Ask us
+                  </div>
+                  <p class="text-muted small mb-0" i18n="@@featureLoadweaverPricing-enterpriseLicense">
+                    Commercial License
+                  </p>
+                </div>
+              </div>
+              <ul class="list-unstyled mb-4 flex-grow-1 small">
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-enterpriseFeature1"><strong>Includes Business</strong></span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-enterpriseFeature2">Priority support and SLA</span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featureLoadweaverPricing-enterpriseFeature3">Custom development</span>
+                </li>
+              </ul>
+              <fpc-button
+                routerLink="/contact"
+                variant="outline-primary"
+                block
+                [loadweaverEarlyAccess]="enterpriseMessage"
+                i18n="@@featureLoadweaverPricing-contactSales"
+                >Contact sales</fpc-button
+              >
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How the split works -->
+<section id="licensing" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverPricing-splitTitle">
+        Nothing is closed
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverPricing-splitLead">
+        All features are public source. The commercial limitation comes from the license terms of each component, not
+        from hidden code.
+      </p>
+    </div>
+    <div class="card border rounded-3 shadow-sm overflow-hidden card-capability-primary">
+      <div class="p-4 p-lg-5 border-bottom landing-surface-tint">
+        <div class="plain-icon mb-4 mx-auto mx-lg-0" aria-hidden="true">
+          <i class="bi bi-unlock-fill text-primary icon-xl"></i>
+        </div>
+        <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureLoadweaverPricing-splitPanelTitle">
+          Public source, licensed per component
+        </h3>
+        <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureLoadweaverPricing-splitPanelLead">
+          Every app and library carries its own LICENSE file. Single-site components are open source, multi-site
+          components use the business license, and the line between them is visible in the repository.
+        </p>
+      </div>
+      <div class="landing-panel-points">
+        <div class="row row-cols-1 row-cols-md-3 g-0">
+          <div class="col">
+            <i class="bi bi-geo-alt text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+            <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverPricing-splitAgplTitle">AGPL-3.0: single-site</p>
+            <p class="small text-muted mb-0" i18n="@@featureLoadweaverPricing-splitAgplDesc">
+              The node agent, the single-site control plane and the console basics.
+            </p>
+          </div>
+          <div class="col">
+            <i class="bi bi-globe2 text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+            <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverPricing-splitBuslTitle">BUSL-1.1: multi-site</p>
+            <p class="small text-muted mb-0" i18n="@@featureLoadweaverPricing-splitBuslDesc">
+              Cross-site orchestration, multi-site storage replication, site failover, own-ASN BGP, multi-homing and
+              anycast, and the fleet console. Free in production below €2M total finances per year, and every release
+              converts to AGPL-3.0 three years after it ships.
+            </p>
+          </div>
+          <div class="col">
+            <i class="bi bi-tags text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+            <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverPricing-splitFlatTitle">Flat per tier</p>
+            <p class="small text-muted mb-0" i18n="@@featureLoadweaverPricing-splitFlatDesc">
+              No node counting and no per-node license enforcement, so starting with one node and growing stays simple.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Managed cloud -->
+<section id="managed" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featureLoadweaverPricing-managedTitle">
+        Loadweaver Cloud
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverPricing-managedLead">
+        Prefer not to run it yourself? We operate a cluster of your own for you, so your teams can focus on what runs on
+        it.
+      </p>
+    </div>
+    <article class="card border rounded-3 shadow-sm overflow-hidden card-capability">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-8 p-4 p-lg-5">
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <h3 class="h5 fw-semibold mb-0" i18n="@@featureLoadweaverPricing-cloudTitle">Loadweaver Cloud</h3>
+            <fpc-badge color="primary" i18n="@@featureLoadweaverPricing-managedBadge">Managed</fpc-badge>
+          </div>
+          <p class="text-muted mb-4" i18n="@@featureLoadweaverPricing-cloudDescription">
+            A dedicated cluster per customer, operated by us through our multi-cluster console. It is the same product
+            as self-hosted Loadweaver.
+          </p>
+          <div class="row row-cols-1 row-cols-sm-2 g-3">
+            <div class="col">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-hdd-rack text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <span class="small text-muted mb-0" i18n="@@featureLoadweaverPricing-cloudFeature1"
+                  ><strong class="text-body">Dedicated.</strong> Own control plane, nodes and keys per customer</span
+                >
+              </div>
+            </div>
+            <div class="col">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-rocket-takeoff text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <span class="small text-muted mb-0" i18n="@@featureLoadweaverPricing-cloudFeature2"
+                  ><strong class="text-body">Ready from day one.</strong> The first node already runs the control plane
+                  and console</span
+                >
+              </div>
+            </div>
+            <div class="col">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-graph-up-arrow text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <span class="small text-muted mb-0" i18n="@@featureLoadweaverPricing-cloudFeature3"
+                  ><strong class="text-body">Grows with you.</strong> Add nodes with your own provider accounts</span
+                >
+              </div>
+            </div>
+            <div class="col">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-shield-check text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <span class="small text-muted mb-0" i18n="@@featureLoadweaverPricing-cloudFeature4"
+                  ><strong class="text-body">Data-safe exit.</strong> Final backup and a read-only grace period</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="col-lg-4 p-4 p-lg-5 text-center landing-surface-tint landing-divider-start pricing-managed-aside d-flex flex-column justify-content-center"
+        >
+          <p class="small text-muted mb-2" i18n="@@featureLoadweaverPricing-cloudAvailability">Availability</p>
+          <div class="h2 fw-bold text-primary mb-2" i18n="@@featureLoadweaverPortal-earlyAccessBadge">Early access</div>
+          <p class="small text-muted mb-4" i18n="@@featureLoadweaverPricing-cloudPriceNote">
+            Pricing is not published yet.
+          </p>
+          <fpc-button
+            class="mb-2"
+            routerLink="/contact"
+            variant="primary"
+            [loadweaverEarlyAccess]="cloudEarlyAccessMessage"
+            i18n="@@featureLoadweaverPricing-cloudEarlyAccess"
+            >Request early access</fpc-button
+          >
+          <a
+            routerLink="/cloud"
+            class="fw-semibold small text-decoration-none"
+            i18n="@@featureLoadweaverPricing-exploreCloud"
+            >Explore Cloud</a
+          >
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="py-10 bg-dark grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center py-10 px-5 shadow-sm cta-box">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureLoadweaverPricing-ctaTitle">Not sure which tier fits?</h2>
+      <p class="lead mb-5 mx-auto cta-lead" i18n="@@featureLoadweaverPricing-ctaLead">
+        Tell us how many sites you run and how your company is set up, and we will help you pick the right license.
+      </p>
+      <shared-contact-person brand="loadweaver" />
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/contact"
+          [loadweaverEarlyAccess]="earlyAccessMessage"
+          i18n="@@featureLoadweaverPricing-ctaEarlyAccess"
+        >
+          <i class="bi bi-envelope-paper" aria-hidden="true"></i>Request early access
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/compare/kubernetes"
+          i18n="@@featureLoadweaverPricing-ctaCompare"
+        >
+          <i class="bi bi-layout-split" aria-hidden="true"></i>Compare alternatives
+        </fpc-button>
+      </div>
+    </div>
+  </div>
+</section>

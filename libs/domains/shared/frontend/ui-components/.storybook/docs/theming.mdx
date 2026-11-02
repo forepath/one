@@ -50,8 +50,17 @@ There is **no production runtime multi-brand switch**. Brand = which palette the
       </td>
       <td>ForePath billing console / landing</td>
     </tr>
+    <tr>
+      <td>Loadweaver</td>
+      <td>
+        <code>#ffc21a</code>
+      </td>
+      <td>Loadweaver landing</td>
+    </tr>
   </tbody>
 </table>
+
+Loadweaver's gold is a light primary (1.6:1 on white), so its fills carry dark labels: the palette sets `$component-active-color` to a dark ink and the brand extras set `--fpc-primary-contrast: #0f0f11`, which the shared solid primary buttons, landing CTAs, tab bars and illustration frames read instead of white (default stays `#fff`). Text-like uses in light mode take the darkened gold `#805b00`.
 
 `--bs-primary-dark` / `--bs-success-dark` use `color-mix` (92% / 80% with black) so they stay derived from the brand colours.
 
@@ -63,7 +72,7 @@ Stock Bootstrap behaviour: [Color modes](https://getbootstrap.com/docs/5.3/custo
 
 ## Storybook brand switcher
 
-The **Color set** toolbar sets `data-fpc-brand` to `decabill` | `agenstra` | `forepath` (or clears it for stock Bootstrap). `.storybook/brands/*.scss` are thin scoped emitters over the same `styles/brands/*/palette` files. Change the palette once for apps and Storybook.
+The **Color set** toolbar sets `data-fpc-brand` to `decabill` | `agenstra` | `forepath` | `loadweaver` (or clears it for stock Bootstrap). `.storybook/brands/*.scss` are thin scoped emitters over the same `styles/brands/*/palette` files. Change the palette once for apps and Storybook.
 
 Storybook loads stock `bootstrap.min.css`, then brand overlays re-emit root `--bs-*` **and** remapped component locals (`.btn-*`, pagination active, progress bar, nav pills, form checks/range) so those controls follow the Color set. Apps that compile Bootstrap from Sass already get this for free.
 

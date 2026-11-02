@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal, type WritableSignal } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, OnInit, signal, type WritableSignal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   AddonsFacade,
@@ -22,27 +22,46 @@ import {
 import {
   FpcAlertComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcConfirmDialogComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcFormSwitchComponent,
-  FpcListComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
-  FpcListItemComponent,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
-  FpcSpinnerComponent,
+  fpcRunBulk,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  FpcListHeaderComponent,
+  FpcMoneyPipe,
+  FpcMultiSelectComponent,
+  type FpcMultiSelectOption,
 } from '@forepath/shared/frontend/ui-components';
-import { catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, skip, switchMap, take } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  firstValueFrom,
+  forkJoin,
+  map,
+  of,
+  skip,
+  switchMap,
+  take,
+} from 'rxjs';
 
-import { getActiveStatusLabel, getActiveStatusTextClass, resolveNamedLabel } from '../billing-status-labels';
+import { getBillingIntervalLabel, resolveNamedLabel } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { MonacoEditorWrapperComponent } from '../monaco-editor-wrapper/monaco-editor-wrapper.component';
 import { optionalNumberInputValue } from '../optional-number-input.util';
+import { DB_DL_CANCEL, DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
+import { activeState } from '../shared/table-states';
+import { formatBillingMoney } from '../billing-format';
+import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
 
 interface EnvVariableFormRow {
   key: string;
@@ -79,12 +98,15 @@ const MIN_RANDOM_DEFAULT_LENGTH = 21;
   selector: 'framework-billing-addons-page',
   standalone: true,
   imports: [
+    FpcMultiSelectComponent,
+    FpcMoneyPipe,
+    FpcListHeaderComponent,
     CommonModule,
     FormsModule,
     MonacoEditorWrapperComponent,
     FpcAlertComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
+    FpcDataTableComponent,
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
@@ -92,12 +114,8 @@ const MIN_RANDOM_DEFAULT_LENGTH = 21;
     FpcFormSwitchComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
-    FpcListItemComponent,
-    FpcListComponent,
     FpcEmptyStateComponent,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
-    FpcSpinnerComponent,
   ],
   templateUrl: './addons-page.component.html',
   styleUrls: ['./addons-page.component.scss'],
@@ -113,17 +131,20 @@ export class AddonsPageComponent implements OnInit {
   private readonly serviceTypesFacade = inject(ServiceTypesFacade);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly pageTitle = $localize`:@@featureAddons-title:Addons`;
-  readonly addAddonAriaLabel = $localize`:@@featureAddons-add:Add addon`;
-  readonly searchPlaceholder = $localize`:@@featureAddons-searchPlaceholder:Search addons`;
+  readonly pageTitle = $localize`:@@featureAddons-title:Add-ons`;
+  readonly addAddonAriaLabel = $localize`:@@featureAddons-add:Add add-on`;
+  readonly searchPlaceholder = $localize`:@@featureAddons-searchPlaceholder:Search add-ons`;
 
   readonly searchQuery = signal('');
   readonly searchQuery$ = toObservable(this.searchQuery);
-  readonly addons$ = this.facade.getAddons$();
+  readonly addons = toSignal(this.facade.getAddons$(), { initialValue: [] as AddonResponse[] });
   readonly providerOptions$ = this.serviceTypesFacade
     .getProviderDetails$()
     .pipe(map((providers) => providers.filter((provider) => provider.supportsAddons === true)));
   readonly activeMeters$ = this.metersFacade.getActiveMeters$();
+  private readonly providers = toSignal(this.serviceTypesFacade.getProviderDetails$(), {
+    initialValue: [] as ProviderDetail[],
+  });
   readonly loading$ = this.facade.getAddonsLoading$();
   readonly loadingAny$ = this.facade.getAddonsLoadingAny$();
   readonly creating$ = this.facade.getAddonsCreating$();
@@ -136,6 +157,81 @@ export class AddonsPageComponent implements OnInit {
   readonly scriptEnvHint = $localize`:@@featureAddons-scriptEnvHint:Use {{env.KEY}} placeholders in the script for configured environment variables.`;
   readonly deprovisionScriptHint = $localize`:@@featureAddons-deprovisionScriptHint:Leave empty for status-only mid-life removal (no SSH reverse script).`;
   readonly compareProviderId = (left: string, right: string): boolean => left === right;
+
+  readonly columns: FpcTableColumn<AddonResponse>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureAddons-colStatus:Status`,
+      type: 'state',
+      state: (addon) => activeState(addon.isActive),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureAddons-colName:Add-on`,
+      value: (addon) => addon.name,
+      required: true,
+      priority: 1,
+    },
+    { id: 'key', label: $localize`:@@featureAddons-colKey:Key`, value: (addon) => addon.key, mono: true, priority: 3 },
+    {
+      id: 'type',
+      label: $localize`:@@featureAddons-colType:Type`,
+      value: (addon) => this.implementationTypeLabel(addon.implementationType),
+      priority: 2,
+    },
+    {
+      id: 'price',
+      label: $localize`:@@featureAddons-colPrice:Price`,
+      value: (addon) => this.formatPrice(addon),
+      align: 'end',
+      priority: 1,
+    },
+    {
+      id: 'providers',
+      label: $localize`:@@featureAddons-colProviders:Providers`,
+      value: (addon) => this.compatibleProvidersLabel(addon),
+      priority: 3,
+    },
+    {
+      id: 'config',
+      label: $localize`:@@featureAddons-colConfigFields:Config fields`,
+      value: (addon) => this.configFieldCount(addon),
+      align: 'end',
+      priority: 3,
+    },
+    {
+      id: 'meters',
+      label: $localize`:@@featureAddons-colMeters:Meters`,
+      value: (addon) => this.addonMeterCount(addon),
+      align: 'end',
+      priority: 3,
+    },
+  ];
+
+  readonly editLabel = $localize`:@@featureAddons-edit:Edit add-on`;
+  readonly deleteLabel = DB_DL_DELETE;
+  readonly cancelLabel = DB_DL_CANCEL;
+  readonly activateLabel = $localize`:@@featureMeters-bulkActivate:Activate`;
+  readonly deactivateLabel = $localize`:@@featureMeters-bulkDeactivate:Deactivate`;
+  readonly bulkDeleteTitle = $localize`:@@featureAddons-bulkDeleteTitle:Delete add-ons?`;
+
+  readonly selected = signal<readonly string[]>([]);
+  readonly confirmBulkDelete = signal(false);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly selectedAddons = computed(() => {
+    const ids = new Set(this.selected());
+
+    return this.addons().filter((addon) => ids.has(addon.id));
+  });
+  readonly bulkDeleteMessage = computed(
+    () =>
+      $localize`:@@featureAddons-bulkDeleteMessage:${this.selectedAddons().length}:count: selected add-ons will be deleted. Add-ons that are still booked are reported and left as they are.`,
+  );
+  readonly rowMenu = (): FpcMenuItem[] => [
+    { id: 'edit', label: this.editLabel, icon: 'pencil' },
+    { id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true },
+    dbCopyIdItem(),
+  ];
 
   createForm = this.defaultForm();
   editForm: AddonForm & { id: string } = { ...this.defaultForm(), id: '' };
@@ -526,12 +622,40 @@ export class AddonsPageComponent implements OnInit {
     if (this.addonToDelete) this.facade.deleteAddon(this.addonToDelete.id);
   }
 
-  activeStatusLabel(isActive: boolean): string {
-    return getActiveStatusLabel(isActive);
+  onRowAction(addon: AddonResponse, action: string): void {
+    if (action === 'edit') this.openEditModal(addon);
+    else if (action === 'delete') this.openDeleteConfirm(addon);
+    else if (action === 'copy-id') fpcCopyText(addon.id);
   }
 
-  activeStatusTextClass(isActive: boolean): string {
-    return getActiveStatusTextClass(isActive);
+  /** Bulk Activate / Deactivate: one `updateAddon` per addon whose state changes (same call as Edit). */
+  async setActiveSelected(isActive: boolean): Promise<void> {
+    const addons = this.selectedAddons().filter((addon) => addon.isActive !== isActive);
+
+    if (addons.length === 0) return;
+
+    const result = await fpcRunBulk(addons, (addon) =>
+      firstValueFrom(this.addonsService.updateAddon(addon.id, { isActive })),
+    );
+
+    this.finishBulk(dbBulkSummary(result, (addon) => addon.name));
+  }
+
+  /** Bulk Delete: one `deleteAddon` per addon. */
+  async deleteSelected(): Promise<void> {
+    const addons = this.selectedAddons();
+
+    if (addons.length === 0) return;
+
+    const result = await fpcRunBulk(addons, (addon) => firstValueFrom(this.addonsService.deleteAddon(addon.id)));
+
+    this.finishBulk(dbBulkSummary(result, (addon) => addon.name));
+  }
+
+  private finishBulk(result: DbBulkResult): void {
+    this.bulkResult.set(result);
+    this.selected.set([]);
+    this.facade.loadAddons({ search: this.searchQuery().trim() || undefined });
   }
 
   implementationTypeLabel(type: AddonImplementationType): string {
@@ -545,7 +669,7 @@ export class AddonsPageComponent implements OnInit {
       return $localize`:@@featureAddons-free:Free`;
     }
 
-    return `€${addon.basePrice} / ${addon.priceIntervalValue} ${addon.priceIntervalType}`;
+    return `${formatBillingMoney(addon.basePrice, undefined, { unitPrice: true })} / ${getBillingIntervalLabel(addon.priceIntervalValue, addon.priceIntervalType)}`;
   }
 
   configFieldCount(addon: AddonResponse): number {
@@ -559,7 +683,11 @@ export class AddonsPageComponent implements OnInit {
       return $localize`:@@featureAddons-allProviders:All providers`;
     }
 
-    return addon.compatibleProviders.join(', ');
+    const providers = this.providers();
+
+    return addon.compatibleProviders
+      .map((id) => providers.find((provider) => provider.id === id)?.displayName?.trim() || id)
+      .join(', ');
   }
 
   onImplementationTypeChange(form: AddonForm): void {
@@ -628,6 +756,14 @@ export class AddonsPageComponent implements OnInit {
 
   showModuleDefaultsSection(form: AddonForm): boolean {
     return form.implementationType === 'module' && form.moduleEnvFields.length > 0;
+  }
+
+  readonly multiSelectSearchLabel = BILLING_MULTI_SELECT_LABELS.search;
+  readonly multiSelectRemoveLabel = BILLING_MULTI_SELECT_LABELS.remove;
+  readonly multiSelectEmptyLabel = BILLING_MULTI_SELECT_LABELS.empty;
+
+  addonProviderOptions(providers: ProviderDetail[]): FpcMultiSelectOption[] {
+    return providers.map((provider) => ({ value: provider.id, label: this.providerOptionLabel(provider) }));
   }
 
   onCompatibleProvidersChange(form: AddonForm, selected: string[] | string | null): void {

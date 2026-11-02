@@ -1,5 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
+
 import type { InvoiceDetailResponse, InvoiceResponse, InvoicesSummaryResponse } from '../../types/billing.types';
 
 import {
@@ -45,6 +47,13 @@ export interface InvoicesState {
   historyListError: string | null;
   openOverdueSearch: string | null;
   historySearch: string | null;
+  /** Replace-page paging of both lists (array API → `hasMore` from one extra row; 1-based page and its size). */
+  openOverdueHasMore: boolean;
+  openOverduePage: number;
+  openOverduePageSize: number;
+  historyHasMore: boolean;
+  historyPage: number;
+  historyPageSize: number;
   error: string | null;
 }
 
@@ -66,6 +75,12 @@ export const initialInvoicesState: InvoicesState = {
   historyListError: null,
   openOverdueSearch: null,
   historySearch: null,
+  openOverdueHasMore: false,
+  openOverduePage: 1,
+  openOverduePageSize: BILLING_LIST_PAGE_SIZE,
+  historyHasMore: false,
+  historyPage: 1,
+  historyPageSize: BILLING_LIST_PAGE_SIZE,
   error: null,
 };
 
@@ -91,19 +106,22 @@ export const invoicesReducer = createReducer(
     summaryLoading: false,
     summaryError: error,
   })),
-  on(loadOpenOverdueInvoices, (state, { silent, search }) =>
-    silent
-      ? state
-      : {
-          ...state,
-          openOverdueListLoading: true,
-          openOverdueListError: null,
-          openOverdueSearch: search?.trim() ? search.trim() : null,
-        },
-  ),
-  on(loadOpenOverdueInvoicesSuccess, (state, { invoices }) => ({
+  on(loadOpenOverdueInvoices, (state, { silent, search, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.openOverduePageSize);
+    const query = {
+      openOverduePage: window.page,
+      openOverduePageSize: window.pageSize,
+      openOverdueSearch: search?.trim() ? search.trim() : null,
+    };
+
+    return silent
+      ? { ...state, ...query }
+      : { ...state, ...query, openOverdueListLoading: true, openOverdueListError: null };
+  }),
+  on(loadOpenOverdueInvoicesSuccess, (state, { invoices, hasMore }) => ({
     ...state,
     openOverdueList: invoices,
+    openOverdueHasMore: hasMore,
     openOverdueListLoading: false,
     openOverdueListError: null,
   })),
@@ -112,19 +130,20 @@ export const invoicesReducer = createReducer(
     openOverdueListLoading: false,
     openOverdueListError: error,
   })),
-  on(loadHistoryInvoices, (state, { silent, search }) =>
-    silent
-      ? state
-      : {
-          ...state,
-          historyListLoading: true,
-          historyListError: null,
-          historySearch: search?.trim() ? search.trim() : null,
-        },
-  ),
-  on(loadHistoryInvoicesSuccess, (state, { invoices }) => ({
+  on(loadHistoryInvoices, (state, { silent, search, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.historyPageSize);
+    const query = {
+      historyPage: window.page,
+      historyPageSize: window.pageSize,
+      historySearch: search?.trim() ? search.trim() : null,
+    };
+
+    return silent ? { ...state, ...query } : { ...state, ...query, historyListLoading: true, historyListError: null };
+  }),
+  on(loadHistoryInvoicesSuccess, (state, { invoices, hasMore }) => ({
     ...state,
     historyList: invoices,
+    historyHasMore: hasMore,
     historyListLoading: false,
     historyListError: null,
   })),

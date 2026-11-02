@@ -1,0 +1,23 @@
+service:
+  image: nginx:1.27
+  replicas: 2
+  password_secret: ENC[AES256_GCM,data:l9kDYCZI,iv:UUWqiwrHGxgDhLT9zbWBEBl2fkuOvgTeNnSOw7JbKqQ=,tag:SUHk8B9ERDPYYlCnEHnqPw==,type:str]
+  nested_secret:
+    key: ENC[AES256_GCM,data:XtubjqM=,iv:/DRhYOTKohaQekcVIBVdPF4wMxONYyRF9lnT1iYbN6I=,tag:V5eS4Z/BZ8mpBIgvC29GOA==,type:str]
+    count: ENC[AES256_GCM,data:yg==,iv:OGTgXuvs2LVl1CqzpyDJk2xatcydghnsD5M47Sp4qhE=,tag:IqEETFnuzAj6iKo8+aj8Lw==,type:int]
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBvSmU5ODBZWjJwcDgxUm80
+        bDVtOGJhdmxOT2RoR09CeDhCSjhVMWVWeEc4CjlvT2Q0NUtZQTRMM1RzK3NKNUJj
+        MGpOcndWOFVISytJZDNPM0hrOWlHQU0KLS0tIHFiOVlabHpLbW0weEQvSkVBQ255
+        TnU5dGU5QUZsTUxWd3czMEoyeGR3OVUKfMrqgCFvInkcqB6czlQbePJzuZruSWOn
+        okuV1+G3qv7ZGiOEXUJ7uJDSAchXHi7GhKgQuQD2kgoTYDleYAyI3g==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1dxepryr8jh4a7jpl4e7e9033tadrdp6cvzjm4wj6uw53xerc8ausnv4xm5
+  encrypted_suffix: _secret
+  lastmodified: '2026-10-18T14:35:34Z'
+  mac: ENC[AES256_GCM,data:TwVHjru7brOvCVmMwjSvYE1dz+qASv6NASPoZx9LA+sIpKTd7AJoqS99e3yzvZdoNY86h00rExeV22Z0wXgz7zeJqdzhYMqe/lTPfhBgZEWcVAnchwQtqXhbDFLlgJuGNQ58VIeErNlSLIp1PRn/ZJy/6+j/afy6yjX24GT1f/A=,iv:7JS2W+CdO7rM5IUQb+vqzCjO/3MpghkEfOUd/yZw4ug=,tag:UVmTQs1L7JiAm/muD8PpDA==,type:str]
+  mac_only_encrypted: true
+  version: 3.13.3

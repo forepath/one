@@ -1,0 +1,126 @@
+asyncapi: 3.0.0
+info:
+  title: Loadweaver Fleet socket relay
+  version: 1.0.0
+  description: |
+    Socket.IO namespace `socket/fleet` (env `LOADWEAVER_FLEET_WEBSOCKET_NAMESPACE`) of the fleet service (3.24),
+    following Agenstra's controller ↔ manager socket proxy. A console socket attaches to live namespaces of clusters;
+    each attachment is an isolated remote socket to the cluster's namespace (`socket/<namespace>`) authenticated with
+    the cluster's service credential and the acting user as `X-Loadweaver-On-Behalf-Of`. Remote events reach only the
+    socket that attached.
+
+    Handshake: `auth: { Authorization: 'Bearer <token>' }` (interactive sessions; PAT sockets are rejected by the
+    shared socket auth). Namespaces and the cluster-wide grant they need: `plans`, `topology`, `logs` → viewer;
+    `terminals` and `consoles` (VM serial / VNC) → operator (closed during the read-only grace). Project-only grants never open streams. At most 8
+    attachments per socket.
+
+    Access is re-checked every `FLEET_SOCKET_RECHECK_MS` (60 s) and right away when a grant, the connection or the
+    read-only grace of the cluster changes: the handshake token is validated again (the console socket is
+    disconnected when it no longer is) and attachments that are no longer allowed are closed with `detached`
+    (`reason: access-revoked`). Remote connections use the SSRF-guarded agent (resolved addresses checked in
+    `lookup`).
+servers:
+  fleet:
+    host: localhost:3500
+    protocol: ws
+    pathname: /socket.io
+channels:
+  fleet:
+    address: socket/fleet
+    messages:
+      attach: { $ref: '#/components/messages/attach' }
+      attached: { $ref: '#/components/messages/attached' }
+      emit: { $ref: '#/components/messages/emit' }
+      event: { $ref: '#/components/messages/event' }
+      detach: { $ref: '#/components/messages/detach' }
+      detached: { $ref: '#/components/messages/detached' }
+      relayError: { $ref: '#/components/messages/relayError' }
+operations:
+  attach:
+    action: receive
+    channel: { $ref: '#/channels/fleet' }
+    summary: Attach to a live namespace of a cluster
+    messages: [{ $ref: '#/channels/fleet/messages/attach' }]
+  attached:
+    action: send
+    channel: { $ref: '#/channels/fleet' }
+    messages: [{ $ref: '#/channels/fleet/messages/attached' }]
+  emit:
+    action: receive
+    channel: { $ref: '#/channels/fleet' }
+    summary: Event from the console to the cluster namespace (subscribe, terminal input, ...)
+    messages: [{ $ref: '#/channels/fleet/messages/emit' }]
+  event:
+    action: send
+    channel: { $ref: '#/channels/fleet' }
+    summary: Event of the cluster namespace (snapshots, patches, log lines, terminal output, ...)
+    messages: [{ $ref: '#/channels/fleet/messages/event' }]
+  detach:
+    action: receive
+    channel: { $ref: '#/channels/fleet' }
+    messages: [{ $ref: '#/channels/fleet/messages/detach' }]
+  detached:
+    action: send
+    channel: { $ref: '#/channels/fleet' }
+    messages: [{ $ref: '#/channels/fleet/messages/detached' }]
+  relayError:
+    action: send
+    channel: { $ref: '#/channels/fleet' }
+    messages: [{ $ref: '#/channels/fleet/messages/relayError' }]
+components:
+  messages:
+    attach:
+      payload:
+        type: object
+        required: [clusterId, namespace]
+        properties:
+          clusterId: { type: string, format: uuid }
+          namespace:
+            { type: string, enum: [plans, topology, logs, terminals, consoles] }
+    attached:
+      payload:
+        type: object
+        properties:
+          attachmentId: { type: string, format: uuid }
+          clusterId: { type: string, format: uuid }
+          namespace: { type: string }
+    emit:
+      payload:
+        type: object
+        required: [attachmentId, event]
+        properties:
+          attachmentId: { type: string, format: uuid }
+          event: { type: string, pattern: '^[A-Za-z][A-Za-z0-9:_-]{0,63}$' }
+          args: { type: array }
+    event:
+      payload:
+        type: object
+        properties:
+          attachmentId: { type: string, format: uuid }
+          event: { type: string }
+          args: { type: array }
+    detach:
+      payload:
+        type: object
+        required: [attachmentId]
+        properties:
+          attachmentId: { type: string, format: uuid }
+    detached:
+      payload:
+        type: object
+        properties:
+          attachmentId: { type: string, format: uuid }
+          reason:
+            {
+              type: string,
+              description: '`detached` (on request), `access-revoked` (re-check), or the remote disconnect reason',
+            }
+          message: { type: string, description: Why access was revoked }
+    relayError:
+      payload:
+        type: object
+        properties:
+          attachmentId: { type: [string, 'null'] }
+          clusterId: { type: string }
+          namespace: { type: string }
+          message: { type: string }

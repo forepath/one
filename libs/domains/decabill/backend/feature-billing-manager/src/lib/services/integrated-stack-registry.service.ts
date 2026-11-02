@@ -24,9 +24,21 @@ export interface IntegratedStackModule {
    */
   readonly buildUserData?: (ctx: IntegratedStackProvisionContext) => string;
   /**
+   * Per-provisioning secrets the stack needs in its user-data (e.g. Loadweaver's one-time admin claim token). Called
+   * right before `buildUserData`; the returned entries are merged into the effective config and persisted in the
+   * item's encrypted `configSnapshot` (never part of item responses) so the stack can show them to the customer later.
+   */
+  readonly prepareProvisioningConfig?: () => Record<string, unknown>;
+  /**
    * SSH update command for already-provisioned hosts (image pull / compose recreate).
    */
   readonly buildUpdateCommand?: () => string;
+  /**
+   * The product updates itself (e.g. Loadweaver's own rollout from signed release bundles). The subscription-update
+   * scheduler then never runs a compose image pull for it; `buildUpdateCommand`, if any, must not pull or recreate
+   * the product (Loadweaver only re-pins its console image to the version the cluster installed).
+   */
+  readonly selfUpdating?: boolean;
   /**
    * Additional service-detail tabs when the item's configSnapshot.service matches this key.
    */

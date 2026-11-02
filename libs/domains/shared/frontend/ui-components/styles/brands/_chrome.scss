@@ -28,3 +28,35 @@ $border-radius-lg: 0.4rem;
 
 $list-group-item-padding-y: 0.75rem;
 $list-group-item-padding-x: 1rem;
+
+// On-primary ink (labels, icons, badges and patterns on primary fills). White by default; brands with a light primary
+// (Loadweaver gold) set it to a dark ink in their palette. Emitted as `--fpc-primary-contrast` (`btn-primary`, active
+// tab, landing CTAs).
+$fpc-primary-contrast: #fff !default;
+// Minimum contrast of the on-primary ink on a solid primary *surface* that carries body-size text (active tab).
+$fpc-on-primary-min-contrast: 4.5 !default;
+
+// The primary fill, shifted away from the ink in small steps until the ink reaches `$min` (WCAG AA for body text).
+// Brands whose primary already passes keep it unchanged (Agenstra violet with white, Loadweaver gold with dark ink);
+// Decabill green and ForePath orange get a slightly deeper shade for white labels. Needs Bootstrap's `contrast-ratio()`
+// (`bootstrap/scss/functions`), resolved when the mixin below is included.
+@function fpc-on-primary-fill($fill, $ink, $min: $fpc-on-primary-min-contrast) {
+  $toward: if(luminance($ink) > 0.5, #000, #fff);
+  $step: 0;
+  $out: $fill;
+  @while contrast-ratio($out, $ink) < $min and $step < 50 {
+    $step: $step + 1;
+    $out: mix($toward, $fill, $step * 2%);
+  }
+  @return $out;
+}
+
+// `--fpc-primary-contrast` (on-primary ink), `--fpc-primary-fill` (a primary surface that carries it at >= 4.5 : 1) and
+// `--fpc-primary-fill-tone` (the direction away from the ink: black for white ink, white for dark ink; washes over the
+// fill use it so they only ever raise the label contrast). Included at `:root` by brands/_extras.scss and in the
+// Storybook brand overlays.
+@mixin fpc-brand-on-primary-vars {
+  --fpc-primary-contrast: #{$fpc-primary-contrast};
+  --fpc-primary-fill: #{fpc-on-primary-fill($primary, $fpc-primary-contrast)};
+  --fpc-primary-fill-tone: #{if(luminance($fpc-primary-contrast) > 0.5, #000, #fff)};
+}

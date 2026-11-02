@@ -47,6 +47,32 @@ import { buildIntegrityArtifactsForDirectory, verifyDirectoryAgainstManifest } f
 
 **Pull requests** ([`pull-request-checks.yml`](../../.github/workflows/pull-request-checks.yml)): the same generate + **verify** steps run on **`release/`**; outputs are attached to the **`binary-bundle`** artifact (installers + **`SHA256SUMS`** + **`integrity-manifest.json`**) instead of uploading to R2. If no desktop binaries were built, integrity generation is skipped.
 
+## Signed release manifests
+
+`signing/` adds **signed per-product release manifests** for Agenstra, Decabill, ForePath and Loadweaver. All products' public keys live in one registry, `@forepath/shared/shared/util-release-keys` (`RELEASE_SIGNING_KEYS.<product>`), which Loadweaver's control plane, agent and CLI also compile in to verify release bundles; Loadweaver's key signs both its bundle and its manifest. The generic part (canonical JSON, ECDSA P-256 signatures with key ids, manifest schema, file checks) is the shared library `@forepath/shared/shared/util-release-signing`.
+
+- **`<product>-release-manifest-<version>.json`** canonical JSON: product, version, channel (prereleases = `beta`), source repository + commit, container images by digest (discovered from the `release` tags of the container-image targets under `apps/<product>/`), files by SHA-256 + size (Agenstra: `desktop/…`, `agentctx/…`)
+- **`….json.sig`** `{ "algorithm": "ecdsa-p256-sha256", "keyId", "signature" }` over exactly the manifest bytes
+
+```bash
+npx nx run release-integrity:release-manifest -- create --product decabill --release 3.5.0 --commit <sha> \
+  --images-from-projects [--image name=repo:tag@sha256:…] [--files desktop=release] --out dist/release-manifests [--sign]
+npx nx run release-integrity:release-manifest -- verify --product decabill --manifest <file> [--files <dir>] [--trust-key <pem>]
+```
+
+`--sign` reads the private key from the product's environment variable and refuses keys whose public half is not in the registry. `sign --product <p> --manifest <file>` signs a manifest `create` wrote earlier; the release workflow builds without the key and signs in a separate step that is the only one with it. Operator verification (OpenSSL or this CLI) is described in each product's `security/vulnerability-reporting-and-artifacts.md`.
+
+**CI**: the job _Sign Release Manifest_ in [`release.yml`](../../.github/workflows/release.yml) (one matrix entry per product, after the container images and desktop binaries) builds, signs and attaches the manifest to the GitHub release. Without the product's secret it is skipped with a warning and succeeds; it never gates other release jobs.
+
+### Key setup (done by the key owner, once per product)
+
+Key material is created and held by the product owner; it never goes into the repository, CI logs or chat.
+
+1. `npx nx run release-integrity:generate-release-key -- --product <agenstra|decabill|forepath|loadweaver> --private-key-out <secure path>` — prints the key id and the **public** key; writes the private key only to the given file (0600, never overwritten).
+2. Add the public PEM to `RELEASE_SIGNING_KEYS.<product>` in `libs/domains/shared/shared/util-release-keys/src/lib/release-keys.ts` and merge it.
+3. Store the private PEM as the GitHub Actions secret of the `production` environment: `AGENSTRA_RELEASE_SIGNING_KEY`, `DECABILL_RELEASE_SIGNING_KEY`, `FOREPATH_RELEASE_SIGNING_KEY` or `LOADWEAVER_RELEASE_SIGNING_KEY`. Keep an offline backup, then delete the file.
+4. Rotation: add the new public key, switch the secret, and remove the old public key only once no supported release is signed with it.
+
 ## Note
 
-Checksums detect tampering or corruption; they do not replace OS code signing. See **`SECURITY.md`**.
+Checksums detect tampering or corruption; they do not replace OS code signing. OS signing (Developer ID + notarization, Authenticode, GPG-signed apt / rpm repositories) and the in-app update feeds come from the shared desktop release pipeline, [`tools/desktop-release`](../desktop-release/README.md); the checksums and the signed release manifest (over the files exactly as published, signed rpms and macOS zips included) stay on top. See **`SECURITY.md`**.

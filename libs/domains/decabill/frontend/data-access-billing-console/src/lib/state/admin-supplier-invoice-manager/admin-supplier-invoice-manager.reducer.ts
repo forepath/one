@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 
 import type {
   AdminSupplierInvoiceListItem,
@@ -32,9 +33,6 @@ import {
   loadAdminSupplierInvoiceSummary,
   loadAdminSupplierInvoiceSummaryFailure,
   loadAdminSupplierInvoiceSummarySuccess,
-  loadMoreAdminSupplierInvoiceManager,
-  loadMoreAdminSupplierInvoiceManagerFailure,
-  loadMoreAdminSupplierInvoiceManagerSuccess,
   parseSupplierInvoiceDocument,
   parseSupplierInvoiceDocumentFailure,
   parseSupplierInvoiceDocumentSuccess,
@@ -58,10 +56,10 @@ export interface AdminSupplierInvoiceManagerState {
   parseError: string | null;
   actionLoading: boolean;
   error: string | null;
-  hasMore: boolean;
-  nextOffset: number;
-  appendLoading: boolean;
-  appendError: string | null;
+  /** Replace-page paging: total of the server list, 1-based page and its size. */
+  total: number;
+  page: number;
+  pageSize: number;
   search: string | null;
   status: string | null;
 }
@@ -81,10 +79,9 @@ export const initialAdminSupplierInvoiceManagerState: AdminSupplierInvoiceManage
   parseError: null,
   actionLoading: false,
   error: null,
-  hasMore: false,
-  nextOffset: 0,
-  appendLoading: false,
-  appendError: null,
+  total: 0,
+  page: 1,
+  pageSize: BILLING_LIST_PAGE_SIZE,
   search: null,
   status: null,
 };
@@ -124,49 +121,32 @@ export const adminSupplierInvoiceManagerReducer = createReducer(
     summaryLoading: false,
     summaryError: error,
   })),
-  on(loadAdminSupplierInvoiceManager, (state, { search, status }) => ({
-    ...state,
-    invoices: [],
-    loading: true,
-    error: null,
-    appendError: null,
-    appendLoading: false,
-    hasMore: false,
-    nextOffset: 0,
-    search: search?.trim() ? search.trim() : null,
-    status: status?.trim() ? status.trim() : null,
-  })),
-  on(loadAdminSupplierInvoiceManagerSuccess, (state, { invoices, hasMore, nextOffset }) => ({
+  on(loadAdminSupplierInvoiceManager, (state, { search, status, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.pageSize);
+
+    return {
+      ...state,
+      loading: true,
+      error: null,
+      page: window.page,
+      pageSize: window.pageSize,
+      search: search?.trim() ? search.trim() : null,
+      status: status?.trim() ? status.trim() : null,
+    };
+  }),
+  on(loadAdminSupplierInvoiceManagerSuccess, (state, { invoices, total }) => ({
     ...state,
     invoices,
-    hasMore,
-    nextOffset,
+    total,
     loading: false,
     error: null,
   })),
   on(loadAdminSupplierInvoiceManagerFailure, (state, { error }) => ({
     ...state,
+    invoices: [],
+    total: 0,
     loading: false,
     error,
-    hasMore: false,
-  })),
-  on(loadMoreAdminSupplierInvoiceManager, (state) => ({
-    ...state,
-    appendLoading: true,
-    appendError: null,
-  })),
-  on(loadMoreAdminSupplierInvoiceManagerSuccess, (state, { invoices, hasMore, nextOffset }) => ({
-    ...state,
-    invoices: [...state.invoices, ...invoices],
-    hasMore,
-    nextOffset,
-    appendLoading: false,
-    appendError: null,
-  })),
-  on(loadMoreAdminSupplierInvoiceManagerFailure, (state, { error }) => ({
-    ...state,
-    appendLoading: false,
-    appendError: error,
   })),
   on(parseSupplierInvoiceDocument, (state) => ({
     ...state,

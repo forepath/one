@@ -22,6 +22,7 @@ describe('FileStorageService', () => {
       writeFile: jest.fn().mockResolvedValue(undefined),
       readFile: jest.fn().mockResolvedValue(Buffer.from('bytes')),
       fileExists: jest.fn().mockResolvedValue(true),
+      deleteFile: jest.fn().mockResolvedValue(undefined),
     };
     factory.registerProvider(provider);
     service = new FileStorageService(factory);

@@ -1,0 +1,32 @@
+@use 'sass:meta';
+
+// Encapsulation is off (xterm renders its own DOM), so every rule is scoped under `.fpc-terminal`.
+.fpc-terminal {
+  @include meta.load-css('@xterm/xterm/css/xterm');
+
+  position: relative;
+  display: block;
+  min-height: 8rem;
+  height: 100%;
+  overflow: hidden;
+  padding: 0.5rem;
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-tertiary-bg);
+
+  &.fpc-terminal--hidden {
+    display: none;
+  }
+
+  .fpc-terminal__container {
+    width: 100%;
+    height: 100%;
+  }
+
+  .xterm {
+    height: 100%;
+  }
+
+  .xterm .xterm-viewport {
+    scrollbar-color: var(--bs-border-color) transparent;
+  }
+}

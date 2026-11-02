@@ -15,12 +15,14 @@
           <span class="fw-bold" i18n="@@featureChat-appName">Agenstra</span>
           <fpc-badge variant="info" color="primary" i18n="@@featureChat-studio">Studio</fpc-badge>
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <fpc-button-group size="sm">
+        <!-- Header action tier (shared X-06 slot class): quiet buttons; a toggled panel is pressed / filled (AG-04). -->
+        <div class="fpc-lane-header__actions d-flex align-items-center gap-1">
+          <div class="d-inline-flex align-items-center gap-1" role="group">
             <fpc-button
               size="sm"
               iconOnly
               [variant]="fileTreeVisible() ? 'primary' : 'dark'"
+              [ariaPressed]="fileTreeVisible()"
               (clicked)="onToggleFileTree()"
               [title]="getFileTreeToggleTitle()"
             >
@@ -35,6 +37,7 @@
               size="sm"
               iconOnly
               [variant]="chatVisible() ? 'primary' : 'dark'"
+              [ariaPressed]="chatVisible()"
               (clicked)="onToggleChat()"
               [title]="getChatToggleTitle()"
             >
@@ -49,6 +52,7 @@
               size="sm"
               iconOnly
               [variant]="terminalVisible() ? 'primary' : 'dark'"
+              [ariaPressed]="terminalVisible()"
               (clicked)="onToggleTerminal()"
               [title]="getTerminalToggleTitle()"
             >
@@ -63,14 +67,15 @@
               size="sm"
               iconOnly
               [variant]="gitManagerVisible() ? 'primary' : 'dark'"
+              [ariaPressed]="gitManagerVisible()"
               (clicked)="onToggleGitManager()"
               [title]="getGitManagerToggleTitle()"
             >
               <i class="bi bi-git" aria-hidden="true"></i>
             </fpc-button>
-          </fpc-button-group>
+          </div>
           <fpc-button
-            [variant]="shareFileLinkCopied() ? 'success' : 'primary'"
+            [variant]="shareFileLinkCopied() ? 'success' : 'dark'"
             size="sm"
             iconOnly
             [disabled]="!selectedFilePathForShare()"
@@ -92,9 +97,32 @@
     <!-- Column 1: Workspace list (hidden when a tool window panel is open) -->
     @if (!editorOpen() && !deploymentManagerOpen() && !virtualDesktopOpen() && !isToolWindowRoute()) {
       <div class="section__column d-flex flex-column border-end" [class.active-column]="!(activeClientId$ | async)">
-        <fpc-page-header [title]="workspacesHeaderTitle">
+        <fpc-page-header [title]="workspacesHeaderTitle" />
+        <!-- Workspaces as a rail table (3.38 decision 7); pages fill from the append-style clients store. -->
+        <fpc-data-table
+          class="chat-rail-table flex-grow-1 min-h-0"
+          [ariaLabel]="workspacesHeaderTitle"
+          [columns]="workspaceColumns"
+          [rows]="workspaceRailRows()"
+          [activeRowId]="activeClientIdForRail()"
+          paging="server"
+          [(page)]="workspaceRailPage"
+          [(pageSize)]="workspaceRailPageSize"
+          [hasNext]="workspaceRailHasNext()"
+          persistKey="agenstra-chat-workspaces"
+          [(query)]="searchClientQuery"
+          [searchPlaceholder]="searchWorkspacesPlaceholder"
+          [filtered]="!!searchClientQuery().trim()"
+          [loading]="workspaceRailLoading()"
+          [error]="workspaceRailError()"
+          [rowMenu]="workspaceRowMenu"
+          (rowAction)="onWorkspaceRowAction($event.row, $event.item.id)"
+          (rowActivate)="onWorkspaceRowActivate($event)"
+          emptyIcon="building"
+          data-testid="chat-workspaces-table"
+        >
           <fpc-button
-            fpcPageHeaderActions
+            fpcDataTableToolbar
             variant="primary"
             size="sm"
             iconOnly
@@ -105,191 +133,36 @@
           >
             <i class="bi bi-plus" aria-hidden="true"></i>
           </fpc-button>
-        </fpc-page-header>
-        <form #searchClientForm="ngForm">
-          <fpc-search-field
-            class="border-bottom"
-            name="search"
-            [bordered]="false"
-            [placeholder]="searchWorkspacesPlaceholder"
-            [ariaLabel]="searchWorkspacesPlaceholder"
-            [(value)]="searchClientQuery"
-          />
-        </form>
-        <div #clientsScrollRoot class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-          @if (clientsLoading$ | async) {
-            <div class="d-flex justify-content-center align-items-center p-4">
-              <fpc-spinner
-                variant="primary"
-                i18n-label="@@featureChat-loadingWorkspaces"
-                label="Loading workspaces..."
-              />
-            </div>
-          } @else {
-            @if (clientsError$ | async; as error) {
-              <fpc-alert class="m-3" variant="danger" [message]="error" />
-            }
-            @if (clients$ | async; as clients) {
-              @if (clients.length === 0) {
-                @if (searchClientQuery().trim()) {
-                  <fpc-empty-state
-                    size="sm"
-                    icon="search"
-                    message="No search results"
-                    i18n-message="@@featureChat-noSearchResults"
-                  />
-                } @else {
-                  <fpc-empty-state size="sm" message="No workspaces yet" i18n-message="@@featureChat-noWorkspaces" />
-                }
-              } @else {
-                @let workspaceProgressBars = (workspaceProgressBars$ | async) ?? {};
-                @let workspaceConnectionErrors = (workspaceConnectionErrors$ | async) ?? {};
-                <fpc-list [flush]="true">
-                  @for (client of clients; track client.id) {
-                    <fpc-list-item
-                      [active]="(activeClientId$ | async) === client.id"
-                      [clickable]="true"
-                      (selected)="onClientSelect(client.id)"
-                    >
-                      <div fpcListItemTitle class="d-flex justify-content-start align-items-center">
-                        <strong class="text-truncate me-2">{{ client.name }}</strong>
-                        @if (workspaceConnectionErrors[client.id]; as connectionError) {
-                          <i
-                            class="bi bi-exclamation-triangle-fill text-danger flex-shrink-0 me-2"
-                            [title]="connectionError"
-                            aria-hidden="true"
-                          ></i>
-                          <span class="visually-hidden" i18n="@@featureChat-workspaceUnreachable"
-                            >Workspace cannot be reached</span
-                          >
-                        }
-                        @if (getClientAttentionBadge$(client.id) | async; as attentionBadge) {
-                          <fpc-notification-indicator [kind]="attentionBadge" placement="inline" />
-                          <span class="visually-hidden" i18n="@@featureChat-environmentsAttention"
-                            >Environments need attention</span
-                          >
-                        }
-                      </div>
-                      <div fpcListItemMeta class="small">
-                        @if (client.description) {
-                          <div class="text-truncate mb-1">{{ client.description }}</div>
-                        }
-                        <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                          <span class="me-2">
-                            <i class="bi bi-globe me-1" aria-hidden="true"></i>{{ getHostname(client.endpoint) }}
-                          </span>
-                          @if (getClientGitRepositoryLabel(client); as repo) {
-                            <span class="me-2"> <i class="bi bi-git me-1" aria-hidden="true"></i>{{ repo }} </span>
-                          }
-                          @if (getClientProviderDisplayName$(client.id) | async; as providerName) {
-                            @if (providerName) {
-                              <span class="me-2">
-                                <i class="bi bi-cloud-fill me-1" aria-hidden="true"></i>{{ providerName }}
-                              </span>
-                            }
-                          }
-                          @if (workspaceIsolationIndicatorLabel(client); as isolationIndicator) {
-                            <span class="me-2">
-                              <i class="bi bi-shield-lock me-1" aria-hidden="true"></i>{{ isolationIndicator }}
-                            </span>
-                          }
-                        </div>
-                      </div>
-                      @if (workspaceProgressBars[client.id]; as progressBar) {
-                        <div class="small text-body-secondary">
-                          <div class="d-flex justify-content-between gap-2 mb-1">
-                            <span class="text-truncate">{{ progressBar.label }}</span>
-                            <span class="flex-shrink-0">{{ progressBar.average }}%</span>
-                          </div>
-                          <fpc-progress
-                            height="0.375rem"
-                            [segments]="progressBar.segments"
-                            [striped]="true"
-                            [animated]="true"
-                            [ariaLabel]="progressBar.label"
-                          />
-                        </div>
-                      }
-                      <fpc-button-group fpcListItemActions size="sm">
-                        <fpc-button
-                          variant="dark"
-                          size="sm"
-                          iconOnly
-                          (clicked)="onManageClientUsersClick(client); $event.stopPropagation()"
-                          i18n-title="@@featureChat-manageClientUsersTitle"
-                          title="Manage workspace users"
-                        >
-                          <i class="bi bi-people"></i>
-                        </fpc-button>
-                        @if (client.canManageWorkspaceConfiguration) {
-                          <fpc-button
-                            variant="dark"
-                            size="sm"
-                            iconOnly
-                            (clicked)="onManageWorkspaceConfigurationClick(client); $event.stopPropagation()"
-                            i18n-title="@@featureChat-manageWorkspaceConfigurationTitle"
-                            title="Manage workspace configuration"
-                          >
-                            <i class="bi bi-sliders"></i>
-                          </fpc-button>
-                          <fpc-button
-                            variant="dark"
-                            size="sm"
-                            iconOnly
-                            (clicked)="onManageOpencodeConfigClick(client); $event.stopPropagation()"
-                            i18n-title="@@featureChat-manageOpencodeConfigTitle"
-                            title="Manage agent configuration"
-                          >
-                            <i class="bi bi-cpu"></i>
-                          </fpc-button>
-                          <fpc-button
-                            variant="warning"
-                            size="sm"
-                            iconOnly
-                            (clicked)="onEditClientClick(client); $event.stopPropagation()"
-                            [disabled]="(clientsUpdating$ | async) === true"
-                            i18n-title="@@featureChat-editWorkspaceTitle"
-                            title="Edit workspace"
-                          >
-                            <i class="bi bi-pencil"></i>
-                          </fpc-button>
-                          <fpc-button
-                            variant="danger"
-                            size="sm"
-                            iconOnly
-                            (clicked)="onDeleteClientClick(client.id, client.name); $event.stopPropagation()"
-                            [disabled]="(clientsDeleting$ | async) === true"
-                            i18n-title="@@featureChat-deleteWorkspaceTitle"
-                            title="Delete Workspace"
-                          >
-                            <i class="bi bi-trash"></i>
-                          </fpc-button>
-                        }
-                      </fpc-button-group>
-                    </fpc-list-item>
-                  }
-                </fpc-list>
-                @if ((clientsAppendLoading$ | async) || (clientsAppendError$ | async)) {
-                  <fpc-list-append-footer
-                    [loading]="!!(clientsAppendLoading$ | async)"
-                    [error]="!!(clientsAppendError$ | async)"
-                    (retry)="onLoadMoreClients()"
-                  />
-                }
-                <div
-                  fpcInfiniteScroll
-                  [root]="clientsScrollRoot"
-                  [paused]="!!(clientsAppendError$ | async)"
-                  [disabled]="
-                    !(clientsHasMore$ | async) || !!(clientsAppendLoading$ | async) || !!(clientsLoading$ | async)
-                  "
-                  (reachedEnd)="onLoadMoreClients()"
-                  aria-hidden="true"
-                ></div>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state size="sm" message="No workspaces yet" i18n-message="@@featureChat-noWorkspaces" />
+          </span>
+
+          <ng-template fpcTableCell="name" let-row>
+            <span class="d-inline-flex align-items-center gap-2 min-w-0 mw-100">
+              <span class="text-truncate">{{ row.name }}</span>
+              @if (getClientAttentionBadge$(row.id) | async; as attentionBadge) {
+                <fpc-notification-indicator [kind]="attentionBadge" placement="inline" />
+                <span class="visually-hidden" i18n="@@featureChat-environmentsAttention"
+                  >Environments need attention</span
+                >
               }
+            </span>
+            @if (workspaceProgressFor(row.id); as progressBar) {
+              <span class="d-block small text-body-secondary mt-1">
+                <fpc-progress
+                  height="0.375rem"
+                  [segments]="progressBar.segments"
+                  [striped]="true"
+                  [animated]="true"
+                  [ariaLabel]="progressBar.label"
+                />
+              </span>
             }
-          }
-        </div>
+          </ng-template>
+          <ng-template fpcTableCell="provider" let-row>{{
+            (getClientProviderDisplayName$(row.id) | async) ?? ''
+          }}</ng-template>
+        </fpc-data-table>
       </div>
     }
 
@@ -322,267 +195,98 @@
             </fpc-button>
             <h5 class="mb-0 fw-semibold text-truncate">{{ environmentsHeaderTitle }}</h5>
           </div>
-          @if ((activeClient$ | async)?.canManageWorkspaceConfiguration) {
-            <fpc-button
-              fpcPageHeaderActions
-              variant="primary"
-              size="sm"
-              iconOnly
-              [disabled]="
-                !(activeClientId$ | async) || !!workspaceConnectionError || (agentsCreating$ | async) === true
-              "
-              [title]="addEnvironmentTitle"
-              [ariaLabel]="addEnvironmentTitle"
-              (clicked)="onAddAgentClick()"
-            >
-              <i class="bi bi-plus" aria-hidden="true"></i>
-            </fpc-button>
-          }
         </fpc-page-header>
-        <form #searchAgentForm="ngForm" [class.opacity-50]="!!workspaceConnectionError">
-          <fpc-search-field
-            class="border-bottom"
-            name="search"
-            [bordered]="false"
-            [disabled]="!!workspaceConnectionError"
-            [clearable]="!workspaceConnectionError"
-            [placeholder]="searchEnvironmentsPlaceholder"
-            [ariaLabel]="searchEnvironmentsPlaceholder"
-            [(value)]="searchAgentQuery"
+        @if (workspaceConnectionError) {
+          <fpc-empty-state
+            size="sm"
+            icon="exclamation-triangle"
+            title="Workspace cannot be reached"
+            i18n-title="@@featureChat-workspaceUnreachableTitle"
+            [message]="workspaceConnectionError"
+            role="alert"
           />
-        </form>
-        <div #agentsScrollRoot class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-          @if (workspaceConnectionError) {
-            <fpc-empty-state
-              size="sm"
-              icon="exclamation-triangle"
-              title="Workspace cannot be reached"
-              i18n-title="@@featureChat-workspaceUnreachableTitle"
-              [message]="workspaceConnectionError"
-              role="alert"
-            />
-          } @else if (agentsLoading$ | async) {
-            <div class="d-flex justify-content-center align-items-center p-4">
-              <fpc-spinner
+        } @else {
+          <!-- Environments as a rail table (3.38 decision 7); running creates show as rows on the first page. -->
+          <fpc-data-table
+            class="chat-rail-table flex-grow-1 min-h-0"
+            [ariaLabel]="environmentsHeaderTitle"
+            [columns]="environmentColumns"
+            [rows]="environmentRailRows()"
+            [activeRowId]="selectedAgentId()"
+            paging="server"
+            [(page)]="environmentRailPage"
+            [(pageSize)]="environmentRailPageSize"
+            [hasNext]="environmentRailHasNext()"
+            persistKey="agenstra-chat-environments"
+            [(query)]="searchAgentQuery"
+            [searchPlaceholder]="searchEnvironmentsPlaceholder"
+            [filtered]="!!searchAgentQuery().trim()"
+            [loading]="environmentRailLoading()"
+            [error]="environmentRailError()"
+            [rowMenu]="environmentRowMenu"
+            (rowAction)="onEnvironmentRowAction($event.row, $event.item.id)"
+            (rowActivate)="onEnvironmentRowActivate($event)"
+            emptyIcon="box"
+            data-testid="chat-environments-table"
+          >
+            @if ((activeClient$ | async)?.canManageWorkspaceConfiguration) {
+              <fpc-button
+                fpcDataTableToolbar
                 variant="primary"
-                i18n-label="@@featureChat-loadingEnvironments"
-                label="Loading environments..."
-              />
-            </div>
-          } @else {
-            @let pendingEnvironmentProgress = (pendingEnvironmentProgress$ | async) ?? [];
-            @let environmentProgressByAgentId = (environmentProgressByAgentId$ | async) ?? {};
-            @if (pendingEnvironmentProgress.length) {
-              <fpc-list [flush]="true">
-                @for (pending of pendingEnvironmentProgress; track pending.operationId) {
-                  <fpc-list-item>
-                    <div fpcListItemTitle class="d-flex align-items-center">
-                      <strong class="text-truncate">{{ pending.agentName }}</strong>
-                    </div>
-                    <div class="small text-body-secondary">
-                      <div class="d-flex justify-content-between gap-2 mb-1">
-                        <span class="text-truncate"
-                          >{{ environmentProgressOperationLabel(pending) }}:
-                          {{ environmentProgressStepLabel(pending.step) }}</span
-                        >
-                        <span class="flex-shrink-0">{{ pending.progress }}%</span>
-                      </div>
-                      <fpc-progress
-                        height="0.375rem"
-                        [value]="pending.progress"
-                        [striped]="true"
-                        [animated]="true"
-                        [ariaLabel]="environmentProgressStepLabel(pending.step)"
-                      />
-                    </div>
-                  </fpc-list-item>
-                }
-              </fpc-list>
+                size="sm"
+                iconOnly
+                [disabled]="
+                  !(activeClientId$ | async) || !!workspaceConnectionError || (agentsCreating$ | async) === true
+                "
+                [title]="addEnvironmentTitle"
+                [ariaLabel]="addEnvironmentTitle"
+                (clicked)="onAddAgentClick()"
+              >
+                <i class="bi bi-plus" aria-hidden="true"></i>
+              </fpc-button>
             }
-            @if (agents$ | async; as agents) {
-              @if (agents.length === 0 && pendingEnvironmentProgress.length === 0) {
-                @if (searchAgentQuery().trim()) {
-                  <fpc-empty-state
-                    size="sm"
-                    icon="search"
-                    message="No search results"
-                    i18n-message="@@featureChat-noSearchResults"
-                  />
-                } @else {
-                  <fpc-empty-state
-                    size="sm"
-                    message="No environments yet"
-                    i18n-message="@@featureChat-noEnvironments"
-                  />
-                }
-              } @else if (agents.length > 0) {
-                <fpc-list [flush]="true">
-                  @for (agent of agents; track agent.id) {
-                    <fpc-list-item
-                      [active]="(selectedAgent$ | async)?.id === agent.id"
-                      [clickable]="true"
-                      (selected)="onAgentSelect(agent.id)"
+            <span fpcDataTableEmpty>
+              <fpc-empty-state size="sm" message="No environments yet" i18n-message="@@featureChat-noEnvironments" />
+            </span>
+
+            <ng-template fpcTableCell="name" let-row>
+              <span class="d-inline-flex align-items-center gap-2 min-w-0 mw-100">
+                <span class="text-truncate">{{ row.name }}</span>
+                @if (row.agent && (activeClientId$ | async); as railClientId) {
+                  @if (getEnvironmentAttentionBadge$(railClientId, row.id) | async; as attentionBadge) {
+                    <fpc-notification-indicator [kind]="attentionBadge" placement="inline" />
+                    <span class="visually-hidden" i18n="@@featureChat-environmentsAttention"
+                      >Environment needs attention</span
                     >
-                      <div fpcListItemTitle class="d-flex align-items-center">
-                        <strong class="text-truncate me-2">{{ agent.name }}</strong>
-                        @if (activeClient$ | async; as activeClient) {
-                          @if (getEnvironmentAttentionBadge$(activeClient.id, agent.id) | async; as attentionBadge) {
-                            <fpc-notification-indicator [kind]="attentionBadge" placement="inline" />
-                            <span class="visually-hidden" i18n="@@featureChat-environmentsAttention"
-                              >Environment needs attention</span
-                            >
-                          }
-                          @if (getAgentDeploymentStatus$(activeClient.id, agent.id) | async; as deploymentStatus) {
-                            @if (deploymentStatus) {
-                              <small class="flex-shrink-0">
-                                <i
-                                  [class]="[
-                                    'bi',
-                                    'd-flex',
-                                    'align-items-center',
-                                    'justify-content-center',
-                                    deploymentStatus.icon,
-                                    deploymentStatus.color,
-                                    'status-badge',
-                                  ]"
-                                ></i>
-                              </small>
-                            }
-                          }
-                        }
-                      </div>
-                      <div fpcListItemMeta class="small">
-                        @if (agent.description) {
-                          <div class="text-truncate mb-1">{{ agent.description }}</div>
-                        }
-                        @if (agent.git?.repositoryUrl || agent.containerType) {
-                          <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                            <span class="me-2">
-                              <i class="bi bi-box me-1" aria-hidden="true"></i
-                              >{{ getContainerTypeDisplayName(agent.containerType) }}
-                            </span>
-                            @let agentIsolationLevel = environmentIsolationLevel(agent);
-                            <span class="me-2">
-                              <i
-                                class="bi me-1"
-                                [class.bi-cpu]="agentIsolationLevel === 'microvm'"
-                                [class.bi-shield-fill-check]="agentIsolationLevel === 'sandboxed-kvm'"
-                                [class.bi-shield-lock]="agentIsolationLevel === 'sandboxed'"
-                                [class.bi-shield]="agentIsolationLevel === 'standard'"
-                                aria-hidden="true"
-                              ></i
-                              >{{ isolationLevelLabel(agentIsolationLevel) }}
-                            </span>
-                            @if (activeClient$ | async; as activeClient) {
-                              @if (getAgentGitRepositoryLabel(agent, activeClient); as repo) {
-                                <span class="me-2"> <i class="bi bi-git me-1" aria-hidden="true"></i>{{ repo }} </span>
-                              }
-                            }
-                          </div>
-                        }
-                      </div>
-                      @if (environmentProgressByAgentId[agent.id]; as progress) {
-                        <div class="small text-body-secondary">
-                          <div class="d-flex justify-content-between gap-2 mb-1">
-                            <span class="text-truncate"
-                              >{{ environmentProgressOperationLabel(progress) }}:
-                              {{ environmentProgressStepLabel(progress.step) }}</span
-                            >
-                            <span class="flex-shrink-0">{{ progress.progress }}%</span>
-                          </div>
-                          <fpc-progress
-                            height="0.375rem"
-                            [value]="progress.progress"
-                            [striped]="true"
-                            [animated]="true"
-                            [ariaLabel]="environmentProgressStepLabel(progress.step)"
-                          />
-                        </div>
-                      }
-                      <fpc-button-group fpcListItemActions size="sm">
-                        @if (activeClient$ | async; as opencodeClient) {
-                          @if (opencodeClient.canManageWorkspaceConfiguration) {
-                            <fpc-button
-                              size="sm"
-                              iconOnly
-                              variant="dark"
-                              (clicked)="onManageTicketAutonomyClick(agent); $event.stopPropagation()"
-                              i18n-title="@@featureChat-ticketAutonomyButtonTitle"
-                              title="Prototype autonomy"
-                            >
-                              <i class="bi bi-lightning-charge" aria-hidden="true"></i>
-                            </fpc-button>
-                            <fpc-button
-                              variant="dark"
-                              size="sm"
-                              iconOnly
-                              (clicked)="onManageEnvironmentVariablesClick(agent); $event.stopPropagation()"
-                              i18n-title="@@featureChat-manageEnvVarsTitle"
-                              title="Manage Environment Variables"
-                            >
-                              <i class="bi bi-sliders"></i>
-                            </fpc-button>
-                            <fpc-button
-                              variant="dark"
-                              size="sm"
-                              iconOnly
-                              (clicked)="
-                                onManageOpencodeConfigClick(opencodeClient, agent.id); $event.stopPropagation()
-                              "
-                              i18n-title="@@featureChat-manageOpencodeConfigEnvironmentTitle"
-                              title="Manage agent configuration"
-                            >
-                              <i class="bi bi-cpu"></i>
-                            </fpc-button>
-                            <fpc-button
-                              variant="warning"
-                              size="sm"
-                              iconOnly
-                              (clicked)="onEditAgentClick(agent); $event.stopPropagation()"
-                              [disabled]="(agentsUpdating$ | async) === true"
-                              i18n-title="@@featureChat-editEnvironmentTitle"
-                              title="Edit environment"
-                            >
-                              <i class="bi bi-pencil"></i>
-                            </fpc-button>
-                            <fpc-button
-                              variant="danger"
-                              size="sm"
-                              iconOnly
-                              (clicked)="onDeleteAgentClick(agent.id, agent.name); $event.stopPropagation()"
-                              [disabled]="(agentsDeleting$ | async) === true"
-                              i18n-title="@@featureChat-deleteEnvironmentTitle"
-                              title="Delete Environment"
-                            >
-                              <i class="bi bi-trash"></i>
-                            </fpc-button>
-                          }
-                        }
-                      </fpc-button-group>
-                    </fpc-list-item>
                   }
-                </fpc-list>
-                @if ((agentsAppendLoading$ | async) || (agentsAppendError$ | async)) {
-                  <fpc-list-append-footer
-                    [loading]="!!(agentsAppendLoading$ | async)"
-                    [error]="!!(agentsAppendError$ | async)"
-                    (retry)="onLoadMoreAgents()"
+                }
+              </span>
+              @if (environmentRowProgress(row); as progress) {
+                <span class="d-block small text-body-secondary mt-1">
+                  <fpc-progress
+                    height="0.375rem"
+                    [value]="progress.progress"
+                    [striped]="true"
+                    [animated]="true"
+                    [ariaLabel]="environmentProgressStepLabel(progress.step)"
+                  />
+                </span>
+              }
+            </ng-template>
+            <ng-template fpcTableCell="deployment" let-row>
+              @if (row.agent && (activeClientId$ | async); as railClientId) {
+                @if (getAgentDeploymentStatus$(railClientId, row.id) | async; as deploymentStatus) {
+                  <fpc-badge
+                    iconOnly
+                    [tone]="deploymentStatus.tone"
+                    [icon]="deploymentStatus.badgeIcon"
+                    [label]="deploymentStatus.status"
                   />
                 }
-                <div
-                  fpcInfiniteScroll
-                  [root]="agentsScrollRoot"
-                  [paused]="!!(agentsAppendError$ | async)"
-                  [disabled]="
-                    !(agentsHasMore$ | async) || !!(agentsAppendLoading$ | async) || !!(agentsLoading$ | async)
-                  "
-                  (reachedEnd)="onLoadMoreAgents()"
-                  aria-hidden="true"
-                ></div>
               }
-            }
-          }
-        </div>
+            </ng-template>
+          </fpc-data-table>
+        }
       </div>
     }
 
@@ -741,7 +445,7 @@
                         <span
                           class="text-body-secondary small d-inline-flex align-items-center gap-1"
                           i18n-title="@@featureChat-chatSessionHandoffBadgeTitle"
-                          title="Task handed over by another agent"
+                          title="Task handed over by another environment"
                         >
                           <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
                           <span i18n="@@featureChat-chatSessionHandoffBadge">(handoff)</span>
@@ -797,14 +501,15 @@
               </h5>
             }
           </div>
-          <div fpcPageHeaderActions class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+          <!-- One quiet icon-button tier (AG-04, X-06); only Stop keeps the danger fill. -->
+          <div fpcPageHeaderActions class="d-flex align-items-center gap-1 flex-wrap justify-content-end">
             @if (activeClient$ | async; as activeClient) {
               @if (selectedAgent$ | async; as selectedAgent) {
                 @if ({ running: getAgentContainerRunning$(activeClient.id, selectedAgent.id) | async }; as status) {
-                  <fpc-button-group size="sm">
+                  <div class="d-inline-flex align-items-center gap-1" role="group">
                     @if (status.running !== true) {
                       <fpc-button
-                        variant="success"
+                        variant="dark"
                         size="sm"
                         iconOnly
                         (clicked)="onStartAgent(activeClient.id, selectedAgent.id)"
@@ -834,7 +539,7 @@
                     }
                     @if (status.running !== null && status.running !== undefined) {
                       <fpc-button
-                        variant="warning"
+                        variant="dark"
                         size="sm"
                         iconOnly
                         (clicked)="onRestartAgent(activeClient.id, selectedAgent.id)"
@@ -847,14 +552,14 @@
                         <span class="visually-hidden" i18n="@@featureChat-restartEnvironment">Restart environment</span>
                       </fpc-button>
                     }
-                  </fpc-button-group>
+                  </div>
                 }
               }
             }
-            <fpc-button-group size="sm">
+            <div class="d-inline-flex align-items-center gap-1" role="group">
               @if (socketConnected$ | async) {
                 <fpc-button
-                  variant="success"
+                  variant="dark"
                   size="sm"
                   iconOnly
                   [disabled]="socketDisconnecting$ | async"
@@ -868,7 +573,7 @@
               } @else {
                 @if (socketReconnecting$ | async; as isReconnecting) {
                   <fpc-button
-                    variant="warning"
+                    variant="dark"
                     size="sm"
                     [disabled]="true"
                     [loading]="true"
@@ -896,10 +601,10 @@
                   </fpc-button>
                 }
               }
-            </fpc-button-group>
+            </div>
             @if (!editorOpen()) {
               <fpc-button
-                variant="primary"
+                variant="dark"
                 size="sm"
                 iconOnly
                 [class.open-editor-btn--git-dirty]="selectedEnvironmentGitDirty$ | async"
@@ -915,6 +620,7 @@
                   size="sm"
                   iconOnly
                   [variant]="deploymentManagerOpen() ? 'primary' : 'dark'"
+                  [ariaPressed]="deploymentManagerOpen()"
                   (clicked)="onOpenDeploymentManager()"
                   [title]="getOpenDeploymentManagerTitle()"
                 >
@@ -924,6 +630,7 @@
                   size="sm"
                   iconOnly
                   [variant]="virtualDesktopOpen() ? 'primary' : 'dark'"
+                  [ariaPressed]="virtualDesktopOpen()"
                   (clicked)="onOpenVirtualDesktop()"
                   [title]="getOpenVirtualDesktopTitle()"
                 >
@@ -1200,9 +907,11 @@
                               <fpc-badge color="light" class="border">{{
                                 agentTaskRunTriggerLabel(item.payload.run.trigger)
                               }}</fpc-badge>
-                              <fpc-badge color="light" class="border">{{
-                                describeAgentTaskSchedule(item.payload.task.cronExpression, item.payload.task.timezone)
-                              }}</fpc-badge>
+                              @let taskSchedule =
+                                describeAgentTaskSchedule(item.payload.task.cronExpression, item.payload.task.timezone);
+                              <fpc-badge color="light" class="border chat-card-chip" [label]="taskSchedule"
+                                ><span class="chat-card-chip__text">{{ taskSchedule }}</span></fpc-badge
+                              >
                             </div>
                             @if (item.payload.run.status === 'failed' && item.payload.run.failureMessage) {
                               <div class="small text-danger mt-2 text-break">{{ item.payload.run.failureMessage }}</div>
@@ -1364,7 +1073,7 @@
 
         <!-- Socket reconnection status (main socket) -->
         @if (socketReconnecting$ | async) {
-          <fpc-alert class="m-3" variant="warning" [showIcon]="false">
+          <fpc-alert flush variant="warning" [showIcon]="false">
             <div class="d-flex align-items-center">
               <fpc-spinner class="me-2" size="sm" />
               <span>
@@ -1380,7 +1089,7 @@
         <!-- Remote connection reconnection status (per clientId) -->
         @if (remoteReconnecting$ | async) {
           @if (activeClientId$ | async) {
-            <fpc-alert class="m-3" variant="warning" [showIcon]="false">
+            <fpc-alert flush variant="warning" [showIcon]="false">
               <div class="d-flex align-items-center">
                 <fpc-spinner class="me-2" size="sm" />
                 <span i18n="@@featureChat-reconnectingToWorkspace">Reconnecting to workspace...</span>
@@ -1392,7 +1101,7 @@
         <!-- Remote connection error (only shown when not reconnecting) -->
         @if (remoteConnectionError$ | async; as remoteError) {
           @if (remoteError && !(remoteReconnecting$ | async)) {
-            <fpc-alert class="m-3" variant="danger">
+            <fpc-alert flush variant="danger">
               <ng-container i18n="@@featureChat-workspaceConnectionFailed"
                 >Workspace connection failed: {{ remoteError }}</ng-container
               >
@@ -1403,7 +1112,7 @@
         <!-- Socket error (only shown when not reconnecting) -->
         @if (socketError$ | async; as socketError) {
           @if (!(socketReconnecting$ | async)) {
-            <fpc-alert class="m-3" variant="danger" [message]="socketError" />
+            <fpc-alert flush variant="danger" [message]="socketError" />
           }
         }
 
@@ -1480,102 +1189,106 @@
                   !(selectedAgent$ | async)
                 "
               ></textarea>
+              <div class="chat-send-button-container">
+                @if (contextSelectionToolbarChips().length > 0) {
+                  <span
+                    class="context-toolbar-chips me-auto d-inline-flex align-items-center gap-1 justify-content-end"
+                  >
+                    @for (chip of contextSelectionToolbarChips(); track chip.trackKey) {
+                      <fpc-badge
+                        color="secondary"
+                        class="border context-toolbar-chip text-truncate"
+                        [attr.title]="chip.title"
+                        ><span class="context-toolbar-chip-label text-truncate">{{ chip.label }}</span></fpc-badge
+                      >
+                    }
+                  </span>
+                }
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  iconOnly
+                  class="context-button"
+                  i18n-title="@@featureChat-selectContextTitle"
+                  title="Select context"
+                  i18n-aria-label="@@featureChat-selectContextAria"
+                  ariaLabel="Select context"
+                  [disabled]="!(selectedAgent$ | async)"
+                  (clicked)="onOpenContextSelectionModal()"
+                >
+                  <i class="bi bi-plus"></i>
+                </fpc-button>
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  iconOnly
+                  i18n-title="@@featureChat-planPromptTitle"
+                  title="Create plan with AI"
+                  i18n-aria-label="@@featureChat-planPromptAria"
+                  ariaLabel="Create plan with AI"
+                  [disabled]="
+                    !(socketConnected$ | async) ||
+                    (socketReconnecting$ | async) ||
+                    (remoteReconnecting$ | async) ||
+                    (forwarding$ | async) ||
+                    (chatEnhancementPending$ | async) ||
+                    (chatPlanBusy$ | async) ||
+                    !(selectedAgent$ | async) ||
+                    !chatMessage().trim()
+                  "
+                  [loading]="(chatPlanBusy$ | async) === true"
+                  (clicked)="onPlanMessage()"
+                >
+                  <i class="bi bi-list-check" aria-hidden="true"></i>
+                </fpc-button>
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  iconOnly
+                  i18n-title="@@featureChat-enhancePromptTitle"
+                  title="Enhance prompt with AI"
+                  i18n-aria-label="@@featureChat-enhancePromptAria"
+                  ariaLabel="Enhance prompt with AI"
+                  [disabled]="
+                    !(socketConnected$ | async) ||
+                    (socketReconnecting$ | async) ||
+                    (remoteReconnecting$ | async) ||
+                    (forwarding$ | async) ||
+                    (chatEnhancementPending$ | async) ||
+                    !(selectedAgent$ | async) ||
+                    !chatMessage().trim()
+                  "
+                  [loading]="(chatEnhancementPending$ | async) === true"
+                  (clicked)="onEnhanceMessage()"
+                >
+                  <i class="bi bi-magic" aria-hidden="true"></i>
+                </fpc-button>
+                <fpc-button
+                  variant="primary"
+                  size="sm"
+                  iconOnly
+                  class="chat-send-button"
+                  [disabled]="
+                    !(socketConnected$ | async) ||
+                    (socketReconnecting$ | async) ||
+                    (remoteReconnecting$ | async) ||
+                    (forwarding$ | async) ||
+                    (chatEnhancementPending$ | async) ||
+                    !(selectedAgent$ | async) ||
+                    !chatMessage().trim()
+                  "
+                  [loading]="(forwarding$ | async) === true"
+                  (clicked)="onSendMessage()"
+                >
+                  <i class="bi bi-send"></i>
+                </fpc-button>
+              </div>
             </div>
           </div>
-          <div class="chat-send-button-container d-flex gap-1 align-items-end justify-content-end overflow-hidden">
-            @if (contextSelectionToolbarChips().length > 0) {
-              <span class="context-toolbar-chips me-auto d-inline-flex align-items-center gap-1 justify-content-end">
-                @for (chip of contextSelectionToolbarChips(); track chip.trackKey) {
-                  <fpc-badge
-                    color="secondary"
-                    class="border context-toolbar-chip text-truncate"
-                    [attr.title]="chip.title"
-                    ><span class="context-toolbar-chip-label text-truncate">{{ chip.label }}</span></fpc-badge
-                  >
-                }
-              </span>
-            }
-            <fpc-button
-              variant="dark"
-              size="sm"
-              iconOnly
-              class="context-button"
-              i18n-title="@@featureChat-selectContextTitle"
-              title="Select context"
-              i18n-aria-label="@@featureChat-selectContextAria"
-              ariaLabel="Select context"
-              [disabled]="!(selectedAgent$ | async)"
-              (clicked)="onOpenContextSelectionModal()"
-            >
-              <i class="bi bi-plus"></i>
-            </fpc-button>
-            <fpc-button
-              variant="dark"
-              size="sm"
-              iconOnly
-              i18n-title="@@featureChat-planPromptTitle"
-              title="Create plan with AI"
-              i18n-aria-label="@@featureChat-planPromptAria"
-              ariaLabel="Create plan with AI"
-              [disabled]="
-                !(socketConnected$ | async) ||
-                (socketReconnecting$ | async) ||
-                (remoteReconnecting$ | async) ||
-                (forwarding$ | async) ||
-                (chatEnhancementPending$ | async) ||
-                (chatPlanBusy$ | async) ||
-                !(selectedAgent$ | async) ||
-                !chatMessage().trim()
-              "
-              [loading]="(chatPlanBusy$ | async) === true"
-              (clicked)="onPlanMessage()"
-            >
-              <i class="bi bi-list-check" aria-hidden="true"></i>
-            </fpc-button>
-            <fpc-button
-              variant="dark"
-              size="sm"
-              iconOnly
-              i18n-title="@@featureChat-enhancePromptTitle"
-              title="Enhance prompt with AI"
-              i18n-aria-label="@@featureChat-enhancePromptAria"
-              ariaLabel="Enhance prompt with AI"
-              [disabled]="
-                !(socketConnected$ | async) ||
-                (socketReconnecting$ | async) ||
-                (remoteReconnecting$ | async) ||
-                (forwarding$ | async) ||
-                (chatEnhancementPending$ | async) ||
-                !(selectedAgent$ | async) ||
-                !chatMessage().trim()
-              "
-              [loading]="(chatEnhancementPending$ | async) === true"
-              (clicked)="onEnhanceMessage()"
-            >
-              <i class="bi bi-magic" aria-hidden="true"></i>
-            </fpc-button>
-            <fpc-button
-              variant="primary"
-              size="sm"
-              iconOnly
-              class="chat-send-button"
-              [disabled]="
-                !(socketConnected$ | async) ||
-                (socketReconnecting$ | async) ||
-                (remoteReconnecting$ | async) ||
-                (forwarding$ | async) ||
-                (chatEnhancementPending$ | async) ||
-                !(selectedAgent$ | async) ||
-                !chatMessage().trim()
-              "
-              [loading]="(forwarding$ | async) === true"
-              (clicked)="onSendMessage()"
-            >
-              <i class="bi bi-send"></i>
-            </fpc-button>
-          </div>
-          <div class="row row-gap-2">
-            <div class="col-md-6">
+          <!-- Wraps on the pane width (not the viewport): in the editor's narrow chat pane the selects stack instead of
+               truncating "GPT-5.5" / "Streaming" (AG-04). -->
+          <div class="chat-composer-selects">
+            <div>
               <fpc-input-group size="sm" class="mt-2">
                 <span fpcInputGroupPrefix class="input-group-text small text-body-secondary" i18n="@@featureChat-model"
                   >Model</span
@@ -1603,7 +1316,7 @@
                 </fpc-form-control>
               </fpc-input-group>
             </div>
-            <div class="col-md-6">
+            <div>
               <fpc-input-group size="sm" class="mt-2">
                 <span
                   fpcInputGroupPrefix
@@ -2101,7 +1814,7 @@
 <fpc-confirm-dialog
   [(open)]="deleteClientModalOpen"
   i18n-title="@@featureChat-deleteWorkspaceModalTitle"
-  title="Delete Workspace"
+  title="Delete workspace"
   i18n-confirmLabel="@@featureChat-delete"
   confirmLabel="Delete"
   [danger]="true"
@@ -2131,7 +1844,7 @@
 <fpc-confirm-dialog
   [(open)]="deleteAgentModalOpen"
   i18n-title="@@featureChat-deleteEnvironmentModalTitle"
-  title="Delete Environment"
+  title="Delete environment"
   i18n-confirmLabel="@@featureChat-delete"
   confirmLabel="Delete"
   [danger]="true"
@@ -2163,7 +1876,7 @@
 <fpc-confirm-dialog
   [(open)]="deleteChatSessionModalOpen"
   i18n-title="@@featureChat-deleteChatSessionModalTitle"
-  title="Delete Chat Session"
+  title="Delete chat session"
   i18n-confirmLabel="@@featureChat-delete"
   confirmLabel="Delete"
   [danger]="true"
@@ -2182,9 +1895,11 @@
 </fpc-confirm-dialog>
 <!-- Rename Chat Session Modal -->
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="renameChatSessionModalOpen"
   i18n-title="@@featureChat-renameChatSessionModalTitle"
-  title="Rename Chat Session"
+  title="Rename chat session"
   (closed)="cancelRenameChatSession()"
 >
   <form #renameChatSessionForm="ngForm" (ngSubmit)="onSubmitRenameChatSession()">
@@ -2205,16 +1920,18 @@
         [loading]="(chatSessionUpdating$ | async) === true"
         [disabled]="!renameChatSessionForm.valid || (chatSessionUpdating$ | async) === true"
       >
-        <span i18n="@@featureChat-renameChatSessionSave">Save</span>
+        <span i18n="@@featureChat-renameChatSessionSave">Rename</span>
       </fpc-button>
     </div>
   </form>
 </fpc-modal>
 <!-- Add Workspace Modal -->
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="addClientModalOpen"
   i18n-title="@@featureChat-addWorkspaceTitle"
-  title="Add Workspace"
+  title="Create workspace"
   size="lg"
   (closed)="cancelAddClient()"
 >
@@ -2244,7 +1961,7 @@
           (valueSelect)="onProvisioningToggle(true)"
           [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
           i18n-label="@@featureChat-provisionServer"
-          label="Provision Server"
+          label="Provision server"
         />
       </fpc-form-check-group>
     </div>
@@ -2551,7 +2268,7 @@
               [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
             />
             <small fpcFormFieldHint i18n="@@featureChat-workspaceGitRepoUrlHint"
-              >Git repository URL for agent workspace</small
+              >Git repository URL for the environment's workspace</small
             >
           </fpc-form-field>
 
@@ -2630,9 +2347,9 @@
         [disabled]="!addClientForm.valid || (clientsCreating$ | async) === true || (provisioning$ | async) === true"
       >
         @if (useProvisioning()) {
-          <span i18n="@@featureChat-provisionServer">Provision</span>
+          <span i18n="@@featureChat-provisionServerSubmit">Provision server</span>
         } @else {
-          <span i18n="@@featureChat-createWorkspace">Create</span>
+          <span i18n="@@featureChat-createWorkspace">Create workspace</span>
         }
       </fpc-button>
     </div>
@@ -2642,7 +2359,7 @@
 <fpc-modal
   [(open)]="addAgentModalOpen"
   i18n-title="@@featureChat-addEnvironmentTitle"
-  title="Add Environment"
+  title="Create environment"
   size="lg"
   (closed)="cancelAddAgent()"
 >
@@ -2684,7 +2401,7 @@
         <option [value]="ContainerType.KUBERNETES">Kubernetes</option>
       </fpc-form-control>
       <small fpcFormFieldHint i18n="@@featureChat-containerTypeHint"
-        >The type of content this agent holds. Defaults to Generic if not specified.</small
+        >The type of content this environment holds. Defaults to Generic if not specified.</small
       >
     </fpc-form-field>
     @let addAgentIsolationRefreshing = (activeClientIsolationRefreshing$ | async) === true;
@@ -2835,6 +2552,14 @@
         }
       }
       <fpc-button
+        variant="dark"
+        type="button"
+        (clicked)="cancelAddAgent()"
+        i18n="@@featureAgentConsoleDataList-cancel"
+        data-testid="add-environment-cancel"
+        >Cancel</fpc-button
+      >
+      <fpc-button
         variant="primary"
         type="submit"
         [loading]="(agentsCreating$ | async) === true"
@@ -2842,16 +2567,18 @@
           !addAgentForm.valid || (agentsCreating$ | async) === true || !!addAgentIsolationSubmission().blockedReason
         "
       >
-        <span i18n="@@featureChat-createEnvironment">Create</span>
+        <span i18n="@@featureChat-createEnvironment">Create environment</span>
       </fpc-button>
     </div>
   </form>
 </fpc-modal>
 <!-- Update Workspace Modal -->
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="updateClientModalOpen"
   i18n-title="@@featureChat-updateWorkspaceTitle"
-  title="Update Workspace"
+  title="Edit workspace"
   size="lg"
   (closed)="cancelUpdateClient()"
 >
@@ -3006,7 +2733,7 @@
             >
           } @else if (editingIsolation.probedAt) {
             <small class="d-block text-body-secondary" i18n="@@featureChat-isolationLastChecked"
-              >Last checked: {{ editingIsolation.probedAt | date: 'short' }}</small
+              >Last checked: {{ editingIsolation.probedAt | fpcDate: 'datetime' }}</small
             >
           }
           @if (editingIsolation.stale) {
@@ -3032,7 +2759,7 @@
         [loading]="(clientsUpdating$ | async) === true"
         [disabled]="!updateClientForm.valid || (clientsUpdating$ | async) === true"
       >
-        <span i18n="@@featureChat-updateWorkspace">Save</span>
+        <span i18n="@@featureChat-updateWorkspace">Save changes</span>
       </fpc-button>
     </div>
   </form>
@@ -3041,7 +2768,7 @@
 <fpc-modal
   [(open)]="updateAgentModalOpen"
   i18n-title="@@featureChat-updateEnvironmentTitle"
-  title="Update Environment"
+  title="Edit environment"
   size="lg"
   (closed)="cancelUpdateAgent()"
 >
@@ -3072,7 +2799,7 @@
       i18n-label="@@featureChat-handoffProfileLabel"
       label="Handoff profile"
       i18n-hint="@@featureChat-handoffProfileHelp"
-      hint="What this environment is responsible for and which tasks other agents of the workspace can hand over to it. The agent can also maintain it itself."
+      hint="What this environment is responsible for and which tasks other environments of the workspace can hand over to it. The agent can also maintain it itself."
     >
       <fpc-form-control
         controlType="textarea"
@@ -3104,7 +2831,9 @@
         <option [value]="ContainerType.TERRAFORM">Terraform</option>
         <option [value]="ContainerType.KUBERNETES">Kubernetes</option>
       </fpc-form-control>
-      <small fpcFormFieldHint i18n="@@featureChat-containerTypeHintShort">The type of content this agent holds.</small>
+      <small fpcFormFieldHint i18n="@@featureChat-containerTypeHintShort"
+        >The type of content this environment holds.</small
+      >
     </fpc-form-field>
     @let editingIsolationLevel = editingAgentIsolation()?.level ?? 'standard';
     <fpc-form-field i18n-label="@@featureChat-isolationLabel" label="Container isolation">
@@ -3142,12 +2871,20 @@
         }
       }
       <fpc-button
+        variant="dark"
+        type="button"
+        (clicked)="cancelUpdateAgent()"
+        i18n="@@featureAgentConsoleDataList-cancel"
+        data-testid="update-environment-cancel"
+        >Cancel</fpc-button
+      >
+      <fpc-button
         variant="primary"
         type="submit"
         [loading]="(agentsUpdating$ | async) === true"
         [disabled]="!updateAgentForm.valid || (agentsUpdating$ | async) === true"
       >
-        <span i18n="@@featureChat-updateEnvironment">Save</span>
+        <span i18n="@@featureChat-updateEnvironment">Save changes</span>
       </fpc-button>
     </div>
   </form>
@@ -3156,7 +2893,7 @@
 <fpc-modal
   [(open)]="workspaceConfigurationModalOpen"
   i18n-title="@@featureChat-manageWorkspaceConfiguration"
-  title="Manage Workspace Configuration"
+  title="Manage workspace configuration"
   size="lg"
   (closed)="onCloseWorkspaceConfigurationModal()"
 >
@@ -3336,7 +3073,7 @@
 <fpc-modal
   [(open)]="environmentVariablesModalOpen"
   i18n-title="@@featureChat-manageEnvVarsModalTitle"
-  title="Manage Environment Variables"
+  title="Manage environment variables"
   size="lg"
   (closed)="onCloseEnvironmentVariablesModal()"
 >
@@ -3492,6 +3229,8 @@
 </fpc-modal>
 <!-- Prototype autonomy modal -->
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="ticketAutonomyModalOpen"
   i18n-title="@@featureChat-ticketAutonomyModalTitle"
   title="Prototype autonomy"
@@ -3507,7 +3246,7 @@
       <fpc-alert variant="danger" class="mb-3" [message]="err" />
     }
     <p class="text-body-secondary small" i18n="@@featureTicketAutonomyManager-intro">
-      Control whether this agent may run autonomous ticket prototyping, including scope and safety limits.
+      Control whether this environment may run autonomous ticket prototyping, including scope and safety limits.
     </p>
     <fpc-form-switch
       class="mb-3"
@@ -3587,7 +3326,7 @@
         [disabled]="autonomySaving() || autonomyLoading()"
         (clicked)="onSaveTicketAutonomy()"
       >
-        <span i18n="@@featureTicketAutonomyManager-save">Save</span>
+        <span i18n="@@featureTicketAutonomyManager-save">Save changes</span>
       </fpc-button>
     </fpc-button-group>
   </div>
@@ -3596,7 +3335,7 @@
 <fpc-modal
   [(open)]="clientUsersModalOpen"
   i18n-title="@@featureChat-manageClientUsersModalTitle"
-  title="Manage Workspace Users"
+  title="Manage workspace users"
   size="lg"
   (closed)="onCloseClientUsersModal()"
 >
@@ -3614,19 +3353,41 @@
           <form #addClientUserForm="ngForm" (ngSubmit)="onSubmitAddClientUser()">
             <div class="row g-3">
               <div class="col-md-6">
-                <fpc-form-field forId="clientUserEmail" label="Email" required>
-                  <fpc-form-control
-                    controlId="clientUserEmail"
-                    inputType="email"
-                    name="email"
-                    [ngModel]="newClientUser().email"
-                    (ngModelChange)="updateClientUserField('email', $event)"
+                @if (canSearchUserDirectory() && !userDirectoryDenied()) {
+                  <fpc-form-field
+                    forId="clientUserEmail"
+                    i18n-label="@@featureChat-clientUserLabel"
+                    label="User"
                     required
-                    i18n-placeholder="@@featureChat-clientUserEmailPlaceholder"
-                    placeholder="user&#64;example.com"
-                    [disabled]="(clientUsersAdding$ | async) === true"
-                  />
-                </fpc-form-field>
+                  >
+                    <framework-workspace-user-select
+                      inputId="clientUserEmail"
+                      [email]="newClientUser().email"
+                      (emailChange)="updateClientUserField('email', $event)"
+                      (denied)="userDirectoryDenied.set(true)"
+                      [disabled]="(clientUsersAdding$ | async) === true"
+                    />
+                  </fpc-form-field>
+                } @else {
+                  <fpc-form-field forId="clientUserEmail" label="Email" required>
+                    <fpc-form-control
+                      controlId="clientUserEmail"
+                      inputType="email"
+                      name="email"
+                      [ngModel]="newClientUser().email"
+                      (ngModelChange)="updateClientUserField('email', $event)"
+                      required
+                      i18n-placeholder="@@featureChat-clientUserEmailPlaceholder"
+                      placeholder="user&#64;example.com"
+                      [disabled]="(clientUsersAdding$ | async) === true"
+                    />
+                    @if (userDirectoryDenied()) {
+                      <span fpcFormFieldHint i18n="@@featureChat-clientUserDirectoryDenied"
+                        >You can't search the user directory. Type the user's email.</span
+                      >
+                    }
+                  </fpc-form-field>
+                }
               </div>
               <div class="col-md-6">
                 <fpc-form-field forId="clientUserRole" label="Role" required>
@@ -3650,7 +3411,11 @@
                       type="submit"
                       variant="primary"
                       iconOnly
-                      [disabled]="!addClientUserForm.valid || (clientUsersAdding$ | async) === true"
+                      [disabled]="
+                        !addClientUserForm.valid ||
+                        !newClientUser().email.trim() ||
+                        (clientUsersAdding$ | async) === true
+                      "
                       [loading]="(clientUsersAdding$ | async) === true"
                       i18n-title="@@featureChat-addClientUserTitle"
                       title="Add user"

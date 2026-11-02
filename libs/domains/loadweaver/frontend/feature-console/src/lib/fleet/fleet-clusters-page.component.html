@@ -1,0 +1,337 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="fleet-clusters" [binding]="views" />
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      [loading]="loading()"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (pollError(); as message) {
+    <fpc-alert [flush]="true" variant="warning" [message]="message" />
+  }
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="fleet-clusters-bulk-result"
+    />
+  }
+
+  @if (loading() && clusters().length === 0) {
+    <fpc-empty-state [loading]="true" [title]="loadingLabel" data-testid="fleet-clusters-loading" />
+  } @else {
+    <!-- List template (3.38): the table's own toolbar strip is the page strip (search). -->
+    <fpc-data-table
+      class="flex-grow-1 min-h-0"
+      [columns]="columns"
+      [rows]="filtered()"
+      [ariaLabel]="title"
+      [(query)]="search"
+      [searchPlaceholder]="searchLabel"
+      [rowLink]="rowLink"
+      paging="client"
+      persistKey="lw-fleet-clusters"
+      selectable
+      [(selected)]="selected"
+      [rowMenu]="rowMenu"
+      (rowAction)="onRowAction($event.row, $event.item.id)"
+      data-testid="fleet-clusters-table"
+    >
+      @if (admin()) {
+        <fpc-button
+          fpcDataTableToolbar
+          variant="primary"
+          size="sm"
+          iconOnly
+          [ariaLabel]="registerLabel"
+          [title]="registerLabel"
+          (clicked)="openRegister()"
+          data-testid="fleet-clusters-register"
+        >
+          <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      <span fpcDataTableEmpty>
+        @if (!error()) {
+          <fpc-empty-state
+            icon="hdd-stack"
+            size="sm"
+            i18n-title="@@lwConsoleFleetClusters-empty"
+            title="No clusters yet"
+            i18n-message="@@lwConsoleFleetClusters-emptyHint"
+            message="Register a cluster with its control-plane endpoint and the PAT of a dedicated fleet service user."
+          />
+        }
+      </span>
+      <fpc-button
+        fpcDataTableBatch
+        variant="secondary"
+        size="sm"
+        [disabled]="selected().length === 0"
+        (clicked)="pollSelected()"
+        data-testid="fleet-clusters-bulk-poll"
+        iconOnly
+        [ariaLabel]="pollLabel"
+        [title]="pollLabel"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+      @if (admin()) {
+        <fpc-button
+          fpcDataTableBatch
+          variant="danger"
+          size="sm"
+          [disabled]="selected().length === 0"
+          (clicked)="confirmBulkDelete.set(true)"
+          data-testid="fleet-clusters-bulk-delete"
+          iconOnly
+          [ariaLabel]="deleteLabel"
+          [title]="deleteLabel"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      <ng-template fpcTableCell="name" let-cluster>
+        <span
+          class="d-inline-flex flex-wrap align-items-center gap-1"
+          [attr.data-testid]="'fleet-cluster-' + cluster.name"
+        >
+          <span class="fw-semibold">{{ cluster.name }}</span>
+          @if (cluster.reference) {
+            <fpc-badge tone="neutral" icon="cloud" [iconOnly]="true" [label]="cloudLabel" />
+          }
+          @if (cluster.state === 'teardown') {
+            <fpc-badge
+              tone="warning"
+              icon="hourglass-split"
+              [iconOnly]="true"
+              [label]="readOnlyUntilLabel + ' ' + (cluster.readOnlyUntil | date: 'mediumDate')"
+            />
+          }
+          @if (cluster.state === 'retired') {
+            <fpc-badge tone="neutral" icon="archive" [iconOnly]="true" [label]="retiredLabel" />
+          }
+        </span>
+        @if (cluster.description) {
+          <div class="small text-body-secondary">{{ cluster.description }}</div>
+        }
+      </ng-template>
+      <ng-template fpcTableCell="checked" let-cluster>
+        @if (cluster.health.checkedAt) {
+          <span class="text-nowrap">{{ cluster.health.checkedAt | date: 'short' }}</span>
+          @if (cluster.health.latencyMs !== null) {
+            <span class="text-nowrap text-body-secondary ms-1">{{ cluster.health.latencyMs }} ms</span>
+          }
+        }
+        @if (cluster.health.error) {
+          <div class="small text-danger text-break">{{ cluster.health.error }}</div>
+        }
+      </ng-template>
+      <!-- No matches: the table's own state (it owns the search; 3.38 empty ≠ no matches). -->
+    </fpc-data-table>
+  }
+</div>
+
+<fpc-modal [open]="editing() !== null" (openChange)="onModalOpenChange($event)" [title]="modalTitle()" size="lg">
+  @if (formError(); as message) {
+    <fpc-alert class="mb-3" variant="danger" [message]="message" />
+  }
+  @if (saveError(); as message) {
+    <fpc-alert class="mb-3" variant="danger" [message]="message" data-testid="fleet-cluster-save-error" />
+  }
+  <div class="row g-3">
+    @if (isNew()) {
+      <div class="col-12 col-md-6">
+        <fpc-form-field forId="lw-fleet-name" i18n-label="@@lwConsoleFleetClusters-name" label="Name" required>
+          <fpc-form-control
+            controlId="lw-fleet-name"
+            size="sm"
+            maxLength="63"
+            placeholder="prod-eu"
+            [(ngModel)]="form.name"
+            data-testid="fleet-cluster-name"
+          />
+        </fpc-form-field>
+      </div>
+    }
+    <div class="col-12" [class.col-md-6]="isNew()">
+      <fpc-form-field
+        forId="lw-fleet-description"
+        i18n-label="@@lwConsoleFleetClusters-description"
+        label="Description"
+      >
+        <fpc-form-control controlId="lw-fleet-description" size="sm" maxLength="1024" [(ngModel)]="form.description" />
+      </fpc-form-field>
+    </div>
+    <div class="col-12">
+      <fpc-form-field
+        forId="lw-fleet-endpoint"
+        i18n-label="@@lwConsoleFleetClusters-endpoint"
+        label="Control-plane endpoint"
+        i18n-hint="@@lwConsoleFleetClusters-endpointHint"
+        hint="HTTPS URL of the cluster's control plane, without /api."
+        required
+      >
+        <fpc-form-control
+          controlId="lw-fleet-endpoint"
+          size="sm"
+          inputType="url"
+          controlClass="font-monospace"
+          placeholder="https://lw.example.com"
+          [(ngModel)]="form.endpoint"
+          data-testid="fleet-cluster-endpoint"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-12">
+      <fpc-form-field
+        forId="lw-fleet-credential"
+        i18n-label="@@lwConsoleFleetClusters-credential"
+        label="Service credential"
+        [hint]="credentialHint()"
+        [required]="credentialRequired()"
+      >
+        <fpc-form-control
+          controlId="lw-fleet-credential"
+          size="sm"
+          inputType="password"
+          autocomplete="new-password"
+          controlClass="font-monospace"
+          [(ngModel)]="form.credential"
+          data-testid="fleet-cluster-credential"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-12">
+      <fpc-form-field
+        forId="lw-fleet-ca"
+        i18n-label="@@lwConsoleFleetClusters-ca"
+        label="CA bundle (PEM, private CAs only)"
+      >
+        <fpc-form-control
+          controlType="textarea"
+          controlId="lw-fleet-ca"
+          size="sm"
+          controlClass="font-monospace"
+          [rows]="3"
+          placeholder="-----BEGIN CERTIFICATE-----"
+          [disabled]="form.removeCa"
+          [(ngModel)]="form.caCertificate"
+        />
+      </fpc-form-field>
+      @if (editingCluster()?.hasCustomCa) {
+        <fpc-form-switch
+          switchId="lw-fleet-remove-ca"
+          i18n-label="@@lwConsoleFleetClusters-removeCa"
+          label="Remove the custom CA"
+          [(checked)]="form.removeCa"
+        />
+      }
+    </div>
+    @if (isNew()) {
+      <div class="col-12">
+        <fpc-form-switch
+          switchId="lw-fleet-test"
+          i18n-label="@@lwConsoleFleetClusters-testBeforeSave"
+          label="Test the connection before saving"
+          [(checked)]="form.test"
+        />
+      </div>
+    }
+  </div>
+
+  @if (testResult(); as result) {
+    <fpc-alert
+      class="mt-3"
+      [variant]="result.state === 'healthy' ? 'success' : result.state === 'degraded' ? 'warning' : 'danger'"
+      data-testid="fleet-cluster-test-result"
+    >
+      <div class="small">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <span class="fw-semibold">{{ connectionLabel(result.state) }}</span>
+          @if (result.version) {
+            <fpc-badge size="sm" color="light"
+              ><span i18n="@@lwConsoleFleetClusters-testVersion">version</span>
+              <span class="font-monospace">{{ result.version }}</span></fpc-badge
+            >
+          }
+          @if (result.latencyMs !== null) {
+            <fpc-badge size="sm" color="light">{{ result.latencyMs }} ms</fpc-badge>
+          }
+        </div>
+        @if (result.error) {
+          <div class="text-break">{{ result.error }}</div>
+        }
+      </div>
+    </fpc-alert>
+  }
+  @if (testError(); as message) {
+    <fpc-alert class="mt-3" variant="danger" [message]="message" />
+  }
+
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2 w-100">
+    <fpc-button
+      class="me-auto"
+      variant="dark"
+      size="sm"
+      [disabled]="!canTest()"
+      [loading]="testing()"
+      (clicked)="test()"
+      data-testid="fleet-cluster-test"
+    >
+      <i class="bi bi-plug me-1" aria-hidden="true"></i
+      ><span i18n="@@lwConsoleFleetClusters-testConnection">Test connection</span>
+    </fpc-button>
+    <fpc-button variant="dark" size="sm" (clicked)="onModalOpenChange(false)">{{ cancelLabel }}</fpc-button>
+    <fpc-button variant="primary" size="sm" [loading]="saving()" (clicked)="save()" data-testid="fleet-cluster-save">
+      <span i18n="@@lwConsoleFleetClusters-save">Save</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="deleting() !== null"
+  (openChange)="onDeleteOpenChange($event)"
+  [title]="deleteTitle"
+  [message]="deleteMessage"
+  [confirmLabel]="deleteConfirm"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  [busy]="saving()"
+  (confirmed)="confirmDelete()"
+>
+  @if (deleting(); as cluster) {
+    <div class="small d-flex flex-wrap align-items-center gap-2">
+      <span class="fw-semibold">{{ cluster.name }}</span>
+      <span class="font-monospace text-body-secondary text-break">{{ cluster.endpoint }}</span>
+    </div>
+  }
+  @if (saveError(); as message) {
+    <fpc-alert class="mt-2" variant="danger" [message]="message" />
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDelete"
+  [title]="deleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteConfirm"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelected()"
+/>

@@ -1,7 +1,39 @@
 <div class="cloud-init-configs-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="cloud-init-configs-bulk-result"
+    />
+  }
+
+  <!-- One data list: State · Config · mode / image / env vars; ⋮ Edit / Delete / Copy ID; bulk Activate / Deactivate / Delete. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="cloudInitConfigs()"
+    paging="client"
+    persistKey="decabill-cloud-init-configs"
+    [(query)]="searchQuery"
+    [searchPlaceholder]="searchPlaceholder"
+    [loading]="(loading$ | async) === true"
+    [error]="(error$ | async) ?? null"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    (rowActivate)="openEditModal($event)"
+    emptyIcon="file-code"
+    data-testid="cloud-init-configs-list"
+  >
     <fpc-button
-      fpcPageHeaderActions
+      fpcDataTableToolbar
       variant="primary"
       size="sm"
       iconOnly
@@ -12,92 +44,74 @@
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
     </fpc-button>
-  </fpc-page-header>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!selectedConfigs().some((config) => !config.isActive)"
+      (clicked)="setActiveSelected(true)"
+      data-testid="cloud-init-configs-bulk-activate"
+      iconOnly
+      [ariaLabel]="activateLabel"
+      [title]="activateLabel"
+    >
+      <i class="bi bi-toggle-on" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!selectedConfigs().some((config) => config.isActive)"
+      (clicked)="setActiveSelected(false)"
+      data-testid="cloud-init-configs-bulk-deactivate"
+      iconOnly
+      [ariaLabel]="deactivateLabel"
+      [title]="deactivateLabel"
+    >
+      <i class="bi bi-toggle-off" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="selectedConfigs().length === 0"
+      (clicked)="confirmBulkDelete.set(true)"
+      data-testid="cloud-init-configs-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
 
-  <fpc-search-field
-    class="border-bottom"
-    name="search"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchPlaceholder"
-    [(value)]="searchQuery"
-  />
-
-  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @if (loading$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" i18n-label="@@featureCloudInitConfigs-loading" label="Loading..." />
-      </div>
-    } @else {
-      @if (error$ | async; as err) {
-        <fpc-alert class="m-3" variant="danger" [message]="err" />
-      }
-      @if (cloudInitConfigs$ | async; as configs) {
-        @if (configs.length === 0) {
-          @if (searchQuery().trim()) {
-            <fpc-empty-state
-              icon="search"
-              message="No search results"
-              i18n-message="@@featureCloudInitConfigs-noSearchResults"
-            />
-          } @else {
-            <fpc-empty-state message="No CloudInit configs yet" i18n-message="@@featureCloudInitConfigs-empty" />
-          }
-        } @else {
-          <fpc-list [flush]="true">
-            @for (config of configs; track config.id) {
-              <fpc-list-item>
-                <div fpcListItemTitle class="fw-semibold">{{ config.name }}</div>
-                <div fpcListItemMeta class="small d-flex align-items-center gap-3 flex-wrap">
-                  <span [ngClass]="activeStatusTextClass(config.isActive)">
-                    @if (config.isActive) {
-                      <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                    } @else {
-                      <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
-                    }
-                    {{ activeStatusLabel(config.isActive) }}
-                  </span>
-                  <span><i class="bi bi-key me-1" aria-hidden="true"></i>{{ configKeyLabel(config.key) }}</span>
-                  <span><i class="bi bi-box me-1" aria-hidden="true"></i>{{ configSummaryLabel(config) }}</span>
-                  <span
-                    ><i class="bi bi-sliders me-1" aria-hidden="true"></i
-                    ><span i18n="@@featureCloudInitConfigs-envVarCount">{{ envVarCount(config) }} env vars</span></span
-                  >
-                </div>
-                <fpc-button-group fpcListItemActions size="sm">
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="warning"
-                    (clicked)="openEditModal(config)"
-                    [disabled]="(loadingAny$ | async) === true"
-                  >
-                    <i class="bi bi-pencil" aria-hidden="true"></i>
-                  </fpc-button>
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="danger"
-                    (clicked)="openDeleteConfirm(config)"
-                    [disabled]="(loadingAny$ | async) === true"
-                  >
-                    <i class="bi bi-trash" aria-hidden="true"></i>
-                  </fpc-button>
-                </fpc-button-group>
-              </fpc-list-item>
-            }
-          </fpc-list>
-        }
-      }
-    }
-  </div>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="file-code"
+        size="sm"
+        message="No cloud-init configs yet"
+        i18n-message="@@featureCloudInitConfigs-empty"
+      />
+    </span>
+  </fpc-data-table>
 </div>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDelete"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelected()"
+/>
 
 <fpc-modal
   [(open)]="createModalOpen"
   size="xl"
   i18n-title="@@featureCloudInitConfigs-createTitle"
-  title="Add CloudInit config"
+  title="Create cloud-init config"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <form (ngSubmit)="onSubmitCreate()">
     <div class="row g-3">
@@ -256,23 +270,29 @@
       </div>
     </div>
 
-    <div class="mb-3 border rounded p-3 bg-body-secondary mt-3">
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-        <span class="fw-semibold" i18n="@@featureCloudInitConfigs-envVariables">Environment variables</span>
-        <fpc-button
-          variant="primary"
-          size="sm"
-          iconOnly
-          (clicked)="addEnvVariable('create')"
-          [disabled]="(creating$ | async) === true"
-          title="Add line"
-          i18n-title="@@featureCloudInitConfigs-addEnvVar"
-          ariaLabel="Add line"
-          i18n-ariaLabel="@@featureCloudInitConfigs-addEnvVar"
-        >
-          <i class="bi bi-plus" aria-hidden="true"></i>
-        </fpc-button>
-      </div>
+    <div class="mb-3 mt-3">
+      <fpc-list-header
+        class="d-block mb-2"
+        title="Environment variables"
+        i18n-title="@@featureCloudInitConfigs-envVariables"
+        [sticky]="false"
+      >
+        <span fpcListHeaderActions class="d-flex align-items-center gap-1">
+          <fpc-button
+            variant="primary"
+            size="sm"
+            iconOnly
+            (clicked)="addEnvVariable('create')"
+            [disabled]="(creating$ | async) === true"
+            title="Add line"
+            i18n-title="@@featureCloudInitConfigs-addEnvVar"
+            ariaLabel="Add line"
+            i18n-ariaLabel="@@featureCloudInitConfigs-addEnvVar"
+          >
+            <i class="bi bi-plus" aria-hidden="true"></i>
+          </fpc-button>
+        </span>
+      </fpc-list-header>
       @for (row of createForm.environmentVariableRows; track $index; let i = $index) {
         <div class="row g-2 mb-2 align-items-end">
           <div class="col-12 col-md-2">
@@ -413,7 +433,9 @@
   [(open)]="editModalOpen"
   size="xl"
   i18n-title="@@featureCloudInitConfigs-editTitle"
-  title="Edit CloudInit config"
+  title="Edit cloud-init config"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <form (ngSubmit)="onSubmitEdit()">
     <div class="row g-3">
@@ -563,23 +585,29 @@
       </div>
     </div>
 
-    <div class="mb-3 border rounded p-3 bg-body-secondary mt-3">
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-        <span class="fw-semibold" i18n="@@featureCloudInitConfigs-envVariables">Environment variables</span>
-        <fpc-button
-          variant="primary"
-          size="sm"
-          iconOnly
-          (clicked)="addEnvVariable('edit')"
-          [disabled]="(updating$ | async) === true"
-          title="Add line"
-          i18n-title="@@featureCloudInitConfigs-addEnvVar"
-          ariaLabel="Add line"
-          i18n-ariaLabel="@@featureCloudInitConfigs-addEnvVar"
-        >
-          <i class="bi bi-plus" aria-hidden="true"></i>
-        </fpc-button>
-      </div>
+    <div class="mb-3 mt-3">
+      <fpc-list-header
+        class="d-block mb-2"
+        title="Environment variables"
+        i18n-title="@@featureCloudInitConfigs-envVariables"
+        [sticky]="false"
+      >
+        <span fpcListHeaderActions class="d-flex align-items-center gap-1">
+          <fpc-button
+            variant="primary"
+            size="sm"
+            iconOnly
+            (clicked)="addEnvVariable('edit')"
+            [disabled]="(updating$ | async) === true"
+            title="Add line"
+            i18n-title="@@featureCloudInitConfigs-addEnvVar"
+            ariaLabel="Add line"
+            i18n-ariaLabel="@@featureCloudInitConfigs-addEnvVar"
+          >
+            <i class="bi bi-plus" aria-hidden="true"></i>
+          </fpc-button>
+        </span>
+      </fpc-list-header>
       @for (row of editForm.environmentVariableRows; track $index; let i = $index) {
         <div class="row g-2 mb-2 align-items-end">
           <div class="col-12 col-md-2">
@@ -727,7 +755,7 @@
   (confirmed)="confirmDelete()"
 >
   @if (configToDelete) {
-    <p i18n="@@featureCloudInitConfigs-deleteConfirm">Delete CloudInit config "{{ configToDelete.name }}"?</p>
+    <p i18n="@@featureCloudInitConfigs-deleteConfirm">Delete cloud-init config "{{ configToDelete.name }}"?</p>
     <p class="text-danger mb-0">
       <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
       <span i18n="@@featureCloudInitConfigs-cannotUndo">This action cannot be undone.</span>

@@ -1,0 +1,24 @@
+# top comment
+app:
+  name: demo # line comment
+  port: 8080
+  ratio: 0.25
+  big: 1.0
+  enabled: true
+  off: false
+  empty: ''
+  nothing: null
+  # inner comment
+  tags:
+    - a
+    # list comment
+    - 2
+    - nested: x
+      deeper:
+        - [1, 2]
+  multi: |
+    line one
+    line two
+  public_unencrypted: visible
+  secret_unencrypted:
+    child: alsovisible

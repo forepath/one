@@ -1,5 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import {
+  isLoadweaverItem,
+  loadweaverTeardownNotBefore,
+  resolveLoadweaverTeardownGraceDays,
+} from '../contributors/loadweaver/loadweaver.utils';
+import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 
@@ -14,6 +20,7 @@ export class SubscriptionExpirationJobHandler {
     private readonly subscriptionsRepository: SubscriptionsRepository,
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly subscriptionTeardownService: SubscriptionTeardownService,
+    private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
   ) {}
 
   async findExpiredSubscriptionIds(): Promise<string[]> {
@@ -23,10 +30,30 @@ export class SubscriptionExpirationJobHandler {
     return expiredSubscriptions.map((subscription) => subscription.id);
   }
 
-  async processSubscriptionCancellation(subscriptionId: string): Promise<void> {
+  async processSubscriptionCancellation(subscriptionId: string, now: Date = new Date()): Promise<void> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const cancelEffectiveAt = subscription.cancelEffectiveAt ?? new Date();
+    const items = (await this.subscriptionItemsRepository.findBySubscription(subscription.id)) ?? [];
+
+    // Data-safe teardown (Loadweaver plan, section 4): a cancelled Loadweaver cluster keeps running for a grace
+    // period after the effective date (not billed) so the customer can run a final backup to their external target
+    // and export; only then is the Decabill-provisioned server deleted.
+    // `teardownNotBefore` is stored at cancellation (the queue query filters on it); the computed value covers
+    // cancellations recorded before the column existed.
+    if (subscription.teardownNotBefore || items.some((item) => isLoadweaverItem(item))) {
+      const notBefore = subscription.teardownNotBefore
+        ? new Date(subscription.teardownNotBefore)
+        : loadweaverTeardownNotBefore(new Date(cancelEffectiveAt), resolveLoadweaverTeardownGraceDays());
+
+      if (now < notBefore) {
+        this.logger.log(
+          `Subscription ${subscriptionId} runs a Loadweaver cluster; teardown deferred until ${notBefore.toISOString()} (grace period)`,
+        );
+
+        return;
+      }
+    }
 
     await this.subscriptionTeardownService.teardownImmediate(subscriptionId, {
       billUntil: cancelEffectiveAt,

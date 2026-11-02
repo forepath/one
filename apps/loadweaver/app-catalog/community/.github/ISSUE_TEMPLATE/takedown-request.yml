@@ -1,0 +1,29 @@
+name: Takedown request (publisher / rights holder)
+description: Ask to take down your own app or a version, or an app that infringes your rights.
+title: '[takedown] <app> <version>'
+labels: [takedown-request]
+body:
+  - type: input
+    id: app
+    attributes:
+      label: App and version(s)
+      placeholder: my-app 1.0.0 (or "all versions")
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: You are
+      options:
+        - The publisher of the app
+        - The rights holder of the software / trademark
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: Reason
+      description: Shown to users in the takedown notice (keep it factual). Publishers, prove ownership with a comment signed by your registered key or from your registered contact.
+    validations:
+      required: true

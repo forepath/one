@@ -11,13 +11,12 @@ import {
 } from '../constants/agent-context.constants';
 import { OpenCodeClientFactory } from '../providers/opencode/opencode-client.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
+import { AgentRuntime } from '../runtime/agent-runtime';
 import {
   agentContextTokensEqual,
   deriveAgentContextToken,
   resolveAgentContextTokenSecret,
 } from '../utils/agent-context-token.utils';
-
-import { DockerService } from './docker.service';
 
 /** Worker image label advertising the bundled context MCP server (`Dockerfile.worker`). */
 export const AGENT_CONTEXT_MCP_IMAGE_LABEL = 'io.agenstra.context-mcp';
@@ -35,7 +34,7 @@ export class AgentContextMcpService {
 
   constructor(
     private readonly agentsRepository: AgentsRepository,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
     private readonly clientFactory: OpenCodeClientFactory,
   ) {}
 
@@ -100,7 +99,7 @@ export class AgentContextMcpService {
       return null;
     }
 
-    const summary = await this.dockerService.inspectContainerSummary(containerId).catch(() => null);
+    const summary = await this.runtime.inspectContainerSummary(containerId).catch(() => null);
 
     if (summary?.labels?.[AGENT_CONTEXT_MCP_IMAGE_LABEL] !== '1') {
       return null;

@@ -85,3 +85,17 @@ export const AllColors: Story = {
         </div>`,
   }),
 };
+
+export const ObjectStateTones: Story = {
+  render: () => ({
+    template: `<div class="d-flex flex-wrap gap-1">
+      <fpc-badge tone="success">Applied</fpc-badge>
+      <fpc-badge tone="warning">Pending</fpc-badge>
+      <fpc-badge tone="danger">Failed</fpc-badge>
+      <fpc-badge tone="info">Applying</fpc-badge>
+      <fpc-badge tone="neutral">Discarded</fpc-badge>
+      <fpc-badge tone="dark">AI content</fpc-badge>
+      <fpc-badge tone="primary">Draft</fpc-badge>
+    </div>`,
+  }),
+};

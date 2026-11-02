@@ -1,0 +1,180 @@
+<div class="loadweaver-cluster-tab d-flex flex-column gap-3 p-3">
+  @if (error(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <h2 class="h6 fw-semibold mb-0" i18n="@@featureLoadweaverCluster-title">Loadweaver cluster</h2>
+    @if (cluster(); as c) {
+      <fpc-badge [color]="healthColor()" [pill]="true">{{ healthLabel() }}</fpc-badge>
+      <span class="small text-body-secondary">
+        <span i18n="@@featureLoadweaverCluster-checkedAt">Checked</span>
+        {{ c.checkedAt | fpcDate: 'datetime' }}
+      </span>
+    }
+    <fpc-button
+      class="ms-auto"
+      variant="secondary"
+      size="sm"
+      [loading]="loading()"
+      (clicked)="refresh()"
+      i18n="@@featureLoadweaverCluster-refresh"
+    >
+      Refresh
+    </fpc-button>
+  </div>
+
+  @if (loading() && !cluster()) {
+    <div class="d-flex align-items-center gap-2 text-body-secondary">
+      <fpc-spinner size="sm" />
+      <span i18n="@@featureLoadweaverCluster-loading">Loading cluster status...</span>
+    </div>
+  }
+
+  @if (cluster(); as c) {
+    @if (c.teardown.deletionNotBefore; as deletion) {
+      <fpc-alert
+        variant="danger"
+        i18n-heading="@@featureLoadweaverCluster-teardownScheduledHeading"
+        heading="Cluster deletion scheduled"
+      >
+        <span i18n="@@featureLoadweaverCluster-teardownScheduled">
+          This subscription is cancelled. The server and all cluster data are deleted on or after
+          {{ deletion | fpcDate: 'datetime' }}. Run a final backup to your external target and save the recovery kit
+          before then.
+        </span>
+      </fpc-alert>
+    }
+
+    @if (c.adminClaim.status !== 'claimed') {
+      @if (c.adminClaim.token; as token) {
+        <fpc-alert
+          variant="warning"
+          i18n-heading="@@featureLoadweaverCluster-claimHeading"
+          heading="Claim your cluster"
+          data-testid="loadweaver-admin-claim"
+        >
+          <p class="small mb-2" i18n="@@featureLoadweaverCluster-claimIntro">
+            Register the first console account now: it becomes the cluster administrator. The registration asks for this
+            one-time admin claim token; without it nobody can register until the first account exists.
+          </p>
+          <div class="small fw-semibold" i18n="@@featureLoadweaverCluster-claimTokenLabel">Admin claim token</div>
+          <pre class="small bg-body-tertiary p-2 mb-2 text-wrap user-select-all"><code>{{ token }}</code></pre>
+          <p class="small mb-0" i18n="@@featureLoadweaverCluster-claimKeepSecret">
+            Keep the token secret. It is removed from here once the cluster reports its first account.
+          </p>
+        </fpc-alert>
+      } @else if (c.adminClaim.status === 'pending') {
+        <fpc-alert variant="info" data-testid="loadweaver-admin-claim-pending">
+          <span i18n="@@featureLoadweaverCluster-claimPendingAdmin">
+            The cluster has no account yet. The customer registers the first account with the admin claim token from
+            this tab.
+          </span>
+        </fpc-alert>
+      }
+    }
+
+    <fpc-panel-grid>
+      <fpc-panel i18n-title="@@featureLoadweaverCluster-endpointTitle" title="Endpoint">
+        @if (c.consoleUrl) {
+          <dl class="mb-2 small">
+            <dt i18n="@@featureLoadweaverCluster-console">Console</dt>
+            <dd>
+              <a [href]="c.consoleUrl" target="_blank" rel="noopener noreferrer">{{ c.consoleUrl }}</a>
+            </dd>
+            <dt i18n="@@featureLoadweaverCluster-api">API</dt>
+            <dd>
+              <code>{{ c.apiUrl }}</code>
+            </dd>
+            @if (c.initialVersion) {
+              <dt i18n="@@featureLoadweaverCluster-initialVersion">Provisioned release</dt>
+              <dd>{{ c.initialVersion }}</dd>
+            }
+          </dl>
+          <p class="small text-body-secondary mb-0" i18n="@@featureLoadweaverCluster-firstAccountHint">
+            The first account registered in the console becomes the cluster administrator; it needs the one-time admin
+            claim token. Loadweaver updates itself through its own rollout (Updates in the console).
+          </p>
+        } @else {
+          <p class="small text-body-secondary mb-0" i18n="@@featureLoadweaverCluster-noEndpoint">
+            The endpoint is available once provisioning has finished.
+          </p>
+        }
+      </fpc-panel>
+
+      <fpc-panel i18n-title="@@featureLoadweaverCluster-addNodesTitle" title="Add nodes">
+        <p class="small mb-2" i18n="@@featureLoadweaverCluster-addNodesIntro">
+          This subscription includes the first node with control plane and console. Further nodes run on your own
+          servers or provider accounts: you pay the provider directly, they are not provisioned or billed here.
+        </p>
+        <ol class="small mb-2 ps-3">
+          <li i18n="@@featureLoadweaverCluster-addNodesStep1">Create a join token in the console (Nodes, Add node).</li>
+          <li i18n="@@featureLoadweaverCluster-addNodesStep2">
+            Run the installer on the new server (Debian 12 / 13, Ubuntu 22.04 / 24.04):
+          </li>
+        </ol>
+        @if (installerLine(); as line) {
+          <pre class="small bg-body-tertiary p-2 mb-2 text-wrap"><code>{{ line }}</code></pre>
+        }
+        @if (c.links.nodes) {
+          <fpc-button
+            variant="secondary"
+            size="sm"
+            [href]="c.links.nodes"
+            target="_blank"
+            rel="noopener noreferrer"
+            i18n="@@featureLoadweaverCluster-openNodes"
+          >
+            Open nodes
+          </fpc-button>
+        }
+      </fpc-panel>
+
+      <fpc-panel i18n-title="@@featureLoadweaverCluster-beforeCancelTitle" title="Before you cancel">
+        <p class="small mb-2" i18n="@@featureLoadweaverCluster-beforeCancelIntro">
+          Cancelling deletes this server, its addresses and DNS records together with all cluster data on it. Nodes in
+          your own provider accounts are not deleted.
+        </p>
+        <ol class="small mb-2 ps-3">
+          <li i18n="@@featureLoadweaverCluster-beforeCancelStep1">
+            Run a final platform backup and copy it to your external target.
+          </li>
+          <li i18n="@@featureLoadweaverCluster-beforeCancelStep2">
+            Save the recovery kit and the disaster-recovery info file (Backups, Keys and Platform).
+          </li>
+          <li i18n="@@featureLoadweaverCluster-beforeCancelStep3">Drain and remove or keep your own nodes.</li>
+        </ol>
+        <p class="small text-body-secondary mb-2" i18n="@@featureLoadweaverCluster-graceHint">
+          After the cancellation takes effect the cluster keeps running for {{ c.teardown.graceDays }} more days (not
+          billed) before the server is deleted.
+        </p>
+        <div class="d-flex gap-2 flex-wrap">
+          @if (c.links.platformBackups) {
+            <fpc-button
+              variant="secondary"
+              size="sm"
+              [href]="c.links.platformBackups"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featureLoadweaverCluster-openPlatformBackups"
+            >
+              Platform backups
+            </fpc-button>
+          }
+          @if (c.links.recoveryKit) {
+            <fpc-button
+              variant="secondary"
+              size="sm"
+              [href]="c.links.recoveryKit"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featureLoadweaverCluster-openRecoveryKit"
+            >
+              Recovery kit
+            </fpc-button>
+          }
+        </div>
+      </fpc-panel>
+    </fpc-panel-grid>
+  }
+</div>

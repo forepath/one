@@ -1,0 +1,25 @@
+{
+  "application": {
+    "production": true
+  },
+  "authentication": {
+    "config": {
+      "type": "users",
+      "disableSignup": false
+    }
+  },
+  "cookieConsent": {
+    "domain": ".loadweaver.com",
+    "urls": {
+      "privacyPolicy": "https://loadweaver.com/legal/privacy",
+      "terms": "https://loadweaver.com/legal/terms"
+    }
+  },
+  "billing": {
+    "tenantId": "loadweaver",
+    "urls": {
+      "restApi": "https://backend.forepath.io/api",
+      "websocket": "https://backend.forepath.io/billing"
+    }
+  }
+}

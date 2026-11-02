@@ -1,0 +1,614 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title()">
+    <a
+      fpcPageHeaderBreadcrumbs
+      routerLink="/fleet/clusters"
+      class="small text-decoration-none d-inline-flex align-items-center"
+      data-testid="fleet-cluster-back"
+    >
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
+    </a>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (clustersError(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    }
+
+    @if (cluster(); as c) {
+      @if (admin()) {
+        <fpc-tab-group
+          class="fpc-lane-tabs"
+          [activeId]="lane()"
+          (activeIdChange)="lane.set($any($event))"
+          [ariaLabel]="title()"
+        >
+          <fpc-tab id="connection" [label]="connectionTitle" />
+          <fpc-tab id="identity" [label]="identityTitle" />
+          <fpc-tab id="grants" [label]="grantsTitle" />
+        </fpc-tab-group>
+      }
+      <fpc-section-row class="flex-grow-1 min-h-0" data-testid="fleet-cluster-lanes">
+        <!-- LW-13: the facts lane is the widest of the three (long endpoints, the approvals sentence). -->
+        <loadweaver-lane [title]="connectionTitle" grow="3 1 0" [off]="admin() && lane() !== 'connection'">
+          <ng-container lwLaneActions>
+            <fpc-button
+              variant="dark"
+              size="sm"
+              [loading]="polling().includes(c.id)"
+              (clicked)="poll()"
+              data-testid="fleet-cluster-poll"
+              iconOnly
+              ariaLabel="Check now"
+              i18n-ariaLabel="@@lwConsoleFleetCluster-poll"
+              title="Check now"
+              i18n-title="@@lwConsoleFleetCluster-poll"
+            >
+              <i class="bi bi-activity" aria-hidden="true"></i>
+            </fpc-button>
+            @if (c.state !== 'retired') {
+              <fpc-button
+                variant="primary"
+                size="sm"
+                (clicked)="open()"
+                data-testid="fleet-cluster-open"
+                iconOnly
+                ariaLabel="Open cluster"
+                i18n-ariaLabel="@@lwConsoleFleetCluster-open"
+                title="Open cluster"
+                i18n-title="@@lwConsoleFleetCluster-open"
+              >
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+              </fpc-button>
+            }
+          </ng-container>
+          @if (trustResult(); as result) {
+            <fpc-alert
+              class="d-block mb-2"
+              [flush]="true"
+              [variant]="result.tone"
+              [message]="result.message"
+              [dismissible]="true"
+              (closed)="trustResult.set(null)"
+              data-testid="fleet-cluster-trust-result"
+            />
+          }
+          <fpc-key-value-list [items]="connectionFacts()" data-testid="fleet-cluster-facts">
+            <!-- The fleet's connection (its own words) and the cluster's health (the overview's words), LW-19. -->
+            <ng-template fpcKeyValue="connection">
+              <span class="d-inline-flex align-items-center gap-2">
+                <fpc-status-badge [tone]="connectionTone(c.health.state)" size="sm">
+                  <i class="bi {{ connectionIcon(c.health.state) }}" aria-hidden="true"></i>
+                </fpc-status-badge>
+                {{ connectionLabel(c.health.state) }}
+              </span>
+              @if (c.health.error) {
+                <div
+                  class="small text-break"
+                  [class.text-danger]="c.health.state !== 'degraded'"
+                  [class.text-body-secondary]="c.health.state === 'degraded'"
+                  data-testid="fleet-cluster-connection-error"
+                >
+                  {{ messageLabel(c.health.error) }}
+                </div>
+              }
+              @if (availabilityOf(c); as a) {
+                @if (a.state === 'read-only') {
+                  <!-- 3.43: the cluster answers, but its control plane can't write: changes through the fleet pause. -->
+                  <div class="small text-warning-emphasis text-break" data-testid="fleet-cluster-read-only">
+                    <i class="bi bi-lock me-1" aria-hidden="true"></i>
+                    <span i18n="@@lwConsoleFleetCluster-writesPaused"
+                      >Read-only: changes through the fleet are paused.</span
+                    >
+                    @if (a.reason) {
+                      {{ messageLabel(a.reason) }}
+                    }
+                  </div>
+                }
+              }
+              @if (c.health.checkedAt) {
+                <div class="small text-body-secondary">
+                  <span i18n="@@lwConsoleFleetCluster-checkedAt">Checked</span>
+                  {{ c.health.checkedAt | fpcDate: 'datetime' }}
+                </div>
+              }
+            </ng-template>
+            <ng-template fpcKeyValue="health">
+              @if (card()?.health; as h) {
+                <fpc-badge [tone]="healthTone(h.state)" [title]="h.message ? messageLabel(h.message) : ''">{{
+                  healthText(h.state)
+                }}</fpc-badge>
+              }
+            </ng-template>
+            <ng-template fpcKeyValue="access">
+              <span class="d-inline-flex flex-wrap align-items-center gap-1">
+                {{ roleLabel(c.access.clusterRole) }}
+                @for (entry of c.access.projects | keyvalue; track entry.key) {
+                  <fpc-badge tone="neutral">{{ entry.key }}: {{ roleLabel(entry.value) }}</fpc-badge>
+                }
+                @if (c.access.readOnly) {
+                  <fpc-badge tone="warning" i18n="@@lwConsoleFleetCluster-readOnly">read-only</fpc-badge>
+                }
+              </span>
+            </ng-template>
+            <ng-template fpcKeyValue="trust">
+              <!-- Trust (2026-10-29): one state from the identity probe (fleetTrustView); the action opens a modal. -->
+              @let t = trust();
+              <span
+                class="d-flex align-items-start gap-2"
+                data-testid="fleet-cluster-identity"
+                [attr.data-state]="t.state"
+              >
+                <fpc-status-badge [tone]="t.tone" size="sm">
+                  <i class="bi {{ t.icon }}" aria-hidden="true"></i>
+                </fpc-status-badge>
+                <span class="flex-grow-1">
+                  {{ t.label }}
+                  @if (t.reason) {
+                    <span
+                      class="d-block small text-body-secondary text-break"
+                      data-testid="fleet-cluster-trust-reason"
+                      >{{ messageLabel(t.reason) }}</span
+                    >
+                  }
+                  @if (t.effect) {
+                    <span class="d-block small text-body-secondary">{{ t.effect }}</span>
+                  }
+                  @if (canEstablishTrust(c)) {
+                    <fpc-button
+                      class="d-inline-block mt-1"
+                      variant="primary"
+                      size="sm"
+                      [loading]="trustBusy()"
+                      (clicked)="openTrust()"
+                      data-testid="fleet-cluster-trust-open"
+                    >
+                      <i class="bi bi-shield-check me-1" aria-hidden="true"></i>{{ trustActionLabel }}
+                    </fpc-button>
+                  }
+                </span>
+              </span>
+            </ng-template>
+            <ng-template fpcKeyValue="trustAttempt">
+              @if (trust().attempt; as attempt) {
+                <div data-testid="fleet-cluster-trust-attempt" [attr.data-outcome]="attempt.outcome">
+                  <fpc-badge [tone]="attempt.tone">{{ attempt.label }}</fpc-badge>
+                  <div class="small text-body-secondary">{{ attempt.at | fpcDate: 'datetime' }}</div>
+                  @if (attempt.superseded) {
+                    <div class="small text-body-secondary" data-testid="fleet-cluster-trust-superseded">
+                      <span i18n="@@lwConsoleFleetCluster-trustSinceThen">Since then:</span>
+                      {{ trust().label }}
+                    </div>
+                  }
+                </div>
+              }
+            </ng-template>
+            <ng-template fpcKeyValue="trustAttemptBy">
+              @if (trust().attempt; as attempt) {
+                <span data-testid="fleet-cluster-trust-by">
+                  @if (attempt.by) {
+                    {{ userLabel(attempt.by) }}
+                  } @else {
+                    <span class="text-body-secondary" i18n="@@lwConsoleFleetCluster-trustAutomatic">automatically</span>
+                  }
+                </span>
+              }
+            </ng-template>
+          </fpc-key-value-list>
+
+          @if (c.reference) {
+            <section class="mt-3" data-testid="fleet-cluster-cloud">
+              <fpc-list-header [title]="cloudTitle" [sticky]="false" />
+              <fpc-key-value-list [items]="cloudFacts()">
+                <ng-template fpcKeyValue="state">
+                  @switch (c.state) {
+                    @case ('teardown') {
+                      <fpc-badge tone="warning">
+                        <span i18n="@@lwConsoleFleetCluster-teardown">Teardown: read-only until</span>
+                        {{ c.readOnlyUntil | date: 'medium' }}
+                      </fpc-badge>
+                      @if (c.readOnlyReason) {
+                        <span class="ms-2 text-body-secondary">{{ c.readOnlyReason }}</span>
+                      }
+                    }
+                    @case ('retired') {
+                      <fpc-badge tone="neutral" i18n="@@lwConsoleFleetCluster-retired"
+                        >Retired: the relay is closed</fpc-badge
+                      >
+                    }
+                    @default {
+                      <fpc-badge tone="success" i18n="@@lwConsoleFleetCluster-active">Active</fpc-badge>
+                    }
+                  }
+                </ng-template>
+              </fpc-key-value-list>
+              @if (cloudError(); as message) {
+                <fpc-alert class="d-block mt-2" [flush]="true" variant="danger" [message]="message" />
+              }
+              @if (cloud()?.finalBackup; as op) {
+                <div class="mt-3" data-testid="fleet-cluster-final-backup">
+                  <fpc-list-header [title]="finalBackupTitle" [sticky]="false">
+                    <fpc-badge fpcListHeaderActions [tone]="operationBadgeTone[op.status]">{{
+                      operationStatusLabel(op.status)
+                    }}</fpc-badge>
+                  </fpc-list-header>
+                  <div class="d-flex align-items-center gap-2 small my-2">
+                    <fpc-progress
+                      class="flex-grow-1"
+                      height="0.5rem"
+                      [value]="operationProgress(op)"
+                      [striped]="op.status === 'running'"
+                      [animated]="op.status === 'running'"
+                    />
+                    <span class="text-body-secondary text-nowrap">{{ op.updatedAt | date: 'short' }}</span>
+                  </div>
+                  <fpc-data-table
+                    nested
+                    [ariaLabel]="finalBackupTitle"
+                    [columns]="stepColumns"
+                    [rows]="op.steps"
+                    [rowId]="stepId"
+                    [searchable]="false"
+                    [showColumnChooser]="false"
+                    [clientSort]="false"
+                    data-testid="fleet-cluster-final-backup-steps"
+                  >
+                    <ng-template fpcTableCell="error" let-step>
+                      @if (step.error) {
+                        <span class="text-danger text-break">{{ step.error }}</span>
+                      }
+                    </ng-template>
+                  </fpc-data-table>
+                </div>
+              } @else if (admin() && !cloudError()) {
+                <div class="small text-body-secondary mt-2" i18n="@@lwConsoleFleetCluster-noFinalBackup">
+                  No final backup has run.
+                </div>
+              }
+            </section>
+          }
+        </loadweaver-lane>
+
+        @if (admin()) {
+          <loadweaver-lane
+            [title]="identityTitle"
+            grow="2 1 0"
+            [flush]="true"
+            [off]="lane() !== 'identity'"
+            data-testid="fleet-identity"
+          >
+            @if (identity(); as id) {
+              <!-- No raw ids as text (LW-13 / D11): the issuer via Copy, the keys' ids in their ⋮. -->
+              <div lwLaneToolbar class="d-flex align-items-center gap-3 small">
+                <span class="flex-grow-1 text-body-secondary" i18n="@@lwConsoleFleetCluster-issuerHint"
+                  >The fleet registers these keys in its clusters by itself (also a new key before you activate it).
+                  Where its credential may not, use Establish trust on the cluster.</span
+                >
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  iconOnly
+                  [ariaLabel]="copyIssuerLabel"
+                  [title]="copyIssuerLabel"
+                  (clicked)="copyText(id.issuer)"
+                  data-testid="fleet-identity-issuer"
+                >
+                  <i class="bi bi-clipboard" aria-hidden="true"></i>
+                </fpc-button>
+              </div>
+            }
+            @if (identityError(); as message) {
+              <fpc-alert [flush]="true" variant="danger" [message]="message" />
+            }
+            @if (identity()) {
+              <fpc-data-table
+                class="flex-grow-1 min-h-0"
+                [ariaLabel]="keysTitle"
+                [columns]="keyColumns"
+                [rows]="liveKeys()"
+                [rowId]="keyId"
+                [searchable]="false"
+                [showColumnChooser]="false"
+                [rowInlineActions]="keyInline"
+                [rowMenu]="keyMenu"
+                (rowAction)="onKeyAction($event.row, $event.item.id)"
+                [expandedRowId]="expandedKey()"
+                (rowActivate)="toggleKey($event)"
+                data-testid="fleet-identity-keys"
+              >
+                @if (!(identity()?.keys ?? []).some((k) => k.state === 'next')) {
+                  <fpc-button
+                    fpcDataTableToolbar
+                    variant="dark"
+                    size="sm"
+                    [loading]="identityBusy()"
+                    (clicked)="createNextKey()"
+                    data-testid="fleet-identity-next"
+                    iconOnly
+                    ariaLabel="New key (rotation)"
+                    i18n-ariaLabel="@@lwConsoleFleetCluster-identityNext"
+                    title="New key (rotation)"
+                    i18n-title="@@lwConsoleFleetCluster-identityNext"
+                  >
+                    <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                  </fpc-button>
+                }
+                <ng-template fpcTableCell="created" let-k>{{ k.createdAt | fpcDate }}</ng-template>
+                <ng-template fpcTableRowDetail let-k>
+                  <pre class="mb-0 small font-monospace text-break text-wrap">{{ k.publicKey }}</pre>
+                </ng-template>
+              </fpc-data-table>
+            } @else if (!identityError()) {
+              <fpc-empty-state [loading]="true" size="sm" [title]="identityLoadingLabel" />
+            }
+          </loadweaver-lane>
+
+          <loadweaver-lane [title]="grantsTitle" grow="3 1 0" [flush]="true" [off]="lane() !== 'grants'">
+            @if (grantsError(); as message) {
+              <fpc-alert [flush]="true" variant="danger" [message]="message" />
+            }
+            @if (!grantOpen() && grantError(); as message) {
+              <fpc-alert [flush]="true" variant="danger" [message]="message" />
+            }
+            @if (bulkResult(); as result) {
+              <fpc-alert
+                [flush]="true"
+                [variant]="result.tone"
+                [message]="result.message"
+                [dismissible]="true"
+                (closed)="bulkResult.set(null)"
+                data-testid="fleet-grants-bulk-result"
+              />
+            }
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [columns]="grantColumns"
+              [rows]="grants()"
+              [loading]="grantsLoading() && grants().length === 0"
+              [ariaLabel]="grantsTitle"
+              [searchable]="false"
+              paging="client"
+              persistKey="lw-fleet-grants"
+              selectable
+              [(selected)]="selectedGrants"
+              [rowMenu]="grantMenu"
+              (rowAction)="onGrantAction($event.row, $event.item.id)"
+              data-testid="fleet-grants"
+            >
+              <fpc-button
+                fpcDataTableToolbar
+                variant="primary"
+                size="sm"
+                (clicked)="openGrant()"
+                data-testid="fleet-grant-add"
+                iconOnly
+                ariaLabel="Grant access"
+                i18n-ariaLabel="@@lwConsoleFleetCluster-addGrant"
+                title="Grant access"
+                i18n-title="@@lwConsoleFleetCluster-addGrant"
+              >
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+              </fpc-button>
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  icon="people"
+                  size="sm"
+                  i18n-title="@@lwConsoleFleetCluster-noGrants"
+                  title="No grants: only fleet admins reach this cluster"
+                />
+              </span>
+              <fpc-button
+                fpcDataTableBatch
+                variant="danger"
+                size="sm"
+                [disabled]="selectedGrants().length === 0"
+                (clicked)="confirmBulkRevoke.set(true)"
+                data-testid="fleet-grants-bulk-remove"
+                iconOnly
+                [ariaLabel]="removeGrantLabel"
+                [title]="removeGrantLabel"
+              >
+                <i class="bi bi-trash" aria-hidden="true"></i>
+              </fpc-button>
+              <ng-template fpcTableCell="scope" let-grant>
+                @if (grant.project) {
+                  <span i18n="@@lwConsoleFleetCluster-projectScope">Project</span>
+                  <span class="font-monospace">{{ grant.project }}</span>
+                } @else {
+                  <span i18n="@@lwConsoleFleetCluster-clusterScope">Whole cluster</span>
+                }
+              </ng-template>
+              <ng-template fpcTableCell="role" let-grant>
+                <fpc-badge tone="neutral">{{ roleLabel(grant.role) }}</fpc-badge>
+              </ng-template>
+              <ng-template fpcTableCell="since" let-grant>
+                <span class="text-nowrap">{{ grant.createdAt | date: 'mediumDate' }}</span>
+              </ng-template>
+            </fpc-data-table>
+          </loadweaver-lane>
+        }
+      </fpc-section-row>
+    } @else if (clustersLoaded()) {
+      <fpc-empty-state
+        icon="question-circle"
+        i18n-title="@@lwConsoleFleetCluster-notFound"
+        title="Cluster not found, or no access"
+      />
+    } @else {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+    }
+  </div>
+</div>
+
+<fpc-modal [open]="grantOpen()" (openChange)="grantOpen.set($event)" [title]="grantTitle">
+  @if (grantFormError(); as message) {
+    <fpc-alert class="mb-3" variant="danger" [message]="message" />
+  }
+  @if (grantError(); as message) {
+    <fpc-alert class="mb-3" variant="danger" [message]="message" />
+  }
+  <fpc-form-field forId="lw-fleet-grant-search" i18n-label="@@lwConsoleFleetCluster-user" label="User" required>
+    <div class="d-flex gap-2">
+      <fpc-form-control
+        class="flex-grow-1"
+        controlId="lw-fleet-grant-search"
+        size="sm"
+        [placeholder]="userSearchLabel"
+        [(ngModel)]="userQuery"
+        (keydown.enter)="searchUsers()"
+      />
+      <fpc-button
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="userSearchLabel"
+        [title]="userSearchLabel"
+        [loading]="searching()"
+        (clicked)="searchUsers()"
+      >
+        <i class="bi bi-search" aria-hidden="true"></i>
+      </fpc-button>
+    </div>
+  </fpc-form-field>
+  @if (userResults().length > 0) {
+    <fpc-form-field forId="lw-fleet-grant-user" i18n-label="@@lwConsoleFleetCluster-userPick" label="Matching users">
+      <fpc-form-control controlType="select" controlId="lw-fleet-grant-user" size="sm" [(ngModel)]="grantUserId">
+        <option value="" i18n="@@lwConsoleFleetCluster-choose">Choose…</option>
+        @for (u of userResults(); track u.id) {
+          <option [value]="u.id">{{ u.email }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+  }
+  @if (userSearchError(); as message) {
+    <div class="small text-body-secondary mb-2">{{ message }}</div>
+  }
+  <fpc-form-field forId="lw-fleet-grant-user-id" i18n-label="@@lwConsoleFleetCluster-userId" label="User id">
+    <fpc-form-control
+      controlId="lw-fleet-grant-user-id"
+      size="sm"
+      controlClass="font-monospace"
+      [(ngModel)]="grantUserId"
+      data-testid="fleet-grant-user-id"
+    />
+  </fpc-form-field>
+  <div class="row g-3">
+    <div class="col-12 col-md-6">
+      <fpc-form-field
+        forId="lw-fleet-grant-project"
+        i18n-label="@@lwConsoleFleetCluster-project"
+        label="Project"
+        i18n-hint="@@lwConsoleFleetCluster-projectHint"
+        hint="Empty: the whole cluster."
+      >
+        <fpc-form-control
+          controlId="lw-fleet-grant-project"
+          size="sm"
+          controlClass="font-monospace"
+          [(ngModel)]="grantProject"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-12 col-md-6">
+      <fpc-form-field forId="lw-fleet-grant-role" i18n-label="@@lwConsoleFleetCluster-role" label="Role" required>
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-fleet-grant-role"
+          size="sm"
+          [(ngModel)]="grantRole"
+          data-testid="fleet-grant-role"
+          i18n-title="@@lwConsoleFleetCluster-roleHint"
+          title="Viewer reads; operator also plans, drains nodes, acknowledges alerts and runs backups and terminals; admin also administers the cluster, downloads backups and browses files. Approvals work through the fleet when the cluster trusts it. Project grants only reach that project's routes."
+        >
+          @for (role of roles; track role) {
+            <option [value]="role">{{ roleLabel(role) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+  </div>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" size="sm" (clicked)="grantOpen.set(false)">{{ cancelLabel }}</fpc-button>
+    <fpc-button
+      variant="primary"
+      size="sm"
+      [loading]="grantSaving()"
+      (clicked)="saveGrant()"
+      data-testid="fleet-grant-save"
+    >
+      <span i18n="@@lwConsoleFleetCluster-saveGrant">Save</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="revoking() !== null"
+  (openChange)="onRevokeOpenChange($event)"
+  [title]="revokeTitle"
+  [message]="revokeMessage"
+  [confirmLabel]="revokeConfirm"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="confirmRevoke()"
+/>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkRevoke"
+  [title]="bulkRevokeTitle"
+  [message]="bulkRevokeMessage()"
+  [confirmLabel]="removeGrantLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="revokeSelected()"
+/>
+
+<!-- Establish trust (2026-10-29): the fleet registers its own keys through the cluster's API; the cluster decides. -->
+<fpc-modal [open]="trustOpen()" (openChange)="onTrustOpenChange($event)" [title]="trustTitle">
+  @if (trustError(); as message) {
+    <fpc-alert class="mb-3" variant="danger" [message]="message" data-testid="fleet-trust-error" />
+  }
+  <p class="small" i18n="@@lwConsoleFleetCluster-trustIntro">
+    The fleet registers its own signing keys in this cluster's trusted fleets, through the cluster's API. The cluster
+    decides: its admins' rules apply, and it can remove the fleet again at any time.
+  </p>
+  <fpc-form-field
+    forId="lw-fleet-trust-token"
+    i18n-label="@@lwConsoleFleetCluster-trustToken"
+    label="Cluster admin token (optional)"
+    i18n-hint="@@lwConsoleFleetCluster-trustTokenHint"
+    hint="Leave empty to use the fleet's connection credential. If that credential may not register trusted fleets, a cluster admin pastes a token with the cluster:admin scope here: it is used for this one request and not stored."
+  >
+    <fpc-form-control
+      controlId="lw-fleet-trust-token"
+      size="sm"
+      inputType="password"
+      autocomplete="off"
+      controlClass="font-monospace"
+      [(ngModel)]="trustToken"
+      data-testid="fleet-trust-token"
+    />
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" size="sm" (clicked)="onTrustOpenChange(false)">{{ cancelLabel }}</fpc-button>
+    <fpc-button
+      variant="primary"
+      size="sm"
+      [loading]="trustBusy()"
+      (clicked)="establishTrust()"
+      data-testid="fleet-trust-submit"
+    >
+      <span i18n="@@lwConsoleFleetCluster-trustSubmit">Establish trust</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

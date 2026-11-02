@@ -35,13 +35,14 @@ import {
   FpcButtonComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
   FpcTypeaheadSelectComponent,
+  type FpcBadgeTone,
+  FpcSectionRowComponent,
+  FpcSectionColumnComponent,
+  FpcDatePipe,
 } from '@forepath/shared/frontend/ui-components';
 import {
   EMPTY,
@@ -60,11 +61,17 @@ import {
 import { resolveNamedDisplayLabel } from '../display-name.util';
 import { KnowledgeEditorComponent } from './knowledge-editor/knowledge-editor.component';
 import { KnowledgeTreeComponent } from './knowledge-tree/knowledge-tree.component';
+import { AttachmentChipsComponent } from '../shared/attachment-chips.component';
+import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
+import { WorkspaceSwitchTableComponent } from '../shared/workspace-switch-table.component';
 
 @Component({
   selector: 'framework-knowledge-board',
   standalone: true,
   imports: [
+    FpcDatePipe,
+    FpcSectionRowComponent,
+    FpcSectionColumnComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -75,12 +82,12 @@ import { KnowledgeTreeComponent } from './knowledge-tree/knowledge-tree.componen
     FpcButtonComponent,
     FpcEmptyStateComponent,
     FpcFormControlComponent,
-    FpcListComponent,
-    FpcListItemComponent,
     FpcModalComponent,
+    AttachmentChipsComponent,
+    WorkspaceChipComponent,
+    WorkspaceSwitchTableComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
     FpcTypeaheadSelectComponent,
   ],
   templateUrl: './knowledge-board.component.html',
@@ -95,7 +102,7 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
   private readonly RELATION_TARGET_KIND_TICKET = 'ticket';
   @ViewChild(KnowledgeTreeComponent, { static: false })
   private knowledgeTreeComponent?: KnowledgeTreeComponent;
-  @ViewChild('knowledgeTreeSidebar', { static: false })
+  @ViewChild('knowledgeTreeSidebar', { static: false, read: ElementRef })
   private knowledgeTreeSidebar?: ElementRef<HTMLDivElement>;
   @ViewChild('globalSearchInput', { static: false })
   private globalSearchInput?: ElementRef<HTMLElement>;
@@ -772,23 +779,23 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  activityActionBadgeClass(actionType: string): string {
+  activityActionBadgeTone(actionType: string): FpcBadgeTone {
     switch (actionType) {
       case 'CREATED':
       case 'DUPLICATED':
-        return 'knowledge-board__chip--activity-created';
+        return 'success';
       case 'CONTENT_UPDATED':
       case 'FIELD_UPDATED':
-        return 'knowledge-board__chip--activity-muted';
+        return 'neutral';
       case 'PARENT_CHANGED':
       case 'SORT_ORDER_CHANGED':
-        return 'knowledge-board__chip--activity-status';
+        return 'primary';
       case 'RELATION_ADDED':
-        return 'knowledge-board__chip--activity-comment';
+        return 'info';
       case 'RELATION_REMOVED':
-        return 'knowledge-board__chip--activity-deleted';
+        return 'danger';
       default:
-        return 'knowledge-board__chip--activity-muted';
+        return 'neutral';
     }
   }
 

@@ -1,0 +1,186 @@
+name: Loadweaver App Catalog Publish
+
+# Builds, signs and publishes the Loadweaver app catalogs (docs/loadweaver/features/app-store-publishing.md):
+#   official  -> oci://ghcr.io/forepath/loadweaver-apps            (key: LOADWEAVER_APP_CATALOG_OFFICIAL_KEY)
+#   community -> oci://ghcr.io/forepath/loadweaver-community-apps  (key: LOADWEAVER_APP_CATALOG_COMMUNITY_KEY)
+# plus the Git catalog layout (index.yaml + .sig, <app>/<version>.tar.gz + .sig) as a workflow artifact.
+#
+# Runs on main when a catalog changes, by hand, and from release.yml after the container images are pushed: then the
+# official apps get a new version for the release (lw app bump re-pins the ForePath images to the release digests).
+#
+# Safety: without the catalog's key secret the catalog is skipped with a warning. The key must match a public key in
+# the catalog's keys/ (the committed keys are development keys), otherwise `lw app index build` refuses to sign, so
+# nothing is published until the production public key is committed.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/loadweaver/app-catalog/**'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Build and sign, but do not push to the registry
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      release-version:
+        description: Release whose images the official apps are bumped to (empty = publish the catalogs as committed)
+        type: string
+        default: ''
+      dry-run:
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+concurrency:
+  group: loadweaver-app-catalog-publish
+  cancel-in-progress: false
+
+env:
+  NX_DAEMON: 'false'
+  LW: node dist/apps/loadweaver/cli/main.js
+
+jobs:
+  publish:
+    name: Publish (${{ matrix.catalog }})
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      # contents / pull-requests: only to open the PR with a release's bumped official packages.
+      contents: write
+      packages: write
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - catalog: official
+            secret: LOADWEAVER_APP_CATALOG_OFFICIAL_KEY
+            passphrase: LOADWEAVER_APP_CATALOG_OFFICIAL_KEY_PASSPHRASE
+          - catalog: community
+            secret: LOADWEAVER_APP_CATALOG_COMMUNITY_KEY
+            passphrase: LOADWEAVER_APP_CATALOG_COMMUNITY_KEY_PASSPHRASE
+    env:
+      DIR: apps/loadweaver/app-catalog/${{ matrix.catalog }}
+      RELEASE_VERSION: ${{ inputs.release-version }}
+      DRY_RUN: ${{ inputs.dry-run && 'true' || 'false' }}
+    steps:
+      - name: Check the catalog signing key
+        id: key
+        env:
+          KEY: ${{ secrets[matrix.secret] }}
+        run: |
+          if [ -n "${KEY}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=${{ matrix.catalog }} app catalog skipped::${{ matrix.secret }} is not set; the catalog is not published."
+          fi
+
+      - name: Checkout code
+        if: steps.key.outputs.present == 'true'
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        if: steps.key.outputs.present == 'true'
+        uses: ./.github/actions/setup-env
+
+      - name: Build the CLI
+        if: steps.key.outputs.present == 'true'
+        run: npx nx run loadweaver-cli:build:development --skip-nx-cache
+
+      # Release: a new version of every official app, from its newest version, with the ForePath images re-pinned to
+      # the digests this release pushed. Versions that already exist are left alone.
+      - name: Bump the official apps to the release
+        if: steps.key.outputs.present == 'true' && matrix.catalog == 'official' && env.RELEASE_VERSION != ''
+        env:
+          LW_REGISTRY_USERNAME: ${{ github.actor }}
+          LW_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          for app in $(find "$DIR" -mindepth 3 -maxdepth 3 -name manifest.yaml | awk -F/ '{print $5}' | sort -u); do
+            [ -d "$DIR/$app/$RELEASE_VERSION" ] && { echo "$app $RELEASE_VERSION exists"; continue; }
+            latest=$(ls "$DIR/$app" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+            $LW app bump "$DIR/$app/$latest" --version "$RELEASE_VERSION"
+            $LW app validate "$DIR/$app/$RELEASE_VERSION"
+            $LW app lint "$DIR/$app/$RELEASE_VERSION"
+          done
+
+      - name: Upload the bumped packages (commit them to the catalog)
+        if: steps.key.outputs.present == 'true' && matrix.catalog == 'official' && env.RELEASE_VERSION != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-catalog-official-${{ inputs.release-version }}
+          path: apps/loadweaver/app-catalog/official/*/${{ inputs.release-version }}/
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Check signatures
+        if: steps.key.outputs.present == 'true'
+        run: |
+          if [ "${{ matrix.catalog }}" = "community" ]; then $LW app verify "$DIR" --require-signatures; else $LW app verify "$DIR"; fi
+
+      # The key reaches only the signing steps, as an env var (never a file, never printed).
+      - name: Build and sign the index (Git catalog layout)
+        if: steps.key.outputs.present == 'true'
+        env:
+          LW_APP_SIGNING_KEY: ${{ secrets[matrix.secret] }}
+          LW_APP_SIGNING_KEY_PASSPHRASE: ${{ secrets[matrix.passphrase] }}
+        run: $LW app index build "$DIR" -o "dist/app-catalog/${{ matrix.catalog }}"
+
+      - name: Verify the signed catalog
+        if: steps.key.outputs.present == 'true'
+        run: $LW app verify "dist/app-catalog/${{ matrix.catalog }}" --key "$DIR/keys"
+
+      - name: Upload the Git catalog
+        if: steps.key.outputs.present == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-catalog-${{ matrix.catalog }}-git
+          path: dist/app-catalog/${{ matrix.catalog }}
+          retention-days: 30
+
+      - name: Publish to the OCI registry
+        if: steps.key.outputs.present == 'true'
+        env:
+          LW_APP_SIGNING_KEY: ${{ secrets[matrix.secret] }}
+          LW_APP_SIGNING_KEY_PASSPHRASE: ${{ secrets[matrix.passphrase] }}
+          LW_REGISTRY_USERNAME: ${{ github.actor }}
+          LW_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ "$DRY_RUN" = "true" ]; then
+            $LW app publish oci "$DIR" --dry-run
+          else
+            $LW app publish oci "$DIR"
+          fi
+
+      # The bumped packages must land in the repository, or the next publish from main would list the release's
+      # versions no more. A PR made with GITHUB_TOKEN runs no workflows; merge it after a look at the diff.
+      - name: Open a PR with the release packages
+        if: >-
+          steps.key.outputs.present == 'true' && matrix.catalog == 'official' && env.RELEASE_VERSION != '' &&
+          env.DRY_RUN != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain -- "$DIR")" ]; then echo "nothing to commit"; exit 0; fi
+          branch="chore/loadweaver-app-catalog-${RELEASE_VERSION}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add -- "$DIR"
+          git commit -m "chore(loadweaver): official app catalog for ${RELEASE_VERSION}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${branch}"
+          gh pr create --head "$branch" --base main \
+            --title "chore(loadweaver): official app catalog for ${RELEASE_VERSION}" \
+            --body "Official app packages bumped to release ${RELEASE_VERSION} (ForePath images re-pinned to the release digests) and already published to the registry by the release workflow."

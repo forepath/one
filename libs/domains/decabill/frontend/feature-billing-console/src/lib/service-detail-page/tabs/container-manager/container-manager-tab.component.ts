@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   Component,
   DestroyRef,
@@ -28,23 +28,25 @@ import {
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
   FpcAlertComponent,
-  FpcBadgeComponent,
   FpcButtonComponent,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcLaneHeaderComponent,
   FpcPanelComponent,
   FpcPanelGridComponent,
-  FpcListComponent,
-  FpcListItemComponent,
-  FpcSearchFieldComponent,
   FpcSpinnerComponent,
   FPC_CHART_AREA_FILL,
-  FPC_CHART_AXIS,
   FPC_CHART_GRID,
   FPC_CHART_LABEL_STYLE,
   fpcChart,
   fpcChartColor,
+  type FpcTableColumn,
+  type FpcTableState,
+  FpcDatePipe,
 } from '@forepath/shared/frontend/ui-components';
+
+import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../../../billing-chart';
+import { formatBillingTime } from '../../../billing-format';
 
 import type {
   ApexAxisChartSeries,
@@ -90,22 +92,19 @@ const TOPOLOGY_NODE_RADIUS = 16;
   selector: 'framework-container-manager-tab',
   standalone: true,
   imports: [
+    FpcDatePipe,
     CommonModule,
     FormsModule,
     NgApexchartsModule,
-    FpcBadgeComponent,
     FpcButtonComponent,
     FpcAlertComponent,
     FpcLaneHeaderComponent,
     FpcPanelComponent,
     FpcPanelGridComponent,
-    FpcListComponent,
-    FpcListItemComponent,
-    FpcSearchFieldComponent,
+    FpcDataTableComponent,
     FpcSpinnerComponent,
     FpcEmptyStateComponent,
   ],
-  providers: [DatePipe],
   templateUrl: './container-manager-tab.component.html',
   styleUrls: ['./container-manager-tab.component.scss'],
 })
@@ -115,7 +114,6 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
   @Input() adminMode = false;
 
   private readonly facade = inject(ContainerManagerFacade);
-  private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
   private readonly logsViewport = viewChild<ElementRef<HTMLPreElement>>('logsViewport');
   private readonly topologyWrap = viewChild<ElementRef<HTMLElement>>('topologyWrap');
@@ -139,6 +137,43 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
   readonly contentView = signal<'container' | 'network'>('container');
   readonly containerSearchPlaceholder = $localize`:@@featureContainerManager-searchPlaceholder:Search containers`;
   readonly searchQuery = signal('');
+  readonly containersLabel = $localize`:@@featureContainerManager-containersLabel:Containers`;
+  /** Containers rail: State · Container · CPU · memory · image (stacked cards in the narrow rail). */
+  readonly containerColumns: FpcTableColumn<ContainerManagerContainer>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureContainerManager-colState:State`,
+      type: 'state',
+      state: (container) => this.containerState(container),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureContainerManager-colContainer:Container`,
+      value: (container) => container.name,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'cpu',
+      label: $localize`:@@featureContainerManager-cpu:CPU`,
+      value: (container) => this.formatPercent(container.stats?.cpuPercent),
+      align: 'end',
+      priority: 1,
+    },
+    {
+      id: 'memory',
+      label: $localize`:@@featureContainerManager-memory:Memory`,
+      value: (container) => this.formatBytes(container.stats?.memoryUsageBytes),
+      align: 'end',
+      priority: 2,
+    },
+    {
+      id: 'image',
+      label: $localize`:@@featureContainerManager-colImage:Image`,
+      value: (container) => container.image,
+      priority: 3,
+    },
+  ];
   readonly topologyHover = signal<TopologyPopoverModel | null>(null);
   readonly topologyPopoverPos = signal<{ left: number; top: number } | null>(null);
 
@@ -398,19 +433,18 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
     return `${value.toFixed(1)}%`;
   }
 
-  containerStatusDotClass(container: ContainerManagerContainer): string {
-    switch (this.containerStatusKind(container)) {
-      case 'running':
-        return 'bg-success';
-      case 'restarting':
-        return 'bg-warning';
-      case 'paused':
-        return 'bg-info';
-      case 'stopped':
-        return 'bg-danger';
-      default:
-        return 'bg-secondary';
-    }
+  containerState(container: ContainerManagerContainer): FpcTableState {
+    const tones: Record<string, FpcTableState['tone']> = {
+      running: 'success',
+      restarting: 'warning',
+      paused: 'info',
+      stopped: 'danger',
+    };
+
+    return {
+      label: this.containerStatusLabel(container),
+      tone: tones[this.containerStatusKind(container)] ?? 'neutral',
+    };
   }
 
   containerStatusLabel(container: ContainerManagerContainer): string {
@@ -493,7 +527,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       return null;
     }
 
-    const categories = points.map((point) => this.datePipe.transform(point.timestamp, 'short') ?? point.timestamp);
+    const categories = points.map((point) => formatBillingTime(point.timestamp));
     const cpuColor = fpcChartColor(0);
 
     return {
@@ -508,11 +542,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       stroke: { curve: 'smooth', width: 2 } as ApexStroke,
       fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
-      xaxis: {
-        ...FPC_CHART_AXIS,
-        categories,
-        labels: { style: FPC_CHART_LABEL_STYLE },
-      } as ApexXAxis,
+      xaxis: billingChartTimeAxis(categories) as ApexXAxis,
       yaxis: {
         min: 0,
         max: 100,
@@ -523,6 +553,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       },
       grid: FPC_CHART_GRID,
       legend: { show: false } as ApexLegend,
+      responsive: BILLING_CHART_RESPONSIVE,
     };
   }
 
@@ -548,7 +579,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       return null;
     }
 
-    const categories = points.map((point) => this.datePipe.transform(point.timestamp, 'short') ?? point.timestamp);
+    const categories = points.map((point) => formatBillingTime(point.timestamp));
     const memoryColor = fpcChartColor(1);
 
     return {
@@ -563,11 +594,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       stroke: { curve: 'smooth', width: 2 } as ApexStroke,
       fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
-      xaxis: {
-        ...FPC_CHART_AXIS,
-        categories,
-        labels: { style: FPC_CHART_LABEL_STYLE },
-      } as ApexXAxis,
+      xaxis: billingChartTimeAxis(categories) as ApexXAxis,
       yaxis: {
         min: 0,
         max: maxBytes,
@@ -578,6 +605,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       },
       grid: FPC_CHART_GRID,
       legend: { show: false } as ApexLegend,
+      responsive: BILLING_CHART_RESPONSIVE,
       tooltip: {
         y: {
           formatter: (value: number) => this.formatBytes(value),

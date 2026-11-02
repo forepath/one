@@ -1,0 +1,298 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="fleet-overview" [binding]="views" />
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      [loading]="cardsLoading()"
+      (clicked)="refresh()"
+      data-testid="fleet-overview-refresh"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (cards().length > 0) {
+    <fpc-summary-bar class="flex-shrink-0" [columns]="6" data-testid="fleet-summary">
+      <!-- Health in the clusters' own words (LW-19): healthy / all, the tone of the worst health in the table. -->
+      <fpc-summary-card
+        icon="diagram-3"
+        i18n-label="@@lwConsoleFleetOverview-sumHealthyClusters"
+        label="Healthy clusters"
+        [value]="clusterHealth().healthy + ' / ' + clusterHealth().total"
+        [tone]="clusterHealth().tone"
+        data-testid="fleet-summary-health"
+      />
+      <fpc-summary-card
+        icon="exclamation-triangle"
+        i18n-label="@@lwConsoleFleetOverview-sumAttention"
+        label="Needs attention"
+        [value]="'' + summary().attention"
+        [tone]="summary().critical > 0 ? 'danger' : 'default'"
+      />
+      <fpc-summary-card
+        icon="bell"
+        i18n-label="@@lwConsoleFleetOverview-sumAlerts"
+        label="Open alerts"
+        [value]="'' + summary().openAlerts"
+      />
+      <fpc-summary-card
+        icon="hourglass-split"
+        i18n-label="@@lwConsoleFleetOverview-sumPlans"
+        label="Pending plans"
+        [value]="'' + summary().pendingPlans"
+      />
+      <fpc-summary-card
+        icon="arrow-up-circle"
+        i18n-label="@@lwConsoleFleetOverview-sumUpgrades"
+        label="Upgrades available"
+        [value]="'' + summary().upgrades"
+        [tone]="summary().upgrades > 0 ? 'info' : 'default'"
+      />
+      <fpc-summary-card
+        icon="power"
+        i18n-label="@@lwConsoleFleetOverview-sumTeardown"
+        label="In teardown"
+        [value]="'' + summary().teardown"
+        [tone]="summary().teardown > 0 ? 'warning' : 'default'"
+      />
+    </fpc-summary-bar>
+  }
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (cardsError(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    }
+
+    @if (cardsLoading() && cards().length === 0) {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" data-testid="fleet-overview-loading" />
+    } @else if (cards().length === 0) {
+      @if (!cardsError()) {
+        <fpc-empty-state
+          icon="globe2"
+          i18n-title="@@lwConsoleFleetOverview-empty"
+          title="No clusters in the fleet yet"
+          i18n-message="@@lwConsoleFleetOverview-emptyHint"
+          message="Fleet admins register clusters under Clusters; others see the clusters they have a grant on."
+        />
+      }
+    } @else {
+      <!-- Lanes (3.38): Clusters | Needs attention | Sites; phones pick one. -->
+      <fpc-tab-group
+        class="fpc-lane-tabs"
+        [activeId]="lane()"
+        (activeIdChange)="lane.set($any($event))"
+        [ariaLabel]="title"
+      >
+        <fpc-tab id="clusters" [label]="clustersLabel" />
+        <fpc-tab id="attention" [label]="inboxTitle" />
+        <fpc-tab id="sites" [label]="sitesTitle" />
+      </fpc-tab-group>
+      <fpc-section-row class="flex-grow-1 min-h-0" data-testid="fleet-overview-lanes">
+        <loadweaver-lane
+          [title]="clustersLabel"
+          grow="2 1 0"
+          [flush]="true"
+          [off]="lane() !== 'clusters'"
+          data-testid="fleet-clusters-lane"
+        >
+          <!-- Clusters (3.38 D1): State (connection) · Cluster (+ flags) · health · facts; click opens the cluster. -->
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="clustersLabel"
+            [columns]="cardColumns"
+            [rows]="filteredCards()"
+            [rowId]="cardId"
+            [filtered]="!!search().trim()"
+            paging="client"
+            persistKey="lw-fleet-overview-clusters"
+            [(query)]="search"
+            [searchPlaceholder]="searchLabel"
+            [rowMenu]="cardMenu"
+            (rowAction)="onCardAction($event.row, $event.item.id)"
+            (rowActivate)="activateCard($event)"
+            data-testid="fleet-cards"
+          >
+            <ng-template fpcTableCell="name" let-card>
+              <span class="d-inline-flex flex-wrap align-items-center gap-1">
+                <span class="fw-semibold">{{ card.name }}</span>
+                @if (card.state === 'teardown') {
+                  <fpc-badge
+                    tone="warning"
+                    icon="hourglass-split"
+                    [iconOnly]="true"
+                    [label]="teardownLabel + ' ' + (card.readOnlyUntil | date: 'mediumDate')"
+                    data-testid="fleet-card-teardown"
+                  />
+                }
+                @if (card.state === 'retired') {
+                  <fpc-badge tone="neutral" icon="archive" [iconOnly]="true" [label]="retiredLabel" />
+                }
+                @if (card.reference) {
+                  <fpc-badge tone="neutral" icon="cloud" [iconOnly]="true" [label]="cloudLabel" />
+                }
+                @if (card.limited) {
+                  <fpc-badge tone="neutral" icon="folder" [iconOnly]="true" [label]="limitedLabel" />
+                }
+                @if (card.activeRollout) {
+                  <fpc-badge tone="info" icon="arrow-up-circle" [iconOnly]="true" [label]="rolloutLabel" />
+                }
+                @if (availability(card); as a) {
+                  @if (a.state !== 'reachable') {
+                    <!-- 3.43: changes through the fleet are paused while unreachable / read-only. -->
+                    <fpc-badge
+                      [tone]="a.state === 'unreachable' ? 'danger' : 'warning'"
+                      icon="pause-circle"
+                      [iconOnly]="true"
+                      [label]="pausedLabel + (a.reason ? ': ' + a.reason : '')"
+                      data-testid="fleet-card-paused"
+                    />
+                  }
+                }
+              </span>
+            </ng-template>
+            <ng-template fpcTableCell="health" let-card>
+              @if (card.health; as h) {
+                <fpc-badge [tone]="healthTone(card)" [title]="h.message ?? ''">{{ health(h.state) }}</fpc-badge>
+              }
+              <ng-container *ngTemplateOutlet="asOfMark; context: { $implicit: card }" />
+            </ng-template>
+            <ng-template fpcTableCell="nodes" let-card>
+              @if (!card.limited && card.nodes; as n) {
+                {{ n.up }} / {{ n.total }}
+                <ng-container *ngTemplateOutlet="asOfMark; context: { $implicit: card }" />
+              }
+            </ng-template>
+            <ng-template fpcTableCell="alerts" let-card>
+              @if (card.openAlerts !== null && card.openAlerts !== undefined) {
+                {{ card.openAlerts }}
+                <ng-container *ngTemplateOutlet="asOfMark; context: { $implicit: card }" />
+              }
+            </ng-template>
+            <ng-template fpcTableCell="version" let-card>
+              <span class="font-monospace"
+                >{{ card.version ?? '' }}
+                @if (card.upgradeAvailable) {
+                  → {{ card.latestAvailable }}
+                }
+              </span>
+            </ng-template>
+            <ng-template fpcTableCell="capacity" let-card>
+              <span class="small d-inline-flex flex-wrap gap-2">
+                @if (capacityPercent(card.capacity, 'cpu'); as cpu) {
+                  <span [class]="capacityClass(cpu)"
+                    ><span i18n="@@lwConsoleFleetOverview-cpu">CPU</span> {{ cpu }}%</span
+                  >
+                }
+                @if (capacityPercent(card.capacity, 'memory'); as memory) {
+                  <span [class]="capacityClass(memory)"
+                    ><span i18n="@@lwConsoleFleetOverview-memory">Memory</span> {{ memory }}%</span
+                  >
+                }
+                @for (e of card.errors; track e) {
+                  <span class="text-danger text-break w-100">{{ e }}</span>
+                }
+              </span>
+            </ng-template>
+          </fpc-data-table>
+        </loadweaver-lane>
+
+        <loadweaver-lane
+          [title]="inboxTitle"
+          [flush]="true"
+          [off]="lane() !== 'attention'"
+          data-testid="fleet-attention-lane"
+        >
+          @if (inboxError(); as message) {
+            <fpc-alert [flush]="true" variant="danger" [message]="message" />
+          } @else {
+            <!-- Needs attention as a table (decision 2): State (severity) · Title · cluster · project · since. -->
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="inboxTitle"
+              [columns]="inboxColumns"
+              [rows]="inbox()"
+              [rowId]="inboxId"
+              [searchable]="false"
+              paging="client"
+              persistKey="lw-fleet-overview-inbox"
+              (rowActivate)="openItem($event)"
+              emptyIcon="check2-circle"
+              data-testid="fleet-inbox"
+            >
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  icon="check2-circle"
+                  size="sm"
+                  i18n-title="@@lwConsoleFleetOverview-inboxEmpty"
+                  title="Nothing needs attention"
+                />
+              </span>
+              <!-- Titles wrap to two lines in the feed (LW-19), the full title in the tooltip. -->
+              <ng-template fpcTableCell="title" let-item>
+                <span class="lw-feed-title" [title]="inboxTitleText(item)">{{ inboxTitleText(item) }}</span>
+              </ng-template>
+              <ng-template fpcTableCell="since" let-item>{{ item.since | date: 'short' }}</ng-template>
+              <ng-template fpcTableCell="native" let-item>
+                @if (item.nativeUrl) {
+                  <!-- Only approvals on a cluster that does not trust the fleet (2026-10-29): there they stay native. -->
+                  <a
+                    [href]="item.nativeUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    (click)="$event.stopPropagation()"
+                    data-testid="fleet-inbox-native"
+                  >
+                    <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
+                    >{{ isApproval(item) ? approveNativeLabel : openNativeLabel }}
+                  </a>
+                }
+              </ng-template>
+            </fpc-data-table>
+          }
+        </loadweaver-lane>
+
+        <loadweaver-lane [title]="sitesTitle" [off]="lane() !== 'sites'" data-testid="fleet-sites-lane">
+          @if (sitesError(); as message) {
+            <fpc-alert [flush]="true" variant="danger" [message]="message" />
+          } @else if (located().length === 0) {
+            <fpc-empty-state
+              icon="geo-alt"
+              size="sm"
+              i18n-title="@@lwConsoleFleetOverview-noLocations"
+              title="No site locations known"
+              i18n-message="@@lwConsoleFleetOverview-noLocationsHint"
+              message="Set spec.location (latitude / longitude) on the Site resources to see them on the map."
+            />
+          } @else {
+            <loadweaver-fleet-world-map [sites]="located()" [ariaLabel]="mapLabel" (siteSelected)="openSite($event)" />
+            <fpc-key-value-list class="mt-2" [items]="siteFacts()" data-testid="fleet-sites-list" />
+          }
+          @if ((sites()?.withoutLocation ?? 0) > 0) {
+            <div class="small text-body-secondary mt-2">
+              <span i18n="@@lwConsoleFleetOverview-withoutLocation">Sites without a location</span>:
+              {{ sites()?.withoutLocation }}
+            </div>
+          }
+        </loadweaver-lane>
+      </fpc-section-row>
+    }
+  </div>
+</div>
+
+<!-- 3.43: counts from an earlier snapshot (the cluster doesn't answer) carry their time. -->
+<ng-template #asOfMark let-card>
+  @if (card.asOf) {
+    <i
+      class="bi bi-clock-history text-body-secondary ms-1"
+      role="img"
+      [title]="asOfTitle(card.asOf)"
+      [attr.aria-label]="asOfTitle(card.asOf)"
+      data-testid="fleet-card-as-of"
+    ></i>
+  }
+</ng-template>

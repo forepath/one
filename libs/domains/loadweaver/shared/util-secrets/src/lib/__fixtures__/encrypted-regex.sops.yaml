@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db
+  replicas: 3
+  mode: 420
+  octal: 15
+  hex: 31
+  bin: 5
+  big: 1000
+  ratio: 1.5
+  exp: 1000
+  inf: .inf
+  enabled: true
+  created: 2024-01-02T03:04:05Z
+  date: 2024-01-02T00:00:00Z
+  quoted: '42'
+  folded: |
+    a folded text
+data:
+  password: ENC[AES256_GCM,data:Y+zOy6LDLg==,iv:8kS0f00fRHfR0/zSS5MizVYIngYK60ZGISS3+RAGOTM=,tag:anSDT/X8VSEPyfYLgD7LoA==,type:str]
+  port: ENC[AES256_GCM,data:mjUr5g==,iv:5/8LSHRestKwtZ1BbcaN0IUz/IlTeNlMY7YHuacJk6M=,tag:PUB4EMa1+G9uvGDi4HmquQ==,type:int]
+stringData:
+  token: ENC[AES256_GCM,data:RlKf,iv:nKIoqO/9uxexSOxNADXMBcriUoa9heWvTXfxlb1jsYw=,tag:7pPHN+vOYWpAqQXI6yLjVg==,type:str]
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB2NFVxa204dGo3cHVrTU9C
+        MDRjU1pYbG10YW0vZld4eVN6aW9Cck1tTFNRCnU5V0NlTElPelowY0dBYm5OSTRK
+        RUhVT1NYTzJKaEp4V3FnMzNIWHlkY3cKLS0tIEY3OFE3Q3pQNkxlbGZvTlhIYlpp
+        TjE0VFNVTVhISmNicytQLzdMYUMvUmMKWkwYLzKvYBL8m3P3p/EtkN9ArvOuz2u2
+        6frwbbSyaC7Pnub9oICXkVkLXXwccidsdRVXS1dLXMaCYlEXlDjr+w==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1dxepryr8jh4a7jpl4e7e9033tadrdp6cvzjm4wj6uw53xerc8ausnv4xm5
+  encrypted_regex: ^(data|stringData)$
+  lastmodified: '2026-10-18T14:35:33Z'
+  mac: ENC[AES256_GCM,data:2KKhlRq+9u5zJSLYkQNd6i1jWRth+u3Fr6+cePXNWflv+OYaWlxp3yHMi8dXg14F0u/vdOQAVgU/LgYWZDqS/Hzqyzqoy/edZYEMJAbgsz7MCLxyb5gZgOEcGw7B9Whx6DfHqMzn0um3e2DeoFtMtxChY3aiI/uokjUHvqeQV+A=,iv:3iq7Dl2L5b48Y+LrVxe0x+4NyeZKPBYKni0s/Y1aSic=,tag:SLwd4VmHhEdfiKvqva+bcw==,type:str]
+  version: 3.13.3

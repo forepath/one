@@ -1,0 +1,24 @@
+#!/bin/bash
+# Console of the VM in this launcher on stdio (run by the node agent through `docker exec` for the live path; never
+# user input and never rewritten to vm-exec).
+#
+#   vm-console serial   the serial console (TTY exec; the terminal is put into raw mode)
+#   vm-console vnc      raw RFB of the graphical console (binary, no TTY)
+set -euo pipefail
+
+# shellcheck source=launcher-lib.sh
+. /usr/lib/agenstra-microvm/launcher-lib.sh
+
+[ "$(id -u)" = 0 ] || die "vm-console runs as the container's root user"
+[ "$#" = 1 ] || die "usage: vm-console serial|vnc"
+domain_name >/dev/null
+
+case "$1" in
+  serial) socket="${VMM_DIR}/console.sock" ;;
+  vnc) socket="${VMM_DIR}/vnc.sock" ;;
+  *) die "unknown console $1" ;;
+esac
+[ -S "${socket}" ] || die "the VM has no $1 console"
+
+exec setpriv --reuid="${vmm_uid}" --regid="${vmm_gid}" --clear-groups --inh-caps=-all --bounding-set=-all -- \
+  /usr/bin/node "${INSTALL_DIR}/bridge-host.cjs" relay --socket "${socket}"

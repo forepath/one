@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
 
+import { billingPageWindow } from '../../constants/list-paging.constants';
 import { AdminProjectsService } from '../../services/admin-projects.service';
 import { ProjectsService } from '../../services/projects.service';
 
@@ -21,12 +22,6 @@ import {
   loadAdminProjects,
   loadAdminProjectsFailure,
   loadAdminProjectsSuccess,
-  loadMoreAdminProjects,
-  loadMoreAdminProjectsFailure,
-  loadMoreAdminProjectsSuccess,
-  loadMoreProjects,
-  loadMoreProjectsFailure,
-  loadMoreProjectsSuccess,
   loadProjectDetail,
   loadProjectDetailFailure,
   loadProjectDetailSuccess,
@@ -54,26 +49,18 @@ function normalizeError(error: unknown): string {
   return 'An unexpected error occurred';
 }
 
-const BATCH_SIZE = 10;
-
 export const loadProjects$ = createEffect(
   (actions$ = inject(Actions), service = inject(ProjectsService)) =>
     actions$.pipe(
       ofType(loadProjects),
-      switchMap(({ search }) =>
-        service.list({ limit: BATCH_SIZE, offset: 0, search }).pipe(
-          map((response) => {
-            const nextOffset = response.items.length;
+      switchMap(({ search, page, pageSize }) => {
+        const { limit, offset } = billingPageWindow(page, pageSize);
 
-            return loadProjectsSuccess({
-              projects: response.items,
-              hasMore: nextOffset < response.total,
-              nextOffset,
-            });
-          }),
+        return service.list({ limit, offset, search }).pipe(
+          map((response) => loadProjectsSuccess({ projects: response.items, total: response.total })),
           catchError((error) => of(loadProjectsFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     ),
   { functional: true },
 );
@@ -86,28 +73,6 @@ export const loadProjectsCatalogSummary$ = createEffect(
         service.getCatalogSummary().pipe(
           map((summary) => loadProjectsCatalogSummarySuccess({ summary })),
           catchError((error) => of(loadProjectsCatalogSummaryFailure({ error: normalizeError(error) }))),
-        ),
-      ),
-    ),
-  { functional: true },
-);
-
-export const loadMoreProjects$ = createEffect(
-  (actions$ = inject(Actions), service = inject(ProjectsService)) =>
-    actions$.pipe(
-      ofType(loadMoreProjects),
-      switchMap(({ offset, search }) =>
-        service.list({ limit: BATCH_SIZE, offset, search }).pipe(
-          map((response) => {
-            const nextOffset = offset + response.items.length;
-
-            return loadMoreProjectsSuccess({
-              projects: response.items,
-              hasMore: nextOffset < response.total,
-              nextOffset,
-            });
-          }),
-          catchError((error) => of(loadMoreProjectsFailure({ error: normalizeError(error) }))),
         ),
       ),
     ),
@@ -146,42 +111,14 @@ export const loadAdminProjects$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminProjectsService)) =>
     actions$.pipe(
       ofType(loadAdminProjects),
-      switchMap(({ search, userId }) =>
-        service.list({ limit: BATCH_SIZE, offset: 0, search, userId }).pipe(
-          map((response) => {
-            const nextOffset = response.items.length;
+      switchMap(({ search, userId, page, pageSize }) => {
+        const { limit, offset } = billingPageWindow(page, pageSize);
 
-            return loadAdminProjectsSuccess({
-              adminProjects: response.items,
-              hasMore: nextOffset < response.total,
-              nextOffset,
-            });
-          }),
+        return service.list({ limit, offset, search, userId }).pipe(
+          map((response) => loadAdminProjectsSuccess({ adminProjects: response.items, total: response.total })),
           catchError((error) => of(loadAdminProjectsFailure({ error: normalizeError(error) }))),
-        ),
-      ),
-    ),
-  { functional: true },
-);
-
-export const loadMoreAdminProjects$ = createEffect(
-  (actions$ = inject(Actions), service = inject(AdminProjectsService)) =>
-    actions$.pipe(
-      ofType(loadMoreAdminProjects),
-      switchMap(({ offset, search, userId }) =>
-        service.list({ limit: BATCH_SIZE, offset, search, userId }).pipe(
-          map((response) => {
-            const nextOffset = offset + response.items.length;
-
-            return loadMoreAdminProjectsSuccess({
-              adminProjects: response.items,
-              hasMore: nextOffset < response.total,
-              nextOffset,
-            });
-          }),
-          catchError((error) => of(loadMoreAdminProjectsFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     ),
   { functional: true },
 );

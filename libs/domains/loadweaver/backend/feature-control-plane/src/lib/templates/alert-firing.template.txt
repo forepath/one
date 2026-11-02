@@ -1,0 +1,13 @@
+{{title}}
+{{#if escalated}}
+Escalated: this alert is still unacknowledged.
+{{/if}}
+
+Severity: {{severity}}
+Since: {{since}}
+{{#if project}}Project: {{project}}
+{{/if}}{{#if entity}}Affected: {{entity}}
+{{/if}}
+{{message}}
+
+Acknowledge or silence it in the Loadweaver console (Alerts).

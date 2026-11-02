@@ -1,5 +1,23 @@
 <div class="billing-admin-user-select">
-  @if (selectedContract(); as contract) {
+  @if (accessDenied()) {
+    <input
+      type="text"
+      class="form-control"
+      [id]="inputId()"
+      [value]="selectedContractNumber()"
+      [disabled]="disabled() || loading()"
+      autocomplete="off"
+      [attr.aria-describedby]="inputId() + '-hint'"
+      (input)="onPlainInput($any($event.target).value)"
+    />
+    <div
+      [id]="inputId() + '-hint'"
+      class="form-text"
+      i18n="@@featureBillingAdminSupplierContractSelect-accessDeniedHint"
+    >
+      You can't list this supplier's contracts. Type the contract number.
+    </div>
+  } @else if (selectedContract(); as contract) {
     <fpc-badge variant="info" color="secondary" class="billing-admin-user-select__chip">
       <span class="text-truncate">{{ contract.contractNumber }}</span>
       <button

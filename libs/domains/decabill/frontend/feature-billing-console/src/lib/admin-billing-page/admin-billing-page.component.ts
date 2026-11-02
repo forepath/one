@@ -1,6 +1,17 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  LOCALE_ID,
+  OnInit,
+  signal,
+  untracked,
+  ViewChild,
+} from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   AdminBillingFacade,
@@ -30,25 +41,29 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
-  FpcCollapsibleFilterPanelComponent,
+  FpcListToolbarComponent,
+  fpcListQueryState,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormCheckGroupComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
-  FpcInfiniteScrollDirective,
+  FpcKeyValueListComponent,
   FpcLaneHeaderComponent,
-  FpcListAppendFooterComponent,
-  FpcListComponent,
-  FpcListItemComponent,
+  FpcListHeaderComponent,
   FpcConfirmDialogComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
+  fpcRunBulk,
+  FpcTableCellDirective,
+  type FpcKeyValueItem,
+  type FpcMenuItem,
+  type FpcTableColumn,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
   FpcPanelGridComponent,
-  FpcSearchFieldComponent,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
   FpcSummaryCardComponent,
@@ -56,15 +71,20 @@ import {
   FpcTabComponent,
   FpcTabGroupComponent,
   FPC_CHART_AREA_FILL,
-  FPC_CHART_AXIS,
   FPC_CHART_GRID,
-  FPC_CHART_LABEL_STYLE,
-  FPC_CHART_LEGEND,
   FPC_CHART_SLICE_LABELS,
   FPC_CHART_SLICE_TOOLTIP,
   fpcChart,
+  fpcChartCategorical,
+  fpcChartValueAxis,
+  FPC_CHART_LEGEND_SCROLL,
   fpcChartColor,
-  fpcChartColors,
+  type FpcBadgeTone,
+  FpcBoardLaneComponent,
+  FpcSectionRowComponent,
+  FpcSectionColumnComponent,
+  FpcDatePipe,
+  FpcMoneyPipe,
 } from '@forepath/shared/frontend/ui-components';
 import type {
   ApexAxisChartSeries,
@@ -76,22 +96,36 @@ import type {
   ApexStroke,
   ApexTooltip,
   ApexXAxis,
+  ApexYAxis,
 } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { debounceTime, distinctUntilChanged, filter, finalize, Observable, pairwise, skip, Subscription } from 'rxjs';
+import { filter, finalize, firstValueFrom, Observable, pairwise, Subscription } from 'rxjs';
 
 import { BillingAdminSubscriptionSelectComponent } from '../billing-admin-subscription-select/billing-admin-subscription-select.component';
 import { BillingAdminSupplierContractSelectComponent } from '../billing-admin-supplier-contract-select/billing-admin-supplier-contract-select.component';
 import { BillingAdminSupplierSelectComponent } from '../billing-admin-supplier-select/billing-admin-supplier-select.component';
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
-import { getInvoiceStatusBadgeClass, getInvoiceStatusLabel, getUnavailableLabel } from '../billing-status-labels';
+import { getInvoiceStatusBadgeTone, getInvoiceStatusLabel, getUnavailableLabel } from '../billing-status-labels';
 import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
+import { DB_DL_CANCEL, dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
+import { invoiceSummaryItems, invoiceTaxItems } from '../shared/invoice-totals';
+import { dbServerPaging } from '../shared/server-paging';
+import { invoiceState } from '../shared/table-states';
 import {
   aggregatePricingTotalsSummaries,
   buildPricingTotalsSummary,
   type PricingTotalsSummary,
 } from '../pricing-totals-summary/pricing-totals.util';
+import {
+  getCustomerLabel,
+  getCustomerSecondaryLabel,
+  getUnnumberedInvoiceLabel,
+  type CustomerLabelSource,
+} from '../named-label.util';
+import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
+import { formatBillingDate, formatBillingDateRange, formatBillingMoney } from '../billing-format';
+import { ThemeService } from '../theme.service';
 
 const FILTERS_STORAGE_KEY = 'billing-console-admin-billing-filters';
 
@@ -150,6 +184,11 @@ type AdminBillingPerspective = 'customer' | 'supplier';
   selector: 'framework-admin-billing-page',
   standalone: true,
   imports: [
+    FpcMoneyPipe,
+    FpcDatePipe,
+    FpcBoardLaneComponent,
+    FpcSectionRowComponent,
+    FpcSectionColumnComponent,
     CommonModule,
     FormsModule,
     NgApexchartsModule,
@@ -160,18 +199,17 @@ type AdminBillingPerspective = 'customer' | 'supplier';
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
     FpcEmptyStateComponent,
-    FpcCollapsibleFilterPanelComponent,
+    FpcListToolbarComponent,
     FpcFormCheckComponent,
     FpcFormCheckGroupComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
-    FpcInfiniteScrollDirective,
+    FpcDataTableComponent,
+    FpcKeyValueListComponent,
     FpcLaneHeaderComponent,
-    FpcListAppendFooterComponent,
-    FpcListComponent,
-    FpcListItemComponent,
+    FpcListHeaderComponent,
+    FpcTableCellDirective,
     FpcConfirmDialogComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
@@ -184,7 +222,6 @@ type AdminBillingPerspective = 'customer' | 'supplier';
     FpcSummaryCardValueDirective,
     FpcTabComponent,
     FpcTabGroupComponent,
-    FpcSearchFieldComponent,
     PricingTotalsSummaryComponent,
   ],
   providers: [DatePipe],
@@ -212,6 +249,7 @@ export class AdminBillingPageComponent implements OnInit {
   private createInvoiceSubscriptionsRequest?: Subscription;
 
   private readonly adminBillingFacade = inject(AdminBillingFacade);
+  private readonly themeService = inject(ThemeService);
   readonly invoiceManagerFacade = inject(AdminInvoiceManagerFacade);
   readonly supplierInvoiceManagerFacade = inject(AdminSupplierInvoiceManagerFacade);
   private readonly adminBillingService = inject(AdminBillingService);
@@ -223,6 +261,7 @@ export class AdminBillingPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly pageTitle = $localize`:@@featureAdminBilling-title:Billing`;
+  readonly perspectiveLabel = $localize`:@@featureAdminBilling-perspective:Perspective`;
   readonly customerTabLabel = $localize`:@@featureAdminBilling-customerTab:Customer`;
   readonly supplierTabLabel = $localize`:@@featureAdminBilling-supplierTab:Supplier`;
   readonly addInvoiceAriaLabel = $localize`:@@featureAdminInvoices-add:Add`;
@@ -235,12 +274,58 @@ export class AdminBillingPageComponent implements OnInit {
   readonly toDate = signal('');
   readonly groupBy = signal<'day' | 'month'>('day');
   readonly selectedUserId = signal<string | null>(null);
+  /** Applied statistics scope for the toolbar strip: "Sep 29 – Oct 29, 2026 · By day · ACME GmbH". */
+  readonly statisticsScopeLabel = computed(() => {
+    const parts = [formatBillingDateRange(this.fromDate() || null, this.toDate() || null, '')].filter(Boolean);
+
+    parts.push(
+      this.groupBy() === 'month'
+        ? $localize`:@@featureAdminBilling-scopeByMonth:By month`
+        : $localize`:@@featureAdminBilling-scopeByDay:By day`,
+    );
+
+    const userId = this.selectedUserId();
+
+    if (userId) {
+      const user = this.users().find((entry) => entry.id === userId);
+
+      parts.push(user?.email ?? getUnavailableLabel());
+    }
+
+    return parts.join(' · ');
+  });
   readonly selectedSupplierId = signal<string | null>(null);
+  readonly filtersOpen = computed(() => !this.filtersCollapsed());
+  /** Applied range / grouping (+ party) in the URL (`?f=`); the drawer edits a draft until Apply (3.38 R12). */
+  readonly filterState = fpcListQueryState({
+    filters: {
+      from: this.fromDate,
+      to: this.toDate,
+      groupBy: this.groupBy,
+      user: this.selectedUserId,
+      supplier: this.selectedSupplierId,
+    },
+    open: this.filtersOpen,
+    changed: () => this.onApplyFilters(),
+  });
+  /** Defaults of the date range (set with the page), so a custom range counts as one applied filter. */
+  private readonly defaultDates = signal({ from: '', to: '' });
+  readonly activeFilterCount = computed(() => {
+    const f = this.filterState.applied();
+    const d = this.defaultDates();
+
+    return [f.from !== d.from || f.to !== d.to, f.groupBy !== 'day', !!f.user, !!f.supplier].filter(Boolean).length;
+  });
   readonly supplierFilterOptions = signal<AdminSupplierProfileListItem[]>([]);
-  readonly invoiceSearch = signal('');
-  readonly supplierInvoiceSearch = signal('');
-  readonly invoiceSearch$ = toObservable(this.invoiceSearch);
-  readonly supplierInvoiceSearch$ = toObservable(this.supplierInvoiceSearch);
+  /** Customer invoices: search + page + size → `GET /admin/billing/invoices?limit&offset&search` (replace-page). */
+  readonly invoicePaging = dbServerPaging((query) => this.invoiceManagerFacade.loadInvoices(query));
+  /** Supplier invoices (loaded only in the supplier perspective). */
+  readonly supplierInvoicePaging = dbServerPaging(
+    (query) => {
+      if (this.billingPerspective() === 'supplier') this.supplierInvoiceManagerFacade.loadInvoices(query);
+    },
+    { filters: () => this.billingPerspective() },
+  );
 
   readonly mobilePanel = signal<AdminBillingMobilePanel>('overview');
   readonly taxRates = signal<TaxPreviewRates>({ standard: 19, reduced: 7 });
@@ -271,7 +356,13 @@ export class AdminBillingPageComponent implements OnInit {
   readonly auditInvoiceId = signal<string | null>(null);
   readonly supplierAuditInvoiceId = signal<string | null>(null);
   readonly supplierAuditLogs = signal<BillingAuditLogResponse[]>([]);
+  readonly supplierAuditLogsTotal = signal(0);
   readonly supplierAuditLogsLoading = signal(false);
+  /** Audit log paging (built-in pager of the nested table; replace-page) for customer and supplier invoices. */
+  readonly auditPage = signal(1);
+  readonly auditPageSize = signal(25);
+  private readonly auditOpenCount = signal(0);
+  private supplierAuditRequest?: Subscription;
   readonly previewLoading = signal(false);
   readonly previewDetail = signal<InvoicePreviewView | null>(null);
 
@@ -307,9 +398,8 @@ export class AdminBillingPageComponent implements OnInit {
   readonly invoicesIssuing$ = this.invoiceManagerFacade.issuing$;
   readonly invoicesDeleting$ = this.invoiceManagerFacade.deleting$;
   readonly invoicesError$ = this.invoiceManagerFacade.error$;
-  readonly invoicesHasMore$ = this.invoiceManagerFacade.hasMore$;
-  readonly invoicesAppendLoading$ = this.invoiceManagerFacade.appendLoading$;
-  readonly invoicesAppendError$ = this.invoiceManagerFacade.appendError$;
+  readonly invoicesTotal = toSignal(this.invoiceManagerFacade.total$, { initialValue: 0 });
+  readonly invoicesError = toSignal(this.invoiceManagerFacade.error$, { initialValue: null });
 
   readonly invoices$ = this.invoiceManagerFacade.invoices$;
 
@@ -326,9 +416,8 @@ export class AdminBillingPageComponent implements OnInit {
   readonly supplierParseError$ = this.supplierInvoiceManagerFacade.parseError$;
   readonly supplierActionLoading$ = this.supplierInvoiceManagerFacade.actionLoading$;
   readonly supplierInvoicesError$ = this.supplierInvoiceManagerFacade.error$;
-  readonly supplierInvoicesHasMore$ = this.supplierInvoiceManagerFacade.hasMore$;
-  readonly supplierInvoicesAppendLoading$ = this.supplierInvoiceManagerFacade.appendLoading$;
-  readonly supplierInvoicesAppendError$ = this.supplierInvoiceManagerFacade.appendError$;
+  readonly supplierInvoicesTotal = toSignal(this.supplierInvoiceManagerFacade.total$, { initialValue: 0 });
+  readonly supplierInvoicesError = toSignal(this.supplierInvoiceManagerFacade.error$, { initialValue: null });
   readonly supplierInvoices$ = this.supplierInvoiceManagerFacade.invoices$;
 
   readonly users = toSignal(this.authFacade.users$, { initialValue: [] as UserResponseDto[] });
@@ -338,12 +427,242 @@ export class AdminBillingPageComponent implements OnInit {
   readonly auditLogsByInvoice = toSignal(this.auditLogsByInvoice$, {
     initialValue: {} as Record<string, BillingAuditLogResponse[]>,
   });
+  private readonly auditLogsTotalByInvoice = toSignal(this.adminBillingFacade.auditLogsTotalByInvoice$, {
+    initialValue: {} as Record<string, number>,
+  });
+  private readonly customerAuditLogsLoading = toSignal(this.auditLogsLoading$, { initialValue: false });
+  /** Server total of the open audit log (customer or supplier invoice). */
+  readonly auditLogsTotal = computed(() => {
+    if (this.supplierAuditInvoiceId()) return this.supplierAuditLogsTotal();
+
+    const id = this.auditInvoiceId();
+
+    return id ? (this.auditLogsTotalByInvoice()[id] ?? 0) : 0;
+  });
+  readonly auditLoading = computed(() =>
+    this.supplierAuditInvoiceId() ? this.supplierAuditLogsLoading() : this.customerAuditLogsLoading(),
+  );
+  /** Loads the requested audit page whenever the open invoice, the page or the size changes (replace-page). */
+  private readonly loadAuditPage = effect(() => {
+    const invoiceId = this.auditInvoiceId();
+    const supplierInvoiceId = this.supplierAuditInvoiceId();
+    const page = this.auditPage();
+    const pageSize = this.auditPageSize();
+
+    this.auditOpenCount();
+    untracked(() => {
+      if (supplierInvoiceId) this.loadSupplierAuditLogs(supplierInvoiceId, page, pageSize);
+      else if (invoiceId) this.adminBillingFacade.loadAuditLogs(invoiceId, page, pageSize);
+    });
+  });
   readonly invoices = toSignal(this.invoices$, { initialValue: [] as AdminInvoiceListItem[] });
   readonly supplierInvoices = toSignal(this.supplierInvoices$, { initialValue: [] as AdminSupplierInvoiceListItem[] });
   readonly supplierSummary = toSignal(this.supplierSummary$, { initialValue: null });
 
   readonly createInvoiceSubscriptions = signal<SubscriptionResponse[]>([]);
   readonly createInvoiceSubscriptionsLoading = signal(false);
+
+  private readonly locale = inject(LOCALE_ID);
+  readonly invoicesTitle = $localize`:@@featureAdminBilling-invoicesTitle:Invoices`;
+  readonly invoiceSearchPlaceholder = $localize`:@@featureAdminInvoices-searchPlaceholder:Search invoices`;
+  readonly supplierInvoiceSearchPlaceholder = $localize`:@@featureAdminSupplierInvoices-searchPlaceholder:Search supplier invoices`;
+  readonly auditHistoryLabel = $localize`:@@featureAdminBilling-auditHistoryTitle:Audit history`;
+  readonly editDraftLabel = $localize`:@@featureAdminInvoices-editButtonTitle:Edit draft`;
+  readonly issueLabel = $localize`:@@featureAdminInvoices-issueButtonTitle:Issue invoice`;
+  readonly deleteDraftLabel = $localize`:@@featureAdminInvoices-deleteButtonTitle:Delete draft`;
+  readonly previewLabel = $localize`:@@featureInvoices-previewButtonTitle:Preview invoice`;
+  readonly voidLabel = $localize`:@@featureAdminInvoices-voidButtonTitle:Void invoice`;
+  readonly markPaidLabel = $localize`:@@featureAdminInvoices-markPaidButtonTitle:Mark as paid`;
+  readonly markUnpaidLabel = $localize`:@@featureAdminInvoices-markUnpaidButtonTitle:Mark as unpaid`;
+  readonly downloadPdfLabel = $localize`:@@featureAdminInvoices-downloadPdfButtonTitle:Download PDF`;
+  readonly downloadVoidPdfLabel = $localize`:@@featureAdminInvoices-downloadVoidPdfButtonTitle:Download void PDF`;
+  readonly downloadTimeReportLabel = $localize`:@@featureAdminInvoices-downloadTimeReportButtonTitle:Download time report`;
+  readonly historyLabel = $localize`:@@featureAdminInvoices-historyButtonTitle:View history`;
+  readonly archiveExpenseLabel = $localize`:@@featureAdminSupplierInvoices-archiveButtonTitle:Archive expense`;
+  readonly downloadDocumentLabel = $localize`:@@featureAdminSupplierInvoices-downloadButtonTitle:Download document`;
+  readonly deleteDraftsLabel = $localize`:@@featureAdminBilling-deleteDraftsSelected:Delete drafts`;
+  readonly cancelLabel = DB_DL_CANCEL;
+
+  /** Customer invoices: State · Invoice · customer · amount · created. */
+  readonly invoiceColumns: FpcTableColumn<AdminInvoiceListItem>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureInvoices-colStatus:Status`,
+      type: 'state',
+      state: (inv) => invoiceState(inv.status),
+    },
+    {
+      id: 'invoice',
+      label: $localize`:@@featureInvoices-colInvoice:Invoice`,
+      value: (inv) => this.invoiceDisplayTitle(inv),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'customer',
+      label: $localize`:@@featureAdminBilling-colCustomer:Customer`,
+      value: (inv) => getCustomerLabel(inv),
+      priority: 1,
+    },
+    {
+      id: 'amount',
+      label: $localize`:@@featureInvoices-colTotal:Total`,
+      value: (inv) => formatBillingMoney(Number(inv.totalGross ?? inv.balance ?? 0)),
+      align: 'end',
+      priority: 2,
+    },
+    {
+      id: 'created',
+      label: $localize`:@@featureInvoices-colCreated:Created`,
+      value: (inv) => this.formatDate(inv.createdAt),
+      priority: 2,
+    },
+  ];
+
+  /** Supplier invoices: State · Invoice · supplier · amount · issue date · due date. */
+  readonly supplierInvoiceColumns: FpcTableColumn<AdminSupplierInvoiceListItem>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureInvoices-colStatus:Status`,
+      type: 'state',
+      state: (inv) => invoiceState(inv.status),
+    },
+    {
+      id: 'invoice',
+      label: $localize`:@@featureInvoices-colInvoice:Invoice`,
+      value: (inv) => this.supplierInvoiceDisplayTitle(inv),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'supplier',
+      label: $localize`:@@featureAdminBilling-colSupplier:Supplier`,
+      value: (inv) => this.supplierInvoiceLabel(inv),
+      priority: 1,
+    },
+    {
+      id: 'amount',
+      label: $localize`:@@featureInvoices-colTotal:Total`,
+      value: (inv) => formatBillingMoney(Number(inv.totalGross ?? 0), inv.currency),
+      align: 'end',
+      priority: 2,
+    },
+    {
+      id: 'issued',
+      label: $localize`:@@featureAdminSupplierInvoices-issueDate:Issue date`,
+      value: (inv) => (inv.issueDate ? this.formatDate(inv.issueDate) : ''),
+      priority: 2,
+    },
+    {
+      id: 'due',
+      label: $localize`:@@featureAdminSupplierInvoices-dueDate:Due date`,
+      value: (inv) => (inv.dueDate ? this.formatDate(inv.dueDate) : ''),
+      priority: 3,
+    },
+  ];
+
+  /** Audit history (modal): Process · Time · Message. */
+  readonly auditColumns: FpcTableColumn<BillingAuditLogResponse>[] = [
+    {
+      id: 'process',
+      label: $localize`:@@featureAdminBilling-colProcess:Process`,
+      value: (log) => log.process,
+      required: true,
+      priority: 1,
+    },
+    { id: 'time', label: $localize`:@@featureProjectDetail-colTime:Time`, value: (log) => log.createdAt, priority: 1 },
+    {
+      id: 'message',
+      label: $localize`:@@featureAdminBilling-colMessage:Message`,
+      value: (log) => log.message,
+      priority: 2,
+    },
+  ];
+
+  readonly selectedInvoices = signal<readonly string[]>([]);
+  readonly selectedSupplierInvoices = signal<readonly string[]>([]);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly pendingBulk = signal<'void' | 'delete' | 'supplier-delete' | null>(null);
+  readonly bulkConfirmTitle = computed(() =>
+    this.pendingBulk() === 'void'
+      ? $localize`:@@featureAdminBilling-bulkVoidTitle:Void invoices?`
+      : $localize`:@@featureAdminBilling-bulkDeleteTitle:Delete drafts?`,
+  );
+  readonly bulkConfirmLabel = computed(() => (this.pendingBulk() === 'void' ? this.voidLabel : this.deleteDraftsLabel));
+  readonly bulkConfirmMessage = computed(() => {
+    const pending = this.pendingBulk();
+    const count =
+      pending === 'void'
+        ? this.invoiceBulkTargets('void').length
+        : pending === 'delete'
+          ? this.invoiceBulkTargets('delete').length
+          : this.supplierBulkTargets('delete').length;
+
+    return pending === 'void'
+      ? $localize`:@@featureAdminBilling-bulkVoidMessage:${count}:count: selected invoices will be voided (a credit note is issued for each). This cannot be undone.`
+      : $localize`:@@featureAdminBilling-bulkDeleteMessage:${count}:count: selected drafts will be deleted. This cannot be undone.`;
+  });
+
+  readonly invoiceMenu = (inv: AdminInvoiceListItem): FpcMenuItem[] => {
+    const menu: FpcMenuItem[] = [];
+
+    if (this.isDraft(inv)) {
+      menu.push(
+        { id: 'edit', label: this.editDraftLabel, icon: 'pencil' },
+        { id: 'issue', label: this.issueLabel, icon: 'send' },
+        { id: 'delete', label: this.deleteDraftLabel, icon: 'trash', danger: true },
+      );
+    } else {
+      if (this.canPreviewInvoice(inv)) menu.push({ id: 'preview', label: this.previewLabel, icon: 'eye' });
+      if (this.canMarkPaid(inv)) menu.push({ id: 'markPaid', label: this.markPaidLabel, icon: 'check2-circle' });
+      if (this.canMarkUnpaid(inv))
+        menu.push({ id: 'markUnpaid', label: this.markUnpaidLabel, icon: 'arrow-counterclockwise' });
+      if (inv.canDownload) menu.push({ id: 'download', label: this.downloadPdfLabel, icon: 'file-earmark-pdf' });
+      if (inv.canDownloadVoidDocument) {
+        menu.push({ id: 'download-void', label: this.downloadVoidPdfLabel, icon: 'file-earmark-x' });
+      }
+      if (inv.canDownloadTimeReport) {
+        menu.push({ id: 'download-time', label: this.downloadTimeReportLabel, icon: 'file-earmark-text' });
+      }
+      if (this.canVoid(inv))
+        menu.push({ id: 'void', label: this.voidLabel, icon: 'x-octagon', danger: true, dividerBefore: true });
+      menu.push({ id: 'history', label: this.historyLabel, icon: 'clock-history', dividerBefore: true });
+    }
+
+    menu.push(dbCopyIdItem());
+
+    return menu;
+  };
+
+  readonly supplierInvoiceMenu = (inv: AdminSupplierInvoiceListItem): FpcMenuItem[] => {
+    const menu: FpcMenuItem[] = [];
+
+    if (this.isDraft(inv)) {
+      menu.push(
+        { id: 'edit', label: this.editDraftLabel, icon: 'pencil' },
+        { id: 'issue', label: this.archiveExpenseLabel, icon: 'archive' },
+      );
+      if (this.canDownloadSupplierInvoice(inv)) {
+        menu.push({ id: 'download', label: this.downloadDocumentLabel, icon: 'file-earmark-arrow-down' });
+      }
+      menu.push({ id: 'delete', label: this.deleteDraftLabel, icon: 'trash', danger: true, dividerBefore: true });
+    } else {
+      if (this.canPreviewSupplierInvoice(inv)) menu.push({ id: 'preview', label: this.previewLabel, icon: 'eye' });
+      if (this.canMarkPaid(inv)) menu.push({ id: 'markPaid', label: this.markPaidLabel, icon: 'check2-circle' });
+      if (this.canMarkUnpaid(inv))
+        menu.push({ id: 'markUnpaid', label: this.markUnpaidLabel, icon: 'arrow-counterclockwise' });
+      if (this.canDownloadSupplierInvoice(inv)) {
+        menu.push({ id: 'download', label: this.downloadDocumentLabel, icon: 'file-earmark-arrow-down' });
+      }
+      if (this.canVoid(inv))
+        menu.push({ id: 'void', label: this.voidLabel, icon: 'x-octagon', danger: true, dividerBefore: true });
+      menu.push({ id: 'history', label: this.historyLabel, icon: 'clock-history', dividerBefore: true });
+    }
+
+    menu.push(dbCopyIdItem());
+
+    return menu;
+  };
 
   readonly selectedAuditLogs = computed(() => {
     const supplierId = this.supplierAuditInvoiceId();
@@ -387,6 +706,8 @@ export class AdminBillingPageComponent implements OnInit {
   createSupplierFile: File | null = null;
   createSupplierLineItems: SupplierInvoiceFormLineItem[] = [this.emptySupplierLineItem()];
   editSupplierInvoiceId = '';
+  /** Scopes the contract typeahead in the edit modal. */
+  editSupplierId = '';
   editSupplierLineItems: SupplierInvoiceFormLineItem[] = [this.emptySupplierLineItem()];
   editSupplierContractNumber = '';
   editSupplierInvoiceNumber = '';
@@ -404,26 +725,21 @@ export class AdminBillingPageComponent implements OnInit {
   issueDueInDays = 14;
   deleteInvoice: AdminInvoiceListItem | null = null;
 
+  customerLabel(row: CustomerLabelSource): string {
+    return getCustomerLabel(row);
+  }
+
+  customerTitle(row: CustomerLabelSource): string | null {
+    return getCustomerSecondaryLabel(row);
+  }
+
   ngOnInit(): void {
     this.restoreFilters();
-    this.setDefaultDates();
+    this.setDefaultDates(false);
     this.adminBillingFacade.loadSummary();
-    this.invoiceManagerFacade.loadInvoices();
     this.loadStatistics();
     this.authFacade.loadUsers();
     this.refreshTaxRates();
-
-    this.invoiceSearch$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.invoiceManagerFacade.loadInvoices({ search: search.trim() || undefined });
-      });
-
-    this.supplierInvoiceSearch$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.supplierInvoiceManagerFacade.loadInvoices({ search: search.trim() || undefined });
-      });
 
     this.supplierParsePreview$
       .pipe(
@@ -618,8 +934,10 @@ export class AdminBillingPageComponent implements OnInit {
   openEditSupplierModal(invoice: AdminSupplierInvoiceListItem): void {
     this.editInvoiceId = '';
     this.editSupplierInvoiceId = invoice.id;
+    this.editSupplierId = invoice.supplierId;
     this.supplierInvoicesService.getById(invoice.id).subscribe({
       next: (detail) => {
+        this.editSupplierId = detail.supplierId || invoice.supplierId;
         this.editSupplierContractNumber = detail.contractNumber ?? '';
         this.editSupplierInvoiceNumber = detail.invoiceNumber ?? '';
         this.editSupplierIssueDate = detail.issueDate?.slice(0, 10) ?? '';
@@ -706,19 +1024,31 @@ export class AdminBillingPageComponent implements OnInit {
   }
 
   openSupplierAuditHistory(invoice: AdminSupplierInvoiceListItem): void {
+    this.auditInvoiceId.set(null);
     this.supplierAuditInvoiceId.set(invoice.id);
-    this.supplierAuditLogsLoading.set(true);
     this.supplierAuditLogs.set([]);
+    this.supplierAuditLogsTotal.set(0);
+    this.auditPage.set(1);
+    this.auditOpenCount.update((count) => count + 1);
     showBillingModal(this.auditHistoryModalOpen);
-    this.supplierInvoicesService.listAuditLogs(invoice.id).subscribe({
-      next: (response) => {
-        this.supplierAuditLogs.set(response.items);
-        this.supplierAuditLogsLoading.set(false);
-      },
-      error: () => {
-        this.supplierAuditLogsLoading.set(false);
-      },
-    });
+  }
+
+  /** One page of a supplier invoice's audit log (`GET …/supplier-invoices/:id/audit-logs?limit&offset`). */
+  private loadSupplierAuditLogs(invoiceId: string, page: number, pageSize: number): void {
+    this.supplierAuditRequest?.unsubscribe();
+    this.supplierAuditLogsLoading.set(true);
+    this.supplierAuditRequest = this.supplierInvoicesService
+      .listAuditLogs(invoiceId, pageSize, (page - 1) * pageSize)
+      .subscribe({
+        next: (response) => {
+          this.supplierAuditLogs.set(response.items);
+          this.supplierAuditLogsTotal.set(response.total);
+          this.supplierAuditLogsLoading.set(false);
+        },
+        error: () => {
+          this.supplierAuditLogsLoading.set(false);
+        },
+      });
   }
 
   downloadSupplierInvoice(invoice: AdminSupplierInvoiceListItem): void {
@@ -798,7 +1128,7 @@ export class AdminBillingPageComponent implements OnInit {
   supplierInvoiceDisplayTitle(invoice: AdminSupplierInvoiceListItem): string {
     if (invoice.invoiceNumber) return invoice.invoiceNumber;
 
-    return getInvoiceStatusLabel('draft');
+    return getUnnumberedInvoiceLabel();
   }
 
   supplierInvoiceLabel(invoice: AdminSupplierInvoiceListItem): string {
@@ -877,7 +1207,8 @@ export class AdminBillingPageComponent implements OnInit {
   openAuditHistory(invoice: AdminInvoiceListItem): void {
     this.supplierAuditInvoiceId.set(null);
     this.auditInvoiceId.set(invoice.id);
-    this.adminBillingFacade.loadAuditLogs(invoice.id);
+    this.auditPage.set(1);
+    this.auditOpenCount.update((count) => count + 1);
     showBillingModal(this.auditHistoryModalOpen);
   }
 
@@ -957,16 +1288,124 @@ export class AdminBillingPageComponent implements OnInit {
     return invoice.status !== 'void' && invoice.status !== 'paid' && invoice.status !== 'draft';
   }
 
+  onInvoiceAction(inv: AdminInvoiceListItem, action: string): void {
+    if (action === 'edit') this.openEditModal(inv);
+    else if (action === 'issue') this.openIssueModal(inv);
+    else if (action === 'delete') this.openDeleteModal(inv);
+    else if (action === 'preview') this.openPreview(inv);
+    else if (action === 'void' || action === 'markPaid' || action === 'markUnpaid') this.openActionModal(action, inv);
+    else if (action === 'download') this.downloadInvoice(inv);
+    else if (action === 'download-void') this.downloadVoidDocument(inv);
+    else if (action === 'download-time') this.downloadTimeReport(inv);
+    else if (action === 'history') this.openAuditHistory(inv);
+    else if (action === 'copy-id') fpcCopyText(inv.id);
+  }
+
+  onSupplierInvoiceAction(inv: AdminSupplierInvoiceListItem, action: string): void {
+    if (action === 'edit') this.openEditSupplierModal(inv);
+    else if (action === 'issue') this.openIssueSupplierModal(inv);
+    else if (action === 'delete') this.openDeleteSupplierModal(inv);
+    else if (action === 'preview') this.openSupplierPreview(inv);
+    else if (action === 'void' || action === 'markPaid' || action === 'markUnpaid')
+      this.openSupplierActionModal(action, inv);
+    else if (action === 'download') this.downloadSupplierInvoice(inv);
+    else if (action === 'history') this.openSupplierAuditHistory(inv);
+    else if (action === 'copy-id') fpcCopyText(inv.id);
+  }
+
+  /** Selected customer invoices a bulk action applies to (same rules as the row menu). */
+  invoiceBulkTargets(action: 'markPaid' | 'void' | 'delete'): AdminInvoiceListItem[] {
+    const ids = new Set(this.selectedInvoices());
+
+    return this.invoices().filter(
+      (inv) =>
+        ids.has(inv.id) &&
+        (action === 'delete'
+          ? this.isDraft(inv)
+          : !this.isDraft(inv) && (action === 'void' ? this.canVoid(inv) : this.canMarkPaid(inv))),
+    );
+  }
+
+  supplierBulkTargets(action: 'markPaid' | 'delete'): AdminSupplierInvoiceListItem[] {
+    const ids = new Set(this.selectedSupplierInvoices());
+
+    return this.supplierInvoices().filter(
+      (inv) =>
+        ids.has(inv.id) && (action === 'delete' ? this.isDraft(inv) : !this.isDraft(inv) && this.canMarkPaid(inv)),
+    );
+  }
+
+  /** Bulk on customer invoices: one call per invoice (mark-paid / void / delete draft), per-item result. */
+  async runInvoiceBulk(action: 'markPaid' | 'void' | 'delete'): Promise<void> {
+    const targets = this.invoiceBulkTargets(action);
+
+    if (targets.length === 0) return;
+
+    const result = await fpcRunBulk(targets, (inv) =>
+      firstValueFrom<unknown>(
+        action === 'markPaid'
+          ? this.adminBillingService.markPaid(inv.id, {})
+          : action === 'void'
+            ? this.adminBillingService.voidInvoice(inv.id)
+            : this.adminBillingService.deleteManualInvoice(inv.id),
+      ),
+    );
+
+    this.bulkResult.set(dbBulkSummary(result, (inv) => this.invoiceDisplayTitle(inv)));
+    this.selectedInvoices.set([]);
+    this.invoicePaging.reload();
+  }
+
+  /** Bulk on supplier invoices: one call per invoice (mark-paid / delete draft), per-item result. */
+  async runSupplierBulk(action: 'markPaid' | 'delete'): Promise<void> {
+    const targets = this.supplierBulkTargets(action);
+
+    if (targets.length === 0) return;
+
+    const result = await fpcRunBulk(targets, (inv) =>
+      firstValueFrom<unknown>(
+        action === 'markPaid'
+          ? this.supplierInvoicesService.markPaid(inv.id, {})
+          : this.supplierInvoicesService.delete(inv.id),
+      ),
+    );
+
+    this.bulkResult.set(dbBulkSummary(result, (inv) => this.supplierInvoiceDisplayTitle(inv)));
+    this.selectedSupplierInvoices.set([]);
+    this.supplierInvoicePaging.reload();
+  }
+
+  confirmPendingBulk(): void {
+    const pending = this.pendingBulk();
+
+    this.pendingBulk.set(null);
+
+    if (pending === 'void' || pending === 'delete') void this.runInvoiceBulk(pending);
+    else if (pending === 'supplier-delete') void this.runSupplierBulk('delete');
+  }
+
+  auditTime(log: BillingAuditLogResponse): string {
+    return log.createdAt;
+  }
+
+  taxItems(detail: Parameters<typeof invoiceTaxItems>[0]): FpcKeyValueItem[] {
+    return invoiceTaxItems(detail, this.locale);
+  }
+
+  summaryItems(detail: Parameters<typeof invoiceSummaryItems>[0]): FpcKeyValueItem[] {
+    return invoiceSummaryItems(detail, this.locale);
+  }
+
   formatDate(value?: string | Date): string {
     if (!value) return '-';
 
-    return this.datePipe.transform(value, 'mediumDate') ?? '-';
+    return formatBillingDate(value, '-');
   }
 
   invoiceDisplayTitle(invoice: AdminInvoiceListItem): string {
     if (invoice.invoiceNumber) return invoice.invoiceNumber;
 
-    return getInvoiceStatusLabel('draft');
+    return getUnnumberedInvoiceLabel();
   }
 
   invoiceUserLabel(invoice: AdminInvoiceListItem): string {
@@ -981,8 +1420,8 @@ export class AdminBillingPageComponent implements OnInit {
     return getInvoiceStatusLabel(status);
   }
 
-  invoiceStatusBadgeClass(status: string | null | undefined): string {
-    return getInvoiceStatusBadgeClass(status);
+  invoiceStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
+    return getInvoiceStatusBadgeTone(status);
   }
 
   mobilePanelLabel(panel: AdminBillingMobilePanel): string {
@@ -1001,13 +1440,13 @@ export class AdminBillingPageComponent implements OnInit {
     }
 
     this.adminBillingFacade.loadSummary();
-    this.invoiceManagerFacade.loadInvoices({ search: this.invoiceSearch().trim() || undefined });
+    this.invoicePaging.reload();
   }
 
   private loadSupplierDashboard(): void {
     this.loadSupplierFilterOptions();
     this.loadSupplierStatistics();
-    this.supplierInvoiceManagerFacade.loadInvoices({ search: this.supplierInvoiceSearch().trim() || undefined });
+    this.supplierInvoicePaging.reload();
   }
 
   private reloadActiveStatistics(): void {
@@ -1048,13 +1487,19 @@ export class AdminBillingPageComponent implements OnInit {
     this.adminBillingFacade.loadStatisticsByCountry(params);
   }
 
-  private setDefaultDates(): void {
+  private setDefaultDates(force = true): void {
     const to = new Date();
     const from = new Date(Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate()));
 
     from.setUTCDate(from.getUTCDate() - 30);
-    this.toDate.set(to.toISOString().slice(0, 10));
-    this.fromDate.set(from.toISOString().slice(0, 10));
+    const defaults = { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) };
+
+    this.defaultDates.set(defaults);
+
+    if (!force && this.fromDate() && this.toDate()) return;
+
+    this.toDate.set(defaults.to);
+    this.fromDate.set(defaults.from);
   }
 
   private restoreFilters(): void {
@@ -1092,6 +1537,10 @@ export class AdminBillingPageComponent implements OnInit {
     };
 
     localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(payload));
+  }
+
+  lineTitle(lineIndex: number): string {
+    return $localize`:@@featureAdminOffers-lineTitle:Line ${lineIndex + 1}:position:`;
   }
 
   lineItemSummary(line: InvoiceFormLineItem | SupplierInvoiceFormLineItem): PricingTotalsSummary | null {
@@ -1463,25 +1912,18 @@ export class AdminBillingPageComponent implements OnInit {
       stroke: { curve: 'smooth', width: 2 } as ApexStroke,
       fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
-      xaxis: {
-        ...FPC_CHART_AXIS,
-        type: 'category',
-        categories: filled.map((p) => this.formatChartPeriodLabel(p.period)),
-        labels: { style: FPC_CHART_LABEL_STYLE },
-      } as ApexXAxis,
-      yaxis: {
-        labels: {
-          style: FPC_CHART_LABEL_STYLE,
-          formatter: (value: number) => `${value.toFixed(2)}€`,
-        },
-      },
+      // DB-17: thinned unrotated date ticks, compact currency ticks (`€25K`).
+      xaxis: billingChartTimeAxis(filled.map((p) => this.formatChartPeriodLabel(p.period))) as ApexXAxis,
+      yaxis: fpcChartValueAxis((value) => formatBillingMoney(value, undefined, { compact: true })) as ApexYAxis,
       grid: FPC_CHART_GRID,
+      responsive: BILLING_CHART_RESPONSIVE,
     };
   }
 
   /** Format YYYY-MM-DD period keys in UTC so chart labels match calendar issue/issued dates. */
   private formatChartPeriodLabel(period: string): string {
-    const format = this.groupBy() === 'month' ? 'MMM y' : 'mediumDate';
+    // Short axis labels (DB-17 a): the year sits in the range filter; days / weeks read "Oct 29".
+    const format = this.groupBy() === 'month' ? 'MMM y' : 'MMM d';
 
     return this.datePipe.transform(`${period}T12:00:00.000Z`, format, 'UTC') ?? period;
   }
@@ -1498,21 +1940,22 @@ export class AdminBillingPageComponent implements OnInit {
     if (items.length === 0) return null;
 
     const series = items.map((i) => i.totalGross);
-    const formatEuro = (value: number): string =>
-      `€${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const formatEuro = (value: number): string => formatBillingMoney(value);
 
     return {
       series: series as ApexNonAxisChartSeries,
       chart: fpcChart('donut', 240) as ApexChart,
       labels: items.map((i) => i.label),
-      colors: fpcChartColors(items.length),
+      // Distinct categorical hues (the brand palette repeats green: primary = success).
+      colors: fpcChartCategorical(items.length, this.themeService.isDarkMode()),
       dataLabels: {
         ...FPC_CHART_SLICE_LABELS,
         enabled: true,
         formatter: (percent: number) => `${percent.toFixed(1)}%`,
         style: { ...FPC_CHART_SLICE_LABELS.style, fontSize: '10px' },
       } as ApexDataLabels,
-      legend: FPC_CHART_LEGEND as ApexLegend,
+      legend: FPC_CHART_LEGEND_SCROLL as ApexLegend,
+      responsive: BILLING_CHART_RESPONSIVE,
       tooltip: {
         ...FPC_CHART_SLICE_TOOLTIP,
         y: {

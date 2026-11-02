@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
 
+import { billingPageWindow } from '../../constants/list-paging.constants';
 import { AdminPromotionsService } from '../../services/admin-promotions.service';
 
 import {
@@ -12,11 +13,9 @@ import {
   deactivateAdminPromotionFailure,
   deactivateAdminPromotionSuccess,
   loadAdminPromotionRedemptions,
-  loadAdminPromotionRedemptionsBatch,
   loadAdminPromotionRedemptionsFailure,
   loadAdminPromotionRedemptionsSuccess,
   loadAdminPromotions,
-  loadAdminPromotionsBatch,
   loadAdminPromotionsFailure,
   loadAdminPromotionsSuccess,
   updateAdminPromotion,
@@ -34,56 +33,18 @@ function normalizeError(error: unknown): string {
   return 'An unexpected error occurred';
 }
 
-const BATCH_SIZE = 10;
-
 export const loadAdminPromotions$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminPromotionsService)) =>
     actions$.pipe(
       ofType(loadAdminPromotions),
-      switchMap(({ search }) =>
-        service.list({ limit: BATCH_SIZE, offset: 0, search }).pipe(
-          switchMap((response) => {
-            if (response.items.length === 0) {
-              return of(loadAdminPromotionsSuccess({ promotions: [] }));
-            }
+      switchMap(({ search, page, pageSize }) => {
+        const { limit, offset } = billingPageWindow(page, pageSize);
 
-            if (response.items.length < BATCH_SIZE) {
-              return of(loadAdminPromotionsSuccess({ promotions: response.items }));
-            }
-
-            return of(loadAdminPromotionsBatch({ offset: BATCH_SIZE, accumulated: response.items, search }));
-          }),
+        return service.list({ limit, offset, search }).pipe(
+          map((response) => loadAdminPromotionsSuccess({ promotions: response.items, total: response.total })),
           catchError((error) => of(loadAdminPromotionsFailure({ error: normalizeError(error) }))),
-        ),
-      ),
-    ),
-  { functional: true },
-);
-
-export const loadAdminPromotionsBatch$ = createEffect(
-  (actions$ = inject(Actions), service = inject(AdminPromotionsService)) =>
-    actions$.pipe(
-      ofType(loadAdminPromotionsBatch),
-      switchMap(({ offset, accumulated, search }) =>
-        service.list({ limit: BATCH_SIZE, offset, search }).pipe(
-          switchMap((response) => {
-            const newAccumulated = [...accumulated, ...response.items];
-
-            if (response.items.length === 0 || response.items.length < BATCH_SIZE) {
-              return of(loadAdminPromotionsSuccess({ promotions: newAccumulated }));
-            }
-
-            return of(
-              loadAdminPromotionsBatch({
-                offset: offset + BATCH_SIZE,
-                accumulated: newAccumulated,
-                search,
-              }),
-            );
-          }),
-          catchError((error) => of(loadAdminPromotionsFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     ),
   { functional: true },
 );
@@ -134,56 +95,16 @@ export const loadAdminPromotionRedemptions$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminPromotionsService)) =>
     actions$.pipe(
       ofType(loadAdminPromotionRedemptions),
-      switchMap(({ promotionId }) =>
-        service.listRedemptions(promotionId, { limit: BATCH_SIZE, offset: 0 }).pipe(
-          switchMap((response) => {
-            if (response.items.length === 0) {
-              return of(loadAdminPromotionRedemptionsSuccess({ redemptions: [] }));
-            }
+      switchMap(({ promotionId, page, pageSize }) => {
+        const { limit, offset } = billingPageWindow(page, pageSize);
 
-            if (response.items.length < BATCH_SIZE) {
-              return of(loadAdminPromotionRedemptionsSuccess({ redemptions: response.items }));
-            }
-
-            return of(
-              loadAdminPromotionRedemptionsBatch({
-                promotionId,
-                offset: BATCH_SIZE,
-                accumulated: response.items,
-              }),
-            );
-          }),
+        return service.listRedemptions(promotionId, { limit, offset }).pipe(
+          map((response) =>
+            loadAdminPromotionRedemptionsSuccess({ redemptions: response.items, total: response.total }),
+          ),
           catchError((error) => of(loadAdminPromotionRedemptionsFailure({ error: normalizeError(error) }))),
-        ),
-      ),
-    ),
-  { functional: true },
-);
-
-export const loadAdminPromotionRedemptionsBatch$ = createEffect(
-  (actions$ = inject(Actions), service = inject(AdminPromotionsService)) =>
-    actions$.pipe(
-      ofType(loadAdminPromotionRedemptionsBatch),
-      switchMap(({ promotionId, offset, accumulated }) =>
-        service.listRedemptions(promotionId, { limit: BATCH_SIZE, offset }).pipe(
-          switchMap((response) => {
-            const newAccumulated = [...accumulated, ...response.items];
-
-            if (response.items.length === 0 || response.items.length < BATCH_SIZE) {
-              return of(loadAdminPromotionRedemptionsSuccess({ redemptions: newAccumulated }));
-            }
-
-            return of(
-              loadAdminPromotionRedemptionsBatch({
-                promotionId,
-                offset: offset + BATCH_SIZE,
-                accumulated: newAccumulated,
-              }),
-            );
-          }),
-          catchError((error) => of(loadAdminPromotionRedemptionsFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     ),
   { functional: true },
 );

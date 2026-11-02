@@ -1,0 +1,81 @@
+# Agenstra agent manager as a Loadweaver deployment that keeps running its environments on the node's Docker
+# (AGENT_RUNTIME=docker, today's runtime incl. the Squid egress guard sidecars).
+# Guide: docs/loadweaver/guides/agenstra-on-loadweaver.md
+#
+# The Docker socket bind hands the node's Docker to this service: it is a pin that must be acknowledged
+# (`x-loadweaver.pinned` below and `--confirm` on apply). Containers the manager starts carry `io.agenstra.*` labels;
+# with `loadweaver.com/delegates` they are reported as delegated to this replica in the drift view, not as drift.
+# Secrets: agent-manager-env, agent-manager-db (see compose.loadweaver-runtime.yaml).
+
+services:
+  postgres:
+    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    environment:
+      POSTGRES_USER: agenstra
+      POSTGRES_DB: agenstra
+      POSTGRES_PASSWORD_FILE: /run/secrets/agent-manager-db
+    secrets: [agent-manager-db]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U agenstra']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    image: ghcr.io/forepath/agenstra-manager-api:latest@sha256:d42ef09fcb7f21dcbd33c39ddddbd345244a15dfc2a70a6f2498f8bd06340d50 # replace with the release you deploy (pinned)
+    entrypoint:
+      - /bin/bash
+      - -c
+      - set -a; . /run/secrets/agent-manager-env; set +a; exec /usr/local/bin/docker-entrypoint.sh
+    environment:
+      HOST: 0.0.0.0
+      PORT: '3000'
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: '5432'
+      DB_USERNAME: agenstra
+      DB_DATABASE: agenstra
+      AGENT_RUNTIME: docker
+      AGENT_DEFAULT_IMAGE: ghcr.io/forepath/agenstra-manager-worker:latest
+      AGENT_DOCKER_NETWORK: agent-manager-network
+      AGENT_EGRESS_GUARD_ENABLED: 'true'
+      AGENT_SANDBOX_RUNTIME: runsc-systrap
+      AGENT_SANDBOX_SHARED_NETNS_RUNTIME: runsc-systrap-hostnet
+    secrets: [agent-manager-env]
+    labels:
+      agenstra.io/role: manager
+      # Containers with these label prefixes are this replica's (drift view: delegated).
+      loadweaver.com/delegates: io.agenstra.
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Workspaces of the environments live on this node's disk (bind mounts of the Docker runtime).
+      - /opt/agents:/opt/agents
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+      # The Agenstra controller (on its own servers) reaches the manager through the ingress; replace the hostname.
+      exposure:
+        http: [{ host: agents.example.com, port: 3000 }]
+      # runc: the manager controls the node's Docker, which gVisor can't give it.
+      runtime: runc
+      placement:
+        selector: { names: [agents-1] }
+      liveMigration: false
+      pinned:
+        reason: >-
+          Agenstra agent manager on the Docker runtime - controls this node's Docker (docker.sock) and keeps the
+          environments' workspaces under /opt/agents
+
+volumes:
+  postgres-data:
+    x-loadweaver: { size: 10g }
+
+secrets:
+  agent-manager-env: { external: true }
+  agent-manager-db: { external: true }

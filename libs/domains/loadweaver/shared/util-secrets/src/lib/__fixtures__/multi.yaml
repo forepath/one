@@ -1,0 +1,7 @@
+kind: A
+password: one
+---
+kind: B
+list:
+  - x: 1
+  - secret: two

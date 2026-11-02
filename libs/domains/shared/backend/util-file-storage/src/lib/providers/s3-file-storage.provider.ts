@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
   NotFound,
@@ -87,6 +88,13 @@ export class S3FileStorageProvider implements FileStorageProvider {
     const bytes = await response.Body.transformToByteArray();
 
     return Buffer.from(bytes);
+  }
+
+  async deleteFile(root: string, storageKey: string): Promise<void> {
+    const { client, config, key } = this.resolve(root, storageKey);
+
+    // S3 deletes are idempotent: a missing key is fine.
+    await client.send(new DeleteObjectCommand({ Bucket: config.bucket, Key: key }));
   }
 
   async fileExists(root: string, storageKey: string): Promise<boolean> {

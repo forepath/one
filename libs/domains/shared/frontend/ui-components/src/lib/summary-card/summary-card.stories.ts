@@ -11,6 +11,8 @@ const meta: Meta<FpcSummaryCardComponent> = {
       description: {
         component: `**When to use:** Metric cell (label / value / actions) inside \`fpc-summary-bar\`.
 
+**Icon:** \`icon\` (Bootstrap name without \`bi-\`) paints a faint decorative background glyph; every card in the apps sets one.
+
 **Pairs with:** Project value via \`[fpcSummaryCardValue]\`. Mark action controls with \`[fpcSummaryCardActions]\` (single or several); the card wraps them in \`fpc-button-group\`.`,
       },
     },
@@ -23,12 +25,13 @@ const meta: Meta<FpcSummaryCardComponent> = {
   ],
   argTypes: {
     tone: { control: 'select', options: ['default', 'primary', 'success', 'danger', 'warning', 'info'] },
+    icon: { control: 'text' },
   },
-  args: { label: 'Open invoices', value: '12', tone: 'default' },
+  args: { label: 'Open invoices', value: '12', tone: 'default', icon: 'receipt' },
   render: (args) => ({
     props: args,
     template: `<div class="border rounded" style="max-width: 16rem">
-            <fpc-summary-card [label]="label" [value]="value" [tone]="tone" />
+            <fpc-summary-card [label]="label" [value]="value" [tone]="tone" [icon]="icon" />
         </div>`,
   }),
 };
@@ -39,12 +42,12 @@ type Story = StoryObj<FpcSummaryCardComponent>;
 
 export const Default: Story = {};
 
-export const Danger: Story = { args: { tone: 'danger', label: 'Overdue', value: '3' } };
+export const Danger: Story = { args: { tone: 'danger', label: 'Overdue', value: '3', icon: 'exclamation-circle' } };
 
 export const WithProjectedValueAndActions: Story = {
   render: () => ({
     template: `<div class="border rounded" style="max-width: 20rem">
-            <fpc-summary-card label="Active plans" tone="success">
+            <fpc-summary-card label="Active plans" tone="success" icon="stack">
                 <span fpcSummaryCardValue>12</span>
                 <fpc-button
                     fpcSummaryCardActions

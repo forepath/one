@@ -1,0 +1,29 @@
+.fpc-command-palette__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fpc-command-palette__group-label {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.fpc-command-palette__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: var(--fpc-density-row-py, 0.375rem) 0.5rem;
+  border-radius: var(--bs-border-radius);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.fpc-command-palette__item--active {
+  background-color: var(--bs-primary-bg-subtle);
+  color: var(--bs-primary-text-emphasis);
+}

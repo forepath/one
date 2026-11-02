@@ -1,0 +1,68 @@
+name: Integration and E2E Tests
+
+# Manual only: these suites usually run locally. Start from the Actions tab (or `gh workflow run`) on any branch.
+on:
+  workflow_dispatch:
+    inputs:
+      suites:
+        description: Which suites to run
+        type: choice
+        options:
+          - both
+          - integration
+          - e2e
+        default: both
+      projects:
+        description: Comma-separated Nx projects (empty = projects affected against the base branch)
+        type: string
+        required: false
+        default: ''
+      base:
+        description: Base branch for the affected projects
+        type: string
+        required: false
+        default: main
+
+permissions:
+  contents: read
+  actions: read
+  packages: read
+
+jobs:
+  run:
+    name: Run ${{ inputs.suites }} tests
+    runs-on: ubuntu-latest
+    env:
+      PROJECTS: ${{ inputs.projects }}
+      BASE: ${{ inputs.base }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      # Integration suites start their own throwaway containers (Docker is available on the runner).
+      - name: Run integration tests
+        if: inputs.suites != 'e2e'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "$PROJECTS" ]; then
+            npx nx run-many --target=integration-test --projects="$PROJECTS" --parallel=1
+          else
+            npx nx affected --target=integration-test --base="origin/$BASE" --head=HEAD --parallel=1
+          fi
+
+      - name: Run end-to-end tests
+        if: inputs.suites != 'integration'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "$PROJECTS" ]; then
+            npx nx run-many --target=e2e --projects="$PROJECTS" --parallel=3
+          else
+            npx nx affected --target=e2e --base="origin/$BASE" --head=HEAD --parallel=3
+          fi

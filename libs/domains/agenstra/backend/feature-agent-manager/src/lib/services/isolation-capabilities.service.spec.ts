@@ -1,4 +1,4 @@
-import type { DockerService, IsolationProbeResult } from './docker.service';
+import type { AgentRuntime, IsolationProbeResult } from '../runtime/agent-runtime';
 import { IsolationCapabilitiesService } from './isolation-capabilities.service';
 
 class TestIsolationCapabilitiesService extends IsolationCapabilitiesService {
@@ -12,7 +12,7 @@ class TestIsolationCapabilitiesService extends IsolationCapabilitiesService {
 describe('IsolationCapabilitiesService', () => {
   let docker: jest.Mocked<
     Pick<
-      DockerService,
+      AgentRuntime,
       'getDockerHostInfo' | 'runIsolationProbe' | 'runMicrovmProbe' | 'getImageId' | 'removeStaleIsolationProbes'
     >
   >;
@@ -65,7 +65,7 @@ describe('IsolationCapabilitiesService', () => {
       getImageId: jest.fn().mockResolvedValue('sha256:image'),
       removeStaleIsolationProbes: jest.fn().mockResolvedValue(0),
     };
-    service = new TestIsolationCapabilitiesService(docker as unknown as DockerService);
+    service = new TestIsolationCapabilitiesService(docker as unknown as AgentRuntime);
   });
 
   afterEach(async () => {

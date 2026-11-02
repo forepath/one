@@ -74,6 +74,13 @@ export class SubscriptionItemUpdateJobHandler {
       return;
     }
 
+    if (stack.selfUpdating) {
+      // e.g. Loadweaver: the product updates itself; the command only aligns auxiliary parts (never a compose pull).
+      this.logger.log(
+        `Item ${item.id} runs a self-updating stack (${stack.key}); running its non-pulling update command`,
+      );
+    }
+
     const command = stack.buildUpdateCommand();
     const result = await this.sshExecutor.exec(serverInfo.publicIp, SSH_PORT, SSH_USER, item.sshPrivateKey, command);
 

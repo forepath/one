@@ -3,7 +3,7 @@ import { Injectable, Logger, NotFoundException, ServiceUnavailableException } fr
 import { CreateVncSessionResponseDto } from '../dto/create-vnc-session-response.dto';
 import { AgentsRepository } from '../repositories/agents.repository';
 
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 import { VncTicketService } from './vnc-ticket.service';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class VncSessionsService {
 
   constructor(
     private readonly agentsRepository: AgentsRepository,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
     private readonly vncTicketService: VncTicketService,
   ) {}
 
@@ -24,7 +24,7 @@ export class VncSessionsService {
       throw new NotFoundException('Agent container not found');
     }
 
-    const status = await this.dockerService.getContainerStatus(containerId);
+    const status = await this.runtime.getContainerStatus(containerId);
 
     if (!status.running) {
       throw new ServiceUnavailableException('Agent container is not running');

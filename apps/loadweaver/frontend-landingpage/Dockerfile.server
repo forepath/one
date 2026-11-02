@@ -1,0 +1,34 @@
+# -----------------------------------------------------------------------------
+# Image:      loadweaver-landingpage-server
+# Project:    loadweaver-frontend-landingpage — Nx target `server-container-image`
+# Registry:   ghcr.io/forepath/loadweaver-landingpage-server
+# Base:       node:24.22.1-alpine
+# User:       node (APP_UID / APP_GID, default 1000)
+# Exposes:    4600 (Express static server)
+# Build:      npx nx run loadweaver-frontend-landingpage:server-container-image
+# Run:        nx docker:run loadweaver-frontend-landingpage -p 4600:4600
+# Notes:      —
+# -----------------------------------------------------------------------------
+#
+FROM docker.io/node:24.22.1-alpine
+
+ARG APP_UID=1000
+ARG APP_GID=1000
+ARG VERSION=0.0.0
+ENV VERSION=${VERSION}
+
+ENV HOST=0.0.0.0
+ENV PORT=4600
+
+WORKDIR /app
+
+EXPOSE ${PORT}
+
+# CVE-2026-59873: upgrade npm so nested tar is >= 7.5.19
+RUN npm install -g npm@11.18.0 && npm cache clean --force
+
+COPY --chown=${APP_UID}:${APP_GID} . /app
+
+USER ${APP_UID}:${APP_GID}
+
+CMD [ "node", "server.mjs" ]

@@ -1,0 +1,7 @@
+# Takedowns (maintainers only, after a report: see CONTRIBUTING.md). They go into the signed index; refreshing
+# clusters hide the versions and flag installed copies (inbox warning + badge).
+#   - app: some-app
+#     versions: all            # or [1.2.0, 1.2.1]
+#     reason: Ships a cryptominer (report #123)
+#     at: 2026-11-02T10:00:00Z
+takedowns: []

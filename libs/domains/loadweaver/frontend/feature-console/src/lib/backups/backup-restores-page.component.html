@@ -1,0 +1,157 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="backup-restores" [binding]="views" />
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert class="flex-shrink-0" [flush]="true" variant="danger" [message]="message" />
+  }
+
+  <!-- Restores | Restore tests as tabs (decision 4): one table at a time; the project filter in each drawer. -->
+  <fpc-tab-group
+    class="flex-shrink-0"
+    [activeId]="activeTab()"
+    (activeIdChange)="selectTab($event)"
+    [ariaLabel]="title"
+  >
+    <fpc-tab id="restores" [label]="tabRestores" icon="arrow-counterclockwise" />
+    <fpc-tab id="tests" [label]="tabTests" icon="clipboard-check" />
+  </fpc-tab-group>
+
+  <ng-template #projectFilter>
+    <fpc-form-field forId="lw-restores-project" [label]="projectLabel">
+      <fpc-form-control
+        controlType="select"
+        controlId="lw-restores-project"
+        size="sm"
+        [ngModel]="filterState.draft().project ?? ''"
+        (ngModelChange)="filterState.patch({ project: $event || null })"
+        data-testid="restores-project"
+      >
+        <option value="">{{ allProjectsLabel }}</option>
+        @for (p of projects(); track p) {
+          <option [value]="p">{{ p }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+  </ng-template>
+
+  @switch (activeTab()) {
+    @case ('tests') {
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="tabTests"
+        [columns]="testColumns"
+        [rows]="visibleTests()"
+        [filtered]="!!testSearch().trim() || filterState.activeCount() > 0"
+        [loading]="loading() && !loaded()"
+        paging="client"
+        persistKey="lw-restore-tests"
+        [(query)]="testSearch"
+        [searchPlaceholder]="testSearchLabel"
+        showFilterButton
+        [(filtersOpen)]="filtersOpen"
+        [filtersActive]="filterState.activeCount()"
+        (filtersApplied)="filterState.apply()"
+        (filtersCleared)="filterState.clear()"
+        [rowMenu]="menu"
+        (rowAction)="onTestAction($event.row, $event.item.id)"
+        [expandedRowId]="expandedTest()"
+        (rowActivate)="toggleTest($event)"
+        emptyIcon="clipboard-check"
+        data-testid="restore-tests-list"
+      >
+        <span fpcDataTableFilters><ng-container *ngTemplateOutlet="projectFilter" /></span>
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            icon="clipboard-check"
+            size="sm"
+            i18n-title="@@lwConsoleBackupRestores-noTests"
+            title="No restore tests yet"
+          />
+        </span>
+        <ng-template fpcTableCell="started" let-t>{{ t.startedAt | date: 'short' }}</ng-template>
+        <ng-template fpcTableCell="error" let-t>
+          @if (t.error) {
+            <span class="text-danger text-break">{{ t.error }}</span>
+          }
+        </ng-template>
+        <ng-template fpcTableRowDetail let-t>
+          @if (t.check?.command) {
+            <div class="small font-monospace">{{ t.check?.command?.join(' ') }}</div>
+          }
+          @if (t.check?.output) {
+            <pre class="restore-test-output small mb-0 text-break">{{ t.check?.output }}</pre>
+          }
+        </ng-template>
+      </fpc-data-table>
+    }
+    @default {
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="tabRestores"
+        [columns]="restoreColumns"
+        [rows]="visibleRestores()"
+        [rowLink]="backupLink"
+        [filtered]="!!search().trim() || filterState.activeCount() > 0"
+        [loading]="loading() && !loaded()"
+        paging="client"
+        persistKey="lw-restores"
+        [(query)]="search"
+        [searchPlaceholder]="searchLabel"
+        showFilterButton
+        [(filtersOpen)]="filtersOpen"
+        [filtersActive]="filterState.activeCount()"
+        (filtersApplied)="filterState.apply()"
+        (filtersCleared)="filterState.clear()"
+        [rowMenu]="menu"
+        (rowAction)="onRestoreAction($event.row, $event.item.id)"
+        emptyIcon="arrow-counterclockwise"
+        data-testid="restores-list"
+      >
+        <span fpcDataTableFilters><ng-container *ngTemplateOutlet="projectFilter" /></span>
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            icon="arrow-counterclockwise"
+            size="sm"
+            i18n-title="@@lwConsoleBackupRestores-none"
+            title="No restores yet"
+          />
+        </span>
+        <ng-template fpcTableCell="progress" let-r>
+          @if (r.progress; as p) {
+            <span class="d-inline-flex flex-wrap gap-2 small">
+              @if (r.status === 'running' && p.phase) {
+                <span class="text-body-secondary">{{ p.phase }}</span>
+              }
+              @if (p.bytes !== undefined) {
+                <span>{{ bytes(p.bytes) }}</span>
+              }
+              @if (p.files !== undefined) {
+                <span>{{ p.files }} <span i18n="@@lwConsoleBackupRestores-files">files</span></span>
+              }
+            </span>
+          }
+        </ng-template>
+        <ng-template fpcTableCell="started" let-r>{{ r.startedAt | date: 'short' }}</ng-template>
+        <ng-template fpcTableCell="finished" let-r>{{ r.finishedAt | date: 'short' }}</ng-template>
+        <ng-template fpcTableCell="error" let-r>
+          @if (r.error) {
+            <span class="text-danger text-break">{{ r.error }}</span>
+          }
+        </ng-template>
+      </fpc-data-table>
+    }
+  }
+</div>

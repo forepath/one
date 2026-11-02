@@ -19,6 +19,9 @@ import {
 } from './subscription-meters.actions';
 import {
   selectSubscriptionMeterEntries,
+  selectSubscriptionMeterEntriesPage,
+  selectSubscriptionMeterEntriesPageSize,
+  selectSubscriptionMeterEntriesTotal,
   selectSubscriptionMeterSummaries,
   selectSubscriptionMetersCreating,
   selectSubscriptionMetersDeleting,
@@ -38,6 +41,9 @@ export class SubscriptionMetersFacade {
 
   readonly summaries$ = this.store.select(selectSubscriptionMeterSummaries);
   readonly entries$ = this.store.select(selectSubscriptionMeterEntries);
+  readonly entriesTotal$ = this.store.select(selectSubscriptionMeterEntriesTotal);
+  readonly entriesPage$ = this.store.select(selectSubscriptionMeterEntriesPage);
+  readonly entriesPageSize$ = this.store.select(selectSubscriptionMeterEntriesPageSize);
   readonly subscriptionId$ = this.store.select(selectSubscriptionMetersSubscriptionId);
   readonly loadingSummaries$ = this.store.select(selectSubscriptionMetersLoadingSummaries);
   readonly loadingEntries$ = this.store.select(selectSubscriptionMetersLoadingEntries);
@@ -59,13 +65,15 @@ export class SubscriptionMetersFacade {
     this.store.dispatch(loadSubscriptionMeters({ subscriptionId }));
   }
 
-  loadEntries(subscriptionId: string): void {
-    this.store.dispatch(loadMeterEntries({ subscriptionId }));
+  /** One page of the meter entries (page 1 by default); the page replaces the current rows. */
+  loadEntries(subscriptionId: string, page?: number, pageSize?: number): void {
+    this.store.dispatch(loadMeterEntries({ subscriptionId, page, pageSize }));
   }
 
-  loadAll(subscriptionId: string): void {
+  /** Summaries + one page of the entries. */
+  loadAll(subscriptionId: string, page?: number, pageSize?: number): void {
     this.loadSummaries(subscriptionId);
-    this.loadEntries(subscriptionId);
+    this.loadEntries(subscriptionId, page, pageSize);
   }
 
   createEntry(subscriptionId: string, entry: CreateUsageMeterEntryDto): void {

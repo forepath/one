@@ -20,6 +20,14 @@ describe('version.utils', () => {
     expect(compareVersions('not-a-version', '1.0.0')).toBeNull();
   });
 
+  it('compareVersions orders prereleases before their release (beta channel)', () => {
+    expect(compareVersions('v3.6.0-beta.1', '3.6.0')).toBe(-1);
+    expect(compareVersions('3.6.0-beta.2', '3.6.0-beta.10')).toBe(-1);
+    expect(compareVersions('3.6.0-beta.1', '3.5.9')).toBe(1);
+    expect(resolveUpdateState('3.6.0-beta.1', 'v3.6.0')).toBe('update_available');
+    expect(normalizeVersion('v3.6.0-beta.1')).toBe('3.6.0-beta.1');
+  });
+
   it('resolveUpdateState compares installed and latest versions', () => {
     expect(resolveUpdateState('1.0.0', '1.1.0')).toBe('update_available');
     expect(resolveUpdateState('2.0.0', '2.0.0')).toBe('up_to_date');

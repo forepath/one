@@ -1,0 +1,27 @@
+# Trivy ignore list (YAML: scoped per CVE, package and path; read via `ignorefile` in trivy.yaml).
+#
+# Only add entries with:
+#   - a linked accepted-risk ID (AR-xxx) in docs/agenstra/security/accepted-risks.md
+#   - a review date (`expired_at`: the entry stops applying then and the gate fails again)
+#   - the narrowest scope possible (paths / purls), never a bare CVE id
+# Unfixed CVEs need no entry: `ignore-unfixed` already keeps them out of the gate (AR-005).
+
+vulnerabilities:
+  # AR-006: Go stdlib crypto/tls session resumption in the `gosu` binary of the upstream postgres:16-alpine and
+  # pgvector:pg16 images (Loadweaver app catalog packages). Fixed in Go, but no rebuilt image exists yet; gosu only
+  # drops privileges at container start and never uses TLS. Remove once upstream rebuilds gosu.
+  - id: CVE-2025-68121
+    paths:
+      - usr/local/bin/gosu
+    expired_at: 2027-02-01
+    statement: AR-006 - gosu does not use crypto/tls; no rebuilt upstream image yet
+
+  # AR-007 (temporary): Debian libbrotli1 1.1.0-2+b7 in our own 4.1.0 images (agenstra-controller-api,
+  # agenstra-manager-api, decabill-billing-api) pinned by the app catalog. Fixed in 1.1.0-2+deb13u1, which the next
+  # release build installs (`apt-get upgrade` in the Dockerfiles); scoped to the vulnerable version only, so rebuilt
+  # images are unaffected. Remove with the next release's catalog re-pin.
+  - id: CVE-2026-111497
+    purls:
+      - pkg:deb/debian/libbrotli1@1.1.0-2%2Bb7
+    expired_at: 2026-12-01
+    statement: AR-007 - fixed by the next release rebuild; temporary for the pinned 4.1.0 images

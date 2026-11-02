@@ -1,8 +1,38 @@
 <div class="section__content-wrapper d-flex flex-column h-100">
-  <fpc-page-header [title]="pageTitle" density="compact">
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="milestones-bulk-result"
+    />
+  }
+
+  <!-- Table: State · Milestone · progress · open / done tickets · target date; ⋮ Edit / Lock / Delete. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    nested
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="milestones()"
+    paging="client"
+    persistKey="decabill-project-milestones"
+    [searchPlaceholder]="searchPlaceholder"
+    [loading]="loading()"
+    [error]="error()"
+    [selectable]="isAdmin"
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    emptyIcon="flag"
+    data-testid="project-milestones-list"
+  >
+    <!-- The tab names the list (DB-12): no lane header repeating "Milestones"; Create sits in the toolbar strip. -->
     @if (isAdmin) {
       <fpc-button
-        fpcPageHeaderActions
+        fpcDataTableToolbar
         variant="primary"
         size="sm"
         iconOnly
@@ -13,86 +43,53 @@
         <i class="bi bi-plus" aria-hidden="true"></i>
       </fpc-button>
     }
-  </fpc-page-header>
-
-  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @if (error$ | async; as error) {
-      <fpc-alert class="m-3 mb-0" variant="danger" [message]="error" />
-    }
-
-    @if (loading$ | async) {
-      <div class="d-flex justify-content-center py-4">
-        <fpc-spinner variant="primary" />
-      </div>
-    } @else if (milestones$ | async; as milestones) {
-      @if (milestones.length === 0) {
-        <fpc-empty-state message="No milestones yet" i18n-message="@@featureProjectMilestones-empty" />
-      } @else {
-        <fpc-list [flush]="true">
-          @for (m of milestones; track m.id) {
-            <fpc-list-item>
-              <div fpcListItemTitle class="fw-semibold">{{ m.name }}</div>
-              <div fpcListItemMeta class="small d-flex align-items-center gap-3 flex-wrap">
-                <span [class]="progressTextClass(m)"
-                  ><i class="bi bi-graph-up me-1" aria-hidden="true"></i>{{ progressLabel(m) }}</span
-                >
-                <span><i class="bi bi-circle me-1" aria-hidden="true"></i>{{ openTicketsLabel(m) }}</span>
-                <span><i class="bi bi-check-circle me-1" aria-hidden="true"></i>{{ doneTicketsLabel(m) }}</span>
-                @if (m.targetDate) {
-                  <span
-                    ><i class="bi bi-calendar3 me-1" aria-hidden="true"></i
-                    >{{ m.targetDate | date: 'mediumDate' }}</span
-                  >
-                }
-                @if (m.lockedAt) {
-                  <span class="text-secondary"
-                    ><i class="bi bi-lock me-1" aria-hidden="true"></i>{{ lockedLabel() }}</span
-                  >
-                }
-              </div>
-              @if (isAdmin && !m.lockedAt) {
-                <fpc-button-group fpcListItemActions size="sm">
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="warning"
-                    (clicked)="openEditModal(m)"
-                    i18n-title="@@featureProjectMilestones-edit"
-                    title="Edit"
-                  >
-                    <i class="bi bi-pencil" aria-hidden="true"></i>
-                  </fpc-button>
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="dark"
-                    (clicked)="lockMilestone(m.id)"
-                    i18n-title="@@featureProjectMilestones-lock"
-                    title="Lock"
-                  >
-                    <i class="bi bi-lock" aria-hidden="true"></i>
-                  </fpc-button>
-                  <fpc-button
-                    size="sm"
-                    variant="danger"
-                    iconOnly
-                    (clicked)="submitDelete()"
-                    i18n-title="@@featureProjectMilestones-delete"
-                    title="Delete"
-                  >
-                    <i class="bi bi-trash" aria-hidden="true"></i>
-                  </fpc-button>
-                </fpc-button-group>
-              }
-            </fpc-list-item>
-          }
-        </fpc-list>
-      }
-    }
-  </div>
+    <!-- Only admins can select rows, so the batch bar only ever shows for them. -->
+    <fpc-button
+      fpcDataTableBatch
+      variant="dark"
+      size="sm"
+      [disabled]="lockableSelection().length === 0"
+      (clicked)="lockSelected()"
+      data-testid="milestones-bulk-lock"
+      iconOnly
+      [ariaLabel]="lockLabel"
+      [title]="lockLabel"
+    >
+      <i class="bi bi-lock" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="lockableSelection().length === 0"
+      (clicked)="confirmBulkDelete.set(true)"
+      data-testid="milestones-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="flag"
+        size="sm"
+        message="No milestones yet"
+        i18n-message="@@featureProjectMilestones-empty"
+      />
+    </span>
+    <ng-template fpcTableCell="progress" let-row>{{ progressLabel(row) }}</ng-template>
+    <ng-template fpcTableCell="target" let-row>{{ targetDateOf(row) | fpcDate }}</ng-template>
+  </fpc-data-table>
 </div>
 
-<fpc-modal [(open)]="createModalOpen" i18n-title="@@featureProjectMilestones-createTitle" title="New milestone">
+<fpc-modal
+  [(open)]="createModalOpen"
+  i18n-title="@@featureProjectMilestones-createTitle"
+  title="Create milestone"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <fpc-form-field forId="milestoneName" i18n-label="@@featureProjectMilestones-nameLabel" label="Name">
     <fpc-form-control
       controlId="milestoneName"
@@ -102,7 +99,7 @@
       i18n-placeholder="@@featureProjectMilestones-namePlaceholder"
     />
   </fpc-form-field>
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="submitCreate()"
@@ -114,7 +111,13 @@
   </div>
 </fpc-modal>
 
-<fpc-modal [(open)]="editModalOpen" i18n-title="@@featureProjectMilestones-editTitle" title="Edit milestone">
+<fpc-modal
+  [(open)]="editModalOpen"
+  i18n-title="@@featureProjectMilestones-editTitle"
+  title="Edit milestone"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <fpc-form-field forId="editMilestoneName" i18n-label="@@featureProjectMilestones-nameLabel" label="Name">
     <fpc-form-control
       controlId="editMilestoneName"
@@ -149,7 +152,7 @@
       name="editMilestoneTargetDate"
     />
   </fpc-form-field>
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="submitEdit()"
@@ -177,3 +180,13 @@
     </p>
   }
 </fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDelete"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelected()"
+/>

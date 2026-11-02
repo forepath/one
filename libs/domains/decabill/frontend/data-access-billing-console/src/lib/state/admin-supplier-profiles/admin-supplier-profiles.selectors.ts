@@ -36,3 +36,13 @@ export const selectAdminSupplierProfilesError = createSelector(
   selectAdminSupplierProfilesState,
   (state) => state.error,
 );
+
+export const selectAdminSupplierProfilesTotal = createSelector(
+  selectAdminSupplierProfilesState,
+  (state) => state.total,
+);
+export const selectAdminSupplierProfilesPage = createSelector(selectAdminSupplierProfilesState, (state) => state.page);
+export const selectAdminSupplierProfilesPageSize = createSelector(
+  selectAdminSupplierProfilesState,
+  (state) => state.pageSize,
+);

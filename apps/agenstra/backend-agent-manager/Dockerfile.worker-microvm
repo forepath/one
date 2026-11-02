@@ -2,10 +2,12 @@
 # Image:      agenstra-manager-worker-microvm
 # Project:    backend-agent-manager — Nx target `worker-microvm-container-image`
 # Registry:   ghcr.io/forepath/agenstra-manager-worker-microvm
-# Base:       debian:trixie-slim (launcher) + the agenstra-manager-worker image below /guest
+# Base:       ghcr.io/forepath/microvm-launcher (shared launcher: QEMU, libvirt session, virtiofsd, guest kernel,
+#             bridge; `apps/shared/microvm-launcher`) + the agenstra-manager-worker image below /guest
 # User:       root (launcher); the workload keeps the worker image's users inside the guest
 # Exposes:    4096 (opencode serve HTTP API), 6080 (websockify → TigerVNC), tunnelled into the microVM
 # Build:      npx nx run agenstra-backend-agent-manager:worker-microvm-container-image
+#             (builds shared-microvm-launcher:container-image first; LAUNCHER_IMAGE selects it)
 # Run:        only through the agent manager (isolation level `microvm`): needs --device /dev/kvm,
 #             the kvm group and the reduced capability set the manager grants.
 # Notes:      The container root is the launcher (libvirt session, QEMU/KVM, virtiofsd, bridge daemon); the
@@ -17,6 +19,10 @@
 #
 ARG VERSION=latest
 ARG WORKER_IMAGE=ghcr.io/forepath/agenstra-manager-worker:${VERSION}
+ARG LAUNCHER_IMAGE=ghcr.io/forepath/microvm-launcher:${VERSION}
+
+# The shared launcher (its bundled-mode `launch`, initramfs and bridge are Agenstra's, unchanged).
+FROM ${LAUNCHER_IMAGE} AS launcher
 
 # Guest root: the unchanged worker image plus a root-owned Node.js runtime and the guest-side bridge.
 FROM ${WORKER_IMAGE} AS guest
@@ -31,52 +37,16 @@ RUN apt-get update && \
     /usr/bin/env -0 > /usr/lib/agenstra-microvm/worker.env && \
     pwd > /usr/lib/agenstra-microvm/worker.workdir
 
-COPY --chmod=0755 worker-microvm/guest-init /usr/lib/agenstra-microvm/guest-init
-COPY --chmod=0644 worker-microvm/pty-helper.py /usr/lib/agenstra-microvm/pty-helper.py
-COPY --chmod=0644 microvm-bridge/bridge-guest.cjs /usr/lib/agenstra-microvm/bridge-guest.cjs
+COPY --chmod=0755 --from=launcher /usr/lib/agenstra-microvm/guest-init /usr/lib/agenstra-microvm/guest-init
+COPY --chmod=0644 --from=launcher /usr/lib/agenstra-microvm/pty-helper.py /usr/lib/agenstra-microvm/pty-helper.py
+COPY --chmod=0644 --from=launcher /usr/lib/agenstra-microvm/bridge-guest.cjs /usr/lib/agenstra-microvm/bridge-guest.cjs
 
-# Launcher root.
-FROM docker.io/debian:trixie-slim
+# Launcher root: the shared launcher image (QEMU, libvirt, virtiofsd, guest kernel, initramfs, bridge-host.cjs,
+# vm-exec, the agenstra-vmm user).
+FROM launcher
 
 ARG VERSION=0.0.0
 ENV VERSION=${VERSION}
-ENV DEBIAN_FRONTEND=noninteractive
-
-COPY --chmod=0755 worker-microvm/initramfs-init /tmp/agenstra-initramfs-init
-RUN set -eux; \
-    arch="$(dpkg --print-architecture)"; \
-    case "${arch}" in \
-      amd64) qemu=qemu-system-x86 ;; \
-      arm64) qemu=qemu-system-arm ;; \
-      *) echo "unsupported architecture ${arch}" >&2; exit 1 ;; \
-    esac; \
-    apt-get update; \
-    apt-get upgrade -y --no-install-recommends; \
-    apt-get install -y --no-install-recommends \
-      "${qemu}" libvirt-daemon libvirt-daemon-driver-qemu libvirt-clients virtiofsd nodejs tini procps \
-      util-linux "linux-image-cloud-${arch}" busybox-static cpio xz-utils; \
-    # initramfs: static busybox, the virtio network driver and the init that mounts the virtio-fs guest root.
-    kernel_version="$(ls /lib/modules)"; \
-    staging="$(mktemp -d)"; \
-    mkdir -p "${staging}/bin" "${staging}/modules"; \
-    cp /usr/bin/busybox "${staging}/bin/busybox"; \
-    install -m 0755 /tmp/agenstra-initramfs-init "${staging}/init"; \
-    for module in kernel/net/core/failover kernel/drivers/net/net_failover kernel/drivers/net/virtio_net; do \
-      xz -dc "/lib/modules/${kernel_version}/${module}.ko.xz" > "${staging}/modules/$(basename "${module}").ko"; \
-    done; \
-    install -d -m 0755 /usr/lib/agenstra-microvm; \
-    (cd "${staging}" && find . | cpio -o -H newc --quiet) | gzip -9 > /usr/lib/agenstra-microvm/initramfs.img; \
-    rm -rf "${staging}" /tmp/agenstra-initramfs-init /boot/initrd.img* /initrd.img* /vmlinuz.old; \
-    apt-get clean; \
-    rm -rf /var/lib/apt/lists/*; \
-    useradd --system --uid 10930 --user-group --no-create-home --home-dir /nonexistent \
-      --shell /usr/sbin/nologin agenstra-vmm
-
-COPY --chmod=0755 worker-microvm/launch /usr/lib/agenstra-microvm/launch
-COPY --chmod=0644 microvm-bridge/bridge-host.cjs /usr/lib/agenstra-microvm/bridge-host.cjs
-RUN printf '#!/bin/sh\nexec /usr/bin/node /usr/lib/agenstra-microvm/bridge-host.cjs exec "$@"\n' \
-      > /usr/lib/agenstra-microvm/vm-exec && \
-    chmod 0755 /usr/lib/agenstra-microvm/vm-exec
 
 COPY --link --from=guest / /guest/
 RUN cp /guest/usr/lib/agenstra-microvm/worker.env /guest/usr/lib/agenstra-microvm/worker.workdir \

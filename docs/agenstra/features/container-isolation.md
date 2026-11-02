@@ -423,6 +423,7 @@ See [Background Jobs](../deployment/background-jobs.md).
 - **[Egress Filtering](./egress-filtering.md)** Egress guard sidecar
 - **[Webhooks](./webhooks.md)** Isolation notifications
 - **[Backend Agent Manager](../applications/backend-agent-manager.md)** `/isolation`, `/isolation/probe`
+- **[Loadweaver isolation levels](../../loadweaver/features/isolation-levels.md)** The same four levels on a Loadweaver cluster: per-node probes, `x-loadweaver.runtime`, KVM opt-out, microVMs for any container image ([Agenstra on Loadweaver](../../loadweaver/guides/agenstra-on-loadweaver.md))
 
 ---
 

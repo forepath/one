@@ -1,7 +1,39 @@
 <div class="user-manager-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="user-manager-bulk-result"
+    />
+  }
+
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="usersExcludingSelf()"
+    paging="client"
+    persistKey="shared-users"
+    [(query)]="searchUserQuery"
+    [searchPlaceholder]="searchUsersPlaceholder"
+    [filtered]="!!searchUserQuery().trim()"
+    [loading]="(usersLoading$ | async) === true && usersExcludingSelf().length === 0"
+    [error]="usersError()"
+    selectable
+    [(selected)]="selectedUserIds"
+    [rowMenu]="userRowMenu"
+    (rowAction)="onUserAction($event.row, $event.item.id)"
+    (rowActivate)="onEditUser($event)"
+    emptyIcon="people"
+    data-testid="user-manager-table"
+  >
     <fpc-button
-      fpcPageHeaderActions
+      fpcDataTableToolbar
       variant="primary"
       size="sm"
       iconOnly
@@ -12,161 +44,81 @@
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
     </fpc-button>
-  </fpc-page-header>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="bulkBusy()"
+      (clicked)="onBulkLock(true)"
+      data-testid="user-manager-bulk-lock"
+      iconOnly
+      [ariaLabel]="lockLabel"
+      [title]="lockLabel"
+    >
+      <i class="bi bi-lock" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="bulkBusy()"
+      (clicked)="onBulkLock(false)"
+      data-testid="user-manager-bulk-unlock"
+      iconOnly
+      [ariaLabel]="unlockLabel"
+      [title]="unlockLabel"
+    >
+      <i class="bi bi-unlock" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="bulkBusy()"
+      (clicked)="bulkDeleteOpen.set(true)"
+      data-testid="user-manager-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
 
-  <fpc-search-field
-    class="border-bottom flex-shrink-0"
-    name="search"
-    [bordered]="false"
-    [placeholder]="searchUsersPlaceholder"
-    [ariaLabel]="searchUsersPlaceholder"
-    [(value)]="searchUserQuery"
-  />
+    <span fpcDataTableEmpty>
+      <fpc-empty-state icon="people" [message]="noOtherUsersMessage" />
+    </span>
 
-  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @if (usersLoading$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" [label]="loadingUsersLabel" />
-      </div>
-    } @else {
-      @if (usersError(); as error) {
-        <fpc-alert variant="danger" [message]="error" />
+    <ng-template fpcTableCell="authenticator" let-row>
+      @if (row.totpEnabled) {
+        <fpc-badge iconOnly tone="primary" icon="shield-lock-fill" [label]="authenticatorLabel" />
       }
-      @if (usersExcludingSelf().length === 0) {
-        @if (searchUserQuery().trim()) {
-          <fpc-empty-state
-            icon="search"
-            message="No search results"
-            i18n-message="@@featureUserManager-noSearchResults"
-          />
-        } @else {
-          <fpc-empty-state [message]="noOtherUsersMessage" />
-        }
-      } @else {
-        <fpc-list [flush]="true">
-          @for (user of usersExcludingSelf(); track user.id) {
-            <fpc-list-item>
-              <div fpcListItemTitle class="fw-semibold">{{ user.email }}</div>
-              <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                  <span class="me-2">
-                    <i class="bi bi-person-badge me-1" aria-hidden="true"></i>{{ user.role | userRoleLabel }}
-                  </span>
-                  @if (user.lockedAt) {
-                    <span class="text-danger me-2"
-                      ><i class="bi bi-lock-fill me-1"></i
-                      ><ng-container i18n="@@featureUserManager-locked">Locked</ng-container></span
-                    >
-                  } @else {
-                    <span class="text-success me-2"
-                      ><i class="bi bi-unlock-fill me-1"></i
-                      ><ng-container i18n="@@featureUserManager-unlocked">Active</ng-container></span
-                    >
-                  }
-                  @if (user.emailConfirmedAt) {
-                    <span class="text-success me-2"
-                      ><i class="bi bi-check-circle me-1"></i
-                      ><ng-container i18n="@@featureUserManager-confirmed">Confirmed</ng-container></span
-                    >
-                  } @else {
-                    <span class="text-warning me-2"
-                      ><i class="bi bi-clock me-1"></i
-                      ><ng-container i18n="@@featureUserManager-pending">Pending</ng-container></span
-                    >
-                  }
-                  @if (user.totpEnabled) {
-                    <span class="text-primary me-2"
-                      ><i class="bi bi-shield-lock-fill me-1"></i
-                      ><ng-container i18n="@@featureUserManager-totpEnabled">Authenticator</ng-container></span
-                    >
-                  }
-                </div>
-                <span>
-                  <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>{{ formatDate(user.createdAt) }}
-                </span>
-              </div>
-              <fpc-button-group fpcListItemActions size="sm">
-                @if (user.totpEnabled) {
-                  <fpc-button
-                    variant="dark"
-                    size="sm"
-                    iconOnly
-                    (clicked)="onClearTotp(user)"
-                    i18n-title="@@featureUserManager-removeAuthenticatorTitle"
-                    title="Remove authenticator"
-                    i18n-ariaLabel="@@featureUserManager-removeAuthenticatorTitle"
-                    ariaLabel="Remove authenticator"
-                  >
-                    <i class="bi bi-shield-x"></i>
-                  </fpc-button>
-                }
-                @if (user.lockedAt) {
-                  <fpc-button
-                    variant="dark"
-                    size="sm"
-                    iconOnly
-                    (clicked)="onUnlockUser(user)"
-                    [disabled]="(unlockingUser$ | async) === true || (lockingUser$ | async) === true"
-                    i18n-title="@@featureUserManager-unlockUserButtonTitle"
-                    title="Unlock user"
-                    i18n-ariaLabel="@@featureUserManager-unlockUserButtonTitle"
-                    ariaLabel="Unlock user"
-                  >
-                    <i class="bi bi-unlock"></i>
-                  </fpc-button>
-                } @else {
-                  <fpc-button
-                    variant="dark"
-                    size="sm"
-                    iconOnly
-                    (clicked)="onLockUser(user)"
-                    [disabled]="(lockingUser$ | async) === true || (unlockingUser$ | async) === true"
-                    i18n-title="@@featureUserManager-lockUserButtonTitle"
-                    title="Lock user"
-                    i18n-ariaLabel="@@featureUserManager-lockUserButtonTitle"
-                    ariaLabel="Lock user"
-                  >
-                    <i class="bi bi-lock"></i>
-                  </fpc-button>
-                }
-                <fpc-button
-                  variant="warning"
-                  size="sm"
-                  iconOnly
-                  (clicked)="onEditUser(user)"
-                  i18n-title="@@featureUserManager-editUserButtonTitle"
-                  title="Edit user"
-                  i18n-ariaLabel="@@featureUserManager-editUserButtonTitle"
-                  ariaLabel="Edit user"
-                >
-                  <i class="bi bi-pencil"></i>
-                </fpc-button>
-                <fpc-button
-                  variant="danger"
-                  size="sm"
-                  iconOnly
-                  (clicked)="onDeleteUser(user)"
-                  i18n-title="@@featureUserManager-deleteUserButtonTitle"
-                  title="Delete user"
-                  i18n-ariaLabel="@@featureUserManager-deleteUserButtonTitle"
-                  ariaLabel="Delete user"
-                >
-                  <i class="bi bi-trash"></i>
-                </fpc-button>
-              </fpc-button-group>
-            </fpc-list-item>
-          }
-        </fpc-list>
-      }
-    }
-  </div>
+    </ng-template>
+    <ng-template fpcTableCell="created" let-row>{{ row.createdAt | fpcDate: 'datetime' }}</ng-template>
+  </fpc-data-table>
 </div>
+
+<fpc-confirm-dialog
+  [(open)]="bulkDeleteOpen"
+  i18n-title="@@featureUserManager-bulkDeleteTitle"
+  title="Delete users"
+  [confirmLabel]="deleteLabel"
+  [danger]="true"
+  [busy]="bulkBusy()"
+  (confirmed)="onConfirmBulkDelete()"
+>
+  <p class="mb-0" i18n="@@featureUserManager-bulkDeleteBody">
+    Delete the selected users? They lose access immediately. This cannot be undone.
+  </p>
+</fpc-confirm-dialog>
 
 <fpc-modal
   [(open)]="createUserModalOpen"
   i18n-title="@@featureUserManager-createUserTitle"
-  title="Create User"
+  title="Create user"
+  size="md"
   [closable]="(creatingUser$ | async) !== true"
+  [cancelLabel]="cancelLabel"
+  [cancelDisabled]="(creatingUser$ | async) === true"
 >
   <form (ngSubmit)="onSubmitCreateUser()">
     <fpc-form-field forId="createUserEmail" i18n-label="@@featureUserManager-emailLabel" label="Email" required>
@@ -231,8 +183,11 @@
 <fpc-modal
   [(open)]="editUserModalOpen"
   i18n-title="@@featureUserManager-editUserModalTitle"
-  title="Edit User"
+  title="Edit user"
+  size="md"
   [closable]="(updatingUser$ | async) !== true"
+  [cancelLabel]="cancelLabel"
+  [cancelDisabled]="(updatingUser$ | async) === true"
 >
   <form (ngSubmit)="onSubmitEditUser()">
     <fpc-form-field forId="editUserEmail" i18n-label="@@featureUserManager-emailLabel" label="Email" required>
@@ -280,7 +235,7 @@
         [disabled]="!editForm.email.trim() || (updatingUser$ | async) === true"
         [loading]="(updatingUser$ | async) === true"
       >
-        <span i18n="@@featureUserManager-update">Update</span>
+        <span i18n="@@featureUserManager-update">Save changes</span>
       </fpc-button>
     </div>
   </form>

@@ -181,24 +181,26 @@ export class AgentConsoleContainerComponent implements OnInit {
       routerLink: ['/users'],
       activePaths: ['/users'],
       icon: 'bi-people',
-      title: $localize`:@@featureContainer-userManagementTitle:User Management`,
-      label: $localize`:@@featureContainer-users:Users`,
+      title: $localize`:@@featureContainer-userManagementTitle:User management`,
+      label: $localize`:@@featureContainer-users:User management`,
     },
     {
       routerLink: ['/agent-config'],
       activePaths: ['/agent-config', '/opencode-config'],
       icon: 'bi-cpu',
       title: $localize`:@@featureContainer-agentConfigTitle:Agent configuration`,
-      label: $localize`:@@featureContainer-agentConfig:Config`,
+      label: $localize`:@@featureContainer-agentConfig:Agent configuration`,
     },
     {
       routerLink: ['/imports/atlassian'],
       activePaths: ['/imports'],
       icon: 'bi-cloud-download',
-      title: $localize`:@@featureContainer-importTitle:Import`,
-      label: $localize`:@@featureContainer-importTitle:Import`,
+      title: $localize`:@@featureContainer-importTitle:Atlassian import (Jira & Confluence)`,
+      label: $localize`:@@featureContainer-importTitle:Atlassian import (Jira & Confluence)`,
     },
   ];
+
+  readonly logoutLabel = $localize`:@@featureContainer-logout:Logout`;
 
   @ViewChild(IdentityLogoutConfirmModalComponent)
   private logoutConfirmModal?: IdentityLogoutConfirmModalComponent;

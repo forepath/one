@@ -17,21 +17,20 @@ import {
   deleteManualInvoice,
   issueManualInvoice,
   loadAdminInvoiceManager,
-  loadMoreAdminInvoiceManager,
   updateManualInvoice,
 } from './admin-invoice-manager.actions';
 import {
   selectAdminInvoiceManagerActionLoading,
-  selectAdminInvoiceManagerAppendError,
-  selectAdminInvoiceManagerAppendLoading,
   selectAdminInvoiceManagerCreating,
   selectAdminInvoiceManagerDeleting,
   selectAdminInvoiceManagerError,
-  selectAdminInvoiceManagerHasMore,
   selectAdminInvoiceManagerInvoices,
   selectAdminInvoiceManagerIssuing,
   selectAdminInvoiceManagerLoading,
+  selectAdminInvoiceManagerPage,
+  selectAdminInvoiceManagerPageSize,
   selectAdminInvoiceManagerState,
+  selectAdminInvoiceManagerTotal,
   selectAdminInvoiceManagerUpdating,
 } from './admin-invoice-manager.selectors';
 
@@ -47,29 +46,30 @@ export class AdminInvoiceManagerFacade {
   readonly deleting$ = this.store.select(selectAdminInvoiceManagerDeleting);
   readonly actionLoading$ = this.store.select(selectAdminInvoiceManagerActionLoading);
   readonly error$ = this.store.select(selectAdminInvoiceManagerError);
-  readonly hasMore$ = this.store.select(selectAdminInvoiceManagerHasMore);
-  readonly appendLoading$ = this.store.select(selectAdminInvoiceManagerAppendLoading);
-  readonly appendError$ = this.store.select(selectAdminInvoiceManagerAppendError);
+  readonly total$ = this.store.select(selectAdminInvoiceManagerTotal);
+  readonly page$ = this.store.select(selectAdminInvoiceManagerPage);
+  readonly pageSize$ = this.store.select(selectAdminInvoiceManagerPageSize);
 
-  loadInvoices(params?: { search?: string; userId?: string }): void {
+  /** Loads page 1 (or the given page) of the filtered list; the page replaces the current rows. */
+  loadInvoices(params?: { search?: string; userId?: string; page?: number; pageSize?: number }): void {
     this.store.dispatch(loadAdminInvoiceManager(params ?? {}));
   }
 
-  loadMore(): void {
+  /** Loads another page of the current filter (replace-page). */
+  loadPage(page: number, pageSize?: number): void {
     this.store
       .select(selectAdminInvoiceManagerState)
       .pipe(take(1))
-      .subscribe((state) => {
-        if (!state.hasMore || state.appendLoading || state.loading) return;
-
+      .subscribe((state) =>
         this.store.dispatch(
-          loadMoreAdminInvoiceManager({
-            offset: state.nextOffset,
+          loadAdminInvoiceManager({
             search: state.search ?? undefined,
             userId: state.userId ?? undefined,
+            page,
+            pageSize: pageSize ?? state.pageSize,
           }),
-        );
-      });
+        ),
+      );
   }
 
   createManualInvoice(dto: CreateManualInvoiceDto): void {

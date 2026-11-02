@@ -479,3 +479,41 @@ describe('AgentEgressService', () => {
     expect(order).toEqual(['first', 'second']);
   });
 });
+
+describe('AgentEgressService with runtime-managed egress (Loadweaver)', () => {
+  const agent = { id: 'a1', containerId: 'lw:env-1', egressPolicy: off, egressPolicyRevision: null };
+
+  it('applies the policy through the runtime: no guard, no proxy variables, fail-safe status', async () => {
+    const applyPolicy = jest.fn().mockResolvedValue({ revision: 'plan-1' });
+    const runtime = { egress: { applyPolicy, collectEvents: jest.fn() }, createEgressGuardContainer: jest.fn() };
+    const repository = { findById: jest.fn().mockResolvedValue(agent), update: jest.fn().mockResolvedValue({}) };
+    const service = new AgentEgressService(repository as never, runtime as never);
+
+    await expect(service.applyPolicyForAgent('a1', enforce, {})).resolves.toEqual({
+      ok: true,
+      proxyEnv: {},
+      applied: true,
+      revision: 'plan-1',
+    });
+    expect(applyPolicy).toHaveBeenCalledWith('lw:env-1', enforce);
+    expect(runtime.createEgressGuardContainer).not.toHaveBeenCalled();
+    expect(repository.update).toHaveBeenCalledWith(
+      'a1',
+      expect.objectContaining({ egressStatus: 'active', egressPolicyRevision: 'plan-1', egressLastError: null }),
+    );
+
+    applyPolicy.mockRejectedValueOnce(new Error('Egress policy: bad host'));
+    await expect(service.applyPolicyForAgent('a1', enforce, {})).resolves.toMatchObject({
+      ok: false,
+      error: 'Egress policy: bad host',
+    });
+    expect(repository.update).toHaveBeenLastCalledWith('a1', {
+      egressStatus: 'failed',
+      egressLastError: 'Egress policy: bad host',
+    });
+    // No guard to wait for before starts, nothing to recover or clean up.
+    await expect(service.beforeAgentStart({ ...agent, egressPolicy: enforce } as never)).resolves.toBeUndefined();
+    await expect(service.recoverMissingGuard(agent as never)).resolves.toBeNull();
+    await expect(service.removeOrphanedGuards()).resolves.toBe(0);
+  });
+});

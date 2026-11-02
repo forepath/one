@@ -1,5 +1,5 @@
 import { UsersRepository } from '@forepath/identity/backend';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 
 import type {
   AdminProjectListItemDto,
@@ -18,6 +18,8 @@ import { ProjectsRepository } from '../repositories/projects.repository';
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import { mapProjectToSearchDocument } from '../../search/billing-search-document.mapper';
 import { BillingSearchIndexService } from '../../search/billing-search-index.service';
+import { CustomerProfilesRepository } from '../../repositories/customer-profiles.repository';
+import { resolveCustomerNamesByUserId } from '../../utils/customer-display-name.util';
 import { getRequiredTenantId } from '../../utils/tenant-query.utils';
 import { ProjectBillingService } from './project-billing.service';
 import { ProjectTimeReportService } from './project-time-report.service';
@@ -33,6 +35,7 @@ export class ProjectsAdminService {
     private readonly projectTimeReportService: ProjectTimeReportService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingSearchIndexService: BillingSearchIndexService,
+    @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
   ) {}
 
   async list(
@@ -43,6 +46,7 @@ export class ProjectsAdminService {
     const { items, total } = await this.projectsRepository.findAll(limit, offset, options);
     const userIds = [...new Set(items.map((item) => item.userId))];
     const userEmailById = new Map<string, string>();
+    const customerNameById = await resolveCustomerNamesByUserId(this.customerProfilesRepository, userIds);
 
     await Promise.all(
       userIds.map(async (userId) => {
@@ -55,7 +59,11 @@ export class ProjectsAdminService {
     );
 
     return {
-      items: await Promise.all(items.map((project) => this.mapListItem(project, userEmailById.get(project.userId)))),
+      items: await Promise.all(
+        items.map((project) =>
+          this.mapListItem(project, userEmailById.get(project.userId), customerNameById.get(project.userId)),
+        ),
+      ),
       total,
       limit,
       offset,
@@ -170,12 +178,17 @@ export class ProjectsAdminService {
     return await this.projectTimeReportService.generateLivePdf(projectId, dto);
   }
 
-  private async mapListItem(project: ProjectEntity, userEmail?: string): Promise<AdminProjectListItemDto> {
+  private async mapListItem(
+    project: ProjectEntity,
+    userEmail?: string,
+    customerName?: string,
+  ): Promise<AdminProjectListItemDto> {
     const item = await this.projectsService.mapListItem(project);
 
     return {
       ...item,
       userEmail,
+      customerName,
     };
   }
 

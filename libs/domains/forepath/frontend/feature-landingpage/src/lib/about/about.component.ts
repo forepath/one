@@ -18,8 +18,7 @@ interface AboutMilestone {
   icon: string;
   title: string;
   description: string;
-  /** `disabled` shows the address before the site is online, without making it clickable. */
-  link?: { label: string; href: string; disabled?: boolean };
+  link?: { label: string; href: string };
   /** Where ForePath stands today: highlighted in the timeline. */
   current?: boolean;
   /** Announced but not released yet: drawn dashed, without a date. */
@@ -115,11 +114,11 @@ export class ForepathAboutComponent implements OnInit {
     },
     {
       id: 'loadweaver',
-      date: $localize`:@@featureForepathAbout-milestoneLoadweaverDate:Coming soon`,
+      date: $localize`:@@featureForepathAbout-milestoneLoadweaverDate:Early access`,
       icon: 'bi-diagram-3',
       title: $localize`:@@featureForepathAbout-milestoneLoadweaverTitle:Loadweaver`,
       description: $localize`:@@featureForepathAbout-milestoneLoadweaverDesc:Our next product turns a handful of servers into a resilient multi-site cluster. It gives applications built with AI, and the agents behind them, a protected home on infrastructure you control, with encrypted traffic between sites and services that keep running when a location goes down.`,
-      link: { label: 'loadweaver.com', href: 'https://loadweaver.com', disabled: true },
+      link: { label: 'loadweaver.com', href: 'https://loadweaver.com' },
       upcoming: true,
     },
   ];

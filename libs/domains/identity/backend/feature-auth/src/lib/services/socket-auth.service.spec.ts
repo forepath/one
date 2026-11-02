@@ -98,6 +98,23 @@ describe('SocketAuthService', () => {
     );
   });
 
+  it('rejects users-mode PAT (machine) JWTs on interactive sockets', async () => {
+    jwtService.verifyAsync.mockResolvedValue({
+      sub: 'user-1',
+      email: 'a@b.com',
+      roles: [UserRole.USER],
+      tv: 2,
+      amr: ['pat'],
+      patId: 't1',
+      scopes: ['clients:read'],
+    });
+
+    const result = await service.validateAndGetUser('Bearer pat.jwt.token');
+
+    expect(result).toBeNull();
+    expect(usersRepository.findById).not.toHaveBeenCalled();
+  });
+
   it('rejects Keycloak-mode PAT JWTs before OIDC validation', async () => {
     process.env.AUTHENTICATION_METHOD = 'keycloak';
     const keycloak = {

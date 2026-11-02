@@ -1,0 +1,65 @@
+{
+  "name": "shared-microvm-launcher",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/shared/microvm-launcher",
+  "projectType": "application",
+  "tags": ["domain:shared", "type:app", "scope:backend"],
+  "implicitDependencies": ["shared-backend-util-microvm-bridge"],
+  "targets": {
+    "copy-microvm-bridge": {
+      "dependsOn": [
+        {
+          "projects": ["shared-backend-util-microvm-bridge"],
+          "target": "build"
+        }
+      ],
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/apps/shared/microvm-launcher"],
+      "options": {
+        "commands": [
+          "rm -rf dist/apps/shared/microvm-launcher",
+          "mkdir -p dist/apps/shared/microvm-launcher/microvm-bridge",
+          "cp -R apps/shared/microvm-launcher/rootfs apps/shared/microvm-launcher/src dist/apps/shared/microvm-launcher/",
+          "cp dist/libs/domains/shared/backend/util-microvm-bridge/bridge-host.cjs dist/libs/domains/shared/backend/util-microvm-bridge/bridge-guest.cjs dist/apps/shared/microvm-launcher/microvm-bridge/"
+        ],
+        "parallel": false
+      }
+    },
+    "container-image": {
+      "dependsOn": ["copy-microvm-bridge"],
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/shared/microvm-launcher/Dockerfile",
+        "context": "dist/apps/shared/microvm-launcher",
+        "build-args": ["VERSION"]
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "labels": ["io.forepath.one.test-project=shared-microvm-launcher"],
+          "tags": ["registry.forenet.internal/forepath/microvm-launcher:test"]
+        },
+        "release": {
+          "push": true,
+          "platforms": ["linux/amd64", "linux/arm64"],
+          "tags": [
+            "ghcr.io/forepath/microvm-launcher:latest",
+            "ghcr.io/forepath/microvm-launcher:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "container-image-test": {
+      "dependsOn": ["container-image"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash apps/shared/microvm-launcher/scripts/image-smoke-test.sh registry.forenet.internal/forepath/microvm-launcher:test",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}

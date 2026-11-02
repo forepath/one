@@ -1,0 +1,8 @@
+apiVersion: apps.loadweaver.com/v1
+kind: Catalog
+name: forepath-official
+title: ForePath official apps
+trust: official
+description: Apps curated and signed by ForePath (Agenstra, Decabill), published by the release pipeline.
+oci: oci://ghcr.io/forepath/loadweaver-apps
+reportUrl: https://github.com/forepath/one/issues/new?template=loadweaver-app-report.yml

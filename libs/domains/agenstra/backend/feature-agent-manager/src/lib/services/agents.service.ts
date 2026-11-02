@@ -63,7 +63,7 @@ import { AgentChatSessionsService } from './agent-chat-sessions.service';
 import { AgentEgressService, EGRESS_GUARDED_AGENT_CAP_DROP } from './agent-egress.service';
 import { AgentGitCredentialsService } from './agent-git-credentials.service';
 import { DeploymentsService } from './deployments.service';
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 import { IsolationCapabilitiesService } from './isolation-capabilities.service';
 import {
   CREATE_ENVIRONMENT_PROGRESS_STEPS,
@@ -87,7 +87,7 @@ export class AgentsService implements OnApplicationBootstrap {
 
   constructor(
     private readonly agentsRepository: AgentsRepository,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
     private readonly passwordService: PasswordService,
     private readonly agentProviderFactory: AgentProviderFactory,
     private readonly agentChatSessionsService: AgentChatSessionsService,
@@ -188,12 +188,12 @@ export class AgentsService implements OnApplicationBootstrap {
     }
 
     const expanded = await expandProviderPathTildeInContainer(raw, containerId, (id) =>
-      this.dockerService.getContainerHomeDirectory(id),
+      this.runtime.getContainerHomeDirectory(id),
     );
     const escaped = this.escapeForShell(expanded);
 
-    await this.dockerService.sendCommandToContainer(containerId, `sh -c "mkdir -p -- ${escaped}"`, undefined, true);
-    await this.dockerService.sendCommandToContainer(
+    await this.runtime.sendCommandToContainer(containerId, `sh -c "mkdir -p -- ${escaped}"`, undefined, true);
+    await this.runtime.sendCommandToContainer(
       containerId,
       `sh -c "chown -R ${AgentsService.CONTAINER_RUNTIME_USER}:${AgentsService.CONTAINER_RUNTIME_GROUP} -- ${escaped}"`,
       undefined,
@@ -270,13 +270,9 @@ export class AgentsService implements OnApplicationBootstrap {
 
     if (setupMode === GitRepositorySetupMode.EMPTY) {
       await this.ensureProviderConfigBaseDirectoryExists(containerId, agentType);
-      await this.dockerService.sendCommandToContainer(
-        containerId,
-        ['git', 'init', '--', repositoryPath],
-        undefined,
-        true,
-        { user: AgentsService.CONTAINER_RUNTIME_USER },
-      );
+      await this.runtime.sendCommandToContainer(containerId, ['git', 'init', '--', repositoryPath], undefined, true, {
+        user: AgentsService.CONTAINER_RUNTIME_USER,
+      });
 
       return;
     }
@@ -295,7 +291,7 @@ export class AgentsService implements OnApplicationBootstrap {
 
     await this.ensureProviderConfigBaseDirectoryExists(containerId, agentType);
 
-    await this.dockerService.sendCommandToContainer(
+    await this.runtime.sendCommandToContainer(
       containerId,
       ['git', 'clone', '--', repositoryUrl, repositoryPath],
       undefined,
@@ -385,13 +381,13 @@ export class AgentsService implements OnApplicationBootstrap {
 
     // Ensure the Docker image exists
     progress?.advance('pullingImage');
-    await this.dockerService.ensureImageExists(dockerImage, (fraction) => progress?.reportStepProgress(fraction));
+    await this.runtime.ensureImageExists(dockerImage, (fraction) => progress?.reportStepProgress(fraction));
 
     progress?.advance('creatingContainer');
     const agentDockerNetwork = process.env.AGENT_DOCKER_NETWORK?.trim();
 
     if (agentDockerNetwork) {
-      await this.dockerService.ensureNetworkExists(agentDockerNetwork);
+      await this.runtime.ensureNetworkExists(agentDockerNetwork);
     }
 
     // Egress filtering required by the layered agent configuration: provision the guard and apply its
@@ -401,7 +397,10 @@ export class AgentsService implements OnApplicationBootstrap {
       : null;
     let egressGuard: { guardId: string; revision: string } | undefined;
 
-    if (egressPolicy && egressPolicyRequiresGuard(egressPolicy)) {
+    // A runtime that filters egress itself (Loadweaver) gets the policy with the environment instead of a guard.
+    const runtimeEgress = !!this.runtime.egress && !!egressPolicy;
+
+    if (egressPolicy && egressPolicyRequiresGuard(egressPolicy) && !runtimeEgress) {
       if (!this.agentEgress?.isEnabled()) {
         throw new BadRequestException(
           'The agent configuration requires egress filtering, but egress guard sidecars are disabled on this agent manager',
@@ -423,7 +422,7 @@ export class AgentsService implements OnApplicationBootstrap {
     let containerId: string;
 
     try {
-      containerId = await this.dockerService.createContainer({
+      containerId = await this.runtime.createContainer({
         name: agentWorkerContainerName(agentId),
         labels: { [AGENT_ID_LABEL]: agentId, [AGENT_WORKER_LABEL]: '1' },
         image: dockerImage,
@@ -451,6 +450,7 @@ export class AgentsService implements OnApplicationBootstrap {
         ],
         ...(isolation.runtime ? { runtime: isolation.runtime } : {}),
         ...(microvm ? { microvm: true } : {}),
+        ...(runtimeEgress ? { egressPolicy } : {}),
         ...(egressGuard
           ? {
               // The guard owns the network namespace (agent network attachment / published ports).
@@ -532,7 +532,11 @@ export class AgentsService implements OnApplicationBootstrap {
         ...(egressPolicy
           ? {
               egressPolicy,
-              egressStatus: egressGuard ? ('active' as const) : ('inactive' as const),
+              egressStatus:
+                egressGuard || (runtimeEgress && egressPolicyRequiresGuard(egressPolicy))
+                  ? ('active' as const)
+                  : ('inactive' as const),
+              ...(runtimeEgress ? { egressAppliedAt: new Date() } : {}),
               ...(egressGuard
                 ? {
                     egressGuardContainerId: egressGuard.guardId,
@@ -596,7 +600,7 @@ export class AgentsService implements OnApplicationBootstrap {
     } catch (error) {
       // Clean up the container if any step after creation fails
       try {
-        await this.dockerService.deleteContainer(containerId);
+        await this.runtime.deleteContainer(containerId);
       } catch (cleanupError) {
         // Log cleanup error but don't mask the original error
         // The original error is more important for debugging
@@ -742,7 +746,7 @@ export class AgentsService implements OnApplicationBootstrap {
 
     if (agent.containerId) {
       try {
-        await this.dockerService.deleteContainer(agent.containerId);
+        await this.runtime.deleteContainer(agent.containerId);
       } catch (error) {
         this.logger.error(`Failed to delete container ${agent.containerId}: ${error}`);
       }
@@ -765,7 +769,7 @@ export class AgentsService implements OnApplicationBootstrap {
       try {
         // The egress guard owns the namespace: it must run before the agent can join it.
         await this.agentEgress?.beforeAgentStart(agent);
-        await this.dockerService.startContainer(agent.containerId);
+        await this.runtime.startContainer(agent.containerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
 
@@ -801,7 +805,7 @@ export class AgentsService implements OnApplicationBootstrap {
 
     if (agent.containerId) {
       try {
-        await this.dockerService.stopContainer(agent.containerId);
+        await this.runtime.stopContainer(agent.containerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
 
@@ -831,7 +835,7 @@ export class AgentsService implements OnApplicationBootstrap {
       try {
         // Fresh guard namespace first; the agent restart then joins it.
         await this.agentEgress?.beforeAgentRestart(agent);
-        await this.dockerService.restartContainer(agent.containerId);
+        await this.runtime.restartContainer(agent.containerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
 
@@ -1032,7 +1036,7 @@ export class AgentsService implements OnApplicationBootstrap {
           try {
             this.logger.log(`Restarting agent container ${agent.containerId} for agent ${agent.name}`);
             await this.agentEgress?.beforeAgentRestart(agent);
-            await this.dockerService.restartContainer(agent.containerId);
+            await this.runtime.restartContainer(agent.containerId);
             restartedContainers.add(agent.containerId);
             this.logger.log(`✅ Successfully restarted agent container ${agent.containerId}`);
           } catch (error: unknown) {
@@ -1087,10 +1091,7 @@ export class AgentsService implements OnApplicationBootstrap {
     }
 
     try {
-      const result = await this.dockerService.sendCommandToContainer(
-        agent.containerId,
-        provider.getModelsListCommand(),
-      );
+      const result = await this.runtime.sendCommandToContainer(agent.containerId, provider.getModelsListCommand());
 
       return provider.toModelsList(result) || {};
     } catch (error: unknown) {
@@ -1155,7 +1156,7 @@ export class AgentsService implements OnApplicationBootstrap {
    */
   private async removeLegacySidecarContainers(): Promise<void> {
     try {
-      const removed = await this.dockerService.removeContainersByImageNameSubstring([
+      const removed = await this.runtime.removeContainersByImageNameSubstring([
         'agenstra-manager-vnc',
         'agenstra-manager-ssh',
       ]);
@@ -1205,7 +1206,7 @@ export class AgentsService implements OnApplicationBootstrap {
         }
 
         try {
-          const result = await this.dockerService.renameContainerIfNeeded(containerId, name);
+          const result = await this.runtime.renameContainerIfNeeded(containerId, name);
 
           if (result === 'renamed') {
             this.logger.log(`Renamed container ${containerId.slice(0, 12)} of agent ${agent.id} to ${name}`);

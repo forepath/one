@@ -59,7 +59,7 @@ import { AgentContextTicketsService } from '../services/agent-context-tickets.se
 import { AgentHandoffsApiService } from '../services/agent-handoffs-api.service';
 import { AgentTasksApiService } from '../services/agent-tasks-api.service';
 import { AgentsService } from '../services/agents.service';
-import { DockerService } from '../services/docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 import { WorkspaceChangeNotifierService } from '../services/workspace-change-notifier.service';
 import { EnvironmentProgressService } from '../services/environment-progress.service';
@@ -365,7 +365,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   constructor(
     private readonly agentsService: AgentsService,
     private readonly agentsRepository: AgentsRepository,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
     private readonly openCodePtyService: OpenCodePtyService,
     private readonly agentMessagesService: AgentMessagesService,
     private readonly agentMessageEventsService: AgentMessageEventsService,
@@ -3422,7 +3422,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     options?: { preferFastStatus?: boolean },
   ): Promise<void> {
     try {
-      const status = await this.dockerService.getContainerStatus(containerId);
+      const status = await this.runtime.getContainerStatus(containerId);
       const statsTimestamp = new Date().toISOString();
       const preferFastStatus = options?.preferFastStatus === true;
 
@@ -3444,11 +3444,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         }
       }
 
-      let stats: Awaited<ReturnType<DockerService['getContainerStats']>> | null = null;
+      let stats: Awaited<ReturnType<AgentRuntime['getContainerStats']>> | null = null;
 
       if (status.running) {
         try {
-          stats = await this.dockerService.getContainerStats(containerId);
+          stats = await this.runtime.getContainerStats(containerId);
         } catch (statsError) {
           const err = statsError as { message?: string; stack?: string };
 

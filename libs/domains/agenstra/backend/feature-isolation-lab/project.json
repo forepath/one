@@ -13,11 +13,10 @@
       }
     },
     "isolation-lab": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}-lab"],
+      "executor": "nx:run-commands",
       "options": {
-        "jestConfig": "libs/domains/agenstra/backend/feature-isolation-lab/jest.isolation-lab.config.cts",
-        "runInBand": true
+        "command": "bash libs/domains/shared/backend/util-vm-lab/scripts/run-lab.sh --config libs/domains/agenstra/backend/feature-isolation-lab/jest.isolation-lab.config.cts --label io.agenstra.isolation-lab --cleanup-args '--ready-marker golden.qcow2 --prune-unfinished-golden'",
+        "forwardAllArgs": true
       },
       "cache": false
     },

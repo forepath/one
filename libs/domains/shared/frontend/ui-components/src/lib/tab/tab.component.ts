@@ -33,6 +33,10 @@ export class FpcTabComponent {
   readonly section = input<string | null>(null);
   readonly active = model(false);
   readonly disabled = input(false);
+  /** Optional count / short text badge after the label (e.g. open items); hidden when null, empty or 0. */
+  readonly badge = input<string | number | null>(null);
+  /** Accessible text of the badge (e.g. "3 open"); defaults to the badge value. */
+  readonly badgeLabel = input<string | null>(null);
 
   /**
    * Optional Bootstrap Icons name for a trailing action on the tab button row

@@ -1,5 +1,5 @@
 import { CommonModule, Location } from '@angular/common';
-import { AfterViewInit, Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import {
   DeploymentsFacade,
@@ -40,6 +40,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
   private readonly deploymentsFacade = inject(DeploymentsFacade);
   private readonly location = inject(Location);
   private readonly localeService = inject(LocaleService);
+  private readonly runsList = viewChild(DeploymentRunsListComponent);
   private readonly actions$ = inject(Actions);
 
   // Inputs
@@ -61,13 +62,13 @@ export class DeploymentManagerComponent implements AfterViewInit {
   // Outputs
   readonly closeRequested = output<void>();
 
-  readonly configurationHeaderTitle = $localize`:@@featureDeploymentManager-configurationHeader:Deployment Configuration`;
-  readonly runsHeaderTitle = $localize`:@@featureDeploymentManager-runsHeader:Deployment Runs`;
-  readonly runDetailsHeaderTitle = $localize`:@@featureDeploymentManager-runDetailsHeader:Run Details`;
+  readonly configurationHeaderTitle = $localize`:@@featureDeploymentManager-configurationHeader:Deployment configuration`;
+  readonly runsHeaderTitle = $localize`:@@featureDeploymentManager-runsHeader:Deployment runs`;
+  readonly runDetailsHeaderTitle = $localize`:@@featureDeploymentManager-runDetailsHeader:Run details`;
   readonly closeConfigurationTitle = $localize`:@@featureDeploymentManager-closeConfigurationTitle:Close Configuration`;
   readonly closeRunsTitle = $localize`:@@featureDeploymentManager-closeRunsTitle:Close Runs List`;
-  readonly closeRunDetailsTitle = $localize`:@@featureDeploymentManager-closeRunDetailsTitle:Close Run Details`;
-  readonly refreshRunsTitle = $localize`:@@featureDeploymentManager-refreshRunsTitle:Refresh Runs`;
+  readonly closeRunDetailsTitle = $localize`:@@featureDeploymentManager-closeRunDetailsTitle:Close run details`;
+  readonly refreshRunsTitle = $localize`:@@featureDeploymentManager-refreshRunsTitle:Refresh runs`;
 
   // Convert signals to observables
   private readonly clientId$ = toObservable(this.clientId);
@@ -248,7 +249,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
       // Reload configuration, repositories, and runs after configuration is saved
       this.deploymentsFacade.loadConfiguration(clientId, agentId);
       this.deploymentsFacade.loadRepositories(clientId, agentId);
-      this.deploymentsFacade.loadRuns(clientId, agentId);
+      this.reloadRuns(clientId, agentId);
 
       // Update selections based on the saved configuration
       if (config.repositoryId) {
@@ -356,7 +357,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
       // Only reload runs on success, not on failure (to preserve error messages)
       this.actions$.pipe(ofType(triggerWorkflowSuccess), take(1)).subscribe(() => {
         setTimeout(() => {
-          this.deploymentsFacade.loadRuns(clientId, agentId);
+          this.reloadRuns(clientId, agentId);
         }, 2000);
       });
     }
@@ -367,6 +368,17 @@ export class DeploymentManagerComponent implements AfterViewInit {
     const agentId = this.agentId();
 
     if (clientId && agentId) {
+      this.reloadRuns(clientId, agentId);
+    }
+  }
+
+  /** Reloads the runs table's current page (it pages on the server); without the table, the newest runs. */
+  private reloadRuns(clientId: string, agentId: string): void {
+    const runsList = this.runsList();
+
+    if (runsList) {
+      runsList.reload();
+    } else {
       this.deploymentsFacade.loadRuns(clientId, agentId);
     }
   }

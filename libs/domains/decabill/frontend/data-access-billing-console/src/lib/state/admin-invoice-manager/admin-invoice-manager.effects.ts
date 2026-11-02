@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
 
+import { billingPageWindow } from '../../constants/list-paging.constants';
 import { AdminBillingService } from '../../services/admin-billing.service';
 
 import {
@@ -26,9 +27,6 @@ import {
   loadAdminInvoiceManager,
   loadAdminInvoiceManagerFailure,
   loadAdminInvoiceManagerSuccess,
-  loadMoreAdminInvoiceManager,
-  loadMoreAdminInvoiceManagerFailure,
-  loadMoreAdminInvoiceManagerSuccess,
   updateManualInvoice,
   updateManualInvoiceFailure,
   updateManualInvoiceSuccess,
@@ -44,48 +42,18 @@ function normalizeError(error: unknown): string {
   return 'An unexpected error occurred';
 }
 
-const BATCH_SIZE = 10;
-
 export const loadAdminInvoiceManager$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(loadAdminInvoiceManager),
-      switchMap(({ search, userId }) =>
-        service.listInvoices({ limit: BATCH_SIZE, offset: 0, search, userId }).pipe(
-          map((response) => {
-            const nextOffset = response.items.length;
+      switchMap(({ search, userId, page, pageSize }) => {
+        const { limit, offset } = billingPageWindow(page, pageSize);
 
-            return loadAdminInvoiceManagerSuccess({
-              invoices: response.items,
-              hasMore: nextOffset < response.total,
-              nextOffset,
-            });
-          }),
+        return service.listInvoices({ limit, offset, search, userId }).pipe(
+          map((response) => loadAdminInvoiceManagerSuccess({ invoices: response.items, total: response.total })),
           catchError((error) => of(loadAdminInvoiceManagerFailure({ error: normalizeError(error) }))),
-        ),
-      ),
-    ),
-  { functional: true },
-);
-
-export const loadMoreAdminInvoiceManager$ = createEffect(
-  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
-    actions$.pipe(
-      ofType(loadMoreAdminInvoiceManager),
-      switchMap(({ offset, search, userId }) =>
-        service.listInvoices({ limit: BATCH_SIZE, offset, search, userId }).pipe(
-          map((response) => {
-            const nextOffset = offset + response.items.length;
-
-            return loadMoreAdminInvoiceManagerSuccess({
-              invoices: response.items,
-              hasMore: nextOffset < response.total,
-              nextOffset,
-            });
-          }),
-          catchError((error) => of(loadMoreAdminInvoiceManagerFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     ),
   { functional: true },
 );

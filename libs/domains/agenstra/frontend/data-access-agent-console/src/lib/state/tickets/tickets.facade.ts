@@ -14,6 +14,8 @@ import {
   prependTicketDetailActivity,
   ticketAttachmentAdded,
   ticketAttachmentRemoved,
+  ticketBoardTicketRemoved,
+  ticketBoardTicketUpsert,
   updateTicket,
 } from './tickets.actions';
 import {
@@ -83,6 +85,16 @@ export class TicketsFacade {
 
   remove(id: string, releaseExternalSyncMarker?: boolean): void {
     this.store.dispatch(deleteTicket({ id, releaseExternalSyncMarker }));
+  }
+
+  /** Merges a ticket the caller already saved through `TicketsService` (bulk actions of the tickets table). */
+  applyTicketUpsert(ticket: TicketResponseDto): void {
+    this.store.dispatch(ticketBoardTicketUpsert({ ticket }));
+  }
+
+  /** Drops a ticket the caller already deleted through `TicketsService` (bulk delete of the tickets table). */
+  applyTicketRemoved(id: string, clientId: string): void {
+    this.store.dispatch(ticketBoardTicketRemoved({ id, clientId }));
   }
 
   addComment(ticketId: string, body: string): void {

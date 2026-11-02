@@ -1,0 +1,304 @@
+<ng-template #refreshButton>
+  <fpc-button
+    variant="dark"
+    size="sm"
+    iconOnly
+    [ariaLabel]="refreshLabel"
+    [title]="refreshLabel"
+    (clicked)="refresh()"
+    data-testid="metrics-refresh"
+  >
+    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+  </fpc-button>
+</ng-template>
+
+<div class="fpc-page">
+  @if (!scope) {
+    <fpc-page-header [title]="title">
+      @if (tab() === 'dashboards' && dashboard(); as d) {
+        <!-- The chosen dashboard names the view (3.38: info strip → header context). -->
+        <fpc-badge
+          fpcPageHeaderContext
+          color="light"
+          size="sm"
+          [title]="d.spec.description ?? ''"
+          data-testid="dashboard-context"
+          >{{ d.spec.title }}</fpc-badge
+        >
+      }
+      <ng-container ngProjectAs="[fpcPageHeaderActions]">
+        <ng-container [ngTemplateOutlet]="refreshButton" />
+      </ng-container>
+    </fpc-page-header>
+
+    <fpc-tab-group class="flex-shrink-0" [activeId]="tab()" (activeIdChange)="onTabChange($event)">
+      <fpc-tab id="overview" [label]="tabOverview" icon="speedometer2" />
+      <fpc-tab id="dashboards" [label]="tabDashboards" icon="grid-1x2" />
+    </fpc-tab-group>
+  }
+
+  @if (tab() === 'overview') {
+    <!-- Scope controls (reload) lead the strip; the drawer only toggles what is shown (3.38 decision 13). -->
+    <fpc-list-toolbar
+      [(open)]="filtersOpen"
+      [title]="showTitle"
+      [activeCount]="visibility.activeCount()"
+      [chips]="chips()"
+      (chipRemove)="removeChip($event)"
+      (applied)="visibility.apply()"
+      (cleared)="clearVisibility()"
+      data-testid="metrics-visibility"
+    >
+      <div fpcListToolbarLead class="d-flex flex-wrap align-items-center gap-2 py-1" data-testid="metrics-scope">
+        <label class="visually-hidden" for="lw-metrics-range">{{ rangeFilterLabel }}</label>
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-metrics-range"
+          size="sm"
+          [ngModel]="range()"
+          (ngModelChange)="setScope({ range: $event })"
+        >
+          @for (r of ranges; track r) {
+            <option [value]="r">{{ rangeLabel(r) }}</option>
+          }
+        </fpc-form-control>
+        <label class="visually-hidden" for="lw-metrics-group">{{ groupByLabel }}</label>
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-metrics-group"
+          size="sm"
+          [ngModel]="groupBy()"
+          (ngModelChange)="setScope({ groupBy: $event })"
+        >
+          @for (g of groupBys; track g) {
+            <option [value]="g">{{ groupByName(g) }}</option>
+          }
+        </fpc-form-control>
+        <label class="visually-hidden" for="lw-metrics-aggregation">{{ aggregationLabel }}</label>
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-metrics-aggregation"
+          size="sm"
+          [ngModel]="aggregation()"
+          (ngModelChange)="setScope({ aggregation: $event })"
+        >
+          @for (a of aggregations; track a) {
+            <option [value]="a">{{ aggregationName(a) }}</option>
+          }
+        </fpc-form-control>
+        @if (projects().length > 0 && !fixed.has('project')) {
+          <label class="visually-hidden" for="lw-metrics-project">{{ projectLabel }}</label>
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-metrics-project"
+            size="sm"
+            [ngModel]="project()"
+            (ngModelChange)="setScope({ project: $event })"
+          >
+            <option value="" i18n="@@lwConsoleMetrics-allProjects">All projects</option>
+            @for (p of projects(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </fpc-form-control>
+        }
+        @if (loading()) {
+          <fpc-spinner size="sm" data-testid="metrics-loading" />
+        }
+      </div>
+      @if (scope) {
+        <ng-container ngProjectAs="[fpcListToolbarActions]">
+          <ng-container [ngTemplateOutlet]="refreshButton" />
+        </ng-container>
+      }
+
+      <fpc-form-check-group [label]="categoriesLabel" legendId="lw-metrics-categories" data-testid="metrics-categories">
+        @for (group of choices(); track group.category) {
+          <fpc-form-check
+            [checkId]="'lw-metrics-cat-' + group.category"
+            [label]="group.label"
+            [checked]="isCategoryShown(group.category)"
+            (checkedChange)="toggleCategory(group.category, $event)"
+          />
+        }
+      </fpc-form-check-group>
+      @for (group of choices(); track group.category) {
+        <fpc-form-check-group [label]="group.label" [legendId]="'lw-metrics-charts-' + group.category">
+          @for (chart of group.charts; track chart.def.metric) {
+            <fpc-form-check
+              [checkId]="'lw-metrics-chart-' + chart.def.metric"
+              [label]="chart.label"
+              [disabled]="!isCategoryShown(group.category)"
+              [checked]="isChartShown(chart.def.metric)"
+              (checkedChange)="toggleChart(chart.def.metric, $event)"
+            />
+          }
+        </fpc-form-check-group>
+      }
+      <fpc-form-field forId="lw-metrics-series" [label]="seriesFilterLabel">
+        <fpc-form-control
+          controlId="lw-metrics-series"
+          size="sm"
+          [placeholder]="seriesFilterLabel"
+          [ngModel]="visibility.draft().series"
+          (ngModelChange)="visibility.patch({ series: $event })"
+        />
+      </fpc-form-field>
+      <fpc-form-check
+        checkId="lw-metrics-markers"
+        [label]="markersLabel"
+        [checked]="visibility.draft().markers"
+        (checkedChange)="visibility.patch({ markers: $event })"
+      />
+    </fpc-list-toolbar>
+
+    <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+      @if (namesError(); as message) {
+        <fpc-alert [flush]="true" variant="warning" [message]="message" />
+      }
+
+      @if (summary().length > 0) {
+        <fpc-summary-bar class="flex-shrink-0" [columns]="summary().length" data-testid="metrics-summary">
+          @for (card of summary(); track card.metric) {
+            <fpc-summary-card [icon]="card.icon" [label]="card.label" [value]="card.value" [tone]="card.tone" />
+          }
+        </fpc-summary-bar>
+      }
+
+      @if (definitions() === null && !namesError()) {
+        <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+      } @else if (noData()) {
+        <fpc-empty-state icon="graph-down" [title]="noSeriesLabel" data-testid="metrics-empty" />
+      } @else if (groups().length === 0 && relevantCharts().length > 0) {
+        <fpc-empty-state
+          icon="eye-slash"
+          i18n-title="@@lwConsoleMetrics-allHidden"
+          title="All charts are hidden by the filter"
+          data-testid="metrics-all-hidden"
+        />
+      } @else {
+        <!-- One section per category: heading, then its charts two per row (from lg). -->
+        @for (group of groups(); track group.category) {
+          <section class="flex-shrink-0" [attr.data-category]="group.category" data-testid="metrics-category">
+            <fpc-list-header [title]="group.label" />
+            <fpc-panel-grid [columns]="2">
+              @for (chart of group.charts; track chart.def.metric; let last = $last; let count = $count) {
+                <fpc-panel
+                  [title]="chart.label"
+                  [span]="last && count % 2 === 1 ? 2 : 1"
+                  [attr.data-metric]="chart.def.metric"
+                  data-testid="metrics-chart-panel"
+                >
+                  @if (chart.data?.error; as message) {
+                    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+                  } @else if (!chart.data) {
+                    <fpc-empty-state size="sm" [loading]="true" [title]="loadingLabel" />
+                  } @else if (chart.series.length === 0) {
+                    <fpc-empty-state size="sm" icon="funnel" [title]="noVisibleSeriesLabel" />
+                  } @else {
+                    <loadweaver-metric-chart
+                      data-testid="metrics-chart"
+                      [type]="chart.def.chart"
+                      [series]="chart.series"
+                      [unit]="chart.unit"
+                      [height]="240"
+                      [events]="markers() ? events() : []"
+                      [seriesLabel]="labelFor(chart.def.metric)"
+                    />
+                  }
+                </fpc-panel>
+              }
+            </fpc-panel-grid>
+          </section>
+        }
+      }
+    </div>
+  } @else {
+    @if (dashboards().length > 0) {
+      <fpc-list-toolbar
+        [(open)]="dashboardFiltersOpen"
+        [activeCount]="dashboardFilterCount()"
+        (applied)="dashboardFilterState.apply()"
+        (cleared)="resetDashboardFilters()"
+        data-testid="dashboards-filter"
+      >
+        <fpc-form-field forId="lw-dashboards-select" [label]="dashboardLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-dashboards-select"
+            size="sm"
+            [ngModel]="dashboardFilterState.draft().dashboard ?? ''"
+            (ngModelChange)="dashboardFilterState.patch({ dashboard: $event, range: null })"
+          >
+            @for (d of dashboards(); track dashboardKey(d)) {
+              <option [value]="dashboardKey(d)">
+                {{ d.spec.title }}{{ d.metadata.project ? ' (' + d.metadata.project + ')' : '' }}
+              </option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+        <fpc-form-field forId="lw-dashboards-range" [label]="rangeFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-dashboards-range"
+            size="sm"
+            [ngModel]="dashboardFilterState.draft().range ?? effectiveDashboardRange()"
+            (ngModelChange)="dashboardFilterState.patch({ range: $event })"
+          >
+            @for (r of dashboardRanges(); track r) {
+              <option [value]="r">{{ rangeLabel(r) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+        @if (projects().length > 0) {
+          <fpc-form-field forId="lw-dashboards-project" [label]="projectLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-dashboards-project"
+              size="sm"
+              [ngModel]="dashboardFilterState.draft().project"
+              (ngModelChange)="dashboardFilterState.patch({ project: $event })"
+            >
+              <option value="" i18n="@@lwConsoleDashboards-allProjects">All projects</option>
+              @for (p of projects(); track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        }
+      </fpc-list-toolbar>
+    }
+
+    <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+      @if (dashboardsError(); as message) {
+        <fpc-alert [flush]="true" variant="danger" [message]="message" />
+      }
+      @if (dashboardsLoading() && dashboards().length === 0) {
+        <fpc-empty-state [loading]="true" [title]="dashboardsLoadingLabel" />
+      } @else if (dashboards().length === 0) {
+        <fpc-empty-state
+          icon="grid-1x2"
+          i18n-title="@@lwConsoleDashboards-empty"
+          title="No dashboards yet"
+          i18n-message="@@lwConsoleDashboards-emptyHint"
+          message="Dashboards are Dashboard resources: add one as YAML in the resources."
+        />
+      } @else {
+        @if (dashboard()) {
+          <!-- The Dashboard resource places its widgets on a 12-column grid with fixed row heights (from lg; the
+               panel grid draws the hairlines between them). -->
+          <fpc-panel-grid [columns]="12" [rowHeight]="rowPx + 'px'" data-testid="dashboard-grid">
+            @for (placed of placedWidgets(); track trackWidget(placed.widget, placed.index)) {
+              <loadweaver-dashboard-widget
+                [style.--lw-widget-column]="placed.column"
+                [style.--lw-widget-row]="placed.row"
+                [style.--lw-widget-height]="placed.height"
+                [widget]="placed.widget"
+                [state]="widgetState(placed.index)"
+              />
+            }
+          </fpc-panel-grid>
+        }
+      }
+    </div>
+  }
+</div>

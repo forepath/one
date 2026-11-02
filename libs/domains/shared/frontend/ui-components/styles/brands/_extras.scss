@@ -13,6 +13,15 @@ $fpc-btn-white-label-colors: primary, secondary, success, danger, warning, info,
   }
 }
 
+// Label colour on primary fills (`--fpc-primary-contrast`, the brand's on-primary ink). White by default; brands with
+// a light primary (Loadweaver gold) set `$fpc-primary-contrast` to a dark ink in their palette (see brands/_chrome.scss).
+.btn-primary {
+  --bs-btn-color: var(--fpc-primary-contrast, #fff);
+  --bs-btn-hover-color: var(--fpc-primary-contrast, #fff);
+  --bs-btn-active-color: var(--fpc-primary-contrast, #fff);
+  --bs-btn-disabled-color: var(--fpc-primary-contrast, #fff);
+}
+
 // Solid buttons: thin edge as a shade of the fill (same idea as landing CTAs /
 // `--bs-primary-dark`). Track hover/active bg so the border never fights the fill.
 @each $name in $fpc-btn-solid-colors {
@@ -25,6 +34,7 @@ $fpc-btn-white-label-colors: primary, secondary, success, danger, warning, info,
 }
 
 :root {
+  @include fpc-brand-on-primary-vars;
   // ~92% primary + black matches previous hand-tuned Decabill/Agenstra/ForePath darks.
   --bs-primary-dark: color-mix(in srgb, var(--bs-primary) 92%, black);
   // ~80% success + black matches previous hand-tuned success darks.

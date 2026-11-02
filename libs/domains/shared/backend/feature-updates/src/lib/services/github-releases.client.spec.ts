@@ -196,4 +196,34 @@ describe('GitHubReleasesClient', () => {
       expect.objectContaining({ tagName: 'v2.22.0' }),
     ]);
   });
+
+  it('beta channel: newest release or prerelease by version, prereleases included in the changelog range', async () => {
+    const list = [
+      { tag_name: 'v3.6.0-beta.2', body: '* feat(loadweaver): beta 2', draft: false, prerelease: true },
+      { tag_name: 'v3.6.0-beta.10', body: '* feat(loadweaver): beta 10', draft: false, prerelease: true },
+      { tag_name: 'v3.7.0-beta.1', body: '* draft', draft: true, prerelease: true },
+      { tag_name: 'v3.5.1', body: '* fix(loadweaver): patch', draft: false, prerelease: false },
+    ];
+
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => list }) as typeof fetch;
+
+    const client = new GitHubReleasesClient({
+      applicationId: 'loadweaver',
+      productScope: 'loadweaver',
+      serviceName: 'control-plane',
+      controllerPath: 'updates/announcements',
+      queueName: 'loadweaver',
+      resolveScopeKey: () => 'instance',
+      assertAdmin: () => undefined,
+    });
+
+    await expect(client.fetchLatestRelease({ includePrereleases: true })).resolves.toEqual(
+      expect.objectContaining({ tagName: 'v3.6.0-beta.10', prerelease: true }),
+    );
+    await expect(client.fetchReleasesNewerThan('3.5.1', { includePrereleases: true })).resolves.toEqual([
+      expect.objectContaining({ tagName: 'v3.6.0-beta.2' }),
+      expect.objectContaining({ tagName: 'v3.6.0-beta.10' }),
+    ]);
+    await expect(client.fetchReleasesNewerThan('3.5.1')).resolves.toEqual([]);
+  });
 });

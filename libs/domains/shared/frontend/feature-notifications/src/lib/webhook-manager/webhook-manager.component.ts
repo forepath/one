@@ -1,39 +1,49 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   AdminWebhooksFacade,
   NOTIFICATION_ADMIN_CLIENT_PROVIDER,
   NOTIFICATION_ADMIN_ENVIRONMENT,
   WebhookAuthType,
+  WebhookEndpointsService,
   WebhookHttpMethod,
   type CreateWebhookEndpointDto,
+  type WebhookDeliveryResponseDto,
   type NotificationAdminClientOption,
   type UpdateWebhookEndpointDto,
   type WebhookEndpointResponseDto,
 } from '@forepath/shared/frontend/data-access-notifications';
 import {
+  FpcDatePipe,
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcFormSwitchComponent,
   FpcLabelComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
   FpcSpinnerComponent,
+  FpcTableCellDirective,
+  FpcTableRowDetailDirective,
+  FPC_DEFAULT_PAGE_SIZE,
+  fpcCopyText,
+  fpcRunBulk,
+  type FpcMenuItem,
+  type FpcTableColumn,
 } from '@forepath/shared/frontend/ui-components';
-import { combineLatestWith, map, of } from 'rxjs';
+import { catchError, combineLatestWith, firstValueFrom, map, of, switchMap } from 'rxjs';
+
+import { SHARED_DL_DELETE, sharedBulkSummary, sharedCopyIdItem } from '../data-list';
 
 import {
   hideNotificationModal,
@@ -69,25 +79,26 @@ const emptyForm = (): WebhookFormState => ({
   selector: 'shared-webhook-manager',
   imports: [
     CommonModule,
+    FpcDatePipe,
     FormsModule,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
     FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
+    FpcDataTableComponent,
     FpcEmptyStateComponent,
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormSwitchComponent,
     FpcLabelComponent,
-    FpcListComponent,
-    FpcListItemComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
     FpcSpinnerComponent,
+    FpcTableCellDirective,
+    FpcTableRowDetailDirective,
   ],
   templateUrl: './webhook-manager.component.html',
   styleUrls: ['./webhook-manager.component.scss'],
@@ -95,6 +106,7 @@ const emptyForm = (): WebhookFormState => ({
 })
 export class WebhookManagerComponent implements OnInit {
   private readonly facade = inject(AdminWebhooksFacade);
+  private readonly endpointsService = inject(WebhookEndpointsService);
   private readonly destroyRef = inject(DestroyRef);
   readonly environment = inject(NOTIFICATION_ADMIN_ENVIRONMENT);
   private readonly clientProvider = inject(NOTIFICATION_ADMIN_CLIENT_PROVIDER, { optional: true });
@@ -107,6 +119,10 @@ export class WebhookManagerComponent implements OnInit {
   readonly WebhookHttpMethod = WebhookHttpMethod;
   readonly WebhookAuthType = WebhookAuthType;
   readonly clientFilterEnabled = this.environment.clientFilterEnabled;
+
+  /** Modal footer Cancel (3.38 R14: [Cancel `dark`, Primary]); the shared identity unit exists in every console. */
+
+  readonly cancelLabel = $localize`:@@identityLogoutConfirm-cancel:Cancel`;
 
   readonly pageTitle = $localize`:@@featureNotifications-title:Webhooks`;
   readonly addWebhookTitle = $localize`:@@featureNotifications-addWebhookTitle:Add webhook`;
@@ -124,7 +140,9 @@ export class WebhookManagerComponent implements OnInit {
 
       const normalized = searchQuery.trim().toLowerCase();
 
-      return endpoints.filter((endpoint) => JSON.stringify(endpoint).toLowerCase().includes(normalized));
+      return endpoints.filter((endpoint) =>
+        `${endpoint.name} ${endpoint.url} ${endpoint.subscribedEvents.join(' ')}`.toLowerCase().includes(normalized),
+      );
     }),
   );
 
@@ -137,12 +155,6 @@ export class WebhookManagerComponent implements OnInit {
   readonly eventTypesLoading$ = this.facade.eventTypesLoading$;
   readonly lastCreatedSigningSecret$ = this.facade.lastCreatedSigningSecret$;
   readonly lastTestDelivery$ = this.facade.lastTestDelivery$;
-  readonly deliveries$ = this.facade.deliveries$;
-  readonly deliveriesTotal$ = this.facade.deliveriesTotal$;
-  readonly deliveriesLoading$ = this.facade.deliveriesLoading$;
-  readonly deliveriesError$ = this.facade.deliveriesError$;
-  readonly deliveriesHasMore$ = this.facade.deliveriesHasMore$;
-
   readonly endpoints = toSignal(this.endpoints$, { initialValue: [] as WebhookEndpointResponseDto[] });
   readonly endpointsError = toSignal(this.endpointsError$, { initialValue: null as string | null });
   readonly lastCreatedSigningSecret = toSignal(this.lastCreatedSigningSecret$, { initialValue: null as string | null });
@@ -155,6 +167,167 @@ export class WebhookManagerComponent implements OnInit {
     },
   );
 
+  // Endpoints table (3.38: State column, ⋮ row actions, bulk Test / Enable / Disable / Delete via single calls)
+  readonly testLabel = $localize`:@@featureNotifications-testWebhookTitle:Send test delivery`;
+  readonly enableLabel = $localize`:@@featureNotifications-enable:Enable`;
+  readonly disableLabel = $localize`:@@featureNotifications-disable:Disable`;
+  readonly deleteLabel = SHARED_DL_DELETE;
+  readonly deliveriesTitle = $localize`:@@featureNotifications-deliveriesTitle:Recent deliveries`;
+  private readonly viewDeliveriesLabel = $localize`:@@featureNotifications-viewDeliveriesTitle:View deliveries`;
+  private readonly editLabel = $localize`:@@featureNotifications-editWebhookTitle:Edit webhook`;
+  private readonly testFailedLabel = $localize`:@@featureNotifications-testFailed:Test delivery failed.`;
+
+  readonly selectedEndpointIds = signal<readonly string[]>([]);
+  readonly bulkBusy = signal(false);
+  readonly bulkDeleteOpen = signal(false);
+  readonly bulkResult = signal<{ tone: 'success' | 'warning' | 'danger'; message: string } | null>(null);
+
+  readonly selectedEndpoints = computed(() => {
+    const ids = new Set(this.selectedEndpointIds());
+
+    return this.endpoints().filter((endpoint) => ids.has(endpoint.id));
+  });
+  readonly selectedEnabledEndpoints = computed(() => this.selectedEndpoints().filter((endpoint) => endpoint.enabled));
+
+  readonly columns: FpcTableColumn<WebhookEndpointResponseDto>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureNotifications-colState:State`,
+      type: 'state',
+      state: (endpoint) =>
+        !endpoint.enabled
+          ? { label: this.statusLabel(endpoint), tone: 'neutral', icon: 'pause-circle' }
+          : endpoint.consecutiveFailures > 0
+            ? {
+                label: $localize`:@@featureNotifications-stateFailing:Failing (${endpoint.consecutiveFailures}:count: failures)`,
+                tone: 'warning',
+                icon: 'exclamation-triangle',
+              }
+            : { label: this.statusLabel(endpoint), tone: 'success', icon: 'check-circle' },
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureNotifications-nameLabel:Name`,
+      value: (endpoint) => endpoint.name,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'url',
+      label: $localize`:@@featureNotifications-urlLabel:URL`,
+      value: (endpoint) => endpoint.url,
+      priority: 1,
+    },
+    {
+      id: 'method',
+      label: $localize`:@@featureNotifications-colMethod:Method`,
+      value: (endpoint) => endpoint.httpMethod,
+      priority: 3,
+      width: '6rem',
+    },
+    ...(this.clientFilterEnabled
+      ? [
+          {
+            id: 'workspace',
+            label: $localize`:@@featureNotifications-colClient:Client`,
+            value: (endpoint: WebhookEndpointResponseDto) => this.clientLabel(endpoint.clientId),
+            priority: 2,
+          } satisfies FpcTableColumn<WebhookEndpointResponseDto>,
+        ]
+      : []),
+    {
+      id: 'events',
+      label: $localize`:@@featureNotifications-colEvents:Events`,
+      value: (endpoint) => endpoint.subscribedEvents.length,
+      align: 'end',
+      priority: 2,
+    },
+    {
+      id: 'updated',
+      label: $localize`:@@featureNotifications-colUpdated:Updated`,
+      value: (endpoint) => endpoint.updatedAt,
+      priority: 3,
+    },
+  ];
+
+  readonly endpointRowMenu = (endpoint: WebhookEndpointResponseDto): FpcMenuItem[] => [
+    { id: 'deliveries', label: this.viewDeliveriesLabel, icon: 'list-ul' },
+    { id: 'test', label: this.testLabel, icon: 'lightning', disabled: !endpoint.enabled },
+    { id: 'edit', label: this.editLabel, icon: 'pencil' },
+    endpoint.enabled
+      ? { id: 'disable', label: this.disableLabel, icon: 'pause-circle' }
+      : { id: 'enable', label: this.enableLabel, icon: 'play-circle' },
+    sharedCopyIdItem(),
+    { id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true },
+  ];
+
+  // Deliveries modal: nested table, server paging with total (limit / offset over the single-endpoint API)
+  private readonly deliveriesEndpointId = signal<string | null>(null);
+  readonly deliveriesPage = signal(1);
+  readonly deliveriesPageSize = signal(FPC_DEFAULT_PAGE_SIZE);
+  readonly deliveries = signal<WebhookDeliveryResponseDto[]>([]);
+  readonly deliveriesTotal = signal(0);
+  readonly deliveriesLoading = signal(false);
+  readonly deliveriesError = signal<string | null>(null);
+  readonly expandedDeliveryId = signal<string | null>(null);
+
+  readonly deliveryColumns: FpcTableColumn<WebhookDeliveryResponseDto>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureNotifications-deliveryStatus:Status`,
+      type: 'state',
+      state: (delivery) => {
+        const status = delivery.httpStatus ? ` (HTTP ${delivery.httpStatus})` : '';
+
+        return delivery.success
+          ? {
+              label: $localize`:@@featureNotifications-deliverySuccess:Success` + status,
+              tone: 'success',
+              icon: 'check-circle',
+            }
+          : {
+              label: $localize`:@@featureNotifications-deliveryFailed:Failed` + status,
+              tone: 'danger',
+              icon: 'x-circle',
+            };
+      },
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureNotifications-deliveryTime:Time`,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'event',
+      label: $localize`:@@featureNotifications-deliveryEvent:Event`,
+      priority: 1,
+    },
+    {
+      id: 'http',
+      label: $localize`:@@featureNotifications-colHttpStatus:HTTP status`,
+      value: (delivery) => delivery.httpStatus ?? null,
+      align: 'end',
+      priority: 2,
+      sortable: false,
+    },
+    {
+      id: 'attempt',
+      label: $localize`:@@featureNotifications-deliveryAttempt:Attempt`,
+      value: (delivery) => delivery.attempt,
+      align: 'end',
+      priority: 3,
+      sortable: false,
+    },
+  ];
+
+  private readonly deliveriesRequest = computed(() => ({
+    id: this.deliveriesEndpointId(),
+    page: this.deliveriesPage(),
+    pageSize: this.deliveriesPageSize(),
+  }));
+  private readonly deliveriesRequest$ = toObservable(this.deliveriesRequest);
+
   createForm = emptyForm();
   editForm = emptyForm();
   endpointToEdit: WebhookEndpointResponseDto | null = null;
@@ -164,6 +337,40 @@ export class WebhookManagerComponent implements OnInit {
   ngOnInit(): void {
     this.facade.load();
     this.facade.loadEventTypes();
+
+    // One deliveries page per request (endpoint, page, page size); a newer request cancels the older one.
+    this.deliveriesRequest$
+      .pipe(
+        switchMap(({ id, page, pageSize }) => {
+          if (!id) {
+            return of(null);
+          }
+
+          this.deliveriesLoading.set(true);
+          this.deliveriesError.set(null);
+
+          return this.endpointsService.listDeliveries(id, { limit: pageSize, offset: (page - 1) * pageSize }).pipe(
+            catchError((error: unknown) => {
+              this.deliveriesError.set(
+                (error as { error?: { message?: string }; message?: string })?.error?.message ??
+                  (error as { message?: string })?.message ??
+                  $localize`:@@featureNotifications-deliveryError:Error`,
+              );
+
+              return of(null);
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((response) => {
+        this.deliveriesLoading.set(false);
+
+        if (response) {
+          this.deliveries.set(response.items);
+          this.deliveriesTotal.set(response.total);
+        }
+      });
 
     watchNotificationMutationModalClose({
       loading$: this.saving$,
@@ -264,14 +471,103 @@ export class WebhookManagerComponent implements OnInit {
 
   onViewDeliveries(endpoint: WebhookEndpointResponseDto): void {
     this.deliveriesEndpoint = endpoint;
-    this.facade.loadDeliveries(endpoint.id);
+    this.deliveries.set([]);
+    this.deliveriesTotal.set(0);
+    this.expandedDeliveryId.set(null);
+    this.deliveriesPage.set(1);
+    this.deliveriesEndpointId.set(endpoint.id);
     showNotificationModal(this.deliveriesModalOpen);
   }
 
   onCloseDeliveries(): void {
     hideNotificationModal(this.deliveriesModalOpen);
     this.deliveriesEndpoint = null;
-    this.facade.clearDeliveries();
+    this.deliveriesEndpointId.set(null);
+    this.deliveries.set([]);
+  }
+
+  toggleDelivery(id: string): void {
+    this.expandedDeliveryId.update((current) => (current === id ? null : id));
+  }
+
+  eventTypeDescription(delivery: WebhookDeliveryResponseDto): string {
+    return this.eventTypes().find((eventType) => eventType.type === delivery.eventType)?.description ?? '';
+  }
+
+  onEndpointAction(endpoint: WebhookEndpointResponseDto, action: string): void {
+    switch (action) {
+      case 'deliveries':
+        this.onViewDeliveries(endpoint);
+        break;
+      case 'test':
+        this.onTestWebhook(endpoint);
+        break;
+      case 'edit':
+        this.onEditWebhook(endpoint);
+        break;
+      case 'enable':
+      case 'disable':
+        void this.runBulk([endpoint], (item) =>
+          firstValueFrom(this.endpointsService.update(item.id, { enabled: action === 'enable' })),
+        );
+        break;
+      case 'copy-id':
+        fpcCopyText(endpoint.id);
+        break;
+      case 'delete':
+        this.onDeleteWebhook(endpoint);
+        break;
+    }
+  }
+
+  /** Bulk Send test: one test delivery per enabled webhook; an unsuccessful delivery counts as failed. */
+  onBulkTest(): void {
+    void this.runBulk(this.selectedEnabledEndpoints(), async (endpoint) => {
+      const delivery = await firstValueFrom(this.endpointsService.test(endpoint.id));
+
+      if (!delivery.success) {
+        throw new Error(
+          delivery.errorMessage || (delivery.httpStatus ? `HTTP ${delivery.httpStatus}` : this.testFailedLabel),
+        );
+      }
+    });
+  }
+
+  onBulkSetEnabled(enabled: boolean): void {
+    void this.runBulk(
+      this.selectedEndpoints().filter((endpoint) => endpoint.enabled !== enabled),
+      (endpoint) => firstValueFrom(this.endpointsService.update(endpoint.id, { enabled })),
+    );
+  }
+
+  onConfirmBulkDelete(): void {
+    this.bulkDeleteOpen.set(false);
+    void this.runBulk(this.selectedEndpoints(), (endpoint) =>
+      firstValueFrom(this.endpointsService.delete(endpoint.id)),
+    );
+  }
+
+  /** Client fan-out over the single-webhook endpoints (3.38 D8), per-webhook result; failed / denied stay selected. */
+  private async runBulk(
+    endpoints: readonly WebhookEndpointResponseDto[],
+    run: (endpoint: WebhookEndpointResponseDto) => Promise<unknown>,
+  ): Promise<void> {
+    if (endpoints.length === 0) {
+      return;
+    }
+
+    this.bulkBusy.set(true);
+    this.bulkResult.set(null);
+
+    try {
+      const result = await fpcRunBulk(endpoints, run);
+
+      this.bulkResult.set(sharedBulkSummary(result, (endpoint) => endpoint.name));
+      this.selectedEndpointIds.set(result.failed.concat(result.denied).map((endpoint) => endpoint.id));
+      this.facade.load();
+    } finally {
+      this.bulkBusy.set(false);
+    }
   }
 
   toggleSubscribedEvent(form: WebhookFormState, eventType: string, checked: boolean): void {
@@ -307,18 +603,6 @@ export class WebhookManagerComponent implements OnInit {
       ?.label?.trim();
 
     return label || $localize`:@@featureNotifications-clientUnavailable:N/A`;
-  }
-
-  formatDate(iso: string | undefined): string {
-    if (!iso) {
-      return '-';
-    }
-
-    try {
-      return new Date(iso).toLocaleString();
-    } catch {
-      return iso;
-    }
   }
 
   formatDeliveryPayload(payload: Record<string, unknown> | null | undefined): string {
@@ -369,10 +653,6 @@ export class WebhookManagerComponent implements OnInit {
     }
 
     return $localize`:@@featureNotifications-enabled:Enabled`;
-  }
-
-  enabledStatusTextClass(endpoint: WebhookEndpointResponseDto): string {
-    return endpoint.enabled ? 'text-success' : 'text-secondary';
   }
 
   isCreateFormValid(): boolean {

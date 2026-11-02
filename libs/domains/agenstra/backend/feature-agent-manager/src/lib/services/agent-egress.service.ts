@@ -32,7 +32,7 @@ import {
 import { resolveAgentContextEgressAllows } from '../utils/agent-context-egress.utils';
 import { isolationRuntimeOptions } from '../utils/container-isolation.utils';
 
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 
 /** Capabilities dropped from agents that join a guard namespace (no raw sockets / netfilter changes). */
 export const EGRESS_GUARDED_AGENT_CAP_DROP = ['NET_ADMIN', 'NET_RAW'] as const;
@@ -100,7 +100,7 @@ export class AgentEgressService {
 
   constructor(
     private readonly agentsRepository: AgentsRepository,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
   ) {}
 
   private get env(): NodeJS.ProcessEnv {
@@ -170,12 +170,12 @@ export class AgentEgressService {
     const network = this.env['AGENT_DOCKER_NETWORK']?.trim() || undefined;
 
     if (network) {
-      await this.dockerService.ensureNetworkExists(network);
+      await this.runtime.ensureNetworkExists(network);
     }
 
     const name = egressGuardContainerName(agentId);
     const create = () =>
-      this.dockerService.createEgressGuardContainer({
+      this.runtime.createEgressGuardContainer({
         name,
         image: resolveEgressGuardImage(this.env),
         labels: {
@@ -195,7 +195,7 @@ export class AgentEgressService {
       }
 
       // A stale guard with the same name (e.g. left behind by a crashed recovery) blocks the name.
-      const stale = await this.dockerService.inspectContainerSummary(name);
+      const stale = await this.runtime.inspectContainerSummary(name);
 
       if (!stale || stale.labels[EGRESS_GUARD_LABEL] !== '1') {
         throw error;
@@ -209,15 +209,9 @@ export class AgentEgressService {
 
   async getGuardStatus(guardId: string): Promise<GuardRuntimeStatus | null> {
     try {
-      const output = await this.dockerService.sendCommandToContainer(
-        guardId,
-        [EGRESS_GUARD_CLI, 'status'],
-        undefined,
-        true,
-        {
-          user: '0',
-        },
-      );
+      const output = await this.runtime.sendCommandToContainer(guardId, [EGRESS_GUARD_CLI, 'status'], undefined, true, {
+        user: '0',
+      });
       const line = output
         .split('\n')
         .map((entry) => entry.trim())
@@ -269,15 +263,15 @@ export class AgentEgressService {
 
     const artifacts = renderEgressGuardArtifacts(policy, upstream, undefined, platformAllows);
 
-    await this.dockerService.sendCommandToContainer(guardId, [EGRESS_GUARD_CLI, 'prepare'], undefined, true, {
+    await this.runtime.sendCommandToContainer(guardId, [EGRESS_GUARD_CLI, 'prepare'], undefined, true, {
       user: '0',
     });
-    await this.dockerService.putFilesIntoContainer(
+    await this.runtime.putFilesIntoContainer(
       guardId,
       `${EGRESS_GUARD_STATE_DIR}/${EGRESS_GUARD_STAGED_DIR_NAME}`,
       Object.entries(artifacts.files).map(([name, content]) => ({ name, content, mode: 0o640 })),
     );
-    await this.dockerService.sendCommandToContainer(guardId, [EGRESS_GUARD_CLI, 'apply'], undefined, true, {
+    await this.runtime.sendCommandToContainer(guardId, [EGRESS_GUARD_CLI, 'apply'], undefined, true, {
       user: '0',
     });
 
@@ -310,7 +304,7 @@ export class AgentEgressService {
 
   async removeGuardContainer(guardId: string): Promise<void> {
     try {
-      await this.dockerService.deleteContainer(guardId);
+      await this.runtime.deleteContainer(guardId);
     } catch (error: unknown) {
       this.logger.warn(`Failed to remove egress guard ${guardId.slice(0, 12)}: ${shortError(error)}`);
     }
@@ -344,10 +338,15 @@ export class AgentEgressService {
       }
 
       const policy = policyInput ?? agent.egressPolicy ?? resolveEffectiveEgressPolicy([]);
+
+      if (this.runtime.egress) {
+        return await this.applyPolicyThroughRuntime(agent, policy, this.runtime.egress);
+      }
+
       const upstream = this.resolveUpstream(secrets);
       const requiresGuard = egressPolicyRequiresGuard(policy);
       let guardId = agent.egressGuardContainerId ?? null;
-      let guard = guardId ? await this.dockerService.inspectContainerSummary(guardId) : null;
+      let guard = guardId ? await this.runtime.inspectContainerSummary(guardId) : null;
 
       if (guardId && !guard) {
         guardId = null;
@@ -373,17 +372,15 @@ export class AgentEgressService {
           }
 
           guardId = await this.createGuard(agentId);
-          guard = await this.dockerService.inspectContainerSummary(guardId);
+          guard = await this.runtime.inspectContainerSummary(guardId);
           await this.agentsRepository.update(agentId, { egressGuardContainerId: guardId, egressLogCursor: null });
         } else if (guard && !guard.running) {
-          await this.dockerService.startContainer(guardId);
+          await this.runtime.startContainer(guardId);
         }
 
         await this.waitForGuardReady(guardId);
         const { revision, applied } = await this.applyPolicyToGuard(guardId, policy, upstream);
-        const agentContainer = agent.containerId
-          ? await this.dockerService.inspectContainerSummary(agent.containerId)
-          : null;
+        const agentContainer = agent.containerId ? await this.runtime.inspectContainerSummary(agent.containerId) : null;
         const joined = agentContainer?.networkMode === `container:${guardId}`;
 
         await this.agentsRepository.update(agentId, {
@@ -437,6 +434,48 @@ export class AgentEgressService {
   }
 
   /**
+   * Runtime-managed egress (Loadweaver): the policy is compiled into the runtime's own filtering (node proxy policies)
+   * and applied with the environment; no proxy variables (the filtering is transparent). On failure the last applied
+   * policies stay in force (Loadweaver applies plans atomically or not at all).
+   */
+  private async applyPolicyThroughRuntime(
+    agent: AgentEntity,
+    policy: EffectiveEgressPolicy,
+    egress: NonNullable<AgentRuntime['egress']>,
+  ): Promise<AgentEgressApplyResult> {
+    const requires = egressPolicyRequiresGuard(policy);
+
+    if (!agent.containerId) {
+      await this.agentsRepository.update(agent.id, { egressPolicy: policy, egressStatus: 'inactive' });
+
+      return { ok: true, proxyEnv: {}, applied: false, revision: null };
+    }
+
+    try {
+      const { revision } = await egress.applyPolicy(agent.containerId, policy);
+
+      await this.agentsRepository.update(agent.id, {
+        egressPolicy: policy,
+        egressPolicyRevision: revision,
+        egressStatus: requires ? 'active' : 'inactive',
+        egressLastError: null,
+        egressAppliedAt: new Date(),
+      });
+      this.statusChangedBroadcaster?.(agent.id);
+
+      return { ok: true, proxyEnv: {}, applied: true, revision };
+    } catch (error: unknown) {
+      const message = shortError(error);
+
+      this.logger.warn(`Egress policy apply failed for agent ${agent.id}: ${message}`);
+      await this.agentsRepository.update(agent.id, { egressStatus: 'failed', egressLastError: message });
+      this.statusChangedBroadcaster?.(agent.id);
+
+      return { ok: false, error: message, proxyEnv: {}, applied: false, revision: agent.egressPolicyRevision ?? null };
+    }
+  }
+
+  /**
    * Fail closed: an agent whose policy requires a guard must never keep running outside a guard
    * namespace. Agents already inside a guard namespace keep the guard's last known good bundle.
    * The next successful sync recreates (and starts) the agent inside the guard namespace.
@@ -447,14 +486,14 @@ export class AgentEgressService {
     }
 
     try {
-      const container = await this.dockerService.inspectContainerSummary(agent.containerId);
+      const container = await this.runtime.inspectContainerSummary(agent.containerId);
 
       if (!container?.running || (guardId && container.networkMode === `container:${guardId}`)) {
         return false;
       }
 
       this.logger.warn(`Stopping agent ${agent.id}: its egress policy requires a guard that could not be provisioned`);
-      await this.dockerService.stopContainer(agent.containerId);
+      await this.runtime.stopContainer(agent.containerId);
 
       return true;
     } catch (error: unknown) {
@@ -466,6 +505,11 @@ export class AgentEgressService {
 
   /** Refuse to (re)start an agent outside a guard namespace while its policy requires one. */
   private assertGuardNotRequired(agent: AgentEntity): void {
+    // The runtime filters egress itself (Loadweaver): there is no guard to wait for.
+    if (this.runtime.egress) {
+      return;
+    }
+
     if (egressPolicyRequiresGuard(agent.egressPolicy)) {
       throw new Error(
         `Agent ${agent.id} requires an egress guard (mode '${agent.egressPolicy?.mode}') that is not provisioned yet; it will be provisioned on the next config sync`,
@@ -483,8 +527,8 @@ export class AgentEgressService {
     }
 
     const [guard, container] = await Promise.all([
-      this.dockerService.inspectContainerSummary(guardId),
-      this.dockerService.inspectContainerSummary(agent.containerId),
+      this.runtime.inspectContainerSummary(guardId),
+      this.runtime.inspectContainerSummary(agent.containerId),
     ]);
 
     if (!guard?.running || !container?.running || !guard.startedAt || !container.startedAt) {
@@ -496,7 +540,7 @@ export class AgentEgressService {
     }
 
     this.logger.log(`Restarting agent ${agent.id} to join the restarted egress guard namespace`);
-    await this.dockerService.restartContainer(agent.containerId);
+    await this.runtime.restartContainer(agent.containerId);
 
     return true;
   }
@@ -512,14 +556,14 @@ export class AgentEgressService {
     }
 
     await withAgentEgressLock(agent.id, async () => {
-      const guard = await this.dockerService.inspectContainerSummary(guardId);
+      const guard = await this.runtime.inspectContainerSummary(guardId);
 
       if (!guard) {
         throw new Error(`Egress guard for agent ${agent.id} is missing; it will be recreated on the next config sync`);
       }
 
       if (!guard.running) {
-        await this.dockerService.startContainer(guardId);
+        await this.runtime.startContainer(guardId);
         await this.waitForGuardReady(guardId);
       }
     });
@@ -536,13 +580,13 @@ export class AgentEgressService {
     }
 
     await withAgentEgressLock(agent.id, async () => {
-      const guard = await this.dockerService.inspectContainerSummary(guardId);
+      const guard = await this.runtime.inspectContainerSummary(guardId);
 
       if (!guard) {
         throw new Error(`Egress guard for agent ${agent.id} is missing; it will be recreated on the next config sync`);
       }
 
-      await this.dockerService.restartContainer(guardId);
+      await this.runtime.restartContainer(guardId);
       await this.waitForGuardReady(guardId);
     });
   }
@@ -554,7 +598,7 @@ export class AgentEgressService {
     }
 
     try {
-      await this.dockerService.stopContainer(agent.egressGuardContainerId);
+      await this.runtime.stopContainer(agent.egressGuardContainerId);
     } catch (error: unknown) {
       this.logger.warn(`Failed to stop egress guard for agent ${agent.id}: ${shortError(error)}`);
     }
@@ -572,7 +616,7 @@ export class AgentEgressService {
    * and move the agent into the new namespace. Uses the stored policy; returns the new guard id.
    */
   async recoverMissingGuard(agent: AgentEntity, secrets: Record<string, string> = {}): Promise<string | null> {
-    if (!agent.containerId || !this.isEnabled()) {
+    if (!agent.containerId || !this.isEnabled() || this.runtime.egress) {
       return null;
     }
 
@@ -583,7 +627,7 @@ export class AgentEgressService {
         return null;
       }
 
-      if (await this.dockerService.inspectContainerSummary(fresh.egressGuardContainerId)) {
+      if (await this.runtime.inspectContainerSummary(fresh.egressGuardContainerId)) {
         return null;
       }
 
@@ -593,7 +637,7 @@ export class AgentEgressService {
       try {
         await this.waitForGuardReady(guardId);
         const { revision } = await this.applyPolicyToGuard(guardId, policy, this.resolveUpstream(secrets), true);
-        const newContainerId = await this.dockerService.updateContainer(fresh.containerId, {
+        const newContainerId = await this.runtime.updateContainer(fresh.containerId, {
           ...isolationRuntimeOptions(fresh),
           sharedNetworkContainerId: guardId,
           capDrop: [...EGRESS_GUARDED_AGENT_CAP_DROP],
@@ -622,7 +666,11 @@ export class AgentEgressService {
 
   /** Guard containers that no agent references (created > 10 minutes ago, avoids racing provisioning). */
   async removeOrphanedGuards(): Promise<number> {
-    const guards = await this.dockerService.listContainersByLabel(`${EGRESS_GUARD_LABEL}=1`);
+    if (this.runtime.egress) {
+      return 0;
+    }
+
+    const guards = await this.runtime.listContainersByLabel(`${EGRESS_GUARD_LABEL}=1`);
 
     if (guards.length === 0) {
       return 0;
@@ -666,7 +714,7 @@ export class AgentEgressService {
     }
 
     const [summary, runtime] = await Promise.all([
-      this.dockerService.inspectContainerSummary(agent.egressGuardContainerId),
+      this.runtime.inspectContainerSummary(agent.egressGuardContainerId),
       this.getGuardStatus(agent.egressGuardContainerId),
     ]);
 

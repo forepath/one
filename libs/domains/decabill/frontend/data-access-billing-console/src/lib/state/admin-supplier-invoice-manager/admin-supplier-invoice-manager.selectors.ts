@@ -75,17 +75,17 @@ export const selectAdminSupplierInvoiceManagerError = createSelector(
   (state) => state.error,
 );
 
-export const selectAdminSupplierInvoiceManagerHasMore = createSelector(
+export const selectAdminSupplierInvoiceManagerTotal = createSelector(
   selectAdminSupplierInvoiceManagerState,
-  (state) => state.hasMore,
+  (state) => state.total,
 );
 
-export const selectAdminSupplierInvoiceManagerAppendLoading = createSelector(
+export const selectAdminSupplierInvoiceManagerPage = createSelector(
   selectAdminSupplierInvoiceManagerState,
-  (state) => state.appendLoading,
+  (state) => state.page,
 );
 
-export const selectAdminSupplierInvoiceManagerAppendError = createSelector(
+export const selectAdminSupplierInvoiceManagerPageSize = createSelector(
   selectAdminSupplierInvoiceManagerState,
-  (state) => state.appendError,
+  (state) => state.pageSize,
 );

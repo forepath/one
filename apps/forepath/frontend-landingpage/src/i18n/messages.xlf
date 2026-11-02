@@ -175,7 +175,7 @@
         <source>Today ForePath has our full attention, with AI at the centre, while our VMMX partners return to their own core business. It was a great time. However, we collectively decided not to continue VMMX. In its place, you can look forward to something great from ForePath, built on everything VMMX taught us.</source>
         </trans-unit>
       <trans-unit id="featureForepathAbout-milestoneLoadweaverDate" datatype="html">
-        <source>Coming soon</source>
+        <source>Early access</source>
         </trans-unit>
       <trans-unit id="featureForepathAbout-milestoneLoadweaverTitle" datatype="html">
         <source>Loadweaver</source>
@@ -578,7 +578,7 @@
         <source>DATEV export for your accountant</source>
         </trans-unit>
       <trans-unit id="featureForepath-navLoadweaverBadge" datatype="html">
-        <source>Coming soon</source>
+        <source>Early access</source>
         </trans-unit>
       <trans-unit id="featureForepath-navLoadweaverCaption" datatype="html">
         <source>Resilient clusters from a handful of servers</source>
@@ -628,8 +628,11 @@
       <trans-unit id="featureForepath-footerDecabillLink" datatype="html">
         <source>Decabill</source>
         </trans-unit>
+      <trans-unit id="featureForepath-footerLoadweaverLink" datatype="html">
+        <source>Loadweaver</source>
+        </trans-unit>
       <trans-unit id="featureForepath-footerLoadweaverSoon" datatype="html">
-        <source>Coming soon</source>
+        <source>Early access</source>
         </trans-unit>
       <trans-unit id="featureForepath-footerIndustries" datatype="html">
         <source>Industries</source>
@@ -1631,7 +1634,7 @@
         <source>ForePath extends product teams with cloud and platform engineering, delivery pipelines, Agenstra coding agents, and Decabill SaaS billing.</source>
         </trans-unit>
       <trans-unit id="featureForepathIndustry-softwareMetaKeywords" datatype="html">
-        <source>SaaS engineering, platform engineering, Kubernetes, CI/CD, coding agents, Agenstra, Decabill, startup</source>
+        <source>SaaS engineering, platform engineering, Kubernetes, CI/CD, coding agents, Agenstra, Decabill, Loadweaver, startup</source>
         </trans-unit>
       <trans-unit id="featureForepathIndustry-softwareHeroAccent" datatype="html">
         <source>Software companies</source>
@@ -1752,6 +1755,21 @@
         </trans-unit>
       <trans-unit id="featureForepathIndustry-softwareSolution4Item3" datatype="html">
         <source>DATEV export for your accountant</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution5Title" datatype="html">
+        <source>Your own servers as one platform with Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution5Desc" datatype="html">
+        <source>Loadweaver turns a handful of servers into a resilient cluster for your Compose apps, with policies, failover, and isolation up to microVMs. Now in early access.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution5Item1" datatype="html">
+        <source>Docker Compose deployments through plan and apply</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution5Item2" datatype="html">
+        <source>Replicated storage and ingress that fails over on its own</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution5Item3" datatype="html">
+        <source>gVisor sandboxes and microVMs for untrusted workloads</source>
         </trans-unit>
       <trans-unit id="featureForepathIndustry-softwareCtaTitle" datatype="html">
         <source>What would your team ship with more time?</source>
@@ -4347,6 +4365,9 @@
       <trans-unit id="sharedFeatureLandingpageContactPerson-messageDecabill" datatype="html">
         <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
         </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageLoadweaver" datatype="html">
+        <source>We build Loadweaver with AI every day, because it makes the product better and lets us ship faster.</source>
+        </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-mayaRole" datatype="html">
         <source>Virtual Customer Success</source>
         </trans-unit>
@@ -4361,6 +4382,9 @@
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
         <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageLoadweaver" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Loadweaver, and a person takes responsibility for every answer.</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
         <source>AI</source>

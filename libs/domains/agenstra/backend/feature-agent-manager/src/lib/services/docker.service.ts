@@ -9,7 +9,7 @@ import {
   MICROVM_BRIDGE_PROTOCOL_VERSION,
   MICROVM_PROTOCOL_LABEL,
   toMicrovmExecOptions,
-} from '@forepath/agenstra/backend/util-microvm-bridge';
+} from '@forepath/shared/backend/util-microvm-bridge';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import Docker = require('dockerode');
 import { v4 as uuidv4 } from 'uuid';
@@ -43,45 +43,31 @@ import {
 } from '../constants/container-isolation.constants';
 import { mapGvisorRuntimeForNetwork } from '../utils/container-isolation.utils';
 import { DockerPullProgressAggregator, type DockerPullProgressEvent } from '../utils/docker-pull-progress.utils';
+import { parseShellCommand } from '../utils/shell-words.utils';
+import {
+  AgentRuntime,
+  type AgentContainerCreateOptions,
+  type AgentContainerStats,
+  type AgentContainerSummary,
+  type AgentContainerUpdateOptions,
+  type DockerHostInfo,
+  type EnvironmentApplyStrategy,
+  type IsolationProbeOptions,
+  type IsolationProbeResult,
+} from '../runtime/agent-runtime';
+
+export type {
+  DockerHostInfo,
+  EnvironmentApplyStrategy,
+  IsolationProbeOptions,
+  IsolationProbeResult,
+} from '../runtime/agent-runtime';
 
 const execAsync = promisify(exec);
 
-/** How environment changes are applied to a container (see {@link DockerService.updateContainer}). */
-export type EnvironmentApplyStrategy = 'restart' | 'recreate';
-
-export interface DockerHostInfo {
-  serverVersion: string | null;
-  kernelVersion: string | null;
-  defaultRuntime: string | null;
-  /** Registered runtimes (name -> binary path / runtime type). */
-  runtimes: Record<string, string | null>;
-  /**
-   * Arguments of registered runtimes as reported by Docker (name -> `runtimeArgs`, e.g.
-   * `['--platform=kvm', '--network=host']`); `null` when Docker reports none. Runtimes registered as a
-   * containerd shim (`runtimeType`, no `path`) are omitted: their options live in the shim configuration.
-   */
-  runtimeArgs: Record<string, string[] | null>;
-}
-
-export interface IsolationProbeOptions {
-  /** Runtime requested for the probe container; omitted = Docker's default runtime. */
-  runtime?: string;
-  /** Runtime the probe container must report (defaults to `runtime`). */
-  expectedRuntime?: string;
-  image: string;
-  timeoutMs: number;
-  /** Also verify the egress guard topology (joining a namespace owned by a default-runtime container). */
-  sharedNetworkNamespace?: boolean;
-  /** Runtime used for the shared-namespace member (defaults to `runtime`). */
-  sharedNetworkNamespaceRuntime?: string;
-}
-
-export type IsolationProbeResult =
-  | { ok: true; gvisorKernelDetected?: boolean }
-  | { ok: false; reasonCode: IsolationReasonCode; reason: string };
-
 @Injectable()
-export class DockerService {
+export class DockerService implements AgentRuntime {
+  readonly kind = 'docker' as const;
   private readonly logger = new Logger(DockerService.name);
   private readonly docker = new Docker({ socketPath: '/var/run/docker.sock' });
   private static readonly WORKSPACE_CONTEXT_BIND_SOURCE = '/opt/agents';
@@ -99,33 +85,7 @@ export class DockerService {
   private static readonly PROBE_LOOPBACK_PORT = 18765;
   private readonly microvmContainerCache = new Map<string, boolean>();
 
-  async createContainer(options: {
-    image?: string;
-    env?: Record<string, string | undefined>;
-    volumes?: Array<{ hostPath: string; containerPath: string; readOnly?: boolean }>;
-    ports?: Array<{ containerPort: number; hostPort?: number; hostIp?: string; protocol?: 'tcp' | 'udp' }>;
-    network?: string;
-    /**
-     * Join another container's network namespace (`container:<id>`, e.g. the egress guard).
-     * Ports are published on (and `network` belongs to) the namespace owner instead.
-     */
-    sharedNetworkContainerId?: string;
-    capDrop?: string[];
-    /**
-     * Docker runtime of the container (container isolation level, e.g. `runc` / `runsc-systrap`).
-     * Always set explicitly so the effective isolation never depends on the daemon default.
-     */
-    runtime?: string;
-    /** Container name (`agenstra-worker-<agentId>`); Docker generates one when omitted. */
-    name?: string;
-    labels?: Record<string, string>;
-    /**
-     * Run the workload as a KVM microVM (isolation level `microvm`). The image must be a microVM worker image
-     * (bridge protocol label); the launcher container runs on runc with `/dev/kvm` and the reduced launcher
-     * capability set, and volumes / the managed environment file are mounted below the guest root.
-     */
-    microvm?: boolean;
-  }): Promise<string> {
+  async createContainer(options: AgentContainerCreateOptions): Promise<string> {
     const {
       image,
       env,
@@ -268,24 +228,7 @@ export class DockerService {
    * @returns The container ID (unchanged on restart, new ID when the container was recreated)
    * @throws NotFoundException if container is not found
    */
-  async updateContainer(
-    containerId: string,
-    options: {
-      env?: Record<string, string | undefined>;
-      /**
-       * Move the container into another container's network namespace (egress guard).
-       * Always recreates the container (network mode is immutable).
-       */
-      sharedNetworkContainerId?: string;
-      capDrop?: string[];
-      /**
-       * Docker runtime the container must run on (the environment's persisted isolation level).
-       * A recreated container always gets it explicitly, so a sandboxed environment can never come
-       * back on another runtime. Without it the runtime of the current container is preserved.
-       */
-      runtime?: string;
-    },
-  ): Promise<string> {
+  async updateContainer(containerId: string, options: AgentContainerUpdateOptions): Promise<string> {
     const { env, sharedNetworkContainerId, capDrop, runtime } = options;
 
     try {
@@ -1541,68 +1484,7 @@ export class DockerService {
    * parseShellCommand('ls -la /tmp\\ with\\ spaces') // ['ls', '-la', '/tmp with spaces']
    */
   private parseShellCommand(command: string): string[] {
-    const args: string[] = [];
-    let current = '';
-    let inSingleQuote = false;
-    let inDoubleQuote = false;
-    let i = 0;
-
-    while (i < command.length) {
-      const char = command[i];
-      const nextChar = i + 1 < command.length ? command[i + 1] : null;
-
-      if (inSingleQuote) {
-        // Inside single quotes: everything is literal except the closing quote
-        if (char === "'") {
-          inSingleQuote = false;
-        } else {
-          current += char;
-        }
-      } else if (inDoubleQuote) {
-        // Inside double quotes: backslash escapes next character
-        if (char === '\\' && nextChar !== null) {
-          current += nextChar;
-          i++; // Skip next character as it's escaped
-        } else if (char === '"') {
-          inDoubleQuote = false;
-        } else {
-          current += char;
-        }
-      } else {
-        // Not in quotes
-        if (char === '\\' && nextChar !== null) {
-          // Escaped character
-          current += nextChar;
-          i++; // Skip next character as it's escaped
-        } else if (char === "'") {
-          inSingleQuote = true;
-        } else if (char === '"') {
-          inDoubleQuote = true;
-        } else if (/\s/.test(char)) {
-          // Whitespace: end current argument
-          if (current.length > 0) {
-            args.push(current);
-            current = '';
-          }
-
-          // Skip additional whitespace
-          while (i + 1 < command.length && /\s/.test(command[i + 1])) {
-            i++;
-          }
-        } else {
-          current += char;
-        }
-      }
-
-      i++;
-    }
-
-    // Add final argument if any
-    if (current.length > 0) {
-      args.push(current);
-    }
-
-    return args;
+    return parseShellCommand(command);
   }
 
   /**
@@ -2709,7 +2591,7 @@ export class DockerService {
    * @returns Container stats object
    * @throws NotFoundException if container is not found
    */
-  async getContainerStats(containerId: string): Promise<Docker.ContainerStats> {
+  async getContainerStats(containerId: string): Promise<AgentContainerStats> {
     try {
       const container = this.docker.getContainer(containerId);
 
@@ -2970,13 +2852,7 @@ export class DockerService {
   }
 
   /** Lightweight inspect (null when the container does not exist). */
-  async inspectContainerSummary(containerId: string): Promise<{
-    id: string;
-    running: boolean;
-    startedAt: Date | null;
-    networkMode: string | null;
-    labels: Record<string, string>;
-  } | null> {
+  async inspectContainerSummary(containerId: string): Promise<AgentContainerSummary | null> {
     try {
       const info = await this.docker.getContainer(containerId).inspect();
       const startedAt = info.State?.StartedAt ? new Date(info.State.StartedAt) : null;

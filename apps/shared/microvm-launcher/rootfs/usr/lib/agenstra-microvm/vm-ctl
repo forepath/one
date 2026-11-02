@@ -1,0 +1,126 @@
+#!/bin/bash
+# Power and guest-agent actions of the VM in this launcher (run by the node agent through `docker exec`; never user
+# input).
+#
+#   vm-ctl reboot | reset | shutdown | destroy | state | fsfreeze | fsthaw
+#
+# reboot / shutdown go through ACPI (the guest decides), reset is a hard reset, destroy a hard power-off (force-off:
+# the launcher's wait loop sees the domain gone and exits without the stop grace); fsfreeze / fsthaw use the
+# qemu-guest-agent channel (consistent snapshots, needs the agent in the guest).
+#
+#   vm-ctl migrate <peer-socket> <downtime-ms> [<bandwidth-MiB/s>] | jobinfo | jobinfo-completed | migrate-abort
+#   vm-ctl suspend | resume
+#   vm-ctl qmp-migrate <peer-socket> <downtime-ms> [<bandwidth-MiB/s>] | migrate-status | migrate-continue
+#   vm-ctl migrate-cancel | fs-release
+#
+# migrate (QEMU live migration, M7.4): tunnelled peer-to-peer migration to the target launcher's libvirt session,
+# reached through the node agent's relay socket (below /run/loadweaver/vm/migration); disks stay on DRBD (no storage
+# copy), the domain stays transient on both ends. jobinfo / migrate-abort follow and cancel it; suspend forces the
+# switch-over (a paused guest dirties no memory), resume undoes it after an abort.
+#
+# qmp-migrate (generic microVMs, M7 W10b; bundled microVMs started with AGENSTRA_MICROVM_MIGRATION=1, M7 F5): QEMU
+# migration over QMP (libvirt passes the commands through) to the
+# target's incoming socket, reached through the same relay socket; with pause-before-switchover, so the node agent
+# can sync the writable layer and hand the volumes over while the guest is stopped (`pre-switchover`) before the
+# device state (virtio-fs included) goes; migrate-continue lets it go on, migrate-cancel resumes the guest here.
+# migrate-status prints QMP's query-migrate (on the target: the incoming side). fs-release ends the volumes'
+# virtiofsd once its state left (the source lets go of the volumes before the target mounts them).
+set -euo pipefail
+
+# shellcheck source=launcher-lib.sh
+. /usr/lib/agenstra-microvm/launcher-lib.sh
+
+[ "$(id -u)" = 0 ] || die "vm-ctl runs as the container's root user"
+[ "$#" -ge 1 ] || die "usage: vm-ctl <action> [arguments]"
+domain=$(domain_name)
+
+# "Unlimited" migration speed: libvirt's maximum (its default, INT64_MAX bytes/s in MiB/s) and 1 TiB/s for QMP.
+readonly UNLIMITED_MIB=8796093022207
+readonly UNLIMITED_BYTES=1099511627776
+
+migrate() {
+  local peer="$1" downtime="$2" bandwidth="${3:-}"
+
+  [[ "${peer}" =~ ^/run/loadweaver/vm/migration/[a-z0-9.-]{1,32}\.sock$ ]] || die "invalid peer socket ${peer}"
+  [ -S "${peer}" ] || die "no relay socket at ${peer}"
+  [[ "${downtime}" =~ ^[0-9]{1,6}$ ]] || die "invalid downtime ${downtime}"
+  virsh_vmm migrate-setmaxdowntime "${domain}" "${downtime}" >/dev/null
+  # The speed is a property of the domain: without a cap, reset it to libvirt's own unlimited default, or an earlier
+  # attempt's cap (same domain after an abort) would stay (G5: a 1 MiB/s attempt left the next one unconvergeable).
+  if [ -n "${bandwidth}" ]; then
+    [[ "${bandwidth}" =~ ^[0-9]{1,7}$ ]] || die "invalid bandwidth ${bandwidth}"
+  else
+    bandwidth="${UNLIMITED_MIB}"
+  fi
+  virsh_vmm migrate-setspeed "${domain}" "${bandwidth}" >/dev/null
+  virsh_vmm migrate --live --p2p --tunnelled --auto-converge --abort-on-error "${domain}" \
+    "qemu+unix:///session?socket=${peer}"
+}
+
+qmp() { virsh_vmm qemu-monitor-command "${domain}" "$1"; }
+
+qmp_migrate() {
+  local peer="$1" downtime="$2" bandwidth="${3:-}" parameters
+
+  [[ "${peer}" =~ ^/run/loadweaver/vm/migration/[a-z0-9.-]{1,32}\.sock$ ]] || die "invalid peer socket ${peer}"
+  [ -S "${peer}" ] || die "no relay socket at ${peer}"
+  [[ "${downtime}" =~ ^[0-9]{1,6}$ ]] || die "invalid downtime ${downtime}"
+  parameters="\"downtime-limit\":${downtime}"
+  # Always set: QEMU's default max-bandwidth is 128 MiB/s, and an earlier attempt's cap stays with the process.
+  if [ -n "${bandwidth}" ]; then
+    [[ "${bandwidth}" =~ ^[0-9]{1,7}$ ]] || die "invalid bandwidth ${bandwidth}"
+    parameters="${parameters},\"max-bandwidth\":$((bandwidth * 1048576))"
+  else
+    parameters="${parameters},\"max-bandwidth\":${UNLIMITED_BYTES}"
+  fi
+  qmp '{"execute":"migrate-set-capabilities","arguments":{"capabilities":[{"capability":"pause-before-switchover","state":true},{"capability":"auto-converge","state":true}]}}' >/dev/null
+  qmp "{\"execute\":\"migrate-set-parameters\",\"arguments\":{${parameters}}}" >/dev/null
+  qmp "{\"execute\":\"migrate\",\"arguments\":{\"uri\":\"unix:${peer}\"}}" >/dev/null
+}
+
+fs_release() {
+  local pid_file="${FS_DIR}/volumes.pid" pid i
+
+  [ -s "${pid_file}" ] || return 0
+  pid=$(cat "${pid_file}")
+  [[ "${pid}" =~ ^[0-9]{1,10}$ ]] || die "invalid virtiofsd pid"
+  kill -TERM "${pid}" 2>/dev/null || return 0
+  for i in $(seq 1 50); do
+    kill -0 "${pid}" 2>/dev/null || return 0
+    sleep 0.1
+  done
+  kill -KILL "${pid}" 2>/dev/null || true
+  sleep 0.2
+  ! kill -0 "${pid}" 2>/dev/null || die "the volumes' virtiofsd did not exit"
+}
+
+if [ "$1" = qmp-migrate ]; then
+  [ "$#" -ge 3 ] && [ "$#" -le 4 ] || die "usage: vm-ctl qmp-migrate <peer-socket> <downtime-ms> [<bandwidth-MiB/s>]"
+  qmp_migrate "$2" "$3" "${4:-}"
+  exit 0
+fi
+
+if [ "$1" = migrate ]; then
+  [ "$#" -ge 3 ] && [ "$#" -le 4 ] || die "usage: vm-ctl migrate <peer-socket> <downtime-ms> [<bandwidth-MiB/s>]"
+  migrate "$2" "$3" "${4:-}"
+  exit 0
+fi
+[ "$#" = 1 ] || die "usage: vm-ctl reboot|reset|shutdown|destroy|state|fsfreeze|fsthaw|jobinfo|migrate-abort|suspend|resume|migrate-status|migrate-continue|migrate-cancel|fs-release"
+
+case "$1" in
+  reboot | reset | shutdown) virsh_vmm "$1" "${domain}" >/dev/null ;;
+  destroy) virsh_vmm destroy "${domain}" >/dev/null ;;
+  state) virsh_vmm domstate "${domain}" ;;
+  fsfreeze) virsh_vmm domfsfreeze "${domain}" ;;
+  fsthaw) virsh_vmm domfsthaw "${domain}" ;;
+  jobinfo) virsh_vmm domjobinfo "${domain}" ;;
+  jobinfo-completed) virsh_vmm domjobinfo --completed "${domain}" ;;
+  migrate-abort) virsh_vmm domjobabort "${domain}" ;;
+  suspend) virsh_vmm suspend "${domain}" >/dev/null ;;
+  resume) virsh_vmm resume "${domain}" >/dev/null ;;
+  migrate-status) qmp '{"execute":"query-migrate"}' ;;
+  migrate-continue) qmp '{"execute":"migrate-continue","arguments":{"state":"pre-switchover"}}' >/dev/null ;;
+  migrate-cancel) qmp '{"execute":"migrate_cancel"}' >/dev/null ;;
+  fs-release) fs_release ;;
+  *) die "unknown action $1" ;;
+esac

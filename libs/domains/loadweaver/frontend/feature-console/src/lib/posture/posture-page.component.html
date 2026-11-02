@@ -1,0 +1,465 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <ng-container ngProjectAs="[fpcPageHeaderActions]">
+      <fpc-button
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="refreshLabel"
+        [title]="refreshLabel"
+        (clicked)="load()"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+    </ng-container>
+  </fpc-page-header>
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    }
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="posture-bulk-result"
+      />
+    }
+
+    <fpc-tab-group
+      class="fpc-lane-tabs"
+      [activeId]="lane()"
+      (activeIdChange)="lane.set($any($event))"
+      [ariaLabel]="title"
+    >
+      <fpc-tab id="integrations" [label]="integrationsTitle" />
+      <fpc-tab id="certificates" [label]="certificatesTitle" />
+    </fpc-tab-group>
+    <fpc-section-row class="flex-grow-1 min-h-0">
+      <loadweaver-lane
+        [title]="integrationsTitle"
+        grow="3 1 0"
+        [flush]="true"
+        [off]="lane() !== 'integrations'"
+        data-testid="posture-integrations-lane"
+      >
+        <!-- 3.38 D1: State · Integration · category · matched · match by · interval · syncs · notes; ⋮ Test / Sync now /
+             Edit / Delete / Copy ID (admins); bulk Sync now / Delete on selection. -->
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="integrationsTitle"
+          [columns]="columns"
+          [rows]="filteredIntegrations()"
+          [loading]="loading() && integrations().length === 0"
+          paging="client"
+          persistKey="lw-posture-integrations"
+          [(query)]="search"
+          [searchPlaceholder]="searchLabel"
+          [selectable]="mayEdit()"
+          [(selected)]="selected"
+          [rowMenu]="mayEdit() ? rowMenu : null"
+          (rowAction)="onRowAction($event.row, $event.item.id)"
+          (rowActivate)="mayEdit() && openEdit($event)"
+          emptyIcon="shield-check"
+          data-testid="posture-list"
+        >
+          @if (mayEdit()) {
+            <fpc-button
+              fpcDataTableToolbar
+              variant="primary"
+              size="sm"
+              iconOnly
+              [ariaLabel]="addLabel"
+              [title]="addLabel"
+              [disabled]="plugins().length === 0"
+              (clicked)="openCreate()"
+              data-testid="posture-add"
+            >
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </fpc-button>
+          }
+          <fpc-button
+            fpcDataTableBatch
+            variant="secondary"
+            size="sm"
+            [disabled]="!canSyncSelection()"
+            (clicked)="syncSelected()"
+            data-testid="posture-bulk-sync"
+            iconOnly
+            [ariaLabel]="syncLabel"
+            [title]="syncLabel"
+          >
+            <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
+            fpcDataTableBatch
+            variant="danger"
+            size="sm"
+            (clicked)="confirmBulkDelete.set(true)"
+            data-testid="posture-bulk-delete"
+            iconOnly
+            [ariaLabel]="deleteLabel"
+            [title]="deleteLabel"
+          >
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </fpc-button>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="shield-check"
+              size="sm"
+              i18n-title="@@lwConsolePosture-empty"
+              title="No posture integrations"
+              i18n-message="@@lwConsolePosture-emptyHint"
+              message="Connect an MDM (Intune, Jamf Pro, Kandji) or an EDR (Defender for Endpoint, CrowdStrike, SentinelOne); client groups use their results in posture conditions."
+            />
+          </span>
+          <ng-template fpcTableCell="name" let-row>
+            <span class="font-monospace">{{ row.name }}</span>
+            <span class="text-body-secondary small ms-2">{{ row.displayName }}</span>
+          </ng-template>
+          <ng-template fpcTableCell="lastSuccess" let-row>{{ row.lastSuccessAt | date: 'short' }}</ng-template>
+          <ng-template fpcTableCell="nextSync" let-row>
+            @if (row.nextSyncAt && row.enabled) {
+              {{ row.nextSyncAt | date: 'short' }}
+            }
+          </ng-template>
+          <ng-template fpcTableCell="notes" let-row>
+            <div class="d-flex flex-column gap-1 small">
+              @for (warning of integrationWarnings(row); track warning) {
+                <span class="text-warning-emphasis" [attr.data-testid]="'posture-warning-' + row.name">
+                  <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>{{ warning }}
+                </span>
+              }
+              @if (row.lastError) {
+                <span class="text-danger-emphasis">
+                  <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i
+                  ><span i18n="@@lwConsolePosture-lastError">Last error</span> ({{ row.failures }}×):
+                  {{ row.lastError }}
+                </span>
+              }
+              @if (results()[row.id]; as result) {
+                <span
+                  [class.text-success-emphasis]="result.ok"
+                  [class.text-danger-emphasis]="!result.ok"
+                  [attr.data-testid]="'posture-test-result-' + row.name"
+                >
+                  <i
+                    class="bi me-1"
+                    [class.bi-check-circle]="result.ok"
+                    [class.bi-x-circle]="!result.ok"
+                    aria-hidden="true"
+                  ></i
+                  >{{ result.message }}
+                </span>
+              }
+            </div>
+          </ng-template>
+        </fpc-data-table>
+      </loadweaver-lane>
+
+      <loadweaver-lane
+        [title]="certificatesTitle"
+        grow="2 1 0"
+        [off]="lane() !== 'certificates'"
+        data-testid="posture-certificates"
+      >
+        <!-- Summary of the trust settings; editing is a fill-and-submit form in a modal (3.38 D10). -->
+        @if (mayEdit()) {
+          <fpc-button
+            lwLaneActions
+            variant="warning"
+            size="sm"
+            iconOnly
+            [ariaLabel]="editTrustLabel"
+            [title]="editTrustLabel"
+            (clicked)="openTrust()"
+            data-testid="posture-trust-edit"
+          >
+            <i class="bi bi-pencil" aria-hidden="true"></i>
+          </fpc-button>
+        }
+        @if (trustSaved()) {
+          <fpc-alert
+            class="d-block mb-3"
+            variant="success"
+            i18n-message="@@lwConsolePosture-trustSaved"
+            message="Saved."
+          />
+        }
+        <fpc-key-value-list [items]="trustFacts()" data-testid="posture-trust-summary" />
+      </loadweaver-lane>
+    </fpc-section-row>
+  </div>
+</div>
+
+<fpc-modal
+  [open]="form() !== null"
+  (openChange)="onFormOpenChange($event)"
+  [title]="form()?.id ? editTitle : createTitle"
+  size="lg"
+  scrollable
+>
+  @if (form(); as f) {
+    <div class="row g-3" data-testid="posture-form">
+      @if (formError(); as message) {
+        <div class="col-12"><fpc-alert variant="danger" [message]="message" /></div>
+      }
+      <div class="col-12 col-md-6">
+        <fpc-form-field
+          forId="lw-posture-type"
+          i18n-label="@@lwConsolePosture-type"
+          label="Integration"
+          [required]="true"
+        >
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-posture-type"
+            size="sm"
+            [disabled]="!!f.id"
+            [ngModel]="f.type"
+            (ngModelChange)="patchForm({ type: $event })"
+            data-testid="posture-form-type"
+          >
+            @for (p of plugins(); track p.id) {
+              <option [value]="p.id">{{ p.displayName }} ({{ p.category === 'mdm' ? 'MDM' : 'EDR' }})</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-6">
+        <fpc-form-field
+          forId="lw-posture-name"
+          i18n-label="@@lwConsolePosture-name"
+          label="Name"
+          [required]="true"
+          i18n-hint="@@lwConsolePosture-nameHint"
+          hint="Used in conditions, e.g. mdm.intune.compliant"
+        >
+          <fpc-form-control
+            controlId="lw-posture-name"
+            size="sm"
+            controlClass="font-monospace"
+            [readOnly]="!!f.id"
+            [ngModel]="f.name"
+            (ngModelChange)="patchForm({ name: $event })"
+            data-testid="posture-form-name"
+          />
+        </fpc-form-field>
+      </div>
+      @for (field of formPlugin()?.fields ?? []; track field.key) {
+        <div class="col-12 col-md-6">
+          <fpc-form-field
+            [forId]="'lw-posture-field-' + field.key"
+            [label]="field.label"
+            [required]="!!field.required && !(field.secret && f.secretsSet.includes(field.key))"
+            [hint]="field.secret && f.secretsSet.includes(field.key) ? secretStoredHint : (field.description ?? '')"
+          >
+            @if (field.options?.length) {
+              <fpc-form-control
+                controlType="select"
+                [controlId]="'lw-posture-field-' + field.key"
+                size="sm"
+                [ngModel]="fieldValue(f.values, field.key, field.default)"
+                (ngModelChange)="setValue(field.key, $event)"
+              >
+                @for (o of field.options; track o) {
+                  <option [value]="o">{{ o }}</option>
+                }
+              </fpc-form-control>
+            } @else {
+              <fpc-form-control
+                [controlId]="'lw-posture-field-' + field.key"
+                size="sm"
+                [inputType]="field.secret ? 'password' : 'text'"
+                autocomplete="off"
+                [ngModel]="fieldValue(f.values, field.key)"
+                (ngModelChange)="setValue(field.key, $event)"
+                [attr.data-testid]="'posture-form-field-' + field.key"
+              />
+            }
+          </fpc-form-field>
+        </div>
+      }
+      <div class="col-12">
+        <span class="form-label small d-block" i18n="@@lwConsolePosture-matchByLabel"
+          >Match devices by (in this order)</span
+        >
+        <div class="d-flex flex-wrap gap-3">
+          @for (k of matchKeys; track k) {
+            <fpc-form-check
+              [checkId]="'lw-posture-match-' + k"
+              [label]="matchKeyLabel(k)"
+              [checked]="f.matchBy.includes(k)"
+              (checkedChange)="toggleMatch(k, $event)"
+            />
+          }
+        </div>
+      </div>
+      @if (formPlugin()?.supportsUserMatch) {
+        <div class="col-12">
+          <fpc-form-switch
+            switchId="lw-posture-require-user-match"
+            [label]="requireUserMatchLabel"
+            [checked]="f.requireUserMatch"
+            (checkedChange)="patchForm({ requireUserMatch: $event })"
+          />
+        </div>
+      }
+      @for (warning of integrationWarnings(f); track warning) {
+        <div class="col-12">
+          <fpc-alert variant="warning" [message]="warning" data-testid="posture-form-warning" />
+        </div>
+      }
+      <div class="col-6 col-md-4">
+        <fpc-form-field
+          forId="lw-posture-interval"
+          i18n-label="@@lwConsolePosture-intervalLabel"
+          label="Sync every (minutes)"
+        >
+          <fpc-form-control
+            controlId="lw-posture-interval"
+            size="sm"
+            inputType="number"
+            [min]="5"
+            [max]="1440"
+            [ngModel]="'' + f.intervalMinutes"
+            (ngModelChange)="patchForm({ intervalMinutes: +$event })"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-6 col-md-4">
+        <fpc-form-field
+          forId="lw-posture-max-age"
+          i18n-label="@@lwConsolePosture-maxAgeLabel"
+          label="Results valid for (minutes)"
+        >
+          <fpc-form-control
+            controlId="lw-posture-max-age"
+            size="sm"
+            inputType="number"
+            [min]="10"
+            [max]="10080"
+            [ngModel]="'' + f.maxAgeMinutes"
+            (ngModelChange)="patchForm({ maxAgeMinutes: +$event })"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-4 d-flex align-items-end">
+        <fpc-form-switch
+          switchId="lw-posture-enabled"
+          [label]="enabledLabel"
+          [checked]="f.enabled"
+          (checkedChange)="patchForm({ enabled: $event })"
+        />
+      </div>
+      @if (formTest(); as result) {
+        <div class="col-12">
+          <fpc-alert
+            [variant]="result.ok ? 'success' : 'danger'"
+            [message]="result.message"
+            data-testid="posture-form-test"
+          />
+        </div>
+      }
+    </div>
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="onFormOpenChange(false)">
+      <span i18n="@@lwConsolePosture-cancelForm">Cancel</span>
+    </fpc-button>
+    <fpc-button
+      variant="dark"
+      [loading]="saving()"
+      [disabled]="!form()?.id && formMissing().length > 0"
+      (clicked)="testForm()"
+      data-testid="posture-form-test-button"
+    >
+      <span i18n="@@lwConsolePosture-testConnection">Test connection</span>
+    </fpc-button>
+    <fpc-button
+      variant="primary"
+      [loading]="saving()"
+      [disabled]="!formValid()"
+      (clicked)="save()"
+      data-testid="posture-form-save"
+    >
+      <span i18n="@@lwConsolePosture-save">Save</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="deleteFor() !== null"
+  (openChange)="onDeleteOpenChange($event)"
+  [title]="deleteTitle"
+  [message]="deleteMessage()"
+  [confirmLabel]="deleteConfirm"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="confirmDelete()"
+/>
+
+<fpc-modal [open]="trustOpen()" (openChange)="trustOpen.set($event)" [title]="certificatesTitle">
+  @if (trustError(); as message) {
+    <fpc-alert class="d-block mb-3" variant="danger" [message]="message" />
+  }
+  <fpc-form-field forId="lw-posture-ca" i18n-label="@@lwConsolePosture-companyCa" label="Company CA bundle (PEM)">
+    <fpc-form-control
+      controlType="textarea"
+      controlId="lw-posture-ca"
+      size="sm"
+      controlClass="font-monospace"
+      [rows]="5"
+      [readOnly]="!mayEdit()"
+      [ngModel]="trustForm().companyCaPem"
+      (ngModelChange)="patchTrust({ companyCaPem: $event })"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="lw-posture-crl" i18n-label="@@lwConsolePosture-crl" label="CRLs (PEM)">
+    <fpc-form-control
+      controlType="textarea"
+      controlId="lw-posture-crl"
+      size="sm"
+      controlClass="font-monospace"
+      [rows]="5"
+      [readOnly]="!mayEdit()"
+      [ngModel]="trustForm().crlPem"
+      (ngModelChange)="patchTrust({ crlPem: $event })"
+    />
+  </fpc-form-field>
+  <div class="d-flex flex-column gap-2 mb-3">
+    <fpc-form-switch
+      switchId="lw-posture-trust-cluster"
+      [label]="trustClusterCaLabel"
+      [disabled]="!mayEdit()"
+      [checked]="trustForm().trustClusterCa"
+      (checkedChange)="patchTrust({ trustClusterCa: $event })"
+    />
+    <fpc-form-switch
+      switchId="lw-posture-require-proof"
+      [label]="requireProofLabel"
+      [disabled]="!mayEdit()"
+      [checked]="trustForm().requireProof"
+      (checkedChange)="patchTrust({ requireProof: $event })"
+    />
+  </div>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="trustOpen.set(false)">{{ cancelLabel }}</fpc-button>
+    <fpc-button variant="primary" (clicked)="saveTrust()" data-testid="posture-trust-save">
+      <span i18n="@@lwConsolePosture-saveTrust">Save certificate trust</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDelete"
+  [title]="deleteSelectedTitle"
+  [message]="deleteSelectedMessage()"
+  [confirmLabel]="deleteConfirm"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelected()"
+/>

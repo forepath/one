@@ -1,0 +1,266 @@
+<!-- Hero -->
+<section id="hero" class="pt-10 pb-10 pb-md-0 py-lg-6 bg-dark text-white grid-section">
+  <div class="container hero-content grid-section__container grid-section__container--hero-top">
+    <div class="row justify-content-center">
+      <div class="col-12 text-center hero-container">
+        <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureLoadweaverCloud-heroTitle">
+          <span class="text-primary">Loadweaver Cloud</span>: your own cluster, operated by us
+        </h1>
+        <p class="hero-lead lead fs-5 mb-5 mx-auto" i18n="@@featureLoadweaverCloud-heroLead">
+          A dedicated cluster per customer, with its own control plane, nodes and keys. We set it up and operate it for
+          you, so your teams only deal with what runs on it.
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
+            routerLink="/contact"
+            [loadweaverEarlyAccess]="cloudEarlyAccessMessage"
+            i18n="@@featureLoadweaverCloud-heroCtaEarlyAccess"
+          >
+            <i class="bi bi-envelope-paper" aria-hidden="true"></i>Request early access
+          </fpc-button>
+          <fpc-button
+            variant="dark"
+            size="xl"
+            btnClass="rounded-3"
+            routerLink="/pricing"
+            i18n="@@featureLoadweaverCloud-heroCtaPricing"
+          >
+            <i class="bi bi-tags" aria-hidden="true"></i>Compare with self-hosted
+          </fpc-button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container grid-section__container grid-section__container--hero-bottom">
+    <div class="row">
+      <div class="col-md-12 hero-illustration d-none d-md-block">
+        <loadweaver-portal-topology-illustration
+          label="Loadweaver topology map: two sites with five nodes, encrypted WireGuard tunnels between the sites, a failover IP on an ingress node with a standby at the other site, a volume replicated synchronously within a site and asynchronously across sites, and live traffic from the internet."
+          i18n-label="@@featureLoadweaverHome-heroIllustration"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- What you get -->
+<section id="dedicated" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverCloud-dedicatedTitle">
+        The same product, without running it yourself
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverCloud-dedicatedLead">
+        Loadweaver Cloud is not a shared platform. Each customer gets a cluster of their own, and it is a full
+        Loadweaver cluster from the first node.
+      </p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-hdd-rack text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverCloud-ownTitle">Your own control plane</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-ownDesc">
+            Control plane, nodes and keys belong to your cluster alone.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-rocket-takeoff text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverCloud-readyTitle">Ready from day one</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-readyDesc">
+            The first node already runs the control plane and the console, so your cluster is complete before the second
+            node joins.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-graph-up-arrow text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverCloud-growTitle">Grows like any cluster</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-growDesc">
+            Add nodes and sites whenever you need them, through plan and apply, bounded by your quotas.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Nodes and provider accounts -->
+<section id="nodes" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverCloud-nodesTitle">
+        More nodes, on your provider accounts
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverCloud-nodesLead">
+        Your cluster orders further nodes itself, through plan and apply, with the provider tokens you configure in it.
+      </p>
+    </div>
+    <div class="card border rounded-3 shadow-sm overflow-hidden card-capability-primary">
+      <div class="p-4 p-lg-5 border-bottom landing-surface-tint">
+        <ol class="list-unstyled row g-3 align-items-stretch mb-0">
+          <li class="col-md">
+            <div class="card border rounded-3 p-4 h-100 bg-body text-center">
+              <i class="bi bi-key text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+              <h3 class="h6 fw-semibold mb-1" i18n="@@featureLoadweaverCloud-flowAccountTitle">
+                Your provider account
+              </h3>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-flowAccountDesc">
+                Hetzner Cloud, DigitalOcean or another provider plugin, with your token
+              </p>
+            </div>
+          </li>
+          <li class="col-md-auto d-flex align-items-center justify-content-center cloud-flow-arrow" aria-hidden="true">
+            <i class="bi bi-arrow-right fs-4 text-primary"></i>
+          </li>
+          <li class="col-md">
+            <div class="card border border-primary rounded-3 p-4 h-100 bg-body text-center">
+              <i class="bi bi-diagram-3 text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+              <h3 class="h6 fw-semibold mb-1" i18n="@@featureLoadweaverCloud-flowClusterTitle">
+                Your Loadweaver cluster
+              </h3>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-flowClusterDesc">
+                Orders the node through plan and apply, within your quotas
+              </p>
+            </div>
+          </li>
+          <li class="col-md-auto d-flex align-items-center justify-content-center cloud-flow-arrow" aria-hidden="true">
+            <i class="bi bi-arrow-right fs-4 text-primary"></i>
+          </li>
+          <li class="col-md">
+            <div class="card border rounded-3 p-4 h-100 bg-body text-center">
+              <i class="bi bi-hdd-network text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+              <h3 class="h6 fw-semibold mb-1" i18n="@@featureLoadweaverCloud-flowNodeTitle">A new node</h3>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-flowNodeDesc">
+                Joins the cluster, and is drained before it is ever deleted
+              </p>
+            </div>
+          </li>
+        </ol>
+      </div>
+      <div class="landing-panel-points">
+        <div class="row row-cols-1 row-cols-md-3 g-0">
+          <div class="col">
+            <i class="bi bi-wallet2 text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+            <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverCloud-tokensOwnTitle">Your own keys</p>
+            <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-tokensOwnDesc">
+              Add your provider accounts to the cluster, or hand over the tokens when you order. With your own keys you
+              pay the provider directly.
+            </p>
+          </div>
+          <div class="col">
+            <i class="bi bi-incognito text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+            <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverCloud-tokensSecretTitle">Kept as secrets</p>
+            <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-tokensSecretDesc">
+              Tokens end up as Loadweaver secrets and are never shown in plans, logs or the audit trail.
+            </p>
+          </div>
+          <div class="col">
+            <i class="bi bi-plug text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+            <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverCloud-tokensProvidersTitle">Provider plugins</p>
+            <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-tokensProvidersDesc">
+              Hetzner Cloud and DigitalOcean out of the box, and more providers through dynamic provider plugins.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Leaving safely -->
+<section id="leaving" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverCloud-leavingTitle">
+        Leaving is data-safe too
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverCloud-leavingLead">
+        Removing a node or cancelling the subscription follows the same rule as everything else: nothing is lost without
+        your choice.
+      </p>
+    </div>
+    <ol class="list-unstyled row row-cols-1 row-cols-md-3 g-4 mb-0">
+      <li class="col">
+        <article class="card border rounded-3 shadow-sm h-100 overflow-hidden">
+          <div class="d-flex align-items-center landing-bento-visual border-bottom px-4 py-4">
+            <span class="step-num" aria-hidden="true">1</span>
+          </div>
+          <div class="p-4">
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverCloud-leaving1Title">Final backup</h3>
+            <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-leaving1Desc">
+              Before teardown, a final backup goes to your external backup target, if you configured one.
+            </p>
+          </div>
+        </article>
+      </li>
+      <li class="col">
+        <article class="card border rounded-3 shadow-sm h-100 overflow-hidden">
+          <div class="d-flex align-items-center landing-bento-visual border-bottom px-4 py-4">
+            <span class="step-num" aria-hidden="true">2</span>
+          </div>
+          <div class="p-4">
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverCloud-leaving2Title">Read-only grace period</h3>
+            <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-leaving2Desc">
+              You keep read-only access for export during a grace period.
+            </p>
+          </div>
+        </article>
+      </li>
+      <li class="col">
+        <article class="card border rounded-3 shadow-sm h-100 overflow-hidden">
+          <div class="d-flex align-items-center landing-bento-visual border-bottom px-4 py-4">
+            <span class="step-num" aria-hidden="true">3</span>
+          </div>
+          <div class="p-4">
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverCloud-leaving3Title">Only what we deployed</h3>
+            <p class="small text-muted mb-0" i18n="@@featureLoadweaverCloud-leaving3Desc">
+              We delete the server we provisioned, its IPs and DNS records. Nodes in your own provider accounts are not
+              deleted; Loadweaver offers to decommission them or leaves them for re-use. Every step is audited.
+            </p>
+          </div>
+        </article>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="py-10 bg-dark grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center py-10 px-5 shadow-sm cta-box">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureLoadweaverCloud-ctaTitle">Interested in Loadweaver Cloud?</h2>
+      <p class="lead mb-5 mx-auto cta-lead" i18n="@@featureLoadweaverCloud-ctaLead">
+        Loadweaver Cloud is part of early access. Tell us what you would like to run, and we will get back to you.
+      </p>
+      <shared-contact-person brand="loadweaver" />
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/contact"
+          [loadweaverEarlyAccess]="cloudEarlyAccessMessage"
+          i18n="@@featureLoadweaverCloud-ctaEarlyAccess"
+        >
+          <i class="bi bi-envelope-paper" aria-hidden="true"></i>Request early access
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/how-it-works"
+          i18n="@@featureLoadweaverCloud-ctaHowItWorks"
+        >
+          <i class="bi bi-diagram-3" aria-hidden="true"></i>How it works
+        </fpc-button>
+      </div>
+    </div>
+  </div>
+</section>

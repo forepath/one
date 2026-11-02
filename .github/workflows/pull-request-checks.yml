@@ -16,7 +16,6 @@ jobs:
       has_affected: ${{ steps.detect-affected.outputs.has_affected }}
       projects: ${{ steps.detect-affected.outputs.projects }}
       has_test: ${{ steps.detect-affected.outputs.has_test }}
-      has_e2e: ${{ steps.detect-affected.outputs.has_e2e }}
       has_lint: ${{ steps.detect-affected.outputs.has_lint }}
       has_build: ${{ steps.detect-affected.outputs.has_build }}
     steps:
@@ -243,14 +242,6 @@ jobs:
           marker: '<!-- nx-test-report -->'
           body-path: pr-tests.md
 
-      - name: Run end-to-end tests
-        if: needs.detect-affected.outputs.has_e2e == 'true'
-        run: npx nx affected --target=e2e --parallel=3
-
-      - name: Skip e2e tests (no affected projects with e2e target)
-        if: needs.detect-affected.outputs.has_e2e != 'true'
-        run: echo "No affected projects with e2e target; skipping e2e tests."
-
   trivy-filesystem:
     name: Trivy Filesystem Scan
     runs-on: ubuntu-latest
@@ -404,6 +395,9 @@ jobs:
       - name: Build Worker container images
         run: |
           npx nx affected --target=worker-container-image --configuration=test --parallel=3
+          # Shared microVM launcher (registry.forenet.internal/forepath/microvm-launcher:test) + its smoke test;
+          # the Agenstra microVM worker image is built FROM it.
+          npx nx affected --target=container-image-test --parallel=1
           npx nx affected --target=worker-microvm-container-image --configuration=test --parallel=1
           npx nx affected --target=egress-guard-container-image --configuration=test --parallel=3
 

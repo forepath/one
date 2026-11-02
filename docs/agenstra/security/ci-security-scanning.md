@@ -12,7 +12,7 @@ Agenstra uses [Trivy](https://trivy.dev/) in GitHub Actions for automated vulner
 
 Scanners enabled for filesystem scans: **vuln**, **secret**, **misconfig**.
 
-**Images with a nested root filesystem.** The microVM worker image (`agenstra-manager-worker-microvm`) carries the guest's complete root below `/guest`. Trivy only reads the package databases of an image's own root, so it would miss every Debian package of the guest and report files those packages own (for example Debian's `python3-certifi`) as stand-alone language packages. Images declare such a directory with the `io.forepath.scan.nested-rootfs` label (here `/guest`). `tools/ci/trivy-scan-local-images.sh` then scans the image without that directory and the extracted directory on its own with `trivy rootfs`, both under the same CRITICAL gate. `tools/ci/trivy-generate-image-sboms.sh` writes a separate SBOM for it (`container-agenstra-manager-worker-microvm-guest.cdx.json`, its own Dependency-Track project). The helpers live in `tools/ci/trivy-nested-rootfs.sh`.
+**Images with a nested root filesystem.** The microVM worker image (`agenstra-manager-worker-microvm`) carries the guest's complete root below `/guest`. Trivy only reads the package databases of an image's own root, so it would miss every Debian package of the guest and report files those packages own (for example Debian's `python3-certifi`) as stand-alone language packages. Images declare such a directory with the `io.forepath.scan.nested-rootfs` label (here `/guest`). `tools/ci/trivy-scan-local-images.sh` then scans the image without that directory and the extracted directory on its own with `trivy rootfs`, both under the same CRITICAL gate. `tools/ci/trivy-generate-image-sboms.sh` writes a separate SBOM for it (`container-agenstra-manager-worker-microvm-guest.cdx.json`, its own Dependency-Track project). The helpers live in `tools/ci/trivy-nested-rootfs.sh`. The worker image is built `FROM` the shared microVM launcher (`microvm-launcher`, `apps/shared/microvm-launcher`), which the worker job builds, smoke-tests and scans first (release: multi-arch push, then the runner's variant is pulled for its SBOM, `container-microvm-launcher.cdx.json`). The launcher itself has no nested root: its `guest-tools/` are copies of its own Debian `nodejs` / libc files (and static `tini`, `busybox`, `lw-pty`), so the image scan covers them; the images Loadweaver runs as generic microVMs are scanned on their own by the cluster.
 
 ## Workflows
 
@@ -40,7 +40,7 @@ SARIF categories include `trivy-fs`, `trivy-config`, and `trivy-images-*` on pul
 ## Triage and exceptions
 
 1. **Prefer fixing** upgrade dependencies, base images, or configuration.
-2. **Documented ignore** open a PR that adds the CVE to `.trivyignore`, reference an **[accepted-risk](./accepted-risks.md)** entry (or document a false positive), and note a **review/expiry date** in the PR description.
+2. **Documented ignore** open a PR that adds the CVE to `.trivyignore.yaml`, reference an **[accepted-risk](./accepted-risks.md)** entry (or document a false positive), and note a **review/expiry date** in the PR description.
 3. **Do not** weaken `trivy.yaml` for one-off exceptions.
 
 See **[Accepted risks](./accepted-risks.md)** for deliberate product-level deviations (separate from CVE ignores), including **[AR-005](./accepted-risks.md#ar-005-ci-local-trivy-unfixed-vulnerabilities-not-gated)** (unfixed vulnerabilities are not pipeline blockers).

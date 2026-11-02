@@ -3,7 +3,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import type { SubscriptionResponseDto } from '../dto/subscription-response.dto';
 import type { WithdrawalEligibilityDto, WithdrawalResultDto } from '../dto/withdrawal-policy.dto';
 import { BillingIntervalType, type ServicePlanEntity } from '../entities/service-plan.entity';
-import { ProvisioningStatus } from '../entities/subscription-item.entity';
+import { ProvisioningStatus, type SubscriptionItemEntity } from '../entities/subscription-item.entity';
 import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
 import { PromotionRedemptionContext } from '../constants/promotion.constants';
 import { BackordersRepository } from '../repositories/backorders.repository';
@@ -20,6 +20,12 @@ import { buildBackorderRequestedConfigSnapshot, resolvePeriodTotalPrice } from '
 import { getProvisioningCredentials } from '../utils/provider-env-defaults.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
 import { mapSubscriptionItemToResponse } from '../utils/subscription-item-response.utils';
+import {
+  isLoadweaverItem,
+  loadweaverTeardownConfirmationError,
+  loadweaverTeardownNotBefore,
+  resolveLoadweaverTeardownGraceDays,
+} from '../contributors/loadweaver/loadweaver.utils';
 
 import { AddonService } from './addon.service';
 import { AddonLifecycleService } from './addon-lifecycle.service';
@@ -63,6 +69,14 @@ const PROVISIONING_SSH_PROBE_COMMAND = 'true';
 const PROVISIONING_SSH_PROBE_TIMEOUT_MS = 15_000;
 const PROVISIONING_SSH_RETRY_INTERVAL_MS = 30_000;
 const PROVISIONING_SSH_RETRY_WINDOW_MS = 5 * 60_000;
+
+/** Explicit confirmation that ending the subscription deletes provisioned data (required for Loadweaver clusters). */
+export interface TeardownConfirmationOptions {
+  confirmDataTeardown?: boolean;
+}
+
+/** Resume refused: the cancellation already took effect (`cancelEffectiveAt` passed, e.g. Loadweaver grace period). */
+export const SUBSCRIPTION_CANCELLATION_EFFECTIVE = 'SUBSCRIPTION_CANCELLATION_EFFECTIVE';
 
 @Injectable()
 export class SubscriptionService {
@@ -409,6 +423,18 @@ export class SubscriptionService {
 
       await this.subscriptionItemsRepository.updateSshPrivateKey(itemId, privateKey);
       effectiveConfig.sshPublicKey = publicKey;
+      const stackSecrets = this.cloudInitDispatchService.prepareProvisioningConfig(
+        effectiveConfig.service as string | undefined,
+      );
+
+      if (Object.keys(stackSecrets).length > 0) {
+        Object.assign(effectiveConfig, stackSecrets);
+        await this.subscriptionItemsRepository.updateConfigSnapshot(itemId, {
+          ...(item.configSnapshot ?? {}),
+          ...stackSecrets,
+        });
+      }
+
       const baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
       let userData = this.cloudInitDispatchService.buildUserData({
         service: effectiveConfig.service as string | undefined,
@@ -655,8 +681,14 @@ export class SubscriptionService {
     return subscription;
   }
 
-  async cancelSubscription(subscriptionId: string, userId: string): Promise<SubscriptionEntity> {
+  async cancelSubscription(
+    subscriptionId: string,
+    userId: string,
+    options: TeardownConfirmationOptions = {},
+  ): Promise<SubscriptionEntity> {
     const subscription = await this.getSubscription(subscriptionId, userId);
+
+    const items = await this.assertTeardownConfirmed(subscriptionId, options);
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const decision = this.cancellationPolicyService.evaluate(
       subscription.createdAt,
@@ -676,6 +708,11 @@ export class SubscriptionService {
       status: SubscriptionStatus.PENDING_CANCEL,
       cancelRequestedAt: new Date(),
       cancelEffectiveAt: decision.effectiveAt,
+      // Loadweaver clusters keep running for the teardown grace period; the expiration queue selects on this.
+      teardownNotBefore:
+        decision.effectiveAt && items.some((item) => isLoadweaverItem(item))
+          ? loadweaverTeardownNotBefore(new Date(decision.effectiveAt), resolveLoadweaverTeardownGraceDays())
+          : null,
     });
 
     this.billingNotificationPublisher.publishSubscription('subscription.cancel_scheduled', canceled, plan);
@@ -686,11 +723,35 @@ export class SubscriptionService {
     return canceled;
   }
 
+  /**
+   * Data-safe teardown (Loadweaver plan, section 4): ending a subscription that runs a Loadweaver cluster deletes the
+   * cluster's Decabill-provisioned node and its data, so the caller must confirm it (`confirmDataTeardown`).
+   */
+  private async assertTeardownConfirmed(
+    subscriptionId: string,
+    options: TeardownConfirmationOptions,
+  ): Promise<SubscriptionItemEntity[]> {
+    const items = (await this.subscriptionItemsRepository.findBySubscription(subscriptionId)) ?? [];
+    const error = loadweaverTeardownConfirmationError(items, options.confirmDataTeardown);
+
+    if (error) {
+      throw new BadRequestException(error);
+    }
+
+    return items;
+  }
+
   async resumeSubscription(subscriptionId: string, userId: string): Promise<SubscriptionEntity> {
     const subscription = await this.getSubscription(subscriptionId, userId);
 
     if (subscription.status !== SubscriptionStatus.PENDING_CANCEL) {
       throw new BadRequestException('Subscription is not pending cancel');
+    }
+
+    // Past `cancelEffectiveAt` the cancellation has taken effect; only Loadweaver subscriptions stay pending_cancel
+    // there (data grace period before teardown) and resuming would revive an ended, unbilled term (M2).
+    if (subscription.cancelEffectiveAt && new Date(subscription.cancelEffectiveAt).getTime() <= Date.now()) {
+      throw new BadRequestException(SUBSCRIPTION_CANCELLATION_EFFECTIVE);
     }
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
@@ -699,6 +760,7 @@ export class SubscriptionService {
       resumedAt: new Date(),
       cancelRequestedAt: null,
       cancelEffectiveAt: null,
+      teardownNotBefore: null,
     });
 
     this.billingNotificationPublisher.publishSubscription('subscription.resumed', resumed, plan);
@@ -712,8 +774,10 @@ export class SubscriptionService {
   async withdrawSubscription(
     subscriptionId: string,
     userId: string,
+    options: TeardownConfirmationOptions = {},
   ): Promise<{ subscription: SubscriptionEntity; withdrawalResult?: WithdrawalResultDto }> {
     await this.getSubscription(subscriptionId, userId);
+    await this.assertTeardownConfirmed(subscriptionId, options);
 
     return this.executeWithdrawal(subscriptionId);
   }
@@ -750,10 +814,13 @@ export class SubscriptionService {
     // Record the withdrawal and hand teardown (deprovision + refund) to the queue,
     // mirroring the pending_cancel expiration flow. The refund is applied when the
     // withdrawal unit job runs, so the response returns an estimate, not the final credit.
+    // Loadweaver clusters keep their server for the teardown grace period (M4); the withdrawal queue selects on
+    // `teardownNotBefore`, while the refund proration still uses `withdrawnAt`.
     await this.subscriptionsRepository.update(subscriptionId, {
       status: SubscriptionStatus.PENDING_WITHDRAWAL,
       withdrawnAt,
       withdrawPhase: phase,
+      ...this.loadweaverGraceTeardown(items, withdrawnAt),
     });
 
     const updated = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
@@ -773,8 +840,10 @@ export class SubscriptionService {
   async instantCancelSubscription(
     subscriptionId: string,
     userId: string,
+    options: TeardownConfirmationOptions = {},
   ): Promise<{ subscription: SubscriptionEntity }> {
     await this.getSubscription(subscriptionId, userId);
+    await this.assertTeardownConfirmed(subscriptionId, options);
 
     return this.executeInstantCancel(subscriptionId);
   }
@@ -791,17 +860,31 @@ export class SubscriptionService {
       throw new BadRequestException('Instant cancel is not permitted for this subscription');
     }
 
+    // Past `cancelEffectiveAt` the cancellation has taken effect (Loadweaver grace period before teardown): an
+    // instant cancel would restart billing bookkeeping and the grace window of an ended term — refused like resume.
+    // Withdrawal can't get here: the withdrawal policy refuses `pending_cancel` subscriptions.
+    if (
+      subscription.status === SubscriptionStatus.PENDING_CANCEL &&
+      subscription.cancelEffectiveAt &&
+      new Date(subscription.cancelEffectiveAt).getTime() <= Date.now()
+    ) {
+      throw new BadRequestException(SUBSCRIPTION_CANCELLATION_EFFECTIVE);
+    }
+
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
 
     await this.backordersRepository.cancelPendingForUserPlan(subscription.userId, subscription.planId);
 
     const instantCanceledAt = new Date();
+    const items = (await this.subscriptionItemsRepository.findBySubscription(subscriptionId)) ?? [];
 
+    // Billing stops at `instantCanceledAt`; a Loadweaver server is only deleted after the grace period (M4).
     await this.subscriptionsRepository.update(subscriptionId, {
       status: SubscriptionStatus.PENDING_INSTANT_CANCEL,
       instantRemoval: true,
       instantCanceledAt,
       cancelEffectiveAt: null,
+      teardownNotBefore: this.loadweaverGraceTeardown(items, instantCanceledAt).teardownNotBefore ?? null,
     });
 
     const updated = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
@@ -811,6 +894,18 @@ export class SubscriptionService {
     this.customerTrustScoreService.triggerRecomputeForUser(updated.userId);
 
     return { subscription: updated };
+  }
+
+  /** `teardownNotBefore` = from + `LOADWEAVER_TEARDOWN_GRACE_DAYS` when the subscription runs a Loadweaver cluster. */
+  private loadweaverGraceTeardown(
+    items: SubscriptionItemEntity[] | null | undefined,
+    from: Date,
+  ): { teardownNotBefore?: Date } {
+    if (!(items ?? []).some((item) => isLoadweaverItem(item))) {
+      return {};
+    }
+
+    return { teardownNotBefore: loadweaverTeardownNotBefore(from, resolveLoadweaverTeardownGraceDays()) };
   }
 
   async mapToResponse(

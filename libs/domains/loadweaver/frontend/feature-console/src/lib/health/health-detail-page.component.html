@@ -1,0 +1,186 @@
+<div class="fpc-page">
+  @if (!embedded()) {
+    <!-- The entity's object header (3.38 Appendix A): crumbs back to the tree / parent, one status glyph. -->
+    <fpc-object-header
+      [title]="entity()?.name ?? key() ?? title"
+      [crumbs]="crumbs()"
+      [subtitle]="entity() ? sinceLabel + ' ' + (entity()!.since | date: 'medium') : null"
+      data-testid="health-entity"
+    >
+      @if (entity(); as e) {
+        <span fpcObjectHeaderBadges class="d-inline-flex align-items-center gap-1">
+          <fpc-status-badge [tone]="healthTone[e.state]" size="sm" [ariaLabel]="healthLabel(e.state)">
+            <i class="bi {{ healthIcon[e.state] }}" aria-hidden="true"></i>
+          </fpc-status-badge>
+          <fpc-badge color="light" size="sm">{{ kindLabel(e.kind) }}</fpc-badge>
+        </span>
+      }
+    </fpc-object-header>
+  }
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="flex-shrink-0" [flush]="true" variant="danger" [message]="message" />
+    }
+
+    @if (entity(); as e) {
+      <fpc-tab-group
+        class="fpc-lane-tabs"
+        [activeId]="lane()"
+        (activeIdChange)="lane.set($any($event))"
+        [ariaLabel]="reasonsTitle"
+      >
+        <fpc-tab id="reasons" [label]="reasonsTitle" />
+        <fpc-tab id="children" [label]="childrenTitle" />
+        <fpc-tab id="history" [label]="historyTitle" />
+      </fpc-tab-group>
+      <fpc-section-row class="flex-grow-1 min-h-0" data-testid="health-lanes">
+        <loadweaver-lane
+          [title]="reasonsTitle"
+          [flush]="true"
+          [off]="lane() !== 'reasons'"
+          data-testid="health-lane-reasons"
+        >
+          <!-- Reasons → table (3.38 D1): cause (readable) · message · affected entities (links). -->
+          <fpc-data-table
+            [class.flex-grow-1]="!autoscaleScope()"
+            class="min-h-0"
+            [nested]="!!autoscaleScope()"
+            [ariaLabel]="reasonsTitle"
+            [columns]="reasonColumns"
+            [rows]="e.reasons"
+            [rowId]="reasonId"
+            [searchable]="false"
+            paging="client"
+            persistKey="lw-health-reasons"
+            emptyIcon="check2"
+            data-testid="health-reasons"
+          >
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                icon="check2"
+                size="sm"
+                i18n-title="@@lwConsoleHealthDetail-noReasons"
+                title="No issues"
+              />
+            </span>
+            <ng-template fpcTableCell="entities" let-row>
+              <span class="d-inline-flex flex-wrap gap-2">
+                @for (entity of row.entities ?? []; track entity) {
+                  @let ref = entityRef(entity);
+                  @if (isEntityKey(entity)) {
+                    <a [routerLink]="link(entity)" [title]="ref.label">
+                      @if (ref.icon) {
+                        <i class="bi {{ ref.icon }} me-1" aria-hidden="true"></i>
+                      }
+                      {{ ref.name ?? ref.label }}</a
+                    >
+                  } @else {
+                    <span>{{ entity }}</span>
+                  }
+                }
+              </span>
+            </ng-template>
+          </fpc-data-table>
+          @if (autoscaleScope(); as scope) {
+            <!-- Its own list-header group inside the lane (no padded wrapper). -->
+            <loadweaver-autoscaling-panel
+              [project]="scope.project"
+              [deployment]="scope.deployment"
+              [serviceName]="scope.service"
+            />
+          }
+        </loadweaver-lane>
+
+        <loadweaver-lane
+          [title]="childrenTitle"
+          [flush]="true"
+          [off]="lane() !== 'children'"
+          data-testid="health-lane-children"
+        >
+          @if (children().length === 0) {
+            <fpc-empty-state
+              icon="diagram-3"
+              size="sm"
+              i18n-title="@@lwConsoleHealthDetail-noChildren"
+              title="Nothing below this entity"
+            />
+          } @else {
+            <loadweaver-health-tree [nodes]="children()" [expandDepth]="1" />
+          }
+        </loadweaver-lane>
+
+        <loadweaver-lane
+          [title]="historyTitle"
+          [flush]="true"
+          [off]="lane() !== 'history'"
+          data-testid="health-lane-history"
+        >
+          <div lwLaneActions>
+            <label class="visually-hidden" for="lw-health-range">{{ rangeLabel }}</label>
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-health-range"
+              size="sm"
+              [ngModel]="'' + rangeDays()"
+              (ngModelChange)="onRangeChange($event)"
+            >
+              @for (days of ranges; track days) {
+                <option [value]="'' + days">{{ rangeName(days) }}</option>
+              }
+            </fpc-form-control>
+          </div>
+          <!-- Time per state: pinned in the lane toolbar (3.38 R3), the changes scroll below. -->
+          <div lwLaneToolbar class="w-100 small" data-testid="health-time">
+            @if (historyError(); as message) {
+              <fpc-alert [flush]="true" variant="danger" [message]="message" />
+            } @else if (historyLoading() && !history()) {
+              <fpc-empty-state size="sm" [loading]="true" [title]="historyLoadingLabel" />
+            } @else if (durations().rows.length === 0) {
+              <span class="text-body-secondary" i18n="@@lwConsoleHealthDetail-noDurations"
+                >No recorded states in this range.</span
+              >
+            } @else {
+              <div class="text-body-secondary mb-1">{{ timeTitle }}</div>
+              <fpc-progress [segments]="segments()" height="1.25rem" class="d-block mb-2" [ariaLabel]="timeTitle" />
+              <div class="d-flex flex-wrap gap-3" data-testid="health-durations">
+                @for (row of durations().rows; track row.state) {
+                  <span class="d-inline-flex align-items-center gap-1">
+                    <fpc-badge size="sm" [tone]="badgeTone[row.state]">{{ healthLabel(row.state) }}</fpc-badge>
+                    <span class="font-monospace">{{ formatDuration(row.ms) }}</span>
+                    <span class="text-body-secondary">{{ row.share }} %</span>
+                  </span>
+                }
+              </div>
+            }
+          </div>
+          <!-- Changes → table (3.38 D1): State (new state) · time · from · message. -->
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="historyTitle"
+            [columns]="changeColumns"
+            [rows]="changes()"
+            [rowId]="changeId"
+            [searchable]="false"
+            paging="client"
+            persistKey="lw-health-changes"
+            emptyIcon="clock-history"
+            data-testid="health-changes"
+          >
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                icon="clock-history"
+                size="sm"
+                i18n-title="@@lwConsoleHealthDetail-noChanges"
+                title="No state changes in this range"
+              />
+            </span>
+            <ng-template fpcTableCell="at" let-row>{{ row.at | date: 'medium' }}</ng-template>
+          </fpc-data-table>
+        </loadweaver-lane>
+      </fpc-section-row>
+    } @else if (loading()) {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+    }
+  </div>
+</div>

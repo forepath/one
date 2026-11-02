@@ -1,0 +1,768 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  // Never wider than the parent (DB-02): a wide table scrolls sideways in its own body scroller, the page never does
+  // (flex / grid parents otherwise size the host to the table's min-content width).
+  min-width: 0;
+  max-width: 100%;
+  // Narrow tables (phones, rails) compact the pager footer (`fpc-pager` queries this container).
+  container: fpc-data-table-host / inline-size;
+}
+
+// Toolbar: the shared `fpc-list-toolbar` strip (owns its bottom edge and the filter drawer).
+
+.fpc-data-table__batch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  // Same block padding as the table cells.
+  padding: var(--fpc-table-cell-padding-y, 0.5rem) var(--fpc-edge-inset, 1rem);
+  font-size: 0.875rem;
+  background-color: var(--bs-primary-bg-subtle);
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.fpc-data-table__batch-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+
+  &:empty {
+    display: none;
+  }
+}
+
+// Fixed head, scrolling body (2026-10-28). Layout: [head block: column heads + toolbar row, never scrolls vertically]
+// → [body scroller: only the rows] → [pager]. One logical table in two <table>s: the head table copies the body's
+// measured column widths into its <colgroup> (`table-layout: fixed` once measured), reserves the body's vertical
+// scrollbar width (`--fpc-data-table-gutter`, set by the component) and mirrors the body's `scrollLeft`.
+// The grid is the container that column priorities / stacked cards query (head and body switch together).
+.fpc-data-table__grid {
+  display: flex;
+  flex-direction: column;
+  // `0%`, not `0`: in auto-height hosts (`nested`, `d-block` consumers) a percentage basis resolves to the content
+  // height instead of collapsing the table; in a bounded host it takes the remaining height.
+  flex: 1 1 0%;
+  min-height: 0;
+  min-width: 0;
+  container-type: inline-size;
+  container-name: fpc-data-table;
+  // Everything inside sits flush in the table (the host bleeds as a whole, `styles/_utilities.scss`).
+  --fpc-flush-bleed: 0px;
+}
+
+.fpc-data-table__head {
+  flex: none;
+  min-width: 0;
+}
+
+// The column-head bar: tinted like the head cells, also above the body's scrollbar gutter (reserved as padding, so the
+// head's scrollport is exactly as wide as the body's and both scroll the same distance sideways).
+.fpc-data-table__head-frame {
+  // Anchor of the overflow indicators.
+  position: relative;
+  padding-inline-end: var(--fpc-data-table-gutter, 0px);
+  background-color: var(--fpc-table-head-bg, var(--bs-tertiary-bg));
+  box-shadow: inset 0 calc(-1 * var(--bs-border-width)) 0 var(--bs-border-color);
+}
+
+// Overflow indicators (user, 2026-10-30): small chevrons at the ends of the column-head bar while the body has more
+// columns that way, fading from the head tint at the edge to transparent inward, so the head labels behind stay
+// readable. They sit inside the sticky columns (first column with `stickyFirstColumn`, the trailing ⋮ / column chooser;
+// widths measured into `--fpc-data-table-overflow-start` / `-end`) and before the body's scrollbar gutter, above the
+// head's bottom edge line. Same chevrons / step as the step strip; shown by `--more-start` / `--more-end` (component).
+.fpc-data-table__overflow {
+  position: absolute;
+  top: 0;
+  bottom: var(--bs-border-width);
+  z-index: calc(var(--fpc-z-sticky-local, 2) + 2);
+  display: flex;
+  align-items: center;
+  width: 2rem;
+  padding: 0 0.375rem;
+  border: 0;
+  color: var(--bs-secondary-color);
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s;
+
+  &:hover {
+    color: var(--bs-emphasis-color);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.fpc-data-table__overflow--start {
+  left: var(--fpc-data-table-overflow-start, 0px);
+  justify-content: flex-start;
+  background: linear-gradient(to right, var(--fpc-table-head-bg, var(--bs-tertiary-bg)) 40%, transparent);
+}
+
+.fpc-data-table__overflow--end {
+  right: calc(var(--fpc-data-table-gutter, 0px) + var(--fpc-data-table-overflow-end, 0px));
+  justify-content: flex-end;
+  background: linear-gradient(to left, var(--fpc-table-head-bg, var(--bs-tertiary-bg)) 40%, transparent);
+}
+
+.fpc-data-table__head-frame--more-start > .fpc-data-table__overflow--start,
+.fpc-data-table__head-frame--more-end > .fpc-data-table__overflow--end {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+// Sideways only, driven by the body (`scrollLeft` mirrored; focus / wheel on the head scroll the body back in step).
+.fpc-data-table__head-scroller {
+  overflow: hidden;
+}
+
+// Measured: the head's columns are the body's (px from the body's sizer row), not the head's own content.
+.fpc-data-table__head-table.fpc-data-table__table--measured {
+  table-layout: fixed;
+}
+
+.fpc-data-table__scroller {
+  flex: 1 1 0%;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  // The body is the table's only scroll container (both axes). Classic scrollbars: the vertical bar never pushes a
+  // 100 % table into a sideways overflow (the thin shared gutter is reserved here, `stable`, not `both-edges`; the head
+  // reserves the same width); no padding: the table's right edge meets the scrollbar. Ancestors holding a data table drop
+  // their own gutter / padding (`styles/_utilities.scss`).
+  scrollbar-gutter: stable;
+  padding: 0;
+  // Column: the table keeps its content height, an empty state below it takes the remaining height.
+  display: flex;
+  flex-direction: column;
+
+  > .fpc-data-table__table {
+    flex: 0 0 auto;
+  }
+}
+
+// Column sizer (body table): an invisible zero-height copy of the head labels, so the body's auto layout also fits the
+// head texts / sort icons; the component measures these cells and gives the head the same widths. No edge, no padding
+// on the block axis, nothing visible or focusable (aria-hidden).
+.fpc-data-table__table > thead.fpc-data-table__sizer > tr > th {
+  height: 0;
+  padding-block: 0 !important;
+  border: 0;
+  box-shadow: none;
+}
+
+.fpc-data-table__sizer-box {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+// Width of the head-corner column chooser (`chooserInHeader`), so an empty trailing column still fits it.
+.fpc-data-table__sizer-chooser {
+  display: inline-block;
+  width: var(--fpc-control-height-sm);
+}
+
+.fpc-data-table__table {
+  font-size: 0.875rem;
+
+  // Head cells: the shared `.table > thead > tr > th` style and `.fpc-table__sort` control from
+  // `styles/_tables.scss` (uniform with plain console tables; sortable heads look like plain ones).
+
+  tfoot > tr > * {
+    background-color: var(--bs-tertiary-bg);
+    font-weight: 600;
+  }
+
+  td {
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 32rem;
+
+    // Rich cells (X-09 / DB-20 / AG-10): consumer cell templates carry the consumer's encapsulation attribute, so the
+    // truncation rules for their markup live in the global `styles/_tables.scss` (a rule here never matched them).
+  }
+}
+
+// Cell padding (head / body / foot, per global density): `styles/_tables.scss`.
+
+.fpc-data-table__row {
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: -2px;
+  }
+}
+
+.fpc-data-table__row--selected > * {
+  background-color: var(--bs-primary-bg-subtle);
+}
+
+.fpc-data-table__check,
+.fpc-data-table__more {
+  width: 2rem;
+}
+
+// Single selection: the head keeps an invisible radio (same width; the search magnifier's axis is measured on it).
+.fpc-data-table__check-ghost {
+  visibility: hidden;
+}
+
+// Single selection: the whole row picks (radio semantics).
+.fpc-data-table__row:has(> .fpc-data-table__check > input[type='radio']) {
+  cursor: pointer;
+}
+
+// Column chooser in the head corner: stays at the trailing edge while a wide table scrolls sideways, the button a
+// size below the head row.
+.fpc-data-table__table > thead > tr > th.fpc-data-table__columns-cell {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  width: 1%;
+  padding-block: 0;
+  text-align: end;
+}
+
+// Same quiet chooser as in the strip, but a size below the head row (the strip's md tier would grow the head).
+.fpc-data-table__columns-cell .fpc-toolbar-btn {
+  --fpc-icon-btn-size: var(--fpc-control-height-sm);
+  min-height: var(--fpc-control-height-sm);
+}
+
+.fpc-data-table__mark {
+  margin-left: 0.25rem;
+  color: var(--bs-warning);
+  font-size: 0.625rem;
+}
+
+// Expanded row detail: wraps, spans the row, tertiary like a drawer under the row.
+.fpc-data-table__table > tbody > tr.fpc-data-table__detail > td {
+  white-space: normal;
+  overflow: visible;
+  max-width: none;
+  background-color: var(--bs-tertiary-bg);
+}
+
+.fpc-data-table__pad td {
+  padding: 0 !important;
+  border: 0;
+}
+
+// Empty / no-matches state: inside the scrolling body, fills the rest of its height and centres.
+.fpc-data-table__empty {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  // Pinned to the scroller's left edge: a wide table scrolled sideways never pushes the message off-centre.
+  position: sticky;
+  left: 0;
+}
+
+.fpc-data-table__empty-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1 0 auto;
+  padding: 1.5rem 1rem;
+
+  // The default text only shows when nothing is projected.
+  &:has(> :not(.fpc-data-table__empty-default)) .fpc-data-table__empty-default {
+    display: none;
+  }
+}
+
+// Pager slot: one row of `sm` controls (pager, page-size select, buttons) on a shared line, pinned under the scroller
+// (3.38 R3: pagers never scroll), at the 1 rem inset.
+.fpc-data-table__pager {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  // Same block padding as the table cells (one value for the whole table, user 2026-10-29).
+  padding: var(--fpc-table-cell-padding-y, 0.5rem) var(--fpc-edge-inset, 1rem);
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.fpc-data-table__pager:empty {
+  display: none;
+}
+
+.fpc-data-table__spin {
+  display: inline-block;
+  animation: fpc-data-table-spin 1s linear infinite;
+}
+
+@keyframes fpc-data-table-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// The head lives outside the scroll area (fixed head block), so it needs no sticky positioning. Opaque tertiary cells;
+// the edge line is an inset shadow (no collapsed borders in the head).
+.fpc-data-table__head-table > thead > tr > th {
+  box-shadow: inset 0 calc(-1 * var(--bs-border-width)) 0 var(--bs-border-color);
+}
+
+.fpc-data-table__table > thead > tr > * {
+  border-bottom-width: 0;
+}
+
+// Toolbar row under the column heads (thead → search → rows): full visible width (outside the sideways-scrolling head
+// table and outside the scroller, so it reserves no scrollbar gutter; user), flat in the body colour. The strip draws
+// its bottom edge; an empty strip collapses the row. Never clipped (wrapping chips / actions; the drawer overlays the
+// body, menus render at <body> level).
+.fpc-data-table__toolbar-row {
+  background-color: var(--bs-body-bg);
+}
+
+.fpc-data-table__toolbar-cell {
+  min-width: 0;
+}
+
+:host(.fpc-data-table--sticky-foot) .fpc-data-table__table tfoot > tr > * {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--fpc-z-sticky-local, 2);
+  box-shadow: inset 0 var(--bs-border-width) 0 var(--bs-border-color);
+}
+
+// Trailing edge (user, 2026-10-29): the toolbar strip spans the full width and ends at `--fpc-edge-inset`, while the
+// rows end before the body's vertical scrollbar. The last column (⋮ / trailing actions) gives up the scrollbar width
+// (`--fpc-data-table-gutter`, measured) from its end inset so it lines up with the toolbar's last action; head and body
+// change alike, so the columns stay aligned.
+.fpc-data-table__table > :not(caption) > tr > :last-child {
+  padding-right: max(0px, calc(var(--fpc-edge-inset, 1rem) - var(--fpc-data-table-gutter, 0px)));
+}
+
+// --- 3.38 D1–D4: State column, links, inline actions, groups, error / skeleton, infinite sentinel, nested ---------
+
+.fpc-data-table__table > * > tr > .fpc-data-table__cell--state {
+  // Shrink to the content (badge square + the cell's padding / edge inset) instead of a fixed 2.75rem cap: with the
+  // roomier 0.5rem cell padding the cap squeezed the square badges (user, 2026-10-29).
+  width: 1%;
+  white-space: nowrap;
+  text-align: center;
+  overflow: visible;
+}
+
+.fpc-data-table__table > * > tr > .fpc-data-table__cell--state:not(.fpc-data-table__cell--state-icon) {
+  width: auto;
+  max-width: 12rem;
+  text-align: start;
+}
+
+// The square state badge sits on the line box's top instead of its baseline / middle, so it doesn't stretch the line
+// beyond the badge square (that strut offset made state rows ~1.5px taller than the uniform row height).
+.fpc-data-table__table > tbody > tr > .fpc-data-table__cell--state-icon > .fpc-badge {
+  vertical-align: top;
+}
+
+// Icon-only state column: head glyph and row badges centre on one vertical axis (a column `align` / `text-start`
+// class does not move them).
+.fpc-data-table__table > * > tr > .fpc-data-table__cell--state-icon {
+  text-align: center !important;
+}
+
+// The name link of a clickable row: the row hover background is the cue, so the link keeps the text colour and gets no
+// underline on hover (no colour jump); keyboard focus on the link draws a ring like the row. Other links in cells:
+// `styles/_tables.scss`.
+.fpc-data-table__link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover,
+  &:focus,
+  &:active {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-focus-ring-color, var(--bs-primary));
+    outline-offset: 1px;
+    border-radius: var(--bs-border-radius-sm);
+  }
+}
+
+.fpc-data-table__table > * > tr > .fpc-data-table__more {
+  width: 1%;
+  text-align: end;
+  overflow: visible;
+  // Row actions stay at the trailing edge while a table too wide for its space scrolls sideways (user, 2026-10-30:
+  // scroll the contents instead of squeezing the columns, the ⋮ stays reachable). Bootstrap's opaque cell background
+  // covers the cells scrolling underneath; stacked cards don't scroll sideways, so it changes nothing there.
+  position: sticky;
+  right: 0;
+  z-index: 1;
+}
+
+.fpc-data-table__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fpc-data-table__table > tbody > tr.fpc-data-table__group > td {
+  padding-block: 0.25rem;
+  background-color: var(--bs-tertiary-bg);
+}
+
+.fpc-data-table__group-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 0.8125rem;
+}
+
+.fpc-data-table__table > tbody > tr.fpc-data-table__error > td {
+  padding: 0;
+  white-space: normal;
+  max-width: none;
+}
+
+.fpc-data-table__skeleton .placeholder {
+  min-height: 0.75em;
+}
+
+.fpc-data-table__sentinel {
+  flex: 0 0 1px;
+  width: 100%;
+}
+
+.fpc-data-table__loading-more {
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  left: 0;
+  padding: 0.5rem 1rem;
+}
+
+.fpc-data-table__loading-more-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fpc-data-table__pager > .fpc-pager {
+  margin-inline-start: auto;
+}
+
+:host(.fpc-data-table--nested) {
+  height: auto;
+  // A nested table is as tall as its rows (the surrounding page scrolls): inside a bounded flex parent it must not be
+  // squeezed, or the rows (overflow visible) run under the pager (DB-20, project time entries).
+  flex-shrink: 0;
+}
+
+:host(.fpc-data-table--nested) .fpc-data-table__grid {
+  flex: 0 0 auto;
+}
+
+:host(.fpc-data-table--nested) :is(.fpc-data-table__scroller, .fpc-data-table__head-scroller) {
+  overflow: visible;
+}
+
+// Responsive priorities (D2), opt-in since 2026-10-30 (`columnPriorities`): priority-3 columns only in wide tables,
+// priority-2 hidden in narrow ones. Default: every shown column stays and a table too wide for its space scrolls
+// sideways (head overflow chevrons; the row actions stay sticky) — the user picks columns with the column chooser.
+@container fpc-data-table (max-width: 60rem) {
+  :host(.fpc-data-table--priorities)
+    .fpc-data-table__table
+    > *
+    > tr
+    > .fpc-data-table__cell--p3:not(.fpc-data-table__cell--lead) {
+    display: none;
+  }
+}
+
+@container fpc-data-table (max-width: 48rem) {
+  :host(.fpc-data-table--priorities)
+    .fpc-data-table__table
+    > *
+    > tr
+    > .fpc-data-table__cell--p2:not(.fpc-data-table__cell--lead, .fpc-data-table__cell--state) {
+    display: none;
+  }
+}
+
+// Stacked card rows (narrow tables below 36 rem, e.g. phones; any width with `stacked` → `.fpc-data-table--stacked`,
+// kanban lanes): [check] [state] name / priority-1 fields [⋮]. Comparison grids (`stickyFirstColumn`) scroll sideways
+// instead. The side cells span all text lines (`--fpc-data-table-lines`: name +
+// the shown priority-1 fields) and centre, every card has the same top / bottom padding. Cells paint nothing (Bootstrap's
+// per-cell hover / active / striping / selected states are reset); hover, active, selected and the keyboard focus ring
+// paint once on the card: a full-width layer (`::before`) behind the cells, like a table row.
+@mixin stacked-cards {
+  // Stacked cards: no column heads (the toolbar row stays), no columns to choose.
+  .fpc-data-table__grid--stackable > .fpc-data-table__head {
+    > .fpc-data-table__head-frame,
+    .fpc-data-table__toolbar [data-testid='fpc-data-table-columns'] {
+      display: none;
+    }
+  }
+
+  .fpc-data-table__body-table:not(.fpc-table--sticky-first) {
+    > thead {
+      display: none;
+    }
+
+    > tbody > tr.fpc-data-table__row,
+    > tbody > tr.fpc-data-table__skeleton {
+      --fpc-data-table-card-bg: transparent;
+      --fpc-data-table-card-ring: transparent;
+
+      position: relative;
+      // Own stacking context: the state layer (z-index -1) paints above the row, below the cells.
+      isolation: isolate;
+      display: grid;
+      // Gaps come from the side cells (an absent check / state column leaves no empty gap track).
+      grid-template-columns: auto auto minmax(0, 1fr) auto;
+      grid-auto-rows: auto;
+      // Spacing between the chained card parts (user, 2026-10-29: a bit more room): horizontal via the side cells,
+      // vertical between the lines.
+      --fpc-data-table-card-gap-x: 0.75rem;
+      --fpc-data-table-card-gap-y: 0.1875rem;
+      column-gap: 0;
+      row-gap: var(--fpc-data-table-card-gap-y);
+      align-items: center;
+      align-content: center;
+      // End inset minus the scrollbar width, like the unstacked last column (⋮ lines up with the toolbar actions).
+      padding: 0.5rem max(0px, calc(var(--fpc-edge-inset, 1rem) - var(--fpc-data-table-gutter, 0px))) 0.5rem
+        var(--fpc-edge-inset, 1rem);
+      border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+      background: transparent;
+      box-shadow: none;
+      outline: 0;
+
+      &::before {
+        content: '';
+        position: absolute;
+        // Full row like the unstacked table: edge to edge, no rounding.
+        inset: 0;
+        z-index: -1;
+        border-radius: 0;
+        background-color: var(--fpc-data-table-card-bg);
+        box-shadow: inset 0 0 0 2px var(--fpc-data-table-card-ring);
+        pointer-events: none;
+      }
+
+      > td {
+        display: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        max-width: none;
+        width: auto;
+        // Card lines size to their content (the table's uniform row height is for unstacked rows).
+        height: auto;
+        min-width: 0;
+        line-height: 1.25;
+        // Per-cell table states (Bootstrap `.table-hover` / `.table-active` / striping, selected rows) off: the card
+        // owns them.
+        --bs-table-bg-state: transparent;
+        --bs-table-bg-type: transparent;
+        --bs-table-accent-bg: transparent;
+        --bs-table-bg: transparent;
+        box-shadow: none;
+        background: transparent;
+      }
+
+      // No stray margins (badges, check boxes, ⋮ / inline action buttons, rich cell content).
+      > td > *,
+      > td > .fpc-data-table__link > *,
+      > td .fpc-data-table__actions > *,
+      > td .form-check-input {
+        margin-block: 0;
+      }
+
+      // Card lines clip to their text line (truncation): a compact badge / chip must not pull out of it with the
+      // table's negative margin (it was cut off top and bottom, e.g. alert severities); here the line may grow instead.
+      > td .badge,
+      > td fpc-badge {
+        margin-block: 0 !important;
+      }
+
+      // Check box, state and ⋮ span all text lines of the card and centre vertically (user, 2026-10-29: the "title
+      // line" placement is reverted), like unstacked rows.
+      > td.fpc-data-table__check,
+      > td.fpc-data-table__cell--state,
+      > td.fpc-data-table__more {
+        display: flex;
+        align-items: center;
+        align-self: stretch;
+        grid-row: 1 / span var(--fpc-data-table-lines, 1);
+      }
+
+      > td.fpc-data-table__check {
+        grid-column: 1;
+        padding-inline-end: var(--fpc-data-table-card-gap-x);
+      }
+
+      > td.fpc-data-table__cell--state {
+        grid-column: 2;
+        justify-content: center;
+        padding-inline-end: var(--fpc-data-table-card-gap-x);
+      }
+
+      > td.fpc-data-table__cell--lead {
+        display: block;
+        grid-column: 3;
+        grid-row: 1;
+        font-weight: 600;
+      }
+
+      > td.fpc-data-table__cell--p1:not(.fpc-data-table__cell--lead, .fpc-data-table__cell--state) {
+        display: block;
+        grid-column: 3;
+        font-size: 0.8125rem;
+        color: var(--bs-secondary-color);
+        text-align: start;
+      }
+
+      > td.fpc-data-table__more {
+        grid-column: 4;
+        justify-content: flex-end;
+        padding-inline-start: var(--fpc-data-table-card-gap-x);
+      }
+
+      .fpc-data-table__actions {
+        line-height: 1;
+      }
+    }
+
+    > tbody > tr.fpc-data-table__row:hover {
+      --fpc-data-table-card-bg: var(--bs-table-hover-bg, var(--bs-tertiary-bg));
+    }
+
+    > tbody > tr.fpc-data-table__row.table-active {
+      --fpc-data-table-card-bg: var(--bs-table-active-bg, var(--bs-secondary-bg));
+    }
+
+    > tbody > tr.fpc-data-table__row.fpc-data-table__row--selected {
+      --fpc-data-table-card-bg: var(--bs-primary-bg-subtle);
+    }
+
+    > tbody > tr.fpc-data-table__row:focus-visible {
+      outline: 0;
+      --fpc-data-table-card-ring: var(--bs-primary);
+    }
+  }
+
+  // No head to align with: the body reserves no scrollbar gutter (a lane that fits shows no scrollbar space).
+  .fpc-data-table__scroller {
+    scrollbar-gutter: auto;
+  }
+
+  // Drag image (the browser snapshots the row right after `dragstart`): an opaque, framed card.
+  .fpc-data-table__body-table:not(.fpc-table--sticky-first)
+    > tbody
+    > tr.fpc-data-table__row.fpc-data-table__row--drag-preview {
+    --fpc-data-table-card-bg: var(--bs-body-bg);
+    --fpc-data-table-card-ring: var(--bs-border-color);
+  }
+}
+
+@container fpc-data-table (max-width: 36rem) {
+  @include stacked-cards;
+
+  // Without the column heads the search strip is the table's top edge: in a modal body (e.g. the workspace switch)
+  // it gets its own top border so it separates from the modal header / body padding above (user, 2026-10-29).
+  :host-context(.modal-body) .fpc-data-table__grid--stackable > .fpc-data-table__head > .fpc-data-table__toolbar-row {
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}
+
+// Forced stacked cards (`stacked` input, kanban lanes): the same rules at any width. (The modal-body strip border
+// above stays width-based.)
+:host(.fpc-data-table--stacked) {
+  @include stacked-cards;
+}
+
+// State column head (3.38 D1): a status glyph instead of an empty head cell; fully visible, centred on the
+// head's text line like the other labels.
+.fpc-data-table__state-head {
+  display: inline-flex;
+  align-items: center;
+  height: 1lh;
+  line-height: inherit;
+  vertical-align: middle;
+
+  > .bi {
+    display: block;
+    // Same glyph size as the icon in the row badges (`fpc-badge`: `$badge-font-size`).
+    font-size: var(--bs-badge-font-size, 0.75rem);
+    line-height: 1;
+  }
+}
+
+// Icon-only state head: the glyph sits on the cell's centre axis, exactly above the badge glyphs. The sort indicator
+// hangs off its trailing edge (out of flow) instead of pushing the glyph left.
+.fpc-data-table__cell--state-icon > .fpc-table__sort {
+  position: relative;
+  display: flex;
+  width: max-content;
+  margin-inline: auto;
+
+  > .fpc-table__sort-icon {
+    position: absolute;
+    margin-inline-start: 0;
+    inset-inline-start: calc(100% + 0.25rem - 0.5em);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+.fpc-data-table__cell--state-icon > .fpc-data-table__state-head {
+  display: flex;
+  width: max-content;
+  margin-inline: auto;
+}
+
+// --- Row drag and drop (`dropGroup`, kanban lanes) -------------------------------------------------------------------
+
+.fpc-data-table__row--draggable {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+// The dragged row stays in place as a dimmed placeholder (like the former lane cards).
+.fpc-data-table__row--drag-source {
+  opacity: 0.45;
+}
+
+// Drop zone: the whole body (an empty one too) gets the former lanes' dashed primary frame and light tint.
+:host(.fpc-data-table--drop-over) .fpc-data-table__scroller {
+  outline: 2px dashed var(--bs-primary);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--bs-primary) 8%, transparent);
+}

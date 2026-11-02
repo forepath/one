@@ -1,0 +1,383 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert class="flex-shrink-0" [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (actionError(); as message) {
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      data-testid="keys-action-error"
+    />
+  }
+  @if (!(loading() && !loaded()) && !activeRecoverable()) {
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      variant="danger"
+      [showIcon]="true"
+      data-testid="keys-not-recoverable"
+    >
+      <span class="fw-semibold" i18n="@@lwConsoleBackupKeys-notRecoverableHeading">Backups are not recoverable.</span>
+      <span i18n="@@lwConsoleBackupKeys-notRecoverable"
+        >If this cluster is lost, nobody can decrypt its backups until the recovery kit of the active key is downloaded
+        and confirmed (or the key is escrowed in a KMS). Download every share, give each to a different person, then
+        confirm the kit by pasting enough shares back.</span
+      >
+    </fpc-alert>
+  }
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (loading() && !loaded()) {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+    } @else {
+      <fpc-tab-group
+        class="fpc-lane-tabs"
+        [activeId]="lane()"
+        (activeIdChange)="lane.set($any($event))"
+        [ariaLabel]="title"
+      >
+        <fpc-tab id="generations" [label]="generationsTitle" />
+        <fpc-tab id="dr" [label]="drTitle" />
+      </fpc-tab-group>
+      <fpc-section-row class="flex-grow-1 min-h-0">
+        <loadweaver-lane
+          [title]="generationsTitle"
+          [flush]="true"
+          [off]="lane() !== 'generations'"
+          data-testid="keys-generations-lane"
+        >
+          <!-- Key generations (3.38 D1): State · Generation · kit facts; ⋮ kit actions; the shares in the row detail
+               (the active generation opens itself). -->
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="generationsTitle"
+            [columns]="generationColumns"
+            [rows]="generations()"
+            [rowId]="generationId"
+            [searchable]="false"
+            paging="client"
+            persistKey="lw-backup-keys"
+            [rowMenu]="generationMenu"
+            (rowAction)="onGenerationAction($event.row, $event.item.id)"
+            [expandedRowId]="expanded()"
+            (rowActivate)="toggle($event)"
+            emptyIcon="key"
+            data-testid="keys-generations"
+          >
+            <!-- The table's primary action, rightmost (3.38 R8); not destructive (a new key, the old ones stay
+                 readable), so no red inline button (LW-06) — the size dialog asks first. -->
+            <fpc-button
+              fpcDataTableToolbar
+              variant="primary"
+              size="sm"
+              iconOnly
+              [ariaLabel]="rotateLabel"
+              [title]="rotateLabel"
+              [loading]="isActing('rotate', null)"
+              [disabled]="acting() !== null"
+              (clicked)="openSize({ mode: 'rotate' })"
+              data-testid="keys-rotate"
+            >
+              <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+            </fpc-button>
+            <span fpcDataTableEmpty>
+              <fpc-empty-state icon="key" size="sm" i18n-title="@@lwConsoleBackupKeys-none" title="No backup key yet" />
+            </span>
+            <ng-template fpcTableCell="kitState" let-g>
+              @if (g.kit.confirmedAt) {
+                <fpc-badge tone="success">{{ kitConfirmedLabel }}</fpc-badge>
+                <span class="small text-body-secondary ms-1">{{ g.kit.confirmedAt | date: 'short' }}</span>
+              } @else {
+                <fpc-badge tone="danger">{{ kitUnconfirmedLabel }}</fpc-badge>
+              }
+            </ng-template>
+            <ng-template fpcTableCell="escrow" let-g>
+              @if (g.escrow; as e) {
+                <fpc-badge tone="info" icon="safe" [iconOnly]="true" [label]="escrowedLabel" />
+                <span class="ms-1">KMS {{ e.provider }} {{ e.at | date: 'short' }}</span>
+              }
+            </ng-template>
+            <ng-template fpcTableCell="created" let-g>{{ g.createdAt | date: 'short' }}</ng-template>
+            <ng-template fpcTableCell="retired" let-g>{{ g.retiredAt | date: 'short' }}</ng-template>
+            <ng-template fpcTableRowDetail let-g>
+              <fpc-data-table
+                nested
+                [ariaLabel]="sharesTitle"
+                [columns]="shareColumns"
+                [rows]="sharesOf(g)"
+                [rowId]="shareId"
+                [searchable]="false"
+                [showColumnChooser]="false"
+                [rowInlineActions]="shareActions"
+                (rowAction)="onShareAction($event.row, $event.item.id)"
+                [attr.data-testid]="'keys-shares-' + g.generation"
+              >
+                <ng-template fpcTableCell="downloadedAt" let-s>{{ s.downloadedAt | date: 'short' }}</ng-template>
+              </fpc-data-table>
+            </ng-template>
+          </fpc-data-table>
+        </loadweaver-lane>
+
+        <loadweaver-lane
+          [title]="drTitle"
+          grow="0 0 360px"
+          [flush]="true"
+          [off]="lane() !== 'dr'"
+          data-testid="keys-dr-lane"
+        >
+          @if (kitNeedsTrust()) {
+            <!-- Fleet mode: the kit goes through the fleet only as the signed person (the cluster has to trust it). -->
+            <fpc-alert [flush]="true" variant="info" [showIcon]="true" data-testid="keys-fleet-trust">
+              <span i18n="@@lwConsoleBackupKeys-fleetTrust"
+                >The recovery kit (handing out shares, confirming and re-issuing it) through the fleet needs the cluster
+                to trust this fleet. The fleet establishes that by itself when its credential may; otherwise a fleet
+                admin uses Establish trust on the fleet's cluster page. Until then, use the cluster's own console for
+                the kit.</span
+              >
+              @if (nativeKeysUrl(); as url) {
+                <a class="ms-1" [href]="url" target="_blank" rel="noopener" data-testid="keys-fleet-native-link"
+                  ><span i18n="@@lwConsoleBackupKeys-openNative">Open in the cluster's console</span></a
+                >
+              }
+            </fpc-alert>
+          }
+          @if (drError(); as message) {
+            <fpc-alert [flush]="true" variant="danger" [message]="message" data-testid="keys-dr-error" />
+          }
+          <section class="d-flex flex-wrap gap-2 px-3 py-2" data-testid="keys-dr">
+            <fpc-button variant="dark" size="sm" routerLink="/operate/backups/platform" data-testid="keys-dr-platform">
+              <i class="bi bi-hdd-stack me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleBackupKeys-drPlatform">Platform backups</span>
+            </fpc-button>
+            <fpc-button
+              variant="primary"
+              size="sm"
+              [loading]="drDownloading()"
+              (clicked)="downloadDrInfo()"
+              data-testid="keys-dr-info"
+              [title]="drHint"
+            >
+              <i class="bi bi-download me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleBackupKeys-drInfo">Download DR info</span>
+            </fpc-button>
+          </section>
+          <p class="small text-body-secondary px-3 mb-0">{{ drHint }}</p>
+        </loadweaver-lane>
+      </fpc-section-row>
+    }
+  </div>
+</div>
+
+<fpc-modal
+  [open]="sizeDialog() !== null"
+  (openChange)="onSizeOpenChange($event)"
+  [title]="sizeDialog()?.mode === 'rotate' ? rotateTitle : reissueTitle"
+  accent="warning"
+>
+  @if (sizeDialog()?.mode === 'rotate') {
+    <p class="small" i18n="@@lwConsoleBackupKeys-rotateHint">
+      A new key generation is created and used for new backups; existing backups stay readable with their generation's
+      kit. The new generation has a new recovery kit that must be downloaded and confirmed.
+    </p>
+  } @else {
+    <p class="small" i18n="@@lwConsoleBackupKeys-reissueHint">
+      The kit is split again: the previous shares stop counting and the new kit must be downloaded and confirmed.
+    </p>
+  }
+  <div class="row g-3">
+    <div class="col-6">
+      <fpc-form-field forId="lw-kit-shares" i18n-label="@@lwConsoleBackupKeys-sharesLabel" label="Shares (n)">
+        <fpc-form-control
+          controlId="lw-kit-shares"
+          size="sm"
+          inputType="number"
+          [invalid]="!validSize(+kitShares, +kitThreshold)"
+          [min]="minKit"
+          [max]="maxKit"
+          [(ngModel)]="kitShares"
+          data-testid="keys-kit-shares"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-6">
+      <fpc-form-field
+        forId="lw-kit-threshold"
+        i18n-label="@@lwConsoleBackupKeys-thresholdLabel"
+        label="Needed to recover (k)"
+      >
+        <fpc-form-control
+          controlId="lw-kit-threshold"
+          size="sm"
+          inputType="number"
+          [invalid]="!validSize(+kitShares, +kitThreshold)"
+          [min]="minKit"
+          [max]="kitShares"
+          [(ngModel)]="kitThreshold"
+          data-testid="keys-kit-threshold"
+        />
+      </fpc-form-field>
+    </div>
+  </div>
+  @if (!validSize(+kitShares, +kitThreshold)) {
+    <fpc-alert
+      variant="warning"
+      i18n-message="@@lwConsoleBackupKeys-sizeInvalid"
+      message="Between 2 and 16 shares; at least 2 and at most all of them needed."
+    />
+  }
+  @if (actionError(); as message) {
+    <fpc-alert variant="danger" [message]="message" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="sizeDialog.set(null)">{{ cancelLabel }}</fpc-button>
+    <fpc-button
+      variant="danger"
+      [disabled]="!validSize(+kitShares, +kitThreshold)"
+      [loading]="acting() !== null"
+      (clicked)="submitSize()"
+      data-testid="keys-size-submit"
+    >
+      @if (sizeDialog()?.mode === 'rotate') {
+        <span i18n="@@lwConsoleBackupKeys-rotateSubmit">Rotate</span>
+      } @else {
+        <span i18n="@@lwConsoleBackupKeys-reissueSubmit">Re-issue</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="shareFor() !== null"
+  (openChange)="onShareAskOpenChange($event)"
+  [title]="shareAskTitle"
+  [message]="shareAskMessage"
+  [confirmLabel]="shareAskConfirm"
+  [cancelLabel]="cancelLabel"
+  [warning]="true"
+  (confirmed)="downloadShare()"
+/>
+
+<fpc-modal
+  [open]="share() !== null"
+  (openChange)="onShareOpenChange($event)"
+  [title]="shareTitle"
+  size="lg"
+  accent="warning"
+  [closeOnBackdrop]="false"
+>
+  @if (share(); as s) {
+    <fpc-alert class="d-block mb-3" variant="warning" [showIcon]="true" data-testid="keys-share-once">
+      <span i18n="@@lwConsoleBackupKeys-shareOnce"
+        >This share is shown only now and can't be downloaded again. It was saved as a text file; store it offline and
+        hand it to its keeper before closing this dialog.</span
+      >
+    </fpc-alert>
+    <div class="small mb-2 d-flex flex-wrap align-items-center gap-2">
+      <fpc-badge color="light" size="sm">{{ generationLabel }} {{ s.generation }}</fpc-badge>
+      <fpc-badge color="light" size="sm"
+        ><span i18n="@@lwConsoleBackupKeys-share">Share</span> {{ s.index }} / {{ s.share.document.shares }}</fpc-badge
+      >
+      <span
+        ><span i18n="@@lwConsoleBackupKeys-checksum">checksum</span>
+        <span class="font-monospace">{{ s.share.document.checksum }}</span></span
+      >
+    </div>
+    <fpc-form-control
+      controlType="textarea"
+      size="sm"
+      controlClass="font-monospace"
+      [rows]="10"
+      readOnly
+      [value]="s.share.text"
+      data-testid="keys-share-text"
+    />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="saveShare()" data-testid="keys-share-save">
+      <i class="bi bi-download me-1" aria-hidden="true"></i
+      ><span i18n="@@lwConsoleBackupKeys-saveAgain">Save as text file again</span>
+    </fpc-button>
+    <fpc-button variant="primary" (clicked)="closeShare()" data-testid="keys-share-close">
+      <span i18n="@@lwConsoleBackupKeys-shareStored">I stored the share</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal [open]="confirmFor() !== null" (openChange)="onConfirmOpenChange($event)" [title]="confirmTitle" size="lg">
+  @if (confirmFor(); as g) {
+    <p class="small">
+      <span i18n="@@lwConsoleBackupKeys-confirmHint"
+        >Paste the shares back (or load the saved text files) to prove the kit recovers the key. Needed:</span
+      >
+      {{ g.kit.threshold }} / {{ g.kit.shares }}.
+    </p>
+    @for (value of pasted(); track $index; let i = $index) {
+      <fpc-form-field [forId]="'lw-kit-paste-' + i" [label]="shareLabel + ' ' + (i + 1)">
+        <fpc-form-control
+          controlType="textarea"
+          [controlId]="'lw-kit-paste-' + i"
+          size="sm"
+          controlClass="font-monospace"
+          [rows]="4"
+          [ngModel]="value"
+          (ngModelChange)="setPasted(i, $event)"
+          [attr.data-testid]="'keys-paste-' + i"
+        />
+        <input
+          type="file"
+          accept=".txt,text/plain"
+          class="form-control form-control-sm mt-1"
+          [attr.aria-label]="shareTitle + ' ' + (i + 1)"
+          (change)="readFile(i, $event)"
+        />
+      </fpc-form-field>
+    }
+    @if (pasted().length < g.kit.shares) {
+      <fpc-button variant="link" size="sm" (clicked)="addPasted()">
+        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i
+        ><span i18n="@@lwConsoleBackupKeys-addShare">Add another share</span>
+      </fpc-button>
+    }
+  }
+  @if (actionError(); as message) {
+    <fpc-alert variant="danger" [message]="message" data-testid="keys-confirm-error" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="confirmFor.set(null)">{{ cancelLabel }}</fpc-button>
+    <fpc-button
+      variant="primary"
+      [disabled]="pastedCount() === 0"
+      [loading]="acting() !== null"
+      (clicked)="submitConfirm()"
+      data-testid="keys-confirm-submit"
+    >
+      <span i18n="@@lwConsoleBackupKeys-confirmSubmit">Confirm kit</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="escrowFor() !== null"
+  (openChange)="onEscrowOpenChange($event)"
+  [title]="escrowTitle"
+  [message]="escrowMessage"
+  [confirmLabel]="escrowConfirm"
+  [cancelLabel]="cancelLabel"
+  (confirmed)="escrow()"
+/>

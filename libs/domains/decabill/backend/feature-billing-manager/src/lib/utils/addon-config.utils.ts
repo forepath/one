@@ -9,6 +9,11 @@ const ENV_KEY_PATTERN = /^[A-Z][A-Z0-9_]*$/;
 
 export type AddonConfigFieldDefinition = Omit<CloudInitConfigEnvVariableDefinition, 'hasDefault'> & {
   hasDefault?: boolean;
+  /**
+   * Admin-only secret of a module addon (e.g. an API token the module uses from the catalog defaults): never copied
+   * into a subscription addon's `configSnapshot` and never settable by customers. Module `configFields` only.
+   */
+  adminOnly?: boolean;
 };
 
 export interface AddonConfigSchema {

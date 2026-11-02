@@ -72,6 +72,28 @@ describe('adminUpdatesReducer', () => {
     expect(state.error).toBe('boom');
   });
 
+  it('keeps the channel and prerelease flag of products with release channels', () => {
+    const fullState = baseFullState({
+      channel: 'beta',
+      release: {
+        tagName: 'v1.1.0-beta.1',
+        name: '1.1.0-beta.1',
+        body: '',
+        htmlUrl: 'https://example.com/releases/v1.1.0-beta.1',
+        publishedAt: '2024-01-01T00:00:00Z',
+        changelog: [{ text: 'new rollout', scope: 'product', product: 'loadweaver' }],
+        scopedChangelog: { product: [], shared: [] },
+        prerelease: true,
+      },
+    });
+    const state = adminUpdatesReducer(initialAdminUpdatesState, loadAdminUpdatesFullSuccess({ fullState }));
+
+    expect(state.fullState?.channel).toBe('beta');
+    expect(state.status?.channel).toBe('beta');
+    expect(state.fullState?.release?.prerelease).toBe(true);
+    expect(state.fullState?.release?.changelog[0].product).toBe('loadweaver');
+  });
+
   it('handles trigger check lifecycle', () => {
     let state = adminUpdatesReducer(initialAdminUpdatesState, triggerAdminUpdateCheck());
 

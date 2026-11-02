@@ -1,7 +1,39 @@
 <div class="service-types-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="service-types-bulk-result"
+    />
+  }
+
+  <!-- One data list: State · Service provider · providers; ⋮ Edit / Delete / Copy ID; bulk Activate / Deactivate / Delete. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="serviceTypes()"
+    paging="client"
+    persistKey="decabill-service-types"
+    [(query)]="searchQuery"
+    [searchPlaceholder]="searchPlaceholder"
+    [loading]="(loading$ | async) === true"
+    [error]="(error$ | async) ?? null"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    (rowActivate)="openEditModal($event)"
+    emptyIcon="box-seam"
+    data-testid="service-types-list"
+  >
     <fpc-button
-      fpcPageHeaderActions
+      fpcDataTableToolbar
       variant="primary"
       size="sm"
       iconOnly
@@ -12,101 +44,76 @@
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
     </fpc-button>
-  </fpc-page-header>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!selectedServiceTypes().some((st) => !st.isActive)"
+      (clicked)="setActiveSelected(true)"
+      data-testid="service-types-bulk-activate"
+      iconOnly
+      [ariaLabel]="activateLabel"
+      [title]="activateLabel"
+    >
+      <i class="bi bi-toggle-on" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!selectedServiceTypes().some((st) => st.isActive)"
+      (clicked)="setActiveSelected(false)"
+      data-testid="service-types-bulk-deactivate"
+      iconOnly
+      [ariaLabel]="deactivateLabel"
+      [title]="deactivateLabel"
+    >
+      <i class="bi bi-toggle-off" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="selectedServiceTypes().length === 0"
+      (clicked)="confirmBulkDelete.set(true)"
+      data-testid="service-types-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
 
-  <fpc-search-field
-    class="border-bottom"
-    name="search"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchPlaceholder"
-    [(value)]="searchQuery"
-  />
-
-  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @if (loading$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" i18n-label="@@featureServiceTypes-loading" label="Loading..." />
-      </div>
-    } @else {
-      @if (error$ | async; as err) {
-        <fpc-alert class="m-3" variant="danger" [message]="err" />
-      }
-      @if (serviceTypes$ | async; as listData) {
-        @if (listData.serviceTypes.length === 0) {
-          @if (searchQuery().trim()) {
-            <fpc-empty-state
-              icon="search"
-              message="No search results"
-              i18n-message="@@featureServiceTypes-noSearchResults"
-            />
-          } @else {
-            <fpc-empty-state message="No service types yet" i18n-message="@@featureServiceTypes-empty" />
-          }
-        } @else {
-          <fpc-list [flush]="true">
-            @for (st of listData.serviceTypes; track st.id) {
-              <fpc-list-item>
-                <div fpcListItemTitle class="fw-semibold">{{ st.name }}</div>
-                <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                    <span class="me-2" [ngClass]="activeStatusTextClass(st.isActive)">
-                      @if (st.isActive) {
-                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                      } @else {
-                        <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
-                      }
-                      {{ activeStatusLabel(st.isActive) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-box-seam me-1" aria-hidden="true"></i
-                      >{{ providersListLabel(st, listData.providerDetails) }}
-                    </span>
-                  </div>
-                </div>
-                <fpc-button-group
-                  fpcListItemActions
-                  size="sm"
-                  ariaLabel="Service provider actions"
-                  i18n-ariaLabel="@@featureServiceTypes-serviceTypeActionsAria"
-                >
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="warning"
-                    (clicked)="openEditModal(st)"
-                    [disabled]="(loadingAny$ | async) === true"
-                    title="Edit service provider"
-                    i18n-title="@@featureServiceTypes-editButtonTitle"
-                  >
-                    <i class="bi bi-pencil" aria-hidden="true"></i>
-                  </fpc-button>
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="danger"
-                    (clicked)="openDeleteConfirm(st)"
-                    [disabled]="(loadingAny$ | async) === true"
-                    title="Delete service provider"
-                    i18n-title="@@featureServiceTypes-deleteButtonTitle"
-                  >
-                    <i class="bi bi-trash" aria-hidden="true"></i>
-                  </fpc-button>
-                </fpc-button-group>
-              </fpc-list-item>
-            }
-          </fpc-list>
-        }
-      }
-    }
-  </div>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="box-seam"
+        size="sm"
+        message="No service types yet"
+        i18n-message="@@featureServiceTypes-empty"
+      />
+    </span>
+  </fpc-data-table>
 </div>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDelete"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelected()"
+/>
 
 <fpc-modal
   [(open)]="createModalOpen"
+  size="lg"
   i18n-title="@@featureServiceTypes-createTitle"
-  title="Add service provider"
+  title="Create service provider"
   [closable]="(creating$ | async) !== true"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+  [cancelDisabled]="!((creating$ | async) !== true)"
 >
   <form (ngSubmit)="onSubmitCreate()">
     <fpc-form-field forId="createKey" i18n-label="@@featureServiceTypes-key" label="Key" required>
@@ -143,27 +150,19 @@
       } @else {
         @if (providerDetails$ | async; as providers) {
           @if (providers.length > 0) {
-            <select
-              id="createProvider"
+            <fpc-multi-select
+              controlId="createProvider"
               name="provider"
-              class="form-select"
-              multiple
-              size="6"
+              [options]="providerMultiOptions('create', providers)"
               [ngModel]="createSelectedProviders"
               (ngModelChange)="onProvidersSelectionChange('create', $event, providers)"
-              [compareWith]="compareProviderId"
               [disabled]="(creating$ | async) === true"
-            >
-              <option [ngValue]="noneProviderValue" i18n="@@featureServiceTypes-noneProvider">None</option>
-              @for (p of providers; track p.id) {
-                <option [ngValue]="p.id" [disabled]="isProviderOptionDisabled('create', p, providers)">
-                  {{ p.displayName }}
-                </option>
-              }
-            </select>
+              [searchPlaceholder]="multiSelectSearchLabel"
+              [removeLabel]="multiSelectRemoveLabel"
+              [emptyLabel]="multiSelectEmptyLabel"
+            />
             <div fpcFormFieldHint i18n="@@featureServiceTypes-providersMultiHelp">
-              Hold Ctrl/Cmd to select multiple compatible providers. First selected is primary. Choose None for no cloud
-              provider.
+              Select compatible providers; the first one is primary. Choose None for no cloud provider.
             </div>
           } @else {
             <fpc-form-control
@@ -184,27 +183,33 @@
     </fpc-form-field>
     @if (providerDetails$ | async; as providers) {
       @if (hasProviderDefaultsSection('create', providers)) {
-        <div class="mb-3 border rounded p-3 bg-body-secondary">
-          <div class="d-flex justify-content-between align-items-center gap-2">
-            <h6 class="mb-0" i18n="@@featureServiceTypes-providerDefaults">Provider defaults</h6>
-            <fpc-button
-              variant="dark"
-              size="sm"
-              data-bs-toggle="collapse"
-              data-bs-target="#createProviderDefaults"
-              [attr.aria-expanded]="createProviderDefaultsExpanded()"
-              aria-controls="createProviderDefaults"
-              [attr.title]="createProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
-              [ariaLabel]="createProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
-              class="flex-shrink-0"
-            >
-              @if (createProviderDefaultsExpanded()) {
-                <i class="bi bi-eye-slash" aria-hidden="true"></i>
-              } @else {
-                <i class="bi bi-eye" aria-hidden="true"></i>
-              }
-            </fpc-button>
-          </div>
+        <div class="mb-3">
+          <fpc-list-header
+            class="d-block mb-2"
+            title="Provider defaults"
+            i18n-title="@@featureServiceTypes-providerDefaults"
+            [sticky]="false"
+          >
+            <span fpcListHeaderActions class="d-flex align-items-center gap-1">
+              <fpc-button
+                variant="dark"
+                size="sm"
+                data-bs-toggle="collapse"
+                data-bs-target="#createProviderDefaults"
+                [attr.aria-expanded]="createProviderDefaultsExpanded()"
+                aria-controls="createProviderDefaults"
+                [attr.title]="createProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
+                [ariaLabel]="createProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
+                class="flex-shrink-0"
+              >
+                @if (createProviderDefaultsExpanded()) {
+                  <i class="bi bi-eye-slash" aria-hidden="true"></i>
+                } @else {
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                }
+              </fpc-button>
+            </span>
+          </fpc-list-header>
           <div
             class="collapse"
             id="createProviderDefaults"
@@ -307,9 +312,13 @@
 
 <fpc-modal
   [(open)]="editModalOpen"
+  size="lg"
   i18n-title="@@featureServiceTypes-editTitle"
   title="Edit service provider"
   [closable]="(updating$ | async) !== true"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+  [cancelDisabled]="!((updating$ | async) !== true)"
 >
   <form (ngSubmit)="onSubmitEdit()">
     <fpc-form-field forId="editName" i18n-label="@@featureServiceTypes-name" label="Name">
@@ -336,27 +345,19 @@
       } @else {
         @if (providerDetails$ | async; as providers) {
           @if (providers.length > 0) {
-            <select
-              id="editProvider"
+            <fpc-multi-select
+              controlId="editProvider"
               name="provider"
-              class="form-select"
-              multiple
-              size="6"
+              [options]="providerMultiOptions('edit', providers)"
               [ngModel]="editSelectedProviders"
               (ngModelChange)="onProvidersSelectionChange('edit', $event, providers)"
-              [compareWith]="compareProviderId"
               [disabled]="(updating$ | async) === true"
-            >
-              <option [ngValue]="noneProviderValue" i18n="@@featureServiceTypes-noneProvider">None</option>
-              @for (p of providers; track p.id) {
-                <option [ngValue]="p.id" [disabled]="isProviderOptionDisabled('edit', p, providers)">
-                  {{ p.displayName }}
-                </option>
-              }
-            </select>
+              [searchPlaceholder]="multiSelectSearchLabel"
+              [removeLabel]="multiSelectRemoveLabel"
+              [emptyLabel]="multiSelectEmptyLabel"
+            />
             <div fpcFormFieldHint i18n="@@featureServiceTypes-providersMultiHelp">
-              Hold Ctrl/Cmd to select multiple compatible providers. First selected is primary. Choose None for no cloud
-              provider.
+              Select compatible providers; the first one is primary. Choose None for no cloud provider.
             </div>
           } @else {
             <fpc-form-control
@@ -377,27 +378,33 @@
     </fpc-form-field>
     @if (providerDetails$ | async; as providers) {
       @if (hasProviderDefaultsSection('edit', providers)) {
-        <div class="mb-3 border rounded p-3 bg-body-secondary">
-          <div class="d-flex justify-content-between align-items-center gap-2">
-            <h6 class="mb-0" i18n="@@featureServiceTypes-providerDefaults">Provider defaults</h6>
-            <fpc-button
-              variant="dark"
-              size="sm"
-              data-bs-toggle="collapse"
-              data-bs-target="#editProviderDefaults"
-              [attr.aria-expanded]="editProviderDefaultsExpanded()"
-              aria-controls="editProviderDefaults"
-              [attr.title]="editProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
-              [ariaLabel]="editProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
-              class="flex-shrink-0"
-            >
-              @if (editProviderDefaultsExpanded()) {
-                <i class="bi bi-eye-slash" aria-hidden="true"></i>
-              } @else {
-                <i class="bi bi-eye" aria-hidden="true"></i>
-              }
-            </fpc-button>
-          </div>
+        <div class="mb-3">
+          <fpc-list-header
+            class="d-block mb-2"
+            title="Provider defaults"
+            i18n-title="@@featureServiceTypes-providerDefaults"
+            [sticky]="false"
+          >
+            <span fpcListHeaderActions class="d-flex align-items-center gap-1">
+              <fpc-button
+                variant="dark"
+                size="sm"
+                data-bs-toggle="collapse"
+                data-bs-target="#editProviderDefaults"
+                [attr.aria-expanded]="editProviderDefaultsExpanded()"
+                aria-controls="editProviderDefaults"
+                [attr.title]="editProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
+                [ariaLabel]="editProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
+                class="flex-shrink-0"
+              >
+                @if (editProviderDefaultsExpanded()) {
+                  <i class="bi bi-eye-slash" aria-hidden="true"></i>
+                } @else {
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                }
+              </fpc-button>
+            </span>
+          </fpc-list-header>
           <div
             class="collapse"
             id="editProviderDefaults"
@@ -505,8 +512,13 @@
 </fpc-modal>
 
 <ng-template #serviceTypeMetersSection let-mode="mode" let-disabled="disabled" let-providerId="providerId">
-  <div class="mb-3 border rounded p-3 bg-body-secondary">
-    <h6 class="mb-2" i18n="@@featureServiceTypes-meters">Usage meters</h6>
+  <div class="mb-3">
+    <fpc-list-header
+      class="d-block mb-2"
+      title="Usage meters"
+      i18n-title="@@featureServiceTypes-meters"
+      [sticky]="false"
+    />
     <p class="form-text text-body-secondary small mb-3" i18n="@@featureServiceTypes-metersHelp">
       Provider-declared meters are required. Attach extra catalog meters with optional unit price and included usage
       overrides.
@@ -524,7 +536,7 @@
                 <span class="font-monospace text-break">{{ declared.key }}</span>
                 <span class="text-body-secondary">{{ declared.aggregator }}</span>
                 <span class="text-body-secondary"
-                  >€{{ declared.defaultUnitPriceNet }}
+                  >{{ declared.defaultUnitPriceNet | fpcMoney: null : { unitPrice: true } }}
                   @if (declared.unitLabel) {
                     / {{ declared.unitLabel }}
                   }
@@ -540,14 +552,14 @@
       <div class="text-body-secondary small mb-2" i18n="@@featureServiceTypes-metersLoading">Loading meters...</div>
     }
     @for (attached of attachedMetersFor(mode); track attached.meterId) {
-      <div class="row g-2 mb-2 align-items-end">
-        <div class="col-12 col-md-4">
+      <div class="row g-2 mb-3 align-items-end">
+        <div class="col-12">
           <div class="fw-semibold">{{ attached.name }}</div>
           <div class="d-flex flex-wrap align-items-center gap-2 small">
             <span class="font-monospace text-break">{{ attached.key }}</span>
             <span class="text-body-secondary">{{ attached.aggregator }}</span>
             <span class="text-body-secondary"
-              >€{{ attached.effectiveUnitPriceNet }}
+              >{{ attached.effectiveUnitPriceNet | fpcMoney: null : { unitPrice: true } }}
               @if (attached.unitLabel) {
                 / {{ attached.unitLabel }}
               }
@@ -557,9 +569,9 @@
             <div class="small text-body-secondary" i18n="@@featureServiceTypes-requiredMeter">Required</div>
           }
         </div>
-        <div class="col-12 col-md-5">
+        <div class="col">
           <div class="row g-2">
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-sm-6">
               <fpc-form-field
                 [forId]="mode + 'ServiceTypeMeterOverride' + attached.meterId"
                 i18n-label="@@featureServiceTypes-meterUnitPriceOverride"
@@ -570,14 +582,13 @@
                   inputType="number"
                   min="0"
                   step="0.0001"
-                  size="sm"
                   [controlId]="mode + 'ServiceTypeMeterOverride' + attached.meterId"
                   [value]="attachedMeterOverrideInput(attached)"
                   [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
                 />
               </fpc-form-field>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-sm-6">
               <fpc-form-field
                 [forId]="mode + 'ServiceTypeMeterIncludedUsage' + attached.meterId"
                 i18n-label="@@featureServiceTypes-meterIncludedUsageOverride"
@@ -588,7 +599,6 @@
                   inputType="number"
                   min="0"
                   step="1"
-                  size="sm"
                   [controlId]="mode + 'ServiceTypeMeterIncludedUsage' + attached.meterId"
                   [value]="attachedMeterIncludedUsageOverrideInput(attached)"
                   [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
@@ -597,7 +607,7 @@
             </div>
           </div>
         </div>
-        <div class="col-12 col-md-3 d-flex gap-1 flex-wrap justify-content-md-end">
+        <div class="col-auto d-flex gap-1 mb-3">
           <fpc-button
             (clicked)="
               updateAttachedServiceTypeMeter(
@@ -607,8 +617,7 @@
                 serviceTypeMeterIncludedUsage.value()
               )
             "
-            variant="primary"
-            size="sm"
+            variant="dark"
             iconOnly
             [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
             title="Update price"
@@ -621,7 +630,6 @@
           @if (!attached.required) {
             <fpc-button
               variant="danger"
-              size="sm"
               iconOnly
               (clicked)="detachServiceTypeMeter(mode, attached)"
               [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
@@ -646,8 +654,9 @@
       @if (providerDetails$ | async; as providers) {
         @if (availableMetersForAttach(meters, mode, providers); as availableMeters) {
           @if (availableMeters.length > 0) {
-            <div class="row g-2 align-items-end">
-              <div class="col-12 col-md-5">
+            <!-- DB-07 / DB-08 d: one control line (gutter-grid fields have no bottom margin), so the "+" carries none either; the row spaces itself. -->
+            <div class="row g-2 gy-3 mb-3 align-items-end">
+              <div class="col-12">
                 <fpc-form-field
                   [forId]="mode + 'AttachServiceTypeMeter'"
                   i18n-label="@@featureServiceTypes-attachMeter"
@@ -656,7 +665,6 @@
                   @if (mode === 'create') {
                     <fpc-form-control
                       controlType="select"
-                      size="sm"
                       [controlId]="mode + 'AttachServiceTypeMeter'"
                       [(ngModel)]="createMeterAttachMeterId"
                       [name]="mode + 'AttachServiceTypeMeter'"
@@ -670,7 +678,6 @@
                   } @else {
                     <fpc-form-control
                       controlType="select"
-                      size="sm"
                       [controlId]="mode + 'AttachServiceTypeMeter'"
                       [(ngModel)]="editMeterAttachMeterId"
                       [name]="mode + 'AttachServiceTypeMeter'"
@@ -684,20 +691,19 @@
                   }
                 </fpc-form-field>
               </div>
-              <div class="col-12 col-md-5">
-                <div class="row g-2">
-                  <div class="col-12 col-md-6">
+              <div class="col">
+                <div class="row g-2 gy-3">
+                  <div class="col-12 col-sm-6">
                     <fpc-form-field
                       [forId]="mode + 'AttachServiceTypeMeterPrice'"
                       i18n-label="@@featureServiceTypes-attachMeterPrice"
-                      label="Override price (optional)"
+                      label="Price override"
                     >
                       @if (mode === 'create') {
                         <fpc-form-control
                           inputType="number"
                           min="0"
                           step="0.0001"
-                          size="sm"
                           [controlId]="mode + 'AttachServiceTypeMeterPrice'"
                           [(ngModel)]="createMeterAttachUnitPrice"
                           [name]="mode + 'AttachServiceTypeMeterPrice'"
@@ -708,7 +714,6 @@
                           inputType="number"
                           min="0"
                           step="0.0001"
-                          size="sm"
                           [controlId]="mode + 'AttachServiceTypeMeterPrice'"
                           [(ngModel)]="editMeterAttachUnitPrice"
                           [name]="mode + 'AttachServiceTypeMeterPrice'"
@@ -717,18 +722,17 @@
                       }
                     </fpc-form-field>
                   </div>
-                  <div class="col-12 col-md-6">
+                  <div class="col-12 col-sm-6">
                     <fpc-form-field
                       [forId]="mode + 'AttachServiceTypeMeterIncludedUsage'"
                       i18n-label="@@featureServiceTypes-attachMeterIncludedUsage"
-                      label="Override included usage (optional)"
+                      label="Included usage override"
                     >
                       @if (mode === 'create') {
                         <fpc-form-control
                           inputType="number"
                           min="0"
                           step="1"
-                          size="sm"
                           [controlId]="mode + 'AttachServiceTypeMeterIncludedUsage'"
                           [(ngModel)]="createMeterAttachIncludedUsage"
                           [name]="mode + 'AttachServiceTypeMeterIncludedUsage'"
@@ -739,7 +743,6 @@
                           inputType="number"
                           min="0"
                           step="1"
-                          size="sm"
                           [controlId]="mode + 'AttachServiceTypeMeterIncludedUsage'"
                           [(ngModel)]="editMeterAttachIncludedUsage"
                           [name]="mode + 'AttachServiceTypeMeterIncludedUsage'"
@@ -750,10 +753,9 @@
                   </div>
                 </div>
               </div>
-              <div class="col-12 col-md-2 d-flex justify-content-md-end">
+              <div class="col-auto">
                 <fpc-button
-                  variant="primary"
-                  size="sm"
+                  variant="dark"
                   iconOnly
                   (clicked)="attachServiceTypeMeter(mode)"
                   [disabled]="

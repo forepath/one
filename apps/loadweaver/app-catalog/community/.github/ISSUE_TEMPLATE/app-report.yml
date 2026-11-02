@@ -1,0 +1,53 @@
+name: Report an app
+description: Report a problem with an app in the catalog (malware, licence violation, broken, abandoned, misleading).
+title: '[report] <app> <version>'
+labels: [app-report]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. For **security vulnerabilities in Loadweaver itself**, use the security policy instead.
+        Maintainers review reports; a confirmed problem leads to a takedown in the signed catalog index.
+  - type: input
+    id: catalog
+    attributes:
+      label: Catalog
+      description: e.g. loadweaver-community or forepath-official
+    validations:
+      required: true
+  - type: input
+    id: app
+    attributes:
+      label: App and version(s)
+      placeholder: my-app 1.0.0 (or "all versions")
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is wrong?
+      options:
+        - Malicious behaviour (malware, miner, data theft, backdoor)
+        - Security issue in the package (vulnerable image, unsafe defaults)
+        - Licence violation or non-free licence
+        - Does not work / abandoned
+        - Misleading description
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What did you observe, and how can maintainers reproduce it? Links, logs, digests.
+    validations:
+      required: true
+  - type: dropdown
+    id: takedown
+    attributes:
+      label: Do you request a takedown?
+      options:
+        - 'Yes'
+        - 'No, just a report'
+    validations:
+      required: true

@@ -1,0 +1,159 @@
+{
+  "name": "loadweaver-backend-control-plane",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/loadweaver/backend-control-plane/src",
+  "projectType": "application",
+  "tags": ["domain:loadweaver", "type:app", "scope:backend"],
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/loadweaver/backend-control-plane",
+        "main": "apps/loadweaver/backend-control-plane/src/main.ts",
+        "tsConfig": "apps/loadweaver/backend-control-plane/tsconfig.app.json",
+        "assets": [
+          "apps/loadweaver/backend-control-plane/src/assets",
+          "apps/loadweaver/backend-control-plane/src/migrations",
+          {
+            "glob": "*.template.html",
+            "input": "libs/domains/shared/backend/feature-notifications/src/lib/templates",
+            "output": "templates"
+          },
+          {
+            "glob": "*.template.txt",
+            "input": "libs/domains/shared/backend/feature-notifications/src/lib/templates",
+            "output": "templates"
+          },
+          {
+            "glob": "email-layout.partial.html",
+            "input": "libs/domains/shared/backend/feature-notifications/src/lib/templates",
+            "output": "templates"
+          },
+          {
+            "glob": "*.template.{html,txt}",
+            "input": "libs/domains/loadweaver/backend/feature-control-plane/src/lib/templates",
+            "output": "templates"
+          }
+        ],
+        "webpackConfig": "apps/loadweaver/backend-control-plane/webpack.config.cjs",
+        "generatePackageJson": true
+      },
+      "configurations": {
+        "development": {
+          "outputHashing": "none"
+        },
+        "production": {}
+      }
+    },
+    "copy-workspace-modules": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": [
+        "{workspaceRoot}/dist/apps/loadweaver/backend-control-plane/workspace_modules"
+      ],
+      "executor": "@nx/js:copy-workspace-modules",
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "prune": {
+      "dependsOn": ["build", "copy-workspace-modules", "compile-migrations"],
+      "executor": "nx:noop"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "loadweaver-backend-control-plane:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "loadweaver-backend-control-plane:build:development"
+        },
+        "production": {
+          "buildTarget": "loadweaver-backend-control-plane:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/loadweaver/backend-control-plane/jest.config.cts",
+        "passWithNoTests": true
+      }
+    },
+    "compile-migrations": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "rm -rf dist/apps/loadweaver/backend-control-plane/src/migrations",
+          "mkdir -p dist/apps/loadweaver/backend-control-plane/src/migrations",
+          "npx tsc $(find apps/loadweaver/backend-control-plane/src/migrations -name '*.ts' ! -name '*.spec.ts') --outDir dist/apps/loadweaver/backend-control-plane/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/loadweaver/backend-control-plane/src/migrations",
+          "npx tsc $(find libs/domains/identity/backend/util-auth/src/lib/migrations -name '*.ts' ! -name '*.spec.ts') --outDir dist/apps/loadweaver/backend-control-plane/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir libs/domains/identity/backend/util-auth/src/lib/migrations"
+        ],
+        "parallel": false
+      }
+    },
+    "api-container-image": {
+      "dependsOn": ["prune"],
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/loadweaver/backend-control-plane/Dockerfile.api",
+        "context": "dist/apps/loadweaver/backend-control-plane",
+        "build-args": ["VERSION"]
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "labels": [
+            "io.forepath.one.test-project=loadweaver-backend-control-plane"
+          ],
+          "tags": ["ghcr.io/forepath/loadweaver-control-plane-api:latest"]
+        },
+        "release": {
+          "push": true,
+          "tags": [
+            "ghcr.io/forepath/loadweaver-control-plane-api:latest",
+            "ghcr.io/forepath/loadweaver-control-plane-api:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "start-containers": {
+      "dependsOn": ["api-container-image"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/loadweaver/backend-control-plane",
+        "command": "docker compose --env-file .start-containers.env up -d --force-recreate --remove-orphans && docker image prune --force --filter label=io.forepath.one.test-project=loadweaver-backend-control-plane"
+      }
+    },
+    "sbom": {
+      "executor": "@forepath/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
+    },
+    "integration-test": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/apps/loadweaver/backend-control-plane-integration"
+      ],
+      "options": {
+        "jestConfig": "apps/loadweaver/backend-control-plane/jest.integration.config.cts",
+        "runInBand": true
+      },
+      "cache": false
+    }
+  }
+}

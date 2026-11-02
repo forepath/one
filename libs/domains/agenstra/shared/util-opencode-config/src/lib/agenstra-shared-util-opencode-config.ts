@@ -11,6 +11,7 @@ export * from './automation-platform';
 export * from './plan-platform';
 export * from './platform-policy';
 export * from './egress-policy';
+export * from './loadweaver-egress';
 export * from './message-filters';
 export * from './platform-security';
 export * from './context-platform';

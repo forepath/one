@@ -1,0 +1,215 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <ng-container ngProjectAs="[fpcPageHeaderActions]">
+      <fpc-button
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="refreshLabel"
+        [title]="refreshLabel"
+        (clicked)="load()"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+    </ng-container>
+  </fpc-page-header>
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      @if (!editorOpen()) {
+        <fpc-alert [flush]="true" variant="danger" [message]="message" data-testid="trusted-fleets-error" />
+      }
+    }
+
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="trusted-fleets-bulk-result"
+      />
+    }
+    <fpc-section-row class="flex-grow-1 min-h-0">
+      <loadweaver-lane [title]="laneTitle" [flush]="true" data-testid="trusted-fleets-lane">
+        <!-- One data list (3.38 D1): State · Fleet · issuer · keys (fingerprints) · last key; ⋮ Edit / Remove; bulk Remove. -->
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="laneTitle"
+          [columns]="columns"
+          [rows]="visible()"
+          [rowId]="fleetId"
+          paging="client"
+          persistKey="lw-trusted-fleets"
+          [(query)]="search"
+          [searchPlaceholder]="searchLabel"
+          [loading]="loading() && !loaded()"
+          selectable
+          [(selected)]="selected"
+          [rowMenu]="rowMenu"
+          (rowAction)="onRowAction($event.row, $event.item.id)"
+          (rowActivate)="openEditor($event)"
+          emptyIcon="diagram-3"
+          data-testid="trusted-fleets-list"
+        >
+          <fpc-button
+            fpcDataTableToolbar
+            variant="primary"
+            size="sm"
+            iconOnly
+            [ariaLabel]="addLabel"
+            [title]="addLabel"
+            (clicked)="openEditor(null)"
+            data-testid="trusted-fleets-add"
+          >
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
+            fpcDataTableBatch
+            variant="danger"
+            size="sm"
+            [disabled]="selectedFleets().length === 0 || busy()"
+            (clicked)="confirmBulkRemove.set(true)"
+            data-testid="trusted-fleets-bulk-remove"
+            iconOnly
+            [ariaLabel]="removeLabel"
+            [title]="removeLabel"
+          >
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </fpc-button>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="diagram-3"
+              size="sm"
+              i18n-title="@@lwConsoleTrustedFleets-none"
+              title="No trusted fleet"
+              data-testid="trusted-fleets-empty"
+            />
+          </span>
+          <ng-template fpcTableCell="keys" let-row>
+            <span class="d-flex flex-column gap-1" [attr.data-testid]="'trusted-fleet-' + row.issuer">
+              @for (k of keysOf(row); track k.kid) {
+                <span class="font-monospace text-truncate" [title]="k.kid + ' · ' + k.fingerprint"
+                  ><i class="bi bi-key me-1" aria-hidden="true"></i>{{ k.fingerprint }}</span
+                >
+              }
+            </span>
+          </ng-template>
+          <ng-template fpcTableCell="added" let-row>{{ lastKeyAdded(row) | date: 'short' }}</ng-template>
+        </fpc-data-table>
+      </loadweaver-lane>
+    </fpc-section-row>
+  </div>
+</div>
+
+<fpc-modal [open]="editorOpen()" (openChange)="editorOpen.set($event)" [title]="editorTitle">
+  @let form_ = form();
+  @if (attempted() && formError(); as problem) {
+    <fpc-alert class="d-block mb-2" variant="warning" [message]="problem" data-testid="trusted-fleets-form-error" />
+  }
+  @if (error(); as message) {
+    <fpc-alert class="d-block mb-2" variant="danger" [message]="message" />
+  }
+  <fpc-form-field forId="lw-trusted-issuer" i18n-label="@@lwConsoleTrustedFleets-issuerLabel" label="Issuer id">
+    <fpc-form-control
+      controlId="lw-trusted-issuer"
+      size="sm"
+      controlClass="font-monospace"
+      [readOnly]="editing() !== null"
+      [ngModel]="form_.issuer"
+      (ngModelChange)="patch({ issuer: $event })"
+      data-testid="trusted-fleets-issuer"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="lw-trusted-name" i18n-label="@@lwConsoleTrustedFleets-nameLabel" label="Name">
+    <fpc-form-control
+      controlId="lw-trusted-name"
+      size="sm"
+      [ngModel]="form_.name"
+      (ngModelChange)="patch({ name: $event })"
+      data-testid="trusted-fleets-name"
+    />
+  </fpc-form-field>
+  <!-- One section per key (3.38 R14: fpc-list-header sections, no cards inside forms). -->
+  @for (k of form_.keys; track $index; let i = $index) {
+    <div [attr.data-testid]="'trusted-fleets-key-' + i">
+      <fpc-list-header [title]="keyLabel(i)" [sticky]="false">
+        @if (form_.keys.length > 1) {
+          <fpc-button
+            fpcListHeaderActions
+            variant="danger"
+            size="sm"
+            iconOnly
+            [ariaLabel]="removeKeyLabel"
+            [title]="removeKeyLabel"
+            (clicked)="removeKey(i)"
+            [attr.data-testid]="'trusted-fleets-remove-key-' + i"
+          >
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </fpc-button>
+        }
+      </fpc-list-header>
+      <fpc-form-field [forId]="'lw-trusted-kid-' + i" i18n-label="@@lwConsoleTrustedFleets-kidLabel" label="Key id">
+        <fpc-form-control
+          [controlId]="'lw-trusted-kid-' + i"
+          size="sm"
+          controlClass="font-monospace"
+          [ngModel]="k.kid"
+          (ngModelChange)="patchKey(i, { kid: $event })"
+        />
+      </fpc-form-field>
+      <fpc-form-field
+        [forId]="'lw-trusted-pem-' + i"
+        i18n-label="@@lwConsoleTrustedFleets-pemLabel"
+        label="Public key (PEM)"
+      >
+        <fpc-form-control
+          controlType="textarea"
+          [controlId]="'lw-trusted-pem-' + i"
+          size="sm"
+          controlClass="font-monospace"
+          [rows]="4"
+          placeholder="-----BEGIN PUBLIC KEY-----"
+          [ngModel]="k.publicKey"
+          (ngModelChange)="patchKey(i, { publicKey: $event })"
+        />
+      </fpc-form-field>
+    </div>
+  }
+  @if (form_.keys.length < maxKeys) {
+    <fpc-button variant="link" size="sm" (clicked)="addKey()" data-testid="trusted-fleets-add-key">
+      <i class="bi bi-plus me-1" aria-hidden="true"></i
+      ><span i18n="@@lwConsoleTrustedFleets-addKey">Add a key (rotation)</span>
+    </fpc-button>
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="editorOpen.set(false)">
+      <span i18n="@@lwConsoleTrustedFleets-cancelEdit">Cancel</span>
+    </fpc-button>
+    <fpc-button variant="primary" [loading]="busy()" (clicked)="save()" data-testid="trusted-fleets-save">
+      <span i18n="@@lwConsoleTrustedFleets-save">Save</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="removeFor() !== null"
+  (openChange)="$event ? null : removeFor.set(null)"
+  [title]="removeTitle"
+  [message]="removeMessage"
+  [confirmLabel]="removeConfirm"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="confirmRemove()"
+/>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkRemove"
+  [title]="removeTitle"
+  [message]="removeMessage"
+  [confirmLabel]="removeConfirm"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="removeSelected()"
+/>

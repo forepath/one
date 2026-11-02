@@ -1,31 +1,40 @@
 <div class="project-detail-container border-top d-flex flex-column h-100">
   @if (selectedProject$ | async; as project) {
+    <!-- One header row like every page (DB-11): back left of the title, assignee / description as context. -->
     <fpc-page-header [title]="project.name">
       <a
-        fpcPageHeaderBreadcrumbs
+        fpcPageHeaderTitle
         [routerLink]="['../..']"
         [relativeTo]="route"
-        class="small text-decoration-none d-inline-flex align-items-center"
-        i18n="@@featureProjectDetail-backToAdminProjects"
+        class="project-detail__back btn btn-sm btn-link text-body-secondary order-first px-1"
+        [title]="backToProjectsLabel"
+        [attr.aria-label]="backToProjectsLabel"
       >
-        <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
-        Back to projects
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
       </a>
       @if (isAdminView() && assigneeEmail(project); as email) {
-        <p class="mb-0 small text-body-secondary" i18n="@@featureProjectDetail-assignee">Assignee: {{ email }}</p>
+        <fpc-badge fpcPageHeaderContext color="light" size="sm" [title]="assigneeLabel(email)">
+          <i class="bi bi-person me-1" aria-hidden="true"></i>{{ email }}
+        </fpc-badge>
       }
       @if (project.description) {
-        <p class="mb-0 small text-body-secondary">{{ project.description }}</p>
+        <i
+          fpcPageHeaderContext
+          class="bi bi-info-circle text-body-secondary ms-1"
+          [title]="project.description"
+          [attr.aria-label]="project.description"
+          role="img"
+        ></i>
       }
     </fpc-page-header>
   }
 
   @if (error$ | async; as err) {
-    <fpc-alert variant="danger" [message]="err" />
+    <fpc-alert flush variant="danger" [message]="err" />
   }
 
   <fpc-summary-bar [columns]="5">
-    <fpc-summary-card [label]="trackedTimeLabel">
+    <fpc-summary-card icon="clock" [label]="trackedTimeLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -63,7 +72,7 @@
         }
       }
     </fpc-summary-card>
-    <fpc-summary-card [label]="unbilledTimeLabel">
+    <fpc-summary-card icon="hourglass-split" [label]="unbilledTimeLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -74,18 +83,18 @@
         }
       </span>
     </fpc-summary-card>
-    <fpc-summary-card [label]="openBillableLabel">
+    <fpc-summary-card icon="cash-coin" [label]="openBillableLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
         } @else if (summary$ | async; as summary) {
-          {{ summary.openBillableAmountNet | number: '1.2-2' }}€
+          {{ summary.openBillableAmountNet | fpcMoney }}
         } @else {
           <span class="text-body-secondary">-</span>
         }
       </span>
     </fpc-summary-card>
-    <fpc-summary-card [label]="isAdminView() ? openMilestonesLabel : completedMilestonesLabel">
+    <fpc-summary-card icon="signpost-2" [label]="isAdminView() ? openMilestonesLabel : completedMilestonesLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -112,7 +121,7 @@
         }
       }
     </fpc-summary-card>
-    <fpc-summary-card [label]="isAdminView() ? openTicketsLabel : completedTicketsLabel">
+    <fpc-summary-card icon="ticket-detailed" [label]="isAdminView() ? openTicketsLabel : completedTicketsLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -162,21 +171,40 @@
     <fpc-tab id="time" [label]="tabLabel('time')">
       @if (projectId) {
         <div class="section__content-wrapper d-flex flex-column h-100">
-          <fpc-page-header title="Time entries" i18n-title="@@featureProjectDetail-timeEntries" density="compact">
+          @if (timeBulkResult(); as result) {
+            <fpc-alert
+              [flush]="true"
+              [variant]="result.tone"
+              [message]="result.message"
+              [dismissible]="true"
+              (closed)="timeBulkResult.set(null)"
+              data-testid="time-entries-bulk-result"
+            />
+          }
+          <!-- Table: State (billed) · Entry · date · time · duration; ⋮ Edit / Delete; bulk Delete. -->
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="timeEntriesLabel"
+            [columns]="timeColumns"
+            [rows]="timeEntries()"
+            paging="server"
+            [total]="timeTotal()"
+            [(page)]="timePage"
+            [(pageSize)]="timePageSize"
+            persistKey="decabill-project-time-entries"
+            [(query)]="timeSearch"
+            [searchPlaceholder]="searchTimeEntriesLabel"
+            [loading]="timeLoading()"
+            [error]="timeError()"
+            [selectable]="isAdminView()"
+            [(selected)]="selectedTimeEntries"
+            [rowMenu]="timeRowMenu"
+            (rowAction)="onTimeRowAction($event.row, $event.item.id)"
+            emptyIcon="clock"
+            data-testid="project-time-entries"
+          >
             @if (isAdminView()) {
-              <ng-container fpcPageHeaderActions>
-                <fpc-button
-                  variant="primary"
-                  size="sm"
-                  iconOnly
-                  (clicked)="openCreateTimeModal()"
-                  i18n-title="@@featureProjectDetail-addTime"
-                  title="Add"
-                  i18n-ariaLabel="@@featureProjectDetail-addTime"
-                  ariaLabel="Add"
-                >
-                  <i class="bi bi-plus" aria-hidden="true"></i>
-                </fpc-button>
+              <ng-container ngProjectAs="[fpcDataTableToolbar]">
                 <fpc-button
                   variant="dark"
                   size="sm"
@@ -208,82 +236,58 @@
                 >
                   <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
                 </fpc-button>
+                <fpc-button
+                  variant="primary"
+                  size="sm"
+                  iconOnly
+                  (clicked)="openCreateTimeModal()"
+                  i18n-title="@@featureProjectDetail-addTime"
+                  title="Add"
+                  i18n-ariaLabel="@@featureProjectDetail-addTime"
+                  ariaLabel="Add"
+                >
+                  <i class="bi bi-plus" aria-hidden="true"></i>
+                </fpc-button>
               </ng-container>
             }
-          </fpc-page-header>
-          <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-            @if (timeError$ | async; as timeError) {
-              <fpc-alert class="m-3" variant="danger" [message]="timeError" />
+            @if (isAdminView()) {
+              <fpc-button
+                fpcDataTableBatch
+                variant="danger"
+                size="sm"
+                [disabled]="deletableTimeSelection().length === 0"
+                (clicked)="confirmTimeBulkDelete.set(true)"
+                data-testid="time-entries-bulk-delete"
+                iconOnly
+                [ariaLabel]="deleteTimeLabel"
+                [title]="deleteTimeLabel"
+              >
+                <i class="bi bi-trash" aria-hidden="true"></i>
+              </fpc-button>
             }
-            @if (timeLoading$ | async) {
-              <div class="d-flex justify-content-center py-4">
-                <fpc-spinner variant="primary" />
-              </div>
-            } @else if (timeEntries$ | async; as entries) {
-              @if (entries.length === 0) {
-                <fpc-empty-state message="No time entries yet" i18n-message="@@featureProjectDetail-timeEntriesEmpty" />
-              } @else {
-                <fpc-list [flush]="true">
-                  @for (entry of entries; track entry.id) {
-                    <fpc-list-item>
-                      <div fpcListItemTitle class="fw-semibold">{{ timeEntryTitle(entry) }}</div>
-                      <div fpcListItemMeta class="small d-flex align-items-center gap-3 flex-wrap">
-                        <span [ngClass]="timeEntryBillingStatusTextClass(entry)">
-                          <i class="bi me-1" [ngClass]="timeEntryBillingStatusIconClass(entry)" aria-hidden="true"></i
-                          >{{ timeEntryBillingStatusLabel(entry) }}
-                        </span>
-                        <span
-                          ><i class="bi bi-calendar3 me-1" aria-hidden="true"></i
-                          >{{ entry.startedAt | date: 'mediumDate' }}</span
-                        >
-                        <span
-                          ><i class="bi bi-clock me-1" aria-hidden="true"></i
-                          >{{ formatTimeEntryClockRange(entry.startedAt, entry.endedAt) }}</span
-                        >
-                        @if (timeEntryShowsDurationInMeta(entry)) {
-                          <span
-                            ><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
-                            >{{ formatMinutes(entry.durationMinutes) }}</span
-                          >
-                        }
-                      </div>
-                      @if (isAdminView() && isTimeEntryEditable(entry)) {
-                        <fpc-button-group fpcListItemActions size="sm">
-                          <fpc-button
-                            iconOnly
-                            size="sm"
-                            variant="warning"
-                            (clicked)="openEditTimeModal(entry)"
-                            i18n-title="@@featureProjectDetail-editTime"
-                            title="Edit"
-                          >
-                            <i class="bi bi-pencil" aria-hidden="true"></i>
-                          </fpc-button>
-                          <fpc-button
-                            iconOnly
-                            size="sm"
-                            variant="danger"
-                            (clicked)="openDeleteTimeModal(entry)"
-                            i18n-title="@@featureProjectDetail-deleteTime"
-                            title="Delete"
-                          >
-                            <i class="bi bi-trash" aria-hidden="true"></i>
-                          </fpc-button>
-                        </fpc-button-group>
-                      }
-                    </fpc-list-item>
-                  }
-                </fpc-list>
-              }
-            }
-          </div>
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                icon="clock"
+                size="sm"
+                message="No time entries yet"
+                i18n-message="@@featureProjectDetail-timeEntriesEmpty"
+              />
+            </span>
+            <ng-template fpcTableCell="date" let-row>{{ timeEntryStart(row) | fpcDate }}</ng-template>
+          </fpc-data-table>
         </div>
       }
     </fpc-tab>
   </fpc-tab-group>
 </div>
 
-<fpc-modal [(open)]="createTimeModalOpen" i18n-title="@@featureProjectDetail-createTimeTitle" title="New time entry">
+<fpc-modal
+  [(open)]="createTimeModalOpen"
+  i18n-title="@@featureProjectDetail-createTimeTitle"
+  title="Create time entry"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <fpc-form-field forId="timeStartedAt" i18n-label="@@featureProjectDetail-startLabel" label="Start" required>
     <fpc-form-control
       controlId="timeStartedAt"
@@ -305,7 +309,7 @@
   <fpc-form-field forId="timeDesc" i18n-label="@@featureProjectDetail-descriptionLabel" label="Description">
     <fpc-form-control controlId="timeDesc" [(ngModel)]="timeFormDescription" name="description" />
   </fpc-form-field>
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="submitTimeEntry()"
@@ -317,7 +321,13 @@
   </div>
 </fpc-modal>
 
-<fpc-modal [(open)]="editTimeModalOpen" i18n-title="@@featureProjectDetail-editTimeTitle" title="Edit time entry">
+<fpc-modal
+  [(open)]="editTimeModalOpen"
+  i18n-title="@@featureProjectDetail-editTimeTitle"
+  title="Edit time entry"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <fpc-form-field forId="editTimeStartedAt" i18n-label="@@featureProjectDetail-startLabel" label="Start" required>
     <fpc-form-control
       controlId="editTimeStartedAt"
@@ -339,7 +349,7 @@
   <fpc-form-field forId="editTimeDesc" i18n-label="@@featureProjectDetail-descriptionLabel" label="Description">
     <fpc-form-control controlId="editTimeDesc" [(ngModel)]="editTimeFormDescription" name="editTimeDesc" />
   </fpc-form-field>
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="submitEditTimeEntry()"
@@ -373,6 +383,8 @@
   size="lg"
   i18n-title="@@featureProjectDetail-billTimeTitle"
   title="Bill unbilled time"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   @if (billBoundsLoading()) {
     <div class="d-flex justify-content-center py-3">
@@ -448,7 +460,7 @@
       <fpc-alert class="mt-3" variant="danger" [message]="err" />
     }
   }
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="submitBillTime()"
@@ -466,7 +478,13 @@
   </div>
 </fpc-modal>
 
-<fpc-modal [(open)]="timeReportModalOpen" i18n-title="@@featureProjectDetail-timeReportTitle" title="Time report">
+<fpc-modal
+  [(open)]="timeReportModalOpen"
+  i18n-title="@@featureProjectDetail-timeReportTitle"
+  title="Time report"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   @if (timeReportBoundsLoading()) {
     <div class="d-flex justify-content-center py-3">
       <fpc-spinner
@@ -515,7 +533,7 @@
       <fpc-alert class="mt-3" variant="danger" [message]="err" />
     }
   }
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="submitTimeReport()"
@@ -615,3 +633,13 @@
     </div>
   </div>
 </ng-template>
+
+<fpc-confirm-dialog
+  [(open)]="confirmTimeBulkDelete"
+  [title]="timeBulkDeleteTitle"
+  [message]="timeBulkDeleteMessage()"
+  [confirmLabel]="deleteTimeLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelectedTimeEntries()"
+/>

@@ -241,7 +241,7 @@ describe('gVisor install scripts', () => {
     const script = buildGvisorHostScript();
 
     expect(script.startsWith('#!/usr/bin/env bash')).toBe(true);
-    expect(script).toContain('check|install|uninstall');
+    expect(script).toContain('check|install|uninstall|install-kvm|uninstall-kvm');
     expect(script).toContain('E_DOCKER_BASELINE_UNAVAILABLE');
     expect(bashSyntaxOk(script)).toBe(true);
   });
@@ -283,6 +283,13 @@ describe('gVisor install scripts', () => {
   it('can opt out of the KVM platform', () => {
     expect(buildGvisorInstallScript()).toContain('GVISOR_KVM:-1');
     expect(buildGvisorInstallScript({ kvm: false })).toContain('GVISOR_KVM:-0');
+  });
+
+  it('can keep the KVM preparation from installing packages (kvmApt: false)', () => {
+    expect(buildGvisorInstallScript()).toContain('AGENSTRA_KVM_APT:-1');
+    expect(buildGvisorInstallScript({ kvmApt: false })).toContain('AGENSTRA_KVM_APT:-0');
+    expect(buildGvisorHostScript({ kvmApt: false })).toContain('AGENSTRA_KVM_APT:-0');
+    expect(bashSyntaxOk(buildGvisorHostScript({ kvmApt: false }))).toBe(true);
   });
 
   it('rejects KVM runtime names that collide with other runtimes', () => {
@@ -359,6 +366,19 @@ describe('gVisor install scripts', () => {
       expect(result.status).toBe(0);
       expect(result.calls.some((call) => /^apt-get install .*linux-modules-extra-/.test(call))).toBe(true);
       expect(result.registered).toEqual([...SYSTRAP_RUNTIMES, ...KVM_RUNTIMES]);
+    });
+
+    it('never installs the extra kernel modules with AGENSTRA_KVM_APT=0 (pinned package sources)', () => {
+      const result = runKvmScenario({
+        cpuinfo: INTEL_CPU,
+        modprobeNeedsExtraModules: true,
+        registered: SYSTRAP_RUNTIMES,
+        env: { AGENSTRA_KVM_APT: '0' },
+      });
+
+      expect(result.status).toBe(1);
+      expect(result.calls.filter((call) => call.startsWith('apt-get'))).toEqual([]);
+      expect(result.registered).toEqual(SYSTRAP_RUNTIMES);
     });
 
     it('gives up when the KVM modules cannot be loaded (no package install for existing modules)', () => {
@@ -515,6 +535,38 @@ describe('gVisor install scripts', () => {
       expect(install.status).toBe(1);
       expect([...prepare.calls, ...install.calls].some((call) => call.startsWith('modprobe'))).toBe(false);
       expect(install.registered).toEqual(SYSTRAP_RUNTIMES);
+    });
+
+    it('uninstall-kvm removes only the KVM runtimes (node opted out of KVM)', () => {
+      const result = runKvmScenario({
+        cpuinfo: INTEL_CPU,
+        devicePresent: true,
+        registered: [...SYSTRAP_RUNTIMES, ...KVM_RUNTIMES],
+        command: 'id() { echo 0; }; main uninstall-kvm --json',
+      });
+
+      expect(result.status).toBe(0);
+      expect(result.registered).toEqual(SYSTRAP_RUNTIMES);
+      expect(result.calls.filter((call) => call.startsWith('runsc install'))).toEqual([]);
+      expect(parseGvisorHostReport(result.stdout)).toMatchObject({
+        sandboxed: 'registered',
+        sandboxedKvm: 'not-registered',
+      });
+    });
+
+    it('install-kvm registers the KVM runtimes on the installed release without downloading anything', () => {
+      const result = runKvmScenario({
+        cpuinfo: INTEL_CPU,
+        modprobeOk: true,
+        registered: SYSTRAP_RUNTIMES,
+        command:
+          'id() { echo 0; }; curl() { echo "curl $*" >>"$AGENSTRA_KVM_MODULES_LOAD_DIR/../calls"; return 1; }; main install-kvm --json',
+      });
+
+      expect(result.status).toBe(0);
+      expect(result.registered).toEqual([...SYSTRAP_RUNTIMES, ...KVM_RUNTIMES]);
+      expect(result.calls.some((call) => call.startsWith('curl'))).toBe(false);
+      expect(parseGvisorHostReport(result.stdout)).toMatchObject({ sandboxedKvm: 'ready' });
     });
 
     it('install prepares /dev/kvm even where gVisor cannot be installed', () => {

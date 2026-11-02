@@ -1,46 +1,13 @@
 <div class="section__content-wrapper d-flex flex-column border-top">
-  <fpc-page-header>
-    <div fpcPageHeaderTitle class="d-flex align-items-center flex-wrap gap-3 min-w-0">
-      <h1 class="fpc-page-header__title h5 mb-0 fw-semibold">{{ pageTitle }}</h1>
-      @if (effectiveWorkspace(); as ew) {
-        <fpc-button
-          variant="link"
-          btnClass="text-decoration-none text-body"
-          (clicked)="openWorkspaceSwitchModal()"
-          [title]="switchWorkspaceTitle"
-        >
-          <fpc-badge variant="info" color="secondary">
-            <i class="bi bi-building" aria-hidden="true"></i>
-            <span class="text-truncate">{{ workspaceDisplayName(ew.name) }}</span>
-          </fpc-badge>
-        </fpc-button>
-      }
-    </div>
-    @if (effectiveClientId() !== null) {
-      <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
-        <fpc-button
-          variant="dark"
-          size="sm"
-          iconOnly
-          [ariaLabel]="refreshTitle"
-          [title]="refreshTitle"
-          [disabled]="loading()"
-          (clicked)="onRefresh()"
-        >
-          <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
-        </fpc-button>
-        <fpc-button
-          variant="primary"
-          size="sm"
-          iconOnly
-          [ariaLabel]="newTaskTitle"
-          [title]="newTaskTitle"
-          [disabled]="agents().length === 0"
-          (clicked)="openCreateEditor()"
-        >
-          <i class="bi bi-plus" aria-hidden="true"></i>
-        </fpc-button>
-      </div>
+  <fpc-page-header [title]="pageTitle">
+    @if (effectiveWorkspace(); as ew) {
+      <!-- Same context slot as Tickets / Pages (one title + chip layout). -->
+      <framework-workspace-chip
+        fpcPageHeaderContext
+        [name]="workspaceDisplayName(ew.name)"
+        [title]="switchWorkspaceTitle"
+        (switch)="openWorkspaceSwitchModal()"
+      />
     }
   </fpc-page-header>
 
@@ -54,7 +21,7 @@
           routerLink="/clients"
           i18n="@@featureAgentTasks-goToSpaces"
         >
-          Go to Spaces
+          Go to workspaces
         </fpc-button>
       </fpc-empty-state>
     } @else {
@@ -90,87 +57,168 @@
       }
     }
 
-    <section class="section__row flex-grow-1 d-flex">
-      <div class="section__column agent-tasks-sidebar border-end d-flex flex-column">
-        <div class="p-2 border-bottom">
-          <label class="visually-hidden" for="agentTasksAgentFilter" i18n="@@featureAgentTasks-agentFilterLabel"
-            >Environment</label
-          >
-          <fpc-form-control
-            controlType="select"
-            controlId="agentTasksAgentFilter"
-            size="sm"
-            [ngModel]="agentFilter() ?? ''"
-            (ngModelChange)="onAgentFilterChange($event)"
-          >
-            <option value="" i18n="@@featureAgentTasks-allEnvironments">All environments</option>
-            @for (agent of agents(); track agent.id) {
-              <option [value]="agent.id">{{ workspaceDisplayName(agent.name) }}</option>
-            }
-          </fpc-form-control>
-        </div>
-        <div class="agent-tasks-list flex-grow-1">
-          @if (visibleTasks().length === 0) {
-            @if (!loading()) {
-              <fpc-empty-state size="sm" icon="alarm" message="No tasks yet" i18n-message="@@featureAgentTasks-noTasks">
-                <p class="small text-body-secondary mb-0" i18n="@@featureAgentTasks-noTasksHint">
-                  Create a task here or ask an agent in chat to schedule something for itself.
-                </p>
-              </fpc-empty-state>
-            }
-          } @else {
-            <fpc-list [flush]="true">
-              @for (task of visibleTasks(); track task.id) {
-                <fpc-list-item
-                  [active]="task.id === selectedTaskId()"
-                  [clickable]="true"
-                  (selected)="onSelectTask(task)"
-                >
-                  <div fpcListItemTitle class="d-flex flex-column min-width-0 text-start w-100">
-                    <span
-                      class="text-truncate fw-medium"
-                      [class.text-body-secondary]="!task.enabled"
-                      [title]="task.title"
-                      >{{ task.title }}</span
-                    >
-                    <div class="d-flex flex-wrap align-items-center gap-1 mt-1">
-                      <fpc-badge
-                        [color]="runStatusBadgeColor(task.lastRunStatus)"
-                        [attr.title]="runStatusLabel(task.lastRunStatus)"
-                        >{{ runStatusLabel(task.lastRunStatus) }}</fpc-badge
-                      >
-                      @if (!task.enabled) {
-                        <fpc-badge variant="info" color="secondary" i18n="@@featureAgentTasks-paused">Paused</fpc-badge>
-                      }
-                      @if (task.approvalStatus === 'pending') {
-                        <fpc-badge color="warning" i18n="@@featureAgentTasks-pendingApproval"
-                          >Awaiting approval</fpc-badge
-                        >
-                      }
-                      <fpc-badge variant="info" color="secondary" [attr.title]="agentName(task.agentId)">
-                        <span class="text-truncate">{{ agentName(task.agentId) }}</span>
-                      </fpc-badge>
-                      <fpc-badge
-                        variant="info"
-                        color="secondary"
-                        [attr.title]="task.cronExpression + ' (' + task.timezone + ')'"
-                      >
-                        <i class="bi bi-clock" aria-hidden="true"></i>
-                        <span class="text-truncate">{{ describeSchedule(task.cronExpression, task.timezone) }}</span>
-                      </fpc-badge>
-                    </div>
-                  </div>
-                </fpc-list-item>
-              }
-            </fpc-list>
-          }
-        </div>
-      </div>
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="agent-tasks-bulk-result"
+      />
+    }
 
-      <div class="section__column d-flex flex-column flex-grow-1 agent-tasks-detail">
+    <!-- Phones (AG-02): the list runs full width; an open task replaces it as its own view (back = close). -->
+    <fpc-section-row class="flex-grow-1 agent-tasks-row" [class.agent-tasks-row--detail-open]="!!selectedTask()">
+      <fpc-section-column class="agent-tasks-sidebar d-flex">
+        <!-- Narrow rail as a data table (decision 7): State · Task · Environment · Schedule; ⋮ + bulk on selection. -->
+        <fpc-data-table
+          class="agent-tasks-list flex-grow-1 min-h-0"
+          [ariaLabel]="tasksLabel"
+          [columns]="taskColumns"
+          [rows]="searchedTasks()"
+          [activeRowId]="selectedTaskId()"
+          paging="client"
+          persistKey="agenstra-agent-tasks"
+          [(query)]="taskSearch"
+          [searchPlaceholder]="taskSearchPlaceholder"
+          [filtered]="!!taskSearch().trim() || !!agentFilter()"
+          [loading]="loading() && tasks().length === 0"
+          selectable
+          [(selected)]="selectedTaskIds"
+          [rowMenu]="taskRowMenu"
+          (rowAction)="onTaskRowAction($event.row, $event.item.id)"
+          (rowActivate)="onSelectTask($event)"
+          emptyIcon="alarm"
+          showFilterButton
+          [filtersActive]="agentFilter() ? 1 : 0"
+          (filtersCleared)="onAgentFilterChange('')"
+          data-testid="agent-tasks-table"
+        >
+          <span fpcDataTableToolbar class="d-inline-flex gap-2">
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              [ariaLabel]="refreshTitle"
+              [title]="refreshTitle"
+              [disabled]="loading()"
+              (clicked)="onRefresh()"
+            >
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              variant="primary"
+              size="sm"
+              iconOnly
+              [ariaLabel]="newTaskTitle"
+              [title]="newTaskTitle"
+              [disabled]="agents().length === 0"
+              (clicked)="openCreateEditor()"
+            >
+              <i class="bi bi-plus" aria-hidden="true"></i>
+            </fpc-button>
+          </span>
+          <!-- Environment filter in the Filters drawer (user, 2026-10-29: no select in the strip, applies live). -->
+          <fpc-form-field fpcDataTableFilters forId="agentTasksAgentFilter" [label]="environmentFilterLabel">
+            <select
+              id="agentTasksAgentFilter"
+              class="form-select form-select-sm"
+              [ngModel]="agentFilter() ?? ''"
+              (ngModelChange)="onAgentFilterChange($event)"
+            >
+              <option value="" i18n="@@featureAgentTasks-allEnvironments">All environments</option>
+              @for (agent of agents(); track agent.id) {
+                <option [value]="agent.id">{{ workspaceDisplayName(agent.name) }}</option>
+              }
+            </select>
+          </fpc-form-field>
+
+          <fpc-button
+            fpcDataTableBatch
+            variant="primary"
+            size="sm"
+            [disabled]="bulkBusy()"
+            (clicked)="onBulkRunNow()"
+            data-testid="agent-tasks-bulk-run"
+            iconOnly
+            [ariaLabel]="runNowLabel"
+            [title]="runNowLabel"
+          >
+            <i class="bi bi-play-fill" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
+            fpcDataTableBatch
+            variant="secondary"
+            size="sm"
+            [disabled]="bulkBusy()"
+            (clicked)="onBulkEnabled(false)"
+            data-testid="agent-tasks-bulk-pause"
+            iconOnly
+            [ariaLabel]="pauseLabel"
+            [title]="pauseLabel"
+          >
+            <i class="bi bi-toggle-off" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
+            fpcDataTableBatch
+            variant="secondary"
+            size="sm"
+            [disabled]="bulkBusy()"
+            (clicked)="onBulkEnabled(true)"
+            data-testid="agent-tasks-bulk-resume"
+            iconOnly
+            [ariaLabel]="resumeLabel"
+            [title]="resumeLabel"
+          >
+            <i class="bi bi-toggle-on" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
+            fpcDataTableBatch
+            variant="danger"
+            size="sm"
+            [disabled]="bulkBusy()"
+            (clicked)="bulkDeleteConfirmOpen.set(true)"
+            data-testid="agent-tasks-bulk-delete"
+            iconOnly
+            [ariaLabel]="deleteLabel"
+            [title]="deleteLabel"
+          >
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </fpc-button>
+
+          <span fpcDataTableEmpty>
+            <fpc-empty-state size="sm" icon="alarm" message="No tasks yet" i18n-message="@@featureAgentTasks-noTasks">
+              <p class="small text-body-secondary mb-0" i18n="@@featureAgentTasks-noTasksHint">
+                Create a task here or ask an agent in chat to schedule something for itself.
+              </p>
+            </fpc-empty-state>
+          </span>
+
+          <ng-template fpcTableCell="schedule" let-row>
+            <span [title]="row.cronExpression + ' (' + row.timezone + ')'">{{
+              describeSchedule(row.cronExpression, row.timezone)
+            }}</span>
+          </ng-template>
+        </fpc-data-table>
+      </fpc-section-column>
+
+      <fpc-section-column class="d-flex flex-grow-1 agent-tasks-detail">
         @if (selectedTask(); as task) {
           <fpc-page-header>
             <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
+              <fpc-button
+                class="d-md-none flex-shrink-0"
+                variant="dark"
+                size="sm"
+                iconOnly
+                [ariaLabel]="backToTasksTitle"
+                [title]="backToTasksTitle"
+                (clicked)="onCloseTask()"
+                data-testid="agent-task-back"
+              >
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+              </fpc-button>
               <h2 class="fpc-page-header__title h6 mb-0 fw-semibold text-truncate">{{ task.title }}</h2>
               @if (task.createdBy === 'agent') {
                 <fpc-badge color="info" i18n="@@featureAgentTasks-createdByAgent">Created by agent</fpc-badge>
@@ -189,7 +237,7 @@
                 (checkedChange)="onToggleEnabled(task, $event)"
               />
               <fpc-button
-                variant="success"
+                variant="dark"
                 size="sm"
                 iconOnly
                 [ariaLabel]="runNowTitle"
@@ -212,16 +260,24 @@
               >
                 <i class="bi bi-pencil" aria-hidden="true"></i>
               </fpc-button>
-              <fpc-button
-                variant="danger"
-                size="sm"
-                iconOnly
-                [ariaLabel]="deleteTitle"
-                [title]="deleteTitle"
-                (clicked)="onRequestDelete(task)"
-              >
-                <i class="bi bi-trash" aria-hidden="true"></i>
-              </fpc-button>
+              <!-- Destructive actions live in More ▾ (R8), not as a red square next to Run / Edit (AG-12). -->
+              <fpc-dropdown alignment="end" appendTo="body">
+                <fpc-button
+                  fpcDropdownTrigger
+                  variant="dark"
+                  size="sm"
+                  iconOnly
+                  [ariaLabel]="moreActionsTitle"
+                  [title]="moreActionsTitle"
+                  ariaHaspopup="menu"
+                  data-testid="agent-task-more"
+                >
+                  <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+                </fpc-button>
+                <fpc-dropdown-item icon="trash" [danger]="true" (selected)="onRequestDelete(task)">{{
+                  deleteTitle
+                }}</fpc-dropdown-item>
+              </fpc-dropdown>
             </div>
           </fpc-page-header>
           @if (task.approvalStatus === 'pending') {
@@ -235,7 +291,7 @@
                 @if (handoffAgentNames(task); as handoffAgents) {
                   @if (handoffAgents.length > 0) {
                     <strong class="d-block mt-1" i18n="@@featureAgentTasks-pendingApprovalHandoffHint"
-                      >Once approved, this task can hand off work to these agents without asking:
+                      >Once approved, this task can hand off work to these environments without asking:
                       {{ handoffAgents.join(', ') }}</strong
                     >
                   }
@@ -254,8 +310,10 @@
               <dd class="col-sm-9">{{ agentName(task.agentId) }}</dd>
               <dt class="col-sm-3" i18n="@@featureAgentTasks-schedule">Schedule</dt>
               <dd class="col-sm-9">
-                {{ describeSchedule(task.cronExpression, task.timezone) }}
-                <span class="font-monospace text-body-secondary ms-1">{{ task.cronExpression }}</span>
+                <!-- Human schedule; the cron expression is in the tooltip (AG-13, D7). -->
+                <span [title]="task.cronExpression + ' (' + task.timezone + ')'">{{
+                  describeSchedule(task.cronExpression, task.timezone)
+                }}</span>
               </dd>
               <dt class="col-sm-3" i18n="@@featureAgentTasks-nextRun">Next run</dt>
               <dd class="col-sm-9">{{ task.enabled ? formatDate(task.nextRunAt) : '—' }}</dd>
@@ -285,119 +343,108 @@
             </div>
           </fpc-page-header>
 
-          <div #sessionScrollRoot class="agent-tasks-detail__history">
-            @if (sessionHistory().length === 0) {
-              <fpc-empty-state
-                size="sm"
-                icon="clock-history"
-                message="This task has not run yet."
-                i18n-message="@@featureAgentTasks-noRuns"
-              />
-            } @else {
-              <fpc-accordion class="agent-tasks-session__runs" [multi]="true" [flush]="true">
-                @for (entry of sessionHistory(); track entry.run.id) {
-                  <fpc-accordion-item
-                    variant="condensed"
-                    [open]="entry.run.id === expandedRunId()"
-                    [id]="'agent-task-run-' + entry.run.id"
-                  >
-                    <span fpcAccordionItemHeading class="agent-tasks-session__heading">
-                      <fpc-badge [color]="runStatusBadgeColor(entry.run.status)">{{
-                        runStatusLabel(entry.run.status)
-                      }}</fpc-badge>
-                      <fpc-badge variant="info" color="secondary">{{ runTriggerLabel(entry.run.trigger) }}</fpc-badge>
-                      <small class="text-body-secondary">{{ formatDate(entry.run.startedAt) }}</small>
-                    </span>
-                    <div class="agent-tasks-session__body">
-                      @for (segment of entry.segments; track segment.trackId) {
-                        @if (segment.kind === 'assistant') {
-                          <div class="d-flex justify-content-start">
-                            <div class="card bg-body agent-tasks-session__message">
-                              <div class="card-body agent-tasks-session__message-body">
-                                @if (renderMarkdown(segment.text); as answerHtml) {
-                                  <div class="markdown-content" [innerHTML]="answerHtml"></div>
-                                } @else {
-                                  <div class="agent-tasks-session__plain">{{ segment.text }}</div>
-                                }
-                              </div>
-                            </div>
-                          </div>
-                        } @else if (segment.kind === 'handoffResponse') {
-                          <div class="d-flex justify-content-start">
-                            <div class="card bg-body agent-tasks-session__message">
-                              <div class="card-body agent-tasks-session__message-body">
-                                <div class="d-flex align-items-center gap-2 flex-wrap small text-body-secondary">
-                                  <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
-                                  <span>{{ handoffResponseHeading(segment.card) }}</span>
-                                  <fpc-badge [color]="segment.card.status === 'failed' ? 'danger' : 'success'">{{
-                                    handoffStatusLabel(segment.card.status)
-                                  }}</fpc-badge>
-                                </div>
-                                @if (segment.card.title) {
-                                  <div class="fw-semibold mt-1 text-break">{{ segment.card.title }}</div>
-                                }
-                                @if (segment.card.body) {
-                                  <!-- Plain text: the agent read exactly this, nothing may be hidden. -->
-                                  <div class="agent-tasks-session__plain mt-2" [textContent]="segment.card.body"></div>
-                                }
-                                <div class="d-flex flex-wrap gap-2 mt-2">
-                                  <fpc-button
-                                    variant="primary"
-                                    size="sm"
-                                    (clicked)="onOpenHandoffLink(segment.card.link)"
-                                  >
-                                    <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
-                                    >{{ openHandoffChatLabel }}
-                                  </fpc-button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        } @else {
-                          @for (row of segment.rows; track row.trackId) {
-                            <framework-agent-chat-event-row
-                              [row]="row"
-                              todosExpandScope="agent-task"
-                              [alreadyAnswered]="true"
-                              [replyBusy]="false"
-                              [replyFailedMessage]="null"
-                            />
-                          }
-                        }
-                      }
-                      @if (entry.run.status === 'awaiting_handoff') {
-                        <small class="text-body-secondary" i18n="@@featureAgentTasks-runAwaitingHandoff"
-                          >The run waits for the response to its handoff and continues when it arrives…</small
-                        >
-                      }
-                      @if (entry.segments.length === 0 && entry.run.status === 'running') {
-                        <small class="text-body-secondary" i18n="@@featureAgentTasks-runInProgress"
-                          >The agent is working on this run…</small
-                        >
-                      }
-                      @if (entry.run.failureMessage) {
-                        <fpc-alert variant="danger" [message]="entry.run.failureMessage" />
-                      }
-                    </div>
-                  </fpc-accordion-item>
-                }
-              </fpc-accordion>
-              @if (sessionAppendLoading() || sessionAppendError()) {
-                <fpc-list-append-footer
-                  [loading]="sessionAppendLoading()"
-                  [error]="!!sessionAppendError()"
-                  (retry)="onLoadMoreRuns()"
+          <div class="agent-tasks-detail__history">
+            <fpc-data-table
+              [searchable]="false"
+              [ariaLabel]="sessionHistoryLabel"
+              [columns]="runColumns"
+              [rows]="runPageRows()"
+              [expandedRowId]="expandedRunId()"
+              (rowActivate)="onToggleRun($event)"
+              [rowMenu]="runRowMenu"
+              (rowAction)="onRunRowAction($event.row, $event.item.id)"
+              paging="server"
+              [(page)]="runPage"
+              [(pageSize)]="runPageSize"
+              [total]="runTotal()"
+              [hasNext]="runHasNext()"
+              [loading]="sessionAppendLoading()"
+              [error]="sessionAppendError()"
+              refreshable
+              (refresh)="onRefreshRuns()"
+              persistKey="agenstra-agent-task-runs"
+              emptyIcon="clock-history"
+              data-testid="agent-task-runs-table"
+            >
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="clock-history"
+                  message="This task has not run yet."
+                  i18n-message="@@featureAgentTasks-noRuns"
                 />
-              }
-            }
-            <div
-              fpcInfiniteScroll
-              [root]="sessionScrollRoot"
-              [paused]="!!sessionAppendError()"
-              [disabled]="!sessionHasMore() || sessionAppendLoading()"
-              (reachedEnd)="onLoadMoreRuns()"
-              aria-hidden="true"
-            ></div>
+              </span>
+              <ng-template fpcTableCell="started" let-row>{{ formatDate(row.startedAt) }}</ng-template>
+              <ng-template fpcTableRowDetail let-run>
+                <div class="agent-tasks-session__body" [id]="'agent-task-run-' + run.id">
+                  @for (segment of runSegments(run); track segment.trackId) {
+                    @if (segment.kind === 'assistant') {
+                      <div class="d-flex justify-content-start">
+                        <div class="card bg-body agent-tasks-session__message">
+                          <div class="card-body agent-tasks-session__message-body">
+                            @if (renderMarkdown(segment.text); as answerHtml) {
+                              <div class="markdown-content" [innerHTML]="answerHtml"></div>
+                            } @else {
+                              <div class="agent-tasks-session__plain">{{ segment.text }}</div>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    } @else if (segment.kind === 'handoffResponse') {
+                      <div class="d-flex justify-content-start">
+                        <div class="card bg-body agent-tasks-session__message">
+                          <div class="card-body agent-tasks-session__message-body">
+                            <div class="d-flex align-items-center gap-2 flex-wrap small text-body-secondary">
+                              <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+                              <span>{{ handoffResponseHeading(segment.card) }}</span>
+                              <fpc-badge [color]="segment.card.status === 'failed' ? 'danger' : 'success'">{{
+                                handoffStatusLabel(segment.card.status)
+                              }}</fpc-badge>
+                            </div>
+                            @if (segment.card.title) {
+                              <div class="fw-semibold mt-1 text-break">{{ segment.card.title }}</div>
+                            }
+                            @if (segment.card.body) {
+                              <!-- Plain text: the agent read exactly this, nothing may be hidden. -->
+                              <div class="agent-tasks-session__plain mt-2" [textContent]="segment.card.body"></div>
+                            }
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                              <fpc-button variant="primary" size="sm" (clicked)="onOpenHandoffLink(segment.card.link)">
+                                <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
+                                >{{ openHandoffChatLabel }}
+                              </fpc-button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    } @else {
+                      @for (row of segment.rows; track row.trackId) {
+                        <framework-agent-chat-event-row
+                          [row]="row"
+                          todosExpandScope="agent-task"
+                          [alreadyAnswered]="true"
+                          [replyBusy]="false"
+                          [replyFailedMessage]="null"
+                        />
+                      }
+                    }
+                  }
+                  @if (run.status === 'awaiting_handoff') {
+                    <small class="text-body-secondary" i18n="@@featureAgentTasks-runAwaitingHandoff"
+                      >The run waits for the response to its handoff and continues when it arrives…</small
+                    >
+                  }
+                  @if (runSegments(run).length === 0 && run.status === 'running') {
+                    <small class="text-body-secondary" i18n="@@featureAgentTasks-runInProgress"
+                      >The agent is working on this run…</small
+                    >
+                  }
+                  @if (run.failureMessage) {
+                    <fpc-alert variant="danger" [message]="run.failureMessage" />
+                  }
+                </div>
+              </ng-template>
+            </fpc-data-table>
           </div>
         } @else {
           <fpc-empty-state
@@ -407,12 +454,15 @@
             i18n-message="@@featureAgentTasks-selectTask"
           />
         }
-      </div>
-    </section>
+      </fpc-section-column>
+    </fpc-section-row>
   }
 </div>
 
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
+  [cancelDisabled]="saving()"
   [(open)]="editorOpen"
   size="lg"
   [scrollable]="true"
@@ -553,7 +603,7 @@
       />
     } @empty {
       <p class="small text-body-secondary mb-0" i18n="@@featureAgentTasks-noOtherAgents">
-        This workspace has no other agents.
+        This workspace has no other environments.
       </p>
     }
   </fpc-form-check-group>
@@ -570,9 +620,12 @@
       [loading]="saving()"
       [disabled]="saving() || !editorValid()"
       (clicked)="onSaveEditor()"
-      i18n="@@featureAgentTasks-save"
     >
-      Save
+      @if (editorMode() === 'create') {
+        <span i18n="@@featureAgentTasks-createSubmit">Create task</span>
+      } @else {
+        <span i18n="@@featureAgentTasks-save">Save changes</span>
+      }
     </fpc-button>
   </div>
 </fpc-modal>
@@ -610,45 +663,25 @@
         i18n="@@featureAgentTasks-goToSpaces"
         (clicked)="goToSpaces($event)"
       >
-        Go to Spaces
+        Go to workspaces
       </fpc-button>
     </fpc-empty-state>
   } @else {
-    <fpc-search-field
-      class="mb-3"
-      inputId="agentTasksWorkspaceSwitchSearch"
-      [value]="workspaceSwitchSearch()"
-      (valueChange)="workspaceSwitchSearch.set($event)"
-      i18n-placeholder="@@featureAgentTasks-searchWorkspacesPlaceholder"
-      placeholder="Search workspaces"
+    <framework-workspace-switch-table
+      [clients]="clients()"
+      [currentId]="activeClientId()"
+      [(query)]="workspaceSwitchSearch"
+      (selectWorkspace)="onSelectWorkspace($event)"
     />
-    @if (clients().length === 0) {
-      <fpc-empty-state
-        size="sm"
-        icon="search"
-        message="No search results"
-        i18n-message="@@featureAgentTasks-noSearchResults"
-      />
-    } @else {
-      <fpc-list [flush]="true" class="border rounded">
-        @for (c of clients(); track c.id) {
-          <fpc-list-item [active]="c.id === activeClientId()" [clickable]="true" (selected)="onSelectWorkspace(c)">
-            <div fpcListItemTitle class="text-truncate text-start">{{ workspaceDisplayName(c.name) }}</div>
-            @if (c.id === activeClientId()) {
-              <div fpcListItemActions>
-                <fpc-badge
-                  color="light"
-                  [pill]="true"
-                  class="flex-shrink-0"
-                  i18n="@@featureAgentTasks-currentWorkspace"
-                >
-                  Current
-                </fpc-badge>
-              </div>
-            }
-          </fpc-list-item>
-        }
-      </fpc-list>
-    }
   }
 </fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="bulkDeleteConfirmOpen"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="onConfirmBulkDelete()"
+/>

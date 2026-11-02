@@ -1,0 +1,277 @@
+# Agenstra controller (API, queue worker, scheduler) and the agent console, from the Agenstra 4.1.0 release
+# (same images as apps/agenstra/backend-agent-controller and frontend-agent-console, pinned by digest).
+# Bundled Postgres (pgvector), Valkey and OpenSearch can each be replaced by an existing service (manifest dependencies).
+#
+# Secrets are mounted as files under /run/secrets/<ENV_NAME>; the backend entrypoint exports every upper-case file
+# as an environment variable, so no secret value is ever part of the compose or the plan.
+
+x-controller-environment: &controller-environment
+  HOST: 0.0.0.0
+  PORT: 3100
+  NODE_ENV: production
+  WEBSOCKET_NAMESPACE: socket/clients
+  DB_HOST: ${dbHost}
+  DB_PORT: ${dbPort}
+  DB_USERNAME: ${dbUser}
+  DB_DATABASE: ${dbName}
+  VALKEY_HOST: ${valkeyHost}
+  VALKEY_PORT: ${valkeyPort}
+  VALKEY_DB: 0
+  VALKEY_KEY_PREFIX: ${valkeyKeyPrefix}
+  CACHE_CLIENT: glide
+  OPENSEARCH_ENABLED: 'true'
+  OPENSEARCH_NODE: ${opensearchUrl}
+  OPENSEARCH_INDEX_PREFIX: agenstra
+  SEARCH_REINDEX_INTERVAL: 15m
+  QUEUE_WORKER_CONCURRENCY: 5
+  QUEUE_BULL_BOARD_ENABLED: 'false'
+  AUTHENTICATION_METHOD: users
+  DISABLE_SIGNUP: ${disableSignup}
+  DISABLE_FORCE_LOGIN_2FA: 'false'
+  SMTP_HOST: ${smtpHost}
+  SMTP_PORT: ${smtpPort}
+  SMTP_USER: ${smtpUser}
+  EMAIL_FROM: ${emailFrom}
+  CORS_ORIGIN: https://${domain}
+  RATE_LIMIT_ENABLED: 'true'
+  RATE_LIMIT_TTL: 60
+  RATE_LIMIT_LIMIT: 100
+  CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: 'true'
+  CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: 'false'
+  CLIENT_ENDPOINT_ALLOWED_HOSTS: ${clientEndpointAllowedHosts}
+  MCP_OAUTH_PUBLIC_BASE_URL: https://${domain}
+
+x-controller-secrets: &controller-secrets
+  - { source: db-password, target: DB_PASSWORD }
+  - { source: valkey-password, target: VALKEY_PASSWORD }
+  - { source: encryption-key, target: ENCRYPTION_KEY }
+  - { source: jwt-secret, target: JWT_SECRET }
+  - { source: smtp-password, target: SMTP_PASSWORD }
+  - { source: mcp-oauth-callback-secret, target: MCP_OAUTH_CALLBACK_SECRET }
+
+services:
+  api:
+    image: ghcr.io/forepath/agenstra-controller-api:4.1.0@sha256:bf0c50df1d003886b34d730d8a4a3a10ee3d02b4578b407c352d522d34be3f63
+    entrypoint:
+      - /bin/bash
+      - -c
+      - 'export QUEUE_ROLE=api; for f in /run/secrets/[A-Z]*; do export "$${f##*/}=$$(cat "$$f")"; done; exec /usr/local/bin/docker-entrypoint.sh'
+    environment: *controller-environment
+    secrets: *controller-secrets
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+      opensearch: { condition: service_healthy }
+    deploy:
+      resources:
+        reservations: { cpus: '0.5', memory: 768m }
+        limits: { memory: 2g }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+      exposure:
+        http:
+          - {
+              host: '${domain}',
+              port: 3100,
+              path: /api,
+              rateLimit: { perIp: 1200/m },
+            }
+          - { host: '${domain}', port: 3100, path: /socket }
+          - { host: '${domain}', port: 3100, path: /socket.io }
+
+  worker:
+    image: ghcr.io/forepath/agenstra-controller-api:4.1.0@sha256:bf0c50df1d003886b34d730d8a4a3a10ee3d02b4578b407c352d522d34be3f63
+    entrypoint:
+      - /bin/bash
+      - -c
+      - 'export QUEUE_ROLE=worker; for f in /run/secrets/[A-Z]*; do export "$${f##*/}=$$(cat "$$f")"; done; exec /usr/local/bin/docker-entrypoint.sh'
+    environment: *controller-environment
+    secrets: *controller-secrets
+    # No HTTP server for QUEUE_ROLE=worker: replaces the image's /api/health check.
+    healthcheck:
+      test: ['CMD-SHELL', 'kill -0 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      api: { condition: service_healthy }
+    deploy:
+      resources:
+        reservations: { cpus: '0.5', memory: 768m }
+        limits: { memory: 2g }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: ${workerReplicas}
+
+  scheduler:
+    image: ghcr.io/forepath/agenstra-controller-api:4.1.0@sha256:bf0c50df1d003886b34d730d8a4a3a10ee3d02b4578b407c352d522d34be3f63
+    entrypoint:
+      - /bin/bash
+      - -c
+      - 'export QUEUE_ROLE=scheduler; for f in /run/secrets/[A-Z]*; do export "$${f##*/}=$$(cat "$$f")"; done; exec /usr/local/bin/docker-entrypoint.sh'
+    environment: *controller-environment
+    secrets: *controller-secrets
+    healthcheck:
+      test: ['CMD-SHELL', 'kill -0 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      api: { condition: service_healthy }
+    deploy:
+      resources:
+        reservations: { cpus: '0.25', memory: 512m }
+        limits: { memory: 1g }
+    restart: unless-stopped
+    x-loadweaver:
+      # Exactly one scheduler: it enqueues the periodic jobs.
+      replicas: 1
+
+  console:
+    image: ghcr.io/forepath/agenstra-console-server:4.1.0@sha256:2b5a692d010475cd830a4ff905a42bdf18b4378fc6c059441bcf4e3c0d6fb337
+    # The console reads its runtime config (API / websocket URLs) from CONFIG; a tiny loopback server in the same
+    # container serves it from CONSOLE_RUNTIME_CONFIG (the provisioned stacks serve the same JSON from Nginx).
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        node -e "require('http').createServer((q,s)=>{s.setHeader('content-type','application/json');s.end(process.env.CONSOLE_RUNTIME_CONFIG)}).listen(8081,'127.0.0.1')" &
+        exec node server.cjs
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4100
+      NODE_ENV: production
+      DEFAULT_LOCALE: ${defaultLocale}
+      CSP_ENFORCE: 'true'
+      CONFIG: http://127.0.0.1:8081/config.json
+      CONFIG_ALLOWED_HOSTS: 127.0.0.1
+      CONFIG_ALLOW_INSECURE_HTTP: 'true'
+      CONFIG_ALLOW_INTERNAL_HOST: 'true'
+      CONSOLE_RUNTIME_CONFIG: '{"application":{"production":true},"console":{"urls":{"restApi":"https://${domain}/api","websocket":"https://${domain}/socket/clients"}},"authentication":{"config":{"type":"users","disableSignup":${disableSignup}}},"chatModelOptions":{"cursor":{},"opencode":{}},"cookieConsent":{"domain":".${domain}","urls":{"privacyPolicy":"https://agenstra.com/legal/privacy","terms":"https://agenstra.com/legal/terms"}}}'
+    deploy:
+      resources:
+        reservations: { cpus: '0.1', memory: 128m }
+        limits: { memory: 512m }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: ${consoleReplicas}
+      # Stateless and without host access: runs in gVisor.
+      runtime: sandboxed
+      exposure:
+        http:
+          - { host: '${domain}', port: 4100 }
+
+  postgres:
+    image: docker.io/pgvector/pgvector:pg16@sha256:0dd3149a06e4579a0d70d8fef9945636cd514005e7237deb27f9b67886f8dc4f
+    environment:
+      POSTGRES_USER: ${dbUser}
+      POSTGRES_DB: ${dbName}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db-password
+    secrets: [db-password]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        reservations: { cpus: '0.5', memory: 512m }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+      backup:
+        hooks:
+          pre:
+            [
+              sh,
+              -c,
+              'pg_dump -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -Fc -f /var/lib/postgresql/data/loadweaver-backup.dump',
+            ]
+          post: [rm, -f, /var/lib/postgresql/data/loadweaver-backup.dump]
+          timeout: 15m
+        check:
+          command:
+            [sh, -c, 'test -s /var/lib/postgresql/data/loadweaver-backup.dump']
+          timeout: 10m
+
+  valkey:
+    image: docker.io/valkey/valkey:9.0.6-alpine@sha256:187679e3bd4036959631e3f03983ab2ba503ab21e6fd0454d508e909db2ee989
+    command:
+      [
+        sh,
+        -c,
+        'exec valkey-server --appendonly yes --requirepass "$$(cat /run/secrets/valkey-password)"',
+      ]
+    secrets: [valkey-password]
+    volumes:
+      - valkey-data:/data
+    deploy:
+      resources:
+        reservations: { cpus: '0.1', memory: 128m }
+        limits: { memory: 512m }
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'valkey-cli --no-auth-warning -a "$$(cat /run/secrets/valkey-password)" ping | grep -q PONG',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+
+  opensearch:
+    image: docker.io/opensearchproject/opensearch:3.9.0@sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e
+    # Single node, internal to the deployment (no exposure). Security plugin off as in the provisioned stacks: only
+    # the controller's services reach it. Nodes need vm.max_map_count >= 262144.
+    environment:
+      discovery.type: single-node
+      plugins.security.disabled: 'true'
+      DISABLE_INSTALL_DEMO_CONFIG: 'true'
+      OPENSEARCH_JAVA_OPTS: -Xms${opensearchHeap} -Xmx${opensearchHeap}
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -sf http://localhost:9200/_cluster/health || exit 1',
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    deploy:
+      resources:
+        reservations: { cpus: '0.5', memory: 1g }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+
+volumes:
+  postgres-data:
+    x-loadweaver: { size: '${postgresVolumeSize}' }
+  valkey-data:
+    x-loadweaver: { size: 2g }
+  opensearch-data:
+    x-loadweaver: { size: '${opensearchVolumeSize}' }
+
+secrets:
+  db-password:
+    x-loadweaver-ref: ${secret:db-password}
+  valkey-password:
+    x-loadweaver-ref: ${secret:valkey-password}
+  encryption-key:
+    x-loadweaver-ref: ${secret:encryption-key}
+  jwt-secret:
+    x-loadweaver-ref: ${secret:jwt-secret}
+  smtp-password:
+    x-loadweaver-ref: ${secret:smtp-password}
+  mcp-oauth-callback-secret:
+    x-loadweaver-ref: ${secret:mcp-oauth-callback-secret}

@@ -118,10 +118,12 @@ export const PRODUCT_FIELD_SERVICES: Record<string, IntegratedProductService[]> 
     IntegratedProvisioningService.AgenstraManager,
     IntegratedProvisioningService.DecabillBilling,
   ],
+  // Loadweaver: the operator's SMTP becomes the cluster's `bootstrap` email flags (loadweaver.utils).
   smtp: [
     IntegratedProvisioningService.AgenstraController,
     IntegratedProvisioningService.AgenstraManager,
     IntegratedProvisioningService.DecabillBilling,
+    IntegratedProvisioningService.Loadweaver,
   ],
   keycloak: [
     IntegratedProvisioningService.AgenstraController,

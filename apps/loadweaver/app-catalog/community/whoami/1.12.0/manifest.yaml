@@ -1,0 +1,33 @@
+apiVersion: apps.loadweaver.com/v1
+name: whoami
+version: 1.12.0
+title: whoami
+description: >-
+  A tiny web server that answers with the request it received (headers, client address, hostname). Handy to check
+  ingress, TLS and routing; also the reference for community submissions.
+publisher: Example Publisher
+license: Apache-2.0
+homepage: https://github.com/traefik/whoami
+docs: https://github.com/traefik/whoami#readme
+channels: [stable]
+parameters:
+  type: object
+  properties:
+    domain:
+      type: string
+      title: Domain
+      description: Public hostname (DNS must point at the cluster's ingress).
+      pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$'
+      examples: [whoami.example.com]
+    replicas:
+      type: integer
+      title: Replicas
+      default: 2
+      minimum: 1
+      maximum: 10
+  required: [domain]
+healthChecks:
+  - service: web
+    type: http
+    port: 80
+    path: /health

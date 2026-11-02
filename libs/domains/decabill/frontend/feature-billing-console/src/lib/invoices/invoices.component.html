@@ -1,16 +1,7 @@
 <div class="invoices-container border-top d-flex flex-column flex-grow-1 min-h-0">
   <fpc-page-header [title]="pageTitle" />
 
-  <fpc-tab-group
-    class="d-md-none flex-shrink-0"
-    [activeId]="mobilePanel()"
-    (activeIdChange)="onMobilePanelTabChange($event)"
-  >
-    <fpc-tab id="openOverdue" [label]="mobilePanelLabel('openOverdue')" />
-    <fpc-tab id="history" [label]="mobilePanelLabel('history')" />
-  </fpc-tab-group>
-
-  <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
+  <div class="flex-grow-1 d-flex flex-column min-h-0 w-100 h-100 overflow-hidden">
     @if (paymentReturnFeedback === 'waiting') {
       <fpc-alert [flush]="true" variant="success"
         ><span i18n="@@featureInvoices-paymentWaiting">
@@ -37,7 +28,7 @@
     }
 
     <fpc-summary-bar [columns]="4">
-      <fpc-summary-card [label]="openOverdueCountLabel">
+      <fpc-summary-card icon="exclamation-circle" [label]="openOverdueCountLabel">
         <span fpcSummaryCardValue>
           @if (invoicesSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -48,18 +39,18 @@
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="openOverdueTotalLabel">
+      <fpc-summary-card icon="cash-coin" [label]="openOverdueTotalLabel">
         <span fpcSummaryCardValue>
           @if (invoicesSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
           } @else if (invoicesSummary$ | async; as summary) {
-            {{ summary.openOverdueTotal | number: '1.2-2' }}€
+            {{ summary.openOverdueTotal | fpcMoney }}
           } @else {
             <span class="text-body-secondary">-</span>
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="nextBillingDayLabel">
+      <fpc-summary-card icon="calendar-event" [label]="nextBillingDayLabel">
         <span fpcSummaryCardValue>
           @if (invoicesSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -70,12 +61,12 @@
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="unbilledTotalLabel">
+      <fpc-summary-card icon="hourglass-split" [label]="unbilledTotalLabel">
         <span fpcSummaryCardValue>
           @if (invoicesSummaryLoading$ | async) {
             <fpc-spinner size="sm" />
           } @else if (invoicesSummary$ | async; as summary) {
-            {{ summary.unbilledTotal | number: '1.2-2' }}€
+            {{ summary.unbilledTotal | fpcMoney }}
           } @else {
             <span class="text-body-secondary">-</span>
           }
@@ -83,237 +74,133 @@
       </fpc-summary-card>
     </fpc-summary-bar>
 
-    <div class="section__row flex-grow-1 min-h-0">
-      <div
-        class="section__column section__column--open-overdue d-md-flex flex-column min-h-0 border-end"
-        [class.d-none]="mobilePanel() !== 'openOverdue'"
-      >
-        <fpc-board-lane class="h-100">
-          <fpc-lane-header fpcBoardLaneHeader flush>
-            <span fpcLaneHeaderTitle i18n="@@featureInvoices-openOverdueList">Open and overdue invoices</span>
-          </fpc-lane-header>
-          <fpc-search-field
-            fpcBoardLaneSearch
-            inputId="openOverdueSearchInput"
-            name="openOverdueSearch"
-            [bordered]="false"
-            i18n-placeholder="@@featureInvoices-searchOpenOverdue"
-            placeholder="Search open and overdue invoices"
-            i18n-ariaLabel="@@featureInvoices-searchOpenOverdue"
-            ariaLabel="Search open and overdue invoices"
-            [(value)]="openOverdueSearch"
-          />
-          @if (openOverdueListLoading$ | async) {
-            <div class="d-flex justify-content-center align-items-center p-4">
-              <fpc-spinner
-                variant="primary"
-                i18n-label="@@featureInvoices-loadingOpenOverdue"
-                label="Loading open and overdue invoices..."
-              />
-            </div>
-          } @else {
-            @if (openOverdueListError$ | async; as listErr) {
-              <fpc-alert class="m-3" variant="warning" [message]="listErr" />
-            }
-            @if (openOverdueList().length === 0) {
-              @if (openOverdueSearch().trim()) {
-                <fpc-empty-state
-                  size="sm"
-                  icon="search"
-                  message="No search results"
-                  i18n-message="@@featureInvoices-noSearchResults"
-                />
-              } @else {
-                <fpc-empty-state
-                  size="sm"
-                  message="No open or overdue invoices yet"
-                  i18n-message="@@featureInvoices-noOpenOverdue"
-                />
-              }
-            } @else {
-              <fpc-list [flush]="true">
-                @for (inv of openOverdueList(); track inv.id) {
-                  <ng-container
-                    *ngTemplateOutlet="invoiceListItem; context: { $implicit: inv, subscriptionId: inv.subscriptionId }"
-                  ></ng-container>
-                }
-              </fpc-list>
-            }
-          }
-        </fpc-board-lane>
-      </div>
+    <!-- Summary first: it is the same for both tabs (user, 2026-10-29). -->
+    <fpc-tab-group class="flex-shrink-0" [activeId]="mobilePanel()" (activeIdChange)="onMobilePanelTabChange($event)">
+      <fpc-tab id="openOverdue" [label]="mobilePanelLabel('openOverdue')" />
+      <fpc-tab id="history" [label]="mobilePanelLabel('history')" />
+    </fpc-tab-group>
 
-      <div
-        class="section__column section__column--history d-md-flex flex-column min-h-0"
-        [class.d-none]="mobilePanel() !== 'history'"
-      >
-        <fpc-board-lane class="h-100">
-          <fpc-lane-header fpcBoardLaneHeader flush>
-            <span fpcLaneHeaderTitle i18n="@@featureInvoices-historyList">Invoice history</span>
-          </fpc-lane-header>
-          <fpc-search-field
-            fpcBoardLaneSearch
-            inputId="historyInvoicesSearchInput"
-            name="historyInvoicesSearch"
-            [bordered]="false"
-            i18n-placeholder="@@featureInvoices-searchHistory"
-            placeholder="Search invoice history"
-            i18n-ariaLabel="@@featureInvoices-searchHistory"
-            ariaLabel="Search invoice history"
-            [(value)]="historyInvoicesSearch"
-          />
-          @if (historyListLoading$ | async) {
-            <div class="d-flex justify-content-center align-items-center p-4">
-              <fpc-spinner
-                variant="primary"
-                i18n-label="@@featureInvoices-loadingHistory"
-                label="Loading invoice history..."
-              />
-            </div>
-          } @else {
-            @if (historyListError$ | async; as listErr) {
-              <fpc-alert class="m-3" variant="warning" [message]="listErr" />
-            }
-            @if (historyList().length === 0) {
-              @if (historyInvoicesSearch().trim()) {
-                <fpc-empty-state
-                  size="sm"
-                  icon="search"
-                  message="No search results"
-                  i18n-message="@@featureInvoices-noSearchResults"
-                />
-              } @else {
-                <fpc-empty-state
-                  size="sm"
-                  message="No invoice history yet"
-                  i18n-message="@@featureInvoices-noHistory"
-                />
-              }
-            } @else {
-              <fpc-list [flush]="true">
-                @for (inv of historyList(); track inv.id) {
-                  <ng-container
-                    *ngTemplateOutlet="
-                      invoiceListItem;
-                      context: { $implicit: inv, subscriptionId: inv.subscriptionId, showTotalGross: true }
-                    "
-                  ></ng-container>
-                }
-              </fpc-list>
-            }
-          }
-        </fpc-board-lane>
-      </div>
-    </div>
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="invoices-bulk-result"
+      />
+    }
+    <!-- Tabs instead of two stacked lanes: one invoices table per tab (only the active one renders). -->
+    @switch (mobilePanel()) {
+      @case ('openOverdue') {
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="openOverdueListLabel"
+          [columns]="openColumns"
+          [rows]="openOverdueList()"
+          paging="server"
+          [hasNext]="openOverdueHasMore()"
+          [total]="openOverdueTotal()"
+          [(page)]="openPaging.page"
+          [(pageSize)]="openPaging.pageSize"
+          persistKey="decabill-invoices-open"
+          [(query)]="openPaging.search"
+          [searchPlaceholder]="searchOpenOverdueLabel"
+          [loading]="!!(openOverdueListLoading$ | async)"
+          [error]="openOverdueListError()"
+          selectable
+          [(selected)]="selectedOpen"
+          [rowMenu]="invoiceMenu"
+          (rowAction)="onInvoiceAction($event.row, $event.item.id)"
+          (rowActivate)="onInvoiceActivate($event)"
+          emptyIcon="receipt"
+          data-testid="invoices-open-overdue"
+        >
+          <fpc-button
+            fpcDataTableBatch
+            variant="dark"
+            size="sm"
+            [disabled]="downloadable(selectedOpen()).length === 0"
+            (clicked)="downloadSelected(selectedOpen())"
+            data-testid="invoices-open-bulk-download"
+            iconOnly
+            [ariaLabel]="downloadPdfsLabel"
+            [title]="downloadPdfsLabel"
+          >
+            <i class="bi bi-download" aria-hidden="true"></i>
+          </fpc-button>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="receipt"
+              message="No open or overdue invoices yet"
+              i18n-message="@@featureInvoices-noOpenOverdue"
+            />
+          </span>
+          <ng-template fpcTableCell="issued" let-row>{{ invoiceIssuedAt(row) }}</ng-template>
+          <ng-template fpcTableCell="due" let-row
+            ><span [class.text-danger]="isInvoiceOverdue(row)" [class.fw-medium]="isInvoiceOverdue(row)">{{
+              invoiceDueDate(row)
+            }}</span></ng-template
+          >
+        </fpc-data-table>
+      }
+      @case ('history') {
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="historyListLabel"
+          [columns]="historyColumns"
+          [rows]="historyList()"
+          paging="server"
+          [hasNext]="historyHasMore()"
+          [total]="historyTotal()"
+          [(page)]="historyPaging.page"
+          [(pageSize)]="historyPaging.pageSize"
+          persistKey="decabill-invoices-history"
+          [(query)]="historyPaging.search"
+          [searchPlaceholder]="searchHistoryLabel"
+          [loading]="!!(historyListLoading$ | async)"
+          [error]="historyListError()"
+          selectable
+          [(selected)]="selectedHistory"
+          [rowMenu]="invoiceMenu"
+          (rowAction)="onInvoiceAction($event.row, $event.item.id)"
+          (rowActivate)="onInvoiceActivate($event)"
+          emptyIcon="receipt"
+          data-testid="invoices-history"
+        >
+          <fpc-button
+            fpcDataTableBatch
+            variant="dark"
+            size="sm"
+            [disabled]="downloadable(selectedHistory()).length === 0"
+            (clicked)="downloadSelected(selectedHistory())"
+            data-testid="invoices-history-bulk-download"
+            iconOnly
+            [ariaLabel]="downloadPdfsLabel"
+            [title]="downloadPdfsLabel"
+          >
+            <i class="bi bi-download" aria-hidden="true"></i>
+          </fpc-button>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="receipt"
+              message="No invoice history yet"
+              i18n-message="@@featureInvoices-noHistory"
+            />
+          </span>
+          <ng-template fpcTableCell="issued" let-row>{{ invoiceIssuedAt(row) }}</ng-template>
+          <ng-template fpcTableCell="due" let-row
+            ><span [class.text-danger]="isInvoiceOverdue(row)" [class.fw-medium]="isInvoiceOverdue(row)">{{
+              invoiceDueDate(row)
+            }}</span></ng-template
+          >
+        </fpc-data-table>
+      }
+    }
   </div>
 </div>
-
-<ng-template #invoiceListItem let-inv let-subscriptionId="subscriptionId" let-showTotalGross="showTotalGross">
-  <fpc-list-item>
-    <div fpcListItemTitle class="fw-semibold">{{ invoiceDisplayTitle(inv) }}</div>
-    <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-      <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-        <fpc-badge
-          variant="info"
-          color="secondary"
-          class="me-2"
-          [ngClass]="invoiceStatusBadgeClass(inv.status)"
-          [attr.title]="inv.status ?? undefined"
-        >
-          {{ getInvoiceStatus(inv.status) }}
-        </fpc-badge>
-        @if (inv.subscriptionNumber) {
-          <span class="me-2">
-            <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>{{ inv.subscriptionNumber }}
-          </span>
-        }
-        <span class="me-2">
-          <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>
-          @let listAmount = invoiceListAmount(inv, showTotalGross);
-          @if (listAmount !== null) {
-            {{ listAmount | number: '1.2-2' }} EUR
-          } @else {
-            -
-          }
-        </span>
-        <span class="me-2">
-          <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(inv.createdAt) }}
-        </span>
-        <span class="me-2">
-          <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(inv.dueDate) }}
-        </span>
-      </div>
-    </div>
-    <fpc-button-group
-      fpcListItemActions
-      size="sm"
-      ariaLabel="Invoice actions"
-      i18n-ariaLabel="@@featureInvoices-invoiceActionsAria"
-    >
-      @if (inv.canPreview) {
-        <fpc-button
-          iconOnly
-          size="sm"
-          variant="dark"
-          (clicked)="openPreview(subscriptionId, inv)"
-          title="Preview invoice"
-          i18n-title="@@featureInvoices-previewButtonTitle"
-        >
-          <i class="bi bi-eye" aria-hidden="true"></i>
-        </fpc-button>
-      }
-      @if (shouldShowPayButton(inv)) {
-        <fpc-button
-          iconOnly
-          size="sm"
-          variant="dark"
-          [disabled]="isPayButtonDisabled(inv, payingInvoiceRefId$ | async)"
-          [title]="payButtonTitle(inv)"
-          (clicked)="payInvoice(subscriptionId, inv)"
-        >
-          <i class="bi bi-credit-card" aria-hidden="true"></i>
-          <span class="visually-hidden">{{ payButtonTitle(inv) }}</span>
-        </fpc-button>
-      }
-      @if (inv.canDownload) {
-        <fpc-button
-          size="sm"
-          variant="dark"
-          iconOnly
-          (clicked)="downloadInvoice(subscriptionId, inv)"
-          title="Download PDF"
-          i18n-title="@@featureInvoices-downloadButtonTitle"
-        >
-          <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
-        </fpc-button>
-      }
-      @if (inv.canDownloadVoidDocument) {
-        <fpc-button
-          size="sm"
-          variant="dark"
-          iconOnly
-          (clicked)="downloadVoidDocument(subscriptionId, inv)"
-          title="Download credit note"
-          i18n-title="@@featureInvoices-downloadCreditNoteButtonTitle"
-        >
-          <i class="bi bi-file-earmark-x" aria-hidden="true"></i>
-        </fpc-button>
-      }
-      @if (inv.canDownloadTimeReport) {
-        <fpc-button
-          size="sm"
-          variant="dark"
-          iconOnly
-          (clicked)="downloadTimeReport(subscriptionId, inv)"
-          title="Download time report"
-          i18n-title="@@featureInvoices-downloadTimeReportButtonTitle"
-        >
-          <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
-        </fpc-button>
-      }
-    </fpc-button-group>
-  </fpc-list-item>
-</ng-template>
 
 <fpc-modal
   class="invoice-preview-modal"
@@ -335,12 +222,7 @@
             <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
               <div>
                 <h6 class="card-title fs-5 mb-2">{{ detail.invoiceNumber ?? detail.id }}</h6>
-                <fpc-badge
-                  variant="info"
-                  color="secondary"
-                  class="d-inline-flex align-self-start"
-                  [ngClass]="invoiceStatusBadgeClass(detail.status)"
-                >
+                <fpc-badge class="d-inline-flex align-self-start" [tone]="invoiceStatusBadgeTone(detail.status)">
                   {{ getInvoiceStatus(detail.status) }}
                 </fpc-badge>
               </div>
@@ -369,7 +251,7 @@
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
               <thead>
-                <tr class="small text-body-secondary">
+                <tr>
                   <th scope="col" i18n="@@featureInvoices-lineDescription">Description</th>
                   <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineQty">Qty</th>
                   <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineUnitNet">Unit (net)</th>
@@ -383,14 +265,14 @@
                   <tr>
                     <td class="text-break">{{ line.description }}</td>
                     <td class="text-end text-nowrap">{{ line.quantity | number: '1.0-2' }}</td>
-                    <td class="text-end text-nowrap">{{ line.unitPriceNet | number: '1.2-2' }} €</td>
-                    <td class="text-end text-nowrap">{{ line.lineNet | number: '1.2-2' }} €</td>
+                    <td class="text-end text-nowrap">{{ line.unitPriceNet | fpcMoney }}</td>
+                    <td class="text-end text-nowrap">{{ line.lineNet | fpcMoney }}</td>
                     <td class="text-end">
-                      <span class="text-nowrap">{{ line.lineTax | number: '1.2-2' }} €</span>
+                      <span class="text-nowrap">{{ line.lineTax | fpcMoney }}</span>
                       <br />
                       <small class="text-body-secondary">{{ line.taxRate | number: '1.0-1' }}%</small>
                     </td>
-                    <td class="text-end text-nowrap">{{ line.lineGross | number: '1.2-2' }} €</td>
+                    <td class="text-end text-nowrap">{{ line.lineGross | fpcMoney }}</td>
                   </tr>
                 }
               </tbody>
@@ -405,16 +287,7 @@
                 <fpc-lane-header>
                   <span fpcLaneHeaderTitle i18n="@@featureInvoices-taxBreakdown">Tax breakdown</span>
                 </fpc-lane-header>
-                <fpc-list [flush]="true">
-                  @for (tax of detail.taxBreakdown; track $index) {
-                    <fpc-list-item class="bg-transparent">
-                      <div class="d-flex justify-content-between gap-2 text-nowrap">
-                        <span>{{ tax.taxRate | number: '1.0-1' }}%</span>
-                        <span class="fw-medium">{{ tax.taxAmount | number: '1.2-2' }} €</span>
-                      </div>
-                    </fpc-list-item>
-                  }
-                </fpc-list>
+                <fpc-key-value-list class="d-block p-3" [items]="taxItems(detail)" />
               </div>
             </div>
           }
@@ -424,32 +297,7 @@
               <fpc-lane-header>
                 <span fpcLaneHeaderTitle i18n="@@featureInvoices-summary">Summary</span>
               </fpc-lane-header>
-              <fpc-list [flush]="true">
-                <fpc-list-item class="bg-transparent">
-                  <div class="d-flex justify-content-between gap-2">
-                    <span i18n="@@featureInvoices-subtotalNet">Subtotal (net)</span>
-                    <span class="text-nowrap">{{ detail.subtotalNet | number: '1.2-2' }} €</span>
-                  </div>
-                </fpc-list-item>
-                <fpc-list-item class="bg-transparent">
-                  <div class="d-flex justify-content-between gap-2">
-                    <span i18n="@@featureInvoices-taxTotal">Tax total</span>
-                    <span class="text-nowrap">{{ detail.taxTotal | number: '1.2-2' }} €</span>
-                  </div>
-                </fpc-list-item>
-                <fpc-list-item class="fw-semibold">
-                  <div class="d-flex justify-content-between gap-2">
-                    <span i18n="@@featureInvoices-totalGross">Total</span>
-                    <span class="text-nowrap">{{ detail.totalGross | number: '1.2-2' }} €</span>
-                  </div>
-                </fpc-list-item>
-                <fpc-list-item class="text-body-secondary small bg-transparent">
-                  <div class="d-flex justify-content-between gap-2">
-                    <span i18n="@@featureInvoices-balanceDue">Balance due</span>
-                    <span class="text-nowrap">{{ detail.balanceDue | number: '1.2-2' }} €</span>
-                  </div>
-                </fpc-list-item>
-              </fpc-list>
+              <fpc-key-value-list class="d-block p-3" [items]="summaryItems(detail)" />
             </div>
           </div>
         </div>
@@ -458,7 +306,13 @@
   }
 </fpc-modal>
 
-<fpc-modal [(open)]="createInvoiceModalOpen" i18n-title="@@featureInvoices-createTitle" title="Create invoice">
+<fpc-modal
+  [(open)]="createInvoiceModalOpen"
+  i18n-title="@@featureInvoices-createTitle"
+  title="Create invoice"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <fpc-form-field forId="createInvoiceDescription" i18n-label="@@featureInvoices-description" label="Description">
     <fpc-form-control
       controlId="createInvoiceDescription"

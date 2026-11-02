@@ -1,0 +1,9 @@
+# ForePath signs the official packages with the official catalog key.
+# DEVELOPMENT KEY: replace keys/forepath-official.dev.pub with the production public key before the first release
+# publish (see keys/README.md).
+name: ForePath
+label: official
+contact: security@forepath.io
+homepage: https://forepath.io
+keys:
+  - keys/forepath-official.dev.pub

@@ -10,6 +10,7 @@
     "src/server.ts",
     "src/server.agenstra.ts",
     "src/server.decabill.ts",
+    "src/server.loadweaver.ts",
     "src/polyfills.ts"
   ],
   "include": ["src/**/*.d.ts", "src/delegating-server.ts"],

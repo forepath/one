@@ -1,0 +1,29 @@
+{
+  "name": "shared-backend-util-microvm-bridge",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/shared/backend/util-microvm-bridge/src",
+  "projectType": "library",
+  "tags": ["domain:shared", "scope:backend", "type:util"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/dist/libs/domains/shared/backend/util-microvm-bridge"
+      ],
+      "options": {
+        "commands": [
+          "npx esbuild libs/domains/shared/backend/util-microvm-bridge/src/bin/host.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/libs/domains/shared/backend/util-microvm-bridge/bridge-host.cjs --tsconfig=libs/domains/shared/backend/util-microvm-bridge/tsconfig.lib.json --legal-comments=none",
+          "npx esbuild libs/domains/shared/backend/util-microvm-bridge/src/bin/guest.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/libs/domains/shared/backend/util-microvm-bridge/bridge-guest.cjs --tsconfig=libs/domains/shared/backend/util-microvm-bridge/tsconfig.lib.json --legal-comments=none"
+        ],
+        "parallel": false
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/shared/backend/util-microvm-bridge/jest.config.cts"
+      }
+    }
+  }
+}

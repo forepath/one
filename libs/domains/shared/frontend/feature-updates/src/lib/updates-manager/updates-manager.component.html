@@ -1,8 +1,9 @@
 <div class="updates-manager-container border-top d-flex flex-column flex-grow-1 min-h-0">
   <fpc-page-header [title]="pageTitle">
+    <!-- Refresh is a secondary action (3.38 R8): quiet header tier. -->
     <fpc-button
       fpcPageHeaderActions
-      variant="primary"
+      variant="dark"
       size="sm"
       iconOnly
       [disabled]="(checking$ | async) === true || (fullLoading$ | async) === true"
@@ -26,7 +27,7 @@
 
       @if (fullState(); as state) {
         <fpc-summary-bar [columns]="summaryCardCount()">
-          <fpc-summary-card [label]="installedVersionLabel">
+          <fpc-summary-card icon="tag" [label]="installedVersionLabel">
             <span fpcSummaryCardValue>
               {{ formatVersion(state.installedVersion) }}
               <i
@@ -38,8 +39,13 @@
               ></i>
             </span>
           </fpc-summary-card>
-          <fpc-summary-card [label]="latestVersionLabel">
-            <span fpcSummaryCardValue>{{ formatVersion(state.latestVersion) }}</span>
+          <fpc-summary-card icon="arrow-up-circle" [label]="latestVersionLabel">
+            <span fpcSummaryCardValue>
+              {{ formatVersion(state.latestVersion) }}
+              @if (state.release?.prerelease) {
+                <fpc-badge color="warning" size="sm" data-testid="updates-prerelease">{{ betaLabel }}</fpc-badge>
+              }
+            </span>
             @if (state.release?.htmlUrl; as releaseUrl) {
               <fpc-button
                 fpcSummaryCardActions
@@ -58,7 +64,7 @@
               </fpc-button>
             }
           </fpc-summary-card>
-          <fpc-summary-card [label]="lastCheckLabel">
+          <fpc-summary-card icon="clock-history" [label]="lastCheckLabel">
             <span fpcSummaryCardValue>
               @if ((checking$ | async) === true) {
                 <fpc-spinner
@@ -68,19 +74,24 @@
                   label="Checking for updates..."
                 />
               } @else {
-                {{ formatDate(state.lastCheckAt) }}
+                {{ state.lastCheckAt | fpcDate: 'datetime' : '—' }}
               }
             </span>
           </fpc-summary-card>
+          @if (state.channel) {
+            <fpc-summary-card icon="broadcast" [label]="channelLabel">
+              <span fpcSummaryCardValue data-testid="updates-channel">{{ channelName(state.channel) }}</span>
+            </fpc-summary-card>
+          }
           @if (environment.frontendVersion) {
-            <fpc-summary-card [label]="frontendVersionLabel">
+            <fpc-summary-card icon="window" [label]="frontendVersionLabel">
               <span fpcSummaryCardValue>{{ formatVersion(environment.frontendVersion) }}</span>
             </fpc-summary-card>
           }
         </fpc-summary-bar>
 
         <fpc-tab-group
-          class="d-md-none flex-shrink-0"
+          class="flex-shrink-0"
           [activeId]="mobilePanel()"
           (activeIdChange)="onMobilePanelTabChange($event)"
         >
@@ -89,239 +100,168 @@
           }
         </fpc-tab-group>
 
-        <fpc-board-lane
-          class="h-100 flex-grow-1 border-bottom d-md-flex"
-          [class.d-none]="mobilePanel() !== 'instances'"
-        >
-          <fpc-lane-header fpcBoardLaneHeader flush>
-            <span fpcLaneHeaderTitle i18n="@@featureUpdates-instancesTitle">Service instances</span>
-          </fpc-lane-header>
-          <fpc-search-field
-            fpcBoardLaneSearch
-            name="instanceSearch"
-            [bordered]="false"
-            [placeholder]="searchInstancesPlaceholder"
-            [ariaLabel]="searchInstancesPlaceholder"
-            [(value)]="searchQuery"
-          />
-          @if (filteredInstances().length === 0) {
-            @if (searchQuery().trim()) {
-              <fpc-empty-state
+        @switch (mobilePanel()) {
+          @case ('instances') {
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="instancesTitle"
+              [columns]="instanceColumns"
+              [rows]="filteredInstances()"
+              [rowId]="instanceRowId"
+              paging="client"
+              persistKey="shared-updates-instances"
+              [(query)]="searchQuery"
+              [searchPlaceholder]="searchInstancesPlaceholder"
+              [filtered]="!!searchQuery().trim()"
+              [rowMenu]="instanceRowMenu"
+              (rowAction)="onInstanceAction($event.row, $event.item.id)"
+              emptyIcon="hdd-stack"
+              data-testid="updates-instances-table"
+            >
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="hdd-stack"
+                  message="No service instances yet"
+                  i18n-message="@@featureUpdates-noInstances"
+                />
+              </span>
+
+              <ng-template fpcTableCell="dependencies" let-row>
+                <span class="d-inline-flex gap-1" role="group" [attr.aria-label]="dependenciesLabel">
+                  @for (dependency of instanceDependencies(row); track dependency.key) {
+                    <fpc-badge iconOnly [tone]="dependency.tone" [icon]="dependency.icon" [label]="dependency.label" />
+                  }
+                </span>
+              </ng-template>
+              <ng-template fpcTableCell="host" let-row
+                ><span [attr.title]="row.hostname">{{ hostLabel(row.hostname) }}</span></ng-template
+              >
+              <ng-template fpcTableCell="heartbeat" let-row>{{
+                row.lastHeartbeatAt | fpcDate: 'datetime' : '—'
+              }}</ng-template>
+            </fpc-data-table>
+          }
+          @case ('product') {
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="productChangelogTitle"
+              [columns]="changelogColumns"
+              [rows]="productChangelogRows()"
+              paging="client"
+              persistKey="shared-updates-changelog-product"
+              [(query)]="productChangelogSearch"
+              [searchPlaceholder]="searchProductChangelogPlaceholder"
+              [filtered]="!!productChangelogSearch().trim()"
+              emptyIcon="journal-text"
+              data-testid="updates-changelog-product-table"
+            >
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="journal-text"
+                  message="No product changelog entries yet"
+                  i18n-message="@@featureUpdates-noChangelogProduct"
+                />
+              </span>
+              <ng-template fpcTableCell="state" let-row>
+                <ng-container
+                  [ngTemplateOutlet]="changelogCategoryCell"
+                  [ngTemplateOutletContext]="{ $implicit: row }"
+                />
+              </ng-template>
+              <ng-template fpcTableCell="name" let-row>
+                <ng-container
+                  [ngTemplateOutlet]="changelogText"
+                  [ngTemplateOutletContext]="{ $implicit: row.text, tag: row.tag }"
+                ></ng-container>
+              </ng-template>
+            </fpc-data-table>
+          }
+          @case ('shared') {
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="sharedChangelogTitle"
+              [columns]="changelogColumns"
+              [rows]="sharedChangelogRows()"
+              paging="client"
+              persistKey="shared-updates-changelog-shared"
+              [(query)]="sharedChangelogSearch"
+              [searchPlaceholder]="searchSharedChangelogPlaceholder"
+              [filtered]="!!sharedChangelogSearch().trim()"
+              emptyIcon="journal-text"
+              data-testid="updates-changelog-shared-table"
+            >
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="journal-text"
+                  message="No shared changelog entries yet"
+                  i18n-message="@@featureUpdates-noChangelogShared"
+                />
+              </span>
+              <ng-template fpcTableCell="state" let-row>
+                <ng-container
+                  [ngTemplateOutlet]="changelogCategoryCell"
+                  [ngTemplateOutletContext]="{ $implicit: row }"
+                />
+              </ng-template>
+              <ng-template fpcTableCell="name" let-row>
+                <ng-container
+                  [ngTemplateOutlet]="changelogText"
+                  [ngTemplateOutletContext]="{ $implicit: row.text, tag: row.tag }"
+                ></ng-container>
+              </ng-template>
+            </fpc-data-table>
+          }
+        }
+
+        <!-- Category: the change type as a badge; a breaking change gets an extra icon-only marker after it
+             (user, 2026-10-29: the type badge stays the type). -->
+        <ng-template #changelogCategoryCell let-row>
+          <span class="d-inline-flex align-items-center gap-1">
+            @if (changelogCategoryState(row.category); as state) {
+              <fpc-badge
+                [tone]="state.tone"
+                [icon]="state.icon ?? null"
+                [label]="state.label"
+                data-testid="fpc-data-table-state"
+                >{{ state.label }}</fpc-badge
+              >
+            }
+            @if (row.breaking) {
+              <fpc-badge
+                tone="danger"
                 size="sm"
-                icon="search"
-                message="No search results"
-                i18n-message="@@featureUpdates-noSearchResults"
-              />
-            } @else {
-              <fpc-empty-state
-                size="sm"
-                message="No service instances yet"
-                i18n-message="@@featureUpdates-noInstances"
+                icon="exclamation-triangle"
+                iconOnly
+                [label]="breakingLabel"
+                [title]="breakingLabel"
+                data-testid="updates-changelog-breaking"
               />
             }
-          } @else {
-            <fpc-list [flush]="true">
-              @for (instance of filteredInstances(); track instance.instanceId) {
-                <fpc-list-item class="p-0 align-items-stretch updates-manager__instance-row">
-                  <div class="d-flex align-items-stretch w-100">
-                    <div class="min-w-0 flex-grow-1 p-3">
-                      <div class="fw-semibold mb-1 d-flex align-items-center gap-2 flex-wrap">
-                        <span>{{ serviceNameLabel(instance.serviceName) }}</span>
-                        <i
-                          class="bi"
-                          [class]="updateStateIconClass(instance.updateState)"
-                          [attr.title]="updateStateLabel(instance.updateState)"
-                          [attr.aria-label]="updateStateLabel(instance.updateState)"
-                          role="img"
-                        ></i>
-                      </div>
-                      <div class="small text-body-secondary d-flex align-items-center gap-3 row-gap-1 flex-wrap">
-                        <span>
-                          <i class="bi bi-fingerprint me-1" aria-hidden="true"></i
-                          ><span class="font-monospace">{{ instance.instanceId }}</span>
-                        </span>
-                        <span> <i class="bi bi-hdd me-1" aria-hidden="true"></i>{{ instance.hostname }} </span>
-                        <span>
-                          <i class="bi bi-tag me-1" aria-hidden="true"></i
-                          >{{ formatVersion(instance.installedVersion) }}
-                        </span>
-                        <span>
-                          <i class="bi bi-heart-pulse me-1" aria-hidden="true"></i
-                          >{{ formatDate(instance.lastHeartbeatAt) }}
-                        </span>
-                      </div>
-                    </div>
-                    <div class="updates-manager__role-status d-flex align-items-center justify-content-center px-4">
-                      <fpc-badge color="secondary">{{ roleLabel(instance.role) }}</fpc-badge>
-                    </div>
-                    <div class="d-flex flex-shrink-0 align-self-stretch" role="group" aria-label="Dependencies">
-                      <div
-                        class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
-                          dependencyHealthClass(instance.dependencies.redis)
-                        }}"
-                        [attr.title]="dependencyStatusTitle('Valkey / Redis', instance.dependencies.redis)"
-                        [attr.aria-label]="dependencyStatusTitle('Valkey / Redis', instance.dependencies.redis)"
-                        role="img"
-                      >
-                        <i class="bi bi-memory" aria-hidden="true"></i>
-                      </div>
-                      <div
-                        class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
-                          dependencyHealthClass(instance.dependencies.queue)
-                        }}"
-                        [attr.title]="dependencyStatusTitle('Queue', instance.dependencies.queue)"
-                        [attr.aria-label]="dependencyStatusTitle('Queue', instance.dependencies.queue)"
-                        role="img"
-                      >
-                        <i class="bi bi-stack" aria-hidden="true"></i>
-                      </div>
-                      <div
-                        class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
-                          dependencyHealthClass(instance.dependencies.database)
-                        }}"
-                        [attr.title]="dependencyStatusTitle('Database', instance.dependencies.database)"
-                        [attr.aria-label]="dependencyStatusTitle('Database', instance.dependencies.database)"
-                        role="img"
-                      >
-                        <i class="bi bi-database" aria-hidden="true"></i>
-                      </div>
-                      <div
-                        class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
-                          dependencyHealthClass(instance.dependencies.opensearch)
-                        }}"
-                        [attr.title]="dependencyStatusTitle('OpenSearch', instance.dependencies.opensearch)"
-                        [attr.aria-label]="dependencyStatusTitle('OpenSearch', instance.dependencies.opensearch)"
-                        role="img"
-                      >
-                        <i class="bi bi-search" aria-hidden="true"></i>
-                      </div>
-                    </div>
-                  </div>
-                </fpc-list-item>
-              }
-            </fpc-list>
-          }
-        </fpc-board-lane>
+          </span>
+        </ng-template>
 
-        <fpc-section-row
-          [nowrap]="true"
-          class="d-md-flex"
-          [class.d-none]="mobilePanel() === 'instances'"
-          [class.d-flex]="mobilePanel() !== 'instances'"
-        >
-          <fpc-section-column
-            class="d-md-flex flex-column min-h-0"
-            [class.d-none]="mobilePanel() !== 'product'"
-            [class.d-flex]="mobilePanel() === 'product'"
-          >
-            <fpc-board-lane class="h-100">
-              <fpc-lane-header fpcBoardLaneHeader flush>
-                <span fpcLaneHeaderTitle i18n="@@featureUpdates-changelogProduct">Product changelog</span>
-              </fpc-lane-header>
-              <fpc-search-field
-                fpcBoardLaneSearch
-                name="productChangelogSearch"
-                [bordered]="false"
-                [placeholder]="searchProductChangelogPlaceholder"
-                [ariaLabel]="searchProductChangelogPlaceholder"
-                [(value)]="productChangelogSearch"
-              />
-              @if (filteredProductChangelog().length === 0) {
-                @if (productChangelogSearch().trim()) {
-                  <fpc-empty-state
-                    size="sm"
-                    icon="search"
-                    message="No search results"
-                    i18n-message="@@featureUpdates-noSearchResults"
-                  />
-                } @else {
-                  <fpc-empty-state
-                    size="sm"
-                    message="No product changelog entries yet"
-                    i18n-message="@@featureUpdates-noChangelogProduct"
-                  />
-                }
+        <ng-template #changelogText let-text let-tag="tag">
+          <span class="text-wrap">
+            <fpc-badge
+              class="me-1"
+              color="light"
+              size="sm"
+              [title]="tag ? '' : generalScopeTitle"
+              data-testid="updates-changelog-scope"
+              >{{ tag || generalScopeLabel }}</fpc-badge
+            >
+            @for (part of changelogTextParts(text); track $index) {
+              @if (part.kind === 'link') {
+                <a [href]="part.href" target="_blank" rel="noopener noreferrer">{{ part.label }}</a>
               } @else {
-                <fpc-list [flush]="true">
-                  @for (entry of filteredProductChangelog(); track $index) {
-                    <fpc-list-item>
-                      <div fpcListItemTitle>
-                        @if (entry.category) {
-                          <fpc-badge class="me-2" color="secondary">{{
-                            changelogCategoryLabel(entry.category)
-                          }}</fpc-badge>
-                        }
-                        @for (part of changelogTextParts(entry.text); track $index) {
-                          @if (part.kind === 'link') {
-                            <a [href]="part.href" target="_blank" rel="noopener noreferrer">{{ part.label }}</a>
-                          } @else {
-                            {{ part.value }}
-                          }
-                        }
-                      </div>
-                    </fpc-list-item>
-                  }
-                </fpc-list>
+                {{ part.value }}
               }
-            </fpc-board-lane>
-          </fpc-section-column>
-          <fpc-section-column
-            class="d-md-flex flex-column min-h-0 border-start"
-            [class.d-none]="mobilePanel() !== 'shared'"
-            [class.d-flex]="mobilePanel() === 'shared'"
-          >
-            <fpc-board-lane class="h-100">
-              <fpc-lane-header fpcBoardLaneHeader flush>
-                <span fpcLaneHeaderTitle i18n="@@featureUpdates-changelogShared">Shared changelog</span>
-              </fpc-lane-header>
-              <fpc-search-field
-                fpcBoardLaneSearch
-                name="sharedChangelogSearch"
-                [bordered]="false"
-                [placeholder]="searchSharedChangelogPlaceholder"
-                [ariaLabel]="searchSharedChangelogPlaceholder"
-                [(value)]="sharedChangelogSearch"
-              />
-              @if (filteredSharedChangelog().length === 0) {
-                @if (sharedChangelogSearch().trim()) {
-                  <fpc-empty-state
-                    size="sm"
-                    icon="search"
-                    message="No search results"
-                    i18n-message="@@featureUpdates-noSearchResults"
-                  />
-                } @else {
-                  <fpc-empty-state
-                    size="sm"
-                    message="No shared changelog entries yet"
-                    i18n-message="@@featureUpdates-noChangelogShared"
-                  />
-                }
-              } @else {
-                <fpc-list [flush]="true">
-                  @for (entry of filteredSharedChangelog(); track $index) {
-                    <fpc-list-item>
-                      <div fpcListItemTitle>
-                        @if (entry.category) {
-                          <fpc-badge class="me-2" color="secondary">{{
-                            changelogCategoryLabel(entry.category)
-                          }}</fpc-badge>
-                        }
-                        @for (part of changelogTextParts(entry.text); track $index) {
-                          @if (part.kind === 'link') {
-                            <a [href]="part.href" target="_blank" rel="noopener noreferrer">{{ part.label }}</a>
-                          } @else {
-                            {{ part.value }}
-                          }
-                        }
-                      </div>
-                    </fpc-list-item>
-                  }
-                </fpc-list>
-              }
-            </fpc-board-lane>
-          </fpc-section-column>
-        </fpc-section-row>
+            }
+          </span>
+        </ng-template>
       } @else if (!error()) {
         <fpc-empty-state message="No update information yet" i18n-message="@@featureUpdates-empty" />
       }

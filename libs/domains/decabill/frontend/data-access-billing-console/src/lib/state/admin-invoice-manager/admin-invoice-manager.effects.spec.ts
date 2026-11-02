@@ -26,8 +26,6 @@ import {
   issueManualInvoiceFailure,
   issueManualInvoiceSuccess,
   loadAdminInvoiceManager,
-  loadMoreAdminInvoiceManager,
-  loadMoreAdminInvoiceManagerSuccess,
   loadAdminInvoiceManagerFailure,
   loadAdminInvoiceManagerSuccess,
   updateManualInvoice,
@@ -42,7 +40,6 @@ import {
   deleteManualInvoice$,
   issueManualInvoice$,
   loadAdminInvoiceManager$,
-  loadMoreAdminInvoiceManager$,
   updateManualInvoice$,
 } from './admin-invoice-manager.effects';
 
@@ -79,36 +76,28 @@ describe('AdminInvoiceManagerEffects', () => {
   describe('loadAdminInvoiceManager$', () => {
     it('returns empty success when no invoices', (done) => {
       actions$ = of(loadAdminInvoiceManager({}));
-      adminBillingService.listInvoices.mockReturnValue(of({ items: [], total: 0, limit: 10, offset: 0 }));
+      adminBillingService.listInvoices.mockReturnValue(of({ items: [], total: 0, limit: 25, offset: 0 }));
 
       loadAdminInvoiceManager$(actions$, adminBillingService).subscribe((result) => {
-        expect(result).toEqual(loadAdminInvoiceManagerSuccess({ invoices: [], hasMore: false, nextOffset: 0 }));
-        done();
-      });
-    });
-
-    it('returns success when first batch is partial', (done) => {
-      actions$ = of(loadAdminInvoiceManager({ search: 'inv' }));
-      adminBillingService.listInvoices.mockReturnValue(of({ items: [mockInvoice], total: 1, limit: 10, offset: 0 }));
-
-      loadAdminInvoiceManager$(actions$, adminBillingService).subscribe((result) => {
-        expect(result).toEqual(
-          loadAdminInvoiceManagerSuccess({ invoices: [mockInvoice], hasMore: false, nextOffset: 1 }),
-        );
+        expect(result).toEqual(loadAdminInvoiceManagerSuccess({ invoices: [], total: 0 }));
         expect(adminBillingService.listInvoices).toHaveBeenCalledWith(
-          expect.objectContaining({ search: 'inv', offset: 0 }),
+          expect.objectContaining({ limit: 25, offset: 0 }),
         );
         done();
       });
     });
 
-    it('sets hasMore when first page is full', (done) => {
-      actions$ = of(loadAdminInvoiceManager({}));
-      const items = Array(10).fill(mockInvoice);
-      adminBillingService.listInvoices.mockReturnValue(of({ items, total: 20, limit: 10, offset: 0 }));
+    it('loads the requested page and returns its rows with the total', (done) => {
+      actions$ = of(loadAdminInvoiceManager({ search: 'inv', page: 3, pageSize: 50 }));
+      adminBillingService.listInvoices.mockReturnValue(
+        of({ items: [mockInvoice], total: 101, limit: 50, offset: 100 }),
+      );
 
       loadAdminInvoiceManager$(actions$, adminBillingService).subscribe((result) => {
-        expect(result).toEqual(loadAdminInvoiceManagerSuccess({ invoices: items, hasMore: true, nextOffset: 10 }));
+        expect(result).toEqual(loadAdminInvoiceManagerSuccess({ invoices: [mockInvoice], total: 101 }));
+        expect(adminBillingService.listInvoices).toHaveBeenCalledWith(
+          expect.objectContaining({ search: 'inv', limit: 50, offset: 100 }),
+        );
         done();
       });
     });
@@ -119,20 +108,6 @@ describe('AdminInvoiceManagerEffects', () => {
 
       loadAdminInvoiceManager$(actions$, adminBillingService).subscribe((result) => {
         expect(result).toEqual(loadAdminInvoiceManagerFailure({ error: 'Load failed' }));
-        done();
-      });
-    });
-  });
-
-  describe('loadMoreAdminInvoiceManager$', () => {
-    it('appends invoices for next page', (done) => {
-      actions$ = of(loadMoreAdminInvoiceManager({ offset: 10 }));
-      adminBillingService.listInvoices.mockReturnValue(of({ items: [mockInvoice], total: 11, limit: 10, offset: 10 }));
-
-      loadMoreAdminInvoiceManager$(actions$, adminBillingService).subscribe((result) => {
-        expect(result).toEqual(
-          loadMoreAdminInvoiceManagerSuccess({ invoices: [mockInvoice], hasMore: false, nextOffset: 11 }),
-        );
         done();
       });
     });

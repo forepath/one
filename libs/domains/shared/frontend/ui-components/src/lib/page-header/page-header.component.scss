@@ -3,8 +3,9 @@
   flex: 0 0 auto;
   padding: 1rem; // Matches Bootstrap `p-3` used by console page headers
   background-color: var(--bs-tertiary-bg);
-  // Shared with `fpc-button` icon-only `sm` via `:host-context(.fpc-page-header)`.
-  --fpc-page-header-control-size: 2.35rem;
+  // Header control tier (`styles/_controls.scss`): every `sm` control in this row (icon-only and
+  // text buttons, selects, search strips) resolves `--fpc-control-height-sm` to it.
+  --fpc-page-header-control-size: var(--fpc-control-height-header, 2.35rem);
 }
 
 :host(.fpc-page-header--compact) {
@@ -66,8 +67,12 @@
   min-height: var(--fpc-page-header-control-size);
 }
 
+// Slots with nothing projected render nothing (and no margin). `:empty` alone is not enough:
+// projection can leave whitespace / comment nodes behind, so also hide wrappers without elements.
 .fpc-page-header__breadcrumbs:empty,
-.fpc-page-header__actions:empty {
+.fpc-page-header__breadcrumbs:not(:has(> *)),
+.fpc-page-header__actions:empty,
+.fpc-page-header__actions:not(:has(> *)) {
   display: none;
 }
 
@@ -88,5 +93,25 @@
     flex-wrap: wrap;
     max-width: 100%;
     margin-inline-start: auto;
+  }
+}
+
+// Title + context chip on one line (the chip never wraps under the title on wide screens).
+.fpc-page-header__title-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.fpc-page-header__context {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+
+  &:empty {
+    display: none;
   }
 }

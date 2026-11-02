@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, forwardRef, input, model, output, signal } from '@angular/core';
+
+import { fpcFocusFromKeyboard } from '../focus-origin/focus-origin';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 export type FpcSearchFieldSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -20,6 +22,8 @@ export type FpcSearchFieldAppearance = 'default' | 'marketing';
     class: 'fpc-search-field',
     '[class.fpc-search-field--marketing]': 'appearance() === "marketing"',
     '[class.fpc-search-field--sm]': 'appearance() === "default" && size() === "sm"',
+    '[class.fpc-search-field--lg]': 'appearance() === "default" && size() === "lg"',
+    '[class.fpc-search-field--bordered]': 'appearance() === "default" && bordered()',
     '[class.fpc-search-field--clearable]': 'clearable()',
   },
   providers: [
@@ -30,7 +34,7 @@ export type FpcSearchFieldAppearance = 'default' | 'marketing';
     },
   ],
   template: `
-    <div [class]="containerClasses()">
+    <div [class]="containerClasses()" [class.fpc-field-kbd-focus]="keyboardFocus()">
       <i class="bi bi-search fpc-search-field__icon" aria-hidden="true"></i>
       <input
         type="search"
@@ -43,6 +47,7 @@ export type FpcSearchFieldAppearance = 'default' | 'marketing';
         [disabled]="isDisabled()"
         [value]="value()"
         (input)="onInput($event)"
+        (focus)="keyboardFocus.set(fpcFocusFromKeyboard())"
         (blur)="onBlur()"
       />
       @if (clearable() && value().length > 0) {
@@ -139,7 +144,12 @@ export class FpcSearchFieldComponent implements ControlValueAccessor {
     this.onChange(next);
   }
 
+  /** Focused by keyboard (Tab): the one focus ring around the whole field; never on mouse focus. */
+  protected readonly keyboardFocus = signal(false);
+  protected readonly fpcFocusFromKeyboard = fpcFocusFromKeyboard;
+
   protected onBlur(): void {
+    this.keyboardFocus.set(false);
     this.onTouched();
   }
 

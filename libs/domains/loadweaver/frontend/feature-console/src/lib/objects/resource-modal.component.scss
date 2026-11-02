@@ -1,0 +1,175 @@
+// Resource modal (user 2026-10-29): the layout of Decabill's Order plan wizard (subscriptions.component.scss).
+
+.lw-resource-modal__layout {
+  align-items: flex-start;
+}
+
+.lw-resource-modal__main {
+  min-width: 0;
+}
+
+// Kind step: the kinds table fills the step card (fixed height, the rows scroll; head and search stay).
+.lw-resource-modal__step--kind {
+  height: clamp(18rem, calc(100dvh - 20rem), 34rem);
+  overflow: hidden;
+
+  > .card-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0;
+  }
+}
+
+.lw-resource-modal__kinds {
+  flex: 1 1 0;
+  min-height: 0;
+  background: var(--bs-body-bg);
+}
+
+// Descriptions truncate so the Scope column stays in view (unstacked table; the stacked cards use the card width).
+.lw-resource-modal__kind-description {
+  display: block;
+}
+
+@container (min-width: 36rem) {
+  .lw-resource-modal__kind-description {
+    max-width: max(10rem, calc(100cqi - 26rem));
+  }
+}
+
+.lw-resource-modal__sidebar-sticky {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+// Step indicator: numbered circles; current = primary ring, done = filled primary, invalid = danger ring.
+.lw-resource-modal-steps__list {
+  // One row, scrolled sideways with the current step in view (`fpcStepStrip`), never a second row.
+  display: flex;
+  gap: 0.5rem 1rem;
+  // Block padding keeps focus rings inside the clipped strip; the negative margin keeps the layout.
+  margin: -0.25rem 0;
+  padding: 0.25rem 1rem;
+  list-style: none;
+}
+
+.lw-resource-modal-steps__step {
+  flex: 1 0 auto;
+}
+
+.lw-resource-modal-steps__button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bs-secondary-color);
+  text-align: left;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+    border-radius: var(--bs-border-radius-sm);
+  }
+}
+
+.lw-resource-modal-steps__indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: 50%;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out;
+}
+
+.lw-resource-modal-steps__label {
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.lw-resource-modal-steps__button--active {
+  color: var(--bs-body-color);
+  font-weight: 600;
+
+  .lw-resource-modal-steps__indicator {
+    color: var(--bs-primary-text-emphasis);
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border-color: var(--bs-primary);
+  }
+}
+
+.lw-resource-modal-steps__button--complete {
+  color: var(--bs-body-color);
+
+  .lw-resource-modal-steps__indicator {
+    color: var(--bs-dark);
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+  }
+}
+
+.lw-resource-modal-steps__button--invalid .lw-resource-modal-steps__indicator {
+  color: var(--bs-danger-text-emphasis);
+  border-color: var(--bs-danger);
+}
+
+// Review summary rows (Order plan's dl): label left, value right, a hairline between rows.
+.lw-resource-modal__summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color-translucent);
+
+  &:last-child {
+    border-bottom: 0;
+    margin-bottom: 0;
+  }
+}
+
+.lw-resource-modal__summary-row--heading {
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 0.375rem;
+}
+
+.lw-resource-modal__summary-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.lw-resource-modal__yaml > summary {
+  cursor: pointer;
+  width: fit-content;
+}
+
+@media (max-width: 991.98px) {
+  // Phones / tablets (Order plan): the draft summary first, compact; the steps two per row.
+  .lw-resource-modal__layout {
+    flex-direction: column-reverse;
+  }
+
+  .lw-resource-modal__sidebar-sticky {
+    position: static;
+  }
+}

@@ -6,13 +6,18 @@ import {
   createConfirmationCode,
   validateConfirmationCode,
   IDENTITY_EMAIL_DISPATCHER,
+  isIdentityEmailDeliveryUnavailable,
   type IIdentityEmailDispatcher,
 } from '@forepath/identity/backend';
 import {
   BadRequestException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   Logger,
+  OnModuleInit,
   Optional,
   ServiceUnavailableException,
   UnauthorizedException,
@@ -34,6 +39,7 @@ import { DUMMY_PAT_BCRYPT_HASH, PAT_TOKEN_PREFIX } from '../constants/pat.consta
 import { TwoFactorStatusDto } from '../dto/auth/two-factor-status.dto';
 import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
+import { AdminClaimAttemptLimiter, adminClaimTokenMatches, resolveAdminClaimConfig } from '../utils/admin-claim.utils';
 import { buildTotpOtpauthUrl, createTotpSecret, verifyTotpCode } from '../utils/totp.utils';
 
 import { PersonalAccessTokenService } from './personal-access-token.service';
@@ -74,8 +80,9 @@ export interface RegisterResponse {
 }
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   private readonly logger = new Logger(AuthService.name);
+  private readonly adminClaimLimiter = new AdminClaimAttemptLimiter();
 
   constructor(
     private readonly usersRepository: UsersRepository,
@@ -87,6 +94,23 @@ export class AuthService {
     @Inject(IDENTITY_EMAIL_DISPATCHER)
     private readonly emailDispatcher: IIdentityEmailDispatcher | null,
   ) {}
+
+  onModuleInit(): void {
+    if (this.isEmailLogin2faSuspended()) {
+      this.logger.warn(
+        'Email delivery is not configured (SMTP_HOST / SMTP_PORT): forced email two-factor login is NOT enforced until it is.',
+      );
+    }
+  }
+
+  /**
+   * True when forced email login 2FA is on (DISABLE_FORCE_LOGIN_2FA not "true") but not enforced because the app's
+   * email dispatcher opted in and reports that no email can be delivered (no SMTP). Always false for apps whose
+   * dispatcher doesn't implement `isDeliveryConfigured`.
+   */
+  isEmailLogin2faSuspended(): boolean {
+    return isForceLogin2faEnabled() && this.isEmailDeliveryUnavailable();
+  }
 
   async login(email: string, password: string, code?: string): Promise<LoginResponse> {
     // PATs must use POST /auth/token — never accept them on interactive login.
@@ -136,12 +160,12 @@ export class AuthService {
     const user = await this.usersRepository.findByIdOrThrow(userId);
     const totpEnabled = Boolean(user.totpEnabledAt && user.totpSecret);
     const emailEnabled = Boolean(user.email2faEnabledAt);
-    const forceEnabled = isForceLogin2faEnabled();
+    const forceEnabled = this.isEmailLogin2faForced();
     let method: Login2faMethod | null = null;
 
     if (totpEnabled) {
       method = 'totp';
-    } else if (forceEnabled || emailEnabled) {
+    } else if (forceEnabled || (emailEnabled && !this.isEmailDeliveryUnavailable())) {
       method = 'email';
     }
 
@@ -161,6 +185,12 @@ export class AuthService {
     }
 
     if (!code) {
+      if (this.isEmailDeliveryUnavailable()) {
+        throw new BadRequestException(
+          'Email is not configured on this server, so email two-factor authentication cannot be enabled.',
+        );
+      }
+
       await this.issueLogin2faEmailCode(user);
 
       return {
@@ -187,7 +217,7 @@ export class AuthService {
   async disableEmail2fa(userId: string, currentPassword: string): Promise<{ message: string }> {
     const user = await this.usersRepository.findByIdOrThrow(userId);
 
-    if (isForceLogin2faEnabled()) {
+    if (this.isEmailLogin2faForced()) {
       throw new BadRequestException(
         'Email two-factor authentication is required by our organization and cannot be disabled.',
       );
@@ -294,13 +324,58 @@ export class AuthService {
     };
   }
 
-  async register(email: string, password: string): Promise<RegisterResponse> {
+  /**
+   * Whether the next registration needs the one-time admin claim token (opt-in via `ADMIN_CLAIM_TOKEN_SHA256`; see
+   * `admin-claim.utils.ts`): configured and no account exists yet. Always false when the claim is not configured.
+   */
+  async isAdminClaimRequired(): Promise<boolean> {
+    if (!resolveAdminClaimConfig().configured) {
+      return false;
+    }
+
+    return (await this.usersRepository.countByTenant()) === 0;
+  }
+
+  /**
+   * Admin claim state for status endpoints: `claimConfigured` (the env is set on this instance) and `claimRequired`
+   * (configured and no account yet). A caller can only conclude "claimed" from `configured && !required` — an
+   * instance without the env says nothing about the claim.
+   */
+  async adminClaimStatus(): Promise<{ claimConfigured: boolean; claimRequired: boolean }> {
+    const claimConfigured = resolveAdminClaimConfig().configured;
+
+    return { claimConfigured, claimRequired: claimConfigured && (await this.isAdminClaimRequired()) };
+  }
+
+  /**
+   * @param adminClaimToken One-time admin claim token; only consulted for the first account and only when the claim
+   *   is configured (`ADMIN_CLAIM_TOKEN_SHA256`). Never logged. With the claim configured, registration is closed once
+   *   the first (claimed) account exists — as with `DISABLE_SIGNUP`; admins create or invite further users.
+   * @param clientKey Client identity (IP) for the failed-claim limiter.
+   */
+  async register(
+    email: string,
+    password: string,
+    adminClaimToken?: string,
+    clientKey?: string,
+  ): Promise<RegisterResponse> {
     if (process.env.DISABLE_SIGNUP === 'true') {
       throw new ServiceUnavailableException('Signup is disabled');
     }
 
     const count = await this.usersRepository.countByTenant();
     const isFirstUser = count === 0;
+
+    // Claimed clusters (opt-in via ADMIN_CLAIM_TOKEN_SHA256) have no open signup: the claim made the administrator,
+    // everyone else is added by them.
+    if (!isFirstUser && resolveAdminClaimConfig().configured) {
+      throw new ServiceUnavailableException('Signup is disabled');
+    }
+
+    if (isFirstUser) {
+      this.assertAdminClaim(adminClaimToken, clientKey ?? 'unknown');
+    }
+
     const created = await this.usersService.create(
       { email, password, role: isFirstUser ? UserRole.ADMIN : UserRole.USER },
       isFirstUser,
@@ -321,6 +396,24 @@ export class AuthService {
         'Account created. Please confirm your email before logging in. Check your inbox for the confirmation code.',
       emailConfirmed: false,
     };
+  }
+
+  private assertAdminClaim(adminClaimToken: string | undefined, clientKey: string): void {
+    const claim = resolveAdminClaimConfig();
+
+    if (!claim.configured) {
+      return;
+    }
+
+    if (this.adminClaimLimiter.isBlocked(clientKey)) {
+      throw new HttpException('Too many admin claim attempts. Try again later.', HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    if (!adminClaimTokenMatches(adminClaimToken, claim.hash)) {
+      this.adminClaimLimiter.recordFailure(clientKey);
+      this.logger.warn('Rejected the first registration: missing or invalid admin claim token');
+      throw new ForbiddenException('A valid admin claim token is required to create the first account.');
+    }
   }
 
   async confirmEmail(email: string, code: string): Promise<{ message: string }> {
@@ -473,9 +566,10 @@ export class AuthService {
 
   private async enforceLogin2fa(user: UserEntity, code?: string): Promise<void> {
     const totpEnabled = Boolean(user.totpEnabledAt && user.totpSecret);
-    const forceEnabled = isForceLogin2faEnabled();
-    const emailEnabled = Boolean(user.email2faEnabledAt);
-    const emailRequired = forceEnabled || emailEnabled;
+    // Email codes can't arrive without delivery (opt-in apps only): then neither forced nor user-enabled email 2FA
+    // applies. TOTP is unaffected.
+    const emailRequired =
+      !this.isEmailDeliveryUnavailable() && (isForceLogin2faEnabled() || Boolean(user.email2faEnabledAt));
 
     if (!totpEnabled && !emailRequired) {
       return;
@@ -508,6 +602,15 @@ export class AuthService {
     if (!consumed) {
       this.throwLogin2faInvalid('email');
     }
+  }
+
+  /** Forced email login 2FA in effect (the policy, unless suspended for missing email delivery). */
+  private isEmailLogin2faForced(): boolean {
+    return isForceLogin2faEnabled() && !this.isEmailDeliveryUnavailable();
+  }
+
+  private isEmailDeliveryUnavailable(): boolean {
+    return isIdentityEmailDeliveryUnavailable(this.emailDispatcher);
   }
 
   private throwLogin2faRequired(method: Login2faMethod): never {

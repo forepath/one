@@ -1,0 +1,268 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title" />
+
+  @if (notice(); as n) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="n.tone"
+      [message]="n.message"
+      [dismissible]="true"
+      (closed)="notice.set(null)"
+      data-testid="apps-notice"
+    />
+  }
+  @if (noCatalogEnabled()) {
+    <fpc-alert [flush]="true" variant="info" [message]="noCatalogLabel" data-testid="apps-no-catalog" />
+  }
+  @for (c of failingCatalogs(); track c.name) {
+    <fpc-alert [flush]="true" variant="warning" data-testid="apps-catalog-error">
+      <span class="fw-semibold">{{ catalogErrorLabel }} {{ c.title ?? c.name }}</span
+      >: {{ c.error }}
+    </fpc-alert>
+  }
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    <fpc-tab-group
+      class="fpc-lane-tabs"
+      [activeId]="lane()"
+      (activeIdChange)="lane.set($any($event))"
+      [ariaLabel]="title"
+    >
+      <fpc-tab id="store" [label]="storeTitle" />
+      <fpc-tab id="installed" [label]="installedTitle" />
+    </fpc-tab-group>
+    <fpc-section-row class="flex-grow-1 min-h-0">
+      <!-- Store: App (link to its page) · Trust · Publisher · Catalog · Latest; filters catalog / trust / category. -->
+      <loadweaver-lane
+        [title]="storeTitle"
+        grow="3 1 0"
+        [flush]="true"
+        [off]="lane() !== 'store'"
+        data-testid="apps-store-lane"
+      >
+        @if (error(); as message) {
+          <fpc-alert [flush]="true" variant="danger" [message]="message" />
+        }
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="storeTitle"
+          [columns]="storeColumns"
+          [rows]="visibleApps()"
+          [rowId]="appRowId"
+          [rowLink]="appRowLink"
+          paging="client"
+          persistKey="lw-apps-store"
+          [(query)]="search"
+          [searchPlaceholder]="searchLabel"
+          showFilterButton
+          [(filtersOpen)]="filtersOpen"
+          [filtersActive]="filterState.activeCount()"
+          (filtersApplied)="filterState.apply()"
+          (filtersCleared)="filterState.clear()"
+          [loading]="loading()"
+          emptyIcon="grid-3x3-gap"
+          data-testid="apps-store"
+        >
+          <span fpcDataTableToolbar class="d-inline-flex gap-2">
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              [ariaLabel]="refreshLabel"
+              [title]="refreshLabel"
+              [loading]="loading()"
+              (clicked)="reload()"
+              data-testid="apps-reload"
+            >
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </fpc-button>
+            @if (canManageCatalogs()) {
+              <fpc-button
+                variant="dark"
+                size="sm"
+                iconOnly
+                [ariaLabel]="refreshCatalogsLabel"
+                [title]="refreshCatalogsLabel"
+                [loading]="refreshing()"
+                (clicked)="refreshCatalogs()"
+                data-testid="apps-refresh-catalogs"
+              >
+                <i class="bi bi-cloud-arrow-down" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="dark"
+                size="sm"
+                iconOnly
+                [ariaLabel]="catalogSettingsLabel"
+                [title]="catalogSettingsLabel"
+                (clicked)="openSetup()"
+                data-testid="apps-catalog-settings"
+              >
+                <i class="bi bi-gear" aria-hidden="true"></i>
+              </fpc-button>
+            }
+          </span>
+          <fpc-form-field fpcDataTableFilters forId="lw-apps-catalog" [label]="catalogLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-apps-catalog"
+              size="sm"
+              [ngModel]="filterState.draft().catalog"
+              (ngModelChange)="filterState.patch({ catalog: $event })"
+              data-testid="apps-filter-catalog"
+            >
+              <option value="">{{ allLabel }}</option>
+              @for (c of catalogNames(); track c) {
+                <option [value]="c">{{ c }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+          <fpc-form-field fpcDataTableFilters forId="lw-apps-trust" [label]="trustLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-apps-trust"
+              size="sm"
+              [ngModel]="filterState.draft().trust"
+              (ngModelChange)="filterState.patch({ trust: $event })"
+              data-testid="apps-filter-trust"
+            >
+              <option value="">{{ allLabel }}</option>
+              @for (t of trustLabels; track t) {
+                <option [value]="t">{{ trustText(t) }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+          @if (categories().length > 0) {
+            <fpc-form-field fpcDataTableFilters forId="lw-apps-category" [label]="categoryLabel">
+              <fpc-form-control
+                controlType="select"
+                controlId="lw-apps-category"
+                size="sm"
+                [ngModel]="filterState.draft().category"
+                (ngModelChange)="filterState.patch({ category: $event })"
+                data-testid="apps-filter-category"
+              >
+                <option value="">{{ allLabel }}</option>
+                @for (c of categories(); track c) {
+                  <option [value]="c">{{ c }}</option>
+                }
+              </fpc-form-control>
+            </fpc-form-field>
+          }
+          <ng-template fpcTableCell="app" let-row>
+            <span class="d-inline-flex flex-wrap align-items-center gap-1">
+              <span class="fw-medium">{{ row.title }}</span>
+              @if (row.deprecated) {
+                <fpc-badge size="sm" tone="warning" data-testid="apps-deprecated">{{ deprecatedLabel }}</fpc-badge>
+              }
+              @if (row.installable === false) {
+                <fpc-badge
+                  size="sm"
+                  tone="neutral"
+                  [label]="notInstallableText(row)"
+                  data-testid="apps-not-installable"
+                  >{{ notInstallableBadge }}</fpc-badge
+                >
+              }
+            </span>
+            @if (row.summary) {
+              <div class="small text-body-secondary text-break">{{ row.summary }}</div>
+            }
+          </ng-template>
+          <ng-template fpcTableCell="trust" let-row>
+            <loadweaver-app-trust-badge [trust]="row.trust" />
+          </ng-template>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="grid-3x3-gap"
+              size="sm"
+              i18n-title="@@lwConsoleApps-emptyStore"
+              title="No app matches"
+            />
+          </span>
+        </fpc-data-table>
+      </loadweaver-lane>
+
+      <!-- Installed apps: State (takedown / update) · App · Deployment · Version · Channel; ⋮ Update / Uninstall. -->
+      <loadweaver-lane
+        [title]="installedTitle"
+        grow="2 1 0"
+        [flush]="true"
+        [off]="lane() !== 'installed'"
+        data-testid="apps-installed-lane"
+      >
+        @if (installedError(); as message) {
+          <fpc-alert [flush]="true" variant="danger" [message]="message" />
+        }
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="installedTitle"
+          [columns]="installedColumns"
+          [rows]="visibleInstalled()"
+          [rowId]="installedRowId"
+          [activeRowId]="focusedInstall()"
+          paging="client"
+          persistKey="lw-apps-installed"
+          [(query)]="installedSearch"
+          [searchPlaceholder]="searchInstalledLabel"
+          [loading]="installedLoading()"
+          [rowMenu]="installedMenu"
+          (rowAction)="onInstalledAction($event.row, $event.item.id)"
+          (rowActivate)="onInstalledAction($event, 'app')"
+          emptyIcon="box-seam"
+          data-testid="apps-installed"
+        >
+          <fpc-button
+            fpcDataTableToolbar
+            variant="dark"
+            size="sm"
+            iconOnly
+            [ariaLabel]="refreshLabel"
+            [title]="refreshLabel"
+            [loading]="installedLoading()"
+            (clicked)="reloadInstalled()"
+            data-testid="apps-installed-reload"
+          >
+            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+          </fpc-button>
+          <ng-template fpcTableCell="app" let-row>
+            <span class="d-inline-flex flex-wrap align-items-center gap-1">
+              <span class="fw-medium">{{ row.title ?? row.app.name }}</span>
+              @if (isTakenDown(row)) {
+                <span [title]="row.takedown?.reason ?? ''" data-testid="apps-taken-down">
+                  <fpc-badge size="sm" tone="danger" icon="exclamation-octagon">{{ takenDownBadge }}</fpc-badge>
+                </span>
+              } @else if (hasUpdate(row)) {
+                <fpc-badge size="sm" tone="warning" icon="arrow-up-circle" data-testid="apps-update-available"
+                  >{{ updateBadge }}{{ latestUpdate(row) ? ': ' + latestUpdate(row) : '' }}</fpc-badge
+                >
+              }
+            </span>
+            <div class="small text-body-secondary font-monospace">{{ row.app.catalog }}/{{ row.app.name }}</div>
+          </ng-template>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="box-seam"
+              size="sm"
+              i18n-title="@@lwConsoleApps-emptyInstalled"
+              title="No app installed yet"
+              i18n-message="@@lwConsoleApps-emptyInstalledHint"
+              message="Open an app in the store and install it into a project."
+            />
+          </span>
+        </fpc-data-table>
+      </loadweaver-lane>
+    </fpc-section-row>
+  </div>
+</div>
+
+<loadweaver-app-update-modal
+  [open]="updateFor() !== null"
+  (openChange)="onUpdateOpenChange($event)"
+  [app]="updateFor()"
+/>
+<loadweaver-app-uninstall-modal
+  [open]="uninstallFor() !== null"
+  (openChange)="onUninstallOpenChange($event)"
+  [app]="uninstallFor()"
+/>

@@ -2,10 +2,10 @@
   <div class="p-2 ps-3 border-bottom bg-body-tertiary">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
       <h6 class="mb-0 fw-semibold" i18n="@@featureKnowledgeTree-pagesHeading">Pages</h6>
-      <fpc-button-group size="sm">
+      <div class="fpc-lane-header__actions d-inline-flex align-items-center gap-1" role="group">
         <fpc-button
           size="sm"
-          variant="primary"
+          variant="dark"
           [iconOnly]="true"
           (clicked)="openCreate(null, 'page', $event)"
           i18n-title="@@featureKnowledgeTree-newPageTitle"
@@ -15,7 +15,7 @@
         </fpc-button>
         <fpc-button
           size="sm"
-          variant="primary"
+          variant="dark"
           [iconOnly]="true"
           (clicked)="openCreate(null, 'folder', $event)"
           i18n-title="@@featureKnowledgeTree-newFolderTitle"
@@ -25,7 +25,7 @@
         </fpc-button>
         <fpc-button
           size="sm"
-          variant="primary"
+          variant="dark"
           [iconOnly]="true"
           (clicked)="onUploadFile(undefined, $event)"
           i18n-title="@@featureKnowledgeTree-uploadFileTitle"
@@ -43,7 +43,7 @@
         >
           <i class="bi bi-arrow-clockwise"></i>
         </fpc-button>
-      </fpc-button-group>
+      </div>
     </div>
   </div>
 
@@ -152,6 +152,7 @@
       [class.drag-over]="dragOverParentId() === node.id && node.nodeType === 'folder'"
       [attr.aria-busy]="isNodeBusy(node.id) ? true : null"
       [attr.aria-current]="isNodeOpen(node.id) ? 'page' : null"
+      [attr.data-node-id]="node.id"
       [attr.data-clipboard]="isNodeClipboardCopy(node.id) ? 'copy' : isNodeClipboardCut(node.id) ? 'cut' : null"
       (click)="onNodeClick(node, $event)"
       (contextmenu)="onContextMenu($event, node)"
@@ -189,7 +190,8 @@
           [class.text-body-secondary]="isNodeBusy(node.id)"
           [title]="node.title"
         >
-          @if (node.shas.short) {
+          <!-- D11: short hashes identify pages (links, relations); folders don't need one (AG-06). -->
+          @if (node.shas.short && node.nodeType === 'page') {
             <small class="text-body-secondary">{{ node.shas.short }}</small>
           }
           {{ node.title }}
@@ -357,6 +359,8 @@
 }
 
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="renameModalOpen"
   i18n-title="@@featureKnowledgeTree-renameModalTitle"
   title="Rename item"
@@ -376,6 +380,8 @@
 </fpc-modal>
 
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="moveModalOpen"
   i18n-title="@@featureKnowledgeTree-moveModalTitle"
   title="Move item"

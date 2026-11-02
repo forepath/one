@@ -10,10 +10,6 @@ import {
   loadAdminProjects,
   loadAdminProjectsFailure,
   loadAdminProjectsSuccess,
-  loadMoreAdminProjects,
-  loadMoreAdminProjectsSuccess,
-  loadMoreProjects,
-  loadMoreProjectsSuccess,
   loadProjects,
   loadProjectsFailure,
   loadProjectsSuccess,
@@ -41,9 +37,7 @@ import {
 } from './projects.actions';
 import {
   loadAdminProjects$,
-  loadMoreAdminProjects$,
   loadProjects$,
-  loadMoreProjects$,
   billProjectTime$,
   loadProjectDetail$,
   loadProjectSummary$,
@@ -90,21 +84,23 @@ describe('ProjectsEffects', () => {
 
   it('loadProjects$ returns empty success', (done) => {
     actions$ = of(loadProjects({}));
-    projectsService.list.mockReturnValue(of({ items: [], total: 0, limit: 10, offset: 0 }));
+    projectsService.list.mockReturnValue(of({ items: [], total: 0, limit: 25, offset: 0 }));
 
     loadProjects$(actions$, projectsService).subscribe((result) => {
-      expect(result).toEqual(loadProjectsSuccess({ projects: [], hasMore: false, nextOffset: 0 }));
+      expect(result).toEqual(loadProjectsSuccess({ projects: [], total: 0 }));
+      expect(projectsService.list).toHaveBeenCalledWith(expect.objectContaining({ limit: 25, offset: 0 }));
       done();
     });
   });
 
-  it('loadProjects$ sets hasMore when first page is full', (done) => {
-    actions$ = of(loadProjects({}));
+  it('loadProjects$ loads the requested page with the total', (done) => {
+    actions$ = of(loadProjects({ page: 2, pageSize: 10 }));
     const items = Array(10).fill(project);
-    projectsService.list.mockReturnValue(of({ items, total: 20, limit: 10, offset: 0 }));
+    projectsService.list.mockReturnValue(of({ items, total: 20, limit: 10, offset: 10 }));
 
     loadProjects$(actions$, projectsService).subscribe((result) => {
-      expect(result).toEqual(loadProjectsSuccess({ projects: items, hasMore: true, nextOffset: 10 }));
+      expect(result).toEqual(loadProjectsSuccess({ projects: items, total: 20 }));
+      expect(projectsService.list).toHaveBeenCalledWith(expect.objectContaining({ limit: 10, offset: 10 }));
       done();
     });
   });
@@ -119,36 +115,14 @@ describe('ProjectsEffects', () => {
     });
   });
 
-  it('loadMoreProjects$ appends page', (done) => {
-    actions$ = of(loadMoreProjects({ offset: 10 }));
-    projectsService.list.mockReturnValue(of({ items: [project], total: 11, limit: 10, offset: 10 }));
-
-    loadMoreProjects$(actions$, projectsService).subscribe((result) => {
-      expect(result).toEqual(loadMoreProjectsSuccess({ projects: [project], hasMore: false, nextOffset: 11 }));
-      done();
-    });
-  });
-
-  it('loadAdminProjects$ returns success for partial batch', (done) => {
-    actions$ = of(loadAdminProjects({}));
-    adminService.list.mockReturnValue(of({ items: [project], total: 1, limit: 10, offset: 0 }));
+  it('loadAdminProjects$ loads the requested page with filters', (done) => {
+    actions$ = of(loadAdminProjects({ search: 'alpha', page: 3 }));
+    adminService.list.mockReturnValue(of({ items: [project], total: 51, limit: 25, offset: 50 }));
 
     loadAdminProjects$(actions$, adminService).subscribe((result) => {
-      expect(result).toEqual(loadAdminProjectsSuccess({ adminProjects: [project], hasMore: false, nextOffset: 1 }));
-      done();
-    });
-  });
-
-  it('loadMoreAdminProjects$ appends', (done) => {
-    actions$ = of(loadMoreAdminProjects({ offset: 10, search: 'alpha' }));
-    adminService.list.mockReturnValue(of({ items: [project], total: 11, limit: 10, offset: 10 }));
-
-    loadMoreAdminProjects$(actions$, adminService).subscribe((result) => {
-      expect(result).toEqual(
-        loadMoreAdminProjectsSuccess({ adminProjects: [project], hasMore: false, nextOffset: 11 }),
-      );
+      expect(result).toEqual(loadAdminProjectsSuccess({ adminProjects: [project], total: 51 }));
       expect(adminService.list).toHaveBeenCalledWith(
-        expect.objectContaining({ offset: 10, search: 'alpha', limit: 10 }),
+        expect.objectContaining({ offset: 50, search: 'alpha', limit: 25 }),
       );
       done();
     });

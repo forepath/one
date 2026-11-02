@@ -2,7 +2,7 @@ import type { AgentsRepository } from '../../repositories/agents.repository';
 import type { AgentEgressService } from '../../services/agent-egress.service';
 import type { AgentMessageFiltersService } from '../../services/agent-message-filters.service';
 import type { AgentRuntimeRefreshService } from '../../services/agent-runtime-refresh.service';
-import type { DockerService } from '../../services/docker.service';
+import type { AgentRuntime } from '../../runtime/agent-runtime';
 
 import type { OpenCodeClientFactory } from './opencode-client.factory';
 import { OpenCodeConfigSyncService } from './opencode-config-sync.service';
@@ -61,7 +61,7 @@ describe('OpenCodeConfigSyncService platform security policy', () => {
         getClient: jest.fn().mockResolvedValue({}),
         resolveConnection: jest.fn().mockResolvedValue({ baseUrl: 'http://opencode', authorization: 'Basic x' }),
       } as unknown as OpenCodeClientFactory,
-      dockerService as unknown as DockerService,
+      dockerService as unknown as AgentRuntime,
       undefined,
       {
         invalidateConnections: jest.fn(),

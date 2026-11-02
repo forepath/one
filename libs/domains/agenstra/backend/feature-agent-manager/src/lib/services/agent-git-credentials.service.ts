@@ -3,7 +3,7 @@ import * as sshpk from 'sshpk';
 
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 
 /** Container env keys whose values end up in the Git credential files (`~/.ssh`, `~/.netrc`). */
 export const GIT_CREDENTIAL_ENV_KEYS: readonly string[] = [
@@ -80,7 +80,7 @@ export class AgentGitCredentialsService {
 
   private readonly logger = new Logger(AgentGitCredentialsService.name);
 
-  constructor(private readonly dockerService: DockerService) {}
+  constructor(private readonly runtime: AgentRuntime) {}
 
   /**
    * Determine whether the configured git repository uses SSH.
@@ -122,7 +122,7 @@ export class AgentGitCredentialsService {
   ): Promise<{ publicKey: string; privateKey?: string }> {
     const keyPair = this.prepareSshKeyPair(providedPrivateKey);
     const { host, port } = this.getSshHostInfo(repositoryUrl);
-    const home = await this.dockerService.getContainerHomeDirectory(containerId);
+    const home = await this.runtime.getContainerHomeDirectory(containerId);
     const sshDir = `${home}/.ssh`;
     const keyPath = `${sshDir}/${keyPair.keyFilename}`;
     const escapedSshDir = this.escapeForShell(sshDir);
@@ -130,28 +130,10 @@ export class AgentGitCredentialsService {
     const escapedKnownHosts = this.escapeForShell(`${sshDir}/known_hosts`);
     const runAsAgent = { user: AgentGitCredentialsService.CONTAINER_RUNTIME_USER };
 
-    await this.dockerService.sendCommandToContainer(
-      containerId,
-      `mkdir -p ${escapedSshDir}`,
-      undefined,
-      true,
-      runAsAgent,
-    );
-    await this.dockerService.sendCommandToContainer(
-      containerId,
-      `chmod 700 ${escapedSshDir}`,
-      undefined,
-      true,
-      runAsAgent,
-    );
+    await this.runtime.sendCommandToContainer(containerId, `mkdir -p ${escapedSshDir}`, undefined, true, runAsAgent);
+    await this.runtime.sendCommandToContainer(containerId, `chmod 700 ${escapedSshDir}`, undefined, true, runAsAgent);
     await this.writeFileToContainer(containerId, keyPath, keyPair.privateKey);
-    await this.dockerService.sendCommandToContainer(
-      containerId,
-      `chmod 600 ${escapedKeyPath}`,
-      undefined,
-      true,
-      runAsAgent,
-    );
+    await this.runtime.sendCommandToContainer(containerId, `chmod 600 ${escapedKeyPath}`, undefined, true, runAsAgent);
 
     const knownHostSpec = port ? `[${host}]:${port}` : host;
     const sshKeyscanCommand = [
@@ -165,14 +147,14 @@ export class AgentGitCredentialsService {
       .filter(Boolean)
       .join(' ');
 
-    await this.dockerService.sendCommandToContainer(
+    await this.runtime.sendCommandToContainer(
       containerId,
       ['sh', '-c', sshKeyscanCommand],
       undefined,
       true,
       runAsAgent,
     );
-    await this.dockerService.sendCommandToContainer(
+    await this.runtime.sendCommandToContainer(
       containerId,
       `chmod 600 ${escapedKnownHosts}`,
       undefined,
@@ -209,25 +191,19 @@ export class AgentGitCredentialsService {
   password ${token}
 `;
     const base64Content = Buffer.from(netrcContent, 'utf-8').toString('base64');
-    const home = await this.dockerService.getContainerHomeDirectory(containerId);
+    const home = await this.runtime.getContainerHomeDirectory(containerId);
     const escapedPath = this.escapeForShell(`${home}/.netrc`);
     const runAsAgent = { user: AgentGitCredentialsService.CONTAINER_RUNTIME_USER };
 
     // The base64 content is sent to stdin, which base64 -d reads and decodes
-    await this.dockerService.sendCommandToContainer(
+    await this.runtime.sendCommandToContainer(
       containerId,
       `sh -c "base64 -d > ${escapedPath}"`,
       base64Content,
       true,
       runAsAgent,
     );
-    await this.dockerService.sendCommandToContainer(
-      containerId,
-      `chmod 600 ${escapedPath}`,
-      undefined,
-      true,
-      runAsAgent,
-    );
+    await this.runtime.sendCommandToContainer(containerId, `chmod 600 ${escapedPath}`, undefined, true, runAsAgent);
   }
 
   /**
@@ -236,7 +212,7 @@ export class AgentGitCredentialsService {
    * Agents without a remote repository, or without credentials for it, are skipped.
    */
   async restoreFromContainerEnvironment(containerId: string): Promise<GitCredentialsRestoreResult> {
-    const env = await this.dockerService.getContainerEnvironmentMap(containerId);
+    const env = await this.runtime.getContainerEnvironmentMap(containerId);
     const repositoryUrl = env['GIT_REPOSITORY_URL']?.trim();
 
     if (env['GIT_REPOSITORY_SETUP_MODE'] === GitRepositorySetupMode.EMPTY || !repositoryUrl) {
@@ -339,7 +315,7 @@ export class AgentGitCredentialsService {
   private async writeFileToContainer(containerId: string, filePath: string, contents: string): Promise<void> {
     const escapedBase64 = this.escapeForShell(Buffer.from(contents, 'utf-8').toString('base64'));
 
-    await this.dockerService.sendCommandToContainer(
+    await this.runtime.sendCommandToContainer(
       containerId,
       ['sh', '-c', `printf '%s' ${escapedBase64} | base64 -d > ${this.escapeForShell(filePath)}`],
       undefined,

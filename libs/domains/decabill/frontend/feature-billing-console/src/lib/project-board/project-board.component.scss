@@ -1,5 +1,3 @@
-@import '../section.scss';
-
 :host {
   display: flex;
   flex-direction: column;
@@ -18,163 +16,12 @@
   overflow: hidden;
 }
 
-.section__row {
-  flex-wrap: nowrap;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.project-board__viewport {
-  flex: 1 1 auto;
-  width: 100%;
-  height: 100%;
-  min-height: 8rem;
-}
-
-.project-board__lane-dropzone {
-  position: relative;
-}
-
-.project-board__lane-dropzone--over {
-  &:after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    outline: 2px dashed var(--bs-primary);
-    outline-offset: -2px;
-    background: color-mix(in srgb, var(--bs-primary) 8%, transparent);
-    pointer-events: none;
-  }
-}
-
-.project-board__card {
-  cursor: pointer;
-  border-radius: 0;
-  border-top: 0;
-  border-left: 0;
-  border-right: 0;
-  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.project-board__card--draggable {
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-
-  &:active {
-    cursor: grabbing;
-  }
-}
-
-.project-board__card--dragging {
-  opacity: 0.45;
-}
-
-.project-board__card:focus-visible {
-  outline: 2px solid var(--bs-primary);
-  outline-offset: 2px;
-}
-
-.project-board__card--nested {
-  padding-left: calc(0.65rem + var(--project-board-nest-depth, 0) * 1rem);
-  position: relative;
-
-  &:before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 0.65rem;
-    height: 100%;
-    --bs-bg-opacity: 1;
-    background-color: var(--bs-secondary-bg);
-  }
-}
-
+// Lanes view (Table | Lanes switch): one stacked `fpc-data-table` per lane, admins drag unlocked cards between lanes
+// (the table's `dropGroup`: drop zone frame, placeholder and drag image live in the shared table). The lane empty hint
+// lets drags pass through to the table body (the drop zone).
 .project-board__empty-lane {
   pointer-events: none;
   user-select: none;
-}
-
-.project-board__meta-chips fpc-badge {
-  display: inline-flex;
-  width: fit-content;
-  max-width: 100%;
-  margin-top: 0;
-}
-
-@mixin project-board-chip-tint($mix-color, $text-color) {
-  background-color: color-mix(in srgb, $mix-color 24%, var(--bs-tertiary-bg)) !important;
-  color: $text-color !important;
-}
-
-fpc-badge.project-board__chip--priority-low {
-  @include project-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
-}
-
-fpc-badge.project-board__chip--priority-medium {
-  @include project-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
-}
-
-fpc-badge.project-board__chip--priority-high {
-  @include project-board-chip-tint(var(--bs-warning), var(--bs-warning-text-emphasis, var(--bs-warning)));
-}
-
-fpc-badge.project-board__chip--priority-critical {
-  @include project-board-chip-tint(var(--bs-danger), var(--bs-danger-text-emphasis, var(--bs-danger)));
-}
-
-fpc-badge.project-board__chip--status-draft {
-  @include project-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
-}
-
-fpc-badge.project-board__chip--status-todo {
-  @include project-board-chip-tint(var(--bs-primary), var(--bs-primary-text-emphasis, var(--bs-primary)));
-}
-
-fpc-badge.project-board__chip--status-in-progress {
-  @include project-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
-}
-
-fpc-badge.project-board__chip--status-prototype {
-  @include project-board-chip-tint(var(--bs-warning), var(--bs-warning-text-emphasis, var(--bs-warning)));
-}
-
-fpc-badge.project-board__chip--status-done {
-  @include project-board-chip-tint(var(--bs-success), var(--bs-success-text-emphasis, var(--bs-success)));
-}
-
-fpc-badge.project-board__chip--status-closed {
-  @include project-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
-}
-
-fpc-badge.project-board__chip--activity-created {
-  @include project-board-chip-tint(var(--bs-success), var(--bs-success-text-emphasis, var(--bs-success)));
-}
-
-fpc-badge.project-board__chip--activity-deleted {
-  @include project-board-chip-tint(var(--bs-danger), var(--bs-danger-text-emphasis, var(--bs-danger)));
-}
-
-fpc-badge.project-board__chip--activity-comment {
-  @include project-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
-}
-
-fpc-badge.project-board__chip--activity-status {
-  @include project-board-chip-tint(var(--bs-primary), var(--bs-primary-text-emphasis, var(--bs-primary)));
-}
-
-fpc-badge.project-board__chip--activity-priority {
-  @include project-board-chip-tint(var(--bs-warning), var(--bs-warning-text-emphasis, var(--bs-warning)));
-}
-
-fpc-badge.project-board__chip--activity-muted {
-  @include project-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
 }
 
 fpc-modal.modal-ticket-detail {
@@ -261,7 +108,7 @@ fpc-modal.modal-ticket-detail {
   overflow: hidden;
 }
 
-:host ::ng-deep .modal-ticket-detail fpc-breadcrumb-item {
+.modal-ticket-detail ::ng-deep fpc-breadcrumb-item {
   max-width: min(14rem, 35vw);
 }
 
@@ -376,7 +223,43 @@ fpc-modal.modal-ticket-detail {
     flex-basis: 100%;
   }
 
-  :host ::ng-deep .modal-ticket-detail fpc-breadcrumb-item {
+  .modal-ticket-detail ::ng-deep fpc-breadcrumb-item {
     max-width: 45vw;
   }
+}
+
+// Subtask rows of the board table: indented under their parent ticket.
+// Ticket cells (DB-20): the hash + title wrapper never outgrows its cell (table and stacked cards), the title is the
+// part that shrinks and ends in an ellipsis (with the full title as tooltip); hash and badges keep their size.
+.project-board__ticket-cell {
+  min-width: 0;
+  max-width: 100%;
+  vertical-align: middle;
+
+  > .text-truncate {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  > :not(.text-truncate) {
+    flex-shrink: 0;
+  }
+}
+
+.project-board__ticket-cell--nested {
+  padding-left: 0.75rem;
+}
+
+// Lanes view (user): lane names, then one full-width search / filter strip, then the lane bodies. Only the bodies
+// scroll vertically; names and strip stay visible. The lanes shrink to the width (no horizontal scroll), so the name
+// row and the bodies keep the same columns.
+.project-board__lane-heads {
+  flex: 0 0 auto;
+}
+
+.project-board__lanes-toolbar {
+  position: sticky;
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+  left: 0;
+  z-index: 1;
 }

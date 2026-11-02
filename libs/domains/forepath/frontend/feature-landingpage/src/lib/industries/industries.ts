@@ -95,6 +95,7 @@ const LINKS = {
   },
   agenstra: { label: 'agenstra.com', href: 'https://agenstra.com' },
   decabill: { label: 'decabill.com', href: 'https://decabill.com' },
+  loadweaver: { label: 'loadweaver.com', href: 'https://loadweaver.com' },
 } as const satisfies Record<string, ForepathIndustrySolutionLink>;
 
 // The industries we serve, in the order of the industries menu and the footer.
@@ -667,7 +668,7 @@ export const FOREPATH_INDUSTRIES: readonly ForepathIndustry[] = [
     navCaption: $localize`:@@featureForepathIndustry-softwareNavCaption:Product teams, startups, and SaaS vendors`,
     metaTitle: $localize`:@@featureForepathIndustry-softwareMetaTitle:Engineering for software companies and SaaS vendors :: ForePath`,
     metaDescription: $localize`:@@featureForepathIndustry-softwareMetaDescription:ForePath extends product teams with cloud and platform engineering, delivery pipelines, Agenstra coding agents, and Decabill SaaS billing.`,
-    metaKeywords: $localize`:@@featureForepathIndustry-softwareMetaKeywords:SaaS engineering, platform engineering, Kubernetes, CI/CD, coding agents, Agenstra, Decabill, startup`,
+    metaKeywords: $localize`:@@featureForepathIndustry-softwareMetaKeywords:SaaS engineering, platform engineering, Kubernetes, CI/CD, coding agents, Agenstra, Decabill, Loadweaver, startup`,
     heroAccent: $localize`:@@featureForepathIndustry-softwareHeroAccent:Software companies`,
     heroRest: $localize`:@@featureForepathIndustry-softwareHeroRest:that ship faster without losing control`,
     heroLead: $localize`:@@featureForepathIndustry-softwareHeroLead:We extend product teams with platform engineering, delivery pipelines, and coding agents, and we bill SaaS with the platform we run ourselves.`,
@@ -765,6 +766,18 @@ export const FOREPATH_INDUSTRIES: readonly ForepathIndustry[] = [
           $localize`:@@featureForepathIndustry-softwareSolution4Item3:DATEV export for your accountant`,
         ],
         link: LINKS.decabill,
+      },
+      {
+        id: 'own-servers',
+        icon: 'bi-hdd-network',
+        title: $localize`:@@featureForepathIndustry-softwareSolution5Title:Your own servers as one platform with Loadweaver`,
+        description: $localize`:@@featureForepathIndustry-softwareSolution5Desc:Loadweaver turns a handful of servers into a resilient cluster for your Compose apps, with policies, failover, and isolation up to microVMs. Now in early access.`,
+        items: [
+          $localize`:@@featureForepathIndustry-softwareSolution5Item1:Docker Compose deployments through plan and apply`,
+          $localize`:@@featureForepathIndustry-softwareSolution5Item2:Replicated storage and ingress that fails over on its own`,
+          $localize`:@@featureForepathIndustry-softwareSolution5Item3:gVisor sandboxes and microVMs for untrusted workloads`,
+        ],
+        link: LINKS.loadweaver,
       },
     ],
     oneThread: 'development',

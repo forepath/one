@@ -9,6 +9,7 @@ backend_apps=(
   "agenstra/backend-agent-manager:agenstra-backend-agent-manager"
   "decabill/backend-billing-manager:decabill-backend-billing-manager"
   "forepath/backend-communication:forepath-backend-communication"
+  "loadweaver/backend-control-plane:loadweaver-backend-control-plane"
 )
 
 for app in "${backend_apps[@]}"; do

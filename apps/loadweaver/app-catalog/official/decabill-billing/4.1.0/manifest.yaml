@@ -1,0 +1,340 @@
+apiVersion: apps.loadweaver.com/v1
+name: decabill-billing
+version: 4.1.0
+title: Decabill Billing
+description: >-
+  Decabill billing: customers, subscriptions, invoices, payments and DATEV exports, with the billing console. Includes
+  the API, the queue worker, the scheduler and the web console, with bundled Postgres, Valkey and OpenSearch, or your
+  existing ones. Optional: Stripe payments, Keycloak sign-in instead of the built-in accounts, and S3-compatible
+  document storage instead of the volume.
+publisher: ForePath
+license: AGPL-3.0-or-later
+homepage: https://decabill.com
+docs: https://github.com/forepath/one/tree/main/docs/decabill
+channels: [stable]
+minLoadweaver: 1.0.0
+parameters:
+  type: object
+  properties:
+    domain:
+      type: string
+      title: Domain
+      description: Public hostname of the billing console and API (DNS must point at the cluster's ingress).
+      pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$'
+      examples: [billing.example.com]
+    issuerName:
+      type: string
+      title: Company name
+      description: Issuer of invoices and sender name of billing emails.
+      minLength: 1
+      maxLength: 200
+      pattern: '^[^"\\]+$'
+      examples: [Example GmbH]
+    issuerEmail:
+      type: string
+      title: Billing contact email
+      description: Contact address on invoices and in billing emails.
+      format: email
+      examples: [billing@example.com]
+    issuerCountry:
+      type: string
+      title: Issuer country
+      description: ISO 3166-1 alpha-2 country code of the issuer.
+      default: DE
+      pattern: '^[A-Z]{2}$'
+    taxRateStandard:
+      type: number
+      title: Standard tax rate (%)
+      default: 19
+      minimum: 0
+      maximum: 100
+    taxRateReduced:
+      type: number
+      title: Reduced tax rate (%)
+      default: 7
+      minimum: 0
+      maximum: 100
+    datevExportEnabled:
+      type: boolean
+      title: Monthly DATEV export
+      default: false
+    disableSignup:
+      type: boolean
+      title: Disable sign-up
+      description: Close open registration (create the first account before switching this on).
+      default: false
+    defaultLocale:
+      type: string
+      title: Console language
+      enum: [en, de]
+      default: en
+    emailFrom:
+      type: string
+      title: Sender address
+      format: email
+      examples: [billing@example.com]
+    smtpHost:
+      type: string
+      title: SMTP host
+      pattern: '^[A-Za-z0-9.-]+$'
+      examples: [smtp.example.com]
+    smtpPort:
+      type: integer
+      title: SMTP port
+      default: 587
+      minimum: 1
+      maximum: 65535
+    smtpUser:
+      type: string
+      title: SMTP user
+      description: Leave empty for servers without authentication (the smtp-password secret is then ignored).
+      default: ''
+    consoleReplicas:
+      type: integer
+      title: Console replicas
+      default: 2
+      minimum: 1
+      maximum: 10
+    filesVolumeSize:
+      type: string
+      title: Document storage size
+      description: Invoice PDFs and exports (local file storage).
+      default: 10g
+      pattern: '^[0-9]+(k|m|g|t|Ki|Mi|Gi|Ti)?$'
+    bundlePostgres:
+      type: boolean
+      title: Bundled Postgres
+      description: Run Postgres as part of the app. Off = connect to an existing database.
+      default: true
+    dbHost:
+      type: string
+      title: Database host
+      default: postgres
+    dbPort:
+      type: integer
+      title: Database port
+      default: 5432
+      minimum: 1
+      maximum: 65535
+    dbUser:
+      type: string
+      title: Database user
+      default: decabill
+      pattern: '^[a-z_][a-z0-9_]{0,62}$'
+    dbName:
+      type: string
+      title: Database name
+      default: decabill
+      pattern: '^[a-z_][a-z0-9_]{0,62}$'
+    postgresVolumeSize:
+      type: string
+      title: Postgres volume size
+      default: 20g
+      pattern: '^[0-9]+(k|m|g|t|Ki|Mi|Gi|Ti)?$'
+    bundleValkey:
+      type: boolean
+      title: Bundled Valkey
+      description: Run Valkey (queues, caches) as part of the app. Off = connect to an existing Valkey / Redis.
+      default: true
+    valkeyHost:
+      type: string
+      title: Valkey host
+      default: valkey
+    valkeyPort:
+      type: integer
+      title: Valkey port
+      default: 6379
+      minimum: 1
+      maximum: 65535
+    valkeyKeyPrefix:
+      type: string
+      title: Valkey key prefix
+      description: Prefix of all keys (lets several apps share one Valkey).
+      default: decabill-billing
+      pattern: '^[a-z0-9-]{1,64}$'
+    bundleOpenSearch:
+      type: boolean
+      title: Bundled OpenSearch
+      description: Run a single-node OpenSearch (search) as part of the app. Off = connect to an existing cluster.
+      default: true
+    opensearchUrl:
+      type: string
+      title: OpenSearch URL
+      default: http://opensearch:9200
+      pattern: '^https?://[^\s"]+$'
+    opensearchHeap:
+      type: string
+      title: OpenSearch heap
+      default: 512m
+      pattern: '^[0-9]+[mg]$'
+    opensearchVolumeSize:
+      type: string
+      title: OpenSearch volume size
+      default: 10g
+      pattern: '^[0-9]+(k|m|g|t|Ki|Mi|Gi|Ti)?$'
+    authMethod:
+      type: string
+      title: Sign-in
+      description: Built-in accounts (users, default) or an existing Keycloak realm (keycloak).
+      enum: [users, keycloak]
+      default: users
+    keycloakUrl:
+      type: string
+      title: Keycloak URL
+      description: Public base URL of Keycloak (browsers and the API reach it), e.g. https://sso.example.com. Keycloak sign-in only.
+      default: ''
+      pattern: '^(|https://[^\s"]+)$'
+    keycloakRealm:
+      type: string
+      title: Keycloak realm
+      default: ''
+      pattern: '^[^"\\]*$'
+    keycloakClientId:
+      type: string
+      title: Keycloak client ID
+      description: Client of the console and the API, as in Decabill's bundled stack (the API uses the keycloak-client-secret secret).
+      default: ''
+      pattern: '^[^"\\]*$'
+    keycloakTokenValidation:
+      type: string
+      title: Keycloak token validation
+      enum: [online, offline]
+      default: online
+    stripeEnabled:
+      type: boolean
+      title: Stripe payments
+      description: Online payments through Stripe Checkout (secrets stripe-secret-key and stripe-webhook-secret; Stripe webhook endpoint https://<domain>/api/webhooks/payments/stripe).
+      default: false
+    fileStorage:
+      type: string
+      title: Document storage
+      description: Invoice PDFs and exports on the replicated volume (local, default) or in an S3-compatible bucket (s3).
+      enum: [local, s3]
+      default: local
+    s3Endpoint:
+      type: string
+      title: S3 endpoint
+      description: API endpoint of a non-AWS provider (R2, B2, Ceph, MinIO, Garage …); empty for AWS S3.
+      default: ''
+      pattern: '^(|https?://[^\s"]+)$'
+    s3Bucket:
+      type: string
+      title: S3 bucket
+      default: ''
+      pattern: '^(|[a-z0-9][a-z0-9.-]{1,61}[a-z0-9])$'
+    s3Region:
+      type: string
+      title: S3 region
+      default: auto
+      pattern: '^[a-z0-9-]{1,32}$'
+    s3ForcePathStyle:
+      type: string
+      title: S3 path-style URLs
+      description: Empty = path style when an endpoint is set, else virtual-hosted style.
+      enum: ['', 'true', 'false']
+      default: ''
+    s3KeyPrefix:
+      type: string
+      title: S3 key prefix
+      description: Optional prefix of every object key (e.g. decabill/prod).
+      default: ''
+      pattern: '^[A-Za-z0-9/_.-]{0,200}$'
+  required: [domain, issuerName, issuerEmail, emailFrom, smtpHost]
+secrets:
+  - name: db-password
+    description: Postgres password of the database user (bundled Postgres is initialised with it).
+  - name: valkey-password
+    description: Valkey password (bundled Valkey requires it; for an existing Valkey, its password).
+  - name: encryption-key
+    description: 'AES-256-GCM key for encrypted columns: base64 of 32 random bytes (`openssl rand -base64 32`). Keep it: data encrypted with it is unreadable without it.'
+  - name: jwt-secret
+    description: Signing secret of user sessions (random, e.g. `openssl rand -hex 32`).
+  - name: smtp-password
+    description: SMTP password (any value when the server needs no authentication).
+  - name: file-signing-secret
+    description: Signs download links of invoices and exports (random, e.g. `openssl rand -hex 32`).
+  # Conditional secrets: needed (and asked for) only while their integration is switched on; left out otherwise.
+  - name: stripe-secret-key
+    description: Stripe secret API key (sk_live_… / sk_test_…).
+    requiredWhen: { parameter: stripeEnabled }
+  - name: stripe-webhook-secret
+    description: Signing secret of the Stripe webhook endpoint (whsec_…).
+    requiredWhen: { parameter: stripeEnabled }
+  - name: keycloak-client-secret
+    description: Secret of the Keycloak client.
+    requiredWhen: { parameter: authMethod, equals: keycloak }
+  - name: s3-access-key-id
+    description: Access key ID for the S3 bucket.
+    requiredWhen: { parameter: fileStorage, equals: s3 }
+  - name: s3-secret-access-key
+    description: Secret access key for the S3 bucket.
+    requiredWhen: { parameter: fileStorage, equals: s3 }
+dependencies:
+  - name: postgres
+    title: PostgreSQL 16
+    bundled:
+      parameter: bundlePostgres
+      services: [postgres]
+      volumes: [postgres-data]
+    provided:
+      parameters: [dbHost, dbPort, dbUser, dbName]
+  - name: valkey
+    title: Valkey (Redis-compatible)
+    bundled:
+      parameter: bundleValkey
+      services: [valkey]
+      volumes: [valkey-data]
+    provided:
+      parameters: [valkeyHost, valkeyPort, valkeyKeyPrefix]
+  - name: opensearch
+    title: OpenSearch 2
+    bundled:
+      parameter: bundleOpenSearch
+      services: [opensearch]
+      volumes: [opensearch-data]
+    provided:
+      parameters: [opensearchUrl]
+  # Optional services you bring (nothing is bundled), used when switched on with authMethod / fileStorage. Stripe is
+  # a hosted service: stripeEnabled + its two secrets.
+  - name: keycloak
+    title: Keycloak (optional, instead of built-in accounts)
+    provided:
+      parameters:
+        [keycloakUrl, keycloakRealm, keycloakClientId, keycloakTokenValidation]
+  - name: s3
+    title: S3-compatible storage (optional, instead of the documents volume)
+    provided:
+      parameters:
+        [s3Endpoint, s3Bucket, s3Region, s3ForcePathStyle, s3KeyPrefix]
+backups:
+  - name: database
+    schedule: '0 2 * * *'
+    volumes: [postgres-data]
+    retention: 30d
+    description: Nightly Postgres backup (pg_dump hook, app-consistent). Invoices are records you must keep.
+  - name: documents
+    schedule: '30 2 * * *'
+    volumes: [billing-files]
+    retention: 30d
+    description: Nightly backup of invoice PDFs and exports.
+  - name: search
+    schedule: '0 3 * * 0'
+    volumes: [opensearch-data]
+    retention: 4w
+    description: Weekly OpenSearch data; the index can also be rebuilt from Postgres.
+healthChecks:
+  - service: api
+    type: http
+    port: 3200
+    path: /api/health
+    interval: 30s
+    timeout: 10s
+  - service: console
+    type: http
+    port: 4202
+    path: /
+  - service: postgres
+    type: command
+    command: [pg_isready]
+# The billing manager migrates its database on start-up (TypeORM); version-specific update steps go here.
+migrations: []

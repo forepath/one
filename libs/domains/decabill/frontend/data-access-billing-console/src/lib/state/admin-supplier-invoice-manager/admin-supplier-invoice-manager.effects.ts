@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
 
+import { billingPageWindow } from '../../constants/list-paging.constants';
 import { AdminSupplierInvoicesService } from '../../services/admin-supplier-invoices.service';
 
 import {
@@ -29,9 +30,6 @@ import {
   loadAdminSupplierInvoiceSummary,
   loadAdminSupplierInvoiceSummaryFailure,
   loadAdminSupplierInvoiceSummarySuccess,
-  loadMoreAdminSupplierInvoiceManager,
-  loadMoreAdminSupplierInvoiceManagerFailure,
-  loadMoreAdminSupplierInvoiceManagerSuccess,
   parseSupplierInvoiceDocument,
   parseSupplierInvoiceDocumentFailure,
   parseSupplierInvoiceDocumentSuccess,
@@ -49,8 +47,6 @@ function normalizeError(error: unknown): string {
 
   return 'An unexpected error occurred';
 }
-
-const BATCH_SIZE = 10;
 
 export const loadAdminSupplierInvoiceSummary$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminSupplierInvoicesService)) =>
@@ -70,42 +66,16 @@ export const loadAdminSupplierInvoiceManager$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminSupplierInvoicesService)) =>
     actions$.pipe(
       ofType(loadAdminSupplierInvoiceManager),
-      switchMap(({ search, status }) =>
-        service.list({ limit: BATCH_SIZE, offset: 0, search, status }).pipe(
-          map((response) => {
-            const nextOffset = response.items.length;
+      switchMap(({ search, status, page, pageSize }) => {
+        const { limit, offset } = billingPageWindow(page, pageSize);
 
-            return loadAdminSupplierInvoiceManagerSuccess({
-              invoices: response.items,
-              hasMore: nextOffset < response.total,
-              nextOffset,
-            });
-          }),
+        return service.list({ limit, offset, search, status }).pipe(
+          map((response) =>
+            loadAdminSupplierInvoiceManagerSuccess({ invoices: response.items, total: response.total }),
+          ),
           catchError((error) => of(loadAdminSupplierInvoiceManagerFailure({ error: normalizeError(error) }))),
-        ),
-      ),
-    ),
-  { functional: true },
-);
-
-export const loadMoreAdminSupplierInvoiceManager$ = createEffect(
-  (actions$ = inject(Actions), service = inject(AdminSupplierInvoicesService)) =>
-    actions$.pipe(
-      ofType(loadMoreAdminSupplierInvoiceManager),
-      switchMap(({ offset, search, status }) =>
-        service.list({ limit: BATCH_SIZE, offset, search, status }).pipe(
-          map((response) => {
-            const nextOffset = offset + response.items.length;
-
-            return loadMoreAdminSupplierInvoiceManagerSuccess({
-              invoices: response.items,
-              hasMore: nextOffset < response.total,
-              nextOffset,
-            });
-          }),
-          catchError((error) => of(loadMoreAdminSupplierInvoiceManagerFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     ),
   { functional: true },
 );

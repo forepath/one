@@ -5,11 +5,11 @@
     @if (addonsLoading) {
       <div class="text-body-secondary small d-flex align-items-center gap-2 mb-2">
         <fpc-spinner size="sm" />
-        <span i18n="@@featureSubscriptions-loadingAddons">Loading addons...</span>
+        <span i18n="@@featureSubscriptions-loadingAddons">Loading add-ons...</span>
       </div>
     } @else if (addons.length > 0) {
       <fieldset class="border rounded p-3 mb-3">
-        <legend class="fs-6 mb-2" i18n="@@featureSubscriptions-addons">Addons</legend>
+        <legend class="fs-6 mb-2" i18n="@@featureSubscriptions-addons">Add-ons</legend>
         @for (addon of addons; track addon.id) {
           <div class="mb-2">
             <fpc-form-check
@@ -296,17 +296,15 @@
             <h6 class="mb-3" i18n="@@featureSubscriptions-orderTermsTitle">Runtime & terms</h6>
             <div class="text-body-secondary small">
               <span i18n="@@featureSubscriptions-billingInterval">Runtime</span>
-              <strong class="ms-2">{{ plan.billingIntervalValue }} {{ plan.billingIntervalType }}(s)</strong>
+              <strong class="ms-2">{{ durationLabel(plan.billingIntervalValue, plan.billingIntervalType) }}</strong>
             </div>
             <div class="text-body-secondary small mt-2">
               <span i18n="@@featureSubscriptions-minCommitment">Min. commitment</span>
-              <strong class="ms-2"
-                >{{ plan.minCommitmentDays }} <span i18n="@@featureSubscriptions-days">days</span></strong
-              >
+              <strong class="ms-2">{{ durationLabel(plan.minCommitmentDays, 'day') }}</strong>
             </div>
             <div class="text-body-secondary small mt-2">
               <span i18n="@@featureSubscriptions-noticeDays">Notice period</span>
-              <strong class="ms-2">{{ plan.noticeDays }} <span i18n="@@featureSubscriptions-days">days</span></strong>
+              <strong class="ms-2">{{ durationLabel(plan.noticeDays, 'day') }}</strong>
             </div>
           </div>
         </div>

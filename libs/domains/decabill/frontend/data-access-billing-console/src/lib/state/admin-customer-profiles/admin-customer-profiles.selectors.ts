@@ -51,3 +51,13 @@ export const selectAdminCustomerProfileTrustScoreRefreshing = createSelector(
   selectAdminCustomerProfilesState,
   (state) => state.trustScoreRefreshing,
 );
+
+export const selectAdminCustomerProfilesTotal = createSelector(
+  selectAdminCustomerProfilesState,
+  (state) => state.total,
+);
+export const selectAdminCustomerProfilesPage = createSelector(selectAdminCustomerProfilesState, (state) => state.page);
+export const selectAdminCustomerProfilesPageSize = createSelector(
+  selectAdminCustomerProfilesState,
+  (state) => state.pageSize,
+);

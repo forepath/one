@@ -55,4 +55,50 @@ describe('OpenSearchService', () => {
       },
     });
   });
+
+  it('bulkAppend_CreatesDocumentsAndCountsRejected', async () => {
+    process.env['OPENSEARCH_ENABLED'] = 'true';
+    const service = new OpenSearchService();
+    const bulk = jest
+      .fn()
+      .mockResolvedValue({ body: { errors: true, items: [{ create: {} }, { create: { error: { type: 'x' } } }] } });
+
+    (service as unknown as { client: unknown }).client = { bulk };
+
+    await expect(service.bulkAppend('logs-1', [{ a: 1 }, { a: 2 }])).resolves.toBe(1);
+    expect(bulk).toHaveBeenCalledWith({
+      refresh: false,
+      body: [{ create: { _index: 'logs-1' } }, { a: 1 }, { create: { _index: 'logs-1' } }, { a: 2 }],
+    });
+  });
+
+  it('searchRaw_ReturnsSortValues', async () => {
+    process.env['OPENSEARCH_ENABLED'] = 'true';
+    const service = new OpenSearchService();
+    const search = jest.fn().mockResolvedValue({
+      body: { hits: { total: { value: 1 }, hits: [{ _id: 'x', _source: { m: 'hi' }, sort: [1, 'x'] }] } },
+    });
+
+    (service as unknown as { client: unknown }).client = { search };
+
+    await expect(service.searchRaw('logs-*', { size: 1 })).resolves.toEqual({
+      total: 1,
+      hits: [{ id: 'x', source: { m: 'hi' }, sort: [1, 'x'] }],
+    });
+    expect(search).toHaveBeenCalledWith({
+      index: 'logs-*',
+      body: { size: 1 },
+      ignore_unavailable: true,
+      allow_no_indices: true,
+    });
+  });
+
+  it('deleteIndices_RefusesWildcards', async () => {
+    process.env['OPENSEARCH_ENABLED'] = 'true';
+    const service = new OpenSearchService();
+
+    (service as unknown as { client: unknown }).client = { indices: { delete: jest.fn() } };
+
+    await expect(service.deleteIndices(['logs-*'])).rejects.toThrow('exact index names');
+  });
 });

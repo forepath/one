@@ -1,0 +1,214 @@
+apiVersion: apps.loadweaver.com/v1
+name: agenstra-controller
+version: 4.1.0
+title: Agenstra Controller
+description: >-
+  The Agenstra controller and agent console: one place to manage AI agent workspaces, tickets, knowledge and
+  environments across your agent managers. Includes the API, the queue worker, the scheduler and the web console,
+  with bundled Postgres (pgvector), Valkey and OpenSearch, or your existing ones.
+publisher: ForePath
+# The console is AGPL-3.0; the controller API is BUSL-1.1 with a free production grant (Agenstra's free Startup tier,
+# see https://agenstra.com), listed here as a reviewed free tier.
+license: AGPL-3.0-or-later AND LicenseRef-Agenstra-BUSL-1.1-Free-Tier
+homepage: https://agenstra.com
+docs: https://github.com/forepath/one/tree/main/docs/agenstra
+channels: [stable]
+minLoadweaver: 1.0.0
+parameters:
+  type: object
+  properties:
+    domain:
+      type: string
+      title: Domain
+      description: Public hostname of the console and API (DNS must point at the cluster's ingress).
+      pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$'
+      examples: [agenstra.example.com]
+    disableSignup:
+      type: boolean
+      title: Disable sign-up
+      description: Close open registration (create the first account before switching this on).
+      default: false
+    defaultLocale:
+      type: string
+      title: Console language
+      enum: [en, de]
+      default: en
+    emailFrom:
+      type: string
+      title: Sender address
+      description: From address of confirmation and password reset emails.
+      format: email
+      examples: [agenstra@example.com]
+    smtpHost:
+      type: string
+      title: SMTP host
+      pattern: '^[A-Za-z0-9.-]+$'
+      examples: [smtp.example.com]
+    smtpPort:
+      type: integer
+      title: SMTP port
+      default: 587
+      minimum: 1
+      maximum: 65535
+    smtpUser:
+      type: string
+      title: SMTP user
+      description: Leave empty for servers without authentication (the smtp-password secret is then ignored).
+      default: ''
+    clientEndpointAllowedHosts:
+      type: string
+      title: Allowed agent manager hosts
+      description: Comma-separated hostnames the controller may connect to as agent managers (`*` = any public host).
+      default: '*'
+    workerReplicas:
+      type: integer
+      title: Queue workers
+      default: 1
+      minimum: 1
+      maximum: 10
+    consoleReplicas:
+      type: integer
+      title: Console replicas
+      default: 2
+      minimum: 1
+      maximum: 10
+    bundlePostgres:
+      type: boolean
+      title: Bundled Postgres
+      description: Run Postgres (pgvector) as part of the app. Off = connect to an existing database.
+      default: true
+    dbHost:
+      type: string
+      title: Database host
+      default: postgres
+    dbPort:
+      type: integer
+      title: Database port
+      default: 5432
+      minimum: 1
+      maximum: 65535
+    dbUser:
+      type: string
+      title: Database user
+      default: agenstra
+      pattern: '^[a-z_][a-z0-9_]{0,62}$'
+    dbName:
+      type: string
+      title: Database name
+      default: agenstra
+      pattern: '^[a-z_][a-z0-9_]{0,62}$'
+    postgresVolumeSize:
+      type: string
+      title: Postgres volume size
+      default: 20g
+      pattern: '^[0-9]+(k|m|g|t|Ki|Mi|Gi|Ti)?$'
+    bundleValkey:
+      type: boolean
+      title: Bundled Valkey
+      description: Run Valkey (queues, caches) as part of the app. Off = connect to an existing Valkey / Redis.
+      default: true
+    valkeyHost:
+      type: string
+      title: Valkey host
+      default: valkey
+    valkeyPort:
+      type: integer
+      title: Valkey port
+      default: 6379
+      minimum: 1
+      maximum: 65535
+    valkeyKeyPrefix:
+      type: string
+      title: Valkey key prefix
+      description: Prefix of all keys (lets several apps share one Valkey).
+      default: agenstra-controller
+      pattern: '^[a-z0-9-]{1,64}$'
+    bundleOpenSearch:
+      type: boolean
+      title: Bundled OpenSearch
+      description: Run a single-node OpenSearch (search) as part of the app. Off = connect to an existing cluster.
+      default: true
+    opensearchUrl:
+      type: string
+      title: OpenSearch URL
+      default: http://opensearch:9200
+      pattern: '^https?://[^\s"]+$'
+    opensearchHeap:
+      type: string
+      title: OpenSearch heap
+      default: 512m
+      pattern: '^[0-9]+[mg]$'
+    opensearchVolumeSize:
+      type: string
+      title: OpenSearch volume size
+      default: 20g
+      pattern: '^[0-9]+(k|m|g|t|Ki|Mi|Gi|Ti)?$'
+  required: [domain, emailFrom, smtpHost]
+secrets:
+  - name: db-password
+    description: Postgres password of the database user (bundled Postgres is initialised with it).
+  - name: valkey-password
+    description: Valkey password (bundled Valkey requires it; for an existing Valkey, its password).
+  - name: encryption-key
+    description: 'AES-256-GCM key for encrypted columns: base64 of 32 random bytes (`openssl rand -base64 32`). Keep it: data encrypted with it is unreadable without it.'
+  - name: jwt-secret
+    description: Signing secret of user sessions (random, e.g. `openssl rand -hex 32`).
+  - name: smtp-password
+    description: SMTP password (any value when the server needs no authentication).
+  - name: mcp-oauth-callback-secret
+    description: Signs the environment MCP OAuth callbacks (random, e.g. `openssl rand -hex 32`).
+dependencies:
+  - name: postgres
+    title: PostgreSQL 16 with pgvector
+    bundled:
+      parameter: bundlePostgres
+      services: [postgres]
+      volumes: [postgres-data]
+    provided:
+      parameters: [dbHost, dbPort, dbUser, dbName]
+  - name: valkey
+    title: Valkey (Redis-compatible)
+    bundled:
+      parameter: bundleValkey
+      services: [valkey]
+      volumes: [valkey-data]
+    provided:
+      parameters: [valkeyHost, valkeyPort, valkeyKeyPrefix]
+  - name: opensearch
+    title: OpenSearch 2
+    bundled:
+      parameter: bundleOpenSearch
+      services: [opensearch]
+      volumes: [opensearch-data]
+    provided:
+      parameters: [opensearchUrl]
+backups:
+  - name: database
+    schedule: '0 2 * * *'
+    volumes: [postgres-data]
+    retention: 14d
+    description: Nightly Postgres backup (pg_dump hook, app-consistent).
+  - name: search
+    schedule: '0 3 * * 0'
+    volumes: [opensearch-data]
+    retention: 4w
+    description: Weekly OpenSearch data; the index can also be rebuilt from Postgres.
+healthChecks:
+  - service: api
+    type: http
+    port: 3100
+    path: /api/health
+    interval: 30s
+    timeout: 10s
+  - service: console
+    type: http
+    port: 4100
+    path: /
+  - service: postgres
+    type: command
+    command: [pg_isready]
+# The controller runs its database migrations on start-up (TypeORM). Version-specific update steps go here, e.g.:
+#   - version: 4.2.0
+#     steps:
+#       - { name: reindex search, service: api, command: [node, main.js, reindex], phase: after }
+migrations: []

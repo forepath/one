@@ -1,0 +1,19 @@
+:host {
+  position: relative;
+  display: block;
+  min-height: 12rem;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-body-bg);
+}
+
+.fpc-graph-canvas__container {
+  position: absolute;
+  inset: 0;
+}
+
+.fpc-graph-canvas__container:focus-visible {
+  outline: 2px solid var(--bs-focus-ring-color, var(--bs-primary));
+  outline-offset: -2px;
+}

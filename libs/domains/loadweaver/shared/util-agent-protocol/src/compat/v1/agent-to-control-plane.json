@@ -1,0 +1,1032 @@
+{
+  "protocolVersion": 1,
+  "direction": "agent-to-control-plane",
+  "messages": {
+    "applyReport": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "status": {
+          "type": "string",
+          "enum": ["applied", "failed", "rolled-back"]
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "layer": {
+                "type": "string",
+                "enum": [
+                  "tunnels",
+                  "routing",
+                  "filtering",
+                  "dns",
+                  "services",
+                  "mesh",
+                  "remote-access",
+                  "public-addresses",
+                  "ingress",
+                  "authoritative-dns",
+                  "rate-limiter",
+                  "control-plane",
+                  "object-store",
+                  "registry",
+                  "volumes",
+                  "workloads"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": ["applied", "unchanged", "failed", "skipped"]
+              },
+              "message": {
+                "type": "string",
+                "maxLength": 2048
+              }
+            },
+            "required": ["layer", "status"],
+            "additionalProperties": false
+          }
+        },
+        "error": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      },
+      "required": ["revision", "status", "steps"],
+      "additionalProperties": false
+    },
+    "error": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 2048
+        }
+      },
+      "required": ["code", "message"],
+      "additionalProperties": false
+    },
+    "event": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "runtime",
+            "tunnels",
+            "routing",
+            "firewall",
+            "dns",
+            "storage",
+            "agent"
+          ]
+        },
+        "level": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"]
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 8192
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+        },
+        "labels": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 256
+          }
+        }
+      },
+      "required": ["source", "level", "message", "at"],
+      "additionalProperties": false
+    },
+    "execExit": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "code": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error": {
+          "type": "string",
+          "maxLength": 1024
+        }
+      },
+      "required": ["code"],
+      "additionalProperties": false
+    },
+    "execOutput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "maxLength": 349528,
+          "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+        }
+      },
+      "required": ["data"],
+      "additionalProperties": false
+    },
+    "fileResponse": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "maxLength": 32
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          "required": ["code", "message"],
+          "additionalProperties": false
+        },
+        "entries": {
+          "maxItems": 10000,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "type": {
+                "type": "string",
+                "enum": ["file", "directory", "symlink", "other"]
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "modifiedAt": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "mode": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4095
+              }
+            },
+            "required": ["name", "type", "size", "modifiedAt", "mode"],
+            "additionalProperties": false
+          }
+        },
+        "entry": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 1024
+            },
+            "type": {
+              "type": "string",
+              "enum": ["file", "directory", "symlink", "other"]
+            },
+            "size": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "modifiedAt": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "mode": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4095
+            }
+          },
+          "required": ["name", "type", "size", "modifiedAt", "mode"],
+          "additionalProperties": false
+        },
+        "data": {
+          "type": "string",
+          "maxLength": 349528,
+          "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+        }
+      },
+      "required": ["ok"],
+      "additionalProperties": false
+    },
+    "heartbeat": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "appliedRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "usage": {
+          "type": "object",
+          "properties": {
+            "cpuMillis": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "memoryBytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "diskBytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": ["cpuMillis", "memoryBytes", "diskBytes"],
+          "additionalProperties": false
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+        },
+        "foreign": {
+          "type": "object",
+          "properties": {
+            "containers": {
+              "maxItems": 200,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{12,64}$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 128
+                  },
+                  "image": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "state": {
+                    "type": "string",
+                    "maxLength": 32
+                  },
+                  "ports": {
+                    "maxItems": 64,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 64
+                    }
+                  }
+                },
+                "required": ["id", "name", "image", "state", "ports"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["containers"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["appliedRevision", "usage", "at"],
+      "additionalProperties": false
+    },
+    "hello": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "nodeName": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$"
+        },
+        "agentVersion": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "os": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "maxLength": 32
+            },
+            "versionId": {
+              "type": "string",
+              "maxLength": 32
+            },
+            "kernel": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "arch": {
+              "type": "string",
+              "enum": ["amd64", "arm64"]
+            }
+          },
+          "required": ["id", "versionId", "kernel", "arch"],
+          "additionalProperties": false
+        },
+        "capabilities": {
+          "type": "object",
+          "properties": {
+            "runtimes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["runc", "sandboxed"]
+              }
+            },
+            "sandboxProbe": {
+              "type": "string",
+              "enum": ["ready", "missing", "failed", "unknown"]
+            },
+            "wireguard": {
+              "type": "boolean"
+            },
+            "nftables": {
+              "type": "boolean"
+            },
+            "bird": {
+              "type": "boolean"
+            },
+            "drbd": {
+              "type": "boolean"
+            },
+            "criu": {
+              "type": "boolean"
+            },
+            "dockerVersion": {
+              "type": "string",
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "runtimes",
+            "sandboxProbe",
+            "wireguard",
+            "nftables",
+            "bird",
+            "drbd",
+            "criu"
+          ],
+          "additionalProperties": false
+        },
+        "capacity": {
+          "type": "object",
+          "properties": {
+            "cpuMillis": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "memoryBytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "diskBytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": ["cpuMillis", "memoryBytes", "diskBytes"],
+          "additionalProperties": false
+        },
+        "wireguardPublicKey": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw480]=$"
+        },
+        "endpointHost": {
+          "type": "string",
+          "maxLength": 253
+        },
+        "sealPublicKey": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw480]=$"
+        },
+        "appliedRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "protocolVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "features": {
+          "maxItems": 128,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$"
+          }
+        }
+      },
+      "required": [
+        "nodeName",
+        "agentVersion",
+        "os",
+        "capabilities",
+        "capacity",
+        "wireguardPublicKey",
+        "appliedRevision"
+      ],
+      "additionalProperties": false
+    },
+    "imageScan": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "scanner": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "counts": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "fixable": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": ["total", "fixable"],
+            "additionalProperties": false
+          },
+          "required": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"]
+        },
+        "findings": {
+          "maxItems": 50,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "severity": {
+                "type": "string",
+                "maxLength": 16
+              },
+              "package": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "installed": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "fixed": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 256
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": ["id", "severity", "package", "installed", "fixed"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["image", "digest", "scanner", "counts", "findings"],
+      "additionalProperties": false
+    },
+    "logBatch": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "entries": {
+          "maxItems": 1000,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "at": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "container",
+                  "proxy",
+                  "firewall",
+                  "routing",
+                  "tunnel",
+                  "ingress",
+                  "failover",
+                  "storage",
+                  "runtime",
+                  "control-plane"
+                ]
+              },
+              "level": {
+                "type": "string",
+                "enum": ["debug", "info", "warn", "error"]
+              },
+              "message": {
+                "type": "string",
+                "maxLength": 16384
+              },
+              "labels": {
+                "type": "object",
+                "properties": {
+                  "project": {
+                    "type": "string",
+                    "maxLength": 253
+                  },
+                  "deployment": {
+                    "type": "string",
+                    "maxLength": 253
+                  },
+                  "service": {
+                    "type": "string",
+                    "maxLength": 253
+                  },
+                  "replica": {
+                    "type": "string",
+                    "maxLength": 253
+                  },
+                  "policy": {
+                    "type": "string",
+                    "maxLength": 253
+                  },
+                  "peer": {
+                    "type": "string",
+                    "maxLength": 253
+                  },
+                  "component": {
+                    "type": "string",
+                    "maxLength": 253
+                  },
+                  "stream": {
+                    "type": "string",
+                    "enum": ["stdout", "stderr"]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "fields": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-zA-Z0-9_]{0,63}$"
+                },
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 1024
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                }
+              }
+            },
+            "required": ["at", "source", "level", "message", "labels"],
+            "additionalProperties": false
+          }
+        },
+        "dropped": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": ["entries"],
+      "additionalProperties": false
+    },
+    "metrics": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+        },
+        "samples": {
+          "maxItems": 10000,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metric": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$"
+              },
+              "entity": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "project": {
+                "type": "string",
+                "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$"
+              },
+              "value": {
+                "type": "number"
+              }
+            },
+            "required": ["metric", "entity", "value"],
+            "additionalProperties": false
+          }
+        },
+        "flows": {
+          "maxItems": 10000,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "policy": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "src": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "dst": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "protocol": {
+                "type": "string",
+                "enum": ["tcp", "udp", "icmp", "any"]
+              },
+              "port": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "decision": {
+                "type": "string",
+                "enum": ["allowed", "denied", "observed"]
+              },
+              "packets": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "policy",
+              "src",
+              "dst",
+              "protocol",
+              "port",
+              "decision",
+              "packets",
+              "bytes"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["at", "samples", "flows"],
+      "additionalProperties": false
+    },
+    "probeResults": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "results": {
+          "maxItems": 1024,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 192
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "latencyMs": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 600000
+              },
+              "error": {
+                "type": "string",
+                "maxLength": 256
+              }
+            },
+            "required": ["id", "ok"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["results"],
+      "additionalProperties": false
+    },
+    "registryTokenRequest": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "repositories": {
+          "minItems": 1,
+          "maxItems": 16,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[a-z0-9]+(?:[._/-][a-z0-9]+)*$"
+          }
+        }
+      },
+      "required": ["requestId", "repositories"],
+      "additionalProperties": false
+    },
+    "renewCertificate": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "csrPem": {
+          "type": "string",
+          "maxLength": 8192
+        }
+      },
+      "required": ["csrPem"],
+      "additionalProperties": false
+    },
+    "secretRequest": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "workload": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "ref": {
+          "type": "string",
+          "maxLength": 256
+        }
+      },
+      "required": ["workload", "ref"],
+      "additionalProperties": false
+    },
+    "tunnelClose": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "maxLength": 256
+        }
+      },
+      "additionalProperties": false
+    },
+    "tunnelData": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "maxLength": 349528,
+          "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+        }
+      },
+      "required": ["data"],
+      "additionalProperties": false
+    },
+    "unsealShare": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "keyId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{16}$"
+        },
+        "sealedShare": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+        }
+      },
+      "required": ["requestId", "keyId", "sealedShare"],
+      "additionalProperties": false
+    },
+    "vpnSessions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "sessions": {
+          "maxItems": 20000,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "publicKey": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw480]=$"
+              },
+              "endpoint": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 64
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "latestHandshake": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "rxBytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "txBytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "publicKey",
+              "endpoint",
+              "latestHandshake",
+              "rxBytes",
+              "txBytes"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["sessions"],
+      "additionalProperties": false
+    },
+    "workloadIdentityRequest": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "requests": {
+          "maxItems": 256,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "identity": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]{1,63}\\/[a-z0-9-]{1,63}\\/[a-z0-9_.-]{1,63}$"
+              },
+              "csrPem": {
+                "type": "string",
+                "maxLength": 8192
+              }
+            },
+            "required": ["identity", "csrPem"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["requests"],
+      "additionalProperties": false
+    },
+    "workloadStatus": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "workloads": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "pulling",
+                  "starting",
+                  "running",
+                  "healthy",
+                  "unhealthy",
+                  "exited",
+                  "failed"
+                ]
+              },
+              "exitCode": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "message": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "specHash": {
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "required": ["id", "state", "specHash"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["workloads"],
+      "additionalProperties": false
+    }
+  }
+}

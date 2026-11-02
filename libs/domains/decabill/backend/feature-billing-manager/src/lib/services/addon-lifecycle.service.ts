@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
+import { LOADWEAVER_ADMIN_CLAIM_TOKEN_KEY } from '../contributors/loadweaver/loadweaver.utils';
 import { AddonEntity } from '../entities/addon.entity';
 import { SubscriptionAddonEntity } from '../entities/subscription-addon.entity';
 import { SubscriptionItemEntity } from '../entities/subscription-item.entity';
@@ -51,6 +52,12 @@ export interface AddonMidLifeDeprovisionParams {
   publicIp?: string;
 }
 
+/**
+ * Snapshot keys that are secrets of the platform, not addon configuration: never interpolated into addon scripts
+ * (L7), even if a snapshot or an addon schema carries them.
+ */
+export const ADDON_SCRIPT_EXCLUDED_SNAPSHOT_KEYS: readonly string[] = [LOADWEAVER_ADMIN_CLAIM_TOKEN_KEY];
+
 @Injectable()
 export class AddonLifecycleService {
   private readonly logger = new Logger(AddonLifecycleService.name);
@@ -80,13 +87,17 @@ export class AddonLifecycleService {
     return await this.subscriptionAddonsRepository.createMany(
       addons.map((addon) => {
         const periodPrice = convertAddonPriceToPlanPeriod(addon, plan);
-        const fields = parseAddonConfigFields(addon.configSchema);
+        const adminOnly = this.adminOnlyConfigKeys(addon);
+        const fields = parseAddonConfigFields(addon.configSchema).filter((f) => !adminOnly.has(f.key));
+        const defaults = addon.configDefaultValues
+          ? Object.fromEntries(Object.entries(addon.configDefaultValues).filter(([key]) => !adminOnly.has(key)))
+          : undefined;
         const resolved =
           fields.length === 0
-            ? addon.configDefaultValues
-              ? { ...addon.configDefaultValues }
+            ? defaults
+              ? { ...defaults }
               : undefined
-            : resolveAddonConfigValues(fields as never, addon.configDefaultValues, addonConfigs?.[addon.id]);
+            : resolveAddonConfigValues(fields as never, defaults, addonConfigs?.[addon.id]);
 
         return {
           subscriptionId,
@@ -100,6 +111,15 @@ export class AddonLifecycleService {
         };
       }),
     );
+  }
+
+  /** Keys the addon's module flags `adminOnly` (secrets used from the catalog defaults, not per subscription). */
+  private adminOnlyConfigKeys(addon: AddonEntity): Set<string> {
+    if (addon.implementationType !== 'module' || !addon.moduleKey) return new Set();
+
+    const fields = this.addonModuleRegistry.get(addon.moduleKey)?.configFields ?? [];
+
+    return new Set(fields.filter((f) => f.adminOnly === true).map((f) => f.key));
   }
 
   async listForSubscription(subscriptionId: string): Promise<SubscriptionAddonEntity[]> {
@@ -637,10 +657,18 @@ export class AddonLifecycleService {
     scriptTemplate: string,
     configSnapshot?: Record<string, unknown> | null,
   ): string {
-    const envKeys = parseAddonConfigFields(addon.configSchema).map((field) => field.key);
+    // Secret snapshot keys never reach a script (scripts land in cloud-init user-data / SSH sessions and logs).
+    const excluded = new Set([...ADDON_SCRIPT_EXCLUDED_SNAPSHOT_KEYS, ...this.adminOnlyConfigKeys(addon)]);
+    const envKeys = parseAddonConfigFields(addon.configSchema)
+      .map((field) => field.key)
+      .filter((key) => !excluded.has(key));
     const env: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(configSnapshot ?? {})) {
+      if (excluded.has(key)) {
+        continue;
+      }
+
       if (typeof value === 'string') {
         env[key] = value;
       } else if (value !== undefined && value !== null) {

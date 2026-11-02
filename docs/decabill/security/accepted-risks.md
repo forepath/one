@@ -102,8 +102,8 @@ Set **`AUTHENTICATION_METHOD`** explicitly if your policy requires **fully expli
 | **Area**                              | **Trivy** vulnerability scanning (`trivy.yaml` at repository root, pull-request CI, pre-commit, local image scans)                                                                                                                                      |
 | **Configuration**                     | **`vulnerability.ignore-unfixed: true`**: findings **without a Fixed Version** are **excluded from the fail gate**. Only **CRITICAL** severities with an available fix fail CI and local hooks (see [CI security scanning](./ci-security-scanning.md)). |
 | **Residual risk**                     | Known **CRITICAL** issues may remain in dependencies, base images, or OS packages until upstream publishes a fix; they are visible in SARIF/report output but do not block merge.                                                                       |
-| **Mitigations in scope of this repo** | Trivy still scans for **vuln**, **secret**, and **misconfig**; **HIGH** and below are report-only; per-CVE exceptions use `.trivyignore` with traceability. Decabill SBOMs are published on release (`decabill-*.cdx.json`).                            |
-| **Compensating controls (deployer)**  | Monitor GitHub Security / SARIF artifacts; patch when fixes ship; track accepted CVEs in `.trivyignore` only when a fix exists but cannot be applied yet.                                                                                               |
+| **Mitigations in scope of this repo** | Trivy still scans for **vuln**, **secret**, and **misconfig**; **HIGH** and below are report-only; per-CVE exceptions use `.trivyignore.yaml` with traceability. Decabill SBOMs are published on release (`decabill-*.cdx.json`).                       |
+| **Compensating controls (deployer)**  | Monitor GitHub Security / SARIF artifacts; patch when fixes ship; track accepted CVEs in `.trivyignore.yaml` only when a fix exists but cannot be applied yet.                                                                                          |
 | **Risk owner**                        | Maintaining party for this repository and product security documentation (Forepath).                                                                                                                                                                    |
 | **Acceptor**                          | Repository maintainer (acceptance recorded in project documentation).                                                                                                                                                                                   |
 | **Acceptance date**                   | **2026-05-16**                                                                                                                                                                                                                                          |
@@ -112,7 +112,7 @@ Set **`AUTHENTICATION_METHOD`** explicitly if your policy requires **fully expli
 
 #### Operator summary (DR-005)
 
-**Unfixed vulnerabilities are acceptable for pipeline gating.** Address **CRITICAL** findings that have a published fix; track anything else via SARIF and release SBOMs. Do not add unfixed CVEs to `.trivyignore` solely to silence the gate. See **[CI security scanning](./ci-security-scanning.md)**.
+**Unfixed vulnerabilities are acceptable for pipeline gating.** Address **CRITICAL** findings that have a published fix; track anything else via SARIF and release SBOMs. Do not add unfixed CVEs to `.trivyignore.yaml` solely to silence the gate. See **[CI security scanning](./ci-security-scanning.md)**.
 
 ---
 

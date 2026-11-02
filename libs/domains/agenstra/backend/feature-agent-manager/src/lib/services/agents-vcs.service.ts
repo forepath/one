@@ -10,7 +10,7 @@ import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentFileSystemService } from './agent-file-system.service';
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
 import { AgentsService } from './agents.service';
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 
 /**
@@ -30,7 +30,7 @@ export class AgentsVcsService {
   constructor(
     private readonly agentsService: AgentsService,
     private readonly agentsRepository: AgentsRepository,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
     private readonly agentFileSystemService: AgentFileSystemService,
     private readonly gitStateBroadcast: AgentGitStateBroadcastService,
     private readonly workspaceChangeNotifier: WorkspaceChangeNotifierService,
@@ -131,7 +131,7 @@ export class AgentsVcsService {
     // Runtime processes use agenstra; manager historically exec'd as root and hit "dubious ownership".
     const script =
       `cd '${safeWorkingDir}' && ${envPrefix}` + `git -c safe.directory=/app -c safe.directory='*' ${command}`;
-    const output = await this.dockerService.sendCommandToContainer(
+    const output = await this.runtime.sendCommandToContainer(
       containerId,
       ['sh', '-c', script],
       undefined,
@@ -807,7 +807,7 @@ export class AgentsVcsService {
         const escapedPath = this.shellQuoteFilePath(filePath);
         const safeBase = this.BASE_PATH.replace(/'/g, `'\\''`);
 
-        output = await this.dockerService.sendCommandToContainer(containerId, [
+        output = await this.runtime.sendCommandToContainer(containerId, [
           'sh',
           '-c',
           `cd '${safeBase}' && stat -c %s ${escapedPath} 2>/dev/null || echo '0'`,

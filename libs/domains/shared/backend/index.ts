@@ -12,3 +12,4 @@ export * from './feature-notifications/src';
 export * from './feature-updates/src';
 export * from './util-opensearch/src';
 export * from './util-file-storage/src';
+export * from './util-hosting-providers/src';

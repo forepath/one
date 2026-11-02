@@ -1,6 +1,3 @@
-@use '../section.scss';
-@use '../admin-list-page.scss';
-
 :host {
   display: flex;
   flex-direction: column;
@@ -17,20 +14,6 @@
 
 .subscriptions-header {
   min-height: 64px;
-}
-
-.section__row {
-  flex: 1 1 0;
-  min-height: 0;
-  flex-wrap: nowrap;
-}
-
-.section__column--subscriptions,
-.section__column--backorders {
-  flex: 1 1 0;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .subscriptions__pre-wrap {
@@ -55,17 +38,17 @@
 }
 
 .order-stepper__steps {
+  // One row, scrolled sideways with the current step in view (`fpcStepStrip`), never a second row.
   display: flex;
-  flex-wrap: wrap;
   gap: 0.5rem 1rem;
   list-style: none;
-  margin: 0;
-  padding: 0;
+  // Block padding keeps focus rings inside the clipped strip; the negative margin keeps the layout.
+  margin: -0.25rem 0;
+  padding: 0.25rem 0;
 }
 
 .order-stepper__step {
-  flex: 1 1 auto;
-  min-width: 5.5rem;
+  flex: 1 0 auto;
 }
 
 .order-stepper__step-button {
@@ -133,9 +116,5 @@
 
   .order-wizard__sidebar-sticky {
     position: static;
-  }
-
-  .order-stepper__step {
-    min-width: calc(50% - 0.5rem);
   }
 }

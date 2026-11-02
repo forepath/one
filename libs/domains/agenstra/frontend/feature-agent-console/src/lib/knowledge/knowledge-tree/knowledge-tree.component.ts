@@ -162,6 +162,41 @@ export class KnowledgeTreeComponent implements OnChanges {
     if (!this.loading && this.workspaceId) {
       this.hasLoadedWorkspaceTree.set(true);
     }
+
+    if (changes['selectedNodeId'] || changes['nodes']) {
+      this.revealSelectedNode();
+    }
+  }
+
+  /** Id of the open page whose path was last expanded; the reveal runs once per opened page, so collapsing later sticks. */
+  private revealedNodeId: string | null = null;
+
+  /**
+   * Reveals the open page (deep link `?openNodeId=`, chat links, search): expands its ancestor folders once the tree
+   * contains it and scrolls its row into view (AG-06).
+   */
+  private revealSelectedNode(): void {
+    const id = this.selectedNodeId;
+
+    if (!id) {
+      this.revealedNodeId = null;
+
+      return;
+    }
+
+    if (id === this.revealedNodeId || !this.findNodeById(this.nodes, id)) {
+      return;
+    }
+
+    this.revealedNodeId = id;
+    this.expandPathToNode(id, false);
+    setTimeout(() => {
+      const rows = Array.from(
+        (this.hostElement.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('[data-node-id]'),
+      );
+
+      rows.find((row) => row.dataset['nodeId'] === id)?.scrollIntoView?.({ block: 'nearest' });
+    }, 0);
   }
 
   shouldShowInitialLoadingSpinner(): boolean {

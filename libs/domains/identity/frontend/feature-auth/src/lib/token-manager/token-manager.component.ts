@@ -1,29 +1,38 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { PersonalAccessTokensFacade, type PersonalAccessTokenResponseDto } from '@forepath/identity/frontend';
 import {
+  AuthService,
+  PersonalAccessTokensFacade,
+  type PersonalAccessTokenResponseDto,
+} from '@forepath/identity/frontend';
+import {
+  FpcDatePipe,
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcLabelComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
-  FpcSpinnerComponent,
+  FpcTableCellDirective,
   FpcTooltipComponent,
+  fpcCopyText,
+  fpcRunBulk,
+  type FpcMenuItem,
+  type FpcTableColumn,
 } from '@forepath/shared/frontend/ui-components';
-import { combineLatestWith, filter, map, of, pairwise, withLatestFrom } from 'rxjs';
+import { combineLatestWith, filter, firstValueFrom, map, of, pairwise, withLatestFrom } from 'rxjs';
+
+import { sharedBulkSummary, sharedCopyIdItem } from '../data-list';
 
 type TokenFormState = {
   name: string;
@@ -41,24 +50,23 @@ const emptyForm = (): TokenFormState => ({
   selector: 'identity-auth-token-manager',
   imports: [
     CommonModule,
+    FpcDatePipe,
     FormsModule,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
     FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
+    FpcDataTableComponent,
     FpcEmptyStateComponent,
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcLabelComponent,
-    FpcListComponent,
-    FpcListItemComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
-    FpcSpinnerComponent,
+    FpcTableCellDirective,
     FpcTooltipComponent,
   ],
   templateUrl: './token-manager.component.html',
@@ -67,16 +75,20 @@ const emptyForm = (): TokenFormState => ({
 })
 export class IdentityTokenManagerComponent implements OnInit {
   private readonly facade = inject(PersonalAccessTokensFacade);
+  private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly createTokenModalOpen = signal(false);
   readonly editTokenModalOpen = signal(false);
   readonly revokeTokenModalOpen = signal(false);
 
-  readonly pageTitle = $localize`:@@featureTokenManager-title:Personal Access Tokens`;
+  /** Modal footer Cancel (3.38 R14: [Cancel `dark`, Primary]); the shared identity unit exists in every console. */
+
+  readonly cancelLabel = $localize`:@@identityLogoutConfirm-cancel:Cancel`;
+
+  readonly pageTitle = $localize`:@@featureTokenManager-title:Personal access tokens`;
   readonly addTokenTitle = $localize`:@@featureTokenManager-addTokenTitle:Create token`;
   readonly searchPlaceholder = $localize`:@@featureTokenManager-searchPlaceholder:Search tokens`;
-  readonly loadingLabel = $localize`:@@featureTokenManager-loading:Loading tokens...`;
   readonly emptyMessage = $localize`:@@featureTokenManager-empty:No personal access tokens yet`;
 
   readonly searchQuery = signal('');
@@ -92,7 +104,7 @@ export class IdentityTokenManagerComponent implements OnInit {
 
       const normalized = searchQuery.trim().toLowerCase();
 
-      return tokens.filter((token) => JSON.stringify(token).toLowerCase().includes(normalized));
+      return tokens.filter((token) => `${token.name} ${token.scopes.join(' ')}`.toLowerCase().includes(normalized));
     }),
   );
 
@@ -108,6 +120,72 @@ export class IdentityTokenManagerComponent implements OnInit {
   readonly error = toSignal(this.error$, { initialValue: null as string | null });
   readonly scopes = toSignal(this.scopes$, { initialValue: [] });
   readonly lastCreatedPlaintext = toSignal(this.lastCreatedPlaintext$, { initialValue: null as string | null });
+
+  // Table (3.38: State column, ⋮ row actions, bulk Revoke via the single-token endpoint)
+  readonly revokeLabel = $localize`:@@featureTokenManager-revoke:Revoke`;
+  private readonly editLabel = $localize`:@@featureTokenManager-editButtonTitle:Edit token`;
+  private readonly revokeTokenLabel = $localize`:@@featureTokenManager-revokeTitle:Revoke token`;
+
+  readonly selectedTokenIds = signal<readonly string[]>([]);
+  readonly bulkBusy = signal(false);
+  readonly bulkRevokeOpen = signal(false);
+  readonly bulkResult = signal<{ tone: 'success' | 'warning' | 'danger'; message: string } | null>(null);
+
+  readonly selectedTokens = computed(() => {
+    const ids = new Set(this.selectedTokenIds());
+
+    return this.tokens().filter((token) => ids.has(token.id));
+  });
+
+  readonly columns: FpcTableColumn<PersonalAccessTokenResponseDto>[] = [
+    {
+      id: 'state',
+      label: $localize`:@@featureTokenManager-colState:State`,
+      type: 'state',
+      state: (token) =>
+        token.revokedAt
+          ? { label: $localize`:@@featureTokenManager-stateRevoked:Revoked`, tone: 'neutral', icon: 'slash-circle' }
+          : token.expiresAt && new Date(token.expiresAt).getTime() < Date.now()
+            ? { label: $localize`:@@featureTokenManager-stateExpired:Expired`, tone: 'danger', icon: 'calendar-x' }
+            : { label: $localize`:@@featureTokenManager-stateActive:Active`, tone: 'success', icon: 'key' },
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureTokenManager-nameLabel:Name`,
+      value: (token) => token.name,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'scopes',
+      label: $localize`:@@featureTokenManager-scopesLabel:Scopes`,
+      priority: 1,
+    },
+    {
+      id: 'created',
+      label: $localize`:@@featureTokenManager-colCreated:Created`,
+      value: (token) => token.createdAt,
+      priority: 2,
+    },
+    {
+      id: 'expires',
+      label: $localize`:@@featureTokenManager-colExpires:Expires`,
+      value: (token) => token.expiresAt ?? '',
+      priority: 2,
+    },
+    {
+      id: 'lastUsed',
+      label: $localize`:@@featureTokenManager-colLastUsed:Last used`,
+      value: (token) => token.lastUsedAt ?? '',
+      priority: 3,
+    },
+  ];
+
+  readonly tokenRowMenu = (): FpcMenuItem[] => [
+    { id: 'edit', label: this.editLabel, icon: 'pencil' },
+    sharedCopyIdItem(),
+    { id: 'revoke', label: this.revokeTokenLabel, icon: 'trash', danger: true, dividerBefore: true },
+  ];
 
   createForm = emptyForm();
   editForm = emptyForm();
@@ -248,15 +326,54 @@ export class IdentityTokenManagerComponent implements OnInit {
     }
   }
 
-  formatDate(iso: string | null | undefined): string {
-    if (!iso) {
-      return '-';
+  scopesText(token: PersonalAccessTokenResponseDto): string {
+    return token.scopes.join('\n');
+  }
+
+  scopeCount(token: PersonalAccessTokenResponseDto): number {
+    return token.scopes.length;
+  }
+
+  rowKey(token: PersonalAccessTokenResponseDto): string {
+    return token.id;
+  }
+
+  onTokenAction(token: PersonalAccessTokenResponseDto, action: string): void {
+    switch (action) {
+      case 'edit':
+        this.onEditToken(token);
+        break;
+      case 'copy-id':
+        fpcCopyText(token.id);
+        break;
+      case 'revoke':
+        this.onRevokeToken(token);
+        break;
+    }
+  }
+
+  /** Bulk Revoke: one revoke call per selected token (the server checks each), per-token result. */
+  async onConfirmBulkRevoke(): Promise<void> {
+    this.bulkRevokeOpen.set(false);
+    const tokens = this.selectedTokens();
+
+    if (tokens.length === 0) {
+      return;
     }
 
+    this.bulkBusy.set(true);
+    this.bulkResult.set(null);
+
     try {
-      return new Date(iso).toLocaleString();
-    } catch {
-      return iso;
+      const result = await fpcRunBulk(tokens, (token) =>
+        firstValueFrom(this.authService.revokePersonalAccessToken(token.id)),
+      );
+
+      this.bulkResult.set(sharedBulkSummary(result, (token) => token.name));
+      this.selectedTokenIds.set(result.failed.concat(result.denied).map((token) => token.id));
+      this.facade.load();
+    } finally {
+      this.bulkBusy.set(false);
     }
   }
 }

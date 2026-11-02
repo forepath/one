@@ -30,7 +30,7 @@
 
 ForePath One connects services and products into one thread. We advise your platform, operate your systems, build your software, and ship products we run ourselves, with the same engineers and the same standards from strategy to production.
 
-This repository holds all of that in one place: the [Agenstra](#agenstra) agent platform, the [Decabill](#decabill) billing product, the [ForePath](#forepath) website, and the [shared platform](#shared-platform) code they all build on.
+This repository holds all of that in one place: the [Agenstra](#agenstra) agent platform, the [Decabill](#decabill) billing product, the upcoming [Loadweaver](#loadweaver) cluster product, the [ForePath](#forepath) website, and the [shared platform](#shared-platform) code they all build on.
 
 ## Products
 
@@ -102,6 +102,18 @@ Decabill is one platform for agencies and digital product teams. Bill client ser
 | [Docs](./apps/decabill/frontend-docs/)                       | Documentation site served at docs.decabill.com         |
 | [Landing page](./apps/decabill/frontend-landingpage/)        | Marketing and pricing site served at decabill.com      |
 
+### <img src="./apps/loadweaver/frontend-landingpage/public/assets/images/icon_colorful.svg" width="22" height="22" alt=""> Loadweaver
+
+**Resilient clusters from a handful of servers.** _Early access._
+
+Loadweaver turns a handful of servers into a resilient multi-site cluster, with an encrypted network between your sites, shared storage on every node, and ingress that fails over on its own. Deployments are Docker Compose projects, and every change goes through plan and apply. The product is not released yet; this repository currently holds its landing page.
+
+| Component                                                                       | Description                                         |
+| ------------------------------------------------------------------------------- | --------------------------------------------------- |
+| [Docs](./apps/loadweaver/frontend-docs/)                                        | Documentation site served at docs.loadweaver.com    |
+| [Landing page](./apps/loadweaver/frontend-landingpage/)                         | Marketing and pricing site served at loadweaver.com |
+| [Landing page feature](./libs/domains/loadweaver/frontend/feature-landingpage/) | Pages, layout, routes, and content for the site     |
+
 ### <img src="./apps/forepath/frontend-landingpage/public/assets/images/icon_colorful.svg" width="22" height="22" alt=""> ForePath
 
 **Practical engineering for teams that ship and operate with confidence.**
@@ -143,6 +155,7 @@ npm install
 npx nx serve forepath-frontend-landingpage
 npx nx serve agenstra-frontend-landingpage
 npx nx serve decabill-frontend-landingpage
+npx nx serve loadweaver-frontend-landingpage
 ```
 
 Nx project names follow `<domain>-<type>-<name>` (for example `agenstra-backend-agent-manager`). Run `npx nx show projects` for the full list, or `npx nx graph` to explore dependencies.
@@ -244,6 +257,12 @@ You may view the source code to understand how the software works. No other righ
 
 - [`apps/decabill/frontend-landingpage`](./apps/decabill/frontend-landingpage/) ([LICENSE](./apps/decabill/frontend-landingpage/LICENSE))
 - [`apps/decabill/frontend-docs`](./apps/decabill/frontend-docs/) ([LICENSE](./apps/decabill/frontend-docs/LICENSE))
+
+**Loadweaver**
+
+- [`apps/loadweaver/frontend-landingpage`](./apps/loadweaver/frontend-landingpage/) ([LICENSE](./apps/loadweaver/frontend-landingpage/LICENSE))
+- [`libs/domains/loadweaver/frontend/feature-landingpage`](./libs/domains/loadweaver/frontend/feature-landingpage/) ([LICENSE](./libs/domains/loadweaver/frontend/feature-landingpage/LICENSE))
+- [`apps/loadweaver/frontend-docs`](./apps/loadweaver/frontend-docs/) ([LICENSE](./apps/loadweaver/frontend-docs/LICENSE))
 
 **Shared**
 

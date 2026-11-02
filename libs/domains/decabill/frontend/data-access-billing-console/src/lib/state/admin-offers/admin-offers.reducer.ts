@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 
 import type { BillingAuditLogResponse } from '../../types/billing.types';
 import type { AdminOfferListItem, OfferStatisticsResponse } from '../../types/offers.types';
@@ -20,12 +21,8 @@ import {
   loadAdminOfferStatisticsFailure,
   loadAdminOfferStatisticsSuccess,
   loadAdminOffers,
-  loadAdminOffersBatch,
   loadAdminOffersFailure,
   loadAdminOffersSuccess,
-  loadMoreAdminOfferAuditLogs,
-  loadMoreAdminOfferAuditLogsFailure,
-  loadMoreAdminOfferAuditLogsSuccess,
   revokeAdminOffer,
   revokeAdminOfferFailure,
   revokeAdminOfferSuccess,
@@ -36,6 +33,10 @@ import {
 
 export interface AdminOffersState {
   offers: AdminOfferListItem[];
+  /** Replace-page paging: server total, 1-based page and its size. */
+  total: number;
+  page: number;
+  pageSize: number;
   loading: boolean;
   creating: boolean;
   updating: boolean;
@@ -52,12 +53,14 @@ export interface AdminOffersState {
   auditLogsTotalByOffer: Record<string, number>;
   auditLogsOffsetByOffer: Record<string, number>;
   auditLogsLoading: boolean;
-  auditLogsAppendLoading: boolean;
   auditLogsError: string | null;
 }
 
 export const initialAdminOffersState: AdminOffersState = {
   offers: [],
+  total: 0,
+  page: 1,
+  pageSize: BILLING_LIST_PAGE_SIZE,
   loading: false,
   creating: false,
   updating: false,
@@ -74,7 +77,6 @@ export const initialAdminOffersState: AdminOffersState = {
   auditLogsTotalByOffer: {},
   auditLogsOffsetByOffer: {},
   auditLogsLoading: false,
-  auditLogsAppendLoading: false,
   auditLogsError: null,
 };
 
@@ -94,22 +96,23 @@ function upsertOffer(offers: AdminOfferListItem[], offer: AdminOfferListItem): A
 
 export const adminOffersReducer = createReducer(
   initialAdminOffersState,
-  on(loadAdminOffers, (state, { search, userId }) => ({
-    ...state,
-    offers: [],
-    loading: true,
-    error: null,
-    search: search?.trim() ? search.trim() : null,
-    userId: userId ?? null,
-  })),
-  on(loadAdminOffersBatch, (state, { accumulated }) => ({
-    ...state,
-    offers: accumulated,
-    loading: true,
-  })),
-  on(loadAdminOffersSuccess, (state, { offers }) => ({
+  on(loadAdminOffers, (state, { search, userId, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.pageSize);
+
+    return {
+      ...state,
+      loading: true,
+      error: null,
+      page: window.page,
+      pageSize: window.pageSize,
+      search: search?.trim() ? search.trim() : null,
+      userId: userId ?? null,
+    };
+  }),
+  on(loadAdminOffersSuccess, (state, { offers, total }) => ({
     ...state,
     offers,
+    total,
     loading: false,
     error: null,
   })),
@@ -169,12 +172,10 @@ export const adminOffersReducer = createReducer(
     offers: upsertOffer(state.offers, offer),
   })),
   on(revokeAdminOfferFailure, (state, { error }) => ({ ...state, revoking: false, error })),
-  on(loadAdminOfferAuditLogs, (state, { offerId }) => ({
+  on(loadAdminOfferAuditLogs, (state) => ({
     ...state,
     auditLogsLoading: true,
     auditLogsError: null,
-    auditLogsByOffer: { ...state.auditLogsByOffer, [offerId]: [] },
-    auditLogsOffsetByOffer: { ...state.auditLogsOffsetByOffer, [offerId]: 0 },
   })),
   on(loadAdminOfferAuditLogsSuccess, (state, { offerId, items, total, offset }) => ({
     ...state,
@@ -186,26 +187,6 @@ export const adminOffersReducer = createReducer(
   on(loadAdminOfferAuditLogsFailure, (state, { error }) => ({
     ...state,
     auditLogsLoading: false,
-    auditLogsError: error,
-  })),
-  on(loadMoreAdminOfferAuditLogs, (state) => ({
-    ...state,
-    auditLogsAppendLoading: true,
-    auditLogsError: null,
-  })),
-  on(loadMoreAdminOfferAuditLogsSuccess, (state, { offerId, items, total, offset }) => ({
-    ...state,
-    auditLogsAppendLoading: false,
-    auditLogsByOffer: {
-      ...state.auditLogsByOffer,
-      [offerId]: [...(state.auditLogsByOffer[offerId] ?? []), ...items],
-    },
-    auditLogsTotalByOffer: { ...state.auditLogsTotalByOffer, [offerId]: total },
-    auditLogsOffsetByOffer: { ...state.auditLogsOffsetByOffer, [offerId]: offset },
-  })),
-  on(loadMoreAdminOfferAuditLogsFailure, (state, { error }) => ({
-    ...state,
-    auditLogsAppendLoading: false,
     auditLogsError: error,
   })),
 );

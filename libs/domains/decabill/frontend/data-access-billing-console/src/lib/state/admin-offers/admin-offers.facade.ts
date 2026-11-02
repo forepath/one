@@ -1,5 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { take } from 'rxjs';
+
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 
 import type { AdminOfferStatisticsParams, CreateAdminOfferDto, UpdateAdminOfferDto } from '../../types/offers.types';
 
@@ -10,17 +13,15 @@ import {
   loadAdminOfferAuditLogs,
   loadAdminOfferStatistics,
   loadAdminOffers,
-  loadMoreAdminOfferAuditLogs,
   revokeAdminOffer,
   updateAdminOffer,
 } from './admin-offers.actions';
 import {
-  selectAdminOfferAuditLogsAppendLoading,
   selectAdminOfferAuditLogsError,
   selectAdminOfferAuditLogsForOffer,
-  selectAdminOfferAuditLogsHasMore,
   selectAdminOfferAuditLogsLoading,
   selectAdminOfferAuditLogsOffsetByOffer,
+  selectAdminOfferAuditLogsTotalForOffer,
   selectAdminOfferStatistics,
   selectAdminOfferStatisticsError,
   selectAdminOfferStatisticsLoading,
@@ -29,9 +30,13 @@ import {
   selectAdminOffersCreating,
   selectAdminOffersDeleting,
   selectAdminOffersError,
+  selectAdminOffersPage,
+  selectAdminOffersPageSize,
+  selectAdminOffersTotal,
   selectAdminOffersLoading,
   selectAdminOffersMutating,
   selectAdminOffersRevoking,
+  selectAdminOffersState,
   selectAdminOffersUpdating,
 } from './admin-offers.selectors';
 
@@ -48,18 +53,45 @@ export class AdminOffersFacade {
   readonly revoking$ = this.store.select(selectAdminOffersRevoking);
   readonly mutating$ = this.store.select(selectAdminOffersMutating);
   readonly error$ = this.store.select(selectAdminOffersError);
+  readonly total$ = this.store.select(selectAdminOffersTotal);
+  readonly page$ = this.store.select(selectAdminOffersPage);
+  readonly pageSize$ = this.store.select(selectAdminOffersPageSize);
 
   readonly statistics$ = this.store.select(selectAdminOfferStatistics);
   readonly statisticsLoading$ = this.store.select(selectAdminOfferStatisticsLoading);
   readonly statisticsError$ = this.store.select(selectAdminOfferStatisticsError);
 
   readonly auditLogsLoading$ = this.store.select(selectAdminOfferAuditLogsLoading);
-  readonly auditLogsAppendLoading$ = this.store.select(selectAdminOfferAuditLogsAppendLoading);
   readonly auditLogsError$ = this.store.select(selectAdminOfferAuditLogsError);
   readonly auditLogsOffsetByOffer$ = this.store.select(selectAdminOfferAuditLogsOffsetByOffer);
 
-  loadOffers(params?: { search?: string; userId?: string }): void {
-    this.store.dispatch(loadAdminOffers({ search: params?.search, userId: params?.userId }));
+  /** Loads page 1 (or the given page) of the filtered offers; the page replaces the current rows. */
+  loadOffers(params?: { search?: string; userId?: string; page?: number; pageSize?: number }): void {
+    this.store.dispatch(
+      loadAdminOffers({
+        search: params?.search,
+        userId: params?.userId,
+        page: params?.page,
+        pageSize: params?.pageSize,
+      }),
+    );
+  }
+
+  /** Loads another page of the current filter (replace-page). */
+  loadPage(page: number, pageSize?: number): void {
+    this.store
+      .select(selectAdminOffersState)
+      .pipe(take(1))
+      .subscribe((state) =>
+        this.store.dispatch(
+          loadAdminOffers({
+            search: state.search ?? undefined,
+            userId: state.userId ?? undefined,
+            page,
+            pageSize: pageSize ?? state.pageSize,
+          }),
+        ),
+      );
   }
 
   loadStatistics(params: AdminOfferStatisticsParams): void {
@@ -86,19 +118,18 @@ export class AdminOffersFacade {
     this.store.dispatch(revokeAdminOffer({ id }));
   }
 
-  loadAuditLogs(offerId: string): void {
-    this.store.dispatch(loadAdminOfferAuditLogs({ offerId }));
-  }
+  /** One page of an offer's audit log (replace-page; 1-based page, 25 by default). */
+  loadAuditLogs(offerId: string, page = 1, pageSize = BILLING_LIST_PAGE_SIZE): void {
+    const window = billingPageWindow(page, pageSize);
 
-  loadMoreAuditLogs(offerId: string, offset: number): void {
-    this.store.dispatch(loadMoreAdminOfferAuditLogs({ offerId, offset }));
+    this.store.dispatch(loadAdminOfferAuditLogs({ offerId, limit: window.limit, offset: window.offset }));
   }
 
   getAuditLogsForOffer$(offerId: string) {
     return this.store.select(selectAdminOfferAuditLogsForOffer(offerId));
   }
 
-  getAuditLogsHasMore$(offerId: string) {
-    return this.store.select(selectAdminOfferAuditLogsHasMore(offerId));
+  getAuditLogsTotal$(offerId: string) {
+    return this.store.select(selectAdminOfferAuditLogsTotalForOffer(offerId));
   }
 }

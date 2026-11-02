@@ -1,11 +1,12 @@
+import { CloudflareDnsProvider } from '@forepath/shared/backend/util-hosting-providers';
 import { Injectable, Logger } from '@nestjs/common';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 
 import { isValidSubdomainHostname } from '../utils/hostname-generator.utils';
 
 /**
- * Cloudflare DNS API: create and delete A records for provisioned servers.
- * Uses single-level subdomains only (e.g. awesome-armadillo-abc12.spirde.com) for SSL.
+ * Cloudflare DNS for provisioned servers: create and delete A records. Uses single-level subdomains only (e.g.
+ * awesome-armadillo-abc12.spirde.com) for SSL. Talks to Cloudflare through the shared DNS provider lib.
  */
 @Injectable()
 export class CloudflareDnsService {
@@ -30,6 +31,10 @@ export class CloudflareDnsService {
     return Boolean(this.apiToken && this.zoneId);
   }
 
+  private provider(): CloudflareDnsProvider {
+    return new CloudflareDnsProvider({ apiToken: this.apiToken });
+  }
+
   /**
    * Creates an A record: subdomain.baseDomain -> ip.
    * @param subdomain - Single-level hostname (no dots), e.g. awesome-armadillo-abc12
@@ -51,22 +56,8 @@ export class CloudflareDnsService {
     const name = this.getFqdn(subdomain);
 
     try {
-      await axios.post(
-        `https://api.cloudflare.com/client/v4/zones/${this.zoneId}/dns_records`,
-        {
-          type: 'A',
-          name,
-          content: ip,
-          ttl: 1,
-          proxied: false,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${this.apiToken}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      // TTL 1 = Cloudflare's automatic TTL.
+      await this.provider().upsertRecord(this.zoneId, { type: 'A', name, content: ip, ttl: 1, proxied: false });
       this.logger.log(`Created DNS A record ${this.getFqdn(subdomain)} -> ${ip}`);
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -94,20 +85,13 @@ export class CloudflareDnsService {
     }
 
     try {
-      const listRes = await axios.get<{
-        result: Array<{ id: string; type: string; name: string }>;
-      }>(
-        `https://api.cloudflare.com/client/v4/zones/${this.zoneId}/dns_records?type=A&name=${encodeURIComponent(this.getFqdn(subdomain))}`,
-        {
-          headers: { Authorization: `Bearer ${this.apiToken}` },
-        },
-      );
-      const records = listRes.data?.result ?? [];
+      const provider = this.provider();
+      const records = await provider.listRecords(this.zoneId, { type: 'A', name: this.getFqdn(subdomain) });
 
       for (const record of records) {
-        await axios.delete(`https://api.cloudflare.com/client/v4/zones/${this.zoneId}/dns_records/${record.id}`, {
-          headers: { Authorization: `Bearer ${this.apiToken}` },
-        });
+        if (!record.id) continue;
+
+        await provider.deleteRecord(this.zoneId, record.id);
         this.logger.log(`Deleted DNS A record ${record.name}`);
       }
 
