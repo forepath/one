@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.0](https://github.com/forepath/one/compare/v4.1.0...v4.2.0) (2026-11-02)
+
+
+### Features
+
+* **shared:** valkey cache support ([#700](https://github.com/forepath/one/issues/700)) ([53f51c3](https://github.com/forepath/one/commit/53f51c36d70209d5178d1dee7c519c295c72b656))
+
+
+### Bug Fixes
+
+* **forepath:** chatwoot message handling ([#702](https://github.com/forepath/one/issues/702)) ([e83da81](https://github.com/forepath/one/commit/e83da818127fd4cc7d1e541d9e87da97b3095727))
+* **forepath:** landingpage pattern continuation ([#703](https://github.com/forepath/one/issues/703)) ([767f47d](https://github.com/forepath/one/commit/767f47da15c9859cc24d87ba161ae033c8ff5592))
+
+
+### Chores
+
+* **shared:** bump nodejs version to 24.22.1 ([#699](https://github.com/forepath/one/issues/699)) ([58ee57c](https://github.com/forepath/one/commit/58ee57c91187e3217da896c44a15ff247bef76ef))
+
 ## [4.1.0](https://github.com/forepath/one/compare/v4.0.0...v4.1.0) (2026-10-23)
 
 
