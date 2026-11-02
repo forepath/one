@@ -484,17 +484,11 @@ const STATIC_FRAME = FRAMES.length - 1;
         background-color: var(--board-team);
       }
 
-      // Dotted whiteboard; nodes, edges, particles and cursors share its pixel coordinates.
+      // Plain whiteboard; nodes, edges, particles and cursors share its pixel coordinates.
       .board__canvas {
         position: relative;
         flex: 1 1 auto;
         overflow: hidden;
-        background-image: radial-gradient(
-          circle,
-          color-mix(in srgb, var(--bs-body-color) 12%, transparent) 1px,
-          transparent 1.5px
-        );
-        background-size: 24px 24px;
       }
 
       .board__edges {
