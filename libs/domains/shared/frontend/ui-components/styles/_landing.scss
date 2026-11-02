@@ -47,8 +47,6 @@
     z-index: -1;
     pointer-events: none;
     background-color: var(--fpc-landing-contour);
-    // Anchored to the bottom edge so a following `landing-hero-continuation` section can pick the
-    // lines up exactly where the hero ends.
     mask: $fpc-contour-tile left 0 bottom 0 / #{$fpc-contour-tile-size} #{$fpc-contour-tile-size} repeat;
     animation: fpc-landing-hero-drift 240s linear infinite;
     will-change: transform;
@@ -67,42 +65,6 @@
   &.bg-body-tertiary {
     --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 20%, transparent);
     --fpc-landing-hero-surface: var(--bs-tertiary-bg);
-  }
-}
-
-// The section right after a hero can continue its contour field: the layer is anchored to the
-// section's top edge (where the hero's lines end), runs the same drift so both stay in step, and a
-// static wash fades it out toward the bottom. Use on a section with the same surface as the hero.
-.grid-section.landing-hero-continuation {
-  --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 42%, transparent);
-  --fpc-landing-hero-surface: rgb(var(--bs-dark-rgb));
-  position: relative;
-  isolation: isolate;
-
-  &.bg-body-tertiary {
-    --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 20%, transparent);
-    --fpc-landing-hero-surface: var(--bs-tertiary-bg);
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: (-$fpc-contour-tile-size) 0 0 (-$fpc-contour-tile-size);
-    z-index: -1;
-    pointer-events: none;
-    background-color: var(--fpc-landing-contour);
-    mask: $fpc-contour-tile 0 0 / #{$fpc-contour-tile-size} #{$fpc-contour-tile-size} repeat;
-    animation: fpc-landing-hero-drift 240s linear infinite;
-    will-change: transform;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background: linear-gradient(to bottom, transparent 0, var(--fpc-landing-hero-surface) 22rem);
   }
 }
 
@@ -414,8 +376,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .grid-section#hero::before,
-  .grid-section.landing-hero-continuation::before {
+  .grid-section#hero::before {
     animation: none;
   }
 }
