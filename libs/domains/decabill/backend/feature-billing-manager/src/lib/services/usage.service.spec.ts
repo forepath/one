@@ -7,6 +7,7 @@ describe('UsageService', () => {
     findLatestForSubscription: jest.fn(),
     create: jest.fn(),
     findMeteredForSubscription: jest.fn(),
+    findMeteredForSubscriptionPage: jest.fn(),
     findByIdForSubscriptionOrThrow: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
@@ -179,5 +180,35 @@ describe('UsageService', () => {
     ).rejects.toThrow(BadRequestException);
 
     expect(usageRecordsRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('lists one page of meter entries with the total', async () => {
+    usageRecordsRepository.findMeteredForSubscriptionPage.mockResolvedValue({
+      items: [
+        {
+          id: 'usage-1',
+          subscriptionId: 'sub-1',
+          meterId: 'meter-1',
+          value: 3,
+          attachmentType: 'plan',
+          addonId: null,
+          periodStart: new Date('2026-01-01'),
+          periodEnd: new Date('2026-01-31'),
+          usageSource: 'admin',
+          usagePayload: {},
+          createdAt: new Date('2026-01-02'),
+        },
+      ],
+      total: 26,
+    });
+
+    const result = await service.listMeterEntries('sub-1', 25, 25);
+
+    expect(usageRecordsRepository.findMeteredForSubscriptionPage).toHaveBeenCalledWith('sub-1', 25, 25);
+    expect(result.total).toBe(26);
+    expect(result.limit).toBe(25);
+    expect(result.offset).toBe(25);
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toEqual(expect.objectContaining({ id: 'usage-1', meterId: 'meter-1', value: 3 }));
   });
 });

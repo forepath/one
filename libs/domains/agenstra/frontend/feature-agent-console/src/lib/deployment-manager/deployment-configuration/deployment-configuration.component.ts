@@ -4,11 +4,16 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   DeploymentsFacade,
+  DeploymentsService,
   type CreateDeploymentConfigurationDto,
   type DeploymentConfiguration,
   type UpdateDeploymentConfigurationDto,
   type Workflow,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  ReferenceComboboxComponent,
+  type ReferenceComboboxLoader,
+} from '@forepath/agenstra/frontend/feature-agent-config';
 import {
   FpcAlertComponent,
   FpcButtonComponent,
@@ -24,7 +29,7 @@ import {
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
-import { filter, skipWhile, take, timer } from 'rxjs';
+import { filter, map, skipWhile, take, timer } from 'rxjs';
 
 @Component({
   selector: 'framework-deployment-configuration',
@@ -43,6 +48,7 @@ import { filter, skipWhile, take, timer } from 'rxjs';
     FpcModalFooterDirective,
     FpcConfirmDialogComponent,
     FpcSpinnerComponent,
+    ReferenceComboboxComponent,
   ],
   templateUrl: './deployment-configuration.component.html',
   styleUrls: ['./deployment-configuration.component.scss'],
@@ -50,6 +56,7 @@ import { filter, skipWhile, take, timer } from 'rxjs';
 })
 export class DeploymentConfigurationComponent {
   private readonly deploymentsFacade = inject(DeploymentsFacade);
+  private readonly deploymentsService = inject(DeploymentsService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly loadingOverlayService = inject(StandaloneLoadingService);
   private bootOverlayCleared = false;
@@ -106,6 +113,76 @@ export class DeploymentConfigurationComponent {
   readonly providerBaseUrl = signal<string>('');
 
   readonly hasConfiguration = computed(() => this.configuration() !== null);
+
+  /*
+   * Configuration modal typeaheads (2026-10-29): the provider lists need the saved token, so they exist once a
+   * configuration does (free text before the first save). Each list is this environment's scoped deployments API;
+   * a 401 / 403 keeps the plain input with a hint. Free text stays allowed.
+   */
+  readonly repositoryLoader = computed<ReferenceComboboxLoader | null>(() => {
+    const clientId = this.clientId();
+    const agentId = this.agentId();
+
+    if (!this.hasConfiguration() || !clientId || !agentId) {
+      return null;
+    }
+
+    return () =>
+      this.deploymentsService.listRepositories(clientId, agentId).pipe(
+        map((repos) =>
+          repos.map((repo) => ({
+            value: repo.id,
+            label: repo.fullName || repo.id,
+            detail: repo.private ? this.privateRepositoryLabel : undefined,
+          })),
+        ),
+      );
+  });
+  readonly branchLoader = computed<ReferenceComboboxLoader | null>(() => {
+    const clientId = this.clientId();
+    const agentId = this.agentId();
+    const repositoryId = this.repositoryId().trim();
+
+    if (!this.hasConfiguration() || !clientId || !agentId || !repositoryId) {
+      return null;
+    }
+
+    return () =>
+      this.deploymentsService.listBranches(clientId, agentId, repositoryId).pipe(
+        map((branches) =>
+          branches.map((branch) => ({
+            value: branch.name,
+            detail: branch.default ? this.defaultBranchDetail : undefined,
+          })),
+        ),
+      );
+  });
+  readonly workflowLoader = computed<ReferenceComboboxLoader | null>(() => {
+    const clientId = this.clientId();
+    const agentId = this.agentId();
+    const repositoryId = this.repositoryId().trim();
+    const branch = this.defaultBranch().trim();
+
+    if (!this.hasConfiguration() || !clientId || !agentId || !repositoryId) {
+      return null;
+    }
+
+    return () =>
+      this.deploymentsService.listWorkflows(clientId, agentId, repositoryId, branch || undefined).pipe(
+        map((workflows) =>
+          workflows.map((workflow) => ({
+            value: workflow.id,
+            label: workflow.name || workflow.id,
+            detail: workflow.path || workflow.id,
+          })),
+        ),
+      );
+  });
+  readonly privateRepositoryLabel = $localize`:@@featureDeploymentConfig-privateRepository:Private`;
+  readonly defaultBranchDetail = $localize`:@@featureDeploymentConfig-defaultBranchDetail:Default branch`;
+  readonly noRepositoriesFound = $localize`:@@featureDeploymentConfig-noRepositoriesFound:No repositories found.`;
+  readonly noBranchesFound = $localize`:@@featureDeploymentConfig-noBranchesFound:No branches found.`;
+  readonly noWorkflowsFound = $localize`:@@featureDeploymentConfig-noWorkflowsFound:No workflows found.`;
   readonly canTriggerWorkflow = computed(() => {
     return (
       this.selectedWorkflowId() !== null &&
@@ -519,8 +596,8 @@ export class DeploymentConfigurationComponent {
 
   getModalTitle(): string {
     return this.hasConfiguration()
-      ? $localize`:@@featureDeploymentConfig-editModalTitle:Edit Deployment Configuration`
-      : $localize`:@@featureDeploymentConfig-createModalTitle:Create Deployment Configuration`;
+      ? $localize`:@@featureDeploymentConfig-editModalTitle:Edit deployment configuration`
+      : $localize`:@@featureDeploymentConfig-createModalTitle:Create deployment configuration`;
   }
 
   getTokenLabel(): string {

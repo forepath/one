@@ -75,7 +75,7 @@ export class IdentitySecuritySettingsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly actions$ = inject(Actions);
 
-  readonly pageTitle = $localize`:@@featureSecuritySettings-title:Security Settings`;
+  readonly pageTitle = $localize`:@@featureSecuritySettings-title:Security settings`;
   readonly loadingLabel = $localize`:@@featureSecuritySettings-loading:Loading...`;
   readonly authNotAvailableMessage = $localize`:@@featureSecuritySettings-authNotAvailable:Two-factor authentication settings are only available for users authentication.`;
 

@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   PromotionsFacade,
@@ -8,43 +8,47 @@ import {
   SubscriptionsFacade,
   type PromotionRedemptionResponse,
   type ValidatePromotionRequest,
+  type PromotionValidationResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
   FpcAlertComponent,
-  FpcBoardLaneComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
-  FpcLaneHeaderComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
-  FpcSpinnerComponent,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FpcTableCellDirective,
+  type FpcTableColumn,
 } from '@forepath/shared/frontend/ui-components';
-import { debounceTime, distinctUntilChanged, map, skip, switchMap } from 'rxjs';
+import { map, switchMap } from 'rxjs';
 
 import {
   getBillingIntervalLabel,
+  getPromotionAdvantageText,
   getPromotionRedemptionContextLabel,
-  getPromotionRedemptionStatusIconClass,
-  getPromotionRedemptionStatusLabel,
-  getPromotionRedemptionStatusTextClass,
   resolveNamedLabel,
 } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { BillingSubscriptionSelectComponent } from '../billing-subscription-select/billing-subscription-select.component';
 import { buildPromotionPeriodPricingPreview } from '../promotion-pricing-preview.util';
+import { dbServerPaging } from '../shared/server-paging';
+import { redemptionState } from '../shared/table-states';
+import {
+  formatBillingDate,
+  formatBillingDateRange,
+  formatBillingDateTime,
+  formatBillingMoney,
+} from '../billing-format';
 
 const PROMOTION_ELIGIBLE_SUBSCRIPTION_STATUSES = new Set(['active', 'pending_backorder', 'pending_cancel']);
 
-type PromotionsMobilePanel = 'active' | 'history';
+type PromotionsTab = 'active' | 'history';
 
 @Component({
   selector: 'framework-billing-promotions-page',
@@ -56,19 +60,15 @@ type PromotionsMobilePanel = 'active' | 'history';
     FpcAlertComponent,
     FpcButtonComponent,
     FpcButtonGroupComponent,
+    FpcDataTableComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
-    FpcListItemComponent,
-    FpcListComponent,
     FpcEmptyStateComponent,
-    FpcBoardLaneComponent,
-    FpcLaneHeaderComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
-    FpcSearchFieldComponent,
-    FpcSpinnerComponent,
     FpcTabComponent,
     FpcTabGroupComponent,
+    FpcTableCellDirective,
     BillingSubscriptionSelectComponent,
   ],
   providers: [DatePipe],
@@ -83,19 +83,131 @@ export class PromotionsPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly pageTitle = $localize`:@@featurePromotions-pageTitle:Promotions`;
+
+  advantageText(preview: PromotionValidationResponse): string {
+    return getPromotionAdvantageText(preview);
+  }
   readonly applyPromoAriaLabel = $localize`:@@featurePromotions-applyCode:Apply a promotion code`;
 
   readonly applyModalOpen = signal(false);
   promoCode = signal('');
   selectedSubscriptionId = signal('');
-  readonly activeSearch = signal('');
-  readonly historySearch = signal('');
-  readonly activeSearch$ = toObservable(this.activeSearch);
-  readonly historySearch$ = toObservable(this.historySearch);
-  readonly mobilePanel = signal<PromotionsMobilePanel>('active');
+  readonly activeTab = signal<PromotionsTab>('active');
+  /** Active tab → `GET /promotions/active?limit&offset&search` (replace-page; only while the tab is shown). */
+  readonly activePaging = dbServerPaging(
+    (query) => {
+      if (untracked(this.activeTab) === 'active') this.promotionsFacade.loadActivePromotions(query);
+    },
+    { url: 'act-' },
+  );
+  /** History tab → `GET /promotions/redemptions?limit&offset&search` (replace-page; only while the tab is shown). */
+  readonly historyPaging = dbServerPaging(
+    (query) => {
+      if (untracked(this.activeTab) === 'history') this.promotionsFacade.loadRedemptions(query);
+    },
+    { url: 'hist-' },
+  );
+  readonly searchActivePlaceholder = $localize`:@@featurePromotions-searchActive:Search active promotions`;
+  readonly searchHistoryPlaceholder = $localize`:@@featurePromotions-searchHistory:Search redemption history`;
+
+  readonly activeColumns: FpcTableColumn<PromotionRedemptionResponse>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureAdminPromotions-colStatus:Status`,
+      type: 'state',
+      state: (item) => redemptionState(item.status),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureAdminPromotions-colPromotion:Promotion`,
+      value: (item) => item.promotionName,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'code',
+      label: $localize`:@@featureAdminPromotions-colCode:Code`,
+      value: (item) => item.code,
+      mono: true,
+      priority: 2,
+    },
+    {
+      id: 'advantage',
+      label: $localize`:@@featureAdminPromotions-colAdvantage:Advantage`,
+      value: (item) => getPromotionAdvantageText(item),
+      priority: 1,
+    },
+    {
+      id: 'valid',
+      label: $localize`:@@featurePromotions-colValid:Valid`,
+      value: (item) => item.validFrom,
+      priority: 2,
+    },
+    {
+      id: 'plan',
+      label: $localize`:@@featureAdminPromotions-colPlan:Plan`,
+      value: (item) => item.planName ?? '',
+      priority: 3,
+    },
+  ];
+
+  readonly historyColumns: FpcTableColumn<PromotionRedemptionResponse>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureAdminPromotions-colStatus:Status`,
+      type: 'state',
+      state: (item) => redemptionState(item.status),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureAdminPromotions-colPromotion:Promotion`,
+      value: (item) => item.promotionName || item.code,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'redeemedAt',
+      label: $localize`:@@featureAdminPromotions-colRedeemedAt:Redeemed`,
+      value: (item) => item.redeemedAt,
+      priority: 1,
+    },
+    {
+      id: 'code',
+      label: $localize`:@@featureAdminPromotions-colCode:Code`,
+      value: (item) => item.code,
+      mono: true,
+      priority: 3,
+    },
+    {
+      id: 'advantage',
+      label: $localize`:@@featureAdminPromotions-colAdvantage:Advantage`,
+      value: (item) => getPromotionAdvantageText(item),
+      priority: 2,
+    },
+    {
+      id: 'subscription',
+      label: $localize`:@@featureAdminPromotions-colSubscription:Subscription`,
+      value: (item) => this.redemptionSubscriptionLabel(item),
+      priority: 2,
+    },
+    {
+      id: 'plan',
+      label: $localize`:@@featureAdminPromotions-colPlan:Plan`,
+      value: (item) => item.planName ?? '',
+      priority: 3,
+    },
+    {
+      id: 'context',
+      label: $localize`:@@featureAdminPromotions-colContext:Context`,
+      value: (item) => this.redemptionContextLabel(item.redemptionContext),
+      priority: 3,
+    },
+  ];
 
   readonly activePromotions = toSignal(this.promotionsFacade.getActivePromotions$(), { initialValue: [] });
   readonly redemptions = toSignal(this.promotionsFacade.getRedemptions$(), { initialValue: [] });
+  readonly activeTotal = toSignal(this.promotionsFacade.getActiveTotal$(), { initialValue: 0 });
+  readonly redemptionsTotal = toSignal(this.promotionsFacade.getRedemptionsTotal$(), { initialValue: 0 });
   readonly loadingActive$ = this.promotionsFacade.getActiveLoading$();
   readonly loadingRedemptions$ = this.promotionsFacade.getRedemptionsLoading$();
   readonly validationPreview = toSignal(this.promotionsFacade.getValidationPreview$('existing'), {
@@ -191,27 +303,34 @@ export class PromotionsPageComponent implements OnInit {
       error$: this.redeemError$,
       open: this.applyModalOpen,
       destroyRef: this.destroyRef,
-      onSuccess: () => this.resetApplyForm(),
+      onSuccess: () => {
+        this.resetApplyForm();
+        this.reloadCurrentTab();
+      },
+    });
+
+    // A tab switch loads the shown tab's current page (the hidden tab does not query).
+    let firstTab = true;
+
+    effect(() => {
+      this.activeTab();
+      if (firstTab) {
+        firstTab = false;
+
+        return;
+      }
+      untracked(() => this.reloadCurrentTab());
     });
   }
 
+  private reloadCurrentTab(): void {
+    if (this.activeTab() === 'history') this.historyPaging.reload();
+    else this.activePaging.reload();
+  }
+
   ngOnInit(): void {
-    this.promotionsFacade.loadActivePromotions();
-    this.promotionsFacade.loadRedemptions();
     this.subscriptionsFacade.loadSubscriptions();
     this.servicePlansFacade.loadServicePlans();
-
-    this.activeSearch$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.promotionsFacade.loadActivePromotions({ search: search.trim() || undefined });
-      });
-
-    this.historySearch$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.promotionsFacade.loadRedemptions({ search: search.trim() || undefined });
-      });
   }
 
   openApplyModal(): void {
@@ -263,13 +382,13 @@ export class PromotionsPageComponent implements OnInit {
     this.promotionsFacade.clearValidation();
   }
 
-  onMobilePanelTabChange(tabId: string | null): void {
+  onTabChange(tabId: string | null): void {
     if (tabId === 'active' || tabId === 'history') {
-      this.mobilePanel.set(tabId);
+      this.activeTab.set(tabId);
     }
   }
 
-  mobilePanelLabel(panel: PromotionsMobilePanel): string {
+  tabLabel(panel: PromotionsTab): string {
     switch (panel) {
       case 'active':
         return $localize`:@@featurePromotions-mobileActive:Active promotions`;
@@ -284,24 +403,20 @@ export class PromotionsPageComponent implements OnInit {
     return getPromotionRedemptionContextLabel(context);
   }
 
-  redemptionStatusLabel(status: PromotionRedemptionResponse['status']): string {
-    return getPromotionRedemptionStatusLabel(status);
-  }
-
   redemptionSubscriptionLabel(item: PromotionRedemptionResponse): string {
     return resolveNamedLabel(item.subscriptionNumber);
   }
 
-  redemptionStatusTextClass(status: PromotionRedemptionResponse['status']): string {
-    return getPromotionRedemptionStatusTextClass(status);
+  validRange(item: PromotionRedemptionResponse): string {
+    return formatBillingDateRange(item.validFrom, item.validTo);
   }
 
-  redemptionStatusIconClass(status: PromotionRedemptionResponse['status']): string {
-    return getPromotionRedemptionStatusIconClass(status);
+  redeemedAt(item: PromotionRedemptionResponse): string {
+    return item.redeemedAt;
   }
 
   formatCurrencyAmount(amount: number): string {
-    return `€${Number.isInteger(amount) ? String(amount) : amount.toFixed(2)}`;
+    return formatBillingMoney(amount);
   }
 
   formatPeriodPrice(amount: number): string {
@@ -316,16 +431,12 @@ export class PromotionsPageComponent implements OnInit {
   formatDate(value?: string): string {
     if (!value) return '-';
 
-    return this.datePipe.transform(value, 'mediumDate') ?? value;
+    return formatBillingDate(value, value ?? '-');
   }
 
   formatDateTime(value?: string): string {
     if (!value) return '-';
 
-    return this.datePipe.transform(value, 'medium') ?? value;
-  }
-
-  trackRedemption(_index: number, item: PromotionRedemptionResponse): string {
-    return item.id;
+    return formatBillingDateTime(value, value ?? '-');
   }
 }

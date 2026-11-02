@@ -6,7 +6,6 @@ import {
   deleteAdminCustomerProfileFailure,
   deleteAdminCustomerProfileSuccess,
   loadAdminCustomerProfiles,
-  loadAdminCustomerProfilesBatch,
   loadAdminCustomerProfileTrustScore,
   loadAdminCustomerProfileTrustScoreFailure,
   loadAdminCustomerProfileTrustScoreSuccess,
@@ -53,31 +52,26 @@ describe('adminCustomerProfilesReducer', () => {
     updatedAt: '2024-01-02',
   };
 
-  it('sets loading on load', () => {
-    const state = adminCustomerProfilesReducer(initialAdminCustomerProfilesState, loadAdminCustomerProfiles());
+  it('sets loading, page window and search on load (current rows stay until the page arrives)', () => {
+    const state = adminCustomerProfilesReducer(
+      { ...initialAdminCustomerProfilesState, profiles: [listItem] },
+      loadAdminCustomerProfiles({ search: ' ada ', page: 2, pageSize: 50 }),
+    );
 
     expect(state.loading).toBe(true);
-    expect(state.profiles).toEqual([]);
+    expect(state.profiles).toEqual([listItem]);
+    expect(state).toEqual(expect.objectContaining({ page: 2, pageSize: 50, search: 'ada' }));
     expect(state.error).toBeNull();
   });
 
-  it('stores accumulated profiles on batch', () => {
+  it('replaces the rows with the loaded page and stores the total', () => {
     const state = adminCustomerProfilesReducer(
-      initialAdminCustomerProfilesState,
-      loadAdminCustomerProfilesBatch({ offset: 10, accumulatedProfiles: [listItem] }),
+      { ...initialAdminCustomerProfilesState, loading: true, profiles: [{ ...listItem, id: 'old' }] },
+      loadAdminCustomerProfilesSuccess({ profiles: [listItem], total: 42 }),
     );
 
     expect(state.profiles).toEqual([listItem]);
-    expect(state.loading).toBe(true);
-  });
-
-  it('stores profiles on success', () => {
-    const state = adminCustomerProfilesReducer(
-      { ...initialAdminCustomerProfilesState, loading: true },
-      loadAdminCustomerProfilesSuccess({ profiles: [listItem] }),
-    );
-
-    expect(state.profiles).toEqual([listItem]);
+    expect(state.total).toBe(42);
     expect(state.loading).toBe(false);
   });
 

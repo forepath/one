@@ -1,3 +1,4 @@
+import { SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KnowledgeFacade, type KnowledgeNodeDto } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { Actions } from '@ngrx/effects';
@@ -124,6 +125,37 @@ describe('KnowledgeTreeComponent selection', () => {
     expect(component.isNodeOpen('page')).toBe(true);
     expect(component.isNodeSelected('page')).toBe(false);
     expect(component.isNodeSelected('a')).toBe(true);
+  });
+
+  it('reveals the open page: expands its folders once, so a later collapse sticks', () => {
+    seedTree();
+    component.expandedNodeIds.set(new Set());
+    const folder = component.nodes[0];
+
+    component.selectedNodeId = 'b';
+    component.ngOnChanges({ selectedNodeId: new SimpleChange(null, 'b', false) });
+
+    expect(component.isExpanded(folder)).toBe(true);
+    expect(component.isNodeOpen('b')).toBe(true);
+
+    component.onToggleExpand('folder');
+    component.ngOnChanges({ nodes: new SimpleChange([], component.nodes, false) });
+
+    expect(component.isExpanded(folder)).toBe(false);
+  });
+
+  it('reveals a deep-linked page once the tree has loaded it', () => {
+    const nodes = component.nodes;
+
+    component.nodes = [];
+    component.selectedNodeId = 'b';
+    component.ngOnChanges({ selectedNodeId: new SimpleChange(null, 'b', false) });
+    component.nodes = nodes;
+    seedTree();
+    component.expandedNodeIds.set(new Set());
+    component.ngOnChanges({ nodes: new SimpleChange([], component.nodes, false) });
+
+    expect(component.isExpanded(component.nodes[0])).toBe(true);
   });
 
   it('marks clipboard copy and cut roots for row highlight', () => {
@@ -355,6 +387,78 @@ describe('KnowledgeTreeComponent selection', () => {
     expect(component.clipboardService.clipboard()).toEqual({
       mode: 'copy',
       entries: [{ id: 'page', nodeType: 'page', parentId: null, title: 'Root page' }],
+    });
+  });
+
+  describe('search', () => {
+    function searchTree(): KnowledgeNodeDto[] {
+      return [
+        sampleNode({
+          id: 'docs',
+          nodeType: 'folder',
+          title: 'Docs',
+          searchMatch: false,
+          children: [
+            sampleNode({
+              id: 'guides',
+              nodeType: 'folder',
+              title: 'Guides',
+              parentId: 'docs',
+              searchMatch: false,
+              children: [sampleNode({ id: 'hit', title: 'Runbook', parentId: 'guides', searchMatch: true })],
+            }),
+          ],
+        }),
+      ];
+    }
+
+    function startSearch(): void {
+      component.nodes = searchTree();
+      component.searching = true;
+      component.ngOnChanges({
+        searching: new SimpleChange(false, true, false),
+        nodes: new SimpleChange([], component.nodes, false),
+      });
+    }
+
+    it('emits the typed query for the board to load', () => {
+      const spy = jest.fn();
+
+      component.searchQueryChange.subscribe(spy);
+      component.searchQueryChange.emit('runbook');
+
+      expect(spy).toHaveBeenCalledWith('runbook');
+    });
+
+    it('expands every folder of the results and marks context-only ancestors', () => {
+      startSearch();
+
+      expect(component.isExpanded(component.nodes[0])).toBe(true);
+      expect(component.isExpanded(component.nodes[0].children![0])).toBe(true);
+      expect(component.isSearchContext(component.nodes[0])).toBe(true);
+      expect(component.isSearchContext(component.nodes[0].children![0].children![0])).toBe(false);
+    });
+
+    it('restores the folders the user had open when the search is cleared', () => {
+      startSearch();
+      seedTree();
+      component.expandedNodeIds.update((ids) => new Set(ids).add('docs'));
+      component.searching = false;
+      component.ngOnChanges({ searching: new SimpleChange(true, false, false) });
+
+      expect([...component.expandedNodeIds()]).toEqual(['folder']);
+      expect(component.isSearchContext(component.nodes[0])).toBe(false);
+    });
+
+    it('shows the loading spinner until the first results arrive', () => {
+      component.searchLoading = true;
+      component.searching = false;
+
+      expect(component.shouldShowInitialLoadingSpinner()).toBe(true);
+
+      component.searching = true;
+
+      expect(component.shouldShowInitialLoadingSpinner()).toBe(false);
     });
   });
 });

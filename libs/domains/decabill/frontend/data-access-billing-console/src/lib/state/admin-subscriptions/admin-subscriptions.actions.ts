@@ -4,27 +4,14 @@ import type { AdminSubscriptionListItem } from '../../types/billing.types';
 
 export const loadAdminSubscriptions = createAction(
   '[AdminSubscriptions] Load Subscriptions',
-  props<{ search?: string; userId?: string }>(),
+  props<{ search?: string; userId?: string; page?: number; pageSize?: number }>(),
 );
 export const loadAdminSubscriptionsSuccess = createAction(
   '[AdminSubscriptions] Load Subscriptions Success',
-  props<{ subscriptions: AdminSubscriptionListItem[]; hasMore: boolean; nextOffset: number }>(),
+  props<{ subscriptions: AdminSubscriptionListItem[]; total: number }>(),
 );
 export const loadAdminSubscriptionsFailure = createAction(
   '[AdminSubscriptions] Load Subscriptions Failure',
-  props<{ error: string }>(),
-);
-
-export const loadMoreAdminSubscriptions = createAction(
-  '[AdminSubscriptions] Load More Subscriptions',
-  props<{ offset: number; search?: string; userId?: string }>(),
-);
-export const loadMoreAdminSubscriptionsSuccess = createAction(
-  '[AdminSubscriptions] Load More Subscriptions Success',
-  props<{ subscriptions: AdminSubscriptionListItem[]; hasMore: boolean; nextOffset: number }>(),
-);
-export const loadMoreAdminSubscriptionsFailure = createAction(
-  '[AdminSubscriptions] Load More Subscriptions Failure',
   props<{ error: string }>(),
 );
 

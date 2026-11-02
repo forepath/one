@@ -1,0 +1,35 @@
+// Density (compact by default where an app instantiates `FpcDensityService`, which sets
+// `body.fpc-density-compact`). Without the service nothing changes, so apps opt in.
+//
+// New row-based components (`fpc-tree`, `fpc-data-table`) read their row height from the service
+// for virtual scrolling; existing chrome is tightened here through its host classes.
+
+body.fpc-density-compact {
+  --fpc-density-row-py: 0.25rem;
+  --fpc-density-cell-px: 0.5rem;
+
+  .fpc-list-item.list-group-item:not(.fpc-list-item--condensed) {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+
+  .fpc-lane-header {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+
+  // `fpc-board-lane [padded]` bodies (forms / prose).
+  .fpc-board-lane__body--padded {
+    --fpc-lane-body-padding-y: 0.5rem;
+  }
+
+  .fpc-page-header:not(.fpc-page-header--compact) {
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+  }
+
+  .fpc-summary-card {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}

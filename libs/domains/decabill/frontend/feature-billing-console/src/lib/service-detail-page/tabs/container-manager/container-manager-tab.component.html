@@ -41,7 +41,7 @@
               @if (networksCollectedAt(); as collectedAt) {
                 <span class="small text-body-secondary">
                   <span i18n="@@featureContainerManager-collectedAt">Collected</span>
-                  {{ collectedAt | date: 'short' }}
+                  {{ collectedAt | fpcDate: 'datetime' }}
                 </span>
               }
             </div>
@@ -187,6 +187,7 @@
                         [yaxis]="chart.yaxis"
                         [grid]="chart.grid"
                         [legend]="chart.legend"
+                        [responsive]="chart.responsive"
                       ></apx-chart>
                     </fpc-panel>
                     @if (memoryChart(); as memory) {
@@ -203,6 +204,7 @@
                           [grid]="memory.grid"
                           [legend]="memory.legend"
                           [tooltip]="memory.tooltip"
+                          [responsive]="memory.responsive"
                         ></apx-chart>
                       </fpc-panel>
                     }
@@ -223,7 +225,7 @@
                 @if (logsCollectedAt(); as collectedAt) {
                   <span fpcLaneHeaderActions class="small text-body-secondary fw-normal">
                     <span i18n="@@featureContainerManager-collectedAt">Collected</span>
-                    {{ collectedAt | date: 'short' }}
+                    {{ collectedAt | fpcDate: 'datetime' }}
                   </span>
                 }
               </fpc-lane-header>
@@ -295,84 +297,36 @@
           @if (containersCollectedAt(); as collectedAt) {
             <span class="small text-body-secondary">
               <span i18n="@@featureContainerManager-collectedAt">Collected</span>
-              {{ collectedAt | date: 'short' }}
+              {{ collectedAt | fpcDate: 'datetime' }}
             </span>
           }
         </div>
 
-        <fpc-search-field
-          class="border-bottom"
-          name="containerSearch"
-          [bordered]="false"
-          [placeholder]="containerSearchPlaceholder"
-          [ariaLabel]="containerSearchPlaceholder"
-          [(value)]="searchQuery"
-        />
-
-        <div class="container-manager-tab__sidebar-list overflow-auto min-h-0">
-          @if (loadingContainers()) {
-            <div class="d-flex align-items-center gap-2 text-body-secondary p-3">
-              <fpc-spinner size="sm" />
-              <span i18n="@@featureContainerManager-loadingContainers">Loading containers...</span>
-            </div>
-          } @else if (containers().length === 0) {
+        <!-- Rail as a table: State · Container · CPU · memory · image; row click opens the container. -->
+        <fpc-data-table
+          class="container-manager-tab__sidebar-list min-h-0"
+          nested
+          [ariaLabel]="containersLabel"
+          [columns]="containerColumns"
+          [rows]="filteredContainers()"
+          [activeRowId]="contentView() === 'container' ? selectedContainerId() : null"
+          paging="client"
+          persistKey="decabill-service-containers"
+          [(query)]="searchQuery"
+          [searchPlaceholder]="containerSearchPlaceholder"
+          [loading]="loadingContainers()"
+          (rowActivate)="selectContainer($event.id)"
+          emptyIcon="box"
+          data-testid="container-manager-containers"
+        >
+          <span fpcDataTableEmpty>
             <fpc-empty-state
               size="sm"
               message="No containers found on this host."
               i18n-message="@@featureContainerManager-noContainers"
             />
-          } @else if (filteredContainers().length === 0) {
-            <fpc-empty-state
-              size="sm"
-              icon="search"
-              message="No search results"
-              i18n-message="@@featureContainerManager-noSearchResults"
-            />
-          } @else {
-            <fpc-list [flush]="true">
-              @for (container of filteredContainers(); track container.id) {
-                <fpc-list-item
-                  [clickable]="true"
-                  [active]="contentView() === 'container' && selectedContainerId() === container.id"
-                  (selected)="selectContainer(container.id)"
-                >
-                  <div fpcListItemTitle class="d-flex align-items-center gap-2 min-w-0">
-                    <span
-                      class="container-manager-tab__status-dot rounded-circle flex-shrink-0"
-                      [ngClass]="containerStatusDotClass(container)"
-                      [attr.title]="containerStatusLabel(container)"
-                      [attr.aria-label]="containerStatusLabel(container)"
-                    ></span>
-                    <span class="fw-semibold text-truncate">{{ container.name }}</span>
-                  </div>
-                  <div fpcListItemMeta class="text-truncate">{{ container.image }}</div>
-                  <div fpcListItemActions class="container-manager-tab__stat-badges">
-                    <fpc-badge
-                      variant="info"
-                      color="secondary"
-                      class="container-manager-tab__stat-badge"
-                      title="CPU"
-                      i18n-title="@@featureContainerManager-cpu"
-                    >
-                      <i class="bi bi-cpu" aria-hidden="true"></i>
-                      <span>{{ formatPercent(container.stats?.cpuPercent) }}</span>
-                    </fpc-badge>
-                    <fpc-badge
-                      variant="info"
-                      color="secondary"
-                      class="container-manager-tab__stat-badge"
-                      title="Memory"
-                      i18n-title="@@featureContainerManager-memory"
-                    >
-                      <i class="bi bi-memory" aria-hidden="true"></i>
-                      <span>{{ formatBytes(container.stats?.memoryUsageBytes) }}</span>
-                    </fpc-badge>
-                  </div>
-                </fpc-list-item>
-              }
-            </fpc-list>
-          }
-        </div>
+          </span>
+        </fpc-data-table>
       </div>
 
       <div class="container-manager-tab__sidebar-footer bg-body-tertiary">

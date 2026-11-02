@@ -64,7 +64,7 @@ export class AgentChatToolEmbedComponent {
   protected readonly bashFailedLabel = $localize`:@@featureChat-toolEmbedBashFailed:Command reported an error`;
   protected readonly fetchFailedLabel = $localize`:@@featureChat-toolEmbedFetchFailed:Fetch reported an error`;
   protected readonly searchFailedLabel = $localize`:@@featureChat-toolEmbedSearchFailed:Search reported an error`;
-  protected readonly handoffLabel = $localize`:@@featureChat-toolEmbedHandoff:Handed over to another agent`;
+  protected readonly handoffLabel = $localize`:@@featureChat-toolEmbedHandoff:Handed over to another environment`;
   protected readonly handoffPendingLabel = $localize`:@@featureChat-toolEmbedHandoffPending:The response arrives here once the agent is done.`;
   protected readonly handoffFailedLabel = $localize`:@@featureChat-toolEmbedHandoffFailed:The handoff could not be created`;
   protected readonly openHandoffChatLabel = $localize`:@@featureChat-toolEmbedOpenHandoffChat:Open handoff chat`;

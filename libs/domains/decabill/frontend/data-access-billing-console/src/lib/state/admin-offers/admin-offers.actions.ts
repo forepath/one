@@ -10,14 +10,13 @@ import type {
   UpdateAdminOfferDto,
 } from '../../types/offers.types';
 
-export const loadAdminOffers = createAction('[AdminOffers] Load Offers', props<{ search?: string; userId?: string }>());
-export const loadAdminOffersBatch = createAction(
-  '[AdminOffers] Load Offers Batch',
-  props<{ offset: number; accumulated: AdminOfferListItem[]; search?: string; userId?: string }>(),
+export const loadAdminOffers = createAction(
+  '[AdminOffers] Load Offers',
+  props<{ search?: string; userId?: string; page?: number; pageSize?: number }>(),
 );
 export const loadAdminOffersSuccess = createAction(
   '[AdminOffers] Load Offers Success',
-  props<{ offers: AdminOfferListItem[] }>(),
+  props<{ offers: AdminOfferListItem[]; total: number }>(),
 );
 export const loadAdminOffersFailure = createAction('[AdminOffers] Load Offers Failure', props<{ error: string }>());
 
@@ -79,18 +78,5 @@ export const loadAdminOfferAuditLogsSuccess = createAction(
 );
 export const loadAdminOfferAuditLogsFailure = createAction(
   '[AdminOffers] Load Audit Logs Failure',
-  props<{ error: string }>(),
-);
-
-export const loadMoreAdminOfferAuditLogs = createAction(
-  '[AdminOffers] Load More Audit Logs',
-  props<{ offerId: string; offset: number; limit?: number }>(),
-);
-export const loadMoreAdminOfferAuditLogsSuccess = createAction(
-  '[AdminOffers] Load More Audit Logs Success',
-  props<{ offerId: string; items: BillingAuditLogResponse[]; total: number; offset: number }>(),
-);
-export const loadMoreAdminOfferAuditLogsFailure = createAction(
-  '[AdminOffers] Load More Audit Logs Failure',
   props<{ error: string }>(),
 );

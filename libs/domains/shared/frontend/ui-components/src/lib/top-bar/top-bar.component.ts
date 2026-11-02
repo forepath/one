@@ -5,9 +5,26 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
  * Project actions into `[fpcTopBarActions]` (or the default slot). Optional `[fpcTopBarBrand]`
  * replaces the default logo mark.
  *
- * Use `compact` when there is no brand column (end-aligned, padded). Meta chips on the dark bar
- * should use class `fpc-top-bar__chip`. Icon / link actions that must stay light regardless of
- * app theme use `fpc-top-bar__action`.
+ * Use `compact` when there is no brand column (end-aligned, padded): tool windows / file-only mode.
+ * Phones keep the one full bar (actions tighten below md); console navigation on phones is the same
+ * `fpc-sidebar` rail + footer `fpc-sidebar-popover` as on desktop (no bottom bar, no second row).
+ *
+ * Item contract (order from the right edge inward: Logout, theme, language, density, security,
+ * running tasks, draft / state chips, primary Create, search trigger):
+ * - actions: `fpc-button variant="link" size="sm" class="fpc-top-bar__action"` (light chrome in both
+ *   themes; `active` for the current route; `fpc-top-bar__action--attention` = warning-tone state chip;
+ *   a count is an `fpc-badge pill` inside the button). Never raw `.btn` / `btn-link`.
+ * - primary actions (Create `+`): `fpc-button variant="primary" size="sm" iconOnly`.
+ * - Logout: `fpc-button variant="primary" size="sm" mdSize="md" [title]="…"` (rightmost) with
+ *   `<i class="bi bi-box-arrow-right fpc-top-bar__phone-icon" aria-hidden="true"></i>` +
+ *   `<span class="fpc-top-bar__label">Logout</span>`: icon-only square below sm, label from sm up.
+ *
+ * Phones (< 576 px): meta chips collapse to their icon, the language switcher drops its glyph, every
+ * `.fpc-top-bar__label` becomes visually hidden (its button turns square, `.fpc-top-bar__phone-icon` shows)
+ * and the gaps tighten, so the row fits at 360–390 px without clipping Logout.
+ * - meta / context chips: `fpc-badge variant="info" color="secondary" size="sm" class="fpc-top-bar__chip"`.
+ * - global search trigger: `button.fpc-top-bar__search` (+ `.fpc-top-bar__search-text`, `kbd.fpc-top-bar__search-key`).
+ * Gaps come from the actions container (1 rem ≥ md, .5 rem below); items carry no margins.
  */
 @Component({
   selector: 'fpc-top-bar',

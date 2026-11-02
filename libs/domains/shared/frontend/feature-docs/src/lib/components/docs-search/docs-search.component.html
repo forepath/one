@@ -1,54 +1,41 @@
-<div
-  class="docs-search-container"
-  [class.docs-search-container--field]="searchField()"
-  [class.docs-search-container--icon]="!searchField()"
-  (keydown.enter)="onSearchClick()"
+<!-- Field-like trigger (top-bar search concept): icon only on narrow bars, label and shortcut from lg. -->
+<button
+  type="button"
+  class="fpc-top-bar__search"
+  [title]="searchTitle"
+  [attr.aria-label]="searchPlaceholder"
+  aria-haspopup="dialog"
+  [attr.aria-expanded]="paletteOpen()"
+  (click)="openPalette()"
+  data-testid="docs-search-trigger"
 >
-  @if (searchField()) {
-    <fpc-typeahead-select
-      inputId="docsSearchInput"
-      listboxId="docsSearchInput-listbox"
-      [query]="searchQuery()"
-      [open]="suggestionsOpen()"
-      [openOnFocus]="false"
-      [placeholder]="searchPlaceholder"
-      [ariaLabel]="searchPlaceholder"
-      (queryChange)="onSearchValueChange($event)"
-      (openChange)="onSuggestionsOpenChange($event)"
-      (cleared)="onCleared()"
+  <i class="bi bi-search" aria-hidden="true"></i>
+  <span class="fpc-top-bar__search-text d-none d-lg-inline">{{ searchPlaceholder }}</span>
+  <kbd class="fpc-top-bar__search-key d-none d-lg-inline">Ctrl K</kbd>
+</button>
+
+<fpc-command-palette
+  [open]="paletteOpen()"
+  (openChange)="onPaletteOpenChange($event)"
+  [query]="searchQuery()"
+  (queryChange)="onQueryChange($event)"
+  [groups]="groups()"
+  [loading]="loading()"
+  [title]="searchLabel"
+  [placeholder]="searchPlaceholder"
+  [inputLabel]="searchPlaceholder"
+  (itemActivate)="onActivate($event)"
+>
+  <span fpcCommandPaletteEmpty>{{ searchQuery().trim() ? noResultsMessage : typeToSearchMessage }}</span>
+  <div fpcCommandPaletteFooter class="d-flex align-items-center gap-3">
+    <span class="d-none d-md-inline">↑ ↓ · Enter · Ctrl + Enter</span>
+    <button
+      type="button"
+      class="btn btn-link btn-sm p-0 ms-auto text-decoration-none"
+      (click)="onViewAllResults()"
+      data-testid="docs-search-all-results"
     >
-      <div fpcTypeaheadSuggestions>
-        @if (searchResults().length > 0) {
-          @for (result of searchResults(); track result.entry.path) {
-            <button type="button" class="dropdown-item py-2 text-start" (mousedown)="onResultClick(result, $event)">
-              <span class="fw-medium d-block text-break">{{ result.entry.title }}</span>
-              @if (result.entry.summary) {
-                <small class="d-block text-muted text-break">{{ result.entry.summary }}</small>
-              }
-              @if (result.highlights.length > 0) {
-                <small class="d-block text-muted" [innerHTML]="result.highlights[0]"></small>
-              }
-            </button>
-          }
-          <button type="button" class="dropdown-item py-2 text-center text-primary" (mousedown)="onSearchClick($event)">
-            {{ viewAllResultsLabel }}
-          </button>
-        } @else if (searchQuery().trim().length > 0) {
-          <span class="dropdown-item-text text-muted small">{{ noResultsMessage }}</span>
-        }
-      </div>
-    </fpc-typeahead-select>
-  } @else {
-    <fpc-button
-      class="fpc-top-bar__action"
-      variant="link"
-      size="sm"
-      iconOnly
-      [ariaLabel]="searchPlaceholder"
-      [title]="searchPlaceholder"
-      (clicked)="onSearchClick()"
-    >
-      <i class="bi bi-search" aria-hidden="true"></i>
-    </fpc-button>
-  }
-</div>
+      {{ viewAllResultsLabel }}
+    </button>
+  </div>
+</fpc-command-palette>

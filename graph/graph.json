@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-24T10:31:05.172Z",
+  "generatedAt": "2026-11-02T21:52:10.092Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -2466,14 +2466,6 @@
       }
     },
     {
-      "id": "package:@angular/cdk",
-      "type": "package",
-      "attrs": {
-        "name": "@angular/cdk",
-        "version": "21.2.6"
-      }
-    },
-    {
       "id": "package:@angular/common",
       "type": "package",
       "attrs": {
@@ -2647,6 +2639,14 @@
       "attrs": {
         "name": "react",
         "version": "18.3.1"
+      }
+    },
+    {
+      "id": "package:sass",
+      "type": "package",
+      "attrs": {
+        "name": "sass",
+        "version": "1.97.3"
       }
     },
     {
@@ -13384,6 +13384,15 @@
       "attrs": {
         "path": "libs/domains/shared/frontend/ui-components/docs/catalog.md",
         "languageOrKind": "md",
+        "projectName": "shared-frontend-ui-components"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/ui-components/src/lib/density/density.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/ui-components/src/lib/density/density.service.ts",
+        "languageOrKind": "ts",
         "projectName": "shared-frontend-ui-components"
       }
     },
@@ -35730,17 +35739,17 @@
     },
     {
       "from": "project:shared-frontend-feature-notifications",
+      "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-feature-notifications",
       "to": "project:shared-frontend-data-access-notifications",
       "type": "depends_on"
     },
     {
       "from": "project:shared-frontend-feature-notifications",
       "to": "project:shared-frontend-util-configuration",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:shared-frontend-feature-notifications",
-      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -36040,6 +36049,11 @@
     },
     {
       "from": "project:decabill-frontend-billing-console",
+      "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-billing-console",
       "to": "project:decabill-frontend-feature-billing-console",
       "type": "depends_on"
     },
@@ -36136,6 +36150,11 @@
     {
       "from": "project:agenstra-frontend-agent-console",
       "to": "project:shared-frontend-data-access-updates",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-agent-console",
+      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -36306,6 +36325,11 @@
     {
       "from": "project:shared-frontend-docs",
       "to": "project:shared-frontend-util-cookie-consent",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-docs",
+      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -36605,11 +36629,6 @@
     },
     {
       "from": "project:agenstra-frontend-billing-console",
-      "to": "package:@angular/cdk",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-billing-console",
       "to": "package:@angular/common",
       "type": "depends_on"
     },
@@ -36726,6 +36745,11 @@
     {
       "from": "project:agenstra-frontend-billing-console",
       "to": "package:rxjs",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-billing-console",
+      "to": "package:sass",
       "type": "depends_on"
     },
     {
@@ -36745,11 +36769,6 @@
     },
     {
       "from": "project:decabill-frontend-billing-console",
-      "to": "package:@angular/cdk",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-billing-console",
       "to": "package:@angular/common",
       "type": "depends_on"
     },
@@ -36866,6 +36885,11 @@
     {
       "from": "project:decabill-frontend-billing-console",
       "to": "package:rxjs",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-billing-console",
+      "to": "package:sass",
       "type": "depends_on"
     },
     {
@@ -36885,11 +36909,6 @@
     },
     {
       "from": "project:forepath-frontend-billing-console",
-      "to": "package:@angular/cdk",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:forepath-frontend-billing-console",
       "to": "package:@angular/common",
       "type": "depends_on"
     },
@@ -37006,6 +37025,11 @@
     {
       "from": "project:forepath-frontend-billing-console",
       "to": "package:rxjs",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-frontend-billing-console",
+      "to": "package:sass",
       "type": "depends_on"
     },
     {
@@ -37300,11 +37324,6 @@
     },
     {
       "from": "project:agenstra-frontend-agent-console",
-      "to": "package:@angular/cdk",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-agent-console",
       "to": "package:@angular/common",
       "type": "depends_on"
     },
@@ -37426,6 +37445,11 @@
     {
       "from": "project:agenstra-frontend-agent-console",
       "to": "package:rxjs",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-agent-console",
+      "to": "package:sass",
       "type": "depends_on"
     },
     {
@@ -37611,6 +37635,11 @@
     {
       "from": "project:agenstra-backend-agent-manager",
       "to": "package:handlebars",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-manager",
+      "to": "package:ioredis",
       "type": "depends_on"
     },
     {
@@ -37945,6 +37974,11 @@
     },
     {
       "from": "project:agenstra-frontend-landingpage",
+      "to": "package:sass",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-landingpage",
       "to": "package:socket.io-client",
       "type": "depends_on"
     },
@@ -38060,6 +38094,11 @@
     },
     {
       "from": "project:decabill-frontend-landingpage",
+      "to": "package:sass",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-landingpage",
       "to": "package:socket.io-client",
       "type": "depends_on"
     },
@@ -38161,6 +38200,11 @@
     {
       "from": "project:forepath-frontend-landingpage",
       "to": "package:rxjs",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-frontend-landingpage",
+      "to": "package:sass",
       "type": "depends_on"
     },
     {
@@ -38301,6 +38345,11 @@
     {
       "from": "project:shared-frontend-docs",
       "to": "package:rxjs",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-docs",
+      "to": "package:sass",
       "type": "depends_on"
     },
     {
@@ -43991,6 +44040,11 @@
     {
       "from": "project:shared-frontend-ui-components",
       "to": "file:libs/domains/shared/frontend/ui-components/docs/catalog.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-ui-components",
+      "to": "file:libs/domains/shared/frontend/ui-components/src/lib/density/density.service.ts",
       "type": "contains"
     },
     {
@@ -66184,6 +66238,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/customer-profiles.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
       "type": "injects"
@@ -66594,6 +66653,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/projects-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/customer-profiles.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/projects.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/repositories/projects.repository.ts",
       "type": "injects"
@@ -66891,6 +66955,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-admin.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plans.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/customer-profiles.repository.ts",
       "type": "injects"
     },
     {
@@ -67271,6 +67340,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-admin.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/trust-score/customer-trust-score.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/customer-profiles.repository.ts",
       "type": "injects"
     },
     {
@@ -73161,16 +73235,6 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
       "to": "api:HTTP:GET:/offers/summary",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
-      "to": "api:HTTP:GET:/offers/pending",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
-      "to": "api:HTTP:GET:/offers/history",
       "type": "calls"
     },
     {

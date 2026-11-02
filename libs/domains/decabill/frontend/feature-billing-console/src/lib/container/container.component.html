@@ -2,19 +2,6 @@
 
 @if (!fileOnlyMode()) {
   <fpc-top-bar brandSrc="assets/images/icon_light.svg" [brandAlt]="productName">
-    @if (headerCustomerNumber(); as customerNumber) {
-      <fpc-badge
-        variant="info"
-        color="secondary"
-        size="sm"
-        class="fpc-top-bar__chip"
-        [attr.title]="customerNumber"
-        [attr.aria-label]="getCustomerNumberAriaLabel(customerNumber)"
-      >
-        <i class="bi bi-person-badge" aria-hidden="true"></i>
-        <span>{{ customerNumber }}</span>
-      </fpc-badge>
-    }
     @if (isUsersAuth && (isAuthenticated$ | async)) {
       <fpc-button
         routerLink="/settings/security"
@@ -36,6 +23,19 @@
           >
         }
       </fpc-button>
+    }
+    @if (headerCustomerNumber(); as customerNumber) {
+      <fpc-badge
+        variant="info"
+        color="secondary"
+        size="sm"
+        class="fpc-top-bar__chip"
+        [attr.title]="customerNumber"
+        [attr.aria-label]="getCustomerNumberAriaLabel(customerNumber)"
+      >
+        <i class="bi bi-person-badge" aria-hidden="true"></i>
+        <span>{{ customerNumber }}</span>
+      </fpc-badge>
     }
     <fpc-language-switcher
       data-bs-theme="dark"
@@ -50,38 +50,18 @@
       (darkChange)="themeService.toggleTheme()"
     />
     @if (isAuthenticated$ | async) {
-      <fpc-button
-        class="d-md-none"
-        variant="primary"
-        size="sm"
-        (clicked)="onLogoutClick()"
-        i18n="@@featureContainer-logout"
-        >Logout</fpc-button
+      <fpc-button class="d-md-none" variant="primary" size="sm" [title]="logoutLabel" (clicked)="onLogoutClick()"
+        ><i class="bi bi-box-arrow-right fpc-top-bar__phone-icon" aria-hidden="true"></i
+        ><span class="fpc-top-bar__label" i18n="@@featureContainer-logout">Logout</span></fpc-button
       >
-      <fpc-button
-        class="d-none d-md-inline-block"
-        variant="primary"
-        (clicked)="onLogoutClick()"
-        i18n="@@featureContainer-logout"
-        >Logout</fpc-button
+      <fpc-button class="d-none d-md-inline-block" variant="primary" [title]="logoutLabel" (clicked)="onLogoutClick()"
+        ><i class="bi bi-box-arrow-right fpc-top-bar__phone-icon" aria-hidden="true"></i
+        ><span class="fpc-top-bar__label" i18n="@@featureContainer-logout">Logout</span></fpc-button
       >
     }
   </fpc-top-bar>
 } @else {
   <fpc-top-bar [compact]="true">
-    @if (headerCustomerNumber(); as customerNumber) {
-      <fpc-badge
-        variant="info"
-        color="secondary"
-        size="sm"
-        class="fpc-top-bar__chip"
-        [attr.title]="customerNumber"
-        [attr.aria-label]="getCustomerNumberAriaLabel(customerNumber)"
-      >
-        <i class="bi bi-person-badge" aria-hidden="true"></i>
-        <span>{{ customerNumber }}</span>
-      </fpc-badge>
-    }
     @if (isUsersAuth && (isAuthenticated$ | async)) {
       <fpc-button
         routerLink="/settings/security"
@@ -103,6 +83,19 @@
           >
         }
       </fpc-button>
+    }
+    @if (headerCustomerNumber(); as customerNumber) {
+      <fpc-badge
+        variant="info"
+        color="secondary"
+        size="sm"
+        class="fpc-top-bar__chip"
+        [attr.title]="customerNumber"
+        [attr.aria-label]="getCustomerNumberAriaLabel(customerNumber)"
+      >
+        <i class="bi bi-person-badge" aria-hidden="true"></i>
+        <span>{{ customerNumber }}</span>
+      </fpc-badge>
     }
     <fpc-language-switcher
       data-bs-theme="dark"

@@ -1,51 +1,60 @@
 <div class="knowledge-tree-container d-flex flex-column h-100">
-  <div class="p-2 ps-3 border-bottom bg-body-tertiary">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-      <h6 class="mb-0 fw-semibold" i18n="@@featureKnowledgeTree-pagesHeading">Pages</h6>
-      <fpc-button-group size="sm">
-        <fpc-button
-          size="sm"
-          variant="primary"
-          [iconOnly]="true"
-          (clicked)="openCreate(null, 'page', $event)"
-          i18n-title="@@featureKnowledgeTree-newPageTitle"
-          title="New page"
-        >
-          <i class="bi bi-file-earmark-plus"></i>
-        </fpc-button>
-        <fpc-button
-          size="sm"
-          variant="primary"
-          [iconOnly]="true"
-          (clicked)="openCreate(null, 'folder', $event)"
-          i18n-title="@@featureKnowledgeTree-newFolderTitle"
-          title="New folder"
-        >
-          <i class="bi bi-folder-plus"></i>
-        </fpc-button>
-        <fpc-button
-          size="sm"
-          variant="primary"
-          [iconOnly]="true"
-          (clicked)="onUploadFile(undefined, $event)"
-          i18n-title="@@featureKnowledgeTree-uploadFileTitle"
-          title="Upload file"
-        >
-          <i class="bi bi-upload"></i>
-        </fpc-button>
-        <fpc-button
-          size="sm"
-          variant="dark"
-          [iconOnly]="true"
-          (clicked)="onContextRefresh()"
-          i18n-title="@@featureKnowledgeTree-refreshTitle"
-          title="Refresh"
-        >
-          <i class="bi bi-arrow-clockwise"></i>
-        </fpc-button>
-      </fpc-button-group>
-    </div>
-  </div>
+  <!-- One row like the tasks rail: search (title, content, id; server-side) and the tree actions. -->
+  <fpc-list-toolbar class="flex-shrink-0" [filterable]="false" data-testid="knowledge-tree-toolbar">
+    <fpc-search-field
+      fpcListToolbarLead
+      inputId="knowledge-tree-search"
+      name="knowledge-tree-search"
+      [bordered]="false"
+      [placeholder]="searchPlaceholder"
+      [ariaLabel]="searchAriaLabel"
+      [value]="searchQuery"
+      (valueChange)="searchQueryChange.emit($event)"
+      data-testid="knowledge-tree-search"
+    />
+    <span fpcListToolbarActions class="d-inline-flex gap-2">
+      <fpc-button
+        size="sm"
+        variant="primary"
+        [iconOnly]="true"
+        (clicked)="openCreate(null, 'page', $event)"
+        i18n-title="@@featureKnowledgeTree-newPageTitle"
+        title="New page"
+      >
+        <i class="bi bi-file-earmark-plus"></i>
+      </fpc-button>
+      <fpc-button
+        size="sm"
+        variant="primary"
+        [iconOnly]="true"
+        (clicked)="openCreate(null, 'folder', $event)"
+        i18n-title="@@featureKnowledgeTree-newFolderTitle"
+        title="New folder"
+      >
+        <i class="bi bi-folder-plus"></i>
+      </fpc-button>
+      <fpc-button
+        size="sm"
+        variant="primary"
+        [iconOnly]="true"
+        (clicked)="onUploadFile(undefined, $event)"
+        i18n-title="@@featureKnowledgeTree-uploadFileTitle"
+        title="Upload file"
+      >
+        <i class="bi bi-upload"></i>
+      </fpc-button>
+      <fpc-button
+        size="sm"
+        variant="dark"
+        [iconOnly]="true"
+        (clicked)="onContextRefresh()"
+        i18n-title="@@featureKnowledgeTree-refreshTitle"
+        title="Refresh"
+      >
+        <i class="bi bi-arrow-clockwise"></i>
+      </fpc-button>
+    </span>
+  </fpc-list-toolbar>
 
   <div
     class="knowledge-tree-scroll flex-grow-1 overflow-auto d-flex flex-column min-h-0 p-2"
@@ -62,6 +71,14 @@
       <div class="d-flex justify-content-center align-items-center p-4 flex-grow-1">
         <fpc-spinner size="sm" variant="primary" />
       </div>
+    } @else if (searching && filteredRoots().length === 0) {
+      <fpc-empty-state
+        size="sm"
+        icon="search"
+        message="No matching pages or folders"
+        i18n-message="@@featureKnowledgeTree-noSearchResults"
+        data-testid="knowledge-tree-no-results"
+      />
     } @else if (filteredRoots().length === 0 && pendingUploadsFor(null).length === 0) {
       <fpc-empty-state size="sm" message="No pages yet" i18n-message="@@featureKnowledgeTree-noPages" />
       @if (creatingAt() && creatingAt()?.parentId === null) {
@@ -152,6 +169,7 @@
       [class.drag-over]="dragOverParentId() === node.id && node.nodeType === 'folder'"
       [attr.aria-busy]="isNodeBusy(node.id) ? true : null"
       [attr.aria-current]="isNodeOpen(node.id) ? 'page' : null"
+      [attr.data-node-id]="node.id"
       [attr.data-clipboard]="isNodeClipboardCopy(node.id) ? 'copy' : isNodeClipboardCut(node.id) ? 'cut' : null"
       (click)="onNodeClick(node, $event)"
       (contextmenu)="onContextMenu($event, node)"
@@ -186,10 +204,11 @@
 
         <span
           class="text-truncate flex-grow-1 tree-node-name small"
-          [class.text-body-secondary]="isNodeBusy(node.id)"
+          [class.text-body-secondary]="isNodeBusy(node.id) || isSearchContext(node)"
           [title]="node.title"
         >
-          @if (node.shas.short) {
+          <!-- D11: short hashes identify pages (links, relations); folders don't need one (AG-06). -->
+          @if (node.shas.short && node.nodeType === 'page') {
             <small class="text-body-secondary">{{ node.shas.short }}</small>
           }
           {{ node.title }}
@@ -357,6 +376,8 @@
 }
 
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="renameModalOpen"
   i18n-title="@@featureKnowledgeTree-renameModalTitle"
   title="Rename item"
@@ -376,6 +397,8 @@
 </fpc-modal>
 
 <fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="moveModalOpen"
   i18n-title="@@featureKnowledgeTree-moveModalTitle"
   title="Move item"

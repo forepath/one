@@ -2,15 +2,13 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
 
+import { billingPageWindow } from '../../constants/list-paging.constants';
 import { AdminBillingService } from '../../services/admin-billing.service';
 
 import {
   loadAdminSubscriptions,
   loadAdminSubscriptionsFailure,
   loadAdminSubscriptionsSuccess,
-  loadMoreAdminSubscriptions,
-  loadMoreAdminSubscriptionsFailure,
-  loadMoreAdminSubscriptionsSuccess,
   adminCancelSubscription,
   adminCancelSubscriptionFailure,
   adminCancelSubscriptionSuccess,
@@ -35,48 +33,18 @@ function normalizeError(error: unknown): string {
   return 'An unexpected error occurred';
 }
 
-const BATCH_SIZE = 10;
-
 export const loadAdminSubscriptions$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(loadAdminSubscriptions),
-      switchMap(({ search, userId }) =>
-        service.listSubscriptions({ limit: BATCH_SIZE, offset: 0, search, userId }).pipe(
-          map((response) => {
-            const nextOffset = response.items.length;
+      switchMap(({ search, userId, page, pageSize }) => {
+        const { limit, offset } = billingPageWindow(page, pageSize);
 
-            return loadAdminSubscriptionsSuccess({
-              subscriptions: response.items,
-              hasMore: nextOffset < response.total,
-              nextOffset,
-            });
-          }),
+        return service.listSubscriptions({ limit, offset, search, userId }).pipe(
+          map((response) => loadAdminSubscriptionsSuccess({ subscriptions: response.items, total: response.total })),
           catchError((error) => of(loadAdminSubscriptionsFailure({ error: normalizeError(error) }))),
-        ),
-      ),
-    ),
-  { functional: true },
-);
-
-export const loadMoreAdminSubscriptions$ = createEffect(
-  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
-    actions$.pipe(
-      ofType(loadMoreAdminSubscriptions),
-      switchMap(({ offset, search, userId }) =>
-        service.listSubscriptions({ limit: BATCH_SIZE, offset, search, userId }).pipe(
-          map((response) => {
-            const nextOffset = offset + response.items.length;
-
-            return loadMoreAdminSubscriptionsSuccess({
-              subscriptions: response.items,
-              hasMore: nextOffset < response.total,
-              nextOffset,
-            });
-          }),
-          catchError((error) => of(loadMoreAdminSubscriptionsFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     ),
   { functional: true },
 );

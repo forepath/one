@@ -12,10 +12,17 @@
   min-height: 0;
 }
 
+// The tab bar only (panels are empty; the active table renders below it in `.audit-content`).
+.audit-tabs {
+  flex: 0 0 auto !important;
+}
+
 .audit-content {
   min-height: 0;
 }
 
-.audit-table-search {
-  max-width: 200px;
+// Header, summary and tab bar keep their natural height on every tab: the active table / charts never squeeze them
+// (AG-07: the layout jumped ~24 px between Overview and Web traffic).
+.audit-container > :is(fpc-page-header, fpc-summary-bar, fpc-tab-group) {
+  flex: 0 0 auto !important;
 }

@@ -36,6 +36,8 @@ export interface KnowledgeNodeDto {
   createdAt: string;
   updatedAt: string;
   children?: KnowledgeNodeDto[];
+  /** Only on search trees: `true` for matches, `false` for ancestor folders shown as context. */
+  searchMatch?: boolean;
 }
 
 export interface CreateKnowledgeNodeDto {

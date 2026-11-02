@@ -259,6 +259,16 @@ describe('ClientsDeploymentsController', () => {
       expect(result).toEqual(mockRuns);
       expect(proxyService.listRuns).toHaveBeenCalledWith('client-uuid', 'agent-uuid', undefined, undefined, undefined);
     });
+
+    it('forwards the search term to the proxy', async () => {
+      proxyService.listRuns.mockResolvedValue([]);
+
+      const mockReq = { apiKeyAuthenticated: true } as any;
+
+      await controller.listRuns('client-uuid', 'agent-uuid', 11, 10, 'hotfix', mockReq);
+
+      expect(proxyService.listRuns).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 11, 10, 'hotfix');
+    });
   });
 
   describe('getRunStatus', () => {
@@ -352,6 +362,18 @@ describe('ClientsDeploymentsController', () => {
         ForbiddenException,
       );
       expect(proxyService.getConfiguration).not.toHaveBeenCalled();
+    });
+
+    it('checks client access before a run search reaches the proxy', async () => {
+      mockClientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'other-user-id' });
+      mockClientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+
+      const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-uuid', roles: ['user'] } } as any;
+
+      await expect(controller.listRuns('client-uuid', 'agent-uuid', 10, 0, 'deploy', mockReq)).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(proxyService.listRuns).not.toHaveBeenCalled();
     });
   });
 });

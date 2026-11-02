@@ -1,56 +1,107 @@
 <div class="file-tree-container d-flex flex-column h-100">
-  <div class="file-tree-header p-2 ps-3 border-bottom bg-body-tertiary">
-    <div class="d-flex justify-content-between align-items-center gap-2">
-      <h6 class="mb-0 fw-semibold" i18n="@@featureFileTree-filesHeader">Files</h6>
-      <fpc-button-group size="sm">
-        <fpc-button
-          variant="primary"
+  <!-- One row like the other lists: search (file names over the whole workspace) and the tree actions. -->
+  <fpc-list-toolbar class="flex-shrink-0" [filterable]="false" data-testid="file-tree-toolbar">
+    @if (fileManagerContext() === 'app') {
+      <fpc-search-field
+        fpcListToolbarLead
+        inputId="file-tree-search"
+        name="file-tree-search"
+        [bordered]="false"
+        [placeholder]="fileSearchPlaceholder"
+        [ariaLabel]="fileSearchAria"
+        [value]="fileSearch()"
+        (valueChange)="onFileSearchChange($event)"
+        data-testid="file-tree-search"
+      />
+    } @else {
+      <h6 fpcListToolbarLead class="mb-0 fw-semibold" i18n="@@featureFileTree-filesHeader">Files</h6>
+    }
+    <span fpcListToolbarActions class="d-inline-flex gap-2">
+      <fpc-button
+        variant="primary"
+        size="sm"
+        iconOnly
+        [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'file'"
+        (clicked)="onCreateItem('file')"
+        i18n-title="@@featureFileTree-newFileTitle"
+        title="New File"
+      >
+        <i class="bi bi-file-earmark-plus"></i>
+      </fpc-button>
+      <fpc-button
+        variant="primary"
+        size="sm"
+        iconOnly
+        [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'directory'"
+        (clicked)="onCreateItem('directory')"
+        i18n-title="@@featureFileTree-newDirectoryTitle"
+        title="New Directory"
+      >
+        <i class="bi bi-folder-plus"></i>
+      </fpc-button>
+      <fpc-button
+        variant="primary"
+        size="sm"
+        iconOnly
+        (clicked)="onUploadFile()"
+        i18n-title="@@featureFileTree-uploadFileTitle"
+        title="Upload File"
+      >
+        <i class="bi bi-upload"></i>
+      </fpc-button>
+      <fpc-button
+        variant="dark"
+        size="sm"
+        iconOnly
+        (clicked)="onRefreshRoot()"
+        i18n-title="@@featureFileTree-refreshTitle"
+        title="Refresh"
+      >
+        <i class="bi bi-arrow-clockwise"></i>
+      </fpc-button>
+    </span>
+  </fpc-list-toolbar>
+
+  @if (fileSearchActive()) {
+    <div class="file-tree-search-results flex-grow-1 overflow-auto p-2" data-testid="file-tree-search-results">
+      @if (fileSearchHits() === null) {
+        <div class="d-flex justify-content-center align-items-center p-4">
+          <fpc-spinner size="sm" variant="primary" />
+        </div>
+      } @else if (fileSearchHits()!.length === 0) {
+        <fpc-empty-state
           size="sm"
-          iconOnly
-          [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'file'"
-          (clicked)="onCreateItem('file')"
-          i18n-title="@@featureFileTree-newFileTitle"
-          title="New File"
-        >
-          <i class="bi bi-file-earmark-plus"></i>
-        </fpc-button>
-        <fpc-button
-          variant="primary"
-          size="sm"
-          iconOnly
-          [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'directory'"
-          (clicked)="onCreateItem('directory')"
-          i18n-title="@@featureFileTree-newDirectoryTitle"
-          title="New Directory"
-        >
-          <i class="bi bi-folder-plus"></i>
-        </fpc-button>
-        <fpc-button
-          variant="primary"
-          size="sm"
-          iconOnly
-          (clicked)="onUploadFile()"
-          i18n-title="@@featureFileTree-uploadFileTitle"
-          title="Upload File"
-        >
-          <i class="bi bi-upload"></i>
-        </fpc-button>
-        <fpc-button
-          variant="dark"
-          size="sm"
-          iconOnly
-          (clicked)="onRefreshRoot()"
-          i18n-title="@@featureFileTree-refreshTitle"
-          title="Refresh"
-        >
-          <i class="bi bi-arrow-clockwise"></i>
-        </fpc-button>
-      </fpc-button-group>
+          icon="search"
+          message="No matching files"
+          i18n-message="@@featureFileTree-noSearchResults"
+        />
+      } @else {
+        <ul class="list-unstyled mb-0" [attr.aria-busy]="fileSearchLoading() ? true : null">
+          @for (hit of fileSearchHits(); track hit.path) {
+            <li>
+              <button
+                type="button"
+                class="file-tree-search-hit btn btn-link w-100 d-flex align-items-center gap-2 py-1 px-2 text-start text-decoration-none text-body rounded"
+                [class.active]="hit.path === selectedPath()"
+                [title]="hit.path"
+                (click)="onFileSearchHitClick(hit)"
+              >
+                <i class="bi {{ getPendingUploadIcon(hit.fileName) }} flex-shrink-0" aria-hidden="true"></i>
+                <span class="text-truncate small">{{ hit.fileName }}</span>
+                @if (fileSearchHitFolder(hit); as folder) {
+                  <span class="text-truncate small text-body-secondary">{{ folder }}</span>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+      }
     </div>
-  </div>
+  }
 
   <div
     class="file-tree-content flex-grow-1 overflow-auto p-2"
+    [class.d-none]="fileSearchActive()"
     [class.drag-over-root]="dragOverPath() === '.'"
     (dragover)="onDragOverRoot($event)"
     (dragenter)="onDragEnterRoot($event)"
@@ -476,7 +527,13 @@
   </p>
 </fpc-confirm-dialog>
 
-<fpc-modal [(open)]="renameFileModalOpen" [title]="getRenameModalTitle()" (closed)="cancelRenameItem()">
+<fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
+  [(open)]="renameFileModalOpen"
+  [title]="getRenameModalTitle()"
+  (closed)="cancelRenameItem()"
+>
   <p>{{ getRenameModalMessage() }}</p>
   <fpc-form-field forId="renameNewName" i18n-label="@@featureFileTree-newNameLabel" label="New Name">
     <fpc-form-control
@@ -498,7 +555,13 @@
   </div>
 </fpc-modal>
 
-<fpc-modal [(open)]="moveFileModalOpen" [title]="getMoveModalTitle()" (closed)="cancelMoveItem()">
+<fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
+  [(open)]="moveFileModalOpen"
+  [title]="getMoveModalTitle()"
+  (closed)="cancelMoveItem()"
+>
   <p>{{ getMoveModalMessage() }}</p>
   <fpc-form-field
     forId="moveDestinationPath"

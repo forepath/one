@@ -30,19 +30,11 @@ export const selectAdminSubscriptionsResuming = createSelector(
 
 export const selectAdminSubscriptionsError = createSelector(selectAdminSubscriptionsState, (state) => state.error);
 
-export const selectAdminSubscriptionsHasMore = createSelector(selectAdminSubscriptionsState, (state) => state.hasMore);
+export const selectAdminSubscriptionsTotal = createSelector(selectAdminSubscriptionsState, (state) => state.total);
 
-export const selectAdminSubscriptionsNextOffset = createSelector(
-  selectAdminSubscriptionsState,
-  (state) => state.nextOffset,
-);
+export const selectAdminSubscriptionsPage = createSelector(selectAdminSubscriptionsState, (state) => state.page);
 
-export const selectAdminSubscriptionsAppendLoading = createSelector(
+export const selectAdminSubscriptionsPageSize = createSelector(
   selectAdminSubscriptionsState,
-  (state) => state.appendLoading,
-);
-
-export const selectAdminSubscriptionsAppendError = createSelector(
-  selectAdminSubscriptionsState,
-  (state) => state.appendError,
+  (state) => state.pageSize,
 );

@@ -7,3 +7,184 @@
 .min-w-0 {
   min-width: 0 !important;
 }
+
+// One scroll container for both axes (wide tables in a lane / panel body / page area): the table's
+// sticky head / foot stick to this box and wide tables scroll sideways inside it instead of being
+// cut off. Use it instead of a `.table-responsive` wrapper (that wrapper becomes the scroll
+// container itself and the head stops sticking vertically). Optional cap:
+// `--fpc-scroll-both-max-height` (e.g. a table panel inside a content-sized panel grid).
+.fpc-scroll-both {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  max-height: var(--fpc-scroll-both-max-height, none);
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+// Flush data tables (3.38 R6): a table that is the direct content of a lane body, panel body, section column, dock body
+// or `.fpc-scroll-both` area touches the container's edges: the container's padding goes away (the table insets its
+// first / last cells, toolbar, batch bar and pager by `--fpc-edge-inset`, so text lines up with the lane / panel
+// header) and its toolbar / head / footer rows and dividers run edge to edge. The table's scroller is the only scroll
+// container: the parent reserves no scrollbar gutter of its own (that showed as an empty strip right of the table's
+// scrollbar). `!important`: component-scoped paddings / gutters (`padded` lanes, `fpc-panel` bodies, `scroll` variants)
+// and Bootstrap spacing utilities on the container must not win over this.
+:is(
+  .fpc-panel__body,
+  .fpc-board-lane__body,
+  .fpc-section-column,
+  .section__column,
+  .fpc-dock-panel__body,
+  .fpc-scroll-both
+):has(> fpc-data-table) {
+  padding: 0 !important;
+}
+
+// Gutter: only where the table scrolls itself (a nested table grows with its content; its container keeps scrolling).
+:is(
+  .fpc-panel__body,
+  .fpc-board-lane__body,
+  .fpc-section-column,
+  .section__column,
+  .fpc-dock-panel__body,
+  .fpc-scroll-both
+):has(> fpc-data-table:not(.fpc-data-table--nested)) {
+  scrollbar-gutter: auto !important;
+}
+
+// Tables deeper inside a padded body (between facts / prose, e.g. a step table under a lane's key-value list): the table
+// bleeds over the container's inline padding (`--fpc-flush-bleed` = that padding), so it still touches the edges and its
+// first / last cells (`--fpc-edge-inset`) line up with the header text. Modal bodies too (e.g. a workspace-switch table
+// in a modal). Containers with their own inline inset (grid columns, cards, alerts, dropdowns, drawers, flush panels, a
+// table's own scroller) reset it.
+.fpc-board-lane__body--padded,
+.fpc-panel__body {
+  --fpc-flush-bleed: 1rem;
+}
+
+.modal-body {
+  --fpc-flush-bleed: var(--bs-modal-padding, 1rem);
+}
+
+.fpc-panel--flush > .fpc-panel__body,
+:is(
+  .fpc-panel__body,
+  .fpc-board-lane__body,
+  .fpc-section-column,
+  .section__column,
+  .fpc-dock-panel__body,
+  .fpc-scroll-both
+):has(> fpc-data-table),
+.row > *,
+.card,
+.alert,
+.dropdown-menu,
+.fpc-list-toolbar__body,
+.fpc-data-table__scroller {
+  --fpc-flush-bleed: 0px;
+}
+
+fpc-data-table {
+  margin-inline: calc(-1 * var(--fpc-flush-bleed, 0px));
+}
+
+// A panel body holding a table becomes a flex column so the table can fill it (fill grids / scroll panels).
+.fpc-panel__body:has(> fpc-data-table:not(.fpc-data-table--nested)) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+
+  > fpc-data-table {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
+// Filter fields (3.38 R12): the `fpc-list-toolbar` drawer lays its fields out in this grid; usable for any
+// short field set (labels above via `fpc-form-field`). No per-page `row g-3` / `col-md-*`.
+.fpc-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+  gap: 1rem;
+  align-items: start;
+
+  > fpc-form-field,
+  > .fpc-form-field {
+    margin-bottom: 0;
+  }
+
+  // Full-width fields (long text, multi-selects): `class="fpc-filter-grid__wide"`.
+  > .fpc-filter-grid__wide {
+    grid-column: 1 / -1;
+  }
+}
+
+// Routed page wrapper (3.38 R1 / R5): a flex column that fills the outlet and owns the top edge under the
+// section chrome. Embedded (object tabs, `.fpc-page--embedded` on the host body) it draws no top edge: the
+// tab bar above already owns that line.
+.fpc-page {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0;
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.fpc-page--embedded .fpc-page {
+  border-top: 0;
+}
+
+// Virtualized lists in a lane (`cdk-virtual-scroll-viewport` around `fpc-list-item`s, e.g. ticket / project
+// boards): the CDK content wrapper is absolutely positioned and sizes to its max-content, so a long row title made
+// it wider than the lane and titles ran past the lane edge without an ellipsis. Vertical lists are pinned to the
+// viewport width; rows truncate their titles.
+fpc-board-lane .cdk-virtual-scroll-orientation-vertical > .cdk-virtual-scroll-content-wrapper {
+  width: 100%;
+  max-width: 100%;
+}
+
+// A list toolbar with nothing in it (no lead, chips, Filters toggle, Clear or actions; e.g. a data table whose page
+// owns search and filters) takes no row: no empty band with a bottom edge above the table.
+fpc-list-toolbar:not(
+  :has(
+    .fpc-list-toolbar__lead > *,
+    .fpc-list-toolbar__actions > *,
+    .fpc-list-toolbar__toggle,
+    .fpc-list-toolbar__chips,
+    .fpc-list-toolbar__clear
+  )
+) {
+  display: none;
+}
+
+// Form fields in a Bootstrap gutter grid (`row g-3` in modals / forms): the row gutter spaces the rows, so the
+// field's own bottom margin would double the gap (2 rem between field rows, Agenstra / Decabill forms use one).
+.row:is(.g-1, .g-2, .g-3, .g-4, .g-5, .gy-1, .gy-2, .gy-3, .gy-4, .gy-5) > * > fpc-form-field:last-child {
+  margin-bottom: 0;
+}
+
+// Monospace keys / ids / IPs / versions (DB-29 / LW-12c, 2026-10-29): monospace faces have a visibly larger x-height
+// than the body face, so `.font-monospace` text runs a step smaller (like Bootstrap's `code` / `kbd`, 0.875em) and
+// matches the surrounding text. Nested monospace does not shrink twice; size utilities (`fs-*`, `!important`) win.
+.font-monospace {
+  font-size: 0.875em;
+
+  .font-monospace,
+  code,
+  kbd,
+  samp {
+    font-size: inherit;
+  }
+}
+
+// Word spacing (DB-28 / X-15, 2026-10-29, verified): Plus Jakarta Sans ships a narrow space glyph (≈ 0.17 em measured
+// from the bundled latin woff2 at 100 px, vs ≈ 0.28 em in Arial), so 14 px labels read run-together ("Openand overdue",
+// "10/29/26to11/1/26"). A small extra word space brings it to ≈ 0.23 em. Code, terminals and editors keep the font's
+// own metrics (Monaco / xterm / CodeMirror measure columns).
+body {
+  word-spacing: 0.06em;
+}
+
+:is(code, pre, kbd, samp, .font-monospace, .monaco-editor, .xterm, .cm-editor, .milkdown-code-block) {
+  word-spacing: normal;
+}

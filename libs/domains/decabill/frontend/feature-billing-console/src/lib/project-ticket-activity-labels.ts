@@ -1,3 +1,4 @@
+import type { FpcBadgeTone } from '@forepath/shared/frontend/ui-components';
 export function projectTicketActivityActionLabel(actionType: string): string {
   switch (actionType) {
     case 'CREATED':
@@ -23,25 +24,25 @@ export function projectTicketActivityActionLabel(actionType: string): string {
   }
 }
 
-export function projectTicketActivityActionBadgeClass(actionType: string): string {
+export function projectTicketActivityActionBadgeTone(actionType: string): FpcBadgeTone {
   switch (actionType) {
     case 'CREATED':
-      return 'project-board__chip--activity-created';
+      return 'success';
     case 'DELETED':
-      return 'project-board__chip--activity-deleted';
+      return 'danger';
     case 'COMMENT_ADDED':
-      return 'project-board__chip--activity-comment';
+      return 'info';
     case 'STATUS_CHANGED':
-      return 'project-board__chip--activity-status';
+      return 'primary';
     case 'PRIORITY_CHANGED':
-      return 'project-board__chip--activity-priority';
+      return 'warning';
     case 'LOCKED':
-      return 'project-board__chip--activity-muted';
+      return 'neutral';
     case 'PARENT_CHANGED':
     case 'MILESTONE_CHANGED':
     case 'FIELD_UPDATED':
-      return 'project-board__chip--activity-muted';
+      return 'neutral';
     default:
-      return 'project-board__chip--neutral';
+      return 'neutral';
   }
 }

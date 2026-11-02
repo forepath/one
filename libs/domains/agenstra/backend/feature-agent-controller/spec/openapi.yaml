@@ -972,16 +972,24 @@ paths:
   /knowledge/tree:
     get:
       summary: Get knowledge tree for a workspace
-      description: Requires `knowledge:read`. Returns nested folder/page tree.
+      description: >-
+        Requires `knowledge:read`. Returns nested folder/page tree. With `search`, only the matching nodes are returned,
+        together with their ancestor folders so every match stays reachable from the root; each node then carries
+        `searchMatch` (`false` on ancestor folders included only as context).
       operationId: getKnowledgeTree
       parameters:
         - in: query
           name: clientId
           required: true
           schema: { type: string, format: uuid }
+        - in: query
+          name: search
+          required: false
+          schema: { type: string }
+          description: Case-insensitive search (trimmed, first 200 characters) across node title, page content, node type and id
       responses:
         '200':
-          description: Nested knowledge tree
+          description: Nested knowledge tree (search matches plus their ancestors when `search` is set)
           content:
             application/json:
               schema:
@@ -4950,7 +4958,7 @@ paths:
           name: search
           schema:
             type: string
-          description: Case-insensitive search across run id, status, name, description, agentId
+          description: Case-insensitive search (trimmed, first 200 characters) across the agent's runs (name, status, conclusion, branch, commit SHA, workflow name, id); narrows the caller's client / agent scope only, `limit` / `offset` page the matches
       responses:
         '200':
           description: Array of deployment runs
@@ -8379,6 +8387,10 @@ components:
             properties:
               filterType:
                 type: string
+              filterDisplayName:
+                type: string
+                nullable: true
+                description: Human-readable name of the filter rule (as on the filter rows), null for legacy rows
               direction:
                 type: string
                 enum: [incoming, outgoing]
@@ -8395,6 +8407,10 @@ components:
             properties:
               filterType:
                 type: string
+              filterDisplayName:
+                type: string
+                nullable: true
+                description: Human-readable name of the filter rule (as on the filter rows), null for legacy rows
               direction:
                 type: string
                 enum: [incoming, outgoing]
@@ -10296,6 +10312,11 @@ components:
         children:
           type: array
           items: { $ref: '#/components/schemas/KnowledgeNodeResponseDto' }
+        searchMatch:
+          type: boolean
+          description: >-
+            Only on `GET /knowledge/tree` with `search`: `true` for matching nodes, `false` for ancestor folders
+            included as context.
     CreateKnowledgeNodeDto:
       type: object
       required: [nodeType, title]

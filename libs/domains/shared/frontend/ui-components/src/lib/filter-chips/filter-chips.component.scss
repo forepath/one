@@ -1,0 +1,42 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.fpc-filter-chips__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.fpc-filter-chips__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+  color: var(--bs-emphasis-color);
+  background-color: var(--bs-secondary-bg);
+  border: 1px solid var(--bs-border-color);
+}
+
+.fpc-filter-chips__chip--negated {
+  text-decoration: line-through;
+  text-decoration-color: var(--bs-danger);
+}
+
+.fpc-filter-chips__text {
+  font-family: var(--bs-font-monospace);
+  font-size: 0.75rem;
+}
+
+.fpc-filter-chips__remove {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0.125rem;
+  background-size: 0.5rem;
+}
+
+.fpc-filter-chips__clear {
+  font-size: 0.75rem;
+}

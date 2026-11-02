@@ -4,10 +4,12 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   ElementRef,
   inject,
   OnInit,
   signal,
+  untracked,
   ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -53,50 +55,53 @@ import {
   providerLocationCatalogFromList,
   resolveServiceDisplayLabel,
   resolveSubscriptionItemProvisioningDisplayStatus,
+  BackordersService,
+  SubscriptionsService,
   type ProviderLocationCatalog,
   type ValidatePromotionRequest,
+  type PromotionValidationResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { ENVIRONMENT, type Environment } from '@forepath/decabill/frontend/util-configuration';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
-  FpcBoardLaneComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
-  FpcInfiniteScrollDirective,
   FpcInputGroupComponent,
-  FpcLaneHeaderComponent,
-  FpcListAppendFooterComponent,
-  FpcListItemComponent,
   FpcConfirmDialogComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
-  FpcSectionColumnComponent,
+  fpcRunBulk,
   FpcSectionContainerComponent,
-  FpcSectionRowComponent,
+  FpcTableRowDetailDirective,
+  type FpcMenuItem,
+  type FpcTableColumn,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
   FpcSummaryCardComponent,
   FpcSummaryCardValueDirective,
   FpcTabComponent,
   FpcTabGroupComponent,
+  type FpcBadgeTone,
+  FpcStepStripComponent,
+  FpcStepStripDirective,
 } from '@forepath/shared/frontend/ui-components';
 import {
   combineLatest,
-  debounceTime,
   distinctUntilChanged,
   filter,
+  firstValueFrom,
   interval,
   map,
   of,
   pairwise,
-  skip,
   startWith,
   switchMap,
   take,
@@ -104,15 +109,18 @@ import {
 } from 'rxjs';
 
 import {
-  getBackorderStatusBadgeClass,
+  getBackorderStatusBadgeTone,
   getBackorderStatusLabel,
+  getBillingIntervalDurationLabel,
   getBillingIntervalLabel,
+  formatSubscriptionPriceCell,
+  getPromotionAdvantageText,
   getMeterAggregatorLabel,
   getProfileCompleteLabel,
   getProviderDisplayName,
-  getProvisioningStatusBadgeClass,
+  getProvisioningStatusBadgeTone,
   getProvisioningStatusLabel,
-  getSubscriptionStatusBadgeClass,
+  getSubscriptionStatusBadgeTone,
   getSubscriptionStatusLabel,
   getVatIdValidationStatusLabel,
   resolveNamedLabel,
@@ -120,9 +128,22 @@ import {
 import {
   BILLING_COUNTRY_OPTIONS,
   DEFAULT_BILLING_COUNTRY_CODE,
+  withOptionalCountry,
   type BillingCountryOption,
 } from '../billing-country-options';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import {
+  dbBulkSummary,
+  dbCopyIdItem,
+  type DbBulkResult,
+  DB_DL_CHANGE_PLAN,
+  DB_DL_RESUME,
+  DB_DL_WITHDRAW,
+  DB_DL_CANCEL_SUBSCRIPTION,
+  DB_DL_RETRY,
+} from '../shared/data-list';
+import { dbPagerTotal, dbServerPaging } from '../shared/server-paging';
+import { backorderState, provisioningState, subscriptionState } from '../shared/table-states';
 import { buildPromotionAdjustedOrderPricing } from '../promotion-pricing-preview.util';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import {
@@ -130,6 +151,12 @@ import {
   type PricingTotalsLeadingRow,
   type PricingTotalsSummary,
 } from '../pricing-totals-summary/pricing-totals.util';
+import {
+  formatBillingDate,
+  formatBillingDateRange,
+  formatBillingDateTime,
+  formatBillingMoney,
+} from '../billing-format';
 
 type CustomerPlansMobilePanel = 'subscriptions' | 'backorders';
 
@@ -153,31 +180,27 @@ type ConfigChangeWizardStep = {
   selector: 'framework-billing-subscriptions',
   standalone: true,
   imports: [
+    FpcStepStripComponent,
+    FpcStepStripDirective,
     CommonModule,
     FormsModule,
     RouterLink,
     FpcAlertComponent,
     FpcBadgeComponent,
-    FpcBoardLaneComponent,
     FpcButtonComponent,
+    FpcDataTableComponent,
     FpcButtonGroupComponent,
     FpcEmptyStateComponent,
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
-    FpcInfiniteScrollDirective,
     FpcInputGroupComponent,
-    FpcLaneHeaderComponent,
-    FpcListAppendFooterComponent,
-    FpcListItemComponent,
     FpcConfirmDialogComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
-    FpcSectionColumnComponent,
     FpcSectionContainerComponent,
-    FpcSectionRowComponent,
+    FpcTableRowDetailDirective,
     FpcSpinnerComponent,
     FpcSummaryBarComponent,
     FpcSummaryCardComponent,
@@ -192,10 +215,6 @@ type ConfigChangeWizardStep = {
 })
 export class SubscriptionsComponent implements OnInit {
   readonly mobilePanel = signal<CustomerPlansMobilePanel>('subscriptions');
-  readonly subscriptionsSearch = signal('');
-  readonly backordersSearch = signal('');
-  readonly subscriptionsSearch$ = toObservable(this.subscriptionsSearch);
-  readonly backordersSearch$ = toObservable(this.backordersSearch);
   readonly orderPlanModalOpen = signal(false);
   readonly modifyConfigModalOpen = signal(false);
   readonly cancelSubscriptionModalOpen = signal(false);
@@ -229,9 +248,169 @@ export class SubscriptionsComponent implements OnInit {
   readonly subscriptionsLoading$ = this.subscriptionsFacade.getSubscriptionsLoading$();
   readonly subscriptionsSummaryLoading$ = this.subscriptionsFacade.getSubscriptionsSummaryLoading$();
   readonly subscriptionsError$ = this.subscriptionsFacade.getSubscriptionsError$();
-  readonly subscriptionsHasMore$ = this.subscriptionsFacade.getHasMore$();
-  readonly subscriptionsAppendLoading$ = this.subscriptionsFacade.getAppendLoading$();
-  readonly subscriptionsAppendError$ = this.subscriptionsFacade.getAppendError$();
+  readonly subscriptionsHasMore = toSignal(this.subscriptionsFacade.getHasMore$(), { initialValue: false });
+  /** Search + page + page size → `GET /subscriptions?limit&offset&search` (replace-page; the API has no total). */
+  /** Backorders tab → `GET /backorders?status=pending,retrying&limit&offset&search` (replace-page, `hasNext`). */
+  readonly backordersPaging = dbServerPaging(
+    (query) => {
+      if (untracked(this.mobilePanel) !== 'backorders') return;
+
+      this.backordersFacade.loadBackorders({
+        search: query.search,
+        limit: query.pageSize,
+        offset: (query.page - 1) * query.pageSize,
+        status: ['pending', 'retrying'],
+      });
+    },
+    { url: 'bo-' },
+  );
+  readonly paging = dbServerPaging((query) =>
+    this.subscriptionsFacade.loadSubscriptions({
+      search: query.search,
+      limit: query.pageSize,
+      offset: (query.page - 1) * query.pageSize,
+    }),
+  );
+  private readonly subscriptionsService = inject(SubscriptionsService);
+  private readonly backordersService = inject(BackordersService);
+
+  readonly subscriptionsLabel = $localize`:@@featureSubscriptions-laneTitle:Subscriptions`;
+  readonly searchSubscriptionsLabel = $localize`:@@featureSubscriptions-searchSubscriptions:Search subscriptions`;
+  readonly searchBackordersLabel = $localize`:@@featureSubscriptions-searchBackorders:Search backorders`;
+  readonly servicesLabel = $localize`:@@featureSubscriptions-services:Services`;
+  readonly usageMetersLabel = $localize`:@@featureSubscriptions-usageMeters:Usage meters`;
+  readonly resumeLabel = $localize`:@@featureSubscriptions-resumeButtonTitle:Resume subscription`;
+  readonly retryBackorderLabel = $localize`:@@featureSubscriptions-retryButtonTitle:Retry backorder`;
+
+  /** Subscriptions: State · Subscription · number · period · next billing · price; services + meters in the row detail. */
+  readonly subscriptionColumns: FpcTableColumn<SubscriptionResponse>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureSubscriptions-colStatus:Status`,
+      type: 'state',
+      state: (sub) =>
+        this.showProvisioningStatusBadge(sub.id)
+          ? provisioningState(this.provisioningStatusForSubscription(sub.id))
+          : subscriptionState(sub.status),
+    },
+    {
+      id: 'subscription',
+      label: $localize`:@@featureSubscriptions-colSubscription:Subscription`,
+      value: (sub) => this.subscriptionDisplayTitle(sub, this.servicePlans()),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'number',
+      label: $localize`:@@featureAdminSubscriptions-colNumber:Number`,
+      value: (sub) => sub.number ?? '',
+      priority: 2,
+    },
+    {
+      id: 'period',
+      label: $localize`:@@featureAdminSubscriptions-colPeriod:Period`,
+      value: (sub) => this.formatSubscriptionPeriod(sub),
+      priority: 3,
+    },
+    {
+      id: 'nextBilling',
+      label: $localize`:@@featureAdminSubscriptions-colNextBilling:Next billing`,
+      value: (sub) => this.formatDate(sub.nextBillingAt),
+      priority: 2,
+    },
+    {
+      id: 'price',
+      label: $localize`:@@featureAdminSubscriptions-colPrice:Price`,
+      value: (sub) => this.formatSubscriptionPeriodPrice(sub, this.servicePlans()),
+      align: 'end',
+      priority: 1,
+    },
+  ];
+
+  /** Usage meters (row detail): Meter · value · included / billable · charge. */
+  readonly meterColumns: FpcTableColumn<SubscriptionMeterSummary>[] = [
+    {
+      id: 'meter',
+      label: $localize`:@@featureAdminSubscriptions-colMeter:Meter`,
+      value: (meter) => meter.name,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'value',
+      label: $localize`:@@featureAdminSubscriptions-colValue:Value`,
+      value: (meter) => this.formatMeterValue(meter),
+      align: 'end',
+      priority: 1,
+    },
+    {
+      id: 'details',
+      label: $localize`:@@featureAdminSubscriptions-colBilling:Billing`,
+      value: (meter) => this.formatMeterBillingDetails(meter),
+      priority: 2,
+    },
+    {
+      id: 'charge',
+      label: $localize`:@@featureAdminSubscriptions-colCharge:Estimated charge`,
+      value: (meter) => this.formatMeterCharge(meter.estimatedChargeNet),
+      align: 'end',
+      priority: 1,
+    },
+  ];
+  readonly meterRowId = (meter: SubscriptionMeterSummary): string =>
+    `${meter.meterId}:${meter.attachmentType}:${meter.addonId ?? ''}`;
+
+  /** Pending backorders: State · Order · price. */
+  readonly backorderColumns: FpcTableColumn<BackorderResponse>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureSubscriptions-colStatus:Status`,
+      type: 'state',
+      state: (bo) => backorderState(bo.status),
+    },
+    {
+      id: 'order',
+      label: $localize`:@@featureSubscriptions-colOrder:Order`,
+      value: (bo) => this.backorderDisplayTitle(bo, this.servicePlans()),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'price',
+      label: $localize`:@@featureAdminSubscriptions-colPrice:Price`,
+      value: (bo) => this.formatBackorderPeriodPrice(bo, this.servicePlans()),
+      align: 'end',
+      priority: 1,
+    },
+  ];
+
+  readonly expandedSubscriptionId = signal<string | null>(null);
+  readonly selectedSubscriptions = signal<readonly string[]>([]);
+  readonly selectedBackorders = signal<readonly string[]>([]);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly resumableSelection = computed(() => {
+    const ids = new Set(this.selectedSubscriptions());
+
+    return this.subscriptions().filter((sub) => ids.has(sub.id) && sub.status === 'pending_cancel');
+  });
+
+  readonly subscriptionMenu = (sub: SubscriptionResponse): FpcMenuItem[] => [
+    ...(this.canModifyConfiguration(sub) ? [{ id: 'modify', label: DB_DL_CHANGE_PLAN, icon: 'arrow-down-up' }] : []),
+    ...(sub.status === 'pending_cancel' ? [{ id: 'resume', label: DB_DL_RESUME, icon: 'arrow-counterclockwise' }] : []),
+    ...(sub.withdrawalEligibility?.canWithdraw
+      ? [{ id: 'withdraw', label: DB_DL_WITHDRAW, icon: 'box-arrow-left', danger: true, dividerBefore: true }]
+      : []),
+    ...(sub.status === 'active'
+      ? [{ id: 'cancel', label: DB_DL_CANCEL_SUBSCRIPTION, icon: 'x-circle', danger: true }]
+      : []),
+    dbCopyIdItem(),
+  ];
+
+  readonly backorderMenu = (): FpcMenuItem[] => [
+    { id: 'retry', label: DB_DL_RETRY, icon: 'arrow-repeat' },
+    { id: 'withdraw-order', label: DB_DL_WITHDRAW, icon: 'box-arrow-left', danger: true, dividerBefore: true },
+    dbCopyIdItem(),
+  ];
   readonly subscriptionsCreating$ = this.subscriptionsFacade.getSubscriptionsCreating$();
   readonly subscriptionsCreating = toSignal(this.subscriptionsFacade.getSubscriptionsCreating$(), {
     initialValue: false,
@@ -254,7 +433,15 @@ export class SubscriptionsComponent implements OnInit {
   readonly summarySubscriptionsTotal = signal(0);
   readonly summaryActiveCount = signal(0);
   readonly summaryBackordersCount = signal(0);
-  readonly pageTitle = $localize`:@@featureSubscriptions-title:Plans & Subscriptions`;
+  /** Pager total from the summary (the list API has no count; D4 / DB-26). 0 = not loaded yet. */
+  readonly subscriptionsTotal = computed(() =>
+    dbPagerTotal(this.paging.search(), this.summarySubscriptionsTotal() > 0 ? this.summarySubscriptionsTotal() : null),
+  );
+  readonly pageTitle = $localize`:@@featureSubscriptions-title:Plans & subscriptions`;
+
+  advantageText(preview: PromotionValidationResponse): string {
+    return getPromotionAdvantageText(preview);
+  }
   readonly orderPlanAriaLabel = $localize`:@@featureSubscriptions-orderPlanButton:Order`;
   readonly summaryTotalLabel = $localize`:@@featureSubscriptions-summaryTotal:Subscriptions`;
   readonly summaryActiveLabel = $localize`:@@featureSubscriptions-summaryActive:Active`;
@@ -278,6 +465,7 @@ export class SubscriptionsComponent implements OnInit {
   readonly backorders = toSignal(this.backordersFacade.getPendingBackorders$(), {
     initialValue: [] as BackorderResponse[],
   });
+  readonly backordersHasMore = toSignal(this.backordersFacade.getBackordersHasMore$(), { initialValue: false });
   readonly backordersLoading$ = this.backordersFacade.getBackordersLoading$();
   readonly backordersError$ = this.backordersFacade.getBackordersError$();
 
@@ -298,6 +486,20 @@ export class SubscriptionsComponent implements OnInit {
   constructor() {
     this.registerQueryParamModalOpeners();
     this.registerModalCloseWatchers();
+
+    // The Backorders tab loads its current page when shown (the hidden tab does not query).
+    let firstPanel = true;
+
+    effect(() => {
+      const panel = this.mobilePanel();
+
+      if (firstPanel) {
+        firstPanel = false;
+
+        return;
+      }
+      if (panel === 'backorders') untracked(() => this.backordersPaging.reload());
+    });
   }
 
   private initialPlanIdFromQuery: string | null = null;
@@ -551,8 +753,8 @@ export class SubscriptionsComponent implements OnInit {
     return getSubscriptionStatusLabel(status);
   }
 
-  subscriptionStatusBadgeClass(status: string | null | undefined): string {
-    return getSubscriptionStatusBadgeClass(status);
+  subscriptionStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
+    return getSubscriptionStatusBadgeTone(status);
   }
 
   provisioningStatusForSubscription(subscriptionId: string): string | undefined {
@@ -569,16 +771,16 @@ export class SubscriptionsComponent implements OnInit {
     return getProvisioningStatusLabel(status);
   }
 
-  provisioningStatusBadgeClass(status: string | null | undefined): string {
-    return getProvisioningStatusBadgeClass(status);
+  provisioningStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
+    return getProvisioningStatusBadgeTone(status);
   }
 
   backorderStatusLabel(status: string | null | undefined): string {
     return getBackorderStatusLabel(status);
   }
 
-  backorderStatusBadgeClass(status: string | null | undefined): string {
-    return getBackorderStatusBadgeClass(status);
+  backorderStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
+    return getBackorderStatusBadgeTone(status);
   }
 
   profileCompleteLabel(isComplete: boolean): string {
@@ -607,26 +809,110 @@ export class SubscriptionsComponent implements OnInit {
   formatDate(value: string | null | undefined): string {
     if (!value) return '-';
 
-    return this.datePipe.transform(value, 'shortDate') ?? '-';
+    return formatBillingDate(value, '-');
   }
 
   formatSubscriptionPeriod(sub: SubscriptionResponse): string {
     if (!sub.currentPeriodStart || !sub.currentPeriodEnd) return '-';
 
-    return `${this.formatDate(sub.currentPeriodStart)} to ${this.formatDate(sub.currentPeriodEnd)}`;
+    return formatBillingDateRange(sub.currentPeriodStart, sub.currentPeriodEnd);
   }
 
-  onSubscriptionsSearchChange(value: string): void {
-    this.subscriptionsSearch.set(value);
+  toggleSubscription(sub: SubscriptionResponse): void {
+    this.expandedSubscriptionId.update((id) => (id === sub.id ? null : sub.id));
   }
 
-  loadMoreSubscriptions(): void {
-    this.subscriptionsFacade.loadMore();
+  onSubscriptionAction(sub: SubscriptionResponse, action: string): void {
+    if (action === 'modify') this.openModifyConfigModal(sub);
+    else if (action === 'resume') this.openResumeConfirm(sub);
+    else if (action === 'withdraw') this.openWithdrawConfirm(sub);
+    else if (action === 'cancel') this.openCancelConfirm(sub);
+    else if (action === 'copy-id') fpcCopyText(sub.id);
   }
 
-  onBackordersSearchChange(value: string): void {
-    this.backordersSearch.set(value);
+  onBackorderAction(bo: BackorderResponse, action: string): void {
+    if (action === 'retry') this.retryBackorder(bo);
+    else if (action === 'withdraw-order') this.openCancelBackorderConfirm(bo);
+    else if (action === 'copy-id') fpcCopyText(bo.id);
   }
+
+  /** Bulk Resume: one `POST /subscriptions/:id/resume` per subscription pending cancellation. */
+  async resumeSelected(): Promise<void> {
+    const targets = this.resumableSelection();
+
+    if (targets.length === 0) return;
+
+    const result = await fpcRunBulk(targets, (sub) =>
+      firstValueFrom(this.subscriptionsService.resumeSubscription(sub.id)),
+    );
+
+    this.bulkResult.set(dbBulkSummary(result, (sub) => this.subscriptionDisplayTitle(sub, this.servicePlans())));
+    this.selectedSubscriptions.set([]);
+    this.paging.reload();
+  }
+
+  /** Bulk Retry: one `POST /backorders/:id/retry` per selected backorder. */
+  async retrySelectedBackorders(): Promise<void> {
+    const ids = new Set(this.selectedBackorders());
+    const targets = this.backorders().filter((bo) => ids.has(bo.id));
+
+    if (targets.length === 0) return;
+
+    const result = await fpcRunBulk(targets, (bo) => firstValueFrom(this.backordersService.retryBackorder(bo.id)));
+
+    this.bulkResult.set(dbBulkSummary(result, (bo) => this.backorderDisplayTitle(bo, this.servicePlans())));
+    this.selectedBackorders.set([]);
+    this.backordersPaging.reload();
+  }
+
+  /** Columns per subscription (cached: the row detail re-renders on every check). */
+  serviceColumns(sub: SubscriptionResponse): FpcTableColumn<SubscriptionItemResponse>[] {
+    let columns = this.serviceColumnsCache.get(sub);
+
+    if (!columns) {
+      columns = [
+        {
+          id: 'state',
+          label: $localize`:@@featureAdminSubscriptions-colProvisioning:Provisioning`,
+          type: 'state',
+          state: (item) => provisioningState(resolveSubscriptionItemProvisioningDisplayStatus(item, sub.status)),
+        },
+        {
+          id: 'service',
+          label: $localize`:@@featureAdminSubscriptions-colService:Service`,
+          value: (item) => this.serviceDisplayLabel(item),
+          required: true,
+          priority: 1,
+        },
+      ];
+      this.serviceColumnsCache.set(sub, columns);
+    }
+
+    return columns;
+  }
+
+  serviceLinkFor(sub: SubscriptionResponse): (item: SubscriptionItemResponse) => string | null {
+    let link = this.serviceLinkCache.get(sub);
+
+    if (!link) {
+      link = (item) =>
+        this.isServiceDetailEligible(sub, item)
+          ? `${this.serviceDetailLink(sub, item).join('/')}?from=subscriptions`
+          : null;
+      this.serviceLinkCache.set(sub, link);
+    }
+
+    return link;
+  }
+
+  private readonly serviceColumnsCache = new WeakMap<
+    SubscriptionResponse,
+    FpcTableColumn<SubscriptionItemResponse>[]
+  >();
+  private readonly serviceLinkCache = new WeakMap<
+    SubscriptionResponse,
+    (item: SubscriptionItemResponse) => string | null
+  >();
 
   /** Calculates total price from plan (base + margin). Same formula as backend PricingService. */
   getPlanTotalPrice(plan: ServicePlanResponse, serverType?: ServerType | null): number | null {
@@ -695,7 +981,7 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   formatCurrencyAmount(amount: number): string {
-    return `€${amount.toFixed(2)}`;
+    return formatBillingMoney(amount);
   }
 
   orderPricingLeadingRows(): PricingTotalsLeadingRow[] {
@@ -726,7 +1012,7 @@ export class SubscriptionsComponent implements OnInit {
 
     if ((pricing.addonLines?.length ?? 0) > 0) {
       rows.push({
-        label: $localize`:@@featureSubscriptions-addonsTotal:Addons total`,
+        label: $localize`:@@featureSubscriptions-addonsTotal:Add-ons total`,
         amount: pricing.addonsTotal ?? 0,
         strong: true,
         borderBottom: true,
@@ -734,7 +1020,7 @@ export class SubscriptionsComponent implements OnInit {
 
       if (promo) {
         rows.push({
-          label: $localize`:@@featureSubscriptions-grandTotal:Plan and addons`,
+          label: $localize`:@@featureSubscriptions-grandTotal:Plan and add-ons`,
           amount: pricing.grandTotal ?? pricing.totalPrice,
           borderBottom: true,
         });
@@ -792,7 +1078,14 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   formatSubscriptionPeriodPrice(sub: SubscriptionResponse, plans: ServicePlanResponse[] | null): string {
-    return this.formatEntryPeriodPrice(sub.periodTotalPrice, this.getSelectedPlan(plans, sub.planId));
+    const plan = this.getSelectedPlan(plans, sub.planId);
+
+    return formatSubscriptionPriceCell(
+      sub.periodTotalPrice,
+      plan ? { value: plan.billingIntervalValue, type: plan.billingIntervalType } : null,
+      (sub.meters?.length ?? 0) > 0,
+      (amount) => this.formatCurrencyAmount(amount),
+    );
   }
 
   subscriptionMeters(sub: SubscriptionResponse): SubscriptionMeterSummary[] {
@@ -815,8 +1108,8 @@ export class SubscriptionsComponent implements OnInit {
     return getProvisioningStatusLabel(resolveSubscriptionItemProvisioningDisplayStatus(item, sub.status));
   }
 
-  itemProvisioningStatusBadgeClass(sub: SubscriptionResponse, item: SubscriptionItemResponse): string {
-    return getProvisioningStatusBadgeClass(resolveSubscriptionItemProvisioningDisplayStatus(item, sub.status));
+  itemProvisioningStatusBadgeTone(sub: SubscriptionResponse, item: SubscriptionItemResponse): FpcBadgeTone {
+    return getProvisioningStatusBadgeTone(resolveSubscriptionItemProvisioningDisplayStatus(item, sub.status));
   }
 
   serviceDetailLink(sub: SubscriptionResponse, item: SubscriptionItemResponse): string[] {
@@ -828,7 +1121,7 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   formatMeterCharge(amount: number): string {
-    return `${amount.toFixed(2)} EUR`;
+    return formatBillingMoney(amount);
   }
 
   formatMeterValue(meter: SubscriptionMeterSummary): string {
@@ -863,7 +1156,7 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   formatOrderMeterPrice(meter: { effectiveUnitPriceNet: number; unitLabel?: string | null }): string {
-    const price = this.formatCurrencyAmount(meter.effectiveUnitPriceNet);
+    const price = formatBillingMoney(meter.effectiveUnitPriceNet, undefined, { unitPrice: true });
     const unit = meter.unitLabel?.trim();
 
     return unit ? `${price} / ${unit}` : price;
@@ -873,10 +1166,14 @@ export class SubscriptionsComponent implements OnInit {
     return this.formatEntryPeriodPrice(bo.periodTotalPrice, this.getSelectedPlan(plans, bo.planId));
   }
 
+  durationLabel(value: number, type: string): string {
+    return getBillingIntervalDurationLabel(value, type);
+  }
+
   /** Option label for plan select: name + price + billing interval. */
   formatPlanOptionLabel(plan: ServicePlanResponse): string {
     const price = this.formatPlanOptionPrice(plan);
-    const interval = `${plan.billingIntervalValue} ${plan.billingIntervalType}(s)`;
+    const interval = getBillingIntervalLabel(plan.billingIntervalValue, plan.billingIntervalType);
 
     return `${plan.name}: ${price} / ${interval}`;
   }
@@ -904,25 +1201,11 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.subscriptionsFacade.loadSubscriptions();
     this.subscriptionsFacade.loadSubscriptionsSummary();
     this.servicePlansFacade.loadServicePlans();
     this.serviceTypesFacade.loadServiceTypes();
     this.serviceTypesFacade.loadProviderDetails();
-    this.backordersFacade.loadBackorders();
     this.customerProfileFacade.loadCustomerProfile();
-
-    this.subscriptionsSearch$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.subscriptionsFacade.loadSubscriptions({ search: search.trim() || undefined });
-      });
-
-    this.backordersSearch$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.backordersFacade.loadBackorders({ search: search.trim() || undefined });
-      });
 
     this.subscriptionsFacade
       .getSubscriptionsSummary$()
@@ -1158,7 +1441,7 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   orderAddonConfigCardTitle(addonName: string): string {
-    return $localize`:@@featureSubscriptions-addonConfigCardTitle:Addon: ${addonName}:addonName:`;
+    return $localize`:@@featureSubscriptions-addonConfigCardTitle:Add-on: ${addonName}:addonName:`;
   }
 
   selectedOrderAddons(): PlanAddonOptionDto[] {
@@ -1280,7 +1563,7 @@ export class SubscriptionsComponent implements OnInit {
     const steps: OrderWizardStep[] = [
       {
         id: 'plan',
-        label: $localize`:@@featureSubscriptions-orderStepPlanAddons:Plan & addons`,
+        label: $localize`:@@featureSubscriptions-orderStepPlanAddons:Plan & add-ons`,
       },
     ];
 
@@ -2493,7 +2776,7 @@ export class SubscriptionsComponent implements OnInit {
     }
 
     if (this.configChangeHasAddonsStep()) {
-      steps.push({ id: 'addons', label: $localize`:@@featureSubscriptions-configChangeStepAddons:Addons` });
+      steps.push({ id: 'addons', label: $localize`:@@featureSubscriptions-configChangeStepAddons:Add-ons` });
     }
 
     steps.push({ id: 'summary', label: $localize`:@@featureSubscriptions-configChangeStepSummary:Summary` });
@@ -2770,11 +3053,8 @@ export class SubscriptionsComponent implements OnInit {
 
     const code = currency?.trim().toUpperCase() ?? '';
 
-    if (!/^[A-Z]{3}$/.test(code)) {
-      return this.formatCurrencyAmount(amount);
-    }
-
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: code }).format(amount);
+    // DB-03: one money format in the app locale (not the browser locale); unknown codes → billing currency.
+    return formatBillingMoney(amount, /^[A-Z]{3}$/.test(code) ? code : undefined);
   }
 
   formatConfigChangeEffectiveAt(value: string | null | undefined): string {
@@ -2782,7 +3062,7 @@ export class SubscriptionsComponent implements OnInit {
       return '-';
     }
 
-    return this.datePipe.transform(value, 'medium') ?? '-';
+    return formatBillingDateTime(value, '-');
   }
 
   /**
@@ -2800,9 +3080,9 @@ export class SubscriptionsComponent implements OnInit {
       case 'CONFIG_CHANGE_SERVER_TYPE_LATERAL_UNSUPPORTED':
         return $localize`:@@featureSubscriptions-configChangeErrorServerTypeLateral:The selected server type costs the same as your current one. Choose a larger or a smaller server type.`;
       case 'CONFIG_CHANGE_ADDON_INVALID':
-        return $localize`:@@featureSubscriptions-configChangeErrorAddonInvalid:One of the selected addons is not available for this subscription.`;
+        return $localize`:@@featureSubscriptions-configChangeErrorAddonInvalid:One of the selected add-ons is not available for this subscription.`;
       case 'CONFIG_CHANGE_ADDON_CONFIG_IMMUTABLE':
-        return $localize`:@@featureSubscriptions-configChangeErrorAddonConfigImmutable:The configuration of an addon that is already active cannot be changed here.`;
+        return $localize`:@@featureSubscriptions-configChangeErrorAddonConfigImmutable:The configuration of an add-on that is already active cannot be changed here.`;
       case 'CONFIG_CHANGE_FAILED':
         return $localize`:@@featureSubscriptions-configChangeErrorFailed:The configuration change could not be applied. Please try again later.`;
       default:
@@ -2905,7 +3185,7 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   onSubmitProfile(): void {
-    this.customerProfileFacade.updateCustomerProfile(this.profileForm);
+    this.customerProfileFacade.updateCustomerProfile(withOptionalCountry(this.profileForm));
   }
 
   onSetupAutoBilling(): void {
@@ -2987,7 +3267,7 @@ export class SubscriptionsComponent implements OnInit {
       )
       .subscribe(() => {
         this.configChangeComplete.set(true);
-        this.subscriptionsFacade.loadSubscriptions();
+        this.paging.reload();
         this.cdr.detectChanges();
       });
     watchBillingMutationModalClose({

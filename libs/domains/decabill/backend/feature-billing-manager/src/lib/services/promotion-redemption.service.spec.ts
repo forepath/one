@@ -189,6 +189,10 @@ describe('PromotionRedemptionService', () => {
 
     expect(active.items).toHaveLength(1);
     expect(active.items[0].code).toBe('SAVE10');
+    // Additive structured advantage (DB-03): the client formats the money itself.
+    expect(active.items[0]).toEqual(
+      expect.objectContaining({ advantageSummary: '10.00 EUR credit', amountNet: 10, currency: 'EUR' }),
+    );
     expect(history.items).toHaveLength(1);
   });
 });

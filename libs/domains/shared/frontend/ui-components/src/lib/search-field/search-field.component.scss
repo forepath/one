@@ -1,5 +1,70 @@
 :host {
   display: block;
+  // Outer strip height = shared control tier (`styles/_controls.scss`); the bordered strip draws
+  // its border outside the input, so the inner glyph / input / clear lose the two border widths.
+  --fpc-search-field-height: var(--fpc-control-height-md, 2.25rem);
+  --fpc-search-field-inner: var(--fpc-search-field-height);
+}
+
+:host(.fpc-search-field--sm) {
+  --fpc-search-field-height: var(--fpc-control-height-sm, 1.875rem);
+}
+
+:host(.fpc-search-field--lg) {
+  --fpc-search-field-height: var(--fpc-control-height-lg, 3.265625rem);
+}
+
+:host(.fpc-search-field--bordered) {
+  --fpc-search-field-inner: calc(var(--fpc-search-field-height) - 2 * var(--bs-border-width));
+}
+
+// Inside a lane search band or a list toolbar strip the strip itself is the chrome (it owns the
+// bottom border): the field drops its own border so the band reads as one unbordered row, at
+// the same outer height. Call sites need no `[bordered]="false"`.
+:host-context(.fpc-board-lane__search),
+:host-context(.fpc-list-toolbar__lead) {
+  --fpc-search-field-inner: var(--fpc-search-field-height);
+
+  .search-input-container.border {
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  // The strip paints the background (incl. its tint gradient): the field is see-through there.
+  .search-input-container:not(:has(> .fpc-search-field__input:disabled)),
+  .search-input-container .fpc-search-field__input:not(:disabled) {
+    background-color: transparent;
+  }
+
+  // The glyph drops its square box: the magnifier starts on the shared inset (= header title / first cell), the input
+  // follows after a fixed gap.
+  .search-input-container > .fpc-search-field__icon {
+    width: auto;
+    justify-content: flex-start;
+    padding-inline: var(--fpc-edge-inset, 1rem) 0.625rem;
+  }
+}
+
+// A search directly in a lane band ends on the inset too (its right edge = the last column / item content end).
+:host-context(.fpc-board-lane__search) {
+  padding-inline-end: var(--fpc-edge-inset, 1rem);
+}
+
+// In a list toolbar strip the strip carries the inset itself.
+:host-context(.fpc-list-toolbar__lead) {
+  padding-inline-end: 0;
+}
+
+:host-context(.fpc-list-toolbar__lead) .search-input-container > .fpc-search-field__icon {
+  padding-inline-start: 0;
+}
+
+// Data table with selection check boxes or an icon-only state column: the magnifier takes the state glyph size (badge
+// icon, 0.75rem) and centres on that column's axis (`--fpc-data-table-state-axis`, measured by `fpc-data-table` from
+// the strip start: the check boxes when present, else the state glyphs), so it stacks exactly above them.
+:host-context(.fpc-data-table--state-axis) .search-input-container > .fpc-search-field__icon {
+  font-size: var(--bs-badge-font-size, 0.75rem);
+  padding-inline-start: max(0px, calc(var(--fpc-data-table-state-axis, 0.375rem) - 0.375rem));
 }
 
 :host(.fpc-search-field--marketing) {
@@ -22,16 +87,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: var(--fpc-search-field-inner);
+    height: var(--fpc-search-field-inner);
     color: var(--bs-secondary-color);
     flex: 0 0 auto;
   }
 
   .fpc-search-field__input {
     // Match glyph height so empty and non-empty states share one strip size.
-    min-height: 2.25rem;
-    height: 2.25rem;
+    min-height: var(--fpc-search-field-inner);
+    height: var(--fpc-search-field-inner);
     padding-top: 0;
     padding-bottom: 0;
   }
@@ -46,10 +111,10 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: 2.25rem;
-    height: 2.25rem;
-    min-width: 2.25rem;
-    min-height: 2.25rem;
+    width: var(--fpc-search-field-inner);
+    height: var(--fpc-search-field-inner);
+    min-width: var(--fpc-search-field-inner);
+    min-height: var(--fpc-search-field-inner);
     padding: 0;
     margin: 0;
     line-height: 1;
@@ -58,11 +123,7 @@
 
 // Reserve end inset whenever clear is enabled so showing the × does not widen the strip.
 :host(.fpc-search-field--clearable) .search-input-container .fpc-search-field__input {
-  padding-right: 2.25rem;
-}
-
-:host(.fpc-search-field--sm.fpc-search-field--clearable) .search-input-container .fpc-search-field__input {
-  padding-right: 1.875rem;
+  padding-right: var(--fpc-search-field-inner);
 }
 
 .fpc-search-field__input {
@@ -70,6 +131,12 @@
   border-radius: 0;
   padding-left: 0;
   box-shadow: none;
+  // Long placeholders ("Search open and overdue invoices") end in an ellipsis in narrow strips (DB-20).
+  text-overflow: ellipsis;
+
+  &::placeholder {
+    text-overflow: ellipsis;
+  }
 
   // Suppress the WebKit clear affordance; the component ships its own clear button.
   &::-webkit-search-cancel-button {
@@ -87,21 +154,6 @@
 
   &:hover {
     color: var(--bs-body-color);
-  }
-}
-
-:host(.fpc-search-field--sm) .search-input-container {
-  > i,
-  .fpc-search-field__clear {
-    width: 1.875rem;
-    height: 1.875rem;
-    min-width: 1.875rem;
-    min-height: 1.875rem;
-  }
-
-  .fpc-search-field__input {
-    min-height: 1.875rem;
-    height: 1.875rem;
   }
 }
 
@@ -125,8 +177,9 @@
   border-radius: 0.75rem;
   box-shadow: none;
 
+  // No glow and no border tint on focus (Branched fix B); keyboard focus = the wrapper ring below.
   &:focus {
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    border-color: var(--bs-border-color);
   }
 }
 
@@ -156,4 +209,57 @@
   padding: 0;
   margin: 0;
   line-height: 1;
+}
+
+// Focus (3.38 + branched fix B, user): no glow anywhere (input, icon, clear button), borders (incl. the bottom edge)
+// unchanged on focus; mouse focus shows only the caret. Bootstrap's `.form-control:focus` / `.btn:focus-visible`
+// box-shadow + outline are killed on every descendant and on the wrapper itself.
+.fpc-search-field__container {
+  box-shadow: none !important;
+  outline: 0;
+
+  *,
+  *:focus,
+  *:focus-visible {
+    box-shadow: none !important;
+    outline: 0 !important;
+  }
+}
+
+.fpc-search-field__container--marketing {
+  border-radius: 0.75rem;
+}
+
+// Keyboard focus = ONE clean ring around the whole field wrapper: the input got focus by keyboard
+// (`fpc-field-kbd-focus` + `:focus-within`; text inputs match `:focus-visible` on mouse focus too, so the origin is
+// tracked in TS) or the clear button is `:focus-visible`. Drawn by a pseudo-element above the (focus-raised,
+// `z-index: 5`) input, as an outline just outside the wrapper border, so the border itself never changes.
+.fpc-search-field__container.fpc-field-kbd-focus:focus-within::after,
+.fpc-search-field__container:has(> .fpc-search-field__clear:focus-visible)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  border-radius: inherit;
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 0;
+}
+
+// Bordered strip: the ring sits on the wrapper's border box (outside its 1px border).
+.search-input-container.border.fpc-field-kbd-focus:focus-within::after,
+.search-input-container.border:has(> .fpc-search-field__clear:focus-visible)::after {
+  inset: calc(-1 * var(--bs-border-width));
+}
+
+// Lane search band / list toolbar strip: borderless and edge-to-edge (an outside ring would be clipped), so the ring
+// is drawn just inside the strip.
+:host-context(.fpc-board-lane__search),
+:host-context(.fpc-list-toolbar__lead) {
+  .search-input-container.fpc-field-kbd-focus:focus-within::after,
+  .search-input-container:has(> .fpc-search-field__clear:focus-visible)::after {
+    inset: 0;
+    border-radius: 0;
+    outline-offset: -2px;
+  }
 }

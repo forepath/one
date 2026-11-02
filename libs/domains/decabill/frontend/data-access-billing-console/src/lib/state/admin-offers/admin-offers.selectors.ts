@@ -36,22 +36,17 @@ export const selectAdminOfferAuditLogsLoading = createSelector(
   selectAdminOffersState,
   (state) => state.auditLogsLoading,
 );
-export const selectAdminOfferAuditLogsAppendLoading = createSelector(
-  selectAdminOffersState,
-  (state) => state.auditLogsAppendLoading,
-);
 export const selectAdminOfferAuditLogsError = createSelector(selectAdminOffersState, (state) => state.auditLogsError);
 
 export const selectAdminOfferAuditLogsForOffer = (offerId: string) =>
   createSelector(selectAdminOfferAuditLogsByOffer, (byOffer) => byOffer[offerId] ?? []);
 
-export const selectAdminOfferAuditLogsHasMore = (offerId: string) =>
-  createSelector(selectAdminOfferAuditLogsTotalByOffer, selectAdminOfferAuditLogsOffsetByOffer, (totals, offsets) => {
-    const total = totals[offerId] ?? 0;
-    const offset = offsets[offerId] ?? 0;
+export const selectAdminOfferAuditLogsTotalForOffer = (offerId: string) =>
+  createSelector(selectAdminOfferAuditLogsTotalByOffer, (totals) => totals[offerId] ?? 0);
 
-    return offset < total;
-  });
+export const selectAdminOffersTotal = createSelector(selectAdminOffersState, (state) => state.total);
+export const selectAdminOffersPage = createSelector(selectAdminOffersState, (state) => state.page);
+export const selectAdminOffersPageSize = createSelector(selectAdminOffersState, (state) => state.pageSize);
 
 export const selectAdminOffersMutating = createSelector(
   selectAdminOffersCreating,

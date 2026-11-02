@@ -6,7 +6,6 @@ import {
   cancelBackorderSuccess,
   clearSelectedBackorder,
   loadBackorders,
-  loadBackordersBatch,
   loadBackordersFailure,
   loadBackordersSuccess,
   retryBackorder,
@@ -50,39 +49,32 @@ describe('backordersReducer', () => {
   });
 
   describe('loadBackorders', () => {
-    it('should set loading to true, clear entities and error', () => {
+    it('should set loading, clear error and keep the shown rows until the page arrives (replace-page)', () => {
       const state: BackordersState = {
         ...initialBackordersState,
         entities: [mockBackorder],
         error: 'Previous error',
       };
-      const newState = backordersReducer(state, loadBackorders({ params: {} }));
+      const newState = backordersReducer(state, loadBackorders({ params: { limit: 50, offset: 100 } }));
 
       expect(newState.loading).toBe(true);
-      expect(newState.entities).toEqual([]);
+      expect(newState.entities).toEqual([mockBackorder]);
       expect(newState.error).toBeNull();
-    });
-  });
-
-  describe('loadBackordersBatch', () => {
-    it('should set accumulated backorders and keep loading true', () => {
-      const state: BackordersState = { ...initialBackordersState, loading: true };
-      const newState = backordersReducer(
-        state,
-        loadBackordersBatch({ offset: 10, accumulatedBackorders: [mockBackorder, mockBackorder2] }),
-      );
-
-      expect(newState.entities).toEqual([mockBackorder, mockBackorder2]);
-      expect(newState.loading).toBe(true);
+      expect(newState.page).toBe(3);
+      expect(newState.pageSize).toBe(50);
     });
   });
 
   describe('loadBackordersSuccess', () => {
     it('should set backorders and set loading to false', () => {
       const state: BackordersState = { ...initialBackordersState, loading: true };
-      const newState = backordersReducer(state, loadBackordersSuccess({ backorders: [mockBackorder, mockBackorder2] }));
+      const newState = backordersReducer(
+        state,
+        loadBackordersSuccess({ backorders: [mockBackorder, mockBackorder2], hasMore: true }),
+      );
 
       expect(newState.entities).toEqual([mockBackorder, mockBackorder2]);
+      expect(newState.hasMore).toBe(true);
       expect(newState.loading).toBe(false);
     });
   });

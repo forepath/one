@@ -6,8 +6,11 @@
   height: 100%;
   min-height: 0;
   position: relative;
-  // Do not use `isolation: isolate` - it traps `fpc-sidebar-popover`'s `position: fixed`
-  // panel in this stacking context so it paints under the main shell.
+  // Chrome layer: `__items` / `__footer` carry `z-index: 1`, so the rail is a stacking context anyway;
+  // without an explicit layer it painted at level 0 and the `position: fixed` `fpc-sidebar-popover`
+  // panel ended up under content with `z-index: 1` (tab bars, sticky heads). Do not use
+  // `isolation: isolate` (same trap at level 0).
+  z-index: var(--fpc-z-chrome, 1030);
   background-color: var(--bs-tertiary-bg);
   border-right: var(--bs-border-width) solid var(--bs-border-color);
   // Clip the rail; scrolling lives on `__items` so a footer trigger can stay pinned.

@@ -10,6 +10,7 @@ export * from './lib/types/config-change.types';
 export * from './lib/types/offers.types';
 
 // Utils
+export * from './lib/constants/list-paging.constants';
 export * from './lib/utils/server-info-provider.utils';
 export * from './lib/utils/plan-provisioning-options.utils';
 export * from './lib/utils/provider-config-schema.utils';

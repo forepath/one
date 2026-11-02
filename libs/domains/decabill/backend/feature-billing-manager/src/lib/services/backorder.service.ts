@@ -105,8 +105,14 @@ export class BackorderService {
     });
   }
 
-  async listForUser(userId: string, limit: number, offset: number, search?: string): Promise<BackorderEntity[]> {
-    return await this.backordersRepository.findAllByUser(userId, limit, offset, search);
+  async listForUser(
+    userId: string,
+    limit: number,
+    offset: number,
+    search?: string,
+    statuses?: BackorderStatus[],
+  ): Promise<BackorderEntity[]> {
+    return await this.backordersRepository.findAllByUser(userId, limit, offset, search, statuses);
   }
 
   async cancel(backorderId: string): Promise<BackorderEntity> {

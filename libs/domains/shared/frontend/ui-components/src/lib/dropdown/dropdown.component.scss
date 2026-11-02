@@ -19,7 +19,7 @@
   padding-top: 0;
   padding-bottom: 0;
   --bs-dropdown-padding-y: 0;
-  z-index: var(--bs-dropdown-zindex, 1000);
+  z-index: var(--fpc-z-dropdown, var(--bs-dropdown-zindex, 1000));
 }
 
 :host(.dropup) .fpc-dropdown__menu {
@@ -44,4 +44,13 @@
 :host(.fpc-dropdown--container) .fpc-dropdown__menu {
   inset-inline: 0;
   width: auto;
+}
+
+// Portaled menus (`appendTo="body"`): fixed viewport coordinates are set inline from the trigger's rect;
+// drop the inline-mode anchoring (`top: 100%`, `inset-inline-*`, dropup margin) and any Popper transform.
+.fpc-dropdown__menu.fpc-dropdown__menu--portaled {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  transform: none;
 }

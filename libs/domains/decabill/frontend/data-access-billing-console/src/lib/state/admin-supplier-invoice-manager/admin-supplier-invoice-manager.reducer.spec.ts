@@ -50,25 +50,28 @@ describe('adminSupplierInvoiceManagerReducer', () => {
     expect(state.summary?.totalGross).toBe(500);
   });
 
-  it('resets invoices on loadAdminSupplierInvoiceManager', () => {
+  it('sets loading and the requested page on loadAdminSupplierInvoiceManager', () => {
     const state = adminSupplierInvoiceManagerReducer(
-      { ...initialAdminSupplierInvoiceManagerState, invoices: [listItem], hasMore: true },
-      loadAdminSupplierInvoiceManager({ search: 'INV' }),
+      { ...initialAdminSupplierInvoiceManagerState, invoices: [listItem], total: 40 },
+      loadAdminSupplierInvoiceManager({ search: 'INV', page: 2 }),
     );
 
     expect(state.loading).toBe(true);
-    expect(state.invoices).toEqual([]);
+    expect(state.invoices).toEqual([listItem]);
+    expect(state.page).toBe(2);
+    expect(state.pageSize).toBe(25);
     expect(state.search).toBe('INV');
   });
 
   it('stores invoices on loadAdminSupplierInvoiceManagerSuccess', () => {
     const state = adminSupplierInvoiceManagerReducer(
       { ...initialAdminSupplierInvoiceManagerState, loading: true },
-      loadAdminSupplierInvoiceManagerSuccess({ invoices: [listItem], hasMore: false, nextOffset: 1 }),
+      loadAdminSupplierInvoiceManagerSuccess({ invoices: [listItem], total: 26 }),
     );
 
     expect(state.loading).toBe(false);
     expect(state.invoices).toEqual([listItem]);
+    expect(state.total).toBe(26);
   });
 
   it('stores parse preview on parseSupplierInvoiceDocumentSuccess', () => {

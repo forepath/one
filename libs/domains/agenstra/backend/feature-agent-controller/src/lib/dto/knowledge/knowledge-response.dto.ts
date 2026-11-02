@@ -23,6 +23,8 @@ export class KnowledgeNodeResponseDto {
   createdAt!: Date;
   updatedAt!: Date;
   children?: KnowledgeNodeResponseDto[];
+  /** Only on `GET /knowledge/tree?search=`: `true` for matches, `false` for ancestor folders shown as context. */
+  searchMatch?: boolean;
 }
 
 export class KnowledgeRelationResponseDto {

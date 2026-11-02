@@ -66,7 +66,7 @@ export class AdminFileManagerPageComponent implements OnInit {
   private readonly environment = inject<Environment>(ENVIRONMENT);
 
   readonly homeTenantId = this.environment.billing?.tenantId?.trim() || 'default';
-  readonly pageTitle = $localize`:@@featureAdminFileExplorer-title:File Explorer`;
+  readonly pageTitle = $localize`:@@featureAdminFileExplorer-title:File explorer`;
   readonly unifiedTabLabel = $localize`:@@featureAdminFileExplorer-tabUnified:Unified`;
   readonly refreshAriaLabel = $localize`:@@featureAdminFileExplorer-refresh:Refresh`;
   readonly verifyAriaLabel = $localize`:@@featureAdminFileExplorer-verify:Verify file`;

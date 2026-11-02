@@ -18,7 +18,6 @@ import {
   loadSubscription,
   loadSubscriptions,
   loadSubscriptionsSummary,
-  loadMoreSubscriptions,
   resumeSubscription,
   withdrawSubscription,
 } from './subscriptions.actions';
@@ -29,8 +28,6 @@ import {
   selectSelectedSubscription,
   selectSubscriptionById,
   selectSubscriptionLoading,
-  selectSubscriptionsAppendError,
-  selectSubscriptionsAppendLoading,
   selectSubscriptionsByPlanId,
   selectSubscriptionsByStatus,
   selectSubscriptionsCanceling,
@@ -41,6 +38,8 @@ import {
   selectSubscriptionsHasMore,
   selectSubscriptionsLoading,
   selectSubscriptionsLoadingAny,
+  selectSubscriptionsPage,
+  selectSubscriptionsPageSize,
   selectSubscriptionsResuming,
   selectSubscriptionsState,
   selectSubscriptionsSummary,
@@ -106,12 +105,12 @@ export class SubscriptionsFacade {
     return this.store.select(selectSubscriptionsHasMore);
   }
 
-  getAppendLoading$(): Observable<boolean> {
-    return this.store.select(selectSubscriptionsAppendLoading);
+  getPage$(): Observable<number> {
+    return this.store.select(selectSubscriptionsPage);
   }
 
-  getAppendError$(): Observable<string | null> {
-    return this.store.select(selectSubscriptionsAppendError);
+  getPageSize$(): Observable<number> {
+    return this.store.select(selectSubscriptionsPageSize);
   }
 
   getSubscriptionsCount$(): Observable<number> {
@@ -150,17 +149,17 @@ export class SubscriptionsFacade {
     this.store.dispatch(loadSubscriptionsSummary());
   }
 
-  loadMore(): void {
+  /** Another page of the current list (same search; replace-page, 1-based). */
+  loadPage(page: number, pageSize?: number): void {
     this.store
       .select(selectSubscriptionsState)
       .pipe(take(1))
       .subscribe((state) => {
-        if (!state.hasMore || state.appendLoading || state.loading) return;
+        const size = pageSize ?? state.pageSize;
 
         this.store.dispatch(
-          loadMoreSubscriptions({
-            offset: state.nextOffset,
-            params: state.listParams ?? undefined,
+          loadSubscriptions({
+            params: { ...(state.listParams ?? {}), limit: size, offset: (Math.max(1, page) - 1) * size },
           }),
         );
       });

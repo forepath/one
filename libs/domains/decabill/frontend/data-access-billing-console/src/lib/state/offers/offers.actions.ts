@@ -15,11 +15,11 @@ export const loadOffersSummaryFailure = createAction('[Offers] Load Summary Fail
 
 export const loadPendingOffers = createAction(
   '[Offers] Load Pending Offers',
-  props<{ silent?: boolean; search?: string }>(),
+  props<{ silent?: boolean; search?: string; page?: number; pageSize?: number }>(),
 );
 export const loadPendingOffersSuccess = createAction(
   '[Offers] Load Pending Offers Success',
-  props<{ offers: CustomerOfferListItem[] }>(),
+  props<{ offers: CustomerOfferListItem[]; total: number }>(),
 );
 export const loadPendingOffersFailure = createAction(
   '[Offers] Load Pending Offers Failure',
@@ -28,11 +28,11 @@ export const loadPendingOffersFailure = createAction(
 
 export const loadHistoryOffers = createAction(
   '[Offers] Load History Offers',
-  props<{ silent?: boolean; search?: string }>(),
+  props<{ silent?: boolean; search?: string; page?: number; pageSize?: number }>(),
 );
 export const loadHistoryOffersSuccess = createAction(
   '[Offers] Load History Offers Success',
-  props<{ offers: CustomerOfferListItem[] }>(),
+  props<{ offers: CustomerOfferListItem[]; total: number }>(),
 );
 export const loadHistoryOffersFailure = createAction(
   '[Offers] Load History Offers Failure',

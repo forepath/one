@@ -1,5 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
+
 import type {
   CustomerOfferDetailResponse,
   CustomerOfferListItem,
@@ -36,10 +38,17 @@ export interface OffersState {
   pendingListLoading: boolean;
   pendingListError: string | null;
   pendingSearch: string | null;
+  /** Replace-page paging (server total, 1-based page and its size) of the pending list. */
+  pendingTotal: number;
+  pendingPage: number;
+  pendingPageSize: number;
   historyList: CustomerOfferListItem[];
   historyListLoading: boolean;
   historyListError: string | null;
   historySearch: string | null;
+  historyTotal: number;
+  historyPage: number;
+  historyPageSize: number;
   offerDetails: Record<string, CustomerOfferDetailResponse>;
   detailsLoading: boolean;
   respondingOfferId: string | null;
@@ -54,10 +63,16 @@ export const initialOffersState: OffersState = {
   pendingListLoading: false,
   pendingListError: null,
   pendingSearch: null,
+  pendingTotal: 0,
+  pendingPage: 1,
+  pendingPageSize: BILLING_LIST_PAGE_SIZE,
   historyList: [],
   historyListLoading: false,
   historyListError: null,
   historySearch: null,
+  historyTotal: 0,
+  historyPage: 1,
+  historyPageSize: BILLING_LIST_PAGE_SIZE,
   offerDetails: {},
   detailsLoading: false,
   respondingOfferId: null,
@@ -86,19 +101,20 @@ export const offersReducer = createReducer(
     summaryLoading: false,
     summaryError: error,
   })),
-  on(loadPendingOffers, (state, { silent, search }) =>
-    silent
-      ? state
-      : {
-          ...state,
-          pendingListLoading: true,
-          pendingListError: null,
-          pendingSearch: search?.trim() ? search.trim() : null,
-        },
-  ),
-  on(loadPendingOffersSuccess, (state, { offers }) => ({
+  on(loadPendingOffers, (state, { silent, search, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.pendingPageSize);
+    const query = {
+      pendingPage: window.page,
+      pendingPageSize: window.pageSize,
+      pendingSearch: search?.trim() ? search.trim() : null,
+    };
+
+    return silent ? { ...state, ...query } : { ...state, ...query, pendingListLoading: true, pendingListError: null };
+  }),
+  on(loadPendingOffersSuccess, (state, { offers, total }) => ({
     ...state,
     pendingList: offers,
+    pendingTotal: total,
     pendingListLoading: false,
     pendingListError: null,
   })),
@@ -107,19 +123,20 @@ export const offersReducer = createReducer(
     pendingListLoading: false,
     pendingListError: error,
   })),
-  on(loadHistoryOffers, (state, { silent, search }) =>
-    silent
-      ? state
-      : {
-          ...state,
-          historyListLoading: true,
-          historyListError: null,
-          historySearch: search?.trim() ? search.trim() : null,
-        },
-  ),
-  on(loadHistoryOffersSuccess, (state, { offers }) => ({
+  on(loadHistoryOffers, (state, { silent, search, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.historyPageSize);
+    const query = {
+      historyPage: window.page,
+      historyPageSize: window.pageSize,
+      historySearch: search?.trim() ? search.trim() : null,
+    };
+
+    return silent ? { ...state, ...query } : { ...state, ...query, historyListLoading: true, historyListError: null };
+  }),
+  on(loadHistoryOffersSuccess, (state, { offers, total }) => ({
     ...state,
     historyList: offers,
+    historyTotal: total,
     historyListLoading: false,
     historyListError: null,
   })),

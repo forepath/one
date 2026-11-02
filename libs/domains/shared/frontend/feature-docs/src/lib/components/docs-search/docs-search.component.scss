@@ -1,21 +1,7 @@
-.docs-search-container {
-  min-width: 0;
-
-  mark {
-    background-color: var(--bs-warning);
-    padding: 0;
-  }
-}
-
-// Desktop typeahead: fixed basis so the clear control cannot grow the top-bar row.
-.docs-search-container--field {
-  width: 20rem;
-  max-width: 100%;
-  flex: 0 1 20rem;
-}
-
-// Mobile icon control: size like other `fpc-top-bar__action` buttons.
-.docs-search-container--icon {
+// The trigger keeps its size in the top-bar row (the bar's `.fpc-top-bar__search` styles size it: icon only below lg,
+// 14 rem with label and shortcut from lg).
+:host {
+  display: inline-flex;
   flex: 0 0 auto;
-  width: auto;
+  min-width: 0;
 }

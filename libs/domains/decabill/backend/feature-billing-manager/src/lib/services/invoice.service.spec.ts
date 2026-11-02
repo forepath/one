@@ -342,6 +342,21 @@ describe('InvoiceService', () => {
       expect(response.canDownloadVoidDocument).toBe(false);
       expect(response.balance).toBe(50);
       expect(response.totalGross).toBe(119);
+      expect(response.issuedAt).toBeNull();
+    });
+
+    it('returns the issue date for issued invoices', () => {
+      const issuedAt = new Date('2026-10-01T00:00:00Z');
+      const response = service.mapToResponse({
+        id: 'inv-1',
+        subscriptionId,
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 50,
+        createdAt: new Date('2026-10-29T00:00:00Z'),
+        issuedAt,
+      } as InvoiceEntity);
+
+      expect(response.issuedAt).toBe(issuedAt);
     });
 
     it('blocks canPay when balance is below the minimum checkout amount', () => {

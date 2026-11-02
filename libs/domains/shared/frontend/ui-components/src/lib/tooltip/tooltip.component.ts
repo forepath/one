@@ -55,6 +55,7 @@ let tooltipSeq = 0;
         [id]="resolvedId()"
         [style.top.px]="bubbleTop()"
         [style.left.px]="bubbleLeft()"
+        [style.width.px]="bubbleWidth()"
         [style.max-width.px]="bubbleMaxWidth()"
         [style.max-height.px]="bubbleMaxHeight()"
       >
@@ -85,6 +86,8 @@ export class FpcTooltipComponent implements OnDestroy {
   protected readonly bubbleTop = signal(0);
   protected readonly bubbleLeft = signal(0);
   protected readonly bubbleMaxWidth = signal<number | null>(null);
+  /** Width measured at the viewport origin, kept at the final position (no re-wrap there). */
+  protected readonly bubbleWidth = signal<number | null>(null);
   protected readonly bubbleMaxHeight = signal<number | null>(null);
 
   protected readonly resolvedId = () => this.tooltipId() ?? this.generatedId;
@@ -201,11 +204,16 @@ export class FpcTooltipComponent implements OnDestroy {
     const boundLeft = Math.max(clip.left, 0);
     const boundRight = Math.min(clip.right, viewportWidth);
 
+    // Measure at the viewport origin with no width limits: a fixed bubble near the right edge would otherwise wrap
+    // narrower than at its last / first position and come out taller than measured (first hover too short).
+    bubble.style.left = '0px';
+    bubble.style.top = '0px';
+    bubble.style.width = '';
     bubble.style.maxHeight = 'none';
     bubble.style.maxWidth = '';
 
     const naturalHeight = bubble.offsetHeight;
-    const naturalWidth = bubble.offsetWidth;
+    const naturalWidth = Math.ceil(bubble.getBoundingClientRect().width);
 
     const spaceAbove = hostRect.top - boundTop - gap;
     const spaceBelow = boundBottom - hostRect.bottom - gap;
@@ -258,11 +266,19 @@ export class FpcTooltipComponent implements OnDestroy {
       top = Math.min(Math.max(boundTop + gap, top), Math.max(boundTop + gap, boundBottom - naturalHeight - gap));
     }
 
-    bubble.style.maxHeight = '';
-    bubble.style.maxWidth = '';
+    const width = maxWidth ?? naturalWidth;
+
+    // Write the result directly too: the signal bindings skip unchanged values, so the inline overrides above must
+    // not linger.
+    bubble.style.left = `${left}px`;
+    bubble.style.top = `${top}px`;
+    bubble.style.width = `${width}px`;
+    bubble.style.maxHeight = maxHeight === null ? '' : `${maxHeight}px`;
+    bubble.style.maxWidth = maxWidth === null ? '' : `${maxWidth}px`;
 
     this.bubbleTop.set(top);
     this.bubbleLeft.set(left);
+    this.bubbleWidth.set(width);
     this.bubbleMaxHeight.set(maxHeight);
     this.bubbleMaxWidth.set(maxWidth);
   }

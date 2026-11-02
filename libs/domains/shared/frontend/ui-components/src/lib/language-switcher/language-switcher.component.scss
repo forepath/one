@@ -15,18 +15,26 @@
 // Chip-like trigger on dark chrome (top bar sets `data-bs-theme="dark"` on the host).
 :host([data-bs-theme='dark']) ::ng-deep .fpc-language-switcher__trigger .fpc-button__btn {
   color: rgba(var(--bs-white-rgb), 0.5);
-  background-color: transparent;
-  border: var(--bs-border-width) solid rgba(var(--bs-secondary-rgb), 0.5);
+  background-color: var(--fpc-top-bar-control-bg, transparent);
+  // Neutral white edge on the dark bar (brand secondaries are tinted, e.g. Decabill's green).
+  border: var(--bs-border-width) solid rgba(var(--bs-white-rgb), 0.06);
   text-decoration: none;
-  padding-inline: 0.5rem;
-  font-size: 0.875em;
+  // Steps up with the top bar's control tier (md from 768 px, `_controls.scss`).
+  padding-inline: var(--fpc-top-bar-control-padding-x, 0.5rem);
+  // Same label size as the other top-bar controls (14px), not 0.875em of the small button. Through the button token,
+  // so the derived block padding (`_controls.scss`, `--fpc-control-h`) accounts for it: the trigger is exactly the
+  // tier height of its neighbours (it was 33 px next to 30 px phone controls and 36 px tool-window bars).
+  --bs-btn-font-size: 0.875rem;
+  font-size: var(--bs-btn-font-size);
   font-weight: 400;
+  box-sizing: border-box;
+  height: var(--fpc-control-h, var(--fpc-control-height-sm));
 
   &:hover,
   &:focus-visible {
     color: rgba(var(--bs-white-rgb), 0.75);
-    border-color: rgba(var(--bs-secondary-rgb), 0.75);
-    background-color: transparent;
+    border-color: rgba(var(--bs-white-rgb), 0.15);
+    background-color: var(--fpc-top-bar-control-bg-hover, transparent);
   }
 
   &:active {

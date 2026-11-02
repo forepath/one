@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { take } from 'rxjs';
 
 import type { CreateAdminSupplierProfileDto, SupplierProfileDto } from '../../types/suppliers.types';
 
@@ -17,6 +18,10 @@ import {
   selectAdminSupplierProfilesDeleting,
   selectAdminSupplierProfilesError,
   selectAdminSupplierProfilesLoading,
+  selectAdminSupplierProfilesPage,
+  selectAdminSupplierProfilesPageSize,
+  selectAdminSupplierProfilesState,
+  selectAdminSupplierProfilesTotal,
   selectAdminSupplierProfilesUpdating,
 } from './admin-supplier-profiles.selectors';
 
@@ -31,9 +36,27 @@ export class AdminSupplierProfilesFacade {
   readonly deleting$ = this.store.select(selectAdminSupplierProfilesDeleting);
   readonly customDataSaving$ = this.store.select(selectAdminSupplierProfilesCustomDataSaving);
   readonly error$ = this.store.select(selectAdminSupplierProfilesError);
+  readonly total$ = this.store.select(selectAdminSupplierProfilesTotal);
+  readonly page$ = this.store.select(selectAdminSupplierProfilesPage);
+  readonly pageSize$ = this.store.select(selectAdminSupplierProfilesPageSize);
 
-  loadProfiles(params?: { search?: string }): void {
-    this.store.dispatch(loadAdminSupplierProfiles({ search: params?.search }));
+  /** Loads page 1 (or the given page) of the filtered profiles; the page replaces the current rows. */
+  loadProfiles(params?: { search?: string; page?: number; pageSize?: number }): void {
+    this.store.dispatch(
+      loadAdminSupplierProfiles({ search: params?.search, page: params?.page, pageSize: params?.pageSize }),
+    );
+  }
+
+  /** Loads another page of the current search (replace-page). */
+  loadPage(page: number, pageSize?: number): void {
+    this.store
+      .select(selectAdminSupplierProfilesState)
+      .pipe(take(1))
+      .subscribe((state) =>
+        this.store.dispatch(
+          loadAdminSupplierProfiles({ search: state.search ?? undefined, page, pageSize: pageSize ?? state.pageSize }),
+        ),
+      );
   }
 
   createProfile(dto: CreateAdminSupplierProfileDto): void {
