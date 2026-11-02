@@ -2,7 +2,7 @@
   <fpc-page-header [title]="pageTitle" />
 
   <fpc-summary-bar [columns]="9">
-    <fpc-summary-card [label]="totalMessagesLabel">
+    <fpc-summary-card icon="chat-dots" [label]="totalMessagesLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -11,7 +11,7 @@
         }
       </span>
     </fpc-summary-card>
-    <fpc-summary-card [label]="totalWordsLabel">
+    <fpc-summary-card icon="text-paragraph" [label]="totalWordsLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -20,7 +20,7 @@
         }
       </span>
     </fpc-summary-card>
-    <fpc-summary-card [label]="avgWordsPerMessageLabel">
+    <fpc-summary-card icon="chat-left-text" [label]="avgWordsPerMessageLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -29,7 +29,7 @@
         }
       </span>
     </fpc-summary-card>
-    <fpc-summary-card [label]="totalTokensLabel">
+    <fpc-summary-card icon="coin" [label]="totalTokensLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -38,7 +38,7 @@
         }
       </span>
     </fpc-summary-card>
-    <fpc-summary-card [label]="totalCostLabel">
+    <fpc-summary-card icon="cash-coin" [label]="totalCostLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -47,7 +47,7 @@
         }
       </span>
     </fpc-summary-card>
-    <fpc-summary-card [label]="filterFlagsLabel">
+    <fpc-summary-card icon="flag" [label]="filterFlagsLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -56,7 +56,7 @@
         }
       </span>
     </fpc-summary-card>
-    <fpc-summary-card [label]="filterDropsLabel">
+    <fpc-summary-card icon="funnel" [label]="filterDropsLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -65,7 +65,7 @@
         }
       </span>
     </fpc-summary-card>
-    <fpc-summary-card [label]="egressBlockedLabel">
+    <fpc-summary-card icon="shield-x" [label]="egressBlockedLabel" [attr.title]="egressBlockedHint">
       <span fpcSummaryCardValue data-testid="audit-egress-blocked">
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -74,7 +74,7 @@
         }
       </span>
     </fpc-summary-card>
-    <fpc-summary-card [label]="egressObservedLabel">
+    <fpc-summary-card icon="eye" [label]="egressObservedLabel" [attr.title]="egressObservedHint">
       <span fpcSummaryCardValue data-testid="audit-egress-observed">
         @if (loadingSummary$ | async) {
           <fpc-spinner size="sm" />
@@ -85,442 +85,315 @@
     </fpc-summary-card>
   </fpc-summary-bar>
 
-  <fpc-collapsible-filter-panel
-    [open]="!filtersCollapsed()"
-    (openChange)="onFiltersOpenChange($event)"
-    [title]="filtersPanelTitle"
-    [showClear]="false"
-  >
-    <div class="row g-3 mb-0 w-100">
-      <div class="col-12">
-        <fpc-form-field forId="auditClientSelect" i18n-label="@@featureAudit-clientLabel" label="Client">
-          <framework-client-select
-            inputId="auditClientSelect"
-            [size]="'sm'"
-            [clients]="clients()"
-            [selectedClientId]="selectedClientId() ?? ''"
-            (selectedClientIdChange)="selectedClientId.set($event || null)"
-          />
-        </fpc-form-field>
-      </div>
-      <div class="col-6">
-        <fpc-form-field forId="auditFromDate" i18n-label="@@featureAudit-fromDateLabel" label="From">
-          <fpc-form-control
-            controlId="auditFromDate"
-            inputType="date"
-            size="sm"
-            [ngModel]="fromDate()"
-            (ngModelChange)="fromDate.set($event)"
-          />
-        </fpc-form-field>
-      </div>
-      <div class="col-6">
-        <fpc-form-field forId="auditToDate" i18n-label="@@featureAudit-toDateLabel" label="To">
-          <fpc-form-control
-            controlId="auditToDate"
-            inputType="date"
-            size="sm"
-            [ngModel]="toDate()"
-            (ngModelChange)="toDate.set($event)"
-          />
-        </fpc-form-field>
-      </div>
-      <div class="col-12">
-        <fpc-form-field forId="auditGroupBy" i18n-label="@@featureAudit-groupByLabel" label="Group by">
-          <fpc-form-control
-            controlType="select"
-            controlId="auditGroupBy"
-            size="sm"
-            [ngModel]="groupBy()"
-            (ngModelChange)="groupBy.set($event)"
-          >
-            <option value="day" i18n="@@featureAudit-groupByDay">Day</option>
-            <option value="hour" i18n="@@featureAudit-groupByHour">Hour</option>
-          </fpc-form-control>
-        </fpc-form-field>
-      </div>
-      <div class="col-12 d-flex gap-2">
-        <fpc-button
-          variant="primary"
-          size="sm"
-          [loading]="(loadingSummary$ | async) === true"
-          [disabled]="(loadingSummary$ | async) === true"
-          (clicked)="onApplyFilters()"
-          i18n="@@featureAudit-apply"
+  @if (error$ | async; as error) {
+    <fpc-alert flush variant="danger" [message]="error" />
+  }
+
+  <!-- One table per tab (3.38 D5): charts, then the five audit tables (server-paged, 25 per page). -->
+  <fpc-tab-group class="audit-tabs flex-grow-1 min-h-0" [(activeId)]="activeTab" [ariaLabel]="pageTitle">
+    <fpc-tab id="overview" [label]="overviewTabLabel" icon="graph-up" />
+    <fpc-tab id="chat-io" [label]="chatIoTabLabel" icon="chat-left-text" />
+    <fpc-tab id="filter-drops" [label]="filterDropsTabLabel" icon="slash-circle" />
+    <fpc-tab id="filter-flags" [label]="filterFlagsTabLabel" icon="flag" />
+    <fpc-tab id="web-traffic" [label]="webTrafficTabLabel" icon="globe2" />
+    <fpc-tab id="entity-events" [label]="entityEventsTabLabel" icon="clock-history" />
+  </fpc-tab-group>
+
+  <div class="audit-content flex-grow-1 d-flex flex-column min-h-0" [attr.data-tab]="activeTab()">
+    @switch (activeTab()) {
+      @case ('overview') {
+        <fpc-list-toolbar
+          class="flex-shrink-0"
+          [open]="filtersOpen()"
+          (openChange)="onFiltersOpenChange($event)"
+          [title]="filtersPanelTitle"
+          [activeCount]="activeFilterCount()"
+          (applied)="filterState.apply()"
+          (cleared)="onResetFilters()"
+          data-testid="audit-overview-filters"
         >
-          Apply
-        </fpc-button>
-        <fpc-button
-          variant="dark"
-          size="sm"
-          [disabled]="(loadingSummary$ | async) === true"
-          [title]="resetFiltersTitle"
-          (clicked)="onResetFilters()"
-          i18n="@@featureAudit-reset"
+          <ng-container [ngTemplateOutlet]="auditPageFilters" />
+        </fpc-list-toolbar>
+        <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+          @let summaryData = summary();
+          @if (loadingSummary$ | async) {
+            <fpc-empty-state loading [title]="loadingLabel" />
+          } @else if (summaryData) {
+            <fpc-panel-grid [columns]="3">
+              @if (seriesChartOptions(); as chartOpts) {
+                <fpc-panel [title]="chartOpts.heading" [span]="filterBreakdownChartOptions() ? 2 : 3">
+                  <apx-chart
+                    [series]="chartOpts.series"
+                    [chart]="chartOpts.chart"
+                    [colors]="chartOpts.colors"
+                    [stroke]="chartOpts.stroke"
+                    [fill]="chartOpts.fill"
+                    [dataLabels]="chartOpts.dataLabels"
+                    [xaxis]="chartOpts.xaxis"
+                    [yaxis]="chartOpts.yaxis"
+                    [grid]="chartOpts.grid"
+                    [legend]="chartOpts.legend"
+                  ></apx-chart>
+                </fpc-panel>
+              }
+              @if (filterBreakdownChartOptions(); as donutOpts) {
+                <fpc-panel [title]="donutOpts.heading" [span]="seriesChartOptions() ? 1 : 3">
+                  <apx-chart
+                    [series]="donutOpts.series"
+                    [chart]="donutOpts.chart"
+                    [colors]="donutOpts.colors"
+                    [labels]="donutOpts.labels"
+                    [dataLabels]="donutOpts.dataLabels"
+                    [legend]="donutOpts.legend"
+                    [tooltip]="donutOpts.tooltip"
+                    [responsive]="donutOpts.responsive ?? []"
+                  ></apx-chart>
+                </fpc-panel>
+              }
+              @if (securitySeriesChartOptions(); as chartOpts) {
+                <fpc-panel [title]="chartOpts.heading" [span]="egressRulesChartOptions() ? 2 : 3">
+                  <apx-chart
+                    [series]="chartOpts.series"
+                    [chart]="chartOpts.chart"
+                    [colors]="chartOpts.colors"
+                    [stroke]="chartOpts.stroke"
+                    [fill]="chartOpts.fill"
+                    [dataLabels]="chartOpts.dataLabels"
+                    [xaxis]="chartOpts.xaxis"
+                    [yaxis]="chartOpts.yaxis"
+                    [grid]="chartOpts.grid"
+                    [legend]="chartOpts.legend"
+                  ></apx-chart>
+                </fpc-panel>
+              }
+              @if (egressRulesChartOptions(); as donutOpts) {
+                <fpc-panel [title]="donutOpts.heading" [span]="securitySeriesChartOptions() ? 1 : 3">
+                  <apx-chart
+                    [series]="donutOpts.series"
+                    [chart]="donutOpts.chart"
+                    [colors]="donutOpts.colors"
+                    [labels]="donutOpts.labels"
+                    [dataLabels]="donutOpts.dataLabels"
+                    [legend]="donutOpts.legend"
+                    [tooltip]="donutOpts.tooltip"
+                    [responsive]="donutOpts.responsive ?? []"
+                  ></apx-chart>
+                </fpc-panel>
+              }
+              @if (egressSeriesChartOptions(); as chartOpts) {
+                <fpc-panel [title]="chartOpts.heading" [span]="egressTopHostsChartOptions() ? 2 : 3">
+                  <apx-chart
+                    [series]="chartOpts.series"
+                    [chart]="chartOpts.chart"
+                    [colors]="chartOpts.colors"
+                    [stroke]="chartOpts.stroke"
+                    [fill]="chartOpts.fill"
+                    [dataLabels]="chartOpts.dataLabels"
+                    [xaxis]="chartOpts.xaxis"
+                    [yaxis]="chartOpts.yaxis"
+                    [grid]="chartOpts.grid"
+                    [legend]="chartOpts.legend"
+                  ></apx-chart>
+                </fpc-panel>
+              }
+              @if (egressTopHostsChartOptions(); as barOpts) {
+                <fpc-panel [title]="barOpts.heading" [span]="egressSeriesChartOptions() ? 1 : 3">
+                  <apx-chart
+                    [series]="barOpts.series"
+                    [chart]="barOpts.chart"
+                    [colors]="barOpts.colors"
+                    [stroke]="barOpts.stroke"
+                    [fill]="barOpts.fill"
+                    [dataLabels]="barOpts.dataLabels"
+                    [xaxis]="barOpts.xaxis"
+                    [yaxis]="barOpts.yaxis"
+                    [grid]="barOpts.grid"
+                    [legend]="barOpts.legend"
+                    [plotOptions]="barOpts.plotOptions"
+                  ></apx-chart>
+                </fpc-panel>
+              }
+            </fpc-panel-grid>
+          } @else if (!(error$ | async)) {
+            <fpc-empty-state message="No data yet" i18n-message="@@featureAudit-noData" />
+          }
+        </div>
+      }
+      @case ('chat-io') {
+        <fpc-data-table
+          [ariaLabel]="chatIoTabLabel"
+          [columns]="chatIoColumns"
+          [rows]="chatIo()?.data ?? []"
+          paging="server"
+          [total]="chatIo()?.total ?? null"
+          [(page)]="chatIoPage"
+          [(pageSize)]="chatIoPageSize"
+          persistKey="agenstra-audit-chat-io"
+          [query]="chatIoSearch()"
+          (queryChange)="onChatIoSearchChange($event)"
+          [searchPlaceholder]="searchChatIoPlaceholder"
+          [loading]="(loadingChatIo$ | async) ?? false"
+          [rowMenu]="agentRowMenu"
+          (rowAction)="onAgentRowAction($event.row, $event.item.id)"
+          showFilterButton
+          [filtersOpen]="filtersOpen()"
+          (filtersOpenChange)="onFiltersOpenChange($event)"
+          [filtersActive]="activeFilterCount()"
+          (filtersApplied)="filterState.apply()"
+          (filtersCleared)="onResetFilters()"
+          emptyIcon="chat-left-text"
+          data-testid="audit-chat-io-table"
         >
-          Reset
-        </fpc-button>
-      </div>
-    </div>
-  </fpc-collapsible-filter-panel>
-
-  <!-- Scrollable content area -->
-  <div class="audit-content flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @let summaryData = summary();
-    @if (error$ | async; as error) {
-      <fpc-alert class="m-3" variant="danger" [message]="error" />
-    } @else if (loadingSummary$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-5">
-        <fpc-spinner variant="primary" [label]="loadingLabel" />
-      </div>
-    } @else if (summaryData) {
-      <fpc-panel-grid [columns]="3">
-        @if (seriesChartOptions(); as chartOpts) {
-          <fpc-panel [title]="chartOpts.heading" [span]="filterBreakdownChartOptions() ? 2 : 3">
-            <apx-chart
-              [series]="chartOpts.series"
-              [chart]="chartOpts.chart"
-              [colors]="chartOpts.colors"
-              [stroke]="chartOpts.stroke"
-              [fill]="chartOpts.fill"
-              [dataLabels]="chartOpts.dataLabels"
-              [xaxis]="chartOpts.xaxis"
-              [yaxis]="chartOpts.yaxis"
-              [grid]="chartOpts.grid"
-              [legend]="chartOpts.legend"
-            ></apx-chart>
-          </fpc-panel>
-        }
-        @if (filterBreakdownChartOptions(); as donutOpts) {
-          <fpc-panel [title]="donutOpts.heading" [span]="seriesChartOptions() ? 1 : 3">
-            <apx-chart
-              [series]="donutOpts.series"
-              [chart]="donutOpts.chart"
-              [colors]="donutOpts.colors"
-              [labels]="donutOpts.labels"
-              [dataLabels]="donutOpts.dataLabels"
-              [legend]="donutOpts.legend"
-              [tooltip]="donutOpts.tooltip"
-            ></apx-chart>
-          </fpc-panel>
-        }
-        @if (securitySeriesChartOptions(); as chartOpts) {
-          <fpc-panel [title]="chartOpts.heading" [span]="egressRulesChartOptions() ? 2 : 3">
-            <apx-chart
-              [series]="chartOpts.series"
-              [chart]="chartOpts.chart"
-              [colors]="chartOpts.colors"
-              [stroke]="chartOpts.stroke"
-              [fill]="chartOpts.fill"
-              [dataLabels]="chartOpts.dataLabels"
-              [xaxis]="chartOpts.xaxis"
-              [yaxis]="chartOpts.yaxis"
-              [grid]="chartOpts.grid"
-              [legend]="chartOpts.legend"
-            ></apx-chart>
-          </fpc-panel>
-        }
-        @if (egressRulesChartOptions(); as donutOpts) {
-          <fpc-panel [title]="donutOpts.heading" [span]="securitySeriesChartOptions() ? 1 : 3">
-            <apx-chart
-              [series]="donutOpts.series"
-              [chart]="donutOpts.chart"
-              [colors]="donutOpts.colors"
-              [labels]="donutOpts.labels"
-              [dataLabels]="donutOpts.dataLabels"
-              [legend]="donutOpts.legend"
-              [tooltip]="donutOpts.tooltip"
-            ></apx-chart>
-          </fpc-panel>
-        }
-        @if (egressSeriesChartOptions(); as chartOpts) {
-          <fpc-panel [title]="chartOpts.heading" [span]="egressTopHostsChartOptions() ? 2 : 3">
-            <apx-chart
-              [series]="chartOpts.series"
-              [chart]="chartOpts.chart"
-              [colors]="chartOpts.colors"
-              [stroke]="chartOpts.stroke"
-              [fill]="chartOpts.fill"
-              [dataLabels]="chartOpts.dataLabels"
-              [xaxis]="chartOpts.xaxis"
-              [yaxis]="chartOpts.yaxis"
-              [grid]="chartOpts.grid"
-              [legend]="chartOpts.legend"
-            ></apx-chart>
-          </fpc-panel>
-        }
-        @if (egressTopHostsChartOptions(); as barOpts) {
-          <fpc-panel [title]="barOpts.heading" [span]="egressSeriesChartOptions() ? 1 : 3">
-            <apx-chart
-              [series]="barOpts.series"
-              [chart]="barOpts.chart"
-              [colors]="barOpts.colors"
-              [stroke]="barOpts.stroke"
-              [fill]="barOpts.fill"
-              [dataLabels]="barOpts.dataLabels"
-              [xaxis]="barOpts.xaxis"
-              [yaxis]="barOpts.yaxis"
-              [grid]="barOpts.grid"
-              [legend]="barOpts.legend"
-              [plotOptions]="barOpts.plotOptions"
-            ></apx-chart>
-          </fpc-panel>
-        }
-
-        <!-- Chat I/O Table -->
-        <fpc-panel [span]="3" flush title="Chat I/O" i18n-title="@@featureAudit-chatIoTable">
-          <fpc-search-field
-            fpcPanelActions
-            class="audit-table-search"
-            size="sm"
-            [placeholder]="searchPlaceholder"
-            [ariaLabel]="searchPlaceholder"
-            [value]="chatIoSearch()"
-            (valueChange)="onChatIoSearchChange($event)"
-          />
-          @if (loadingChatIo$ | async) {
-            <div class="text-center py-4">
-              <fpc-spinner size="sm" />
-            </div>
-          } @else {
-            <div class="table-responsive">
-              <table class="table table-striped table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th i18n="@@featureAudit-time">Time</th>
-                    <th i18n="@@featureAudit-user">User</th>
-                    <th i18n="@@featureAudit-agent">Agent</th>
-                    <th i18n="@@featureAudit-direction">Direction</th>
-                    <th i18n="@@featureAudit-words">Words</th>
-                    <th i18n="@@featureAudit-chars">Chars</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of chatIo()?.data ?? []; track row.id) {
-                    <tr>
-                      <td>{{ formatDateTime(row.occurredAt) }}</td>
-                      <td>{{ resolveUserDisplay(row.originalUserId) }}</td>
-                      <td>
-                        @if (buildAgentChatRoute(row.clientId, row.agentId); as route) {
-                          <a
-                            [routerLink]="route"
-                            [innerHTML]="resolveAgentDisplay(row)"
-                            class="text-decoration-none"
-                          ></a>
-                        } @else {
-                          <span [innerHTML]="resolveAgentDisplay(row)"></span>
-                        }
-                      </td>
-                      <td>
-                        <fpc-badge [color]="row.direction === 'input' ? 'primary' : 'secondary'">{{
-                          formatChatIoDirection(row.direction)
-                        }}</fpc-badge>
-                      </td>
-                      <td>{{ row.wordCount }}</td>
-                      <td>{{ row.charCount }}</td>
-                    </tr>
-                  } @empty {
-                    <tr>
-                      <td colspan="6" class="text-center text-body-secondary py-3" i18n="@@featureAudit-noRows">
-                        No rows
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
-          @if (chatIo(); as list) {
-            <div fpcPanelFooter class="d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
-              <small class="text-body-secondary" i18n="@@featureAudit-showingOf"
-                >Showing {{ list.data.length }} of {{ list.total }}</small
-              >
-              <fpc-pagination
-                size="sm"
-                [page]="chatIoPage() + 1"
-                [totalPages]="totalPages(list.total) || 1"
-                (pageChange)="onChatIoPageChange($event - 1)"
-              />
-            </div>
-          }
-        </fpc-panel>
-
-        <!-- Filter Drops Table -->
-        <fpc-panel [span]="3" flush title="Filter Drops" i18n-title="@@featureAudit-filterDropsTable">
-          <fpc-search-field
-            fpcPanelActions
-            class="audit-table-search"
-            size="sm"
-            [placeholder]="searchPlaceholder"
-            [ariaLabel]="searchPlaceholder"
-            [value]="filterDropsSearch()"
-            (valueChange)="onFilterDropsSearchChange($event)"
-          />
-          @if (loadingFilterDrops$ | async) {
-            <div class="text-center py-4">
-              <fpc-spinner size="sm" />
-            </div>
-          } @else {
-            <div class="table-responsive">
-              <table class="table table-striped table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th i18n="@@featureAudit-time">Time</th>
-                    <th i18n="@@featureAudit-user">User</th>
-                    <th i18n="@@featureAudit-agent">Agent</th>
-                    <th i18n="@@featureAudit-filterType">Filter</th>
-                    <th i18n="@@featureAudit-direction">Direction</th>
-                    <th i18n="@@featureAudit-words">Words</th>
-                    <th i18n="@@featureAudit-reason">Reason</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of filterDrops()?.data ?? []; track row.id) {
-                    <tr>
-                      <td>{{ formatDateTime(row.occurredAt) }}</td>
-                      <td>{{ resolveUserDisplay(row.originalUserId) }}</td>
-                      <td>
-                        @if (buildAgentChatRoute(row.clientId, row.agentId); as route) {
-                          <a
-                            [routerLink]="route"
-                            [innerHTML]="resolveAgentDisplay(row)"
-                            class="text-decoration-none"
-                          ></a>
-                        } @else {
-                          <span [innerHTML]="resolveAgentDisplay(row)"></span>
-                        }
-                      </td>
-                      <td>{{ row.filterDisplayName }}</td>
-                      <td>
-                        <fpc-badge [color]="row.direction === 'incoming' ? 'primary' : 'secondary'">{{
-                          formatFilterDirection(row.direction)
-                        }}</fpc-badge>
-                      </td>
-                      <td>{{ row.wordCount }}</td>
-                      <td>{{ row.filterReason ?? '-' }}</td>
-                    </tr>
-                  } @empty {
-                    <tr>
-                      <td colspan="7" class="text-center text-body-secondary py-3" i18n="@@featureAudit-noRows">
-                        No rows
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
-          @if (filterDrops(); as list) {
-            <div fpcPanelFooter class="d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
-              <small class="text-body-secondary" i18n="@@featureAudit-showingOf"
-                >Showing {{ list.data.length }} of {{ list.total }}</small
-              >
-              <fpc-pagination
-                size="sm"
-                [page]="filterDropsPage() + 1"
-                [totalPages]="totalPages(list.total) || 1"
-                (pageChange)="onFilterDropsPageChange($event - 1)"
-              />
-            </div>
-          }
-        </fpc-panel>
-
-        <!-- Filter Flags Table -->
-        <fpc-panel [span]="3" flush title="Filter Flags" i18n-title="@@featureAudit-filterFlagsTable">
-          <fpc-search-field
-            fpcPanelActions
-            class="audit-table-search"
-            size="sm"
-            [placeholder]="searchPlaceholder"
-            [ariaLabel]="searchPlaceholder"
-            [value]="filterFlagsSearch()"
-            (valueChange)="onFilterFlagsSearchChange($event)"
-          />
-          @if (loadingFilterFlags$ | async) {
-            <div class="text-center py-4">
-              <fpc-spinner size="sm" />
-            </div>
-          } @else {
-            <div class="table-responsive">
-              <table class="table table-striped table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th i18n="@@featureAudit-time">Time</th>
-                    <th i18n="@@featureAudit-user">User</th>
-                    <th i18n="@@featureAudit-agent">Agent</th>
-                    <th i18n="@@featureAudit-filterType">Filter</th>
-                    <th i18n="@@featureAudit-direction">Direction</th>
-                    <th i18n="@@featureAudit-words">Words</th>
-                    <th i18n="@@featureAudit-reason">Reason</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of filterFlags()?.data ?? []; track row.id) {
-                    <tr>
-                      <td>{{ formatDateTime(row.occurredAt) }}</td>
-                      <td>{{ resolveUserDisplay(row.originalUserId) }}</td>
-                      <td>
-                        @if (buildAgentChatRoute(row.clientId, row.agentId); as route) {
-                          <a
-                            [routerLink]="route"
-                            [innerHTML]="resolveAgentDisplay(row)"
-                            class="text-decoration-none"
-                          ></a>
-                        } @else {
-                          <span [innerHTML]="resolveAgentDisplay(row)"></span>
-                        }
-                      </td>
-                      <td>{{ row.filterDisplayName }}</td>
-                      <td>
-                        <fpc-badge [color]="row.direction === 'incoming' ? 'primary' : 'secondary'">{{
-                          formatFilterDirection(row.direction)
-                        }}</fpc-badge>
-                      </td>
-                      <td>{{ row.wordCount }}</td>
-                      <td>{{ row.filterReason ?? '-' }}</td>
-                    </tr>
-                  } @empty {
-                    <tr>
-                      <td colspan="7" class="text-center text-body-secondary py-3" i18n="@@featureAudit-noRows">
-                        No rows
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
-          @if (filterFlags(); as list) {
-            <div fpcPanelFooter class="d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
-              <small class="text-body-secondary" i18n="@@featureAudit-showingOf"
-                >Showing {{ list.data.length }} of {{ list.total }}</small
-              >
-              <fpc-pagination
-                size="sm"
-                [page]="filterFlagsPage() + 1"
-                [totalPages]="totalPages(list.total) || 1"
-                (pageChange)="onFilterFlagsPageChange($event - 1)"
-              />
-            </div>
-          }
-        </fpc-panel>
-
-        <!-- Egress (web traffic) Table -->
-        <fpc-panel
-          [span]="3"
-          flush
-          title="Web Traffic"
-          i18n-title="@@featureAudit-egressEventsTable"
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="chat-left-text"
+              message="No messages in this period"
+              i18n-message="@@featureAudit-emptyChatIo"
+            >
+              <p class="small text-body-secondary mb-0">{{ emptyPeriodHint }}</p>
+            </fpc-empty-state>
+          </span>
+          <ng-container ngProjectAs="[fpcDataTableFilters]" [ngTemplateOutlet]="auditPageFilters" />
+          <ng-template fpcTableCell="user" let-row>{{ resolveUserDisplay(row.originalUserId) }}</ng-template>
+          <ng-template fpcTableCell="agent" let-row>
+            <ng-container [ngTemplateOutlet]="agentCell" [ngTemplateOutletContext]="{ $implicit: row }" />
+          </ng-template>
+        </fpc-data-table>
+      }
+      @case ('filter-drops') {
+        <fpc-data-table
+          [ariaLabel]="filterDropsTabLabel"
+          [columns]="filterColumns"
+          [rows]="filterDrops()?.data ?? []"
+          paging="server"
+          [total]="filterDrops()?.total ?? null"
+          [(page)]="filterDropsPage"
+          [(pageSize)]="filterDropsPageSize"
+          persistKey="agenstra-audit-filter-drops"
+          [query]="filterDropsSearch()"
+          (queryChange)="onFilterDropsSearchChange($event)"
+          [searchPlaceholder]="searchFilterDropsPlaceholder"
+          [loading]="(loadingFilterDrops$ | async) ?? false"
+          [rowMenu]="agentRowMenu"
+          (rowAction)="onAgentRowAction($event.row, $event.item.id)"
+          showFilterButton
+          [filtersOpen]="filtersOpen()"
+          (filtersOpenChange)="onFiltersOpenChange($event)"
+          [filtersActive]="activeFilterCount()"
+          (filtersApplied)="filterState.apply()"
+          (filtersCleared)="onResetFilters()"
+          emptyIcon="slash-circle"
+          data-testid="audit-filter-drops-table"
+        >
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="slash-circle"
+              message="No filter drops in this period"
+              i18n-message="@@featureAudit-emptyFilterDrops"
+            >
+              <p class="small text-body-secondary mb-0">{{ emptyPeriodHint }}</p>
+            </fpc-empty-state>
+          </span>
+          <ng-container ngProjectAs="[fpcDataTableFilters]" [ngTemplateOutlet]="auditPageFilters" />
+          <ng-template fpcTableCell="user" let-row>{{ resolveUserDisplay(row.originalUserId) }}</ng-template>
+          <ng-template fpcTableCell="agent" let-row>
+            <ng-container [ngTemplateOutlet]="agentCell" [ngTemplateOutletContext]="{ $implicit: row }" />
+          </ng-template>
+        </fpc-data-table>
+      }
+      @case ('filter-flags') {
+        <fpc-data-table
+          [ariaLabel]="filterFlagsTabLabel"
+          [columns]="filterColumns"
+          [rows]="filterFlags()?.data ?? []"
+          paging="server"
+          [total]="filterFlags()?.total ?? null"
+          [(page)]="filterFlagsPage"
+          [(pageSize)]="filterFlagsPageSize"
+          persistKey="agenstra-audit-filter-flags"
+          [query]="filterFlagsSearch()"
+          (queryChange)="onFilterFlagsSearchChange($event)"
+          [searchPlaceholder]="searchFilterFlagsPlaceholder"
+          [loading]="(loadingFilterFlags$ | async) ?? false"
+          [rowMenu]="agentRowMenu"
+          (rowAction)="onAgentRowAction($event.row, $event.item.id)"
+          showFilterButton
+          [filtersOpen]="filtersOpen()"
+          (filtersOpenChange)="onFiltersOpenChange($event)"
+          [filtersActive]="activeFilterCount()"
+          (filtersApplied)="filterState.apply()"
+          (filtersCleared)="onResetFilters()"
+          emptyIcon="flag"
+          data-testid="audit-filter-flags-table"
+        >
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="flag"
+              message="No filter flags in this period"
+              i18n-message="@@featureAudit-emptyFilterFlags"
+            >
+              <p class="small text-body-secondary mb-0">{{ emptyPeriodHint }}</p>
+            </fpc-empty-state>
+          </span>
+          <ng-container ngProjectAs="[fpcDataTableFilters]" [ngTemplateOutlet]="auditPageFilters" />
+          <ng-template fpcTableCell="user" let-row>{{ resolveUserDisplay(row.originalUserId) }}</ng-template>
+          <ng-template fpcTableCell="agent" let-row>
+            <ng-container [ngTemplateOutlet]="agentCell" [ngTemplateOutletContext]="{ $implicit: row }" />
+          </ng-template>
+        </fpc-data-table>
+      }
+      @case ('web-traffic') {
+        <fpc-data-table
+          [ariaLabel]="webTrafficTabLabel"
+          [columns]="egressColumns"
+          [rows]="egressEvents()?.data ?? []"
+          paging="server"
+          [total]="egressEvents()?.total ?? null"
+          [(page)]="egressEventsPage"
+          [(pageSize)]="egressEventsPageSize"
+          persistKey="agenstra-audit-web-traffic"
+          [query]="egressEventsSearch()"
+          (queryChange)="onEgressEventsSearchChange($event)"
+          [searchPlaceholder]="searchWebTrafficPlaceholder"
+          [loading]="(loadingEgressEvents$ | async) ?? false"
+          showFilterButton
+          [filtersOpen]="filtersOpen()"
+          (filtersOpenChange)="onFiltersOpenChange($event)"
+          [filtersActive]="activeFilterCount() + (egressDecision() ? 1 : 0)"
+          [chips]="egressChips()"
+          (filtersApplied)="filterState.apply()"
+          (filtersCleared)="onResetFilters()"
+          (removeChip)="onEgressDecisionChange('')"
+          [rowMenu]="agentRowMenu"
+          (rowAction)="onAgentRowAction($event.row, $event.item.id)"
+          [expandedRowId]="expandedEgressId()"
+          (rowActivate)="toggleEgressDetail($event)"
+          emptyIcon="globe2"
           data-testid="audit-egress-table"
         >
-          <div fpcPanelActions class="d-flex gap-2 align-items-center flex-wrap">
-            <label class="visually-hidden" for="auditEgressDecision" i18n="@@featureAudit-egressDecisionFilter"
-              >Decision</label
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="globe2"
+              message="No web traffic in this period"
+              i18n-message="@@featureAudit-emptyWebTraffic"
             >
+              <p class="small text-body-secondary mb-0">{{ emptyPeriodHint }}</p>
+            </fpc-empty-state>
+          </span>
+          <ng-container ngProjectAs="[fpcDataTableFilters]" [ngTemplateOutlet]="auditPageFilters" />
+          <fpc-form-field
+            fpcDataTableFilters
+            forId="auditEgressDecision"
+            i18n-label="@@featureAudit-egressDecisionFilter"
+            label="Decision"
+          >
             <fpc-form-control
               controlType="select"
               controlId="auditEgressDecision"
-              controlClass="w-auto"
               size="sm"
               [ngModel]="egressDecision()"
               (ngModelChange)="onEgressDecisionChange($event)"
@@ -530,208 +403,142 @@
                 <option [value]="decision">{{ formatEgressDecision(decision) }}</option>
               }
             </fpc-form-control>
-            <fpc-search-field
-              class="audit-table-search"
+          </fpc-form-field>
+          <ng-template fpcTableCell="agent" let-row>
+            <ng-container [ngTemplateOutlet]="agentCell" [ngTemplateOutletContext]="{ $implicit: row }" />
+          </ng-template>
+          <ng-template fpcTableCell="destination" let-row>
+            <span class="font-monospace small">{{ row.host ?? '–' }}</span>
+            @if (row.method) {
+              <span class="ms-2 small text-body-secondary">{{ row.method }}</span>
+            }
+          </ng-template>
+          <ng-template fpcTableCell="rule" let-row>
+            {{ formatEgressRule(row.rule) }}
+            @if (row.matchedEntry) {
+              <span class="ms-2 small text-body-secondary font-monospace">{{ row.matchedEntry }}</span>
+            }
+          </ng-template>
+          <ng-template fpcTableCell="transfer" let-row>
+            <span class="small text-nowrap"
+              ><i class="bi bi-arrow-down me-1" aria-hidden="true"></i>{{ formatBytes(row.bytesIn) }}
+              <i class="bi bi-arrow-up ms-2 me-1" aria-hidden="true"></i>{{ formatBytes(row.bytesOut) }}</span
+            >
+          </ng-template>
+          <ng-template fpcTableRowDetail let-row>
+            <div class="small font-monospace text-break">
+              @if (row.sampleUrl) {
+                <div>{{ row.sampleUrl }}</div>
+              }
+              @if (row.matchedSource) {
+                <div class="text-body-secondary">{{ row.matchedSource }}</div>
+              }
+              @if (row.message) {
+                <div class="text-body-secondary">{{ row.message }}</div>
+              }
+            </div>
+          </ng-template>
+        </fpc-data-table>
+      }
+      @case ('entity-events') {
+        <fpc-data-table
+          [ariaLabel]="entityEventsTabLabel"
+          [columns]="entityColumns"
+          [rows]="entityEvents()?.data ?? []"
+          paging="server"
+          [total]="entityEvents()?.total ?? null"
+          [(page)]="entityEventsPage"
+          [(pageSize)]="entityEventsPageSize"
+          persistKey="agenstra-audit-entity-events"
+          [query]="entityEventsSearch()"
+          (queryChange)="onEntityEventsSearchChange($event)"
+          [searchPlaceholder]="searchEntityEventsPlaceholder"
+          [loading]="(loadingEntityEvents$ | async) ?? false"
+          [rowMenu]="entityRowMenu"
+          (rowAction)="onEntityRowAction($event.row, $event.item.id)"
+          showFilterButton
+          [filtersOpen]="filtersOpen()"
+          (filtersOpenChange)="onFiltersOpenChange($event)"
+          [filtersActive]="activeFilterCount()"
+          (filtersApplied)="filterState.apply()"
+          (filtersCleared)="onResetFilters()"
+          emptyIcon="clock-history"
+          data-testid="audit-entity-events-table"
+        >
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
               size="sm"
-              [placeholder]="searchPlaceholder"
-              [ariaLabel]="searchPlaceholder"
-              [value]="egressEventsSearch()"
-              (valueChange)="onEgressEventsSearchChange($event)"
-            />
-          </div>
-          @if (loadingEgressEvents$ | async) {
-            <div class="text-center py-4">
-              <fpc-spinner size="sm" />
-            </div>
-          } @else {
-            <div class="table-responsive">
-              <table class="table table-striped table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th i18n="@@featureAudit-time">Time</th>
-                    <th i18n="@@featureAudit-agent">Agent</th>
-                    <th i18n="@@featureAudit-egressDecision">Decision</th>
-                    <th i18n="@@featureAudit-egressKind">Type</th>
-                    <th i18n="@@featureAudit-egressDestination">Destination</th>
-                    <th i18n="@@featureAudit-egressRule">Rule</th>
-                    <th i18n="@@featureAudit-egressCount">Count</th>
-                    <th i18n="@@featureAudit-egressTransfer">Transfer</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of egressEvents()?.data ?? []; track row.id) {
-                    <tr>
-                      <td>{{ formatDateTime(row.occurredAt) }}</td>
-                      <td>
-                        @if (buildAgentChatRoute(row.clientId, row.agentId); as route) {
-                          <a
-                            [routerLink]="route"
-                            [innerHTML]="resolveAgentDisplay(row)"
-                            class="text-decoration-none"
-                          ></a>
-                        } @else {
-                          <span [innerHTML]="resolveAgentDisplay(row)"></span>
-                        }
-                      </td>
-                      <td>
-                        <fpc-badge [color]="egressDecisionColor(row.decision)">{{
-                          formatEgressDecision(row.decision)
-                        }}</fpc-badge>
-                      </td>
-                      <td>{{ formatEgressKind(row.kind) }}</td>
-                      <td class="font-monospace small text-break">
-                        <div class="d-flex flex-wrap align-items-center gap-2">
-                          <span>{{ row.host ?? '-' }}</span>
-                          @if (row.method) {
-                            <span class="text-body-secondary">{{ row.method }}</span>
-                          }
-                        </div>
-                        @if (row.sampleUrl) {
-                          <div class="text-body-secondary">{{ row.sampleUrl }}</div>
-                        }
-                        @if (row.message) {
-                          <div class="text-body-secondary">{{ row.message }}</div>
-                        }
-                      </td>
-                      <td>
-                        {{ formatEgressRule(row.rule) }}
-                        @if (row.matchedEntry) {
-                          <div
-                            class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary font-monospace"
-                          >
-                            <span>{{ row.matchedEntry }}</span>
-                            @if (row.matchedSource) {
-                              <span>({{ row.matchedSource }})</span>
-                            }
-                          </div>
-                        }
-                      </td>
-                      <td>{{ row.count }}</td>
-                      <td class="small text-nowrap">
-                        <div class="d-flex align-items-center gap-3">
-                          <span
-                            ><i class="bi bi-arrow-down me-1" aria-hidden="true"></i
-                            >{{ formatBytes(row.bytesIn) }}</span
-                          >
-                          <span
-                            ><i class="bi bi-arrow-up me-1" aria-hidden="true"></i>{{ formatBytes(row.bytesOut) }}</span
-                          >
-                        </div>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr>
-                      <td colspan="8" class="text-center text-body-secondary py-3" i18n="@@featureAudit-noRows">
-                        No rows
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
-          @if (egressEvents(); as list) {
-            <div fpcPanelFooter class="d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
-              <small class="text-body-secondary" i18n="@@featureAudit-showingOf"
-                >Showing {{ list.data.length }} of {{ list.total }}</small
-              >
-              <fpc-pagination
-                size="sm"
-                [page]="egressEventsPage() + 1"
-                [totalPages]="totalPages(list.total) || 1"
-                (pageChange)="onEgressEventsPageChange($event - 1)"
-              />
-            </div>
-          }
-        </fpc-panel>
-
-        <!-- Entity Events Table -->
-        <fpc-panel [span]="3" flush title="Entity Events" i18n-title="@@featureAudit-entityEventsTable">
-          <fpc-search-field
-            fpcPanelActions
-            class="audit-table-search"
-            size="sm"
-            [placeholder]="searchPlaceholder"
-            [ariaLabel]="searchPlaceholder"
-            [value]="entityEventsSearch()"
-            (valueChange)="onEntityEventsSearchChange($event)"
-          />
-          @if (loadingEntityEvents$ | async) {
-            <div class="text-center py-4">
-              <fpc-spinner size="sm" />
-            </div>
-          } @else {
-            <div class="table-responsive">
-              <table class="table table-striped table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th i18n="@@featureAudit-time">Time</th>
-                    <th i18n="@@featureAudit-user">User</th>
-                    <th i18n="@@featureAudit-entityType">Type</th>
-                    <th i18n="@@featureAudit-entity">Entity</th>
-                    <th i18n="@@featureAudit-eventType">Event</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of entityEvents()?.data ?? []; track row.id) {
-                    <tr>
-                      <td>{{ formatDateTime(row.occurredAt) }}</td>
-                      <td>{{ resolveUserDisplay(row.originalUserId) }}</td>
-                      <td>{{ formatEntityType(row.entityType) }}</td>
-                      <td>
-                        @if (buildEntityEventRoute(row); as route) {
-                          <a
-                            [routerLink]="route"
-                            [innerHTML]="resolveEntityDisplay(row)"
-                            class="text-decoration-none"
-                          ></a>
-                        } @else {
-                          <span [innerHTML]="resolveEntityDisplay(row)"></span>
-                        }
-                      </td>
-                      <td>
-                        <fpc-badge
-                          [color]="
-                            row.eventType === 'created'
-                              ? 'success'
-                              : row.eventType === 'updated'
-                                ? 'warning'
-                                : row.eventType === 'deleted'
-                                  ? 'danger'
-                                  : 'secondary'
-                          "
-                          >{{ formatEntityEventType(row.eventType) }}</fpc-badge
-                        >
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr>
-                      <td colspan="6" class="text-center text-body-secondary py-3" i18n="@@featureAudit-noRows">
-                        No rows
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
-          @if (entityEvents(); as list) {
-            <div fpcPanelFooter class="d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
-              <small class="text-body-secondary" i18n="@@featureAudit-showingOf"
-                >Showing {{ list.data.length }} of {{ list.total }}</small
-              >
-              <fpc-pagination
-                size="sm"
-                [page]="entityEventsPage() + 1"
-                [totalPages]="totalPages(list.total) || 1"
-                (pageChange)="onEntityEventsPageChange($event - 1)"
-              />
-            </div>
-          }
-        </fpc-panel>
-      </fpc-panel-grid>
-    } @else if (!(loadingSummary$ | async) && !(error$ | async)) {
-      <fpc-empty-state message="No data yet" i18n-message="@@featureAudit-noData" />
+              icon="clock-history"
+              message="No entity events in this period"
+              i18n-message="@@featureAudit-emptyEntityEvents"
+            >
+              <p class="small text-body-secondary mb-0">{{ emptyPeriodHint }}</p>
+            </fpc-empty-state>
+          </span>
+          <ng-container ngProjectAs="[fpcDataTableFilters]" [ngTemplateOutlet]="auditPageFilters" />
+          <ng-template fpcTableCell="user" let-row>{{ resolveUserDisplay(row.originalUserId) }}</ng-template>
+          <ng-template fpcTableCell="entity" let-row>
+            @if (buildEntityEventRoute(row); as route) {
+              <a [routerLink]="route" [innerHTML]="resolveEntityDisplay(row)" class="text-decoration-none"></a>
+            } @else {
+              <span [innerHTML]="resolveEntityDisplay(row)"></span>
+            }
+          </ng-template>
+        </fpc-data-table>
+      }
     }
   </div>
 </div>
+
+<ng-template #agentCell let-row>
+  @if (buildAgentChatRoute(row.clientId, row.agentId); as route) {
+    <a [routerLink]="route" [innerHTML]="resolveAgentDisplay(row)" class="text-decoration-none"></a>
+  } @else {
+    <span [innerHTML]="resolveAgentDisplay(row)"></span>
+  }
+</ng-template>
+
+<!-- Page filters (workspace, range, grouping): one filter UI per tab, in the tab's own strip below the tabs (R11);
+     the drawer overlays the content (R12). Tables get them in their Filters drawer, Overview in its own strip. -->
+<ng-template #auditPageFilters>
+  <fpc-form-field forId="auditClientSelect" i18n-label="@@featureAudit-clientLabel" label="Workspace">
+    <framework-client-select
+      inputId="auditClientSelect"
+      [size]="'sm'"
+      [clients]="clients()"
+      [selectedClientId]="filterState.draft().client ?? ''"
+      [placeholder]="allWorkspacesPlaceholder"
+      (selectedClientIdChange)="filterState.patch({ client: $event || null })"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="auditFromDate" i18n-label="@@featureAudit-fromDateLabel" label="From">
+    <fpc-form-control
+      controlId="auditFromDate"
+      inputType="date"
+      size="sm"
+      [ngModel]="filterState.draft().from"
+      (ngModelChange)="filterState.patch({ from: $event })"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="auditToDate" i18n-label="@@featureAudit-toDateLabel" label="To">
+    <fpc-form-control
+      controlId="auditToDate"
+      inputType="date"
+      size="sm"
+      [ngModel]="filterState.draft().to"
+      (ngModelChange)="filterState.patch({ to: $event })"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="auditGroupBy" i18n-label="@@featureAudit-groupByLabel" label="Group by">
+    <fpc-form-control
+      controlType="select"
+      controlId="auditGroupBy"
+      size="sm"
+      [ngModel]="filterState.draft().groupBy"
+      (ngModelChange)="filterState.patch({ groupBy: $event })"
+    >
+      <option value="day" i18n="@@featureAudit-groupByDay">Day</option>
+      <option value="hour" i18n="@@featureAudit-groupByHour">Hour</option>
+    </fpc-form-control>
+  </fpc-form-field>
+</ng-template>

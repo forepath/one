@@ -1,0 +1,281 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="audit" [binding]="views" />
+    @if (canVerify()) {
+      <fpc-button
+        fpcPageHeaderActions
+        variant="dark"
+        size="sm"
+        [iconOnly]="true"
+        [ariaLabel]="verifyLabel"
+        [title]="verifyLabel"
+        [loading]="verifying()"
+        (clicked)="verify()"
+        data-testid="audit-verify"
+      >
+        <i class="bi bi-link-45deg" aria-hidden="true"></i>
+      </fpc-button>
+    }
+  </fpc-page-header>
+
+  @if (verification(); as v) {
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      [variant]="v.ok ? 'success' : 'danger'"
+      data-testid="audit-verification"
+    >
+      <div class="small">
+        <div class="d-flex align-items-center gap-2 fw-semibold mb-1">
+          @if (v.ok) {
+            <span i18n="@@lwConsoleAudit-chainOk">The hash chain is intact</span>
+          } @else {
+            <span i18n="@@lwConsoleAudit-chainBroken">The hash chain is broken</span>
+          }
+          @if (verifiedAt(); as at) {
+            <span class="fw-normal text-body-secondary ms-auto">{{ at | date: 'MMM d, y HH:mm:ss' }}</span>
+          }
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <span><span i18n="@@lwConsoleAudit-checked">Entries checked</span>: {{ v.checked }}</span>
+          @if (v.head) {
+            <span
+              ><span i18n="@@lwConsoleAudit-head">head</span> <span class="font-monospace">#{{ v.head }}</span></span
+            >
+          }
+          @if (v.brokenAt) {
+            <span
+              ><span i18n="@@lwConsoleAudit-brokenAt">first mismatch at</span>
+              <span class="font-monospace">#{{ v.brokenAt }}</span></span
+            >
+          }
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          @if (v.anchors.available) {
+            <span><span i18n="@@lwConsoleAudit-anchors">External anchors compared</span>: {{ v.anchors.checked }}</span>
+            @if (v.anchors.mismatched.length > 0) {
+              <span
+                ><span i18n="@@lwConsoleAudit-anchorsMismatched">rewritten after anchoring</span>:
+                <span class="font-monospace">{{ v.anchors.mismatched.join(', ') }}</span></span
+              >
+            }
+          } @else {
+            <span class="text-body-secondary" i18n="@@lwConsoleAudit-anchorsUnavailable"
+              >External anchors are not available (log store unreachable): only the chain itself was checked.</span
+            >
+          }
+        </div>
+      </div>
+    </fpc-alert>
+  }
+
+  @if (verifyError(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (exportError(); as message) {
+    <fpc-alert
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="exportError.set(null)"
+    />
+  }
+
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [columns]="columns"
+    [rows]="entries()"
+    [rowId]="rowId"
+    [searchable]="false"
+    [clientSort]="false"
+    [loading]="loading()"
+    [ariaLabel]="title"
+    [expandedRowId]="expanded()"
+    (rowActivate)="toggle($event)"
+    [filtered]="activeFilterCount() > 0 || !!filters().text"
+    paging="server"
+    [page]="page() + 1"
+    (pageChange)="onPage($event)"
+    [hasNext]="hasNext()"
+    [pageSize]="limit()"
+    (pageSizeChange)="onLimitChange($event)"
+    [pageSizes]="pageSizes"
+    persistKey="lw-audit"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    data-testid="audit-table"
+  >
+    <!-- One Export menu instead of two icon buttons (LW-05). -->
+    <fpc-dropdown fpcDataTableToolbar #exportMenu alignment="end" appendTo="body" data-testid="audit-export">
+      <fpc-button
+        fpcDropdownTrigger
+        variant="dark"
+        size="sm"
+        [iconOnly]="true"
+        ariaHaspopup="menu"
+        [ariaExpanded]="exportMenu.open()"
+        [ariaLabel]="exportLabel"
+        [title]="exportLabel"
+        [loading]="exporting()"
+      >
+        <i class="bi bi-download" aria-hidden="true"></i>
+      </fpc-button>
+      <fpc-dropdown-item icon="filetype-csv" (selected)="export('csv')" data-testid="audit-export-csv">{{
+        exportCsvLabel
+      }}</fpc-dropdown-item>
+      <fpc-dropdown-item icon="filetype-json" (selected)="export('ndjson')" data-testid="audit-export-ndjson">{{
+        exportNdjsonLabel
+      }}</fpc-dropdown-item>
+    </fpc-dropdown>
+    <fpc-list-toolbar
+      fpcDataTableHeadToolbar
+      [(open)]="filtersOpen"
+      [activeCount]="activeFilterCount()"
+      (applied)="search()"
+      (cleared)="reset()"
+      data-testid="audit-filter"
+    >
+      <fpc-search-field
+        fpcListToolbarLead
+        name="text"
+        [placeholder]="searchLabel"
+        [ariaLabel]="searchLabel"
+        [ngModel]="filters().text"
+        (ngModelChange)="onTextChange($event)"
+      />
+      <fpc-form-field forId="lw-audit-from" [label]="fromLabel">
+        <fpc-form-control
+          controlId="lw-audit-from"
+          name="from"
+          inputType="datetime-local"
+          size="sm"
+          [ngModel]="fromInput()"
+          (ngModelChange)="fromInput.set($event)"
+        />
+      </fpc-form-field>
+      <fpc-form-field forId="lw-audit-to" [label]="toLabel">
+        <fpc-form-control
+          controlId="lw-audit-to"
+          name="to"
+          inputType="datetime-local"
+          size="sm"
+          [ngModel]="toInput()"
+          (ngModelChange)="toInput.set($event)"
+        />
+      </fpc-form-field>
+      <fpc-form-field forId="lw-audit-project" [label]="placeholder('project')">
+        @if (projects().length > 0) {
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-audit-project"
+            name="project"
+            size="sm"
+            [ngModel]="filters().project"
+            (ngModelChange)="setFilter('project', $event)"
+          >
+            <option value="" i18n="@@lwConsoleAudit-allProjects">All projects</option>
+            @for (p of projects(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+            @if (filters().project && !projects().includes(filters().project)) {
+              <option [value]="filters().project">{{ filters().project }}</option>
+            }
+          </fpc-form-control>
+        } @else {
+          <fpc-form-control
+            controlId="lw-audit-project"
+            name="project"
+            size="sm"
+            [placeholder]="placeholder('project')"
+            [ngModel]="filters().project"
+            (ngModelChange)="setFilter('project', $event)"
+          />
+        }
+      </fpc-form-field>
+      <fpc-form-field forId="lw-audit-action" [label]="actionLabel">
+        <fpc-form-control
+          controlId="lw-audit-action"
+          name="action"
+          size="sm"
+          controlClass="font-monospace"
+          [placeholder]="placeholder('action')"
+          [ngModel]="filters().action"
+          (ngModelChange)="setFilter('action', $event)"
+        />
+      </fpc-form-field>
+      <fpc-form-field forId="lw-audit-actor" [label]="placeholder('actor')">
+        <fpc-form-control
+          controlId="lw-audit-actor"
+          name="actor"
+          size="sm"
+          controlClass="font-monospace"
+          [placeholder]="placeholder('actor')"
+          [ngModel]="filters().actor"
+          (ngModelChange)="setFilter('actor', $event)"
+        />
+      </fpc-form-field>
+      <fpc-form-field forId="lw-audit-target" [label]="placeholder('target')">
+        <fpc-form-control
+          controlId="lw-audit-target"
+          name="target"
+          size="sm"
+          controlClass="font-monospace"
+          [placeholder]="placeholder('target')"
+          [ngModel]="filters().target"
+          (ngModelChange)="setFilter('target', $event)"
+        />
+      </fpc-form-field>
+    </fpc-list-toolbar>
+    @if (loading()) {
+      <fpc-empty-state fpcDataTableEmpty [loading]="true" [title]="loadingLabel" />
+    } @else if (!error()) {
+      <fpc-empty-state
+        fpcDataTableEmpty
+        icon="shield"
+        i18n-title="@@lwConsoleAudit-empty"
+        title="No audit entries match"
+      />
+    }
+    <ng-template fpcTableCell="at" let-entry>
+      <!-- The shared date-time format (no seconds, not monospace, LW-05); the exact instant in the tooltip. -->
+      <span class="text-nowrap" [title]="entry.at">{{ entry.at | fpcDate: 'datetime' }}</span>
+    </ng-template>
+    <ng-template fpcTableCell="action" let-entry>
+      <span [title]="entry.action">{{ actionText(entry.action) }}</span>
+    </ng-template>
+    <ng-template fpcTableRowDetail let-entry>
+      <div data-testid="audit-entry-details">
+        <pre class="small mb-2 p-2 border rounded bg-body">{{ details(entry) }}</pre>
+        <div class="small text-body-secondary mb-2">
+          <span class="font-monospace me-2" data-testid="audit-entry-seq">#{{ entry.seq }}</span>
+        </div>
+        <div class="d-flex flex-wrap gap-3 small">
+          <a href="" (click)="$event.preventDefault(); narrow('action', entry.action)"
+            ><i class="bi bi-funnel me-1" aria-hidden="true"></i
+            ><span i18n="@@lwConsoleAudit-onlyAction">Only this action</span></a
+          >
+          <a href="" (click)="$event.preventDefault(); narrow('target', entry.target)"
+            ><i class="bi bi-funnel me-1" aria-hidden="true"></i
+            ><span i18n="@@lwConsoleAudit-onlyTarget">Only this target</span></a
+          >
+          @if (entry.actorId) {
+            <a href="" (click)="$event.preventDefault(); narrow('actor', actorFilterValue(entry))"
+              ><i class="bi bi-funnel me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleAudit-onlyActor">Only this actor</span></a
+            >
+          }
+          @if (sessionOf(entry)) {
+            <a [routerLink]="['/operate/sessions']" [queryParams]="entry.project ? { project: entry.project } : null"
+              ><i class="bi bi-record-circle me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleAudit-sessions">Terminal sessions</span></a
+            >
+          }
+        </div>
+      </div>
+    </ng-template>
+  </fpc-data-table>
+</div>

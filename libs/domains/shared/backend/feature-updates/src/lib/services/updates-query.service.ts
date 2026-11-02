@@ -24,10 +24,13 @@ export class UpdatesQueryService {
     const updateState = resolveUpdateState(installedVersion, latestVersion);
     const outdatedInstanceCount = instances.filter((instance) => instance.updateState === 'update_available').length;
 
+    const channel = this.options.resolveChannel ? await this.options.resolveChannel() : undefined;
+
     return {
       installedVersion,
       latestVersion,
       updateState,
+      ...(channel ? { channel } : {}),
       lastCheckAt: checkJobMeta?.lastCompletedAt ?? checkJobMeta?.lastTriggeredAt ?? null,
       lastCheckStatus: checkJobMeta?.lastStatus ?? 'unknown',
       instanceCount: instances.length,

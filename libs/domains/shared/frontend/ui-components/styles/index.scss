@@ -17,11 +17,26 @@
 // - utilities: `min-h-0` / `min-w-0` flex helpers used across feature templates
 // - charts: ApexCharts tooltip / slice border / grid chrome on Bootstrap tokens (light + dark)
 // - section-marketing: `.section__column--marketing` wash + brand contour pattern (auth / public pages)
+// - controls: shared control-height scale (`--fpc-control-height-sm/-md/-lg/-header`, compact steps)
+//   applied to `.btn`, `.form-control`, `.form-select`, `.input-group-text`, `.pagination`
+// - density: compact spacing on `body.fpc-density-compact` (set by `FpcDensityService`)
+// - master-detail: `.fpc-md` list | detail lanes (side by side at >= xl, one at a time below)
+// - z-index: shared layer scale (`--fpc-z-*`); see `_z-index.scss`
+// - tables: uniform head cells + `.fpc-table__sort` control; `.fpc-table--sticky-head` / `.fpc-table--sticky-foot` for plain Bootstrap tables
 // - landing: contour hero and one continuous contour field across the CTA / fit section and footer; logo strips
+// - step-strip: step lists on one row, scrolled sideways without a scrollbar (`fpcStepStrip`)
+// - prose: markdown scale (`.fpc-prose`, Milkdown Crepe editors): headings below the page title, 1 rem inset
 // Modal / sidebar-popover / icon-button chrome live on their components.
+@forward 'z-index';
+@forward 'tables';
 @forward 'scrollbar';
 @forward 'section-outlet';
 @forward 'utilities';
 @forward 'charts';
 @forward 'section-marketing';
 @forward 'landing';
+@forward 'controls';
+@forward 'density';
+@forward 'master-detail';
+@forward 'step-strip';
+@forward 'prose';

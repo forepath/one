@@ -1,0 +1,367 @@
+<!-- Hero -->
+<section id="hero" class="pt-10 pb-10 pb-md-0 py-lg-6 bg-dark text-white grid-section">
+  <div class="container hero-content grid-section__container grid-section__container--hero-top">
+    <div class="row justify-content-center">
+      <div class="col-12 text-center hero-container">
+        <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureLoadweaverRemoteAccess-heroTitle">
+          Remote access that <span class="text-primary">follows your policies</span>
+        </h1>
+        <p class="hero-lead lead fs-5 mb-5 mx-auto" i18n="@@featureLoadweaverRemoteAccess-heroLead">
+          People, machines and whole offices connect to the cluster over WireGuard and reach internal services according
+          to the policies assigned to them, so a full company can run on Loadweaver.
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
+            routerLink="/contact"
+            loadweaverEarlyAccess
+            i18n="@@featureLoadweaverRemoteAccess-heroCtaEarlyAccess"
+          >
+            <i class="bi bi-envelope-paper" aria-hidden="true"></i>Request early access
+          </fpc-button>
+          <fpc-button
+            variant="dark"
+            size="xl"
+            btnClass="rounded-3"
+            routerLink="/how-it-works"
+            fragment="policies"
+            i18n="@@featureLoadweaverRemoteAccess-heroCtaPolicies"
+          >
+            <i class="bi bi-diagram-3" aria-hidden="true"></i>The policy model
+          </fpc-button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container grid-section__container grid-section__container--hero-bottom">
+    <div class="row">
+      <div class="col-md-12 hero-illustration d-none d-md-block">
+        <loadweaver-portal-remote-access-illustration
+          label="Remote access: a laptop with good posture, a phone with an outdated OS, an office router and a CI runner connect through one endpoint to two WireGuard gateways at different sites. Each reaches only the internal service its group may use; the phone lands in a restricted group that only reaches the helpdesk."
+          i18n-label="@@featureLoadweaverRemoteAccess-heroIllustration"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Who connects -->
+<section id="clients" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverRemoteAccess-clientsTitle">
+        Users, machines and offices
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverRemoteAccess-clientsLead">
+        Every client belongs to groups in the same policy model as your workloads. Policies stay allow-only: a client
+        sees nothing unless a policy allows it.
+      </p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-person-badge text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverRemoteAccess-usersTitle">People</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-usersDesc">
+            A client is a device that belongs to a user. Identity-provider groups map to client groups, so "sales may
+            reach the CRM on 443" is just a policy.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-cpu text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverRemoteAccess-machinesTitle">Machines</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-machinesDesc">
+            CI runners, servers elsewhere and office routers connect as machine clients with their own group membership,
+            enrolled by admins.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-building text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverRemoteAccess-officesTitle">Offices</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-officesDesc">
+            Any WireGuard-capable router or firewall, such as OPNsense, pfSense, MikroTik, Fritz!Box or Linux, announces
+            its office subnets. They become a group; overlapping subnets are rejected in the plan.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Gateways, keys, routing -->
+<section id="gateways" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverRemoteAccess-connectTitle">
+        One endpoint, short-lived keys, routes from policies
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverRemoteAccess-connectLead">
+        Clients never need to know which gateway they use, keys do not live forever, and every client only gets the
+        routes its policies allow.
+      </p>
+    </div>
+    <div class="row g-3 g-lg-4 align-items-stretch">
+      <div class="col-lg-5">
+        <div class="card border rounded-3 shadow-sm overflow-hidden h-100 landing-bento-visual">
+          <div class="p-4 p-lg-5 h-100 d-flex flex-column">
+            <fpc-badge
+              color="primary"
+              class="mb-4 align-self-start"
+              i18n="@@featureLoadweaverRemoteAccess-gatewaysBadge"
+              >Gateways</fpc-badge
+            >
+            <div class="ra-endpoint flex-grow-1" aria-hidden="true">
+              <span class="ra-endpoint__host font-monospace">vpn.example.com</span>
+              <i class="bi bi-arrow-down ra-endpoint__arrow"></i>
+              <div class="ra-endpoint__gateways">
+                <span class="ra-endpoint__gateway"><i class="ra-endpoint__dot"></i>gw1 <small>fra1</small></span>
+                <span class="ra-endpoint__gateway"><i class="ra-endpoint__dot"></i>gw2 <small>ams1</small></span>
+              </div>
+            </div>
+            <h3 class="h5 fw-semibold mt-4 mb-2" i18n="@@featureLoadweaverRemoteAccess-gatewaysTitle">
+              Gateways without a single point of failure
+            </h3>
+            <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-gatewaysDesc">
+              Nodes in a vpn group act as gateways. Clients get one endpoint hostname that resolves via failover IP,
+              anycast or DNS failover, and a client's key is valid on all gateways. A gateway failure means a short
+              reconnect, not a reconfiguration, and a single gateway shows up as a pin.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5">
+          <div class="ra-list">
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-person-plus text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-enrollTitle">
+                  Self-service enrollment
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-enrollDesc">
+                  In the console, desktop app or CLI. The keypair is generated on the device where possible, so the
+                  private key never leaves it.
+                </p>
+              </div>
+            </div>
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-hourglass-split text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-keysTitle">Keys that expire</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-keysExpireDesc">
+                  For example after 30 days, renewed after a fresh sign-in with MFA, since WireGuard itself has no
+                  login.
+                </p>
+              </div>
+            </div>
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-x-octagon text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-revokeTitle">Instant revocation</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-revokeDesc">
+                  A revoked device is gone from all gateways at once, and offboarding a user in Keycloak revokes all
+                  their devices.
+                </p>
+              </div>
+            </div>
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-signpost-split text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-routingTitle">
+                  Split tunnel by default
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-splitDesc">
+                  Only the prefixes and service IPs a client's policies allow are routed, and internal names resolve
+                  through the policy-aware cluster DNS.
+                </p>
+              </div>
+            </div>
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-globe2 text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-fullTunnelTitle">
+                  Full tunnel where needed
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-fullTunnelDesc">
+                  Groups that need it send all their traffic through the cluster, past the egress proxy and egress
+                  policies.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Posture -->
+<section id="posture" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="card border rounded-3 shadow-sm overflow-hidden ra-pillar-panel card-capability-primary">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-5 p-4 p-lg-5 border-end landing-bento-visual">
+          <div class="plain-icon mb-4 mx-auto mx-lg-0" aria-hidden="true">
+            <i class="bi bi-shield-fill-check text-primary icon-xl"></i>
+          </div>
+          <h2
+            class="h3 fw-semibold mb-3 text-center text-lg-start text-body-emphasis"
+            i18n="@@featureLoadweaverRemoteAccess-postureTitle"
+          >
+            Device posture as a policy condition
+          </h2>
+          <p class="text-muted mb-4 text-center text-lg-start" i18n="@@featureLoadweaverRemoteAccess-postureLead">
+            "Finance needs an encrypted disk, an OS patched within 30 days and a low EDR risk" is a condition on a
+            client group.
+          </p>
+          <p class="small text-muted mb-0 text-center text-lg-start" i18n="@@featureLoadweaverRemoteAccess-postureSub">
+            A device that fails its posture moves into a restricted group instead of being disconnected, for example
+            with only the helpdesk and the wiki in reach, and the user sees why.
+          </p>
+        </div>
+        <div class="col-lg-7 p-4 p-lg-5 d-flex align-items-center">
+          <div class="row row-cols-1 row-cols-sm-2 g-4">
+            <div class="col">
+              <i class="bi bi-laptop text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+              <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-postureCoreTitle">Core checks</p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-postureCoreDesc">
+                Disk encryption, OS version and patch level, screen lock, OS firewall and app version, reported at
+                connect and periodically.
+              </p>
+            </div>
+            <div class="col">
+              <i class="bi bi-phone text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+              <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-postureMdmTitle">MDM</p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-postureMdmDesc">
+                Compliance state from Microsoft Intune, Jamf and Kandji, behind a posture plugin interface.
+              </p>
+            </div>
+            <div class="col">
+              <i class="bi bi-bug text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+              <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-postureEdrTitle">EDR</p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-postureEdrDesc">
+                Risk level from Microsoft Defender for Endpoint, CrowdStrike and SentinelOne.
+              </p>
+            </div>
+            <div class="col">
+              <i class="bi bi-file-earmark-lock text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+              <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-postureCertTitle">
+                Device certificates
+              </p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-postureCertDesc">
+                From your company CA, or from Loadweaver's own CA, issued at enrollment.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Visibility -->
+<section id="visibility" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="row d-flex align-items-stretch g-5">
+      <div class="col-lg-6">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverRemoteAccess-visibilityTitle">
+          alice&#64;laptop, not 10.99.0.17
+        </h2>
+        <p class="lead text-muted mb-5" i18n="@@featureLoadweaverRemoteAccess-visibilityLead">
+          Every client IP maps to a user and a device, so proxy and firewall decisions, logs and the audit trail name
+          the person behind a connection.
+        </p>
+        <div class="d-flex flex-column gap-3">
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-diagram-2 text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-mapTitle">On the map</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-mapDesc">
+                  Remote clients appear as a group at the border of the topology map, with live connections and the path
+                  trace.
+                </p>
+              </div>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-plug text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-sessionsTitle">
+                  Sessions under control
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-sessionsDesc">
+                  Admins see active sessions and disconnect or revoke a device instantly. Users see their own devices
+                  and last connections.
+                </p>
+              </div>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-bell text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverRemoteAccess-alertsTitle">Alerts</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverRemoteAccess-alertsDesc">
+                  For unusual patterns such as a new country, many denies or posture changes.
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="landing-bento-visual card border rounded-3 shadow-sm overflow-hidden h-100 card-capability-primary">
+          <div class="ra-activity-illustration landing-illustration-fill">
+            <loadweaver-portal-client-activity-illustration
+              label="Remote access in the console: active sessions named by user and device with their groups, and recent decisions that show alice on her laptop reaching the CRM, bob on his phone being blocked from the CRM by the restricted group but reaching the helpdesk, and the Berlin office reaching the intranet."
+              i18n-label="@@featureLoadweaverRemoteAccess-activityIllustration"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="py-10 bg-dark grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center py-10 px-5 shadow-sm cta-box">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureLoadweaverRemoteAccess-ctaTitle">Connect your whole company</h2>
+      <p class="lead mb-5 mx-auto cta-lead" i18n="@@featureLoadweaverRemoteAccess-ctaLead">
+        Tell us about your users, devices and offices, and we will show you how remote access on Loadweaver would look
+        for you.
+      </p>
+      <shared-contact-person brand="loadweaver" />
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/contact"
+          loadweaverEarlyAccess
+          i18n="@@featureLoadweaverRemoteAccess-ctaEarlyAccess"
+        >
+          <i class="bi bi-envelope-paper" aria-hidden="true"></i>Request early access
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/apps"
+          i18n="@@featureLoadweaverRemoteAccess-ctaApps"
+        >
+          <i class="bi bi-display" aria-hidden="true"></i>See the apps
+        </fpc-button>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,24 +1,7 @@
 <div class="section__content-wrapper atlassian-import-admin d-flex flex-column border-top">
-  <fpc-page-header [title]="pageTitle">
-    <fpc-button
-      fpcPageHeaderActions
-      variant="dark"
-      size="sm"
-      iconOnly
-      [disabled]="(loading$ | async) === true"
-      [ariaLabel]="refreshTitle"
-      [title]="refreshTitle"
-      (clicked)="refresh()"
-    >
-      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
-    </fpc-button>
-  </fpc-page-header>
+  <fpc-page-header [title]="pageTitle" />
 
-  <fpc-tab-group
-    class="d-md-none flex-shrink-0"
-    [activeId]="selectedLane()"
-    (activeIdChange)="onSelectedLaneTabChange($event)"
-  >
+  <fpc-tab-group class="flex-shrink-0" [activeId]="selectedLane()" (activeIdChange)="onSelectedLaneTabChange($event)">
     @for (lane of adminLanes; track lane) {
       <fpc-tab [id]="lane" [label]="adminLaneLabel(lane)" />
     }
@@ -55,330 +38,265 @@
     </fpc-alert>
   }
 
-  <section class="section__row flex-grow-1 atlassian-import-admin__lanes">
-    <div class="section__column d-md-flex flex-column border-end" [class.d-none]="selectedLane() !== 'connections'">
-      <div class="atlassian-import-admin__lane card h-100 border-0">
-        <fpc-lane-header flush visibility="md-up">
-          <span fpcLaneHeaderTitle>{{ adminLaneLabel('connections') }}</span>
-          <fpc-button
-            fpcLaneHeaderActions
-            variant="primary"
-            size="sm"
-            [iconOnly]="true"
-            (clicked)="openCreateConnectionModal()"
-            i18n-title="@@featureAtlassianImportAdmin-add"
-            title="Add"
-            i18n-ariaLabel="@@featureAtlassianImportAdmin-add"
-            ariaLabel="Add"
-          >
-            <i class="bi bi-plus" aria-hidden="true"></i>
-          </fpc-button>
-        </fpc-lane-header>
-        <div class="card-body d-flex flex-column flex-grow-1 overflow-hidden min-height-0 p-0">
-          <div class="d-flex d-md-none justify-content-end px-3 py-2 border-bottom">
-            <fpc-button
-              variant="primary"
-              size="sm"
-              [iconOnly]="true"
-              (clicked)="openCreateConnectionModal()"
-              i18n-title="@@featureAtlassianImportAdmin-add"
-              title="Add"
-              i18n-ariaLabel="@@featureAtlassianImportAdmin-add"
-              ariaLabel="Add"
-            >
-              <i class="bi bi-plus" aria-hidden="true"></i>
-            </fpc-button>
-          </div>
-          <fpc-search-field
-            class="border-bottom flex-shrink-0"
-            inputId="atlassianImportConnSearch"
-            name="atlassianImportConnSearch"
-            [bordered]="false"
-            [placeholder]="searchConnectionsPlaceholder"
-            [ariaLabel]="searchConnectionsLabel"
-            [(value)]="connectionsSearchQuery"
-          />
-          <div class="flex-grow-1 overflow-auto min-height-0 d-flex flex-column min-h-0">
-            @if (loading$ | async) {
-              <div class="d-flex justify-content-center p-4">
-                <fpc-spinner variant="primary" [label]="loadingConnectionsLabel" />
-              </div>
-            } @else {
-              @if (!connections().length) {
-                @if (connectionsSearchQuery().trim()) {
-                  <fpc-empty-state
-                    size="sm"
-                    icon="search"
-                    message="No search results"
-                    i18n-message="@@featureAtlassianImportAdmin-noSearchResults"
-                  />
-                } @else {
-                  <fpc-empty-state
-                    size="sm"
-                    message="No connections yet"
-                    i18n-message="@@featureAtlassianImportAdmin-noConnectionsYet"
-                  />
-                }
-              } @else {
-                <fpc-list [flush]="true">
-                  @for (c of connections(); track c.id) {
-                    <fpc-list-item>
-                      <div fpcListItemTitle class="fw-semibold text-break">
-                        {{ c.label || unnamedConnectionLabel() }}
-                      </div>
-                      <div fpcListItemMeta class="small d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                        @if (connectionHostname(c)) {
-                          <span
-                            class="me-2 text-truncate atlassian-import-admin__connection-meta"
-                            [attr.title]="c.baseUrl"
-                          >
-                            <i class="bi bi-globe me-1" aria-hidden="true"></i>{{ connectionHostname(c) }}
-                          </span>
-                        }
-                        <span
-                          class="me-2 text-truncate atlassian-import-admin__connection-meta"
-                          [attr.title]="c.accountEmail"
-                        >
-                          <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ c.accountEmail }}
-                        </span>
-                      </div>
-                      <fpc-button-group
-                        fpcListItemActions
-                        size="sm"
-                        ariaLabel="Connection actions"
-                        i18n-ariaLabel="@@featureAtlassianImportAdmin-connectionActionsAria"
-                      >
-                        <fpc-button
-                          variant="dark"
-                          size="sm"
-                          [iconOnly]="true"
-                          (clicked)="testConnection(c.id)"
-                          [disabled]="(testingConnectionId$ | async) === c.id || (saving$ | async)"
-                          title="Test connection"
-                          i18n-title="@@featureAtlassianImportAdmin-testConnectionTitle"
-                        >
-                          <i class="bi bi-lightning-charge" aria-hidden="true"></i>
-                        </fpc-button>
-                        <fpc-button
-                          variant="warning"
-                          size="sm"
-                          [iconOnly]="true"
-                          (clicked)="openEditConnection(c)"
-                          title="Edit connection"
-                          i18n-title="@@featureAtlassianImportAdmin-editConnectionTitle"
-                        >
-                          <i class="bi bi-pencil" aria-hidden="true"></i>
-                        </fpc-button>
-                        <fpc-button
-                          variant="danger"
-                          size="sm"
-                          [iconOnly]="true"
-                          (clicked)="openDeleteConnectionConfirm(c)"
-                          [disabled]="!!(deleting$ | async)"
-                          title="Delete connection"
-                          i18n-title="@@featureAtlassianImportAdmin-deleteConnectionTitle"
-                        >
-                          <i class="bi bi-trash" aria-hidden="true"></i>
-                        </fpc-button>
-                      </fpc-button-group>
-                    </fpc-list-item>
-                  }
-                </fpc-list>
-              }
-            }
-          </div>
-        </div>
-      </div>
-    </div>
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      [closeAriaLabel]="dismissAriaLabel"
+      (closed)="bulkResult.set(null)"
+      data-testid="atlassian-import-bulk-result"
+    />
+  }
 
-    <div class="section__column d-md-flex flex-column" [class.d-none]="selectedLane() !== 'configs'">
-      <div class="atlassian-import-admin__lane card h-100 border-0">
-        <fpc-lane-header flush visibility="md-up">
-          <span fpcLaneHeaderTitle>{{ adminLaneLabel('configs') }}</span>
+  @let loadingLists = (loading$ | async) === true;
+  @switch (selectedLane()) {
+    @case ('connections') {
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="adminLaneLabel('connections')"
+        [columns]="connectionColumns"
+        [rows]="connections()"
+        paging="client"
+        persistKey="agenstra-atlassian-connections"
+        [(query)]="connectionsSearchQuery"
+        [searchPlaceholder]="searchConnectionsPlaceholder"
+        [filtered]="!!connectionsSearchQuery().trim()"
+        [loading]="loadingLists && connections().length === 0"
+        selectable
+        [(selected)]="selectedConnectionIds"
+        [rowMenu]="connectionRowMenu"
+        (rowAction)="onConnectionAction($event.row, $event.item.id)"
+        (rowActivate)="openEditConnection($event)"
+        emptyIcon="plug"
+        data-testid="atlassian-connections-table"
+      >
+        <span fpcDataTableToolbar class="d-inline-flex gap-2">
           <fpc-button
-            fpcLaneHeaderActions
+            variant="dark"
+            size="sm"
+            iconOnly
+            [disabled]="(loading$ | async) === true"
+            [ariaLabel]="refreshTitle"
+            [title]="refreshTitle"
+            (clicked)="refresh()"
+          >
+            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
             variant="primary"
             size="sm"
-            [iconOnly]="true"
-            (clicked)="openCreateConfigModal()"
-            i18n-title="@@featureAtlassianImportAdmin-add"
-            title="Add"
-            i18n-ariaLabel="@@featureAtlassianImportAdmin-add"
-            ariaLabel="Add"
+            iconOnly
+            [ariaLabel]="addConnectionLabel"
+            [title]="addConnectionLabel"
+            (clicked)="openCreateConnectionModal()"
+            data-testid="atlassian-import-add"
           >
             <i class="bi bi-plus" aria-hidden="true"></i>
           </fpc-button>
-        </fpc-lane-header>
-        <div class="card-body d-flex flex-column flex-grow-1 overflow-hidden min-height-0 p-0">
-          <div class="d-flex d-md-none justify-content-end px-3 py-2 border-bottom">
-            <fpc-button
-              variant="primary"
-              size="sm"
-              [iconOnly]="true"
-              (clicked)="openCreateConfigModal()"
-              i18n-title="@@featureAtlassianImportAdmin-add"
-              title="Add"
-              i18n-ariaLabel="@@featureAtlassianImportAdmin-add"
-              ariaLabel="Add"
-            >
-              <i class="bi bi-plus" aria-hidden="true"></i>
-            </fpc-button>
-          </div>
-          <fpc-search-field
-            class="border-bottom flex-shrink-0"
-            inputId="atlassianImportCfgSearch"
-            name="atlassianImportCfgSearch"
-            [bordered]="false"
-            [placeholder]="searchConfigsPlaceholder"
-            [ariaLabel]="searchConfigsLabel"
-            [(value)]="configsSearchQuery"
+        </span>
+        <fpc-button
+          fpcDataTableBatch
+          variant="secondary"
+          size="sm"
+          [disabled]="bulkBusy()"
+          (clicked)="onBulkTestConnections()"
+          data-testid="atlassian-connections-bulk-test"
+          iconOnly
+          [ariaLabel]="testConnectionLabel"
+          [title]="testConnectionLabel"
+        >
+          <i class="bi bi-plug" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          fpcDataTableBatch
+          variant="danger"
+          size="sm"
+          [disabled]="bulkBusy()"
+          (clicked)="bulkDeleteConnectionsOpen.set(true)"
+          data-testid="atlassian-connections-bulk-delete"
+          iconOnly
+          [ariaLabel]="deleteLabel"
+          [title]="deleteLabel"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            size="sm"
+            icon="plug"
+            message="No connections yet"
+            i18n-message="@@featureAtlassianImportAdmin-noConnectionsYet"
           />
-          <div class="flex-grow-1 overflow-auto min-height-0 d-flex flex-column min-h-0">
-            @if (loading$ | async) {
-              <div class="d-flex justify-content-center p-4">
-                <fpc-spinner variant="primary" [label]="loadingConfigsLabel" />
-              </div>
-            } @else {
-              @if (!configs().length) {
-                @if (configsSearchQuery().trim()) {
-                  <fpc-empty-state
-                    size="sm"
-                    icon="search"
-                    message="No search results"
-                    i18n-message="@@featureAtlassianImportAdmin-noSearchResults"
-                  />
-                } @else {
-                  <fpc-empty-state
-                    size="sm"
-                    message="No import configs yet"
-                    i18n-message="@@featureAtlassianImportAdmin-noConfigsYet"
-                  />
-                }
-              } @else {
-                @let runningConfigId = runningConfigId$ | async;
-                @let savingActive = saving$ | async;
-                <fpc-list [flush]="true">
-                  @for (cfg of configs(); track cfg.id) {
-                    <fpc-list-item>
-                      <div fpcListItemTitle class="d-flex align-items-center gap-2">
-                        @if (cfg.enabled) {
-                          <fpc-badge color="success" i18n="@@featureAtlassianImportAdmin-badgeOn">On</fpc-badge>
-                        } @else {
-                          <fpc-badge color="secondary" i18n="@@featureAtlassianImportAdmin-badgeOff">Off</fpc-badge>
-                        }
-                        <div class="fw-semibold text-capitalize">{{ cfg.importKind }}</div>
-                      </div>
-                      <fpc-button-group
-                        fpcListItemActions
-                        size="sm"
-                        ariaLabel="Import config actions"
-                        i18n-ariaLabel="@@featureAtlassianImportAdmin-configActionsAria"
-                      >
-                        <fpc-button
-                          variant="dark"
-                          size="sm"
-                          [iconOnly]="true"
-                          [loading]="runningConfigId === cfg.id"
-                          (clicked)="runConfig(cfg.id)"
-                          [disabled]="runningConfigId === cfg.id || !!savingActive || !cfg.enabled"
-                          title="Run import now"
-                          i18n-title="@@featureAtlassianImportAdmin-runImportTitle"
-                        >
-                          @if (runningConfigId !== cfg.id) {
-                            <i class="bi bi-play-fill" aria-hidden="true"></i>
-                          }
-                        </fpc-button>
-                        <fpc-button
-                          variant="dark"
-                          size="sm"
-                          [iconOnly]="true"
-                          (clicked)="openClearMarkersConfirm(cfg)"
-                          [disabled]="(clearingMarkersId$ | async) === cfg.id"
-                          title="Clear sync markers"
-                          i18n-title="@@featureAtlassianImportAdmin-clearMarkersTitle"
-                        >
-                          <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                        </fpc-button>
-                        <fpc-button
-                          variant="warning"
-                          size="sm"
-                          [iconOnly]="true"
-                          (clicked)="openEditConfig(cfg)"
-                          title="Edit import config"
-                          i18n-title="@@featureAtlassianImportAdmin-editConfigTitle"
-                        >
-                          <i class="bi bi-pencil" aria-hidden="true"></i>
-                        </fpc-button>
-                        <fpc-button
-                          variant="danger"
-                          size="sm"
-                          [iconOnly]="true"
-                          (clicked)="openDeleteConfigConfirm(cfg)"
-                          [disabled]="!!(deleting$ | async)"
-                          title="Delete import config"
-                          i18n-title="@@featureAtlassianImportAdmin-deleteConfigTitle"
-                        >
-                          <i class="bi bi-trash" aria-hidden="true"></i>
-                        </fpc-button>
-                      </fpc-button-group>
-                      @if (cfg.importKind === 'jira') {
-                        <pre
-                          class="atlassian-import-admin__config-query small bg-body-secondary border rounded p-2"
-                        ><code class="text-body">{{ (cfg.jql ?? '').trim() ? cfg.jql : emptyFieldMarker() }}</code></pre>
-                      } @else {
-                        <pre
-                          class="atlassian-import-admin__config-query small bg-body-secondary border rounded p-2"
-                        ><code class="text-body">{{ displayConfluenceSearchCql(cfg) }}</code></pre>
-                      }
-                      <div class="small text-body-secondary d-flex flex-column gap-2">
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                          <span class="d-inline-flex align-items-center gap-1 flex-wrap text-body-secondary">
-                            <fpc-badge color="secondary" [attr.title]="connectionNameForConfig(cfg)">{{
-                              connectionNameForConfig(cfg)
-                            }}</fpc-badge>
-                            @if (cfg.importKind === 'jira') {
-                              <fpc-badge color="info">{{ cfg.jiraBoardId }}</fpc-badge>
-                            }
-                            <span class="text-body-secondary" i18n="@@featureAtlassianImportAdmin-connectionToWorkspace"
-                              >to</span
-                            >
-                            <fpc-badge color="secondary" [attr.title]="clientName(cfg.clientId)">{{
-                              clientName(cfg.clientId)
-                            }}</fpc-badge>
-                          </span>
-                        </div>
-                        <div class="d-inline-flex align-items-center gap-1 flex-wrap">
-                          @if (cfg.lastRunAt) {
-                            <span class="text-success">
-                              <i class="bi bi-clock-history me-1" aria-hidden="true"></i>
-                              <span>{{ cfg.lastRunAt | date: 'medium' }}</span>
-                            </span>
-                          } @else {
-                            <span class="text-body-secondary">
-                              <i class="bi bi-clock me-1" aria-hidden="true"></i>
-                              <span i18n="@@featureAtlassianImportAdmin-neverRun">Never run</span>
-                            </span>
-                          }
-                        </div>
-                      </div>
-                      @if (cfg.lastError) {
-                        <fpc-alert class="mt-2" variant="danger" [message]="cfg.lastError" />
-                      }
-                    </fpc-list-item>
-                  }
-                </fpc-list>
-              }
+        </span>
+      </fpc-data-table>
+    }
+    @case ('configs') {
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="adminLaneLabel('configs')"
+        [columns]="configColumns"
+        [rows]="configs()"
+        paging="client"
+        persistKey="agenstra-atlassian-configs"
+        [(query)]="configsSearchQuery"
+        [searchPlaceholder]="searchConfigsPlaceholder"
+        [filtered]="!!configsSearchQuery().trim()"
+        [loading]="loadingLists && configs().length === 0"
+        selectable
+        [(selected)]="selectedConfigIds"
+        [rowMenu]="configRowMenu"
+        (rowAction)="onConfigAction($event.row, $event.item.id)"
+        (rowActivate)="toggleConfigDetail($event.id)"
+        [expandedRowId]="expandedConfigId()"
+        emptyIcon="cloud-download"
+        data-testid="atlassian-configs-table"
+      >
+        <span fpcDataTableToolbar class="d-inline-flex gap-2">
+          <fpc-button
+            variant="dark"
+            size="sm"
+            iconOnly
+            [disabled]="(loading$ | async) === true"
+            [ariaLabel]="refreshTitle"
+            [title]="refreshTitle"
+            (clicked)="refresh()"
+          >
+            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
+            variant="primary"
+            size="sm"
+            iconOnly
+            [ariaLabel]="addConfigLabel"
+            [title]="addConfigLabel"
+            (clicked)="openCreateConfigModal()"
+            data-testid="atlassian-import-add"
+          >
+            <i class="bi bi-plus" aria-hidden="true"></i>
+          </fpc-button>
+        </span>
+        <fpc-button
+          fpcDataTableBatch
+          variant="primary"
+          size="sm"
+          [disabled]="bulkBusy() || selectedEnabledConfigs().length === 0"
+          (clicked)="onBulkRunConfigs()"
+          data-testid="atlassian-configs-bulk-run"
+          iconOnly
+          [ariaLabel]="runNowLabel"
+          [title]="runNowLabel"
+        >
+          <i class="bi bi-play-fill" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          fpcDataTableBatch
+          variant="secondary"
+          size="sm"
+          [disabled]="bulkBusy()"
+          (clicked)="onBulkSetConfigsEnabled(true)"
+          data-testid="atlassian-configs-bulk-enable"
+          iconOnly
+          [ariaLabel]="enableLabel"
+          [title]="enableLabel"
+        >
+          <i class="bi bi-toggle-on" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          fpcDataTableBatch
+          variant="secondary"
+          size="sm"
+          [disabled]="bulkBusy()"
+          (clicked)="onBulkSetConfigsEnabled(false)"
+          data-testid="atlassian-configs-bulk-disable"
+          iconOnly
+          [ariaLabel]="disableLabel"
+          [title]="disableLabel"
+        >
+          <i class="bi bi-toggle-off" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          fpcDataTableBatch
+          variant="danger"
+          size="sm"
+          [disabled]="bulkBusy()"
+          (clicked)="bulkDeleteConfigsOpen.set(true)"
+          data-testid="atlassian-configs-bulk-delete"
+          iconOnly
+          [ariaLabel]="deleteLabel"
+          [title]="deleteLabel"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            size="sm"
+            icon="cloud-download"
+            message="No import configs yet"
+            i18n-message="@@featureAtlassianImportAdmin-noConfigsYet"
+          />
+        </span>
+
+        <ng-template fpcTableCell="lastRun" let-row>
+          @if (row.lastRunAt) {
+            {{ row.lastRunAt | fpcDate: 'datetime' }}
+          } @else {
+            <span class="text-body-secondary" i18n="@@featureAtlassianImportAdmin-neverRun">Never run</span>
+          }
+        </ng-template>
+
+        <ng-template fpcTableRowDetail let-row>
+          <div class="p-3 d-flex flex-column gap-2">
+            <div class="small fw-semibold">{{ configQueryLabel(row) }}</div>
+            <pre
+              class="atlassian-import-admin__config-query small bg-body-secondary border rounded p-2"
+            ><code class="text-body">{{ configQuery(row) }}</code></pre>
+            @if (row.lastError) {
+              <fpc-alert variant="danger" [message]="row.lastError" />
             }
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
+        </ng-template>
+      </fpc-data-table>
+    }
+  }
+
+  <fpc-confirm-dialog
+    [(open)]="bulkDeleteConnectionsOpen"
+    i18n-title="@@featureAtlassianImportAdmin-bulkDeleteConnectionsTitle"
+    title="Delete connections"
+    [confirmLabel]="deleteLabel"
+    [danger]="true"
+    [busy]="bulkBusy()"
+    (confirmed)="onConfirmBulkDeleteConnections()"
+  >
+    <p class="mb-0" i18n="@@featureAtlassianImportAdmin-bulkDeleteConnectionsBody">
+      Delete the selected site connections? This cannot be undone.
+    </p>
+  </fpc-confirm-dialog>
+
+  <fpc-confirm-dialog
+    [(open)]="bulkDeleteConfigsOpen"
+    i18n-title="@@featureAtlassianImportAdmin-bulkDeleteConfigsTitle"
+    title="Delete import configs"
+    [confirmLabel]="deleteLabel"
+    [danger]="true"
+    [busy]="bulkBusy()"
+    (confirmed)="onConfirmBulkDeleteConfigs()"
+  >
+    <p class="mb-0" i18n="@@featureAtlassianImportAdmin-bulkDeleteConfigsBody">
+      Delete the selected import configs? This cannot be undone.
+    </p>
+  </fpc-confirm-dialog>
 
   <fpc-modal
+    cancelLabel="Cancel"
+    i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
     [(open)]="createConnectionModalOpen"
     i18n-title="@@featureAtlassianImportAdmin-newConnectionTitle"
-    title="New connection"
+    title="Create connection"
     size="lg"
     [closeOnBackdrop]="false"
     (closed)="onCreateConnectionModalHidden()"
@@ -435,17 +353,19 @@
         [loading]="(saving$ | async) === true"
         [disabled]="!!(saving$ | async)"
         (clicked)="submitNewConnection()"
-        i18n="@@featureAtlassianImportAdmin-create"
+        i18n="@@featureAtlassianImportAdmin-createConnectionSubmit"
       >
-        Create
+        Create connection
       </fpc-button>
     </div>
   </fpc-modal>
 
   <fpc-modal
+    cancelLabel="Cancel"
+    i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
     [(open)]="createConfigModalOpen"
     i18n-title="@@featureAtlassianImportAdmin-newConfigTitle"
-    title="New import config"
+    title="Create import config"
     size="xl"
     [closeOnBackdrop]="false"
     (closed)="onCreateConfigModalHidden()"
@@ -721,14 +641,16 @@
         [loading]="(saving$ | async) === true"
         [disabled]="!!(saving$ | async)"
         (clicked)="submitNewConfig()"
-        i18n="@@featureAtlassianImportAdmin-create"
+        i18n="@@featureAtlassianImportAdmin-createConfigSubmit"
       >
-        Create
+        Create import config
       </fpc-button>
     </div>
   </fpc-modal>
 
   <fpc-modal
+    cancelLabel="Cancel"
+    i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
     [(open)]="editConnectionModalOpen"
     i18n-title="@@featureAtlassianImportAdmin-editConnectionTitleHeading"
     title="Edit connection"
@@ -786,13 +708,19 @@
           (clicked)="submitEditConnection()"
           i18n="@@featureAtlassianImportAdmin-save"
         >
-          Save
+          Save changes
         </fpc-button>
       </div>
     }
   </fpc-modal>
 
-  <fpc-modal [(open)]="editConfigModalOpen" size="lg" (closed)="onEditConfigModalHidden()">
+  <fpc-modal
+    cancelLabel="Cancel"
+    i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
+    [(open)]="editConfigModalOpen"
+    size="lg"
+    (closed)="onEditConfigModalHidden()"
+  >
     @if (configToEdit; as cfg) {
       <span fpcModalTitle i18n="@@featureAtlassianImportAdmin-editConfigHeading">
         Edit import config ({{ cfg.importKind }})
@@ -1046,7 +974,7 @@
           (clicked)="submitEditConfig()"
           i18n="@@featureAtlassianImportAdmin-save"
         >
-          Save
+          Save changes
         </fpc-button>
       </div>
     }

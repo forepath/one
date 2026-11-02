@@ -33,6 +33,7 @@ import {
   type OfferLineTotals,
   type PricingTotalsSummary,
 } from './admin-offer-totals.util';
+import { BillingAdminPromotionSelectComponent } from '../billing-admin-promotion-select/billing-admin-promotion-select.component';
 import { PlanOrderConfiguratorComponent } from '../plan-order-configurator/plan-order-configurator.component';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import {
@@ -41,6 +42,7 @@ import {
   FpcFormCheckGroupComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
+  FpcListHeaderComponent,
 } from '@forepath/shared/frontend/ui-components';
 
 import type { PricingTotalsLeadingRow } from '../pricing-totals-summary/pricing-totals.util';
@@ -51,6 +53,7 @@ import type { PricingTotalsLeadingRow } from '../pricing-totals-summary/pricing-
   imports: [
     CommonModule,
     FormsModule,
+    BillingAdminPromotionSelectComponent,
     PlanOrderConfiguratorComponent,
     PricingTotalsSummaryComponent,
     FpcButtonComponent,
@@ -58,6 +61,7 @@ import type { PricingTotalsLeadingRow } from '../pricing-totals-summary/pricing-
     FpcFormCheckGroupComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
+    FpcListHeaderComponent,
   ],
   templateUrl: './admin-offer-line-editor.component.html',
 })
@@ -145,6 +149,18 @@ export class AdminOfferLineEditorComponent implements OnInit, OnChanges {
       default:
         return $localize`:@@featureAdminOffers-lineTypeStandard:Generic`;
     }
+  }
+
+  lineTitle(lineIndex: number): string {
+    return $localize`:@@featureAdminOffers-lineTitle:Line ${lineIndex + 1}:position:`;
+  }
+
+  /**
+   * Per-line totals only add information when there are several lines or the line has its own
+   * breakdown (plan template); otherwise they repeat the modal's totals block (DB-09).
+   */
+  showLineSummary(line: OfferFormLineItem, lineIndex: number): boolean {
+    return this.lines.length > 1 || this.lineLeadingRows(line, lineIndex).length > 0;
   }
 
   planLabel(plan: ServicePlanResponse): string {

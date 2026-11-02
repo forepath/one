@@ -74,4 +74,38 @@ describe('changelog-scope.parser', () => {
     expect(scoped.product).toHaveLength(1);
     expect(scoped.shared).toHaveLength(1);
   });
+
+  it('scopes Loadweaver entries like the other products', () => {
+    const entries = parseChangelogMarkdown(
+      '* feat(loadweaver): update rollout\n* loadweaver console updates\n* feat(agenstra): x',
+    );
+
+    expect(entries.map((e) => e.product)).toEqual(['loadweaver', 'loadweaver', 'agenstra']);
+    expect(scopeChangelogEntries(entries, 'loadweaver').product).toHaveLength(2);
+    expect(filterChangelogForProduct(entries, 'agenstra').product).toHaveLength(1);
+  });
+  it('classifies release-tool bold scopes; other products never land in shared (2026-10-29)', () => {
+    const entries = parseChangelogMarkdown(
+      [
+        '### Features',
+        '* **agenstra:** gvisor isolation ([#695](https://x))',
+        '* **loadweaver:** secrets page',
+        '* **shared:** reworked readme',
+        '* **forepath:** industry landingpages',
+        '* **deps:** bump actions',
+        '* unified page styling',
+        '* forepath landingpage hardware rental',
+        '### ⚠ BREAKING CHANGES',
+        '* fix(agenstra): log storm',
+      ].join('\n'),
+    );
+    const scoped = filterChangelogForProduct(entries, 'loadweaver');
+
+    expect(scoped.product.map((e) => e.text)).toEqual(['**loadweaver:** secrets page']);
+    expect(scoped.shared.map((e) => e.text)).toEqual([
+      '**shared:** reworked readme',
+      '**deps:** bump actions',
+      'unified page styling',
+    ]);
+  });
 });

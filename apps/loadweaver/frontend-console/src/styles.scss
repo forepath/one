@@ -1,0 +1,49 @@
+// Loadweaver design system (Bootstrap 5 overrides via shared FPC brands)
+//
+// Stack: functions → brands/loadweaver/palette → brands/chrome → brands/badge-tint → bootstrap → FPC styles → brands extras
+@import 'bootstrap/scss/functions';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/loadweaver/palette';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/chrome';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/badge-tint';
+
+@import 'bootstrap/scss/bootstrap';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/extras';
+@import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/loadweaver/extras';
+
+@import 'bootstrap/scss/bootstrap-grid';
+@import 'bootstrap-icons/font/bootstrap-icons';
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';
+@import 'monaco';
+
+.status-badge {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 0.625rem;
+  font-size: 0.75rem;
+  color: var(--bs-white);
+}
+
+// Active rows sit on the gold primary: badges inside them use dark ink, never gold on white.
+.list-group-item.active {
+  .status-badge {
+    background-color: var(--bs-white) !important;
+    color: var(--bs-dark) !important;
+  }
+
+  fpc-badge.fpc-badge--info {
+    background-color: var(--bs-primary-dark) !important;
+    color: var(--bs-dark) !important;
+  }
+}
+
+// Feed titles (needs attention, LW-19): up to two lines inside a table cell / stacked card, then an ellipsis.
+.lw-feed-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

@@ -17,6 +17,7 @@ import {
   viewChild,
 } from '@angular/core';
 
+import { fpcFocusFromKeyboard } from '../focus-origin/focus-origin';
 import { FpcSpinnerComponent } from '../spinner/spinner.component';
 
 export type FpcTypeaheadSelectSize = 'sm' | 'md';
@@ -55,7 +56,11 @@ export type FpcTypeaheadSelectVariant = 'menu' | 'inline';
       <ng-content select="[fpcTypeaheadSelection]" />
     </div>
 
-    <div #anchor class="input-group fpc-typeahead-select__input-group border rounded">
+    <div
+      #anchor
+      class="input-group fpc-typeahead-select__input-group border rounded"
+      [class.fpc-field-kbd-focus]="keyboardFocus()"
+    >
       <i class="bi bi-search" aria-hidden="true"></i>
       <input
         type="text"
@@ -73,6 +78,7 @@ export type FpcTypeaheadSelectVariant = 'menu' | 'inline';
         [value]="query()"
         (input)="onInput($event)"
         (focus)="onFocus()"
+        (blur)="keyboardFocus.set(false)"
         (keydown.escape)="close()"
       />
       @if (loading()) {
@@ -128,7 +134,7 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
 
   readonly query = model('');
   readonly open = model(false);
-  readonly placeholder = input<string | null>('Start typing...');
+  readonly placeholder = input<string | null>('Start typing');
   readonly ariaLabel = input<string | null>(null);
   readonly clearAriaLabel = input('Clear selection');
   readonly inputId = input<string | null>(null);
@@ -231,7 +237,11 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
     this.open.set(true);
   }
 
+  /** Focused by keyboard (Tab): the one focus ring around the whole field; never on mouse focus. */
+  protected readonly keyboardFocus = signal(false);
+
   protected onFocus(): void {
+    this.keyboardFocus.set(fpcFocusFromKeyboard());
     if (this.openOnFocus() && !this.disabled()) {
       this.open.set(true);
     }

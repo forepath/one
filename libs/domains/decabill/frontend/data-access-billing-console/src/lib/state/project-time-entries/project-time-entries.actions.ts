@@ -6,14 +6,14 @@ import type {
   UpdateProjectTimeEntryDto,
 } from '../../types/projects.types';
 
-export const loadProjectTimeEntries = createAction('[ProjectTimeEntries] Load', props<{ projectId: string }>());
-export const loadProjectTimeEntriesBatch = createAction(
-  '[ProjectTimeEntries] Load Batch',
-  props<{ projectId: string; offset: number; accumulatedEntries: ProjectTimeEntryResponse[] }>(),
+/** One page of a project's time entries (replace-page; 1-based page, `BILLING_LIST_PAGE_SIZE` by default). */
+export const loadProjectTimeEntries = createAction(
+  '[ProjectTimeEntries] Load',
+  props<{ projectId: string; page?: number; pageSize?: number; search?: string }>(),
 );
 export const loadProjectTimeEntriesSuccess = createAction(
   '[ProjectTimeEntries] Load Success',
-  props<{ entries: ProjectTimeEntryResponse[] }>(),
+  props<{ entries: ProjectTimeEntryResponse[]; total: number }>(),
 );
 export const loadProjectTimeEntriesFailure = createAction(
   '[ProjectTimeEntries] Load Failure',

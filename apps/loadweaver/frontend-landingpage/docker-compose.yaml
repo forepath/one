@@ -1,0 +1,20 @@
+services:
+  frontend-landingpage-server:
+    image: ghcr.io/forepath/loadweaver-landingpage-server:latest
+    pull_policy: never
+    container_name: ${LANDINGPAGE_SERVER_CONTAINER_NAME:-loadweaver-landingpage-server}
+    environment:
+      # Frontend server configuration
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-4600}
+      NODE_ENV: ${NODE_ENV:-production}
+      DEFAULT_LOCALE: ${DEFAULT_LOCALE:-en}
+    ports:
+      - '${PORT:-4600}:${PORT:-4600}'
+    networks:
+      - landingpage-network
+    restart: unless-stopped
+
+networks:
+  landingpage-network:
+    driver: bridge

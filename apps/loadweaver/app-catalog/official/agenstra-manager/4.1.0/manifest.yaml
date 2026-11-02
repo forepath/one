@@ -1,0 +1,135 @@
+apiVersion: apps.loadweaver.com/v1
+name: agenstra-manager
+version: 4.1.0
+title: Agenstra Manager
+description: >-
+  The Agenstra agent manager with Loadweaver as its runtime: every agent environment becomes a Loadweaver deployment in
+  this project, isolated in gVisor, gVisor on KVM or a microVM, with egress filtered by the cluster's node proxies.
+  Connect it to an Agenstra controller (the Agenstra Controller app or Agenstra Cloud).
+publisher: ForePath
+license: AGPL-3.0-or-later
+homepage: https://agenstra.com
+docs: https://github.com/forepath/one/blob/main/docs/loadweaver/guides/agenstra-on-loadweaver.md
+channels: [stable]
+minLoadweaver: 1.0.0
+parameters:
+  type: object
+  properties:
+    domain:
+      type: string
+      title: Domain
+      description: Hostname the Agenstra controller reaches this manager on (only the controller-facing routes are exposed).
+      pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$'
+      examples: [agents.example.com]
+    loadweaverUrl:
+      type: string
+      title: Loadweaver API URL
+      description: URL of this cluster's control plane, as the manager reaches it.
+      pattern: '^https://[^\s"]+$'
+      examples: [https://loadweaver.example.com]
+    loadweaverProject:
+      type: string
+      title: Workspace project
+      description: The project this app is installed into; agent environments are created here.
+      pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'
+      examples: [agenstra-acme]
+    corsOrigin:
+      type: string
+      title: Allowed browser origins
+      description: Comma-separated origins of the Agenstra console (empty = no browser access).
+      default: ''
+    environmentVolumeSize:
+      type: string
+      title: Environment volume size
+      default: 20g
+      pattern: '^[0-9]+(k|m|g|t|Ki|Mi|Gi|Ti)?$'
+    sandboxKvmEnabled:
+      type: boolean
+      title: Offer gVisor on KVM
+      default: true
+    microvmEnabled:
+      type: boolean
+      title: Offer microVM environments
+      default: true
+    microvmCpus:
+      type: integer
+      title: MicroVM CPUs
+      default: 2
+      minimum: 1
+      maximum: 32
+    microvmMemory:
+      type: string
+      title: MicroVM memory
+      default: 2g
+      pattern: '^[0-9]+[mg]$'
+    bundlePostgres:
+      type: boolean
+      title: Bundled Postgres
+      description: Run Postgres as part of the app. Off = connect to an existing database.
+      default: true
+    dbHost:
+      type: string
+      title: Database host
+      default: postgres
+    dbPort:
+      type: integer
+      title: Database port
+      default: 5432
+      minimum: 1
+      maximum: 65535
+    dbUser:
+      type: string
+      title: Database user
+      default: agenstra
+      pattern: '^[a-z_][a-z0-9_]{0,62}$'
+    dbName:
+      type: string
+      title: Database name
+      default: agenstra
+      pattern: '^[a-z_][a-z0-9_]{0,62}$'
+    postgresVolumeSize:
+      type: string
+      title: Postgres volume size
+      default: 10g
+      pattern: '^[0-9]+(k|m|g|t|Ki|Mi|Gi|Ti)?$'
+  required: [domain, loadweaverUrl, loadweaverProject]
+secrets:
+  - name: db-password
+    description: Postgres password of the database user (bundled Postgres is initialised with it).
+  - name: encryption-key
+    description: 'AES-256-GCM key for encrypted columns: base64 of 32 random bytes (`openssl rand -base64 32`).'
+  - name: static-api-key
+    description: API key the Agenstra controller authenticates with (random, e.g. `openssl rand -hex 32`).
+  - name: agent-context-token-secret
+    description: Signs the per-agent context MCP tokens (random, e.g. `openssl rand -hex 32`).
+  - name: loadweaver-token
+    description: >-
+      Personal access token of a project operator in this project, scopes projects:read resources:read plans:create
+      plans:apply secrets:write logs:read metrics:read live:access live:exec.
+dependencies:
+  - name: postgres
+    title: PostgreSQL 16
+    bundled:
+      parameter: bundlePostgres
+      services: [postgres]
+      volumes: [postgres-data]
+    provided:
+      parameters: [dbHost, dbPort, dbUser, dbName]
+backups:
+  - name: database
+    schedule: '0 2 * * *'
+    volumes: [postgres-data]
+    retention: 14d
+    description: Nightly Postgres backup (pg_dump hook, app-consistent).
+healthChecks:
+  - service: api
+    type: http
+    port: 3000
+    path: /api/health
+    interval: 30s
+    timeout: 10s
+  - service: postgres
+    type: command
+    command: [pg_isready]
+# The manager migrates its database on start-up; version-specific update steps go here.
+migrations: []

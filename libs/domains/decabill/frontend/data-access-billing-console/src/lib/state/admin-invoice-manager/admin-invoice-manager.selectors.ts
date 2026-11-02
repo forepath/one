@@ -41,17 +41,11 @@ export const selectAdminInvoiceManagerActionLoading = createSelector(
 
 export const selectAdminInvoiceManagerError = createSelector(selectAdminInvoiceManagerState, (state) => state.error);
 
-export const selectAdminInvoiceManagerHasMore = createSelector(
-  selectAdminInvoiceManagerState,
-  (state) => state.hasMore,
-);
+export const selectAdminInvoiceManagerTotal = createSelector(selectAdminInvoiceManagerState, (state) => state.total);
 
-export const selectAdminInvoiceManagerAppendLoading = createSelector(
-  selectAdminInvoiceManagerState,
-  (state) => state.appendLoading,
-);
+export const selectAdminInvoiceManagerPage = createSelector(selectAdminInvoiceManagerState, (state) => state.page);
 
-export const selectAdminInvoiceManagerAppendError = createSelector(
+export const selectAdminInvoiceManagerPageSize = createSelector(
   selectAdminInvoiceManagerState,
-  (state) => state.appendError,
+  (state) => state.pageSize,
 );

@@ -289,12 +289,19 @@
                       >decabill.com <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i
                     ></span>
                   </a>
-                  <div class="portal-nav-product portal-nav-product--loadweaver" aria-disabled="true">
+                  <a
+                    href="https://loadweaver.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    role="menuitem"
+                    class="portal-nav-product portal-nav-product--loadweaver"
+                    (click)="closeMobileMenu()"
+                  >
                     <span class="portal-nav-product__head">
                       <img src="assets/images/products/loadweaver.svg" alt="" class="portal-nav-product__icon" />
                       <span class="portal-nav-product__name">Loadweaver</span>
                       <span class="portal-nav-product__badge" i18n="@@featureForepath-navLoadweaverBadge"
-                        >Coming soon</span
+                        >Early access</span
                       >
                     </span>
                     <span class="portal-nav-product__tagline" i18n="@@featureForepath-navLoadweaverCaption"
@@ -311,10 +318,10 @@
                         >Ingress that fails over on its own</span
                       >
                     </span>
-                    <span class="portal-nav-product__link portal-nav-product__link--disabled"
+                    <span class="portal-nav-product__link"
                       >loadweaver.com <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i
                     ></span>
-                  </div>
+                  </a>
                 </div>
               </fpc-dropdown>
             </li>
@@ -471,9 +478,13 @@
             >
           </li>
           <li class="mb-2">
-            <span class="footer-link footer-link--disabled small" aria-disabled="true"
-              >Loadweaver
-              <span class="footer-link__badge" i18n="@@featureForepath-footerLoadweaverSoon">Coming soon</span></span
+            <a
+              href="https://loadweaver.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-decoration-none footer-link footer-link--badged small"
+              ><span i18n="@@featureForepath-footerLoadweaverLink">Loadweaver</span>
+              <span class="footer-link__badge" i18n="@@featureForepath-footerLoadweaverSoon">Early access</span></a
             >
           </li>
         </ul>

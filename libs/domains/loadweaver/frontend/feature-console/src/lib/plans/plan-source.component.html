@@ -1,0 +1,104 @@
+@if (source(); as s) {
+  @if (compact()) {
+    <span class="d-inline-flex align-items-center gap-1" data-testid="plan-source">
+      <fpc-badge [color]="s.kind === 'git' ? 'dark' : 'light'" size="sm"
+        ><i class="bi {{ icon[s.kind] }} me-1" aria-hidden="true"></i>{{ label(s.kind) }}</fpc-badge
+      >
+      @if (s.kind === 'git' && s.commit) {
+        <span class="font-monospace">{{ shortSha(s.commit) }}</span>
+        @if (s.ref) {
+          <span class="font-monospace">{{ shortRef(s.ref) }}</span>
+        }
+        @if (s.pr) {
+          <span>#{{ s.pr }}</span>
+        }
+      }
+      @if (s.pullRequests?.length) {
+        <fpc-badge color="primary" size="sm" [pill]="true"
+          ><i class="bi bi-git me-1" aria-hidden="true"></i
+          ><span i18n="@@lwConsoleGitPlanSource-viaPr">via pull request</span></fpc-badge
+        >
+      }
+      @if (s.supersededBy) {
+        <fpc-badge color="secondary" size="sm" [pill]="true" i18n="@@lwConsoleGitPlanSource-supersededBadge"
+          >superseded</fpc-badge
+        >
+      }
+    </span>
+  } @else {
+    <span class="d-inline-flex flex-wrap align-items-center gap-2" data-testid="plan-source">
+      <fpc-badge [color]="s.kind === 'git' ? 'dark' : 'light'" size="sm"
+        ><i class="bi {{ icon[s.kind] }} me-1" aria-hidden="true"></i>{{ label(s.kind) }}</fpc-badge
+      >
+      @if (s.kind === 'git') {
+        @if (s.commit) {
+          <span>
+            <span i18n="@@lwConsoleGitPlanSource-commit">Commit</span>
+            @if (commitUrl(); as url) {
+              <a class="font-monospace ms-1" [href]="url" target="_blank" rel="noopener noreferrer">{{
+                shortSha(s.commit)
+              }}</a>
+            } @else {
+              <span class="font-monospace ms-1">{{ shortSha(s.commit) }}</span>
+            }
+            @if (s.ref) {
+              <span class="font-monospace text-body-secondary ms-1">{{ shortRef(s.ref) }}</span>
+            }
+          </span>
+        }
+        @if (s.pr) {
+          @if (prUrl(); as url) {
+            <a [href]="url" target="_blank" rel="noopener noreferrer" data-testid="plan-source-pr"
+              ><i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleGitPlanSource-pr">Pull request #{{ s.pr }}</span></a
+            >
+          } @else {
+            <span i18n="@@lwConsoleGitPlanSource-prPlain">Pull request #{{ s.pr }}</span>
+          }
+        } @else if (prUrl(); as url) {
+          <a [href]="url" target="_blank" rel="noopener noreferrer" data-testid="plan-source-pr"
+            ><i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
+            ><span i18n="@@lwConsoleGitPlanSource-prLink">Pull request</span></a
+          >
+        }
+        @if (s.limited) {
+          <fpc-badge color="light" size="sm" data-testid="plan-source-limited"
+            ><span i18n="@@lwConsoleGitPlanSource-limited">limited to {{ s.limited }}</span></fpc-badge
+          >
+        }
+        @if (s.connection) {
+          <a [routerLink]="['/delivery/git', s.connection]" i18n="@@lwConsoleGitPlanSource-connection"
+            >Git connection</a
+          >
+        }
+      }
+      <!-- The commit author for Git plans; a UI / API plan's author is "Planned by" on the Details tab (no raw ids). -->
+      @if (s.author && s.kind === 'git') {
+        <span class="text-break"><i class="bi bi-person me-1" aria-hidden="true"></i>{{ s.author }}</span>
+      }
+      @if (s.supersedes) {
+        <span data-testid="plan-source-supersedes"
+          ><span i18n="@@lwConsoleGitPlanSource-supersedes">Supersedes plan</span>
+          <a [routerLink]="['/activity/plans', s.supersedes]" class="font-monospace ms-1">{{
+            shortId(s.supersedes)
+          }}</a></span
+        >
+      }
+      @if (s.supersededBy) {
+        <span data-testid="plan-source-superseded-by"
+          ><span i18n="@@lwConsoleGitPlanSource-supersededBy">Superseded by plan</span>
+          <a [routerLink]="['/activity/plans', s.supersededBy]" class="font-monospace ms-1">{{
+            shortId(s.supersededBy)
+          }}</a></span
+        >
+      }
+      @if (s.authors?.length) {
+        <span class="text-body-secondary text-break" data-testid="plan-source-authors"
+          ><i class="bi bi-person-x me-1" aria-hidden="true"></i
+          ><span i18n="@@lwConsoleGitPlanSource-authors">The change's authors can't approve it:</span>
+          <span class="font-monospace ms-1">{{ s.authors!.join(', ') }}</span></span
+        >
+      }
+    </span>
+  }
+}

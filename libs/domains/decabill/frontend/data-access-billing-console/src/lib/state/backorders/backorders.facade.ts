@@ -2,7 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
-import type { BackorderCancelDto, BackorderRetryDto, BackorderResponse, ListParams } from '../../types/billing.types';
+import type {
+  BackorderCancelDto,
+  BackorderRetryDto,
+  BackorderResponse,
+  BackordersListParams,
+} from '../../types/billing.types';
 
 import { cancelBackorder, clearSelectedBackorder, loadBackorders, retryBackorder } from './backorders.actions';
 import {
@@ -12,6 +17,7 @@ import {
   selectBackordersCount,
   selectBackordersEntities,
   selectBackordersError,
+  selectBackordersHasMore,
   selectBackordersLoading,
   selectBackordersLoadingAny,
   selectBackordersRetrying,
@@ -74,7 +80,13 @@ export class BackordersFacade {
     return this.store.select(selectPendingBackorders);
   }
 
-  loadBackorders(params?: ListParams): void {
+  /** Whether a page after the loaded one exists (array API: one extra row was requested). */
+  getBackordersHasMore$(): Observable<boolean> {
+    return this.store.select(selectBackordersHasMore);
+  }
+
+  /** One page of backorders (replace-page; `limit` = page size, `offset` = page start; first 25 by default). */
+  loadBackorders(params?: BackordersListParams): void {
     this.store.dispatch(loadBackorders({ params }));
   }
 

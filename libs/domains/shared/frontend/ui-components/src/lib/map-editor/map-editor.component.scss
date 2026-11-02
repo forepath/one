@@ -1,0 +1,81 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.fpc-map-editor__head,
+.fpc-map-editor__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 2rem;
+  gap: 0.375rem;
+  align-items: center;
+}
+
+.fpc-map-editor__head {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+.fpc-map-editor__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.fpc-map-editor__error {
+  grid-column: 1 / -1;
+  margin-top: -0.125rem;
+}
+
+// Quiet square remove (the list editor's row action).
+.fpc-map-editor__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: var(--bs-secondary-color);
+  background: transparent;
+  border: 0;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-danger-text-emphasis);
+    background-color: var(--bs-tertiary-bg);
+  }
+}
+
+.fpc-map-editor__add {
+  align-self: flex-start;
+  color: var(--bs-body-color);
+  background-color: var(--bs-tertiary-bg);
+  border: var(--bs-border-width) dashed var(--bs-border-color);
+
+  &:hover {
+    border-color: var(--bs-primary);
+  }
+}
+
+@media (max-width: 575.98px) {
+  // Phones: key above value, remove beside the key.
+  .fpc-map-editor__head {
+    display: none;
+  }
+
+  .fpc-map-editor__row {
+    grid-template-columns: minmax(0, 1fr) 2rem;
+
+    > input:nth-of-type(2) {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    > .fpc-map-editor__remove {
+      grid-column: 2;
+      grid-row: 1;
+    }
+  }
+}

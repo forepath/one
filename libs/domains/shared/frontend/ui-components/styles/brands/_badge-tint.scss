@@ -19,3 +19,15 @@ $fpc-badge-text-bg-colors: primary, secondary, success, info, warning, danger, l
 @each $color-name in $fpc-badge-text-bg-colors {
   @include fpc-badge-text-bg-tint($color-name);
 }
+
+// Neutral tone in dark mode (DB-30, 2026-10-29): the 24 % secondary tint on the dark tertiary surface left grey text on
+// a near-black fill with an edge that vanished into the row ("Low" priority). Dark mode mixes the neutral grey ink
+// (not the brand-tinted secondary) into the fill and edge, and uses the body ink for the label.
+[data-bs-theme='dark'] .badge {
+  &.bg-secondary,
+  &.text-bg-secondary {
+    background-color: color-mix(in srgb, var(--bs-secondary-color) 22%, var(--bs-tertiary-bg)) !important;
+    color: var(--bs-body-color) !important;
+    border-color: color-mix(in srgb, var(--bs-secondary-color) 45%, var(--bs-tertiary-bg)) !important;
+  }
+}

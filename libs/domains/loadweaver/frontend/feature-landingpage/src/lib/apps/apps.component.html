@@ -1,0 +1,260 @@
+<!-- Hero -->
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white grid-section">
+  <div class="container hero-content grid-section__container">
+    <div class="row justify-content-center">
+      <div class="col-12 text-center hero-container">
+        <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureLoadweaverApps-heroTitle">
+          Your cluster on <span class="text-primary">every screen</span>, and in every terminal
+        </h1>
+        <p class="hero-lead lead fs-5 mb-5 mx-auto" i18n="@@featureLoadweaverApps-heroLead">
+          The web console is the center. Around it: a code-signed desktop app with its own VPN tunnel, mobile apps for
+          alerts and approvals on the go, a CLI for scripts and pipelines, and an MCP server for your agents.
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
+            routerLink="/contact"
+            loadweaverEarlyAccess
+            i18n="@@featureLoadweaverApps-heroCtaEarlyAccess"
+          >
+            <i class="bi bi-envelope-paper" aria-hidden="true"></i>Request early access
+          </fpc-button>
+          <fpc-button
+            variant="dark"
+            size="xl"
+            btnClass="rounded-3"
+            routerLink="/remote-access"
+            i18n="@@featureLoadweaverApps-heroCtaRemote"
+          >
+            <i class="bi bi-person-lock" aria-hidden="true"></i>Remote access
+          </fpc-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Desktop -->
+<section id="desktop" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="row d-flex align-items-stretch g-5">
+      <div class="col-lg-6">
+        <ul class="list-unstyled d-flex flex-wrap gap-2 mb-3">
+          <li><fpc-badge color="primary">Linux</fpc-badge></li>
+          <li><fpc-badge color="primary">macOS</fpc-badge></li>
+          <li><fpc-badge color="primary">Windows</fpc-badge></li>
+        </ul>
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverApps-desktopTitle">
+          Loadweaver Desktop
+        </h2>
+        <p class="lead text-muted mb-5" i18n="@@featureLoadweaverApps-desktopLead">
+          The console as a native app, with the fleet view, OS notifications for alerts, and terminals and tunnels one
+          click away. It runs your VPN tunnel too.
+        </p>
+        <div class="d-flex flex-column gap-3">
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-shield-lock text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverApps-desktopTunnelTitle">OS-native WireGuard</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverApps-desktopTunnelDesc">
+                  Kernel WireGuard on Linux, wireguard-nt on Windows and WireGuardKit in a Network Extension on macOS.
+                  No own crypto.
+                </p>
+              </div>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-person-check text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverApps-desktopPostureTitle">
+                  Enrollment and posture
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverApps-desktopPostureDesc">
+                  Enrollment, key renewal after sign-in and posture reports, plus a view of the services you may reach.
+                </p>
+              </div>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-patch-check text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverApps-desktopSignedTitle">Code-signed</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverApps-desktopSignedDesc">
+                  Apple Developer ID with notarization, Windows Authenticode, and signed apt and rpm repositories on
+                  Linux, with checksums on top.
+                </p>
+              </div>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-arrow-repeat text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureLoadweaverApps-desktopUpdatesTitle">Verified updates</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverApps-desktopUpdatesDesc">
+                  In-app updates on stable and beta channels, verified by signature and manifest before install, and
+                  never silently downgraded.
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="landing-bento-visual card border rounded-3 shadow-sm overflow-hidden h-100 card-capability-primary">
+          <div class="apps-desktop-illustration landing-illustration-fill">
+            <loadweaver-portal-desktop-tunnel-illustration
+              label="Loadweaver Desktop with a connected tunnel through gateway gw1, company sign-in, a device key that renews after sign-in, passed posture checks and the internal services the user's policies allow."
+              i18n-label="@@featureLoadweaverApps-desktopIllustration"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mobile -->
+<section id="mobile" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="card border rounded-3 shadow-sm overflow-hidden apps-pillar-panel card-capability-primary">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-5 p-4 p-lg-5 border-end landing-bento-visual">
+          <ul class="list-unstyled d-flex flex-wrap gap-2 mb-4 justify-content-center justify-content-lg-start">
+            <li><fpc-badge color="primary">iOS</fpc-badge></li>
+            <li><fpc-badge color="primary">Android</fpc-badge></li>
+          </ul>
+          <div class="plain-icon mb-4 mx-auto mx-lg-0" aria-hidden="true">
+            <i class="bi bi-phone-fill text-primary icon-xl"></i>
+          </div>
+          <h2
+            class="h3 fw-semibold mb-3 text-center text-lg-start text-body-emphasis"
+            i18n="@@featureLoadweaverApps-mobileTitle"
+          >
+            Loadweaver for phones and tablets
+          </h2>
+          <p class="text-muted mb-4 text-center text-lg-start" i18n="@@featureLoadweaverApps-mobileLead">
+            The console in a mobile layout: the overview and the needs-attention inbox, alerts as push notifications,
+            approvals on the go, logs and the map.
+          </p>
+          <p class="small text-muted mb-0 text-center text-lg-start" i18n="@@featureLoadweaverApps-mobileSub">
+            Available in the App Store and Google Play, and through managed distribution with Intune, Jamf or Kandji.
+          </p>
+        </div>
+        <div class="col-lg-7 p-4 p-lg-5 d-flex align-items-center">
+          <div class="row row-cols-1 row-cols-sm-3 g-4">
+            <div class="col">
+              <i class="bi bi-bell text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+              <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverApps-mobileAlertsTitle">
+                Alerts and approvals
+              </p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverApps-mobileAlertsDesc">
+                Push notifications when something needs attention, and approvals for plans wherever you are.
+              </p>
+            </div>
+            <div class="col">
+              <i class="bi bi-shield-lock text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+              <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverApps-mobileTunnelTitle">
+                A tunnel in your pocket
+              </p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverApps-mobileTunnelDesc">
+                WireGuardKit in a Packet Tunnel extension on iOS and the official wireguard-android library on Android.
+              </p>
+            </div>
+            <div class="col">
+              <i class="bi bi-fingerprint text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+              <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverApps-mobilePostureTitle">
+                Posture you can trust
+              </p>
+              <p class="small text-muted mb-0" i18n="@@featureLoadweaverApps-mobilePostureDesc">
+                Passcode or biometrics, OS patch level, jailbreak and root detection, and app attestation so reports
+                cannot be faked by a modified app.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLI & MCP -->
+<section id="cli" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverApps-cliTitle">
+        A CLI for people, an MCP server for agents
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverApps-cliLead">
+        Both work against the same API as the console, with the same access rules, approvals and audit trail.
+      </p>
+    </div>
+    <div class="row g-4 align-items-stretch">
+      <div class="col-lg-7">
+        <loadweaver-portal-plan-diff-illustration
+          class="lw-scene--rounded h-100"
+          label="A Loadweaver plan in the terminal: a new deployment, a changed policy that adds a WireGuard peer and a route, a DNS record and a certificate, followed by the failure analysis with one unacknowledged pin."
+          i18n-label="@@featureLoadweaverHome-planIllustration"
+        />
+      </div>
+      <div class="col-lg-5 d-flex flex-column gap-4">
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-terminal text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverApps-cliCardTitle">Loadweaver CLI</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverApps-cliCardDesc">
+            Single binaries for Linux, macOS and Windows on amd64 and arm64. Published on npm, GitHub releases, an
+            install script, Homebrew, a deb / rpm repository and as a container image, signed with cosign and checksums.
+          </p>
+        </article>
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-robot text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverApps-mcpCardTitle">MCP server</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverApps-mcpCardDesc">
+            loadweaver mcp in the CLI for local agents, and a remote MCP endpoint for hosted agents, including
+            Agenstra's. Agents can read state, query logs and metrics, create plans and request approvals, but never
+            bypass them.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="py-10 bg-dark grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center py-10 px-5 shadow-sm cta-box">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureLoadweaverApps-ctaTitle">Run your cluster from anywhere</h2>
+      <p class="lead mb-5 mx-auto cta-lead" i18n="@@featureLoadweaverApps-ctaLead">
+        The apps ship with Loadweaver. Request early access and tell us which platforms your team uses.
+      </p>
+      <shared-contact-person brand="loadweaver" />
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/contact"
+          loadweaverEarlyAccess
+          i18n="@@featureLoadweaverApps-ctaEarlyAccess"
+        >
+          <i class="bi bi-envelope-paper" aria-hidden="true"></i>Request early access
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/how-it-works"
+          i18n="@@featureLoadweaverApps-ctaHowItWorks"
+        >
+          <i class="bi bi-diagram-3" aria-hidden="true"></i>How it works
+        </fpc-button>
+      </div>
+    </div>
+  </div>
+</section>

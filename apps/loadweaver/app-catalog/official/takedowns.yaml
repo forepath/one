@@ -1,0 +1,3 @@
+# Takedowns of the official catalog: they go into the signed index; refreshing clusters hide the versions and flag
+# installed copies. Entry: { app, versions: all | [x.y.z, ...], reason, at: <ISO time> }.
+takedowns: []

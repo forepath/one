@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   ServicePlansFacade,
@@ -51,21 +51,25 @@ import {
 import {
   FpcAlertComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormCheckGroupComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcFormSwitchComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
-  FpcSpinnerComponent,
+  fpcRunBulk,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  FpcListHeaderComponent,
+  FpcMoneyPipe,
+  FpcMultiSelectComponent,
+  type FpcMultiSelectOption,
 } from '@forepath/shared/frontend/ui-components';
 import {
   formatProvisioningLocationLabel,
@@ -77,6 +81,7 @@ import {
   catchError,
   debounceTime,
   distinctUntilChanged,
+  firstValueFrom,
   forkJoin,
   map,
   of,
@@ -86,14 +91,17 @@ import {
 } from 'rxjs';
 
 import {
-  getActiveStatusLabel,
-  getActiveStatusTextClass,
   getBillingIntervalLabel,
+  getBillingIntervalTypeLabel,
   getProviderDisplayName,
   getUnavailableLabel,
 } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { optionalNumberInputValue } from '../optional-number-input.util';
+import { DB_DL_CANCEL, DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
+import { activeState } from '../shared/table-states';
+import { formatBillingMoney } from '../billing-format';
+import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
 
 /** Schema property: type, description, and optional enum for pre-defined values. */
 interface ConfigSchemaProperty {
@@ -118,25 +126,24 @@ interface ServerTypeProviderGroup {
   selector: 'framework-billing-service-plans-page',
   standalone: true,
   imports: [
+    FpcMultiSelectComponent,
+    FpcMoneyPipe,
+    FpcListHeaderComponent,
     CommonModule,
     FormsModule,
     FpcAlertComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
+    FpcDataTableComponent,
     FpcEmptyStateComponent,
     FpcFormCheckComponent,
     FpcFormCheckGroupComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormSwitchComponent,
-    FpcListComponent,
-    FpcListItemComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
-    FpcSpinnerComponent,
   ],
   templateUrl: './service-plans-page.component.html',
   styleUrls: ['./service-plans-page.component.scss'],
@@ -146,7 +153,7 @@ export class ServicePlansPageComponent implements OnInit {
   readonly editModalOpen = signal(false);
   readonly deleteConfirmModalOpen = signal(false);
 
-  readonly pageTitle = $localize`:@@featureServicePlans-title:Service Plans`;
+  readonly pageTitle = $localize`:@@featureServicePlans-title:Service plans`;
   readonly addServicePlanAriaLabel = $localize`:@@featureServicePlans-add:Add service plan`;
   readonly searchPlaceholder = $localize`:@@featureServicePlans-searchPlaceholder:Search plans`;
   /** Native multi-selects keep Bootstrap `form-select` (ngValue + compareWith). */
@@ -169,10 +176,10 @@ export class ServicePlansPageComponent implements OnInit {
   readonly hideProductDefaultsLabel = $localize`:@@featureServicePlans-hideProductDefaults:Hide`;
   readonly noneServiceTypeLabel = $localize`:@@featureServicePlans-noneType:None (no deployment)`;
   readonly searchQuery$ = toObservable(this.searchQuery);
-  readonly servicePlans$ = combineLatest([
-    this.plansFacade.getServicePlans$(),
-    this.typesFacade.getServiceTypes$(),
-  ]).pipe(map(([plans, serviceTypes]) => ({ plans, serviceTypes })));
+  readonly servicePlans = toSignal(this.plansFacade.getServicePlans$(), { initialValue: [] as ServicePlanResponse[] });
+  private readonly serviceTypesList = toSignal(this.typesFacade.getServiceTypes$(), {
+    initialValue: [] as ServiceTypeResponse[],
+  });
   readonly serviceTypes$ = this.typesFacade.getServiceTypes$();
   readonly cloudInitConfigs$ = this.cloudInitConfigsFacade.getActiveCloudInitConfigs$();
   readonly activeAddons$ = this.addonsFacade.getActiveAddons$();
@@ -199,6 +206,80 @@ export class ServicePlansPageComponent implements OnInit {
       { value: 'reduced' as TaxCategory, label: `Reduced (${rates.reduced}%)` },
     ];
   });
+
+  readonly columns: FpcTableColumn<ServicePlanResponse>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureServicePlans-colStatus:Status`,
+      type: 'state',
+      state: (plan) => activeState(plan.isActive),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureServicePlans-colName:Plan`,
+      value: (plan) => plan.name,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'serviceType',
+      label: $localize`:@@featureServiceTypes-colName:Service provider`,
+      value: (plan) => this.serviceTypeNameById(this.serviceTypesList(), plan.serviceTypeId),
+      priority: 2,
+    },
+    {
+      id: 'interval',
+      label: $localize`:@@featureServicePlans-colInterval:Billing interval`,
+      value: (plan) => this.billingIntervalLabel(plan),
+      priority: 2,
+    },
+    {
+      id: 'price',
+      label: $localize`:@@featureAddons-colPrice:Price`,
+      value: (plan) => this.formatPlanPrice(plan),
+      align: 'end',
+      priority: 1,
+    },
+    {
+      id: 'tax',
+      label: $localize`:@@featureServicePlans-colTaxRate:Tax rate`,
+      value: (plan) => this.planTaxRateLabel(plan),
+      align: 'end',
+      priority: 3,
+    },
+    {
+      id: 'meters',
+      label: $localize`:@@featureAddons-colMeters:Meters`,
+      value: (plan) => this.planMeterCount(plan),
+      align: 'end',
+      priority: 3,
+    },
+  ];
+
+  readonly editLabel = $localize`:@@featureServicePlans-editButtonTitle:Edit plan`;
+  readonly deleteLabel = DB_DL_DELETE;
+  readonly cancelLabel = DB_DL_CANCEL;
+  readonly activateLabel = $localize`:@@featureMeters-bulkActivate:Activate`;
+  readonly deactivateLabel = $localize`:@@featureMeters-bulkDeactivate:Deactivate`;
+  readonly bulkDeleteTitle = $localize`:@@featureServicePlans-bulkDeleteTitle:Delete plans?`;
+
+  readonly selected = signal<readonly string[]>([]);
+  readonly confirmBulkDelete = signal(false);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly selectedPlans = computed(() => {
+    const ids = new Set(this.selected());
+
+    return this.servicePlans().filter((plan) => ids.has(plan.id));
+  });
+  readonly bulkDeleteMessage = computed(
+    () =>
+      $localize`:@@featureServicePlans-bulkDeleteMessage:${this.selectedPlans().length}:count: selected plans will be deleted. Plans with subscriptions are reported and left as they are.`,
+  );
+  readonly rowMenu = (): FpcMenuItem[] => [
+    { id: 'edit', label: this.editLabel, icon: 'pencil' },
+    { id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true },
+    dbCopyIdItem(),
+  ];
 
   createForm: CreateServicePlanDto = this.getDefaultCreateForm();
   editForm: UpdateServicePlanDto & { id: string } = this.getDefaultEditForm();
@@ -247,16 +328,50 @@ export class ServicePlansPageComponent implements OnInit {
     return isNoneServiceTypeId(serviceTypeId);
   }
 
+  intervalTypeLabel(type: BillingIntervalType): string {
+    return getBillingIntervalTypeLabel(type);
+  }
+
   billingIntervalLabel(plan: ServicePlanResponse): string {
     return getBillingIntervalLabel(plan.billingIntervalValue, plan.billingIntervalType);
   }
 
-  activeStatusLabel(isActive: boolean): string {
-    return getActiveStatusLabel(isActive);
+  onRowAction(plan: ServicePlanResponse, action: string): void {
+    if (action === 'edit') this.openEditModal(plan);
+    else if (action === 'delete') this.openDeleteConfirm(plan);
+    else if (action === 'copy-id') fpcCopyText(plan.id);
   }
 
-  activeStatusTextClass(isActive: boolean): string {
-    return getActiveStatusTextClass(isActive);
+  /** Bulk Activate / Deactivate: one `updateServicePlan` per plan whose state changes (same call as Edit). */
+  async setActiveSelected(isActive: boolean): Promise<void> {
+    const plans = this.selectedPlans().filter((plan) => plan.isActive !== isActive);
+
+    if (plans.length === 0) return;
+
+    const result = await fpcRunBulk(plans, (plan) =>
+      firstValueFrom(this.servicePlansService.updateServicePlan(plan.id, { isActive })),
+    );
+
+    this.finishBulk(dbBulkSummary(result, (plan) => plan.name));
+  }
+
+  /** Bulk Delete: one `deleteServicePlan` per plan. */
+  async deleteSelected(): Promise<void> {
+    const plans = this.selectedPlans();
+
+    if (plans.length === 0) return;
+
+    const result = await fpcRunBulk(plans, (plan) =>
+      firstValueFrom(this.servicePlansService.deleteServicePlan(plan.id)),
+    );
+
+    this.finishBulk(dbBulkSummary(result, (plan) => plan.name));
+  }
+
+  private finishBulk(result: DbBulkResult): void {
+    this.bulkResult.set(result);
+    this.selected.set([]);
+    this.plansFacade.loadServicePlans({ search: this.searchQuery().trim() || undefined });
   }
 
   private applyDefaultProvisioningOptionKeys(
@@ -288,6 +403,8 @@ export class ServicePlansPageComponent implements OnInit {
     if (this.serviceEnumIncludes(serviceTypes, providerDetails, serviceTypeId, 'decabill-billing', form)) {
       target.add('integrated:decabill-billing');
     }
+
+    // Loadweaver is opt-in (needs a release version in the plan defaults); never pre-selected.
   }
 
   private pruneInvalidProvisioningOptionKeys(
@@ -316,6 +433,13 @@ export class ServicePlansPageComponent implements OnInit {
       if (
         optionKey === 'integrated:decabill-billing' &&
         !this.serviceEnumIncludes(serviceTypes, providerDetails, serviceTypeId, 'decabill-billing', form)
+      ) {
+        target.delete(optionKey);
+      }
+
+      if (
+        optionKey === 'integrated:loadweaver' &&
+        !this.serviceEnumIncludes(serviceTypes, providerDetails, serviceTypeId, 'loadweaver', form)
       ) {
         target.delete(optionKey);
       }
@@ -366,6 +490,7 @@ export class ServicePlansPageComponent implements OnInit {
         value === 'agenstra-controller' ||
         value === 'agenstra-manager' ||
         value === 'decabill-billing' ||
+        value === 'loadweaver' ||
         value === 'controller' ||
         value === 'manager' ||
         value === 'custom',
@@ -845,14 +970,6 @@ export class ServicePlansPageComponent implements OnInit {
     );
   }
 
-  highlightsLabel(plan: ServicePlanResponse): string {
-    const count = this.orderingHighlightCount(plan);
-
-    return count === 1
-      ? $localize`:@@featureBilling-planHighlightsSingular:1 highlight`
-      : $localize`:@@featureBilling-planHighlightsPlural:${count} highlights`;
-  }
-
   planTaxRatePercent(plan: ServicePlanResponse): number {
     return rateForTaxCategory(this.taxRates(), plan.taxCategory ?? 'standard');
   }
@@ -995,6 +1112,32 @@ export class ServicePlansPageComponent implements OnInit {
     const allowed = this.getServiceTypeAllowedProviders(serviceTypes, serviceTypeId);
 
     return allowed[0] ?? null;
+  }
+
+  readonly multiSelectSearchLabel = BILLING_MULTI_SELECT_LABELS.search;
+  readonly multiSelectRemoveLabel = BILLING_MULTI_SELECT_LABELS.remove;
+  readonly multiSelectEmptyLabel = BILLING_MULTI_SELECT_LABELS.empty;
+
+  allowedProviderOptions(
+    serviceTypes: ServiceTypeResponse[] | null,
+    serviceTypeId: string | null | undefined,
+    providers: ProviderDetail[] | null | undefined,
+  ): FpcMultiSelectOption[] {
+    return this.getServiceTypeAllowedProviders(serviceTypes, serviceTypeId).map((id) => ({
+      value: id,
+      label: this.providerLabel(id, providers),
+    }));
+  }
+
+  /** Server types for the multi-select; with several providers the provider name is the option hint. */
+  serverTypeMultiOptions(): FpcMultiSelectOption[] {
+    if (this.currentServerTypeGroups.length > 1) {
+      return this.currentServerTypeGroups.flatMap((group) =>
+        group.types.map((st) => ({ value: st.id, label: this.formatServerTypeOptionLabel(st), hint: group.label })),
+      );
+    }
+
+    return this.currentServerTypes.map((st) => ({ value: st.id, label: this.formatServerTypeOptionLabel(st) }));
   }
 
   getServiceTypeAllowedProviders(
@@ -1270,6 +1413,10 @@ export class ServicePlansPageComponent implements OnInit {
 
     if (optionKeys.has('integrated:decabill-billing')) {
       services.push('decabill-billing');
+    }
+
+    if (optionKeys.has('integrated:loadweaver')) {
+      services.push('loadweaver');
     }
 
     if (services.length > 0) {
@@ -2282,14 +2429,6 @@ export class ServicePlansPageComponent implements OnInit {
     return plan.orderingHighlights?.length ?? 0;
   }
 
-  private formatPrice(value: number | string): string {
-    const n = typeof value === 'number' ? value : Number(value);
-
-    if (Number.isNaN(n)) return String(value);
-
-    return Number.isInteger(n) ? String(n) : n.toFixed(2);
-  }
-
   /** Parses form value to number; returns 0 for empty/invalid. */
   private parseFormNumber(value: string | number | undefined): number {
     if (value === undefined || value === null) return 0;
@@ -2322,7 +2461,7 @@ export class ServicePlansPageComponent implements OnInit {
   formatEstimatedPrice(total: number | null): string {
     if (total === null) return '-';
 
-    return `€${this.formatPrice(total)}`;
+    return formatBillingMoney(total);
   }
 
   getEstimatedPriceBreakdown(
@@ -2350,7 +2489,7 @@ export class ServicePlansPageComponent implements OnInit {
 
     if (!breakdown) return '-';
 
-    return `€${this.formatPrice(breakdown.net)} + €${this.formatPrice(breakdown.tax)} VAT (${breakdown.taxRate}%) = €${this.formatPrice(breakdown.gross)}`;
+    return `${formatBillingMoney(breakdown.net)} + ${formatBillingMoney(breakdown.tax)} VAT (${breakdown.taxRate}%) = ${formatBillingMoney(breakdown.gross)}`;
   }
 
   private getDefaultCreateForm(): CreateServicePlanDto {

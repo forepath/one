@@ -22,7 +22,7 @@ const meta: Meta<FpcAlertComponent> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'],
+      options: ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'git'],
     },
   },
   args: {

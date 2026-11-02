@@ -1,0 +1,252 @@
+name: Loadweaver App Catalog
+
+# Checks for the Loadweaver app catalogs (apps/loadweaver/app-catalog/{official,community}), see
+# docs/loadweaver/features/app-store-publishing.md: validate + lint every changed package, Trivy scan of its images,
+# signature checks against the registered publisher keys, and a test install (dry-run plan; a real plan in the
+# sandbox cluster when it is configured).
+
+on:
+  pull_request:
+    paths:
+      - 'apps/loadweaver/app-catalog/**'
+      - 'apps/loadweaver/cli/src/lib/app/**'
+      - 'libs/domains/loadweaver/shared/util-app-catalog/**'
+      - '.github/workflows/loadweaver-app-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/loadweaver/app-catalog/**'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: loadweaver-app-catalog-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NX_DAEMON: 'false'
+  CATALOGS: apps/loadweaver/app-catalog
+  LW: node dist/apps/loadweaver/cli/main.js
+
+jobs:
+  changes:
+    name: Changed Packages
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.changes.outputs.packages }}
+      any: ${{ steps.changes.outputs.any }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Pull requests: the package folders the PR touches. Pushes / manual runs, and PRs that only change the
+      # tooling: every package.
+      - name: List changed package folders
+        id: changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          all() { find "$CATALOGS" -mindepth 4 -maxdepth 4 -name manifest.yaml -printf '%h\n' | sort -u; }
+          if [ "$EVENT" = "pull_request" ]; then
+            changed=$(git diff --name-only "$BASE_SHA"...HEAD -- "$CATALOGS" \
+              | grep -oE "^$CATALOGS/(official|community)/[a-z0-9-]+/[^/]+/" | sed 's:/$::' | sort -u || true)
+            if git diff --name-only "$BASE_SHA"...HEAD | grep -qvE "^$CATALOGS/"; then changed=$(printf '%s\n%s\n' "$changed" "$(all)"); fi
+          else
+            changed=$(all)
+          fi
+          packages=$(printf '%s\n' "$changed" | sort -u | while read -r d; do [ -n "$d" ] && [ -f "$d/manifest.yaml" ] && echo "$d"; done | jq -R . | jq -cs .)
+          echo "packages=$packages" >> "$GITHUB_OUTPUT"
+          echo "any=$([ "$packages" = "[]" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+          echo "Packages: $packages"
+
+  validate:
+    name: Validate and Policy Lint
+    runs-on: ubuntu-latest
+    needs: changes
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Build the CLI
+        run: npx nx run loadweaver-cli:build:development --skip-nx-cache
+
+      # Catalog structure: catalog.yaml, keys, publishers, takedowns, folder names, manifest name / version /
+      # publisher, lint of every package (lw app verify on a catalog folder loads and checks all of it).
+      - name: Check the catalogs
+        run: |
+          set -euo pipefail
+          $LW app verify "$CATALOGS/official"
+          $LW app verify "$CATALOGS/community" --require-signatures
+
+      - name: Validate and lint the changed packages
+        if: needs.changes.outputs.any == 'true'
+        env:
+          PACKAGES: ${{ needs.changes.outputs.packages }}
+        run: |
+          set -euo pipefail
+          status=0
+          for dir in $(echo "$PACKAGES" | jq -r '.[]'); do
+            echo "::group::$dir"
+            $LW app validate "$dir" || status=1
+            $LW app lint "$dir" || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+      - name: Catalog content tests
+        run: npx jest -c apps/loadweaver/cli/jest.config.cts --maxWorkers=2 apps/loadweaver/cli/src/lib/app/catalog-content.spec.ts
+
+  signatures:
+    name: Signature Checks
+    runs-on: ubuntu-latest
+    needs: changes
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: No private keys in the catalogs
+        run: |
+          if grep -rIl -- '-----BEGIN [A-Z ]*PRIVATE KEY-----' "$CATALOGS"; then
+            echo "::error::private key material in the app catalog (files above); remove it and rotate the key"
+            exit 1
+          fi
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Build the CLI
+        run: npx nx run loadweaver-cli:build:development --skip-nx-cache
+
+      # Community packages must carry package.sig made with a key registered for their publisher (publishers/).
+      # Official packages are signed by the release pipeline with the catalog key.
+      - name: Verify publisher signatures
+        run: $LW app verify "$CATALOGS/community" --require-signatures
+
+  images:
+    name: List Images
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.any == 'true'
+    outputs:
+      images: ${{ steps.images.outputs.images }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Collect the images of the changed packages
+        id: images
+        env:
+          PACKAGES: ${{ needs.changes.outputs.packages }}
+        run: |
+          set -euo pipefail
+          images=$(for dir in $(echo "$PACKAGES" | jq -r '.[]'); do
+            grep -E '^\s+image:\s' "$dir/compose.yaml" | sed -E 's/^\s+image:\s+//; s/\s+#.*$//; s/^["'\'']//; s/["'\'']$//'
+          done | sort -u | jq -R . | jq -cs .)
+          echo "images=$images" >> "$GITHUB_OUTPUT"
+          echo "Images: $images"
+
+  trivy:
+    name: Trivy (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    needs: images
+    if: needs.images.outputs.images != '[]' && needs.images.outputs.images != ''
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJSON(needs.images.outputs.images) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: SARIF category
+        id: category
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: echo "name=app-catalog-$(echo "${IMAGE%%@*}" | tr -c 'a-zA-Z0-9\n' '-')" >> "$GITHUB_OUTPUT"
+
+      # Same gate as the repository's own images (trivy.yaml: CRITICAL with a fix available fails).
+      - name: Scan the image
+        uses: ./.github/actions/trivy-scan
+        with:
+          scan-type: image
+          image-ref: ${{ matrix.image }}
+          sarif-category: ${{ steps.category.outputs.name }}
+
+  test-install:
+    name: Test Install
+    runs-on: ubuntu-latest
+    needs: [changes, validate]
+    if: needs.changes.outputs.any == 'true'
+    env:
+      # Optional sandbox cluster for real plans (see docs/loadweaver/features/app-store-publishing.md#test-install).
+      LOADWEAVER_URL: ${{ secrets.LOADWEAVER_APP_SANDBOX_URL }}
+      LOADWEAVER_TOKEN: ${{ secrets.LOADWEAVER_APP_SANDBOX_TOKEN }}
+      SANDBOX_PROJECT: ${{ vars.LOADWEAVER_APP_SANDBOX_PROJECT || 'app-dry-run' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Build the CLI
+        run: npx nx run loadweaver-cli:build:development --skip-nx-cache
+
+      # Dry run (always): render each package with its defaults / examples and run the control plane's compose
+      # parser on it (lw app validate), then write the Deployment an install would plan.
+      - name: Render the deployments
+        env:
+          PACKAGES: ${{ needs.changes.outputs.packages }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist/app-catalog-test-install
+          for dir in $(echo "$PACKAGES" | jq -r '.[]'); do
+            name=$(echo "$dir" | awk -F/ '{print $(NF-1)"-"$NF}')
+            $LW app validate "$dir" --project "$SANDBOX_PROJECT" --deployment "dist/app-catalog-test-install/$name.yaml"
+          done
+          ls -l dist/app-catalog-test-install
+
+      # Real plan in the sandbox cluster: only with the sandbox secrets, never for pull requests from forks.
+      - name: Plan in the sandbox cluster
+        if: env.LOADWEAVER_URL != '' && env.LOADWEAVER_TOKEN != ''
+        run: |
+          set -euo pipefail
+          for file in dist/app-catalog-test-install/*.yaml; do
+            echo "::group::$file"
+            $LW plan -f "$file"
+            echo "::endgroup::"
+          done
+
+      - name: Sandbox not configured
+        if: env.LOADWEAVER_URL == '' || env.LOADWEAVER_TOKEN == ''
+        run: echo "::notice title=Test install::dry run only (LOADWEAVER_APP_SANDBOX_URL / _TOKEN not set)"
+
+      - name: Upload the rendered deployments
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-catalog-test-install
+          path: dist/app-catalog-test-install
+          retention-days: 7

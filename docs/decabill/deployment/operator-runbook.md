@@ -120,7 +120,7 @@ Operators who redistribute or operate Decabill should keep disclosure and supply
 - [ ] Record the deployed release version and retain matching CycloneDX SBOMs (`releases/<version>/sboms/`, `decabill-*.cdx.json`)
 - [ ] Prefer downloads from **[downloads.decabill.com](https://downloads.decabill.com/)** or your signed distribution channel
 - [ ] Track accepted residual risks in **[Accepted risks](../security/accepted-risks.md)** on your review cadence
-- [ ] Prefer images and packages that passed PR Trivy gates; document any `.trivyignore` exceptions you inherit
+- [ ] Prefer images and packages that passed PR Trivy gates; document any `.trivyignore.yaml` exceptions you inherit
 
 ## Related documentation
 

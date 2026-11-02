@@ -225,4 +225,63 @@ describe('UpdateCheckService', () => {
     expect(result.enqueuedAt).toEqual(expect.any(String));
     expect(store.setCheckJobMeta).toHaveBeenCalledWith(expect.objectContaining({ lastStatus: 'pending' }));
   });
+
+  it('follows the beta channel when the product resolves it (prereleases, Loadweaver scope)', async () => {
+    const loadweaver = new UpdateCheckService(
+      store as unknown as UpdatesRedisStore,
+      githubReleasesClient as unknown as GitHubReleasesClient,
+      {
+        ...options,
+        applicationId: 'loadweaver',
+        productScope: 'loadweaver',
+        serviceName: 'control-plane',
+        resolveChannel: async () => 'beta' as const,
+      },
+      queue,
+    );
+    const beta = {
+      tagName: 'v3.6.0-beta.1',
+      name: '3.6.0-beta.1',
+      body: '* feat(loadweaver): rolling upgrades\n* feat(decabill): other product',
+      htmlUrl: 'https://example.com/beta',
+      publishedAt: '2026-10-19T00:00:00.000Z',
+      prerelease: true,
+    };
+
+    githubReleasesClient.fetchLatestRelease.mockResolvedValue(beta);
+    githubReleasesClient.fetchReleasesNewerThan.mockResolvedValue([beta]);
+
+    const previousVersion = process.env.VERSION;
+
+    process.env.VERSION = '3.5.0';
+    await loadweaver.runCheck();
+
+    expect(githubReleasesClient.fetchLatestRelease).toHaveBeenCalledWith({ includePrereleases: true });
+    expect(githubReleasesClient.fetchReleasesNewerThan).toHaveBeenCalledWith('3.5.0', { includePrereleases: true });
+    expect(store.setRelease).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tagName: 'v3.6.0-beta.1',
+        prerelease: true,
+        scopedChangelog: {
+          product: [expect.objectContaining({ product: 'loadweaver' })],
+          shared: [],
+        },
+      }),
+    );
+    expect(options.publishNotification).toHaveBeenCalledWith(
+      'application.update_available',
+      expect.objectContaining({ latestVersion: '3.6.0-beta.1' }),
+    );
+
+    if (previousVersion === undefined) delete process.env.VERSION;
+    else process.env.VERSION = previousVersion;
+  });
+
+  it('stays on the stable channel by default', async () => {
+    githubReleasesClient.fetchLatestRelease.mockResolvedValue(null);
+
+    await service.runCheck();
+
+    expect(githubReleasesClient.fetchLatestRelease).toHaveBeenCalledWith();
+  });
 });

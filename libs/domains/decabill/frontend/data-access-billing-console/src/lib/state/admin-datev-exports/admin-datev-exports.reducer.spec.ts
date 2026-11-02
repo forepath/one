@@ -1,6 +1,7 @@
 import {
   loadAdminDatevExports,
   loadAdminDatevExportsSuccess,
+  resolveQueuedDatevExports,
   triggerDatevExportSuccess,
   expireQueuedDatevExports,
 } from './admin-datev-exports.actions';
@@ -66,6 +67,35 @@ describe('adminDatevExportsReducer', () => {
     );
 
     expect(state.scope).toBe('tenant');
+    expect(state.items).toEqual([listItem]);
+  });
+
+  it('stores the page window and search of a load (replace-page)', () => {
+    const state = adminDatevExportsReducer(
+      { ...initialAdminDatevExportsState, items: [listItem] },
+      loadAdminDatevExports({ params: { scope: 'tenant', search: ' jan ', limit: 50, offset: 100 } }),
+    );
+
+    expect(state).toEqual(expect.objectContaining({ limit: 50, offset: 100, search: 'jan', year: null }));
+    expect(state.items).toEqual([listItem]);
+  });
+
+  it('prunes queued exports resolved by a poll without touching the page', () => {
+    const state = adminDatevExportsReducer(
+      {
+        ...initialAdminDatevExportsState,
+        items: [listItem],
+        queuedExports: [
+          { clientId: 'q', scope: 'tenant', periodYear: 2025, periodMonth: 3, queuedAt: '2026-01-01T00:00:00Z' },
+        ],
+      },
+      resolveQueuedDatevExports({
+        items: [{ ...listItem, id: 'old', periodYear: 2025, periodMonth: 3 }],
+        loadedScope: 'tenant',
+      }),
+    );
+
+    expect(state.queuedExports).toEqual([]);
     expect(state.items).toEqual([listItem]);
   });
 

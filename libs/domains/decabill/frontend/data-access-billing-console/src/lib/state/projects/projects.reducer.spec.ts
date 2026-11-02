@@ -15,10 +15,6 @@ import {
   loadAdminProjects,
   loadAdminProjectsFailure,
   loadAdminProjectsSuccess,
-  loadMoreAdminProjects,
-  loadMoreAdminProjectsSuccess,
-  loadMoreProjects,
-  loadMoreProjectsSuccess,
   loadProjectDetail,
   loadProjectDetailFailure,
   loadProjectDetailSuccess,
@@ -48,21 +44,23 @@ describe('projectsReducer', () => {
   };
 
   it('sets loading on loadProjects', () => {
-    const state = projectsReducer(initialProjectsState, loadProjects({}));
+    const state = projectsReducer({ ...initialProjectsState, projects: [project] }, loadProjects({ page: 2 }));
 
     expect(state.loading).toBe(true);
-    expect(state.projects).toEqual([]);
+    expect(state.projects).toEqual([project]);
+    expect(state.page).toBe(2);
+    expect(state.pageSize).toBe(25);
   });
 
   it('stores projects on success', () => {
     const state = projectsReducer(
       { ...initialProjectsState, loading: true },
-      loadProjectsSuccess({ projects: [project], hasMore: false, nextOffset: 1 }),
+      loadProjectsSuccess({ projects: [project], total: 26 }),
     );
 
     expect(state.projects).toEqual([project]);
     expect(state.loading).toBe(false);
-    expect(state.hasMore).toBe(false);
+    expect(state.total).toBe(26);
   });
 
   it('stores summary on success', () => {
@@ -146,41 +144,28 @@ describe('projectsReducer', () => {
     expect(done.billing).toBe(false);
   });
 
-  it('appends on load more success', () => {
-    const more = projectsReducer(
-      { ...initialProjectsState, projects: [project], appendLoading: true },
-      loadMoreProjectsSuccess({ projects: [project], hasMore: false, nextOffset: 2 }),
-    );
-    const adminMore = projectsReducer(
-      { ...initialProjectsState, adminProjects: [project], adminAppendLoading: true },
-      loadMoreAdminProjectsSuccess({ adminProjects: [project], hasMore: false, nextOffset: 2 }),
-    );
-
-    expect(more.projects).toEqual([project, project]);
-    expect(more.appendLoading).toBe(false);
-    expect(adminMore.adminProjects).toEqual([project, project]);
-    expect(adminMore.adminAppendLoading).toBe(false);
-  });
-
-  it('sets appendLoading on loadMoreProjects and loadMoreAdminProjects', () => {
+  it('replaces the page on a page load (customer and admin lists)', () => {
     const customer = projectsReducer(
-      { ...initialProjectsState, projects: [project], hasMore: true, nextOffset: 10 },
-      loadMoreProjects({ offset: 10 }),
+      { ...initialProjectsState, projects: [project] },
+      loadProjectsSuccess({ projects: [], total: 1 }),
     );
     const admin = projectsReducer(
-      { ...initialProjectsState, adminProjects: [project], adminHasMore: true, adminNextOffset: 10 },
-      loadMoreAdminProjects({ offset: 10 }),
+      projectsReducer(initialProjectsState, loadAdminProjects({ page: 4, pageSize: 50 })),
+      loadAdminProjectsSuccess({ adminProjects: [project], total: 151 }),
     );
 
-    expect(customer.appendLoading).toBe(true);
-    expect(admin.adminAppendLoading).toBe(true);
+    expect(customer.projects).toEqual([]);
+    expect(admin.adminProjects).toEqual([project]);
+    expect(admin.adminTotal).toBe(151);
+    expect(admin.adminPage).toBe(4);
+    expect(admin.adminPageSize).toBe(50);
   });
 
   it('loads admin projects and detail', () => {
     const loadingAdmin = projectsReducer(initialProjectsState, loadAdminProjects({}));
     const adminSuccess = projectsReducer(
       loadingAdmin,
-      loadAdminProjectsSuccess({ adminProjects: [project], hasMore: false, nextOffset: 1 }),
+      loadAdminProjectsSuccess({ adminProjects: [project], total: 1 }),
     );
     const loadingDetail = projectsReducer(adminSuccess, loadAdminProjectDetail({ projectId: 'p-1' }));
     const detailSuccess = projectsReducer(

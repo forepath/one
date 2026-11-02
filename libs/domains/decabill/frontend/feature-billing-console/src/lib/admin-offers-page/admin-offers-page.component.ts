@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -13,36 +13,37 @@ import {
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
   FpcAlertComponent,
-  FpcBadgeComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
-  FpcCollapsibleFilterPanelComponent,
+  FpcListToolbarComponent,
+  fpcListQueryState,
   FpcConfirmDialogComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
-  FpcLaneHeaderComponent,
-  FpcListComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
-  FpcListItemComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
   FpcPanelGridComponent,
-  FpcSearchFieldComponent,
+  fpcRunBulk,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
   FpcSummaryCardComponent,
   FpcSummaryCardValueDirective,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FpcTableCellDirective,
   FPC_CHART_AREA_FILL,
-  FPC_CHART_AXIS,
   FPC_CHART_GRID,
-  FPC_CHART_LABEL_STYLE,
   FPC_CHART_LEGEND,
   fpcChart,
+  fpcChartCountAxis,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  FpcMoneyPipe,
 } from '@forepath/shared/frontend/ui-components';
 import type {
   ApexAxisChartSeries,
@@ -55,12 +56,15 @@ import type {
   ApexYAxis,
 } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { debounceTime, distinctUntilChanged, of, skip, switchMap } from 'rxjs';
+import { firstValueFrom, of, switchMap } from 'rxjs';
 
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
-import { getOfferStatusBadgeClass, getOfferStatusLabel, getUnavailableLabel } from '../billing-status-labels';
+import { getUnavailableLabel } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
+import { DB_DL_CANCEL, DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
+import { dbServerPaging } from '../shared/server-paging';
+import { offerState } from '../shared/table-states';
 import { AdminOfferLineEditorComponent } from './admin-offer-line-editor.component';
 import {
   createEmptyOfferFormLine,
@@ -69,13 +73,22 @@ import {
   mapOfferFormLinesToDto,
   type OfferFormLineItem,
 } from './admin-offer-form.util';
+import {
+  getCustomerLabel,
+  getCustomerSecondaryLabel,
+  getUnnumberedOfferLabel,
+  type CustomerLabelSource,
+} from '../named-label.util';
+import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
+import { formatBillingDateTime, formatBillingMoney } from '../billing-format';
 
-type AdminOffersMobilePanel = 'overview' | 'offers';
+type AdminOffersTab = 'offers' | 'statistics';
 
 @Component({
   selector: 'framework-admin-offers-page',
   standalone: true,
   imports: [
+    FpcMoneyPipe,
     CommonModule,
     FormsModule,
     NgApexchartsModule,
@@ -83,18 +96,14 @@ type AdminOffersMobilePanel = 'overview' | 'offers';
     AdminOfferLineEditorComponent,
     PricingTotalsSummaryComponent,
     FpcAlertComponent,
-    FpcBadgeComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
+    FpcDataTableComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormCheckComponent,
-    FpcListItemComponent,
-    FpcListComponent,
     FpcEmptyStateComponent,
-    FpcCollapsibleFilterPanelComponent,
+    FpcListToolbarComponent,
     FpcConfirmDialogComponent,
-    FpcLaneHeaderComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
@@ -104,9 +113,9 @@ type AdminOffersMobilePanel = 'overview' | 'offers';
     FpcSummaryBarComponent,
     FpcSummaryCardComponent,
     FpcSummaryCardValueDirective,
-    FpcSearchFieldComponent,
     FpcTabComponent,
     FpcTabGroupComponent,
+    FpcTableCellDirective,
   ],
   providers: [DatePipe],
   templateUrl: './admin-offers-page.component.html',
@@ -130,18 +139,32 @@ export class AdminOffersPageComponent implements OnInit {
   private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly mobilePanel = signal<AdminOffersMobilePanel>('overview');
+  readonly activeTab = signal<AdminOffersTab>('offers');
   readonly filtersCollapsed = signal(true);
   readonly filtersPanelTitle = $localize`:@@featureAdminOffers-filters:Filters`;
   readonly fromDate = signal('');
   readonly toDate = signal('');
   readonly groupBy = signal<'day' | 'month'>('day');
+  readonly filtersOpen = computed(() => !this.filtersCollapsed());
+  /** Applied range / grouping (+ party) in the URL (`?f=`); the drawer edits a draft until Apply (3.38 R12). */
+  readonly filterState = fpcListQueryState({
+    filters: { from: this.fromDate, to: this.toDate, groupBy: this.groupBy },
+    open: this.filtersOpen,
+    changed: () => this.onApplyFilters(),
+  });
+  /** Defaults of the date range (set with the page), so a custom range counts as one applied filter. */
+  private readonly defaultDates = signal({ from: '', to: '' });
+  readonly activeFilterCount = computed(() => {
+    const f = this.filterState.applied();
+    const d = this.defaultDates();
+
+    return [f.from !== d.from || f.to !== d.to, f.groupBy !== 'day'].filter(Boolean).length;
+  });
   filterUserId = '';
   readonly pageTitle = $localize`:@@featureAdminOffers-title:Offers`;
   readonly createOfferAriaLabel = $localize`:@@featureAdminOffers-create:Create offer`;
 
-  readonly searchQuery = signal('');
-  readonly searchQuery$ = toObservable(this.searchQuery);
+  readonly searchPlaceholder = $localize`:@@featureAdminOffers-searchPlaceholder:Search offers`;
   readonly auditOfferId = signal<string | null>(null);
 
   readonly offers$ = this.facade.offers$;
@@ -156,15 +179,11 @@ export class AdminOffersPageComponent implements OnInit {
   readonly pendingGrossLabel = $localize`:@@featureAdminOffers-pendingGross:Pending gross`;
   readonly statisticsError$ = this.facade.statisticsError$;
   readonly auditLogsLoading$ = this.facade.auditLogsLoading$;
-  readonly auditLogsAppendLoading$ = this.facade.auditLogsAppendLoading$;
   readonly auditLogsError$ = this.facade.auditLogsError$;
-  readonly auditLogsOffsetByOffer$ = this.facade.auditLogsOffsetByOffer$;
 
   readonly statistics = toSignal(this.statistics$, { initialValue: null });
   readonly offers = toSignal(this.offers$, { initialValue: [] as AdminOfferListItem[] });
-  readonly auditLogsOffsetByOffer = toSignal(this.auditLogsOffsetByOffer$, {
-    initialValue: {} as Record<string, number>,
-  });
+  readonly total = toSignal(this.facade.total$, { initialValue: 0 });
 
   readonly selectedAuditLogs = toSignal(
     toObservable(this.auditOfferId).pipe(
@@ -173,12 +192,145 @@ export class AdminOffersPageComponent implements OnInit {
     { initialValue: [] as BillingAuditLogResponse[] },
   );
 
-  readonly auditLogsHasMore = toSignal(
+  readonly auditLogsTotal = toSignal(
     toObservable(this.auditOfferId).pipe(
-      switchMap((offerId) => (offerId ? this.facade.getAuditLogsHasMore$(offerId) : of(false))),
+      switchMap((offerId) => (offerId ? this.facade.getAuditLogsTotal$(offerId) : of(0))),
     ),
-    { initialValue: false },
+    { initialValue: 0 },
   );
+  /** Audit log paging (built-in pager of the nested table; replace-page). */
+  readonly auditPage = signal(1);
+  readonly auditPageSize = signal(25);
+  private readonly auditOpenCount = signal(0);
+  readonly auditHistoryLabel = $localize`:@@featureAdminOffers-auditTitle:Audit history`;
+  readonly auditColumns: FpcTableColumn<BillingAuditLogResponse>[] = [
+    {
+      id: 'process',
+      label: $localize`:@@featureAdminBilling-colProcess:Process`,
+      value: (log) => log.process,
+      required: true,
+      priority: 1,
+    },
+    { id: 'time', label: $localize`:@@featureProjectDetail-colTime:Time`, value: (log) => log.createdAt, priority: 1 },
+    {
+      id: 'message',
+      label: $localize`:@@featureAdminBilling-colMessage:Message`,
+      value: (log) => log.message,
+      priority: 2,
+    },
+  ];
+
+  /** Customer filter of the offers table (drawer draft → applied on Apply). */
+  readonly offerFiltersOpen = signal(false);
+  readonly offersUserId = signal('');
+  offersUserIdDraft = '';
+
+  /** Search + page + size + customer → `GET /admin/billing/offers?limit&offset&search&userId` (replace-page). */
+  readonly paging = dbServerPaging(
+    (query) =>
+      this.facade.loadOffers({
+        search: query.search,
+        userId: untracked(this.offersUserId) || undefined,
+        page: query.page,
+        pageSize: query.pageSize,
+      }),
+    { filters: () => this.offersUserId() },
+  );
+
+  readonly columns: FpcTableColumn<AdminOfferListItem>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureOffers-colStatus:Status`,
+      type: 'state',
+      state: (offer) => offerState(offer.status),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureOffers-colOffer:Offer`,
+      value: (offer) => this.offerDisplayTitle(offer),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'customer',
+      label: $localize`:@@featureAdminOffers-customer:Customer`,
+      value: (offer) => getCustomerLabel(offer),
+      priority: 1,
+    },
+    {
+      id: 'total',
+      label: $localize`:@@featureOffers-colTotal:Total (gross)`,
+      value: (offer) => offer.totalGross,
+      align: 'end',
+      priority: 2,
+    },
+    {
+      id: 'created',
+      label: $localize`:@@featureAdminOffers-colCreated:Created`,
+      value: (offer) => offer.createdAt,
+      priority: 2,
+    },
+    {
+      id: 'expires',
+      label: $localize`:@@featureOffers-colExpires:Expires`,
+      value: (offer) => (offer.expiresAt ? this.formatDate(offer.expiresAt) : ''),
+      priority: 3,
+    },
+  ];
+
+  readonly editLabel = $localize`:@@featureAdminOffers-edit:Edit`;
+  readonly auditLabel = $localize`:@@featureAdminOffers-audit:Audit log`;
+  readonly sendLabel = $localize`:@@featureAdminOffers-archive:Send to customer`;
+  readonly revokeLabel = $localize`:@@featureAdminOffers-revoke:Revoke`;
+  readonly deleteLabel = DB_DL_DELETE;
+  readonly deleteDraftsLabel = $localize`:@@featureAdminOffers-bulkDeleteDrafts:Delete drafts`;
+  readonly cancelLabel = DB_DL_CANCEL;
+
+  readonly selected = signal<readonly string[]>([]);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly pendingBulk = signal<'revoke' | 'delete' | null>(null);
+  readonly selectedOffers = computed(() => {
+    const ids = new Set(this.selected());
+
+    return this.offers().filter((offer) => ids.has(offer.id));
+  });
+  readonly selectedDrafts = computed(() => this.selectedOffers().filter((offer) => this.canDeleteOffer(offer)));
+  readonly selectedPendingResponse = computed(() =>
+    this.selectedOffers().filter((offer) => this.canRevokeOffer(offer)),
+  );
+  readonly bulkConfirmTitle = computed(() =>
+    this.pendingBulk() === 'revoke'
+      ? $localize`:@@featureAdminOffers-bulkRevokeTitle:Revoke offers?`
+      : $localize`:@@featureAdminOffers-bulkDeleteTitle:Delete draft offers?`,
+  );
+  readonly bulkConfirmLabel = computed(() => (this.pendingBulk() === 'revoke' ? this.revokeLabel : this.deleteLabel));
+  readonly bulkConfirmMessage = computed(() =>
+    this.pendingBulk() === 'revoke'
+      ? $localize`:@@featureAdminOffers-bulkRevokeMessage:${this.selectedPendingResponse().length}:count: offers awaiting a response will be revoked. Customers can no longer accept them.`
+      : $localize`:@@featureAdminOffers-bulkDeleteMessage:${this.selectedDrafts().length}:count: draft offers will be deleted. This action cannot be undone.`,
+  );
+  readonly rowMenu = (offer: AdminOfferListItem): FpcMenuItem[] => [
+    ...(this.canEditOffer(offer) ? [{ id: 'edit', label: this.editLabel, icon: 'pencil' }] : []),
+    { id: 'audit', label: this.auditLabel, icon: 'clock-history' },
+    ...(this.canArchiveOffer(offer) ? [{ id: 'send', label: this.sendLabel, icon: 'send' }] : []),
+    ...(this.canRevokeOffer(offer) ? [{ id: 'revoke', label: this.revokeLabel, icon: 'slash-circle' }] : []),
+    ...(this.canDeleteOffer(offer)
+      ? [{ id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true }]
+      : []),
+    dbCopyIdItem(),
+  ];
+
+  constructor() {
+    effect(() => {
+      const offerId = this.auditOfferId();
+      const page = this.auditPage();
+      const pageSize = this.auditPageSize();
+
+      this.auditOpenCount();
+
+      if (offerId) untracked(() => this.facade.loadAuditLogs(offerId, page, pageSize));
+    });
+  }
 
   readonly offersChartTitle = $localize`:@@featureAdminOffers-chartTitle:Offer activity over time`;
 
@@ -192,19 +344,17 @@ export class AdminOffersPageComponent implements OnInit {
   editDetailLoading = false;
   selectedOffer: AdminOfferListItem | null = null;
 
-  ngOnInit(): void {
-    this.setDefaultDates();
-    this.facade.loadOffers();
-    this.loadStatistics();
+  customerLabel(row: CustomerLabelSource): string {
+    return getCustomerLabel(row);
+  }
 
-    this.searchQuery$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.facade.loadOffers({
-          search: search.trim() || undefined,
-          userId: this.filterUserId.trim() || undefined,
-        });
-      });
+  customerTitle(row: CustomerLabelSource): string | null {
+    return getCustomerSecondaryLabel(row);
+  }
+
+  ngOnInit(): void {
+    this.setDefaultDates(false);
+    this.loadStatistics();
 
     watchBillingMutationModalClose({
       loading$: this.facade.creating$,
@@ -240,10 +390,89 @@ export class AdminOffersPageComponent implements OnInit {
   onApplyFilters(): void {
     this.filtersCollapsed.set(true);
     this.loadStatistics();
-    this.facade.loadOffers({
-      search: this.searchQuery().trim() || undefined,
-      userId: this.filterUserId.trim() || undefined,
-    });
+  }
+
+  applyOfferFilters(): void {
+    this.offersUserId.set(this.offersUserIdDraft.trim());
+    this.offerFiltersOpen.set(false);
+  }
+
+  clearOfferFilters(): void {
+    this.offersUserIdDraft = '';
+    this.offersUserId.set('');
+  }
+
+  onRowActivate(offer: AdminOfferListItem): void {
+    if (this.canEditOffer(offer)) this.openEditModal(offer);
+    else this.openAuditHistory(offer);
+  }
+
+  onRowAction(offer: AdminOfferListItem, action: string): void {
+    if (action === 'edit') this.openEditModal(offer);
+    else if (action === 'audit') this.openAuditHistory(offer);
+    else if (action === 'send') this.archiveOffer(offer);
+    else if (action === 'revoke') this.revokeOffer(offer);
+    else if (action === 'delete') this.openDeleteModal(offer);
+    else if (action === 'copy-id') fpcCopyText(offer.id);
+  }
+
+  /** Bulk Send to customer: one `POST /admin/billing/offers/:id/archive` per draft. */
+  async sendSelected(): Promise<void> {
+    const drafts = this.selectedDrafts();
+
+    if (drafts.length === 0) return;
+
+    const result = await fpcRunBulk(drafts, (offer) => firstValueFrom(this.adminOffersService.archive(offer.id)));
+
+    this.finishBulk(dbBulkSummary(result, (offer) => this.offerDisplayTitle(offer)));
+  }
+
+  /** Bulk Revoke (`POST …/:id/revoke`) / Delete drafts (`DELETE …/:id`), after the confirm dialog. */
+  async runPendingBulk(): Promise<void> {
+    const pending = this.pendingBulk();
+
+    this.pendingBulk.set(null);
+
+    if (pending === 'revoke') {
+      const offers = this.selectedPendingResponse();
+
+      if (offers.length === 0) return;
+
+      const result = await fpcRunBulk(offers, (offer) => firstValueFrom(this.adminOffersService.revoke(offer.id)));
+
+      this.finishBulk(dbBulkSummary(result, (offer) => this.offerDisplayTitle(offer)));
+    } else if (pending === 'delete') {
+      const drafts = this.selectedDrafts();
+
+      if (drafts.length === 0) return;
+
+      const result = await fpcRunBulk(drafts, (offer) => firstValueFrom(this.adminOffersService.delete(offer.id)));
+
+      this.finishBulk(dbBulkSummary(result, (offer) => this.offerDisplayTitle(offer)));
+    }
+  }
+
+  private finishBulk(result: DbBulkResult): void {
+    this.bulkResult.set(result);
+    this.selected.set([]);
+    this.paging.reload();
+    this.loadStatistics();
+  }
+
+  offerDisplayTitle(offer: AdminOfferListItem): string {
+    return offer.offerNumber?.trim() || getUnnumberedOfferLabel();
+  }
+
+  offerTotal(offer: AdminOfferListItem): string {
+    return formatBillingMoney(offer.totalGross, offer.currency);
+  }
+
+  offerCreatedAt(offer: AdminOfferListItem): string {
+    return offer.createdAt;
+  }
+
+  auditTime(log: BillingAuditLogResponse): string {
+    return log.createdAt;
   }
 
   onResetFilters(): void {
@@ -303,19 +532,10 @@ export class AdminOffersPageComponent implements OnInit {
   }
 
   openAuditHistory(offer: AdminOfferListItem): void {
+    this.auditPage.set(1);
     this.auditOfferId.set(offer.id);
-    this.facade.loadAuditLogs(offer.id);
+    this.auditOpenCount.update((count) => count + 1);
     showBillingModal(this.auditHistoryModalOpen);
-  }
-
-  loadMoreAuditLogs(): void {
-    const offerId = this.auditOfferId();
-
-    if (!offerId) return;
-
-    const offset = this.auditLogsOffsetByOffer()[offerId] ?? 0;
-
-    this.facade.loadMoreAuditLogs(offerId, offset);
   }
 
   submitCreate(): void {
@@ -366,29 +586,21 @@ export class AdminOffersPageComponent implements OnInit {
     this.facade.revokeOffer(offer.id);
   }
 
-  offerStatusLabel(status: string | null | undefined): string {
-    return getOfferStatusLabel(status);
-  }
-
-  offerStatusBadgeClass(status: string | null | undefined): string {
-    return getOfferStatusBadgeClass(status);
-  }
-
   formatDate(value?: string | null): string {
     if (!value) return getUnavailableLabel();
 
-    return this.datePipe.transform(value, 'medium') ?? value;
+    return formatBillingDateTime(value, value ?? '-');
   }
 
-  onMobilePanelTabChange(tabId: string | null): void {
-    if (tabId === 'overview' || tabId === 'offers') {
-      this.mobilePanel.set(tabId);
+  onTabChange(tabId: string | null): void {
+    if (tabId === 'offers' || tabId === 'statistics') {
+      this.activeTab.set(tabId);
     }
   }
 
-  mobilePanelLabel(panel: AdminOffersMobilePanel): string {
-    return panel === 'overview'
-      ? $localize`:@@featureAdminOffers-mobileOverview:Overview`
+  tabLabel(tab: AdminOffersTab): string {
+    return tab === 'statistics'
+      ? $localize`:@@featureAdminOffers-statisticsTitle:Statistics`
       : $localize`:@@featureAdminOffers-mobileOffers:Offers`;
   }
 
@@ -417,13 +629,19 @@ export class AdminOffersPageComponent implements OnInit {
     });
   }
 
-  private setDefaultDates(): void {
+  private setDefaultDates(force = true): void {
     const to = new Date();
     const from = new Date(to);
 
     from.setDate(from.getDate() - 30);
-    this.toDate.set(to.toISOString().slice(0, 10));
-    this.fromDate.set(from.toISOString().slice(0, 10));
+    const defaults = { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) };
+
+    this.defaultDates.set(defaults);
+
+    if (!force && this.fromDate() && this.toDate()) return;
+
+    this.toDate.set(defaults.to);
+    this.fromDate.set(defaults.from);
   }
 
   private emptyForm(): CreateAdminOfferDto {
@@ -455,25 +673,21 @@ export class AdminOffersPageComponent implements OnInit {
       chart: fpcChart('area', 240) as ApexChart,
       // Semantic series: archived (neutral), accepted (success), declined (danger).
       colors: ['var(--bs-secondary)', 'var(--bs-success)', 'var(--bs-danger)'],
-      stroke: { curve: 'smooth', width: 2 } as ApexStroke,
+      // Counts: straight segments and whole-number ticks (DB-17 f).
+      stroke: { curve: 'straight', width: 2 } as ApexStroke,
       fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
       legend: { ...FPC_CHART_LEGEND, position: 'top' } as ApexLegend,
-      xaxis: {
-        ...FPC_CHART_AXIS,
-        type: 'category',
-        categories: filled.map((p) => this.formatChartPeriodLabel(p.period)),
-        labels: { style: FPC_CHART_LABEL_STYLE },
-      } as ApexXAxis,
-      yaxis: {
-        labels: { style: FPC_CHART_LABEL_STYLE },
-      } as ApexYAxis,
+      xaxis: billingChartTimeAxis(filled.map((p) => this.formatChartPeriodLabel(p.period))) as ApexXAxis,
+      yaxis: fpcChartCountAxis() as ApexYAxis,
+      responsive: BILLING_CHART_RESPONSIVE,
       grid: FPC_CHART_GRID,
     };
   }
 
   private formatChartPeriodLabel(period: string): string {
-    const format = this.groupBy() === 'month' ? 'MMM y' : 'mediumDate';
+    // Short axis labels (DB-17 a): the year sits in the range filter; days / weeks read "Oct 29".
+    const format = this.groupBy() === 'month' ? 'MMM y' : 'MMM d';
 
     return this.datePipe.transform(`${period}T12:00:00.000Z`, format, 'UTC') ?? period;
   }

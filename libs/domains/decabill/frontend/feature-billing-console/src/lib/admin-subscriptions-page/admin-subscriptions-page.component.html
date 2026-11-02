@@ -2,7 +2,7 @@
   <fpc-page-header [title]="pageTitle" />
 
   <fpc-summary-bar [columns]="2">
-    <fpc-summary-card [label]="summaryTotalLabel">
+    <fpc-summary-card icon="stack" [label]="summaryTotalLabel">
       <span fpcSummaryCardValue>
         @if ((billingSummaryLoading$ | async) && !billingSummary()) {
           <fpc-spinner size="sm" />
@@ -11,7 +11,7 @@
         }
       </span>
     </fpc-summary-card>
-    <fpc-summary-card [label]="summaryActiveLabel">
+    <fpc-summary-card icon="check2-circle" [label]="summaryActiveLabel">
       <span fpcSummaryCardValue>
         @if ((billingSummaryLoading$ | async) && !billingSummary()) {
           <fpc-spinner size="sm" />
@@ -22,236 +22,134 @@
     </fpc-summary-card>
   </fpc-summary-bar>
 
-  <fpc-search-field
-    class="border-bottom"
-    name="adminSubscriptionsSearch"
-    inputId="adminSubscriptionsSearchInput"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchAriaLabel"
-    [(value)]="searchQuery"
-  />
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="admin-subscriptions-bulk-result"
+    />
+  }
 
-  <div #scrollRoot class="flex-grow-1 overflow-auto min-h-0 d-flex flex-column">
-    @if (loading$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" i18n-label="@@featureAdminSubscriptions-loading" label="Loading contracts..." />
+  <!-- One data list: State · Contract · customer · number · period · next billing · price; services and usage meters
+       as nested tables in the row detail; ⋮ actions; bulk Cancel / Resume. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="subscriptions()"
+    paging="server"
+    [total]="total()"
+    [(page)]="paging.page"
+    [(pageSize)]="paging.pageSize"
+    persistKey="decabill-admin-subscriptions"
+    [(query)]="paging.search"
+    [searchPlaceholder]="searchPlaceholder"
+    [loading]="!!(loading$ | async)"
+    [error]="error()"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    [expandedRowId]="expandedId()"
+    (rowActivate)="toggleExpanded($event)"
+    emptyIcon="file-earmark-text"
+    data-testid="admin-subscriptions-list"
+  >
+    <fpc-button
+      fpcDataTableBatch
+      variant="dark"
+      size="sm"
+      [disabled]="selectedWithStatus('pending_cancel').length === 0"
+      (clicked)="resumeSelected()"
+      data-testid="admin-subscriptions-bulk-resume"
+      iconOnly
+      [ariaLabel]="resumeLabel"
+      [title]="resumeLabel"
+    >
+      <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="selectedWithStatus('active').length === 0"
+      (clicked)="openBulkCancelConfirm()"
+      data-testid="admin-subscriptions-bulk-cancel"
+      iconOnly
+      [ariaLabel]="cancelSubscriptionLabel"
+      [title]="cancelSubscriptionLabel"
+    >
+      <i class="bi bi-slash-circle" aria-hidden="true"></i>
+    </fpc-button>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="file-earmark-text"
+        size="sm"
+        message="No subscriptions yet"
+        i18n-message="@@featureAdminSubscriptions-empty"
+      />
+    </span>
+    <ng-template fpcTableCell="customer" let-row
+      ><span [attr.title]="customerTitle(row)">{{ customerLabel(row) }}</span></ng-template
+    >
+
+    <ng-template fpcTableRowDetail let-row>
+      <div class="d-flex flex-column gap-3 py-2">
+        @if (subscriptionItems(row).length > 0) {
+          <fpc-data-table
+            nested
+            [ariaLabel]="servicesLabel"
+            [columns]="serviceColumns(row)"
+            [rows]="subscriptionItems(row)"
+            [rowLink]="serviceLinkFor(row)"
+            [searchable]="false"
+            data-testid="admin-subscription-services"
+          />
+        }
+        @if (hasSubscriptionMeters(row)) {
+          <fpc-data-table
+            nested
+            [ariaLabel]="usageMetersLabel"
+            [columns]="meterColumns"
+            [rows]="subscriptionMeterSummaries(row)"
+            [rowId]="meterRowId"
+            [searchable]="false"
+            data-testid="admin-subscription-meters"
+          />
+        }
       </div>
-    } @else {
-      @if (error$ | async; as error) {
-        <fpc-alert class="m-3" variant="danger" [message]="error" />
-      }
-      @if (subscriptions().length === 0) {
-        @if (searchQuery().trim()) {
-          <fpc-empty-state
-            icon="search"
-            message="No search results"
-            i18n-message="@@featureAdminSubscriptions-noSearchResults"
-          />
-        } @else {
-          <fpc-empty-state message="No contracts yet" i18n-message="@@featureAdminSubscriptions-empty" />
-        }
-      } @else {
-        <fpc-list [flush]="true">
-          @for (sub of subscriptions(); track sub.id) {
-            <fpc-list-item>
-              <div fpcListItemTitle class="fw-semibold">{{ subscriptionTitle(sub) }}</div>
-              <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                  <fpc-badge
-                    variant="info"
-                    color="secondary"
-                    class="me-2"
-                    [ngClass]="subscriptionStatusBadgeClass(sub.status)"
-                    [attr.title]="sub.status ?? undefined"
-                  >
-                    {{ subscriptionStatusLabel(sub.status) }}
-                  </fpc-badge>
-                  <span class="me-2">
-                    <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ subscriptionUserLabel(sub) }}
-                  </span>
-                  @if (sub.number) {
-                    <span class="me-2"> <i class="bi bi-upc-scan me-1" aria-hidden="true"></i>{{ sub.number }} </span>
-                  }
-                  <span class="me-2">
-                    <i class="bi bi-calendar-range me-1" aria-hidden="true"></i>{{ formatSubscriptionPeriod(sub) }}
-                  </span>
-                  <span class="me-2">
-                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(sub.nextBillingAt) }}
-                  </span>
-                  <span class="me-2">
-                    <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatPeriodPrice(sub) }}
-                  </span>
-                  @if (hasSubscriptionMeters(sub)) {
-                    <span class="me-2">
-                      <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i
-                      ><span i18n="@@featureAdminSubscriptions-hasMeters">Has usage meters</span>
-                    </span>
-                  }
-                </div>
-              </div>
-              @if (subscriptionItems(sub).length > 0 || hasSubscriptionMeters(sub)) {
-                <div class="row g-2 mt-2">
-                  @if (subscriptionItems(sub).length > 0) {
-                    <div class="col-md">
-                      <div class="small text-body-secondary h-100 bg-body-tertiary rounded border py-2 px-3">
-                        <div class="fw-semibold mb-1" i18n="@@featureAdminSubscriptions-services">Services</div>
-                        <div class="d-flex flex-column gap-2">
-                          @for (item of subscriptionItems(sub); track item.id) {
-                            <div class="d-flex flex-wrap align-items-center gap-2">
-                              <fpc-badge
-                                variant="info"
-                                color="secondary"
-                                [ngClass]="itemProvisioningStatusBadgeClass(sub, item)"
-                              >
-                                {{ itemProvisioningStatusLabel(sub, item) }}
-                              </fpc-badge>
-                              <span class="fw-medium">{{ serviceDisplayLabel(item) }}</span>
-                              @if (isServiceDetailEligible(sub, item)) {
-                                <fpc-button
-                                  [routerLink]="serviceDetailLink(sub, item)"
-                                  variant="primary"
-                                  size="sm"
-                                  class="py-0 ms-auto"
-                                  title="Open details"
-                                  i18n-title="@@featureAdminSubscriptions-openServiceDetails"
-                                  iconOnly
-                                >
-                                  <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-                                  <span class="visually-hidden" i18n="@@featureAdminSubscriptions-openServiceDetails"
-                                    >Open details</span
-                                  >
-                                </fpc-button>
-                              }
-                            </div>
-                          }
-                        </div>
-                      </div>
-                    </div>
-                  }
-                  @if (hasSubscriptionMeters(sub)) {
-                    <div class="col-md">
-                      <div class="small text-body-secondary h-100 bg-body-tertiary rounded border py-2 px-3">
-                        <div class="fw-semibold mb-1" i18n="@@featureAdminSubscriptions-usageMeters">Usage meters</div>
-                        <div class="d-flex flex-column gap-1">
-                          @for (
-                            meter of subscriptionMeterSummaries(sub);
-                            track meter.meterId + meter.attachmentType + (meter.addonId ?? '')
-                          ) {
-                            <div class="d-flex flex-wrap align-items-center gap-2">
-                              <fpc-badge variant="info" color="secondary">{{ meter.name }}</fpc-badge>
-                              <span>{{ formatMeterValue(meter) }}</span>
-                              @if (hasMeterBillingDetails(meter)) {
-                                <span class="text-body-secondary small">{{ formatMeterBillingDetails(meter) }}</span>
-                              }
-                              <span class="ms-auto">{{ formatMeterCharge(meter.estimatedChargeNet) }}</span>
-                            </div>
-                          }
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
-              }
-              <fpc-button-group
-                fpcListItemActions
-                size="sm"
-                ariaLabel="Subscription actions"
-                i18n-ariaLabel="@@featureSubscriptions-subscriptionActionsAria"
-              >
-                <fpc-button
-                  iconOnly
-                  size="sm"
-                  variant="dark"
-                  (clicked)="openMetersModal(sub)"
-                  title="Manage usage meters"
-                  i18n-title="@@featureAdminSubscriptions-manageMetersTitle"
-                >
-                  <i class="bi bi-speedometer2" aria-hidden="true"></i>
-                </fpc-button>
-                @if (sub.withdrawalEligibility?.canWithdraw) {
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="dark"
-                    (clicked)="openWithdrawConfirm(sub)"
-                    title="Withdraw subscription"
-                    i18n-title="@@featureSubscriptions-withdrawButtonTitle"
-                  >
-                    <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
-                  </fpc-button>
-                }
-                @if (canInstantCancel(sub)) {
-                  <fpc-button
-                    size="sm"
-                    variant="dark"
-                    iconOnly
-                    (clicked)="openInstantCancelConfirm(sub)"
-                    title="Instant cancel subscription"
-                    i18n-title="@@featureAdminSubscriptions-instantCancelButtonTitle"
-                  >
-                    <i class="bi bi-lightning-charge" aria-hidden="true"></i>
-                  </fpc-button>
-                }
-                @if (sub.status === 'active') {
-                  <fpc-button
-                    size="sm"
-                    variant="dark"
-                    iconOnly
-                    (clicked)="openCancelConfirm(sub)"
-                    title="Cancel subscription"
-                    i18n-title="@@featureSubscriptions-cancelButtonTitle"
-                  >
-                    <i class="bi bi-x-circle" aria-hidden="true"></i>
-                  </fpc-button>
-                }
-                @if (sub.status === 'pending_cancel') {
-                  <fpc-button
-                    size="sm"
-                    variant="dark"
-                    iconOnly
-                    (clicked)="openResumeConfirm(sub)"
-                    title="Resume subscription"
-                    i18n-title="@@featureSubscriptions-resumeButtonTitle"
-                  >
-                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                  </fpc-button>
-                }
-              </fpc-button-group>
-            </fpc-list-item>
-          }
-        </fpc-list>
-        @if ((appendLoading$ | async) || (appendError$ | async)) {
-          <fpc-list-append-footer
-            [loading]="!!(appendLoading$ | async)"
-            [error]="!!(appendError$ | async)"
-            (retry)="facade.loadMore()"
-          />
-        }
-        <div
-          fpcInfiniteScroll
-          [root]="scrollRoot"
-          [paused]="!!(appendError$ | async)"
-          [disabled]="(hasMore$ | async) === false || !!(appendLoading$ | async) || !!(loading$ | async)"
-          (reachedEnd)="facade.loadMore()"
-          aria-hidden="true"
-        ></div>
-      }
-    }
-  </div>
+    </ng-template>
+  </fpc-data-table>
 </div>
 
 <fpc-confirm-dialog
   [(open)]="cancelSubscriptionModalOpen"
-  i18n-title="@@featureSubscriptions-cancelSubscriptionTitle"
-  title="Cancel subscription?"
-  i18n-message="@@featureSubscriptions-cancelSubscriptionConfirm"
-  message="Are you sure you want to cancel this subscription? It will remain active until the end of the current period."
+  [title]="cancelDialogTitle()"
+  [message]="cancelDialogMessage()"
   i18n-confirmLabel="@@featureSubscriptions-cancel"
   confirmLabel="Cancel"
   [busy]="(canceling$ | async) === true"
-  (confirmed)="confirmCancelSubscription()"
-/>
+  (confirmed)="bulkCancel() ? cancelSelected() : confirmCancelSubscription()"
+>
+  <fpc-form-check
+    class="mt-3"
+    checkId="adminCancelConfirmTeardown"
+    [checked]="confirmDataTeardown()"
+    (checkedChange)="confirmDataTeardown.set($event)"
+  >
+    <label
+      class="form-check-label small"
+      for="adminCancelConfirmTeardown"
+      i18n="@@featureAdminSubscriptions-confirmLoadweaverTeardown"
+    >
+      Delete Loadweaver cluster data: required when this subscription runs a Loadweaver cluster. Its server, volumes,
+      backups and secrets are deleted.
+    </label>
+  </fpc-form-check>
+</fpc-confirm-dialog>
 
 <fpc-confirm-dialog
   [(open)]="withdrawSubscriptionModalOpen"
@@ -278,6 +176,21 @@
       <strong class="ms-1">{{ formatCurrencyAmount(refund) }}</strong>
     </p>
   }
+  <fpc-form-check
+    class="mt-3"
+    checkId="adminWithdrawConfirmTeardown"
+    [checked]="confirmDataTeardown()"
+    (checkedChange)="confirmDataTeardown.set($event)"
+  >
+    <label
+      class="form-check-label small"
+      for="adminWithdrawConfirmTeardown"
+      i18n="@@featureAdminSubscriptions-confirmLoadweaverTeardown"
+    >
+      Delete Loadweaver cluster data: required when this subscription runs a Loadweaver cluster. Its server, volumes,
+      backups and secrets are deleted.
+    </label>
+  </fpc-form-check>
 </fpc-confirm-dialog>
 
 <fpc-confirm-dialog
@@ -291,7 +204,23 @@
   [danger]="true"
   [busy]="(instantCanceling$ | async) === true"
   (confirmed)="confirmInstantCancelSubscription()"
-/>
+>
+  <fpc-form-check
+    class="mt-3"
+    checkId="adminInstantCancelConfirmTeardown"
+    [checked]="confirmDataTeardown()"
+    (checkedChange)="confirmDataTeardown.set($event)"
+  >
+    <label
+      class="form-check-label small"
+      for="adminInstantCancelConfirmTeardown"
+      i18n="@@featureAdminSubscriptions-confirmLoadweaverTeardown"
+    >
+      Delete Loadweaver cluster data: required when this subscription runs a Loadweaver cluster. Its server, volumes,
+      backups and secrets are deleted.
+    </label>
+  </fpc-form-check>
+</fpc-confirm-dialog>
 
 <fpc-modal
   [(open)]="metersModalOpen"
@@ -302,7 +231,7 @@
   @if (subscriptionForMeters; as sub) {
     <p class="text-body-secondary small d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
       <span>{{ subscriptionTitle(sub) }}</span>
-      <span>{{ subscriptionUserLabel(sub) }}</span>
+      <span [attr.title]="customerTitle(sub)">{{ customerLabel(sub) }}</span>
     </p>
   }
   @if (metersError$ | async; as metersError) {
@@ -311,69 +240,78 @@
   <div class="row g-4">
     <div class="col-lg-5">
       <h6 class="mb-2" i18n="@@featureAdminSubscriptions-meterSummaries">Current period summaries</h6>
-      @if (metersLoadingAny$ | async) {
+      @if (meterSummariesLoading()) {
         <div class="text-body-secondary small" i18n="@@featureAdminSubscriptions-metersLoading">Loading meters...</div>
-      } @else if (meterSummaries().length === 0) {
-        <div class="text-body-secondary small" i18n="@@featureAdminSubscriptions-noMeterSummaries">
-          No meter summaries.
-        </div>
       } @else {
-        <fpc-list>
-          @for (summary of meterSummaries(); track summary.meterId + summary.attachmentType + (summary.addonId ?? '')) {
-            <fpc-list-item>
-              <div class="d-flex flex-wrap align-items-center gap-2">
-                <fpc-badge variant="info" color="secondary">{{ summary.name }}</fpc-badge>
-                <span class="small text-body-secondary">{{ formatMeterValue(summary) }}</span>
-                @if (hasMeterBillingDetails(summary)) {
-                  <span class="small text-body-secondary">{{ formatMeterBillingDetails(summary) }}</span>
-                }
-                <span class="small text-body-secondary ms-auto">{{
-                  formatMeterCharge(summary.estimatedChargeNet)
-                }}</span>
-              </div>
-            </fpc-list-item>
-          }
-        </fpc-list>
+        <fpc-data-table
+          nested
+          [ariaLabel]="meterSummariesLabel"
+          [columns]="meterColumns"
+          [rows]="meterSummaries()"
+          [rowId]="meterRowId"
+          paging="client"
+          persistKey="decabill-admin-subscription-meter-summaries"
+          [searchable]="false"
+          data-testid="admin-subscription-meter-summaries"
+        >
+          <span fpcDataTableEmpty i18n="@@featureAdminSubscriptions-noMeterSummaries">No meter summaries.</span>
+        </fpc-data-table>
       }
     </div>
     <div class="col-lg-7">
       <h6 class="mb-2" i18n="@@featureAdminSubscriptions-meterEntries">Meter entries</h6>
-      @if (meterEntries().length === 0) {
-        <div class="text-body-secondary small mb-3" i18n="@@featureAdminSubscriptions-noMeterEntries">
-          No entries yet.
-        </div>
-      } @else {
-        <fpc-list class="mb-3">
-          @for (entry of meterEntries(); track entry.id) {
-            <fpc-list-item>
-              <div fpcListItemTitle class="fw-semibold">{{ meterNameById(entry.meterId) }}</div>
-              <div fpcListItemMeta class="d-flex flex-wrap align-items-center gap-3 row-gap-0">
-                <span><i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>{{ entry.value }}</span>
-                <span
-                  ><i class="bi bi-tag me-1" aria-hidden="true"></i
-                  >{{ attachmentTypeLabel(entry.attachmentType) }}</span
-                >
-                <span>
-                  <i class="bi bi-calendar-range me-1" aria-hidden="true"></i>{{ formatDateTime(entry.periodStart) }}
-                  <i class="bi bi-arrow-right mx-1" aria-hidden="true"></i>{{ formatDateTime(entry.periodEnd) }}
-                </span>
-              </div>
-              <fpc-button
-                fpcListItemActions
-                variant="danger"
-                size="sm"
-                iconOnly
-                (clicked)="openDeleteEntryConfirm(entry)"
-                [disabled]="(deletingEntry$ | async) === true"
-              >
-                <i class="bi bi-trash" aria-hidden="true"></i>
-              </fpc-button>
-            </fpc-list-item>
-          }
-        </fpc-list>
+      @if (entryBulkResult(); as result) {
+        <fpc-alert
+          class="mb-2"
+          [variant]="result.tone"
+          [message]="result.message"
+          [dismissible]="true"
+          (closed)="entryBulkResult.set(null)"
+          data-testid="admin-subscription-meter-entries-bulk-result"
+        />
       }
-      <div class="border rounded p-3 bg-body-secondary">
-        <h6 class="mb-3" i18n="@@featureAdminSubscriptions-createEntry">Record meter entry</h6>
+      <fpc-data-table
+        class="mb-3"
+        nested
+        [ariaLabel]="meterEntriesLabel"
+        [columns]="entryColumns"
+        [rows]="meterEntries()"
+        paging="server"
+        [total]="meterEntriesTotal()"
+        [(page)]="entriesPage"
+        [(pageSize)]="entriesPageSize"
+        persistKey="decabill-admin-subscription-meter-entries"
+        [searchable]="false"
+        [loading]="meterEntriesLoading()"
+        selectable
+        [(selected)]="selectedEntries"
+        [rowMenu]="entryRowMenu"
+        (rowAction)="onEntryAction($event.row, $event.item.id)"
+        data-testid="admin-subscription-meter-entries"
+      >
+        <fpc-button
+          fpcDataTableBatch
+          variant="danger"
+          size="sm"
+          [disabled]="selectedEntries().length === 0"
+          (clicked)="confirmBulkEntryDelete.set(true)"
+          data-testid="admin-subscription-meter-entries-bulk-delete"
+          iconOnly
+          [ariaLabel]="deleteEntryLabel"
+          [title]="deleteEntryLabel"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+        <span fpcDataTableEmpty i18n="@@featureAdminSubscriptions-noMeterEntries">No entries yet.</span>
+        <ng-template fpcTableCell="period" let-row>{{ entryPeriodLabel(row) }}</ng-template>
+      </fpc-data-table>
+      <div>
+        <fpc-list-header
+          class="d-block mb-2"
+          title="Record meter entry"
+          i18n-title="@@featureAdminSubscriptions-createEntry"
+          [sticky]="false"
+        />
         <form (ngSubmit)="submitMeterEntry()">
           <div class="row g-3">
             <div class="col-md-6">
@@ -391,7 +329,7 @@
                 >
                   <option value="plan" i18n="@@featureAdminSubscriptions-attachmentPlan">Plan</option>
                   @if (hasAvailableAddonMeters()) {
-                    <option value="addon" i18n="@@featureAdminSubscriptions-attachmentAddon">Addon</option>
+                    <option value="addon" i18n="@@featureAdminSubscriptions-attachmentAddon">Add-on</option>
                   }
                 </fpc-form-control>
               </fpc-form-field>
@@ -441,7 +379,7 @@
                 <fpc-form-field
                   forId="entryAddonMeter"
                   i18n-label="@@featureAdminSubscriptions-entryAddonMeter"
-                  label="Addon meter"
+                  label="Add-on meter"
                   required
                 >
                   <fpc-form-control
@@ -452,7 +390,7 @@
                     name="entryAddonMeter"
                     required
                   >
-                    <option value="" i18n="@@featureAdminSubscriptions-selectAddonMeter">Select addon meter</option>
+                    <option value="" i18n="@@featureAdminSubscriptions-selectAddonMeter">Select add-on meter</option>
                     @for (option of availableAddonMeters(); track option.key) {
                       <option [value]="option.key">{{ option.label }}</option>
                     }
@@ -536,4 +474,14 @@
   confirmLabel="Resume"
   [busy]="(resuming$ | async) === true"
   (confirmed)="confirmResume()"
+/>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkEntryDelete"
+  [title]="bulkEntryDeleteTitle"
+  [message]="bulkEntryDeleteMessage()"
+  [confirmLabel]="deleteEntryLabel"
+  [cancelLabel]="dialogCancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelectedEntries()"
 />

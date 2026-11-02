@@ -42,6 +42,25 @@ describe('CloudInitDispatchService', () => {
     );
   });
 
+  it('returns per-provisioning stack secrets only for stacks with the hook', () => {
+    const registry = new IntegratedStackRegistryService();
+
+    registry.register({
+      key: 'loadweaver',
+      displayName: 'Loadweaver',
+      buildUserData: () => 'lw',
+      prepareProvisioningConfig: () => ({ loadweaverAdminClaimToken: 'lwc_x' }),
+    });
+    registry.register({ key: 'agenstra-controller', displayName: 'Agenstra Controller', buildUserData: () => 'c' });
+    const dispatch = createService(registry);
+
+    expect(dispatch.prepareProvisioningConfig('loadweaver')).toEqual({ loadweaverAdminClaimToken: 'lwc_x' });
+    expect(dispatch.prepareProvisioningConfig('agenstra-controller')).toEqual({});
+    expect(dispatch.prepareProvisioningConfig(CloudInitServiceType.Custom)).toEqual({});
+    expect(dispatch.prepareProvisioningConfig(undefined)).toEqual({});
+    expect(dispatch.prepareProvisioningConfig('unknown-stack')).toEqual({});
+  });
+
   it('uses the registered stack buildUserData for each first-party key', () => {
     const registry = new IntegratedStackRegistryService();
     registry.register({

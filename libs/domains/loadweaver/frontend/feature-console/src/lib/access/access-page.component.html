@@ -1,0 +1,532 @@
+<div class="fpc-page">
+  @if (!scope) {
+    <fpc-page-header [title]="title">
+      <!-- The project is a scope, not a filter: a live picker in the header, no page-wide Filters strip above the lanes
+           (LW-20, live filters). -->
+      @if (projects().length > 0) {
+        <span fpcPageHeaderActions class="lw-access__project">
+          <label class="visually-hidden" for="lw-access-project">{{ projectLabel }}</label>
+          <fpc-form-control
+            controlType="select"
+            controlId="lw-access-project"
+            size="sm"
+            [ngModel]="project() ?? ''"
+            (ngModelChange)="selectProject($event)"
+            [title]="projectLabel"
+            data-testid="access-project"
+          >
+            @for (p of projects(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </fpc-form-control>
+        </span>
+      }
+      <loadweaver-saved-views fpcPageHeaderActions scope="access" [binding]="views" />
+      <fpc-button
+        fpcPageHeaderActions
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="refreshLabel"
+        [title]="refreshLabel"
+        (clicked)="refresh()"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+    </fpc-page-header>
+  }
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (changeError(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" data-testid="access-change-error" />
+    }
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="access-bulk-result"
+      />
+    }
+
+    @if (project() && projectError(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    }
+
+    @if (lanes().length > 1) {
+      <fpc-tab-group
+        class="fpc-lane-tabs"
+        [activeId]="currentLane()"
+        (activeIdChange)="lane.set($any($event))"
+        [ariaLabel]="title"
+      >
+        @for (id of lanes(); track id) {
+          <fpc-tab [id]="id" [label]="laneLabels[id]" />
+        }
+      </fpc-tab-group>
+    }
+    <fpc-section-row class="flex-grow-1 min-h-0">
+      @if (showsCluster()) {
+        <!-- Same weight as the project lanes (7 / 4 / 5): the default 1 shrank it to a sliver beside them. -->
+        <loadweaver-lane
+          [title]="clusterTitle"
+          grow="5 1 0"
+          [flush]="true"
+          [off]="currentLane() !== 'cluster'"
+          data-testid="access-cluster-lane"
+        >
+          @if (scope) {
+            <fpc-button
+              fpcPanelActions
+              variant="dark"
+              size="sm"
+              iconOnly
+              [ariaLabel]="refreshLabel"
+              [title]="refreshLabel"
+              (clicked)="refresh()"
+              data-testid="access-cluster-refresh"
+            >
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </fpc-button>
+          }
+          @if (clusterMembersError(); as message) {
+            <fpc-alert [flush]="true" variant="danger" [message]="message" />
+          }
+          <!-- 3.38 D1: Member · role · since · granted by; ⋮ Change role / Remove; bulk Remove (cluster admins). -->
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="clusterTitle"
+            [columns]="clusterColumns"
+            [rows]="filteredClusterMembers()"
+            [rowId]="clusterMemberId"
+            [loading]="clusterMembersLoading() && clusterMembers().length === 0"
+            paging="client"
+            persistKey="lw-access-cluster"
+            [(query)]="clusterSearch"
+            [searchPlaceholder]="searchLabel"
+            [selectable]="isClusterAdmin()"
+            [(selected)]="selectedCluster"
+            [rowMenu]="isClusterAdmin() ? clusterMenu : null"
+            (rowAction)="onClusterAction($event.row, $event.item.id)"
+            emptyIcon="person-badge"
+            data-testid="access-cluster-members"
+          >
+            @if (isClusterAdmin()) {
+              <span fpcDataTableToolbar class="d-inline-flex gap-2">
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  iconOnly
+                  [ariaLabel]="transferTitle"
+                  [title]="transferTitle"
+                  (clicked)="transferOpen.set(true)"
+                  data-testid="access-transfer-open"
+                >
+                  <i class="bi bi-arrow-down-up" aria-hidden="true"></i>
+                </fpc-button>
+                <fpc-button
+                  variant="primary"
+                  size="sm"
+                  iconOnly
+                  [ariaLabel]="addClusterMemberLabel"
+                  [title]="addClusterMemberLabel"
+                  (clicked)="openClusterMemberForm()"
+                  data-testid="access-cluster-add"
+                >
+                  <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                </fpc-button>
+              </span>
+            }
+            <fpc-button
+              fpcDataTableBatch
+              variant="danger"
+              size="sm"
+              [disabled]="changing()"
+              (clicked)="confirmBulk.set('cluster')"
+              data-testid="access-cluster-bulk-remove"
+              iconOnly
+              [ariaLabel]="removeLabel"
+              [title]="removeLabel"
+            >
+              <i class="bi bi-trash" aria-hidden="true"></i>
+            </fpc-button>
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                icon="person-badge"
+                size="sm"
+                i18n-title="@@lwConsoleAccess-noClusterMembers"
+                title="No cluster roles assigned (global admins are cluster admins)"
+              />
+            </span>
+            <ng-template fpcTableCell="since" let-row>{{ row.createdAt | date: 'short' }}</ng-template>
+          </fpc-data-table>
+        </loadweaver-lane>
+      }
+
+      @if (project(); as p) {
+        @if (projectLoading() && !projectAccess()) {
+          <loadweaver-lane [title]="membersOf(p)" [flush]="true" [off]="currentLane() !== 'members'">
+            <fpc-empty-state [loading]="true" size="sm" [title]="loadingLabel" data-testid="access-members-loading" />
+          </loadweaver-lane>
+        } @else if (projectAccess(); as pa) {
+          <loadweaver-lane [title]="membersOf(p)" grow="7 1 0" [flush]="true" [off]="currentLane() !== 'members'">
+            @if (scope && !showsCluster()) {
+              <fpc-button
+                fpcPanelActions
+                variant="dark"
+                size="sm"
+                iconOnly
+                [ariaLabel]="refreshLabel"
+                [title]="refreshLabel"
+                (clicked)="refresh()"
+                data-testid="access-members-refresh"
+              >
+                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+              </fpc-button>
+            }
+            <!-- 3.38 D1: Member (creator badge) · role · since · granted by; ⋮ Change role / Remove; bulk Remove. -->
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="membersOf(p)"
+              [columns]="memberColumns"
+              [rows]="filteredMembers()"
+              [rowId]="projectMemberId"
+              paging="client"
+              persistKey="lw-access-members"
+              [(query)]="memberSearch"
+              [searchPlaceholder]="searchLabel"
+              [selectable]="mayAdminProject()"
+              [(selected)]="selectedMembers"
+              [rowMenu]="mayAdminProject() ? memberMenu : null"
+              (rowAction)="onMemberAction($event.row, $event.item.id)"
+              emptyIcon="people"
+              data-testid="access-members"
+            >
+              @if (mayAdminProject()) {
+                <fpc-button
+                  fpcDataTableToolbar
+                  variant="primary"
+                  size="sm"
+                  iconOnly
+                  [ariaLabel]="addMemberLabel"
+                  [title]="addMemberLabel"
+                  (clicked)="openMemberForm()"
+                  data-testid="access-member-add"
+                >
+                  <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                </fpc-button>
+              }
+              <fpc-button
+                fpcDataTableBatch
+                variant="danger"
+                size="sm"
+                [disabled]="changing() || !canRemoveMembers()"
+                (clicked)="confirmBulk.set('members')"
+                data-testid="access-members-bulk-remove"
+                iconOnly
+                [ariaLabel]="removeLabel"
+                [title]="removeLabel"
+              >
+                <i class="bi bi-trash" aria-hidden="true"></i>
+              </fpc-button>
+              <span fpcDataTableEmpty>
+                <fpc-empty-state icon="people" size="sm" i18n-title="@@lwConsoleAccess-noMembers" title="No members" />
+              </span>
+              <ng-template fpcTableCell="user" let-row>
+                <span>{{ memberLabel(row) }}</span>
+                @if (row.userId === pa.settings.createdBy) {
+                  <fpc-badge class="ms-1" tone="neutral" i18n="@@lwConsoleAccess-creator">Creator</fpc-badge>
+                }
+              </ng-template>
+              <ng-template fpcTableCell="since" let-row>{{ row.createdAt | date: 'short' }}</ng-template>
+            </fpc-data-table>
+          </loadweaver-lane>
+
+          <loadweaver-lane [title]="settingsTitle" grow="4 1 0" [off]="currentLane() !== 'project'">
+            <!-- Summary; the fill-and-submit form is a modal (3.38 D10). Quiet edit like the other lane actions. -->
+            @if (mayAdminProject()) {
+              <fpc-button
+                lwLaneActions
+                variant="dark"
+                size="sm"
+                iconOnly
+                [ariaLabel]="editSettingsLabel"
+                [title]="editSettingsLabel"
+                (clicked)="openSettings()"
+                data-testid="access-settings-edit"
+              >
+                <i class="bi bi-pencil" aria-hidden="true"></i>
+              </fpc-button>
+            }
+            <!-- Label over value: the lane is the narrowest of four at 1440 px (LW-20), a side-by-side value wrapped
+                 letter by letter there. -->
+            <fpc-key-value-list
+              class="lw-access__settings"
+              [items]="settingsFacts()"
+              data-testid="access-settings-summary"
+            />
+            @if (!mayAdminProject()) {
+              <div class="small text-body-secondary" i18n="@@lwConsoleAccess-settingsReadOnly">
+                Project admins change these settings.
+              </div>
+            }
+          </loadweaver-lane>
+
+          <!-- Requests: a separate flush lane (3.38), not a list inside the padded settings form. -->
+          <loadweaver-lane
+            [title]="requestsTitle"
+            grow="5 1 0"
+            [flush]="true"
+            [off]="currentLane() !== 'requests'"
+            data-testid="access-requests-lane"
+          >
+            <loadweaver-access-requests
+              [requests]="requests()"
+              [(search)]="requestSearch"
+              [searchLabel]="requestSearchLabel"
+              [mayAccept]="mayAccept()"
+              [changing]="changing()"
+              (accept)="acceptRequest($event)"
+              (bulkDone)="onRequestsBulkDone($event)"
+            />
+          </loadweaver-lane>
+        }
+      }
+    </fpc-section-row>
+
+    @if (me() && !showsCluster() && !project()) {
+      <fpc-empty-state
+        icon="people"
+        i18n-title="@@lwConsoleAccess-noRoles"
+        title="You have no cluster or project role yet"
+        i18n-message="@@lwConsoleAccess-noRolesHint"
+        message="Ask a project admin to add you to a project."
+      />
+    }
+  </div>
+</div>
+
+@if (isClusterAdmin()) {
+  <!-- Export / import (3.38): a modal with the YAML editor instead of a section under the member list. -->
+  <fpc-modal [(open)]="transferOpen" [title]="transferTitle" size="lg">
+    <div data-testid="access-transfer">
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <fpc-button
+          variant="dark"
+          size="sm"
+          [loading]="exporting()"
+          (clicked)="exportAccess('download')"
+          data-testid="access-export"
+        >
+          <i class="bi bi-download me-1" aria-hidden="true"></i
+          ><span i18n="@@lwConsoleAccess-download">Download YAML</span>
+        </fpc-button>
+        <fpc-button variant="dark" size="sm" [disabled]="exporting()" (clicked)="exportAccess('editor')">
+          <i class="bi bi-pencil-square me-1" aria-hidden="true"></i
+          ><span i18n="@@lwConsoleAccess-loadIntoEditor">Load current access into the editor</span>
+        </fpc-button>
+      </div>
+      @if (exportError(); as message) {
+        <fpc-alert class="d-block mb-3" variant="danger" [message]="message" />
+      }
+      <fpc-code-editor
+        [value]="editorValue()"
+        language="yaml"
+        height="20rem"
+        (valueChange)="onImportYamlChange($event)"
+      />
+      @if (importError(); as message) {
+        <fpc-alert class="d-block mt-3" variant="danger" [message]="message" data-testid="access-import-error" />
+      }
+      @if (importResult(); as result) {
+        <fpc-alert
+          class="d-block mt-3"
+          variant="success"
+          [message]="result.changed + ' ' + importedLabel"
+          data-testid="access-import-result"
+        />
+      }
+    </div>
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button variant="dark" (clicked)="transferOpen.set(false)">{{ closeLabel }}</fpc-button>
+      <fpc-button variant="danger" [loading]="importing()" (clicked)="importAccess()" data-testid="access-import">
+        <i class="bi bi-upload me-1" aria-hidden="true"></i><span i18n="@@lwConsoleAccess-import">Import</span>
+      </fpc-button>
+    </div>
+  </fpc-modal>
+}
+
+@if (isClusterAdmin()) {
+  <fpc-modal [(open)]="clusterFormOpen" [title]="addClusterMemberLabel">
+    <form (ngSubmit)="saveClusterMember()" data-testid="access-cluster-form">
+      <fpc-form-field forId="lw-access-cluster-user" i18n-label="@@lwConsoleAccess-userId" label="User id">
+        <fpc-form-control
+          controlId="lw-access-cluster-user"
+          name="clusterUserId"
+          size="sm"
+          controlClass="font-monospace"
+          placeholder="00000000-0000-0000-0000-000000000000"
+          [(ngModel)]="clusterUserId"
+        />
+      </fpc-form-field>
+      <fpc-form-field forId="lw-access-cluster-role" i18n-label="@@lwConsoleAccess-role" label="Role">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-access-cluster-role"
+          name="clusterRole"
+          size="sm"
+          [(ngModel)]="clusterRole"
+        >
+          @for (r of clusterRoles; track r) {
+            <option [value]="r">{{ clusterRoleLabel(r) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+      @if (clusterInvalid()) {
+        <fpc-alert
+          variant="warning"
+          i18n-message="@@lwConsoleAccess-clusterInvalid"
+          message="Cluster roles need the platform user id (a UUID)."
+        />
+      }
+    </form>
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button variant="dark" (clicked)="clusterFormOpen.set(false)">{{ cancelLabel }}</fpc-button>
+      <fpc-button variant="primary" [loading]="changing()" (clicked)="saveClusterMember()">
+        <span i18n="@@lwConsoleAccess-grant">Grant</span>
+      </fpc-button>
+    </div>
+  </fpc-modal>
+}
+
+@if (mayAdminProject()) {
+  <fpc-modal [(open)]="memberFormOpen" [title]="addMemberLabel">
+    <form (ngSubmit)="saveMember()" data-testid="access-member-form">
+      <fpc-form-field forId="lw-access-member-user" i18n-label="@@lwConsoleAccess-userId" label="User id">
+        <fpc-form-control
+          controlId="lw-access-member-user"
+          name="memberUserId"
+          size="sm"
+          controlClass="font-monospace"
+          [(ngModel)]="memberUserId"
+        />
+      </fpc-form-field>
+      <fpc-form-field forId="lw-access-member-role" i18n-label="@@lwConsoleAccess-role" label="Role">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-access-member-role"
+          name="memberRole"
+          size="sm"
+          [(ngModel)]="memberRole"
+        >
+          @for (r of grantableRoles(); track r) {
+            <option [value]="r">{{ projectRoleLabel(r) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+      @if (memberInvalid()) {
+        <fpc-alert
+          variant="warning"
+          i18n-message="@@lwConsoleAccess-memberInvalid"
+          message="Enter a user id (letters, digits and @._:|-) and a role you may grant."
+        />
+      }
+    </form>
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button variant="dark" (clicked)="memberFormOpen.set(false)">{{ cancelLabel }}</fpc-button>
+      <fpc-button variant="primary" [loading]="changing()" (clicked)="saveMember()">
+        <span i18n="@@lwConsoleAccess-grant">Grant</span>
+      </fpc-button>
+    </div>
+  </fpc-modal>
+}
+
+@if (mayAdminProject()) {
+  <fpc-modal [(open)]="settingsOpen" [title]="settingsTitle">
+    <form (ngSubmit)="saveSettings()" data-testid="access-settings">
+      <fpc-form-field
+        forId="lw-access-approval"
+        i18n-label="@@lwConsoleAccess-approvalMode"
+        label="Plans that need an approval"
+      >
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-access-approval"
+          name="approvalMode"
+          size="sm"
+          [disabled]="!mayAdminProject()"
+          [ngModel]="approvalMode()"
+          (ngModelChange)="approvalMode.set($event)"
+        >
+          @for (mode of approvalModes; track mode) {
+            <option [value]="mode">{{ approvalModeLabel(mode) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+      <fpc-form-switch
+        class="d-block mb-3"
+        switchId="lw-access-developer-exec"
+        [disabled]="!mayAdminProject()"
+        [checked]="developerExec()"
+        (checkedChange)="developerExec.set($event)"
+      >
+        <label class="form-check-label small" for="lw-access-developer-exec">
+          <span i18n="@@lwConsoleAccess-developerExec">Developers may open terminals</span>
+          <span class="d-block text-body-secondary" i18n="@@lwConsoleAccess-developerExecHint"
+            >Exec into the project's replicas, not only operators and admins.</span
+          >
+        </label>
+      </fpc-form-switch>
+      <fpc-form-switch
+        class="d-block mb-3"
+        switchId="lw-access-record"
+        [disabled]="!mayAdminProject()"
+        [checked]="recordTerminals()"
+        (checkedChange)="recordTerminals.set($event)"
+      >
+        <label class="form-check-label small" for="lw-access-record">
+          <span i18n="@@lwConsoleAccess-recordTerminals">Record terminal sessions</span>
+          <span class="d-block text-body-secondary" i18n="@@lwConsoleAccess-recordTerminalsHint"
+            >Input and output are kept for the audit; off: metadata only.</span
+          >
+        </label>
+      </fpc-form-switch>
+    </form>
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button variant="dark" (clicked)="settingsOpen.set(false)">{{ cancelLabel }}</fpc-button>
+      <fpc-button
+        variant="primary"
+        [disabled]="!settingsDirty()"
+        [loading]="changing()"
+        (clicked)="saveSettings()"
+        data-testid="access-settings-save"
+      >
+        <span i18n="@@lwConsoleAccess-save">Save</span>
+      </fpc-button>
+    </div>
+  </fpc-modal>
+}
+
+<fpc-confirm-dialog
+  [open]="confirmBulk() !== null"
+  (openChange)="$event || confirmBulk.set(null)"
+  [title]="bulkRemoveTitle"
+  [message]="bulkRemoveMessage()"
+  [confirmLabel]="removeLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="removeSelected()"
+/>
+
+<fpc-confirm-dialog
+  [open]="pending() !== null"
+  (openChange)="onConfirmOpenChange($event)"
+  [title]="pending()?.title ?? ''"
+  [message]="pending()?.message ?? null"
+  [confirmLabel]="pending()?.confirmLabel ?? ''"
+  [cancelLabel]="cancelLabel"
+  [danger]="pending()?.danger ?? false"
+  (confirmed)="confirmPending()"
+/>

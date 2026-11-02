@@ -37,9 +37,10 @@ export function getInstalledVersion(env: NodeJS.ProcessEnv = process.env, versio
   return '0.0.0';
 }
 
+/** Semver order; prereleases (`3.6.0-beta.1`) sort before their release. */
 export function compareVersions(left: string, right: string): number | null {
-  const leftCoerced = coerce(left);
-  const rightCoerced = coerce(right);
+  const leftCoerced = coerce(left, { includePrerelease: true });
+  const rightCoerced = coerce(right, { includePrerelease: true });
 
   if (!leftCoerced || !rightCoerced) {
     return null;
@@ -67,7 +68,7 @@ export function resolveUpdateState(installed: string, latest: string | null | un
 }
 
 export function normalizeVersion(value: string): string | null {
-  const coerced = coerce(value);
+  const coerced = coerce(value, { includePrerelease: true });
 
   return coerced ? coerced.version : null;
 }

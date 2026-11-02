@@ -52,6 +52,7 @@ const preview: Preview = {
           { value: 'decabill', title: 'Decabill' },
           { value: 'agenstra', title: 'Agenstra' },
           { value: 'forepath', title: 'ForePath' },
+          { value: 'loadweaver', title: 'Loadweaver' },
         ],
         dynamicTitle: true,
       },

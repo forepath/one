@@ -1,0 +1,50 @@
+<fpc-command-palette
+  [open]="open()"
+  (openChange)="open.set($event)"
+  [query]="query()"
+  (queryChange)="onQueryChange($event)"
+  [groups]="groups()"
+  [loading]="loading()"
+  [title]="title"
+  [placeholder]="placeholder"
+  [inputLabel]="inputLabel"
+  (itemActivate)="onActivate($event)"
+  data-testid="search-palette"
+>
+  <div fpcCommandPaletteEmpty>
+    @if (error(); as message) {
+      <fpc-alert variant="danger" [message]="message" />
+    } @else if (query().trim() && !loading()) {
+      <span i18n="@@lwConsoleSearch-noResults">Nothing found.</span>
+    } @else if (!query().trim()) {
+      <span i18n="@@lwConsoleSearch-hintScoped"
+        >Type to search everything you may see; narrow with in:project/name or kind:VirtualMachine, or type a command
+        (drain n2, logs api).</span
+      >
+    }
+  </div>
+  <div fpcCommandPaletteFooter class="d-flex justify-content-between align-items-center">
+    <span i18n="@@lwConsoleSearch-keys">↑ ↓ to move, Enter to open, Ctrl / ⌘ + K to close</span>
+    @if (query().trim()) {
+      <fpc-button variant="link" size="sm" (clicked)="showAll()" data-testid="search-show-all">
+        <span i18n="@@lwConsoleSearch-showAll">All results</span>
+        <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+      </fpc-button>
+    }
+  </div>
+</fpc-command-palette>
+
+<loadweaver-search-action-confirm [action]="pendingAction()" (actionChange)="pendingAction.set($event)" />
+
+@if (actionResult(); as result) {
+  <fpc-toast-container>
+    <fpc-toast
+      [variant]="result.ok ? 'success' : 'danger'"
+      [title]="result.ok ? actionDone : actionFailed"
+      [message]="result.error ? result.title + ': ' + result.error : result.title"
+      [delay]="result.ok ? 5000 : 0"
+      (closed)="dismissActionResult()"
+      data-testid="search-action-result"
+    />
+  </fpc-toast-container>
+}

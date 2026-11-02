@@ -1,0 +1,249 @@
+{
+  "name": "loadweaver-frontend-console",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/loadweaver/frontend-console/src",
+  "i18n": {
+    "sourceLocale": "en",
+    "locales": {
+      "de": "apps/loadweaver/frontend-console/src/i18n/messages.de.xlf"
+    }
+  },
+  "tags": ["domain:loadweaver", "type:app", "scope:frontend"],
+  "implicitDependencies": [
+    "shared-platform-authentication",
+    "loadweaver-backend-control-plane"
+  ],
+  "targets": {
+    "stage-monaco-assets": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/package-lock.json",
+        "{workspaceRoot}/tools/ci/stage-monaco-assets.mjs",
+        "{workspaceRoot}/node_modules/monaco-editor/**/*"
+      ],
+      "outputs": ["{workspaceRoot}/.cache/monaco-editor"],
+      "options": {
+        "command": "node tools/ci/stage-monaco-assets.mjs"
+      }
+    },
+    "build": {
+      "dependsOn": ["stage-monaco-assets"],
+      "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/loadweaver/frontend-console",
+        "index": "apps/loadweaver/frontend-console/src/index.html",
+        "browser": "apps/loadweaver/frontend-console/src/main.ts",
+        "polyfills": [
+          "zone.js",
+          "apps/loadweaver/frontend-console/src/polyfills.ts"
+        ],
+        "tsConfig": "apps/loadweaver/frontend-console/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/loadweaver/frontend-console/public"
+          },
+          {
+            "glob": "**/*",
+            "input": ".cache/monaco-editor",
+            "output": "/assets/monaco/"
+          }
+        ],
+        "externalDependencies": ["monaco-editor"],
+        "styles": ["apps/loadweaver/frontend-console/src/styles.scss"],
+        "scripts": [
+          "node_modules/@popperjs/core/dist/umd/popper.min.js",
+          "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+          "node_modules/apexcharts/dist/apexcharts.min.js"
+        ],
+        "localize": true,
+        "i18nMissingTranslation": "warning"
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "1mb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "16kb",
+              "maximumError": "32kb"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "libs/domains/loadweaver/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/loadweaver/frontend/util-configuration/src/lib/environment.console.production.ts"
+            }
+          ]
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "libs/domains/loadweaver/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/loadweaver/frontend/util-configuration/src/lib/environment.console.ts"
+            }
+          ]
+        },
+        "serve": {
+          "externalDependencies": []
+        },
+        "en": {
+          "localize": ["en"]
+        },
+        "de": {
+          "localize": ["de"]
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "hmr": false,
+        "port": 4602
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "loadweaver-frontend-console:build:development,serve,en"
+        },
+        "production": {
+          "buildTarget": "loadweaver-frontend-console:build:production,serve,en"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n-angular": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "loadweaver-frontend-console:build",
+        "outputPath": "apps/loadweaver/frontend-console/src/i18n"
+      }
+    },
+    "extract-i18n": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node ../../../remove-context-groups.cjs src/i18n/messages.xlf",
+        "cwd": "apps/loadweaver/frontend-console"
+      },
+      "dependsOn": ["extract-i18n-angular"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/loadweaver/frontend-console/jest.config.cts",
+        "tsConfig": "apps/loadweaver/frontend-console/tsconfig.spec.json"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "loadweaver-frontend-console:build",
+        "port": 4602,
+        "staticFilePath": "dist/apps/loadweaver/frontend-console/browser",
+        "spa": true
+      }
+    },
+    "prebuild-server": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/loadweaver/frontend-console/server",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/loadweaver/frontend-console/src/server.ts",
+        "tsConfig": "apps/loadweaver/frontend-console/tsconfig.server.json",
+        "assets": [],
+        "generatePackageJson": true,
+        "external": ["express"],
+        "deleteOutputPath": false,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      },
+      "dependsOn": ["build"]
+    },
+    "server": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/loadweaver/frontend-console/server/browser"
+      ],
+      "options": {
+        "command": "bash -c \"test -d dist/apps/loadweaver/frontend-console/browser && mkdir -p dist/apps/loadweaver/frontend-console/server && rm -rf dist/apps/loadweaver/frontend-console/server/browser && cp -r dist/apps/loadweaver/frontend-console/browser dist/apps/loadweaver/frontend-console/server/browser || (echo 'Error: Browser directory not found. Please run build first.' && exit 1)\""
+      },
+      "dependsOn": ["prebuild-server"]
+    },
+    "server-container-image": {
+      "dependsOn": ["server"],
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/loadweaver/frontend-console/Dockerfile.server",
+        "context": "dist/apps/loadweaver/frontend-console/server",
+        "build-args": ["VERSION"]
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "labels": [
+            "io.forepath.one.test-project=loadweaver-frontend-console"
+          ],
+          "tags": ["ghcr.io/forepath/loadweaver-console-server:latest"]
+        },
+        "release": {
+          "push": true,
+          "tags": [
+            "ghcr.io/forepath/loadweaver-console-server:latest",
+            "ghcr.io/forepath/loadweaver-console-server:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "start-containers": {
+      "dependsOn": ["server-container-image"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/loadweaver/frontend-console",
+        "command": "CONSOLE_SERVER_IMAGE=ghcr.io/forepath/loadweaver-console-server:latest CONSOLE_SERVER_CONTAINER_NAME=loadweaver-console-server docker compose up -d --force-recreate --remove-orphans && docker image prune --force --filter label=io.forepath.one.test-project=loadweaver-frontend-console"
+      }
+    },
+    "sbom": {
+      "executor": "@forepath/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
+    }
+  }
+}

@@ -1,0 +1,135 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title" />
+
+  @if (comparison(); as cmp) {
+    <fpc-summary-bar class="flex-shrink-0" [columns]="4" data-testid="fleet-compare-summary">
+      <fpc-summary-card
+        icon="tag"
+        i18n-label="@@lwConsoleFleetCompare-sumVersions"
+        label="Versions"
+        [value]="cmp.sameVersion ? '=' : '≠'"
+        [tone]="cmp.sameVersion ? 'success' : 'warning'"
+      />
+      <fpc-summary-card
+        icon="check2-circle"
+        i18n-label="@@lwConsoleFleetCompare-sumIdentical"
+        label="Identical policies"
+        [value]="'' + cmp.policyDrift.identical"
+        tone="success"
+      />
+      <fpc-summary-card
+        icon="intersect"
+        i18n-label="@@lwConsoleFleetCompare-sumDifferent"
+        label="Different"
+        [value]="'' + cmp.policyDrift.different"
+        [tone]="cmp.policyDrift.different > 0 ? 'warning' : 'default'"
+      />
+      <fpc-summary-card
+        icon="question-circle"
+        i18n-label="@@lwConsoleFleetCompare-sumMissing"
+        label="Missing somewhere"
+        [value]="'' + cmp.policyDrift.missing"
+        [tone]="cmp.policyDrift.missing > 0 ? 'warning' : 'default'"
+      />
+    </fpc-summary-bar>
+  }
+
+  <fpc-list-toolbar
+    [(open)]="selectionOpen"
+    [title]="selectionLabel"
+    [activeCount]="selected().length"
+    (applied)="canCompare() && compare()"
+    (cleared)="clear()"
+  >
+    @if (selectable().length === 0) {
+      <p class="fpc-filter-grid__wide small text-body-secondary mb-0" i18n="@@lwConsoleFleetCompare-noneSelectable">
+        Comparing needs a cluster-wide grant on at least two clusters.
+      </p>
+    }
+    @for (c of selectable(); track c.id) {
+      <fpc-form-check
+        [checkId]="'lw-fleet-compare-' + c.id"
+        [label]="c.name"
+        [checked]="isSelected(c.id)"
+        (checkedChange)="toggle(c.id, $event)"
+        [attr.data-testid]="'fleet-compare-pick-' + c.name"
+      />
+    }
+    <span class="fpc-filter-grid__wide small text-body-secondary" i18n="@@lwConsoleFleetCompare-limits"
+      >2 to 8 clusters</span
+    >
+  </fpc-list-toolbar>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    }
+
+    @if (loading() && !comparison()) {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" data-testid="fleet-compare-loading" />
+    } @else if (comparison(); as cmp) {
+      <!-- Dashboard (3.38): one table per panel, first column sticky for wide comparisons. -->
+      <fpc-panel-grid [columns]="2">
+        <fpc-panel i18n-title="@@lwConsoleFleetCompare-versions" title="Versions" [flush]="true">
+          <fpc-data-table
+            [columns]="versionColumns"
+            [rows]="cmp.versions"
+            [rowId]="clusterRowId"
+            [ariaLabel]="versionsLabel"
+            [searchable]="false"
+            [showColumnChooser]="false"
+            stickyFirstColumn
+            nested
+            data-testid="fleet-compare-versions"
+          />
+        </fpc-panel>
+        <fpc-panel i18n-title="@@lwConsoleFleetCompare-capacity" title="Capacity" [flush]="true">
+          <fpc-data-table
+            [columns]="capacityColumns"
+            [rows]="cmp.capacity"
+            [rowId]="clusterRowId"
+            [ariaLabel]="capacityLabel"
+            [searchable]="false"
+            [showColumnChooser]="false"
+            stickyFirstColumn
+            nested
+            data-testid="fleet-compare-capacity"
+          />
+        </fpc-panel>
+      </fpc-panel-grid>
+      <fpc-panel-grid [columns]="1" fill>
+        <fpc-panel i18n-title="@@lwConsoleFleetCompare-drift" title="Policy drift" [flush]="true">
+          @if (cmp.policyDrift.items.length === 0) {
+            <fpc-empty-state
+              icon="check2-circle"
+              size="sm"
+              i18n-title="@@lwConsoleFleetCompare-noDrift"
+              title="The policies are the same on every cluster"
+            />
+          } @else {
+            <fpc-data-table
+              [columns]="driftColumns()"
+              [rows]="driftRows()"
+              [rowId]="driftRowId"
+              [ariaLabel]="driftLabel"
+              [searchPlaceholder]="driftSearchLabel"
+              [(query)]="driftQuery"
+              [showColumnChooser]="false"
+              stickyFirstColumn
+              nested
+              paging="client"
+              persistKey="lw-fleet-compare-drift"
+              data-testid="fleet-compare-drift"
+            />
+          }
+        </fpc-panel>
+      </fpc-panel-grid>
+    } @else if (!error()) {
+      <fpc-empty-state
+        icon="layout-split"
+        i18n-title="@@lwConsoleFleetCompare-empty"
+        title="Choose 2 to 8 clusters to compare"
+      />
+    }
+  </div>
+</div>

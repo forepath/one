@@ -6,6 +6,7 @@ export enum IntegratedProvisioningService {
   AgenstraController = 'agenstra-controller',
   AgenstraManager = 'agenstra-manager',
   DecabillBilling = 'decabill-billing',
+  Loadweaver = 'loadweaver',
 }
 
 /**
@@ -15,6 +16,7 @@ export enum CloudInitServiceType {
   AgenstraController = IntegratedProvisioningService.AgenstraController,
   AgenstraManager = IntegratedProvisioningService.AgenstraManager,
   DecabillBilling = IntegratedProvisioningService.DecabillBilling,
+  Loadweaver = IntegratedProvisioningService.Loadweaver,
   Custom = 'custom',
 }
 
@@ -76,6 +78,10 @@ export function canonicalizeCloudInitService(value: string | undefined): CloudIn
     return CloudInitServiceType.DecabillBilling;
   }
 
+  if (integrated === IntegratedProvisioningService.Loadweaver) {
+    return CloudInitServiceType.Loadweaver;
+  }
+
   return CloudInitServiceType.AgenstraController;
 }
 
@@ -89,6 +95,8 @@ export function integratedProvisioningServiceLabel(service: IntegratedProvisioni
       return 'Agenstra Manager';
     case IntegratedProvisioningService.DecabillBilling:
       return 'Decabill Billing';
+    case IntegratedProvisioningService.Loadweaver:
+      return 'Loadweaver';
     default:
       return 'Agenstra Controller';
   }
@@ -100,6 +108,8 @@ export function integratedProvisioningServiceDescription(service: IntegratedProv
       return 'Runs the agent manager only.';
     case IntegratedProvisioningService.DecabillBilling:
       return 'Runs the Decabill billing manager and console stack.';
+    case IntegratedProvisioningService.Loadweaver:
+      return 'Runs a single-node Loadweaver cluster (control plane, console, node agent).';
     default:
       return 'Runs the full agent controller stack.';
   }

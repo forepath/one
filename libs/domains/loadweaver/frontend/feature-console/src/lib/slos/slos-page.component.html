@@ -1,0 +1,169 @@
+<ng-template #refreshButton>
+  <fpc-button
+    variant="dark"
+    size="sm"
+    [iconOnly]="true"
+    [ariaLabel]="refreshLabel"
+    [title]="refreshLabel"
+    (clicked)="load()"
+    data-testid="slos-refresh"
+  >
+    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+  </fpc-button>
+</ng-template>
+
+<!-- One objective in a table cell: measured / target, the error budget used (bar + %), the 1 h burn rate. -->
+<ng-template #objective let-o>
+  <span
+    class="d-inline-flex flex-wrap align-items-center gap-2 small"
+    [attr.data-testid]="o.percentile ? 'slo-latency' : 'slo-availability'"
+  >
+    <span class="text-nowrap">{{ percent(o.sli) }} / {{ percent(o.target) }}</span>
+    <fpc-progress
+      class="flex-grow-1 lw-slo__budget"
+      height=".5rem"
+      [value]="budgetUsed(o)"
+      [variant]="budgetTone(o)"
+      [ariaLabel]="budgetLabel"
+      [attr.title]="budgetLabel + ': ' + budgetUsed(o) + ' %'"
+    />
+    <span class="text-nowrap">{{ budgetUsed(o) }} %</span>
+    <span class="text-nowrap" [class.text-danger]="burnsFast(o)" [title]="burnRateLabel"
+      ><i class="bi bi-fire me-1" aria-hidden="true"></i>{{ burnRate(o.burnRate1h) }}</span
+    >
+  </span>
+</ng-template>
+
+<div class="fpc-page">
+  @if (!scope) {
+    <fpc-page-header [title]="title">
+      <loadweaver-saved-views fpcPageHeaderActions scope="slos" [binding]="views" />
+      <ng-container ngProjectAs="[fpcPageHeaderActions]">
+        <ng-container [ngTemplateOutlet]="refreshButton" />
+      </ng-container>
+    </fpc-page-header>
+  }
+
+  <fpc-summary-bar class="flex-shrink-0" [columns]="4">
+    <fpc-summary-card icon="bullseye" i18n-label="@@lwConsoleSlos-total" label="SLOs" [value]="'' + counts().total" />
+    <fpc-summary-card
+      icon="check2-circle"
+      i18n-label="@@lwConsoleSlos-ok"
+      label="OK"
+      [value]="'' + counts().ok"
+      [tone]="counts().ok > 0 ? 'success' : 'default'"
+    />
+    <fpc-summary-card
+      icon="fire"
+      i18n-label="@@lwConsoleSlos-burning"
+      label="Burning"
+      [value]="'' + counts().burning"
+      [tone]="counts().burning > 0 ? 'danger' : 'default'"
+    />
+    <fpc-summary-card
+      icon="x-octagon"
+      i18n-label="@@lwConsoleSlos-exhausted"
+      label="Budget exhausted"
+      [value]="'' + counts().exhausted"
+      [tone]="counts().exhausted > 0 ? 'warning' : 'default'"
+    />
+  </fpc-summary-bar>
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+
+  <!-- Read-only control plane (3.43): no metrics are stored, the SLOs are as of the last stored sample. -->
+  @if (readOnlyNote(); as note) {
+    <fpc-alert [flush]="true" variant="secondary" [message]="note" data-testid="slos-read-only" />
+  }
+
+  <!-- One table (3.38 D1): State · SLO (→ health) · uptime · objectives with budget bars; search + filter drawer. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="title"
+    [columns]="columns"
+    [rows]="shown()"
+    [rowId]="rowId"
+    [rowLink]="rowLink"
+    [loading]="loading() && slos().length === 0"
+    paging="client"
+    persistKey="lw-slos"
+    [(query)]="search"
+    [searchPlaceholder]="searchLabel"
+    showFilterButton
+    [(filtersOpen)]="filtersOpen"
+    [filtersActive]="filterState.activeCount()"
+    (filtersApplied)="filterState.apply()"
+    (filtersCleared)="filterState.clear()"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    emptyIcon="speedometer"
+    data-testid="slos-list"
+  >
+    @if (scope) {
+      <span fpcDataTableToolbar>
+        <ng-container [ngTemplateOutlet]="refreshButton" />
+      </span>
+    }
+    @if (projects().length > 0 && !scope) {
+      <fpc-form-field
+        fpcDataTableFilters
+        forId="lw-slos-project"
+        [label]="projectFilterLabel"
+        data-testid="slos-project"
+      >
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-slos-project"
+          size="sm"
+          [ngModel]="filterState.draft().project"
+          (ngModelChange)="filterState.patch({ project: $event })"
+        >
+          <option value="" i18n="@@lwConsoleSlos-allProjects">All projects</option>
+          @for (p of projects(); track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    }
+    <fpc-form-field fpcDataTableFilters forId="lw-slos-state" [label]="stateFilterLabel">
+      <fpc-form-control
+        controlType="select"
+        controlId="lw-slos-state"
+        size="sm"
+        [ngModel]="filterState.draft().state"
+        (ngModelChange)="filterState.patch({ state: $event })"
+      >
+        <option value="" i18n="@@lwConsoleSlos-allStates">All states</option>
+        @for (s of states; track s) {
+          <option [value]="s">{{ stateLabel(s) }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="speedometer"
+        size="sm"
+        i18n-title="@@lwConsoleSlos-empty"
+        title="No SLOs"
+        i18n-message="@@lwConsoleSlos-emptyMessage"
+        message="Declare an SLO in a service's x-loadweaver (availability and / or latency) to track it here."
+      />
+    </span>
+
+    <ng-template fpcTableCell="uptime" let-slo>{{ percent(slo.monthlyUptime) }}</ng-template>
+    <ng-template fpcTableCell="availability" let-slo>
+      @if (slo.availability; as o) {
+        <ng-container [ngTemplateOutlet]="objective" [ngTemplateOutletContext]="{ $implicit: o }" />
+      }
+    </ng-template>
+    <ng-template fpcTableCell="latency" let-slo>
+      @if (slo.latency; as o) {
+        <span class="small text-body-secondary me-2">{{ o.percentile }} ≤ {{ o.thresholdMs }} ms</span>
+        <ng-container [ngTemplateOutlet]="objective" [ngTemplateOutletContext]="{ $implicit: o }" />
+      }
+    </ng-template>
+  </fpc-data-table>
+</div>

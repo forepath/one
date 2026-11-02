@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   OffersFacade,
@@ -11,31 +11,38 @@ import {
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
-  FpcBoardLaneComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
-  FpcLaneHeaderComponent,
-  FpcListComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
-  FpcListItemComponent,
+  FpcMoneyPipe,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
+  fpcRunBulk,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
   FpcSummaryCardComponent,
   FpcSummaryCardValueDirective,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FpcTableCellDirective,
+  type FpcBadgeTone,
+  type FpcMenuItem,
+  type FpcTableColumn,
 } from '@forepath/shared/frontend/ui-components';
-import { BehaviorSubject, debounceTime, distinctUntilChanged, map, of, skip, switchMap } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, map, of, switchMap } from 'rxjs';
 
-import { canCustomerRespondToOffer, getOfferStatusBadgeClass, getOfferStatusLabel } from '../billing-status-labels';
+import { canCustomerRespondToOffer, getOfferStatusBadgeTone, getOfferStatusLabel } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { dbBulkSummary, type DbBulkResult } from '../shared/data-list';
+import { dbServerPaging } from '../shared/server-paging';
+import { offerState } from '../shared/table-states';
+import { getUnnumberedOfferLabel } from '../named-label.util';
+import { formatBillingDate, formatBillingMoney } from '../billing-format';
 
-type CustomerOffersMobilePanel = 'pending' | 'history';
+type CustomerOffersTab = 'pending' | 'history';
 
 @Component({
   selector: 'framework-billing-offers-page',
@@ -45,8 +52,7 @@ type CustomerOffersMobilePanel = 'pending' | 'history';
     FormsModule,
     FpcAlertComponent,
     FpcBadgeComponent,
-    FpcBoardLaneComponent,
-    FpcLaneHeaderComponent,
+    FpcDataTableComponent,
     FpcPageHeaderComponent,
     FpcSpinnerComponent,
     FpcSummaryBarComponent,
@@ -54,15 +60,14 @@ type CustomerOffersMobilePanel = 'pending' | 'history';
     FpcSummaryCardValueDirective,
     FpcButtonComponent,
     FpcButtonGroupComponent,
-    FpcListItemComponent,
-    FpcListComponent,
     FpcEmptyStateComponent,
-    FpcSearchFieldComponent,
     FpcConfirmDialogComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
+    FpcMoneyPipe,
     FpcTabComponent,
     FpcTabGroupComponent,
+    FpcTableCellDirective,
   ],
   providers: [DatePipe],
   templateUrl: './offers-page.component.html',
@@ -76,11 +81,64 @@ export class OffersPageComponent implements OnInit {
   private readonly offersFacade = inject(OffersFacade);
   private readonly datePipe = inject(DatePipe);
 
-  readonly mobilePanel = signal<CustomerOffersMobilePanel>('pending');
-  readonly pendingSearch = signal('');
-  readonly historySearch = signal('');
-  readonly pendingSearch$ = toObservable(this.pendingSearch);
-  readonly historySearch$ = toObservable(this.historySearch);
+  readonly activeTab = signal<CustomerOffersTab>('pending');
+  readonly searchPendingPlaceholder = $localize`:@@featureOffers-searchPending:Search pending offers`;
+  readonly searchHistoryPlaceholder = $localize`:@@featureOffers-searchHistory:Search offer history`;
+  readonly downloadPdfsLabel = $localize`:@@featureOffers-bulkDownload:Download PDFs`;
+  readonly columns: FpcTableColumn<CustomerOfferListItem>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureOffers-colStatus:Status`,
+      type: 'state',
+      state: (offer) => offerState(offer.status),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureOffers-colOffer:Offer`,
+      value: (offer) => this.offerDisplayTitle(offer),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'total',
+      label: $localize`:@@featureOffers-colTotal:Total (gross)`,
+      value: (offer) => offer.totalGross,
+      align: 'end',
+      priority: 1,
+    },
+    {
+      id: 'expires',
+      label: $localize`:@@featureOffers-colExpires:Expires`,
+      value: (offer) => offer.expiresAt ?? '',
+      priority: 2,
+    },
+  ];
+  readonly rowMenu = (): FpcMenuItem[] => [
+    { id: 'preview', label: $localize`:@@featureOffers-previewButtonTitle:Preview offer`, icon: 'eye' },
+    { id: 'download', label: $localize`:@@featureOffers-downloadButtonTitle:Download PDF`, icon: 'file-earmark-pdf' },
+  ];
+  readonly selected = signal<readonly string[]>([]);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly selectedOffers = computed(() => {
+    const ids = new Set(this.selected());
+    const rows = this.activeTab() === 'pending' ? this.pendingList() : this.historyList();
+
+    return rows.filter((offer) => ids.has(offer.id));
+  });
+  /** Pending tab → `GET /offers/pending?limit&offset&search` (replace-page; only while the tab is shown). */
+  readonly pendingPaging = dbServerPaging(
+    (query) => {
+      if (untracked(this.activeTab) === 'pending') this.offersFacade.loadPendingOffers(query);
+    },
+    { url: 'pend-' },
+  );
+  /** History tab → `GET /offers/history?limit&offset&search` (replace-page; only while the tab is shown). */
+  readonly historyPaging = dbServerPaging(
+    (query) => {
+      if (untracked(this.activeTab) === 'history') this.offersFacade.loadHistoryOffers(query);
+    },
+    { url: 'hist-' },
+  );
 
   readonly previewOfferId$ = new BehaviorSubject<string | null>(null);
   readonly previewDetail$ = this.previewOfferId$.pipe(
@@ -93,6 +151,8 @@ export class OffersPageComponent implements OnInit {
   readonly historyList = toSignal(this.offersFacade.getHistoryList$(), {
     initialValue: [] as CustomerOfferListItem[],
   });
+  readonly pendingTotal = toSignal(this.offersFacade.getPendingTotal$(), { initialValue: 0 });
+  readonly historyTotal = toSignal(this.offersFacade.getHistoryTotal$(), { initialValue: 0 });
   readonly offersSummary = toSignal(this.offersFacade.getOffersSummary$(), {
     initialValue: null as OffersSummaryResponse | null,
   });
@@ -116,20 +176,6 @@ export class OffersPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.offersFacade.loadOffersSummary();
-    this.offersFacade.loadPendingOffers();
-    this.offersFacade.loadHistoryOffers();
-
-    this.pendingSearch$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.offersFacade.loadPendingOffers({ search: search.trim() || undefined });
-      });
-
-    this.historySearch$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.offersFacade.loadHistoryOffers({ search: search.trim() || undefined });
-      });
 
     watchBillingMutationModalClose({
       loading$: this.respondingOfferId$.pipe(map((id) => id !== null)),
@@ -139,12 +185,53 @@ export class OffersPageComponent implements OnInit {
     });
   }
 
-  onPendingSearchChange(value: string): void {
-    this.pendingSearch.set(value);
+  constructor() {
+    // A tab switch loads the shown tab's current page (the hidden tab does not query).
+    let firstTab = true;
+
+    effect(() => {
+      const tab = this.activeTab();
+
+      if (firstTab) {
+        firstTab = false;
+
+        return;
+      }
+      untracked(() => (tab === 'history' ? this.historyPaging : this.pendingPaging).reload());
+    });
   }
 
-  onHistorySearchChange(value: string): void {
-    this.historySearch.set(value);
+  onRowAction(offer: CustomerOfferListItem, action: string): void {
+    if (action === 'preview') this.openPreview(offer);
+    else if (action === 'download') this.downloadOfferPdf(offer);
+  }
+
+  /** Bulk Download PDFs: one `GET /offers/:id/pdf` per selected offer, saved one by one. */
+  async downloadSelected(): Promise<void> {
+    const offers = this.selectedOffers();
+
+    if (offers.length === 0) return;
+
+    const result = await fpcRunBulk(
+      offers,
+      async (offer) => {
+        const blob = await firstValueFrom(this.offersFacade.downloadOfferPdf(offer.id));
+
+        this.saveBlob(blob, `${offer.offerNumber ?? offer.id}.pdf`);
+      },
+      1,
+    );
+
+    this.bulkResult.set(dbBulkSummary(result, (offer) => this.offerDisplayTitle(offer)));
+    this.selected.set([]);
+  }
+
+  offerTotal(offer: CustomerOfferListItem): string {
+    return formatBillingMoney(offer.totalGross, offer.currency);
+  }
+
+  offerExpiresAt(offer: CustomerOfferListItem): string | null | undefined {
+    return offer.expiresAt;
   }
 
   openPreview(offer: CustomerOfferListItem): void {
@@ -174,25 +261,25 @@ export class OffersPageComponent implements OnInit {
   }
 
   private downloadPdfBlob(source: ReturnType<OffersFacade['downloadOfferPdf']>, filename: string): void {
-    source.subscribe({
-      next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
+    source.subscribe({ next: (blob) => this.saveBlob(blob, filename) });
+  }
 
-        anchor.href = url;
-        anchor.download = filename;
-        anchor.click();
-        URL.revokeObjectURL(url);
-      },
-    });
+  private saveBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   offerStatusLabel(status: string | null | undefined): string {
     return getOfferStatusLabel(status);
   }
 
-  offerStatusBadgeClass(status: string | null | undefined): string {
-    return getOfferStatusBadgeClass(status);
+  offerStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
+    return getOfferStatusBadgeTone(status);
   }
 
   canRespond(status: string | null | undefined): boolean {
@@ -200,22 +287,23 @@ export class OffersPageComponent implements OnInit {
   }
 
   offerDisplayTitle(offer: CustomerOfferListItem): string {
-    return offer.offerNumber?.trim() || getOfferStatusLabel(offer.status);
+    return offer.offerNumber?.trim() || getUnnumberedOfferLabel();
   }
 
   formatDate(value?: string | null): string {
     if (!value) return '-';
 
-    return this.datePipe.transform(value, 'mediumDate') ?? '-';
+    return formatBillingDate(value, '-');
   }
 
-  onMobilePanelTabChange(tabId: string | null): void {
+  onTabChange(tabId: string | null): void {
     if (tabId === 'pending' || tabId === 'history') {
-      this.mobilePanel.set(tabId);
+      this.activeTab.set(tabId);
+      this.selected.set([]);
     }
   }
 
-  mobilePanelLabel(panel: CustomerOffersMobilePanel): string {
+  tabLabel(panel: CustomerOffersTab): string {
     return panel === 'pending'
       ? $localize`:@@featureOffers-mobilePending:Pending`
       : $localize`:@@featureOffers-mobileHistory:History`;

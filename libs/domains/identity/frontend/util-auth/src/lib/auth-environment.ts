@@ -68,6 +68,12 @@ export interface IdentityAuthEnvironment {
    * Used by registration UI when both this and {@link termsUrl} are set.
    */
   privacyPolicyUrl?: string;
+  /**
+   * Optional: public endpoint answering `{ claimRequired: boolean }` (e.g. Loadweaver's `/api/install/claim-status`).
+   * When set, the registration form asks it and, while the deployment requires a one-time admin claim for its first
+   * account, shows a required claim-token field. Unset: no request, no field (unchanged default).
+   */
+  adminClaimStatusUrl?: string;
 }
 
 /**

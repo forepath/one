@@ -7,7 +7,6 @@ import { PromotionsService } from '../../services/promotions.service';
 
 import {
   loadActivePromotions,
-  loadActivePromotionsBatch,
   loadActivePromotionsFailure,
   loadActivePromotionsSuccess,
   loadPromotionRedemptions,
@@ -21,7 +20,6 @@ import {
 } from './promotions.actions';
 import {
   loadActivePromotions$,
-  loadActivePromotionsBatch$,
   loadPromotionRedemptions$,
   redeemPromotion$,
   validatePromotion$,
@@ -44,50 +42,28 @@ describe('PromotionsEffects', () => {
     });
   });
 
-  it('loads active promotions in one batch when response is short', (done) => {
-    actions$ = of(loadActivePromotions());
+  it('loads one page of active promotions with the total (replace-page)', (done) => {
+    actions$ = of(loadActivePromotions({ search: 'save', page: 2, pageSize: 25 }));
     promotionsService.listActive.mockReturnValue(
-      of({ items: [{ id: 'r-1' } as never], total: 1, limit: 10, offset: 0 }),
+      of({ items: [{ id: 'r-1' } as never], total: 26, limit: 25, offset: 25 }),
     );
 
     loadActivePromotions$(actions$, promotionsService).subscribe((result) => {
-      expect(result).toEqual(loadActivePromotionsSuccess({ items: [{ id: 'r-1' } as never] }));
+      expect(result).toEqual(loadActivePromotionsSuccess({ items: [{ id: 'r-1' } as never], total: 26 }));
+      expect(promotionsService.listActive).toHaveBeenCalledWith({ limit: 25, offset: 25, search: 'save' });
       done();
     });
   });
 
-  it('continues active promotion batching when first page is full', (done) => {
-    const firstPage = Array.from({ length: 10 }, (_, index) => ({ id: `r-${index}` }));
-    actions$ = of(loadActivePromotions());
-    promotionsService.listActive.mockReturnValue(of({ items: firstPage as never[], total: 20, limit: 10, offset: 0 }));
-
-    loadActivePromotions$(actions$, promotionsService).subscribe((result) => {
-      expect(result).toEqual(loadActivePromotionsBatch({ offset: 10, accumulated: firstPage }));
-      done();
-    });
-  });
-
-  it('completes active promotion batching', (done) => {
-    const accumulated = [{ id: 'r-1' }];
-    actions$ = of(loadActivePromotionsBatch({ offset: 10, accumulated: accumulated as never[] }));
-    promotionsService.listActive.mockReturnValue(
-      of({ items: [{ id: 'r-2' } as never], total: 2, limit: 10, offset: 10 }),
-    );
-
-    loadActivePromotionsBatch$(actions$, promotionsService).subscribe((result) => {
-      expect(result).toEqual(loadActivePromotionsSuccess({ items: [{ id: 'r-1' }, { id: 'r-2' }] as never[] }));
-      done();
-    });
-  });
-
-  it('loads promotion redemptions', (done) => {
-    actions$ = of(loadPromotionRedemptions());
+  it('loads one page of promotion redemptions (page 1 by default)', (done) => {
+    actions$ = of(loadPromotionRedemptions({}));
     promotionsService.listRedemptions.mockReturnValue(
-      of({ items: [{ id: 'r-1' } as never], total: 1, limit: 10, offset: 0 }),
+      of({ items: [{ id: 'r-1' } as never], total: 1, limit: 25, offset: 0 }),
     );
 
     loadPromotionRedemptions$(actions$, promotionsService).subscribe((result) => {
-      expect(result).toEqual(loadPromotionRedemptionsSuccess({ items: [{ id: 'r-1' } as never] }));
+      expect(result).toEqual(loadPromotionRedemptionsSuccess({ items: [{ id: 'r-1' } as never], total: 1 }));
+      expect(promotionsService.listRedemptions).toHaveBeenCalledWith({ limit: 25, offset: 0, search: undefined });
       done();
     });
   });
@@ -133,7 +109,7 @@ describe('PromotionsEffects', () => {
   });
 
   it('maps load active failures', (done) => {
-    actions$ = of(loadActivePromotions());
+    actions$ = of(loadActivePromotions({}));
     promotionsService.listActive.mockReturnValue(throwError(() => 'network'));
 
     loadActivePromotions$(actions$, promotionsService).subscribe((result) => {

@@ -1,0 +1,333 @@
+# Decabill billing (API, queue worker, scheduler) and the billing console, from the Decabill 4.1.0 release (same
+# images as apps/decabill/backend-billing-manager and frontend-billing-console, pinned by digest).
+# Bundled Postgres, Valkey and OpenSearch can each be replaced by an existing service (manifest dependencies).
+#
+# Secrets are mounted as files under /run/secrets/<ENV_NAME>; the backend entrypoint exports every upper-case file
+# as an environment variable, so no secret value is ever part of the compose or the plan. The optional integrations'
+# secrets (STRIPE_*, KEYCLOAK_*, FILE_STORAGE_S3_*) are conditional (manifest `requiredWhen`): while an integration is
+# off they are left out of the rendered compose (entries below and the mounts), even when a reference was given; the
+# entrypoint additionally exports them only while their integration is switched on.
+
+x-billing-environment: &billing-environment
+  HOST: 0.0.0.0
+  PORT: 3200
+  NODE_ENV: production
+  WEBSOCKET_NAMESPACE: socket/billing
+  DB_HOST: ${dbHost}
+  DB_PORT: ${dbPort}
+  DB_USERNAME: ${dbUser}
+  DB_DATABASE: ${dbName}
+  VALKEY_HOST: ${valkeyHost}
+  VALKEY_PORT: ${valkeyPort}
+  VALKEY_DB: 0
+  VALKEY_KEY_PREFIX: ${valkeyKeyPrefix}
+  CACHE_CLIENT: glide
+  OPENSEARCH_ENABLED: 'true'
+  OPENSEARCH_NODE: ${opensearchUrl}
+  OPENSEARCH_INDEX_PREFIX: decabill
+  SEARCH_REINDEX_INTERVAL: 15m
+  QUEUE_WORKER_CONCURRENCY: 5
+  QUEUE_BULL_BOARD_ENABLED: 'false'
+  AUTHENTICATION_METHOD: ${authMethod}
+  KEYCLOAK_SERVER_URL: ${keycloakUrl}
+  KEYCLOAK_AUTH_SERVER_URL: ${keycloakUrl}
+  KEYCLOAK_REALM: ${keycloakRealm}
+  KEYCLOAK_CLIENT_ID: ${keycloakClientId}
+  KEYCLOAK_TOKEN_VALIDATION: ${keycloakTokenValidation}
+  DISABLE_SIGNUP: ${disableSignup}
+  DISABLE_FORCE_LOGIN_2FA: 'false'
+  SMTP_HOST: ${smtpHost}
+  SMTP_PORT: ${smtpPort}
+  SMTP_USER: ${smtpUser}
+  EMAIL_FROM: ${emailFrom}
+  EMAIL_COMPANY_NAME: ${issuerName}
+  EMAIL_COMPANY_EMAIL: ${issuerEmail}
+  CORS_ORIGIN: https://${domain}
+  RATE_LIMIT_ENABLED: 'true'
+  RATE_LIMIT_TTL: 60
+  RATE_LIMIT_LIMIT: 100
+  BILLING_FRONTEND_URL: https://${domain}
+  BILLING_ISSUER_NAME: ${issuerName}
+  BILLING_ISSUER_EMAIL: ${issuerEmail}
+  BILLING_ISSUER_COUNTRY: ${issuerCountry}
+  BILLING_TAX_RATE_STANDARD: ${taxRateStandard}
+  BILLING_TAX_RATE_REDUCED: ${taxRateReduced}
+  FILE_STORAGE_PROVIDER: ${fileStorage}
+  FILE_STORAGE_ROOT: /data
+  FILE_STORAGE_S3_BUCKET: ${s3Bucket}
+  FILE_STORAGE_S3_REGION: ${s3Region}
+  FILE_STORAGE_S3_ENDPOINT: ${s3Endpoint}
+  FILE_STORAGE_S3_FORCE_PATH_STYLE: ${s3ForcePathStyle}
+  FILE_STORAGE_S3_KEY_PREFIX: ${s3KeyPrefix}
+  BILLING_DATEV_EXPORT_ENABLED: ${datevExportEnabled}
+  # Stripe is Decabill's only built-in processor (others are Decabill plugins this app doesn't install), so it stays
+  # the default with stripeEnabled off too: a processor name Decabill doesn't know would be stored on every invoice
+  # issued meanwhile, leaving those unpayable online once Stripe is switched on. Without Stripe, invoices are paid
+  # offline and marked paid by an admin.
+  BILLING_DEFAULT_PAYMENT_PROCESSOR: stripe
+  LW_STRIPE_ENABLED: ${stripeEnabled}
+  STRIPE_CHECKOUT_FRAUD_PROTECTION_ENABLED: 'true'
+  STRIPE_CHECKOUT_SUCCESS_URL: https://${domain}/invoices?payment=success
+  STRIPE_CHECKOUT_CANCEL_URL: https://${domain}/invoices?payment=cancel
+  TENANTS_ALLOW_DEFAULT: 'true'
+  DNS_BASE_DOMAIN: ${domain}
+
+x-billing-secrets: &billing-secrets
+  - { source: db-password, target: DB_PASSWORD }
+  - { source: valkey-password, target: VALKEY_PASSWORD }
+  - { source: encryption-key, target: ENCRYPTION_KEY }
+  - { source: jwt-secret, target: JWT_SECRET }
+  - { source: smtp-password, target: SMTP_PASSWORD }
+  - { source: file-signing-secret, target: BILLING_FILE_SIGNING_SECRET }
+  - { source: stripe-secret-key, target: STRIPE_SECRET_KEY }
+  - { source: stripe-webhook-secret, target: STRIPE_WEBHOOK_SECRET }
+  - { source: keycloak-client-secret, target: KEYCLOAK_CLIENT_SECRET }
+  - { source: s3-access-key-id, target: FILE_STORAGE_S3_ACCESS_KEY_ID }
+  - { source: s3-secret-access-key, target: FILE_STORAGE_S3_SECRET_ACCESS_KEY }
+
+services:
+  api:
+    image: ghcr.io/forepath/decabill-billing-api:4.1.0@sha256:c6ed4eeb72601c6500fe057f3cfe7742ac1f2963dc4ea9f93b7285ce01354040
+    entrypoint:
+      - /bin/bash
+      - -c
+      - 'export QUEUE_ROLE=api; for f in /run/secrets/[A-Z]*; do n="$${f##*/}"; case "$$n" in STRIPE_*) [ "$$LW_STRIPE_ENABLED" = true ] || continue ;; KEYCLOAK_*) [ "$$AUTHENTICATION_METHOD" = keycloak ] || continue ;; FILE_STORAGE_S3_*) [ "$$FILE_STORAGE_PROVIDER" = s3 ] || continue ;; esac; export "$$n=$$(cat "$$f")"; done; exec /usr/local/bin/docker-entrypoint.sh'
+    environment: *billing-environment
+    secrets: *billing-secrets
+    volumes:
+      - billing-files:/data
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+      opensearch: { condition: service_healthy }
+    deploy:
+      resources:
+        reservations: { cpus: '0.5', memory: 768m }
+        limits: { memory: 2g }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+      exposure:
+        http:
+          - {
+              host: '${domain}',
+              port: 3200,
+              path: /api,
+              rateLimit: { perIp: 1200/m },
+            }
+          - { host: '${domain}', port: 3200, path: /socket }
+          - { host: '${domain}', port: 3200, path: /socket.io }
+
+  worker:
+    image: ghcr.io/forepath/decabill-billing-api:4.1.0@sha256:c6ed4eeb72601c6500fe057f3cfe7742ac1f2963dc4ea9f93b7285ce01354040
+    entrypoint:
+      - /bin/bash
+      - -c
+      - 'export QUEUE_ROLE=worker; for f in /run/secrets/[A-Z]*; do n="$${f##*/}"; case "$$n" in STRIPE_*) [ "$$LW_STRIPE_ENABLED" = true ] || continue ;; KEYCLOAK_*) [ "$$AUTHENTICATION_METHOD" = keycloak ] || continue ;; FILE_STORAGE_S3_*) [ "$$FILE_STORAGE_PROVIDER" = s3 ] || continue ;; esac; export "$$n=$$(cat "$$f")"; done; exec /usr/local/bin/docker-entrypoint.sh'
+    environment: *billing-environment
+    secrets: *billing-secrets
+    volumes:
+      - billing-files:/data
+    # No HTTP server for QUEUE_ROLE=worker: replaces the image's /api/health check.
+    healthcheck:
+      test: ['CMD-SHELL', 'kill -0 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      api: { condition: service_healthy }
+    deploy:
+      resources:
+        reservations: { cpus: '0.5', memory: 768m }
+        limits: { memory: 2g }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+
+  scheduler:
+    image: ghcr.io/forepath/decabill-billing-api:4.1.0@sha256:c6ed4eeb72601c6500fe057f3cfe7742ac1f2963dc4ea9f93b7285ce01354040
+    entrypoint:
+      - /bin/bash
+      - -c
+      - 'export QUEUE_ROLE=scheduler; for f in /run/secrets/[A-Z]*; do n="$${f##*/}"; case "$$n" in STRIPE_*) [ "$$LW_STRIPE_ENABLED" = true ] || continue ;; KEYCLOAK_*) [ "$$AUTHENTICATION_METHOD" = keycloak ] || continue ;; FILE_STORAGE_S3_*) [ "$$FILE_STORAGE_PROVIDER" = s3 ] || continue ;; esac; export "$$n=$$(cat "$$f")"; done; exec /usr/local/bin/docker-entrypoint.sh'
+    environment: *billing-environment
+    secrets: *billing-secrets
+    volumes:
+      - billing-files:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'kill -0 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      api: { condition: service_healthy }
+    deploy:
+      resources:
+        reservations: { cpus: '0.25', memory: 512m }
+        limits: { memory: 1g }
+    restart: unless-stopped
+    x-loadweaver:
+      # Exactly one scheduler: it enqueues the periodic billing runs.
+      replicas: 1
+
+  console:
+    image: ghcr.io/forepath/decabill-billing-console-server:4.1.0@sha256:f2df99b69c1fff707bfe1ed3bc2ec84499a3a3560c8c384357082a64ce69e9bb
+    # The console reads its runtime config (API / websocket URLs) from CONFIG; a tiny loopback server in the same
+    # container serves it from CONSOLE_RUNTIME_CONFIG (the provisioned stacks serve the same JSON from Nginx).
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        node -e "require('http').createServer((q,s)=>{s.setHeader('content-type','application/json');s.end(process.env.CONSOLE_RUNTIME_CONFIG)}).listen(8081,'127.0.0.1')" &
+        exec node server.cjs
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4202
+      NODE_ENV: production
+      DEFAULT_LOCALE: ${defaultLocale}
+      CSP_ENFORCE: 'true'
+      # Keycloak sign-in loads Keycloak's check-sso frame (empty = nothing added).
+      CSP_DEFAULT_SRC_EXTRA: ${keycloakUrl}
+      CONFIG: http://127.0.0.1:8081/config.json
+      CONFIG_ALLOWED_HOSTS: 127.0.0.1
+      CONFIG_ALLOW_INSECURE_HTTP: 'true'
+      CONFIG_ALLOW_INTERNAL_HOST: 'true'
+      CONSOLE_RUNTIME_CONFIG: '{"application":{"production":true},"billing":{"tenantId":"default","urls":{"restApi":"https://${domain}/api","websocket":"https://${domain}/socket/billing"}},"authentication":{"config":{"type":"${authMethod}","disableSignup":${disableSignup},"authServerUrl":"${keycloakUrl}","realm":"${keycloakRealm}","clientId":"${keycloakClientId}"}},"cookieConsent":{"domain":".${domain}","urls":{"privacyPolicy":"https://decabill.com/legal/privacy","terms":"https://decabill.com/legal/terms"}}}'
+    deploy:
+      resources:
+        reservations: { cpus: '0.1', memory: 128m }
+        limits: { memory: 512m }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: ${consoleReplicas}
+      # Stateless and without host access: runs in gVisor.
+      runtime: sandboxed
+      exposure:
+        http:
+          - { host: '${domain}', port: 4202 }
+
+  postgres:
+    image: docker.io/library/postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
+    environment:
+      POSTGRES_USER: ${dbUser}
+      POSTGRES_DB: ${dbName}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db-password
+    secrets: [db-password]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        reservations: { cpus: '0.5', memory: 512m }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+      backup:
+        hooks:
+          pre:
+            [
+              sh,
+              -c,
+              'pg_dump -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -Fc -f /var/lib/postgresql/data/loadweaver-backup.dump',
+            ]
+          post: [rm, -f, /var/lib/postgresql/data/loadweaver-backup.dump]
+          timeout: 15m
+        check:
+          command:
+            [sh, -c, 'test -s /var/lib/postgresql/data/loadweaver-backup.dump']
+          timeout: 10m
+
+  valkey:
+    image: docker.io/valkey/valkey:9.0.6-alpine@sha256:187679e3bd4036959631e3f03983ab2ba503ab21e6fd0454d508e909db2ee989
+    command:
+      [
+        sh,
+        -c,
+        'exec valkey-server --appendonly yes --requirepass "$$(cat /run/secrets/valkey-password)"',
+      ]
+    secrets: [valkey-password]
+    volumes:
+      - valkey-data:/data
+    deploy:
+      resources:
+        reservations: { cpus: '0.1', memory: 128m }
+        limits: { memory: 512m }
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'valkey-cli --no-auth-warning -a "$$(cat /run/secrets/valkey-password)" ping | grep -q PONG',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+
+  opensearch:
+    image: docker.io/opensearchproject/opensearch:3.9.0@sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e
+    # Single node, internal to the deployment (no exposure). Security plugin off as in the provisioned stacks: only
+    # the billing services reach it. Nodes need vm.max_map_count >= 262144.
+    environment:
+      discovery.type: single-node
+      plugins.security.disabled: 'true'
+      DISABLE_INSTALL_DEMO_CONFIG: 'true'
+      OPENSEARCH_JAVA_OPTS: -Xms${opensearchHeap} -Xmx${opensearchHeap}
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -sf http://localhost:9200/_cluster/health || exit 1',
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    deploy:
+      resources:
+        reservations: { cpus: '0.5', memory: 1g }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+
+volumes:
+  billing-files:
+    x-loadweaver: { size: '${filesVolumeSize}' }
+  postgres-data:
+    x-loadweaver: { size: '${postgresVolumeSize}' }
+  valkey-data:
+    x-loadweaver: { size: 2g }
+  opensearch-data:
+    x-loadweaver: { size: '${opensearchVolumeSize}' }
+
+secrets:
+  db-password:
+    x-loadweaver-ref: ${secret:db-password}
+  valkey-password:
+    x-loadweaver-ref: ${secret:valkey-password}
+  encryption-key:
+    x-loadweaver-ref: ${secret:encryption-key}
+  jwt-secret:
+    x-loadweaver-ref: ${secret:jwt-secret}
+  smtp-password:
+    x-loadweaver-ref: ${secret:smtp-password}
+  file-signing-secret:
+    x-loadweaver-ref: ${secret:file-signing-secret}
+  stripe-secret-key:
+    x-loadweaver-ref: ${secret:stripe-secret-key}
+  stripe-webhook-secret:
+    x-loadweaver-ref: ${secret:stripe-webhook-secret}
+  keycloak-client-secret:
+    x-loadweaver-ref: ${secret:keycloak-client-secret}
+  s3-access-key-id:
+    x-loadweaver-ref: ${secret:s3-access-key-id}
+  s3-secret-access-key:
+    x-loadweaver-ref: ${secret:s3-secret-access-key}

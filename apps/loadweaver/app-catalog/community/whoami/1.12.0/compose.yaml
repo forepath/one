@@ -1,0 +1,14 @@
+services:
+  web:
+    image: docker.io/traefik/whoami:v1.12.0@sha256:c4717a8d1f0134a7444e24f881160e033991f23027c6c5a9a3f8fd22e70d1d44
+    deploy:
+      resources:
+        reservations: { cpus: '0.05', memory: 32m }
+        limits: { memory: 64m }
+    x-loadweaver:
+      replicas: ${replicas}
+      placement: { spread: node }
+      runtime: sandboxed
+      exposure:
+        http:
+          - { host: '${domain}', port: 80, rateLimit: { perIp: 600/m } }

@@ -1,0 +1,69 @@
+<div class="billing-admin-user-select">
+  @if (accessDenied()) {
+    <input
+      type="text"
+      class="form-control"
+      [class.form-control-sm]="size() === 'sm'"
+      [id]="inputId()"
+      [value]="selectedCode()"
+      [disabled]="disabled()"
+      [required]="required()"
+      autocomplete="off"
+      [attr.aria-describedby]="inputId() + '-hint'"
+      (input)="onPlainInput($any($event.target).value)"
+    />
+    <div [id]="inputId() + '-hint'" class="form-text" i18n="@@featureBillingAdminPromotionSelect-accessDeniedHint">
+      You can't list promotions. Type the promotion code.
+    </div>
+  } @else if (selectedPromotion(); as promotion) {
+    <fpc-badge variant="info" color="secondary" class="billing-admin-user-select__chip">
+      <span class="text-truncate"
+        >{{ promotion.code }}
+        @if (promotion.name) {
+          <span class="text-body-secondary"> · {{ promotion.name }}</span>
+        }
+      </span>
+      <button
+        type="button"
+        class="btn-close billing-admin-user-select__clear"
+        [disabled]="disabled()"
+        (click)="clearSelection()"
+        i18n-aria-label="@@featureBillingAdminPromotionSelect-clearSelectionAria"
+        aria-label="Clear selected promotion"
+      ></button>
+    </fpc-badge>
+  } @else {
+    <fpc-typeahead-select
+      [inputId]="inputId()"
+      [listboxId]="inputId() + '-listbox'"
+      [size]="size()"
+      [placeholder]="placeholder()"
+      [disabled]="disabled()"
+      [required]="required()"
+      [loading]="loading()"
+      [openOnFocus]="showSuggestionsOnFocus()"
+      [query]="searchQuery()"
+      (queryChange)="onSearchChange($event)"
+      [open]="suggestionsOpen()"
+      (openChange)="suggestionsOpen.set($event)"
+      (cleared)="reset()"
+    >
+      <div fpcTypeaheadSuggestions>
+        @if (filteredPromotions().length > 0) {
+          @for (promotion of filteredPromotions(); track promotion.id) {
+            <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickPromotion(promotion, $event)">
+              <span class="d-block small fw-medium text-truncate">{{ promotion.name }}</span>
+              <span class="d-block font-monospace text-body-secondary small text-truncate">{{ promotion.code }}</span>
+            </button>
+          }
+        } @else if (searchQuery().trim() && !loading()) {
+          <span
+            class="dropdown-item-text text-body-secondary small"
+            i18n="@@featureBillingAdminPromotionSelect-noPromotions"
+            >No promotions found.</span
+          >
+        }
+      </div>
+    </fpc-typeahead-select>
+  }
+</div>

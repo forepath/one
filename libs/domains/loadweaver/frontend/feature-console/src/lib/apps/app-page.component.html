@@ -1,0 +1,216 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="detail()?.title ?? appName()" [subtitle]="detail()?.summary ?? null">
+    <a
+      fpcPageHeaderBreadcrumbs
+      routerLink="/delivery/apps"
+      [queryParams]="presetProject() ? { project: presetProject() } : {}"
+      class="small text-decoration-none d-inline-flex align-items-center"
+      data-testid="app-back"
+    >
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
+    </a>
+    @if (detail()) {
+      <fpc-button
+        fpcPageHeaderActions
+        variant="primary"
+        size="sm"
+        [disabled]="installBlocked()"
+        [title]="
+          detail()?.installable === false
+            ? notInstallableLabel()
+            : projects().length === 0
+              ? noProjectLabel
+              : installLabel
+        "
+        iconOnly
+        [ariaLabel]="installLabel"
+        (clicked)="installOpen.set(true)"
+        data-testid="app-install"
+      >
+        <i class="bi bi-download" aria-hidden="true"></i>
+      </fpc-button>
+    }
+  </fpc-page-header>
+
+  @if (loading()) {
+    <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+  } @else if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" data-testid="app-error" />
+  } @else if (detail(); as d) {
+    @if (d.deprecated) {
+      <fpc-alert [flush]="true" variant="warning" [message]="deprecatedLabel" data-testid="app-deprecated" />
+    }
+    @if (d.installable === false) {
+      <fpc-alert [flush]="true" variant="info" [message]="notInstallableLabel()" />
+    }
+
+    <!-- Two lanes like the other pages: README 2 : details 1; below md the lane tabs switch between them. -->
+    <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0" data-testid="app-body">
+      <fpc-tab-group
+        class="fpc-lane-tabs"
+        [activeId]="lane()"
+        (activeIdChange)="lane.set($any($event))"
+        [ariaLabel]="lanesLabel"
+      >
+        <fpc-tab id="readme" [label]="readmeTitle" />
+        <fpc-tab id="details" [label]="detailsTitle" />
+      </fpc-tab-group>
+      <fpc-section-row class="flex-grow-1 min-h-0">
+        <loadweaver-lane [title]="readmeTitle" grow="2 1 0" [off]="lane() !== 'readme'" data-testid="app-readme-lane">
+          @if (readmeHtml()) {
+            <div class="lw-app-readme" [innerHTML]="readmeHtml()" data-testid="app-readme"></div>
+          } @else {
+            <p class="text-body-secondary">{{ d.manifest.description }}</p>
+            @if (!d.readme?.trim()) {
+              <p class="small text-body-secondary">{{ readmeEmptyLabel }}</p>
+            }
+          }
+        </loadweaver-lane>
+        <loadweaver-lane
+          [title]="detailsTitle"
+          grow="1 1 0"
+          [off]="lane() !== 'details'"
+          data-testid="app-details-lane"
+        >
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <loadweaver-app-trust-badge [trust]="d.trust" />
+            <a
+              class="ms-auto"
+              [href]="d.manifest.homepage"
+              target="_blank"
+              rel="noopener"
+              [attr.aria-label]="homepageLabel"
+              [title]="homepageLabel"
+              ><i class="bi bi-house" aria-hidden="true"></i
+            ></a>
+            <a [href]="d.manifest.docs" target="_blank" rel="noopener" [attr.aria-label]="docsLabel" [title]="docsLabel"
+              ><i class="bi bi-book" aria-hidden="true"></i
+            ></a>
+          </div>
+          <fpc-key-value-list [items]="facts()" data-testid="app-facts" />
+
+          <h2 class="h6 mt-4">{{ versionsTitle }}</h2>
+          <div class="table-responsive">
+            <table class="table table-sm small mb-0" data-testid="app-versions">
+              <thead>
+                <tr>
+                  <th scope="col">{{ colVersion }}</th>
+                  <th scope="col">{{ colChannel }}</th>
+                  <th scope="col">{{ colPublished }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (v of versions(); track v.version) {
+                  <tr>
+                    <td class="font-monospace">{{ v.version }}</td>
+                    <td>
+                      <fpc-badge size="sm" [tone]="v.channel === 'stable' ? 'success' : 'info'">{{
+                        v.channel
+                      }}</fpc-badge>
+                    </td>
+                    <td class="text-nowrap">{{ v.published.slice(0, 10) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (parameterRows().length > 0) {
+            <h2 class="h6 mt-4">{{ parametersTitle }}</h2>
+            <ul class="list-unstyled small mb-0" data-testid="app-parameters">
+              @for (p of parameterRows(); track p.name) {
+                <li class="mb-2">
+                  <span class="fw-medium">{{ p.title }}</span>
+                  <span class="text-body-secondary font-monospace"> {{ p.name }}: {{ p.type }}</span>
+                  @if (p.required) {
+                    <fpc-badge class="ms-1" size="sm" tone="neutral">{{ requiredLabel }}</fpc-badge>
+                  }
+                  @if (p.default) {
+                    <span class="text-body-secondary">
+                      · {{ colDefault }} <code>{{ p.default }}</code></span
+                    >
+                  }
+                  @if (p.description) {
+                    <div class="text-body-secondary">{{ p.description }}</div>
+                  }
+                </li>
+              }
+            </ul>
+          }
+
+          @if (d.manifest.secrets.length > 0) {
+            <h2 class="h6 mt-4">{{ secretsTitle }}</h2>
+            <ul class="list-unstyled small mb-0" data-testid="app-secrets">
+              @for (s of d.manifest.secrets; track s.name) {
+                <li class="mb-1">
+                  <span class="font-monospace">{{ s.name }}</span>
+                  <span class="text-body-secondary"> — {{ s.description }}</span>
+                  @if (s.requiredWhen) {
+                    <span class="text-body-secondary fst-italic" [attr.data-testid]="'app-secret-condition-' + s.name">
+                      ({{ conditionText(s.requiredWhen) }})</span
+                    >
+                  }
+                </li>
+              }
+            </ul>
+          }
+
+          @if (form()?.dependencies?.length) {
+            <h2 class="h6 mt-4">{{ dependenciesTitle }}</h2>
+            <ul class="list-unstyled small mb-0" data-testid="app-dependencies">
+              @for (dep of form()?.dependencies ?? []; track dep.dependency.name) {
+                <li class="mb-1">
+                  <span class="fw-medium">{{ dep.dependency.title ?? dep.dependency.name }}</span>
+                  @if (dep.dependency.bundled) {
+                    <fpc-badge class="ms-1" size="sm" tone="info">{{ bundledLabel }}</fpc-badge>
+                  }
+                  @if (dep.dependency.provided) {
+                    <span class="text-body-secondary"> {{ dep.dependency.bundled ? providedLabel : '' }}</span>
+                    <span class="text-body-secondary font-monospace">
+                      ({{ dep.dependency.provided.parameters.join(', ') }})</span
+                    >
+                  }
+                </li>
+              }
+            </ul>
+          }
+
+          @if (suggestions().length > 0) {
+            <h2 class="h6 mt-4">{{ suggestionsTitle }}</h2>
+            <ul class="small mb-0" data-testid="app-suggestions">
+              @for (s of suggestions(); track s.key) {
+                @if (s.group !== 'backups') {
+                  @for (label of s.labels; track label) {
+                    <li class="font-monospace">{{ label }}</li>
+                  }
+                }
+              }
+            </ul>
+          }
+
+          @if (d.manifest.backups.length > 0) {
+            <h2 class="h6 mt-4">{{ backupsTitle }}</h2>
+            <ul class="small mb-0" data-testid="app-backups">
+              @for (b of d.manifest.backups; track b.name) {
+                <li>
+                  <span class="font-monospace">{{ b.name }}</span>
+                  <span class="text-body-secondary"> · {{ b.schedule }}</span>
+                  @if (b.description) {
+                    — {{ b.description }}
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </loadweaver-lane>
+      </fpc-section-row>
+    </div>
+  }
+</div>
+
+<loadweaver-app-install-modal
+  [(open)]="installOpen"
+  [detail]="detail()"
+  [projects]="projects()"
+  [project]="presetProject()"
+/>

@@ -241,6 +241,100 @@ export class OpenSearchService implements OnModuleDestroy {
     }
   }
 
+  /**
+   * Appends documents without ids (time series such as logs): one bulk request; returns how many were rejected.
+   */
+  async bulkAppend(index: string, documents: readonly Record<string, unknown>[]): Promise<number> {
+    if (!this.isEnabled() || documents.length === 0) {
+      return 0;
+    }
+
+    try {
+      const client = this.getClient();
+      const body = documents.flatMap((document) => [{ create: { _index: index } }, document]);
+      const response = await client.bulk({ refresh: false, body });
+      const items = (response.body?.items ?? []) as Array<{ create?: { error?: unknown } }>;
+
+      return response.body?.errors ? items.filter((item) => item.create?.error).length : 0;
+    } catch (error) {
+      this.logger.warn(`OpenSearch bulk append failed for ${index}: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * A search with a caller-built body (time ranges, sorting, `search_after` cursors); hits carry their sort values.
+   */
+  async searchRaw(
+    index: string,
+    body: Record<string, unknown>,
+  ): Promise<{ total: number; hits: { id: string; source: Record<string, unknown>; sort: unknown[] }[] }> {
+    if (!this.isEnabled()) {
+      return { total: 0, hits: [] };
+    }
+
+    try {
+      const client = this.getClient();
+      const response = await client.search({ index, body, ignore_unavailable: true, allow_no_indices: true });
+      const hitsRaw = (response.body?.hits?.hits ?? []) as Array<{
+        _id?: string;
+        _source?: Record<string, unknown>;
+        sort?: unknown[];
+      }>;
+      const totalRaw = response.body?.hits?.total;
+
+      return {
+        total:
+          typeof totalRaw === 'number'
+            ? totalRaw
+            : typeof totalRaw?.value === 'number'
+              ? totalRaw.value
+              : hitsRaw.length,
+        hits: hitsRaw.map((hit) => ({ id: hit._id ?? '', source: hit._source ?? {}, sort: hit.sort ?? [] })),
+      };
+    } catch (error) {
+      this.logger.warn(`OpenSearch search failed for ${index}: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  /** Creates or replaces a composable index template (settings and mappings for indices matching its patterns). */
+  async putIndexTemplate(name: string, body: Record<string, unknown>): Promise<void> {
+    if (!this.isEnabled()) {
+      return;
+    }
+
+    await this.getClient().indices.putIndexTemplate({ name, body });
+  }
+
+  /** Names of the indices matching a pattern. */
+  async listIndices(pattern: string): Promise<string[]> {
+    if (!this.isEnabled()) {
+      return [];
+    }
+
+    const response = await this.getClient().cat.indices({ index: [pattern], format: 'json', h: ['index'] });
+    const rows = (response.body ?? []) as Array<{ index?: string }>;
+
+    return rows
+      .map((row) => row.index ?? '')
+      .filter(Boolean)
+      .sort();
+  }
+
+  /** Deletes whole indices by exact name (retention); wildcards are refused. */
+  async deleteIndices(indices: readonly string[]): Promise<void> {
+    if (!this.isEnabled() || indices.length === 0) {
+      return;
+    }
+
+    if (indices.some((index) => index.includes('*') || index.includes(','))) {
+      throw new Error('deleteIndices takes exact index names');
+    }
+
+    await this.getClient().indices.delete({ index: [...indices], ignore_unavailable: true });
+  }
+
   async onModuleDestroy(): Promise<void> {
     if (!this.client) {
       return;

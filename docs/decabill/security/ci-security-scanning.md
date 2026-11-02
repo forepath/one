@@ -38,7 +38,7 @@ SARIF categories include `trivy-fs`, `trivy-config`, and `trivy-images-*` on pul
 ## Triage and exceptions
 
 1. **Prefer fixing** upgrade dependencies, base images, or configuration.
-2. **Documented ignore** open a PR that adds the CVE to `.trivyignore`, reference an **[accepted-risk](./accepted-risks.md)** entry (or document a false positive), and note a **review/expiry date** in the PR description.
+2. **Documented ignore** open a PR that adds the CVE to `.trivyignore.yaml`, reference an **[accepted-risk](./accepted-risks.md)** entry (or document a false positive), and note a **review/expiry date** in the PR description.
 3. **Do not** weaken `trivy.yaml` for one-off exceptions.
 
 See **[Accepted risks](./accepted-risks.md)** for deliberate product-level deviations, including **[DR-005](./accepted-risks.md#dr-005-ci-local-trivy-unfixed-vulnerabilities-not-gated)**.

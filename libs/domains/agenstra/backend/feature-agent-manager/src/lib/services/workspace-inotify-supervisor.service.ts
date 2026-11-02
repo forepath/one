@@ -4,7 +4,7 @@ import type { WorkspaceIndexChangeOp } from '../constants/workspace-index.consta
 import { AgentsRepository } from '../repositories/agents.repository';
 import { toWorkspaceRelativePath } from '../utils/workspace-index-ignore';
 
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 
 interface WatcherHandle {
@@ -25,7 +25,7 @@ export class WorkspaceInotifySupervisor implements OnModuleDestroy {
   private readonly watchers = new Map<string, WatcherHandle>();
 
   constructor(
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
     private readonly agentsRepository: AgentsRepository,
     private readonly changeNotifier: WorkspaceChangeNotifierService,
   ) {}
@@ -76,7 +76,7 @@ export class WorkspaceInotifySupervisor implements OnModuleDestroy {
     };
 
     try {
-      const handle = await this.dockerService.startStreamingExec(
+      const handle = await this.runtime.startStreamingExec(
         containerId,
         [
           'inotifywait',

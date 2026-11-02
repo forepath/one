@@ -25,10 +25,10 @@ const meta: Meta<FpcSummaryBarComponent> = {
   render: (args) => ({
     props: args,
     template: `<fpc-summary-bar [columns]="columns" [bordered]="bordered">
-            <fpc-summary-card label="Open" value="12" />
-            <fpc-summary-card label="Overdue" value="3" tone="danger" />
-            <fpc-summary-card label="Paid this month" value="41" tone="success" />
-            <fpc-summary-card label="Revenue" value="18 420,00 €" />
+            <fpc-summary-card label="Open" value="12" icon="receipt" />
+            <fpc-summary-card label="Overdue" value="3" tone="danger" icon="exclamation-circle" />
+            <fpc-summary-card label="Paid this month" value="41" tone="success" icon="check2-circle" />
+            <fpc-summary-card label="Revenue" value="18 420,00 €" icon="cash-coin" />
         </fpc-summary-bar>`,
   }),
 };
@@ -44,9 +44,9 @@ export const ThreeCards: Story = {
   render: (args) => ({
     props: args,
     template: `<fpc-summary-bar [columns]="columns">
-            <fpc-summary-card label="Open" value="12" />
-            <fpc-summary-card label="Overdue" value="3" tone="danger" />
-            <fpc-summary-card label="Paid" value="41" tone="success" />
+            <fpc-summary-card label="Open" value="12" icon="receipt" />
+            <fpc-summary-card label="Overdue" value="3" tone="danger" icon="exclamation-circle" />
+            <fpc-summary-card label="Paid" value="41" tone="success" icon="check2-circle" />
         </fpc-summary-bar>`,
   }),
 };
@@ -54,11 +54,11 @@ export const ThreeCards: Story = {
 export const WithActions: Story = {
   render: () => ({
     template: `<fpc-summary-bar [columns]="2">
-            <fpc-summary-card label="Open invoices">
+            <fpc-summary-card label="Open invoices" icon="receipt">
                 <span fpcSummaryCardValue>12</span>
                 <button fpcSummaryCardActions class="btn btn-sm btn-secondary">View</button>
             </fpc-summary-card>
-            <fpc-summary-card label="Overdue" tone="danger">
+            <fpc-summary-card label="Overdue" tone="danger" icon="exclamation-circle">
                 <span fpcSummaryCardValue>3</span>
                 <button fpcSummaryCardActions class="btn btn-sm btn-danger">Remind</button>
             </fpc-summary-card>
@@ -71,11 +71,11 @@ export const WrappedIncompleteLastRow: Story = {
   render: (args) => ({
     props: args,
     template: `<fpc-summary-bar [columns]="columns" [bordered]="bordered">
-            <fpc-summary-card label="One" value="1" />
-            <fpc-summary-card label="Two" value="2" />
-            <fpc-summary-card label="Three" value="3" />
-            <fpc-summary-card label="Four" value="4" />
-            <fpc-summary-card label="Five" value="5" />
+            <fpc-summary-card label="One" value="1" icon="people" />
+            <fpc-summary-card label="Two" value="2" icon="kanban" />
+            <fpc-summary-card label="Three" value="3" icon="clock" />
+            <fpc-summary-card label="Four" value="4" icon="ticket-detailed" />
+            <fpc-summary-card label="Five" value="5" icon="stack" />
         </fpc-summary-bar>`,
   }),
 };

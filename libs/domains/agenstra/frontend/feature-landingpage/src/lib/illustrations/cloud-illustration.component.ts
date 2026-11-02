@@ -35,10 +35,10 @@ import {
 
       <section class="sai-col sai-col--grow">
         <div class="cloud-illustration__summary">
-          <fpc-summary-card label="Workspaces" value="4" />
-          <fpc-summary-card label="Agents running" value="7" tone="success" />
-          <fpc-summary-card label="Region" value="Falkenstein" />
-          <fpc-summary-card label="Uptime (30 days)" value="99.98%" />
+          <fpc-summary-card icon="boxes" label="Workspaces" value="4" />
+          <fpc-summary-card icon="robot" label="Agents running" value="7" tone="success" />
+          <fpc-summary-card icon="geo-alt" label="Region" value="Falkenstein" />
+          <fpc-summary-card icon="activity" label="Uptime (30 days)" value="99.98%" />
         </div>
         <fpc-lane-header title="Environments" flush />
         <fpc-list [flush]="true" class="sai-body">

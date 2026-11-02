@@ -1,19 +1,36 @@
 <div class="section__content-wrapper d-flex flex-column h-100">
-  <fpc-page-header [title]="pageTitle" density="compact">
-    <fpc-button
-      fpcPageHeaderActions
-      variant="dark"
-      size="sm"
-      iconOnly
-      [ariaLabel]="globalSearchAriaLabel"
-      [title]="globalSearchTitle"
-      (clicked)="openGlobalSearchModal()"
-    >
-      <i class="bi bi-search" aria-hidden="true"></i>
-    </fpc-button>
+  <!-- Views + Create in the toolbar strip of the table / lanes (DB-12: the tab already names the board, so no
+       lane header repeating "Board"). -->
+  <ng-template #boardActions>
+    <!-- Table | Lanes (URL view=, remembered per user; default table). -->
+    <fpc-button-group size="sm" [ariaLabel]="viewSwitchLabel" data-testid="project-board-view-switch">
+      <fpc-button
+        [variant]="view() === 'table' ? 'primary' : 'outline-secondary'"
+        size="sm"
+        iconOnly
+        [ariaLabel]="tableViewLabel"
+        [title]="tableViewLabel"
+        [ariaPressed]="view() === 'table'"
+        (clicked)="setView('table')"
+        data-testid="project-board-view-table"
+      >
+        <i class="bi bi-table" aria-hidden="true"></i>
+      </fpc-button>
+      <fpc-button
+        [variant]="view() === 'lanes' ? 'primary' : 'outline-secondary'"
+        size="sm"
+        iconOnly
+        [ariaLabel]="lanesViewLabel"
+        [title]="lanesViewLabel"
+        [ariaPressed]="view() === 'lanes'"
+        (clicked)="setView('lanes')"
+        data-testid="project-board-view-lanes"
+      >
+        <i class="bi bi-kanban" aria-hidden="true"></i>
+      </fpc-button>
+    </fpc-button-group>
     @if (isAdmin) {
       <fpc-button
-        fpcPageHeaderActions
         variant="primary"
         size="sm"
         iconOnly
@@ -24,141 +41,386 @@
         <i class="bi bi-plus" aria-hidden="true"></i>
       </fpc-button>
     }
-  </fpc-page-header>
-
-  <fpc-tab-group
-    class="d-md-none flex-shrink-0"
-    [activeId]="selectedLane()"
-    (activeIdChange)="onSelectedLaneTabChange($event)"
-  >
-    @for (status of lanes; track status) {
-      <fpc-tab [id]="status" [label]="laneLabel(status)" />
-    }
-  </fpc-tab-group>
+  </ng-template>
 
   @if (error$ | async; as err) {
     <fpc-alert variant="danger" [flush]="true" [message]="err" />
   }
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="project-board-bulk-result"
+    />
+  }
 
-  @if (loadingList$ | async) {
-    <div class="d-flex justify-content-center py-5">
-      <fpc-spinner variant="primary" />
-    </div>
-  } @else if (ticketsBoardRowsByStatus$ | async; as byStatus) {
-    <section class="section__row flex-grow-1 min-h-0">
+  @if (view() === 'lanes') {
+    <fpc-tab-group
+      class="d-md-none flex-shrink-0"
+      [activeId]="selectedLane()"
+      (activeIdChange)="onSelectedLaneTabChange($event)"
+    >
       @for (status of lanes; track status) {
-        @let laneRows = filteredLaneRows(status, byStatus[status]);
-        <div
-          class="section__column d-md-flex flex-column border-end min-h-0"
-          [class.d-none]="selectedLane() !== status"
-        >
-          <fpc-board-lane class="h-100" [scrollBody]="false" [ariaLabel]="laneLabel(status)">
-            <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up" [title]="laneLabel(status)" />
-            <fpc-search-field
-              fpcBoardLaneSearch
-              [inputId]="'project-lane-search-' + status"
-              [name]="'lane-search-' + status"
-              [bordered]="false"
-              [placeholder]="laneSearchPlaceholder"
-              [ariaLabel]="laneSearchAriaLabel"
-              [value]="laneSearchQueries()[status]"
-              (valueChange)="setLaneSearchQuery(status, $event)"
-            />
-            <div
-              class="project-board__lane-dropzone list-group list-group-flush flex-grow-1 min-h-0 d-flex flex-column"
-              [class.project-board__lane-dropzone--over]="isLaneDragHighlight(status)"
-              (dragover)="onLaneDragOver($event, status)"
-              (dragenter)="onLaneDragEnter($event, status)"
-              (dragleave)="onLaneDragLeave($event, status)"
-              (drop)="onLaneDrop($event, status)"
-            >
-              @if (byStatus[status].length === 0) {
-                <fpc-empty-state
-                  class="project-board__empty-lane"
-                  size="sm"
-                  icon="arrow-down-circle"
-                  message="Drop tickets here"
-                  i18n-message="@@featureProjectBoard-dropHere"
-                />
-              } @else if (laneRows.length === 0) {
-                <fpc-empty-state
-                  class="project-board__empty-lane"
-                  size="sm"
-                  icon="search"
-                  message="No search results"
-                  i18n-message="@@featureProjectBoard-noMatchingTickets"
-                />
-              } @else {
-                <cdk-virtual-scroll-viewport
-                  class="project-board__viewport"
-                  [itemSize]="laneVirtualItemSize"
-                  [minBufferPx]="laneVirtualItemSize * 4"
-                  [maxBufferPx]="laneVirtualItemSize * 8"
-                >
-                  <div
-                    *cdkVirtualFor="let row of laneRows; trackBy: trackLaneRowByTicketId"
-                    class="list-group-item project-board__card border-bottom"
-                    [class.project-board__card--nested]="row.depth > 0"
-                    [class.project-board__card--draggable]="isTicketDraggable(row.ticket)"
-                    [class.project-board__card--dragging]="draggedTicket()?.id === row.ticket.id"
-                    [style.--project-board-nest-depth]="row.depth"
-                    [attr.draggable]="isTicketDraggable(row.ticket) ? 'true' : null"
-                    (dragstart)="onTicketDragStart($event, row.ticket)"
-                    (dragend)="onTicketDragEnd()"
-                    (dragover)="onCardDragOver($event)"
-                    (drop)="onLaneDrop($event, status)"
-                    (click)="onTicketCardClick(row.ticket)"
-                    (keyup.enter)="onTicketCardClick(row.ticket)"
-                    tabindex="0"
-                    role="button"
-                  >
-                    <div class="project-board__card-content">
-                      <div class="d-flex align-items-center gap-2 min-width-0 w-100">
-                        <div class="fw-medium text-truncate flex-grow-1 min-width-0" [title]="row.ticket.title">
-                          @if (row.ticket.shas.short) {
-                            <small class="text-body-secondary small">{{ row.ticket.shas.short }}</small>
-                          }
-                          {{ row.ticket.title }}
-                        </div>
-                      </div>
-                      <div class="project-board__meta-chips d-flex flex-wrap align-items-center gap-1 mt-1">
-                        <fpc-badge
-                          variant="info"
-                          color="secondary"
-                          [ngClass]="ticketPriorityBadgeClass(row.ticket.priority)"
-                          [attr.title]="row.ticket.priority"
-                          >{{ priorityLabel(row.ticket.priority) }}</fpc-badge
-                        >
-                        <fpc-badge
-                          variant="info"
-                          color="secondary"
-                          [ngClass]="ticketStatusBadgeClass(row.ticket.status)"
-                          [attr.title]="row.ticket.status"
-                          >{{ laneLabel(row.ticket.status) }}</fpc-badge
-                        >
-                        @if (row.ticket.subtaskCounts; as sc) {
-                          @if (sc.open + sc.done > 0) {
-                            <fpc-badge
-                              variant="info"
-                              color="secondary"
-                              i18n-title="@@featureProjectBoard-subtaskCountTitle"
-                              title="Direct subtasks (done / total)"
-                              >{{ sc.done }}/{{ sc.open + sc.done }}</fpc-badge
-                            >
-                          }
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </cdk-virtual-scroll-viewport>
-              }
-            </div>
-          </fpc-board-lane>
-        </div>
+        <fpc-tab [id]="status" [label]="laneLabel(status)" />
       }
-    </section>
+    </fpc-tab-group>
+
+    <!-- Lanes view (user): lane names → one sticky search / filter strip for all lanes → lane bodies
+         (like a table: thead → search → rows). Search + filters are the table view's query state. -->
+    <div class="project-board__lanes d-flex flex-column flex-grow-1 min-h-0" data-testid="project-board-lanes-view">
+      <fpc-section-row
+        class="project-board__lane-heads d-none d-md-flex"
+        [nowrap]="true"
+        data-testid="project-board-lane-heads"
+      >
+        @for (status of lanes; track status) {
+          <fpc-section-column>
+            <fpc-lane-header flush [title]="laneLabel(status)" />
+          </fpc-section-column>
+        }
+      </fpc-section-row>
+      <fpc-list-toolbar
+        class="project-board__lanes-toolbar flex-shrink-0"
+        [(open)]="ticketFiltersOpen"
+        [activeCount]="laneFiltersActive()"
+        [chips]="laneChips()"
+        (chipRemove)="removeTicketChip($event)"
+        (applied)="ticketFilterState.apply()"
+        (cleared)="ticketFilterState.clear()"
+        data-testid="project-board-lanes-toolbar"
+      >
+        <span fpcListToolbarActions class="d-inline-flex align-items-center gap-1">
+          <ng-container [ngTemplateOutlet]="boardActions" />
+        </span>
+        <fpc-search-field
+          fpcListToolbarLead
+          inputId="project-board-lanes-search"
+          name="project-board-lanes-search"
+          [bordered]="false"
+          [placeholder]="laneSearchPlaceholder"
+          [ariaLabel]="laneSearchAriaLabel"
+          [value]="ticketSearch()"
+          (valueChange)="ticketSearch.set($event)"
+        />
+        <fpc-form-field forId="projectBoardLanesFilterPriority" [label]="priorityFilterLabel">
+          <fpc-form-control
+            controlType="select"
+            controlId="projectBoardLanesFilterPriority"
+            size="sm"
+            [ngModel]="ticketFilterState.draft().priority"
+            (ngModelChange)="ticketFilterState.patch({ priority: $event })"
+          >
+            <option value="" i18n="@@featureProjectBoard-filterPriorityAll">All priorities</option>
+            @for (p of priorityOptions; track p) {
+              <option [value]="p">{{ priorityLabel(p) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+        @if (hiddenMatchCount() > 0) {
+          <fpc-button
+            fpcListToolbarActions
+            variant="link"
+            size="sm"
+            btnClass="text-body-secondary text-nowrap"
+            [title]="hiddenMatchesTitle"
+            (clicked)="showHiddenMatches()"
+            data-testid="project-board-more-matches"
+            >{{ hiddenMatchLabel() }}</fpc-button
+          >
+        }
+      </fpc-list-toolbar>
+
+      @if (loadingList$ | async) {
+        <div class="d-flex justify-content-center py-5">
+          <fpc-spinner variant="primary" />
+        </div>
+      } @else if (ticketsBoardRowsByStatus$ | async; as byStatus) {
+        <fpc-section-row class="flex-grow-1" [nowrap]="true" data-testid="project-board-lanes">
+          @for (status of lanes; track status) {
+            <fpc-section-column class="d-md-flex" [class.d-none]="selectedLane() !== status">
+              <fpc-board-lane class="h-100" [scrollBody]="false" [ariaLabel]="laneLabel(status)">
+                <!-- One stacked data table per lane (shared table pattern): State · Ticket / Priority · Subtasks,
+                     ⋮ row menu like the table view; admins drag unlocked cards between lanes (`dropGroup`), the whole
+                     lane body (an empty one too) is the drop zone. The lane body scrolls only when its cards overflow. -->
+                <fpc-data-table
+                  class="project-board__lane-table flex-grow-1 min-h-0"
+                  [ariaLabel]="laneLabel(status)"
+                  [columns]="laneColumns"
+                  [rows]="laneTableRows()[status]"
+                  [rowId]="ticketRowId"
+                  [activeRowId]="detail()?.id ?? null"
+                  stacked
+                  [searchable]="false"
+                  [showColumnChooser]="false"
+                  [clientSort]="false"
+                  [filtered]="false"
+                  [virtualThreshold]="laneVirtualThreshold"
+                  [rowMenu]="ticketRowMenu"
+                  (rowAction)="onTicketRowAction($event.row, $event.item.id)"
+                  (rowActivate)="onLaneRowActivate($event)"
+                  [dropGroup]="laneDropGroup"
+                  [dropData]="status"
+                  [rowDraggable]="isAdmin ? laneRowDraggable : false"
+                  (rowDrop)="onLaneRowDrop($event)"
+                  [attr.data-lane]="status"
+                  data-testid="project-board-lane-table"
+                >
+                  <div fpcDataTableEmpty class="project-board__empty-lane">
+                    @if (byStatus[status].length === 0) {
+                      <fpc-empty-state
+                        size="sm"
+                        icon="arrow-down-circle"
+                        message="Drop tickets here"
+                        i18n-message="@@featureProjectBoard-dropHere"
+                      />
+                    } @else {
+                      <fpc-empty-state
+                        size="sm"
+                        icon="search"
+                        message="No search results"
+                        i18n-message="@@featureProjectBoard-noMatchingTickets"
+                      />
+                    }
+                  </div>
+                  <ng-template fpcTableCell="ticket" let-row>
+                    <span
+                      class="project-board__ticket-cell d-inline-flex align-items-center gap-2"
+                      [class.project-board__ticket-cell--nested]="row.depth > 0"
+                      [title]="row.ticket.title"
+                    >
+                      @if (row.depth > 0) {
+                        <i class="bi bi-arrow-return-right text-body-secondary" aria-hidden="true"></i>
+                      }
+                      @if (row.ticket.shas.short) {
+                        <small class="text-body-secondary flex-shrink-0">{{ row.ticket.shas.short }}</small>
+                      }
+                      <span class="text-truncate">{{ row.ticket.title }}</span>
+                      @if (row.ticket.locked) {
+                        <fpc-badge tone="neutral" icon="lock-fill" [iconOnly]="true" [label]="lockedTicketLabel()" />
+                      }
+                    </span>
+                  </ng-template>
+                  <ng-template fpcTableCell="priority" let-row>
+                    <fpc-badge [tone]="ticketPriorityBadgeTone(row.ticket.priority)">{{
+                      priorityLabel(row.ticket.priority)
+                    }}</fpc-badge>
+                  </ng-template>
+                  <ng-template fpcTableCell="subtasks" let-row>
+                    @if (row.ticket.subtaskCounts; as sc) {
+                      @if (sc.open + sc.done > 0) {
+                        <span
+                          i18n-title="@@featureProjectBoard-subtaskCountTitle"
+                          title="Direct subtasks (done / total)"
+                          ><i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>{{ sc.done }}/{{
+                            sc.open + sc.done
+                          }}</span
+                        >
+                      }
+                    }
+                  </ng-template>
+                </fpc-data-table>
+              </fpc-board-lane>
+            </fpc-section-column>
+          }
+        </fpc-section-row>
+      }
+    </div>
+  } @else {
+    <!-- Table view: State · Ticket (short hash + title) · Priority · Milestone · facts; ⋮ = the card actions;
+         bulk status / priority / delete for admins (fan-out over the single-ticket endpoints). -->
+    <fpc-data-table
+      class="flex-grow-1 min-h-0"
+      [ariaLabel]="pageTitle"
+      [columns]="ticketColumns"
+      [rows]="ticketTableRows()"
+      [rowId]="ticketRowId"
+      [activeRowId]="detail()?.id ?? null"
+      (rowActivate)="openTicketDetailFlow($event.ticket.id)"
+      paging="client"
+      [(page)]="ticketPage"
+      persistKey="decabill-project-board"
+      [clientSort]="false"
+      [(sort)]="ticketSort"
+      [(query)]="ticketSearch"
+      [searchPlaceholder]="laneSearchPlaceholder"
+      showFilterButton
+      [(filtersOpen)]="ticketFiltersOpen"
+      [filtersActive]="ticketFilterState.activeCount()"
+      [chips]="ticketChips()"
+      (removeChip)="removeTicketChip($event)"
+      (filtersApplied)="ticketFilterState.apply()"
+      (filtersCleared)="ticketFilterState.clear()"
+      [loading]="(loadingList$ | async) === true && ticketTableRows().length === 0"
+      [selectable]="isAdmin"
+      [(selected)]="selectedTicketIds"
+      [rowMenu]="ticketRowMenu"
+      (rowAction)="onTicketRowAction($event.row, $event.item.id)"
+      emptyIcon="kanban"
+      data-testid="project-board-table"
+    >
+      <span fpcDataTableToolbar class="d-inline-flex align-items-center gap-1">
+        <ng-container [ngTemplateOutlet]="boardActions" />
+      </span>
+      <fpc-form-field fpcDataTableFilters forId="projectBoardFilterStatus" [label]="statusFilterLabel">
+        <fpc-form-control
+          controlType="select"
+          controlId="projectBoardFilterStatus"
+          size="sm"
+          [ngModel]="ticketFilterState.draft().status"
+          (ngModelChange)="ticketFilterState.patch({ status: $event })"
+        >
+          @for (option of ticketStatusFilterOptions; track option) {
+            <option [value]="option">{{ statusFilterOptionLabel(option) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+      <fpc-form-field fpcDataTableFilters forId="projectBoardFilterPriority" [label]="priorityFilterLabel">
+        <fpc-form-control
+          controlType="select"
+          controlId="projectBoardFilterPriority"
+          size="sm"
+          [ngModel]="ticketFilterState.draft().priority"
+          (ngModelChange)="ticketFilterState.patch({ priority: $event })"
+        >
+          <option value="" i18n="@@featureProjectBoard-filterPriorityAll">All priorities</option>
+          @for (p of priorityOptions; track p) {
+            <option [value]="p">{{ priorityLabel(p) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+
+      <fpc-dropdown
+        fpcDataTableBatch
+        appendTo="body"
+        alignment="end"
+        [disabled]="bulkBusy()"
+        data-testid="project-board-bulk-status"
+      >
+        <fpc-button
+          fpcDropdownTrigger
+          variant="dark"
+          size="sm"
+          iconOnly
+          ariaHaspopup="menu"
+          [ariaLabel]="bulkStatusLabel"
+          [title]="bulkStatusLabel"
+          [disabled]="bulkBusy()"
+        >
+          <i class="bi bi-arrow-right-circle" aria-hidden="true"></i>
+        </fpc-button>
+        @for (s of statusOptions; track s) {
+          <fpc-dropdown-item (selected)="onBulkStatusValue(s)">{{ laneLabel(s) }}</fpc-dropdown-item>
+        }
+      </fpc-dropdown>
+      <fpc-dropdown
+        fpcDataTableBatch
+        appendTo="body"
+        alignment="end"
+        [disabled]="bulkBusy()"
+        data-testid="project-board-bulk-priority"
+      >
+        <fpc-button
+          fpcDropdownTrigger
+          variant="dark"
+          size="sm"
+          iconOnly
+          ariaHaspopup="menu"
+          [ariaLabel]="bulkPriorityLabel"
+          [title]="bulkPriorityLabel"
+          [disabled]="bulkBusy()"
+        >
+          <i class="bi bi-flag" aria-hidden="true"></i>
+        </fpc-button>
+        @for (p of priorityOptions; track p) {
+          <fpc-dropdown-item (selected)="onBulkPriorityValue(p)">{{ priorityLabel(p) }}</fpc-dropdown-item>
+        }
+      </fpc-dropdown>
+      <fpc-button
+        fpcDataTableBatch
+        variant="danger"
+        size="sm"
+        iconOnly
+        [ariaLabel]="deleteLabel"
+        [title]="deleteLabel"
+        [disabled]="bulkBusy()"
+        (clicked)="requestBulkDelete()"
+        data-testid="project-board-bulk-delete"
+      >
+        <i class="bi bi-trash" aria-hidden="true"></i>
+      </fpc-button>
+
+      @if (hiddenMatchCount() > 0) {
+        <fpc-button
+          fpcDataTableToolbar
+          variant="link"
+          size="sm"
+          btnClass="text-body-secondary text-nowrap"
+          [title]="hiddenMatchesTitle"
+          (clicked)="showHiddenMatches()"
+          data-testid="project-board-more-matches"
+          >{{ hiddenMatchLabel() }}</fpc-button
+        >
+      }
+
+      <span fpcDataTableEmpty>
+        <fpc-empty-state icon="kanban" size="sm" i18n-message="@@featureProjectBoard-empty" message="No tickets yet">
+          @if (isAdmin) {
+            <fpc-button
+              fpcEmptyStateActions
+              variant="primary"
+              size="sm"
+              (clicked)="showCreateTicketModal()"
+              i18n="@@featureProjectBoard-emptyCreate"
+              >New ticket</fpc-button
+            >
+          }
+        </fpc-empty-state>
+      </span>
+
+      <ng-template fpcTableCell="ticket" let-row>
+        <span
+          class="project-board__ticket-cell d-inline-flex align-items-center gap-2"
+          [class.project-board__ticket-cell--nested]="row.depth > 0"
+          [title]="row.ticket.title"
+        >
+          @if (row.depth > 0) {
+            <i class="bi bi-arrow-return-right text-body-secondary" aria-hidden="true"></i>
+          }
+          @if (row.ticket.shas.short) {
+            <small class="text-body-secondary flex-shrink-0">{{ row.ticket.shas.short }}</small>
+          }
+          <span class="text-truncate">{{ row.ticket.title }}</span>
+          @if (row.ticket.locked) {
+            <fpc-badge tone="neutral" icon="lock-fill" [iconOnly]="true" [label]="lockedTicketLabel()" />
+          }
+        </span>
+      </ng-template>
+      <ng-template fpcTableCell="priority" let-row>
+        <fpc-badge [tone]="ticketPriorityBadgeTone(row.ticket.priority)">{{
+          priorityLabel(row.ticket.priority)
+        }}</fpc-badge>
+      </ng-template>
+      <ng-template fpcTableCell="updated" let-row>{{
+        row.ticket.updatedAt | date: activityOccurredAtFormat
+      }}</ng-template>
+    </fpc-data-table>
   }
 </div>
+
+<fpc-confirm-dialog
+  [(open)]="bulkDeleteConfirmOpen"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  [busy]="bulkBusy()"
+  (confirmed)="onConfirmBulkDelete()"
+  data-testid="project-board-bulk-delete-confirm"
+/>
 
 <fpc-modal
   class="modal-ticket-detail"
@@ -210,27 +472,33 @@
       <div
         class="project-board__ticket-detail-toolbar d-flex w-100 flex-wrap align-items-center gap-2 px-3 pt-2 pb-2 flex-shrink-0 min-width-0"
       >
-        <div class="project-board__hierarchy-box flex-grow-1 min-width-0 border rounded px-3">
-          <fpc-breadcrumbs
-            size="sm"
-            divider="›"
-            i18n-ariaLabel="@@featureProjectBoard-breadcrumbNavAria"
-            ariaLabel="Ticket hierarchy"
-          >
-            @for (crumb of detailBreadcrumb$ | async; track crumb.id) {
-              @if (crumb.id === d.id) {
-                <fpc-breadcrumb-item [label]="crumb.title" [title]="crumb.title" [active]="true" />
-              } @else {
-                <fpc-breadcrumb-item
-                  [label]="crumb.title"
-                  [title]="crumb.title"
-                  href="#"
-                  (selected)="onHierarchyBreadcrumbSelected($event, crumb.id)"
-                />
+        <!-- Hierarchy only for sub-tickets: a root ticket's single crumb repeated the modal title (DB-14 a). -->
+        @let crumbs = (detailBreadcrumb$ | async) ?? [];
+        @if (crumbs.length > 1) {
+          <div class="project-board__hierarchy-box flex-grow-1 min-width-0 border rounded px-3">
+            <fpc-breadcrumbs
+              size="sm"
+              divider="›"
+              i18n-ariaLabel="@@featureProjectBoard-breadcrumbNavAria"
+              ariaLabel="Ticket hierarchy"
+            >
+              @for (crumb of crumbs; track crumb.id) {
+                @if (crumb.id === d.id) {
+                  <fpc-breadcrumb-item [label]="crumb.title" [title]="crumb.title" [active]="true" />
+                } @else {
+                  <fpc-breadcrumb-item
+                    [label]="crumb.title"
+                    [title]="crumb.title"
+                    href="#"
+                    (selected)="onHierarchyBreadcrumbSelected($event, crumb.id)"
+                  />
+                }
               }
-            }
-          </fpc-breadcrumbs>
-        </div>
+            </fpc-breadcrumbs>
+          </div>
+        } @else {
+          <span class="flex-grow-1"></span>
+        }
         @if (d.locked) {
           <span class="text-secondary small flex-shrink-0"
             ><i class="bi bi-lock me-1" aria-hidden="true"></i>{{ lockedTicketLabel() }}</span
@@ -267,14 +535,21 @@
                 <dt class="col-sm-3 mb-2" i18n="@@featureProjectBoard-fieldShas">SHAs</dt>
                 <dd class="col-sm-9 mb-2 d-flex align-items-center gap-2">
                   @if (d.shas.short) {
-                    <fpc-badge variant="info" color="secondary" class="project-board__chip--activity-muted">{{
-                      d.shas.short
-                    }}</fpc-badge>
+                    <fpc-badge tone="neutral">{{ d.shas.short }}</fpc-badge>
                   }
                   @if (d.shas.long) {
-                    <fpc-badge variant="info" color="secondary" class="project-board__chip--activity-muted">{{
-                      d.shas.long
-                    }}</fpc-badge>
+                    <!-- Full hash via Copy instead of a 40-character badge (DB-14 b). -->
+                    <fpc-button
+                      variant="link"
+                      size="sm"
+                      iconOnly
+                      class="p-0"
+                      [title]="copyFullShaLabel"
+                      [ariaLabel]="copyFullShaLabel"
+                      (clicked)="copyText(d.shas.long)"
+                    >
+                      <i class="bi bi-copy" aria-hidden="true"></i>
+                    </fpc-button>
                   }
                 </dd>
               }
@@ -293,9 +568,7 @@
                     }
                   </fpc-form-control>
                 } @else {
-                  <fpc-badge variant="info" color="secondary" [ngClass]="ticketStatusBadgeClass(d.status)">{{
-                    laneLabel(d.status)
-                  }}</fpc-badge>
+                  <fpc-badge [tone]="ticketStatusBadgeTone(d.status)">{{ laneLabel(d.status) }}</fpc-badge>
                 }
               </dd>
               <dt class="col-sm-3 mt-2" i18n="@@featureProjectBoard-priorityLabel">Priority</dt>
@@ -313,9 +586,7 @@
                     }
                   </fpc-form-control>
                 } @else {
-                  <fpc-badge variant="info" color="secondary" [ngClass]="ticketPriorityBadgeClass(d.priority)">{{
-                    priorityLabel(d.priority)
-                  }}</fpc-badge>
+                  <fpc-badge [tone]="ticketPriorityBadgeTone(d.priority)">{{ priorityLabel(d.priority) }}</fpc-badge>
                 }
               </dd>
               <dt class="col-sm-3 mt-2" i18n="@@featureProjectBoard-milestoneLabel">Milestone</dt>
@@ -495,48 +766,30 @@
                     No subtasks yet.
                   </p>
                 } @else {
-                  <fpc-list class="project-board__detail-subtasks small mb-0">
-                    @for (row of detailSubtaskRows(); track row.ticket.id) {
-                      <fpc-list-item
-                        class="project-board__detail-subtask-row py-2 px-3"
-                        [class.project-board__detail-subtask--nested]="row.depth > 0"
-                        [style.--project-board-nest-depth]="row.depth"
+                  <!-- Nested table: State (lane) · Ticket (indented by depth) · Priority; row click opens the subtask. -->
+                  <fpc-data-table
+                    nested
+                    [ariaLabel]="subtasksLabel"
+                    [columns]="subtaskColumns"
+                    [rows]="detailSubtaskRows()"
+                    [rowId]="subtaskRowId"
+                    [searchable]="false"
+                    (rowActivate)="openSubtaskDetail($event.ticket.id)"
+                    data-testid="project-board-subtasks"
+                  >
+                    <ng-template fpcTableCell="ticket" let-row>
+                      <span
+                        class="project-board__ticket-cell d-inline-flex align-items-center gap-2"
+                        [style.padding-inline-start.rem]="subtaskDepth(row)"
+                        [title]="subtaskTitle(row)"
                       >
-                        <fpc-button
-                          variant="link"
-                          [block]="true"
-                          btnClass="p-0 text-start text-decoration-none justify-content-start"
-                          class="project-board__detail-subtask-btn"
-                          (clicked)="openSubtaskDetail(row.ticket.id)"
-                          i18n-title="@@featureProjectBoard-openSubtaskTitle"
-                          title="Open subtask"
-                        >
-                          <span class="d-flex align-items-center gap-2 w-100 min-width-0">
-                            @if (row.ticket.shas.short) {
-                              <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
-                                row.ticket.shas.short
-                              }}</small>
-                            }
-                            <span class="fw-medium text-break flex-grow-1 min-width-0">{{ row.ticket.title }}</span>
-                          </span>
-                        </fpc-button>
-                        <div class="project-board__meta-chips d-flex flex-wrap align-items-center gap-1 mt-1">
-                          <fpc-badge
-                            variant="info"
-                            color="secondary"
-                            [ngClass]="ticketPriorityBadgeClass(row.ticket.priority)"
-                            >{{ priorityLabel(row.ticket.priority) }}</fpc-badge
-                          >
-                          <fpc-badge
-                            variant="info"
-                            color="secondary"
-                            [ngClass]="ticketStatusBadgeClass(row.ticket.status)"
-                            >{{ laneLabel(row.ticket.status) }}</fpc-badge
-                          >
-                        </div>
-                      </fpc-list-item>
-                    }
-                  </fpc-list>
+                        @if (subtaskShortSha(row); as sha) {
+                          <small class="text-body-secondary fw-medium flex-shrink-0">{{ sha }}</small>
+                        }
+                        <span class="fw-medium text-truncate">{{ subtaskTitle(row) }}</span>
+                      </span>
+                    </ng-template>
+                  </fpc-data-table>
                 }
               </div>
 
@@ -576,33 +829,19 @@
                     No time logged on this ticket yet.
                   </p>
                 } @else {
-                  <fpc-list class="project-board__detail-time-entries small mb-0">
-                    @for (entry of ticketTimeEntries(); track entry.id) {
-                      <fpc-list-item class="py-2 px-3">
-                        <div fpcListItemTitle class="fw-semibold">{{ timeEntryTitle(entry) }}</div>
-                        <div fpcListItemMeta class="d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                          <span [ngClass]="timeEntryBillingStatusTextClass(entry)">
-                            <i class="bi me-1" [ngClass]="timeEntryBillingStatusIconClass(entry)" aria-hidden="true"></i
-                            >{{ timeEntryBillingStatusLabel(entry) }}
-                          </span>
-                          <span
-                            ><i class="bi bi-calendar3 me-1" aria-hidden="true"></i
-                            >{{ entry.startedAt | date: 'mediumDate' }}</span
-                          >
-                          <span
-                            ><i class="bi bi-clock me-1" aria-hidden="true"></i
-                            >{{ formatTimeEntryClockRange(entry.startedAt, entry.endedAt) }}</span
-                          >
-                          @if (timeEntryShowsDurationInMeta(entry)) {
-                            <span
-                              ><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
-                              >{{ formatMinutes(entry.durationMinutes) }}</span
-                            >
-                          }
-                        </div>
-                      </fpc-list-item>
-                    }
-                  </fpc-list>
+                  <!-- Nested table: State (billed) · Entry · date · time · duration. -->
+                  <fpc-data-table
+                    nested
+                    [ariaLabel]="timeEntriesLabel"
+                    [columns]="timeColumns"
+                    [rows]="ticketTimeEntries()"
+                    paging="client"
+                    persistKey="decabill-ticket-time-entries"
+                    [searchable]="false"
+                    data-testid="project-board-time-entries"
+                  >
+                    <ng-template fpcTableCell="date" let-row>{{ timeEntryStart(row) | fpcDate }}</ng-template>
+                  </fpc-data-table>
                 }
               </div>
             </div>
@@ -670,29 +909,21 @@
             }
 
             <h3 class="h6 mt-3" i18n="@@featureProjectBoard-activityHeading">Activity</h3>
-            <ul class="list-unstyled small project-board__scroll">
-              @for (ev of activity$ | async; track ev.id) {
-                <li class="mb-2 pb-2 border-bottom border-opacity-50">
-                  <div
-                    class="project-board__activity-line d-flex flex-wrap align-items-center column-gap-2 row-gap-1 small"
-                  >
-                    <fpc-badge
-                      variant="info"
-                      color="secondary"
-                      [ngClass]="activityActionBadgeClass(ev.actionType)"
-                      [attr.title]="ev.actionType"
-                      >{{ activityActionLabel(ev.actionType) }}</fpc-badge
-                    >
-                    <span class="text-body-secondary">{{ ev.occurredAt | date: activityOccurredAtFormat }}</span>
-                    @if (ev.actorEmail) {
-                      <span class="text-body-secondary text-truncate project-board__activity-actor">{{
-                        ev.actorEmail
-                      }}</span>
-                    }
-                  </div>
-                </li>
-              }
-            </ul>
+            <!-- Activity feed as a nested table: State (action) · Time · Actor. -->
+            <fpc-data-table
+              nested
+              [ariaLabel]="activityLabel"
+              [columns]="activityColumns"
+              [rows]="activity()"
+              paging="client"
+              persistKey="decabill-ticket-activity"
+              [searchable]="false"
+              data-testid="project-board-activity"
+            >
+              <ng-template fpcTableCell="time" let-row>{{
+                activityTime(row) | date: activityOccurredAtFormat
+              }}</ng-template>
+            </fpc-data-table>
           </div>
         </div>
       }
@@ -743,7 +974,15 @@
   </p>
 </fpc-confirm-dialog>
 
-<fpc-modal [(open)]="createModalOpen" size="xl" scrollable [closeOnBackdrop]="false" (closed)="onCreateModalClosed()">
+<fpc-modal
+  [(open)]="createModalOpen"
+  size="xl"
+  scrollable
+  [closeOnBackdrop]="false"
+  (closed)="onCreateModalClosed()"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <div fpcModalTitle class="h5 mb-0">
     @if (createParentId()) {
       <span i18n="@@featureProjectBoard-createSubtaskTitle">New subtask</span>
@@ -810,7 +1049,7 @@
       </fpc-form-field>
     </div>
   </div>
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button variant="primary" (clicked)="submitCreate()" [disabled]="saving()" i18n="@@featureProjectBoard-create">
       Create
     </fpc-button>
@@ -818,75 +1057,13 @@
 </fpc-modal>
 
 <fpc-modal
-  [(open)]="globalSearchModalOpen"
-  scrollable
-  i18n-title="@@featureProjectBoard-globalSearchTitle"
-  title="Search tickets"
-  (closed)="onCloseGlobalSearchModal()"
->
-  <label class="visually-hidden" for="projectBoardGlobalSearchInput" i18n="@@featureProjectBoard-globalSearchInputLabel"
-    >Search tickets</label
-  >
-  <fpc-typeahead-select
-    #globalSearchInput
-    inputId="projectBoardGlobalSearchInput"
-    listboxId="projectBoardGlobalSearchInput-listbox"
-    variant="inline"
-    [openOnFocus]="false"
-    [loading]="globalSearchLoading()"
-    i18n-placeholder="@@featureProjectBoard-globalSearchPlaceholder"
-    placeholder="Search by title, description, or id"
-    i18n-ariaLabel="@@featureProjectBoard-globalSearchInputLabel"
-    ariaLabel="Search tickets"
-    [query]="globalSearchQuery()"
-    (queryChange)="onGlobalSearchQueryChange($event)"
-    [open]="globalSearchSuggestionsOpen()"
-    (openChange)="onGlobalSearchSuggestionsOpenChange($event)"
-    (cleared)="onGlobalSearchQueryChange('')"
-  >
-    <div fpcTypeaheadSuggestions>
-      @if (globalSearchHits().length > 0) {
-        @for (ticket of globalSearchHits(); track ticket.id) {
-          <button
-            type="button"
-            class="dropdown-item py-2 text-start"
-            (mousedown)="onGlobalSearchResultClick(ticket, $event)"
-          >
-            <span class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
-              @if (ticket.shas.short) {
-                <span class="font-monospace text-body-secondary small flex-shrink-0">{{ ticket.shas.short }}</span>
-              }
-              <span class="fw-medium text-break flex-grow-1 min-width-0">{{ ticket.title }}</span>
-              <fpc-badge
-                variant="info"
-                color="secondary"
-                class="flex-shrink-0"
-                [ngClass]="ticketStatusBadgeClass(ticket.status)"
-                >{{ laneLabel(ticket.status) }}</fpc-badge
-              >
-            </span>
-          </button>
-        }
-      } @else if (globalSearchQuery().trim()) {
-        <span class="dropdown-item-text text-body-secondary small" i18n="@@featureProjectBoard-globalSearchNoResults"
-          >No matching tickets</span
-        >
-      }
-    </div>
-  </fpc-typeahead-select>
-  @if (globalSearchQuery().trim() === '') {
-    <p class="text-body-secondary small mb-0 mt-2" i18n="@@featureProjectBoard-globalSearchHint">
-      Type to search all tickets in this project, including done and closed.
-    </p>
-  }
-</fpc-modal>
-
-<fpc-modal
   [(open)]="createTimeModalOpen"
   i18n-title="@@featureProjectBoard-createTimeEntryTitle"
-  title="New time entry"
+  title="Create time entry"
   [closeOnBackdrop]="false"
   (closed)="onCreateTimeModalClosed()"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <fpc-form-field forId="ticketTimeStartedAt" i18n-label="@@featureProjectBoard-timeStartLabel" label="Start" required>
     <fpc-form-control
@@ -909,7 +1086,7 @@
   <fpc-form-field forId="ticketTimeDesc" i18n-label="@@featureProjectBoard-timeDescriptionLabel" label="Description">
     <fpc-form-control controlId="ticketTimeDesc" [(ngModel)]="timeFormDescription" name="ticketTimeDescription" />
   </fpc-form-field>
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="submitTicketTimeEntry()"

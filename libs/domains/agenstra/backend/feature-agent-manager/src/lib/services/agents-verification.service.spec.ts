@@ -6,7 +6,7 @@ import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentsVerificationService } from './agents-verification.service';
 import { AgentsService } from './agents.service';
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 
 describe('AgentsVerificationService', () => {
   let service: AgentsVerificationService;
@@ -33,7 +33,7 @@ describe('AgentsVerificationService', () => {
         AgentsVerificationService,
         { provide: AgentsService, useValue: agentsService },
         { provide: AgentsRepository, useValue: agentsRepository },
-        { provide: DockerService, useValue: dockerService },
+        { provide: AgentRuntime, useValue: dockerService },
       ],
     }).compile();
 

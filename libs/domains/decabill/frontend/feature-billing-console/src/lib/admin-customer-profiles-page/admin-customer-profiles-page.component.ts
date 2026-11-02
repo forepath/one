@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   AdminCustomerProfilesFacade,
@@ -8,30 +8,32 @@ import {
   type AdminCustomerProfileListItem,
   type CustomerTrustLevel,
   type CustomerTrustScoreDetail,
+  type CustomerTrustScoreFactor,
   type CustomerProfileDto,
   type VatIdValidationStatus,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/frontend';
 import {
   FpcAlertComponent,
-  FpcBadgeComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcConfirmDialogComponent,
-  FpcListComponent,
-  FpcListItemComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
+  fpcRunBulk,
   FpcSpinnerComponent,
+  FpcTableCellDirective,
+  type FpcMenuItem,
+  type FpcTableColumn,
 } from '@forepath/shared/frontend/ui-components';
-import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
-import { BILLING_COUNTRY_OPTIONS, DEFAULT_BILLING_COUNTRY_CODE } from '../billing-country-options';
+import { BILLING_COUNTRY_OPTIONS, DEFAULT_BILLING_COUNTRY_CODE, withOptionalCountry } from '../billing-country-options';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
 import {
@@ -44,6 +46,10 @@ import {
   getUnavailableLabel,
   getVatIdValidationStatusLabel,
 } from '../billing-status-labels';
+import { DB_DL_CANCEL, DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
+import { dbServerPaging } from '../shared/server-paging';
+import { trustState } from '../shared/table-states';
+import { formatBillingDate } from '../billing-format';
 
 @Component({
   selector: 'framework-admin-customer-profiles-page',
@@ -53,20 +59,17 @@ import {
     FormsModule,
     BillingAdminUserSelectComponent,
     FpcAlertComponent,
-    FpcBadgeComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
+    FpcDataTableComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
-    FpcListItemComponent,
     FpcConfirmDialogComponent,
-    FpcListComponent,
     FpcEmptyStateComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
     FpcSpinnerComponent,
+    FpcTableCellDirective,
   ],
   providers: [DatePipe],
   templateUrl: './admin-customer-profiles-page.component.html',
@@ -81,7 +84,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   readonly trustScoreModalOpen = signal(false);
   readonly customDataModalOpen = signal(false);
 
-  readonly pageTitle = $localize`:@@featureAdminProfiles-title:Billing Profiles`;
+  readonly pageTitle = $localize`:@@featureAdminProfiles-title:Customer profiles`;
   readonly addProfileAriaLabel = $localize`:@@featureAdminProfiles-add:Add`;
   readonly searchPlaceholder = $localize`:@@featureAdminProfiles-searchPlaceholder:Search profiles`;
 
@@ -92,8 +95,12 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   private readonly datePipe = inject(DatePipe);
 
   readonly countryOptions = BILLING_COUNTRY_OPTIONS;
-  readonly searchQuery = signal('');
-  readonly searchQuery$ = toObservable(this.searchQuery);
+  /** Search + page + size → `GET /admin/billing/customer-profiles?limit&offset&search` (replace-page; URL q / p / n). */
+  readonly paging = dbServerPaging(
+    (query) => this.facade.loadProfiles({ search: query.search, page: query.page, pageSize: query.pageSize }),
+    { url: '' },
+  );
+  readonly total = toSignal(this.facade.total$, { initialValue: 0 });
   readonly profiles$ = this.facade.profiles$;
 
   readonly loading$ = this.facade.loading$;
@@ -121,6 +128,115 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
     return this.users().filter((user) => !profileUserIds.has(user.id));
   });
 
+  readonly columns: FpcTableColumn<AdminCustomerProfileListItem>[] = [
+    {
+      id: 'trust',
+      label: $localize`:@@featureAdminProfiles-colTrust:Trust`,
+      type: 'state',
+      state: (profile) => trustState(profile.trustLevel),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureAdminProfiles-colCustomer:Customer`,
+      value: (profile) => this.profilePrimaryTitle(profile),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'customerNumber',
+      label: $localize`:@@featureAdminProfiles-colCustomerNumber:Customer no.`,
+      value: (profile) => profile.customerNumber ?? '',
+      mono: true,
+      priority: 1,
+    },
+    {
+      id: 'complete',
+      label: $localize`:@@featureAdminProfiles-colProfile:Profile`,
+      value: (profile) => this.profileCompleteLabel(profile.isComplete),
+      priority: 2,
+    },
+    {
+      id: 'user',
+      label: $localize`:@@featureAdminProfiles-colUser:User`,
+      value: (profile) => this.profileUserLabel(profile),
+      priority: 2,
+    },
+    {
+      id: 'contact',
+      label: $localize`:@@featureAdminProfiles-colContact:Contact`,
+      value: (profile) => this.profileSecondaryName(profile) ?? '',
+      priority: 3,
+      // DB-02: secondary columns off by default (column chooser) so the list fits 1440 px with ⋮ visible.
+      hidden: true,
+    },
+    {
+      id: 'country',
+      label: $localize`:@@featureAdminProfiles-colCountry:Country`,
+      value: (profile) => this.profileCountryLabel(profile.country),
+      priority: 3,
+    },
+    {
+      id: 'updated',
+      label: $localize`:@@featureAdminProfiles-colUpdated:Updated`,
+      value: (profile) => profile.updatedAt,
+      priority: 3,
+      hidden: true,
+    },
+  ];
+
+  readonly trustFactorsLabel = $localize`:@@featureAdminProfiles-trustFactors:Trust factors`;
+  readonly trustFactorColumns: FpcTableColumn<CustomerTrustScoreFactor>[] = [
+    {
+      id: 'name',
+      label: $localize`:@@featureAdminProfiles-colFactor:Factor`,
+      value: (factor) => factor.label,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'description',
+      label: $localize`:@@featureAdminProfiles-colDescription:Description`,
+      value: (factor) => factor.description,
+      priority: 2,
+    },
+    {
+      id: 'points',
+      label: $localize`:@@featureAdminProfiles-colPoints:Points`,
+      value: (factor) => factor.points,
+      align: 'end',
+      priority: 1,
+    },
+  ];
+
+  readonly deleteLabel = DB_DL_DELETE;
+  readonly cancelLabel = DB_DL_CANCEL;
+  readonly recomputeLabel = $localize`:@@featureAdminProfiles-bulkRecompute:Recompute trust`;
+  readonly bulkDeleteTitle = $localize`:@@featureAdminProfiles-bulkDeleteTitle:Delete billing profiles?`;
+
+  readonly selected = signal<readonly string[]>([]);
+  readonly confirmBulkDelete = signal(false);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly selectedProfiles = computed(() => {
+    const ids = new Set(this.selected());
+
+    return this.profiles().filter((profile) => ids.has(profile.id));
+  });
+  readonly bulkDeleteMessage = computed(
+    () =>
+      $localize`:@@featureAdminProfiles-bulkDeleteMessage:${this.selectedProfiles().length}:count: selected billing profiles will be deleted. This action cannot be undone.`,
+  );
+  readonly rowMenu = (): FpcMenuItem[] => [
+    { id: 'trust', label: $localize`:@@featureAdminProfiles-trustButtonTitle:View trust score`, icon: 'shield-check' },
+    {
+      id: 'custom-data',
+      label: $localize`:@@featureAdminProfiles-customDataButtonTitle:Edit custom data`,
+      icon: 'database',
+    },
+    { id: 'edit', label: $localize`:@@featureAdminProfiles-editButtonTitle:Edit profile`, icon: 'pencil' },
+    { id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true },
+    dbCopyIdItem(),
+  ];
+
   createForm: CustomerProfileDto & { userId: string } = this.emptyCreateForm();
   editForm: CustomerProfileDto & {
     id: string;
@@ -138,15 +254,58 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   customDataLoading = signal(false);
 
   ngOnInit(): void {
-    this.facade.loadProfiles();
     this.authFacade.loadUsers();
     this.registerModalCloseWatchers();
+  }
 
-    this.searchQuery$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.facade.loadProfiles({ search: search.trim() || undefined });
-      });
+  onRowAction(profile: AdminCustomerProfileListItem, action: string): void {
+    if (action === 'trust') this.openTrustScoreModal(profile);
+    else if (action === 'custom-data') this.openCustomDataModal(profile);
+    else if (action === 'edit') this.openEditModal(profile);
+    else if (action === 'delete') this.openDeleteModal(profile);
+    else if (action === 'copy-id') fpcCopyText(profile.id);
+  }
+
+  /** Bulk Recompute trust: one `POST /admin/billing/customer-profiles/:id/trust-score/recompute` per profile. */
+  async recomputeTrustSelected(): Promise<void> {
+    const profiles = this.selectedProfiles();
+
+    if (profiles.length === 0) return;
+
+    const result = await fpcRunBulk(profiles, (profile) =>
+      firstValueFrom(this.profilesService.recomputeTrustScore(profile.id)),
+    );
+
+    this.finishBulk(dbBulkSummary(result, (profile) => this.profilePrimaryTitle(profile)));
+  }
+
+  /** Bulk Delete: one `DELETE /admin/billing/customer-profiles/:id` per profile. */
+  async deleteSelected(): Promise<void> {
+    const profiles = this.selectedProfiles();
+
+    if (profiles.length === 0) return;
+
+    const result = await fpcRunBulk(profiles, (profile) => firstValueFrom(this.profilesService.delete(profile.id)));
+
+    this.finishBulk(dbBulkSummary(result, (profile) => this.profilePrimaryTitle(profile)));
+  }
+
+  private finishBulk(result: DbBulkResult): void {
+    this.bulkResult.set(result);
+    this.selected.set([]);
+    this.paging.reload();
+  }
+
+  profileUpdatedAt(profile: AdminCustomerProfileListItem): string {
+    return profile.updatedAt;
+  }
+
+  factorPoints(factor: CustomerTrustScoreFactor): number {
+    return factor.points;
+  }
+
+  formatPoints(points: number): string {
+    return `${points > 0 ? '+' : ''}${points}`;
   }
 
   openCreateModal(): void {
@@ -235,7 +394,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
 
     const { userId, ...dto } = this.createForm;
 
-    this.facade.createProfile({ userId, ...dto });
+    this.facade.createProfile(withOptionalCountry({ userId, ...dto }));
   }
 
   submitEdit(): void {
@@ -250,7 +409,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
       ...dto
     } = this.editForm;
 
-    this.facade.updateProfile(id, dto);
+    this.facade.updateProfile(id, withOptionalCountry(dto));
   }
 
   submitCustomData(): void {
@@ -288,7 +447,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   formatDate(value?: string): string {
     if (!value) return '-';
 
-    return this.datePipe.transform(value, 'mediumDate') ?? '-';
+    return formatBillingDate(value, '-');
   }
 
   datevDebtorNumberDisplay(value: number | null | undefined): string {
@@ -432,9 +591,8 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   }
 
   private registerModalCloseWatchers(): void {
-    const reloadProfiles = (): void => {
-      this.facade.loadProfiles();
-    };
+    // The current page again (replace-page), so search / page / size stay.
+    const reloadProfiles = (): void => this.paging.reload();
 
     watchBillingMutationModalClose({
       loading$: this.creating$,
@@ -463,6 +621,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.profileToDelete = null;
+        reloadProfiles();
       },
     });
     watchBillingMutationModalClose({

@@ -1,0 +1,120 @@
+<!-- Node Summary (3.38): the object header shows name + health; lanes Status | Network & system, groups as list headers. -->
+<div class="fpc-page">
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (actionError(); as message) {
+    <fpc-alert
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      [dismissible]="true"
+      (closed)="dismissActionError()"
+    />
+  }
+
+  @if (node(); as n) {
+    <fpc-tab-group
+      class="fpc-lane-tabs"
+      [activeId]="lane()"
+      (activeIdChange)="lane.set($any($event))"
+      [ariaLabel]="title"
+    >
+      <fpc-tab id="status" [label]="statusTitle" />
+      <fpc-tab id="system" [label]="networkSystemTitle" />
+    </fpc-tab-group>
+    <fpc-section-row class="flex-grow-1 min-h-0" data-testid="node-lanes">
+      <loadweaver-lane [title]="statusTitle" [flush]="true" [off]="lane() !== 'status'" data-testid="node-lane-status">
+        <fpc-key-value-list class="px-3" [items]="statusFacts()" data-testid="node-status">
+          <ng-template fpcKeyValue="lifecycle">
+            <span class="d-inline-flex flex-wrap align-items-center gap-1">
+              <fpc-badge [tone]="lifecycleTone(n)" data-testid="node-lifecycle">{{
+                lifecycleLabel(n.lifecycle)
+              }}</fpc-badge>
+              @if (n.connected) {
+                <fpc-badge tone="success" i18n="@@lwConsoleNodeDetail-connected">Connected</fpc-badge>
+              } @else if (n.lifecycle !== 'left') {
+                <fpc-badge tone="danger" i18n="@@lwConsoleNodeDetail-disconnected">Disconnected</fpc-badge>
+              }
+            </span>
+          </ng-template>
+          <ng-template fpcKeyValue="roles">
+            <span class="d-inline-flex flex-wrap gap-1">
+              @if (n.controlPlane) {
+                <fpc-badge tone="primary" i18n="@@lwConsoleNodeDetail-controlPlane">Control plane</fpc-badge>
+              }
+              @if (n.witness) {
+                <fpc-badge tone="info" i18n="@@lwConsoleNodeDetail-witness">Witness</fpc-badge>
+              }
+            </span>
+          </ng-template>
+          <ng-template fpcKeyValue="applied">
+            <span class="d-inline-flex flex-wrap align-items-center gap-1">
+              {{ n.appliedRevision }}
+              @if (n.applyStatus === 'failed') {
+                <fpc-badge tone="danger" i18n="@@lwConsoleNodeDetail-applyFailed">Failed</fpc-badge>
+              } @else if (n.applyStatus === 'rolled-back') {
+                <fpc-badge tone="warning" i18n="@@lwConsoleNodeDetail-rolledBack">Rolled back</fpc-badge>
+              }
+            </span>
+          </ng-template>
+          <ng-template fpcKeyValue="applyError">
+            <span class="text-danger text-break">{{ n.applyError }}</span>
+          </ng-template>
+          <ng-template fpcKeyValue="labels">
+            <span class="d-inline-flex flex-wrap gap-1">
+              @for (label of n.labels | keyvalue; track label.key) {
+                <fpc-badge color="light" size="sm">{{ label.key }}={{ label.value }}</fpc-badge>
+              } @empty {
+                –
+              }
+            </span>
+          </ng-template>
+        </fpc-key-value-list>
+        <fpc-list-header [title]="capacityTitle" />
+        @for (r of resources(); track r.id) {
+          <div class="small px-3 py-2" [attr.data-testid]="'node-capacity-' + r.id">
+            <div class="d-flex justify-content-between">
+              <span>{{ r.label }}</span
+              ><span class="text-body-secondary text-nowrap">{{ r.text }}</span>
+            </div>
+            <fpc-progress
+              [value]="r.percent ?? 0"
+              [variant]="(r.percent ?? 0) >= 90 ? 'danger' : (r.percent ?? 0) >= 75 ? 'warning' : 'primary'"
+              height="0.5rem"
+            />
+          </div>
+        } @empty {
+          @if (node()?.connected === false && node()?.capacity) {
+            <fpc-empty-state
+              icon="plug"
+              size="sm"
+              i18n-title="@@lwConsoleNodeDetail-capacityOffline"
+              title="The node is offline"
+              data-testid="node-capacity-offline"
+            />
+          } @else {
+            <fpc-empty-state
+              icon="speedometer2"
+              size="sm"
+              i18n-title="@@lwConsoleNodeDetail-noCapacity"
+              title="Not reported yet"
+            />
+          }
+        }
+      </loadweaver-lane>
+      <loadweaver-lane
+        [title]="networkSystemTitle"
+        [flush]="true"
+        [off]="lane() !== 'system'"
+        data-testid="node-lane-system"
+      >
+        <fpc-key-value-list class="px-3" [items]="networkFacts()" data-testid="node-network" />
+        <fpc-list-header [title]="systemTitle" />
+        <fpc-key-value-list class="px-3" [items]="systemFacts()" data-testid="node-system" />
+      </loadweaver-lane>
+    </fpc-section-row>
+  } @else if (loading()) {
+    <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+  }
+</div>

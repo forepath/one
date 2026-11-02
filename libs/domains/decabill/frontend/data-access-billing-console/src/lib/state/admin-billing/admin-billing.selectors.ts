@@ -53,5 +53,9 @@ export const selectAdminAuditLogsByInvoice = createSelector(
   selectAdminBillingState,
   (state) => state.auditLogsByInvoice,
 );
+export const selectAdminAuditLogsTotalByInvoice = createSelector(
+  selectAdminBillingState,
+  (state) => state.auditLogsTotalByInvoice,
+);
 export const selectAdminAuditLogsLoading = createSelector(selectAdminBillingState, (state) => state.auditLogsLoading);
 export const selectAdminAuditLogsError = createSelector(selectAdminBillingState, (state) => state.auditLogsError);

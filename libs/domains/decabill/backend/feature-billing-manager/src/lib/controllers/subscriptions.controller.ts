@@ -159,7 +159,7 @@ export class SubscriptionsController {
   @Post(':id/cancel')
   async cancel(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body() _dto: CancelSubscriptionDto,
+    @Body() dto: CancelSubscriptionDto,
     @Req() req?: RequestWithUser,
   ): Promise<SubscriptionResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
@@ -168,7 +168,9 @@ export class SubscriptionsController {
       throw new BadRequestException('User not authenticated');
     }
 
-    const row = await this.subscriptionService.cancelSubscription(id, userInfo.userId);
+    const row = await this.subscriptionService.cancelSubscription(id, userInfo.userId, {
+      confirmDataTeardown: dto?.confirmDataTeardown,
+    });
 
     return (await this.subscriptionService.mapManyToResponses([row]))[0];
   }
@@ -177,7 +179,7 @@ export class SubscriptionsController {
   @Post(':id/withdraw')
   async withdraw(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body() _dto: WithdrawSubscriptionDto,
+    @Body() dto: WithdrawSubscriptionDto,
     @Req() req?: RequestWithUser,
   ): Promise<SubscriptionResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
@@ -186,7 +188,13 @@ export class SubscriptionsController {
       throw new BadRequestException('User not authenticated');
     }
 
-    const { subscription, withdrawalResult } = await this.subscriptionService.withdrawSubscription(id, userInfo.userId);
+    const { subscription, withdrawalResult } = await this.subscriptionService.withdrawSubscription(
+      id,
+      userInfo.userId,
+      {
+        confirmDataTeardown: dto?.confirmDataTeardown,
+      },
+    );
 
     const [mapped] = await this.subscriptionService.mapManyToResponses([subscription]);
 

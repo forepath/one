@@ -16,6 +16,7 @@ describe('providerConfigSchemaUtils', () => {
           firewallId: { type: 'number', description: 'Firewall' },
           authenticationMethod: { type: 'string', description: 'Auth' },
           git: { type: 'object', description: 'Git' },
+          smtp: { type: 'object', description: 'SMTP' },
         },
         ['serverType', 'location', 'firewallId'],
       );
@@ -23,6 +24,8 @@ describe('providerConfigSchemaUtils', () => {
       expect(properties['serverType']?.['scope']).toBe('server');
       expect(properties['authenticationMethod']?.['scope']).toBe('product');
       expect(properties['git']?.['productServices']).toEqual([IntegratedProvisioningService.AgenstraManager]);
+      // Operator SMTP of a Loadweaver plan becomes the cluster's bootstrap email flags.
+      expect(properties['smtp']?.['productServices']).toContain(IntegratedProvisioningService.Loadweaver);
     });
   });
 

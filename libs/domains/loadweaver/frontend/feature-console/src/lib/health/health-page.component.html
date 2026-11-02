@@ -1,0 +1,109 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+
+  @if (tree().length > 0) {
+    <fpc-summary-bar class="flex-shrink-0" [columns]="5">
+      @for (c of counts(); track c.state) {
+        <fpc-summary-card
+          [icon]="icon(c.state)"
+          [label]="healthLabel(c.state)"
+          [value]="'' + c.count"
+          [tone]="tone(c.state, c.count)"
+        />
+      }
+    </fpc-summary-bar>
+  }
+
+  <!-- One full-width lane (3.38 Appendix A): search + filters in its strip, the tree flush in its body. -->
+  <fpc-section-row class="flex-grow-1 min-h-0">
+    <loadweaver-lane [title]="laneTitle" [count]="entityCount()" [flush]="true" data-testid="health-lane">
+      <fpc-list-toolbar
+        lwLaneSearch
+        [(open)]="filtersOpen"
+        [activeCount]="filterState.activeCount()"
+        (applied)="filterState.apply()"
+        (cleared)="filterState.clear()"
+      >
+        <fpc-search-field
+          fpcListToolbarLead
+          inputId="lw-health-search"
+          [placeholder]="searchLabel"
+          [ariaLabel]="searchLabel"
+          [value]="search()"
+          (valueChange)="search.set($event)"
+          data-testid="health-search"
+        />
+        @if (projects().length > 0) {
+          <fpc-form-field forId="lw-health-project" [label]="projectLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-health-project"
+              size="sm"
+              [ngModel]="filterState.draft().project"
+              (ngModelChange)="filterState.patch({ project: $event })"
+            >
+              @if (seesInfrastructure()) {
+                <option value="" i18n="@@lwConsoleHealth-wholeCluster">Whole cluster</option>
+              } @else {
+                <option value="" i18n="@@lwConsoleHealth-allProjects">All my projects</option>
+              }
+              @for (p of projects(); track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        }
+        <fpc-form-switch
+          switchId="lw-health-unhealthy"
+          [ngModel]="filterState.draft().onlyUnhealthy"
+          (ngModelChange)="filterState.patch({ onlyUnhealthy: $event })"
+        >
+          <label class="form-check-label small" for="lw-health-unhealthy" i18n="@@lwConsoleHealth-onlyUnhealthy"
+            >Needs attention only</label
+          >
+        </fpc-form-switch>
+      </fpc-list-toolbar>
+
+      @if (tree().length > 0) {
+        @if (shown().length > 0) {
+          <loadweaver-health-tree [nodes]="shown()" [expandDepth]="onlyUnhealthy() || search() ? 10 : 2" />
+        } @else if (search()) {
+          <fpc-empty-state
+            icon="search"
+            size="sm"
+            [title]="noMatchesTitle"
+            [message]="noMatchesHint"
+            data-testid="health-no-matches"
+          />
+        } @else {
+          <fpc-empty-state
+            icon="check2-circle"
+            size="sm"
+            i18n-title="@@lwConsoleHealth-allHealthy"
+            title="Everything is healthy"
+          />
+        }
+      } @else if (loading()) {
+        <fpc-empty-state size="sm" [loading]="true" [title]="loadingLabel" />
+      } @else if (!error()) {
+        <fpc-empty-state icon="heart-pulse" size="sm" i18n-title="@@lwConsoleHealth-empty" title="No health data yet" />
+      }
+    </loadweaver-lane>
+  </fpc-section-row>
+</div>

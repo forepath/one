@@ -1,0 +1,144 @@
+<!-- Summary (3.38): the object header shows the health once; summary bar, then the lanes Needs attention | Activity. -->
+@if (error(); as message) {
+  <fpc-alert [flush]="true" variant="danger" [message]="message" />
+}
+
+@if (overview(); as o) {
+  <!-- One column per card (no empty cell when the memory card is absent, LW-11). -->
+  <fpc-summary-bar class="flex-shrink-0" [columns]="(seesInfrastructure() ? 2 : 0) + (o.summary.capacity ? 4 : 3)">
+    @if (seesInfrastructure()) {
+      <fpc-summary-card
+        icon="hdd-stack"
+        i18n-label="@@lwConsoleOverview-nodes"
+        label="Nodes up"
+        [value]="o.summary.nodes.up + ' / ' + o.summary.nodes.total"
+        [tone]="o.summary.nodes.up < o.summary.nodes.total ? 'warning' : 'default'"
+      />
+      <fpc-summary-card
+        icon="geo-alt"
+        i18n-label="@@lwConsoleOverview-sites"
+        label="Sites"
+        [value]="'' + o.summary.sites"
+      />
+    }
+    <fpc-summary-card
+      icon="rocket-takeoff"
+      i18n-label="@@lwConsoleOverview-deployments"
+      label="Deployments"
+      [value]="'' + o.summary.deployments"
+    />
+    @if (o.summary.capacity; as capacity) {
+      <fpc-summary-card
+        icon="memory"
+        i18n-label="@@lwConsoleOverview-memory"
+        label="Memory in use"
+        [value]="formatShare(capacity.memoryBytes.used, capacity.memoryBytes.total)"
+        [tone]="
+          capacity.memoryBytes.used + capacity.memoryBytes.reserve > capacity.memoryBytes.total ? 'warning' : 'default'
+        "
+      />
+    }
+    <fpc-summary-card
+      icon="bell"
+      i18n-label="@@lwConsoleOverview-alerts"
+      label="Alerts firing"
+      [value]="'' + o.summary.alertsFiring"
+      [tone]="o.summary.alertsFiring > 0 ? 'danger' : 'default'"
+    />
+    <fpc-summary-card
+      icon="fire"
+      i18n-label="@@lwConsoleOverview-slos"
+      label="SLOs burning"
+      [value]="o.summary.slos.burning + o.summary.slos.exhausted + ' / ' + o.summary.slos.total"
+      [tone]="o.summary.slos.burning + o.summary.slos.exhausted > 0 ? 'warning' : 'default'"
+    >
+      <!-- Read-only control plane (3.43): SLOs come from stored metrics, which stop at the last stored sample. -->
+      @if (o.summary.readOnly; as readOnly) {
+        <small class="d-block text-body-secondary text-truncate" data-testid="overview-slos-as-of">{{
+          asOf(readOnly.metricsAsOf)
+        }}</small>
+      }
+    </fpc-summary-card>
+  </fpc-summary-bar>
+
+  <fpc-tab-group
+    class="fpc-lane-tabs"
+    [activeId]="lane()"
+    (activeIdChange)="lane.set($any($event))"
+    [ariaLabel]="inboxTitle"
+  >
+    <fpc-tab id="inbox" [label]="inboxTitle" />
+    <fpc-tab id="activity" [label]="activityTitle" />
+  </fpc-tab-group>
+  <fpc-section-row class="flex-grow-1 min-h-0">
+    <loadweaver-lane [title]="inboxTitle" [flush]="true" [off]="lane() !== 'inbox'" data-testid="summary-lane-inbox">
+      <!-- Feed → table (3.38 D1): State (severity) · Issue (link to where it's resolved) · kind · project · since. -->
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="inboxTitle"
+        [columns]="inboxColumns"
+        [rows]="inbox()"
+        [rowId]="inboxId"
+        [rowLink]="inboxLink"
+        paging="client"
+        persistKey="lw-summary-inbox"
+        [(query)]="inboxSearch"
+        [searchPlaceholder]="inboxSearchLabel"
+        emptyIcon="check2-circle"
+        data-testid="overview-inbox"
+      >
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            icon="check2-circle"
+            size="sm"
+            i18n-title="@@lwConsoleOverview-inboxEmpty"
+            title="Nothing needs attention"
+          />
+        </span>
+        <ng-template fpcTableCell="title" let-row>
+          <span class="lw-feed-title" [title]="inboxTitleText(row)">
+            @if (isGitItem(row)) {
+              <i class="bi bi-git me-1" aria-hidden="true"></i>
+            }
+            {{ inboxTitleText(row) }}
+          </span>
+        </ng-template>
+        <ng-template fpcTableCell="since" let-row>{{ row.since | date: 'short' }}</ng-template>
+      </fpc-data-table>
+    </loadweaver-lane>
+    <loadweaver-lane
+      [title]="activityTitle"
+      [flush]="true"
+      [off]="lane() !== 'activity'"
+      data-testid="summary-lane-activity"
+    >
+      <!-- Feed → table (3.38 D1): time · message · kind · project. -->
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="activityTitle"
+        [columns]="activityColumns"
+        [rows]="activity()"
+        [rowId]="activityId"
+        [rowLink]="activityLink"
+        paging="client"
+        persistKey="lw-summary-activity"
+        [(query)]="activitySearch"
+        [searchPlaceholder]="activitySearchLabel"
+        emptyIcon="clock-history"
+        data-testid="overview-activity"
+      >
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            icon="clock-history"
+            size="sm"
+            i18n-title="@@lwConsoleOverview-activityEmpty"
+            title="No activity yet"
+          />
+        </span>
+        <ng-template fpcTableCell="time" let-row>{{ row.time | date: 'short' }}</ng-template>
+      </fpc-data-table>
+    </loadweaver-lane>
+  </fpc-section-row>
+} @else if (loading()) {
+  <fpc-empty-state [loading]="true" size="sm" [title]="loadingLabel" />
+}

@@ -71,7 +71,10 @@ export type FpcButtonType = 'button' | 'submit' | 'reset';
       [attr.title]="title()"
       [attr.data-bs-dismiss]="dataBsDismiss()"
       [attr.data-bs-toggle]="dataBsToggle()"
-      [attr.aria-expanded]="dataBsToggle() ? 'false' : null"
+      [attr.aria-haspopup]="ariaHaspopup()"
+      [attr.aria-expanded]="ariaExpandedAttr()"
+      [attr.aria-controls]="ariaControls()"
+      [attr.aria-pressed]="ariaPressed()"
       (click)="onClick($event)"
       (auxclick)="onAuxClick($event)"
     >
@@ -96,6 +99,11 @@ export class FpcButtonComponent {
 
   readonly variant = input<FpcButtonVariant>('primary');
   readonly size = input<FpcButtonSize>('md');
+  /**
+   * Responsive size from the md breakpoint up (e.g. `size="sm" mdSize="md"`: compact on phones, default on
+   * wider screens, like the top-bar Logout). `null`: `size` everywhere.
+   */
+  readonly mdSize = input<'sm' | 'md' | 'lg' | null>(null);
   readonly type = input<FpcButtonType>('button');
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly loading = input(false, { transform: booleanAttribute });
@@ -104,6 +112,14 @@ export class FpcButtonComponent {
   /** Stretches the button to the full width of its container. */
   readonly block = input(false, { transform: booleanAttribute });
   readonly ariaLabel = input<string | null>(null);
+  /** `aria-haspopup` on the native control (e.g. `menu` for a dropdown trigger); omitted when unset. */
+  readonly ariaHaspopup = input<'menu' | 'listbox' | 'dialog' | 'tree' | 'grid' | 'true' | null>(null);
+  /** `aria-expanded` on the native control (bind the popup's open state); omitted when unset. */
+  readonly ariaExpanded = input<boolean | null>(null);
+  /** `aria-controls` on the native control (id of the open popup); omitted when unset. */
+  readonly ariaControls = input<string | null>(null);
+  /** `aria-pressed` on the native control (toggle / segmented view buttons); omitted when unset. */
+  readonly ariaPressed = input<boolean | null>(null);
   /** Native tooltip; useful for icon-only buttons. */
   readonly title = input<string | null>(null);
   /**
@@ -126,6 +142,15 @@ export class FpcButtonComponent {
 
   protected readonly isLink = computed(() => !!this.href());
 
+  /** Explicit `ariaExpanded` wins; a Bootstrap `dataBsToggle` without it keeps the legacy `false`. */
+  protected readonly ariaExpandedAttr = computed(() => {
+    const expanded = this.ariaExpanded();
+
+    if (expanded !== null) return expanded ? 'true' : 'false';
+
+    return this.dataBsToggle() ? 'false' : null;
+  });
+
   protected readonly buttonClasses = computed(() => {
     const classes = ['btn', `btn-${this.variant()}`, 'fpc-button__btn'];
     const size = this.size();
@@ -137,6 +162,12 @@ export class FpcButtonComponent {
     } else if (size === 'xl') {
       // `cta-btn` kept for any residual global landing hooks; tones live in button SCSS.
       classes.push('fpc-button__btn--xl', 'cta-btn');
+    }
+
+    const mdSize = this.mdSize();
+
+    if (mdSize && mdSize !== size) {
+      classes.push(`fpc-button__btn--md-${mdSize}`);
     }
 
     if (this.iconOnly()) {

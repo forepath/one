@@ -1,0 +1,643 @@
+<!-- View options (3.38 Appendix A): layers, Edit on map, Refresh — in the page header when routed, in the strip's
+     actions when embedded in an object tab. -->
+<ng-template #viewActions>
+  <fpc-dropdown [(open)]="layersOpen" [closeOnSelect]="false" data-testid="topology-layers">
+    <fpc-button fpcDropdownTrigger variant="dark" size="sm" [ariaLabel]="layersLabel">
+      <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ layersLabel }}
+      @if (offLayers() > 0) {
+        <fpc-badge size="sm" color="warning" class="ms-1">{{ allLayers.length - offLayers() }}</fpc-badge>
+      }
+      <i class="bi bi-chevron-down ms-1" aria-hidden="true"></i>
+    </fpc-button>
+    <div class="px-3 py-2 d-flex flex-column gap-1" role="group" [attr.aria-label]="layersLabel">
+      @for (layer of allLayers; track layer) {
+        @if (layer !== 'traffic' || clusterRole()) {
+          <fpc-form-switch
+            [switchId]="'lw-topology-layer-' + layer"
+            [label]="layerLabel(layer)"
+            [checked]="layers().has(layer)"
+            (checkedChange)="toggleLayer(layer, $event)"
+          />
+        }
+      }
+      @if (offLayers() > 0) {
+        <fpc-button variant="link" size="sm" class="p-0 text-start" (clicked)="resetLayers()">{{
+          allLayersLabel
+        }}</fpc-button>
+      }
+    </div>
+  </fpc-dropdown>
+  @if (mayEdit()) {
+    <fpc-form-switch
+      switchId="lw-topology-edit"
+      [label]="editLabel"
+      [checked]="editing()"
+      (checkedChange)="setEditing($event)"
+      data-testid="topology-edit-toggle"
+    />
+  }
+
+  <fpc-button
+    variant="dark"
+    size="sm"
+    iconOnly
+    [ariaLabel]="refreshLabel"
+    [title]="refreshLabel"
+    [loading]="loading()"
+    (clicked)="refresh()"
+    data-testid="topology-refresh"
+  >
+    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+  </fpc-button>
+</ng-template>
+
+@if (!embedded()) {
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="topology" [binding]="views" />
+    <ng-container ngProjectAs="[fpcPageHeaderActions]">
+      <ng-container [ngTemplateOutlet]="viewActions" />
+    </ng-container>
+  </fpc-page-header>
+}
+
+<!-- The strip (3.38 R12): map search (syntax in the field's title) with its chips inline; mode, time / plan and the
+     path trace in the actions. -->
+<fpc-list-toolbar
+  class="flex-shrink-0"
+  [filterable]="false"
+  [chips]="chips()"
+  [chipsLabel]="chipsLabel"
+  (chipRemove)="removeChip($event)"
+  (cleared)="query.set('')"
+  data-testid="topology-toolbar"
+>
+  <fpc-search-field
+    fpcListToolbarLead
+    inputId="lw-topology-search"
+    [placeholder]="searchLabel"
+    [ariaLabel]="searchLabel"
+    [title]="searchHint"
+    [value]="query()"
+    (valueChange)="query.set($event)"
+    data-testid="topology-search"
+  />
+  <ng-container ngProjectAs="[fpcListToolbarActions]">
+    @if (!embedded()) {
+      <fpc-button-group size="sm" [ariaLabel]="modeLabel" data-testid="topology-modes">
+        <fpc-button
+          size="sm"
+          [variant]="mode() === 'live' ? 'primary' : 'secondary'"
+          (clicked)="setMode('live')"
+          data-testid="topology-mode-live"
+          ><i class="bi bi-broadcast me-1" aria-hidden="true"></i>{{ liveLabel }}</fpc-button
+        >
+        @if (clusterRole()) {
+          <fpc-button
+            size="sm"
+            [variant]="mode() === 'timeline' ? 'primary' : 'secondary'"
+            (clicked)="setMode('timeline')"
+            data-testid="topology-mode-timeline"
+            ><i class="bi bi-clock-history me-1" aria-hidden="true"></i>{{ timelineLabel }}</fpc-button
+          >
+        }
+        <fpc-button
+          size="sm"
+          [variant]="mode() === 'plan' ? 'primary' : 'secondary'"
+          (clicked)="setMode('plan')"
+          data-testid="topology-mode-plan"
+          ><i class="bi bi-file-diff me-1" aria-hidden="true"></i>{{ planLabel }}</fpc-button
+        >
+      </fpc-button-group>
+    }
+    @if (mode() === 'timeline') {
+      <span class="d-inline-flex align-items-center gap-2" data-testid="topology-timeline">
+        <label class="visually-hidden" for="lw-topology-slider">{{ sliderLabel }}</label>
+        <fpc-form-control
+          class="lw-topology__slider"
+          controlId="lw-topology-slider"
+          inputType="range"
+          min="0"
+          [max]="timelineMinutes"
+          step="5"
+          [value]="'' + minutesBack()"
+          (valueChange)="onSlider($event)"
+        />
+        <label class="visually-hidden" for="lw-topology-at">{{ atLabel }}</label>
+        <fpc-form-control
+          class="lw-topology__at"
+          controlId="lw-topology-at"
+          inputType="datetime-local"
+          size="sm"
+          [value]="localAt()"
+          (valueChange)="onAtInput($event)"
+        />
+      </span>
+    }
+    @if (mode() === 'plan') {
+      <span class="d-inline-flex align-items-center gap-2" data-testid="topology-plan">
+        <label class="visually-hidden" for="lw-topology-plan">{{ planSelectLabel }}</label>
+        <fpc-form-control
+          class="lw-topology__plan"
+          controlType="select"
+          controlId="lw-topology-plan"
+          size="sm"
+          [value]="planId() ?? ''"
+          (valueChange)="onPlanChange($event)"
+        >
+          <option value="" i18n="@@lwConsoleTopology-noPlan">None</option>
+          @for (plan of pendingPlans(); track plan.id) {
+            <option [value]="plan.id">{{ planName(plan) }}</option>
+          }
+        </fpc-form-control>
+        @if (plansLoading()) {
+          <fpc-spinner size="sm" />
+        }
+        @if (planId(); as id) {
+          <a [routerLink]="['/activity/plans', id]" class="text-nowrap" i18n="@@lwConsoleTopology-openPlan"
+            >Open plan</a
+          >
+        }
+      </span>
+    }
+    <form class="d-inline-flex align-items-center gap-1" (submit)="$event.preventDefault(); trace()">
+      <label class="visually-hidden" for="lw-topology-host">{{ traceLabel }}</label>
+      <fpc-form-control
+        class="lw-topology__host"
+        controlId="lw-topology-host"
+        size="sm"
+        name="host"
+        autocomplete="off"
+        [placeholder]="tracePlaceholder"
+        [value]="hostInput()"
+        (valueChange)="hostInput.set($event)"
+        data-testid="topology-trace-input"
+      />
+      <fpc-button type="submit" variant="secondary" size="sm" iconOnly [ariaLabel]="traceLabel" [title]="traceLabel">
+        <i class="bi bi-signpost-split" aria-hidden="true"></i>
+      </fpc-button>
+    </form>
+    @if (embedded()) {
+      <ng-container [ngTemplateOutlet]="viewActions" />
+      <!-- "Open elsewhere" in a toolbar = icon-only quiet button, box-arrow-up-right (user, 2026-10-29). -->
+      <fpc-button
+        variant="dark"
+        size="sm"
+        iconOnly
+        routerLink="/observe/topology"
+        [ariaLabel]="openFullLabel"
+        [title]="openFullLabel"
+        data-testid="topology-open-full"
+      >
+        <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+      </fpc-button>
+    }
+  </ng-container>
+</fpc-list-toolbar>
+
+@if (error(); as message) {
+  <fpc-alert class="flex-shrink-0" [flush]="true" variant="danger" [message]="message" />
+}
+@if (nodeActionError() ?? vmActionError(); as message) {
+  <fpc-alert
+    class="flex-shrink-0"
+    [flush]="true"
+    variant="danger"
+    [message]="message"
+    data-testid="topology-action-error"
+  />
+}
+@if (mode() === 'live' && liveError(); as message) {
+  <fpc-alert class="flex-shrink-0" [flush]="true" variant="warning" [message]="message" />
+}
+
+<!-- Status line: live / legend / flows / plan progress / edit hint / matches. -->
+<div class="lw-topology__status small" data-testid="topology-status">
+  @switch (mode()) {
+    @case ('live') {
+      @if (clusterRole()) {
+        <fpc-badge size="sm" [color]="liveConnected() ? 'success' : 'secondary'" data-testid="topology-live-status">
+          @if (liveConnected()) {
+            <span i18n="@@lwConsoleTopology-liveOn">Live</span>
+          } @else {
+            <span i18n="@@lwConsoleTopology-liveOff">Connecting</span>
+          }
+        </fpc-badge>
+        @if (at(); as time) {
+          <span class="text-body-secondary"
+            ><span i18n="@@lwConsoleTopology-flowsAt">Traffic of the minute before</span>
+            {{ time | date: 'mediumTime' }}</span
+          >
+        }
+      } @else {
+        <span class="text-body-secondary" i18n="@@lwConsoleTopology-noTraffic"
+          >Traffic is shown to cluster roles only.</span
+        >
+      }
+    }
+    @case ('plan') {
+      <fpc-badge size="sm" tone="success" i18n="@@lwConsoleTopology-legendCreate">create</fpc-badge>
+      <fpc-badge size="sm" tone="warning" i18n="@@lwConsoleTopology-legendUpdate">update</fpc-badge>
+      <fpc-badge size="sm" tone="danger" i18n="@@lwConsoleTopology-legendDelete">delete</fpc-badge>
+      <span class="text-body-secondary" i18n="@@lwConsoleTopology-legendProposed">dashed: proposed edges</span>
+      @if (selectedPlan(); as plan) {
+        <span class="d-inline-flex align-items-center gap-2" data-testid="topology-plan-progress">
+          <fpc-badge size="sm" [tone]="planTone[plan.status]">{{ planStatusLabel(plan.status) }}</fpc-badge>
+          @if (plan.progress; as progress) {
+            <fpc-badge size="sm" color="light">{{ progress.step }} {{ progress.percent }}%</fpc-badge>
+          }
+        </span>
+      }
+    }
+  }
+  @if (mode() !== 'plan' && flowTotals().count > 0) {
+    <span class="d-inline-flex flex-wrap align-items-center gap-2" data-testid="topology-flow-totals">
+      <fpc-badge size="sm" color="light"
+        >{{ flowTotals().count }} <span i18n="@@lwConsoleTopology-flows">flows</span></fpc-badge
+      >
+      <fpc-badge size="sm" color="light">{{ formatRate(flowTotals().bytesPerSecond) }}</fpc-badge>
+      @if (flowTotals().denied > 0) {
+        <fpc-badge size="sm" color="danger"
+          >{{ flowTotals().denied }} <span i18n="@@lwConsoleTopology-denied">denied</span></fpc-badge
+        >
+      }
+    </span>
+  }
+  @if (migrations().length) {
+    <fpc-badge size="sm" color="info"
+      >{{ migrations().length }} <span i18n="@@lwConsoleWorkspace-workloadChanges">workload moves</span></fpc-badge
+    >
+  }
+  @if (editing()) {
+    <span class="text-body-secondary" i18n="@@lwConsoleTopology-editHint"
+      >Drag a service or VM onto a node or site to change its placement in the draft.</span
+    >
+  }
+  @if (matching(); as matches) {
+    <fpc-badge size="sm" color="light" data-testid="topology-match-count"
+      >{{ matches.size }} <span i18n="@@lwConsoleWorkspace-matches">matches</span></fpc-badge
+    >
+  }
+</div>
+
+<!-- Workbench: map + 360 px inspector (bottom sheet on phones). -->
+<div class="lw-topology__body d-flex flex-grow-1 min-h-0">
+  <div class="lw-topology__map position-relative d-flex flex-column flex-grow-1 min-w-0">
+    <!-- First load: a centred overlay over the map (refreshes spin the Refresh button). -->
+    <fpc-loading-overlay [loading]="loading() && !graph()" [dim]="false" [label]="loadingLabel" />
+    @if (graph() && canvasData().elements.length === 0) {
+      <fpc-empty-state icon="diagram-3" i18n-title="@@lwConsoleTopology-empty" title="Nothing on the map yet" />
+    } @else {
+      <fpc-graph-canvas
+        class="flex-grow-1"
+        layout="preset"
+        [elements]="canvasData().elements"
+        [edges]="canvasData().edges"
+        [positions]="canvasData().positions"
+        [hiddenKinds]="hiddenKinds()"
+        [highlight]="canvasData().highlight"
+        [selectedId]="selectedId()"
+        [performanceMode]="canvasData().elements.length > 1500"
+        [draggable]="editing()"
+        [ariaLabel]="mapLabel"
+        [fitHint]="fitHint"
+        (elementSelect)="onElementSelect($event)"
+        (edgeSelect)="onEdgeSelect($event)"
+        (elementHover)="onHover($event)"
+        (elementDrop)="onDrop($event)"
+        (zoomChange)="onZoom($event)"
+        (selectionClear)="clearSelection()"
+        data-testid="topology-map"
+      />
+      @if (hover(); as h) {
+        @if (hoverItem(); as item) {
+          <div
+            class="lw-topology__popover dropdown-menu show"
+            role="dialog"
+            [attr.aria-label]="item.label"
+            [style.left.px]="h.box.x + h.box.width + 8"
+            [style.top.px]="h.box.y"
+            (mouseenter)="keepPopover()"
+            (mouseleave)="onHover(null)"
+            data-testid="topology-popover"
+          >
+            <div class="lw-topology__popover-head">
+              <div class="d-flex align-items-center gap-2 min-w-0">
+                <i class="bi {{ kindIcon(item.typeName) }}" aria-hidden="true"></i>
+                <strong class="text-truncate">{{ item.label }}</strong>
+              </div>
+              <div class="d-flex flex-wrap gap-1">
+                <fpc-badge size="sm" color="light">{{ item.typeName }}</fpc-badge>
+                <fpc-badge size="sm" [tone]="healthBadgeTone(statusOf(item))">{{
+                  healthLabel(statusOf(item))
+                }}</fpc-badge>
+                @if (item.project) {
+                  <fpc-badge size="sm" color="light">{{ item.project }}</fpc-badge>
+                }
+                @if (change(item); as c) {
+                  <fpc-badge size="sm" [tone]="c === 'create' ? 'success' : c === 'delete' ? 'danger' : 'warning'">{{
+                    c
+                  }}</fpc-badge>
+                }
+              </div>
+              @if (item.placement) {
+                <div class="text-body-secondary">
+                  <i class="bi bi-geo me-1" aria-hidden="true"></i>{{ item.placement }}
+                </div>
+              }
+            </div>
+            @if (popoverActions(item); as acts) {
+              @if (acts.length > 0) {
+                <hr class="dropdown-divider" role="separator" />
+                <div role="group" [attr.aria-label]="actionsLabel" data-testid="topology-popover-actions">
+                  @for (action of acts; track action.id) {
+                    <button
+                      type="button"
+                      class="dropdown-item d-flex align-items-center gap-2"
+                      [class.text-danger]="action.confirm?.danger || action.id === 'delete'"
+                      [disabled]="!!action.disabled"
+                      [attr.title]="action.reason ?? null"
+                      (click)="run(action, item)"
+                      [attr.data-testid]="'topology-act-' + action.id"
+                    >
+                      <i class="bi {{ action.icon }}" aria-hidden="true"></i>{{ action.label }}
+                    </button>
+                  }
+                </div>
+              }
+            }
+          </div>
+        }
+      }
+    }
+  </div>
+
+  @if (inspectorOpen()) {
+    <aside
+      class="lw-topology__inspector d-flex flex-column min-h-0"
+      [attr.aria-label]="detailsTitle"
+      data-testid="topology-inspector"
+    >
+      @if (traceHost(); as host) {
+        <section class="border-bottom" data-testid="topology-trace">
+          <fpc-lane-header [title]="traceLabel + ': ' + host" [flush]="true">
+            <fpc-button
+              fpcLaneHeaderActions
+              variant="secondary"
+              size="sm"
+              iconOnly
+              [ariaLabel]="closeLabel"
+              [title]="closeLabel"
+              (clicked)="clearTrace()"
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </fpc-button>
+          </fpc-lane-header>
+          @if (traceError(); as message) {
+            <fpc-alert [flush]="true" variant="danger" [message]="message" />
+          } @else if (traceLoading()) {
+            <fpc-empty-state size="sm" [loading]="true" [title]="traceLoadingLabel" />
+          } @else {
+            <!-- Feed → table (3.38 D1): step · kind · what; a click focuses it on the map. -->
+            <fpc-data-table
+              [nested]="true"
+              [ariaLabel]="traceLabel"
+              [columns]="traceColumns"
+              [rows]="traceRows()"
+              [searchable]="false"
+              [showColumnChooser]="false"
+              paging="client"
+              persistKey="lw-topology-trace"
+              (rowActivate)="focus($event)"
+              data-testid="topology-trace-steps"
+            />
+          }
+        </section>
+      }
+
+      @if (selectedItem(); as item) {
+        <section class="d-flex flex-column min-h-0" data-testid="topology-item">
+          <!-- Inspector = a standard lane: header (kind icon, full name, close), tone badges, actions, facts, links. -->
+          <fpc-lane-header [flush]="true">
+            <span fpcLaneHeaderTitle class="d-inline-flex align-items-center gap-2 min-w-0">
+              <i class="bi {{ kindIcon(item.typeName) }}" aria-hidden="true"></i>
+              <span class="text-truncate" [title]="item.label">{{ item.label }}</span>
+            </span>
+            <fpc-button
+              fpcLaneHeaderActions
+              variant="secondary"
+              size="sm"
+              iconOnly
+              [ariaLabel]="closeLabel"
+              [title]="closeLabel"
+              (clicked)="clearSelection()"
+              data-testid="topology-details-close"
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </fpc-button>
+          </fpc-lane-header>
+          <div class="px-3 pt-2 d-flex flex-wrap gap-1">
+            <fpc-badge size="sm" color="light">{{ item.typeName }}</fpc-badge>
+            <fpc-badge size="sm" [tone]="healthBadgeTone(statusOf(item))">{{ healthLabel(statusOf(item)) }}</fpc-badge>
+            @if (item.project) {
+              <fpc-badge size="sm" color="light">{{ item.project }}</fpc-badge>
+            }
+            @if (item.status === 'draining') {
+              <fpc-badge
+                size="sm"
+                color="warning"
+                data-testid="topology-draining"
+                i18n-title="@@lwConsoleTopology-drainingHint"
+                title="Removed: out of routing, stopped after its grace period"
+                i18n="@@lwConsoleTopology-draining"
+                >draining</fpc-badge
+              >
+            }
+            @if (change(item); as c) {
+              <fpc-badge size="sm" [color]="c === 'create' ? 'success' : c === 'delete' ? 'danger' : 'warning'">{{
+                c
+              }}</fpc-badge>
+            }
+            @if (inDraft(item)) {
+              <fpc-badge size="sm" color="warning" i18n="@@lwConsoleWorkspace-inDraft">in the draft</fpc-badge>
+            }
+          </div>
+          <div class="px-3 pt-2 d-flex flex-wrap align-items-center gap-2">
+            @if (objectRouteOf(item); as route) {
+              <fpc-button
+                variant="primary"
+                size="sm"
+                [routerLink]="route"
+                data-testid="topology-open-object"
+                iconOnly
+                [ariaLabel]="openObjectLabel"
+                [title]="openObjectLabel"
+              >
+                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+              </fpc-button>
+            }
+            @if (actsOf(item); as acts) {
+              @if (acts.length > 0) {
+                <fpc-button-group size="sm" data-testid="topology-inspector-actions">
+                  @for (action of acts; track action.id) {
+                    <fpc-button
+                      size="sm"
+                      iconOnly
+                      [variant]="action.confirm?.danger ? 'danger' : 'secondary'"
+                      [ariaLabel]="action.label"
+                      [title]="action.reason ?? action.label"
+                      [disabled]="!!action.disabled"
+                      (clicked)="run(action, item)"
+                    >
+                      <i class="bi {{ action.icon }}" aria-hidden="true"></i>
+                    </fpc-button>
+                  }
+                </fpc-button-group>
+              }
+            }
+            @if (draftActsOf(item).length > 0 || inDraft(item)) {
+              <fpc-button-group size="sm" data-testid="topology-inspector-draft">
+                @for (action of draftActsOf(item); track action.id) {
+                  <fpc-button
+                    size="sm"
+                    iconOnly
+                    [variant]="action.id === 'delete' ? 'danger' : 'warning'"
+                    [ariaLabel]="action.label"
+                    [title]="action.label"
+                    (clicked)="run(action, item)"
+                    [attr.data-testid]="'topology-draft-' + action.id"
+                  >
+                    <i class="bi {{ action.icon }}" aria-hidden="true"></i>
+                  </fpc-button>
+                }
+                @if (inDraft(item)) {
+                  <fpc-button
+                    size="sm"
+                    iconOnly
+                    variant="secondary"
+                    [ariaLabel]="revertLabel"
+                    [title]="revertLabel"
+                    (clicked)="revert(item)"
+                    data-testid="topology-draft-revert"
+                  >
+                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                  </fpc-button>
+                }
+              </fpc-button-group>
+            }
+          </div>
+          <div class="lw-topology__scroll flex-grow-1 min-h-0">
+            @if (membersOf(item); as members) {
+              <div class="px-3 pt-3 small" data-testid="topology-group-members">
+                <div class="fw-semibold mb-1">
+                  {{ members.length }} <span i18n="@@lwConsolePolicies-members">members</span>
+                </div>
+                <ul class="list-unstyled mb-0">
+                  @for (m of members; track m.replica) {
+                    <li class="font-monospace">{{ m.deployment ? m.deployment + '/' : '' }}{{ m.label }}</li>
+                  }
+                </ul>
+              </div>
+            }
+            <fpc-key-value-list
+              class="d-block px-3 py-2 small"
+              [items]="facts(details(item))"
+              data-testid="topology-details"
+            />
+            <fpc-list [flush]="true" data-testid="topology-links">
+              @for (link of linksOf(item); track link.id) {
+                <fpc-list-item variant="condensed">
+                  <a fpcListItemTitle class="small" [routerLink]="link.route" [queryParams]="link.queryParams ?? null"
+                    ><i class="bi {{ link.icon }} me-1" aria-hidden="true"></i>{{ link.label }}</a
+                  >
+                </fpc-list-item>
+              }
+              @if (item.kind === 'hostname') {
+                <fpc-list-item variant="condensed">
+                  <a fpcListItemTitle class="small" href="" (click)="$event.preventDefault(); trace(item.label)"
+                    ><i class="bi bi-signpost-split me-1" aria-hidden="true"></i
+                    ><span i18n="@@lwConsoleTopology-traceHost">Trace this hostname</span></a
+                  >
+                </fpc-list-item>
+              }
+            </fpc-list>
+          </div>
+        </section>
+      } @else if (selectedEdge(); as edge) {
+        <section class="lw-topology__scroll" data-testid="topology-edge">
+          <fpc-lane-header [title]="detailsTitle" [flush]="true">
+            <fpc-button
+              fpcLaneHeaderActions
+              variant="secondary"
+              size="sm"
+              iconOnly
+              [ariaLabel]="closeLabel"
+              [title]="closeLabel"
+              (clicked)="clearSelection()"
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </fpc-button>
+          </fpc-lane-header>
+          <div class="px-3 pt-2 small">
+            <fpc-badge size="sm" [color]="edge.kind === 'denied' ? 'danger' : 'light'">{{
+              edgeKindLabel(edge.kind ?? '')
+            }}</fpc-badge>
+            <div class="font-monospace mt-1 text-break">{{ edge.source }} → {{ edge.target }}</div>
+          </div>
+          <fpc-key-value-list class="d-block px-3 py-2 small" [items]="facts(edgeDetails())" />
+          @if (edgeLinks().length > 0) {
+            <fpc-list [flush]="true">
+              @for (link of edgeLinks(); track link.label) {
+                <fpc-list-item variant="condensed">
+                  <a fpcListItemTitle class="small" [routerLink]="link.route" [queryParams]="link.queryParams ?? null"
+                    ><i class="bi {{ link.icon }} me-1" aria-hidden="true"></i>{{ link.label }}</a
+                  >
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </section>
+      }
+    </aside>
+  }
+</div>
+
+<fpc-confirm-dialog
+  [open]="context.pending() !== null"
+  (openChange)="$event || context.cancelPending()"
+  [title]="context.pending()?.label ?? confirmTitle"
+  [message]="context.pending()?.confirm?.message ?? ''"
+  [confirmLabel]="context.pending()?.label ?? confirmTitle"
+  [cancelLabel]="cancelLabel"
+  [danger]="!!context.pending()?.confirm?.danger"
+  (confirmed)="context.confirmPending()"
+/>
+
+<fpc-modal [open]="pendingMove() !== null" (openChange)="$event || pendingMove.set(null)" [title]="pinTitle">
+  @if (pendingMove(); as move) {
+    <p class="small" i18n="@@lwConsoleWorkspace-pinHint">
+      Pinning to one node keeps the workload off every other node: it can't fail over or migrate (3.12). The pin and its
+      reason go into the draft; the plan shows the moves it causes.
+    </p>
+    <fpc-form-field forId="lw-topology-pin-reason" [label]="pinReasonLabel">
+      <fpc-form-control
+        controlId="lw-topology-pin-reason"
+        size="sm"
+        [ngModel]="pinReason()"
+        (ngModelChange)="pinReason.set($event)"
+        data-testid="topology-pin-reason"
+      />
+    </fpc-form-field>
+    <p class="small text-body-secondary mb-0 font-monospace">{{ move.item.label }} → {{ move.target.node }}</p>
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" size="sm" (clicked)="pendingMove.set(null)">{{ cancelLabel }}</fpc-button>
+    <fpc-button
+      variant="warning"
+      size="sm"
+      [disabled]="pinReason().trim().length < 3"
+      (clicked)="confirmPin()"
+      data-testid="topology-pin-confirm"
+      >{{ pinConfirm }}</fpc-button
+    >
+  </div>
+</fpc-modal>

@@ -1,0 +1,61 @@
+<fpc-panel class="h-100 overflow-hidden" [title]="widget().title">
+  @if (state()?.loading) {
+    <fpc-spinner fpcPanelActions size="sm" />
+  }
+  <div class="h-100 overflow-auto d-flex flex-column">
+    @if (state()?.error; as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    } @else if (!result()) {
+      <fpc-empty-state size="sm" [loading]="true" [title]="loadingLabel" />
+    } @else if (empty()) {
+      <fpc-empty-state icon="inbox" size="sm" i18n-title="@@lwConsoleDashboards-noData" title="No data in this range" />
+    } @else {
+      @switch (widget().type) {
+        @case ('stat') {
+          <div class="d-flex h-100 align-items-center justify-content-center" data-testid="widget-stat">
+            <span class="display-6 fw-semibold">{{ formatValue(stat(), unit()) }}</span>
+          </div>
+        }
+        @case ('table') {
+          @if (result()?.kind === 'flows') {
+            <!-- Flows → a nested data table (3.38 D1): State (decision) · source · destination · port · policy · counts. -->
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="widget().title"
+              [columns]="flowColumns"
+              [rows]="rows()"
+              [rowId]="flowId"
+              [searchable]="false"
+              [nested]="true"
+              paging="client"
+              data-testid="widget-flows"
+            />
+          } @else {
+            <!-- Newest value per series: label / value facts. -->
+            <fpc-key-value-list class="px-2" [items]="latestItems()" data-testid="widget-latest" />
+          }
+        }
+        @case ('logs') {
+          <!-- Log lines → a nested data table (feed, 3.38 D5): State (level) · time · message. -->
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="widget().title"
+            [columns]="logColumns"
+            [rows]="lines()"
+            [searchable]="false"
+            [nested]="true"
+            paging="client"
+            data-testid="widget-logs"
+          >
+            <ng-template fpcTableCell="at" let-line>{{ lineTime(line) | date: 'MMM d, HH:mm:ss' }}</ng-template>
+          </fpc-data-table>
+        }
+        @default {
+          @if (chartType(); as type) {
+            <loadweaver-metric-chart [type]="type" [series]="series()" [unit]="unit()" [height]="chartHeight()" />
+          }
+        }
+      }
+    }
+  </div>
+</fpc-panel>

@@ -195,6 +195,7 @@ describe('SubscriptionService', () => {
   };
   const cloudInitDispatchService = {
     buildUserData: jest.fn().mockReturnValue('mock-user-data'),
+    prepareProvisioningConfig: jest.fn().mockReturnValue({}),
   };
   const providerRegistry = { getProvider: jest.fn().mockReturnValue(undefined) } as never;
   const subscriptionOrderPreparationService = new SubscriptionOrderPreparationService(
@@ -271,6 +272,7 @@ describe('SubscriptionService', () => {
     });
     (validateConfigSchema as jest.Mock).mockReturnValue([]);
     cloudInitDispatchService.buildUserData.mockReturnValue('mock-user-data');
+    cloudInitDispatchService.prepareProvisioningConfig.mockReturnValue({});
     hostnameReservationService.reserveHostname.mockResolvedValue('awesome-armadillo-abc12');
     provisioningService.getServerInfo.mockResolvedValue({ publicIp: '1.2.3.4' });
     provisioningService.ensurePublicIpForDns.mockImplementation(
@@ -359,6 +361,48 @@ describe('SubscriptionService', () => {
 
     expect(provisioningService.provision).toHaveBeenCalled();
     expect(itemsRepository.updateProviderReference).toHaveBeenCalledWith('item-1', 'srv-1');
+  });
+
+  it('persists per-provisioning stack secrets in the item config before building the user-data', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+      providerConfigDefaults: controllerProvisioningDefaults,
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    itemsRepository.updateConfigSnapshot = jest.fn().mockResolvedValue({});
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+    cloudInitDispatchService.prepareProvisioningConfig.mockReturnValue({ loadweaverAdminClaimToken: 'lwc_secret' });
+
+    await service.createSubscription('user-1', 'plan-1', { region: 'fsn1' });
+    await provisionCreatedItem();
+
+    expect(itemsRepository.updateConfigSnapshot).toHaveBeenCalledWith(
+      'item-1',
+      expect.objectContaining({ region: 'fsn1', loadweaverAdminClaimToken: 'lwc_secret' }),
+    );
+    expect(cloudInitDispatchService.buildUserData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        effectiveConfig: expect.objectContaining({ loadweaverAdminClaimToken: 'lwc_secret' }),
+      }),
+    );
   });
 
   it('uses plan providerConfigDefaults when requestedConfig is not provided', async () => {
@@ -1071,6 +1115,237 @@ describe('SubscriptionService', () => {
     await expect(service.cancelSubscription('sub-1', 'user-1')).rejects.toThrow(BadRequestException);
   });
 
+  it('refuses to resume once the cancellation took effect (Loadweaver grace period, M2)', async () => {
+    subscriptionsRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.PENDING_CANCEL,
+      cancelEffectiveAt: new Date(Date.now() - 60_000),
+    });
+    subscriptionsRepository.update = jest.fn();
+
+    await expect(service.resumeSubscription('sub-1', 'user-1')).rejects.toThrow('SUBSCRIPTION_CANCELLATION_EFFECTIVE');
+    expect(subscriptionsRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('still resumes before the cancellation takes effect', async () => {
+    subscriptionsRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.PENDING_CANCEL,
+      cancelEffectiveAt: new Date(Date.now() + 86_400_000),
+    });
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({ id: 'plan-1', name: 'Plan' });
+    subscriptionsRepository.update = jest
+      .fn()
+      .mockResolvedValue({ id: 'sub-1', userId: 'user-1', planId: 'plan-1', status: SubscriptionStatus.ACTIVE });
+
+    await expect(service.resumeSubscription('sub-1', 'user-1')).resolves.toMatchObject({
+      status: SubscriptionStatus.ACTIVE,
+    });
+    expect(subscriptionsRepository.update).toHaveBeenCalledWith(
+      'sub-1',
+      expect.objectContaining({ status: SubscriptionStatus.ACTIVE, cancelEffectiveAt: null }),
+    );
+  });
+
+  describe('Loadweaver data-safe teardown confirmation', () => {
+    const activeSubscription = {
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      createdAt: new Date(),
+      currentPeriodEnd: new Date(),
+      status: SubscriptionStatus.ACTIVE,
+    };
+
+    beforeEach(() => {
+      subscriptionsRepository.findByIdOrThrow = jest.fn().mockResolvedValue(activeSubscription);
+      subscriptionsRepository.update = jest.fn();
+      itemsRepository.findBySubscription = jest
+        .fn()
+        .mockResolvedValue([{ id: 'item-1', configSnapshot: { service: 'loadweaver' } }]);
+    });
+
+    it('rejects cancel, withdrawal and instant cancel without confirmDataTeardown', async () => {
+      await expect(service.cancelSubscription('sub-1', 'user-1')).rejects.toThrow(
+        'LOADWEAVER_TEARDOWN_CONFIRMATION_REQUIRED',
+      );
+      await expect(service.withdrawSubscription('sub-1', 'user-1')).rejects.toThrow(
+        'LOADWEAVER_TEARDOWN_CONFIRMATION_REQUIRED',
+      );
+      await expect(
+        service.instantCancelSubscription('sub-1', 'user-1', { confirmDataTeardown: false }),
+      ).rejects.toThrow('LOADWEAVER_TEARDOWN_CONFIRMATION_REQUIRED');
+      expect(subscriptionsRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('lets a confirmed cancel reach the cancellation policy', async () => {
+      plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+        id: 'plan-1',
+        cancelAtPeriodEnd: true,
+        billInAdvance: false,
+        autoRecalculatePriceDaily: false,
+        minCommitmentDays: 10,
+        noticeDays: 0,
+      });
+
+      await expect(service.cancelSubscription('sub-1', 'user-1', { confirmDataTeardown: true })).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(plansRepository.findByIdOrThrow).toHaveBeenCalledWith('plan-1');
+    });
+
+    it('stores the effective teardown time (effective date + grace) on a confirmed cancel', async () => {
+      plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+        id: 'plan-1',
+        cancelAtPeriodEnd: true,
+        billInAdvance: false,
+        autoRecalculatePriceDaily: false,
+        minCommitmentDays: 0,
+        noticeDays: 0,
+      });
+      subscriptionsRepository.update = jest
+        .fn()
+        .mockImplementation(async (id, dto) => ({ ...activeSubscription, ...dto }));
+
+      await service.cancelSubscription('sub-1', 'user-1', { confirmDataTeardown: true });
+
+      const dto = (subscriptionsRepository.update as jest.Mock).mock.calls[0][1];
+
+      expect(dto.status).toBe(SubscriptionStatus.PENDING_CANCEL);
+      expect(dto.teardownNotBefore.getTime() - new Date(dto.cancelEffectiveAt).getTime()).toBe(7 * 24 * 60 * 60 * 1000);
+    });
+
+    it('leaves the teardown time empty for other stacks', async () => {
+      itemsRepository.findBySubscription = jest
+        .fn()
+        .mockResolvedValue([{ id: 'item-1', configSnapshot: { service: 'decabill-billing' } }]);
+      plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+        id: 'plan-1',
+        cancelAtPeriodEnd: true,
+        billInAdvance: false,
+        autoRecalculatePriceDaily: false,
+        minCommitmentDays: 0,
+        noticeDays: 0,
+      });
+      subscriptionsRepository.update = jest
+        .fn()
+        .mockImplementation(async (id, dto) => ({ ...activeSubscription, ...dto }));
+
+      await service.cancelSubscription('sub-1', 'user-1');
+
+      expect((subscriptionsRepository.update as jest.Mock).mock.calls[0][1].teardownNotBefore).toBeNull();
+    });
+  });
+
+  describe('Loadweaver teardown grace on withdrawal / instant cancel (M4)', () => {
+    const graceMs = 7 * 24 * 60 * 60 * 1000;
+    const loadweaverItems = [
+      {
+        id: 'item-1',
+        configSnapshot: { service: 'loadweaver' },
+        provisioningStatus: 'active',
+        provisionedAt: new Date(),
+        createdAt: new Date(),
+      },
+    ];
+
+    beforeEach(() => {
+      subscriptionsRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+        id: 'sub-1',
+        userId: 'user-1',
+        planId: 'plan-1',
+        status: SubscriptionStatus.ACTIVE,
+      });
+      subscriptionsRepository.update = jest.fn().mockResolvedValue(undefined);
+      plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({ id: 'plan-1', serviceTypeId: 'st-1' });
+      typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({ id: 'st-1', disallowStatutoryWithdrawal: false });
+      itemsRepository.findBySubscription = jest.fn().mockResolvedValue(loadweaverItems);
+      (withdrawalRefundService.estimateRefundGross as jest.Mock).mockResolvedValue(10);
+    });
+
+    it('keeps the server for the grace period on a confirmed customer withdrawal', async () => {
+      await service.withdrawSubscription('sub-1', 'user-1', { confirmDataTeardown: true });
+
+      const dto = (subscriptionsRepository.update as jest.Mock).mock.calls[0][1];
+
+      expect(dto.status).toBe(SubscriptionStatus.PENDING_WITHDRAWAL);
+      expect(dto.teardownNotBefore.getTime() - dto.withdrawnAt.getTime()).toBe(graceMs);
+    });
+
+    it('keeps the server for the grace period on the public e-mail-code withdrawal path', async () => {
+      await service.executeWithdrawal('sub-1');
+
+      const dto = (subscriptionsRepository.update as jest.Mock).mock.calls[0][1];
+
+      expect(dto.teardownNotBefore.getTime() - dto.withdrawnAt.getTime()).toBe(graceMs);
+    });
+
+    it('keeps the server for the grace period on an instant cancel', async () => {
+      await service.executeInstantCancel('sub-1');
+
+      const dto = (subscriptionsRepository.update as jest.Mock).mock.calls[0][1];
+
+      expect(dto.status).toBe(SubscriptionStatus.PENDING_INSTANT_CANCEL);
+      expect(dto.teardownNotBefore.getTime() - dto.instantCanceledAt.getTime()).toBe(graceMs);
+    });
+
+    it('refuses instant cancel and withdrawal once the cancellation took effect (grace period, M4)', async () => {
+      const effective = {
+        id: 'sub-1',
+        userId: 'user-1',
+        planId: 'plan-1',
+        status: SubscriptionStatus.PENDING_CANCEL,
+        cancelEffectiveAt: new Date(Date.now() - 60_000),
+        teardownNotBefore: new Date(Date.now() + graceMs),
+      };
+
+      subscriptionsRepository.findByIdOrThrow = jest.fn().mockResolvedValue(effective);
+
+      await expect(service.executeInstantCancel('sub-1')).rejects.toThrow('SUBSCRIPTION_CANCELLATION_EFFECTIVE');
+      await expect(service.instantCancelSubscription('sub-1', 'user-1', { confirmDataTeardown: true })).rejects.toThrow(
+        'SUBSCRIPTION_CANCELLATION_EFFECTIVE',
+      );
+      // Withdrawal is not reachable in that state (the withdrawal policy refuses pending_cancel).
+      await expect(service.executeWithdrawal('sub-1')).rejects.toThrow(BadRequestException);
+      expect(subscriptionsRepository.update).not.toHaveBeenCalled();
+      expect(backordersRepository.cancelPendingForUserPlan).not.toHaveBeenCalled();
+    });
+
+    it('still allows instant cancel of a pending cancellation before it takes effect', async () => {
+      subscriptionsRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+        id: 'sub-1',
+        userId: 'user-1',
+        planId: 'plan-1',
+        status: SubscriptionStatus.PENDING_CANCEL,
+        cancelEffectiveAt: new Date(Date.now() + 86_400_000),
+      });
+
+      await service.executeInstantCancel('sub-1');
+
+      expect((subscriptionsRepository.update as jest.Mock).mock.calls[0][1].status).toBe(
+        SubscriptionStatus.PENDING_INSTANT_CANCEL,
+      );
+    });
+
+    it('sets no grace for other stacks', async () => {
+      itemsRepository.findBySubscription = jest
+        .fn()
+        .mockResolvedValue([{ ...loadweaverItems[0], configSnapshot: { service: 'decabill-billing' } }]);
+
+      await service.executeWithdrawal('sub-1');
+      await service.executeInstantCancel('sub-1');
+
+      const calls = (subscriptionsRepository.update as jest.Mock).mock.calls;
+
+      expect(calls[0][1]).not.toHaveProperty('teardownNotBefore');
+      expect(calls[1][1].teardownNotBefore).toBeNull();
+    });
+  });
+
   it('queues withdrawal for unprovisioned subscription without tearing down inline', async () => {
     subscriptionsRepository.findByIdOrThrow = jest
       .fn()
@@ -1191,6 +1466,7 @@ describe('SubscriptionService', () => {
       instantRemoval: true,
       instantCanceledAt: expect.any(Date),
       cancelEffectiveAt: null,
+      teardownNotBefore: null,
     });
     expect(result.subscription.status).toBe(SubscriptionStatus.PENDING_INSTANT_CANCEL);
   });

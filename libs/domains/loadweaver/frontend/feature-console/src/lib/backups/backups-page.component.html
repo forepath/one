@@ -1,0 +1,351 @@
+<div class="fpc-page">
+  <!-- Header, pins, kit warning and the KPI bar live in the shell's full-width summary (backups-summary). -->
+  <!-- List lane head (3.38): title + actions in a lane header, search + filters below — the same bands as the
+       overview lanes beside it (≥ xl), so both columns line up. -->
+  <fpc-lane-header [title]="volumesTitle" [flush]="true">
+    <ng-container ngProjectAs="[fpcLaneHeaderActions]">
+      @if (!scope) {
+        <loadweaver-saved-views scope="backups" [binding]="views" />
+      }
+      <fpc-button
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="policiesLabel"
+        [title]="policiesLabel"
+        [routerLink]="['/resources', 'cluster']"
+        [queryParams]="{ tab: 'contents', kind: 'BackupPolicy' }"
+        data-testid="backups-policies"
+      >
+        <i class="bi bi-calendar-check" aria-hidden="true"></i>
+      </fpc-button>
+      <fpc-button
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="refreshLabel"
+        [title]="refreshLabel"
+        [loading]="loading()"
+        (clicked)="refresh()"
+        data-testid="backups-refresh"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+    </ng-container>
+  </fpc-lane-header>
+  @if (error(); as message) {
+    <fpc-alert class="flex-shrink-0" [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (actionError(); as message) {
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      variant="danger"
+      [message]="message"
+      data-testid="backups-action-error"
+    />
+  }
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      class="flex-shrink-0"
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="backups-bulk-result"
+    />
+  }
+
+  <!-- Volumes (3.38 D1): State · Volume · facts; row click opens the volume's timeline + backups (nested table). -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="volumesTitle"
+    [columns]="volumeColumns"
+    [rows]="visibleCatalog()"
+    [rowId]="volumeId"
+    [filtered]="!!search().trim()"
+    paging="client"
+    persistKey="lw-backups-volumes"
+    [(query)]="search"
+    [searchPlaceholder]="searchLabel"
+    [showFilterButton]="!scope"
+    [(filtersOpen)]="filtersOpen"
+    [filtersActive]="filterState.activeCount()"
+    (filtersApplied)="filterState.apply()"
+    (filtersCleared)="filterState.clear()"
+    [loading]="loading() && !loaded()"
+    [expandedRowId]="expanded()"
+    [activeRowId]="expanded()"
+    (rowActivate)="toggle($event)"
+    selectable
+    [(selected)]="selectedVolumes"
+    [rowMenu]="volumeMenu"
+    (rowAction)="onVolumeAction($event.row, $event.item.id)"
+    emptyIcon="safe"
+    data-testid="backups-catalog"
+  >
+    @if (!scope) {
+      <fpc-form-field fpcDataTableFilters forId="lw-backups-project" [label]="projectLabel">
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-backups-project"
+          size="sm"
+          [ngModel]="filterState.draft().project ?? ''"
+          (ngModelChange)="filterState.patch({ project: $event || null })"
+          data-testid="backups-project"
+        >
+          <option value="">{{ allProjectsLabel }}</option>
+          @for (p of projects(); track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    }
+    <fpc-button
+      fpcDataTableBatch
+      variant="primary"
+      size="sm"
+      [disabled]="!canBackupSelection()"
+      (clicked)="backupSelected()"
+      data-testid="backups-bulk-now"
+      iconOnly
+      [ariaLabel]="backupNowLabel"
+      [title]="backupNowLabel"
+    >
+      <i class="bi bi-play-fill" aria-hidden="true"></i>
+    </fpc-button>
+
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="safe"
+        size="sm"
+        i18n-title="@@lwConsoleBackups-emptyTitle"
+        title="No backed-up volumes"
+        [message]="emptyMessage"
+      />
+    </span>
+
+    <ng-template fpcTableCell="stored" let-v>{{ v.empty ? '' : bytes(v.storedBytes) }}</ng-template>
+    <ng-template fpcTableCell="lastGood" let-v>{{ v.lastSucceeded?.startedAt | date: 'short' }}</ng-template>
+
+    <ng-template fpcTableRowDetail let-v>
+      @if (v.backups.length > 0) {
+        <div
+          class="backups-timeline d-flex align-items-end gap-1 overflow-auto mb-2"
+          role="img"
+          [attr.aria-label]="catalogTitle"
+          data-testid="backups-timeline"
+        >
+          @for (point of timeline(v.backups); track point.backup.id) {
+            <a
+              class="backups-timeline__bar d-block rounded-top flex-shrink-0"
+              [ngClass]="'bg-' + statusTone[point.backup.status]"
+              [style.height.%]="point.height"
+              [style.opacity]="point.backup.deletedAt ? 0.3 : 1"
+              [routerLink]="['/operate/backups', point.backup.id]"
+              [title]="timelineTitle(point.backup)"
+              [attr.aria-label]="timelineTitle(point.backup)"
+            ></a>
+          }
+        </div>
+      }
+      <fpc-data-table
+        nested
+        [ariaLabel]="backupsOfLabel"
+        [columns]="backupColumns"
+        [rows]="v.backups"
+        [rowLink]="backupLink"
+        [activeRowId]="openId()"
+        [searchable]="false"
+        paging="client"
+        persistKey="lw-backups-backups"
+        selectable
+        [(selected)]="selectedBackups"
+        [rowMenu]="backupMenu"
+        (rowAction)="onBackupAction($event.row, $event.item.id)"
+        emptyIcon="safe"
+        [attr.data-testid]="'backups-volume-' + v.resource"
+      >
+        <fpc-button
+          fpcDataTableBatch
+          variant="secondary"
+          size="sm"
+          [disabled]="!canTestSelection()"
+          (clicked)="testSelected()"
+          data-testid="backups-bulk-test"
+          iconOnly
+          [ariaLabel]="testNowLabel"
+          [title]="testNowLabel"
+        >
+          <i class="bi bi-clipboard-check" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          fpcDataTableBatch
+          variant="danger"
+          size="sm"
+          [disabled]="!canDeleteSelection()"
+          (clicked)="deleteSelected()"
+          data-testid="backups-bulk-delete"
+          iconOnly
+          [ariaLabel]="deleteLabel"
+          [title]="deleteLabel"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+        <span fpcDataTableEmpty>
+          <fpc-empty-state icon="safe" size="sm" [title]="noBackupsLabel" />
+        </span>
+        <ng-template fpcTableCell="time" let-b>{{ b.startedAt | date: 'short' }}</ng-template>
+        <ng-template fpcTableCell="size" let-b>
+          {{ bytes(b.bytes) }} <span class="text-body-secondary">+{{ bytes(b.uploadedBytes) }}</span>
+        </ng-template>
+        <ng-template fpcTableCell="keep" let-b>
+          <span class="d-inline-flex flex-wrap gap-1">
+            @for (k of b.keep; track k) {
+              <fpc-badge color="light" size="sm">{{ keepLabel(k) }}</fpc-badge>
+            }
+          </span>
+        </ng-template>
+        <ng-template fpcTableCell="test" let-b>
+          @if (b.restoreTest; as t) {
+            <fpc-badge [tone]="testToneOf(t.status)">{{ testLabel(t.status) }}</fpc-badge>
+          }
+        </ng-template>
+        <ng-template fpcTableCell="locked" let-b>
+          @if (b.lockedUntil) {
+            <span class="text-nowrap">
+              <fpc-badge
+                [tone]="locked(b.lockedUntil) ? 'success' : 'neutral'"
+                [icon]="locked(b.lockedUntil) ? 'lock-fill' : 'unlock'"
+                [iconOnly]="true"
+                [label]="locked(b.lockedUntil) ? immutableLabel : unlockedLabel"
+              />
+              {{ b.lockedUntil | date: 'shortDate' }}
+            </span>
+          }
+        </ng-template>
+        <ng-template fpcTableCell="error" let-b>
+          @if (b.error) {
+            <span class="text-danger text-break">{{ b.error }}</span>
+          }
+        </ng-template>
+      </fpc-data-table>
+    </ng-template>
+  </fpc-data-table>
+</div>
+
+<loadweaver-backup-restore-modal
+  [(open)]="restoreOpen"
+  [backup]="restoreFor()?.backup ?? null"
+  [candidates]="restoreFor()?.candidates ?? []"
+  [volumes]="liveVolumes()"
+/>
+
+<fpc-modal [open]="diffFor() !== null" (openChange)="onDiffOpenChange($event)" [title]="diffTitle">
+  @if (diffFor(); as d) {
+    @if (d.others.length === 0) {
+      <p class="small mb-0" i18n="@@lwConsoleBackups-diffNone">This volume has no other available backup.</p>
+    } @else {
+      <fpc-form-field
+        forId="lw-backups-diff-other"
+        i18n-label="@@lwConsoleBackups-diffOther"
+        label="Other backup of the volume"
+      >
+        <fpc-form-control
+          controlType="select"
+          controlId="lw-backups-diff-other"
+          size="sm"
+          [(ngModel)]="diffOther"
+          data-testid="backups-diff-other"
+        >
+          @for (o of d.others; track o.id) {
+            <option [value]="o.id">{{ o.startedAt | date: 'medium' }} ({{ bytes(o.bytes) }})</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    }
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="diffFor.set(null)">
+      <span i18n="@@lwConsoleBackups-diffCancel">Cancel</span>
+    </fpc-button>
+    <fpc-button variant="primary" [disabled]="!diffOther" (clicked)="compare()" data-testid="backups-diff-open">
+      <span i18n="@@lwConsoleBackups-diffOpen">Compare</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  [open]="deleteFor() !== null"
+  (openChange)="onDeleteOpenChange($event)"
+  [title]="deleteTitle"
+  accent="danger"
+>
+  @if (requested(); as r) {
+    <fpc-alert variant="success" [showIcon]="true" data-testid="backups-delete-requested">
+      <span i18n="@@lwConsoleBackups-deleteRequested"
+        >The deletion was requested. Another admin has to approve it; it takes effect at the earliest on</span
+      >
+      {{ r.notBefore | date: 'medium' }}.
+    </fpc-alert>
+  } @else {
+    @if (deleteFor(); as backups) {
+      <ul class="small list-unstyled" data-testid="backups-delete-list">
+        @for (b of backups; track b.id) {
+          <li class="d-flex flex-wrap align-items-center gap-2">
+            <span class="font-monospace fw-semibold">{{ b.resource }}</span>
+            <span class="text-body-secondary">{{ b.startedAt | date: 'medium' }}</span>
+          </li>
+        }
+      </ul>
+    }
+    <fpc-alert class="d-block mb-3" variant="warning" [showIcon]="true">
+      <span i18n="@@lwConsoleBackups-deleteRule"
+        >Deleting a backup needs the approval of a second admin of the same project (or a second cluster admin) and only
+        takes effect after the deletion delay:</span
+      >
+      {{ status()?.deletionDelayHours ?? 72 }} h.
+      <span i18n="@@lwConsoleBackups-deleteRuleCancel">Until then any admin can cancel it.</span>
+    </fpc-alert>
+    <fpc-form-field
+      forId="lw-backups-delete-reason"
+      i18n-label="@@lwConsoleBackups-deleteReason"
+      label="Reason (required)"
+      required
+    >
+      <fpc-form-control
+        controlType="textarea"
+        controlId="lw-backups-delete-reason"
+        size="sm"
+        [rows]="3"
+        maxLength="1000"
+        [(ngModel)]="deletionReason"
+        data-testid="backups-delete-reason"
+      />
+    </fpc-form-field>
+    @if (requestError(); as message) {
+      <fpc-alert variant="danger" [message]="message" />
+    }
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    @if (requested()) {
+      <fpc-button variant="primary" (clicked)="closeDelete()">
+        <span i18n="@@lwConsoleBackups-deleteClose">Close</span>
+      </fpc-button>
+    } @else {
+      <fpc-button variant="dark" (clicked)="closeDelete()">
+        <span i18n="@@lwConsoleBackups-deleteCancel">Cancel</span>
+      </fpc-button>
+      <fpc-button
+        variant="danger"
+        [loading]="requesting()"
+        [disabled]="deletionReason.trim().length < 3"
+        (clicked)="requestDeletion()"
+        data-testid="backups-delete-submit"
+      >
+        <span i18n="@@lwConsoleBackups-deleteSubmit">Request deletion</span>
+      </fpc-button>
+    }
+  </div>
+</fpc-modal>

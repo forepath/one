@@ -496,6 +496,7 @@ export class InvoiceService {
       totalGross: Number(invoice.totalGross),
       subscriptionNumber,
       createdAt: invoice.createdAt,
+      issuedAt: invoice.issuedAt ?? null,
       dueDate: invoice.dueDate,
       paidAt: invoice.paidAt ?? null,
       ...this.capabilityFlags(invoice),

@@ -13,6 +13,8 @@ export const selectPromotionRedemptionsLoading = createSelector(
   selectPromotionsState,
   (state) => state.loadingRedemptions,
 );
+export const selectActivePromotionsTotal = createSelector(selectPromotionsState, (state) => state.activeTotal);
+export const selectPromotionRedemptionsTotal = createSelector(selectPromotionsState, (state) => state.redemptionsTotal);
 export const selectPromotionValidationPreview = createSelector(
   selectPromotionsState,
   (state) => state.validationPreview,

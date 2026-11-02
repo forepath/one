@@ -25,24 +25,41 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+}
 
-  // Hide by default on mobile, show as overlay when visible
-  @media (max-width: 767.98px) {
-    display: none !important; // Hidden by default on mobile
+// Phones (AG-01): one view at a time. The configuration and the runs stack in one scrolling column; an open run
+// replaces them (its header's back button closes it). Nothing is fixed-positioned over the tool window header.
+@media (max-width: 767.98px) {
+  .deployment-manager-container {
+    flex-direction: column;
+  }
 
-    &.mobile-overlay {
-      display: flex !important; // Show as overlay when explicitly opened
-      position: fixed;
-      top: 115px; // Start below toolbar
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 1050;
-      flex: 0 0 100%;
-      width: 100%;
-      height: calc(100% - 115px); // Account for toolbar height
-      border: none;
+  .deployment-sidebar {
+    flex-direction: column !important;
+    flex: 1 1 auto;
+    height: auto;
+    overflow-y: auto;
+    border-right: 0 !important;
+
+    &.deployment-sidebar--run-open {
+      display: none !important;
     }
+  }
+
+  .deployment-configuration-wrapper,
+  .deployment-runs-wrapper {
+    flex: 0 0 auto;
+    overflow: visible;
+    border-right: 0 !important;
+  }
+
+  .deployment-runs-wrapper {
+    // The runs table keeps its own scroller; give it room on a phone.
+    min-height: 24rem;
+  }
+
+  .deployment-content:not(.deployment-content--run-open) {
+    display: none !important;
   }
 }
 

@@ -1,9 +1,10 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   AdminPromotionsFacade,
+  AdminPromotionsService,
   ServicePlansFacade,
   ServiceTypesFacade,
   type AdminPromotionResponse,
@@ -15,32 +16,37 @@ import {
 import {
   FpcAlertComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcFormSwitchComponent,
-  FpcListComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
-  FpcListItemComponent,
+  FpcMultiSelectComponent,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
-  FpcSpinnerComponent,
+  fpcRunBulk,
+  FpcTableCellDirective,
+  type FpcMenuItem,
+  type FpcMultiSelectOption,
+  type FpcTableColumn,
 } from '@forepath/shared/frontend/ui-components';
-import { combineLatest, debounceTime, distinctUntilChanged, map, skip } from 'rxjs';
+import { combineLatest, firstValueFrom, map } from 'rxjs';
 
 import {
-  getActiveStatusLabel,
-  getActiveStatusTextClass,
+  getPromotionFreeDaysLabel,
+  getPromotionFreePeriodsLabel,
   getPromotionRedemptionContextLabel,
-  getPromotionRedemptionStatusIconClass,
-  getPromotionRedemptionStatusLabel,
-  getPromotionRedemptionStatusTextClass,
-  getUnavailableLabel,
   resolveNamedLabel,
 } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
+import { DB_DL_CANCEL, dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
+import { dbServerPaging } from '../shared/server-paging';
+import { activeState, redemptionState } from '../shared/table-states';
+import { formatBillingDateRange, formatBillingDateTime, formatBillingMoney } from '../billing-format';
 
 @Component({
   selector: 'framework-admin-promotions-page',
@@ -50,18 +56,17 @@ import { showBillingModal, watchBillingMutationModalClose } from '../billing-mod
     FormsModule,
     FpcAlertComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcDataTableComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormSwitchComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
-    FpcListItemComponent,
-    FpcListComponent,
+    FpcMultiSelectComponent,
     FpcEmptyStateComponent,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
-    FpcSpinnerComponent,
+    FpcTableCellDirective,
   ],
   providers: [DatePipe],
   templateUrl: './admin-promotions-page.component.html',
@@ -77,15 +82,19 @@ export class AdminPromotionsPageComponent implements OnInit {
   readonly searchPlaceholder = $localize`:@@featureAdminPromotions-searchPlaceholder:Search promotions`;
 
   private readonly facade = inject(AdminPromotionsFacade);
+  private readonly promotionsService = inject(AdminPromotionsService);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly serviceTypesFacade = inject(ServiceTypesFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly datePipe = inject(DatePipe);
 
-  readonly searchQuery = signal('');
-  readonly searchQuery$ = toObservable(this.searchQuery);
-  readonly allPromotions$ = this.facade.getPromotions$();
-  readonly promotions$ = this.facade.getPromotions$();
+  /** Search + page + size → `GET /admin/billing/promotions?limit&offset&search` (replace-page; URL `q` / `p` / `n`). */
+  readonly paging = dbServerPaging(
+    (query) => this.facade.loadPromotions({ search: query.search, page: query.page, pageSize: query.pageSize }),
+    { url: '' },
+  );
+  readonly promotions = toSignal(this.facade.getPromotions$(), { initialValue: [] as AdminPromotionResponse[] });
+  readonly total = toSignal(this.facade.getTotal$(), { initialValue: 0 });
   readonly loading$ = this.facade.getLoading$();
   readonly creating$ = this.facade.getCreating$();
   readonly updating$ = this.facade.getUpdating$();
@@ -94,12 +103,138 @@ export class AdminPromotionsPageComponent implements OnInit {
     map(([creating, updating, deactivating]) => creating || updating || deactivating),
   );
   readonly error$ = this.facade.getError$();
-  readonly redemptions$ = this.facade.getRedemptions$();
+  readonly redemptions = toSignal(this.facade.getRedemptions$(), {
+    initialValue: [] as PromotionRedemptionResponse[],
+  });
   readonly redemptionsLoading$ = this.facade.getRedemptionsLoading$();
+  readonly redemptionsTotal = toSignal(this.facade.getRedemptionsTotal$(), { initialValue: 0 });
+  /** Redemptions of the selected promotion: built-in pager of the nested table (replace-page). */
+  readonly redemptionsPromotionId = signal<string | null>(null);
+  readonly redemptionsPage = signal(1);
+  readonly redemptionsPageSize = signal(25);
+  private readonly redemptionsOpenCount = signal(0);
   readonly servicePlans$ = combineLatest([
     this.servicePlansFacade.getServicePlans$(),
     this.serviceTypesFacade.getServiceTypes$(),
   ]).pipe(map(([plans, types]) => ({ plans, types })));
+  /** Applicable-plan options of the shared multi-select (DB-08): plan name, service type as hint (catalog order). */
+  readonly planOptions$ = this.servicePlans$.pipe(map(({ plans, types }) => promotionPlanOptions(plans, types)));
+  readonly multiSelectSearchLabel = BILLING_MULTI_SELECT_LABELS.search;
+  readonly multiSelectRemoveLabel = BILLING_MULTI_SELECT_LABELS.remove;
+  readonly multiSelectEmptyLabel = BILLING_MULTI_SELECT_LABELS.empty;
+
+  readonly columns: FpcTableColumn<AdminPromotionResponse>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureAdminPromotions-colStatus:Status`,
+      type: 'state',
+      state: (promotion) => activeState(promotion.isActive),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureAdminPromotions-colPromotion:Promotion`,
+      value: (promotion) => promotion.name,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'code',
+      label: $localize`:@@featureAdminPromotions-colCode:Code`,
+      value: (promotion) => promotion.code,
+      mono: true,
+      priority: 1,
+    },
+    {
+      id: 'period',
+      label: $localize`:@@featureAdminPromotions-colPeriod:Redeemable`,
+      value: (promotion) => promotion.redeemableFrom,
+      priority: 2,
+    },
+    {
+      id: 'advantage',
+      label: $localize`:@@featureAdminPromotions-colAdvantage:Advantage`,
+      value: (promotion) => this.advantageSummaryLabel(promotion),
+      priority: 2,
+    },
+    {
+      id: 'eligibility',
+      label: $localize`:@@featureAdminPromotions-colEligibility:Subscription eligibility`,
+      value: (promotion) => this.eligibilityLabel(promotion.subscriptionEligibility),
+      priority: 3,
+      // DB-02: low-value wide column off by default (column chooser) so the list fits 1440 px with ⋮ visible.
+      hidden: true,
+    },
+    {
+      id: 'redemptions',
+      label: $localize`:@@featureAdminPromotions-redemptions:Redemptions`,
+      value: (promotion) => promotion.redemptionCount,
+      align: 'end',
+      priority: 3,
+    },
+  ];
+
+  readonly redemptionsTitle = $localize`:@@featureAdminPromotions-redemptions:Redemptions`;
+  readonly redemptionColumns: FpcTableColumn<PromotionRedemptionResponse>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureAdminPromotions-colStatus:Status`,
+      type: 'state',
+      state: (item) => redemptionState(item.status),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureAdminPromotions-colSubscription:Subscription`,
+      value: (item) => this.redemptionSubscriptionLabel(item),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'redeemedAt',
+      label: $localize`:@@featureAdminPromotions-colRedeemedAt:Redeemed`,
+      value: (item) => item.redeemedAt,
+      priority: 1,
+    },
+    {
+      id: 'plan',
+      label: $localize`:@@featureAdminPromotions-colPlan:Plan`,
+      value: (item) => item.planName ?? '',
+      priority: 2,
+    },
+    {
+      id: 'context',
+      label: $localize`:@@featureAdminPromotions-colContext:Context`,
+      value: (item) => this.redemptionContextLabel(item.redemptionContext),
+      priority: 3,
+    },
+  ];
+
+  readonly editLabel = $localize`:@@featureAdminPromotions-edit:Edit`;
+  readonly deactivateLabel = $localize`:@@featureAdminPromotions-deactivate:Deactivate`;
+  readonly cancelLabel = DB_DL_CANCEL;
+  readonly bulkDeactivateTitle = $localize`:@@featureAdminPromotions-bulkDeactivateTitle:Deactivate promotions?`;
+  readonly selected = signal<readonly string[]>([]);
+  readonly confirmBulkDeactivate = signal(false);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly selectedPromotions = computed(() => {
+    const ids = new Set(this.selected());
+
+    return this.promotions().filter((promotion) => ids.has(promotion.id));
+  });
+  readonly selectedActivePromotions = computed(() =>
+    this.selectedPromotions().filter((promotion) => promotion.isActive),
+  );
+  readonly bulkDeactivateMessage = computed(
+    () =>
+      $localize`:@@featureAdminPromotions-bulkDeactivateMessage:${this.selectedActivePromotions().length}:count: active promotions will be deactivated. Their codes can no longer be redeemed.`,
+  );
+  readonly rowMenu = (promotion: AdminPromotionResponse): FpcMenuItem[] => [
+    { id: 'edit', label: this.editLabel, icon: 'pencil' },
+    { id: 'redemptions', label: this.redemptionsTitle, icon: 'list-ul' },
+    ...(promotion.isActive
+      ? [{ id: 'deactivate', label: this.deactivateLabel, icon: 'slash-circle', danger: true, dividerBefore: true }]
+      : []),
+    dbCopyIdItem(),
+  ];
 
   createForm: CreateAdminPromotionDto = this.emptyForm();
   editForm: CreateAdminPromotionDto & { id: string } = { ...this.emptyForm(), id: '' };
@@ -108,16 +243,21 @@ export class AdminPromotionsPageComponent implements OnInit {
   readonly advantageTypes: PromotionAdvantageType[] = ['fixed_amount_net', 'free_days', 'free_billing_periods'];
   readonly eligibilityOptions: PromotionSubscriptionEligibility[] = ['new', 'existing', 'both'];
 
+  constructor() {
+    effect(() => {
+      const promotionId = this.redemptionsPromotionId();
+      const page = this.redemptionsPage();
+      const pageSize = this.redemptionsPageSize();
+
+      this.redemptionsOpenCount();
+
+      if (promotionId) untracked(() => this.facade.loadRedemptions(promotionId, page, pageSize));
+    });
+  }
+
   ngOnInit(): void {
-    this.facade.loadPromotions();
     this.servicePlansFacade.loadServicePlans();
     this.serviceTypesFacade.loadServiceTypes();
-
-    this.searchQuery$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.facade.loadPromotions({ search: search.trim() || undefined });
-      });
 
     watchBillingMutationModalClose({
       loading$: this.creating$,
@@ -126,6 +266,7 @@ export class AdminPromotionsPageComponent implements OnInit {
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.createForm = this.emptyForm();
+        this.paging.reload();
       },
     });
     watchBillingMutationModalClose({
@@ -163,7 +304,9 @@ export class AdminPromotionsPageComponent implements OnInit {
 
   openRedemptionsModal(promotion: AdminPromotionResponse): void {
     this.selectedPromotion = promotion;
-    this.facade.loadRedemptions(promotion.id);
+    this.redemptionsPage.set(1);
+    this.redemptionsPromotionId.set(promotion.id);
+    this.redemptionsOpenCount.update((count) => count + 1);
     showBillingModal(this.redemptionsModalOpen);
   }
 
@@ -181,6 +324,36 @@ export class AdminPromotionsPageComponent implements OnInit {
     this.facade.deactivatePromotion(promotion.id);
   }
 
+  onRowAction(promotion: AdminPromotionResponse, action: string): void {
+    if (action === 'edit') this.openEditModal(promotion);
+    else if (action === 'redemptions') this.openRedemptionsModal(promotion);
+    else if (action === 'deactivate') this.deactivate(promotion);
+    else if (action === 'copy-id') fpcCopyText(promotion.id);
+  }
+
+  /** Bulk Deactivate: one `deactivate` call per active promotion (same endpoint as the row action). */
+  async deactivateSelected(): Promise<void> {
+    const promotions = this.selectedActivePromotions();
+
+    if (promotions.length === 0) return;
+
+    const result = await fpcRunBulk(promotions, (promotion) =>
+      firstValueFrom(this.promotionsService.deactivate(promotion.id)),
+    );
+
+    this.bulkResult.set(dbBulkSummary(result, (promotion) => promotion.name));
+    this.selected.set([]);
+    this.paging.reload();
+  }
+
+  periodLabel(promotion: AdminPromotionResponse): string {
+    return formatBillingDateRange(promotion.redeemableFrom, promotion.redeemableTo);
+  }
+
+  redeemedAt(item: PromotionRedemptionResponse): string {
+    return item.redeemedAt;
+  }
+
   onAdvantageTypeChange(form: CreateAdminPromotionDto): void {
     if (form.advantageType === 'fixed_amount_net') {
       form.advantageConfig = { amountNet: Number(form.advantageConfig['amountNet'] ?? 0) };
@@ -191,40 +364,18 @@ export class AdminPromotionsPageComponent implements OnInit {
     }
   }
 
-  onApplicablePlansChange(event: Event, form: CreateAdminPromotionDto): void {
-    const select = event.target as HTMLSelectElement;
-
-    form.applicablePlanIds = Array.from(select.selectedOptions).map((option) => option.value);
+  onApplicablePlansChange(planIds: readonly string[] | null, form: CreateAdminPromotionDto): void {
+    form.applicablePlanIds = [...(planIds ?? [])];
   }
 
   formatDate(value?: string): string {
     if (!value) return '-';
 
-    return this.datePipe.transform(value, 'medium') ?? value;
+    return formatBillingDateTime(value, value ?? '-');
   }
 
   redemptionContextLabel(context: PromotionRedemptionResponse['redemptionContext']): string {
     return getPromotionRedemptionContextLabel(context);
-  }
-
-  redemptionStatusLabel(status: PromotionRedemptionResponse['status']): string {
-    return getPromotionRedemptionStatusLabel(status);
-  }
-
-  redemptionStatusTextClass(status: PromotionRedemptionResponse['status']): string {
-    return getPromotionRedemptionStatusTextClass(status);
-  }
-
-  redemptionStatusIconClass(status: PromotionRedemptionResponse['status']): string {
-    return getPromotionRedemptionStatusIconClass(status);
-  }
-
-  activeStatusLabel(isActive: boolean): string {
-    return getActiveStatusLabel(isActive);
-  }
-
-  activeStatusTextClass(isActive: boolean): string {
-    return getActiveStatusTextClass(isActive);
   }
 
   eligibilityLabel(eligibility: PromotionSubscriptionEligibility): string {
@@ -257,29 +408,18 @@ export class AdminPromotionsPageComponent implements OnInit {
     const config = promotion.advantageConfig;
 
     switch (promotion.advantageType) {
-      case 'fixed_amount_net':
-        return $localize`:@@featureAdminPromotions-advantageAmountNet:${Number(config['amountNet'] ?? 0)} net credit`;
+      case 'fixed_amount_net': {
+        const amount = formatBillingMoney(Number(config['amountNet'] ?? 0));
+
+        return $localize`:@@featureAdminPromotions-advantageAmountNet:${amount} net credit`;
+      }
       case 'free_days':
-        return $localize`:@@featureAdminPromotions-advantageFreeDays:${Number(config['days'] ?? 0)} free days`;
+        return getPromotionFreeDaysLabel(Number(config['days'] ?? 0));
       case 'free_billing_periods':
-        return $localize`:@@featureAdminPromotions-advantageFreePeriods:${Number(config['periods'] ?? 0)} free billing periods`;
+        return getPromotionFreePeriodsLabel(Number(config['periods'] ?? 0));
       default:
         return promotion.advantageType;
     }
-  }
-
-  planLabel(
-    planId: string,
-    plans: { id: string; name: string; serviceTypeId: string | null }[],
-    types: { id: string; name: string }[],
-  ): string {
-    const plan = plans.find((item) => item.id === planId);
-
-    if (!plan) return getUnavailableLabel();
-
-    const typeName = plan.serviceTypeId ? (types.find((item) => item.id === plan.serviceTypeId)?.name ?? '') : '';
-
-    return typeName ? `${plan.name} (${typeName})` : plan.name;
   }
 
   redemptionSubscriptionLabel(item: PromotionRedemptionResponse): string {
@@ -340,4 +480,16 @@ export class AdminPromotionsPageComponent implements OnInit {
       subscriptionEligibility: 'both',
     };
   }
+}
+
+/** Applicable-plan options (DB-08): plan name as label, service type as hint; list order kept. */
+export function promotionPlanOptions(
+  plans: readonly { id: string; name: string; serviceTypeId: string | null }[],
+  types: readonly { id: string; name: string }[],
+): FpcMultiSelectOption[] {
+  return plans.map((plan) => {
+    const typeName = plan.serviceTypeId ? types.find((type) => type.id === plan.serviceTypeId)?.name : undefined;
+
+    return typeName ? { value: plan.id, label: plan.name, hint: typeName } : { value: plan.id, label: plan.name };
+  });
 }

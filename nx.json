@@ -36,6 +36,17 @@
         "buildTarget": "docker:build",
         "runTarget": "docker:run"
       }
+    },
+    {
+      "plugin": "@nx/webpack/plugin",
+      "options": {
+        "buildTargetName": "webpack:build",
+        "serveTargetName": "webpack:serve",
+        "previewTargetName": "preview",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps",
+        "serveStaticTargetName": "serve-static"
+      }
     }
   ],
   "targetDefaults": {
@@ -49,7 +60,8 @@
         "ci": {
           "ci": true,
           "codeCoverage": true,
-          "coverageReporters": ["json-summary", "json"]
+          "coverageReporters": ["json-summary", "json"],
+          "maxWorkers": 1
         }
       }
     },

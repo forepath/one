@@ -26,7 +26,7 @@ import {
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
 import { AgentDirectoryIndexService } from './agent-directory-index.service';
 import { AgentsService } from './agents.service';
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 
 /** Inclusive byte range for a chunked upload (Content-Range semantics). */
@@ -111,7 +111,7 @@ export class AgentFileSystemService {
   constructor(
     private readonly agentsService: AgentsService,
     private readonly agentsRepository: AgentsRepository,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
     private readonly agentProviderFactory: AgentProviderFactory,
     private readonly gitStateBroadcast: AgentGitStateBroadcastService,
     private readonly workspaceChangeNotifier: WorkspaceChangeNotifierService,
@@ -165,7 +165,7 @@ export class AgentFileSystemService {
    */
   private async expandTildeInProviderPath(providerPath: string, containerId: string): Promise<string> {
     return expandProviderPathTildeInContainer(providerPath, containerId, (id) =>
-      this.dockerService.getContainerHomeDirectory(id),
+      this.runtime.getContainerHomeDirectory(id),
     );
   }
 
@@ -199,7 +199,7 @@ export class AgentFileSystemService {
     mode: PathContainmentMode,
     user: string,
   ): Promise<void> {
-    const output = await this.dockerService.sendCommandToContainer(
+    const output = await this.runtime.sendCommandToContainer(
       containerId,
       this.commandFor(user, [
         'sh',
@@ -293,7 +293,7 @@ export class AgentFileSystemService {
    * Run a workspace FS command (argv, never shell-parsed) as the workspace runtime user.
    */
   private async runWorkspaceFsCommand(containerId: string, command: string[], input?: string): Promise<void> {
-    await this.dockerService.sendCommandToContainer(
+    await this.runtime.sendCommandToContainer(
       containerId,
       command,
       input,
@@ -317,7 +317,7 @@ export class AgentFileSystemService {
     let output: string;
 
     try {
-      output = await this.dockerService.sendCommandToContainer(
+      output = await this.runtime.sendCommandToContainer(
         containerId,
         this.commandFor(AgentFileSystemService.ROOT_EXEC_USER, [
           'sh',
@@ -364,14 +364,10 @@ export class AgentFileSystemService {
 
     try {
       // Align with chunked upload ceiling so downloaded assemblies remain readable.
-      const fileBuffer = await this.dockerService.readFileBytesFromContainer(
-        target.containerId,
-        resolved.containerPath,
-        {
-          user: AgentFileSystemService.WORKSPACE_EXEC_USER,
-          maxBytes: this.MAX_ASSEMBLED_FILE_SIZE,
-        },
-      );
+      const fileBuffer = await this.runtime.readFileBytesFromContainer(target.containerId, resolved.containerPath, {
+        user: AgentFileSystemService.WORKSPACE_EXEC_USER,
+        maxBytes: this.MAX_ASSEMBLED_FILE_SIZE,
+      });
       const classified = classifyAgentFile(filePath, fileBuffer);
 
       this.logger.debug(`File ${filePath} classified as ${classified.fileType} (${fileBuffer.length} bytes)`);
@@ -422,7 +418,7 @@ export class AgentFileSystemService {
     const execOptions = this.execOptionsFor(AgentFileSystemService.WORKSPACE_EXEC_USER);
 
     try {
-      const existsOutput = await this.dockerService.sendCommandToContainer(
+      const existsOutput = await this.runtime.sendCommandToContainer(
         target.containerId,
         ['sh', '-c', 'test -f "$1" && echo EXISTS || echo NOTFOUND', 'sh', containerPath],
         undefined,
@@ -435,7 +431,7 @@ export class AgentFileSystemService {
       }
 
       // Small stdout only — parse first integer (docker demux can inject stray chars).
-      const sizeRaw = await this.dockerService.sendCommandToContainer(
+      const sizeRaw = await this.runtime.sendCommandToContainer(
         target.containerId,
         ['stat', '-c', '%s', '--', containerPath],
         undefined,
@@ -449,7 +445,7 @@ export class AgentFileSystemService {
       }
 
       const size = Number(sizeMatch[1]);
-      const peekRaw = await this.dockerService.sendCommandToContainer(
+      const peekRaw = await this.runtime.sendCommandToContainer(
         target.containerId,
         ['sh', '-c', `head -c ${peekBytes} -- "$1" | base64 -w 0`, 'sh', containerPath],
         undefined,
@@ -761,7 +757,7 @@ export class AgentFileSystemService {
       const escapedPath = this.escapeForShell(containerPath);
       // Get list of items using ls -1 (one per line)
       const listCommand = ['ls', '-a', '-1', '--', containerPath];
-      let output = await this.dockerService.sendCommandToContainer(
+      let output = await this.runtime.sendCommandToContainer(
         containerId,
         this.commandFor(user, listCommand),
         undefined,
@@ -811,7 +807,7 @@ export class AgentFileSystemService {
         fi
       done`,
       ];
-      let processOutput = await this.dockerService.sendCommandToContainer(
+      let processOutput = await this.runtime.sendCommandToContainer(
         containerId,
         this.commandFor(user, processCommand),
         undefined,
@@ -1040,7 +1036,7 @@ export class AgentFileSystemService {
 
     try {
       // Use mv command to move file or directory
-      await this.dockerService.sendCommandToContainer(
+      await this.runtime.sendCommandToContainer(
         target.containerId,
         ['mv', '--', source.containerPath, destination.containerPath],
         undefined,

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-export type SharedContactPersonBrand = 'forepath' | 'agenstra' | 'decabill';
+export type SharedContactPersonBrand = 'forepath' | 'agenstra' | 'decabill' | 'loadweaver';
 
 interface SharedContactPerson {
   id: 'marcel' | 'maya';
@@ -37,6 +37,7 @@ export const SHARED_CONTACT_PEOPLE: readonly SharedContactPerson[] = [
       forepath: $localize`:@@sharedFeatureLandingpageContactPerson-messageForepath:We work with AI every day, because it makes us faster and our results better.`,
       agenstra: $localize`:@@sharedFeatureLandingpageContactPerson-messageAgenstra:We build Agenstra with AI every day, because it makes the product better and lets us ship faster.`,
       decabill: $localize`:@@sharedFeatureLandingpageContactPerson-messageDecabill:We build Decabill with AI every day, because it makes the product better and lets us ship faster.`,
+      loadweaver: $localize`:@@sharedFeatureLandingpageContactPerson-messageLoadweaver:We build Loadweaver with AI every day, because it makes the product better and lets us ship faster.`,
     },
   },
   {
@@ -50,6 +51,7 @@ export const SHARED_CONTACT_PEOPLE: readonly SharedContactPerson[] = [
       forepath: $localize`:@@sharedFeatureLandingpageContactPerson-mayaMessageForepath:I am part of that, but your message still reaches real people on our team, and a person takes responsibility for every answer.`,
       agenstra: $localize`:@@sharedFeatureLandingpageContactPerson-mayaMessageAgenstra:I am part of that, but your message still reaches real people who know Agenstra, and a person takes responsibility for every answer.`,
       decabill: $localize`:@@sharedFeatureLandingpageContactPerson-mayaMessageDecabill:I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.`,
+      loadweaver: $localize`:@@sharedFeatureLandingpageContactPerson-mayaMessageLoadweaver:I am part of that, but your message still reaches real people who know Loadweaver, and a person takes responsibility for every answer.`,
     },
   },
 ];

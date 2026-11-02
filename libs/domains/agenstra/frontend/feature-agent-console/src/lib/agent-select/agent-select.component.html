@@ -8,7 +8,7 @@
         [disabled]="disabled()"
         (click)="clearSelection()"
         i18n-aria-label="@@featureAgentSelect-clearSelectionAria"
-        aria-label="Clear selected agent"
+        aria-label="Clear selected environment"
       ></button>
     </fpc-badge>
   } @else {
@@ -37,7 +37,7 @@
           }
         } @else if (searchQuery().trim() && !loading()) {
           <span class="dropdown-item-text text-body-secondary small" i18n="@@featureAgentSelect-noAgents"
-            >No agents found.</span
+            >No environments found.</span
           >
         }
       </div>

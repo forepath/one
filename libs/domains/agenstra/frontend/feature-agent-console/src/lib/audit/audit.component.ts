@@ -1,45 +1,60 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal, untracked, LOCALE_ID } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   AuthenticationFacade,
   ClientsFacade,
   StatisticsFacade,
   type ClientResponseDto,
+  type StatisticsChatIoDto,
   type StatisticsEgressDecision,
+  type StatisticsEgressEventDto,
+  type StatisticsEntityEventDto,
+  type StatisticsFilterDropDto,
   type StatisticsSeriesPoint,
   type UserResponseDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
   FpcAlertComponent,
-  FpcBadgeComponent,
-  FpcButtonComponent,
-  FpcCollapsibleFilterPanelComponent,
+  FpcDataTableComponent,
+  FpcListToolbarComponent,
+  fpcListQueryState,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcPageHeaderComponent,
   FpcPanelComponent,
   FpcPanelGridComponent,
-  FpcPaginationComponent,
-  FpcSearchFieldComponent,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
   FpcSummaryCardComponent,
   FpcSummaryCardValueDirective,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+  FpcTableCellDirective,
+  FpcTableRowDetailDirective,
+  FPC_DEFAULT_PAGE_SIZE,
+  type FpcFilterChip,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  type FpcTableState,
   FPC_CHART_AREA_FILL,
   FPC_CHART_AXIS,
   FPC_CHART_GRID,
   FPC_CHART_LABEL_STYLE,
   FPC_CHART_LEGEND,
+  FPC_CHART_LEGEND_SCROLL,
+  FPC_CHART_RESPONSIVE,
+  fpcChartCountAxis,
   FPC_CHART_PLACEHOLDER_COLOR,
   FPC_CHART_SLICE_LABELS,
   FPC_CHART_SLICE_TOOLTIP,
   fpcChart,
   fpcChartColor,
   fpcChartColors,
+  fpcFormatDateTime,
 } from '@forepath/shared/frontend/ui-components';
 import type {
   ApexAxisChartSeries,
@@ -48,6 +63,7 @@ import type {
   ApexFill,
   ApexGrid,
   ApexLegend,
+  ApexResponsive,
   ApexNonAxisChartSeries,
   ApexPlotOptions,
   ApexStroke,
@@ -62,7 +78,9 @@ import { ClientSelectComponent } from '../client-select/client-select.component'
 
 import {
   alignSecuritySeries,
+  countAxisScale,
   egressDecisionColor,
+  filterBreakdownLabel,
   formatBytes,
   formatEgressDecision,
   formatEgressKind,
@@ -70,7 +88,6 @@ import {
   hasEgressData,
 } from './audit-security.util';
 
-const PAGE_SIZE = 10;
 const AUDIT_FILTERS_STORAGE_KEY = 'agent-console-audit-filters';
 
 interface AuditFiltersStorage {
@@ -85,7 +102,24 @@ interface AuditFiltersStorage {
   egressEventsSearch: string;
   egressDecision: StatisticsEgressDecision | '';
   filtersCollapsed: boolean;
+  activeTab: AuditTab;
 }
+
+/** Tabs of the audit page (3.38 D5: one table per tab). */
+export type AuditTab = 'overview' | 'chat-io' | 'filter-drops' | 'filter-flags' | 'web-traffic' | 'entity-events';
+type AuditTable = Exclude<AuditTab, 'overview'>;
+
+const AUDIT_TABS: readonly AuditTab[] = [
+  'overview',
+  'chat-io',
+  'filter-drops',
+  'filter-flags',
+  'web-traffic',
+  'entity-events',
+];
+
+/** Rows with an agent (chat route in the row menu). */
+type AuditAgentRow = { clientId?: string; agentId?: string };
 
 interface AuditAxisChartOptions {
   series: ApexAxisChartSeries;
@@ -102,6 +136,7 @@ interface AuditAxisChartOptions {
 }
 
 interface AuditDonutChartOptions {
+  responsive?: ApexResponsive[];
   series: ApexNonAxisChartSeries;
   chart: ApexChart;
   colors: string[];
@@ -121,17 +156,18 @@ interface AuditDonutChartOptions {
     NgApexchartsModule,
     RouterLink,
     FpcAlertComponent,
-    FpcBadgeComponent,
-    FpcButtonComponent,
-    FpcCollapsibleFilterPanelComponent,
+    FpcListToolbarComponent,
     FpcEmptyStateComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcPageHeaderComponent,
     FpcPanelComponent,
     FpcPanelGridComponent,
-    FpcPaginationComponent,
-    FpcSearchFieldComponent,
+    FpcDataTableComponent,
+    FpcTableCellDirective,
+    FpcTableRowDetailDirective,
+    FpcTabGroupComponent,
+    FpcTabComponent,
     FpcSpinnerComponent,
     FpcSummaryBarComponent,
     FpcSummaryCardComponent,
@@ -144,25 +180,229 @@ interface AuditDonutChartOptions {
 })
 export class AuditComponent implements OnInit {
   private readonly authFacade = inject(AuthenticationFacade);
+  private readonly locale = inject(LOCALE_ID);
   private readonly clientsFacade = inject(ClientsFacade);
   private readonly statisticsFacade = inject(StatisticsFacade);
   private readonly datePipe = inject(DatePipe);
+  private readonly router = inject(Router);
 
   readonly pageTitle = $localize`:@@featureAudit-pageTitle:Audit`;
   readonly filtersPanelTitle = $localize`:@@featureAudit-filtersTitle:Filters`;
-  readonly resetFiltersTitle = $localize`:@@featureAudit-resetFiltersTitle:Reset filters to defaults`;
-  readonly searchPlaceholder = $localize`:@@featureAudit-searchPlaceholder:Search`;
-  readonly loadingLabel = $localize`:@@featureAudit-loading:Loading statistics...`;
-  readonly totalMessagesLabel = $localize`:@@featureAudit-totalMessages:Total messages`;
-  readonly totalWordsLabel = $localize`:@@featureAudit-totalWords:Total words`;
-  readonly avgWordsPerMessageLabel = $localize`:@@featureAudit-avgWordsPerMessage:Avg words/message`;
-  readonly totalTokensLabel = $localize`:@@featureAudit-totalTokens:Total tokens`;
-  readonly totalCostLabel = $localize`:@@featureAudit-totalCost:Total cost (USD)`;
+  readonly emptyPeriodHint = $localize`:@@featureAudit-emptyPeriodHint:Change the time range or workspace in Filters.`;
+  readonly allWorkspacesPlaceholder = $localize`:@@featureAudit-allWorkspaces:All workspaces`;
+  readonly searchChatIoPlaceholder = $localize`:@@featureAudit-searchChatIo:Search messages`;
+  readonly searchFilterDropsPlaceholder = $localize`:@@featureAudit-searchFilterDrops:Search filter drops`;
+  readonly searchFilterFlagsPlaceholder = $localize`:@@featureAudit-searchFilterFlags:Search filter flags`;
+  readonly searchWebTrafficPlaceholder = $localize`:@@featureAudit-searchWebTraffic:Search web traffic`;
+  readonly searchEntityEventsPlaceholder = $localize`:@@featureAudit-searchEntityEvents:Search entity events`;
+  readonly loadingLabel = $localize`:@@featureAudit-loading:Loading statistics`;
+  readonly totalMessagesLabel = $localize`:@@featureAudit-totalMessages:Messages`;
+  readonly totalWordsLabel = $localize`:@@featureAudit-totalWords:Words`;
+  readonly avgWordsPerMessageLabel = $localize`:@@featureAudit-avgWordsPerMessage:Words / message`;
+  readonly totalTokensLabel = $localize`:@@featureAudit-totalTokens:Tokens`;
+  readonly totalCostLabel = $localize`:@@featureAudit-totalCost:Cost (USD)`;
   readonly filterFlagsLabel = $localize`:@@featureAudit-filterFlags:Filter flags`;
   readonly filterDropsLabel = $localize`:@@featureAudit-filterDrops:Filter drops`;
-  readonly egressBlockedLabel = $localize`:@@featureAudit-egressBlocked:Blocked destinations`;
-  readonly egressObservedLabel = $localize`:@@featureAudit-egressObserved:Would-be blocks`;
+  readonly egressBlockedLabel = $localize`:@@featureAudit-egressBlocked:Blocked`;
+  readonly egressObservedLabel = $localize`:@@featureAudit-egressObserved:Observed`;
+  /** "Observed" explained (AG-09): the label stays short, the tooltip says what it counts. */
+  readonly egressObservedHint = $localize`:@@featureAudit-egressObservedHint:Requests an observe-only egress policy let through that enforcing it would block`;
+  readonly egressBlockedHint = $localize`:@@featureAudit-egressBlockedHint:Requests to destinations the egress policy blocked`;
   readonly egressAllowedLabel = $localize`:@@featureAudit-egressAllowed:Allowed requests`;
+  readonly overviewTabLabel = $localize`:@@featureAudit-tabOverview:Overview`;
+  readonly chatIoTabLabel = $localize`:@@featureAudit-chatIoTable:Chat I/O`;
+  readonly filterDropsTabLabel = $localize`:@@featureAudit-filterDropsTable:Filter drops`;
+  readonly filterFlagsTabLabel = $localize`:@@featureAudit-filterFlagsTable:Filter flags`;
+  readonly webTrafficTabLabel = $localize`:@@featureAudit-egressEventsTable:Web traffic`;
+  readonly entityEventsTabLabel = $localize`:@@featureAudit-entityEventsTable:Entity events`;
+  private readonly openChatLabel = $localize`:@@featureAudit-openChat:Open environment chat`;
+  private readonly openEntityLabel = $localize`:@@featureAudit-openEntity:Open`;
+
+  private readonly timeLabel = $localize`:@@featureAudit-time:Time`;
+  private readonly userLabel = $localize`:@@featureAudit-user:User`;
+  private readonly agentLabel = $localize`:@@featureAudit-agent:Environment`;
+  private readonly directionLabel = $localize`:@@featureAudit-direction:Direction`;
+  private readonly wordsLabel = $localize`:@@featureAudit-words:Words`;
+  private readonly charsLabel = $localize`:@@featureAudit-chars:Chars`;
+  private readonly filterTypeLabel = $localize`:@@featureAudit-filterType:Filter`;
+  private readonly reasonLabel = $localize`:@@featureAudit-reason:Reason`;
+  private readonly decisionLabel = $localize`:@@featureAudit-egressDecision:Decision`;
+  private readonly kindLabel = $localize`:@@featureAudit-egressKind:Type`;
+  private readonly destinationLabel = $localize`:@@featureAudit-egressDestination:Destination`;
+  private readonly ruleLabel = $localize`:@@featureAudit-egressRule:Rule`;
+  private readonly countLabel = $localize`:@@featureAudit-egressCount:Count`;
+  private readonly transferLabel = $localize`:@@featureAudit-egressTransfer:Transfer`;
+  private readonly entityTypeLabel = $localize`:@@featureAudit-entityType:Type`;
+  private readonly entityLabel = $localize`:@@featureAudit-entity:Entity`;
+  private readonly eventTypeLabel = $localize`:@@featureAudit-eventType:Event`;
+
+  /** Time column (the name column of an event log: the row's lead). */
+  private readonly timeColumn = <R extends { occurredAt: string }>(): FpcTableColumn<R> => ({
+    id: 'time',
+    label: this.timeLabel,
+    value: (row) => this.formatDateTime(row.occurredAt),
+    sortable: false,
+    priority: 1,
+  });
+
+  /** The audit APIs page server-side without a sort parameter: columns don't sort (no "sorted within page"). */
+  readonly chatIoColumns: FpcTableColumn<StatisticsChatIoDto>[] = [
+    {
+      id: 'direction',
+      label: this.directionLabel,
+      type: 'state',
+      sortable: false,
+      state: (row): FpcTableState => ({
+        label: this.formatChatIoDirection(row.direction),
+        tone: row.direction === 'input' ? 'primary' : 'neutral',
+        icon: row.direction === 'input' ? 'person' : 'robot',
+      }),
+    },
+    this.timeColumn<StatisticsChatIoDto>(),
+    { id: 'user', label: this.userLabel, sortable: false, priority: 2 },
+    { id: 'agent', label: this.agentLabel, sortable: false, priority: 1 },
+    {
+      id: 'words',
+      label: this.wordsLabel,
+      value: (row) => row.wordCount,
+      sortable: false,
+      align: 'end',
+      width: '7rem',
+    },
+    {
+      id: 'chars',
+      label: this.charsLabel,
+      value: (row) => row.charCount,
+      sortable: false,
+      align: 'end',
+      width: '7rem',
+      priority: 3,
+    },
+  ];
+
+  readonly filterColumns: FpcTableColumn<StatisticsFilterDropDto>[] = [
+    {
+      id: 'direction',
+      label: this.directionLabel,
+      type: 'state',
+      sortable: false,
+      state: (row): FpcTableState => ({
+        label: this.formatFilterDirection(row.direction),
+        tone: row.direction === 'incoming' ? 'primary' : 'neutral',
+        icon: row.direction === 'incoming' ? 'box-arrow-in-down' : 'box-arrow-up',
+      }),
+    },
+    this.timeColumn<StatisticsFilterDropDto>(),
+    { id: 'user', label: this.userLabel, sortable: false, priority: 2 },
+    { id: 'agent', label: this.agentLabel, sortable: false, priority: 1 },
+    { id: 'filter', label: this.filterTypeLabel, value: (row) => row.filterDisplayName, sortable: false },
+    {
+      id: 'words',
+      label: this.wordsLabel,
+      value: (row) => row.wordCount,
+      sortable: false,
+      align: 'end',
+      width: '7rem',
+      priority: 3,
+    },
+    { id: 'reason', label: this.reasonLabel, value: (row) => row.filterReason ?? '–', sortable: false, priority: 3 },
+  ];
+
+  readonly egressColumns: FpcTableColumn<StatisticsEgressEventDto>[] = [
+    {
+      id: 'decision',
+      label: this.decisionLabel,
+      type: 'state',
+      sortable: false,
+      state: (row): FpcTableState => ({
+        label: formatEgressDecision(row.decision),
+        tone: AuditComponent.egressTone(row.decision),
+        icon: AuditComponent.egressIcon(row.decision),
+      }),
+    },
+    this.timeColumn<StatisticsEgressEventDto>(),
+    { id: 'agent', label: this.agentLabel, sortable: false, priority: 2 },
+    { id: 'destination', label: this.destinationLabel, sortable: false, priority: 1 },
+    { id: 'kind', label: this.kindLabel, value: (row) => formatEgressKind(row.kind), sortable: false, priority: 3 },
+    { id: 'rule', label: this.ruleLabel, sortable: false, priority: 3 },
+    { id: 'count', label: this.countLabel, value: (row) => row.count, sortable: false, align: 'end', width: '6rem' },
+    { id: 'transfer', label: this.transferLabel, sortable: false, priority: 3 },
+  ];
+
+  readonly entityColumns: FpcTableColumn<StatisticsEntityEventDto>[] = [
+    {
+      id: 'event',
+      label: this.eventTypeLabel,
+      type: 'state',
+      sortable: false,
+      state: (row): FpcTableState => ({
+        label: this.formatEntityEventType(row.eventType),
+        tone: row.eventType === 'created' ? 'success' : row.eventType === 'deleted' ? 'danger' : 'warning',
+        icon: row.eventType === 'created' ? 'plus-circle' : row.eventType === 'deleted' ? 'trash' : 'pencil',
+      }),
+    },
+    this.timeColumn<StatisticsEntityEventDto>(),
+    { id: 'user', label: this.userLabel, sortable: false, priority: 2 },
+    { id: 'type', label: this.entityTypeLabel, value: (row) => this.formatEntityType(row.entityType), sortable: false },
+    { id: 'entity', label: this.entityLabel, sortable: false, priority: 1 },
+  ];
+
+  /** ⋮ of rows with an agent: open its chat. */
+  readonly agentRowMenu = (row: AuditAgentRow): FpcMenuItem[] =>
+    this.buildAgentChatRoute(row.clientId, row.agentId)
+      ? [{ id: 'open-chat', label: this.openChatLabel, icon: 'chat-left-text' }]
+      : [];
+
+  readonly entityRowMenu = (row: StatisticsEntityEventDto): FpcMenuItem[] =>
+    this.buildEntityEventRoute(row) ? [{ id: 'open', label: this.openEntityLabel, icon: 'box-arrow-up-right' }] : [];
+
+  onAgentRowAction(row: AuditAgentRow, action: string): void {
+    const route = this.buildAgentChatRoute(row.clientId, row.agentId);
+
+    if (action === 'open-chat' && route) void this.router.navigateByUrl(route);
+  }
+
+  /** Web traffic row click: show / hide its details (row type is inferred from the shared agent row menu). */
+  toggleEgressDetail(row: AuditAgentRow): void {
+    const id = (row as Partial<StatisticsEgressEventDto>).id ?? null;
+
+    this.expandedEgressId.set(this.expandedEgressId() === id ? null : id);
+  }
+
+  onEntityRowAction(row: StatisticsEntityEventDto, action: string): void {
+    const route = this.buildEntityEventRoute(row);
+
+    if (action === 'open' && route) void this.router.navigateByUrl(route);
+  }
+
+  private static egressTone(decision: string): FpcTableState['tone'] {
+    switch (decision) {
+      case 'allowed':
+        return 'success';
+      case 'observed':
+        return 'warning';
+      case 'blocked':
+      case 'error':
+        return 'danger';
+      default:
+        return 'neutral';
+    }
+  }
+
+  private static egressIcon(decision: string): string {
+    switch (decision) {
+      case 'allowed':
+        return 'check-circle-fill';
+      case 'observed':
+        return 'eye';
+      case 'blocked':
+        return 'slash-circle-fill';
+      case 'error':
+        return 'exclamation-octagon-fill';
+      default:
+        return 'question-circle';
+    }
+  }
   readonly egressDecisions: StatisticsEgressDecision[] = ['blocked', 'observed', 'allowed', 'error'];
   readonly formatEgressRule = formatEgressRule;
   readonly formatEgressDecision = formatEgressDecision;
@@ -175,25 +415,60 @@ export class AuditComponent implements OnInit {
   readonly fromDate = signal<string>('');
   readonly toDate = signal<string>('');
   readonly groupBy = signal<'day' | 'hour'>('day');
+  readonly filtersOpen = computed(() => !this.filtersCollapsed());
+  /** Applied client / range / grouping in the URL (`?f=`); the drawer edits a draft until Apply (3.38 R12). */
+  readonly filterState = fpcListQueryState({
+    filters: { client: this.selectedClientId, from: this.fromDate, to: this.toDate, groupBy: this.groupBy },
+    open: this.filtersOpen,
+    changed: () => this.onApplyFilters(),
+  });
+  /** Applied filters that differ from the defaults (last 30 days, all clients, per day). */
+  readonly activeFilterCount = computed(() => {
+    const f = this.filterState.applied();
 
-  readonly chatIoPage = signal(0);
-  readonly filterDropsPage = signal(0);
-  readonly filterFlagsPage = signal(0);
-  readonly entityEventsPage = signal(0);
-  readonly egressEventsPage = signal(0);
+    return [
+      !!f.client,
+      !!f.from && f.from !== this.formatDateForInput(this.getDefaultFromDate()),
+      !!f.to && f.to !== this.formatDateForInput(this.getDefaultToDate()),
+      f.groupBy !== 'day',
+    ].filter(Boolean).length;
+  });
+
+  readonly activeTab = signal<AuditTab>('overview');
+
+  /** 1-based pages and page sizes (25 by default, persisted per table by the data table). */
+  readonly chatIoPage = signal(1);
+  readonly filterDropsPage = signal(1);
+  readonly filterFlagsPage = signal(1);
+  readonly entityEventsPage = signal(1);
+  readonly egressEventsPage = signal(1);
+  readonly chatIoPageSize = signal(FPC_DEFAULT_PAGE_SIZE);
+  readonly filterDropsPageSize = signal(FPC_DEFAULT_PAGE_SIZE);
+  readonly filterFlagsPageSize = signal(FPC_DEFAULT_PAGE_SIZE);
+  readonly entityEventsPageSize = signal(FPC_DEFAULT_PAGE_SIZE);
+  readonly egressEventsPageSize = signal(FPC_DEFAULT_PAGE_SIZE);
   readonly egressDecision = signal<StatisticsEgressDecision | ''>('');
+  /** Web traffic drawer: draft decision until Apply. */
+  readonly egressFiltersOpen = signal(false);
+  readonly egressDecisionDraft = signal<StatisticsEgressDecision | ''>('');
+  readonly egressChips = computed<FpcFilterChip[]>(() => {
+    const decision = this.egressDecision();
+
+    return decision
+      ? [{ id: 'decision', label: `${this.decisionLabel}: ${formatEgressDecision(decision)}`, value: decision }]
+      : [];
+  });
+  /** Web traffic row whose details (sample URL, matched source, message) are open. */
+  readonly expandedEgressId = signal<string | null>(null);
+  /** Bumped by Apply / Clear all of the page filters: the active table reloads. */
+  private readonly filterVersion = signal(0);
+  private readonly loadTimers = new Map<AuditTable, { handle: ReturnType<typeof setTimeout>; due: number }>();
 
   readonly chatIoSearch = signal('');
   readonly filterDropsSearch = signal('');
   readonly filterFlagsSearch = signal('');
   readonly entityEventsSearch = signal('');
   readonly egressEventsSearch = signal('');
-
-  private chatIoSearchTimer: ReturnType<typeof setTimeout> | null = null;
-  private filterDropsSearchTimer: ReturnType<typeof setTimeout> | null = null;
-  private filterFlagsSearchTimer: ReturnType<typeof setTimeout> | null = null;
-  private entityEventsSearchTimer: ReturnType<typeof setTimeout> | null = null;
-  private egressEventsSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly clients$ = this.clientsFacade.clients$;
   readonly clients = toSignal(this.clientsFacade.clients$, { initialValue: [] as ClientResponseDto[] });
@@ -237,8 +512,8 @@ export class AuditComponent implements OnInit {
     );
 
     return {
-      ...this.buildTimeAxisChart('area', categories, groupBy),
-      series: [{ name: 'Messages', data }],
+      ...this.buildTimeAxisChart('area', categories, groupBy, { counts: [data] }),
+      series: [{ name: this.totalMessagesLabel, data }],
       colors: [fpcChartColor(0)],
       stroke: { curve: 'smooth', width: 2 },
       fill: FPC_CHART_AREA_FILL,
@@ -254,12 +529,13 @@ export class AuditComponent implements OnInit {
 
     const dropPrefix = $localize`:@@featureAudit-chartDropPrefix:Drop`;
     const flagPrefix = $localize`:@@featureAudit-chartFlagPrefix:Flag`;
+    // Legend = the rule names shown in the tables (AG-08), not the raw filter keys.
     const drops = (s.filterTypesBreakdown ?? []).map((b) => ({
-      label: `${dropPrefix}: ${b.filterType} (${this.formatFilterDirection(b.direction)})`,
+      label: filterBreakdownLabel(dropPrefix, b, this.formatFilterDirection(b.direction)),
       count: b.count,
     }));
     const flags = (s.filterFlagsBreakdown ?? []).map((b) => ({
-      label: `${flagPrefix}: ${b.filterType} (${this.formatFilterDirection(b.direction)})`,
+      label: filterBreakdownLabel(flagPrefix, b, this.formatFilterDirection(b.direction)),
       count: b.count,
     }));
     const items = [...drops, ...flags];
@@ -296,12 +572,14 @@ export class AuditComponent implements OnInit {
     );
 
     return {
-      ...this.buildTimeAxisChart('area', aligned.categories, groupBy),
+      ...this.buildTimeAxisChart('area', aligned.categories, groupBy, {
+        counts: [aligned.filterDrops, aligned.filterFlags, aligned.egressBlocked, aligned.egressObserved],
+      }),
       series: [
         { name: $localize`:@@featureAudit-seriesFilterDrops:Message drops`, data: aligned.filterDrops },
         { name: $localize`:@@featureAudit-seriesFilterFlags:Message flags`, data: aligned.filterFlags },
         { name: $localize`:@@featureAudit-seriesEgressBlocked:Blocked destinations`, data: aligned.egressBlocked },
-        { name: $localize`:@@featureAudit-seriesEgressObserved:Would-be blocks`, data: aligned.egressObserved },
+        { name: $localize`:@@featureAudit-seriesEgressObserved:Observed (would block)`, data: aligned.egressObserved },
       ],
       colors: ['var(--bs-danger)', 'var(--bs-warning)', 'var(--bs-primary)', 'var(--bs-info)'],
       stroke: { curve: 'smooth', width: 2 },
@@ -325,7 +603,10 @@ export class AuditComponent implements OnInit {
     );
 
     return {
-      ...this.buildTimeAxisChart('bar', aligned.categories, groupBy, { stacked: true }),
+      ...this.buildTimeAxisChart('bar', aligned.categories, groupBy, {
+        stacked: true,
+        counts: [aligned.egressAllowed, aligned.egressBlocked, aligned.egressObserved],
+      }),
       series: [
         { name: formatEgressDecision('allowed'), data: aligned.egressAllowed },
         { name: formatEgressDecision('blocked'), data: aligned.egressBlocked },
@@ -386,12 +667,12 @@ export class AuditComponent implements OnInit {
     type: 'area' | 'line' | 'bar',
     categories: string[],
     groupBy: 'day' | 'hour',
-    extra: { stacked?: boolean } = {},
+    extra: { stacked?: boolean; counts?: readonly (readonly number[])[] } = {},
   ): Pick<AuditAxisChartOptions, 'chart' | 'dataLabels' | 'xaxis' | 'yaxis' | 'grid'> {
     const axisDateFormat = groupBy === 'day' ? 'mediumDate' : 'short';
 
     return {
-      chart: fpcChart(type, 280, extra),
+      chart: fpcChart(type, 280, { stacked: extra.stacked }),
       dataLabels: { enabled: false },
       xaxis: {
         ...FPC_CHART_AXIS,
@@ -401,7 +682,8 @@ export class AuditComponent implements OnInit {
           formatter: (value: string): string => this.formatAxisDateLabel(value, axisDateFormat),
         },
       },
-      yaxis: { labels: { style: FPC_CHART_LABEL_STYLE } },
+      // Shared count axis (integer labels) + whole-unit ticks for small ranges (AG-08: no 0.5 steps).
+      yaxis: { ...fpcChartCountAxis(), ...countAxisScale(extra.counts ?? [], extra.stacked) },
       grid: FPC_CHART_GRID,
     };
   }
@@ -415,11 +697,13 @@ export class AuditComponent implements OnInit {
   ): AuditDonutChartOptions {
     return {
       series,
-      chart: fpcChart('donut', 280),
+      chart: fpcChart('donut', 320),
       colors,
       labels,
       dataLabels: { ...FPC_CHART_SLICE_LABELS, enabled: showSliceLabels },
-      legend: FPC_CHART_LEGEND,
+      // Legend below the ring and scrollable (AG-08): long rule names neither clip nor squeeze the donut on phones.
+      legend: FPC_CHART_LEGEND_SCROLL,
+      responsive: FPC_CHART_RESPONSIVE as ApexResponsive[],
       tooltip: FPC_CHART_SLICE_TOOLTIP,
       heading: title,
     };
@@ -427,15 +711,19 @@ export class AuditComponent implements OnInit {
 
   ngOnInit(): void {
     const stored = this.loadFilters();
+    // Filters from the URL (shared links, reload) win over the stored ones.
+    const fromUrl = this.filterState.activeCount() > 0;
 
     if (stored) {
-      if (stored.selectedClientId !== undefined) this.selectedClientId.set(stored.selectedClientId);
+      if (!fromUrl) {
+        if (stored.selectedClientId !== undefined) this.selectedClientId.set(stored.selectedClientId);
 
-      if (stored.fromDate) this.fromDate.set(stored.fromDate);
+        if (stored.fromDate) this.fromDate.set(stored.fromDate);
 
-      if (stored.toDate) this.toDate.set(stored.toDate);
+        if (stored.toDate) this.toDate.set(stored.toDate);
 
-      if (stored.groupBy === 'day' || stored.groupBy === 'hour') this.groupBy.set(stored.groupBy);
+        if (stored.groupBy === 'day' || stored.groupBy === 'hour') this.groupBy.set(stored.groupBy);
+      }
 
       if (stored.chatIoSearch !== undefined) this.chatIoSearch.set(stored.chatIoSearch);
 
@@ -455,6 +743,8 @@ export class AuditComponent implements OnInit {
       }
 
       if (stored.filtersCollapsed !== undefined) this.filtersCollapsed.set(stored.filtersCollapsed);
+
+      if (stored.activeTab && AUDIT_TABS.includes(stored.activeTab)) this.activeTab.set(stored.activeTab);
     }
 
     if (!stored?.fromDate) this.fromDate.set(this.formatDateForInput(this.getDefaultFromDate()));
@@ -557,42 +847,13 @@ export class AuditComponent implements OnInit {
     return d.toISOString().slice(0, 10);
   }
 
+  /** Live apply (no Apply button): the drawer stays open while the filters change; Esc / outside click close it. */
   onApplyFilters(): void {
-    this.chatIoPage.set(0);
-    this.filterDropsPage.set(0);
-    this.filterFlagsPage.set(0);
-    this.entityEventsPage.set(0);
-    this.egressEventsPage.set(0);
-    this.filtersCollapsed.set(true);
+    this.resetPages();
     this.applyFilters();
   }
 
   onResetFilters(): void {
-    if (this.egressEventsSearchTimer) {
-      clearTimeout(this.egressEventsSearchTimer);
-      this.egressEventsSearchTimer = null;
-    }
-
-    if (this.chatIoSearchTimer) {
-      clearTimeout(this.chatIoSearchTimer);
-      this.chatIoSearchTimer = null;
-    }
-
-    if (this.filterDropsSearchTimer) {
-      clearTimeout(this.filterDropsSearchTimer);
-      this.filterDropsSearchTimer = null;
-    }
-
-    if (this.filterFlagsSearchTimer) {
-      clearTimeout(this.filterFlagsSearchTimer);
-      this.filterFlagsSearchTimer = null;
-    }
-
-    if (this.entityEventsSearchTimer) {
-      clearTimeout(this.entityEventsSearchTimer);
-      this.entityEventsSearchTimer = null;
-    }
-
     this.selectedClientId.set(null);
     this.fromDate.set(this.formatDateForInput(this.getDefaultFromDate()));
     this.toDate.set(this.formatDateForInput(this.getDefaultToDate()));
@@ -604,11 +865,7 @@ export class AuditComponent implements OnInit {
     this.egressEventsSearch.set('');
     this.egressDecision.set('');
     this.filtersCollapsed.set(true);
-    this.chatIoPage.set(0);
-    this.filterDropsPage.set(0);
-    this.filterFlagsPage.set(0);
-    this.entityEventsPage.set(0);
-    this.egressEventsPage.set(0);
+    this.resetPages();
     this.applyFilters();
   }
 
@@ -616,108 +873,95 @@ export class AuditComponent implements OnInit {
     this.filtersCollapsed.set(!open);
   }
 
-  onChatIoPageChange(page: number): void {
-    this.chatIoPage.set(page);
-    this.loadChatIo();
-  }
-
-  onFilterDropsPageChange(page: number): void {
-    this.filterDropsPage.set(page);
-    this.loadFilterDrops();
-  }
-
-  onFilterFlagsPageChange(page: number): void {
-    this.filterFlagsPage.set(page);
-    this.loadFilterFlags();
-  }
-
-  onEntityEventsPageChange(page: number): void {
-    this.entityEventsPage.set(page);
-    this.loadEntityEvents();
-  }
-
-  onEgressEventsPageChange(page: number): void {
-    this.egressEventsPage.set(page);
-    this.loadEgressEvents();
-  }
-
   onEgressEventsSearchChange(value: string): void {
     this.egressEventsSearch.set(value);
-
-    if (this.egressEventsSearchTimer) clearTimeout(this.egressEventsSearchTimer);
-
-    this.egressEventsSearchTimer = setTimeout(() => {
-      this.egressEventsPage.set(0);
-      this.loadEgressEvents();
-      this.egressEventsSearchTimer = null;
-    }, 300);
+    this.egressEventsPage.set(1);
+    this.scheduleLoad('web-traffic', 300);
   }
 
   onEgressDecisionChange(value: string): void {
-    this.egressDecision.set(
-      this.egressDecisions.includes(value as StatisticsEgressDecision) ? (value as StatisticsEgressDecision) : '',
-    );
-    this.egressEventsPage.set(0);
-    this.loadEgressEvents();
+    const decision = this.egressDecisions.includes(value as StatisticsEgressDecision)
+      ? (value as StatisticsEgressDecision)
+      : '';
+
+    this.egressDecision.set(decision);
+    this.egressDecisionDraft.set(decision);
+    this.egressEventsPage.set(1);
+    this.scheduleLoad('web-traffic', 0);
   }
 
   onChatIoSearchChange(value: string): void {
     this.chatIoSearch.set(value);
-
-    if (this.chatIoSearchTimer) clearTimeout(this.chatIoSearchTimer);
-
-    this.chatIoSearchTimer = setTimeout(() => {
-      this.chatIoPage.set(0);
-      this.loadChatIo();
-      this.chatIoSearchTimer = null;
-    }, 300);
+    this.chatIoPage.set(1);
+    this.scheduleLoad('chat-io', 300);
   }
 
   onFilterDropsSearchChange(value: string): void {
     this.filterDropsSearch.set(value);
-
-    if (this.filterDropsSearchTimer) clearTimeout(this.filterDropsSearchTimer);
-
-    this.filterDropsSearchTimer = setTimeout(() => {
-      this.filterDropsPage.set(0);
-      this.loadFilterDrops();
-      this.filterDropsSearchTimer = null;
-    }, 300);
+    this.filterDropsPage.set(1);
+    this.scheduleLoad('filter-drops', 300);
   }
 
   onFilterFlagsSearchChange(value: string): void {
     this.filterFlagsSearch.set(value);
-
-    if (this.filterFlagsSearchTimer) clearTimeout(this.filterFlagsSearchTimer);
-
-    this.filterFlagsSearchTimer = setTimeout(() => {
-      this.filterFlagsPage.set(0);
-      this.loadFilterFlags();
-      this.filterFlagsSearchTimer = null;
-    }, 300);
+    this.filterFlagsPage.set(1);
+    this.scheduleLoad('filter-flags', 300);
   }
 
   onEntityEventsSearchChange(value: string): void {
     this.entityEventsSearch.set(value);
+    this.entityEventsPage.set(1);
+    this.scheduleLoad('entity-events', 300);
+  }
 
-    if (this.entityEventsSearchTimer) clearTimeout(this.entityEventsSearchTimer);
-
-    this.entityEventsSearchTimer = setTimeout(() => {
-      this.entityEventsPage.set(0);
-      this.loadEntityEvents();
-      this.entityEventsSearchTimer = null;
-    }, 300);
+  private resetPages(): void {
+    this.chatIoPage.set(1);
+    this.filterDropsPage.set(1);
+    this.filterFlagsPage.set(1);
+    this.entityEventsPage.set(1);
+    this.egressEventsPage.set(1);
   }
 
   private applyFilters(): void {
     const baseParams = this.getBaseParams();
 
     this.statisticsFacade.loadSummary(baseParams);
-    this.loadChatIo();
-    this.loadFilterDrops();
-    this.loadFilterFlags();
-    this.loadEntityEvents();
-    this.loadEgressEvents();
+    this.filterVersion.update((version) => version + 1);
+  }
+
+  /**
+   * Loads a table after `delay` ms; requests within that window coalesce (a search keystroke and the page reset it
+   * causes load once, after the debounce).
+   */
+  private scheduleLoad(table: AuditTable, delay: number): void {
+    const due = Date.now() + delay;
+    const pending = this.loadTimers.get(table);
+
+    if (pending && pending.due >= due) return;
+    if (pending) clearTimeout(pending.handle);
+
+    this.loadTimers.set(table, {
+      due,
+      handle: setTimeout(() => {
+        this.loadTimers.delete(table);
+        this.loadTable(table);
+      }, delay),
+    });
+  }
+
+  private loadTable(table: AuditTable): void {
+    switch (table) {
+      case 'chat-io':
+        return this.loadChatIo();
+      case 'filter-drops':
+        return this.loadFilterDrops();
+      case 'filter-flags':
+        return this.loadFilterFlags();
+      case 'web-traffic':
+        return this.loadEgressEvents();
+      case 'entity-events':
+        return this.loadEntityEvents();
+    }
   }
 
   private getBaseParams(): {
@@ -759,8 +1003,8 @@ export class AuditComponent implements OnInit {
     this.statisticsFacade.loadChatIo({
       ...base,
       search,
-      limit: PAGE_SIZE,
-      offset: this.chatIoPage() * PAGE_SIZE,
+      limit: this.chatIoPageSize(),
+      offset: (this.chatIoPage() - 1) * this.chatIoPageSize(),
     });
   }
 
@@ -771,8 +1015,8 @@ export class AuditComponent implements OnInit {
     this.statisticsFacade.loadFilterDrops({
       ...base,
       search,
-      limit: PAGE_SIZE,
-      offset: this.filterDropsPage() * PAGE_SIZE,
+      limit: this.filterDropsPageSize(),
+      offset: (this.filterDropsPage() - 1) * this.filterDropsPageSize(),
     });
   }
 
@@ -783,8 +1027,8 @@ export class AuditComponent implements OnInit {
     this.statisticsFacade.loadFilterFlags({
       ...base,
       search,
-      limit: PAGE_SIZE,
-      offset: this.filterFlagsPage() * PAGE_SIZE,
+      limit: this.filterFlagsPageSize(),
+      offset: (this.filterFlagsPage() - 1) * this.filterFlagsPageSize(),
     });
   }
 
@@ -795,8 +1039,8 @@ export class AuditComponent implements OnInit {
     this.statisticsFacade.loadEntityEvents({
       ...base,
       search,
-      limit: PAGE_SIZE,
-      offset: this.entityEventsPage() * PAGE_SIZE,
+      limit: this.entityEventsPageSize(),
+      offset: (this.entityEventsPage() - 1) * this.entityEventsPageSize(),
     });
   }
 
@@ -809,8 +1053,8 @@ export class AuditComponent implements OnInit {
       ...base,
       search,
       decision,
-      limit: PAGE_SIZE,
-      offset: this.egressEventsPage() * PAGE_SIZE,
+      limit: this.egressEventsPageSize(),
+      offset: (this.egressEventsPage() - 1) * this.egressEventsPageSize(),
     });
   }
 
@@ -916,11 +1160,8 @@ export class AuditComponent implements OnInit {
   formatDateTime(iso: string | undefined): string {
     if (!iso) return '-';
 
-    try {
-      return new Date(iso).toLocaleString();
-    } catch {
-      return iso;
-    }
+    // Shared date-time format, never seconds (AG-20, X-04).
+    return fpcFormatDateTime(iso, this.locale, iso);
   }
 
   /** Human-readable label for Chat I/O direction (API: input | output). */
@@ -953,11 +1194,11 @@ export class AuditComponent implements OnInit {
       case 'user':
         return $localize`:@@featureAudit-entityTypeUser:User`;
       case 'client':
-        return $localize`:@@featureAudit-entityTypeClient:Client`;
+        return $localize`:@@featureAudit-entityTypeClient:Workspace`;
       case 'agent':
-        return $localize`:@@featureAudit-entityTypeAgent:Agent`;
+        return $localize`:@@featureAudit-entityTypeEnvironment:Agent`;
       case 'client_user':
-        return $localize`:@@featureAudit-entityTypeClientUser:Client user`;
+        return $localize`:@@featureAudit-entityTypeClientUser:Workspace member`;
       case 'provisioning_reference':
         return $localize`:@@featureAudit-entityTypeProvisioningReference:Provisioning reference`;
       default:
@@ -979,11 +1220,32 @@ export class AuditComponent implements OnInit {
     }
   }
 
-  totalPages(total: number): number {
-    return Math.max(0, Math.ceil(total / PAGE_SIZE));
-  }
-
   constructor() {
+    // The active table loads on tab switch, page / page-size change and after the page filters (only that table:
+    // light API load). `untracked` keeps the search / decision out (they schedule their own debounced load).
+    const tables: { table: AuditTable; page: () => number; size: () => number }[] = [
+      { table: 'chat-io', page: this.chatIoPage, size: this.chatIoPageSize },
+      { table: 'filter-drops', page: this.filterDropsPage, size: this.filterDropsPageSize },
+      { table: 'filter-flags', page: this.filterFlagsPage, size: this.filterFlagsPageSize },
+      { table: 'web-traffic', page: this.egressEventsPage, size: this.egressEventsPageSize },
+      { table: 'entity-events', page: this.entityEventsPage, size: this.entityEventsPageSize },
+    ];
+
+    for (const entry of tables) {
+      effect(() => {
+        entry.page();
+        entry.size();
+        this.filterVersion();
+
+        if (this.activeTab() === entry.table) untracked(() => this.scheduleLoad(entry.table, 0));
+      });
+    }
+
+    // The drawer starts from the applied decision whenever it opens.
+    effect(() => {
+      if (this.egressFiltersOpen()) untracked(() => this.egressDecisionDraft.set(this.egressDecision()));
+    });
+
     effect(() => {
       this.selectedClientId();
       this.fromDate();
@@ -996,6 +1258,7 @@ export class AuditComponent implements OnInit {
       this.egressEventsSearch();
       this.egressDecision();
       this.filtersCollapsed();
+      this.activeTab();
       this.saveFilters();
     });
   }
@@ -1036,6 +1299,7 @@ export class AuditComponent implements OnInit {
         egressEventsSearch: this.egressEventsSearch(),
         egressDecision: this.egressDecision(),
         filtersCollapsed: this.filtersCollapsed(),
+        activeTab: this.activeTab(),
       };
 
       window.localStorage.setItem(AUDIT_FILTERS_STORAGE_KEY, JSON.stringify(payload));

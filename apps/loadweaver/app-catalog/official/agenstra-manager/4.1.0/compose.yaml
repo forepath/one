@@ -1,0 +1,123 @@
+# Agenstra agent manager on Loadweaver (AGENT_RUNTIME=loadweaver), from the Agenstra 4.1.0 release: agent environments
+# are Loadweaver deployments in this project, scheduled at the isolation level each environment asks for. Same setup
+# as apps/agenstra/backend-agent-manager/loadweaver/compose.loadweaver-runtime.yaml, pinned by digest.
+# The manager holds no Docker socket and runs in gVisor itself.
+
+services:
+  api:
+    image: ghcr.io/forepath/agenstra-manager-api:4.1.0@sha256:118c776ae797d382b1e269fa52ed5ca5c367b292a8fbb65d05ceabd6d207ff64
+    # Upper-case secret files become environment variables; loadweaver-token stays a file (LOADWEAVER_TOKEN_FILE).
+    entrypoint:
+      - /bin/bash
+      - -c
+      - 'for f in /run/secrets/[A-Z]*; do export "$${f##*/}=$$(cat "$$f")"; done; exec /usr/local/bin/docker-entrypoint.sh'
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      NODE_ENV: production
+      WEBSOCKET_NAMESPACE: socket/agents
+      DB_HOST: ${dbHost}
+      DB_PORT: ${dbPort}
+      DB_USERNAME: ${dbUser}
+      DB_DATABASE: ${dbName}
+      CORS_ORIGIN: ${corsOrigin}
+      RATE_LIMIT_ENABLED: 'true'
+      RATE_LIMIT_TTL: 60
+      RATE_LIMIT_LIMIT: 300
+      AGENT_RUNTIME: loadweaver
+      LOADWEAVER_URL: ${loadweaverUrl}
+      LOADWEAVER_PROJECT: ${loadweaverProject}
+      LOADWEAVER_TOKEN_FILE: /run/secrets/loadweaver-token
+      LOADWEAVER_ENVIRONMENT_VOLUME_SIZE: ${environmentVolumeSize}
+      AGENT_DEFAULT_IMAGE: ghcr.io/forepath/agenstra-manager-worker:4.1.0@sha256:62082b08005b8c366253e6f4d4872532202478f7170388dbe13862f2251cb550
+      AGENT_EGRESS_EVENTS_COLLECTOR_ENABLED: 'true'
+      AGENT_ISOLATION_SANDBOX_ENABLED: 'true'
+      AGENT_ISOLATION_SANDBOX_KVM_ENABLED: ${sandboxKvmEnabled}
+      AGENT_ISOLATION_MICROVM_ENABLED: ${microvmEnabled}
+      AGENT_MICROVM_IMAGE: ghcr.io/forepath/agenstra-manager-worker-microvm:4.1.0@sha256:4aeefa3c590dfb2967013e336db57401e9694f27a52f116bd92c92adf6fdfce2
+      LOADWEAVER_ENVIRONMENT_MICROVM_CPUS: ${microvmCpus}
+      LOADWEAVER_ENVIRONMENT_MICROVM_MEMORY: ${microvmMemory}
+      # Environments reach the manager's context API at its service address (standing policy
+      # agenstra-environments-manager); only the controller-facing routes are exposed below.
+      AGENT_CONTEXT_MCP_MANAGER_URL: http://api.${loadweaverProject}.lw:3000/api
+    secrets:
+      - { source: db-password, target: DB_PASSWORD }
+      - { source: encryption-key, target: ENCRYPTION_KEY }
+      - { source: static-api-key, target: STATIC_API_KEY }
+      - {
+          source: agent-context-token-secret,
+          target: AGENT_CONTEXT_TOKEN_SECRET,
+        }
+      - loadweaver-token
+    labels:
+      agenstra.io/role: manager
+    depends_on:
+      postgres: { condition: service_healthy }
+    deploy:
+      resources:
+        reservations: { cpus: '0.5', memory: 512m }
+        limits: { memory: 2g }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+      runtime: sandboxed
+      exposure:
+        http:
+          - { host: '${domain}', port: 3000, path: /api/agents }
+          - { host: '${domain}', port: 3000, path: /api/egress }
+          - { host: '${domain}', port: 3000, path: /api/config }
+          - { host: '${domain}', port: 3000, path: /api/health }
+          - { host: '${domain}', port: 3000, path: /api/instance-status }
+          - { host: '${domain}', port: 3000, path: /api/isolation }
+          - { host: '${domain}', port: 3000, path: /socket.io }
+
+  postgres:
+    image: docker.io/library/postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
+    environment:
+      POSTGRES_USER: ${dbUser}
+      POSTGRES_DB: ${dbName}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db-password
+    secrets: [db-password]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        reservations: { cpus: '0.25', memory: 256m }
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+      backup:
+        hooks:
+          pre:
+            [
+              sh,
+              -c,
+              'pg_dump -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -Fc -f /var/lib/postgresql/data/loadweaver-backup.dump',
+            ]
+          post: [rm, -f, /var/lib/postgresql/data/loadweaver-backup.dump]
+          timeout: 10m
+        check:
+          command:
+            [sh, -c, 'test -s /var/lib/postgresql/data/loadweaver-backup.dump']
+          timeout: 10m
+
+volumes:
+  postgres-data:
+    x-loadweaver: { size: '${postgresVolumeSize}' }
+
+secrets:
+  db-password:
+    x-loadweaver-ref: ${secret:db-password}
+  encryption-key:
+    x-loadweaver-ref: ${secret:encryption-key}
+  static-api-key:
+    x-loadweaver-ref: ${secret:static-api-key}
+  agent-context-token-secret:
+    x-loadweaver-ref: ${secret:agent-context-token-secret}
+  loadweaver-token:
+    x-loadweaver-ref: ${secret:loadweaver-token}

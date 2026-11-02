@@ -45,6 +45,9 @@ is_decabill_sbom() {
 #   decabill-frontend-docs.cdx.json              -> decabill bucket
 #   container-agenstra-docs-server.cdx.json      -> agenstra bucket
 #   container-decabill-docs-server.cdx.json      -> decabill bucket
+#
+# Everything that is not Decabill (including forepath-* and loadweaver-* SBOMs) lands in the default
+# (agenstra) bucket until those domains get buckets of their own.
 
 staging_dir="$(mktemp -d)"
 trap 'rm -rf "$staging_dir"' EXIT

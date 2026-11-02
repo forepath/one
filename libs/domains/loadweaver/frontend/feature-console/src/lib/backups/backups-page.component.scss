@@ -1,0 +1,8 @@
+// Backup timeline per volume: fixed-height strip of narrow bars whose height is the backup size.
+.backups-timeline {
+  height: 3rem;
+}
+
+.backups-timeline__bar {
+  width: 0.5rem;
+}

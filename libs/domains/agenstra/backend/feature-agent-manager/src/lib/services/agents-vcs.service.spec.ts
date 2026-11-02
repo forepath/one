@@ -11,13 +11,13 @@ import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.servi
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 import { AgentsVcsService } from './agents-vcs.service';
 import { AgentsService } from './agents.service';
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 
 describe('AgentsVcsService', () => {
   let service: AgentsVcsService;
   let agentsService: jest.Mocked<AgentsService>;
   let agentsRepository: jest.Mocked<AgentsRepository>;
-  let dockerService: jest.Mocked<DockerService>;
+  let dockerService: jest.Mocked<AgentRuntime>;
   let agentFileSystemService: jest.Mocked<AgentFileSystemService>;
   const mockAgentId = 'test-agent-uuid';
   const mockContainerId = 'test-container-id';
@@ -64,7 +64,7 @@ describe('AgentsVcsService', () => {
           useValue: mockAgentsRepository,
         },
         {
-          provide: DockerService,
+          provide: AgentRuntime,
           useValue: mockDockerService,
         },
         {
@@ -89,7 +89,7 @@ describe('AgentsVcsService', () => {
     service = module.get<AgentsVcsService>(AgentsVcsService);
     agentsService = module.get(AgentsService);
     agentsRepository = module.get(AgentsRepository);
-    dockerService = module.get(DockerService);
+    dockerService = module.get(AgentRuntime);
     agentFileSystemService = module.get(AgentFileSystemService);
 
     // Set default environment variables

@@ -91,11 +91,21 @@ For each active arrear subscription (skip prepaid):
 
 The tenant unit job pages through eligible subscriptions (`BILLING_METER_COLLECT_BATCH_SIZE`, default 500) until exhausted.
 
-Idempotency is soft: due-check against the latest collector `periodEnd` for `(subscriptionId, meterId, attachmentType, addonId)`. Fail-closed: meters with an interval but no `collectMeters` implementation are skipped (warn log; no zero invent). Per-subscription and per-addon errors are isolated so one failure does not abort the tenant job.
+Idempotency is soft: due-check against the latest collector `periodEnd` for `(subscriptionId, meterId, attachmentType, addonId)`. Collectors may additionally return an `idempotencyKey` per sample (e.g. per source, meter and hour): a sample whose key is already recorded for the subscription and meter is skipped, the key is stored as `usagePayload.idempotencyKey`, and a partial unique index on `(subscription_id, meter_id, usage_payload->>'idempotencyKey')` catches concurrent runs (a unique violation counts as already recorded). One collect call may return several samples for the same meter; each becomes its own usage entry for the due window. Fail-closed: meters with an interval but no `collectMeters` implementation are skipped (warn log; no zero invent). Per-subscription and per-addon errors are isolated so one failure does not abort the tenant job.
 
 Push (`POST /admin/usage/record`) and pull coexist; modules own their collection windows.
 
 Built-in Hetzner / DigitalOcean register stub collectors (empty samples) until real metrics APIs are wired.
+
+## Loadweaver usage
+
+Hosters who resell capacity of their **own** Loadweaver clusters bill it through the built-in addon module `loadweaver-usage` (Loadweaver side: [usage metering](../../loadweaver/features/usage-metering.md)).
+
+- **Catalog:** one addon per Loadweaver cluster with `implementationType=module`, `moduleKey=loadweaver-usage`. Admin defaults `LOADWEAVER_API_URL` (control plane API URL including `/api`; HTTPS, plain HTTP only with `BILLING_LOADWEAVER_USAGE_ALLOW_HTTP=true`; no credentials / query) and `LOADWEAVER_API_TOKEN` (personal access token of a Loadweaver auditor with scope `usage:read`). The collector reads both **only from the catalog addon's encrypted admin defaults**, never from a subscription's config snapshot (customers can submit addon config values at order time and must not redirect the collector or see the token).
+- **Meters** (declared, `required`, aggregator `sum`, default price `0`, `collectionIntervalMs` 1 h): `loadweaver.cpu_core_hours` (core-hours), `loadweaver.memory_gib_hours` (GiB-hours), `loadweaver.storage_gib_hours` (GiB-hours, each volume once), `loadweaver.storage_replica_gib_hours` (GiB-hours incl. replica copies), `loadweaver.traffic_in_gb` / `loadweaver.traffic_out_gb` (GB, 10⁹ bytes), `loadweaver.public_ip_hours` (IP-hours). Attach prices and included usage as for any meter.
+- **Mapping:** explicit, in Loadweaver: a cluster admin sets `spec.billing.decabillSubscriptionId` on each Loadweaver project billed on a subscription (several projects per subscription add up). Loadweaver snapshots the mapping into each hourly bucket, so remapping never moves billed hours.
+- **Collection:** for a due window `[periodStart, periodEnd]` the module calls `GET {LOADWEAVER_API_URL}/usage?billingSubscription=<subscriptionId>&granularity=hour&finalOnly=true` (one HTTP call per subscription and window, cached for a minute across meters; 15 s timeout, no redirects). Hours are assigned by their end: hours ending in `(periodStart − 20 min, periodEnd − 20 min]` belong to the window (Loadweaver marks an hour final 15 minutes after it ends), so consecutive windows split the hours without gaps. The query also covers a 3 h lookback; every hour is recorded as its own entry with the idempotency key `loadweaver:<cluster>:<project>:<meter>:<hour>` and payload `{ source, cluster, project, meter, bucket }`, so hours seen again are skipped. Rows of other subscriptions, non-final rows and zero values are ignored. A window without usage records one zero entry (key `loadweaver:<cluster>:window:<subscription>:<meter>:<periodEnd>`) so it isn't due again every minute. A truncated or malformed answer fails the collect (retried next run, nothing recorded).
+- **Hours around the billing boundary:** an hour is billed in the charge period that contains the `periodEnd` of its entry, which is the period that was open when it was **collected**, not necessarily the one the hour belongs to. Hours that end in the last ~20 minutes before `nextBillingAt` (settle delay), and hours picked up only by the 3 h lookback after the invoice was cut (Loadweaver or the collector briefly unavailable, an hour finalised late), are recorded after the boundary and appear on the **next** invoice. They are billed once (idempotency key), just a period later; nothing is lost or doubled. Hours older than the lookback that were never collected (an outage longer than ~3 h) are not fetched again automatically — an admin can add them as manual meter entries from Loadweaver's `GET /usage` for that range.
 
 ## Subscription views
 
@@ -153,3 +163,4 @@ No new webhook event types. Existing meter and attachment events gain `defaultIn
 - [Invoices](./invoices.md)
 - [Advance billing](./advance-billing-and-yearly-interval.md)
 - [Webhooks](./webhooks.md)
+- [Loadweaver usage metering](../../loadweaver/features/usage-metering.md)

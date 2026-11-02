@@ -26,6 +26,20 @@ export class CustomerProfilesRepository {
       .getOne();
   }
 
+  /** Profiles of several users in the current tenant (one query; admin list name lookups). */
+  async findByUserIds(userIds: string[]): Promise<CustomerProfileEntity[]> {
+    if (userIds.length === 0) {
+      return [];
+    }
+
+    return await this.repository
+      .createQueryBuilder('profile')
+      .innerJoin('users', 'user', 'user.id = profile.user_id')
+      .where('profile.user_id IN (:...userIds)', { userIds })
+      .andWhere('user.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
+      .getMany();
+  }
+
   async findByIdOrThrow(id: string): Promise<CustomerProfileEntity> {
     const entity = await this.repository
       .createQueryBuilder('profile')

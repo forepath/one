@@ -21,7 +21,7 @@ export class DocsSearchComponent {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly searchPlaceholder = $localize`:@@featureDocsSearch-searchPlaceholder:Search documentation...`;
+  readonly searchPlaceholder = $localize`:@@featureDocsSearch-searchPlaceholder:Search documentation`;
   readonly noResultsMessage = $localize`:@@featureDocsSearch-noResults:No search results`;
   readonly viewAllResultsLabel = $localize`:@@featureDocsSearch-viewAllResults:View all results`;
 

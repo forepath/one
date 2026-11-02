@@ -47,14 +47,21 @@ export class UpdateCheckService {
         await this.options.refreshRemoteInstances();
       }
 
-      const latestRelease = await this.githubReleasesClient.fetchLatestRelease();
+      const channel = (await this.options.resolveChannel?.()) ?? 'stable';
+      const includePrereleases = channel === 'beta';
+      const latestRelease = await this.githubReleasesClient.fetchLatestRelease(
+        ...(includePrereleases ? [{ includePrereleases }] : []),
+      );
 
       if (!latestRelease) {
         throw new Error('Latest GitHub release could not be resolved');
       }
 
       const installedVersion = getInstalledVersion(process.env, this.options.versionEnv);
-      const releasesNewerThanInstalled = await this.githubReleasesClient.fetchReleasesNewerThan(installedVersion);
+      const releasesNewerThanInstalled = await this.githubReleasesClient.fetchReleasesNewerThan(
+        installedVersion,
+        ...(includePrereleases ? [{ includePrereleases }] : []),
+      );
       const changelogSourceReleases =
         releasesNewerThanInstalled === null
           ? [latestRelease]

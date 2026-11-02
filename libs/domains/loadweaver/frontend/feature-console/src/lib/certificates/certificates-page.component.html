@@ -1,0 +1,56 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="certificates" [binding]="views" />
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="load()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+
+  <!-- 3.38 D1: State · Certificate (link) · valid until · names · source; ⋮ Open / Copy ID (no bulk action: the API
+       only lists). -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [columns]="columns"
+    [rows]="filtered()"
+    [rowId]="rowId"
+    [rowLink]="rowLink"
+    [activeRowId]="selectedId()"
+    [ariaLabel]="title"
+    [loading]="loading() && certificates().length === 0"
+    paging="client"
+    persistKey="lw-certificates"
+    [(query)]="search"
+    [searchPlaceholder]="searchLabel"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    emptyIcon="shield-lock"
+    data-testid="certificates-table"
+  >
+    <ng-template fpcTableCell="notAfter" let-c>
+      <!-- Labelled, so the meta line of a stacked card says what the date is (LW-22). -->
+      <span class="text-nowrap">{{ c.notAfter ? expiresLabel + ' ' + (c.notAfter | fpcDate) : '–' }}</span>
+    </ng-template>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="shield-lock"
+        size="sm"
+        i18n-title="@@lwConsoleCertificates-empty"
+        title="No certificates yet"
+        i18n-message="@@lwConsoleCertificates-emptyHint"
+        message="Certificates are issued for every exposed hostname."
+      />
+    </span>
+  </fpc-data-table>
+</div>

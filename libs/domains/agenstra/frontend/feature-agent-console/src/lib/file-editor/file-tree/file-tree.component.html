@@ -2,9 +2,9 @@
   <div class="file-tree-header p-2 ps-3 border-bottom bg-body-tertiary">
     <div class="d-flex justify-content-between align-items-center gap-2">
       <h6 class="mb-0 fw-semibold" i18n="@@featureFileTree-filesHeader">Files</h6>
-      <fpc-button-group size="sm">
+      <div class="fpc-lane-header__actions d-inline-flex align-items-center gap-1" role="group">
         <fpc-button
-          variant="primary"
+          variant="dark"
           size="sm"
           iconOnly
           [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'file'"
@@ -15,7 +15,7 @@
           <i class="bi bi-file-earmark-plus"></i>
         </fpc-button>
         <fpc-button
-          variant="primary"
+          variant="dark"
           size="sm"
           iconOnly
           [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'directory'"
@@ -26,7 +26,7 @@
           <i class="bi bi-folder-plus"></i>
         </fpc-button>
         <fpc-button
-          variant="primary"
+          variant="dark"
           size="sm"
           iconOnly
           (clicked)="onUploadFile()"
@@ -45,7 +45,7 @@
         >
           <i class="bi bi-arrow-clockwise"></i>
         </fpc-button>
-      </fpc-button-group>
+      </div>
     </div>
   </div>
 
@@ -476,7 +476,13 @@
   </p>
 </fpc-confirm-dialog>
 
-<fpc-modal [(open)]="renameFileModalOpen" [title]="getRenameModalTitle()" (closed)="cancelRenameItem()">
+<fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
+  [(open)]="renameFileModalOpen"
+  [title]="getRenameModalTitle()"
+  (closed)="cancelRenameItem()"
+>
   <p>{{ getRenameModalMessage() }}</p>
   <fpc-form-field forId="renameNewName" i18n-label="@@featureFileTree-newNameLabel" label="New Name">
     <fpc-form-control
@@ -498,7 +504,13 @@
   </div>
 </fpc-modal>
 
-<fpc-modal [(open)]="moveFileModalOpen" [title]="getMoveModalTitle()" (closed)="cancelMoveItem()">
+<fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
+  [(open)]="moveFileModalOpen"
+  [title]="getMoveModalTitle()"
+  (closed)="cancelMoveItem()"
+>
   <p>{{ getMoveModalMessage() }}</p>
   <fpc-form-field
     forId="moveDestinationPath"

@@ -172,3 +172,63 @@ describe('AgentEgressEventsCollectorService', () => {
     setIntervalSpy.mockRestore();
   });
 });
+
+describe('AgentEgressEventsCollectorService with runtime-managed egress (Loadweaver)', () => {
+  it("stores the runtime's decisions with the matching entry and advances the cursor", async () => {
+    const policy = resolveEffectiveEgressPolicy([
+      { source: 'workspace', overlay: { egress: { mode: 'enforce', deny_hosts: ['evil.example'] } } },
+    ]);
+    const agent = { id: 'a1', containerId: 'lw:env-1', egressPolicy: policy, egressLogCursor: 'c0' };
+    const agents = {
+      findAllWithContainers: jest.fn().mockResolvedValue([agent, { ...agent, id: 'a2', egressPolicy: null }]),
+      findAllWithEgressGuards: jest.fn(),
+      update: jest.fn().mockResolvedValue({}),
+    };
+    const events = { insertMany: jest.fn().mockResolvedValue(undefined) };
+    const collectEvents = jest.fn().mockResolvedValue({
+      cursor: 'c1',
+      observations: [
+        {
+          kind: 'web',
+          decision: 'blocked',
+          rule: 'deny_host',
+          host: 'www.evil.example',
+          occurredAt: new Date(1),
+          count: 1,
+        },
+        {
+          kind: 'web',
+          decision: 'blocked',
+          rule: 'deny_host',
+          host: 'www.evil.example',
+          occurredAt: new Date(2),
+          count: 1,
+        },
+      ],
+    });
+    const service = new AgentEgressEventsCollectorService(
+      agents as never,
+      events as never,
+      { egress: { collectEvents, applyPolicy: jest.fn() } } as never,
+      {} as never,
+    );
+
+    await service.runCycle();
+
+    // Only filtered environments are collected.
+    expect(collectEvents).toHaveBeenCalledTimes(1);
+    expect(collectEvents).toHaveBeenCalledWith('lw:env-1', 'c0');
+    expect(agents.update).toHaveBeenCalledWith('a1', { egressLogCursor: 'c1' });
+    expect(events.insertMany.mock.calls[0][0]).toEqual([
+      expect.objectContaining({
+        agentId: 'a1',
+        decision: 'blocked',
+        rule: 'deny_host',
+        matchedEntry: 'evil.example',
+        count: 2,
+        mode: 'enforce',
+      }),
+    ]);
+    expect(agents.findAllWithEgressGuards).not.toHaveBeenCalled();
+  });
+});

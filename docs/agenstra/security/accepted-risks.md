@@ -8,23 +8,36 @@ This register records **explicit risk acceptance** for product and deployment co
 
 ## AR-001 (Desktop app: no OS-trusted code signing / no in-app auto-update)
 
-| Field                                  | Recorded value                                                                                                                                                                                                                               |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ID**                                 | AR-001                                                                                                                                                                                                                                       |
-| **Area**                               | **`native-agent-console`** (Electron Forge pipeline, `apps/agenstra/native-agent-console/forge.config.js`)                                                                                                                                   |
-| **Configuration**                      | **No** OS-trusted **code signing** and **no** **in-app auto-update** channel in the documented release pipeline.                                                                                                                             |
-| **Residual risk**                      | Users rely on **manual checksum verification** and a trusted download channel rather than OS trust stores or automatic security updates from the application.                                                                                |
-| **Mitigations in scope of this repo**  | Release artifacts include **`SHA256SUMS`** and **`integrity-manifest.json`** produced by the **`release-integrity`** Nx project (`tools/release-integrity` in the repository). CI and release pipelines generate and verify these manifests. |
-| **Compensating controls (user / org)** | Verify checksums after download. Prefer the **web browser** as the primary client. Treat **`STATIC_API_KEY`** and other secrets per **[Environment configuration](../deployment/environment-configuration.md)**.                             |
-| **Risk owner**                         | Maintaining party for this repository and product security documentation (Forepath).                                                                                                                                                         |
-| **Acceptor**                           | Repository maintainer (acceptance recorded in project documentation).                                                                                                                                                                        |
-| **Acceptance date**                    | **2026-05-06**                                                                                                                                                                                                                               |
-| **Next review date**                   | **2027-05-06**                                                                                                                                                                                                                               |
-| **Rationale (business / technical)**   | The product is **primarily** used via the **web browser**. The native build is a **secondary** distribution channel.                                                                                                                         |
+| Field                                  | Recorded value                                                                                                                                                                                                                                                                  |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ID**                                 | AR-001                                                                                                                                                                                                                                                                          |
+| **Status**                             | **Retired once the signing secrets are configured (2026-10-20).** Replaced by the shared desktop release pipeline (`tools/desktop-release`) and in-app auto-update; see _Retirement_ below. Until the secrets exist, this acceptance stays in force for the unsigned artifacts. |
+| **Area**                               | **`native-agent-console`** (Electron Forge pipeline, `apps/agenstra/native-agent-console/forge.config.js`)                                                                                                                                                                      |
+| **Configuration**                      | **No** OS-trusted **code signing** and **no** **in-app auto-update** channel in the documented release pipeline.                                                                                                                                                                |
+| **Residual risk**                      | Users rely on **manual checksum verification** and a trusted download channel rather than OS trust stores or automatic security updates from the application.                                                                                                                   |
+| **Mitigations in scope of this repo**  | Release artifacts include **`SHA256SUMS`** and **`integrity-manifest.json`** produced by the **`release-integrity`** Nx project (`tools/release-integrity` in the repository). CI and release pipelines generate and verify these manifests.                                    |
+| **Compensating controls (user / org)** | Verify checksums after download. Prefer the **web browser** as the primary client. Treat **`STATIC_API_KEY`** and other secrets per **[Environment configuration](../deployment/environment-configuration.md)**.                                                                |
+| **Risk owner**                         | Maintaining party for this repository and product security documentation (Forepath).                                                                                                                                                                                            |
+| **Acceptor**                           | Repository maintainer (acceptance recorded in project documentation).                                                                                                                                                                                                           |
+| **Acceptance date**                    | **2026-05-06**                                                                                                                                                                                                                                                                  |
+| **Next review date**                   | **2027-05-06**                                                                                                                                                                                                                                                                  |
+| **Rationale (business / technical)**   | The product is **primarily** used via the **web browser**. The native build is a **secondary** distribution channel.                                                                                                                                                            |
+
+#### Retirement (AR-001)
+
+What replaces the accepted risk (Loadweaver plan 3.32, implemented 2026-10-20):
+
+- **macOS**: Apple **Developer ID** signing with hardened runtime, **notarization** and stapling.
+- **Windows**: **Authenticode** signatures (SHA-256, RFC 3161 timestamp) on the app binaries and the NSIS installer.
+- **Linux**: rpm packages signed with the **ForePath GPG key** and **signed apt / rpm repositories** (updates through the package manager); zip archives keep their checksums.
+- **In-app auto-update** (stable / beta channels): every update is verified against the **signed Agenstra release manifest** (ECDSA, keys compiled into the app; product, version, channel, SHA-256 and size of the file) before it is installed, and never downgrades. macOS additionally enforces the Developer ID signature (Squirrel.Mac), Windows the Authenticode publisher.
+- `SHA256SUMS` / `integrity-manifest.json` and the signed release manifest stay on top.
+
+**Condition**: the certificates and keys are release secrets of ForePath (`DESKTOP_MACOS_*` / `DESKTOP_APPLE_*`, `DESKTOP_WINDOWS_*`, `DESKTOP_LINUX_GPG_*`, plus `AGENSTRA_RELEASE_SIGNING_KEY` for the manifest; setup in `tools/desktop-release/README.md`). AR-001 is retired for every release built with them. While a secret is missing, the pipeline **skips that signing step with a warning** (like the Loadweaver bundle signing) and publishes the artifact as before: for those artifacts the acceptance above still applies, and the release workflow's warnings show which platforms were affected. The entry is closed for good once the first release with all secrets configured has shipped; until then it stays in the register with this status.
 
 #### Operator summary (AR-001)
 
-**OS-trusted code signing** and **in-app auto-update** are **not** provided. Verify artifacts using **`SHA256SUMS`** / **`integrity-manifest.json`**. Details: **[Desktop release integrity](./vulnerability-reporting-and-artifacts.md#desktop-release-integrity)**.
+Releases built with the signing secrets are **OS-signed** (Developer ID + notarization, Authenticode, GPG-signed packages and repositories) and **update in-app** after verifying the signed release manifest; see **[Agenstra Desktop](../applications/native-agent-console.md)**. For releases without them, verify artifacts using **`SHA256SUMS`** / **`integrity-manifest.json`** or the signed release manifest. Details: **[Desktop release integrity](./vulnerability-reporting-and-artifacts.md#desktop-release-integrity)**.
 
 ---
 
@@ -102,8 +115,8 @@ New windows are **allowed** by design. Risk is **lower** than in a general-purpo
 | **Area**                              | **Trivy** vulnerability scanning (`trivy.yaml` at repository root, pull-request CI, pre-commit, local image scans, not the release workflow)                                                                                                                                                           |
 | **Configuration**                     | **`vulnerability.ignore-unfixed: true`**. Findings **without a Fixed Version** (no vendor or upstream fix published yet) are **excluded from the fail gate**. Only **CRITICAL** severities with an available fix fail CI and local hooks (see [`ci-security-scanning.md`](./ci-security-scanning.md)). |
 | **Residual risk**                     | Known **CRITICAL** issues may remain in dependencies, base images, or OS packages until upstream publishes a fix. They are visible in SARIF and report output but do not block merge or release.                                                                                                       |
-| **Mitigations in scope of this repo** | Trivy still scans for **vuln**, **secret**, and **misconfig**. **HIGH** and below are report-only. Per-CVE exceptions use `.trivyignore` with traceability. SBOM publication and Dependency Track on release provide ongoing visibility.                                                               |
-| **Compensating controls (deployer)**  | Monitor GitHub Security and SARIF artifacts. Patch when fixes ship. Track accepted CVEs in `.trivyignore` only when a fix exists but cannot be applied yet (not for permanently unfixed issues).                                                                                                       |
+| **Mitigations in scope of this repo** | Trivy still scans for **vuln**, **secret**, and **misconfig**. **HIGH** and below are report-only. Per-CVE exceptions use `.trivyignore.yaml` with traceability. SBOM publication and Dependency Track on release provide ongoing visibility.                                                          |
+| **Compensating controls (deployer)**  | Monitor GitHub Security and SARIF artifacts. Patch when fixes ship. Track accepted CVEs in `.trivyignore.yaml` only when a fix exists but cannot be applied yet (not for permanently unfixed issues).                                                                                                  |
 | **Risk owner**                        | Maintaining party for this repository and product security documentation (Forepath).                                                                                                                                                                                                                   |
 | **Acceptor**                          | Repository maintainer (acceptance recorded in project documentation).                                                                                                                                                                                                                                  |
 | **Acceptance date**                   | **2026-05-16**                                                                                                                                                                                                                                                                                         |
@@ -112,17 +125,55 @@ New windows are **allowed** by design. Risk is **lower** than in a general-purpo
 
 #### Operator summary (AR-005)
 
-**Unfixed vulnerabilities are acceptable for pipeline gating**. Trivy will not fail because a CVE has an empty **Fixed Version**. Address **CRITICAL** findings that have a published fix. Track anything else via SARIF and release SBOMs. Do not add unfixed CVEs to `.trivyignore` solely to silence the gate (they are already ignored). See **[CI security scanning](./ci-security-scanning.md)**.
+**Unfixed vulnerabilities are acceptable for pipeline gating**. Trivy will not fail because a CVE has an empty **Fixed Version**. Address **CRITICAL** findings that have a published fix. Track anything else via SARIF and release SBOMs. Do not add unfixed CVEs to `.trivyignore.yaml` solely to silence the gate (they are already ignored). See **[CI security scanning](./ci-security-scanning.md)**.
+
+---
+
+## AR-006 (Trivy: CVE-2025-68121 in `gosu` of upstream Postgres images, app catalog)
+
+| Field                                | Recorded value                                                                                                                                                                                                       |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ID**                               | AR-006                                                                                                                                                                                                               |
+| **Area**                             | Image scans of the **Loadweaver app catalog** (`apps/loadweaver/app-catalog`): `docker.io/library/postgres:16-alpine` and `docker.io/pgvector/pgvector:pg16`, bundled by the official Agenstra and Decabill packages |
+| **Finding**                          | **CVE-2025-68121** (CRITICAL, Go `crypto/tls`: certificate validation during TLS session resumption) in the Go standard library compiled into **`/usr/local/bin/gosu`** (Go 1.24.6). Fixed in Go 1.24.13 / 1.25.7.   |
+| **Why it can't be fixed yet**        | The newest upstream builds (postgres `16.15-alpine`, pgvector `0.8.7-pg16`, checked 2026-11-01) carry the same digests as the pinned images: no image with a rebuilt `gosu` exists.                                  |
+| **Residual risk**                    | None practical: `gosu` only switches to the `postgres` user at container start and then `exec`s the server. It never opens a TLS connection, so the vulnerable code path isn't reachable.                            |
+| **Scope of the exception**           | `.trivyignore.yaml`: this CVE **only** for the path `usr/local/bin/gosu`, with `expired_at: 2027-02-01`. Any other package or binary with this CVE still fails the gate.                                             |
+| **Compensating controls (deployer)** | The bundled databases are internal to the app's deployment (no exposure). Operators can provide their own Postgres instead (`bundlePostgres: false`).                                                                |
+| **Risk owner**                       | Maintaining party for this repository and product security documentation (Forepath).                                                                                                                                 |
+| **Acceptor**                         | Repository maintainer (acceptance recorded in project documentation).                                                                                                                                                |
+| **Acceptance date**                  | **2026-11-01**                                                                                                                                                                                                       |
+| **Next review date**                 | **2027-02-01** (the ignore entry expires then), or earlier when postgres / pgvector publish images with a rebuilt `gosu`: re-pin and remove the entry.                                                               |
+
+---
+
+## AR-007 (Trivy, temporary: CVE-2026-111497 in `libbrotli1` of our 4.1.0 images, app catalog)
+
+| Field                                | Recorded value                                                                                                                                                                                                                |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ID**                               | AR-007                                                                                                                                                                                                                        |
+| **Area**                             | Image scans of the **Loadweaver app catalog**: `ghcr.io/forepath/agenstra-controller-api`, `agenstra-manager-api` and `decabill-billing-api` **4.1.0**, pinned by digest in the official packages                             |
+| **Finding**                          | **CVE-2026-111497** (CRITICAL, out-of-bounds write in the Brotli decoder) in Debian `libbrotli1` **1.1.0-2+b7**. Fixed in `1.1.0-2+deb13u1`.                                                                                  |
+| **Why it can't be fixed yet**        | The 4.1.0 images are released and immutable. Their Dockerfiles run `apt-get upgrade` and the Debian mirror serves the fix, so the **next release build** contains it; the release's app-catalog PR then re-pins the packages. |
+| **Residual risk**                    | Until the re-pin, catalog installs of these three apps run the vulnerable library. The services don't decode untrusted Brotli streams on purpose; exposure depends on libraries that may link it (e.g. HTTP decompression).   |
+| **Scope of the exception**           | `.trivyignore.yaml`: this CVE **only** for `pkg:deb/debian/libbrotli1@1.1.0-2+b7`, `expired_at: 2026-12-01`. Rebuilt images carry the fixed version and are unaffected; any other package with this CVE still fails the gate. |
+| **Compensating controls (deployer)** | Update to the next release as soon as it is published (the app store offers it as an update).                                                                                                                                 |
+| **Risk owner**                       | Maintaining party for this repository and product security documentation (Forepath).                                                                                                                                          |
+| **Acceptor**                         | Repository maintainer (acceptance recorded in project documentation).                                                                                                                                                         |
+| **Acceptance date**                  | **2026-11-01**                                                                                                                                                                                                                |
+| **Next review date**                 | **2026-12-01** (the ignore entry expires then), or at the next release: re-pin and remove the entry.                                                                                                                          |
 
 ---
 
 ## Hardening paths (if an acceptance is withdrawn)
 
-- **AR-001:** Add OS-trusted signing and/or Electron auto-update when native distribution requirements justify the operational cost.
+- **AR-001:** Implemented (shared desktop release pipeline, see _Retirement (AR-001)_); remaining step is configuring the signing secrets in the release environment.
 - **AR-002:** Tighten CSP after automated and manual verification so core UI (including Monaco) still functions.
 - **AR-003:** Require **`AUTHENTICATION_METHOD`** in all environments if auditors demand explicit configuration, or add startup validation that fails when **`STATIC_API_KEY`** is set without an explicit mode.
 - **AR-004:** Tighten **`setWindowOpenHandler`** (for example URL allowlist or **`action: 'deny'`**) if the product loads untrusted origins or adds browser-like navigation.
-- **AR-005:** Set **`vulnerability.ignore-unfixed: false`** (and optionally add **HIGH** to `severity`) if policy requires failing on all CRITICAL findings regardless of fix availability. Expect more `.trivyignore` churn until dependencies catch up.
+- **AR-005:** Set **`vulnerability.ignore-unfixed: false`** (and optionally add **HIGH** to `severity`) if policy requires failing on all CRITICAL findings regardless of fix availability. Expect more `.trivyignore.yaml` churn until dependencies catch up.
+- **AR-006:** Re-pin postgres / pgvector to images with a rebuilt `gosu` and delete the `.trivyignore.yaml` entry; or build patched derived images.
+- **AR-007:** Cut the next release (rebuilt images with the fixed `libbrotli1`), merge its app-catalog PR and delete the `.trivyignore.yaml` entry.
 
 ---
 

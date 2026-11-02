@@ -1,0 +1,41 @@
+#!/bin/bash
+# Builds a cloud-init NoCloud seed image (vfat, label CIDATA) on tmpfs.
+#
+#   seed-build <seed dir> <output image>
+#
+# The seed dir holds meta-data, user-data, network-config and vendor-data (any subset; meta-data is required). The
+# node agent renders them on tmpfs (secrets resolved, never on disk); the image goes to /dev/shm, is attached to the
+# VM read-only and is rebuilt at every start with the same instance-id, so cloud-init doesn't run first boot again.
+set -euo pipefail
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+umask 077
+
+readonly SEED_SIZE_KIB=4096
+readonly MAX_FILE_BYTES=$((1024 * 1024))
+
+die() {
+  printf 'seed-build: %s\n' "$*" >&2
+  exit 1
+}
+
+[ "$#" = 2 ] || die "usage: seed-build <seed dir> <output image>"
+seed_dir="$1"
+output="$2"
+[ -d "${seed_dir}" ] || die "no seed directory ${seed_dir}"
+[ -f "${seed_dir}/meta-data" ] && [ ! -L "${seed_dir}/meta-data" ] || die "the seed has no meta-data"
+case "${output}" in
+  /dev/shm/*) ;;
+  *) die "the seed image must be on tmpfs (/dev/shm)" ;;
+esac
+
+rm -f "${output}"
+truncate -s "${SEED_SIZE_KIB}K" "${output}"
+mkfs.vfat -n CIDATA "${output}" >/dev/null
+
+for name in meta-data user-data network-config vendor-data; do
+  file="${seed_dir}/${name}"
+  [ -e "${file}" ] || continue
+  [ -f "${file}" ] && [ ! -L "${file}" ] || die "${name} is not a regular file"
+  [ "$(stat -c %s "${file}")" -le "${MAX_FILE_BYTES}" ] || die "${name} is larger than 1 MiB"
+  mcopy -o -i "${output}" "${file}" "::${name}"
+done

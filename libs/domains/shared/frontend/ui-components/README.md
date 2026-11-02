@@ -6,7 +6,7 @@ Shared Angular UI library for all ForePath frontends.
 
 The selector prefix is **`fpc`**, short for **ForePath Component**. Element components use
 `fpc-<kebab-case>` (`fpc-button`, `fpc-list-item`), directives use the camelCase attribute
-form (`[fpcInfiniteScroll]`, `*fpcModalFooter`), and other content-projection slots use attribute
+form (`*fpcModalFooter`), and other content-projection slots use attribute
 markers in the same namespace (`[fpcListItemActions]`).
 
 Class names follow the selector: `fpc-summary-card` becomes `FpcSummaryCardComponent`.
@@ -100,6 +100,34 @@ Modal chrome lives on `fpc-modal`. Icon-button sizing lives on `fpc-button` (`ic
 Sidebar-popover chrome and `--sidebar-item-*` tokens live on `fpc-sidebar` /
 `fpc-sidebar-popover`.
 
+## Canvas and editor components
+
+`fpc-graph-canvas` (Cytoscape.js), `fpc-terminal` (xterm.js) and `fpc-code-editor` (Monaco) render
+through third-party engines that cannot read `var(--bs-*)`. They resolve the brand colours with
+`fpcReadBrandPalette()` and re-apply them when `data-bs-theme` or `data-fpc-brand` changes
+(`fpcObserveBrandChanges()`); reuse both helpers for other canvas renderers.
+
+- **`fpc-graph-canvas`**: give the host a height. Push new `elements` / `edges` arrays freely; they
+  are diffed by id and the layout only re-runs when ids or parents change. Built-in layouts only.
+- **`fpc-terminal`**: transport-agnostic. Forward `(data)` to the remote PTY, `write()` its output,
+  and send `(sizeChange)` to the PTY. xterm's CSS ships with the component.
+- **`fpc-code-editor`**: the consuming app must register the loader once and serve Monaco:
+
+  ```ts
+  import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
+
+  // route or app providers
+  providers: [provideMonacoEditor()], // loads ./assets/monaco/min/vs/loader.js (or pass { baseUrl })
+  ```
+
+  Copy `node_modules/monaco-editor/min` to `assets/monaco/min` in the app build. Validation is a
+  plain function (`validate`); `fpcYamlValidator(checkDocument)` / `fpcJsonValidator(checkDocument)`
+  report syntax errors and place `{ path, message }` issues of your document check (for example a
+  JSON Schema check) on the right line.
+
+In Jest these components run without a canvas: the graph switches Cytoscape to headless mode under
+jsdom; mock `@xterm/xterm` and `ngx-monaco-editor-v2` (see the component specs).
+
 ## Storybook
 
 Every component ships a `*.stories.ts` file covering its key inputs, outputs and states. Docs
@@ -135,10 +163,8 @@ nx build shared-frontend-ui-components
 
 That library was removed. Import from `@forepath/shared/frontend/ui-components` instead:
 
-| Old                         | New                                                       |
-| --------------------------- | --------------------------------------------------------- |
-| `sharedInfiniteScroll`      | `fpcInfiniteScroll` (`FpcInfiniteScrollDirective`)        |
-| `shared-list-append-footer` | `fpc-list-append-footer` (`FpcListAppendFooterComponent`) |
+| Old | New |
+| --- | --- |
 
 ### From identity OTP
 

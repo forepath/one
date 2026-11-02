@@ -66,3 +66,16 @@
 .fpc-empty-state__actions:empty {
   display: none;
 }
+
+// Loading: the spinner takes the icon's place (same height), so the box doesn't move.
+.fpc-empty-state__spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+}
+
+:host(.fpc-empty-state--loading) .fpc-empty-state__title {
+  font-weight: 400;
+  color: var(--bs-secondary-color);
+}

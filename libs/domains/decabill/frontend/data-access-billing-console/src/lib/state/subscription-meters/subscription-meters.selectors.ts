@@ -8,6 +8,18 @@ export const selectSubscriptionMeterSummaries = createSelector(
   (state) => state.summaries,
 );
 export const selectSubscriptionMeterEntries = createSelector(selectSubscriptionMetersState, (state) => state.entries);
+export const selectSubscriptionMeterEntriesTotal = createSelector(
+  selectSubscriptionMetersState,
+  (state) => state.entriesTotal,
+);
+export const selectSubscriptionMeterEntriesPage = createSelector(
+  selectSubscriptionMetersState,
+  (state) => state.entriesPage,
+);
+export const selectSubscriptionMeterEntriesPageSize = createSelector(
+  selectSubscriptionMetersState,
+  (state) => state.entriesPageSize,
+);
 export const selectSubscriptionMetersSubscriptionId = createSelector(
   selectSubscriptionMetersState,
   (state) => state.subscriptionId,

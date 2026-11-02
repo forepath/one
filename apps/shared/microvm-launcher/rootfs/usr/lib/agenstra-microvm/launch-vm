@@ -1,0 +1,108 @@
+#!/bin/bash
+# Full VM launcher (entrypoint of ghcr.io/forepath/microvm-launcher for `VirtualMachine` workloads, under tini).
+#
+# Boots a full VM (own firmware, kernel and init from its boot disk) through libvirt in session mode, like the
+# microVM launchers: the container is hardened (runc, reduced capabilities, no-new-privileges), the VMM runs as the
+# unprivileged agenstra-vmm user with the kvm group and the groups of the VM's block devices.
+#
+# Inputs (node agent, /run/loadweaver/vm, read-only):
+#   vm.json   uid, firmware (uefi | bios), cpuModel, vcpus, memoryMiB, graphics, guestAgent,
+#             disks [{name, device: /dev/drbd<minor>, cache, boot}], nics [{name, mac, tap: lwtap<n>}]
+#   seed/     cloud-init NoCloud files (meta-data, user-data, network-config) on tmpfs; turned into a read-only
+#             CIDATA image on /dev/shm at every start (seed-build) and never persisted
+# Devices: /dev/kvm, /dev/net/tun and the DRBD devices of the disks (HostConfig.Devices, no `m`).
+# Taps: created by the node agent in this network namespace (tc redirect + anti-spoofing per NIC).
+#
+# Consoles: serial on ${VMM_DIR}/console.sock, VNC on ${VMM_DIR}/vnc.sock (vm-console); power: vm-ctl.
+# Live migration (M7.4): with the marker migration/incoming (written and removed by the node agent), the VM is not
+# booted: the source's libvirt defines it here through the agent's relay (tunnelled p2p, vm-ctl migrate on the
+# source) and this launcher follows it once it exists. A restart while the marker is present waits again; it never
+# cold-boots a VM that may still run on the source.
+# Stop (SIGTERM): ACPI shutdown, destroyed after AGENSTRA_MICROVM_STOP_GRACE (default 60) seconds.
+# Exit status: 0 when the guest powered off, 125 when the VM can't be started.
+set -euo pipefail
+
+# shellcheck source=launcher-lib.sh
+. /usr/lib/agenstra-microvm/launcher-lib.sh
+
+readonly DOMAIN=lw-vm
+
+require_root_and_kvm
+[ -r "${CONFIG_DIR}/vm.json" ] || die "no VM configuration in ${CONFIG_DIR}"
+stop_grace="${AGENSTRA_MICROVM_STOP_GRACE:-60}"
+[[ "${stop_grace}" =~ ^[0-9]{1,4}$ ]] || die "invalid AGENSTRA_MICROVM_STOP_GRACE"
+
+prepare_run_dir
+
+seed_args=()
+if [ -d "${CONFIG_DIR}/seed" ]; then
+  "${INSTALL_DIR}/seed-build" "${CONFIG_DIR}/seed" "${VMM_DIR}/seed.img" || die "cannot build the cloud-init seed"
+  chown "${vmm_uid}:${vmm_gid}" "${VMM_DIR}/seed.img"
+  chmod 0400 "${VMM_DIR}/seed.img"
+  seed_args=(--seed-image "${VMM_DIR}/seed.img")
+fi
+
+# Validates vm.json and renders the domain; prints the block devices and the taps.
+{
+  read -r devices
+  read -r taps
+} < <(/usr/bin/node "${INSTALL_DIR}/bridge-host.cjs" vm-domain --config "${CONFIG_DIR}/vm.json" \
+  --run-dir "${VMM_DIR}" --out "${VMM_DIR}/domain.xml" "${seed_args[@]}" || true)
+[ -n "${devices:-}" ] && [ -n "${taps:-}" ] || die "invalid VM configuration"
+chown "${vmm_uid}:${vmm_gid}" "${VMM_DIR}/domain.xml"
+
+for device in ${devices}; do
+  [ -b "${device}" ] || die "E_VM_DISK_UNAVAILABLE: ${device} is not a block device in the container"
+  add_vmm_group "$(stat -c %g "${device}")"
+done
+
+# shellcheck disable=SC2086 # space-separated, validated tap names
+wait_for_taps ${taps}
+printf '%s\n' "${DOMAIN}" >"${VMM_DIR}/domain.name"
+
+cleanup() {
+  trap - EXIT TERM INT
+  virsh_vmm destroy "${DOMAIN}" >/dev/null 2>&1 || true
+  pkill -u "${vmm_uid}" -x libvirtd 2>/dev/null || true
+  rm -f "${VMM_DIR}/seed.img"
+}
+trap cleanup EXIT
+
+if [ -e "${CONFIG_DIR}/migration/incoming" ]; then
+  incoming_wait="${AGENSTRA_MICROVM_INCOMING_WAIT:-3600}"
+  [[ "${incoming_wait}" =~ ^[0-9]{1,5}$ ]] || die "invalid AGENSTRA_MICROVM_INCOMING_WAIT"
+  log "waiting for an incoming live migration"
+  trap 'exit 0' TERM INT
+  deadline=$((SECONDS + incoming_wait))
+  # The session daemon stays up while this polls (libvirt's session daemon exits when idle).
+  until virsh_vmm domstate "${DOMAIN}" >/dev/null 2>&1; do
+    [ "${SECONDS}" -lt "${deadline}" ] || die "E_VM_MIGRATION_TIMEOUT: no incoming migration within ${incoming_wait} s"
+    sleep 1 &
+    wait $! || true
+  done
+  log "VM migrating in"
+else
+  virsh_vmm create "${VMM_DIR}/domain.xml" >/dev/null || die "E_VM_BOOT_FAILED: libvirt could not start the VM"
+  log "VM started"
+fi
+
+stopping=0
+stop() {
+  [ "${stopping}" = 0 ] || return 0
+  stopping=1
+  log "shutting the VM down (ACPI, ${stop_grace} s grace)"
+  virsh_vmm shutdown "${DOMAIN}" >/dev/null 2>&1 || true
+  (
+    sleep "${stop_grace}"
+    virsh_vmm destroy "${DOMAIN}" >/dev/null 2>&1 || true
+  ) &
+}
+trap stop TERM INT
+
+# The domain is transient: it disappears when the guest powers off (or is destroyed).
+while state=$(virsh_vmm domstate "${DOMAIN}" 2>/dev/null) && [ "${state}" != "shut off" ]; do
+  sleep 1 &
+  wait $! || true
+done
+log "VM stopped"
+exit 0

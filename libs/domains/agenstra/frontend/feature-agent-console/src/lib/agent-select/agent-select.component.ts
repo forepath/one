@@ -22,7 +22,7 @@ export class AgentSelectComponent {
   readonly disabled = input(false);
   readonly required = input(false);
   readonly inputId = input('agentSelect');
-  readonly placeholder = input($localize`:@@featureAgentSelect-placeholder:Search agents by name`);
+  readonly placeholder = input($localize`:@@featureAgentSelect-placeholder:Search environments by name`);
   readonly showSuggestionsOnFocus = input(false);
   readonly suggestionLimit = input(20);
 

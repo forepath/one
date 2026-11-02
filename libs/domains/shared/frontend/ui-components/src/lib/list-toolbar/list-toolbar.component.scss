@@ -1,0 +1,169 @@
+// List toolbar strip (3.38 R12): one flush row, owns its bottom edge; the drawer overlays the list.
+:host {
+  display: block;
+  position: relative;
+  flex: 0 0 auto;
+  // Flat surface step (user, 2026-10-29: set the search / filter row apart from the content below; gradient and
+  // shadow rejected): half way between the tertiary head tone and the body colour, so column heads → controls → data
+  // read as three flat layers. The drawer keeps the plain body colour.
+  --fpc-list-toolbar-bg: color-mix(in srgb, var(--bs-tertiary-bg) 50%, var(--bs-body-bg));
+  background: var(--fpc-list-toolbar-bg);
+}
+
+// Bottom edge without a layout border (the strip is exactly the search tier tall), drawn above the children: an inset
+// shadow on the host would be painted over by the lead's own background (search field), and both together doubled the
+// translucent border colour under the trailing controls.
+:host::after {
+  content: '';
+  display: block;
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: var(--bs-border-width);
+  background: var(--bs-border-color);
+  pointer-events: none;
+  // Above Bootstrap's `.input-group > .form-control:focus { z-index: 5 }`: a focused search lead painted its
+  // background over the edge (the bottom border vanished on focus).
+  z-index: 6;
+}
+
+// Inside a lane search band the band draws the bottom edge.
+:host-context(.fpc-board-lane__search)::after {
+  display: none;
+}
+
+// Open, the drawer covers the band's edge: the strip draws the strip / drawer rule itself.
+:host(.fpc-list-toolbar--open)::after {
+  display: block;
+}
+
+.fpc-list-toolbar__strip {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  // Always one row (user, 2026-10-29), active filters or not: the search shrinks first, then the chips scroll
+  // sideways; the toggle, Clear all and actions never wrap or shrink.
+  flex-wrap: nowrap;
+  gap: 0 0.75rem;
+  // The strip carries the surface itself too (round 2, 2026-10-29): the host already paints it in every app, but a
+  // probe / consumer reading the strip element saw `transparent` (reported as "tint only in Loadweaver"; the measured
+  // pixels were the same half-tertiary step in all three apps).
+  background: var(--fpc-list-toolbar-bg);
+  // One inset for the whole strip (= header titles, list items, first / last table cells): the search glyph starts
+  // and the last control ends at `--fpc-edge-inset`.
+  padding-inline: var(--fpc-edge-inset, 1rem);
+  min-height: var(--fpc-control-height-md, 2.25rem);
+}
+
+// Lead slot (the list's `fpc-search-field`): takes the free space (basis 0) and is the first to give way, down to
+// the magnifier alone.
+.fpc-list-toolbar__lead {
+  flex: 1 1 0%;
+  min-width: var(--fpc-control-height-md, 2.25rem);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+
+  > ::ng-deep * {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &:empty {
+    display: none;
+  }
+}
+
+.fpc-list-toolbar__chips {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding-block: 0.25rem;
+
+  // One line in the strip: when the search has shrunk to its glyph, the chips scroll sideways instead of wrapping.
+  ::ng-deep .fpc-filter-chips__list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    > * {
+      flex: 0 0 auto;
+    }
+  }
+}
+
+// Filters toggle and Clear all: the shared quiet strip button (`.fpc-toolbar-btn` in `styles/_controls.scss`: no
+// box, body colour, link colour on hover / open, md height, flush text). Every other control in the strip
+// (`[fpcListToolbarActions]`) gets the same treatment by context.
+.fpc-list-toolbar__toggle,
+.fpc-list-toolbar__clear {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+// Clear all: the funnel struck through by a diagonal bar in the button colour (follows hover / focus), with a gap in
+// the strip background so it reads as a slash over the glyph.
+.fpc-list-toolbar__clear-icon {
+  position: relative;
+  display: inline-flex;
+  line-height: 1;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0.125em;
+    height: 1.3em;
+    border-radius: 0.0625em;
+    background-color: currentcolor;
+    box-shadow: 0 0 0 0.0625em var(--fpc-list-toolbar-bg, var(--bs-body-bg));
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+}
+
+.fpc-list-toolbar__actions {
+  display: flex;
+  align-items: center;
+  // Same gap as the strip: search, chips, Filters, Clear all and every action are spaced by the gap alone.
+  gap: 0.75rem;
+  flex: 0 0 auto;
+
+  &:empty {
+    display: none;
+  }
+}
+
+// Drawer over the list content (sticky layer: above sticky table heads, below menus, modals and
+// popovers). `max-height` = the remaining viewport below the host, so it scrolls instead of overflowing.
+.fpc-list-toolbar__body {
+  position: absolute;
+  z-index: var(--fpc-z-sticky, 1020);
+  inset-inline: 0;
+  top: 100%;
+  display: flex;
+  flex-direction: column;
+  // Flat like the strip: the bottom edge (the strip's divider) separates it from the list, no shadow (3.38).
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+// At body level (overlay portals): fixed below the strip with its width, on the popover layer like body-portaled
+// dropdowns (also above a modal it was opened in); menus opened from its fields attach later and paint above it.
+.fpc-list-toolbar__body--portaled {
+  position: fixed;
+  inset-inline: auto;
+  z-index: var(--fpc-z-popover, 1070);
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+// The fields scroll; the footer stays at the drawer's bottom (phones: long field lists).
+.fpc-list-toolbar__fields {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0.75rem 1rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

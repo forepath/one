@@ -1,5 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 
+import { BILLING_LIST_PAGE_SIZE } from '../../constants/list-paging.constants';
+
 import type { BackorderResponse } from '../../types/billing.types';
 
 import {
@@ -8,7 +10,6 @@ import {
   cancelBackorderSuccess,
   clearSelectedBackorder,
   loadBackorders,
-  loadBackordersBatch,
   loadBackordersFailure,
   loadBackordersSuccess,
   retryBackorder,
@@ -23,6 +24,10 @@ export interface BackordersState {
   retrying: boolean;
   canceling: boolean;
   error: string | null;
+  /** Replace-page paging: next page exists, 1-based page and its size. */
+  hasMore: boolean;
+  page: number;
+  pageSize: number;
 }
 
 export const initialBackordersState: BackordersState = {
@@ -32,31 +37,36 @@ export const initialBackordersState: BackordersState = {
   retrying: false,
   canceling: false,
   error: null,
+  hasMore: false,
+  page: 1,
+  pageSize: BILLING_LIST_PAGE_SIZE,
 };
 
 export const backordersReducer = createReducer(
   initialBackordersState,
   // Load Backorders
-  on(loadBackorders, (state) => ({
-    ...state,
-    entities: [],
-    loading: true,
-    error: null,
-  })),
-  on(loadBackordersBatch, (state, { accumulatedBackorders }) => ({
-    ...state,
-    entities: accumulatedBackorders,
-    loading: true,
-    error: null,
-  })),
-  on(loadBackordersSuccess, (state, { backorders }) => ({
+  on(loadBackorders, (state, { params }) => {
+    const pageSize = params?.limit && params.limit > 0 ? params.limit : BILLING_LIST_PAGE_SIZE;
+
+    return {
+      ...state,
+      loading: true,
+      error: null,
+      page: Math.floor((params?.offset ?? 0) / pageSize) + 1,
+      pageSize,
+    };
+  }),
+  on(loadBackordersSuccess, (state, { backorders, hasMore }) => ({
     ...state,
     entities: backorders,
+    hasMore,
     loading: false,
     error: null,
   })),
   on(loadBackordersFailure, (state, { error }) => ({
     ...state,
+    entities: [],
+    hasMore: false,
     loading: false,
     error,
   })),

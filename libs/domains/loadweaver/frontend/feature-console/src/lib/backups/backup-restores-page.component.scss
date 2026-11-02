@@ -1,0 +1,4 @@
+// Restore test check output keeps its line breaks but wraps long lines.
+.restore-test-output {
+  white-space: pre-wrap;
+}

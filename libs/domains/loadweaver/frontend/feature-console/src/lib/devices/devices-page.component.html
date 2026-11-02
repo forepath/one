@@ -1,0 +1,229 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="devices" [binding]="views" />
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (mayManageAll()) {
+    <fpc-tab-group
+      class="flex-shrink-0"
+      data-testid="devices-scope"
+      [activeId]="all() ? 'all' : 'mine'"
+      (activeIdChange)="showAll($event === 'all')"
+    >
+      <fpc-tab id="mine" [label]="mineTitle" icon="person" />
+      <fpc-tab id="all" [label]="allTitle" icon="people" />
+    </fpc-tab-group>
+  }
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    }
+    @if (revokeError(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    }
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="devices-bulk-result"
+      />
+    }
+    @if (restrictedCount() > 0) {
+      <fpc-alert
+        [flush]="true"
+        variant="warning"
+        [message]="restrictedCount() + ' ' + restrictedLabel"
+        data-testid="devices-restricted"
+      />
+    }
+
+    <!-- 3.38 D1: State · Device · posture · owner · address · groups · expires; ⋮ Revoke / Copy ID; bulk Revoke. -->
+    <fpc-data-table
+      class="flex-grow-1 min-h-0"
+      [ariaLabel]="all() ? allTitle : mineTitle"
+      [columns]="columns()"
+      [rows]="filtered()"
+      [loading]="loading() && devices().length === 0"
+      paging="client"
+      persistKey="lw-devices"
+      [(query)]="search"
+      [searchPlaceholder]="searchLabel"
+      selectable
+      [(selected)]="selected"
+      [rowMenu]="rowMenu"
+      (rowAction)="onRowAction($event.row, $event.item.id)"
+      emptyIcon="laptop"
+      data-testid="devices-list"
+    >
+      <fpc-button
+        fpcDataTableToolbar
+        variant="primary"
+        size="sm"
+        iconOnly
+        [ariaLabel]="enrollTitle"
+        [title]="enrollTitle"
+        (clicked)="enrollOpen.set(true)"
+        data-testid="devices-enroll-open"
+      >
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+      </fpc-button>
+      <fpc-button
+        fpcDataTableBatch
+        variant="danger"
+        size="sm"
+        [disabled]="!canRevokeSelection()"
+        [title]="revokeSelectedHint"
+        (clicked)="confirmBulkRevoke.set(true)"
+        data-testid="devices-bulk-revoke"
+        iconOnly
+        [ariaLabel]="revokeLabel"
+      >
+        <i class="bi bi-x-octagon" aria-hidden="true"></i>
+      </fpc-button>
+      <span fpcDataTableEmpty>
+        <fpc-empty-state icon="laptop" size="sm" i18n-title="@@lwConsoleDevices-empty" title="No devices enrolled" />
+      </span>
+      <ng-template fpcTableCell="name" let-row>
+        <i
+          class="bi {{ row.kind === 'machine' ? 'bi-hdd-rack' : 'bi-laptop' }} me-1"
+          [title]="row.kind === 'machine' ? machineLabel : ''"
+          aria-hidden="true"
+        ></i
+        >{{ row.name }}
+        @if (row.status === 'active' && connected(row)) {
+          <fpc-badge class="ms-1" tone="primary" icon="broadcast" [iconOnly]="true" [label]="connectedLabel" />
+        }
+      </ng-template>
+      <ng-template fpcTableCell="posture" let-row>
+        <div class="d-flex flex-column gap-1 small" [attr.data-testid]="'devices-posture-' + row.name">
+          <div class="d-flex flex-wrap align-items-center gap-1">
+            @if (row.status === 'active') {
+              @if (restricted(row)) {
+                <fpc-badge tone="warning" i18n="@@lwConsoleDevices-postureRestricted">Restricted by posture</fpc-badge>
+              } @else {
+                <fpc-badge tone="success" i18n="@@lwConsoleDevices-postureOk">Posture OK</fpc-badge>
+              }
+            }
+            @if (row.posture; as p) {
+              @for (fact of p.integrations; track fact.integration) {
+                <fpc-badge [tone]="factTone(fact)" [title]="fact.reasons.join(', ')">{{ factLabel(fact) }}</fpc-badge>
+              }
+              <fpc-badge [tone]="certificateTone(p.certificate)" [title]="p.certificate?.reasons?.join(', ') ?? ''">{{
+                certificateLabel(p.certificate)
+              }}</fpc-badge>
+            }
+          </div>
+          @if (row.posture; as p) {
+            @if (reportSummary(p); as summary) {
+              <span class="text-body-secondary"
+                ><i class="bi bi-clipboard-check me-1" aria-hidden="true"></i>{{ summary }}
+                @if (p.reportedAt) {
+                  ({{ p.reportedAt | date: 'short' }})
+                }
+              </span>
+            } @else {
+              <span class="text-body-secondary" i18n="@@lwConsoleDevices-noReport">No posture report yet</span>
+            }
+          }
+          @for (line of restrictionLines(row); track line) {
+            <span class="text-warning-emphasis">
+              <i class="bi bi-shield-exclamation me-1" aria-hidden="true"></i>{{ line }}
+            </span>
+          }
+        </div>
+      </ng-template>
+      <ng-template fpcTableCell="validity" let-row>
+        @if (row.status === 'revoked' && row.revokedAt) {
+          <span i18n="@@lwConsoleDevices-revokedAt">Revoked</span> {{ row.revokedAt | date: 'short' }}
+        } @else {
+          {{ row.expiresAt | date: 'short' }}
+        }
+      </ng-template>
+      <ng-template fpcTableCell="handshake" let-row>
+        @if (row.lastHandshakeAt) {
+          {{ row.lastHandshakeAt | date: 'short' }}
+          @if (row.lastEndpoint) {
+            <span class="font-monospace">({{ row.lastEndpoint }})</span>
+          }
+        }
+      </ng-template>
+    </fpc-data-table>
+  </div>
+</div>
+
+<!-- Enrolling is a modal (3.38 decision 12): name the device, copy the CLI command, run it on the device. -->
+<fpc-modal
+  [open]="enrollOpen()"
+  (openChange)="enrollOpen.set($event)"
+  [title]="enrollTitle"
+  data-testid="devices-enroll"
+>
+  <p class="small text-body-secondary" i18n="@@lwConsoleDevices-enrollHint">
+    Run the CLI on the device you want to connect. It generates the WireGuard key pair locally, writes the private key
+    only into its wg-quick file and sends just the public key — no private key passes through the browser. Enrolling
+    needs an interactive login (not an access token) and membership in a client group.
+  </p>
+  <fpc-form-field forId="lw-devices-name" i18n-label="@@lwConsoleDevices-name" label="Device name">
+    <fpc-form-control
+      controlId="lw-devices-name"
+      size="sm"
+      controlClass="font-monospace"
+      placeholder="laptop"
+      [ngModel]="deviceName()"
+      (ngModelChange)="deviceName.set($event)"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="lw-devices-command" i18n-label="@@lwConsoleDevices-command" label="Command">
+    <fpc-form-control
+      controlId="lw-devices-command"
+      size="sm"
+      controlClass="font-monospace"
+      readOnly
+      [value]="command()"
+      data-testid="devices-command"
+    />
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" (clicked)="enrollOpen.set(false)">{{ closeLabel }}</fpc-button>
+    <fpc-button variant="primary" (clicked)="copy(command())" data-testid="devices-copy-command">
+      <i class="bi bi-clipboard me-1" aria-hidden="true"></i
+      ><span i18n="@@lwConsoleDevices-copyCommand">Copy command</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkRevoke"
+  [title]="revokeSelectedTitle"
+  [message]="revokeSelectedMessage()"
+  [confirmLabel]="revokeConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="revokeSelected()"
+/>
+
+<fpc-confirm-dialog
+  [open]="revokeFor() !== null"
+  (openChange)="onRevokeOpenChange($event)"
+  [title]="revokeTitle"
+  [message]="revokeMessage()"
+  [confirmLabel]="revokeConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="confirmRevoke()"
+/>

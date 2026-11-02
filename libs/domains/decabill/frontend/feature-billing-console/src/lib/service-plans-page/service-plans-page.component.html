@@ -1,7 +1,39 @@
 <div class="service-plans-container border-top d-flex flex-column h-100">
-  <fpc-page-header [title]="pageTitle">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="service-plans-bulk-result"
+    />
+  }
+
+  <!-- One data list: State · Plan · facts; ⋮ Edit / Delete / Copy ID; bulk Activate / Deactivate / Delete. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="servicePlans()"
+    paging="client"
+    persistKey="decabill-service-plans"
+    [(query)]="searchQuery"
+    [searchPlaceholder]="searchPlaceholder"
+    [loading]="(loading$ | async) === true"
+    [error]="(error$ | async) ?? null"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    (rowActivate)="openEditModal($event)"
+    emptyIcon="card-list"
+    data-testid="service-plans-list"
+  >
     <fpc-button
-      fpcPageHeaderActions
+      fpcDataTableToolbar
       variant="primary"
       size="sm"
       iconOnly
@@ -12,121 +44,77 @@
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
     </fpc-button>
-  </fpc-page-header>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!selectedPlans().some((plan) => !plan.isActive)"
+      (clicked)="setActiveSelected(true)"
+      data-testid="service-plans-bulk-activate"
+      iconOnly
+      [ariaLabel]="activateLabel"
+      [title]="activateLabel"
+    >
+      <i class="bi bi-toggle-on" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!selectedPlans().some((plan) => plan.isActive)"
+      (clicked)="setActiveSelected(false)"
+      data-testid="service-plans-bulk-deactivate"
+      iconOnly
+      [ariaLabel]="deactivateLabel"
+      [title]="deactivateLabel"
+    >
+      <i class="bi bi-toggle-off" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="selectedPlans().length === 0"
+      (clicked)="confirmBulkDelete.set(true)"
+      data-testid="service-plans-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
 
-  <fpc-search-field
-    class="border-bottom"
-    name="search"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchPlaceholder"
-    [(value)]="searchQuery"
-  />
-
-  <div class="flex-grow-1 overflow-auto">
-    @if (loading$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" i18n-label="@@featureServicePlans-loading" label="Loading..." />
-      </div>
-    } @else {
-      @if (error$ | async; as err) {
-        <fpc-alert class="m-3" variant="danger" [message]="err" />
-      }
-      @if (servicePlans$ | async; as listData) {
-        @if (listData.plans.length === 0) {
-          @if (searchQuery().trim()) {
-            <fpc-empty-state
-              icon="search"
-              message="No search results"
-              i18n-message="@@featureServicePlans-noSearchResults"
-            />
-          } @else {
-            <fpc-empty-state message="No service plans." i18n-message="@@featureServicePlans-empty" />
-          }
-        } @else {
-          <fpc-list [flush]="true">
-            @for (plan of listData.plans; track plan.id) {
-              <fpc-list-item>
-                <div fpcListItemTitle class="fw-semibold">{{ plan.name }}</div>
-                <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                    <span class="me-2" [ngClass]="activeStatusTextClass(plan.isActive)">
-                      @if (plan.isActive) {
-                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                      } @else {
-                        <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
-                      }
-                      {{ activeStatusLabel(plan.isActive) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i
-                      >{{ serviceTypeNameById(listData.serviceTypes, plan.serviceTypeId) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ billingIntervalLabel(plan) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatPlanPrice(plan) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-star me-1" aria-hidden="true"></i>{{ highlightsLabel(plan) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-percent me-1" aria-hidden="true"></i>{{ planTaxRateLabel(plan) }}
-                    </span>
-                    @if (planMeterCount(plan) > 0) {
-                      <span class="me-2">
-                        <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>{{ planMeterCount(plan) }}
-                        <span i18n="@@featureServicePlans-metersBadge">meters</span>
-                      </span>
-                    }
-                  </div>
-                </div>
-                <fpc-button-group
-                  fpcListItemActions
-                  size="sm"
-                  ariaLabel="Plan actions"
-                  i18n-ariaLabel="@@featureServicePlans-planActionsAria"
-                >
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="warning"
-                    (clicked)="openEditModal(plan)"
-                    [disabled]="(loadingAny$ | async) === true"
-                    title="Edit plan"
-                    i18n-title="@@featureServicePlans-editButtonTitle"
-                  >
-                    <i class="bi bi-pencil" aria-hidden="true"></i>
-                  </fpc-button>
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="danger"
-                    (clicked)="openDeleteConfirm(plan)"
-                    [disabled]="(loadingAny$ | async) === true"
-                    title="Delete plan"
-                    i18n-title="@@featureServicePlans-deleteButtonTitle"
-                  >
-                    <i class="bi bi-trash" aria-hidden="true"></i>
-                  </fpc-button>
-                </fpc-button-group>
-              </fpc-list-item>
-            }
-          </fpc-list>
-        }
-      }
-    }
-  </div>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="card-list"
+        size="sm"
+        message="No service plans."
+        i18n-message="@@featureServicePlans-empty"
+      />
+    </span>
+  </fpc-data-table>
 </div>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDelete"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelected()"
+/>
 
 <!-- Create modal -->
 <fpc-modal
   [(open)]="createModalOpen"
   size="lg"
   i18n-title="@@featureServicePlans-createTitle"
-  title="Add service plan"
+  title="Create service plan"
   [closable]="(creating$ | async) !== true"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+  [cancelDisabled]="!((creating$ | async) !== true)"
 >
   <form (ngSubmit)="onSubmitCreate()">
     @if (typesAndProviders$ | async; as data) {
@@ -164,23 +152,29 @@
           [disabled]="(creating$ | async) === true"
         />
       </fpc-form-field>
-      <div class="mb-3 border rounded p-3 bg-body-secondary">
-        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-          <span class="fw-semibold mb-0" i18n="@@featureServicePlans-orderingHighlights">Ordering highlights</span>
-          <fpc-button
-            variant="dark"
-            size="sm"
-            iconOnly
-            (clicked)="addOrderingHighlight('create')"
-            [disabled]="(creating$ | async) === true"
-            title="Add line"
-            i18n-title="@@featureServicePlans-addHighlight"
-            ariaLabel="Add line"
-            i18n-ariaLabel="@@featureServicePlans-addHighlight"
-          >
-            <i class="bi bi-plus" aria-hidden="true"></i>
-          </fpc-button>
-        </div>
+      <div class="mb-3">
+        <fpc-list-header
+          class="d-block mb-2"
+          title="Ordering highlights"
+          i18n-title="@@featureServicePlans-orderingHighlights"
+          [sticky]="false"
+        >
+          <span fpcListHeaderActions class="d-flex align-items-center gap-1">
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              (clicked)="addOrderingHighlight('create')"
+              [disabled]="(creating$ | async) === true"
+              title="Add line"
+              i18n-title="@@featureServicePlans-addHighlight"
+              ariaLabel="Add line"
+              i18n-ariaLabel="@@featureServicePlans-addHighlight"
+            >
+              <i class="bi bi-plus" aria-hidden="true"></i>
+            </fpc-button>
+          </span>
+        </fpc-list-header>
         <p class="text-body-secondary small mb-3" i18n="@@featureServicePlans-orderingHighlightsHint">
           Optional icon key and label text for the order page (in addition to the description).
         </p>
@@ -277,7 +271,7 @@
               [disabled]="(creating$ | async) === true"
             >
               @for (t of billingIntervalTypes; track t) {
-                <option [value]="t">{{ t }}</option>
+                <option [value]="t">{{ intervalTypeLabel(t) }}</option>
               }
             </fpc-form-control>
           </fpc-form-field>
@@ -450,28 +444,19 @@
             i18n-label="@@featureServicePlans-allowedProviders"
             label="Allowed providers"
           >
-            <select
-              id="createAllowedProviders"
+            <fpc-multi-select
+              controlId="createAllowedProviders"
               name="createAllowedProviders"
-              [class]="formSelectClass"
-              multiple
-              size="4"
+              [options]="allowedProviderOptions(data.serviceTypes, createForm.serviceTypeId, data.providerDetails)"
               [ngModel]="createAllowedProviders"
               (ngModelChange)="onAllowedProvidersChangeCreate($event, data.serviceTypes, data.providerDetails)"
-              [compareWith]="compareProviderId"
               [disabled]="(creating$ | async) === true"
-            >
-              @for (
-                providerId of getServiceTypeAllowedProviders(data.serviceTypes, createForm.serviceTypeId);
-                track providerId
-              ) {
-                <option [ngValue]="providerId">
-                  {{ providerLabel(providerId, data.providerDetails) }}
-                </option>
-              }
-            </select>
+              [searchPlaceholder]="multiSelectSearchLabel"
+              [removeLabel]="multiSelectRemoveLabel"
+              [emptyLabel]="multiSelectEmptyLabel"
+            />
             <span fpcFormFieldHint i18n="@@featureServicePlans-allowedProvidersHelp"
-              >Hold Ctrl/Cmd to select. First selected is the default provider at checkout.</span
+              >The first selected provider is the default at checkout.</span
             >
           </fpc-form-field>
         } @else {
@@ -537,8 +522,13 @@
         </fpc-form-check>
       }
       @if (getProviderSchema(data.serviceTypes, data.providerDetails, createForm.serviceTypeId, 'create'); as schema) {
-        <div class="mb-3 border rounded p-3 bg-body-secondary">
-          <h6 class="mb-3" i18n="@@featureServicePlans-providerConfigDefaults">Provider default config</h6>
+        <div class="mb-3">
+          <fpc-list-header
+            class="d-block mb-2"
+            title="Provider default config"
+            i18n-title="@@featureServicePlans-providerConfigDefaults"
+            [sticky]="false"
+          />
           @for (key of getServerProviderConfigKeys(schema); track key) {
             @if (!(needsPerProviderGeographyDefaults('create') && isGeographyConfigKey(key))) {
               <fpc-form-field [forId]="'createProviderConfig_' + key" [label]="key">
@@ -555,33 +545,19 @@
                     >
                   } @else {
                     @if (createForm.allowCustomerServerTypeSelection === true) {
-                      <select
-                        [id]="'createProviderConfig_' + key"
-                        [class]="formSelectClass"
-                        multiple
+                      <fpc-multi-select
+                        [controlId]="'createProviderConfig_' + key"
+                        [name]="'createProviderConfig_' + key + '_multi'"
+                        [options]="serverTypeMultiOptions()"
                         [ngModel]="createAllowedServerTypes"
                         (ngModelChange)="onAllowedServerTypesChangeCreate($event)"
-                        [compareWith]="compareServerTypeId"
-                        [name]="'createProviderConfig_' + key + '_multi'"
                         [disabled]="(creating$ | async) === true"
-                        size="6"
-                      >
-                        @if (currentServerTypeGroups.length > 1) {
-                          @for (group of currentServerTypeGroups; track group.providerId) {
-                            <optgroup [label]="group.label">
-                              @for (st of group.types; track st.id) {
-                                <option [ngValue]="st.id">{{ formatServerTypeOptionLabel(st) }}</option>
-                              }
-                            </optgroup>
-                          }
-                        } @else {
-                          @for (st of currentServerTypes; track st.id) {
-                            <option [ngValue]="st.id">{{ formatServerTypeOptionLabel(st) }}</option>
-                          }
-                        }
-                      </select>
+                        [searchPlaceholder]="multiSelectSearchLabel"
+                        [removeLabel]="multiSelectRemoveLabel"
+                        [emptyLabel]="multiSelectEmptyLabel"
+                      />
                       <div class="form-text text-body-secondary small">
-                        Hold Ctrl/Cmd to select multiple server types customers may choose at checkout.
+                        Server types customers may choose at checkout.
                       </div>
                     }
                     @if (needsPerProviderServerTypeDefaults('create')) {
@@ -708,10 +684,15 @@
           'create'
         )
       ) {
-        <div class="mb-3 border rounded p-3 bg-body-secondary">
-          <h6 class="mb-2" i18n="@@featureServicePlans-provisioningOptions">Customer-selectable options</h6>
+        <div class="mb-3">
+          <fpc-list-header
+            class="d-block mb-2"
+            title="Customer-selectable options"
+            i18n-title="@@featureServicePlans-provisioningOptions"
+            [sticky]="false"
+          />
           <p class="form-text text-body-secondary small mb-3" i18n="@@featureServicePlans-provisioningOptionsHelp">
-            Choose which integrated stacks and CloudInit configs customers may pick when ordering this plan.
+            Choose which integrated stacks and cloud-init configs customers may pick when ordering this plan.
           </p>
           @if (
             serviceEnumIncludes(
@@ -767,6 +748,24 @@
               label="Decabill Billing"
             />
           }
+          @if (
+            serviceEnumIncludes(
+              data.serviceTypes,
+              data.providerDetails,
+              createForm.serviceTypeId,
+              'loadweaver',
+              'create'
+            )
+          ) {
+            <fpc-form-check
+              class="mb-2"
+              checkId="createProvisioningLoadweaver"
+              [checked]="isProvisioningOptionSelected('create', 'integrated:loadweaver')"
+              (checkedChange)="toggleProvisioningOption('create', 'integrated:loadweaver', $event)"
+              [disabled]="(creating$ | async) === true"
+              label="Loadweaver"
+            />
+          }
           @for (cfg of cloudInitConfigs$ | async; track cfg.id) {
             <fpc-form-check
               class="mb-2"
@@ -782,27 +781,33 @@
       @if (getProviderSchema(data.serviceTypes, data.providerDetails, createForm.serviceTypeId, 'create'); as schema) {
         @if (cloudInitConfigs$ | async; as cloudInitConfigs) {
           @if (hasProductDefaultsSection('create', schema, cloudInitConfigs)) {
-            <div class="mb-3 border rounded p-3 bg-body-secondary">
-              <div class="d-flex justify-content-between align-items-center gap-2">
-                <h6 class="mb-0" i18n="@@featureServicePlans-productDefaults">Product defaults</h6>
-                <fpc-button
-                  variant="dark"
-                  size="sm"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#createProductDefaults"
-                  [attr.aria-expanded]="createProductDefaultsExpanded()"
-                  aria-controls="createProductDefaults"
-                  [attr.title]="createProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel"
-                  [ariaLabel]="createProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel"
-                  class="flex-shrink-0"
-                >
-                  @if (createProductDefaultsExpanded()) {
-                    <i class="bi bi-eye-slash" aria-hidden="true"></i>
-                  } @else {
-                    <i class="bi bi-eye" aria-hidden="true"></i>
-                  }
-                </fpc-button>
-              </div>
+            <div class="mb-3">
+              <fpc-list-header
+                class="d-block mb-2"
+                title="Product defaults"
+                i18n-title="@@featureServicePlans-productDefaults"
+                [sticky]="false"
+              >
+                <span fpcListHeaderActions class="d-flex align-items-center gap-1">
+                  <fpc-button
+                    variant="dark"
+                    size="sm"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#createProductDefaults"
+                    [attr.aria-expanded]="createProductDefaultsExpanded()"
+                    aria-controls="createProductDefaults"
+                    [attr.title]="createProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel"
+                    [ariaLabel]="createProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel"
+                    class="flex-shrink-0"
+                  >
+                    @if (createProductDefaultsExpanded()) {
+                      <i class="bi bi-eye-slash" aria-hidden="true"></i>
+                    } @else {
+                      <i class="bi bi-eye" aria-hidden="true"></i>
+                    }
+                  </fpc-button>
+                </span>
+              </fpc-list-header>
               <div
                 class="collapse"
                 id="createProductDefaults"
@@ -813,7 +818,7 @@
                   class="form-text text-body-secondary small mb-3 mt-2"
                   i18n="@@featureServicePlans-productDefaultsHelp"
                 >
-                  Defaults for integrated stacks and CloudInit environment variables required by the selected customer
+                  Defaults for integrated stacks and cloud-init environment variables required by the selected customer
                   options.
                 </p>
                 @for (key of getProductProviderConfigKeysForForm('create', schema); track key) {
@@ -968,10 +973,15 @@
           as availableAddons
         ) {
           @if (availableAddons.length > 0) {
-            <div class="mb-3 border rounded p-3 bg-body-secondary">
-              <h6 class="mb-2" i18n="@@featureServicePlans-addons">Customer-selectable addons</h6>
+            <div class="mb-3">
+              <fpc-list-header
+                class="d-block mb-2"
+                title="Customer-selectable add-ons"
+                i18n-title="@@featureServicePlans-addons"
+                [sticky]="false"
+              />
               <p class="form-text text-body-secondary small mb-3" i18n="@@featureServicePlans-addonsHelp">
-                Choose which addons customers may add when ordering this plan.
+                Choose which add-ons customers may add when ordering this plan.
               </p>
               @for (addon of availableAddons; track addon.id) {
                 <div class="mb-2">
@@ -999,7 +1009,7 @@
                       <label class="form-check-label small" [for]="'createAddonMandatory_' + addon.id">
                         <span i18n="@@featureServicePlans-mandatoryAddon">Mandatory</span>
                         <span class="d-block text-body-secondary" i18n="@@featureServicePlans-mandatoryAddonHelp"
-                          >Customers cannot deselect this addon when ordering.</span
+                          >Customers cannot deselect this add-on when ordering.</span
                         >
                       </label>
                     </fpc-form-check>
@@ -1074,7 +1084,7 @@
         label="Active"
       />
     }
-    <div *fpcModalFooter>
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
       <fpc-button
         variant="primary"
         type="submit"
@@ -1094,6 +1104,9 @@
   i18n-title="@@featureServicePlans-editTitle"
   title="Edit service plan"
   [closable]="(updating$ | async) !== true"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+  [cancelDisabled]="!((updating$ | async) !== true)"
 >
   <form (ngSubmit)="onSubmitEdit()">
     @if (typesAndProviders$ | async; as data) {
@@ -1115,23 +1128,29 @@
           [disabled]="(updating$ | async) === true"
         />
       </fpc-form-field>
-      <div class="mb-3 border rounded p-3 bg-body-secondary">
-        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-          <span class="fw-semibold mb-0" i18n="@@featureServicePlans-orderingHighlights">Ordering highlights</span>
-          <fpc-button
-            variant="dark"
-            size="sm"
-            iconOnly
-            (clicked)="addOrderingHighlight('edit')"
-            [disabled]="(updating$ | async) === true"
-            title="Add line"
-            i18n-title="@@featureServicePlans-addHighlight"
-            ariaLabel="Add line"
-            i18n-ariaLabel="@@featureServicePlans-addHighlight"
-          >
-            <i class="bi bi-plus" aria-hidden="true"></i>
-          </fpc-button>
-        </div>
+      <div class="mb-3">
+        <fpc-list-header
+          class="d-block mb-2"
+          title="Ordering highlights"
+          i18n-title="@@featureServicePlans-orderingHighlights"
+          [sticky]="false"
+        >
+          <span fpcListHeaderActions class="d-flex align-items-center gap-1">
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              (clicked)="addOrderingHighlight('edit')"
+              [disabled]="(updating$ | async) === true"
+              title="Add line"
+              i18n-title="@@featureServicePlans-addHighlight"
+              ariaLabel="Add line"
+              i18n-ariaLabel="@@featureServicePlans-addHighlight"
+            >
+              <i class="bi bi-plus" aria-hidden="true"></i>
+            </fpc-button>
+          </span>
+        </fpc-list-header>
         <p class="text-body-secondary small mb-3" i18n="@@featureServicePlans-orderingHighlightsHint">
           Optional icon key and label text for the order page (in addition to the description).
         </p>
@@ -1228,7 +1247,7 @@
               [disabled]="(updating$ | async) === true"
             >
               @for (t of billingIntervalTypes; track t) {
-                <option [value]="t">{{ t }}</option>
+                <option [value]="t">{{ intervalTypeLabel(t) }}</option>
               }
             </fpc-form-control>
           </fpc-form-field>
@@ -1356,12 +1375,9 @@
           [disabled]="(updating$ | async) === true"
           i18n-label="@@featureServicePlans-migrateExistingSubscriptions"
           label="Apply base price, margin, and VAT changes to existing subscriptions"
+          i18n-hint="@@featureServicePlans-migrateExistingSubscriptionsHelp"
+          hint="When checked, changing base price, margins, or VAT rate queues a job that migrates eligible subscriptions (differential billing, statutory withdrawal restart, and customer email). Leave unchecked to update the catalog only for new orders."
         />
-        <div class="form-text small mt-2 mb-0" i18n="@@featureServicePlans-migrateExistingSubscriptionsHelp">
-          When checked, changing base price, margins, or VAT rate queues a job that migrates eligible subscriptions
-          (differential billing, statutory withdrawal restart, and customer email). Leave unchecked to update the
-          catalog only for new orders.
-        </div>
       </fpc-alert>
       <div class="mb-3">
         @if (showPerTypePriceEstimates('edit')) {
@@ -1417,28 +1433,19 @@
             i18n-label="@@featureServicePlans-allowedProviders"
             label="Allowed providers"
           >
-            <select
-              id="editAllowedProviders"
+            <fpc-multi-select
+              controlId="editAllowedProviders"
               name="editAllowedProviders"
-              [class]="formSelectClass"
-              multiple
-              size="4"
+              [options]="allowedProviderOptions(data.serviceTypes, editingPlan.serviceTypeId, data.providerDetails)"
               [ngModel]="editAllowedProviders"
               (ngModelChange)="onAllowedProvidersChangeEdit($event, data.serviceTypes, data.providerDetails)"
-              [compareWith]="compareProviderId"
               [disabled]="(updating$ | async) === true"
-            >
-              @for (
-                providerId of getServiceTypeAllowedProviders(data.serviceTypes, editingPlan.serviceTypeId);
-                track providerId
-              ) {
-                <option [ngValue]="providerId">
-                  {{ providerLabel(providerId, data.providerDetails) }}
-                </option>
-              }
-            </select>
+              [searchPlaceholder]="multiSelectSearchLabel"
+              [removeLabel]="multiSelectRemoveLabel"
+              [emptyLabel]="multiSelectEmptyLabel"
+            />
             <span fpcFormFieldHint i18n="@@featureServicePlans-allowedProvidersHelp"
-              >Hold Ctrl/Cmd to select. First selected is the default provider at checkout.</span
+              >The first selected provider is the default at checkout.</span
             >
           </fpc-form-field>
         } @else {
@@ -1509,8 +1516,13 @@
         editingPlan && getProviderSchema(data.serviceTypes, data.providerDetails, editingPlan.serviceTypeId, 'edit');
         as schema
       ) {
-        <div class="mb-3 border rounded p-3 bg-body-secondary">
-          <h6 class="mb-3" i18n="@@featureServicePlans-providerConfigDefaults">Provider default config</h6>
+        <div class="mb-3">
+          <fpc-list-header
+            class="d-block mb-2"
+            title="Provider default config"
+            i18n-title="@@featureServicePlans-providerConfigDefaults"
+            [sticky]="false"
+          />
           @for (key of getServerProviderConfigKeys(schema); track key) {
             @if (!(needsPerProviderGeographyDefaults('edit') && isGeographyConfigKey(key))) {
               <fpc-form-field [forId]="'editProviderConfig_' + key" [label]="key">
@@ -1528,33 +1540,19 @@
                     >
                   } @else {
                     @if (editForm.allowCustomerServerTypeSelection === true) {
-                      <select
-                        [id]="'editProviderConfig_' + key"
-                        [class]="formSelectClass"
-                        multiple
+                      <fpc-multi-select
+                        [controlId]="'editProviderConfig_' + key"
+                        [name]="'editProviderConfig_' + key + '_multi'"
+                        [options]="serverTypeMultiOptions()"
                         [ngModel]="editAllowedServerTypes"
                         (ngModelChange)="onAllowedServerTypesChangeEdit($event)"
-                        [compareWith]="compareServerTypeId"
-                        [name]="'editProviderConfig_' + key + '_multi'"
                         [disabled]="(updating$ | async) === true"
-                        size="6"
-                      >
-                        @if (currentServerTypeGroups.length > 1) {
-                          @for (group of currentServerTypeGroups; track group.providerId) {
-                            <optgroup [label]="group.label">
-                              @for (st of group.types; track st.id) {
-                                <option [ngValue]="st.id">{{ formatServerTypeOptionLabel(st) }}</option>
-                              }
-                            </optgroup>
-                          }
-                        } @else {
-                          @for (st of currentServerTypes; track st.id) {
-                            <option [ngValue]="st.id">{{ formatServerTypeOptionLabel(st) }}</option>
-                          }
-                        }
-                      </select>
+                        [searchPlaceholder]="multiSelectSearchLabel"
+                        [removeLabel]="multiSelectRemoveLabel"
+                        [emptyLabel]="multiSelectEmptyLabel"
+                      />
                       <div class="form-text text-body-secondary small">
-                        Hold Ctrl/Cmd to select multiple server types customers may choose at checkout.
+                        Server types customers may choose at checkout.
                       </div>
                     }
                     @if (needsPerProviderServerTypeDefaults('edit')) {
@@ -1677,15 +1675,20 @@
         editingPlan &&
         supportsProvisioningOptionsSelection(data.serviceTypes, data.providerDetails, editingPlan.serviceTypeId, 'edit')
       ) {
-        <div class="mb-3 border rounded p-3 bg-body-secondary">
-          <h6 class="mb-2" i18n="@@featureServicePlans-provisioningOptions">Customer-selectable options</h6>
+        <div class="mb-3">
+          <fpc-list-header
+            class="d-block mb-2"
+            title="Customer-selectable options"
+            i18n-title="@@featureServicePlans-provisioningOptions"
+            [sticky]="false"
+          />
           <p class="form-text text-body-secondary small mb-3" i18n="@@featureServicePlans-provisioningOptionsHelp">
-            Choose which integrated stacks and CloudInit configs customers may pick when ordering this plan.
+            Choose which integrated stacks and cloud-init configs customers may pick when ordering this plan.
           </p>
           @if (editStaleCustomConfigIds.length > 0) {
             <fpc-alert class="py-2 small mb-3" variant="warning"
               ><span i18n="@@featureServicePlans-inactiveCustomConfigWarning"
-                >This plan referenced inactive CloudInit configs. They were removed from provisioning options. Save to
+                >This plan referenced inactive cloud-init configs. They were removed from provisioning options. Save to
                 apply the change.</span
               ></fpc-alert
             >
@@ -1744,6 +1747,24 @@
               label="Decabill Billing"
             />
           }
+          @if (
+            serviceEnumIncludes(
+              data.serviceTypes,
+              data.providerDetails,
+              editingPlan.serviceTypeId,
+              'loadweaver',
+              'edit'
+            )
+          ) {
+            <fpc-form-check
+              class="mb-2"
+              checkId="editProvisioningLoadweaver"
+              [checked]="isProvisioningOptionSelected('edit', 'integrated:loadweaver')"
+              (checkedChange)="toggleProvisioningOption('edit', 'integrated:loadweaver', $event)"
+              [disabled]="(updating$ | async) === true"
+              label="Loadweaver"
+            />
+          }
           @for (cfg of cloudInitConfigs$ | async; track cfg.id) {
             <fpc-form-check
               class="mb-2"
@@ -1762,27 +1783,33 @@
       ) {
         @if (cloudInitConfigs$ | async; as cloudInitConfigs) {
           @if (hasProductDefaultsSection('edit', schema, cloudInitConfigs)) {
-            <div class="mb-3 border rounded p-3 bg-body-secondary">
-              <div class="d-flex justify-content-between align-items-center gap-2">
-                <h6 class="mb-0" i18n="@@featureServicePlans-productDefaults">Product defaults</h6>
-                <fpc-button
-                  variant="dark"
-                  size="sm"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#editProductDefaults"
-                  [attr.aria-expanded]="editProductDefaultsExpanded()"
-                  aria-controls="editProductDefaults"
-                  [attr.title]="editProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel"
-                  [ariaLabel]="editProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel"
-                  class="flex-shrink-0"
-                >
-                  @if (editProductDefaultsExpanded()) {
-                    <i class="bi bi-eye-slash" aria-hidden="true"></i>
-                  } @else {
-                    <i class="bi bi-eye" aria-hidden="true"></i>
-                  }
-                </fpc-button>
-              </div>
+            <div class="mb-3">
+              <fpc-list-header
+                class="d-block mb-2"
+                title="Product defaults"
+                i18n-title="@@featureServicePlans-productDefaults"
+                [sticky]="false"
+              >
+                <span fpcListHeaderActions class="d-flex align-items-center gap-1">
+                  <fpc-button
+                    variant="dark"
+                    size="sm"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#editProductDefaults"
+                    [attr.aria-expanded]="editProductDefaultsExpanded()"
+                    aria-controls="editProductDefaults"
+                    [attr.title]="editProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel"
+                    [ariaLabel]="editProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel"
+                    class="flex-shrink-0"
+                  >
+                    @if (editProductDefaultsExpanded()) {
+                      <i class="bi bi-eye-slash" aria-hidden="true"></i>
+                    } @else {
+                      <i class="bi bi-eye" aria-hidden="true"></i>
+                    }
+                  </fpc-button>
+                </span>
+              </fpc-list-header>
               <div
                 class="collapse"
                 id="editProductDefaults"
@@ -1793,7 +1820,7 @@
                   class="form-text text-body-secondary small mb-3 mt-2"
                   i18n="@@featureServicePlans-productDefaultsHelp"
                 >
-                  Defaults for integrated stacks and CloudInit environment variables required by the selected customer
+                  Defaults for integrated stacks and cloud-init environment variables required by the selected customer
                   options.
                 </p>
                 @for (key of getProductProviderConfigKeysForForm('edit', schema); track key) {
@@ -1949,10 +1976,15 @@
           as availableAddons
         ) {
           @if (availableAddons.length > 0) {
-            <div class="mb-3 border rounded p-3 bg-body-secondary">
-              <h6 class="mb-2" i18n="@@featureServicePlans-addons">Customer-selectable addons</h6>
+            <div class="mb-3">
+              <fpc-list-header
+                class="d-block mb-2"
+                title="Customer-selectable add-ons"
+                i18n-title="@@featureServicePlans-addons"
+                [sticky]="false"
+              />
               <p class="form-text text-body-secondary small mb-3" i18n="@@featureServicePlans-addonsHelp">
-                Choose which addons customers may add when ordering this plan.
+                Choose which add-ons customers may add when ordering this plan.
               </p>
               @for (addon of availableAddons; track addon.id) {
                 <div class="mb-2">
@@ -1980,7 +2012,7 @@
                       <label class="form-check-label small" [for]="'editAddonMandatory_' + addon.id">
                         <span i18n="@@featureServicePlans-mandatoryAddon">Mandatory</span>
                         <span class="d-block text-body-secondary" i18n="@@featureServicePlans-mandatoryAddonHelp"
-                          >Customers cannot deselect this addon when ordering.</span
+                          >Customers cannot deselect this add-on when ordering.</span
                         >
                       </label>
                     </fpc-form-check>
@@ -2051,7 +2083,7 @@
         label="Active"
       />
     }
-    <div *fpcModalFooter>
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
       <fpc-button
         variant="primary"
         type="submit"
@@ -2087,8 +2119,13 @@
 </fpc-confirm-dialog>
 
 <ng-template #planMetersSection let-mode="mode" let-billInAdvance="billInAdvance" let-disabled="disabled">
-  <div class="mb-3 border rounded p-3 bg-body-secondary">
-    <h6 class="mb-2" i18n="@@featureServicePlans-meters">Usage meters</h6>
+  <div class="mb-3">
+    <fpc-list-header
+      class="d-block mb-2"
+      title="Usage meters"
+      i18n-title="@@featureServicePlans-meters"
+      [sticky]="false"
+    />
     <p class="form-text text-body-secondary small mb-3" i18n="@@featureServicePlans-metersHelp">
       Attach usage meters billed in arrears. Optional unit price and included usage override catalog defaults.
     </p>
@@ -2112,7 +2149,7 @@
             <span class="font-monospace text-break">{{ attached.key }}</span>
             <span class="text-body-secondary">{{ attached.aggregator }}</span>
             <span class="text-body-secondary"
-              >€{{ attached.effectiveUnitPriceNet }}
+              >{{ attached.effectiveUnitPriceNet | fpcMoney: null : { unitPrice: true } }}
               @if (attached.unitLabel) {
                 / {{ attached.unitLabel }}
               }
@@ -2207,7 +2244,8 @@
     @if (activeMeters$ | async; as meters) {
       @if (availableMetersForPlanAttach(meters, mode); as availableMeters) {
         @if (availableMeters.length > 0) {
-          <div class="row g-2 align-items-end">
+          <!-- DB-07 / DB-08 d: one control line (gutter-grid fields have no bottom margin), so the "+" carries none either; the row spaces itself. -->
+          <div class="row g-2 gy-3 mb-3 align-items-end">
             <div class="col-12 col-md-5">
               <fpc-form-field
                 [forId]="mode + 'AttachMeter'"
@@ -2246,7 +2284,7 @@
               </fpc-form-field>
             </div>
             <div class="col-12 col-md-5">
-              <div class="row g-2">
+              <div class="row g-2 gy-3">
                 <div class="col-12 col-md-6">
                   <fpc-form-field
                     [forId]="mode + 'AttachMeterPrice'"

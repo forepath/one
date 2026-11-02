@@ -110,8 +110,8 @@ export class AuthenticationFacade {
     this.store.dispatch(checkAuthentication());
   }
 
-  register(email: string, password: string): void {
-    this.store.dispatch(register({ email, password }));
+  register(email: string, password: string, adminClaimToken?: string): void {
+    this.store.dispatch(register(adminClaimToken ? { email, password, adminClaimToken } : { email, password }));
   }
 
   confirmEmail(email: string, code: string): void {

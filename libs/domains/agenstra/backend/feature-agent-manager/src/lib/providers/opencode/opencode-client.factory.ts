@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 
 import { AgentsRepository } from '../../repositories/agents.repository';
-import { DockerService } from '../../services/docker.service';
+import { AgentRuntime } from '../../runtime/agent-runtime';
 
 import { OPENCODE_SERVER_PORT, OPENCODE_SERVER_USERNAME_DEFAULT } from './opencode-provider.config';
 import type { CreateOpencodeClient, OpencodeClient } from './opencode-sdk.types';
@@ -31,7 +31,7 @@ export class OpenCodeClientFactory {
 
   constructor(
     private readonly agentsRepository: AgentsRepository,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
   ) {}
 
   private loadCreateClient(): Promise<CreateOpencodeClient> {
@@ -62,7 +62,7 @@ export class OpenCodeClientFactory {
   }
 
   async resolveBaseUrl(containerId: string): Promise<string> {
-    return this.dockerService.resolveContainerHttpBaseUrl(containerId, OPENCODE_SERVER_PORT);
+    return this.runtime.resolveContainerHttpBaseUrl(containerId, OPENCODE_SERVER_PORT);
   }
 
   /**

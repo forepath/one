@@ -3,8 +3,8 @@ export const HOST_PROVIDER_CONFIG_PROPERTIES: Record<string, Record<string, unkn
   service: {
     type: 'string',
     description:
-      'Product service: agenstra-controller (full stack), agenstra-manager (agent manager only), decabill-billing (Decabill stack), or custom (admin CloudInit template)',
-    enum: ['agenstra-controller', 'agenstra-manager', 'decabill-billing', 'custom'],
+      'Product service: agenstra-controller (full stack), agenstra-manager (agent manager only), decabill-billing (Decabill stack), loadweaver (single-node Loadweaver cluster), or custom (admin CloudInit template)',
+    enum: ['agenstra-controller', 'agenstra-manager', 'decabill-billing', 'loadweaver', 'custom'],
   },
   cloudInitConfigId: {
     type: 'string',

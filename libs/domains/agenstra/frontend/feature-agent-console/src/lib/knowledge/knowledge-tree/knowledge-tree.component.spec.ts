@@ -1,3 +1,4 @@
+import { SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KnowledgeFacade, type KnowledgeNodeDto } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { Actions } from '@ngrx/effects';
@@ -124,6 +125,37 @@ describe('KnowledgeTreeComponent selection', () => {
     expect(component.isNodeOpen('page')).toBe(true);
     expect(component.isNodeSelected('page')).toBe(false);
     expect(component.isNodeSelected('a')).toBe(true);
+  });
+
+  it('reveals the open page: expands its folders once, so a later collapse sticks', () => {
+    seedTree();
+    component.expandedNodeIds.set(new Set());
+    const folder = component.nodes[0];
+
+    component.selectedNodeId = 'b';
+    component.ngOnChanges({ selectedNodeId: new SimpleChange(null, 'b', false) });
+
+    expect(component.isExpanded(folder)).toBe(true);
+    expect(component.isNodeOpen('b')).toBe(true);
+
+    component.onToggleExpand('folder');
+    component.ngOnChanges({ nodes: new SimpleChange([], component.nodes, false) });
+
+    expect(component.isExpanded(folder)).toBe(false);
+  });
+
+  it('reveals a deep-linked page once the tree has loaded it', () => {
+    const nodes = component.nodes;
+
+    component.nodes = [];
+    component.selectedNodeId = 'b';
+    component.ngOnChanges({ selectedNodeId: new SimpleChange(null, 'b', false) });
+    component.nodes = nodes;
+    seedTree();
+    component.expandedNodeIds.set(new Set());
+    component.ngOnChanges({ nodes: new SimpleChange([], component.nodes, false) });
+
+    expect(component.isExpanded(component.nodes[0])).toBe(true);
   });
 
   it('marks clipboard copy and cut roots for row highlight', () => {

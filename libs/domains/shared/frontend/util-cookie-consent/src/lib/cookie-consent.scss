@@ -10,13 +10,13 @@
 
   &:not(.cc-deny) {
     background-color: var(--bs-primary) !important;
-    color: #fff !important;
+    color: var(--fpc-primary-contrast, #fff) !important;
     border-color: transparent !important;
 
     &:hover,
     &:focus {
       background-color: var(--bs-primary-dark, var(--bs-primary)) !important;
-      color: #fff !important;
+      color: var(--fpc-primary-contrast, #fff) !important;
     }
   }
 

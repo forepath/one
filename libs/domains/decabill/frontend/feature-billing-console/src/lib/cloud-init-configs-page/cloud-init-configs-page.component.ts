@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal, type WritableSignal } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, OnInit, signal, type WritableSignal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   CloudInitConfigsFacade,
@@ -13,26 +13,29 @@ import {
 import {
   FpcAlertComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcConfirmDialogComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcFormSwitchComponent,
-  FpcListComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
-  FpcListItemComponent,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
-  FpcSpinnerComponent,
+  fpcRunBulk,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  FpcListHeaderComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { debounceTime, distinctUntilChanged, skip, take } from 'rxjs';
+import { debounceTime, distinctUntilChanged, firstValueFrom, skip, take } from 'rxjs';
 
-import { getActiveStatusLabel, getActiveStatusTextClass, getUnavailableLabel } from '../billing-status-labels';
+import { getUnavailableLabel } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { MonacoEditorWrapperComponent } from '../monaco-editor-wrapper/monaco-editor-wrapper.component';
+import { DB_DL_CANCEL, DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
+import { activeState } from '../shared/table-states';
 
 interface EnvVariableFormRow {
   key: string;
@@ -99,9 +102,12 @@ log "Provisioning completed"
 `;
 
 const PROVISIONING_MODE_OPTIONS: Array<{ value: CloudInitProvisioningMode; label: string }> = [
-  { value: 'simple', label: 'Simple (single Docker image)' },
-  { value: 'compose-template', label: 'Docker Compose template' },
-  { value: 'user-data-template', label: 'Full cloud-init user-data' },
+  { value: 'simple', label: $localize`:@@featureCloudInitConfigs-modeSimple:Simple (single Docker image)` },
+  { value: 'compose-template', label: $localize`:@@featureCloudInitConfigs-modeCompose:Docker Compose template` },
+  {
+    value: 'user-data-template',
+    label: $localize`:@@featureCloudInitConfigs-modeUserData:Full cloud-init user-data`,
+  },
 ];
 
 const MIN_RANDOM_DEFAULT_LENGTH = 21;
@@ -110,12 +116,13 @@ const MIN_RANDOM_DEFAULT_LENGTH = 21;
   selector: 'framework-billing-cloud-init-configs-page',
   standalone: true,
   imports: [
+    FpcListHeaderComponent,
     CommonModule,
     FormsModule,
     MonacoEditorWrapperComponent,
     FpcAlertComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
+    FpcDataTableComponent,
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
@@ -123,12 +130,8 @@ const MIN_RANDOM_DEFAULT_LENGTH = 21;
     FpcFormSwitchComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
-    FpcListItemComponent,
-    FpcListComponent,
     FpcEmptyStateComponent,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
-    FpcSpinnerComponent,
   ],
   templateUrl: './cloud-init-configs-page.component.html',
   styleUrls: ['./cloud-init-configs-page.component.scss'],
@@ -138,7 +141,7 @@ export class CloudInitConfigsPageComponent implements OnInit {
   readonly editModalOpen = signal(false);
   readonly deleteConfirmModalOpen = signal(false);
 
-  readonly pageTitle = $localize`:@@featureCloudInitConfigs-title:CloudInit Configs`;
+  readonly pageTitle = $localize`:@@featureCloudInitConfigs-title:Cloud-init configs`;
   readonly addConfigAriaLabel = $localize`:@@featureCloudInitConfigs-add:Add config`;
   readonly searchPlaceholder = $localize`:@@featureCloudInitConfigs-searchPlaceholder:Search configs`;
 
@@ -148,7 +151,9 @@ export class CloudInitConfigsPageComponent implements OnInit {
 
   readonly searchQuery = signal('');
   readonly searchQuery$ = toObservable(this.searchQuery);
-  readonly cloudInitConfigs$ = this.facade.getCloudInitConfigs$();
+  readonly cloudInitConfigs = toSignal(this.facade.getCloudInitConfigs$(), {
+    initialValue: [] as CloudInitConfigResponse[],
+  });
   readonly loading$ = this.facade.getCloudInitConfigsLoading$();
   readonly loadingAny$ = this.facade.getCloudInitConfigsLoadingAny$();
   readonly error$ = this.facade.getCloudInitConfigsError$();
@@ -159,6 +164,73 @@ export class CloudInitConfigsPageComponent implements OnInit {
   readonly provisioningModeOptions = PROVISIONING_MODE_OPTIONS;
   readonly templatePlaceholderHelp =
     'Placeholders: {{HOSTNAME}}, {{FQDN}}, {{WORK_DIR}}, {{SSH_PUBLIC_KEY}}, {{DOCKER_IMAGE}}, {{CONTAINER_PORT}}, {{HOST_PORT}}, {{env.VAR_KEY}}';
+
+  readonly columns: FpcTableColumn<CloudInitConfigResponse>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureCloudInitConfigs-colStatus:Status`,
+      type: 'state',
+      state: (config) => activeState(config.isActive),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureCloudInitConfigs-colName:Config`,
+      value: (config) => config.name,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'key',
+      label: $localize`:@@featureAddons-colKey:Key`,
+      value: (config) => this.configKeyLabel(config.key),
+      mono: true,
+      priority: 3,
+    },
+    {
+      id: 'mode',
+      label: $localize`:@@featureCloudInitConfigs-colMode:Mode`,
+      value: (config) => this.provisioningModeLabel(config.provisioningMode ?? 'simple'),
+      priority: 1,
+    },
+    {
+      id: 'image',
+      label: $localize`:@@featureCloudInitConfigs-colImage:Image`,
+      value: (config) => this.configSummaryLabel(config),
+      priority: 2,
+    },
+    {
+      id: 'env',
+      label: $localize`:@@featureCloudInitConfigs-colEnvVars:Env vars`,
+      value: (config) => this.envVarCount(config),
+      align: 'end',
+      priority: 3,
+    },
+  ];
+
+  readonly editLabel = $localize`:@@featureCloudInitConfigs-edit:Edit config`;
+  readonly deleteLabel = DB_DL_DELETE;
+  readonly cancelLabel = DB_DL_CANCEL;
+  readonly activateLabel = $localize`:@@featureMeters-bulkActivate:Activate`;
+  readonly deactivateLabel = $localize`:@@featureMeters-bulkDeactivate:Deactivate`;
+  readonly bulkDeleteTitle = $localize`:@@featureCloudInitConfigs-bulkDeleteTitle:Delete configs?`;
+
+  readonly selected = signal<readonly string[]>([]);
+  readonly confirmBulkDelete = signal(false);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly selectedConfigs = computed(() => {
+    const ids = new Set(this.selected());
+
+    return this.cloudInitConfigs().filter((config) => ids.has(config.id));
+  });
+  readonly bulkDeleteMessage = computed(
+    () =>
+      $localize`:@@featureCloudInitConfigs-bulkDeleteMessage:${this.selectedConfigs().length}:count: selected configs will be deleted. Configs still used by service plans are reported and left as they are.`,
+  );
+  readonly rowMenu = (): FpcMenuItem[] => [
+    { id: 'edit', label: this.editLabel, icon: 'pencil' },
+    { id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true },
+    dbCopyIdItem(),
+  ];
 
   createForm: CloudInitConfigForm = this.getDefaultCreateForm();
   editForm: UpdateCloudInitConfigDto & { id: string; environmentVariableRows: EnvVariableFormRow[] } =
@@ -223,12 +295,42 @@ export class CloudInitConfigsPageComponent implements OnInit {
     return config.environmentVariables?.length ?? 0;
   }
 
-  activeStatusLabel(isActive: boolean): string {
-    return getActiveStatusLabel(isActive);
+  onRowAction(config: CloudInitConfigResponse, action: string): void {
+    if (action === 'edit') this.openEditModal(config);
+    else if (action === 'delete') this.openDeleteConfirm(config);
+    else if (action === 'copy-id') fpcCopyText(config.id);
   }
 
-  activeStatusTextClass(isActive: boolean): string {
-    return getActiveStatusTextClass(isActive);
+  /** Bulk Activate / Deactivate: one `updateCloudInitConfig` per config whose state changes (same call as Edit). */
+  async setActiveSelected(isActive: boolean): Promise<void> {
+    const configs = this.selectedConfigs().filter((config) => config.isActive !== isActive);
+
+    if (configs.length === 0) return;
+
+    const result = await fpcRunBulk(configs, (config) =>
+      firstValueFrom(this.cloudInitConfigsService.updateCloudInitConfig(config.id, { isActive })),
+    );
+
+    this.finishBulk(dbBulkSummary(result, (config) => config.name));
+  }
+
+  /** Bulk Delete: one `deleteCloudInitConfig` per config. */
+  async deleteSelected(): Promise<void> {
+    const configs = this.selectedConfigs();
+
+    if (configs.length === 0) return;
+
+    const result = await fpcRunBulk(configs, (config) =>
+      firstValueFrom(this.cloudInitConfigsService.deleteCloudInitConfig(config.id)),
+    );
+
+    this.finishBulk(dbBulkSummary(result, (config) => config.name));
+  }
+
+  private finishBulk(result: DbBulkResult): void {
+    this.bulkResult.set(result);
+    this.selected.set([]);
+    this.facade.loadCloudInitConfigs({ search: this.searchQuery().trim() || undefined });
   }
 
   configKeyLabel(key: string | null | undefined): string {
@@ -282,15 +384,11 @@ export class CloudInitConfigsPageComponent implements OnInit {
   }
 
   configSummaryLabel(config: CloudInitConfigResponse): string {
-    if (config.provisioningMode === 'user-data-template') {
-      return 'Custom user-data';
+    if (config.provisioningMode === 'user-data-template' || config.provisioningMode === 'compose-template') {
+      return '';
     }
 
-    if (config.provisioningMode === 'compose-template') {
-      return 'Compose template';
-    }
-
-    return config.dockerImage?.trim() || 'No image';
+    return config.dockerImage?.trim() || $localize`:@@featureCloudInitConfigs-noImage:No image`;
   }
 
   addEnvVariable(form: 'create' | 'edit'): void {

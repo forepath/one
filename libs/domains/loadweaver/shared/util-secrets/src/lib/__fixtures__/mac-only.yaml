@@ -1,0 +1,7 @@
+service:
+  image: nginx:1.27
+  replicas: 2
+  password_secret: s3cr3t
+  nested_secret:
+    key: value
+    count: 7

@@ -1,0 +1,380 @@
+@use 'sass:math';
+@use 'brands/chrome';
+
+// Shared control-height scale. Every control that can sit in a row with others (buttons incl.
+// icon-only, selects, inputs, search / typeahead strips, pagination links, pager page-size select,
+// segmented `.btn-group` toggles, badge-as-control chips) resolves its height from one token per
+// size, so a toolbar / page header / lane header / pager lines up without per-page tweaks.
+//
+//   --fpc-control-height-sm      `size="sm"` controls (lane headers, toolbars, pagers, footers)
+//   --fpc-control-height-md      default controls (forms, dialogs)
+//   --fpc-control-height-lg      `size="lg"` controls
+//   --fpc-control-height-header  page / object header actions (icon-only `sm` buttons and every
+//                                other `sm` control in that row)
+//
+// Comfortable density = the natural Bootstrap metrics of the shared chrome (font sizes + control
+// padding in `brands/_chrome.scss`), so nothing moves there. `body.fpc-density-compact` (default
+// where `FpcDensityService` runs) steps every tier down a little.
+//
+// The heights are applied by deriving the block padding from the token (single-line controls end
+// up exactly at the token; wrapped labels still grow). Utilities such as `p-0` / `py-*` keep
+// winning (`!important`), so inline link buttons are unaffected.
+
+$_border: 1px;
+$_line-height: 1.5;
+$_font-size-sm: chrome.$font-size-base * 0.875;
+$_font-size-lg: chrome.$font-size-base * 1.25;
+
+$control-height-sm: $_font-size-sm * $_line-height + 2 * chrome.$input-btn-padding-y-sm + math.div(2 * $_border, 16px) *
+  1rem;
+$control-height-md: chrome.$font-size-base * $_line-height + 2 * chrome.$input-btn-padding-y +
+  math.div(2 * $_border, 16px) * 1rem;
+$control-height-lg: $_font-size-lg * $_line-height + 2 * chrome.$input-btn-padding-y-lg + math.div(2 * $_border, 16px) *
+  1rem;
+$control-height-header: 2.35rem;
+
+$control-height-sm-compact: 1.875rem;
+$control-height-md-compact: 2.25rem;
+$control-height-header-compact: 2.125rem;
+
+:root {
+  --fpc-control-height-sm: #{$control-height-sm};
+  --fpc-control-height-md: #{$control-height-md};
+  --fpc-control-height-lg: #{$control-height-lg};
+  --fpc-control-height-header: #{$control-height-header};
+}
+
+body.fpc-density-compact {
+  --fpc-control-height-sm: #{$control-height-sm-compact};
+  --fpc-control-height-md: #{$control-height-md-compact};
+  --fpc-control-height-header: #{$control-height-header-compact};
+}
+
+// Page / object header rows: every `sm` control takes the header tier so text buttons, selects
+// and search strips match the square icon-only actions. Menus opened from the header keep the
+// regular `sm` tier.
+.fpc-page-header,
+.fpc-object-header__head {
+  --fpc-control-height-sm: var(--fpc-control-height-header);
+
+  .dropdown-menu {
+    --fpc-control-height-sm: #{$control-height-sm};
+  }
+}
+
+body.fpc-density-compact :is(.fpc-page-header, .fpc-object-header__head) .dropdown-menu {
+  --fpc-control-height-sm: #{$control-height-sm-compact};
+}
+
+// Top bar (from md, where Logout is `mdSize="md"`): every `sm` control in the bar (cluster chip, search trigger,
+// Create, icon actions, language switcher) takes the md tier, so the whole row is one height; their inline padding
+// steps up with it (`--fpc-top-bar-control-padding-x`, = Bootstrap's md button padding). Phones keep sm (Logout
+// too). Menus opened from the bar keep the regular `sm` tier. Compact bars (tool windows: language + theme only) take
+// the same tier, so the language select is one height in every bar (round 2, 2026-10-29).
+@media (min-width: 768px) {
+  .fpc-top-bar {
+    --fpc-control-height-sm: var(--fpc-control-height-md);
+    --fpc-top-bar-control-padding-x: 0.75rem;
+
+    // One label size across the bar: `sm` buttons (Draft, icon actions) take the md text size like Logout / search.
+    .btn-sm:not(.dropdown-item) {
+      --bs-btn-font-size: #{chrome.$font-size-base};
+    }
+
+    .dropdown-menu {
+      --fpc-control-height-sm: #{$control-height-sm};
+    }
+  }
+
+  body.fpc-density-compact .fpc-top-bar .dropdown-menu {
+    --fpc-control-height-sm: #{$control-height-sm-compact};
+  }
+}
+
+// --- Buttons -------------------------------------------------------------------------------------
+// `--fpc-control-h` is the resolved height of this control; the padding follows from it.
+@mixin _btn-padding {
+  --bs-btn-padding-y: max(
+    0px,
+    calc(
+      (var(--fpc-control-h) - var(--bs-btn-font-size) * var(--bs-btn-line-height) - 2 * var(--bs-btn-border-width)) / 2
+    )
+  );
+}
+
+.btn {
+  --fpc-control-h: var(--fpc-control-height-md);
+  @include _btn-padding;
+}
+
+.btn-sm {
+  --fpc-control-h: var(--fpc-control-height-sm);
+}
+
+.btn-lg {
+  --fpc-control-h: var(--fpc-control-height-lg);
+}
+
+// Group / input-group sizing: Bootstrap sets these with a higher specificity than `.btn` (and the
+// input-group ones with `padding` / `font-size` directly), so restate the derived padding here.
+.btn-group-sm > .btn,
+.input-group-sm > .btn {
+  --fpc-control-h: var(--fpc-control-height-sm);
+  --bs-btn-font-size: #{$_font-size-sm};
+  @include _btn-padding;
+  padding-top: var(--bs-btn-padding-y);
+  padding-bottom: var(--bs-btn-padding-y);
+}
+
+.btn-group-lg > .btn,
+.input-group-lg > .btn {
+  --fpc-control-h: var(--fpc-control-height-lg);
+  --bs-btn-font-size: #{$_font-size-lg};
+  @include _btn-padding;
+  padding-top: var(--bs-btn-padding-y);
+  padding-bottom: var(--bs-btn-padding-y);
+}
+
+// --- Form controls / selects / addons ---------------------------------------------------------
+@mixin _field-height($height) {
+  --fpc-control-h: #{$height};
+  min-height: var(--fpc-control-h);
+  padding-top: max(0px, calc((var(--fpc-control-h) - #{$_line-height}em - 2 * var(--bs-border-width)) / 2));
+  padding-bottom: max(0px, calc((var(--fpc-control-h) - #{$_line-height}em - 2 * var(--bs-border-width)) / 2));
+}
+
+$_field: '.form-control:not(textarea, [type="file"], .form-control-color, .form-control-plaintext)';
+$_select: '.form-select:not([multiple], [size])';
+
+#{$_field},
+#{$_select},
+.input-group-text {
+  @include _field-height(var(--fpc-control-height-md));
+}
+
+#{$_field}.form-control-sm,
+#{$_select}.form-select-sm,
+.input-group-sm > #{$_field},
+.input-group-sm > #{$_select},
+.input-group-sm > .input-group-text {
+  @include _field-height(var(--fpc-control-height-sm));
+}
+
+#{$_field}.form-control-lg,
+#{$_select}.form-select-lg,
+.input-group-lg > #{$_field},
+.input-group-lg > #{$_select},
+.input-group-lg > .input-group-text {
+  @include _field-height(var(--fpc-control-height-lg));
+}
+
+// --- Pagination ---------------------------------------------------------------------------------
+// Page links (numbers, arrows, "Page x") use the same tier as the buttons / page-size select next
+// to them; arrow and single-digit links are square.
+.pagination {
+  --fpc-control-h: var(--fpc-control-height-md);
+  --bs-pagination-padding-y: max(
+    0px,
+    calc(
+      (
+          var(--fpc-control-h) - var(--bs-pagination-font-size) * #{$_line-height} - 2 *
+            var(--bs-pagination-border-width)
+        ) /
+        2
+    )
+  );
+
+  .page-link {
+    line-height: $_line-height;
+    min-width: var(--fpc-control-h);
+    min-height: var(--fpc-control-h);
+  }
+}
+
+.pagination-sm {
+  --fpc-control-h: var(--fpc-control-height-sm);
+}
+
+.pagination-lg {
+  --fpc-control-h: var(--fpc-control-height-lg);
+}
+
+// --- Icon-only raw buttons -----------------------------------------------------------------------
+// Same square as `fpc-button [iconOnly]` for plain `<button class="btn …">` icon controls that can't be an
+// `fpc-button` (dropdown triggers such as a table's column chooser, refresh in a table strip): one square at the
+// tier's control height, so every icon control in a toolbar row lines up.
+.btn.fpc-icon-btn {
+  --fpc-icon-btn-size: var(--fpc-control-height-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: var(--fpc-icon-btn-size);
+  height: var(--fpc-icon-btn-size);
+  min-width: var(--fpc-icon-btn-size);
+  padding: 0;
+  line-height: 1;
+
+  &.btn-sm {
+    --fpc-icon-btn-size: var(--fpc-control-height-sm);
+  }
+
+  &.btn-lg {
+    --fpc-icon-btn-size: var(--fpc-control-height-lg);
+  }
+}
+
+// --- Toolbar strip buttons -----------------------------------------------------------------------
+// One quiet treatment for every button in a list / table toolbar strip, modelled on the strip's Filters toggle: no
+// box (transparent background and border, no shadow), body-coloured text + icon, link colour on hover / open
+// (`aria-expanded`, `.show`), the strip's md control height and body font size even for `size="sm"` controls. Text
+// buttons sit flush (no inline padding, 0.5rem icon / label gap); icon-only ones keep their square, at md. A
+// `.dropdown-toggle` caret becomes the toggle's chevron. Primary actions keep a link-coloured label as the only cue.
+//
+// Applied by class (`.fpc-toolbar-btn`: the strip's own Filters / Clear all buttons) and by context, so pages need no
+// changes: buttons projected into `[fpcListToolbarActions]` (incl. the data table's Views / columns / Refresh /
+// `[fpcDataTableToolbar]`) and into `[fpcDataTableHeadToolbar]`. Menus, segmented groups and the drawer keep theirs.
+@mixin toolbar-btn {
+  --fpc-control-h: var(--fpc-control-height-md);
+  --fpc-icon-btn-size: var(--fpc-control-height-md);
+  --fpc-button-icon-size: var(--fpc-control-height-md);
+  --bs-btn-font-size: #{chrome.$font-size-base};
+  --bs-btn-padding-x: 0;
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: var(--bs-link-hover-color);
+  --bs-btn-hover-bg: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: var(--bs-link-color);
+  --bs-btn-active-bg: transparent;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: var(--bs-body-color);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+  --bs-btn-box-shadow: none;
+  --bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  min-height: var(--fpc-control-height-md);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: none;
+  }
+
+  &[aria-expanded='true'] {
+    color: var(--bs-btn-active-color);
+  }
+
+  &.btn-primary {
+    --bs-btn-color: var(--bs-link-color);
+    --bs-btn-disabled-color: var(--bs-link-color);
+  }
+
+  &.dropdown-toggle::after {
+    content: '\F282';
+    font-family: 'bootstrap-icons';
+    font-size: 1em;
+    line-height: 1;
+    vertical-align: 0;
+    margin-left: 0;
+    border: 0;
+  }
+
+  &.dropdown-toggle:is(.show, [aria-expanded='true'])::after {
+    content: '\F286';
+  }
+
+  // Count badge (e.g. active filters on the Filters toggle): compact, never taller than the label's line, so the
+  // button keeps the strip's md height (user, 2026-10-28).
+  .fpc-badge {
+    font-size: 0.6875rem;
+    line-height: 1;
+    padding: 0.1875rem 0.375rem;
+  }
+}
+
+.btn.fpc-toolbar-btn,
+:is(.fpc-list-toolbar__actions, .fpc-data-table__toolbar-cell > :not(fpc-list-toolbar))
+  .btn:not(.dropdown-item, .btn-group > .btn, .dropdown-menu .btn, .fpc-list-toolbar__body .btn) {
+  @include toolbar-btn;
+}
+
+// Icon-only controls in a toolbar strip hug their glyph like the flush text buttons (no square box around the icon):
+// the strip's gap is the only spacing between the search and the actions (user, 2026-10-28). Height stays md.
+.btn.fpc-toolbar-btn.fpc-icon-btn,
+:is(.fpc-list-toolbar__actions, .fpc-data-table__toolbar-cell > :not(fpc-list-toolbar))
+  :is(.btn.fpc-icon-btn, .btn.fpc-button__btn--icon):not(.dropdown-menu .btn, .fpc-list-toolbar__body .btn) {
+  width: auto;
+  min-width: 0;
+  aspect-ratio: auto;
+  padding-inline: 0;
+}
+
+// --- Header action tier (X-06 / AG-04 / AG-12 / DB-16 / DB-22 / LW-06, 2026-10-29) ---------------------------------
+// Page / object / lane / dock headers and summary-card action rows had no quiet secondary tier: secondary icon buttons
+// were filled black / grey squares, next to filled orange / teal / purple ones and inline red destructive squares. In
+// those action slots every non-primary button now renders quiet: transparent fill, the shared border edge, body ink,
+// a tertiary fill on hover (the top bar's "faint control" language). Primary stays the one filled action; danger
+// keeps a danger ink without the red square (destructive actions belong in the ⋮ More menu, 3.38 R8). Pages need no
+// changes; `variant` keeps choosing the tier (`primary` = filled, anything else = quiet, `danger` = quiet danger).
+@mixin quiet-btn {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: var(--bs-border-color);
+  --bs-btn-hover-color: var(--bs-emphasis-color);
+  --bs-btn-hover-bg: var(--bs-tertiary-bg);
+  --bs-btn-hover-border-color: var(--bs-border-color);
+  --bs-btn-active-color: var(--bs-emphasis-color);
+  --bs-btn-active-bg: var(--bs-secondary-bg);
+  --bs-btn-active-border-color: var(--bs-border-color);
+  --bs-btn-disabled-color: var(--bs-secondary-color);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: var(--bs-border-color);
+  --bs-btn-box-shadow: none;
+}
+
+@mixin quiet-danger-btn {
+  @include quiet-btn;
+  --bs-btn-color: var(--bs-danger-text-emphasis);
+  --bs-btn-hover-color: var(--bs-danger-text-emphasis);
+  --bs-btn-hover-bg: var(--bs-danger-bg-subtle);
+  --bs-btn-hover-border-color: var(--bs-danger-border-subtle);
+  --bs-btn-active-color: var(--bs-danger-text-emphasis);
+  --bs-btn-active-bg: var(--bs-danger-bg-subtle);
+  --bs-btn-active-border-color: var(--bs-danger-border-subtle);
+}
+
+$_header-action-slots: '.fpc-page-header__actions, .fpc-object-header__actions, .fpc-lane-header__actions, .fpc-dock-panel__actions, .fpc-summary-card__actions';
+$_quiet-variants: '.btn-dark, .btn-secondary, .btn-info, .btn-success, .btn-warning, .btn-light, .btn-outline-dark, .btn-outline-secondary';
+
+:is(#{$_header-action-slots}) .btn:is(#{$_quiet-variants}):not(.dropdown-item, .dropdown-menu .btn) {
+  @include quiet-btn;
+}
+
+:is(#{$_header-action-slots}) .btn:is(.btn-danger, .btn-outline-danger):not(.dropdown-item, .dropdown-menu .btn) {
+  @include quiet-danger-btn;
+}
+
+// Summary-card actions sit over the card's faint glyph: one quiet style for all of them (incl. primary), on an opaque
+// body fill so the glyph never shows through (DB-16).
+.fpc-summary-card__actions .btn:is(.btn-primary, .btn-outline-primary):not(.dropdown-item, .dropdown-menu .btn) {
+  @include quiet-btn;
+}
+
+.fpc-summary-card__actions .btn:not(.dropdown-item, .dropdown-menu .btn) {
+  --bs-btn-bg: var(--bs-body-bg);
+  --bs-btn-disabled-bg: var(--bs-body-bg);
+}
+
+// Segmented toggles (view switch Table / Lanes, DB-13 / AG-12 / X-13): inside an `fpc-button-group`, an unpressed
+// option (`ariaPressed` false) is quiet, so only the pressed one carries the fill.
+.fpc-button-group .btn[aria-pressed='false']:not(.dropdown-item) {
+  @include quiet-btn;
+}

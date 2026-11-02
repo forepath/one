@@ -118,7 +118,9 @@
       <div class="d-flex justify-content-center align-items-center h-100 p-4">
         <div class="text-center text-body-secondary">
           <i class="bi bi-exclamation-triangle fs-4 d-block mb-2"></i>
-          <p class="mb-0 small" i18n="@@featureFileEditor-selectWorkspaceAgent">Please select a workspace and agent</p>
+          <p class="mb-0 small" i18n="@@featureFileEditor-selectWorkspaceAgent">
+            Please select a workspace and environment
+          </p>
         </div>
       </div>
     }
@@ -346,7 +348,7 @@
 <fpc-modal
   [(open)]="showFileUpdateModal"
   i18n-title="@@featureFileEditor-externalChangesTitle"
-  title="External File Changes Detected"
+  title="External file changes detected"
 >
   <p i18n="@@featureFileEditor-externalChangesMessage">
     The file <strong>{{ fileUpdateNotification()?.filePath }}</strong> has been updated by another user while you have
@@ -376,7 +378,7 @@
 <fpc-confirm-dialog
   [(open)]="saveOverrideModalOpen"
   i18n-title="@@featureFileEditor-overrideNewerTitle"
-  title="Override Newer Changes?"
+  title="Override newer changes?"
   i18n-confirmLabel="@@featureFileEditor-save"
   confirmLabel="Save"
   [danger]="true"

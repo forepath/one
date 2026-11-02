@@ -28,9 +28,11 @@ import {
   createMeterEntry$,
   deleteMeterEntry$,
   loadMeterEntries$,
+  reloadMeterEntriesAfterMutation$,
   loadSubscriptionMeters$,
   updateMeterEntry$,
 } from './subscription-meters.effects';
+import { initialSubscriptionMetersState } from './subscription-meters.reducer';
 
 describe('subscriptionMetersEffects', () => {
   let actions$: Actions;
@@ -107,12 +109,30 @@ describe('subscriptionMetersEffects', () => {
     });
   });
 
-  it('loads entries', (done) => {
-    actions$ = of(loadMeterEntries({ subscriptionId: 'sub-1' }));
-    adminBillingService.listSubscriptionMeterEntries.mockReturnValue(of([entry]));
+  it('loads one page of entries with the total (replace-page)', (done) => {
+    actions$ = of(loadMeterEntries({ subscriptionId: 'sub-1', page: 2 }));
+    adminBillingService.listSubscriptionMeterEntries.mockReturnValue(
+      of({ items: [entry], total: 26, limit: 25, offset: 25 }),
+    );
 
     loadMeterEntries$(actions$, adminBillingService).subscribe((result) => {
-      expect(result).toEqual(loadMeterEntriesSuccess({ subscriptionId: 'sub-1', entries: [entry] }));
+      expect(adminBillingService.listSubscriptionMeterEntries).toHaveBeenCalledWith('sub-1', { limit: 25, offset: 25 });
+      expect(result).toEqual(loadMeterEntriesSuccess({ subscriptionId: 'sub-1', entries: [entry], total: 26 }));
+      done();
+    });
+  });
+
+  it('reloads the current entries page after a create / delete', (done) => {
+    const store = {
+      select: jest.fn(() =>
+        of({ ...initialSubscriptionMetersState, subscriptionId: 'sub-1', entriesPage: 3, entriesPageSize: 50 }),
+      ),
+    };
+
+    actions$ = of(deleteMeterEntrySuccess({ subscriptionId: 'sub-1', entryId: 'entry-1' }));
+
+    reloadMeterEntriesAfterMutation$(actions$, store as never).subscribe((result) => {
+      expect(result).toEqual(loadMeterEntries({ subscriptionId: 'sub-1', page: 3, pageSize: 50 }));
       done();
     });
   });

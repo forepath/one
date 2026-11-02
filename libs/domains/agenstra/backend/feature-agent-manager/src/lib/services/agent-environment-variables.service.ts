@@ -18,7 +18,7 @@ import { touchesGitCredentialEnvironment } from './agent-git-credentials.service
 import { AgentMessagesService } from './agent-messages.service';
 import { AgentRuntimeRefreshService } from './agent-runtime-refresh.service';
 import { AgentSessionHydrationService } from './agent-session-hydration.service';
-import { DockerService, type EnvironmentApplyStrategy } from './docker.service';
+import { AgentRuntime, type EnvironmentApplyStrategy } from '../runtime/agent-runtime';
 import {
   EnvironmentProgressService,
   EnvironmentProgressTracker,
@@ -45,7 +45,7 @@ export class AgentEnvironmentVariablesService {
   constructor(
     private readonly agentEnvironmentVariablesRepository: AgentEnvironmentVariablesRepository,
     private readonly agentsRepository: AgentsRepository,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
     private readonly agentMessagesService: AgentMessagesService,
     private readonly agentProviderFactory: AgentProviderFactory,
     private readonly agentSessionHydrationService: AgentSessionHydrationService,
@@ -95,7 +95,7 @@ export class AgentEnvironmentVariablesService {
       progress?.advance('restartingContainer');
     }
 
-    const newContainerId = await this.dockerService.updateContainer(containerId, {
+    const newContainerId = await this.runtime.updateContainer(containerId, {
       env,
       ...isolationRuntimeOptions(agent),
     });
@@ -322,7 +322,7 @@ export class AgentEnvironmentVariablesService {
         return;
       }
 
-      const strategy = await this.dockerService.getEnvironmentApplyStrategy(
+      const strategy = await this.runtime.getEnvironmentApplyStrategy(
         agent.containerId,
         ...isolationRuntimeArgs(agent),
       );
@@ -341,7 +341,7 @@ export class AgentEnvironmentVariablesService {
       const plan = planAgentEnvironmentVariables({
         desired,
         baseline: parseAgentEnvironmentBaseline(agent.environmentVariableBaseline),
-        currentEnv: await this.dockerService.getContainerEnvironmentMap(agent.containerId),
+        currentEnv: await this.runtime.getContainerEnvironmentMap(agent.containerId),
         hints,
       });
       const newContainerId = await this.applyEnvironmentToContainer(
@@ -402,7 +402,7 @@ export class AgentEnvironmentVariablesService {
         continue;
       }
 
-      const currentContainerEnv = await this.dockerService.getContainerEnvironmentMap(agent.containerId);
+      const currentContainerEnv = await this.runtime.getContainerEnvironmentMap(agent.containerId);
       const relevantOverrides: Record<string, string | undefined> = {};
 
       for (const key of changedKeys) {
@@ -427,7 +427,7 @@ export class AgentEnvironmentVariablesService {
         continue;
       }
 
-      const strategy = await this.dockerService.getEnvironmentApplyStrategy(
+      const strategy = await this.runtime.getEnvironmentApplyStrategy(
         agent.containerId,
         ...isolationRuntimeArgs(agent),
       );

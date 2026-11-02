@@ -2,7 +2,10 @@ export type UpdateState = 'up_to_date' | 'update_available' | 'unknown';
 
 export type DependencyHealthStatus = 'healthy' | 'degraded' | 'unknown' | 'not_applicable';
 
-export type ProductScope = 'agenstra' | 'decabill';
+export type ProductScope = 'agenstra' | 'decabill' | 'loadweaver';
+
+/** Release channel: `beta` includes GitHub prereleases. */
+export type UpdateChannel = 'stable' | 'beta';
 
 export interface InstanceDependencyHealth {
   redis: DependencyHealthStatus;
@@ -42,6 +45,8 @@ export interface ReleaseSnapshot {
   publishedAt: string;
   changelog: ChangelogEntry[];
   scopedChangelog: ScopedChangelog;
+  /** A GitHub prerelease (beta channel). */
+  prerelease?: boolean;
 }
 
 export interface UpdatesStatusSummary {
@@ -52,6 +57,8 @@ export interface UpdatesStatusSummary {
   lastCheckStatus: 'success' | 'failed' | 'pending' | 'unknown';
   instanceCount: number;
   outdatedInstanceCount: number;
+  /** The channel the check follows (products with channels). */
+  channel?: UpdateChannel;
 }
 
 export interface UpdatesFullState extends UpdatesStatusSummary {
@@ -86,4 +93,6 @@ export interface GitHubLatestRelease {
   body: string;
   htmlUrl: string;
   publishedAt: string;
+  /** Set for GitHub prereleases (only returned for the beta channel). */
+  prerelease?: boolean;
 }

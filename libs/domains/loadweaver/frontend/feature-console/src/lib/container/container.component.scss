@@ -1,0 +1,170 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden; // Prevent page-level overflow
+}
+
+// Adjust height in Electron context to account for custom titlebar (32px)
+:host-context(body.electron-app) {
+  height: calc(100vh - 32px);
+}
+
+@mixin sidebar-item-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-direction: column;
+  width: 72px;
+  height: 72px;
+  border: 0;
+  outline: 0;
+  background-color: transparent;
+  color: var(--bs-heading-color);
+  text-decoration: none;
+
+  span {
+    &.small {
+      font-size: 0.65rem;
+      // Longer labels (e.g. "Access & audit") wrap onto two lines; keep them centred like the icon.
+      max-width: 100%;
+      padding-inline: 0.25rem;
+      line-height: 1.15;
+      text-align: center;
+    }
+  }
+}
+
+@mixin sidebar-item-states {
+  &.active {
+    background-color: var(--sidebar-item-active-bg);
+
+    &:hover {
+      background-color: var(--sidebar-item-active-bg);
+    }
+  }
+
+  &:hover {
+    background-color: var(--sidebar-item-hover-bg);
+  }
+}
+
+@mixin sidebar-item-states-dark {
+  &:hover {
+    background-color: var(--sidebar-item-hover-bg);
+  }
+
+  &.active {
+    background-color: var(--sidebar-item-active-bg);
+
+    &:hover {
+      background-color: var(--sidebar-item-active-bg);
+    }
+  }
+}
+
+:host-context(html[data-bs-theme='dark']) {
+  .sidebar {
+    &__item {
+      @include sidebar-item-states-dark;
+    }
+
+    &__item--confirm,
+    &__item--confirm:hover {
+      background-color: var(--bs-danger);
+      color: var(--bs-white);
+    }
+  }
+}
+
+.section__container {
+  flex-grow: 1;
+  min-height: 0; // Critical for flex scrolling
+  overflow: hidden; // Prevent page-level overflow
+}
+
+.sidebar {
+  min-width: calc(2rem + 40.5px);
+  width: calc(2rem + 40.5px);
+  height: 100%;
+  background-color: var(--bs-tertiary-bg);
+  border-right: 1px solid var(--bs-border-color);
+  // Scrolling is owned by `fpc-sidebar__items`; keep the host from competing.
+  overflow: hidden;
+
+  &__item {
+    @include sidebar-item-layout;
+    @include sidebar-item-states;
+    flex-shrink: 0;
+    padding: 0;
+    font: inherit;
+  }
+
+  // Fleet tile armed for leaving the cluster (two-step confirm, 2026-10-28).
+  &__item--confirm,
+  &__item--confirm:hover {
+    background-color: var(--bs-danger);
+    color: var(--bs-white);
+  }
+}
+
+// Fixed section label in the rail (fleet mode: "Cluster" below "Back") — plain text, no tile, no icon.
+// Framed by `border-top` / `border-bottom` (same border as above Admin) on `bg-body-secondary` (theme-aware).
+.sidebar__heading {
+  // Pull up 1px so the top border sits flush on the "Back" tile's bottom edge; `position: relative` paints it
+  // above the (positioned) tile before it, so the line stays visible over the tile's hover tint.
+  position: relative;
+  margin-top: -1px;
+  width: 72px;
+  padding: 0.5rem 0.25rem 0.25rem;
+  color: var(--bs-secondary-color);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: default;
+  user-select: none;
+}
+
+.lw-task-dock {
+  flex: 0 0 auto;
+}
+
+// Phones: the rail stays (the shared Agenstra / Decabill navigation, 2026-10-29); the expanded task dock opens as a
+// sheet over the content beside the rail (collapse it to return).
+@media (max-width: 767.98px) {
+  :host ::ng-deep .lw-task-dock .fpc-dock-panel:not(.fpc-dock-panel--collapsed) {
+    position: fixed;
+    inset: 3.5rem 0 env(safe-area-inset-bottom) calc(2rem + 40.5px);
+    height: auto !important;
+    max-height: none !important;
+    z-index: 1040;
+    background-color: var(--bs-body-bg);
+  }
+
+  // Full-screen sheet: the body fills the space under the (always visible) header; no drag height.
+  :host ::ng-deep .lw-task-dock .fpc-dock-panel:not(.fpc-dock-panel--collapsed) .fpc-dock-panel__body {
+    flex: 1 1 auto;
+    height: auto !important;
+  }
+
+  :host ::ng-deep .lw-task-dock .fpc-dock-panel__gutter {
+    display: none;
+  }
+}
+
+// Divider between the top bar and the content (user, 2026-10-29): Agenstra / Decabill page wrappers carry
+// `border-top`; Loadweaver draws it once on the content area so every page has it, whatever sits first (side-nav
+// tabs, resource tree, page or object header). Shared managers that bring their own top border (tokens, users,
+// webhooks, updates) drop it here, so the line never doubles.
+.lw-console__content--divided {
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+:host ::ng-deep .lw-console__content--divided > * > .border-top:first-child {
+  border-top: 0 !important;
+}

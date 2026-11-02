@@ -1,0 +1,113 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      [loading]="loading()"
+      (clicked)="search()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+
+  <!-- One table (3.38 D1): search + filter drawer in the table head, built-in server paging (cursor: prev / next),
+       details in the row detail, ⋮ Copy ID. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [columns]="columns"
+    [rows]="visibleEntries()"
+    [rowId]="rowId"
+    [ariaLabel]="title"
+    [(query)]="query"
+    [searchPlaceholder]="searchLabel"
+    [searchTitle]="searchHint"
+    showFilterButton
+    [(filtersOpen)]="filtersOpen"
+    [filtersActive]="activeFilterCount()"
+    (filtersApplied)="search()"
+    (filtersCleared)="reset()"
+    [loading]="loading()"
+    [clientSort]="false"
+    paging="server"
+    [page]="page() + 1"
+    (pageChange)="onPage($event)"
+    [pageSize]="limit()"
+    (pageSizeChange)="onLimitChange($event)"
+    [hasNext]="hasNext()"
+    persistKey="lw-fleet-audit"
+    [expandedRowId]="expanded()"
+    [activeRowId]="expanded()"
+    (rowActivate)="toggle($event)"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    [filtered]="!!query().trim() || activeFilterCount() > 0"
+    data-testid="fleet-audit-table"
+  >
+    <fpc-form-field
+      fpcDataTableFilters
+      forId="lw-fleet-audit-cluster"
+      i18n-label="@@lwConsoleFleetAudit-cluster"
+      label="Cluster"
+    >
+      <fpc-form-control
+        controlType="select"
+        controlId="lw-fleet-audit-cluster"
+        name="cluster"
+        size="sm"
+        [ngModel]="cluster()"
+        (ngModelChange)="cluster.set($event ?? '')"
+      >
+        <option value="" i18n="@@lwConsoleFleetAudit-allClusters">All clusters</option>
+        @for (c of clusters(); track c.id) {
+          <option [value]="c.id">{{ c.name }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+    <fpc-form-field
+      fpcDataTableFilters
+      forId="lw-fleet-audit-action"
+      i18n-label="@@lwConsoleFleetAudit-action"
+      label="Action"
+    >
+      <fpc-form-control
+        controlId="lw-fleet-audit-action"
+        name="action"
+        size="sm"
+        controlClass="font-monospace"
+        [placeholder]="actionPlaceholder"
+        [ngModel]="action()"
+        (ngModelChange)="action.set($event ?? '')"
+      />
+    </fpc-form-field>
+    @if (!error()) {
+      <fpc-empty-state
+        fpcDataTableEmpty
+        icon="shield"
+        size="sm"
+        i18n-title="@@lwConsoleFleetAudit-empty"
+        title="No audit entries match"
+      />
+    }
+    <ng-template fpcTableCell="time" let-entry>
+      <!-- The shared date-time (no seconds, not monospace; X-04 round 2). -->
+      <span class="text-nowrap">{{ entry.at | fpcDate: 'datetime' }}</span>
+    </ng-template>
+    <ng-template fpcTableCell="action" let-entry>
+      <!-- Readable action like the cluster audit (D7); the key in the tooltip and the Action filter. -->
+      <span [title]="entry.action">{{ actionText(entry.action) }}</span>
+    </ng-template>
+    <ng-template fpcTableRowDetail let-entry>
+      <div data-testid="fleet-audit-details">
+        <pre class="small mb-0 p-2 border rounded bg-body">{{ details(entry) }}</pre>
+      </div>
+    </ng-template>
+  </fpc-data-table>
+</div>

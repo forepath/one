@@ -1,0 +1,196 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <loadweaver-saved-views fpcPageHeaderActions scope="backup-deletions" [binding]="views" />
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert class="flex-shrink-0" [flush]="true" variant="danger" [message]="message" />
+    }
+    @if (actionError(); as message) {
+      <fpc-alert
+        class="flex-shrink-0"
+        [flush]="true"
+        variant="danger"
+        [message]="message"
+        data-testid="deletions-action-error"
+      />
+    }
+
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        class="flex-shrink-0"
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="deletions-bulk-result"
+      />
+    }
+
+    <!-- Open | History as tabs (decision 4): one table at a time. -->
+    <fpc-tab-group
+      class="flex-shrink-0"
+      [activeId]="lane()"
+      (activeIdChange)="lane.set($event === 'history' ? 'history' : 'open')"
+      [ariaLabel]="title"
+      data-testid="deletions-tabs"
+    >
+      <fpc-tab id="open" [label]="openTitle" icon="hourglass-split" />
+      <fpc-tab id="history" [label]="historyTitle" icon="clock-history" />
+    </fpc-tab-group>
+    @switch (lane()) {
+      @case ('history') {
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="historyTitle"
+          [columns]="historyColumns"
+          [rows]="historyShown()"
+          [filtered]="!!historySearch().trim()"
+          [loading]="loading() && deletions() === null"
+          paging="client"
+          persistKey="lw-backup-deletions-history"
+          [(query)]="historySearch"
+          [searchPlaceholder]="searchLabel"
+          [rowMenu]="menu"
+          (rowAction)="onRowAction($event.row, $event.item.id)"
+          [expandedRowId]="expanded()"
+          (rowActivate)="toggle($event)"
+          emptyIcon="clock-history"
+          data-testid="deletions-history"
+        >
+          <span fpcDataTableEmpty>
+            <fpc-empty-state icon="clock-history" size="sm" [title]="noHistoryLabel" />
+          </span>
+          <ng-template fpcTableCell="created" let-d>{{ d.createdAt | date: 'short' }}</ng-template>
+          <ng-template fpcTableCell="executed" let-d>{{ d.executedAt | date: 'short' }}</ng-template>
+          <ng-template fpcTableRowDetail let-d>
+            <ng-container *ngTemplateOutlet="requestDetail; context: { $implicit: d }" />
+          </ng-template>
+        </fpc-data-table>
+      }
+      @default {
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="openTitle"
+          [columns]="openColumns"
+          [rows]="openShown()"
+          [filtered]="!!openSearch().trim()"
+          [loading]="loading() && deletions() === null"
+          paging="client"
+          persistKey="lw-backup-deletions-open"
+          [(query)]="openSearch"
+          [searchPlaceholder]="searchLabel"
+          selectable
+          [(selected)]="selected"
+          [rowMenu]="menu"
+          (rowAction)="onRowAction($event.row, $event.item.id)"
+          [expandedRowId]="expanded()"
+          (rowActivate)="toggle($event)"
+          emptyIcon="check2-circle"
+          data-testid="deletions-open"
+        >
+          <fpc-button
+            fpcDataTableBatch
+            variant="secondary"
+            size="sm"
+            [disabled]="!canCancelSelection()"
+            (clicked)="bulkConfirm.set('cancel')"
+            data-testid="deletions-bulk-cancel"
+            iconOnly
+            [ariaLabel]="cancelLabel"
+            [title]="cancelLabel"
+          >
+            <i class="bi bi-slash-circle" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
+            fpcDataTableBatch
+            variant="danger"
+            size="sm"
+            [disabled]="!canApproveSelection()"
+            (clicked)="bulkConfirm.set('approve')"
+            data-testid="deletions-bulk-approve"
+            iconOnly
+            [ariaLabel]="approveLabel"
+            [title]="approveLabel"
+          >
+            <i class="bi bi-check2-circle" aria-hidden="true"></i>
+          </fpc-button>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="check2-circle"
+              size="sm"
+              i18n-title="@@lwConsoleBackupDeletions-none"
+              title="No open deletion requests"
+            />
+          </span>
+          <ng-template fpcTableCell="created" let-d>{{ d.createdAt | date: 'short' }}</ng-template>
+          <ng-template fpcTableCell="notBefore" let-d>
+            <span [class.text-warning]="waiting(d)">{{ d.notBefore | date: 'medium' }}</span>
+          </ng-template>
+          <ng-template fpcTableCell="approvedBy" let-d>
+            @if (d.approvedBy) {
+              {{ userLabel(d.approvedBy, d.approvedByEmail) }}
+              <span class="text-body-secondary">{{ d.approvedAt | date: 'short' }}</span>
+            } @else if (mayAct(d) && !mayApprove(d) && d.state === 'pending') {
+              <span class="text-body-secondary">{{ ownLabel }}</span>
+            }
+          </ng-template>
+          <ng-template fpcTableRowDetail let-d>
+            <ng-container *ngTemplateOutlet="requestDetail; context: { $implicit: d }" />
+          </ng-template>
+        </fpc-data-table>
+      }
+    }
+  </div>
+</div>
+
+<!-- A request's backups (row detail): named by volume + time, linked to the backup page (no ids, D11). -->
+<ng-template #requestDetail let-d>
+  @if (d.kind === 'backups') {
+    <div class="small text-body-secondary mb-1">{{ backupsOfLabel }}</div>
+    <ul class="list-unstyled small mb-0 d-flex flex-wrap gap-3" data-testid="deletions-backups">
+      @for (id of d.backupIds; track id; let i = $index) {
+        <li>
+          <a [routerLink]="['/operate/backups', id]">{{ backupName(id, i) }}</a>
+        </li>
+      }
+    </ul>
+  } @else {
+    <div class="small">{{ requestLabel(d) }}</div>
+  }
+</ng-template>
+
+<fpc-confirm-dialog
+  [open]="confirm() !== null"
+  (openChange)="onConfirmOpenChange($event)"
+  [title]="confirm()?.action === 'approve' ? approveTitle : cancelTitle"
+  [message]="confirm()?.action === 'approve' ? approveMessage : cancelMessage"
+  [confirmLabel]="confirm()?.action === 'approve' ? approveLabel : cancelLabel"
+  [cancelLabel]="keepLabel"
+  [danger]="confirm()?.action === 'approve'"
+  (confirmed)="confirmed()"
+/>
+
+<fpc-confirm-dialog
+  [open]="bulkConfirm() !== null"
+  (openChange)="onBulkConfirmOpenChange($event)"
+  [title]="bulkConfirm() === 'approve' ? approveTitle : cancelTitle"
+  [message]="bulkMessage()"
+  [confirmLabel]="bulkConfirm() === 'approve' ? approveLabel : cancelLabel"
+  [cancelLabel]="keepLabel"
+  [danger]="bulkConfirm() === 'approve'"
+  (confirmed)="runBulk()"
+/>

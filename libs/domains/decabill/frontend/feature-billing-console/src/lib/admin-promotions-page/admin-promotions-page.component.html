@@ -1,7 +1,43 @@
 <div class="admin-promotions-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="admin-promotions-bulk-result"
+    />
+  }
+
+  <!-- One data list: State · Promotion · code / period / advantage; ⋮ Edit / Redemptions / Deactivate / Copy ID;
+       bulk Deactivate. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="promotions()"
+    paging="server"
+    [total]="total()"
+    [(page)]="paging.page"
+    [(pageSize)]="paging.pageSize"
+    persistKey="decabill-admin-promotions"
+    [(query)]="paging.search"
+    [searchPlaceholder]="searchPlaceholder"
+    [loading]="(loading$ | async) === true"
+    [error]="(error$ | async) ?? null"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    (rowActivate)="openEditModal($event)"
+    emptyIcon="ticket-perforated"
+    data-testid="admin-promotions-list"
+  >
     <fpc-button
-      fpcPageHeaderActions
+      fpcDataTableToolbar
       variant="primary"
       size="sm"
       iconOnly
@@ -12,130 +48,68 @@
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
     </fpc-button>
-  </fpc-page-header>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="!selectedPromotions().some((promotion) => promotion.isActive)"
+      (clicked)="confirmBulkDeactivate.set(true)"
+      data-testid="admin-promotions-bulk-deactivate"
+      iconOnly
+      [ariaLabel]="deactivateLabel"
+      [title]="deactivateLabel"
+    >
+      <i class="bi bi-toggle-off" aria-hidden="true"></i>
+    </fpc-button>
 
-  <fpc-search-field
-    class="border-bottom"
-    name="search"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchPlaceholder"
-    [(value)]="searchQuery"
-  />
-
-  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @if (loading$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" i18n-label="@@featureAdminPromotions-loading" label="Loading..." />
-      </div>
-    } @else {
-      @if (error$ | async; as error) {
-        <fpc-alert class="m-3" variant="danger" [message]="error" />
-      }
-      @if (promotions$ | async; as promotions) {
-        @if (promotions.length === 0) {
-          @if (searchQuery().trim()) {
-            <fpc-empty-state
-              icon="search"
-              message="No search results"
-              i18n-message="@@featureAdminPromotions-noSearchResults"
-            />
-          } @else {
-            <fpc-empty-state message="No promotions yet" i18n-message="@@featureAdminPromotions-empty" />
-          }
-        } @else {
-          <fpc-list [flush]="true">
-            @for (promotion of promotions; track promotion.id) {
-              <fpc-list-item>
-                <div fpcListItemTitle class="fw-semibold">{{ promotion.name }} ({{ promotion.code }})</div>
-                <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                  <span class="me-2" [ngClass]="activeStatusTextClass(promotion.isActive)">
-                    @if (promotion.isActive) {
-                      <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                    } @else {
-                      <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
-                    }
-                    {{ activeStatusLabel(promotion.isActive) }}
-                  </span>
-                  <span
-                    ><i class="bi bi-calendar-range me-1" aria-hidden="true"></i
-                    >{{ formatDate(promotion.redeemableFrom) }} to {{ formatDate(promotion.redeemableTo) }}</span
-                  >
-                  <span><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ advantageSummaryLabel(promotion) }}</span>
-                  <span
-                    ><i class="bi bi-people me-1" aria-hidden="true"></i
-                    >{{ eligibilityLabel(promotion.subscriptionEligibility) }}</span
-                  >
-                  <span
-                    ><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i
-                    ><span i18n="@@featureAdminPromotions-redemptionCount"
-                      >{{ promotion.redemptionCount }} redemptions</span
-                    ></span
-                  >
-                </div>
-                <fpc-button-group fpcListItemActions size="sm">
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="warning"
-                    (clicked)="openEditModal(promotion)"
-                    [disabled]="(loadingAny$ | async) === true"
-                    i18n-title="@@featureAdminPromotions-edit"
-                    title="Edit"
-                  >
-                    <i class="bi bi-pencil" aria-hidden="true"></i>
-                  </fpc-button>
-                  <fpc-button
-                    iconOnly
-                    size="sm"
-                    variant="dark"
-                    (clicked)="openRedemptionsModal(promotion)"
-                    [disabled]="(loadingAny$ | async) === true"
-                    i18n-title="@@featureAdminPromotions-redemptions"
-                    title="Redemptions"
-                  >
-                    <i class="bi bi-list-ul" aria-hidden="true"></i>
-                  </fpc-button>
-                  @if (promotion.isActive) {
-                    <fpc-button
-                      size="sm"
-                      variant="dark"
-                      iconOnly
-                      (clicked)="deactivate(promotion)"
-                      [disabled]="(loadingAny$ | async) === true"
-                      i18n-title="@@featureAdminPromotions-deactivate"
-                      title="Deactivate"
-                    >
-                      <i class="bi bi-slash-circle" aria-hidden="true"></i>
-                    </fpc-button>
-                  }
-                </fpc-button-group>
-              </fpc-list-item>
-            }
-          </fpc-list>
-        }
-      }
-    }
-  </div>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="ticket-perforated"
+        size="sm"
+        message="No promotions yet"
+        i18n-message="@@featureAdminPromotions-empty"
+      />
+    </span>
+    <ng-template fpcTableCell="period" let-row>{{ periodLabel(row) }}</ng-template>
+  </fpc-data-table>
 </div>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDeactivate"
+  [title]="bulkDeactivateTitle"
+  [message]="bulkDeactivateMessage()"
+  [confirmLabel]="deactivateLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deactivateSelected()"
+/>
 
 <fpc-modal
   [(open)]="createModalOpen"
   size="xl"
   i18n-title="@@featureAdminPromotions-createTitle"
   title="Create promotion"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <form (ngSubmit)="submitCreate()">
     <ng-container *ngTemplateOutlet="promotionForm; context: { form: createForm, prefix: 'create' }"></ng-container>
     <div *fpcModalFooter class="d-flex justify-content-end gap-2">
-      <fpc-button variant="primary" type="submit" [disabled]="creating$ | async" i18n="@@featureAdminPromotions-save">
-        Save
+      <fpc-button variant="primary" type="submit" [disabled]="creating$ | async" i18n="@@featureAdminPromotions-create">
+        Create promotion
       </fpc-button>
     </div>
   </form>
 </fpc-modal>
 
-<fpc-modal [(open)]="editModalOpen" size="xl" i18n-title="@@featureAdminPromotions-editTitle" title="Edit promotion">
+<fpc-modal
+  [(open)]="editModalOpen"
+  size="xl"
+  i18n-title="@@featureAdminPromotions-editTitle"
+  title="Edit promotion"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
+>
   <form (ngSubmit)="submitEdit()">
     <ng-container *ngTemplateOutlet="promotionForm; context: { form: editForm, prefix: 'edit' }"></ng-container>
     <div *fpcModalFooter class="d-flex justify-content-end gap-2">
@@ -310,19 +284,17 @@
         i18n-hint="@@featureAdminPromotions-applicablePlansHint"
         hint="Leave empty to allow all products."
       >
-        <select
-          [id]="prefix + '-plans'"
-          multiple
-          class="form-select"
-          [value]="form.applicablePlanIds ?? []"
-          (change)="onApplicablePlansChange($event, form)"
-        >
-          @if (servicePlans$ | async; as catalog) {
-            @for (plan of catalog.plans; track plan.id) {
-              <option [value]="plan.id">{{ planLabel(plan.id, catalog.plans, catalog.types) }}</option>
-            }
-          }
-        </select>
+        <!-- DB-08: shared multi-select (chips + searchable list) instead of a native listbox. -->
+        <fpc-multi-select
+          [controlId]="prefix + '-plans'"
+          [name]="prefix + '-plans'"
+          [options]="(planOptions$ | async) ?? []"
+          [ngModel]="form.applicablePlanIds ?? []"
+          (ngModelChange)="onApplicablePlansChange($event, form)"
+          [searchPlaceholder]="multiSelectSearchLabel"
+          [removeLabel]="multiSelectRemoveLabel"
+          [emptyLabel]="multiSelectEmptyLabel"
+        />
       </fpc-form-field>
     </div>
     <div class="col-12">
@@ -344,36 +316,26 @@
       ({{ selectedPromotion.code }})
     }
   </span>
-  @if (redemptionsLoading$ | async) {
-    <div class="d-flex justify-content-center align-items-center p-4">
-      <fpc-spinner variant="primary" i18n-label="@@featureAdminPromotions-loading" label="Loading..." />
-    </div>
-  } @else if (redemptions$ | async; as redemptions) {
-    @if (redemptions.length === 0) {
-      <fpc-empty-state size="sm" message="No redemptions yet" i18n-message="@@featureAdminPromotions-noRedemptions" />
-    } @else {
-      <fpc-list [flush]="true">
-        @for (item of redemptions; track item.id) {
-          <fpc-list-item>
-            <div fpcListItemTitle class="fw-semibold">{{ item.code }}</div>
-            <div fpcListItemMeta class="small d-flex align-items-center gap-3 flex-wrap">
-              <span><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ formatDate(item.redeemedAt) }}</span>
-              <span><i class="bi bi-box me-1" aria-hidden="true"></i>{{ redemptionSubscriptionLabel(item) }}</span>
-              @if (item.planName) {
-                <span><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ item.planName }}</span>
-              }
-              <span
-                ><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i
-                >{{ redemptionContextLabel(item.redemptionContext) }}</span
-              >
-              <span [ngClass]="redemptionStatusTextClass(item.status)">
-                <i class="bi me-1" [ngClass]="redemptionStatusIconClass(item.status)" aria-hidden="true"></i
-                >{{ redemptionStatusLabel(item.status) }}
-              </span>
-            </div>
-          </fpc-list-item>
-        }
-      </fpc-list>
-    }
+  @if (redemptionsPromotionId()) {
+    <fpc-data-table
+      nested
+      [ariaLabel]="redemptionsTitle"
+      [columns]="redemptionColumns"
+      [rows]="redemptions()"
+      paging="server"
+      [total]="redemptionsTotal()"
+      [(page)]="redemptionsPage"
+      [(pageSize)]="redemptionsPageSize"
+      persistKey="decabill-admin-promotion-redemptions"
+      [searchable]="false"
+      [loading]="(redemptionsLoading$ | async) === true"
+      emptyIcon="ticket-perforated"
+      data-testid="admin-promotions-redemptions"
+    >
+      <span fpcDataTableEmpty>
+        <fpc-empty-state size="sm" message="No redemptions yet" i18n-message="@@featureAdminPromotions-noRedemptions" />
+      </span>
+      <ng-template fpcTableCell="redeemedAt" let-row>{{ formatDate(redeemedAt(row)) }}</ng-template>
+    </fpc-data-table>
   }
 </fpc-modal>

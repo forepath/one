@@ -1,0 +1,302 @@
+<div class="fpc-page">
+  <fpc-page-header [title]="title">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="copyUrlLabel"
+      [title]="copyUrlLabel"
+      [disabled]="!catalogUrl()"
+      (clicked)="copyUrl()"
+      data-testid="fleet-catalog-copy-url"
+    >
+      <i class="bi bi-link-45deg" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="copyKeyLabel"
+      [title]="copyKeyLabel"
+      [disabled]="!info()"
+      (clicked)="copyKey()"
+      data-testid="fleet-catalog-copy-key"
+    >
+      <i class="bi bi-key" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      [loading]="loading()"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (notice(); as n) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="n.tone"
+      [message]="n.message"
+      [dismissible]="true"
+      (closed)="notice.set(null)"
+      data-testid="fleet-catalog-notice"
+    />
+  }
+  @if (info(); as i) {
+    <div class="small text-body-secondary px-3 py-2 border-bottom" data-testid="fleet-catalog-info">
+      <span i18n="@@lwConsoleFleetCatalog-infoUrl">Catalog URL</span>:
+      <span class="font-monospace text-break">{{ catalogUrl() ?? '–' }}</span>
+      · <span i18n="@@lwConsoleFleetCatalog-infoKey">Key</span>:
+      <span class="font-monospace">{{ i.keyId.slice(0, 16) }}</span>
+      · <span i18n="@@lwConsoleFleetCatalog-infoName">Catalog name</span>:
+      <span class="font-monospace">{{ i.name }}</span>
+      @if (!i.url) {
+        ·
+        <span i18n="@@lwConsoleFleetCatalog-infoNoUrl"
+          >FLEET_PUBLIC_URL is not set: the URL this console uses is shown.</span
+        >
+      }
+    </div>
+  }
+
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="title"
+    [columns]="columns"
+    [rows]="filtered()"
+    [rowId]="rowId"
+    [filtered]="!!search().trim()"
+    [loading]="loading() && packages().length === 0"
+    paging="client"
+    persistKey="lw-fleet-catalog"
+    [(query)]="search"
+    [searchPlaceholder]="searchLabel"
+    [expandedRowId]="expanded()"
+    [activeRowId]="expanded()"
+    (rowActivate)="toggle($event)"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    emptyIcon="box-seam"
+    data-testid="fleet-catalog-table"
+  >
+    <fpc-button
+      fpcDataTableToolbar
+      variant="primary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="uploadLabel"
+      [title]="uploadLabel"
+      (clicked)="openUpload()"
+      data-testid="fleet-catalog-upload"
+    >
+      <i class="bi bi-upload" aria-hidden="true"></i>
+    </fpc-button>
+    @if (!error()) {
+      <span fpcDataTableEmpty>
+        <fpc-empty-state
+          icon="box-seam"
+          size="sm"
+          i18n-title="@@lwConsoleFleetCatalog-empty"
+          title="No packages yet"
+          i18n-message="@@lwConsoleFleetCatalog-emptyHint"
+          message="Upload a package built with lw app package; publish it to offer it to the clusters that use this catalog."
+        />
+      </span>
+    }
+    <ng-template fpcTableCell="app" let-p>
+      <div class="fw-semibold">{{ p.title }}</div>
+      <div class="small text-body-secondary font-monospace">{{ p.app }}</div>
+    </ng-template>
+    <ng-template fpcTableCell="uploaded" let-p>{{ p.createdAt | date: 'short' }}</ng-template>
+    <ng-template fpcTableRowDetail let-p>
+      <div class="small p-2" data-testid="fleet-catalog-detail">
+        <div class="mb-1">{{ p.summary }}</div>
+        <div class="text-body-secondary">
+          <span i18n="@@lwConsoleFleetCatalog-detailPublisher">Manifest publisher</span>: {{ p.manifestPublisher }} ·
+          <span i18n="@@lwConsoleFleetCatalog-detailLicense">License</span>: {{ p.license }} ·
+          <span i18n="@@lwConsoleFleetCatalog-detailUploadedBy">Uploaded by</span>: {{ p.uploadedBy ?? '–' }}
+        </div>
+        <div class="font-monospace text-break text-body-secondary">{{ p.digest }}</div>
+        @if (p.findings.length > 0) {
+          <ul class="mb-0 mt-2 ps-3">
+            @for (f of p.findings; track $index) {
+              <li [class.text-warning-emphasis]="f.severity === 'warning'">
+                <span class="font-monospace">{{ f.rule }}</span>
+                @if (f.path) {
+                  <span class="font-monospace"> ({{ f.path }})</span>
+                }
+                : {{ f.message }}
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </ng-template>
+  </fpc-data-table>
+
+  @if (takedowns().length > 0) {
+    <fpc-list-header class="d-block mt-3" [title]="takedownsTitle" [sticky]="false" />
+    <fpc-data-table
+      [ariaLabel]="takedownsTitle"
+      [columns]="takedownColumns"
+      [rows]="takedowns()"
+      [rowId]="takedownId"
+      [searchable]="false"
+      [showColumnChooser]="false"
+      [stickyHeader]="false"
+      [rowMenu]="takedownMenu"
+      (rowAction)="onTakedownAction($event.row, $event.item.id)"
+      data-testid="fleet-catalog-takedowns"
+    >
+      <ng-template fpcTableCell="at" let-t>{{ t.createdAt | date: 'short' }}</ng-template>
+    </fpc-data-table>
+  }
+</div>
+
+<fpc-modal [open]="uploadOpen()" (openChange)="uploadOpen.set($event)" [title]="uploadLabel" size="lg">
+  @if (uploadError(); as e) {
+    <fpc-alert class="mb-3" variant="danger" [message]="e.message" data-testid="fleet-catalog-upload-error" />
+    @if (e.findings.length > 0) {
+      <ul class="small mb-3">
+        @for (f of e.findings; track $index) {
+          <li [class.text-danger]="f.severity === 'error'">
+            <span class="font-monospace">{{ f.rule }}</span>
+            @if (f.path) {
+              <span class="font-monospace"> ({{ f.path }})</span>
+            }
+            : {{ f.message }}
+          </li>
+        }
+      </ul>
+    }
+  }
+  <fpc-form-field
+    forId="lw-fleet-catalog-file"
+    i18n-label="@@lwConsoleFleetCatalog-file"
+    label="Package (.tar.gz)"
+    i18n-hint="@@lwConsoleFleetCatalog-fileHint"
+    hint="Built with lw app package (≤ 8 MiB). The fleet validates and lints it; errors block the upload, warnings are kept with the version."
+    required
+  >
+    <fpc-form-control
+      controlId="lw-fleet-catalog-file"
+      size="sm"
+      inputType="file"
+      accept=".tar.gz,.tgz,application/gzip"
+      (filesChange)="onFiles($event)"
+      data-testid="fleet-catalog-file"
+    />
+  </fpc-form-field>
+  <fpc-form-field
+    class="d-block mt-3"
+    forId="lw-fleet-catalog-channel"
+    i18n-label="@@lwConsoleFleetCatalog-channel"
+    label="Channel"
+    i18n-hint="@@lwConsoleFleetCatalog-channelHint"
+    hint="One of the manifest's channels; empty: stable (or the manifest's first channel)."
+  >
+    <fpc-form-control
+      controlId="lw-fleet-catalog-channel"
+      size="sm"
+      controlClass="font-monospace"
+      [ngModel]="uploadChannel()"
+      (ngModelChange)="uploadChannel.set($event)"
+    />
+  </fpc-form-field>
+  <fpc-form-switch
+    class="d-block mt-3"
+    switchId="lw-fleet-catalog-publish"
+    i18n-label="@@lwConsoleFleetCatalog-publishNow"
+    label="Publish right away"
+    [checked]="uploadPublish()"
+    (checkedChange)="uploadPublish.set($event)"
+  />
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" size="sm" (clicked)="uploadOpen.set(false)">{{ closeLabel }}</fpc-button>
+    <fpc-button
+      variant="primary"
+      size="sm"
+      [loading]="uploading()"
+      (clicked)="submitUpload()"
+      data-testid="fleet-catalog-upload-submit"
+    >
+      <span i18n="@@lwConsoleFleetCatalog-uploadSubmit">Upload</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal [open]="takedownFor() !== null" (openChange)="$event || takedownFor.set(null)" [title]="takedownTitle">
+  @if (takedownFor(); as p) {
+    @if (takedownError(); as message) {
+      <fpc-alert class="mb-3" variant="danger" [message]="message" />
+    }
+    <p class="small" i18n="@@lwConsoleFleetCatalog-takedownHint">
+      The signed index lists the takedown: clusters hide the versions and flag installed copies after their next
+      refresh.
+    </p>
+    <fpc-form-switch
+      class="d-block mb-3"
+      switchId="lw-fleet-catalog-takedown-all"
+      i18n-label="@@lwConsoleFleetCatalog-takedownAll"
+      label="All versions of the app"
+      [checked]="takedownAll()"
+      (checkedChange)="takedownAll.set($event)"
+    />
+    <div class="small text-body-secondary mb-2 font-monospace">
+      {{ p.app }} {{ takedownAll() ? allVersionsLabel : p.version }}
+    </div>
+    <fpc-form-field
+      forId="lw-fleet-catalog-takedown-reason"
+      i18n-label="@@lwConsoleFleetCatalog-reason"
+      label="Reason"
+      required
+    >
+      <fpc-form-control
+        controlType="textarea"
+        controlId="lw-fleet-catalog-takedown-reason"
+        size="sm"
+        [ngModel]="takedownReason()"
+        (ngModelChange)="takedownReason.set($event)"
+        data-testid="fleet-catalog-takedown-reason"
+      />
+    </fpc-form-field>
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" size="sm" (clicked)="takedownFor.set(null)">{{ cancelLabel }}</fpc-button>
+    <fpc-button variant="danger" size="sm" (clicked)="submitTakedown()" data-testid="fleet-catalog-takedown-submit">
+      <span i18n="@@lwConsoleFleetCatalog-takedownSubmit">Take down</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="deleteFor() !== null"
+  (openChange)="$event || deleteFor.set(null)"
+  [title]="deleteTitle"
+  [message]="deleteMessage"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="confirmDelete()"
+/>
+
+<fpc-confirm-dialog
+  [open]="liftFor() !== null"
+  (openChange)="$event || liftFor.set(null)"
+  [title]="liftTitle"
+  [message]="liftMessage"
+  [confirmLabel]="liftLabel"
+  [cancelLabel]="cancelLabel"
+  (confirmed)="confirmLift()"
+/>

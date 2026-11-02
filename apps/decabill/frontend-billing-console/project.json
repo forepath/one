@@ -21,6 +21,7 @@
       "cache": true,
       "inputs": [
         "{workspaceRoot}/package-lock.json",
+        "{workspaceRoot}/tools/ci/stage-monaco-assets.mjs",
         "{workspaceRoot}/node_modules/monaco-editor/**/*"
       ],
       "outputs": ["{workspaceRoot}/.cache/monaco-editor"],
@@ -203,7 +204,7 @@
         "{workspaceRoot}/dist/apps/decabill/frontend-billing-console/server/browser"
       ],
       "options": {
-        "command": "bash -c \"test -d dist/apps/decabill/frontend-billing-console/browser && mkdir -p dist/apps/decabill/frontend-billing-console/server && cp -r dist/apps/decabill/frontend-billing-console/browser dist/apps/decabill/frontend-billing-console/server/browser || (echo 'Error: Browser directory not found. Please run build first.' && exit 1)\""
+        "command": "bash -c \"test -d dist/apps/decabill/frontend-billing-console/browser && mkdir -p dist/apps/decabill/frontend-billing-console/server && rm -rf dist/apps/decabill/frontend-billing-console/server/browser && cp -r dist/apps/decabill/frontend-billing-console/browser dist/apps/decabill/frontend-billing-console/server/browser || (echo 'Error: Browser directory not found. Please run build first.' && exit 1)\""
       },
       "dependsOn": ["prebuild-server"]
     },

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked, ViewChild } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
@@ -8,6 +8,7 @@ import {
   AdminProjectsService,
   ProjectBoardSocketFacade,
   ProjectTimeEntriesFacade,
+  ProjectTimeEntriesService,
   ProjectsFacade,
   computeLineTotalsFromRate,
   rateForTaxCategory,
@@ -22,17 +23,16 @@ import {
 import {
   FpcAlertComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormCheckGroupComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
-  FpcListComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
-  FpcListItemComponent,
   FpcPageHeaderComponent,
   FpcProgressComponent,
   FpcSpinnerComponent,
@@ -42,18 +42,32 @@ import {
   FpcSummaryCardValueDirective,
   FpcTabComponent,
   FpcTabGroupComponent,
+  fpcRunBulk,
+  FpcTableCellDirective,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  FpcDatePipe,
+  FpcMoneyPipe,
+  FpcBadgeComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { filter, finalize, map, startWith, switchMap, distinctUntilChanged, EMPTY, take } from 'rxjs';
+import {
+  filter,
+  finalize,
+  firstValueFrom,
+  map,
+  startWith,
+  switchMap,
+  debounceTime,
+  distinctUntilChanged,
+  EMPTY,
+  take,
+} from 'rxjs';
 import type { Subscription } from 'rxjs';
 
 import { BillingAdminSubscriptionSelectComponent } from '../billing-admin-subscription-select/billing-admin-subscription-select.component';
 import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
-import {
-  getProjectTimeEntryBillingStatusIconClass,
-  getProjectTimeEntryBillingStatusLabel,
-  getProjectTimeEntryBillingStatusTextClass,
-  isProjectTimeEntryBilled,
-} from '../billing-status-labels';
+import { isProjectTimeEntryBilled } from '../billing-status-labels';
+import { formatBillingClockRange } from '../billing-format';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import { buildPricingTotalsSummary, type PricingTotalsSummary } from '../pricing-totals-summary/pricing-totals.util';
 import { ProjectBoardComponent } from '../project-board/project-board.component';
@@ -67,6 +81,9 @@ import {
   hasProjectTargetHours,
   type ProjectSummaryProgressBar,
 } from '../project-summary-progress.utils';
+import { DB_DL_CANCEL, dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
+import { timeEntryBillingState } from '../shared/table-states';
+
 import { isProjectDetailTab, parseProjectDetailTab, type ProjectDetailTab } from './project-detail-tabs';
 
 type ProjectViewMode = 'admin' | 'customer';
@@ -79,6 +96,9 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
   selector: 'framework-project-detail-page',
   standalone: true,
   imports: [
+    FpcBadgeComponent,
+    FpcMoneyPipe,
+    FpcDatePipe,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -95,15 +115,14 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
     FpcTabComponent,
     FpcTabGroupComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
     FpcEmptyStateComponent,
     FpcFormCheckComponent,
     FpcFormCheckGroupComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcConfirmDialogComponent,
-    FpcListComponent,
-    FpcListItemComponent,
+    FpcDataTableComponent,
+    FpcTableCellDirective,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcProgressComponent,
@@ -132,6 +151,12 @@ export class ProjectDetailPageComponent implements OnInit {
 
   readonly isAdminView = signal(false);
   readonly trackedTimeProgressAriaLabel = $localize`:@@featureProjectDetail-trackedTimeProgressAria:Tracked time progress`;
+  readonly backToProjectsLabel = $localize`:@@featureProjectDetail-backToProjects:Back to projects`;
+
+  assigneeLabel(email: string): string {
+    return $localize`:@@featureProjectDetail-assigneeTitle:Assignee: ${email}:email:`;
+  }
+
   readonly trackedTimeLabel = $localize`:@@featureProjectDetail-trackedTime:Tracked time`;
   readonly unbilledTimeLabel = $localize`:@@featureProjectDetail-unbilledTime:Unbilled time`;
   readonly openBillableLabel = $localize`:@@featureProjectDetail-openBillable:Open billable`;
@@ -151,10 +176,101 @@ export class ProjectDetailPageComponent implements OnInit {
   readonly timeLoading$ = this.timeEntriesFacade.loading$;
   readonly timeSaving$ = this.timeEntriesFacade.saving$;
   readonly timeError$ = this.timeEntriesFacade.error$;
+  private readonly timeEntriesService = inject(ProjectTimeEntriesService);
+  readonly timeEntries = toSignal(this.timeEntriesFacade.entries$, { initialValue: [] as ProjectTimeEntryResponse[] });
+  readonly timeLoading = toSignal(this.timeEntriesFacade.loading$, { initialValue: false });
+  readonly timeError = toSignal(this.timeEntriesFacade.error$, { initialValue: null });
+  readonly timeTotal = toSignal(this.timeEntriesFacade.total$, { initialValue: 0 });
+  /** Server paging of the time entries (built-in pager of the nested table; replace-page). */
+  readonly timePage = signal(1);
+  readonly timePageSize = signal(25);
+  /** Project whose Time tab is open (`null` on other tabs): the paging effect loads its current page. */
+  private readonly timeProjectId = signal<string | null>(null);
+  /** Search strip of the time entries (DB-12): description / ticket title, server-side, debounced. */
+  readonly timeSearch = signal('');
+  private readonly timeSearchDebounced = toSignal(
+    toObservable(this.timeSearch).pipe(debounceTime(300), distinctUntilChanged()),
+    { initialValue: '' },
+  );
+  private readonly loadTimePage = effect(() => {
+    const projectId = this.timeProjectId();
+    const page = this.timePage();
+    const pageSize = this.timePageSize();
+    const search = this.timeSearchDebounced();
+
+    if (projectId) untracked(() => this.timeEntriesFacade.load(projectId, page, pageSize, search));
+  });
+  readonly searchTimeEntriesLabel = $localize`:@@featureProjectDetail-searchTimeEntries:Search time entries`;
+
+  readonly timeEntriesLabel = $localize`:@@featureProjectDetail-timeEntries:Time entries`;
+  readonly editTimeLabel = $localize`:@@featureProjectDetail-editTime:Edit`;
+  readonly deleteTimeLabel = $localize`:@@featureProjectDetail-deleteTime:Delete`;
+  readonly cancelLabel = DB_DL_CANCEL;
+  readonly timeBulkDeleteTitle = $localize`:@@featureProjectDetail-timeBulkDeleteTitle:Delete time entries?`;
+
+  /** Time entries (one server page): State (billed) · Entry · date · time · duration; server paging with total. */
+  readonly timeColumns: FpcTableColumn<ProjectTimeEntryResponse>[] = [
+    {
+      id: 'billing',
+      label: $localize`:@@featureProjectDetail-colBilling:Billing`,
+      type: 'state',
+      state: (entry) => timeEntryBillingState(isProjectTimeEntryBilled(entry)),
+    },
+    {
+      id: 'entry',
+      label: $localize`:@@featureProjectDetail-colEntry:Entry`,
+      value: (entry) => this.timeEntryTitle(entry),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'date',
+      label: $localize`:@@featureProjectDetail-colDate:Date`,
+      value: (entry) => entry.startedAt,
+      priority: 1,
+    },
+    {
+      id: 'time',
+      label: $localize`:@@featureProjectDetail-colTime:Time`,
+      value: (entry) => this.formatTimeEntryClockRange(entry.startedAt, entry.endedAt),
+      priority: 2,
+    },
+    {
+      id: 'duration',
+      label: $localize`:@@featureProjectDetail-colDuration:Duration`,
+      value: (entry) => this.formatMinutes(entry.durationMinutes),
+      align: 'end',
+      priority: 2,
+    },
+  ];
+
+  readonly selectedTimeEntries = signal<readonly string[]>([]);
+  readonly confirmTimeBulkDelete = signal(false);
+  readonly timeBulkResult = signal<DbBulkResult | null>(null);
+  /** Billed entries are locked: only unbilled ones can be deleted. */
+  readonly deletableTimeSelection = computed(() => {
+    const ids = new Set(this.selectedTimeEntries());
+
+    return this.timeEntries().filter((entry) => ids.has(entry.id) && this.isTimeEntryEditable(entry));
+  });
+  readonly timeBulkDeleteMessage = computed(
+    () =>
+      $localize`:@@featureProjectDetail-timeBulkDeleteMessage:${this.deletableTimeSelection().length}:count: selected unbilled time entries will be deleted. This cannot be undone.`,
+  );
+  readonly timeRowMenu = (entry: ProjectTimeEntryResponse): FpcMenuItem[] => [
+    ...(this.isAdminView() && this.isTimeEntryEditable(entry)
+      ? [
+          { id: 'edit', label: this.editTimeLabel, icon: 'pencil' },
+          { id: 'delete', label: this.deleteTimeLabel, icon: 'trash', danger: true, dividerBefore: true },
+        ]
+      : []),
+    dbCopyIdItem(),
+  ];
 
   readonly activeTab = signal<ProjectDetailTab>('board');
   projectId = '';
   private loadedProjectKey = '';
+  private lastTimeProjectId: string | null = null;
 
   timeFormStartedAt = '';
   timeFormEndedAt = '';
@@ -218,6 +334,7 @@ export class ProjectDetailPageComponent implements OnInit {
 
         if (!projectId) {
           this.loadedProjectKey = '';
+          this.timeProjectId.set(null);
           this.socketFacade.disconnect();
 
           return;
@@ -236,9 +353,15 @@ export class ProjectDetailPageComponent implements OnInit {
           }
         }
 
-        if (tab === 'time') {
-          this.timeEntriesFacade.load(projectId);
+        const timeProjectId = tab === 'time' ? projectId : null;
+
+        if (timeProjectId && timeProjectId !== this.lastTimeProjectId) {
+          // Another project starts on page 1.
+          this.lastTimeProjectId = timeProjectId;
+          this.timePage.set(1);
         }
+
+        this.timeProjectId.set(timeProjectId);
       });
 
     this.router.events
@@ -527,20 +650,41 @@ export class ProjectDetailPageComponent implements OnInit {
     this.timeEntriesFacade.remove(this.projectId, this.timeEntryToDelete.id);
   }
 
+  onTimeRowAction(entry: ProjectTimeEntryResponse, action: string): void {
+    if (action === 'edit') this.openEditTimeModal(entry);
+    else if (action === 'delete') this.openDeleteTimeModal(entry);
+    else if (action === 'copy-id') fpcCopyText(entry.id);
+  }
+
+  timeEntryStart(entry: ProjectTimeEntryResponse): string {
+    return entry.startedAt;
+  }
+
+  /** Bulk Delete: one `DELETE …/time-entries/:id` per unbilled entry (same endpoint + authorization as the row). */
+  async deleteSelectedTimeEntries(): Promise<void> {
+    const projectId = this.projectId;
+    const entries = this.deletableTimeSelection();
+
+    if (!projectId || !this.isAdminView() || entries.length === 0) return;
+
+    const result = await fpcRunBulk(entries, (entry) =>
+      firstValueFrom(this.timeEntriesService.delete(projectId, entry.id)),
+    );
+
+    this.timeBulkResult.set(dbBulkSummary(result, (entry) => this.timeEntryTitle(entry)));
+    this.selectedTimeEntries.set([]);
+    this.reloadTimeEntries();
+  }
+
+  /** Reloads the current page of the time entries (after a bulk action / billing; replace-page, no append). */
+  reloadTimeEntries(): void {
+    if (!this.projectId) return;
+
+    this.timeEntriesFacade.load(this.projectId, this.timePage(), this.timePageSize(), this.timeSearch());
+  }
+
   isTimeEntryEditable(entry: ProjectTimeEntryResponse): boolean {
     return !isProjectTimeEntryBilled(entry);
-  }
-
-  timeEntryBillingStatusLabel(entry: ProjectTimeEntryResponse): string {
-    return getProjectTimeEntryBillingStatusLabel(isProjectTimeEntryBilled(entry));
-  }
-
-  timeEntryBillingStatusTextClass(entry: ProjectTimeEntryResponse): string {
-    return getProjectTimeEntryBillingStatusTextClass(isProjectTimeEntryBilled(entry));
-  }
-
-  timeEntryBillingStatusIconClass(entry: ProjectTimeEntryResponse): string {
-    return getProjectTimeEntryBillingStatusIconClass(isProjectTimeEntryBilled(entry));
   }
 
   isTimeFormValid(): boolean {
@@ -556,29 +700,13 @@ export class ProjectDetailPageComponent implements OnInit {
   }
 
   formatTimeEntryClockRange(startedAt: string, endedAt: string): string {
-    const start = new Date(startedAt);
-    const end = new Date(endedAt);
-    const sameDay =
-      start.getFullYear() === end.getFullYear() &&
-      start.getMonth() === end.getMonth() &&
-      start.getDate() === end.getDate();
-    const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
-
-    if (sameDay) {
-      return `${start.toLocaleTimeString([], timeOptions)} - ${end.toLocaleTimeString([], timeOptions)}`;
-    }
-
-    return `${start.toLocaleString()} - ${end.toLocaleString()}`;
+    return formatBillingClockRange(startedAt, endedAt);
   }
 
   timeEntryTitle(entry: ProjectTimeEntryResponse): string {
     const description = entry.description?.trim();
 
     return description || this.formatMinutes(entry.durationMinutes);
-  }
-
-  timeEntryShowsDurationInMeta(entry: ProjectTimeEntryResponse): boolean {
-    return !!entry.description?.trim();
   }
 
   formatMinutes(minutes: number): string {
@@ -732,7 +860,7 @@ export class ProjectDetailPageComponent implements OnInit {
         this.resetBillTimeCustomFields();
 
         if (this.projectId && this.activeTab() === 'time') {
-          this.timeEntriesFacade.load(this.projectId);
+          this.reloadTimeEntries();
         }
       },
     });

@@ -1,0 +1,90 @@
+<div class="fpc-page">
+  @if (!scope) {
+    <fpc-page-header [title]="title" [subtitle]="project()">
+      <fpc-button
+        fpcPageHeaderActions
+        variant="dark"
+        size="sm"
+        iconOnly
+        routerLink="/access/members"
+        [queryParams]="{ project: project() }"
+        [ariaLabel]="accessLabel"
+        [title]="accessLabel"
+        data-testid="project-requests-access"
+      >
+        <i class="bi bi-people" aria-hidden="true"></i>
+      </fpc-button>
+      <fpc-button
+        fpcPageHeaderActions
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="refreshLabel"
+        [title]="refreshLabel"
+        (clicked)="refresh()"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+    </fpc-page-header>
+  }
+
+  <!-- The search lives in the requests table (3.38 D1); embedded, the strip keeps only the refresh. -->
+  @if (scope) {
+    <fpc-list-toolbar [filterable]="false">
+      <fpc-button
+        fpcListToolbarActions
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="refreshLabel"
+        [title]="refreshLabel"
+        (clicked)="refresh()"
+        data-testid="project-requests-refresh"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+    </fpc-list-toolbar>
+  }
+
+  <div class="flex-grow-1 overflow-hidden d-flex flex-column min-h-0">
+    @if (error(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    }
+    @if (changeError(); as message) {
+      <fpc-alert [flush]="true" variant="danger" [message]="message" />
+    }
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="project-requests-bulk-result"
+      />
+    }
+    @if (loading() && !ready()) {
+      <fpc-empty-state [loading]="true" [title]="loadingLabel" data-testid="project-requests-loading" />
+    } @else if (ready()) {
+      <loadweaver-access-requests
+        [requests]="requests()"
+        [(search)]="search"
+        [searchLabel]="searchLabel"
+        [mayAccept]="mayAccept()"
+        [changing]="changing()"
+        (accept)="acceptFor.set($event)"
+        (bulkDone)="bulkResult.set($event); refresh()"
+      />
+    }
+  </div>
+</div>
+
+<fpc-confirm-dialog
+  [open]="acceptFor() !== null"
+  (openChange)="onAcceptOpenChange($event)"
+  [title]="acceptTitle"
+  [message]="acceptMessage()"
+  [confirmLabel]="acceptLabel"
+  [cancelLabel]="cancelLabel"
+  (confirmed)="confirmAccept()"
+/>

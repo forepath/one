@@ -478,8 +478,11 @@ export const register$ = createEffect(
   (actions$ = inject(Actions), authService = inject(AuthService)) => {
     return actions$.pipe(
       ofType(register),
-      switchMap(({ email, password }) =>
-        authService.register(email, password).pipe(
+      switchMap(({ email, password, adminClaimToken }) =>
+        (adminClaimToken
+          ? authService.register(email, password, adminClaimToken)
+          : authService.register(email, password)
+        ).pipe(
           map((res) =>
             registerSuccess({
               user: res.user,

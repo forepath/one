@@ -1,7 +1,12 @@
 import type { CloudInitConfigOrderField } from '@forepath/decabill/frontend/data-access-billing-console';
 import type { PlanAddonOptionDto } from '@forepath/decabill/frontend/data-access-billing-console';
 
-export type IntegratedOrderService = 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'custom';
+export type IntegratedOrderService =
+  | 'agenstra-controller'
+  | 'agenstra-manager'
+  | 'decabill-billing'
+  | 'loadweaver'
+  | 'custom';
 
 export type IntegratedOrderAuthMethod = 'users' | 'api-key' | 'keycloak';
 
@@ -101,11 +106,15 @@ export function buildPlanOrderRequestedConfig(params: BuildPlanOrderRequestedCon
     return requestedConfig;
   }
 
-  const requestedConfig: Record<string, unknown> = {
-    service: cfg.service,
-    authenticationMethod: cfg.authenticationMethod,
-    smtp: { ...cfg.smtp },
-  };
+  // Loadweaver generates its own secrets and accounts on the node (bootstrap); no auth / SMTP order fields.
+  const isLoadweaver = cfg.service === 'loadweaver';
+  const requestedConfig: Record<string, unknown> = isLoadweaver
+    ? { service: cfg.service }
+    : {
+        service: cfg.service,
+        authenticationMethod: cfg.authenticationMethod,
+        smtp: { ...cfg.smtp },
+      };
 
   attachOrderProvider(requestedConfig, params);
 
@@ -113,11 +122,11 @@ export function buildPlanOrderRequestedConfig(params: BuildPlanOrderRequestedCon
     requestedConfig['disableSignup'] = cfg.disableSignup;
   }
 
-  if (cfg.authenticationMethod === 'api-key' && cfg.staticApiKey.trim()) {
+  if (!isLoadweaver && cfg.authenticationMethod === 'api-key' && cfg.staticApiKey.trim()) {
     requestedConfig['staticApiKey'] = cfg.staticApiKey.trim();
   }
 
-  if (cfg.authenticationMethod === 'keycloak') {
+  if (!isLoadweaver && cfg.authenticationMethod === 'keycloak') {
     requestedConfig['keycloak'] = { ...cfg.keycloak };
   }
 

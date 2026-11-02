@@ -1,3 +1,5 @@
+import { formatBillingMoney } from '../billing-format';
+
 export interface PricingTaxRow {
   taxRate: number;
   taxAmount: number;
@@ -23,7 +25,7 @@ function roundMoney(value: number): number {
 }
 
 export function formatPricingCurrencyAmount(amount: number): string {
-  return `€${amount.toFixed(2)}`;
+  return formatBillingMoney(amount);
 }
 
 export function buildPricingTotalsSummary(input: {

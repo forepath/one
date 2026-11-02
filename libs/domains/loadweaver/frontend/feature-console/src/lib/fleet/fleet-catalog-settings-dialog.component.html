@@ -1,0 +1,237 @@
+<fpc-modal [open]="open()" (openChange)="open.set($event)" [title]="title" size="lg" scrollable>
+  @if (error(); as message) {
+    <fpc-alert class="mb-3" variant="danger" [message]="message" data-testid="fleet-catalog-op-error" />
+  }
+
+  <fpc-list-header [title]="clustersTitle" [sticky]="false" />
+  <fpc-form-check
+    class="d-block mb-1"
+    checkId="lw-fleet-catalog-op-all"
+    i18n-label="@@lwConsoleFleetCatalogOp-allClusters"
+    label="All active clusters"
+    [checked]="allSelected()"
+    (checkedChange)="toggleAll($event)"
+  />
+  <div class="d-flex flex-wrap gap-3 mb-3" data-testid="fleet-catalog-op-clusters">
+    @for (c of targets(); track c.id) {
+      <fpc-form-check
+        [checkId]="'lw-fleet-catalog-op-cluster-' + c.id"
+        [label]="c.name"
+        [checked]="form().clusterIds.includes(c.id)"
+        (checkedChange)="toggleCluster(c.id, $event)"
+      />
+    } @empty {
+      <span class="small text-body-secondary" i18n="@@lwConsoleFleetCatalogOp-noClusters">No active clusters.</span>
+    }
+  </div>
+
+  <fpc-list-header [title]="catalogsTitle" [sticky]="false" />
+  <fpc-form-switch
+    class="d-block mb-2"
+    switchId="lw-fleet-catalog-op-fleet"
+    i18n-label="@@lwConsoleFleetCatalogOp-includeFleet"
+    label="This fleet's catalog"
+    i18n-hint="@@lwConsoleFleetCatalogOp-includeFleetHint"
+    hint="Adds or updates the catalog this fleet hosts (type fleet) with the fleet's URL and catalog key."
+    [checked]="form().includeFleetCatalog"
+    (checkedChange)="patch({ includeFleetCatalog: $event })"
+    data-testid="fleet-catalog-op-include-fleet"
+  />
+  @if (form().includeFleetCatalog) {
+    <fpc-form-switch
+      class="d-block mb-2 ms-4"
+      switchId="lw-fleet-catalog-op-fleet-enabled"
+      i18n-label="@@lwConsoleFleetCatalogOp-fleetEnabled"
+      label="Enabled"
+      i18n-hint="@@lwConsoleFleetCatalogOp-fleetEnabledHint"
+      hint="Clusters that trust this fleet always keep its catalog as a fixed, enabled entry; this switch applies to the others."
+      [checked]="form().fleetCatalogEnabled"
+      (checkedChange)="patch({ fleetCatalogEnabled: $event })"
+    />
+  }
+  <fpc-form-field
+    class="d-block mb-2"
+    forId="lw-fleet-catalog-op-official"
+    i18n-label="@@lwConsoleFleetCatalogOp-official"
+    label="Official ForePath catalog"
+  >
+    <fpc-form-control
+      controlType="select"
+      controlId="lw-fleet-catalog-op-official"
+      size="sm"
+      [ngModel]="form().official"
+      (ngModelChange)="patch({ official: $event })"
+    >
+      <option value="keep" i18n="@@lwConsoleFleetCatalogOp-officialKeep">Leave as it is</option>
+      <option value="enable" i18n="@@lwConsoleFleetCatalogOp-officialEnable">Enable</option>
+      <option value="disable" i18n="@@lwConsoleFleetCatalogOp-officialDisable">Disable</option>
+    </fpc-form-control>
+  </fpc-form-field>
+
+  @for (row of form().catalogs; track $index; let i = $index) {
+    <div class="border rounded p-2 mb-2" [attr.data-testid]="'fleet-catalog-op-catalog-' + i">
+      <div class="row g-2">
+        <div class="col-12 col-md-4">
+          <fpc-form-field
+            [forId]="'lw-fleet-catalog-op-name-' + i"
+            i18n-label="@@lwConsoleFleetCatalogOp-name"
+            label="Name"
+          >
+            <fpc-form-control
+              [controlId]="'lw-fleet-catalog-op-name-' + i"
+              size="sm"
+              controlClass="font-monospace"
+              [ngModel]="row.name"
+              (ngModelChange)="updateCatalog(i, { name: $event })"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-3">
+          <fpc-form-field
+            [forId]="'lw-fleet-catalog-op-type-' + i"
+            i18n-label="@@lwConsoleFleetCatalogOp-type"
+            label="Type"
+          >
+            <fpc-form-control
+              controlType="select"
+              [controlId]="'lw-fleet-catalog-op-type-' + i"
+              size="sm"
+              [ngModel]="row.type"
+              (ngModelChange)="updateCatalog(i, { type: $event })"
+            >
+              <option value="git">Git</option>
+              <option value="oci">OCI</option>
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-5 d-flex align-items-end justify-content-between gap-2">
+          <fpc-form-switch
+            [switchId]="'lw-fleet-catalog-op-enabled-' + i"
+            i18n-label="@@lwConsoleFleetCatalogOp-fleetEnabled"
+            label="Enabled"
+            [checked]="row.enabled"
+            (checkedChange)="updateCatalog(i, { enabled: $event })"
+          />
+          <fpc-button
+            variant="danger"
+            size="sm"
+            iconOnly
+            [ariaLabel]="removeLabel"
+            [title]="removeLabel"
+            (clicked)="removeCatalog(i)"
+          >
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </fpc-button>
+        </div>
+        <div class="col-12 col-md-8">
+          <fpc-form-field
+            [forId]="'lw-fleet-catalog-op-url-' + i"
+            i18n-label="@@lwConsoleFleetCatalogOp-url"
+            label="URL"
+          >
+            <fpc-form-control
+              [controlId]="'lw-fleet-catalog-op-url-' + i"
+              size="sm"
+              controlClass="font-monospace"
+              [ngModel]="row.url"
+              (ngModelChange)="updateCatalog(i, { url: $event })"
+            />
+          </fpc-form-field>
+        </div>
+        @if (row.type === 'git') {
+          <div class="col-12 col-md-4">
+            <fpc-form-field
+              [forId]="'lw-fleet-catalog-op-ref-' + i"
+              i18n-label="@@lwConsoleFleetCatalogOp-ref"
+              label="Ref"
+            >
+              <fpc-form-control
+                [controlId]="'lw-fleet-catalog-op-ref-' + i"
+                size="sm"
+                controlClass="font-monospace"
+                [ngModel]="row.ref"
+                (ngModelChange)="updateCatalog(i, { ref: $event })"
+              />
+            </fpc-form-field>
+          </div>
+        }
+        <div class="col-12">
+          <fpc-form-field
+            [forId]="'lw-fleet-catalog-op-key-' + i"
+            i18n-label="@@lwConsoleFleetCatalogOp-key"
+            label="Public key (PEM)"
+          >
+            <fpc-form-control
+              controlType="textarea"
+              [controlId]="'lw-fleet-catalog-op-key-' + i"
+              size="sm"
+              controlClass="font-monospace"
+              [ngModel]="row.publicKey"
+              (ngModelChange)="updateCatalog(i, { publicKey: $event })"
+            />
+          </fpc-form-field>
+        </div>
+      </div>
+    </div>
+  }
+  <fpc-button variant="dark" size="sm" (clicked)="addCatalog()" data-testid="fleet-catalog-op-add-catalog">
+    <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+    <span i18n="@@lwConsoleFleetCatalogOp-addCatalog">Add a catalog</span>
+  </fpc-button>
+  <fpc-form-switch
+    class="d-block mt-3"
+    switchId="lw-fleet-catalog-op-replace"
+    i18n-label="@@lwConsoleFleetCatalogOp-replace"
+    label="Remove the clusters' other catalogs"
+    i18n-hint="@@lwConsoleFleetCatalogOp-replaceHint"
+    hint="Catalogs not named here are removed; the official catalog stays."
+    [checked]="form().replaceCatalogs"
+    (checkedChange)="patch({ replaceCatalogs: $event })"
+  />
+
+  <fpc-list-header class="d-block mt-3" [title]="trustTitle" [sticky]="false" />
+  <fpc-form-switch
+    class="d-block mb-2"
+    switchId="lw-fleet-catalog-op-change-trust"
+    i18n-label="@@lwConsoleFleetCatalogOp-changeTrust"
+    label="Set the allowed trust labels"
+    [checked]="form().changeTrust"
+    (checkedChange)="patch({ changeTrust: $event })"
+  />
+  @if (form().changeTrust) {
+    <fpc-form-check-group class="d-block mb-2" [label]="trustTitle" inline>
+      @for (t of trustLabels; track t) {
+        <fpc-form-check
+          [checkId]="'lw-fleet-catalog-op-trust-' + t"
+          [label]="trustLabel(t)"
+          [checked]="form().allowedTrust.includes(t)"
+          (checkedChange)="toggleTrust(t, $event)"
+        />
+      }
+    </fpc-form-check-group>
+  }
+
+  <fpc-form-switch
+    class="d-block mt-3"
+    switchId="lw-fleet-catalog-op-apply"
+    i18n-label="@@lwConsoleFleetCatalogOp-apply"
+    label="Apply the plans"
+    i18n-hint="@@lwConsoleFleetCatalogOp-applyHint"
+    hint="Without apply, each plan waits in its cluster for review. With apply, the cluster's approval rules still hold it."
+    [checked]="form().apply"
+    (checkedChange)="patch({ apply: $event })"
+  />
+
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="dark" size="sm" (clicked)="open.set(false)">{{ closeLabel }}</fpc-button>
+    <fpc-button
+      variant="primary"
+      size="sm"
+      [loading]="saving()"
+      (clicked)="submit()"
+      data-testid="fleet-catalog-op-submit"
+    >
+      <span i18n="@@lwConsoleFleetCatalogOp-start">Start</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

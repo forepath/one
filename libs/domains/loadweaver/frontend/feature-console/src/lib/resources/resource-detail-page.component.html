@@ -1,0 +1,96 @@
+<!-- Resource Summary (3.38): YAML | Compose is a segmented switch in the lane header; metadata as a key-value list. -->
+<div class="fpc-page">
+  @if (error(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" />
+  }
+  @if (planError(); as message) {
+    <fpc-alert [flush]="true" variant="danger" [message]="message" [dismissible]="true" (closed)="dismissPlanError()" />
+  }
+
+  @if (resource(); as r) {
+    <fpc-tab-group
+      class="fpc-lane-tabs"
+      [activeId]="lane()"
+      (activeIdChange)="lane.set($any($event))"
+      [ariaLabel]="metadataTitle"
+    >
+      <fpc-tab id="yaml" [label]="settings() ? settingsTitle : yamlTab" />
+      <fpc-tab id="meta" [label]="metadataTitle" />
+    </fpc-tab-group>
+    <fpc-section-row class="flex-grow-1 min-h-0" data-testid="resource-workbench">
+      @if (settings()) {
+        <!-- Kinds with a Spec tab: the Summary reads as settings, not as the same YAML again (LW-12b). -->
+        <loadweaver-lane
+          [title]="settingsTitle"
+          [flush]="true"
+          [off]="lane() !== 'yaml'"
+          data-testid="resource-settings-lane"
+        >
+          @if (settingFacts().length > 0) {
+            <fpc-key-value-list class="px-3" [items]="settingFacts()" data-testid="resource-settings" />
+          } @else {
+            <fpc-empty-state icon="sliders" size="sm" [title]="noSettingsLabel" />
+          }
+        </loadweaver-lane>
+      } @else {
+        <loadweaver-lane [title]="yamlTab" [flush]="true" [off]="lane() !== 'yaml'" data-testid="resource-yaml-lane">
+          @if (compose() !== null) {
+            <fpc-button-group lwLaneActions size="sm" [ariaLabel]="viewLabel" data-testid="resource-view-switch">
+              <fpc-button
+                [variant]="activeTab() !== 'compose' ? 'primary' : 'dark'"
+                size="sm"
+                [attr.aria-pressed]="activeTab() !== 'compose'"
+                (clicked)="activeTab.set('yaml')"
+                data-testid="resource-view-yaml"
+              >
+                <i class="bi bi-file-earmark-code me-1" aria-hidden="true"></i>{{ yamlTab }}
+              </fpc-button>
+              <fpc-button
+                [variant]="activeTab() === 'compose' ? 'primary' : 'dark'"
+                size="sm"
+                [attr.aria-pressed]="activeTab() === 'compose'"
+                (clicked)="activeTab.set('compose')"
+                data-testid="resource-view-compose"
+              >
+                <i class="bi bi-box-seam me-1" aria-hidden="true"></i>{{ composeTab }}
+              </fpc-button>
+            </fpc-button-group>
+          }
+          @if (compose() !== null && activeTab() === 'compose') {
+            <fpc-code-editor [value]="compose() ?? ''" language="yaml" [readOnly]="true" [height]="editorHeight" />
+          } @else {
+            <fpc-code-editor [value]="yaml()" language="yaml" [readOnly]="true" [height]="editorHeight" />
+          }
+        </loadweaver-lane>
+      }
+      <loadweaver-lane
+        [title]="metadataTitle"
+        grow="0 0 360px"
+        [flush]="true"
+        [off]="lane() !== 'meta'"
+        data-testid="resource-metadata-lane"
+      >
+        <fpc-key-value-list class="px-3" [items]="facts()" data-testid="resource-metadata">
+          <ng-template fpcKeyValue="project">
+            @if (r.metadata.project) {
+              {{ r.metadata.project }}
+            } @else {
+              <span i18n="@@lwConsoleResourceDetail-clusterLevel">Cluster-level</span>
+            }
+          </ng-template>
+          <ng-template fpcKeyValue="labels">
+            <span class="d-inline-flex flex-wrap gap-1">
+              @for (label of r.metadata.labels ?? {} | keyvalue; track label.key) {
+                <fpc-badge color="light" size="sm">{{ label.key }}={{ label.value }}</fpc-badge>
+              } @empty {
+                –
+              }
+            </span>
+          </ng-template>
+        </fpc-key-value-list>
+      </loadweaver-lane>
+    </fpc-section-row>
+  } @else if (loading()) {
+    <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+  }
+</div>

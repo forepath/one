@@ -1,0 +1,10 @@
+# Example publisher (DEVELOPMENT key: it signs the example app only; replace or remove before going live).
+name: Example Publisher
+label: community
+contact: https://github.com/forepath/one/issues
+keys:
+  - |
+    -----BEGIN PUBLIC KEY-----
+    MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfoFNTWjQZxpmSLlnSI40jD78Oeg/
+    RQg6uQvRphSsUxlArge6FB8CLYRkO4ZLJOH/gCC6aX4xdqWA3aHaBpi3Hg==
+    -----END PUBLIC KEY-----

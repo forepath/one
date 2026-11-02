@@ -18,6 +18,12 @@ export interface MeterCollectSample {
   meterKey: string;
   value: number;
   usagePayload?: Record<string, unknown>;
+  /**
+   * Optional idempotency key (e.g. per source, meter and hour): a sample whose key is already recorded for the
+   * subscription and meter is skipped, so overlapping collect windows never bill twice. Stored as
+   * `usagePayload.idempotencyKey` (unique per subscription and meter).
+   */
+  idempotencyKey?: string;
 }
 
 /** usage_source value written by the meter-collect job. */

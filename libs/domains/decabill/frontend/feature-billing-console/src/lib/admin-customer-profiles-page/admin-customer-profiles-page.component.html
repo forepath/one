@@ -1,7 +1,43 @@
 <div class="admin-profiles-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="admin-profiles-bulk-result"
+    />
+  }
+
+  <!-- One data list: Trust (State) · Customer · facts; ⋮ Trust score / Custom data / Edit / Delete / Copy ID;
+       bulk Recompute trust / Delete. -->
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="profiles()"
+    paging="server"
+    [total]="total()"
+    [(page)]="paging.page"
+    [(pageSize)]="paging.pageSize"
+    persistKey="decabill-admin-customer-profiles"
+    [(query)]="paging.search"
+    [searchPlaceholder]="searchPlaceholder"
+    [loading]="(loading$ | async) === true"
+    [error]="(error$ | async) ?? null"
+    selectable
+    [(selected)]="selected"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    (rowActivate)="openEditModal($event)"
+    emptyIcon="person-vcard"
+    data-testid="admin-profiles-list"
+  >
     <fpc-button
-      fpcPageHeaderActions
+      fpcDataTableToolbar
       variant="primary"
       size="sm"
       iconOnly
@@ -12,155 +48,62 @@
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
     </fpc-button>
-  </fpc-page-header>
+    <fpc-button
+      fpcDataTableBatch
+      variant="secondary"
+      size="sm"
+      [disabled]="selectedProfiles().length === 0"
+      (clicked)="recomputeTrustSelected()"
+      data-testid="admin-profiles-bulk-recompute"
+      iconOnly
+      [ariaLabel]="recomputeLabel"
+      [title]="recomputeLabel"
+    >
+      <i class="bi bi-calculator" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="selectedProfiles().length === 0"
+      (clicked)="confirmBulkDelete.set(true)"
+      data-testid="admin-profiles-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
 
-  <fpc-search-field
-    class="border-bottom"
-    name="search"
-    [bordered]="false"
-    [placeholder]="searchPlaceholder"
-    [ariaLabel]="searchPlaceholder"
-    [(value)]="searchQuery"
-  />
-
-  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-    @if (loading$ | async) {
-      <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" />
-      </div>
-    } @else {
-      @if (error$ | async; as error) {
-        <fpc-alert class="m-3" variant="danger" [message]="error" />
-      }
-      @if (profiles().length === 0) {
-        @if (searchQuery().trim()) {
-          <fpc-empty-state
-            icon="search"
-            message="No search results"
-            i18n-message="@@featureAdminProfiles-noSearchResults"
-          />
-        } @else {
-          <fpc-empty-state message="No billing profiles yet" i18n-message="@@featureAdminProfiles-empty" />
-        }
-      } @else {
-        <fpc-list [flush]="true">
-          @for (profile of profiles(); track profile.id) {
-            <fpc-list-item>
-              <div fpcListItemTitle class="fw-semibold d-flex align-items-center flex-wrap gap-2">
-                @if (profile.customerNumber) {
-                  <fpc-badge variant="info" color="secondary" class="fw-normal" [attr.title]="profile.customerNumber">
-                    {{ profile.customerNumber }}
-                  </fpc-badge>
-                }
-                <span class="text-truncate">{{ profilePrimaryTitle(profile) }}</span>
-              </div>
-              <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                  <span
-                    class="me-2 d-inline-flex align-items-center gap-2"
-                    [attr.aria-label]="profileTrustLabel(profile.trustLevel)"
-                  >
-                    <span class="trust-traffic-light" aria-hidden="true">
-                      <span
-                        class="trust-traffic-light__light trust-traffic-light__light--green"
-                        [class.is-active]="isTrustLightActive(profile.trustLevel, 'green')"
-                      ></span>
-                      <span
-                        class="trust-traffic-light__light trust-traffic-light__light--yellow"
-                        [class.is-active]="isTrustLightActive(profile.trustLevel, 'yellow')"
-                      ></span>
-                      <span
-                        class="trust-traffic-light__light trust-traffic-light__light--red"
-                        [class.is-active]="isTrustLightActive(profile.trustLevel, 'red')"
-                      ></span>
-                    </span>
-                    <span [ngClass]="profileTrustTextClass(profile.trustLevel)">
-                      <i class="bi me-1" [ngClass]="profileTrustIconClass(profile.trustLevel)" aria-hidden="true"></i>
-                      {{ profileTrustLabel(profile.trustLevel) }}
-                    </span>
-                  </span>
-                  <span class="me-2" [ngClass]="profileCompleteTextClass(profile.isComplete)">
-                    @if (profile.isComplete) {
-                      <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                    } @else {
-                      <i class="bi bi-clock me-1" aria-hidden="true"></i>
-                    }
-                    {{ profileCompleteLabel(profile.isComplete) }}
-                  </span>
-                  <span class="me-2">
-                    <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ profileUserLabel(profile) }}
-                  </span>
-                  <span class="me-2">
-                    <i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ profileCountryLabel(profile.country) }}
-                  </span>
-                  @if (profileSecondaryName(profile); as contactName) {
-                    <span class="me-2"> <i class="bi bi-person me-1" aria-hidden="true"></i>{{ contactName }} </span>
-                  }
-                  <span class="me-2">
-                    <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(profile.updatedAt) }}
-                  </span>
-                </div>
-              </div>
-              <fpc-button-group
-                fpcListItemActions
-                size="sm"
-                ariaLabel="Profile actions"
-                i18n-ariaLabel="@@featureAdminProfiles-profileActionsAria"
-              >
-                <fpc-button
-                  iconOnly
-                  size="sm"
-                  variant="dark"
-                  (clicked)="openTrustScoreModal(profile)"
-                  title="View trust score"
-                  i18n-title="@@featureAdminProfiles-trustButtonTitle"
-                >
-                  <i class="bi bi-shield-check" aria-hidden="true"></i>
-                </fpc-button>
-                <fpc-button
-                  iconOnly
-                  size="sm"
-                  variant="dark"
-                  (clicked)="openCustomDataModal(profile)"
-                  title="Edit custom data"
-                  i18n-title="@@featureAdminProfiles-customDataButtonTitle"
-                >
-                  <i class="bi bi-database" aria-hidden="true"></i>
-                </fpc-button>
-                <fpc-button
-                  size="sm"
-                  variant="warning"
-                  iconOnly
-                  (clicked)="openEditModal(profile)"
-                  title="Edit profile"
-                  i18n-title="@@featureAdminProfiles-editButtonTitle"
-                >
-                  <i class="bi bi-pencil" aria-hidden="true"></i>
-                </fpc-button>
-                <fpc-button
-                  size="sm"
-                  variant="danger"
-                  iconOnly
-                  (clicked)="openDeleteModal(profile)"
-                  title="Delete profile"
-                  i18n-title="@@featureAdminProfiles-deleteButtonTitle"
-                >
-                  <i class="bi bi-trash" aria-hidden="true"></i>
-                </fpc-button>
-              </fpc-button-group>
-            </fpc-list-item>
-          }
-        </fpc-list>
-      }
-    }
-  </div>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="person-vcard"
+        size="sm"
+        message="No billing profiles yet"
+        i18n-message="@@featureAdminProfiles-empty"
+      />
+    </span>
+    <ng-template fpcTableCell="updated" let-row>{{ formatDate(profileUpdatedAt(row)) }}</ng-template>
+  </fpc-data-table>
 </div>
+
+<fpc-confirm-dialog
+  [(open)]="confirmBulkDelete"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="deleteSelected()"
+/>
 
 <fpc-modal
   [(open)]="trustScoreModalOpen"
   size="lg"
   i18n-title="@@featureAdminProfiles-trustModalTitle"
   title="Customer trust score"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   @if (trustScoreLoading()) {
     <div class="d-flex justify-content-center align-items-center py-4">
@@ -208,21 +151,26 @@
       </div>
     </div>
 
-    <fpc-list>
-      @for (factor of trustDetail.factors; track factor.id) {
-        <fpc-list-item>
-          <div fpcListItemTitle class="fw-semibold">{{ factor.label }}</div>
-          <div fpcListItemMeta>{{ factor.description }}</div>
-          <div fpcListItemActions class="fw-semibold text-nowrap" [ngClass]="trustScorePointsClass(factor.points)">
-            {{ factor.points > 0 ? '+' : '' }}{{ factor.points }}
-          </div>
-        </fpc-list-item>
-      }
-    </fpc-list>
+    <fpc-data-table
+      nested
+      [ariaLabel]="trustFactorsLabel"
+      [columns]="trustFactorColumns"
+      [rows]="trustDetail.factors"
+      paging="client"
+      persistKey="decabill-customer-trust-factors"
+      [searchable]="false"
+      data-testid="admin-profiles-trust-factors"
+    >
+      <ng-template fpcTableCell="points" let-row>
+        <span class="fw-semibold text-nowrap" [ngClass]="trustScorePointsClass(factorPoints(row))">{{
+          formatPoints(factorPoints(row))
+        }}</span>
+      </ng-template>
+    </fpc-data-table>
   } @else {
     <fpc-alert class="mb-0" variant="dark">Trust details are currently unavailable.</fpc-alert>
   }
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="recomputeTrustScore()"
@@ -239,6 +187,8 @@
   size="lg"
   i18n-title="@@featureAdminProfiles-createTitle"
   title="Create billing profile"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <fpc-form-field forId="createProfileUser" i18n-label="@@featureAdminInvoices-user" label="Customer">
     <framework-billing-admin-user-select
@@ -250,7 +200,7 @@
     />
   </fpc-form-field>
   <ng-container *ngTemplateOutlet="profileFields; context: { form: createForm, prefix: 'create' }"></ng-container>
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="submitCreate()"
@@ -267,6 +217,8 @@
   size="lg"
   i18n-title="@@featureAdminProfiles-editTitle"
   title="Edit billing profile"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <div class="row">
     <div class="col-md-6">
@@ -294,7 +246,7 @@
     </div>
   </div>
   <ng-container *ngTemplateOutlet="profileFields; context: { form: editForm, prefix: 'edit' }"></ng-container>
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="submitEdit()"
@@ -328,6 +280,8 @@
   size="lg"
   i18n-title="@@featureAdminProfiles-customDataTitle"
   title="Custom data"
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <p class="text-body-secondary small mb-3" i18n="@@featureAdminProfiles-customDataHelp">
     Admin-only key/value pairs for linking this customer to external systems. Values are stored encrypted.
@@ -399,7 +353,7 @@
       </div>
     }
   }
-  <div *fpcModalFooter>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="primary"
       (clicked)="submitCustomData()"
@@ -519,6 +473,7 @@
           [(ngModel)]="form.country"
           [name]="prefix + 'Country'"
         >
+          <option value="" i18n="@@featureBilling-selectCountry">Select country</option>
           @for (country of countryOptions; track country.code) {
             <option [value]="country.code">{{ country.name }}</option>
           }

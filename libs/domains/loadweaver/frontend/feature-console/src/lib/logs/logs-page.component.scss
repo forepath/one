@@ -1,0 +1,4 @@
+// Log messages keep their line breaks; Bootstrap has no `white-space: pre-wrap` utility.
+.lw-logs__message {
+  white-space: pre-wrap;
+}

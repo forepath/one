@@ -1,0 +1,204 @@
+<fpc-modal [open]="open()" (openChange)="open.set($event)" [title]="title()" size="lg" scrollable>
+  @if (detail(); as d) {
+    @if (d.installable === false) {
+      <fpc-alert variant="warning" [message]="notInstallableLabel()" data-testid="app-install-not-allowed" />
+    } @else if (projects().length === 0) {
+      <fpc-alert variant="info" [message]="noProjectLabel" data-testid="app-install-no-project" />
+    } @else {
+      <div class="row g-2">
+        <div class="col-12 col-md-6">
+          <fpc-form-field forId="lw-app-install-project" [label]="projectLabel" [required]="true">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-app-install-project"
+              size="sm"
+              [ngModel]="selectedProject()"
+              (ngModelChange)="selectedProject.set($event)"
+              data-testid="app-install-project"
+            >
+              @for (p of projects(); track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <fpc-form-field
+            forId="lw-app-install-name"
+            [label]="nameLabel"
+            [hint]="nameHint"
+            [error]="nameInvalid() ? invalidNameLabel : null"
+          >
+            <fpc-form-control
+              controlId="lw-app-install-name"
+              size="sm"
+              controlClass="font-monospace"
+              autocomplete="off"
+              maxLength="63"
+              [invalid]="nameInvalid()"
+              [ngModel]="name()"
+              (ngModelChange)="name.set($event)"
+              data-testid="app-install-name"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-6">
+          <fpc-form-field forId="lw-app-install-channel" [label]="channelLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-app-install-channel"
+              size="sm"
+              [ngModel]="channel()"
+              (ngModelChange)="setChannel($event)"
+              data-testid="app-install-channel"
+            >
+              @for (c of channels(); track c) {
+                <option [value]="c">{{ c }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        <div class="col-6">
+          <fpc-form-field forId="lw-app-install-version" [label]="versionLabel">
+            <fpc-form-control
+              controlType="select"
+              controlId="lw-app-install-version"
+              size="sm"
+              [ngModel]="version()"
+              (ngModelChange)="setVersion($event)"
+              data-testid="app-install-version"
+            >
+              @for (v of channelVersions(); track v.version) {
+                <option [value]="v.version">{{ v.version }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+      </div>
+
+      <!-- Parameters: the manifest's JSON Schema, rendered by the resource form's field component. -->
+      <h3 class="h6 mt-3">{{ parametersTitle }}</h3>
+      @if (model().parameters.length === 0) {
+        <p class="small text-body-secondary">{{ noParametersLabel }}</p>
+      }
+      @for (p of model().parameters; track p.name) {
+        <loadweaver-schema-field
+          class="mb-2"
+          [schema]="p.schema"
+          [value]="values()[p.name]"
+          [path]="[p.name]"
+          [required]="p.required"
+          [rowLabel]="p.schema.title ?? p.name"
+          [hintText]="p.schema.description ?? null"
+          [issues]="shownIssues()"
+          [disabled]="loadingManifest()"
+          [depth]="1"
+          idPrefix="lw-app-param-"
+          (valueChange)="setValue(p.name, $event)"
+          [attr.data-testid]="'app-install-param-' + p.name"
+        />
+      }
+
+      @if (model().dependencies.length > 0) {
+        <h3 class="h6 mt-3">{{ dependenciesTitle }}</h3>
+        @for (dep of model().dependencies; track dep.dependency.name) {
+          <div class="border rounded p-2 mb-2" [attr.data-testid]="'app-install-dep-' + dep.dependency.name">
+            <div class="d-flex align-items-center justify-content-between gap-2">
+              <span class="fw-semibold">{{ dep.dependency.title ?? dep.dependency.name }}</span>
+              @if (dep.toggle && dep.provided.length > 0) {
+                <fpc-form-switch
+                  [switchId]="'lw-app-dep-' + dep.dependency.name"
+                  [label]="bundledLabel"
+                  [checked]="bundled(dep)"
+                  (checkedChange)="setBundled(dep, $event)"
+                  [disabled]="loadingManifest()"
+                  data-testid="app-install-dep-toggle"
+                />
+              } @else if (dep.toggle) {
+                <fpc-badge size="sm" tone="info">{{ bundledLabel }}</fpc-badge>
+              }
+            </div>
+            @if (bundled(dep)) {
+              <p class="small text-body-secondary mb-0 mt-1 font-monospace">
+                {{ dep.dependency.bundled?.services?.join(', ') }}
+              </p>
+            } @else {
+              <p class="small text-body-secondary mt-1 mb-2">{{ providedHint }}</p>
+              @for (p of dep.provided; track p.name) {
+                <loadweaver-schema-field
+                  class="mb-2"
+                  [schema]="p.schema"
+                  [value]="values()[p.name]"
+                  [path]="[p.name]"
+                  [required]="p.required"
+                  [rowLabel]="p.schema.title ?? p.name"
+                  [hintText]="p.schema.description ?? null"
+                  [issues]="shownIssues()"
+                  [depth]="1"
+                  idPrefix="lw-app-param-"
+                  (valueChange)="setValue(p.name, $event)"
+                  [attr.data-testid]="'app-install-param-' + p.name"
+                />
+              }
+            }
+          </div>
+        }
+      }
+
+      @if (shownSecrets().length > 0) {
+        <h3 class="h6 mt-3">{{ secretsTitle }}</h3>
+        <p class="small text-body-secondary">{{ secretsHint }}</p>
+        @for (s of shownSecrets(); track s.name) {
+          <fpc-form-field
+            [forId]="'lw-app-secret-' + s.name"
+            [label]="s.name"
+            [hint]="s.description"
+            [required]="true"
+            [error]="attempted() && missing().includes(s.name) ? secretMissingLabel : null"
+          >
+            <loadweaver-reference-field
+              [target]="{ type: 'secretName', project: selectedProject() || null }"
+              [value]="secrets()[s.name] ?? ''"
+              [controlId]="'lw-app-secret-' + s.name"
+              [ariaLabel]="s.name"
+              [invalid]="attempted() && missing().includes(s.name)"
+              (valueChange)="setSecret(s.name, $event)"
+              [attr.data-testid]="'app-install-secret-' + s.name"
+            />
+          </fpc-form-field>
+        }
+      }
+
+      @if (suggestions().length > 0) {
+        <h3 class="h6 mt-3">{{ suggestionsTitle }}</h3>
+        <p class="small text-body-secondary">{{ suggestionsHint }}</p>
+        @for (item of suggestions(); track item.key) {
+          <fpc-form-check
+            [checkId]="'lw-app-suggest-' + item.key"
+            [label]="groupLabels[item.group] + ': ' + item.labels.join(', ')"
+            [checked]="selected().has(item.key)"
+            (checkedChange)="toggleSuggestion(item.key, $event)"
+            [attr.data-testid]="'app-install-suggestion-' + item.key"
+          />
+        }
+      }
+    }
+    @if (error(); as message) {
+      <fpc-alert class="mt-3" variant="danger" [message]="message" data-testid="app-install-error" />
+    }
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="secondary" (clicked)="open.set(false)">
+      <span>{{ cancelLabel }}</span>
+    </fpc-button>
+    <fpc-button
+      variant="primary"
+      [disabled]="blocked() || (attempted() && !valid())"
+      [loading]="saving()"
+      (clicked)="submit()"
+      data-testid="app-install-submit"
+    >
+      <i class="bi bi-file-diff me-1" aria-hidden="true"></i><span>{{ planLabel }}</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

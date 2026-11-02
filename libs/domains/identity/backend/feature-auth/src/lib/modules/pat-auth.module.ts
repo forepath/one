@@ -26,6 +26,11 @@ export interface PatAuthModuleOptions {
  * Host must register JwtModule (UsersAuthModule or KeycloakUserSyncModule).
  * APP_GUARD registration for PatScopesGuard / UsersRolesGuard / PatBearerAuthGuard
  * is owned by the host module so guard order stays correct.
+ *
+ * Registered **global**: in keycloak mode `KeycloakUserSyncModule` (a sibling, not an importer)
+ * provides `UsersAuthGuard` for its `UsersController`, and the guard needs
+ * `RevokedUserTokensRepository` / `PersonalAccessTokenService` from this stack — without
+ * `global` the host failed at startup with a DI error in `UsersAuthGuard`.
  */
 @Module({})
 export class PatAuthModule {
@@ -45,6 +50,7 @@ export class PatAuthModule {
     ];
 
     return {
+      global: true,
       module: PatAuthModule,
       imports: [TypeOrmModule.forFeature([UserEntity, RevokedUserTokenEntity, UserPersonalAccessTokenEntity])],
       controllers: [PersonalAccessTokensController, PatTokenExchangeController],

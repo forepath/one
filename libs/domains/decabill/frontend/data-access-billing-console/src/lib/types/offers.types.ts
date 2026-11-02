@@ -67,6 +67,8 @@ export interface AdminOfferListItem {
   id: string;
   userId: string;
   userEmail?: string;
+  /** Billing-profile name (company, else first + last name); shown instead of the email in admin lists. */
+  customerName?: string;
   offerNumber?: string | null;
   status: OfferStatus;
   currency: string;

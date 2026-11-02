@@ -276,9 +276,9 @@ describe('AdminBillingController', () => {
   it('cancelSubscription delegates to billing admin service', async () => {
     billingAdminService.cancelSubscriptionForAdmin.mockResolvedValue({ id: 'sub-1', status: 'pending_cancel' });
 
-    const result = await controller.cancelSubscription('sub-1', {});
+    const result = await controller.cancelSubscription('sub-1', { confirmDataTeardown: true });
 
-    expect(billingAdminService.cancelSubscriptionForAdmin).toHaveBeenCalledWith('sub-1');
+    expect(billingAdminService.cancelSubscriptionForAdmin).toHaveBeenCalledWith('sub-1', { confirmDataTeardown: true });
     expect(result.status).toBe('pending_cancel');
   });
 
@@ -287,7 +287,9 @@ describe('AdminBillingController', () => {
 
     const result = await controller.withdrawSubscription('sub-1', {});
 
-    expect(billingAdminService.withdrawSubscriptionForAdmin).toHaveBeenCalledWith('sub-1');
+    expect(billingAdminService.withdrawSubscriptionForAdmin).toHaveBeenCalledWith('sub-1', {
+      confirmDataTeardown: undefined,
+    });
     expect(result.status).toBe('pending_withdrawal');
   });
 
@@ -299,7 +301,9 @@ describe('AdminBillingController', () => {
 
     const result = await controller.instantCancelSubscription('sub-1', {});
 
-    expect(billingAdminService.instantCancelSubscriptionForAdmin).toHaveBeenCalledWith('sub-1');
+    expect(billingAdminService.instantCancelSubscriptionForAdmin).toHaveBeenCalledWith('sub-1', {
+      confirmDataTeardown: undefined,
+    });
     expect(result.status).toBe('pending_instant_cancel');
   });
 

@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { take } from 'rxjs';
 
 import type { CreateAdminPromotionDto, UpdateAdminPromotionDto } from '../../types/promotions.types';
 
@@ -18,6 +19,11 @@ import {
   selectAdminPromotionsDeactivating,
   selectAdminPromotionsError,
   selectAdminPromotionsLoading,
+  selectAdminPromotionsPage,
+  selectAdminPromotionsPageSize,
+  selectAdminPromotionsState,
+  selectAdminPromotionsTotal,
+  selectAdminPromotionRedemptionsTotal,
   selectAdminPromotionsUpdating,
 } from './admin-promotions.selectors';
 
@@ -31,6 +37,22 @@ export class AdminPromotionsFacade {
 
   getLoading$() {
     return this.store.select(selectAdminPromotionsLoading);
+  }
+
+  getTotal$() {
+    return this.store.select(selectAdminPromotionsTotal);
+  }
+
+  getPage$() {
+    return this.store.select(selectAdminPromotionsPage);
+  }
+
+  getPageSize$() {
+    return this.store.select(selectAdminPromotionsPageSize);
+  }
+
+  getRedemptionsTotal$() {
+    return this.store.select(selectAdminPromotionRedemptionsTotal);
   }
 
   getRedemptions$() {
@@ -57,12 +79,28 @@ export class AdminPromotionsFacade {
     return this.store.select(selectAdminPromotionsError);
   }
 
-  loadPromotions(params?: { search?: string }): void {
-    this.store.dispatch(loadAdminPromotions({ search: params?.search }));
+  /** Loads page 1 (or the given page) of the filtered promotions; the page replaces the current rows. */
+  loadPromotions(params?: { search?: string; page?: number; pageSize?: number }): void {
+    this.store.dispatch(
+      loadAdminPromotions({ search: params?.search, page: params?.page, pageSize: params?.pageSize }),
+    );
   }
 
-  loadRedemptions(promotionId: string): void {
-    this.store.dispatch(loadAdminPromotionRedemptions({ promotionId }));
+  /** Loads another page of the current search (replace-page). */
+  loadPage(page: number, pageSize?: number): void {
+    this.store
+      .select(selectAdminPromotionsState)
+      .pipe(take(1))
+      .subscribe((state) =>
+        this.store.dispatch(
+          loadAdminPromotions({ search: state.search ?? undefined, page, pageSize: pageSize ?? state.pageSize }),
+        ),
+      );
+  }
+
+  /** One page of a promotion's redemptions (replace-page; 1-based page). */
+  loadRedemptions(promotionId: string, page?: number, pageSize?: number): void {
+    this.store.dispatch(loadAdminPromotionRedemptions({ promotionId, page, pageSize }));
   }
 
   createPromotion(dto: CreateAdminPromotionDto): void {

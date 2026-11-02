@@ -1,11 +1,9 @@
-import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import {
   afterNextRender,
   Component,
   DestroyRef,
   ElementRef,
-  HostListener,
   computed,
   effect,
   inject,
@@ -15,7 +13,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   BOARD_LANE_STATUSES,
@@ -33,6 +31,7 @@ import {
   type ProjectTicketResponse,
   type ProjectTicketStatus,
   type ProjectTimeEntryResponse,
+  type ProjectTicketActivityResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
   FpcAlertComponent,
@@ -41,7 +40,11 @@ import {
   FpcBreadcrumbItemComponent,
   FpcBreadcrumbsComponent,
   FpcButtonComponent,
+  FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
+  FpcDataTableComponent,
+  FpcDropdownComponent,
+  FpcDropdownItemComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
@@ -49,29 +52,30 @@ import {
   FpcLaneHeaderComponent,
   FpcListComponent,
   FpcListItemComponent,
+  FpcListToolbarComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
-  FpcPageHeaderComponent,
   FpcProgressComponent,
   FpcSearchFieldComponent,
   FpcSpinnerComponent,
   FpcTabComponent,
   FpcTabGroupComponent,
-  FpcTypeaheadSelectComponent,
+  FpcTableCellDirective,
+  fpcCopyText,
+  fpcListQueryState,
+  type FpcBulkResult,
+  type FpcFilterChip,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  type FpcTableRowDropEvent,
+  type FpcTableSort,
+  type FpcBadgeTone,
+  FpcSectionRowComponent,
+  FpcSectionColumnComponent,
+  FpcDatePipe,
 } from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
-import {
-  catchError,
-  debounceTime,
-  distinctUntilChanged,
-  filter,
-  finalize,
-  map,
-  of,
-  pairwise,
-  switchMap,
-  take,
-} from 'rxjs';
+import { filter, firstValueFrom, pairwise, take } from 'rxjs';
 
 import {
   BILLING_MODAL_TRANSITION_MS,
@@ -82,54 +86,61 @@ import {
   watchBillingMutationModalClose,
   type BillingModalSwapState,
 } from '../billing-modal';
+import { formatBillingClockRange } from '../billing-format';
+import { getUnavailableLabel, isProjectTimeEntryBilled } from '../billing-status-labels';
 import {
-  getProjectTimeEntryBillingStatusIconClass,
-  getProjectTimeEntryBillingStatusLabel,
-  getProjectTimeEntryBillingStatusTextClass,
-  getUnavailableLabel,
-  isProjectTimeEntryBilled,
-} from '../billing-status-labels';
-import {
-  projectTicketActivityActionBadgeClass,
+  projectTicketActivityActionBadgeTone,
   projectTicketActivityActionLabel,
 } from '../project-ticket-activity-labels';
 import { ProjectMilestoneSelectComponent } from '../project-milestone-select/project-milestone-select.component';
 import { ProjectTicketEditorComponent } from '../project-ticket-editor/project-ticket-editor.component';
 import { projectTicketLaneStatusLabel } from '../project-ticket-lane-status-label';
+import {
+  dbBulkSummary,
+  dbCopyIdItem,
+  dbOpenItem,
+  DB_DL_CANCEL,
+  DB_DL_DELETE,
+  type DbBulkResult,
+} from '../shared/data-list';
+import { timeEntryBillingState } from '../shared/table-states';
+import {
+  bulkDeleteProjectTickets,
+  bulkUpdateProjectTickets,
+  buildProjectTicketTableRows,
+  filterProjectTicketLaneRows,
+  PROJECT_TICKET_STATUSES,
+  projectTicketEditable,
+  projectTicketHiddenMatchCount,
+  projectTicketHiddenMatchLabel,
+  projectTicketPriorityLabel,
+  projectTicketPriorityTone,
+  projectTicketStatusFilterLabel,
+  projectTicketStatusState,
+  projectTicketStatusTone,
+  projectTicketTableColumns,
+  type ProjectTicketStatusFilter,
+} from './project-board-table';
+import { projectBoardViewState, type ProjectBoardView } from './project-board-view';
 
 const ALL_TICKET_STATUSES: ProjectTicketStatus[] = ['draft', 'todo', 'in_progress', 'prototype', 'done', 'closed'];
 
 const PRIORITY_OPTIONS: ProjectTicketPriority[] = ['low', 'medium', 'high', 'critical'];
-
-/** Fixed row height for CDK virtual scroll (title + meta chips + list-group padding). */
-const PROJECT_BOARD_VIRTUAL_ITEM_SIZE_PX = 88;
 
 interface ProjectTicketDetailSubtaskRow {
   ticket: ProjectTicketResponse;
   depth: number;
 }
 
-function isEditableDomTarget(target: EventTarget | null): boolean {
-  if (!target || !(target instanceof HTMLElement)) {
-    return false;
-  }
-
-  const tag = target.tagName;
-
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-    return true;
-  }
-
-  return target.isContentEditable;
-}
-
 @Component({
   selector: 'framework-project-board',
   standalone: true,
   imports: [
+    FpcDatePipe,
+    FpcSectionRowComponent,
+    FpcSectionColumnComponent,
     CommonModule,
     FormsModule,
-    ScrollingModule,
     ProjectMilestoneSelectComponent,
     ProjectTicketEditorComponent,
     FpcAlertComponent,
@@ -138,47 +149,63 @@ function isEditableDomTarget(target: EventTarget | null): boolean {
     FpcBreadcrumbItemComponent,
     FpcBreadcrumbsComponent,
     FpcButtonComponent,
+    FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
+    FpcDataTableComponent,
+    FpcDropdownComponent,
+    FpcDropdownItemComponent,
     FpcEmptyStateComponent,
+    FpcTableCellDirective,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcLabelComponent,
     FpcLaneHeaderComponent,
     FpcListComponent,
     FpcListItemComponent,
+    FpcListToolbarComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
-    FpcPageHeaderComponent,
     FpcProgressComponent,
     FpcSearchFieldComponent,
     FpcSpinnerComponent,
     FpcTabComponent,
     FpcTabGroupComponent,
-    FpcTypeaheadSelectComponent,
   ],
   templateUrl: './project-board.component.html',
   styleUrls: ['./project-board.component.scss'],
 })
 export class ProjectBoardComponent implements OnInit {
   readonly pageTitle = $localize`:@@featureProjectBoard-title:Board`;
-  readonly globalSearchTitle = $localize`:@@featureProjectBoard-globalSearchOpenTitle:Search tickets (Ctrl+F)`;
-  readonly globalSearchAriaLabel = $localize`:@@featureProjectBoard-globalSearchOpenAria:Search tickets`;
+  readonly copyFullShaLabel = $localize`:@@featureProjectBoard-copyFullSha:Copy full hash`;
+
+  copyText(value: string): void {
+    fpcCopyText(value);
+  }
   readonly commentInputAriaLabel = $localize`:@@featureProjectBoard-commentPlaceholder:Add a comment...`;
   readonly laneSearchPlaceholder = $localize`:@@featureProjectBoard-searchLanePlaceholder:Search tickets`;
   readonly laneSearchAriaLabel = $localize`:@@featureProjectBoard-searchLaneLabel:Search tickets`;
   readonly addTitle = $localize`:@@featureProjectBoard-add:Add`;
+  readonly viewSwitchLabel = $localize`:@@featureProjectBoard-viewSwitch:View`;
+  readonly tableViewLabel = $localize`:@@featureProjectBoard-viewTable:Table view`;
+  readonly lanesViewLabel = $localize`:@@featureProjectBoard-viewLanes:Lanes view`;
+  readonly statusFilterLabel = $localize`:@@featureProjectBoard-filterStatus:Status`;
+  readonly priorityFilterLabel = $localize`:@@featureProjectBoard-filterPriority:Priority`;
+  readonly bulkStatusLabel = $localize`:@@featureProjectBoard-bulkStatus:Set status…`;
+  readonly bulkPriorityLabel = $localize`:@@featureProjectBoard-bulkPriority:Set priority…`;
+  readonly bulkDeleteTitle = $localize`:@@featureProjectBoard-bulkDeleteTitle:Delete tickets`;
+  readonly moveToHeading = $localize`:@@featureProjectBoard-moveTo:Move to`;
+  readonly deleteLabel = DB_DL_DELETE;
+  readonly cancelLabel = DB_DL_CANCEL;
 
   @Input({ required: true }) projectId!: string;
   @Input() isAdmin = false;
 
-  private readonly globalSearchInput = viewChild<ElementRef<HTMLElement>>('globalSearchInput');
   private readonly detailTitleInputRef = viewChild<ElementRef<HTMLInputElement>>('detailTitleInput');
 
   readonly detailModalOpen = signal(false);
   readonly createModalOpen = signal(false);
   readonly createTimeModalOpen = signal(false);
   readonly deleteTicketConfirmModalOpen = signal(false);
-  readonly globalSearchModalOpen = signal(false);
   private readonly ticketsFacade = inject(ProjectTicketsFacade);
   private readonly ticketsService = inject(ProjectTicketsService);
   private readonly milestonesFacade = inject(ProjectMilestonesFacade);
@@ -187,21 +214,15 @@ export class ProjectBoardComponent implements OnInit {
   private readonly injector = inject(Injector);
   private readonly actions$ = inject(Actions);
 
-  readonly laneVirtualItemSize = PROJECT_BOARD_VIRTUAL_ITEM_SIZE_PX;
+  /** Lanes: one stacked `fpc-data-table` per lane; rows drag between the lanes of this group. */
+  readonly laneDropGroup = 'decabill-project-board-lanes';
+  /** Lanes render every ticket (variable-height cards; drag and drop is off in the table's virtual mode). */
+  readonly laneVirtualThreshold = Number.MAX_SAFE_INTEGER;
   readonly lanes = BOARD_LANE_STATUSES;
   readonly statusOptions = ALL_TICKET_STATUSES;
   readonly priorityOptions = PRIORITY_OPTIONS;
   readonly selectedLane = signal<BoardLaneStatus>('todo');
   readonly activityOccurredAtFormat = 'MMM d, y, h:mm a';
-
-  /** Per-swimlane list filter (same substring behavior as Agenstra tickets board). */
-  readonly laneSearchQueries = signal({
-    draft: '',
-    todo: '',
-    in_progress: '',
-    prototype: '',
-    done: '',
-  } satisfies Record<BoardLaneStatus, string>);
 
   readonly createParentId = signal<string | null>(null);
   readonly descriptionDraft = signal('');
@@ -209,13 +230,6 @@ export class ProjectBoardComponent implements OnInit {
   readonly detailTitleEditing = signal(false);
   readonly detailTitleDraft = signal('');
 
-  readonly draggedTicket = signal<ProjectTicketResponse | null>(null);
-  readonly dragOverLane = signal<BoardLaneStatus | null>(null);
-  readonly globalSearchQuery = signal('');
-  readonly globalSearchQuery$ = toObservable(this.globalSearchQuery);
-  readonly globalSearchHits = signal<ProjectTicketResponse[]>([]);
-  readonly globalSearchLoading = signal(false);
-  readonly globalSearchSuggestionsOpen = signal(false);
   readonly ticketPendingDelete = signal<{ id: string; title: string } | null>(null);
 
   private lastDetailIdForDraft: string | null = null;
@@ -223,14 +237,142 @@ export class ProjectBoardComponent implements OnInit {
   private readonly detailModalSwap: BillingModalSwapState = { suspended: false };
   /** Bumps on each {@link openTicketDetailFlow} so stale load completions cannot reopen the modal. */
   private ticketDetailOpenGeneration = 0;
-  /** Skip opening detail right after a drag ended (browser may emit click). */
-  private suppressCardClickUntil = 0;
 
+  /** Admins move unlocked tickets (drag and drop, ⋮ Move to); locked or non-admin cards stay put. */
   isTicketDraggable(ticket: ProjectTicketResponse): boolean {
     return this.isAdmin && !ticket.locked;
   }
 
+  /** Lane cards (bound as `isAdmin ? laneRowDraggable : false`, so a role change re-renders the cards). */
+  readonly laneRowDraggable = (row: ProjectTicketBoardRow): boolean => this.isTicketDraggable(row.ticket);
+
   readonly ticketsBoardRowsByStatus$ = this.ticketsFacade.boardRowsByStatus$;
+  readonly ticketsList = toSignal(this.ticketsFacade.tickets$, { initialValue: [] as ProjectTicketResponse[] });
+
+  /** Table | Lanes (URL `view=`, then localStorage, default table). */
+  private readonly boardView = projectBoardViewState();
+  readonly view = this.boardView.view;
+
+  // Board table (client paging; the list API returns the project's tickets at once).
+  readonly ticketStatusFilterOptions: readonly ProjectTicketStatusFilter[] = [
+    'board',
+    'all',
+    ...PROJECT_TICKET_STATUSES,
+  ];
+  readonly ticketColumns = projectTicketTableColumns((milestoneId) => this.milestoneLabel(milestoneId));
+  /** Lane cards: State (icon) · Ticket (short hash + title, lock) / Priority · Subtasks (priority-1 lines). */
+  readonly laneColumns: FpcTableColumn<ProjectTicketBoardRow>[] = this.ticketColumns
+    .filter((column) => ['status', 'ticket', 'priority', 'subtasks'].includes(column.id))
+    .map((column) => (column.id === 'subtasks' ? { ...column, priority: 1 } : column));
+  readonly ticketRowId = (row: ProjectTicketBoardRow): string => row.ticket.id;
+  readonly ticketStatusFilter = signal<ProjectTicketStatusFilter>('board');
+  readonly ticketPriorityFilter = signal<ProjectTicketPriority | ''>('');
+  readonly ticketSearch = signal('');
+  readonly ticketSort = signal<FpcTableSort | null>(null);
+  readonly ticketPage = signal(1);
+  readonly ticketFiltersOpen = signal(false);
+  readonly ticketFilterState = fpcListQueryState({
+    filters: { status: this.ticketStatusFilter, priority: this.ticketPriorityFilter },
+    search: this.ticketSearch,
+    open: this.ticketFiltersOpen,
+    page: this.ticketPage,
+  });
+  readonly ticketTableRows = computed(() =>
+    buildProjectTicketTableRows(
+      this.ticketsList(),
+      {
+        status: this.ticketStatusFilter(),
+        priority: this.ticketPriorityFilter(),
+        search: this.ticketSearch(),
+        sort: this.ticketSort(),
+      },
+      this.ticketColumns,
+    ),
+  );
+  /** Lanes view drawer: only the priority filter applies (the lanes are the statuses). */
+  readonly laneFiltersActive = computed(() => (this.ticketPriorityFilter() ? 1 : 0));
+  private readonly laneRowsByStatus = toSignal(this.ticketsBoardRowsByStatus$, { initialValue: null });
+  /** Rows of each lane narrowed by the strip's search + priority (one array per lane until the inputs change). */
+  readonly laneTableRows = computed(() => {
+    const byStatus = this.laneRowsByStatus();
+
+    return Object.fromEntries(this.lanes.map((lane) => [lane, this.filteredLaneRows(byStatus?.[lane])])) as Record<
+      BoardLaneStatus,
+      ProjectTicketBoardRow[]
+    >;
+  });
+  readonly hiddenMatchesTitle = $localize`:@@featureProjectBoard-moreMatchesTitle:Matches in other statuses (for example closed tickets) — show them in the table with all statuses`;
+  /** Removable chips of the applied filters (status when not the default board statuses, priority). */
+  readonly ticketChips = computed((): FpcFilterChip[] => [
+    ...(this.ticketStatusFilter() !== 'board'
+      ? [
+          {
+            id: 'status',
+            value: this.ticketStatusFilter(),
+            label: `${this.statusFilterLabel}: ${projectTicketStatusFilterLabel(this.ticketStatusFilter())}`,
+          },
+        ]
+      : []),
+    ...this.laneChips(),
+  ]);
+  readonly laneChips = computed((): FpcFilterChip[] => {
+    const priority = this.ticketPriorityFilter();
+
+    return priority
+      ? [{ id: 'priority', value: priority, label: `${this.priorityFilterLabel}: ${this.priorityLabel(priority)}` }]
+      : [];
+  });
+  /** Search / priority matches the current view hides (closed tickets, other statuses). */
+  readonly hiddenMatchCount = computed(() => {
+    const query = { priority: this.ticketPriorityFilter(), search: this.ticketSearch() };
+    let visible: Set<string>;
+
+    if (this.view() === 'table') {
+      visible = new Set(this.ticketTableRows().map((row) => row.ticket.id));
+    } else {
+      const byStatus = this.laneRowsByStatus();
+
+      visible = new Set(
+        this.lanes.flatMap((lane) => this.filteredLaneRows(byStatus?.[lane]).map((row) => row.ticket.id)),
+      );
+    }
+
+    return projectTicketHiddenMatchCount(this.ticketsList(), query, visible, this.ticketColumns);
+  });
+  readonly hiddenMatchLabel = computed(() => projectTicketHiddenMatchLabel(this.hiddenMatchCount()));
+  readonly selectedTicketIds = signal<readonly string[]>([]);
+  readonly bulkBusy = signal(false);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly ticketsPendingBulkDelete = signal<readonly ProjectTicketResponse[]>([]);
+  readonly bulkDeleteConfirmOpen = signal(false);
+  readonly bulkDeleteMessage = computed(() => {
+    const pending = this.ticketsPendingBulkDelete();
+
+    return pending.length === 1
+      ? $localize`:@@featureProjectBoard-bulkDeleteOne:Delete "${pending[0].title}:title:"? This cannot be undone.`
+      : $localize`:@@featureProjectBoard-bulkDeleteMany:Delete ${pending.length}:count: tickets? Subtasks of deleted tickets are deleted too. This cannot be undone.`;
+  });
+  /** ⋮ of a ticket row: the card's actions (open; move between lanes for admins) plus Copy ID / Delete. */
+  readonly ticketRowMenu = (row: ProjectTicketBoardRow): FpcMenuItem[] => {
+    const editable = projectTicketEditable(row.ticket, this.isAdmin);
+
+    return [
+      dbOpenItem(),
+      ...(editable
+        ? this.statusOptions
+            .filter((status) => status !== row.ticket.status)
+            .map((status, index) => ({
+              id: `status:${status}`,
+              label: this.laneLabel(status),
+              icon: projectTicketStatusState(status).icon,
+              heading: index === 0 ? this.moveToHeading : undefined,
+              dividerBefore: index === 0,
+            }))
+        : []),
+      dbCopyIdItem(),
+      ...(editable ? [{ id: 'delete', label: DB_DL_DELETE, icon: 'trash', danger: true }] : []),
+    ];
+  };
   readonly loadingList$ = this.ticketsFacade.loadingList$;
   readonly detail$ = this.ticketsFacade.detail$;
   readonly detailBreadcrumb$ = this.ticketsFacade.detailBreadcrumb$;
@@ -248,6 +390,92 @@ export class ProjectBoardComponent implements OnInit {
   readonly detail = toSignal(this.detail$, { initialValue: null as ProjectTicketResponse | null });
   readonly saving = toSignal(this.saving$, { initialValue: false });
   readonly ticketTimeEntries = toSignal(this.ticketTimeEntries$, { initialValue: [] as ProjectTimeEntryResponse[] });
+  readonly activity = toSignal(this.activity$, { initialValue: [] as ProjectTicketActivityResponse[] });
+
+  readonly subtasksLabel = $localize`:@@featureProjectBoard-subtasksHeading:Subtasks`;
+  readonly timeEntriesLabel = $localize`:@@featureProjectBoard-timeEntriesHeading:Time entries`;
+  readonly activityLabel = $localize`:@@featureProjectBoard-activityHeading:Activity`;
+  readonly subtaskRowId = (row: ProjectTicketDetailSubtaskRow): string => row.ticket.id;
+  /** Subtasks of the open ticket (tree order, indented by depth): State (lane) · Ticket · Priority. */
+  readonly subtaskColumns: FpcTableColumn<ProjectTicketDetailSubtaskRow>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureProjectBoard-colStatus:Status`,
+      type: 'state',
+      state: (row) => ({
+        label: this.laneLabel(row.ticket.status),
+        tone: this.ticketStatusBadgeTone(row.ticket.status),
+      }),
+    },
+    { id: 'ticket', label: $localize`:@@featureProjectBoard-colTicket:Ticket`, required: true, priority: 1 },
+    {
+      id: 'priority',
+      label: $localize`:@@featureProjectBoard-colPriority:Priority`,
+      value: (row) => this.priorityLabel(row.ticket.priority),
+      priority: 1,
+    },
+  ];
+  /** Time logged on the open ticket: State (billed) · Entry · date · time · duration. */
+  readonly timeColumns: FpcTableColumn<ProjectTimeEntryResponse>[] = [
+    {
+      id: 'billing',
+      label: $localize`:@@featureProjectDetail-colBilling:Billing`,
+      type: 'state',
+      state: (entry) => timeEntryBillingState(isProjectTimeEntryBilled(entry)),
+    },
+    {
+      id: 'entry',
+      label: $localize`:@@featureProjectDetail-colEntry:Entry`,
+      value: (entry) => this.timeEntryTitle(entry),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'date',
+      label: $localize`:@@featureProjectDetail-colDate:Date`,
+      value: (entry) => entry.startedAt,
+      priority: 1,
+    },
+    {
+      id: 'time',
+      label: $localize`:@@featureProjectDetail-colTime:Time`,
+      value: (entry) => this.formatTimeEntryClockRange(entry.startedAt, entry.endedAt),
+      priority: 2,
+    },
+    {
+      id: 'duration',
+      label: $localize`:@@featureProjectDetail-colDuration:Duration`,
+      value: (entry) => this.formatMinutes(entry.durationMinutes),
+      align: 'end',
+      priority: 2,
+    },
+  ];
+  /** Ticket activity feed: State (readable action) · Time · Actor. */
+  readonly activityColumns: FpcTableColumn<ProjectTicketActivityResponse>[] = [
+    {
+      id: 'action',
+      label: $localize`:@@featureProjectBoard-colAction:Action`,
+      type: 'state',
+      state: (event) => ({
+        label: this.activityActionLabel(event.actionType),
+        tone: this.activityActionBadgeTone(event.actionType),
+      }),
+      iconOnly: false,
+    },
+    {
+      id: 'time',
+      label: $localize`:@@featureProjectDetail-colTime:Time`,
+      value: (event) => event.occurredAt,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'actor',
+      label: $localize`:@@featureProjectBoard-colActor:Actor`,
+      value: (event) => event.actorEmail ?? '',
+      priority: 1,
+    },
+  ];
   readonly ticketTimeLoading = toSignal(this.ticketTimeLoading$, { initialValue: false });
   readonly ticketTimeSaving = toSignal(this.ticketTimeSaving$, { initialValue: false });
   readonly milestones = toSignal(this.milestonesFacade.milestones$, {
@@ -305,31 +533,6 @@ export class ProjectBoardComponent implements OnInit {
     this.ticketsFacade.loadTickets({ projectId: this.projectId });
     this.milestonesFacade.load(this.projectId);
 
-    this.globalSearchQuery$
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        switchMap((query) => {
-          const trimmed = query.trim();
-
-          if (!trimmed) {
-            this.globalSearchLoading.set(false);
-
-            return of([] as ProjectTicketResponse[]);
-          }
-
-          this.globalSearchLoading.set(true);
-
-          return this.ticketsService.list({ projectId: this.projectId, search: trimmed, limit: 50 }).pipe(
-            map((tickets) => [...tickets].sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()))),
-            catchError(() => of([] as ProjectTicketResponse[])),
-            finalize(() => this.globalSearchLoading.set(false)),
-          );
-        }),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((hits) => this.globalSearchHits.set(hits));
-
     watchBillingMutationModalClose({
       loading$: this.saving$,
       error$: this.error$,
@@ -381,25 +584,139 @@ export class ProjectBoardComponent implements OnInit {
     });
   }
 
-  setLaneSearchQuery(lane: BoardLaneStatus, value: string): void {
-    this.laneSearchQueries.update((queries) => ({ ...queries, [lane]: value }));
+  /** "and n more": widen to the table with every status (removable "Status: All statuses" chip). */
+  showHiddenMatches(): void {
+    this.setView('table');
+    this.ticketStatusFilter.set('all');
+    this.ticketFilterState.syncDraft();
   }
 
-  filteredLaneRows(lane: BoardLaneStatus, rows: ProjectTicketBoardRow[] | undefined): ProjectTicketBoardRow[] {
-    const list = rows ?? [];
-    const query = (this.laneSearchQueries()[lane] ?? '').trim();
-
-    if (!query) {
-      return list;
+  removeTicketChip(chip: FpcFilterChip): void {
+    if (chip.id === 'status' || chip.id === 'priority') {
+      this.ticketFilterState.reset(chip.id);
     }
-
-    const needle = query.toLowerCase();
-
-    return list.filter((row) => JSON.stringify(row.ticket).toLowerCase().includes(needle));
   }
 
-  trackLaneRowByTicketId(_index: number, row: ProjectTicketBoardRow): string {
-    return row.ticket.id;
+  setView(view: ProjectBoardView): void {
+    if (view !== this.view()) {
+      this.boardView.set(view);
+    }
+  }
+
+  statusFilterOptionLabel(value: ProjectTicketStatusFilter): string {
+    return projectTicketStatusFilterLabel(value);
+  }
+
+  onTicketRowAction(row: ProjectTicketBoardRow, action: string): void {
+    const ticket = row.ticket;
+
+    if (action === 'open') {
+      this.openTicketDetailFlow(ticket.id);
+    } else if (action === 'copy-id') {
+      fpcCopyText(ticket.id);
+    } else if (action === 'delete' && projectTicketEditable(ticket, this.isAdmin)) {
+      this.ticketsPendingBulkDelete.set([ticket]);
+      this.bulkDeleteConfirmOpen.set(true);
+    } else if (action.startsWith('status:') && projectTicketEditable(ticket, this.isAdmin)) {
+      this.ticketsFacade.update(this.projectId, ticket.id, {
+        status: action.slice('status:'.length) as ProjectTicketStatus,
+      });
+    }
+  }
+
+  /** Selected tickets an admin may change (locked ones are read-only and skipped). */
+  private selectedEditableTickets(): ProjectTicketResponse[] {
+    const ids = new Set(this.selectedTicketIds());
+
+    return this.ticketsList().filter((ticket) => ids.has(ticket.id) && projectTicketEditable(ticket, this.isAdmin));
+  }
+
+  onBulkStatus(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const status = select.value as ProjectTicketStatus;
+
+    select.value = '';
+    this.onBulkStatusValue(status);
+  }
+
+  /** Batch menu (status): fan the change out over the selected tickets. */
+  onBulkStatusValue(status: ProjectTicketStatus): void {
+    if (status) {
+      void this.runTicketBulk(() =>
+        bulkUpdateProjectTickets(this.selectedEditableTickets(), { status }, this.updateTicket),
+      );
+    }
+  }
+
+  onBulkPriority(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const priority = select.value as ProjectTicketPriority;
+
+    select.value = '';
+    this.onBulkPriorityValue(priority);
+  }
+
+  /** Batch menu (priority): fan the change out over the selected tickets. */
+  onBulkPriorityValue(priority: ProjectTicketPriority): void {
+    if (priority) {
+      void this.runTicketBulk(() =>
+        bulkUpdateProjectTickets(this.selectedEditableTickets(), { priority }, this.updateTicket),
+      );
+    }
+  }
+
+  requestBulkDelete(): void {
+    const tickets = this.selectedEditableTickets();
+
+    if (tickets.length > 0) {
+      this.ticketsPendingBulkDelete.set(tickets);
+      this.bulkDeleteConfirmOpen.set(true);
+    }
+  }
+
+  onConfirmBulkDelete(): void {
+    const tickets = this.ticketsPendingBulkDelete();
+
+    this.ticketsPendingBulkDelete.set([]);
+    void this.runTicketBulk(() =>
+      bulkDeleteProjectTickets(tickets, (id) => firstValueFrom(this.ticketsService.delete(this.projectId, id))),
+    );
+  }
+
+  private readonly updateTicket = (
+    id: string,
+    dto: { status?: ProjectTicketStatus; priority?: ProjectTicketPriority },
+  ) => firstValueFrom(this.ticketsService.update(this.projectId, id, dto));
+
+  /** Runs a bulk action (client fan-out over the single-ticket endpoints), shows the per-ticket result, reloads. */
+  async runTicketBulk(bulk: () => Promise<FpcBulkResult<ProjectTicketResponse>>): Promise<void> {
+    this.bulkBusy.set(true);
+    this.bulkResult.set(null);
+
+    try {
+      const result = await bulk();
+
+      if (result.results.length === 0) {
+        return;
+      }
+
+      this.bulkResult.set(dbBulkSummary(result, (ticket) => ticket.title));
+      this.selectedTicketIds.set(result.failed.concat(result.denied).map((ticket) => ticket.id));
+
+      if (result.succeeded.length > 0) {
+        this.ticketsFacade.loadTickets({ projectId: this.projectId });
+      }
+    } finally {
+      this.bulkBusy.set(false);
+    }
+  }
+
+  /** Lane rows narrowed by the board search + priority filter (one toolbar above all lanes, shared with the table). */
+  filteredLaneRows(rows: ProjectTicketBoardRow[] | undefined): ProjectTicketBoardRow[] {
+    return filterProjectTicketLaneRows(rows ?? [], {
+      priority: this.ticketPriorityFilter(),
+      search: this.ticketSearch(),
+    });
   }
 
   laneLabel(status: string): string {
@@ -425,152 +742,28 @@ export class ProjectBoardComponent implements OnInit {
   }
 
   priorityLabel(priority: ProjectTicketPriority): string {
-    switch (priority) {
-      case 'low':
-        return $localize`:@@featureProjectBoard-priorityLow:Low`;
-      case 'medium':
-        return $localize`:@@featureProjectBoard-priorityMedium:Medium`;
-      case 'high':
-        return $localize`:@@featureProjectBoard-priorityHigh:High`;
-      case 'critical':
-        return $localize`:@@featureProjectBoard-priorityCritical:Critical`;
-      default:
-        return priority;
-    }
+    return projectTicketPriorityLabel(priority);
   }
 
   activityActionLabel(actionType: string): string {
     return projectTicketActivityActionLabel(actionType);
   }
 
-  activityActionBadgeClass(actionType: string): string {
-    return projectTicketActivityActionBadgeClass(actionType);
+  activityActionBadgeTone(actionType: string): FpcBadgeTone {
+    return projectTicketActivityActionBadgeTone(actionType);
   }
 
-  ticketPriorityBadgeClass(priority: ProjectTicketPriority): string {
-    switch (priority) {
-      case 'low':
-        return 'project-board__chip--priority-low';
-      case 'medium':
-        return 'project-board__chip--priority-medium';
-      case 'high':
-        return 'project-board__chip--priority-high';
-      case 'critical':
-        return 'project-board__chip--priority-critical';
-      default:
-        return 'project-board__chip--neutral';
-    }
+  ticketPriorityBadgeTone(priority: ProjectTicketPriority): FpcBadgeTone {
+    return projectTicketPriorityTone(priority);
   }
 
-  ticketStatusBadgeClass(status: ProjectTicketStatus): string {
-    switch (status) {
-      case 'draft':
-        return 'project-board__chip--status-draft';
-      case 'todo':
-        return 'project-board__chip--status-todo';
-      case 'in_progress':
-        return 'project-board__chip--status-in-progress';
-      case 'prototype':
-        return 'project-board__chip--status-prototype';
-      case 'done':
-        return 'project-board__chip--status-done';
-      case 'closed':
-        return 'project-board__chip--status-closed';
-      default:
-        return 'project-board__chip--neutral';
-    }
+  ticketStatusBadgeTone(status: ProjectTicketStatus): FpcBadgeTone {
+    return projectTicketStatusTone(status);
   }
 
-  onTicketCardClick(ticket: ProjectTicketResponse): void {
-    if (typeof performance !== 'undefined' && performance.now() < this.suppressCardClickUntil) {
-      return;
-    }
-
-    this.openTicketDetailFlow(ticket.id);
-  }
-
-  @HostListener('document:keydown', ['$event'])
-  onDocumentKeydownForGlobalSearch(event: KeyboardEvent): void {
-    if (!event.ctrlKey || (event.key !== 'f' && event.key !== 'F')) {
-      return;
-    }
-
-    if (!this.projectId) {
-      return;
-    }
-
-    const target = event.target;
-    const searchHost = this.globalSearchInput()?.nativeElement;
-
-    if (isEditableDomTarget(target)) {
-      if (this.globalSearchModalOpen() && searchHost && target instanceof Node && searchHost.contains(target)) {
-        event.preventDefault();
-        this.focusGlobalSearchInput();
-      }
-
-      return;
-    }
-
-    event.preventDefault();
-    this.openGlobalSearchModal();
-  }
-
-  openGlobalSearchModal(): void {
-    this.globalSearchQuery.set('');
-    this.globalSearchHits.set([]);
-    this.globalSearchLoading.set(false);
-    this.globalSearchSuggestionsOpen.set(false);
-    setTimeout(() => {
-      if (this.globalSearchModalOpen()) {
-        this.focusGlobalSearchInput({ preventScroll: true });
-
-        return;
-      }
-
-      showBillingModal(this.globalSearchModalOpen);
-      afterNextRender(() => this.focusGlobalSearchInput({ preventScroll: true }), { injector: this.injector });
-    }, 0);
-  }
-
-  onCloseGlobalSearchModal(): void {
-    this.globalSearchModalOpen.set(false);
-    this.globalSearchQuery.set('');
-    this.globalSearchHits.set([]);
-    this.globalSearchLoading.set(false);
-    this.globalSearchSuggestionsOpen.set(false);
-  }
-
-  onGlobalSearchQueryChange(value: string): void {
-    this.globalSearchQuery.set(value);
-    const term = value.trim();
-
-    if (!term) {
-      this.globalSearchHits.set([]);
-      this.globalSearchLoading.set(false);
-      this.globalSearchSuggestionsOpen.set(false);
-
-      return;
-    }
-
-    this.globalSearchHits.set([]);
-    this.globalSearchLoading.set(true);
-    this.globalSearchSuggestionsOpen.set(true);
-  }
-
-  onGlobalSearchSuggestionsOpenChange(open: boolean): void {
-    if (!open) {
-      this.globalSearchSuggestionsOpen.set(false);
-
-      return;
-    }
-
-    this.globalSearchSuggestionsOpen.set(this.globalSearchQuery().trim().length > 0);
-  }
-
-  onGlobalSearchResultClick(ticket: ProjectTicketResponse, event?: MouseEvent): void {
-    event?.preventDefault();
-    this.onCloseGlobalSearchModal();
-    this.openTicketDetailFlow(ticket.id);
+  /** Lane card click / Enter (a drag never activates it): open the detail. */
+  onLaneRowActivate(row: ProjectTicketBoardRow): void {
+    this.openTicketDetailFlow(row.ticket.id);
   }
 
   onBreadcrumbNavigate(ticketId: string): void {
@@ -816,20 +1009,24 @@ export class ProjectBoardComponent implements OnInit {
     return description || this.formatMinutes(entry.durationMinutes);
   }
 
-  timeEntryShowsDurationInMeta(entry: ProjectTimeEntryResponse): boolean {
-    return !!entry.description?.trim();
+  timeEntryStart(entry: ProjectTimeEntryResponse): string {
+    return entry.startedAt;
   }
 
-  timeEntryBillingStatusLabel(entry: ProjectTimeEntryResponse): string {
-    return getProjectTimeEntryBillingStatusLabel(isProjectTimeEntryBilled(entry));
+  activityTime(event: ProjectTicketActivityResponse): string {
+    return event.occurredAt;
   }
 
-  timeEntryBillingStatusTextClass(entry: ProjectTimeEntryResponse): string {
-    return getProjectTimeEntryBillingStatusTextClass(isProjectTimeEntryBilled(entry));
+  subtaskDepth(row: ProjectTicketDetailSubtaskRow): number {
+    return row.depth;
   }
 
-  timeEntryBillingStatusIconClass(entry: ProjectTimeEntryResponse): string {
-    return getProjectTimeEntryBillingStatusIconClass(isProjectTimeEntryBilled(entry));
+  subtaskShortSha(row: ProjectTicketDetailSubtaskRow): string | null {
+    return row.ticket.shas.short || null;
+  }
+
+  subtaskTitle(row: ProjectTicketDetailSubtaskRow): string {
+    return row.ticket.title;
   }
 
   formatMinutes(minutes: number): string {
@@ -840,19 +1037,7 @@ export class ProjectBoardComponent implements OnInit {
   }
 
   formatTimeEntryClockRange(startedAt: string, endedAt: string): string {
-    const start = new Date(startedAt);
-    const end = new Date(endedAt);
-    const sameDay =
-      start.getFullYear() === end.getFullYear() &&
-      start.getMonth() === end.getMonth() &&
-      start.getDate() === end.getDate();
-    const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
-
-    if (sameDay) {
-      return `${start.toLocaleTimeString([], timeOptions)} - ${end.toLocaleTimeString([], timeOptions)}`;
-    }
-
-    return `${start.toLocaleString()} - ${end.toLocaleString()}`;
+    return formatBillingClockRange(startedAt, endedAt);
   }
 
   isTicketTimeFormValid(): boolean {
@@ -965,133 +1150,15 @@ export class ProjectBoardComponent implements OnInit {
     this.commentBody.set('');
   }
 
-  onLaneDrop(event: DragEvent, laneStatus: BoardLaneStatus): void {
-    event.preventDefault();
+  /** A lane card dropped on another lane: same status update as before, admins and unlocked tickets only. */
+  onLaneRowDrop(event: FpcTableRowDropEvent<ProjectTicketBoardRow>): void {
+    const status = event.toData as BoardLaneStatus;
+    const ticket = event.row.ticket;
 
-    const dragged = this.draggedTicket();
+    if (!(this.lanes as readonly string[]).includes(status) || ticket.status === status) return;
+    if (!this.isTicketDraggable(ticket)) return;
 
-    this.dragOverLane.set(null);
-
-    if (!dragged) {
-      return;
-    }
-
-    if (!(this.lanes as readonly string[]).includes(laneStatus)) {
-      this.draggedTicket.set(null);
-
-      return;
-    }
-
-    if (dragged.status === laneStatus) {
-      this.draggedTicket.set(null);
-
-      return;
-    }
-
-    this.ticketsFacade.update(this.projectId, dragged.id, { status: laneStatus });
-    this.draggedTicket.set(null);
-  }
-
-  isLaneDragHighlight(status: BoardLaneStatus): boolean {
-    const dragged = this.draggedTicket();
-
-    return this.dragOverLane() === status && dragged !== null && dragged.status !== status;
-  }
-
-  onLaneDragOver(event: DragEvent, laneStatus: BoardLaneStatus): void {
-    event.preventDefault();
-
-    const dragged = this.draggedTicket();
-
-    if (!dragged || dragged.status === laneStatus) {
-      return;
-    }
-
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move';
-    }
-
-    this.dragOverLane.set(laneStatus);
-  }
-
-  onCardDragOver(event: DragEvent): void {
-    event.preventDefault();
-
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move';
-    }
-  }
-
-  onLaneDragEnter(event: DragEvent, laneStatus: BoardLaneStatus): void {
-    event.preventDefault();
-
-    const dragged = this.draggedTicket();
-
-    if (!dragged || dragged.status === laneStatus) {
-      return;
-    }
-
-    this.dragOverLane.set(laneStatus);
-  }
-
-  onLaneDragLeave(event: DragEvent, laneStatus: BoardLaneStatus): void {
-    event.preventDefault();
-
-    const related = event.relatedTarget as HTMLElement | null;
-
-    if (related && event.currentTarget instanceof HTMLElement && event.currentTarget.contains(related)) {
-      return;
-    }
-
-    if (this.dragOverLane() === laneStatus) {
-      this.dragOverLane.set(null);
-    }
-  }
-
-  onTicketDragStart(event: DragEvent, ticket: ProjectTicketResponse): void {
-    if (!event.dataTransfer) {
-      return;
-    }
-
-    if (!this.isAdmin || ticket.locked) {
-      event.preventDefault();
-
-      return;
-    }
-
-    this.draggedTicket.set(ticket);
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', ticket.id);
-
-    if (event.currentTarget instanceof HTMLElement) {
-      const card = event.currentTarget.querySelector('.project-board__card-content');
-
-      if (card) {
-        const dragImage = card.cloneNode(true) as HTMLElement;
-
-        dragImage.style.position = 'absolute';
-        dragImage.style.top = '-1000px';
-        dragImage.style.opacity = '0.8';
-        dragImage.style.backgroundColor = 'var(--bs-body-bg)';
-        dragImage.style.padding = '4px 8px';
-        dragImage.style.border = '1px solid var(--bs-border-color)';
-        dragImage.style.borderRadius = '4px';
-        dragImage.style.maxWidth = '240px';
-        document.body.appendChild(dragImage);
-        event.dataTransfer.setDragImage(dragImage, 0, 0);
-        setTimeout(() => {
-          if (document.body.contains(dragImage)) {
-            document.body.removeChild(dragImage);
-          }
-        }, 0);
-      }
-    }
-  }
-
-  onTicketDragEnd(): void {
-    this.draggedTicket.set(null);
-    this.dragOverLane.set(null);
-    this.suppressCardClickUntil = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 200;
+    this.ticketsFacade.update(this.projectId, ticket.id, { status });
   }
 
   private resetCreateForm(): void {
@@ -1127,9 +1194,5 @@ export class ProjectBoardComponent implements OnInit {
 
   private datetimeLocalToIso(value: string): string {
     return new Date(value).toISOString();
-  }
-
-  private focusGlobalSearchInput(options?: FocusOptions): void {
-    this.globalSearchInput()?.nativeElement?.querySelector<HTMLInputElement>('input')?.focus(options);
   }
 }

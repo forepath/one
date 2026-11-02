@@ -17,6 +17,7 @@ flowchart TB
   Registry(["ghcr.io/forepath<br/>controller-api, manager-api, manager-worker,<br/>manager-worker-microvm, manager-egress-guard, console-server, landingpage-server"])
   Decabill(["Decabill billing manager (:3200)<br/>plans, orders, cloud-init provisioning of<br/>Agenstra controllers + managers"])
   Communication(["Forepath communication API (:3300)<br/>contact form, Turnstile"])
+  Loadweaver(["Loadweaver cluster API<br/>project-scoped operator PAT (LOADWEAVER_URL / _PROJECT / _TOKEN_FILE)"])
 
   subgraph Frontends["Frontends (Angular SSR, Express)"]
     Console["Agent console (:4100)<br/>chat, tool + permission embeds, editor (Monaco),<br/>terminal, VNC desktop, Git, tickets board,<br/>knowledge tree, chat plans, agent tasks (/tasks),<br/>handoff cards + chats, statistics, config layers"]
@@ -102,6 +103,7 @@ flowchart TB
       Filters["Chat filters<br/>incoming / outgoing, plugins"]
       Deploy["Deployments<br/>GitHub / GitLab pipeline providers"]
       WsIndex["Workspace index<br/>inotify supervisor, change notifier"]
+      AgentRuntime["Agent runtime (AGENT_RUNTIME)<br/>docker: containers on this host via docker.sock;<br/>loadweaver: one Deployment per environment (plan + apply,<br/>isolation level 1:1), machine exec, live files, logs + metrics,<br/>egress via Loadweaver's node proxy, project secrets"]
       MPg[("Postgres<br/>agents (incl. handoff profile), messages, events, chat sessions<br/>(primary / user / handoff),<br/>deployments, env vars, egress events")]
     end
 
@@ -136,7 +138,8 @@ flowchart TB
   CtxApi -.handoff profiles.-> Profiles
   Profiles -.read-only self-description turn.-> Runtime
   CtxAccess -.permission reply ctx_*.-> MApi
-  MApi --> ConfigSync & Egress & Isolation & Deploy & WsIndex
+  MApi --> ConfigSync & Egress & Isolation & Deploy & WsIndex & AgentRuntime
+  AgentRuntime -.REST + socket/exec (loadweaver runtime).-> Loadweaver
   Manager --> MPg
   Runtime <-->|"HTTP + SSE events (Basic auth)"| OpenCode
   ConfigSync -->|"config, provider auth, MCP"| OpenCode

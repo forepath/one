@@ -1,5 +1,6 @@
 import type {
   StatisticsEgressBreakdownItem,
+  StatisticsFilterTypesBreakdownItem,
   StatisticsSecuritySeriesPoint,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 
@@ -165,4 +166,45 @@ export function formatBytes(bytes: number): string {
   const value = bytes / 1024 ** exponent;
 
   return `${value >= 10 || exponent === 0 ? Math.round(value) : value.toFixed(1)} ${units[exponent]}`;
+}
+
+/** Donut legend entry of a filter drop / flag breakdown: `Drop: <rule name> (Incoming)`; raw key only for legacy rows. */
+export function filterBreakdownLabel(
+  prefix: string,
+  item: Pick<StatisticsFilterTypesBreakdownItem, 'filterType' | 'filterDisplayName'>,
+  directionLabel: string,
+): string {
+  return `${prefix}: ${item.filterDisplayName?.trim() || item.filterType} (${directionLabel})`;
+}
+
+/**
+ * Y axis bounds for count charts (messages, events): whole-number ticks only (AG-08: no 0.5 steps). Up to 5 the axis
+ * shows one tick per unit (an empty range shows 0–1); above, Apex picks a nice scale with integer labels.
+ */
+export function countAxisScale(
+  series: readonly (readonly number[])[],
+  stacked = false,
+): {
+  min: number;
+  max?: number;
+  tickAmount?: number;
+  forceNiceScale: boolean;
+  decimalsInFloat: number;
+} {
+  const length = Math.max(0, ...series.map((values) => values.length));
+  let max = 0;
+
+  for (let i = 0; i < length; i++) {
+    const values = series.map((s) => s[i] ?? 0);
+
+    max = Math.max(max, stacked ? values.reduce((sum, v) => sum + v, 0) : Math.max(0, ...values));
+  }
+
+  if (max <= 5) {
+    const top = Math.max(1, Math.ceil(max));
+
+    return { min: 0, max: top, tickAmount: top, forceNiceScale: false, decimalsInFloat: 0 };
+  }
+
+  return { min: 0, forceNiceScale: true, decimalsInFloat: 0 };
 }

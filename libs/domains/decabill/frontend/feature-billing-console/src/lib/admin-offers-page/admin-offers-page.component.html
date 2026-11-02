@@ -1,35 +1,13 @@
 <div class="admin-offers-container border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle">
-    <fpc-button
-      fpcPageHeaderActions
-      variant="primary"
-      size="sm"
-      iconOnly
-      [disabled]="(mutating$ | async) === true"
-      [ariaLabel]="createOfferAriaLabel"
-      [title]="createOfferAriaLabel"
-      (clicked)="openCreateModal()"
-    >
-      <i class="bi bi-plus" aria-hidden="true"></i>
-    </fpc-button>
-  </fpc-page-header>
+  <fpc-page-header [title]="pageTitle" />
 
-  <fpc-tab-group
-    class="d-md-none flex-shrink-0"
-    [activeId]="mobilePanel()"
-    (activeIdChange)="onMobilePanelTabChange($event)"
-  >
-    <fpc-tab id="overview" [label]="mobilePanelLabel('overview')" />
-    <fpc-tab id="offers" [label]="mobilePanelLabel('offers')" />
-  </fpc-tab-group>
-
-  <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
+  <div class="flex-grow-1 d-flex flex-column min-h-0 w-100 h-100 overflow-hidden">
     @if (error$ | async; as err) {
       <fpc-alert [flush]="true" variant="danger" [message]="err" />
     }
 
     <fpc-summary-bar [columns]="4">
-      <fpc-summary-card [label]="draftCountLabel">
+      <fpc-summary-card icon="pencil-square" [label]="draftCountLabel">
         <span fpcSummaryCardValue>
           @if (statisticsLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -38,7 +16,7 @@
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="pendingCountLabel">
+      <fpc-summary-card icon="hourglass-split" [label]="pendingCountLabel">
         <span fpcSummaryCardValue>
           @if (statisticsLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -47,7 +25,7 @@
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="acceptedCountLabel">
+      <fpc-summary-card icon="check2-circle" [label]="acceptedCountLabel">
         <span fpcSummaryCardValue>
           @if (statisticsLoading$ | async) {
             <fpc-spinner size="sm" />
@@ -56,254 +34,233 @@
           }
         </span>
       </fpc-summary-card>
-      <fpc-summary-card [label]="pendingGrossLabel">
+      <fpc-summary-card icon="cash-coin" [label]="pendingGrossLabel">
         <span fpcSummaryCardValue>
           @if (statisticsLoading$ | async) {
             <fpc-spinner size="sm" />
           } @else if (statistics$ | async; as stats) {
-            {{ stats.pendingGross | number: '1.2-2' }}€
+            {{ stats.pendingGross | fpcMoney }}
           }
         </span>
       </fpc-summary-card>
     </fpc-summary-bar>
 
-    <div class="section__row flex-grow-1 min-h-0">
-      <div
-        class="section__column section__column--overview d-md-flex flex-column min-h-0 border-end"
-        [class.d-none]="mobilePanel() !== 'overview'"
-      >
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="admin-offers-bulk-result"
+      />
+    }
+
+    <fpc-tab-group class="flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="onTabChange($event)">
+      <fpc-tab id="offers" [label]="tabLabel('offers')" />
+      <fpc-tab id="statistics" [label]="tabLabel('statistics')" />
+    </fpc-tab-group>
+
+    @switch (activeTab()) {
+      @case ('offers') {
+        <!-- Server-paged offers: State · Offer number · customer · total · dates; ⋮ Edit / Audit / Send / Revoke /
+             Delete / Copy ID; bulk Send / Revoke / Delete drafts. -->
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="pageTitle"
+          [columns]="columns"
+          [rows]="offers()"
+          paging="server"
+          [total]="total()"
+          [(page)]="paging.page"
+          [(pageSize)]="paging.pageSize"
+          persistKey="decabill-admin-offers"
+          [(query)]="paging.search"
+          [searchPlaceholder]="searchPlaceholder"
+          showFilterButton
+          [(filtersOpen)]="offerFiltersOpen"
+          [filtersActive]="offersUserId() ? 1 : 0"
+          (filtersApplied)="applyOfferFilters()"
+          (filtersCleared)="clearOfferFilters()"
+          [loading]="(loading$ | async) === true"
+          selectable
+          [(selected)]="selected"
+          [rowMenu]="rowMenu"
+          (rowAction)="onRowAction($event.row, $event.item.id)"
+          (rowActivate)="onRowActivate($event)"
+          emptyIcon="file-earmark-text"
+          data-testid="admin-offers-list"
+        >
+          <fpc-button
+            fpcDataTableToolbar
+            variant="primary"
+            size="sm"
+            iconOnly
+            [disabled]="(mutating$ | async) === true"
+            [ariaLabel]="createOfferAriaLabel"
+            [title]="createOfferAriaLabel"
+            (clicked)="openCreateModal()"
+          >
+            <i class="bi bi-plus" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-form-field fpcDataTableFilters i18n-label="@@featureAdminOffers-customerFilter" label="Customer">
+            <framework-billing-admin-user-select
+              [(selectedUserId)]="offersUserIdDraft"
+              [size]="'sm'"
+            ></framework-billing-admin-user-select>
+          </fpc-form-field>
+
+          <fpc-button
+            fpcDataTableBatch
+            variant="secondary"
+            size="sm"
+            [disabled]="selectedDrafts().length === 0"
+            (clicked)="sendSelected()"
+            data-testid="admin-offers-bulk-send"
+            iconOnly
+            [ariaLabel]="sendLabel"
+            [title]="sendLabel"
+          >
+            <i class="bi bi-send" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
+            fpcDataTableBatch
+            variant="secondary"
+            size="sm"
+            [disabled]="selectedPendingResponse().length === 0"
+            (clicked)="pendingBulk.set('revoke')"
+            data-testid="admin-offers-bulk-revoke"
+            iconOnly
+            [ariaLabel]="revokeLabel"
+            [title]="revokeLabel"
+          >
+            <i class="bi bi-x-octagon" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
+            fpcDataTableBatch
+            variant="danger"
+            size="sm"
+            [disabled]="selectedDrafts().length === 0"
+            (clicked)="pendingBulk.set('delete')"
+            data-testid="admin-offers-bulk-delete"
+            iconOnly
+            [ariaLabel]="deleteDraftsLabel"
+            [title]="deleteDraftsLabel"
+          >
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </fpc-button>
+
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              icon="file-earmark-text"
+              size="sm"
+              message="No offers yet"
+              i18n-message="@@featureAdminOffers-empty"
+            />
+          </span>
+          <ng-template fpcTableCell="customer" let-row
+            ><span [attr.title]="customerTitle(row)">{{ customerLabel(row) }}</span></ng-template
+          >
+          <ng-template fpcTableCell="total" let-row>{{ offerTotal(row) }}</ng-template>
+          <ng-template fpcTableCell="created" let-row>{{ formatDate(offerCreatedAt(row)) }}</ng-template>
+        </fpc-data-table>
+      }
+      @case ('statistics') {
+        <fpc-list-toolbar
+          [open]="!filtersCollapsed()"
+          (openChange)="onFiltersOpenChange($event)"
+          [title]="filtersPanelTitle"
+          [activeCount]="activeFilterCount()"
+          (applied)="filterState.apply()"
+          (cleared)="onResetFilters()"
+        >
+          <fpc-form-field i18n-label="@@featureAdminOffers-customerFilter" label="Customer">
+            <framework-billing-admin-user-select
+              [(selectedUserId)]="filterUserId"
+              [size]="'sm'"
+            ></framework-billing-admin-user-select>
+          </fpc-form-field>
+          <fpc-form-field forId="offersFromDate" i18n-label="@@featureAdminOffers-fromDate" label="From">
+            <fpc-form-control
+              controlId="offersFromDate"
+              inputType="date"
+              size="sm"
+              [ngModel]="filterState.draft().from"
+              (ngModelChange)="filterState.patch({ from: $event })"
+              name="fromDate"
+            />
+          </fpc-form-field>
+          <fpc-form-field forId="offersToDate" i18n-label="@@featureAdminOffers-toDate" label="To">
+            <fpc-form-control
+              controlId="offersToDate"
+              inputType="date"
+              size="sm"
+              [ngModel]="filterState.draft().to"
+              (ngModelChange)="filterState.patch({ to: $event })"
+              name="toDate"
+            />
+          </fpc-form-field>
+          <fpc-form-field forId="offersGroupBy" i18n-label="@@featureAdminOffers-groupBy" label="Group by">
+            <fpc-form-control
+              controlType="select"
+              controlId="offersGroupBy"
+              size="sm"
+              [ngModel]="filterState.draft().groupBy"
+              (ngModelChange)="filterState.patch({ groupBy: $event })"
+              name="groupBy"
+            >
+              <option value="day" i18n="@@featureAdminOffers-groupByDay">Day</option>
+              <option value="month" i18n="@@featureAdminOffers-groupByMonth">Month</option>
+            </fpc-form-control>
+          </fpc-form-field>
+        </fpc-list-toolbar>
+
         @if (statisticsError$ | async; as statsErr) {
           <fpc-alert [flush]="true" variant="danger" [message]="statsErr" />
         }
 
-        <div class="admin-offers__statistics-lane card flex-grow-1 border-0 d-flex flex-column min-h-0">
-          <fpc-lane-header flush>
-            <span fpcLaneHeaderTitle i18n="@@featureAdminOffers-statisticsTitle">Statistics</span>
-          </fpc-lane-header>
-
-          <fpc-collapsible-filter-panel
-            [open]="!filtersCollapsed()"
-            (openChange)="onFiltersOpenChange($event)"
-            [title]="filtersPanelTitle"
-            [showClear]="false"
-          >
-            <div class="row g-3 mb-0 w-100">
-              <div class="col-12">
-                <fpc-form-field i18n-label="@@featureAdminOffers-customerFilter" label="Customer">
-                  <framework-billing-admin-user-select
-                    [(selectedUserId)]="filterUserId"
-                    [size]="'sm'"
-                  ></framework-billing-admin-user-select>
-                </fpc-form-field>
-              </div>
-              <div class="col-12 col-md-6">
-                <fpc-form-field forId="offersFromDate" i18n-label="@@featureAdminOffers-fromDate" label="From">
-                  <fpc-form-control
-                    controlId="offersFromDate"
-                    inputType="date"
-                    size="sm"
-                    [ngModel]="fromDate()"
-                    (ngModelChange)="fromDate.set($event)"
-                    name="fromDate"
-                  />
-                </fpc-form-field>
-              </div>
-              <div class="col-12 col-md-6">
-                <fpc-form-field forId="offersToDate" i18n-label="@@featureAdminOffers-toDate" label="To">
-                  <fpc-form-control
-                    controlId="offersToDate"
-                    inputType="date"
-                    size="sm"
-                    [ngModel]="toDate()"
-                    (ngModelChange)="toDate.set($event)"
-                    name="toDate"
-                  />
-                </fpc-form-field>
-              </div>
-              <div class="col-12">
-                <fpc-form-field forId="offersGroupBy" i18n-label="@@featureAdminOffers-groupBy" label="Group by">
-                  <fpc-form-control
-                    controlType="select"
-                    controlId="offersGroupBy"
-                    size="sm"
-                    [ngModel]="groupBy()"
-                    (ngModelChange)="groupBy.set($event)"
-                    name="groupBy"
-                  >
-                    <option value="day" i18n="@@featureAdminOffers-groupByDay">Day</option>
-                    <option value="month" i18n="@@featureAdminOffers-groupByMonth">Month</option>
-                  </fpc-form-control>
-                </fpc-form-field>
-              </div>
-              <div class="col-12 d-flex gap-2">
-                <fpc-button
-                  variant="primary"
-                  size="sm"
-                  (clicked)="onApplyFilters()"
-                  i18n="@@featureAdminOffers-applyFilters"
-                >
-                  Apply
-                </fpc-button>
-                <fpc-button
-                  variant="dark"
-                  size="sm"
-                  (clicked)="onResetFilters()"
-                  i18n="@@featureAdminOffers-resetFilters"
-                >
-                  Reset
-                </fpc-button>
-              </div>
-            </div>
-          </fpc-collapsible-filter-panel>
-
-          <div class="admin-offers__statistics-body flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-            <fpc-panel-grid [columns]="1" [bordered]="false">
-              <fpc-panel [title]="offersChartTitle">
-                @if (statisticsLoading$ | async) {
-                  <div class="text-center py-4">
-                    <fpc-spinner size="sm" />
-                  </div>
-                } @else if (seriesChartOptions(); as chart) {
-                  <apx-chart
-                    [series]="chart.series"
-                    [chart]="chart.chart"
-                    [colors]="chart.colors"
-                    [stroke]="chart.stroke"
-                    [fill]="chart.fill"
-                    [dataLabels]="chart.dataLabels"
-                    [legend]="chart.legend"
-                    [xaxis]="chart.xaxis"
-                    [yaxis]="chart.yaxis"
-                    [grid]="chart.grid"
-                  ></apx-chart>
-                } @else {
-                  <p class="text-body-secondary small mb-0" i18n="@@featureAdminOffers-noStatistics">
-                    No statistics for the selected period.
-                  </p>
-                }
-              </fpc-panel>
-            </fpc-panel-grid>
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="section__column section__column--offers d-md-flex flex-column min-h-0"
-        [class.d-none]="mobilePanel() !== 'offers'"
-      >
-        <div class="admin-offers__offers-lane card flex-grow-1 border-0 d-flex flex-column min-h-0">
-          <fpc-lane-header flush visibility="md-up">
-            <span fpcLaneHeaderTitle i18n="@@featureAdminOffers-listTitle">Offers</span>
-            <span fpcLaneHeaderActions class="admin-lane-header-spacer invisible" aria-hidden="true">&nbsp;</span>
-          </fpc-lane-header>
-
-          <fpc-search-field
-            class="border-bottom"
-            name="search"
-            [bordered]="false"
-            i18n-placeholder="@@featureAdminOffers-searchPlaceholder"
-            placeholder="Search offers"
-            [(value)]="searchQuery"
-          />
-
-          <div class="flex-grow-1 overflow-auto min-h-0 d-flex flex-column">
-            @if (loading$ | async) {
-              <div class="d-flex justify-content-center align-items-center p-4">
-                <fpc-spinner variant="primary" />
-              </div>
-            } @else if (offers().length === 0) {
-              @if (searchQuery().trim()) {
-                <fpc-empty-state
-                  icon="search"
-                  message="No search results"
-                  i18n-message="@@featureAdminOffers-noSearchResults"
-                />
-              } @else {
-                <fpc-empty-state message="No offers yet" i18n-message="@@featureAdminOffers-empty" />
-              }
+        <fpc-panel-grid [columns]="1" [bordered]="false">
+          <fpc-panel [title]="offersChartTitle">
+            @if (statisticsLoading$ | async) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (seriesChartOptions(); as chart) {
+              <apx-chart
+                [series]="chart.series"
+                [chart]="chart.chart"
+                [colors]="chart.colors"
+                [stroke]="chart.stroke"
+                [fill]="chart.fill"
+                [dataLabels]="chart.dataLabels"
+                [legend]="chart.legend"
+                [xaxis]="chart.xaxis"
+                [yaxis]="chart.yaxis"
+                [grid]="chart.grid"
+                [responsive]="chart.responsive"
+              ></apx-chart>
             } @else {
-              <fpc-list [flush]="true">
-                @for (offer of offers(); track offer.id) {
-                  <fpc-list-item>
-                    <div fpcListItemTitle class="fw-semibold">{{ offer.offerNumber || offer.id }}</div>
-                    <div fpcListItemMeta class="small d-flex align-items-center gap-3 flex-wrap">
-                      <fpc-badge variant="info" color="secondary" [ngClass]="offerStatusBadgeClass(offer.status)">
-                        {{ offerStatusLabel(offer.status) }}
-                      </fpc-badge>
-                      <span>{{ offer.userEmail || offer.userId }}</span>
-                      <span>{{ offer.totalGross | number: '1.2-2' }} {{ offer.currency }}</span>
-                      <span>{{ formatDate(offer.createdAt) }}</span>
-                    </div>
-                    <fpc-button-group fpcListItemActions size="sm">
-                      @if (canEditOffer(offer)) {
-                        <fpc-button
-                          iconOnly
-                          size="sm"
-                          variant="warning"
-                          (clicked)="openEditModal(offer)"
-                          title="Edit"
-                          i18n-title="@@featureAdminOffers-edit"
-                        >
-                          <i class="bi bi-pencil" aria-hidden="true"></i>
-                        </fpc-button>
-                      }
-                      <fpc-button
-                        iconOnly
-                        size="sm"
-                        variant="dark"
-                        (clicked)="openAuditHistory(offer)"
-                        title="Audit log"
-                        i18n-title="@@featureAdminOffers-audit"
-                      >
-                        <i class="bi bi-clock-history" aria-hidden="true"></i>
-                      </fpc-button>
-                      @if (canArchiveOffer(offer)) {
-                        <fpc-button
-                          size="sm"
-                          variant="dark"
-                          iconOnly
-                          (clicked)="archiveOffer(offer)"
-                          title="Send to customer"
-                          i18n-title="@@featureAdminOffers-archive"
-                        >
-                          <i class="bi bi-send" aria-hidden="true"></i>
-                        </fpc-button>
-                      }
-                      @if (canRevokeOffer(offer)) {
-                        <fpc-button
-                          size="sm"
-                          variant="dark"
-                          iconOnly
-                          (clicked)="revokeOffer(offer)"
-                          title="Revoke"
-                          i18n-title="@@featureAdminOffers-revoke"
-                        >
-                          <i class="bi bi-slash-circle" aria-hidden="true"></i>
-                        </fpc-button>
-                      }
-                      @if (canDeleteOffer(offer)) {
-                        <fpc-button
-                          size="sm"
-                          variant="danger"
-                          iconOnly
-                          (clicked)="openDeleteModal(offer)"
-                          title="Delete"
-                          i18n-title="@@featureAdminOffers-delete"
-                        >
-                          <i class="bi bi-trash" aria-hidden="true"></i>
-                        </fpc-button>
-                      }
-                    </fpc-button-group>
-                  </fpc-list-item>
-                }
-              </fpc-list>
+              <fpc-empty-state
+                size="sm"
+                message="No statistics for the selected period."
+                i18n-message="@@featureAdminOffers-noStatistics"
+              />
             }
-          </div>
-        </div>
-      </div>
-    </div>
+          </fpc-panel>
+        </fpc-panel-grid>
+      }
+    }
   </div>
 </div>
+
+<fpc-confirm-dialog
+  [open]="pendingBulk() !== null"
+  (openChange)="!$event && pendingBulk.set(null)"
+  [title]="bulkConfirmTitle()"
+  [message]="bulkConfirmMessage()"
+  [confirmLabel]="bulkConfirmLabel()"
+  [cancelLabel]="cancelLabel"
+  [danger]="true"
+  (confirmed)="runPendingBulk()"
+/>
 
 <fpc-modal [(open)]="createModalOpen" size="lg" i18n-title="@@featureAdminOffers-createTitle" title="Create offer">
   <fpc-form-field i18n-label="@@featureAdminOffers-customer" label="Customer">
@@ -339,7 +296,15 @@
       variant="primary"
       [summary]="createLineEditor?.draftSummary() ?? null"
     ></framework-pricing-totals-summary>
-    <div class="d-flex justify-content-end w-100">
+    <div class="d-flex justify-content-end gap-2 w-100">
+      <fpc-button
+        variant="dark"
+        type="button"
+        (clicked)="createModalOpen.set(false)"
+        i18n="@@featureBillingModal-cancel"
+      >
+        Cancel
+      </fpc-button>
       <fpc-button
         variant="primary"
         [disabled]="!canSubmitCreate() || (mutating$ | async)"
@@ -388,20 +353,18 @@
         [summary]="editLineEditor?.draftSummary() ?? null"
       ></framework-pricing-totals-summary>
     }
-    <div class="d-flex justify-content-end w-100">
-      <fpc-button-group>
-        <fpc-button variant="dark" (clicked)="editModalOpen.set(false)" i18n="@@featureAdminOffers-cancel">
-          Cancel
-        </fpc-button>
-        <fpc-button
-          variant="primary"
-          [disabled]="!canSubmitEdit() || (mutating$ | async)"
-          (clicked)="submitEdit()"
-          i18n="@@featureAdminOffers-saveChanges"
-        >
-          Save changes
-        </fpc-button>
-      </fpc-button-group>
+    <div class="d-flex justify-content-end gap-2 w-100">
+      <fpc-button variant="dark" (clicked)="editModalOpen.set(false)" i18n="@@featureAdminOffers-cancel">
+        Cancel
+      </fpc-button>
+      <fpc-button
+        variant="primary"
+        [disabled]="!canSubmitEdit() || (mutating$ | async)"
+        (clicked)="submitEdit()"
+        i18n="@@featureAdminOffers-saveChanges"
+      >
+        Save changes
+      </fpc-button>
     </div>
   </div>
 </fpc-modal>
@@ -428,36 +391,23 @@
   @if (auditLogsError$ | async; as auditErr) {
     <fpc-alert variant="danger" [message]="auditErr" />
   }
-  @if (auditLogsLoading$ | async) {
-    <div class="d-flex justify-content-center p-4">
-      <fpc-spinner variant="primary" />
-    </div>
-  } @else if (selectedAuditLogs().length === 0) {
-    <p class="text-body-secondary mb-0" i18n="@@featureAdminOffers-noAuditLogs">No audit entries.</p>
-  } @else {
-    <fpc-list [flush]="true">
-      @for (entry of selectedAuditLogs(); track entry.id) {
-        <fpc-list-item class="px-0">
-          <div fpcListItemTitle class="fw-semibold">{{ entry.message }}</div>
-          <div fpcListItemMeta class="d-flex flex-wrap align-items-center gap-3 row-gap-0">
-            <span><i class="bi bi-gear me-1" aria-hidden="true"></i>{{ entry.process }}</span>
-            <span><i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(entry.createdAt) }}</span>
-          </div>
-        </fpc-list-item>
-      }
-    </fpc-list>
-    @if (auditLogsHasMore()) {
-      <div class="text-center mt-3">
-        <fpc-button
-          variant="dark"
-          size="sm"
-          [disabled]="auditLogsAppendLoading$ | async"
-          (clicked)="loadMoreAuditLogs()"
-          i18n="@@featureAdminOffers-loadMoreAudit"
-        >
-          Load more
-        </fpc-button>
-      </div>
-    }
+  @if (auditOfferId()) {
+    <fpc-data-table
+      nested
+      [ariaLabel]="auditHistoryLabel"
+      [columns]="auditColumns"
+      [rows]="selectedAuditLogs()"
+      paging="server"
+      [total]="auditLogsTotal()"
+      [(page)]="auditPage"
+      [(pageSize)]="auditPageSize"
+      persistKey="decabill-offer-audit"
+      [searchable]="false"
+      [loading]="(auditLogsLoading$ | async) === true"
+      data-testid="admin-offer-audit"
+    >
+      <span fpcDataTableEmpty i18n="@@featureAdminOffers-noAuditLogs">No audit entries.</span>
+      <ng-template fpcTableCell="time" let-row>{{ formatDate(auditTime(row)) }}</ng-template>
+    </fpc-data-table>
   }
 </fpc-modal>

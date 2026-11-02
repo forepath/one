@@ -1,0 +1,4 @@
+// Incident updates keep the line breaks the author typed (no Bootstrap utility for `pre-wrap`).
+.lw-incident-message {
+  white-space: pre-wrap;
+}

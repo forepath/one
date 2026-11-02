@@ -50,8 +50,8 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto.email, dto.password);
+  async register(@Body() dto: RegisterDto, @Req() req?: Request) {
+    return this.authService.register(dto.email, dto.password, dto.adminClaimToken, req?.ip);
   }
 
   @Public()

@@ -84,8 +84,17 @@ export class AuthService {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/users/${userId}/2fa/totp`);
   }
 
-  register(email: string, password: string): Observable<RegisterResponse> {
-    return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register`, { email, password });
+  register(email: string, password: string, adminClaimToken?: string): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register`, {
+      email,
+      password,
+      ...(adminClaimToken ? { adminClaimToken } : {}),
+    });
+  }
+
+  /** Whether the first registration needs a one-time admin claim token (`IdentityAuthEnvironment.adminClaimStatusUrl`). */
+  getAdminClaimStatus(url: string): Observable<{ claimRequired: boolean }> {
+    return this.http.get<{ claimRequired: boolean }>(url);
   }
 
   confirmEmail(email: string, code: string): Observable<{ message: string }> {

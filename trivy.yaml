@@ -5,6 +5,9 @@ severity:
   - CRITICAL
 
 exit-code: 1
+
+# Scoped ignore list (per CVE, path / package, with review dates), see the file header.
+ignorefile: .trivyignore.yaml
 timeout: 15m
 
 scan:

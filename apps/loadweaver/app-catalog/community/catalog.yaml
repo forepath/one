@@ -1,0 +1,8 @@
+apiVersion: apps.loadweaver.com/v1
+kind: Catalog
+name: loadweaver-community
+title: Loadweaver community apps
+trust: community
+description: Third-party apps submitted by pull request, checked automatically, reviewed by the maintainers and signed by their publishers.
+oci: oci://ghcr.io/forepath/loadweaver-community-apps
+reportUrl: https://github.com/forepath/one/issues/new?template=loadweaver-app-report.yml

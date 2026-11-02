@@ -1,0 +1,622 @@
+<!-- Resource create / edit (3.37 / 3.38; user 2026-10-29): Decabill's Order plan wizard — numbered steps, the step in a
+     tertiary card, the draft sidebar, Back · Next / Add to draft. No fullscreen. -->
+<fpc-modal
+  [open]="modalShown()"
+  [title]="title()"
+  size="xl"
+  [guardClose]="true"
+  [closable]="!busy()"
+  [closeOnBackdrop]="!busy()"
+  [closeOnEscape]="!busy() && !discardOpen()"
+  (closeRequest)="requestClose()"
+  data-testid="resource-modal"
+>
+  @if (isOpen()) {
+    <div (keydown.enter)="onEnter($event)" data-testid="resource-modal-body">
+      @if (error(); as message) {
+        <fpc-alert
+          class="d-block mb-3"
+          variant="danger"
+          [message]="message"
+          [dismissible]="true"
+          (closed)="error.set(null)"
+          data-testid="resource-modal-error"
+        />
+      }
+      @if (planError(); as message) {
+        <fpc-alert
+          class="d-block mb-3"
+          variant="danger"
+          [message]="message"
+          [dismissible]="true"
+          (closed)="dismissPlanError()"
+          data-testid="resource-modal-plan-error"
+        />
+      }
+      @if (loadError(); as message) {
+        <fpc-alert class="d-block mb-3" variant="danger" [message]="message" data-testid="resource-modal-load-error" />
+      } @else if (initialText() === null && !needsKind()) {
+        <fpc-empty-state [loading]="true" [title]="loadingLabel" />
+      } @else {
+        <div class="row g-4 lw-resource-modal__layout">
+          <div class="col-lg-8 lw-resource-modal__main">
+            <!-- Step indicator (Order plan): done = filled, current = ring, upcoming = grey; back always, forward over
+                 valid steps only. -->
+            @if (!yamlPage()) {
+              <nav class="lw-resource-modal-steps mb-4" [attr.aria-label]="title()" data-testid="resource-modal-steps">
+                <fpc-step-strip>
+                  <ol class="lw-resource-modal-steps__list" fpcStepStrip>
+                    @for (s of stepperSteps(); track s.id; let index = $index) {
+                      <li class="lw-resource-modal-steps__step">
+                        <button
+                          type="button"
+                          class="lw-resource-modal-steps__button"
+                          [class.lw-resource-modal-steps__button--active]="index === active()"
+                          [class.lw-resource-modal-steps__button--complete]="index < active() && !s.invalid"
+                          [class.lw-resource-modal-steps__button--invalid]="s.invalid && index < active()"
+                          [disabled]="!reachable(index)"
+                          [attr.aria-current]="index === active() ? 'step' : null"
+                          [attr.data-step-id]="s.id"
+                          (click)="goTo(index)"
+                        >
+                          <span class="lw-resource-modal-steps__indicator" aria-hidden="true">
+                            @if (index < active() && !s.invalid) {
+                              <i class="bi bi-check-lg"></i>
+                            } @else if (s.invalid && index < active()) {
+                              <i class="bi bi-exclamation-lg"></i>
+                            } @else {
+                              {{ index + 1 }}
+                            }
+                          </span>
+                          <span class="lw-resource-modal-steps__label">{{ s.label }}</span>
+                        </button>
+                      </li>
+                    }
+                  </ol>
+                </fpc-step-strip>
+              </nav>
+            }
+
+            @if (step()?.id !== 'kind' && initialText() !== null) {
+              <!-- Form | YAML: the same document at every step. -->
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                @if (!yamlPage()) {
+                  <span class="small text-body-secondary" data-testid="resource-modal-step-of">{{ stepNumber() }}</span>
+                }
+                <fpc-button-group class="ms-auto" size="sm" [ariaLabel]="modeLabel" data-testid="resource-modal-mode">
+                  <fpc-button
+                    size="sm"
+                    [variant]="yaml() ? 'dark' : 'primary'"
+                    [ariaPressed]="!yaml()"
+                    (clicked)="yaml.set(false)"
+                    data-testid="resource-modal-form-toggle"
+                  >
+                    <i class="bi bi-ui-checks me-1" aria-hidden="true"></i>{{ formLabel }}
+                  </fpc-button>
+                  <fpc-button
+                    size="sm"
+                    [variant]="yaml() ? 'primary' : 'dark'"
+                    [ariaPressed]="yaml()"
+                    (clicked)="yaml.set(true)"
+                    data-testid="resource-modal-yaml-toggle"
+                  >
+                    <i class="bi bi-file-earmark-code me-1" aria-hidden="true"></i>{{ yamlLabel }}
+                  </fpc-button>
+                </fpc-button-group>
+              </div>
+            }
+
+            <div
+              #stepBody
+              class="card bg-body-tertiary border"
+              [class.lw-resource-modal__step--kind]="step()?.id === 'kind'"
+              data-testid="resource-modal-step"
+              [attr.data-step]="step()?.id"
+            >
+              <div class="card-body">
+                @if (!permitted()) {
+                  <fpc-alert
+                    class="d-block mb-3"
+                    variant="warning"
+                    [message]="forbiddenLabel"
+                    data-testid="resource-modal-forbidden"
+                  />
+                }
+                @if (schemaError(); as message) {
+                  <fpc-alert class="d-block mb-3" variant="warning" [message]="message" />
+                }
+
+                @if (step()?.id === 'kind') {
+                  <!-- Kind (user 2026-10-29): every published kind in one single-selection table that fills the step
+                       card (own scroll; head and search fixed). Click / Space pick, Enter / double click pick and move
+                       on. -->
+                  <fpc-data-table
+                    class="lw-resource-modal__kinds"
+                    [ariaLabel]="kindsLabel"
+                    [columns]="kindColumns"
+                    [rows]="shownKindRows()"
+                    [rowId]="kindRowId"
+                    selectable
+                    selectionMode="single"
+                    [selected]="kindSelection()"
+                    (selectedChange)="onKindSelection($event)"
+                    [query]="kindQuery()"
+                    (queryChange)="kindQuery.set($event)"
+                    [searchPlaceholder]="searchKindsLabel"
+                    [showColumnChooser]="false"
+                    emptyIcon="boxes"
+                    (rowActivate)="onKindActivate($event)"
+                    data-testid="resource-modal-kinds"
+                  >
+                    <ng-template fpcTableCell="name" let-row>
+                      <span class="d-inline-flex align-items-center gap-2 mw-100">
+                        <i class="bi {{ row.icon }}" aria-hidden="true"></i>
+                        <span class="text-truncate">{{ row.name }}</span>
+                      </span>
+                    </ng-template>
+                    <ng-template fpcTableCell="description" let-row>
+                      <span class="lw-resource-modal__kind-description text-truncate" [title]="row.description">{{
+                        row.description
+                      }}</span>
+                    </ng-template>
+                  </fpc-data-table>
+                } @else if (yaml()) {
+                  <!-- YAML: the same document at every step; a Deployment's compose file in its own editor. -->
+                  @if (isDeployment()) {
+                    <fpc-button-group class="d-inline-flex mb-2" size="sm" [ariaLabel]="documentLabel">
+                      <fpc-button
+                        size="sm"
+                        [variant]="document() === 'resource' ? 'primary' : 'dark'"
+                        [ariaPressed]="document() === 'resource'"
+                        (clicked)="document.set('resource')"
+                        data-testid="resource-modal-document-resource"
+                      >
+                        <i class="bi bi-file-earmark-code me-1" aria-hidden="true"></i>{{ resourceTab }}
+                      </fpc-button>
+                      <fpc-button
+                        size="sm"
+                        [variant]="document() === 'compose' ? 'primary' : 'dark'"
+                        [ariaPressed]="document() === 'compose'"
+                        (clicked)="document.set('compose')"
+                        data-testid="resource-modal-document-compose"
+                      >
+                        <i class="bi bi-box-seam me-1" aria-hidden="true"></i>{{ composeTab }}
+                      </fpc-button>
+                    </fpc-button-group>
+                  }
+                  @if (isDeployment() && document() === 'compose') {
+                    @if (compose() !== null) {
+                      <fpc-code-editor
+                        #composeEditor
+                        [value]="compose() ?? ''"
+                        language="yaml"
+                        [height]="editorHeight"
+                        [validate]="validateCompose"
+                        (valueChange)="onComposeChange($event)"
+                        data-testid="resource-modal-compose"
+                      />
+                    } @else {
+                      <fpc-alert
+                        class="d-block"
+                        variant="info"
+                        i18n-message="@@lwConsoleResourceEditor-composeUnavailable"
+                        message="The compose file is edited here once the resource YAML parses and has spec.compose."
+                      />
+                    }
+                  } @else {
+                    @if (!schemaLoaded() && !schemaError()) {
+                      <p class="small text-body-secondary mb-2" i18n="@@lwConsoleResourceEditor-schemaLoading">
+                        Loading the schema of this kind…
+                      </p>
+                    }
+                    <fpc-code-editor
+                      #resourceEditor
+                      [value]="text()"
+                      language="yaml"
+                      [height]="editorHeight"
+                      [validate]="validate()"
+                      (valueChange)="text.set($event)"
+                      data-testid="resource-modal-yaml"
+                    />
+                  }
+                  @if (problems().length > 0) {
+                    <!-- Compiler diagnostics (3.38 D1 table): a click reveals the problem in its editor. -->
+                    <fpc-data-table
+                      class="d-block mt-3"
+                      [ariaLabel]="problemsTitle"
+                      [columns]="problemColumns"
+                      [rows]="problems()"
+                      [rowId]="problemId"
+                      [searchable]="false"
+                      [showColumnChooser]="false"
+                      paging="client"
+                      persistKey="lw-resource-modal-problems"
+                      (rowActivate)="reveal($event)"
+                      data-testid="resource-modal-problems"
+                    />
+                  }
+                } @else {
+                  @if (stepIssues().length > 0 && step()?.id !== 'review') {
+                    <fpc-alert
+                      class="d-block mb-3"
+                      variant="danger"
+                      [heading]="stepErrorsLabel"
+                      data-testid="resource-modal-step-issues"
+                    >
+                      <ul class="small mb-0">
+                        @for (issue of stepIssues(); track $index) {
+                          <li>{{ issue.message }}</li>
+                        }
+                      </ul>
+                    </fpc-alert>
+                  }
+                  @switch (step()?.id) {
+                    @case ('general') {
+                      <div class="row g-3" [class.mb-3]="(step()?.keys?.length ?? 0) > 0 || renamed()">
+                        <div class="col-12" [class.col-md-6]="scope() !== 'cluster'">
+                          <fpc-form-field
+                            forId="lw-resource-modal-name"
+                            [label]="nameLabel"
+                            [required]="true"
+                            [error]="nameError()"
+                            [hint]="nameError() ? null : nameInvalid"
+                          >
+                            <fpc-form-control
+                              controlId="lw-resource-modal-name"
+                              [invalid]="!!nameError()"
+                              [ngModel]="meta().name"
+                              (ngModelChange)="setName($event)"
+                              data-testid="resource-modal-name"
+                            />
+                          </fpc-form-field>
+                        </div>
+                        @if (scope() !== 'cluster') {
+                          <div class="col-12 col-md-6">
+                            <fpc-form-field
+                              forId="lw-resource-modal-project"
+                              [label]="projectLabel"
+                              [required]="scope() === 'project'"
+                              [error]="projectError()"
+                            >
+                              <fpc-form-control
+                                controlType="select"
+                                controlId="lw-resource-modal-project"
+                                [invalid]="!!projectError()"
+                                [ngModel]="meta().project ?? ''"
+                                (ngModelChange)="setProject($event)"
+                                data-testid="resource-modal-project"
+                              >
+                                @if (clusterLevelAllowed()) {
+                                  <option value="">{{ clusterLevelLabel }}</option>
+                                } @else if (!meta().project) {
+                                  <option value="">{{ chooseLabel }}</option>
+                                }
+                                @for (p of projects(); track p) {
+                                  <option [value]="p">{{ p }}</option>
+                                }
+                              </fpc-form-control>
+                            </fpc-form-field>
+                          </div>
+                        }
+                      </div>
+                      @if (renamed() && declared(); as next) {
+                        <fpc-alert class="d-block mb-3" variant="warning" data-testid="resource-modal-renamed">
+                          <span i18n="@@lwConsoleResourceEditor-renamed">The plan deletes</span>
+                          <span class="font-monospace mx-1">{{ label(original()!) }}</span>
+                          <span i18n="@@lwConsoleResourceEditor-renamedAnd">and creates</span>
+                          <span class="font-monospace ms-1">{{ label(next) }}</span
+                          >.
+                        </fpc-alert>
+                      }
+                      @if ((step()?.keys?.length ?? 0) > 0) {
+                        <loadweaver-schema-form
+                          [(text)]="text"
+                          [schema]="kindSchema()"
+                          [keys]="step()?.keys ?? []"
+                          [kindName]="kind()"
+                          [issues]="fieldIssues()"
+                          [live]="liveText()"
+                          idPrefix="lw-resource-modal-general-"
+                        />
+                      }
+                    }
+                    @case ('review') {
+                      <!-- Summary (Order plan): every step's settings in words; the YAML behind "Show YAML". -->
+                      <h6 class="mb-3">{{ reviewTitle }}</h6>
+                      @if (renamed() && declared(); as next) {
+                        <fpc-alert class="d-block mb-3" variant="warning" data-testid="resource-modal-renamed">
+                          <span i18n="@@lwConsoleResourceEditor-renamed">The plan deletes</span>
+                          <span class="font-monospace mx-1">{{ label(original()!) }}</span>
+                          <span i18n="@@lwConsoleResourceEditor-renamedAnd">and creates</span>
+                          <span class="font-monospace ms-1">{{ label(next) }}</span
+                          >.
+                        </fpc-alert>
+                      }
+                      @if (!changed()) {
+                        <fpc-alert
+                          class="d-block mb-3"
+                          variant="info"
+                          [message]="unchangedLabel"
+                          data-testid="resource-modal-unchanged"
+                        />
+                      }
+                      @if (stepIssues().length > 0 || errorCount() > 0) {
+                        <fpc-alert class="d-block mb-3" variant="danger" data-testid="resource-modal-review-errors">
+                          <fpc-badge tone="danger">
+                            {{ issues().length || errorCount() }}
+                            <span i18n="@@lwConsoleResourceEditor-errors">errors</span>
+                          </fpc-badge>
+                          <ul class="small mb-0 mt-2">
+                            @for (issue of issues(); track $index) {
+                              <li>{{ issue.message }}</li>
+                            }
+                          </ul>
+                        </fpc-alert>
+                      }
+                      @if (gitAuthoritative().length > 0) {
+                        <fpc-alert
+                          class="d-block mb-3"
+                          variant="git"
+                          i18n-heading="@@lwConsoleGitEditor-heading"
+                          heading="Managed in Git: saving opens a pull request"
+                          data-testid="resource-modal-git-authoritative"
+                        >
+                          <p class="small mb-1" i18n="@@lwConsoleGitEditor-message">
+                            Git is authoritative for this scope. The plan shows the effect of the change, but it isn't
+                            applied here: Loadweaver pushes the change to a branch and opens a pull request, linked on
+                            the plan. Merging it creates the plan that is applied.
+                          </p>
+                          <ul class="small mb-0">
+                            @for (c of gitAuthoritative(); track c.id) {
+                              <li>
+                                <span class="fw-semibold">{{ scopeLabel(c.project) }}</span
+                                >: <span class="font-monospace">{{ c.repoUrl }}</span> ({{ c.branch }})
+                              </li>
+                            }
+                          </ul>
+                        </fpc-alert>
+                      }
+                      <dl class="small mb-3 lw-resource-modal__summary" data-testid="resource-modal-review">
+                        @for (item of summary(); track item.key) {
+                          <div class="lw-resource-modal__summary-row">
+                            <dt class="text-body-secondary fw-normal">{{ item.label }}</dt>
+                            <dd class="mb-0 text-end fw-medium" [class.font-monospace]="item.mono">
+                              {{ item.value }}
+                            </dd>
+                          </div>
+                        }
+                      </dl>
+                      @for (section of reviewSections(); track section.id) {
+                        <section class="mb-3" [attr.data-section]="section.id">
+                          <div class="small fw-semibold text-uppercase text-body-secondary mb-2">
+                            {{ section.label }}
+                          </div>
+                          <dl class="small mb-0 lw-resource-modal__summary">
+                            @for (row of section.rows; track $index) {
+                              <div
+                                class="lw-resource-modal__summary-row"
+                                [class.lw-resource-modal__summary-row--heading]="row.value === null"
+                                [style.padding-left.rem]="row.depth * 0.875"
+                              >
+                                <dt
+                                  [class.text-body-secondary]="row.value !== null"
+                                  [class.fw-normal]="row.value !== null"
+                                  [class.fw-semibold]="row.value === null"
+                                >
+                                  {{ row.label }}
+                                </dt>
+                                @if (row.value !== null) {
+                                  <dd class="mb-0 text-end fw-medium lw-resource-modal__summary-value">
+                                    {{ row.value }}
+                                  </dd>
+                                }
+                              </div>
+                            }
+                          </dl>
+                        </section>
+                      } @empty {
+                        <p class="small text-body-secondary mb-3">{{ reviewEmpty }}</p>
+                      }
+                      <fpc-form-switch
+                        class="d-block mb-3"
+                        switchId="lw-resource-modal-preview"
+                        [label]="previewLabel"
+                        [checked]="previewNow()"
+                        (checkedChange)="previewNow.set($event)"
+                        data-testid="resource-modal-preview-now"
+                      />
+                      <!-- The YAML stays one click away (and in the Form | YAML toggle). -->
+                      <details
+                        class="lw-resource-modal__yaml"
+                        [open]="showYaml()"
+                        (toggle)="showYaml.set($any($event.target).open)"
+                        data-testid="resource-modal-show-yaml"
+                      >
+                        <summary class="small fw-semibold">{{ showYamlLabel }}</summary>
+                        @if (showYaml()) {
+                          <div class="mt-2">
+                            @if (liveText() !== null) {
+                              <!-- Draft vs live, side by side (the changed lines highlighted). -->
+                              <div class="row g-2" data-testid="resource-modal-diff">
+                                <div class="col-12 col-xl-6">
+                                  <div class="small fw-semibold mb-1">{{ liveLabel }}</div>
+                                  <fpc-code-editor
+                                    [value]="liveText() ?? ''"
+                                    language="yaml"
+                                    [height]="editorHeight"
+                                    [readOnly]="true"
+                                    [lineHighlights]="lineDiff().live"
+                                  />
+                                </div>
+                                <div class="col-12 col-xl-6">
+                                  <div class="small fw-semibold mb-1">{{ draftLabel }}</div>
+                                  <fpc-code-editor
+                                    [value]="text()"
+                                    language="yaml"
+                                    [height]="editorHeight"
+                                    [readOnly]="true"
+                                    [lineHighlights]="lineDiff().draft"
+                                  />
+                                </div>
+                              </div>
+                            } @else {
+                              <fpc-code-editor
+                                [value]="text()"
+                                language="yaml"
+                                [height]="editorHeight"
+                                [readOnly]="true"
+                                data-testid="resource-modal-review-yaml"
+                              />
+                            }
+                          </div>
+                        }
+                      </details>
+                    }
+                    @default {
+                      @if (step()?.id === 'source' && meta().project) {
+                        <div class="small mb-3" data-testid="resource-modal-images-link">
+                          <a [routerLink]="imagesLink()" [queryParams]="{ tab: 'images' }" target="_blank"
+                            ><i class="bi bi-hdd-stack me-1" aria-hidden="true"></i
+                            ><span i18n="@@lwConsoleWizard-manageImages">VM images and imports of this project</span></a
+                          >
+                        </div>
+                        @if (kind() === 'VirtualMachine') {
+                          <loadweaver-vm-recommended-images
+                            class="d-block mb-3"
+                            [project]="meta().project ?? ''"
+                            (imageChange)="setVmImage($event)"
+                            data-testid="resource-modal-recommended-images"
+                          />
+                        }
+                      }
+                      <loadweaver-schema-form
+                        [(text)]="text"
+                        [schema]="kindSchema()"
+                        [keys]="step()?.keys ?? []"
+                        [kindName]="kind()"
+                        [issues]="fieldIssues()"
+                        [live]="liveText()"
+                        [idPrefix]="'lw-resource-modal-' + step()?.id + '-'"
+                      />
+                    }
+                  }
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar (Order plan's totals + terms): what goes into the draft, the kind and the state. -->
+          <aside class="col-lg-4 lw-resource-modal__sidebar" data-testid="resource-modal-sidebar">
+            <div class="lw-resource-modal__sidebar-sticky">
+              <div class="p-3 rounded border border-primary text-bg-primary" data-testid="resource-modal-summary">
+                <div class="d-flex align-items-center gap-2 fw-semibold mb-2">
+                  <i class="bi {{ kindIcon() }}" aria-hidden="true"></i>
+                  <span class="text-truncate">{{ kind() ? kindTitle() : createAnyLabel }}</span>
+                </div>
+                <dl class="mb-0 small">
+                  @for (item of summary(); track item.key; let last = $last) {
+                    @if (item.key !== 'kind') {
+                      <div
+                        class="d-flex justify-content-between gap-3"
+                        [class.border-top]="last"
+                        [class.pt-2]="last"
+                        [class.mt-1]="last"
+                        [class.border-opacity-25]="last"
+                      >
+                        <dt class="fw-normal">{{ item.label }}</dt>
+                        <dd class="mb-1 text-end fw-semibold text-break" [class.font-monospace]="item.mono">
+                          {{ item.value }}
+                        </dd>
+                      </div>
+                    }
+                  }
+                </dl>
+              </div>
+              @if (kind()) {
+                <div class="card bg-body border d-none d-lg-block">
+                  <div class="card-body">
+                    <h6 class="mb-2">{{ aboutKindLabel }}</h6>
+                    @if (kindDescription(); as description) {
+                      <p class="small text-body-secondary mb-2">{{ description }}</p>
+                    }
+                    <div class="small d-flex align-items-center gap-2" data-testid="resource-modal-status">
+                      <span class="text-body-secondary">{{ statusLabel }}</span>
+                      @if (status() === 'problems') {
+                        <strong class="text-danger-emphasis"
+                          ><i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i
+                          >{{ statusProblems() }}</strong
+                        >
+                      } @else if (status() === 'incomplete') {
+                        <strong class="text-warning-emphasis"
+                          ><i class="bi bi-pencil me-1" aria-hidden="true"></i>{{ statusIncomplete }}</strong
+                        >
+                      } @else {
+                        <strong><i class="bi bi-check-circle me-1" aria-hidden="true"></i>{{ statusReady }}</strong>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </aside>
+        </div>
+      }
+    </div>
+
+    <!-- Footer (Order plan): Back left; [Plan now] · Next / Add to draft right. Close: X / Escape (asks when dirty). -->
+    <div *fpcModalFooter class="d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
+      <div>
+        @if (mayGoBack()) {
+          <fpc-button variant="dark" [disabled]="busy()" (clicked)="back()" data-testid="resource-modal-back">
+            {{ backLabel }}
+          </fpc-button>
+        }
+      </div>
+      <fpc-button-group>
+        @if (finishing()) {
+          <fpc-button
+            variant="dark"
+            [disabled]="!canPlan()"
+            [loading]="planning()"
+            (clicked)="planNow()"
+            data-testid="resource-modal-plan"
+          >
+            @if (gitAuthoritative().length > 0) {
+              <i class="bi bi-git me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleGitEditor-planPr">Plan and open pull request</span>
+            } @else {
+              <i class="bi bi-file-diff me-1" aria-hidden="true"></i
+              ><span i18n="@@lwConsoleResourceEditor-planNow">Plan now</span>
+            }
+          </fpc-button>
+          <fpc-button
+            variant="primary"
+            [disabled]="!canFinish()"
+            [loading]="busy()"
+            (clicked)="finish()"
+            data-testid="resource-modal-finish"
+          >
+            <i class="bi bi-pencil-square me-1" aria-hidden="true"></i
+            >{{ editing() ? saveToDraftLabel : addToDraftLabel }}
+          </fpc-button>
+        } @else {
+          <fpc-button variant="primary" [disabled]="!canNext()" (clicked)="next()" data-testid="resource-modal-next">
+            {{ nextLabel }}
+          </fpc-button>
+        }
+      </fpc-button-group>
+    </div>
+  }
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="discardOpen"
+  [title]="discardTitle"
+  [message]="discardMessage"
+  [confirmLabel]="discardLabel"
+  [cancelLabel]="keepEditingLabel"
+  [danger]="true"
+  (confirmed)="discard()"
+  (cancelled)="keepEditing()"
+  data-testid="resource-modal-discard"
+/>

@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   AdminSupplierProfilesFacade,
@@ -11,24 +11,25 @@ import {
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
   FpcAlertComponent,
-  FpcBadgeComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcConfirmDialogComponent,
-  FpcListComponent,
-  FpcListItemComponent,
+  fpcCopyText,
+  FpcDataTableComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
+  fpcRunBulk,
   FpcSpinnerComponent,
+  FpcTableCellDirective,
+  type FpcMenuItem,
+  type FpcTableColumn,
 } from '@forepath/shared/frontend/ui-components';
-import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
-import { BILLING_COUNTRY_OPTIONS, DEFAULT_BILLING_COUNTRY_CODE } from '../billing-country-options';
+import { BILLING_COUNTRY_OPTIONS, DEFAULT_BILLING_COUNTRY_CODE, withOptionalCountry } from '../billing-country-options';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import {
   getCountryDisplayName,
@@ -37,6 +38,10 @@ import {
   getUnavailableLabel,
   getVatIdValidationStatusLabel,
 } from '../billing-status-labels';
+import { DB_DL_CANCEL, DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult } from '../shared/data-list';
+import { dbServerPaging } from '../shared/server-paging';
+import { profileCompleteState } from '../shared/table-states';
+import { formatBillingDate } from '../billing-format';
 
 @Component({
   selector: 'framework-admin-supplier-profiles-page',
@@ -45,20 +50,17 @@ import {
     CommonModule,
     FormsModule,
     FpcAlertComponent,
-    FpcBadgeComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
+    FpcDataTableComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
-    FpcListItemComponent,
     FpcConfirmDialogComponent,
-    FpcListComponent,
     FpcEmptyStateComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
     FpcSpinnerComponent,
+    FpcTableCellDirective,
   ],
   providers: [DatePipe],
   templateUrl: './admin-supplier-profiles-page.component.html',
@@ -70,7 +72,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
   readonly deleteModalOpen = signal(false);
   readonly customDataModalOpen = signal(false);
 
-  readonly pageTitle = $localize`:@@featureAdminSupplierProfiles-title:Supplier Profiles`;
+  readonly pageTitle = $localize`:@@featureAdminSupplierProfiles-title:Supplier profiles`;
   readonly addProfileAriaLabel = $localize`:@@featureAdminSupplierProfiles-add:Add`;
   readonly searchPlaceholder = $localize`:@@featureAdminSupplierProfiles-searchPlaceholder:Search supplier profiles`;
 
@@ -80,8 +82,12 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
   private readonly datePipe = inject(DatePipe);
 
   readonly countryOptions = BILLING_COUNTRY_OPTIONS;
-  readonly searchQuery = signal('');
-  readonly searchQuery$ = toObservable(this.searchQuery);
+  /** Search + page + size → `GET /admin/billing/supplier-profiles?limit&offset&search` (replace-page; URL q / p / n). */
+  readonly paging = dbServerPaging(
+    (query) => this.facade.loadProfiles({ search: query.search, page: query.page, pageSize: query.pageSize }),
+    { url: '' },
+  );
+  readonly total = toSignal(this.facade.total$, { initialValue: 0 });
   readonly profiles$ = this.facade.profiles$;
   readonly loading$ = this.facade.loading$;
   readonly creating$ = this.facade.creating$;
@@ -92,6 +98,80 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
 
   readonly profiles = toSignal(this.facade.profiles$, { initialValue: [] as AdminSupplierProfileListItem[] });
   readonly customDataSaving = toSignal(this.customDataSaving$, { initialValue: false });
+
+  readonly columns: FpcTableColumn<AdminSupplierProfileListItem>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureAdminSupplierProfiles-colStatus:Status`,
+      type: 'state',
+      state: (profile) => profileCompleteState(profile.isComplete),
+    },
+    {
+      id: 'name',
+      label: $localize`:@@featureAdminSupplierProfiles-colSupplier:Supplier`,
+      value: (profile) => this.profilePrimaryTitle(profile),
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'supplierNumber',
+      label: $localize`:@@featureAdminSupplierProfiles-colSupplierNumber:Supplier no.`,
+      value: (profile) => profile.supplierNumber ?? '',
+      mono: true,
+      priority: 1,
+    },
+    {
+      id: 'email',
+      label: $localize`:@@featureAdminSupplierProfiles-colEmail:Email`,
+      value: (profile) => profile.email ?? '',
+      priority: 2,
+    },
+    {
+      id: 'contact',
+      label: $localize`:@@featureAdminProfiles-colContact:Contact`,
+      value: (profile) => this.profileSecondaryName(profile) ?? '',
+      priority: 3,
+    },
+    {
+      id: 'country',
+      label: $localize`:@@featureAdminProfiles-colCountry:Country`,
+      value: (profile) => this.profileCountryLabel(profile.country),
+      priority: 3,
+    },
+    {
+      id: 'updated',
+      label: $localize`:@@featureAdminProfiles-colUpdated:Updated`,
+      value: (profile) => profile.updatedAt,
+      priority: 3,
+    },
+  ];
+
+  readonly deleteLabel = DB_DL_DELETE;
+  readonly cancelLabel = DB_DL_CANCEL;
+  readonly bulkDeleteTitle = $localize`:@@featureAdminSupplierProfiles-bulkDeleteTitle:Delete supplier profiles?`;
+
+  readonly selected = signal<readonly string[]>([]);
+  readonly confirmBulkDelete = signal(false);
+  readonly bulkResult = signal<DbBulkResult | null>(null);
+  readonly selectedProfiles = computed(() => {
+    const ids = new Set(this.selected());
+
+    return this.profiles().filter((profile) => ids.has(profile.id));
+  });
+  readonly bulkDeleteMessage = computed(
+    () =>
+      $localize`:@@featureAdminSupplierProfiles-bulkDeleteMessage:${this.selectedProfiles().length}:count: selected supplier profiles will be deleted. This action cannot be undone.`,
+  );
+  readonly rowMenu = (): FpcMenuItem[] => [
+    {
+      id: 'custom-data',
+      label: $localize`:@@featureAdminSupplierProfiles-customDataButtonTitle:Edit custom data`,
+      icon: 'database',
+    },
+    { id: 'edit', label: $localize`:@@featureAdminSupplierProfiles-editButtonTitle:Edit profile`, icon: 'pencil' },
+    { id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true },
+    dbCopyIdItem(),
+  ];
 
   createForm: SupplierProfileDto = this.emptyForm();
   editForm: SupplierProfileDto & {
@@ -109,14 +189,31 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
   customDataLoading = signal(false);
 
   ngOnInit(): void {
-    this.facade.loadProfiles();
     this.registerModalCloseWatchers();
+  }
 
-    this.searchQuery$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.facade.loadProfiles({ search: search.trim() || undefined });
-      });
+  onRowAction(profile: AdminSupplierProfileListItem, action: string): void {
+    if (action === 'custom-data') this.openCustomDataModal(profile);
+    else if (action === 'edit') this.openEditModal(profile);
+    else if (action === 'delete') this.openDeleteModal(profile);
+    else if (action === 'copy-id') fpcCopyText(profile.id);
+  }
+
+  /** Bulk Delete: one `delete` per supplier profile (same endpoint + authorization as the row Delete). */
+  async deleteSelected(): Promise<void> {
+    const profiles = this.selectedProfiles();
+
+    if (profiles.length === 0) return;
+
+    const result = await fpcRunBulk(profiles, (profile) => firstValueFrom(this.profilesService.delete(profile.id)));
+
+    this.bulkResult.set(dbBulkSummary(result, (profile) => this.profilePrimaryTitle(profile)));
+    this.selected.set([]);
+    this.paging.reload();
+  }
+
+  profileUpdatedAt(profile: AdminSupplierProfileListItem): string {
+    return profile.updatedAt;
   }
 
   openCreateModal(): void {
@@ -194,7 +291,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
   }
 
   submitCreate(): void {
-    this.facade.createProfile(this.createForm);
+    this.facade.createProfile(withOptionalCountry(this.createForm));
   }
 
   submitEdit(): void {
@@ -209,7 +306,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
       ...dto
     } = this.editForm;
 
-    this.facade.updateProfile(id, dto);
+    this.facade.updateProfile(id, withOptionalCountry(dto));
   }
 
   submitCustomData(): void {
@@ -241,7 +338,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
   formatDate(value?: string): string {
     if (!value) return '-';
 
-    return this.datePipe.transform(value, 'mediumDate') ?? '-';
+    return formatBillingDate(value, '-');
   }
 
   datevCreditorNumberDisplay(value: number | null | undefined): string {
@@ -342,9 +439,8 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
   }
 
   private registerModalCloseWatchers(): void {
-    const reloadProfiles = (): void => {
-      this.facade.loadProfiles();
-    };
+    // The current page again (replace-page), so search / page / size stay.
+    const reloadProfiles = (): void => this.paging.reload();
 
     watchBillingMutationModalClose({
       loading$: this.creating$,
@@ -373,6 +469,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.profileToDelete = null;
+        reloadProfiles();
       },
     });
     watchBillingMutationModalClose({

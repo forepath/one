@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { GVISOR_RUNTIMES } from '@forepath/shared/backend/util-container-runtime';
 
 import {
@@ -96,5 +99,24 @@ describe('isolation lab configuration', () => {
   it('pins the Ubuntu cloud image', () => {
     expect(ISOLATION_LAB_UBUNTU_IMAGE.url).toContain(`release-${ISOLATION_LAB_UBUNTU_IMAGE.release}`);
     expect(ISOLATION_LAB_UBUNTU_IMAGE.sha256).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('takes the lab locks once per run in a global setup, so every spec file joins them', () => {
+    // Without it the first spec's lock (own Jest environment) made every later spec file fail with
+    // "/tmp/lw-vmlab.lock is held by io.agenstra.isolation-lab (pid <own pid>)".
+    const root = join(__dirname, '..', '..');
+    const config = readFileSync(join(root, 'jest.isolation-lab.config.cts'), 'utf8');
+
+    for (const [key, file] of [
+      ['globalSetup', 'global-setup.ts'],
+      ['globalTeardown', 'global-teardown.ts'],
+    ]) {
+      expect(config).toContain(`${key}: '<rootDir>/src/integration/harness/${file}'`);
+      expect(existsSync(join(root, 'src', 'integration', 'harness', file))).toBe(true);
+    }
+
+    expect(readFileSync(join(root, 'src', 'integration', 'harness', 'global-setup.ts'), 'utf8')).toContain(
+      'vmLabGlobalSetup(',
+    );
   });
 });

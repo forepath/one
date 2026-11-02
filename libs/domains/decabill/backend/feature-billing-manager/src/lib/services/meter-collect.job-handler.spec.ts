@@ -25,6 +25,7 @@ describe('MeterCollectJobHandler', () => {
   };
   const usageRecordsRepository = {
     findLatestCollectorForMeter: jest.fn(),
+    existsByIdempotencyKey: jest.fn(),
   };
   const meterService = {
     listEffectivePlanMeters: jest.fn(),
@@ -62,6 +63,8 @@ describe('MeterCollectJobHandler', () => {
     subscriptionsRepository.findActiveArrearForMeterCollect.mockReset();
     subscriptionItemsRepository.findBySubscription.mockReset();
     usageRecordsRepository.findLatestCollectorForMeter.mockReset();
+    usageRecordsRepository.existsByIdempotencyKey.mockReset();
+    usageRecordsRepository.existsByIdempotencyKey.mockResolvedValue(false);
     providerModuleRegistry.get.mockReset();
     providerRegistry.getProvider.mockReset();
     usageService.createUsage.mockReset();
@@ -357,5 +360,88 @@ describe('MeterCollectJobHandler', () => {
         value: 7,
       }),
     );
+  });
+
+  describe('idempotency keys', () => {
+    const arrangeAddon = (samples: unknown[]) => {
+      subscriptionsRepository.findActiveArrearForMeterCollect.mockResolvedValue([activeSub()]);
+      subscriptionItemsRepository.findBySubscription.mockResolvedValue([]);
+      subscriptionAddonsRepository.findActiveBySubscriptionId.mockResolvedValue([
+        { id: 'sa-1', addonId: 'addon-lw', addon: null, configSnapshot: {} },
+      ]);
+      addonsRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'addon-lw',
+        key: 'lw',
+        implementationType: 'module',
+        moduleKey: 'loadweaver-usage',
+      });
+      addonModuleRegistry.get.mockReturnValue({
+        key: 'loadweaver-usage',
+        displayName: 'Loadweaver usage',
+        meters: [
+          {
+            key: 'loadweaver.cpu_core_hours',
+            name: 'CPU',
+            aggregator: 'sum',
+            defaultUnitPriceNet: 0,
+            collectionIntervalMs: 3_600_000,
+          },
+        ],
+        provision: jest.fn(),
+        teardown: jest.fn(),
+        collectMeters: jest.fn().mockResolvedValue(samples),
+      });
+      addonMetersRepository.findByAddonId.mockResolvedValue([
+        { meterId: 'meter-lw', meter: { id: 'meter-lw', key: 'loadweaver.cpu_core_hours' } },
+      ]);
+      usageRecordsRepository.findLatestCollectorForMeter.mockResolvedValue(null);
+      usageService.createUsage.mockResolvedValue({ id: 'usage-lw' });
+    };
+
+    it('records each keyed sample once and stores the key in the payload', async () => {
+      arrangeAddon([
+        { meterKey: 'loadweaver.cpu_core_hours', value: 1.5, idempotencyKey: 'k-10', usagePayload: { project: 'a' } },
+        { meterKey: 'loadweaver.cpu_core_hours', value: 2, idempotencyKey: 'k-11' },
+      ]);
+      usageRecordsRepository.existsByIdempotencyKey.mockImplementation(
+        async ({ idempotencyKey }: { idempotencyKey: string }) => idempotencyKey === 'k-10',
+      );
+
+      await handler.processTenant('default', now);
+
+      expect(usageRecordsRepository.existsByIdempotencyKey).toHaveBeenCalledWith({
+        subscriptionId: 'sub-1',
+        meterId: 'meter-lw',
+        idempotencyKey: 'k-10',
+      });
+      expect(usageService.createUsage).toHaveBeenCalledTimes(1);
+      expect(usageService.createUsage).toHaveBeenCalledWith(
+        expect.objectContaining({ value: 2, usagePayload: { idempotencyKey: 'k-11' }, addonId: 'addon-lw' }),
+      );
+    });
+
+    it('treats a unique violation of a keyed sample as already recorded', async () => {
+      arrangeAddon([
+        { meterKey: 'loadweaver.cpu_core_hours', value: 1, idempotencyKey: 'k-raced' },
+        { meterKey: 'loadweaver.cpu_core_hours', value: 3, idempotencyKey: 'k-next' },
+      ]);
+      usageService.createUsage
+        .mockRejectedValueOnce(Object.assign(new Error('duplicate key'), { driverError: { code: '23505' } }))
+        .mockResolvedValueOnce({ id: 'usage-next' });
+
+      await handler.processTenant('default', now);
+
+      expect(usageService.createUsage).toHaveBeenCalledTimes(2);
+      expect(usageService.createUsage).toHaveBeenLastCalledWith(expect.objectContaining({ value: 3 }));
+    });
+
+    it('does not check keys for samples without one', async () => {
+      arrangeAddon([{ meterKey: 'loadweaver.cpu_core_hours', value: 4 }]);
+
+      await handler.processTenant('default', now);
+
+      expect(usageRecordsRepository.existsByIdempotencyKey).not.toHaveBeenCalled();
+      expect(usageService.createUsage).toHaveBeenCalledWith(expect.objectContaining({ value: 4, usagePayload: {} }));
+    });
   });
 });

@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { take } from 'rxjs';
 
 import type { CreateAdminCustomerProfileDto, CustomerProfileDto } from '../../types/billing.types';
 
@@ -22,6 +23,10 @@ import {
   selectAdminCustomerProfilesDeleting,
   selectAdminCustomerProfilesError,
   selectAdminCustomerProfilesLoading,
+  selectAdminCustomerProfilesPage,
+  selectAdminCustomerProfilesPageSize,
+  selectAdminCustomerProfilesState,
+  selectAdminCustomerProfilesTotal,
   selectAdminCustomerProfilesUpdating,
 } from './admin-customer-profiles.selectors';
 
@@ -39,9 +44,27 @@ export class AdminCustomerProfilesFacade {
   readonly trustScoreDetail$ = this.store.select(selectAdminCustomerProfileTrustScoreDetail);
   readonly trustScoreLoading$ = this.store.select(selectAdminCustomerProfileTrustScoreLoading);
   readonly trustScoreRefreshing$ = this.store.select(selectAdminCustomerProfileTrustScoreRefreshing);
+  readonly total$ = this.store.select(selectAdminCustomerProfilesTotal);
+  readonly page$ = this.store.select(selectAdminCustomerProfilesPage);
+  readonly pageSize$ = this.store.select(selectAdminCustomerProfilesPageSize);
 
-  loadProfiles(params?: { search?: string }): void {
-    this.store.dispatch(loadAdminCustomerProfiles({ search: params?.search }));
+  /** Loads page 1 (or the given page) of the filtered profiles; the page replaces the current rows. */
+  loadProfiles(params?: { search?: string; page?: number; pageSize?: number }): void {
+    this.store.dispatch(
+      loadAdminCustomerProfiles({ search: params?.search, page: params?.page, pageSize: params?.pageSize }),
+    );
+  }
+
+  /** Loads another page of the current search (replace-page). */
+  loadPage(page: number, pageSize?: number): void {
+    this.store
+      .select(selectAdminCustomerProfilesState)
+      .pipe(take(1))
+      .subscribe((state) =>
+        this.store.dispatch(
+          loadAdminCustomerProfiles({ search: state.search ?? undefined, page, pageSize: pageSize ?? state.pageSize }),
+        ),
+      );
   }
 
   createProfile(dto: CreateAdminCustomerProfileDto): void {

@@ -1,0 +1,10 @@
+# Lab node image for the agent's real-kernel integration tests (section 6: lab tests on real kernels).
+# Containers run in their own network namespace with NET_ADMIN only; the host network is never touched.
+FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends iproute2 wireguard-tools nftables bird2 keepalived netcat-openbsd iputils-ping procps && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /run/bird
+
+CMD ["sleep", "infinity"]

@@ -29,6 +29,24 @@ export interface BuildProvisioningUserDataParams {
 export class CloudInitDispatchService {
   constructor(private readonly integratedStackRegistry: IntegratedStackRegistryService) {}
 
+  /**
+   * Per-provisioning secrets of an integrated stack (see `IntegratedStackModule.prepareProvisioningConfig`); empty
+   * for custom templates and stacks without the hook. Callers merge them into the effective config and persist them in
+   * the item's encrypted config snapshot before building the user-data.
+   */
+  prepareProvisioningConfig(service: string | undefined): Record<string, unknown> {
+    const trimmed = service?.trim();
+
+    if (!trimmed || trimmed === CloudInitServiceType.Custom) {
+      return {};
+    }
+
+    const stackKey = canonicalizeIntegratedProvisioningService(trimmed);
+    const stack = stackKey ? this.integratedStackRegistry.get(stackKey) : undefined;
+
+    return stack?.prepareProvisioningConfig?.() ?? {};
+  }
+
   buildUserData(params: BuildProvisioningUserDataParams): string {
     const { service, effectiveConfig, hostname, baseDomain, customTemplate, resolvedCustomEnv } = params;
     const trimmed = service?.trim();

@@ -94,26 +94,11 @@ export const MICROVM_GUEST_ROOT = '/guest';
 export const MICROVM_ISOLATION_LEVEL_DESCRIPTION = 'microvm (KVM microVM)';
 
 /**
- * Capabilities of a microVM launcher container (a strict subset of Docker's defaults): virtiofsd needs them to
- * give the guest root normal file semantics and to confine itself to /guest (chroot sandbox); the VMM itself runs
- * unprivileged. Never NET_ADMIN / NET_RAW /
- * SYS_ADMIN: the launcher shares the egress guard's network namespace.
+ * Capabilities of a microVM launcher container and its only host device (`/dev/kvm`). Defined by the shared launcher
+ * (`@forepath/shared/backend/util-microvm-bridge`): never NET_ADMIN / NET_RAW / SYS_ADMIN, because the launcher shares
+ * the egress guard's network namespace.
  */
-export const MICROVM_LAUNCHER_CAPABILITIES: readonly string[] = [
-  'CHOWN',
-  'DAC_OVERRIDE',
-  'FOWNER',
-  'FSETID',
-  'SETUID',
-  'SETGID',
-  'MKNOD',
-  'KILL',
-  'SETPCAP',
-  'SYS_CHROOT',
-] as const;
-
-/** Host device every microVM launcher gets (and the only one). */
-export const MICROVM_KVM_DEVICE = '/dev/kvm';
+export { MICROVM_KVM_DEVICE, MICROVM_LAUNCHER_CAPABILITIES } from '@forepath/shared/backend/util-microvm-bridge';
 
 /** Operator-facing description of the runtime of a gVisor level (used in failure messages). */
 export const GVISOR_ISOLATION_LEVEL_DESCRIPTION: Readonly<Record<GvisorIsolationLevel, string>> = {
