@@ -179,6 +179,14 @@ affect rebuild speed for other projects using the same builder.
 - Ensure all checklist items are completed
 - Request review from maintainers
 
+### 5. Releases (maintainers)
+
+Releases are cut with the manually dispatched **Release** workflow (`.github/workflows/release.yml`, [semantic-release](https://semantic-release.gitbook.io/) with `.releaserc.json`):
+
+- **Stable**: dispatch it on `main` → `v<x.y.z>`, images `:<x.y.z>` + `:latest`, npm clients on dist-tag `latest`, desktop apps on the stable and beta update channels.
+- **Release candidate**: push the commits to the `rc` branch (e.g. `git push origin main:rc` or merge a feature branch into `rc`) and dispatch the workflow on `rc` → `v<x.y.z>-rc.<n>` (a GitHub prerelease), images `:<x.y.z>-rc.<n>` + `:rc`, npm clients on dist-tag `rc`, desktop apps on the beta update channel and repositories only. `:latest`, the npm `latest` dist-tag, the unversioned agentctx download and the stable desktop channel are never touched by a release candidate.
+- Once the candidate is good, merge `rc` into `main` and dispatch on `main`; semantic-release publishes the final `v<x.y.z>` (the next candidates then continue from there). Keep `rc` up to date with `main` after each stable release.
+
 ## Pull Request Guidelines
 
 ### Before Submitting

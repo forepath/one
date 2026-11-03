@@ -227,7 +227,7 @@
         "release": {
           "push": true,
           "tags": [
-            "ghcr.io/forepath/agenstra-console-server:latest",
+            "ghcr.io/forepath/agenstra-console-server:$RELEASE_CHANNEL_TAG",
             "ghcr.io/forepath/agenstra-console-server:$VERSION"
           ]
         }

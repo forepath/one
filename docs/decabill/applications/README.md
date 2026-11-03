@@ -4,13 +4,14 @@ This section provides detailed documentation for each application in the Decabil
 
 ## Overview
 
-Decabill consists of three primary applications:
+Decabill consists of three primary applications and a desktop client:
 
 1. **Frontend Billing Console** Angular SSR customer and admin UI
 2. **Backend Billing Manager** NestJS API, WebSocket gateway, background jobs, and integrations
 3. **Frontend Landing Page** Angular SSR marketing and pricing site at [decabill.com](https://decabill.com)
+4. **Decabill Desktop** Electron shell around the billing console (`native-billing-console`)
 
-Both applications live under `apps/decabill/` and delegate feature logic to domain libraries in `libs/domains/decabill/`.
+All applications live under `apps/decabill/` and delegate feature logic to domain libraries in `libs/domains/decabill/`.
 
 ## Licensing
 
@@ -39,6 +40,16 @@ Web application for subscription self-service, invoicing, payments, and billing 
 **Default port**: **4202**
 
 **Docker image**: `ghcr.io/forepath/decabill-billing-console-server:latest`
+
+### [Decabill Desktop](./native-billing-console.md)
+
+Electron shell around the billing console (`native-billing-console`), released for Windows and Linux (macOS once the Apple signing secrets are configured).
+
+**Key features**:
+
+- Same console and runtime configuration (`CONFIG` URL) as the web billing console, served by a bundled local SSR server
+- Signed builds (Authenticode, GPG-signed deb / rpm repositories) once the release signing secrets are configured
+- In-app updates on stable / beta channels, verified against the signed release manifest, never downgrading
 
 ### [Backend Billing Manager](./backend-billing-manager.md)
 

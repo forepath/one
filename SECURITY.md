@@ -176,7 +176,7 @@ Full register: **[docs/agenstra/security/accepted-risks.md](./docs/agenstra/secu
 | **AR-005** | Trivy gate                 | Unfixed CVEs do not fail CI (`ignore-unfixed: true`)                        |
 | **AR-006** | mTLS authentication        | No CRL / OCSP; certificate assertions replayable within their lifetime      |
 
-### Decabill (register DR-001 through DR-006)
+### Decabill (register DR-001 through DR-007)
 
 Full register: **[docs/decabill/security/accepted-risks.md](./docs/decabill/security/accepted-risks.md)**
 
@@ -188,6 +188,7 @@ Full register: **[docs/decabill/security/accepted-risks.md](./docs/decabill/secu
 | **DR-004** | Backend auth resolution      | Same implicit auth mode resolution as shared identity stack         |
 | **DR-005** | Trivy gate                   | Unfixed CVEs do not fail CI (monorepo-wide `trivy.yaml`)            |
 | **DR-006** | mTLS authentication          | No CRL / OCSP; certificate assertions replayable within lifetime    |
+| **DR-007** | Desktop app                  | No OS-trusted code signing yet (signed release manifest, checksums) |
 
 ## Security Resources
 

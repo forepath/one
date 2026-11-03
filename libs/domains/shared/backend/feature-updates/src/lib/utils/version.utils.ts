@@ -37,9 +37,10 @@ export function getInstalledVersion(env: NodeJS.ProcessEnv = process.env, versio
   return '0.0.0';
 }
 
+/** Keeps prerelease identifiers, so a release candidate (`4.3.0-rc.1`) sorts before its final release (`4.3.0`). */
 export function compareVersions(left: string, right: string): number | null {
-  const leftCoerced = coerce(left);
-  const rightCoerced = coerce(right);
+  const leftCoerced = coerce(left, { includePrerelease: true });
+  const rightCoerced = coerce(right, { includePrerelease: true });
 
   if (!leftCoerced || !rightCoerced) {
     return null;

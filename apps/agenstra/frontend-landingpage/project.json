@@ -189,7 +189,7 @@
         "release": {
           "push": true,
           "tags": [
-            "ghcr.io/forepath/agenstra-landingpage-server:latest",
+            "ghcr.io/forepath/agenstra-landingpage-server:$RELEASE_CHANNEL_TAG",
             "ghcr.io/forepath/agenstra-landingpage-server:$VERSION"
           ]
         }

@@ -1,7 +1,10 @@
 # Build a Windows NSIS installer from a pre-packaged Electron app directory (electron-builder --prepackaged).
 param(
     [string]$BundleRoot = $(if ($env:WINDOWS_BUNDLE_DIR) { $env:WINDOWS_BUNDLE_DIR } else { 'windows-electron-bundle' }),
-    [string]$ProjectDir = $(if ($env:NATIVE_AGENT_CONSOLE_DIR) { $env:NATIVE_AGENT_CONSOLE_DIR } else { 'apps/agenstra/native-agent-console' })
+    [string]$ProjectDir = $(if ($env:NATIVE_APP_DIR) { $env:NATIVE_APP_DIR } elseif ($env:NATIVE_AGENT_CONSOLE_DIR) { $env:NATIVE_AGENT_CONSOLE_DIR } else { 'apps/agenstra/native-agent-console' }),
+    # Forge executable name and NSIS install directory name of the app (tools/desktop-release apps.ts: executableName / productName prefix).
+    [string]$ExecutableName = $(if ($env:NATIVE_EXECUTABLE_NAME) { $env:NATIVE_EXECUTABLE_NAME } else { 'native-agent-console' }),
+    [string]$InstallName = $(if ($env:NATIVE_INSTALL_NAME) { $env:NATIVE_INSTALL_NAME } else { 'Agenstra' })
 )
 
 $ErrorActionPreference = 'Stop'
@@ -14,14 +17,14 @@ if (-not (Test-Path -LiteralPath $BundleRoot)) {
     exit 0
 }
 
-$exe = Get-ChildItem -Path $BundleRoot -Recurse -Filter 'native-agent-console.exe' -File -ErrorAction SilentlyContinue |
+$exe = Get-ChildItem -Path $BundleRoot -Recurse -Filter "$ExecutableName.exe" -File -ErrorAction SilentlyContinue |
     Select-Object -First 1
 
 if (-not $exe) {
     if ($env:REQUIRE_INSTALLER_BUNDLE -eq '1') {
-        throw "No native-agent-console.exe under '$BundleRoot'"
+        throw "No $ExecutableName.exe under '$BundleRoot'"
     }
-    Write-Host "No native-agent-console.exe under '$BundleRoot'; skipping Windows installer build."
+    Write-Host "No $ExecutableName.exe under '$BundleRoot'; skipping Windows installer build."
     exit 0
 }
 
@@ -34,14 +37,15 @@ if (Test-Path -LiteralPath $packageJsonPath) {
     node -e @"
 const fs = require('fs');
 const path = process.argv[1];
-const releaseVersion = process.argv[2] || '';
+const installName = process.argv[2];
+const releaseVersion = process.argv[3] || '';
 const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));
-pkg.name = 'Agenstra';
+pkg.name = installName;
 if (releaseVersion) {
   pkg.version = releaseVersion;
 }
 fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n');
-"@ $packageJsonPath $releaseVersion
+"@ $packageJsonPath $InstallName $releaseVersion
 }
 
 $configPath = Join-Path $ProjectDir 'electron-builder.installer.yml'
@@ -66,7 +70,7 @@ fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 
 Write-Host "Building NSIS installer from prepackaged app: $appDirectory"
 
-# Pin version: matches apps/agenstra/native-agent-console devDependency; avoids npx pulling latest (e.g. 26.x).
+# Pin version: matches the native apps' electron-builder devDependency; avoids npx pulling latest (e.g. 26.x).
 $electronBuilderVersion = '25.1.8'
 
 Push-Location $ProjectDir

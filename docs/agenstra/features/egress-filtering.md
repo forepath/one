@@ -173,7 +173,8 @@ See [Background Jobs](../deployment/background-jobs.md).
 
 ```bash
 npx nx run agenstra-backend-agent-manager:egress-guard-container-image            # test tag, loaded locally
-npx nx run agenstra-backend-agent-manager:egress-guard-container-image:release    # push ghcr.io/forepath/agenstra-manager-egress-guard
+VERSION=<x.y.z> RELEASE_CHANNEL_TAG=latest \
+  npx nx run agenstra-backend-agent-manager:egress-guard-container-image:release  # push :<x.y.z> and :latest (`rc` for release candidates)
 ```
 
 The image is built from `apps/agenstra/backend-agent-manager/Dockerfile.egress-guard` (Alpine, Squid 7, dnsmasq, iptables-nft). `start-containers` builds the test image automatically.

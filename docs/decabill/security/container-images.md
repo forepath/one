@@ -10,6 +10,19 @@ This page documents **first-party Decabill Docker images**: runtime users, secre
 | **decabill-billing-console-server** | Frontend billing console SSR | `ghcr.io/forepath/decabill-billing-console-server:latest` |
 | **decabill-docs-server**            | Frontend docs SSR            | `ghcr.io/forepath/decabill-docs-server:latest`            |
 
+### Image tags
+
+Every release pushes each image under two tags:
+
+| Tag               | Points to                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `:<x.y.z>`        | That stable release (immutable)                                                          |
+| `:latest`         | The newest **stable** release                                                            |
+| `:<x.y.z>-rc.<n>` | That release candidate (immutable)                                                       |
+| `:rc`             | The newest **release candidate** (published from the `rc` branch; never moves `:latest`) |
+
+Release candidates are GitHub prereleases (`v<x.y.z>-rc.<n>`), so the in-product update check never offers them to stable installs. Pin production deployments to `:<x.y.z>` (or its digest from the signed release manifest) rather than `:latest`.
+
 Build targets:
 
 ```bash
