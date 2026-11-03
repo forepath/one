@@ -1,7 +1,6 @@
 import { AGENT_TASK_REQUEST_EVENT } from '@forepath/agenstra/shared/util-opencode-config';
 import type { Socket } from 'socket.io';
 
-import { ContainerType } from '../entities/agent.entity';
 import type { AgentProviderFactory } from '../providers/agent-provider.factory';
 import type { ChatFilterFactory } from '../providers/chat-filter.factory';
 import type { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
@@ -29,7 +28,6 @@ describe('AgentsGateway agent tasks bridge', () => {
     name: 'Agent',
     containerId: 'container-1',
     agentType: 'opencode',
-    containerType: ContainerType.GENERIC,
   };
   let gateway: AgentsGateway;
   let tasksApi: AgentTasksApiService;

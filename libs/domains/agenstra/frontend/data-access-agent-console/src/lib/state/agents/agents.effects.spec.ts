@@ -69,13 +69,7 @@ import {
   updateClientAgent$,
 } from './agents.effects';
 import { selectAgentsEntities, selectAgentsState } from './agents.selectors';
-import type {
-  AgentResponseDto,
-  ContainerType,
-  CreateAgentDto,
-  CreateAgentResponseDto,
-  UpdateAgentDto,
-} from './agents.types';
+import type { AgentResponseDto, CreateAgentDto, CreateAgentResponseDto, UpdateAgentDto } from './agents.types';
 
 describe('AgentsEffects', () => {
   let actions$: Actions;
@@ -88,7 +82,6 @@ describe('AgentsEffects', () => {
     name: 'Test Agent',
     description: 'Test Description',
     agentType: 'opencode',
-    containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-1',
     createdAt: '2024-01-01T00:00:00Z',

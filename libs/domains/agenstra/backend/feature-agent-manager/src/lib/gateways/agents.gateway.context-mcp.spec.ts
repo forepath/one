@@ -1,6 +1,5 @@
 import type { Socket } from 'socket.io';
 
-import { ContainerType } from '../entities/agent.entity';
 import type { AgentProviderFactory } from '../providers/agent-provider.factory';
 import type { ChatFilterFactory } from '../providers/chat-filter.factory';
 import type { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
@@ -31,7 +30,6 @@ describe('AgentsGateway context MCP integration', () => {
     name: 'Agent',
     containerId: 'container-1',
     agentType: 'opencode',
-    containerType: ContainerType.GENERIC,
   };
   let gateway: AgentsGateway;
   let tickets: AgentContextTicketsService;

@@ -2,7 +2,6 @@ import { BadRequestException, ConflictException, ServiceUnavailableException } f
 
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import type { HostIsolationCapabilitiesDto } from '../dto/container-isolation.dto';
-import { ContainerType } from '../entities/agent.entity';
 
 import { AgentsService } from './agents.service';
 
@@ -106,7 +105,6 @@ describe('AgentsService container isolation', () => {
 
   const dto = (extra: Record<string, unknown> = {}) => ({
     name: 'env',
-    containerType: ContainerType.GENERIC,
     gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
     ...extra,
   });

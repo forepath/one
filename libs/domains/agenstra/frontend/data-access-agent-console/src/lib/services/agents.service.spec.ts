@@ -4,7 +4,6 @@ import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 
 import type {
   AgentResponseDto,
-  ContainerType,
   CreateAgentDto,
   CreateAgentResponseDto,
   UpdateAgentDto,
@@ -22,7 +21,6 @@ describe('AgentsService', () => {
     name: 'Test Agent',
     description: 'Test Description',
     agentType: 'opencode',
-    containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-1',
     createdAt: '2024-01-01T00:00:00Z',

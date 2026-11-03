@@ -73,7 +73,6 @@ import type {
 import { ContextInjectionPayload } from '../types/context-injection.types';
 import { deriveAgentContextItems } from '../utils/agent-context-items.utils';
 import { PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX } from '../utils/chat-enhancement-prompt.utils';
-import { isNonGenericContainerType } from '../utils/context-injection-prompt.utils';
 import { finalizeStreamingTranscriptParts } from '../utils/materialize-streaming-deltas-for-transcript';
 import { PROMPT_TICKET_BODY_RESUME_SESSION_SUFFIX } from '../utils/ticket-body-prompt.utils';
 
@@ -596,21 +595,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
             byteSize: attachment.byteSize,
             agentPath: attachment.agentPath as string,
           })),
-        ...(contextInjection.includeWorkspace
-          ? {
-              workspace: {
-                mountPath: '/opt/workspace',
-                ...(contextInjection.workspaceContainerType
-                  ? { containerType: contextInjection.workspaceContainerType }
-                  : {}),
-              },
-            }
-          : {}),
-        environments: (contextInjection.environmentIds ?? []).map((id) => {
-          const typed = contextInjection.environmentContainerTypes?.find((ref) => ref.id === id);
-
-          return { id, ...(typed ? { containerType: typed.containerType } : {}) };
-        }),
+        ...(contextInjection.includeWorkspace ? { workspace: { mountPath: '/opt/workspace' } } : {}),
+        environments: (contextInjection.environmentIds ?? []).map((id) => ({ id })),
       });
     } catch (error) {
       const err = error as { message?: string };
@@ -1098,8 +1084,6 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       includeWorkspace: contextInjection.includeWorkspace === true,
       autoEnrichmentEnabled: contextInjection.autoEnrichmentEnabled !== false,
       environmentIds: contextInjection.environmentIds ?? [],
-      workspaceContainerType: contextInjection.workspaceContainerType,
-      environmentContainerTypes: contextInjection.environmentContainerTypes ?? [],
       ticketShas: contextInjection.ticketShas ?? [],
       ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
       knowledgeShas: contextInjection.knowledgeShas ?? [],
@@ -1124,8 +1108,6 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
           includeWorkspace: contextInjection.includeWorkspace === true,
           autoEnrichmentEnabled: contextInjection.autoEnrichmentEnabled !== false,
           environmentIds: contextInjection.environmentIds ?? [],
-          workspaceContainerType: contextInjection.workspaceContainerType,
-          environmentContainerTypes: contextInjection.environmentContainerTypes ?? [],
           ticketShas: contextInjection.ticketShas ?? [],
           ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
           knowledgeShas: contextInjection.knowledgeShas ?? [],
@@ -1360,35 +1342,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     );
     const attachmentContexts = this.normalizeChatAttachments(contextInjection.attachmentContexts);
     const allowedIds: string[] = [];
-    const environmentContainerTypes: NonNullable<ContextInjectionPayload['environmentContainerTypes']> = [];
-    const needsAgentLookup = includeWorkspace || requestedIds.length > 0;
-    const currentAgent = needsAgentLookup ? await this.agentsRepository.findById(agentUuid) : null;
 
     for (const environmentId of requestedIds) {
-      if (environmentId === agentUuid) {
+      if (environmentId === agentUuid || (await this.agentsRepository.findById(environmentId))) {
         allowedIds.push(environmentId);
-
-        if (currentAgent && isNonGenericContainerType(currentAgent.containerType)) {
-          environmentContainerTypes.push({
-            id: environmentId,
-            containerType: currentAgent.containerType,
-          });
-        }
-
-        continue;
-      }
-
-      const entity = await this.agentsRepository.findById(environmentId);
-
-      if (entity) {
-        allowedIds.push(environmentId);
-
-        if (isNonGenericContainerType(entity.containerType)) {
-          environmentContainerTypes.push({
-            id: environmentId,
-            containerType: entity.containerType,
-          });
-        }
       }
     }
 
@@ -1406,11 +1363,6 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       return undefined;
     }
 
-    const workspaceContainerType =
-      includeWorkspace && currentAgent && isNonGenericContainerType(currentAgent.containerType)
-        ? currentAgent.containerType
-        : undefined;
-
     return {
       includeWorkspace,
       autoEnrichmentEnabled,
@@ -1422,8 +1374,6 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       knowledgeContexts,
       ...(attachmentIds.length ? { attachmentIds } : {}),
       ...(attachmentContexts.length ? { attachmentContexts } : {}),
-      ...(workspaceContainerType ? { workspaceContainerType } : {}),
-      environmentContainerTypes,
     };
   }
 
@@ -2133,8 +2083,6 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
             args: {
               includeWorkspace: contextInjection.includeWorkspace === true,
               environmentIds: contextInjection.environmentIds ?? [],
-              workspaceContainerType: contextInjection.workspaceContainerType,
-              environmentContainerTypes: contextInjection.environmentContainerTypes ?? [],
               ticketShas: contextInjection.ticketShas ?? [],
               ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
               knowledgeShas: contextInjection.knowledgeShas ?? [],
@@ -2160,8 +2108,6 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
               applied: true,
               includeWorkspace: contextInjection.includeWorkspace === true,
               environmentIds: contextInjection.environmentIds ?? [],
-              workspaceContainerType: contextInjection.workspaceContainerType,
-              environmentContainerTypes: contextInjection.environmentContainerTypes ?? [],
               ticketShas: contextInjection.ticketShas ?? [],
               ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
               knowledgeShas: contextInjection.knowledgeShas ?? [],

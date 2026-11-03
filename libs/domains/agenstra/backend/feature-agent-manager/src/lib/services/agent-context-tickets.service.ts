@@ -19,7 +19,7 @@ export interface MintAgentContextTicketInput extends AgentContextTicketBinding {
   items: Array<Omit<AgentContextStoredItem, 'index'>>;
   grants?: Partial<AgentContextGrants>;
   attachments?: AgentContextAttachmentRef[];
-  workspace?: { mountPath: string; containerType?: string };
+  workspace?: { mountPath: string };
   environments?: AgentContextEnvironmentRef[];
 }
 

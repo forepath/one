@@ -83,7 +83,6 @@ export interface AgentHandoffAgentSummary {
   name: string;
   description?: string;
   handoffProfile?: string;
-  containerType?: string;
   repositoryUrl?: string;
 }
 

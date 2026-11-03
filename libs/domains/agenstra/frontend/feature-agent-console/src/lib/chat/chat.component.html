@@ -2406,25 +2406,6 @@
         [disabled]="(agentsCreating$ | async) === true"
       />
     </fpc-form-field>
-    <fpc-form-field forId="agentContainerType" i18n-label="@@featureChat-containerTypeLabel" label="Container Type">
-      <fpc-form-control
-        controlType="select"
-        controlId="agentContainerType"
-        name="containerType"
-        [ngModel]="newAgent().containerType ?? ''"
-        (ngModelChange)="updateAgentField('containerType', $event === '' ? undefined : $event)"
-        [disabled]="(agentsCreating$ | async) === true"
-      >
-        <option value="" i18n="@@featureChat-containerTypeDefaultGeneric">Default (Generic)</option>
-        <option [value]="ContainerType.GENERIC" i18n="@@featureChat-containerTypeGeneric">Generic</option>
-        <option [value]="ContainerType.DOCKER">Docker</option>
-        <option [value]="ContainerType.TERRAFORM">Terraform</option>
-        <option [value]="ContainerType.KUBERNETES">Kubernetes</option>
-      </fpc-form-control>
-      <small fpcFormFieldHint i18n="@@featureChat-containerTypeHint"
-        >The type of content this environment holds. Defaults to Generic if not specified.</small
-      >
-    </fpc-form-field>
     @let addAgentIsolationRefreshing = (activeClientIsolationRefreshing$ | async) === true;
     <fpc-form-check-group
       class="d-block mb-3"
@@ -2832,29 +2813,6 @@
         (ngModelChange)="updateEditingAgentField('handoffProfile', $event)"
         [disabled]="(agentsUpdating$ | async) === true"
       />
-    </fpc-form-field>
-    <fpc-form-field
-      forId="updateAgentContainerType"
-      i18n-label="@@featureChat-containerTypeLabel"
-      label="Container Type"
-    >
-      <fpc-form-control
-        controlType="select"
-        controlId="updateAgentContainerType"
-        name="containerType"
-        [ngModel]="editingAgent().containerType ?? ''"
-        (ngModelChange)="updateEditingAgentField('containerType', $event === '' ? undefined : $event)"
-        [disabled]="(agentsUpdating$ | async) === true"
-      >
-        <option value="" i18n="@@featureChat-containerTypeDefaultGeneric">Default (Generic)</option>
-        <option [value]="ContainerType.GENERIC" i18n="@@featureChat-containerTypeGeneric">Generic</option>
-        <option [value]="ContainerType.DOCKER">Docker</option>
-        <option [value]="ContainerType.TERRAFORM">Terraform</option>
-        <option [value]="ContainerType.KUBERNETES">Kubernetes</option>
-      </fpc-form-control>
-      <small fpcFormFieldHint i18n="@@featureChat-containerTypeHintShort"
-        >The type of content this environment holds.</small
-      >
     </fpc-form-field>
     @let editingIsolationLevel = editingAgentIsolation()?.level ?? 'standard';
     <fpc-form-field i18n-label="@@featureChat-isolationLabel" label="Container isolation">

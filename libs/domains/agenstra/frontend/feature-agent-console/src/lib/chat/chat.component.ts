@@ -30,7 +30,6 @@ import {
   ClientAgentAutonomyFacade,
   ClientsFacade,
   ContainerSocketFacade,
-  ContainerType,
   DeploymentsService,
   EnvFacade,
   EnvironmentProgressFacade,
@@ -1222,13 +1221,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       width: '6rem',
     },
     {
-      id: 'container',
-      label: $localize`:@@featureChat-railColContainer:Container`,
-      value: (row) => (row.agent ? this.getContainerTypeDisplayName(row.agent.containerType) : ''),
-      priority: 2,
-      sortable: false,
-    },
-    {
       id: 'isolation',
       label: $localize`:@@featureChat-railColIsolation:Isolation`,
       value: (row) => (row.agent ? this.isolationLevelLabel(this.environmentIsolationLevel(row.agent)) : ''),
@@ -1609,9 +1601,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     return chips;
   });
 
-  // Expose ContainerType enum for template use
-  readonly ContainerType = ContainerType;
-
   // Computed observable to determine if chat should be visible
   readonly shouldShowChat$ = combineLatest([
     this.selectedAgent$,
@@ -1896,7 +1885,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     name: '',
     description: '',
     agentType: undefined,
-    containerType: undefined,
     gitRepositorySetupMode: 'clone',
     gitRepositoryUrl: undefined,
   });
@@ -1917,7 +1905,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly editingAgent = signal<Partial<UpdateAgentDto>>({
     name: '',
     description: '',
-    containerType: undefined,
   });
   /** Read-only isolation of the environment being edited (fixed at creation). */
   readonly editingAgentIsolation = signal<AgentResponseDto['isolation'] | null>(null);
@@ -4799,7 +4786,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       name: '',
       description: '',
       agentType: undefined,
-      containerType: undefined,
       gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
       gitRepositoryUrl: undefined,
     });
@@ -4827,7 +4813,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.editingAgent.set({
       name: '',
       description: '',
-      containerType: undefined,
     });
   }
 
@@ -4892,7 +4877,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           name: '',
           description: '',
           agentType: undefined,
-          containerType: undefined,
           gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
           gitRepositoryUrl: undefined,
         });
@@ -4928,7 +4912,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         this.editingAgent.set({
           name: '',
           description: '',
-          containerType: undefined,
         });
       },
     });
@@ -4977,7 +4960,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       name: '',
       description: '',
       agentType: undefined,
-      containerType: undefined,
       gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
       gitRepositoryUrl: undefined,
     });
@@ -5318,10 +5300,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       createDto.gitRepositoryUrl = agentData.gitRepositoryUrl;
     }
 
-    if (agentData.containerType) {
-      createDto.containerType = agentData.containerType;
-    }
-
     // Explicit level only for a user choice (otherwise the server applies its recommendation), pinned to the
     // displayed capability revision so a capability change is rejected (409) instead of silently applied.
     const { isolationLevel, capabilityRevision, blockedReason } = this.addAgentIsolationSubmission();
@@ -5479,7 +5457,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       name: agent.name,
       description: agent.description,
       handoffProfile: agent.handoffProfile ?? '',
-      containerType: agent.containerType,
     });
     this.editingAgentIsolation.set(agent.isolation ?? null);
     showAgentModal(this.updateAgentModalOpen);
@@ -5580,10 +5557,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     if (agentData.handoffProfile !== undefined) {
       updateDto.handoffProfile = agentData.handoffProfile;
-    }
-
-    if (agentData.containerType !== undefined) {
-      updateDto.containerType = agentData.containerType;
     }
 
     this.agentsFacade.updateClientAgent(clientId, agentId, updateDto);
@@ -7077,25 +7050,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   /**
    * Toggle the SSH command visibility
    */
-
-  /**
-   * Get the display name for a container type
-   * @param containerType - The container type
-   * @returns The display name
-   */
-  getContainerTypeDisplayName(containerType: ContainerType): string {
-    switch (containerType) {
-      case ContainerType.DOCKER:
-        return 'Docker';
-      case ContainerType.TERRAFORM:
-        return 'Terraform';
-      case ContainerType.KUBERNETES:
-        return 'Kubernetes';
-      case ContainerType.GENERIC:
-      default:
-        return 'Generic';
-    }
-  }
 
   /**
    * Static model list from environment config (fallback until GET .../models returns or if unset).

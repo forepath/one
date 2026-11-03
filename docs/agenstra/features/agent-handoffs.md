@@ -11,8 +11,8 @@ Handoffs run between the main agents of a workspace. They are not the subagents 
 
 Agents decide on their own whether to gather information from, or offload work to, another agent. They see:
 
-- **Metadata** of every other agent of the workspace (`agenstra_handoff_agents`): name, description, container type,
-  repository, and the **handoff profile**.
+- **Metadata** of every other agent of the workspace (`agenstra_handoff_agents`): name, description, repository, and
+  the **handoff profile**.
 - **Handoff profile**: what the environment is responsible for and what it can take over. It is edited in the console
   (**Update Environment** → **Handoff profile**) or by the agent itself (`agenstra_handoff_profile_update`); the
   listing reminds an agent whose own profile is still empty.

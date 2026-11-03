@@ -5,7 +5,6 @@ import { AgentResponseDto } from '../dto/agent-response.dto';
 import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
-import { ContainerType } from '../entities/agent.entity';
 import { AgentsService } from '../services/agents.service';
 import { EnvironmentProgressService } from '../services/environment-progress.service';
 
@@ -19,7 +18,6 @@ describe('AgentsController', () => {
     name: 'Test Agent',
     description: 'Test Description',
     agentType: 'opencode',
-    containerType: ContainerType.GENERIC,
     chats: [
       {
         id: 'primary-chat-id',

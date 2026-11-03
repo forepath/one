@@ -7,7 +7,7 @@ import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import type { EnvironmentProgressDto } from '../dto/environment-progress.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
-import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import { AgentEntity } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProvider, AgentProviderModels } from '../providers/agent-provider.interface';
 import { OpenCodeClientFactory } from '../providers/opencode/opencode-client.factory';
@@ -53,7 +53,6 @@ describe('AgentsService', () => {
     containerId: 'container-id-123',
     volumePath: '/opt/agents/test-volume-uuid',
     agentType: 'opencode',
-    containerType: ContainerType.GENERIC,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
@@ -261,7 +260,7 @@ describe('AgentsService', () => {
         );
         const { serviceWithProgress, progressService, emitted } = buildServiceWithProgress();
 
-        await serviceWithProgress.create({ name: 'Progress Agent', containerType: ContainerType.GENERIC });
+        await serviceWithProgress.create({ name: 'Progress Agent' });
 
         const steps = [...new Set(emitted.map((e) => e.step))];
 
@@ -285,9 +284,7 @@ describe('AgentsService', () => {
         mockOpenCodeClientFactory.waitForHealthy.mockRejectedValueOnce(new Error('unhealthy'));
         const { serviceWithProgress, progressService, emitted } = buildServiceWithProgress();
 
-        await expect(
-          serviceWithProgress.create({ name: 'Progress Agent', containerType: ContainerType.GENERIC }),
-        ).rejects.toThrow('unhealthy');
+        await expect(serviceWithProgress.create({ name: 'Progress Agent' })).rejects.toThrow('unhealthy');
 
         expect(emitted.at(-1)).toEqual(expect.objectContaining({ status: 'failed', error: 'unhealthy' }));
         expect(progressService.list()).toEqual([]);
@@ -297,9 +294,7 @@ describe('AgentsService', () => {
         mockRepository.findByName.mockResolvedValue(mockAgent);
         const { serviceWithProgress, emitted } = buildServiceWithProgress();
 
-        await expect(
-          serviceWithProgress.create({ name: 'Progress Agent', containerType: ContainerType.GENERIC }),
-        ).rejects.toThrow(BadRequestException);
+        await expect(serviceWithProgress.create({ name: 'Progress Agent' })).rejects.toThrow(BadRequestException);
         expect(emitted).toEqual([]);
       });
     });
@@ -308,7 +303,6 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
         description: 'New Description',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-123';
@@ -431,7 +425,6 @@ describe('AgentsService', () => {
         containerId,
         volumePath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
         agentType: 'opencode',
-        containerType: ContainerType.GENERIC,
         opencodeServerPassword: expect.any(String),
         gitRepositoryUrl: undefined,
         environmentVariableBaseline: '{}',
@@ -446,7 +439,6 @@ describe('AgentsService', () => {
     it('should create agent without description', async () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-123';
@@ -458,7 +450,6 @@ describe('AgentsService', () => {
         containerId,
         volumePath,
         agentType: 'opencode',
-        containerType: ContainerType.GENERIC,
         createdAt: mockAgent.createdAt,
         updatedAt: mockAgent.updatedAt,
       };
@@ -516,7 +507,6 @@ describe('AgentsService', () => {
         name: createDto.name,
         description: undefined,
         agentType: 'opencode',
-        containerType: ContainerType.GENERIC,
         hashedPassword,
         containerId,
         volumePath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
@@ -1187,7 +1177,6 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
         description: 'New Description',
-        containerType: ContainerType.GENERIC,
         deploymentConfiguration: {
           providerType: 'github',
           repositoryId: 'owner/repo',
@@ -1238,7 +1227,6 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
         description: 'New Description',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-123';
@@ -1316,7 +1304,6 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
         description: 'New Description',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-123';
@@ -1361,7 +1348,6 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
         description: 'New Description',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-123';
@@ -1442,7 +1428,6 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
         description: 'New Description',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-123';
@@ -1484,7 +1469,6 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
         description: 'New Description',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-123';
@@ -1560,7 +1544,6 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
         description: 'New Description',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-123';
@@ -1636,7 +1619,6 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
         description: 'New Description',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-123';
@@ -1709,7 +1691,6 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
         description: 'New Description',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-123';
@@ -1916,7 +1897,6 @@ describe('AgentsService', () => {
     it('should not mkdir provider config when getConfigBasePath is not defined', async () => {
       const createDto: CreateAgentDto = {
         name: 'Agent Without Config Base',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-123';
@@ -1945,7 +1925,6 @@ describe('AgentsService', () => {
     it('should mkdir absolute provider config path without calling getContainerHomeDirectory for tilde expansion', async () => {
       const createDto: CreateAgentDto = {
         name: 'Agent Abs Config',
-        containerType: ContainerType.GENERIC,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-abc';

@@ -102,15 +102,15 @@ See **[Application updates](./application-updates.md)**.
 
 The agent manager enables shared host and runtime metrics. When OTEL is enabled it also polls domain gauges every 60 seconds (local DB equivalents of the controller chat/filter surface; tickets/workspaces live on the controller only):
 
-| Gauge                                 | Labels                         | Description                                               |
-| ------------------------------------- | ------------------------------ | --------------------------------------------------------- |
-| `agenstra.manager.agents`             | `agent_type`, `container_type` | Agents by type and container kind                         |
-| `agenstra.manager.agents.total`       | -                              | Total agent count                                         |
-| `agenstra.manager.agents.provisioned` | -                              | Agents with a non-null `container_id`                     |
-| `agenstra.manager.chat_messages`      | `actor`, `filtered`            | Persisted chat messages (`user` / `agent`)                |
-| `agenstra.manager.chat_words`         | `actor`, `filtered`            | Approximate word counts from message text                 |
-| `agenstra.manager.chat_chars`         | `actor`, `filtered`            | Character counts from message text                        |
-| `agenstra.manager.filter_triggers`    | `actor`                        | Messages marked filtered (manager has no drop/flag split) |
+| Gauge                                 | Labels              | Description                                               |
+| ------------------------------------- | ------------------- | --------------------------------------------------------- |
+| `agenstra.manager.agents`             | `agent_type`        | Agents by type                                            |
+| `agenstra.manager.agents.total`       | -                   | Total agent count                                         |
+| `agenstra.manager.agents.provisioned` | -                   | Agents with a non-null `container_id`                     |
+| `agenstra.manager.chat_messages`      | `actor`, `filtered` | Persisted chat messages (`user` / `agent`)                |
+| `agenstra.manager.chat_words`         | `actor`, `filtered` | Approximate word counts from message text                 |
+| `agenstra.manager.chat_chars`         | `actor`, `filtered` | Character counts from message text                        |
+| `agenstra.manager.filter_triggers`    | `actor`             | Messages marked filtered (manager has no drop/flag split) |
 
 ## Optional OTLP export
 

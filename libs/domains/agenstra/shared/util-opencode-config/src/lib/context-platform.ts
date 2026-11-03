@@ -69,8 +69,8 @@ export interface AgentContextListResponse {
   ticket: string;
   items: AgentContextItemSummary[];
   attachments: AgentContextAttachmentSummary[];
-  workspace?: { mountPath: string; containerType?: string };
-  environments: Array<{ id: string; containerType?: string }>;
+  workspace?: { mountPath: string };
+  environments: Array<{ id: string }>;
   /** True when the agent may ask the user (or the platform) for additional refs. */
   canRequestAccess: boolean;
 }

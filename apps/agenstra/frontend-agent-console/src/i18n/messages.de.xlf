@@ -1398,22 +1398,6 @@
         <source>Create workspace</source>
         <target>Workspace anlegen</target>
       </trans-unit>
-      <trans-unit id="featureChat-containerTypeLabel" datatype="html">
-        <source>Container Type</source>
-        <target>Container-Typ</target>
-      </trans-unit>
-      <trans-unit id="featureChat-containerTypeDefaultGeneric" datatype="html">
-        <source>Default (Generic)</source>
-        <target>Standard (Generic)</target>
-      </trans-unit>
-      <trans-unit id="featureChat-containerTypeGeneric" datatype="html">
-        <source>Generic</source>
-        <target>Generic</target>
-      </trans-unit>
-      <trans-unit id="featureChat-containerTypeHint" datatype="html">
-        <source>The type of content this environment holds. Defaults to Generic if not specified.</source>
-        <target>Der Inhaltstyp dieser Umgebung. Standard ist Generic, wenn nichts angegeben ist.</target>
-      </trans-unit>
       <trans-unit id="featureChat-isolationLabel" datatype="html">
         <source>Container isolation</source>
         <target>Container-Isolation</target>
@@ -1501,10 +1485,6 @@
       <trans-unit id="featureChat-isolationNoLevelAvailable" datatype="html">
         <source>No isolation level is ready on this workspace host, so no environment can be created right now.</source>
         <target>Auf dem Host dieses Workspace ist keine Isolationsstufe bereit, daher kann derzeit keine Umgebung erstellt werden.</target>
-      </trans-unit>
-      <trans-unit id="featureChat-containerTypeHintShort" datatype="html">
-        <source>The type of content this environment holds.</source>
-        <target>Der Inhaltstyp dieser Umgebung.</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationFixedHint" datatype="html">
         <source>The isolation level is fixed when the environment is created.</source>
@@ -8253,10 +8233,6 @@
       <trans-unit id="featureChat-railColDeployment" datatype="html">
         <source>Deployment</source>
         <target>Deployment</target>
-      </trans-unit>
-      <trans-unit id="featureChat-railColContainer" datatype="html">
-        <source>Container</source>
-        <target>Container</target>
       </trans-unit>
       <trans-unit id="sharedDataList-copyId" datatype="html">
         <source>Copy ID</source>

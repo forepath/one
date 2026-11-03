@@ -3018,16 +3018,12 @@ components:
           properties:
             mountPath:
               type: string
-            containerType:
-              type: string
         environments:
           type: array
           items:
             type: object
             properties:
               id:
-                type: string
-              containerType:
                 type: string
         canRequestAccess:
           type: boolean
@@ -3094,8 +3090,6 @@ components:
         handoffProfile:
           type: string
           description: Responsibilities and what the agent can take over
-        containerType:
-          type: string
         repositoryUrl:
           type: string
     AgentHandoffSelfSummary:
@@ -3420,8 +3414,6 @@ components:
           type: string
           enum: [opencode]
           description: Agent provider type (defaults to 'opencode' if not provided)
-        containerType:
-          $ref: '#/components/schemas/ContainerType'
         gitRepositorySetupMode:
           type: string
           enum: [clone, empty]
@@ -3549,8 +3541,6 @@ components:
         agentType:
           type: string
           description: Agent provider type identifier
-        containerType:
-          $ref: '#/components/schemas/ContainerType'
         capabilities:
           $ref: '#/components/schemas/AgentTypeCapabilities'
         git:
@@ -3673,11 +3663,6 @@ components:
         isolation:
           $ref: '#/components/schemas/HostIsolationCapabilitiesDto'
           description: Container isolation levels this host can run (from real runtime probes)
-    ContainerType:
-      type: string
-      enum: [generic, docker, terraform, kubernetes]
-      default: generic
-      description: Container type of the environment
     IsolationLevel:
       type: string
       enum: [standard, sandboxed, sandboxed-kvm, microvm]

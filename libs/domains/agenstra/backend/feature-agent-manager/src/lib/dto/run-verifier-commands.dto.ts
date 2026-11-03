@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { Type } from 'class-transformer';
 import { ArrayMaxSize, IsArray, IsInt, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
 

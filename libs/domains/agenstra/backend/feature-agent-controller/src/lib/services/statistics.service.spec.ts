@@ -299,7 +299,6 @@ describe('StatisticsService', () => {
         {
           clientId: 'client-uuid',
           agentType: 'opencode',
-          containerType: 'generic',
           name: 'Test Agent',
           description: 'Test',
         },
@@ -311,7 +310,6 @@ describe('StatisticsService', () => {
         'stats-client-uuid',
         expect.objectContaining({
           agentType: 'opencode',
-          containerType: 'generic',
           name: 'Test Agent',
           description: 'Test',
         }),

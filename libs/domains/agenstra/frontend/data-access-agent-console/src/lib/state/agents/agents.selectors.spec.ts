@@ -36,7 +36,7 @@ import {
   selectSelectedAgents,
   selectSelectedClientAgent,
 } from './agents.selectors';
-import type { AgentResponseDto, ContainerType } from './agents.types';
+import type { AgentResponseDto } from './agents.types';
 
 describe('Agents Selectors', () => {
   const clientId = 'client-1';
@@ -46,7 +46,6 @@ describe('Agents Selectors', () => {
     name: 'Test Agent',
     description: 'Test Description',
     agentType: 'opencode',
-    containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-1',
     createdAt: '2024-01-01T00:00:00Z',
@@ -56,7 +55,6 @@ describe('Agents Selectors', () => {
     id: 'agent-2',
     name: 'Test Agent 2',
     agentType: 'opencode',
-    containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-2',
     createdAt: '2024-01-02T00:00:00Z',

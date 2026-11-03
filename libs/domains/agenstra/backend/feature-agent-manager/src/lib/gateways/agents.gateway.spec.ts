@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
-import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import { AgentEntity } from '../entities/agent.entity';
 import type { AgentEventEnvelope } from '../providers/agent-events.types';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProvider, AgentResponseObject } from '../providers/agent-provider.interface';
@@ -63,7 +63,6 @@ describe('AgentsGateway', () => {
     hashedPassword: 'hashed-password',
     containerId: 'container-123',
     agentType: 'opencode',
-    containerType: ContainerType.GENERIC,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
@@ -72,7 +71,6 @@ describe('AgentsGateway', () => {
     name: mockAgent.name,
     description: mockAgent.description,
     agentType: mockAgent.agentType,
-    containerType: mockAgent.containerType,
     createdAt: mockAgent.createdAt,
     updatedAt: mockAgent.updatedAt,
     chats: [],
@@ -4002,73 +4000,25 @@ describe('AgentsGateway', () => {
         ticketContexts: [],
         knowledgeShas: [],
         knowledgeContexts: [],
-        environmentContainerTypes: [],
       });
     });
 
-    it('enriches workspaceContainerType when workspace is included and agent is non-generic', async () => {
-      const dockerAgent = { ...mockAgent, containerType: ContainerType.DOCKER };
+    it('keeps environment ids of known agents', async () => {
+      const envAgent = { ...mockAgent, id: 'env-other' };
 
-      agentsRepository.findById.mockResolvedValueOnce(dockerAgent);
-
-      const result = await (gateway as any).normalizeContextInjection(mockAgent.id, {
-        includeWorkspace: true,
-        autoEnrichmentEnabled: false,
-      });
-
-      expect(agentsRepository.findById).toHaveBeenCalledWith(mockAgent.id);
-      expect(result?.workspaceContainerType).toBe(ContainerType.DOCKER);
-      expect(result?.environmentContainerTypes).toEqual([]);
-    });
-
-    it('omits workspaceContainerType when workspace agent is generic', async () => {
-      agentsRepository.findById.mockResolvedValueOnce(mockAgent);
-
-      const result = await (gateway as any).normalizeContextInjection(mockAgent.id, {
-        includeWorkspace: true,
-        autoEnrichmentEnabled: false,
-      });
-
-      expect(result?.workspaceContainerType).toBeUndefined();
-      expect(result?.environmentContainerTypes).toEqual([]);
-    });
-
-    it('enriches environmentContainerTypes for non-generic environment agents', async () => {
-      const envAgent = {
-        ...mockAgent,
-        id: 'env-terraform',
-        containerType: ContainerType.TERRAFORM,
-      };
-
-      agentsRepository.findById.mockImplementation(async (id: string) => {
-        if (id === mockAgent.id) {
-          return mockAgent;
-        }
-
-        if (id === 'env-terraform') {
-          return envAgent;
-        }
-
-        return null;
-      });
+      agentsRepository.findById.mockImplementation(async (id: string) => (id === 'env-other' ? envAgent : null));
 
       const result = await (gateway as any).normalizeContextInjection(mockAgent.id, {
         includeWorkspace: false,
         autoEnrichmentEnabled: true,
-        environmentIds: ['env-terraform'],
+        environmentIds: ['env-other'],
       });
 
-      expect(result?.environmentIds).toEqual(['env-terraform']);
-      expect(result?.environmentContainerTypes).toEqual([
-        { id: 'env-terraform', containerType: ContainerType.TERRAFORM },
-      ]);
+      expect(result?.environmentIds).toEqual(['env-other']);
     });
 
-    it('includes self environment id type without extra repository lookup for other ids', async () => {
-      const kubernetesAgent = { ...mockAgent, containerType: ContainerType.KUBERNETES };
-
+    it('includes self environment id without repository lookup', async () => {
       agentsRepository.findById.mockClear();
-      agentsRepository.findById.mockResolvedValueOnce(kubernetesAgent);
 
       const result = await (gateway as any).normalizeContextInjection(mockAgent.id, {
         includeWorkspace: false,
@@ -4077,36 +4027,7 @@ describe('AgentsGateway', () => {
       });
 
       expect(result?.environmentIds).toEqual([mockAgent.id]);
-      expect(result?.environmentContainerTypes).toEqual([
-        { id: mockAgent.id, containerType: ContainerType.KUBERNETES },
-      ]);
-      expect(agentsRepository.findById).toHaveBeenCalledTimes(1);
-      expect(agentsRepository.findById).toHaveBeenCalledWith(mockAgent.id);
-    });
-
-    it('keeps generic environment ids without environmentContainerTypes entry', async () => {
-      const genericEnvAgent = { ...mockAgent, id: 'env-generic', containerType: ContainerType.GENERIC };
-
-      agentsRepository.findById.mockImplementation(async (id: string) => {
-        if (id === mockAgent.id) {
-          return mockAgent;
-        }
-
-        if (id === 'env-generic') {
-          return genericEnvAgent;
-        }
-
-        return null;
-      });
-
-      const result = await (gateway as any).normalizeContextInjection(mockAgent.id, {
-        includeWorkspace: false,
-        autoEnrichmentEnabled: true,
-        environmentIds: ['env-generic'],
-      });
-
-      expect(result?.environmentIds).toEqual(['env-generic']);
-      expect(result?.environmentContainerTypes).toEqual([]);
+      expect(agentsRepository.findById).not.toHaveBeenCalled();
     });
 
     it('filters unknown environment ids', async () => {
@@ -4125,7 +4046,6 @@ describe('AgentsGateway', () => {
       });
 
       expect(result?.environmentIds).toEqual([]);
-      expect(result?.environmentContainerTypes).toEqual([]);
     });
 
     it('includes autoEnrichmentEnabled false in enrichment transcript parts when disabled', () => {

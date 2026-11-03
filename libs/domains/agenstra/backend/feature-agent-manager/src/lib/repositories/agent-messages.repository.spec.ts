@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { AgentMessageEntity } from '../entities/agent-message.entity';
-import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import { AgentEntity } from '../entities/agent.entity';
 
 import { AgentMessagesRepository } from './agent-messages.repository';
 
@@ -17,7 +17,6 @@ describe('AgentMessagesRepository', () => {
     containerId: 'container-id-123',
     volumePath: '/opt/agents/test-volume-uuid',
     agentType: 'opencode',
-    containerType: ContainerType.GENERIC,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

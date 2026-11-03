@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
-import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import { AgentEntity } from '../entities/agent.entity';
 
 import { AgentEnvironmentVariablesRepository } from './agent-environment-variables.repository';
 
@@ -17,7 +17,6 @@ describe('AgentEnvironmentVariablesRepository', () => {
     containerId: 'container-id-123',
     volumePath: '/opt/agents/test-volume-uuid',
     agentType: 'opencode',
-    containerType: ContainerType.GENERIC,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

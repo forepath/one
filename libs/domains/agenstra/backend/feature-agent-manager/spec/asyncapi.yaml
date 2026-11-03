@@ -760,9 +760,7 @@ components:
           contextInjection:
             type: object
             description: >
-              Optional hidden context references for prompt enrichment. Agent-manager resolves each referenced
-              agent's repository/container type server-side when composing the hidden preamble (non-generic types
-              only); clients do not send type fields on the wire. When the worker runs the platform `agenstra` context
+              Optional hidden context references for prompt enrichment. When the worker runs the platform `agenstra` context
               MCP server, resolved ticket / knowledge bodies are not inlined: the preamble lists titles, sizes and a
               context ticket, and the agent reads content through the MCP server (see `agentContextRequest`).
             properties:
@@ -932,9 +930,7 @@ components:
           contextInjection:
             type: object
             description: >
-              Optional hidden context references for prompt enrichment. Agent-manager resolves each referenced
-              agent's repository/container type server-side when composing the hidden preamble (non-generic types
-              only); clients do not send type fields on the wire.
+              Optional hidden context references for prompt enrichment.
             properties:
               includeWorkspace:
                 type: boolean
@@ -1028,9 +1024,7 @@ components:
           contextInjection:
             type: object
             description: >
-              Optional hidden context references for prompt enrichment. Agent-manager resolves each referenced
-              agent's repository/container type server-side when composing the hidden preamble (non-generic types
-              only); clients do not send type fields on the wire.
+              Optional hidden context references for prompt enrichment.
             properties:
               includeWorkspace:
                 type: boolean

@@ -116,7 +116,6 @@ describe('AgentHandoffsService', () => {
           name: 'Reviewer',
           description: 'Reviews code',
           handoffProfile: 'Owns the review pipeline',
-          containerType: 'generic',
           git: { repositoryUrl: 'https://git.example/reviewer.git', setupMode: 'clone' },
           primaryChatId: 'secret-chat',
         },
@@ -139,7 +138,6 @@ describe('AgentHandoffsService', () => {
         name: 'Reviewer',
         description: 'Reviews code',
         handoffProfile: 'Owns the review pipeline',
-        containerType: 'generic',
         repositoryUrl: 'https://git.example/reviewer.git',
       },
     ]);
