@@ -36,9 +36,6 @@ export class StatisticsAgentEntity {
   @Column({ type: 'varchar', length: 50, default: 'opencode', name: 'agent_type' })
   agentType!: string;
 
-  @Column({ type: 'varchar', length: 50, default: 'generic', name: 'container_type' })
-  containerType!: string;
-
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'name' })
   name?: string;
 

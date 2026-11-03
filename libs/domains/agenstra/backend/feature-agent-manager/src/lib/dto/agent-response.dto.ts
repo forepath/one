@@ -1,5 +1,4 @@
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
-import { ContainerType } from '../entities/agent.entity';
 
 import type { AgentEgressStatusDto } from './agent-egress.dto';
 import type { AgentIsolationDto } from './container-isolation.dto';
@@ -17,7 +16,6 @@ export class AgentResponseDto {
   /** Responsibilities / what the environment can take over (agent handoffs). */
   handoffProfile?: string;
   agentType!: string;
-  containerType!: ContainerType;
   /**
    * Capabilities of the agent's provider (mirrors config agentTypes capabilities).
    */

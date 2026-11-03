@@ -9,7 +9,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AgentResponseDto } from '../dto/agent-response.dto';
 import { FileNodeDto } from '../dto/file-node.dto';
-import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import { AgentEntity } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
 
@@ -47,7 +47,6 @@ describe('AgentFileSystemService', () => {
     name: 'Test Agent',
     description: 'Test Description',
     agentType: 'opencode',
-    containerType: ContainerType.GENERIC,
     chats: [
       {
         id: 'primary-chat-id',

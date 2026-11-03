@@ -14,7 +14,7 @@ export const HANDOFF_TOOL_DEFINITIONS: ContextToolDefinition[] = [
   {
     name: AGENSTRA_HANDOFF_MCP_TOOL_NAMES.agents,
     description:
-      'List the other agents of your workspace (id, name, description, handoff profile, container type, repository) ' +
+      'List the other agents of your workspace (id, name, description, handoff profile, repository) ' +
       'plus your own entry. Use it whenever a task touches an area another agent owns (another repository, service, ' +
       'infrastructure) or would benefit from its knowledge, to gather information or offload work with handoff_create. ' +
       'For a peer without handoff profile call handoff_profile_get. Keep your own profile current with ' +

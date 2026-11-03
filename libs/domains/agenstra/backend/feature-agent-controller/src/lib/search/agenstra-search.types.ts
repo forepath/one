@@ -46,7 +46,6 @@ export interface AgenstraSearchDocument {
   provider?: string | null;
   importKind?: string | null;
   agentType?: string | null;
-  containerType?: string | null;
   variable?: string | null;
   agentId?: string | null;
   role?: string | null;
@@ -110,7 +109,6 @@ export const AGENSTRA_SEARCH_TEXT_FIELDS = [
   'provider',
   'importKind',
   'agentType',
-  'containerType',
   'variable',
   'agentId',
   'role',
@@ -140,7 +138,6 @@ export const AGENSTRA_SEARCH_INDEX_MAPPINGS: Record<string, unknown> = {
     provider: { type: 'keyword' },
     importKind: { type: 'keyword' },
     agentType: { type: 'keyword' },
-    containerType: { type: 'keyword' },
     role: { type: 'keyword' },
     decision: { type: 'keyword' },
     kind: { type: 'keyword' },

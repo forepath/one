@@ -2527,18 +2527,6 @@
       <trans-unit id="featureChat-addEnvironmentTitle" datatype="html">
         <source>Create environment</source>
         </trans-unit>
-      <trans-unit id="featureChat-containerTypeLabel" datatype="html">
-        <source>Container Type</source>
-        </trans-unit>
-      <trans-unit id="featureChat-containerTypeDefaultGeneric" datatype="html">
-        <source>Default (Generic)</source>
-        </trans-unit>
-      <trans-unit id="featureChat-containerTypeGeneric" datatype="html">
-        <source>Generic</source>
-        </trans-unit>
-      <trans-unit id="featureChat-containerTypeHint" datatype="html">
-        <source>The type of content this environment holds. Defaults to Generic if not specified.</source>
-        </trans-unit>
       <trans-unit id="featureChat-isolationLabel" datatype="html">
         <source>Container isolation</source>
         </trans-unit>
@@ -2610,9 +2598,6 @@
         </trans-unit>
       <trans-unit id="featureChat-handoffProfileHelp" datatype="html">
         <source>What this environment is responsible for and which tasks other environments of the workspace can hand over to it. The agent can also maintain it itself.</source>
-        </trans-unit>
-      <trans-unit id="featureChat-containerTypeHintShort" datatype="html">
-        <source>The type of content this environment holds.</source>
         </trans-unit>
       <trans-unit id="featureChat-isolationFixedHint" datatype="html">
         <source>The isolation level is fixed when the environment is created.</source>
@@ -2835,9 +2820,6 @@
         </trans-unit>
       <trans-unit id="featureChat-railColDeployment" datatype="html">
         <source>Deployment</source>
-        </trans-unit>
-      <trans-unit id="featureChat-railColContainer" datatype="html">
-        <source>Container</source>
         </trans-unit>
       <trans-unit id="featureChat-contextToolbarWorkspace" datatype="html">
         <source>Workspace</source>

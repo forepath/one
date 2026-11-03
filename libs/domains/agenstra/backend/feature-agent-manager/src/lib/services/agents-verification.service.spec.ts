@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import { AgentEntity } from '../entities/agent.entity';
 import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentsVerificationService } from './agents-verification.service';
@@ -21,7 +21,6 @@ describe('AgentsVerificationService', () => {
     containerId: 'c1',
     volumePath: '/v',
     agentType: 'opencode',
-    containerType: ContainerType.GENERIC,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

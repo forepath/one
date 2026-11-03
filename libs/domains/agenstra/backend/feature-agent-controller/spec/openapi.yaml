@@ -2233,7 +2233,7 @@ paths:
           name: search
           schema:
             type: string
-          description: Case-insensitive search across name, description, agentType, containerType, id
+          description: Case-insensitive search across name, description, agentType, id
       responses:
         '200':
           description: Array of agents
@@ -7331,8 +7331,6 @@ components:
           type: string
           enum: [opencode]
           description: Agent provider type (defaults to 'opencode' if not provided)
-        containerType:
-          $ref: '#/components/schemas/ContainerType'
         gitRepositorySetupMode:
           type: string
           enum: [clone, empty]
@@ -7383,8 +7381,6 @@ components:
         agentType:
           type: string
           description: Agent provider type identifier
-        containerType:
-          $ref: '#/components/schemas/ContainerType'
         capabilities:
           $ref: '#/components/schemas/AgentTypeCapabilities'
         git:
@@ -7472,11 +7468,6 @@ components:
         isolation:
           $ref: '#/components/schemas/HostIsolationCapabilitiesDto'
           description: Container isolation levels the agent-manager host can run (absent for agent managers without isolation support)
-    ContainerType:
-      type: string
-      enum: [generic, docker, terraform, kubernetes]
-      default: generic
-      description: Container type of the environment
     IsolationLevel:
       type: string
       enum: [standard, sandboxed, sandboxed-kvm, microvm]

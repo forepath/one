@@ -35,7 +35,7 @@ import {
   updateClientAgentSuccess,
 } from './agents.actions';
 import { agentsReducer, initialAgentsState, type AgentsState } from './agents.reducer';
-import type { AgentResponseDto, ContainerType } from './agents.types';
+import type { AgentResponseDto } from './agents.types';
 
 describe('agentsReducer', () => {
   const clientId = 'client-1';
@@ -45,7 +45,6 @@ describe('agentsReducer', () => {
     name: 'Test Agent',
     description: 'Test Description',
     agentType: 'opencode',
-    containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-1',
     createdAt: '2024-01-01T00:00:00Z',
@@ -55,7 +54,6 @@ describe('agentsReducer', () => {
     id: 'agent-2',
     name: 'Test Agent 2',
     agentType: 'opencode',
-    containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-2',
     createdAt: '2024-01-02T00:00:00Z',

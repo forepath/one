@@ -37,7 +37,7 @@ import { AgentResponseDto } from '../dto/agent-response.dto';
 import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
-import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import { AgentEntity } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProvider } from '../providers/agent-provider.interface';
 import { AgentProviderModels } from '../providers/agent-provider.interface';
@@ -518,7 +518,6 @@ export class AgentsService implements OnApplicationBootstrap {
         containerId: containerId,
         volumePath: agentVolumePath,
         agentType: createAgentDto.agentType || 'opencode',
-        containerType: createAgentDto.containerType || ContainerType.GENERIC,
         opencodeServerPassword,
         gitRepositoryUrl:
           gitRepositorySetupMode === GitRepositorySetupMode.CLONE ? createAgentDto.gitRepositoryUrl : undefined,
@@ -700,7 +699,6 @@ export class AgentsService implements OnApplicationBootstrap {
         handoffProfile: updateAgentDto.handoffProfile.trim() || null,
       }),
       ...(updateAgentDto.agentType !== undefined && { agentType: updateAgentDto.agentType }),
-      ...(updateAgentDto.containerType !== undefined && { containerType: updateAgentDto.containerType }),
     };
 
     // Remove undefined fields
@@ -990,7 +988,6 @@ export class AgentsService implements OnApplicationBootstrap {
       description: agent.description,
       ...(agent.handoffProfile ? { handoffProfile: agent.handoffProfile } : {}),
       agentType: agent.agentType,
-      containerType: agent.containerType,
       capabilities,
       git: this.mapAgentGit(agent),
       chats,

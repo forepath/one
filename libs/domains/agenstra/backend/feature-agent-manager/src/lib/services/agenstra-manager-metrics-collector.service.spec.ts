@@ -9,12 +9,6 @@ jest.mock('@forepath/shared/backend/util-otel', () => ({
 }));
 
 jest.mock('../entities/agent.entity', () => ({
-  ContainerType: {
-    GENERIC: 'generic',
-    DOCKER: 'docker',
-    TERRAFORM: 'terraform',
-    KUBERNETES: 'kubernetes',
-  },
   AgentEntity: class AgentEntity {},
 }));
 
@@ -51,7 +45,7 @@ describe('AgenstraManagerMetricsCollectorService', () => {
       getCount: jest.fn().mockResolvedValue(2),
       getRawMany: jest
         .fn()
-        .mockResolvedValueOnce([{ agentType: 'opencode', containerType: 'docker', count: '2' }])
+        .mockResolvedValueOnce([{ agentType: 'opencode', count: '2' }])
         .mockResolvedValueOnce([{ status: 'active', count: '1' }]),
       getRawOne: jest.fn().mockResolvedValue({ count: '4' }),
     });
@@ -84,7 +78,6 @@ describe('AgenstraManagerMetricsCollectorService', () => {
 
     expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.agents', 2, {
       agent_type: 'opencode',
-      container_type: 'docker',
     });
     expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.agents.total', 3);
     expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.agents.provisioned', 2);

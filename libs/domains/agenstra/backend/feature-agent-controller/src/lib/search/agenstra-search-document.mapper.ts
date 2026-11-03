@@ -58,16 +58,9 @@ export function mapAgentToSearchDocument(
     name: agent.name ?? null,
     description: agent.description ?? null,
     agentType: agent.agentType,
-    containerType: agent.containerType,
     createdAt: toIso(agent.createdAt),
     updatedAt: toIso(agent.updatedAt),
-    searchableText: joinSearchable([
-      agent.originalAgentId,
-      agent.name,
-      agent.description,
-      agent.agentType,
-      agent.containerType,
-    ]),
+    searchableText: joinSearchable([agent.originalAgentId, agent.name, agent.description, agent.agentType]),
   };
 }
 

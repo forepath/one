@@ -4,7 +4,6 @@ import type { AgentContextTicketRecord } from '../types/agent-context.types';
 import { ContextInjectionPayload } from '../types/context-injection.types';
 import { buildAgentContextHintLines } from '../utils/agent-context-items.utils';
 import { buildPromptEnhancementMessage } from '../utils/chat-enhancement-prompt.utils';
-import { formatEnvironmentContextLine, formatWorkspaceContextLine } from '../utils/context-injection-prompt.utils';
 import { buildTicketBodyFromTitleMessage } from '../utils/ticket-body-prompt.utils';
 
 @Injectable()
@@ -24,7 +23,7 @@ export class PromptContextComposerService {
     const lines: string[] = [];
 
     if (contextInjection.includeWorkspace) {
-      lines.push(formatWorkspaceContextLine(contextInjection.workspaceContainerType));
+      lines.push('- Shared workspace context is mounted at /opt/workspace (read-only).');
     }
 
     const environmentIds = (contextInjection.environmentIds ?? []).filter((id) => id.trim().length > 0);
@@ -37,14 +36,7 @@ export class PromptContextComposerService {
     );
 
     if (environmentIds.length > 0) {
-      const environmentLine = formatEnvironmentContextLine(
-        environmentIds,
-        contextInjection.environmentContainerTypes ?? [],
-      );
-
-      if (environmentLine) {
-        lines.push(environmentLine);
-      }
+      lines.push(`- Relevant environment context: ${environmentIds.join(', ')}.`);
     }
 
     if (ticketShas.length > 0) {

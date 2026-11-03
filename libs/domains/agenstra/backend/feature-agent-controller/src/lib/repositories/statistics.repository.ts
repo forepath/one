@@ -166,7 +166,7 @@ export class StatisticsRepository {
   async upsertStatisticsAgent(
     originalAgentId: string,
     statisticsClientId: string,
-    data?: { agentType?: string; containerType?: string; name?: string; description?: string },
+    data?: { agentType?: string; name?: string; description?: string },
   ): Promise<StatisticsAgentEntity> {
     let entity = await this.statisticsAgents.findOne({
       where: { originalAgentId, statisticsClientId },
@@ -177,7 +177,6 @@ export class StatisticsRepository {
         originalAgentId,
         statisticsClientId,
         agentType: data?.agentType ?? 'opencode',
-        containerType: data?.containerType ?? 'generic',
         name: data?.name,
         description: data?.description,
       });
@@ -187,8 +186,6 @@ export class StatisticsRepository {
 
     if (data) {
       if (data.agentType !== undefined) entity.agentType = data.agentType;
-
-      if (data.containerType !== undefined) entity.containerType = data.containerType;
 
       if (data.name !== undefined) entity.name = data.name;
 

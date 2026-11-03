@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { CreateBranchDto } from '../dto/create-branch.dto';
 import { ResolveConflictDto } from '../dto/resolve-conflict.dto';
-import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import { AgentEntity } from '../entities/agent.entity';
 import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentFileSystemService } from './agent-file-system.service';
@@ -31,7 +31,6 @@ describe('AgentsVcsService', () => {
     containerId: mockContainerId,
     volumePath: '/opt/agents/test-uuid',
     agentType: 'opencode',
-    containerType: ContainerType.GENERIC,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };

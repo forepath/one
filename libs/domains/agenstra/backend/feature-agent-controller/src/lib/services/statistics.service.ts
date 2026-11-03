@@ -426,7 +426,6 @@ export class StatisticsService {
             statisticsClient.id,
             {
               agentType: metadata.agentType as string,
-              containerType: metadata.containerType as string,
               name: metadata.name as string,
               description: metadata.description as string,
             },
@@ -601,7 +600,6 @@ export class StatisticsService {
             statisticsClient.id,
             {
               agentType: metadata.agentType as string,
-              containerType: metadata.containerType as string,
               name: metadata.name as string,
               description: metadata.description as string,
             },

@@ -17,7 +17,6 @@ export interface AgentResponseDto {
   /** What the environment is responsible for and can take over from other agents (agent handoffs). */
   handoffProfile?: string;
   agentType: string;
-  containerType: ContainerType;
   capabilities?: AgentTypeCapabilities;
   git?: {
     repositoryUrl?: string;
@@ -58,7 +57,6 @@ export interface CreateAgentDto {
   name: string;
   description?: string;
   agentType?: string;
-  containerType?: ContainerType;
   gitRepositorySetupMode?: 'clone' | 'empty';
   gitRepositoryUrl?: string;
   /** Container isolation level; omitted = the host's recommended level. */
@@ -72,7 +70,6 @@ export interface UpdateAgentDto {
   description?: string;
   /** Empty string clears the profile. */
   handoffProfile?: string;
-  containerType?: ContainerType;
 }
 
 export interface CreateAgentResponseDto extends AgentResponseDto {
@@ -94,11 +91,4 @@ export interface AgentSlashCommand {
   description?: string;
   /** OpenCode registry source when loaded from the worker. */
   source?: 'command' | 'mcp' | 'skill';
-}
-
-export enum ContainerType {
-  GENERIC = 'generic',
-  DOCKER = 'docker',
-  TERRAFORM = 'terraform',
-  KUBERNETES = 'kubernetes',
 }

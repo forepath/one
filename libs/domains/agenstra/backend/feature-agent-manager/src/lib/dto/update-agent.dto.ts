@@ -1,7 +1,5 @@
 import { AGENT_HANDOFF_LIMITS } from '@forepath/agenstra/shared/util-opencode-config';
-import { IsEnum, IsIn, IsOptional, MaxLength, IsString } from 'class-validator';
-
-import { ContainerType } from '../entities/agent.entity';
+import { IsIn, IsOptional, MaxLength, IsString } from 'class-validator';
 
 /**
  * DTO for updating an existing agent.
@@ -29,10 +27,6 @@ export class UpdateAgentDto {
   @IsString({ message: 'Agent type must be a string' })
   @IsIn(['opencode'], { message: 'Agent type must be one of: opencode' })
   agentType?: string;
-
-  @IsOptional()
-  @IsEnum(ContainerType, { message: 'Container type must be one of: generic, docker, terraform, kubernetes' })
-  containerType?: ContainerType;
 
   /**
    * CI/CD deployment configuration (optional).

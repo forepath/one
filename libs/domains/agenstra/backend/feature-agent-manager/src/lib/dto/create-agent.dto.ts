@@ -3,7 +3,6 @@ import { IsEnum, IsIn, IsNotEmpty, IsObject, IsOptional, IsString, MaxLength } f
 
 import { ISOLATION_LEVELS, type IsolationLevel } from '../constants/container-isolation.constants';
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
-import { ContainerType } from '../entities/agent.entity';
 
 /**
  * DTO for creating a new agent.
@@ -30,10 +29,6 @@ export class CreateAgentDto {
   @IsString({ message: 'Agent type must be a string' })
   @IsIn(['opencode'], { message: 'Agent type must be one of: opencode' })
   agentType?: string;
-
-  @IsOptional()
-  @IsEnum(ContainerType, { message: 'Container type must be one of: generic, docker, terraform, kubernetes' })
-  containerType?: ContainerType = ContainerType.GENERIC;
 
   @IsOptional()
   @IsEnum(GitRepositorySetupMode, {

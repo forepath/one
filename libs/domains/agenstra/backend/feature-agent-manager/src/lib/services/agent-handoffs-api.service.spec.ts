@@ -211,7 +211,7 @@ describe('AgentHandoffsApiService', () => {
     beforeEach(() => {
       requestControllerHandoffs.mockResolvedValue({
         ok: true,
-        agents: [{ id: targetAgentId, name: 'Reviewer', containerType: 'generic' }],
+        agents: [{ id: targetAgentId, name: 'Reviewer' }],
       });
     });
 
@@ -246,7 +246,6 @@ describe('AgentHandoffsApiService', () => {
         expect.objectContaining({
           id: targetAgentId,
           handoffProfile: 'I own the review pipeline.',
-          containerType: 'generic',
         }),
       );
       expect(second.handoffProfile).toBe('I own the review pipeline.');

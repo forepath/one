@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 
 import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentEgressEventEntity } from '../entities/agent-egress-event.entity';
-import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import { AgentEntity } from '../entities/agent.entity';
 
 const METER_NAME = 'forepath.agenstra';
 const POLL_INTERVAL_MS = 60_000;
@@ -63,22 +63,15 @@ export class AgenstraManagerMetricsCollectorService implements OnModuleInit, OnM
     const agentRows = await this.agentRepository
       .createQueryBuilder('agent')
       .select('agent.agentType', 'agentType')
-      .addSelect('agent.containerType', 'containerType')
       .addSelect('COUNT(*)', 'count')
       .groupBy('agent.agentType')
-      .addGroupBy('agent.containerType')
-      .getRawMany<{ agentType: string; containerType: string; count: string }>();
+      .getRawMany<{ agentType: string; count: string }>();
 
-    const byKey = new Map(agentRows.map((row) => [`${row.agentType}:${row.containerType}`, parseInt(row.count, 10)]));
+    const byAgentType = new Map(agentRows.map((row) => [row.agentType, parseInt(row.count, 10)]));
     const agentTypes = new Set<string>([...agentRows.map((row) => row.agentType), 'opencode']);
 
     for (const agentType of agentTypes) {
-      for (const containerType of Object.values(ContainerType)) {
-        setGauge(METER_NAME, 'agenstra.manager.agents', byKey.get(`${agentType}:${containerType}`) ?? 0, {
-          agent_type: agentType,
-          container_type: containerType,
-        });
-      }
+      setGauge(METER_NAME, 'agenstra.manager.agents', byAgentType.get(agentType) ?? 0, { agent_type: agentType });
     }
 
     const [totalAgents, provisionedAgents] = await Promise.all([

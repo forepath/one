@@ -89,7 +89,6 @@ export class AgentHandoffsService {
         name: agent.name,
         ...(agent.description ? { description: agent.description } : {}),
         ...(agent.handoffProfile ? { handoffProfile: agent.handoffProfile } : {}),
-        ...(agent.containerType ? { containerType: agent.containerType } : {}),
         ...(agent.git?.repositoryUrl ? { repositoryUrl: agent.git.repositoryUrl } : {}),
       });
     }

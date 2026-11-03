@@ -27,7 +27,6 @@ export interface AgentContextAttachmentRef {
 
 export interface AgentContextEnvironmentRef {
   id: string;
-  containerType?: string;
 }
 
 export interface AgentContextGrants {
@@ -58,7 +57,7 @@ export interface AgentContextTicketRecord extends AgentContextTicketBinding {
    */
   scopeAnchors: string[];
   attachments: AgentContextAttachmentRef[];
-  workspace?: { mountPath: string; containerType?: string };
+  workspace?: { mountPath: string };
   environments: AgentContextEnvironmentRef[];
   createdAt: number;
   lastUsedAt: number;

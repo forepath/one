@@ -1,7 +1,6 @@
 import {
   AgentModelsResponseDto,
   AgentResponseDto,
-  ContainerType,
   CreateAgentDto,
   CreateAgentResponseDto,
   GitRepositorySetupMode,
@@ -54,7 +53,6 @@ describe('ClientAgentProxyService', () => {
     name: 'Test Agent',
     description: 'Test Agent Description',
     agentType: 'opencode',
-    containerType: ContainerType.GENERIC,
     chats: [],
     primaryChatId: 'primary-chat-uuid',
     createdAt: new Date('2024-01-01'),

@@ -436,7 +436,6 @@ export class ClientAgentProxyService {
           {
             clientId,
             agentType: createAgentDto.agentType ?? 'opencode',
-            containerType: createAgentDto.containerType?.toString() ?? 'generic',
             isolationLevel: result.isolation?.level ?? 'standard',
             name: createAgentDto.name,
             description: createAgentDto.description,
@@ -475,7 +474,6 @@ export class ClientAgentProxyService {
         {
           clientId,
           agentType: result.agentType,
-          containerType: result.containerType?.toString(),
           name: result.name,
           description: result.description,
         },
