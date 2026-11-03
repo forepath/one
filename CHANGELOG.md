@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.3.0](https://github.com/forepath/one/compare/v4.2.1...v4.3.0) (2026-11-03)
+
+
+### Features
+
+* **agenstra:** context manipulation mcp functionality ([#711](https://github.com/forepath/one/issues/711)) ([8fcfb96](https://github.com/forepath/one/commit/8fcfb9631bcf8f69d9f8971db3d225291a06e5b7))
+
+
+### Bug Fixes
+
+* **agenstra:** cross workspace access ([#712](https://github.com/forepath/one/issues/712)) ([7095012](https://github.com/forepath/one/commit/7095012852b81f6e74d1a95360f44bdea39022cd))
+
+
+### Chores
+
+* **agenstra:** container type removal ([#708](https://github.com/forepath/one/issues/708)) ([3e2830e](https://github.com/forepath/one/commit/3e2830e11bec253ebf4767896522d37d4c80c038))
+* **agenstra:** sdd template removal ([#709](https://github.com/forepath/one/issues/709)) ([d4bc06d](https://github.com/forepath/one/commit/d4bc06d5d72c589db13032f8763dfb22d6496b2e))
+* **shared:** ui modernization ([#706](https://github.com/forepath/one/issues/706)) ([8decdeb](https://github.com/forepath/one/commit/8decdeb46c73fa9dc31d084943020931800cd0c4))
+
 ## [4.2.1](https://github.com/forepath/one/compare/v4.2.0...v4.2.1) (2026-11-02)
 
 
