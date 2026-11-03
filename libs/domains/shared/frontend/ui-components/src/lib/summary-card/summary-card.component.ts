@@ -8,7 +8,9 @@ export type FpcSummaryCardTone = 'default' | 'primary' | 'success' | 'danger' | 
  * Single metric inside an `fpc-summary-bar`. Use the `value` input for plain text, or project
  * richer markup through `[fpcSummaryCardValue]` (import `FpcSummaryCardValueDirective`);
  * `[fpcSummaryCardActions]` sits to the right of the value on the same row, wrapped in an
- * `fpc-button-group` so icon/action buttons share alignment and gap.
+ * `fpc-button-group` so icon/action buttons share alignment and gap. `icon` (Bootstrap icon name without `bi-`)
+ * paints a large, faint glyph behind the card (decorative, `aria-hidden`): it marks the bar as a set of metric tiles
+ * so it reads apart from an adjacent tab strip (user, 2026-10-29).
  */
 @Component({
   selector: 'fpc-summary-card',
@@ -17,14 +19,18 @@ export type FpcSummaryCardTone = 'default' | 'primary' | 'success' | 'danger' | 
   imports: [FpcButtonGroupComponent],
   host: {
     '[class]': '"fpc-summary-card fpc-summary-card--" + tone()',
+    '[class.fpc-summary-card--with-icon]': '!!icon()',
   },
   template: `
+    @if (icon(); as glyph) {
+      <i class="bi fpc-summary-card__icon" [class]="'bi-' + glyph" aria-hidden="true"></i>
+    }
     <span class="fpc-summary-card__label text-body-secondary">{{ label() }}</span>
 
     <div class="fpc-summary-card__row">
       <div class="fpc-summary-card__value">
         @if (value() !== null) {
-          <span class="fpc-summary-card__value-text">{{ value() }}</span>
+          <span class="fpc-summary-card__value-text" [attr.title]="value()">{{ value() }}</span>
         }
         <ng-content select="[fpcSummaryCardValue]" />
       </div>
@@ -44,4 +50,6 @@ export class FpcSummaryCardComponent {
   readonly label = input('');
   readonly value = input<string | null>(null);
   readonly tone = input<FpcSummaryCardTone>('default');
+  /** Faint background glyph (Bootstrap icon name without `bi-`), decorative. */
+  readonly icon = input<string | null>(null);
 }

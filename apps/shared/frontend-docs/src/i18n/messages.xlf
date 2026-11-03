@@ -27,10 +27,22 @@
         <source>Toggle navigation</source>
         </trans-unit>
       <trans-unit id="featureDocsSearch-searchPlaceholder" datatype="html">
-        <source>Search documentation...</source>
+        <source>Search documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-searchTitle" datatype="html">
+        <source>Search documentation (Ctrl / ⌘ + K)</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-searchLabel" datatype="html">
+        <source>Search</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-pagesGroup" datatype="html">
+        <source>Pages</source>
         </trans-unit>
       <trans-unit id="featureDocsSearch-noResults" datatype="html">
         <source>No search results</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-typeToSearch" datatype="html">
+        <source>Type to search the documentation.</source>
         </trans-unit>
       <trans-unit id="featureDocsSearch-viewAllResults" datatype="html">
         <source>View all results</source>

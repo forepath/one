@@ -7,14 +7,13 @@ import type {
   UpdateAdminPromotionDto,
 } from '../../types/promotions.types';
 
-export const loadAdminPromotions = createAction('[AdminPromotions] Load Promotions', props<{ search?: string }>());
-export const loadAdminPromotionsBatch = createAction(
-  '[AdminPromotions] Load Promotions Batch',
-  props<{ offset: number; accumulated: AdminPromotionResponse[]; search?: string }>(),
+export const loadAdminPromotions = createAction(
+  '[AdminPromotions] Load Promotions',
+  props<{ search?: string; page?: number; pageSize?: number }>(),
 );
 export const loadAdminPromotionsSuccess = createAction(
   '[AdminPromotions] Load Promotions Success',
-  props<{ promotions: AdminPromotionResponse[] }>(),
+  props<{ promotions: AdminPromotionResponse[]; total: number }>(),
 );
 export const loadAdminPromotionsFailure = createAction(
   '[AdminPromotions] Load Promotions Failure',
@@ -59,15 +58,11 @@ export const deactivateAdminPromotionFailure = createAction(
 
 export const loadAdminPromotionRedemptions = createAction(
   '[AdminPromotions] Load Promotion Redemptions',
-  props<{ promotionId: string }>(),
-);
-export const loadAdminPromotionRedemptionsBatch = createAction(
-  '[AdminPromotions] Load Promotion Redemptions Batch',
-  props<{ promotionId: string; offset: number; accumulated: PromotionRedemptionResponse[] }>(),
+  props<{ promotionId: string; page?: number; pageSize?: number }>(),
 );
 export const loadAdminPromotionRedemptionsSuccess = createAction(
   '[AdminPromotions] Load Promotion Redemptions Success',
-  props<{ redemptions: PromotionRedemptionResponse[] }>(),
+  props<{ redemptions: PromotionRedemptionResponse[]; total: number }>(),
 );
 export const loadAdminPromotionRedemptionsFailure = createAction(
   '[AdminPromotions] Load Promotion Redemptions Failure',

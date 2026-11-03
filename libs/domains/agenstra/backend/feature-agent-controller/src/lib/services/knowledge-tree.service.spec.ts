@@ -89,6 +89,61 @@ describe('KnowledgeTreeService', () => {
     jest.clearAllMocks();
   });
 
+  describe('getTree with search', () => {
+    const row = (id: string, nodeType: KnowledgeNodeType, parentId: string | null, title: string) => ({
+      id,
+      clientId: 'c1',
+      nodeType,
+      parentId,
+      title,
+      content: null,
+      sortOrder: 0,
+      longSha: `${id}-sha`,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    const all = [
+      row('root', KnowledgeNodeType.FOLDER, null, 'Handbook'),
+      row('sub', KnowledgeNodeType.FOLDER, 'root', 'Guides'),
+      row('hit', KnowledgeNodeType.PAGE, 'sub', 'Deploy runbook'),
+      row('other', KnowledgeNodeType.PAGE, 'root', 'Unrelated'),
+    ];
+
+    it('returns matches inside unmatched folders with their ancestors as context', async () => {
+      const toDto = (entity: (typeof all)[number]) => ({ ...entity, shas: { short: '', long: '' }, attachments: [] });
+
+      jest.spyOn(service, 'listNodes').mockResolvedValueOnce([toDto(all[2])] as never);
+      nodeRepo.find.mockResolvedValueOnce(all);
+
+      const tree = await service.getTree('c1', undefined, 'runbook');
+
+      expect(service.listNodes).toHaveBeenCalledWith('c1', undefined, 'runbook');
+      expect(tree).toHaveLength(1);
+      expect(tree[0]).toMatchObject({ id: 'root', searchMatch: false });
+      expect(tree[0].children).toHaveLength(1);
+      expect(tree[0].children?.[0]).toMatchObject({ id: 'sub', searchMatch: false });
+      expect(tree[0].children?.[0].children?.[0]).toMatchObject({ id: 'hit', searchMatch: true });
+    });
+
+    it('returns an empty tree without loading ancestors when nothing matches', async () => {
+      jest.spyOn(service, 'listNodes').mockResolvedValueOnce([]);
+
+      await expect(service.getTree('c1', undefined, 'nothing')).resolves.toEqual([]);
+      expect(nodeRepo.find).not.toHaveBeenCalled();
+    });
+
+    it('leaves the unfiltered tree without search flags', async () => {
+      const toDto = (entity: (typeof all)[number]) => ({ ...entity, shas: { short: '', long: '' }, attachments: [] });
+
+      jest.spyOn(service, 'listNodes').mockResolvedValueOnce(all.map(toDto) as never);
+
+      const tree = await service.getTree('c1');
+
+      expect(service.listNodes).toHaveBeenCalledWith('c1', undefined);
+      expect(tree[0].searchMatch).toBeUndefined();
+    });
+  });
+
   it('collects prompt sections for folder subtree and deduplicates pages', async () => {
     (service as any).assertClientAccess = jest.fn().mockResolvedValue(undefined);
     relationRepo.find.mockResolvedValue([

@@ -8,19 +8,18 @@ import {
   adminResumeSubscription,
   adminWithdrawSubscription,
   loadAdminSubscriptions,
-  loadMoreAdminSubscriptions,
 } from './admin-subscriptions.actions';
 import {
   selectAdminSubscriptions,
-  selectAdminSubscriptionsAppendError,
-  selectAdminSubscriptionsAppendLoading,
   selectAdminSubscriptionsCanceling,
   selectAdminSubscriptionsError,
-  selectAdminSubscriptionsHasMore,
   selectAdminSubscriptionsInstantCanceling,
   selectAdminSubscriptionsLoading,
+  selectAdminSubscriptionsPage,
+  selectAdminSubscriptionsPageSize,
   selectAdminSubscriptionsResuming,
   selectAdminSubscriptionsState,
+  selectAdminSubscriptionsTotal,
   selectAdminSubscriptionsWithdrawing,
 } from './admin-subscriptions.selectors';
 
@@ -35,29 +34,30 @@ export class AdminSubscriptionsFacade {
   readonly instantCanceling$ = this.store.select(selectAdminSubscriptionsInstantCanceling);
   readonly resuming$ = this.store.select(selectAdminSubscriptionsResuming);
   readonly error$ = this.store.select(selectAdminSubscriptionsError);
-  readonly hasMore$ = this.store.select(selectAdminSubscriptionsHasMore);
-  readonly appendLoading$ = this.store.select(selectAdminSubscriptionsAppendLoading);
-  readonly appendError$ = this.store.select(selectAdminSubscriptionsAppendError);
+  readonly total$ = this.store.select(selectAdminSubscriptionsTotal);
+  readonly page$ = this.store.select(selectAdminSubscriptionsPage);
+  readonly pageSize$ = this.store.select(selectAdminSubscriptionsPageSize);
 
-  loadSubscriptions(params?: { search?: string; userId?: string }): void {
+  /** Loads page 1 (or the given page) of the filtered list; the page replaces the current rows. */
+  loadSubscriptions(params?: { search?: string; userId?: string; page?: number; pageSize?: number }): void {
     this.store.dispatch(loadAdminSubscriptions(params ?? {}));
   }
 
-  loadMore(): void {
+  /** Loads another page of the current filter (replace-page). */
+  loadPage(page: number, pageSize?: number): void {
     this.store
       .select(selectAdminSubscriptionsState)
       .pipe(take(1))
-      .subscribe((state) => {
-        if (!state.hasMore || state.appendLoading || state.loading) return;
-
+      .subscribe((state) =>
         this.store.dispatch(
-          loadMoreAdminSubscriptions({
-            offset: state.nextOffset,
+          loadAdminSubscriptions({
             search: state.search ?? undefined,
             userId: state.userId ?? undefined,
+            page,
+            pageSize: pageSize ?? state.pageSize,
           }),
-        );
-      });
+        ),
+      );
   }
 
   cancelSubscription(id: string): void {

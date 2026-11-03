@@ -6,6 +6,7 @@ import {
   FilesService,
   type FileNodeDto,
   VcsFacade,
+  WorkspaceSearchService,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
@@ -32,6 +33,18 @@ describe('FileTreeComponent selection', () => {
     readFile: jest.fn(),
   };
 
+  const workspaceSearchStub = {
+    search: jest.fn().mockReturnValue(
+      of({
+        status: 'ready',
+        total: 2,
+        hits: [
+          { path: 'src/app/main.ts', fileName: 'main.ts', fileType: 'ts', size: 1 },
+          { path: 'main.go', fileName: 'main.go', fileType: 'go', size: 1 },
+        ],
+      }),
+    ),
+  };
   const vcsFacadeStub = {
     status$: of(null),
     currentBranch$: of(null),
@@ -99,6 +112,7 @@ describe('FileTreeComponent selection', () => {
           },
         },
         { provide: VcsFacade, useValue: vcsFacadeStub },
+        { provide: WorkspaceSearchService, useValue: workspaceSearchStub },
         { provide: Actions, useValue: new Subject() },
         { provide: Store, useValue: { dispatch: jest.fn() } },
         FileTreeClipboardService,
@@ -459,6 +473,59 @@ describe('FileTreeComponent selection', () => {
     expect(component.clipboardService.clipboard()).toEqual({
       mode: 'copy',
       entries: [{ path: 'readme.md', type: 'file' }],
+    });
+  });
+
+  describe('files row search', () => {
+    // Real time: the debounce keeps reusing the interval its first, pre-test timer started, so fake time can't drive
+    // it; `whenStable` lets the `toObservable` root effect run first.
+    async function search(query: string): Promise<void> {
+      component.onFileSearchChange(query);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      fixture.detectChanges();
+    }
+
+    it('searches file names of the workspace and lists the hits in place of the tree', async () => {
+      await search('main');
+
+      expect(workspaceSearchStub.search).toHaveBeenLastCalledWith('client-1', 'agent-1', 'main', [], [], 'files');
+      expect(component.fileSearchActive()).toBe(true);
+      expect(component.fileSearchHits()?.map((hit) => hit.path)).toEqual(['src/app/main.ts', 'main.go']);
+
+      const el = fixture.nativeElement as HTMLElement;
+
+      expect(el.querySelectorAll('.file-tree-search-hit')).toHaveLength(2);
+      expect(el.querySelector('.file-tree-content')?.classList.contains('d-none')).toBe(true);
+    });
+
+    it('opens a hit like a tree file and shows its folder', async () => {
+      await search('main');
+      const [nested, root] = component.fileSearchHits()!;
+
+      component.onFileSearchHitClick(nested);
+
+      expect(fileSelectSpy).toHaveBeenCalledWith('src/app/main.ts');
+      expect(component.fileSearchHitFolder(nested)).toBe('src/app');
+      expect(component.fileSearchHitFolder(root)).toBe('');
+    });
+
+    it('brings the tree back when the search is cleared', async () => {
+      await search('main');
+      await search('');
+
+      expect(component.fileSearchActive()).toBe(false);
+      expect(component.fileSearchHits()).toBeNull();
+    });
+
+    it('does not search the agent config files (not in the workspace index)', async () => {
+      workspaceSearchStub.search.mockClear();
+      fixture.componentRef.setInput('fileManagerContext', 'config');
+      await search('main');
+
+      expect(component.fileSearchActive()).toBe(false);
+      expect(workspaceSearchStub.search).not.toHaveBeenCalled();
     });
   });
 });

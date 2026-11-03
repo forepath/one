@@ -54,6 +54,11 @@ export class PromotionRedemptionResponseDto {
   redeemedAt!: string;
   advantageType!: PromotionAdvantageType;
   advantageSummary!: string;
+  /** Structured advantage (additive): fixed amount (net) + currency, free days or free billing periods. */
+  amountNet?: number;
+  currency?: string;
+  days?: number;
+  periods?: number;
   validFrom!: string;
   validTo?: string;
   remainingMonetaryNet?: number;

@@ -1,0 +1,41 @@
+// Shared z-index scale (aligned with Bootstrap's `$zindex-*`). Components read these with a
+// numeric fallback (`var(--fpc-z-dropdown, 1000)`) so they also work without this partial.
+//
+//   content ............ auto / 0  (no z-index; never create stacking contexts on overlay hosts)
+//   raised (local) ..... 1          inside the element's own stacking context (active tab, focus ring)
+//   sticky-local ....... 2          sticky thead / tfoot / panel headers inside their scroll container
+//   dropdown ........... 1000       inline `fpc-dropdown` menus
+//   sticky ............. 1020       page-level sticky bars (rare; prefer sticky-local)
+//   chrome ............. 1030       app rail / sidebar (`fpc-sidebar`), docks fixed over content
+//   top-bar ............ 1032       `fpc-top-bar` (its menus / tray sit in this context, above the rail)
+//   offcanvas .......... 1045       drawers (backdrop 1044)
+//   modal-backdrop ..... 1050
+//   modal .............. 1055       `fpc-modal` (portaled to <body>)
+//   popover ............ 1070       `fpc-sidebar-popover`, `fpc-context-menu`, body-portaled dropdowns
+//   tooltip ............ 1080       `fpc-tooltip` (portaled to <body>)
+//   toast .............. 1090       `fpc-toast-container`
+//
+// Rules: in-content sticky elements use `raised` / `sticky-local` only; chrome containers carry an
+// explicit layer instead of `isolation: isolate` (an isolated context without z-index paints at
+// level 0 and lets any later `z-index: 1` content cover its menus); overlays render at <body> level.
+$fpc-z-layers: (
+  'raised': 1,
+  'sticky-local': 2,
+  'dropdown': 1000,
+  'sticky': 1020,
+  'chrome': 1030,
+  'top-bar': 1032,
+  'offcanvas-backdrop': 1044,
+  'offcanvas': 1045,
+  'modal-backdrop': 1050,
+  'modal': 1055,
+  'popover': 1070,
+  'tooltip': 1080,
+  'toast': 1090,
+);
+
+:root {
+  @each $name, $value in $fpc-z-layers {
+    --fpc-z-#{$name}: #{$value};
+  }
+}

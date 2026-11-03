@@ -17,9 +17,32 @@ import {
 import { BackorderCancelDto } from '../dto/backorder-cancel.dto';
 import { BackorderResponseDto } from '../dto/backorder-response.dto';
 import { BackorderRetryDto } from '../dto/backorder-retry.dto';
+import { BackorderStatus } from '../entities/backorder.entity';
 import { BackordersRepository } from '../repositories/backorders.repository';
 import { BackorderService } from '../services/backorder.service';
 import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
+
+/** Largest page of the backorder list. */
+const MAX_BACKORDERS_LIMIT = 100;
+
+/** `?status=pending,retrying` → validated statuses (`undefined` = all). */
+function parseBackorderStatuses(status?: string): BackorderStatus[] | undefined {
+  const values = (status ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (values.length === 0) return undefined;
+
+  const allowed = new Set<string>(Object.values(BackorderStatus));
+  const invalid = values.filter((value) => !allowed.has(value));
+
+  if (invalid.length > 0) {
+    throw new BadRequestException(`Unknown backorder status: ${invalid.join(', ')}`);
+  }
+
+  return values as BackorderStatus[];
+}
 
 @Controller('backorders')
 export class BackordersController {
@@ -35,6 +58,7 @@ export class BackordersController {
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
     @Query('search') search?: string,
     @Req() req?: RequestWithUser,
+    @Query('status') status?: string,
   ): Promise<BackorderResponseDto[]> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
 
@@ -42,7 +66,13 @@ export class BackordersController {
       throw new BadRequestException('User not authenticated');
     }
 
-    const rows = await this.backorderService.listForUser(userInfo.userId, limit ?? 10, offset ?? 0, search);
+    const rows = await this.backorderService.listForUser(
+      userInfo.userId,
+      Math.min(Math.max(limit ?? 10, 1), MAX_BACKORDERS_LIMIT),
+      Math.max(offset ?? 0, 0),
+      search,
+      parseBackorderStatuses(status),
+    );
 
     return await this.backorderService.mapManyToResponses(rows);
   }

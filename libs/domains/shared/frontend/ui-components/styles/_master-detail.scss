@@ -1,0 +1,93 @@
+// Master-detail lanes (list lane | detail lane). Used by pages whose list and detail share one component (or a route
+// shell): at >= xl both lanes side by side, each with its own scroll; below xl one lane at a time — the list, or the
+// detail once `.fpc-md--detail` is set (the detail route stays the deep link).
+//
+//   <div class="fpc-md" [class.fpc-md--detail]="!!selectedId()">
+//     <section class="fpc-md__list">…</section>
+//     <section class="fpc-md__detail">…</section>
+//   </div>
+.fpc-md {
+  display: flex;
+  // Explicit: a routed host with this class would otherwise inherit the outlet rules' column direction
+  // and stack the list (`flex: 0 0 32rem` = a 512 px tall band) above the detail.
+  flex-direction: row;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.fpc-md__list,
+.fpc-md__detail {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.fpc-md__detail {
+  display: none;
+}
+
+.fpc-md--detail {
+  > .fpc-md__list {
+    display: none;
+  }
+
+  > .fpc-md__detail {
+    display: flex;
+  }
+}
+
+// Scroll body inside a lane.
+.fpc-md__scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+// Only shown below xl (e.g. "Back to the list" in the detail lane).
+.fpc-md__back {
+  display: inline-flex;
+}
+
+@media (min-width: 1200px) {
+  .fpc-md > .fpc-md__list,
+  .fpc-md--detail > .fpc-md__list {
+    display: flex;
+    flex: 0 0 32rem;
+    max-width: 45%;
+    border-right: 1px solid var(--bs-border-color);
+  }
+
+  .fpc-md > .fpc-md__detail {
+    display: flex;
+  }
+
+  .fpc-md__back {
+    display: none;
+  }
+
+  // A page header whose breadcrumb row only holds the (now hidden) back link drops the row and its spacing, so the
+  // detail title sits at the header's normal top (user, 2026-10-29).
+  .fpc-page-header__breadcrumbs:has(> .fpc-md__back:only-child) {
+    display: none;
+  }
+}
+
+// Lanes on phones: a tab switch (`.fpc-lane-tabs`, shown below md only) picks one lane; the others carry
+// `.fpc-lane--off` (hidden below md, visible side by side from md on).
+.fpc-lane-tabs {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  .fpc-lane-tabs {
+    display: block;
+    flex: 0 0 auto;
+  }
+
+  .fpc-lane--off {
+    display: none !important;
+  }
+}

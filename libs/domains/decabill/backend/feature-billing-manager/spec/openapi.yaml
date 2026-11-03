@@ -3001,6 +3001,13 @@ paths:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
         - $ref: '#/components/parameters/Search'
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, example: 'pending,retrying' }
+          description: >-
+            Optional comma-separated status filter (pending, retrying, fulfilled, cancelled, failed). Unknown values
+            are rejected with 400. The page size is clamped to 1–100.
       responses:
         '200':
           description: Array of backorders
@@ -3688,15 +3695,21 @@ paths:
       operationId: listPendingOffers
       parameters:
         - $ref: '#/components/parameters/Search'
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+        - name: offset
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
       responses:
         '200':
-          description: Pending offers
+          description: One page of pending offers (newest first) with the total
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CustomerOfferListItemDto'
+                $ref: '#/components/schemas/PaginatedCustomerOffersResponseDto'
   /offers/history:
     get:
       tags: [Offers]
@@ -3704,15 +3717,21 @@ paths:
       operationId: listOfferHistory
       parameters:
         - $ref: '#/components/parameters/Search'
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+        - name: offset
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
       responses:
         '200':
-          description: Offer history
+          description: One page of offer history (newest first) with the total
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CustomerOfferListItemDto'
+                $ref: '#/components/schemas/PaginatedCustomerOffersResponseDto'
   /offers/{offerRefId}:
     get:
       tags: [Offers]
@@ -4339,15 +4358,30 @@ paths:
       operationId: adminListSubscriptionMeterEntries
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+        - name: offset
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
       responses:
         '200':
-          description: Meter entries
+          description: One page of meter entries (newest first) with the total
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UsageMeterEntryResponse'
+                type: object
+                required: [items, total, limit, offset]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UsageMeterEntryResponse'
+                  total: { type: integer }
+                  limit: { type: integer }
+                  offset: { type: integer }
     post:
       tags: [Admin Billing]
       summary: Create a metered usage entry for a subscription
@@ -6442,6 +6476,11 @@ paths:
           in: query
           schema: { type: string, format: uuid }
           description: Optional ticket filter
+        - name: search
+          in: query
+          required: false
+          schema: { type: string }
+          description: Optional case-insensitive search on the entry description or linked ticket title
       responses:
         '200':
           description: Paginated time entries
@@ -9302,6 +9341,13 @@ components:
           { type: number, nullable: true, description: Invoice total (gross) }
         subscriptionNumber: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
+        issuedAt:
+          {
+            type: string,
+            format: date-time,
+            nullable: true,
+            description: When the invoice was issued (null for drafts),
+          }
         dueDate: { type: string, format: date, nullable: true }
         paidAt: { type: string, format: date-time, nullable: true }
         canPay: { type: boolean }
@@ -9421,6 +9467,10 @@ components:
           type: number
           exclusiveMinimum: 0
           description: Minimum balance due required for Checkout or saved payment method charges
+        historyCount:
+          type: integer
+          minimum: 0
+          description: Size of the invoice history (pager total when no search is applied)
       required:
         - openOverdueCount
         - openOverdueTotal
@@ -9948,6 +9998,12 @@ components:
           properties:
             userId: { type: string, format: uuid }
             userEmail: { type: string, format: email, nullable: true }
+            customerName:
+              {
+                type: string,
+                nullable: true,
+                description: 'Billing-profile name (company, else first + last name)',
+              }
     PaginatedAdminInvoicesResponse:
       type: object
       properties:
@@ -9964,7 +10020,25 @@ components:
         - type: object
           properties:
             userEmail: { type: string, format: email, nullable: true }
+            customerName:
+              {
+                type: string,
+                nullable: true,
+                description: 'Billing-profile name (company, else first + last name)',
+              }
             planName: { type: string, nullable: true }
+            billingIntervalType:
+              {
+                type: string,
+                nullable: true,
+                description: Billing interval type of the subscription's plan,
+              }
+            billingIntervalValue:
+              {
+                type: integer,
+                nullable: true,
+                description: Billing interval value of the subscription's plan,
+              }
     PaginatedAdminSubscriptionsResponse:
       type: object
       properties:
@@ -10676,6 +10750,12 @@ components:
         - type: object
           properties:
             userEmail: { type: string }
+            customerName:
+              {
+                type: string,
+                nullable: true,
+                description: 'Billing-profile name (company, else first + last name)',
+              }
     PaginatedAdminProjectsResponse:
       type: object
       required: [items, total, limit, offset]
@@ -11051,6 +11131,26 @@ components:
         redeemedAt: { type: string, format: date-time }
         advantageType: { type: string }
         advantageSummary: { type: string }
+        amountNet:
+          {
+            type: number,
+            description: Fixed amount (net); only for fixed-amount advantages,
+          }
+        currency:
+          {
+            type: string,
+            description: Currency of `amountNet`; only for fixed-amount advantages,
+          }
+        days:
+          {
+            type: integer,
+            description: Free days; only for free-days advantages,
+          }
+        periods:
+          {
+            type: integer,
+            description: Free billing periods; only for free-billing-period advantages,
+          }
         validFrom: { type: string, format: date-time }
         validTo: { type: string, format: date-time, nullable: true }
         remainingMonetaryNet: { type: number }
@@ -11155,6 +11255,12 @@ components:
         id: { type: string, format: uuid }
         userId: { type: string, format: uuid }
         userEmail: { type: string }
+        customerName:
+          {
+            type: string,
+            nullable: true,
+            description: 'Billing-profile name (company, else first + last name)',
+          }
         offerNumber: { type: string, nullable: true }
         status:
           {
@@ -11234,6 +11340,17 @@ components:
         archivedAt: { type: string, format: date-time, nullable: true }
         acceptedAt: { type: string, format: date-time, nullable: true }
         declinedAt: { type: string, format: date-time, nullable: true }
+    PaginatedCustomerOffersResponseDto:
+      type: object
+      required: [items, total, limit, offset]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerOfferListItemDto'
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
     CustomerOfferDetailResponseDto:
       allOf:
         - $ref: '#/components/schemas/CustomerOfferListItemDto'

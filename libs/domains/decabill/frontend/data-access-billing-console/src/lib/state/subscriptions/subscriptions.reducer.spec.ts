@@ -12,9 +12,6 @@ import {
   loadSubscription,
   loadSubscriptionFailure,
   loadSubscriptions,
-  loadMoreSubscriptions,
-  loadMoreSubscriptionsSuccess,
-  loadMoreSubscriptionsFailure,
   loadSubscriptionsFailure,
   loadSubscriptionsSuccess,
   loadSubscriptionSuccess,
@@ -57,7 +54,7 @@ describe('subscriptionsReducer', () => {
   });
 
   describe('loadSubscriptions', () => {
-    it('should set loading to true, clear entities and error', () => {
+    it('should set loading, keep the rows until the page arrives and clear the error', () => {
       const state: SubscriptionsState = {
         ...initialSubscriptionsState,
         entities: [mockSubscription],
@@ -66,44 +63,20 @@ describe('subscriptionsReducer', () => {
       const newState = subscriptionsReducer(state, loadSubscriptions({ params: {} }));
 
       expect(newState.loading).toBe(true);
-      expect(newState.entities).toEqual([]);
+      expect(newState.entities).toEqual([mockSubscription]);
       expect(newState.error).toBeNull();
+      expect(newState.page).toBe(1);
+      expect(newState.pageSize).toBe(25);
     });
-  });
 
-  describe('loadMoreSubscriptions', () => {
-    it('should set appendLoading', () => {
-      const state: SubscriptionsState = {
-        ...initialSubscriptionsState,
-        hasMore: true,
-        nextOffset: 10,
-      };
-      const newState = subscriptionsReducer(state, loadMoreSubscriptions({ offset: 10 }));
-
-      expect(newState.appendLoading).toBe(true);
-      expect(newState.appendError).toBeNull();
-    });
-  });
-
-  describe('loadMoreSubscriptionsSuccess', () => {
-    it('should append subscriptions', () => {
-      const state: SubscriptionsState = {
-        ...initialSubscriptionsState,
-        entities: [mockSubscription],
-        appendLoading: true,
-      };
+    it('should derive page and page size from limit / offset', () => {
       const newState = subscriptionsReducer(
-        state,
-        loadMoreSubscriptionsSuccess({
-          subscriptions: [mockSubscription2],
-          hasMore: false,
-          nextOffset: 2,
-        }),
+        initialSubscriptionsState,
+        loadSubscriptions({ params: { limit: 50, offset: 100 } }),
       );
 
-      expect(newState.entities).toEqual([mockSubscription, mockSubscription2]);
-      expect(newState.appendLoading).toBe(false);
-      expect(newState.hasMore).toBe(false);
+      expect(newState.page).toBe(3);
+      expect(newState.pageSize).toBe(50);
     });
   });
 
@@ -118,7 +91,6 @@ describe('subscriptionsReducer', () => {
         loadSubscriptionsSuccess({
           subscriptions: [mockSubscription, mockSubscription2],
           hasMore: false,
-          nextOffset: 2,
         }),
       );
 

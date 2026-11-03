@@ -28,20 +28,40 @@ import {
   type FileNodeDto,
   type ListDirectoryParams,
   type WriteFileDto,
+  WorkspaceSearchService,
+  type WorkspaceSearchHitDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
   FpcFormControlComponent,
+  FpcEmptyStateComponent,
   FpcFormFieldComponent,
+  FpcListToolbarComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
+  FpcSearchFieldComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { combineLatest, filter, firstValueFrom, map, Observable, of, Subscription, switchMap, take } from 'rxjs';
+import {
+  EMPTY,
+  catchError,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  finalize,
+  firstValueFrom,
+  map,
+  Observable,
+  of,
+  Subscription,
+  switchMap,
+  take,
+} from 'rxjs';
 
 import { fileIconClassForName } from '../file-icon.util';
 import { FileTreeClipboardService } from './file-tree-clipboard.service';
@@ -112,9 +132,12 @@ interface PendingUpload {
     FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
     FpcFormControlComponent,
+    FpcEmptyStateComponent,
     FpcFormFieldComponent,
+    FpcListToolbarComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
+    FpcSearchFieldComponent,
     FpcSpinnerComponent,
   ],
   templateUrl: './file-tree.component.html',
@@ -129,6 +152,7 @@ interface PendingUpload {
 })
 export class FileTreeComponent implements OnInit {
   private readonly filesFacade = inject(FilesFacade);
+  private readonly workspaceSearch = inject(WorkspaceSearchService);
   private readonly filesService = inject(FilesService);
   private readonly vcsFacade = inject(VcsFacade);
   private readonly actions$ = inject(Actions);
@@ -176,6 +200,17 @@ export class FileTreeComponent implements OnInit {
   directoryCollapse = output<string>();
   /** Emits whenever multi-selection changes (for parent cleanup hooks). */
   selectionChange = output<string[]>();
+
+  /**
+   * Search in the files row (workspace only): file names / paths over the whole workspace via the search index
+   * (`files` mode, the Search tab's own API), listed in place of the tree; content search stays in the Search tab.
+   */
+  readonly fileSearch = signal('');
+  readonly fileSearchHits = signal<WorkspaceSearchHitDto[] | null>(null);
+  readonly fileSearchLoading = signal(false);
+  readonly fileSearchActive = computed(() => this.fileManagerContext() === 'app' && !!this.fileSearch().trim());
+  readonly fileSearchPlaceholder = $localize`:@@featureFileTree-searchPlaceholder:Search files`;
+  readonly fileSearchAria = $localize`:@@featureFileTree-searchAria:Search file names in the workspace`;
 
   // Internal state
   treeNodes = signal<TreeNode[]>([]);
@@ -286,6 +321,38 @@ export class FileTreeComponent implements OnInit {
     this.destroyRef.onDestroy(() => {
       this.clearHoverTimeout();
     });
+
+    // Files-row search: debounced path search of the workspace index (also re-run when the environment changes).
+    combineLatest([
+      toObservable(this.fileSearch).pipe(
+        map((query) => query.trim()),
+        debounceTime(250),
+        distinctUntilChanged(),
+      ),
+      toObservable(this.clientId),
+      toObservable(this.agentId),
+      toObservable(this.fileManagerContext),
+    ])
+      .pipe(
+        switchMap(([query, clientId, agentId, context]) => {
+          if (!query || !clientId || !agentId || context !== 'app') {
+            this.fileSearchHits.set(null);
+            this.fileSearchLoading.set(false);
+
+            return EMPTY;
+          }
+
+          this.fileSearchLoading.set(true);
+
+          return this.workspaceSearch.search(clientId, agentId, query, [], [], 'files').pipe(
+            map((response) => response.hits),
+            catchError(() => of([] as WorkspaceSearchHitDto[])),
+            finalize(() => this.fileSearchLoading.set(false)),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((hits) => this.fileSearchHits.set(hits));
 
     // Load root directory on init
     effect(() => {
@@ -578,6 +645,23 @@ export class FileTreeComponent implements OnInit {
     }
 
     return 'plain';
+  }
+
+  onFileSearchChange(query: string): void {
+    this.fileSearch.set(query);
+
+    if (!query.trim()) this.fileSearchHits.set(null);
+  }
+
+  onFileSearchHitClick(hit: WorkspaceSearchHitDto): void {
+    this.fileSelect.emit(hit.path);
+  }
+
+  /** Folder part of a hit's path (shown muted after the file name); empty at the workspace root. */
+  fileSearchHitFolder(hit: WorkspaceSearchHitDto): string {
+    const slash = hit.path.lastIndexOf('/');
+
+    return slash > 0 ? hit.path.slice(0, slash) : '';
   }
 
   private shouldIgnoreTreeHotkey(event: KeyboardEvent): boolean {

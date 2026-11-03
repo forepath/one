@@ -5,6 +5,7 @@ import type {
   CustomerOfferDetailResponseDto,
   CustomerOfferListItemDto,
   OffersSummaryResponseDto,
+  PaginatedCustomerOffersResponseDto,
 } from '../dto/offer.dto';
 import { OffersRepository } from '../repositories/offers.repository';
 import { OfferLineItemsRepository } from '../repositories/offer-line-items.repository';
@@ -53,16 +54,28 @@ export class OffersCustomerService {
     };
   }
 
-  async listPending(userId: string, search?: string): Promise<CustomerOfferListItemDto[]> {
-    const items = await this.offersRepository.findPendingByUserId(userId, search);
+  /** One page of the caller's pending offers (only `userId`'s own offers). */
+  async listPending(
+    userId: string,
+    limit: number,
+    offset: number,
+    search?: string,
+  ): Promise<PaginatedCustomerOffersResponseDto> {
+    const { items, total } = await this.offersRepository.findPendingByUserId(userId, { limit, offset, search });
 
-    return items.map((item) => this.mapListItem(item));
+    return { items: items.map((item) => this.mapListItem(item)), total, limit, offset };
   }
 
-  async listHistory(userId: string, search?: string): Promise<CustomerOfferListItemDto[]> {
-    const items = await this.offersRepository.findHistoryByUserId(userId, search);
+  /** One page of the caller's offer history (only `userId`'s own offers). */
+  async listHistory(
+    userId: string,
+    limit: number,
+    offset: number,
+    search?: string,
+  ): Promise<PaginatedCustomerOffersResponseDto> {
+    const { items, total } = await this.offersRepository.findHistoryByUserId(userId, { limit, offset, search });
 
-    return items.map((item) => this.mapListItem(item));
+    return { items: items.map((item) => this.mapListItem(item)), total, limit, offset };
   }
 
   async getDetail(userId: string, offerId: string): Promise<CustomerOfferDetailResponseDto> {

@@ -19,7 +19,7 @@ export const BILLING_COUNTRY_OPTIONS: BillingCountryOption[] = (() => {
     .sort((a, b) => a.name.localeCompare(b.name));
 })();
 
-export const DEFAULT_BILLING_COUNTRY_CODE = BILLING_COUNTRY_OPTIONS[0]?.code ?? '';
+export { DEFAULT_BILLING_COUNTRY_CODE, withOptionalCountry } from './billing-country-default';
 
 const COUNTRY_NAME_BY_CODE = new Map(BILLING_COUNTRY_OPTIONS.map((option) => [option.code, option.name]));
 

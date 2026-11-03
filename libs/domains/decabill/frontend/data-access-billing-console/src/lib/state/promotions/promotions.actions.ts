@@ -7,28 +7,28 @@ import type {
   ValidatePromotionRequest,
 } from '../../types/promotions.types';
 
-export const loadActivePromotions = createAction('[Promotions] Load Active Promotions', props<{ search?: string }>());
-export const loadActivePromotionsBatch = createAction(
-  '[Promotions] Load Active Promotions Batch',
-  props<{ offset: number; accumulated: PromotionRedemptionResponse[]; search?: string }>(),
+/** One page of the active promotions (replace-page; 1-based page). */
+export const loadActivePromotions = createAction(
+  '[Promotions] Load Active Promotions',
+  props<{ search?: string; page?: number; pageSize?: number }>(),
 );
 export const loadActivePromotionsSuccess = createAction(
   '[Promotions] Load Active Promotions Success',
-  props<{ items: PromotionRedemptionResponse[] }>(),
+  props<{ items: PromotionRedemptionResponse[]; total: number }>(),
 );
 export const loadActivePromotionsFailure = createAction(
   '[Promotions] Load Active Promotions Failure',
   props<{ error: string }>(),
 );
 
-export const loadPromotionRedemptions = createAction('[Promotions] Load Redemptions', props<{ search?: string }>());
-export const loadPromotionRedemptionsBatch = createAction(
-  '[Promotions] Load Redemptions Batch',
-  props<{ offset: number; accumulated: PromotionRedemptionResponse[]; search?: string }>(),
+/** One page of the redemption history (replace-page; 1-based page). */
+export const loadPromotionRedemptions = createAction(
+  '[Promotions] Load Redemptions',
+  props<{ search?: string; page?: number; pageSize?: number }>(),
 );
 export const loadPromotionRedemptionsSuccess = createAction(
   '[Promotions] Load Redemptions Success',
-  props<{ items: PromotionRedemptionResponse[] }>(),
+  props<{ items: PromotionRedemptionResponse[]; total: number }>(),
 );
 export const loadPromotionRedemptionsFailure = createAction(
   '[Promotions] Load Redemptions Failure',

@@ -23,7 +23,7 @@ const meta: Meta<DropdownStoryArgs> = {
   component: FpcDropdownComponent,
   decorators: [moduleMetadata({ imports: [FpcDropdownComponent, FpcDropdownItemComponent] })],
   argTypes: {
-    alignment: { control: 'inline-radio', options: ['start', 'end'] },
+    alignment: { control: 'inline-radio', options: ['start', 'end', 'auto'] },
   },
   args: {
     open: true,

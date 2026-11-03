@@ -28,6 +28,18 @@
   span {
     &.small {
       font-size: 0.65rem;
+      // Rail labels = page titles (AG-16), some of them long ("Personal access tokens", "Atlassian import (Jira &
+      // Confluence)"): centred, tight lines, at most three, inside the 72 px tile.
+      max-width: 100%;
+      padding: 0 0.125rem 0.125rem;
+      line-height: 1.2;
+      text-align: center;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
   }
 }

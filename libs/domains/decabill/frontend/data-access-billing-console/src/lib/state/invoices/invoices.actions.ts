@@ -17,11 +17,11 @@ export const loadInvoicesSummaryFailure = createAction('[Invoices] Load Summary 
 
 export const loadOpenOverdueInvoices = createAction(
   '[Invoices] Load Open Overdue Invoices',
-  props<{ silent?: boolean; search?: string }>(),
+  props<{ silent?: boolean; search?: string; page?: number; pageSize?: number }>(),
 );
 export const loadOpenOverdueInvoicesSuccess = createAction(
   '[Invoices] Load Open Overdue Invoices Success',
-  props<{ invoices: InvoiceResponse[] }>(),
+  props<{ invoices: InvoiceResponse[]; hasMore: boolean }>(),
 );
 export const loadOpenOverdueInvoicesFailure = createAction(
   '[Invoices] Load Open Overdue Invoices Failure',
@@ -30,11 +30,11 @@ export const loadOpenOverdueInvoicesFailure = createAction(
 
 export const loadHistoryInvoices = createAction(
   '[Invoices] Load History Invoices',
-  props<{ silent?: boolean; search?: string }>(),
+  props<{ silent?: boolean; search?: string; page?: number; pageSize?: number }>(),
 );
 export const loadHistoryInvoicesSuccess = createAction(
   '[Invoices] Load History Invoices Success',
-  props<{ invoices: InvoiceResponse[] }>(),
+  props<{ invoices: InvoiceResponse[]; hasMore: boolean }>(),
 );
 export const loadHistoryInvoicesFailure = createAction(
   '[Invoices] Load History Invoices Failure',

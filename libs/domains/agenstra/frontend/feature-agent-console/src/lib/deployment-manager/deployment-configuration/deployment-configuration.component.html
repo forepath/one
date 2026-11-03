@@ -55,7 +55,7 @@
             <dt class="col-sm-4" i18n="@@featureDeploymentConfig-repositoryLabel">Repository</dt>
             <dd class="col-sm-8">{{ configuration()!.repositoryId }}</dd>
             @if (configuration()!.defaultBranch) {
-              <dt class="col-sm-4" i18n="@@featureDeploymentConfig-defaultBranchLabel">Default Branch</dt>
+              <dt class="col-sm-4" i18n="@@featureDeploymentConfig-defaultBranchLabel">Default branch</dt>
               <dd class="col-sm-8">{{ configuration()!.defaultBranch }}</dd>
             }
             @if (configuration()!.workflowId) {
@@ -175,7 +175,7 @@
                 </fpc-input-group>
               }
               <fpc-button variant="dark" size="sm" [block]="true" (clicked)="onAddWorkflowInput()">
-                <i class="bi bi-plus me-1"></i><span i18n="@@featureDeploymentConfig-addInputButton">Add Input</span>
+                <i class="bi bi-plus me-1"></i><span i18n="@@featureDeploymentConfig-addInputButton">Add input</span>
               </fpc-button>
             </div>
           }
@@ -192,7 +192,7 @@
               (clicked)="onTriggerWorkflowClick()"
             >
               <i class="bi bi-play-fill me-1"></i>
-              <span i18n="@@featureDeploymentConfig-triggerWorkflowButton">Trigger Workflow</span>
+              <span i18n="@@featureDeploymentConfig-triggerWorkflowButton">Trigger workflow</span>
             </fpc-button>
           }
         }
@@ -210,12 +210,14 @@
         (clicked)="onShowConfigurationForm()"
         i18n="@@featureDeploymentConfig-createConfigButton"
       >
-        Create Configuration
+        Create configuration
       </fpc-button>
     </fpc-empty-state>
   }
 
   <fpc-modal
+    cancelLabel="Cancel"
+    i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
     [(open)]="configurationModalOpen"
     [title]="getModalTitle()"
     [closable]="!(creatingConfiguration$ | async) && !(updatingConfiguration$ | async)"
@@ -244,13 +246,17 @@
         i18n-label="@@featureDeploymentConfig-repositoryIdLabel"
         label="Repository ID"
       >
-        <fpc-form-control
-          controlId="repositoryId"
+        <agenstra-reference-combobox
+          inputId="repositoryId"
           [value]="repositoryId()"
           (valueChange)="repositoryId.set($event)"
+          [loader]="repositoryLoader()"
+          [emptyText]="noRepositoriesFound"
+          [monospace]="true"
           i18n-placeholder="@@featureDeploymentConfig-repoPlaceholder"
           placeholder="owner/repo"
-          required
+          [required]="true"
+          data-testid="deployment-repository"
         />
         <span fpcFormFieldHint i18n="@@featureDeploymentConfig-repositoryIdHint">Format: owner/repository-name</span>
       </fpc-form-field>
@@ -258,14 +264,18 @@
       <fpc-form-field
         forId="defaultBranch"
         i18n-label="@@featureDeploymentConfig-defaultBranchFormLabel"
-        label="Default Branch (optional)"
+        label="Default branch (optional)"
       >
-        <fpc-form-control
-          controlId="defaultBranch"
+        <agenstra-reference-combobox
+          inputId="defaultBranch"
           [value]="defaultBranch()"
           (valueChange)="defaultBranch.set($event)"
+          [loader]="branchLoader()"
+          [emptyText]="noBranchesFound"
+          [monospace]="true"
           i18n-placeholder="@@featureDeploymentConfig-branchPlaceholder"
           placeholder="main"
+          data-testid="deployment-branch"
         />
       </fpc-form-field>
 
@@ -274,12 +284,15 @@
         i18n-label="@@featureDeploymentConfig-workflowIdLabel"
         label="Workflow ID (optional)"
       >
-        <fpc-form-control
-          controlId="workflowId"
+        <agenstra-reference-combobox
+          inputId="workflowId"
           [value]="workflowId()"
           (valueChange)="workflowId.set($event)"
+          [loader]="workflowLoader()"
+          [emptyText]="noWorkflowsFound"
           i18n-placeholder="@@featureDeploymentConfig-workflowPlaceholder"
           placeholder="workflow.yml"
+          data-testid="deployment-workflow"
         />
       </fpc-form-field>
 
@@ -320,9 +333,9 @@
         (clicked)="onSaveConfiguration()"
       >
         @if (hasConfiguration()) {
-          <span i18n="@@featureDeploymentConfig-save">Save</span>
+          <span i18n="@@featureDeploymentConfig-save">Save changes</span>
         } @else {
-          <span i18n="@@featureDeploymentConfig-create">Create</span>
+          <span i18n="@@featureDeploymentConfig-create">Create configuration</span>
         }
       </fpc-button>
     </div>
@@ -330,7 +343,7 @@
 
   <!-- Error Display (404 errors are hidden since we have a "Create Configuration" button) -->
   @if (filteredError(); as error) {
-    <fpc-alert class="m-3" variant="danger" [message]="error" />
+    <fpc-alert flush variant="danger" [message]="error" />
   }
 
   <fpc-confirm-dialog

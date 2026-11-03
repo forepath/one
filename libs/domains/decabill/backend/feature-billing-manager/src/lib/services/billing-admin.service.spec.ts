@@ -20,6 +20,7 @@ describe('BillingAdminService', () => {
   };
   const usersRepository = { findByIdForTenant: jest.fn() };
   const servicePlansRepository = { findById: jest.fn() };
+  const customerProfilesRepository = { findByUserIds: jest.fn() };
   const service = new BillingAdminService(
     subscriptionsRepository as never,
     invoicesRepository as never,
@@ -28,10 +29,12 @@ describe('BillingAdminService', () => {
     subscriptionService as never,
     usersRepository as never,
     servicePlansRepository as never,
+    customerProfilesRepository as never,
   );
 
   beforeEach(() => {
     jest.resetAllMocks();
+    customerProfilesRepository.findByUserIds.mockResolvedValue([]);
     subscriptionsRepository.countAll.mockResolvedValue(12);
     subscriptionsRepository.countByStatus.mockResolvedValue(5);
     invoicesRepository.findGlobalOpenOverdueSummary.mockResolvedValue({ count: 2, totalBalance: 100 });
@@ -72,7 +75,13 @@ describe('BillingAdminService', () => {
       { id: 'sub-1', userId: 'user-1', planId: 'plan-1', number: 'SUB-001' },
     ]);
     usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1', email: 'user@test.local' });
-    servicePlansRepository.findById.mockResolvedValue({ id: 'plan-1', name: 'Basic Plan' });
+    servicePlansRepository.findById.mockResolvedValue({
+      id: 'plan-1',
+      name: 'Basic Plan',
+      billingIntervalType: 'month',
+      billingIntervalValue: 1,
+    });
+    customerProfilesRepository.findByUserIds.mockResolvedValue([{ userId: 'user-1', company: 'ACME GmbH' }]);
 
     const result = await service.listSubscriptionsForAdmin({ limit: 10, offset: 0, search: 'promo' });
 
@@ -85,7 +94,10 @@ describe('BillingAdminService', () => {
     expect(result.items[0]).toMatchObject({
       number: 'SUB-001',
       userEmail: 'user@test.local',
+      customerName: 'ACME GmbH',
       planName: 'Basic Plan',
+      billingIntervalType: 'month',
+      billingIntervalValue: 1,
     });
     expect(result.total).toBe(1);
   });

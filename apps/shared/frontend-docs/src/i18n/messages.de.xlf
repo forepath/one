@@ -35,16 +35,32 @@
         <target>Navigation ein-/ausblenden</target>
       </trans-unit>
       <trans-unit id="featureDocsSearch-searchPlaceholder" datatype="html">
-        <source>Search documentation...</source>
-        <target>Dokumentation durchsuchen...</target>
+        <source>Search documentation</source>
+        <target>Dokumentation durchsuchen</target>
       </trans-unit>
       <trans-unit id="featureDocsSearch-viewAllResults" datatype="html">
-        <source> View all results </source>
-        <target> Alle Ergebnisse anzeigen </target>
+        <source>View all results</source>
+        <target>Alle Ergebnisse anzeigen</target>
       </trans-unit>
       <trans-unit id="featureDocsSearch-noResults" datatype="html">
         <source>No search results</source>
         <target>Keine Suchergebnisse</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearch-searchTitle" datatype="html">
+        <source>Search documentation (Ctrl / ⌘ + K)</source>
+        <target>Dokumentation durchsuchen (Strg / ⌘ + K)</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearch-searchLabel" datatype="html">
+        <source>Search</source>
+        <target>Suche</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearch-pagesGroup" datatype="html">
+        <source>Pages</source>
+        <target>Seiten</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearch-typeToSearch" datatype="html">
+        <source>Type to search the documentation.</source>
+        <target>Tippen, um die Dokumentation zu durchsuchen.</target>
       </trans-unit>
       <trans-unit id="featureDocsToc-title" datatype="html">
         <source>Table of Contents</source>

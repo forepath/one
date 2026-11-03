@@ -18,7 +18,7 @@ describe('adminOffersReducer', () => {
   } as const;
 
   it('stores loaded offers and statistics', () => {
-    let state = adminOffersReducer(initialAdminOffersState, loadAdminOffersSuccess({ offers: [offer] }));
+    let state = adminOffersReducer(initialAdminOffersState, loadAdminOffersSuccess({ offers: [offer], total: 1 }));
 
     state = adminOffersReducer(
       state,

@@ -1,5 +1,3 @@
-@use '../section.scss';
-
 :host {
   display: flex;
   flex-direction: column;
@@ -39,7 +37,31 @@
 
 .agent-tasks-list {
   min-height: 0;
-  overflow: auto;
+}
+
+// Phones (AG-02, Workbench pattern): one view at a time. Without an open task the list takes the full width and the
+// detail pane (its "select a task" placeholder) is hidden; an open task replaces the list.
+@media (max-width: 767.98px) {
+  .agent-tasks-row {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  .agent-tasks-sidebar {
+    flex: 1 1 0;
+    max-width: none;
+    width: 100%;
+  }
+
+  .agent-tasks-detail {
+    flex: 1 1 0;
+    width: 100%;
+  }
+
+  .agent-tasks-row:not(.agent-tasks-row--detail-open) .agent-tasks-detail,
+  .agent-tasks-row--detail-open .agent-tasks-sidebar {
+    display: none !important;
+  }
 }
 
 .agent-tasks-detail {
@@ -54,11 +76,19 @@
   overflow: auto;
 }
 
-/* Scroll root of the session history (infinite scroll sentinel lives inside). */
+/* Session history (runs table, paged): a bounded flex column without its own scroll; the table fills it and only its
+   rows scroll, so the column heads and the pager stay pinned like every other table (user, 2026-10-29). */
 .agent-tasks-detail__history {
   flex: 1 1 0;
   min-height: 0;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  > fpc-data-table {
+    flex: 1 1 0;
+    min-height: 0;
+  }
 }
 
 .agent-tasks-detail__prompt {
@@ -67,25 +97,12 @@
   font-family: inherit;
 }
 
-/*
- * Session history rows share one gutter with the "Session history" bar and the info block above (`fpc-page-header` /
- * `p-3` = 1rem), for the clickable run header as well as the expanded content. All content blocks (event rows, answers,
- * notices) are separated by the same gap.
- */
-.agent-tasks-session__runs {
+/* Expanded run (row detail of the runs table): transcript blocks separated by one gap. */
+.agent-tasks-detail__history {
+  // One gutter with the "Session history" bar and the info block above (the runs wrapper that defined these is gone).
   --agent-tasks-session-gutter-x: 1rem;
   --agent-tasks-session-gutter-y: 0.75rem;
   --agent-tasks-session-gap: 0.5rem;
-
-  // Must out-rank the condensed accordion rules (`.fpc-accordion-item--condensed[_nghost] .x[_ngcontent]`).
-  ::ng-deep .fpc-accordion-item--condensed .accordion-button.fpc-accordion-item__button {
-    padding: var(--agent-tasks-session-gutter-y) var(--agent-tasks-session-gutter-x);
-    gap: var(--agent-tasks-session-gap);
-  }
-
-  ::ng-deep .fpc-accordion-item--condensed .accordion-collapse > .accordion-body {
-    padding: 0 var(--agent-tasks-session-gutter-x) var(--agent-tasks-session-gutter-y);
-  }
 
   // Chat event rows bring their own bottom margin for the chat thread; spacing here comes from the body gap.
   ::ng-deep framework-agent-chat-event-row > .mb-2 {
@@ -93,18 +110,13 @@
   }
 }
 
-.agent-tasks-session__heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--agent-tasks-session-gap);
-  min-width: 0;
-}
-
 .agent-tasks-session__body {
   display: flex;
   flex-direction: column;
   gap: var(--agent-tasks-session-gap);
+  // The expanded row's cell brings the table's edge inset (1rem) inline; the block padding matches the former
+  // accordion body so the transcript isn't squeezed against the row edges.
+  padding-block: var(--agent-tasks-session-gutter-y);
 }
 
 .agent-tasks-session__message-body {

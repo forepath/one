@@ -39,12 +39,16 @@ describe('OffersFacade', () => {
 
   it('dispatches load actions', () => {
     facade.loadOffersSummary();
-    facade.loadPendingOffers({ search: 'abc' });
+    facade.loadPendingOffers({ search: 'abc', page: 2, pageSize: 50 });
     facade.loadHistoryOffers({ silent: true });
 
     expect(store.dispatch).toHaveBeenCalledWith(loadOffersSummary(false));
-    expect(store.dispatch).toHaveBeenCalledWith(loadPendingOffers({ silent: false, search: 'abc' }));
-    expect(store.dispatch).toHaveBeenCalledWith(loadHistoryOffers({ silent: true, search: undefined }));
+    expect(store.dispatch).toHaveBeenCalledWith(
+      loadPendingOffers({ silent: false, search: 'abc', page: 2, pageSize: 50 }),
+    );
+    expect(store.dispatch).toHaveBeenCalledWith(
+      loadHistoryOffers({ silent: true, search: undefined, page: undefined, pageSize: undefined }),
+    );
   });
 
   it('dispatches acceptOffer', () => {

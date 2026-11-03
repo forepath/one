@@ -104,6 +104,13 @@ import {
   isLocalEditorPath,
   resolveLayerEditorPath,
 } from '../path-list/path-list-value.util';
+import { ProviderModelSelectComponent } from '../provider-model-select/provider-model-select.component';
+import {
+  ReferenceComboboxComponent,
+  type ReferenceComboboxLoader,
+  type ReferenceComboboxOption,
+} from '../reference-combobox/reference-combobox.component';
+import { commandAgentLoader as buildCommandAgentLoader } from '../reference-combobox/reference-loaders';
 import { AgentConfigSettingsRowComponent } from '../settings-row/settings-row.component';
 
 import {
@@ -115,6 +122,12 @@ import {
   testEgressDestination,
   testMessageFilters,
 } from './security-policy-editor.util';
+import {
+  agentConfigAgentModeLabel,
+  agentConfigDefaultOptionLabel,
+  agentConfigShareLabel,
+  agentConfigUpdateLabel,
+} from './config-option-labels';
 
 type EditorLayer = 'global' | 'workspace' | 'agent';
 type EditorMode = 'structured' | 'raw';
@@ -165,6 +178,8 @@ function isPlainObject(value: unknown): value is JsonObject {
     AgentConfigMapListComponent,
     AgentConfigPathListComponent,
     AgentConfigSettingsRowComponent,
+    ProviderModelSelectComponent,
+    ReferenceComboboxComponent,
   ],
   templateUrl: './agent-config-editor.component.html',
   styleUrl: './agent-config-editor.component.scss',
@@ -427,6 +442,10 @@ export class AgentConfigEditorComponent implements OnInit {
       : $localize`:@@featureAgentConfig-switchToStructured:Switch to structured editor`,
   );
   readonly shareOptions = SHARE_OPTIONS;
+  readonly defaultOptionLabel = agentConfigDefaultOptionLabel();
+  readonly shareLabel = agentConfigShareLabel;
+  readonly updateLabel = agentConfigUpdateLabel;
+  readonly agentModeLabel = agentConfigAgentModeLabel;
   readonly updateOptions = UPDATE_OPTIONS;
   readonly agentModes = AGENT_MODES;
   readonly mcpTypes = MCP_TYPES;
@@ -538,6 +557,35 @@ export class AgentConfigEditorComponent implements OnInit {
   readonly isCustomMcpMode = computed(() => this.draftBuiltinMcpServerName() === CUSTOM_MCP_SELECT_VALUE);
   readonly commandEntries = computed(() => this.mapEntries('commands', '/commands'));
   readonly agentEntries = computed(() => this.mapEntries('agents', '/agents'));
+  /** Command `agent` suggestions: the agents this config defines (the runtime list comes from `commandAgentLoader`). */
+  readonly commandAgentOptions = computed<ReferenceComboboxOption[]>(() =>
+    this.agentEntries()
+      .filter((entry) => !entry.deleted)
+      .map((entry) => ({ value: entry.key, detail: this.configAgentLabel })),
+  );
+  /** Agent layer: the environment's runtime agents (built-in + configured), scoped to that environment. */
+  readonly commandAgentLoader = computed<ReferenceComboboxLoader | null>(() => {
+    const clientId = this.clientId();
+    const agentId = this.agentId();
+
+    if (this.layer() !== 'agent' || !clientId || !agentId) {
+      return null;
+    }
+
+    return buildCommandAgentLoader(this.opencodeConfigService, clientId, agentId, this.builtInAgentLabel);
+  });
+  /** Providers for the per-entry model pickers (same scope as the default model). */
+  readonly entryModelProviders = computed(() =>
+    filterBuiltinProvidersByAllowDeny(
+      this.builtinProvidersCatalog(),
+      this.stringListItems('enabled_providers'),
+      this.stringListItems('disabled_providers'),
+    ),
+  );
+  readonly configAgentLabel = $localize`:@@featureAgentConfig-commandAgentFromConfig:Defined in this configuration`;
+  readonly builtInAgentLabel = $localize`:@@featureAgentConfig-commandAgentBuiltIn:Built-in agent`;
+  readonly commandAgentPlaceholder = $localize`:@@featureAgentConfig-commandAgentPlaceholder:Search agents or type a name`;
+  readonly commandAgentEmpty = $localize`:@@featureAgentConfig-commandAgentEmpty:No agents found.`;
   readonly referenceEntries = computed(() => this.mapEntries('references', '/references'));
   readonly formatterEntries = computed(() => this.mapEntries('formatter', '/formatter'));
   readonly permissionRules = computed(() => this.ruleEntries('permissions'));

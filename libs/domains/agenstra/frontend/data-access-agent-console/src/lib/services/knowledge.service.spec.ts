@@ -69,6 +69,14 @@ describe('KnowledgeService', () => {
     req.flush([]);
   });
 
+  it('getTree should pass a trimmed search term', (done) => {
+    service.getTree('c1', '  runbook ').subscribe(() => done());
+    const req = httpMock.expectOne((r) => r.url === `${apiUrl}/knowledge/tree`);
+
+    expect(req.request.params.get('search')).toBe('runbook');
+    req.flush([]);
+  });
+
   it('create should POST dto', (done) => {
     const dto = { nodeType: 'folder' as const, title: 'F' };
 

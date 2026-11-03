@@ -6,7 +6,7 @@ Shared Angular UI library for all ForePath frontends.
 
 The selector prefix is **`fpc`**, short for **ForePath Component**. Element components use
 `fpc-<kebab-case>` (`fpc-button`, `fpc-list-item`), directives use the camelCase attribute
-form (`[fpcInfiniteScroll]`, `*fpcModalFooter`), and other content-projection slots use attribute
+form (`*fpcModalFooter`), and other content-projection slots use attribute
 markers in the same namespace (`[fpcListItemActions]`).
 
 Class names follow the selector: `fpc-summary-card` becomes `FpcSummaryCardComponent`.
@@ -135,10 +135,8 @@ nx build shared-frontend-ui-components
 
 That library was removed. Import from `@forepath/shared/frontend/ui-components` instead:
 
-| Old                         | New                                                       |
-| --------------------------- | --------------------------------------------------------- |
-| `sharedInfiniteScroll`      | `fpcInfiniteScroll` (`FpcInfiniteScrollDirective`)        |
-| `shared-list-append-footer` | `fpc-list-append-footer` (`FpcListAppendFooterComponent`) |
+| Old | New |
+| --- | --- |
 
 ### From identity OTP
 

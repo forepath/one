@@ -265,7 +265,7 @@
                 i18n-title="@@featureAgentConfig-fieldShare"
                 title="Sharing"
                 i18n-description="@@featureAgentConfig-fieldShareHelp"
-                description="manual, auto, or disabled"
+                description="Share sessions manually, automatically, or never"
                 [dirty]="isConfigPathDirty('share')"
                 [lockable]="showLockControl('/share')"
                 [locked]="isLocked('/share')"
@@ -279,9 +279,9 @@
                   (ngModelChange)="setString('share', $event)"
                   [disabled]="isLocked('/share')"
                 >
-                  <option value=""></option>
+                  <option value="">{{ defaultOptionLabel }}</option>
                   @for (option of shareOptions; track option) {
-                    <option [value]="option">{{ option }}</option>
+                    <option [value]="option">{{ shareLabel(option) }}</option>
                   }
                 </fpc-form-control>
               </agenstra-agent-config-settings-row>
@@ -291,7 +291,7 @@
                 i18n-title="@@featureAgentConfig-fieldUpdate"
                 title="Updates"
                 i18n-description="@@featureAgentConfig-fieldUpdateHelp"
-                description="true, false, or notify"
+                description="Install updates automatically, only notify, or turn them off"
                 [dirty]="isConfigPathDirty('update')"
                 [lockable]="showLockControl('/update')"
                 [locked]="isLocked('/update')"
@@ -305,9 +305,9 @@
                   (ngModelChange)="setString('update', $event)"
                   [disabled]="isLocked('/update')"
                 >
-                  <option value=""></option>
+                  <option value="">{{ defaultOptionLabel }}</option>
                   @for (option of updateOptions; track option) {
-                    <option [value]="option">{{ option }}</option>
+                    <option [value]="option">{{ updateLabel(option) }}</option>
                   }
                 </fpc-form-control>
               </agenstra-agent-config-settings-row>
@@ -1919,9 +1919,15 @@
                   description="Agent id to run this command as"
                   [dirty]="isMapEntryFieldDirty('commands', key, 'agent')"
                 >
-                  <fpc-form-control
-                    [ngModel]="mapEntryString('commands', key, 'agent')"
-                    (ngModelChange)="setMapEntryString('commands', key, 'agent', $event)"
+                  <agenstra-reference-combobox
+                    [inputId]="'agentConfigCommandAgent-' + key"
+                    [value]="mapEntryString('commands', key, 'agent')"
+                    (valueChange)="setMapEntryString('commands', key, 'agent', $event)"
+                    [options]="commandAgentOptions()"
+                    [loader]="commandAgentLoader()"
+                    [placeholder]="commandAgentPlaceholder"
+                    [emptyText]="commandAgentEmpty"
+                    data-testid="command-agent-combobox"
                   />
                 </agenstra-agent-config-settings-row>
               }
@@ -1931,9 +1937,11 @@
                   description="provider/model"
                   [dirty]="isMapEntryFieldDirty('commands', key, 'model')"
                 >
-                  <fpc-form-control
-                    [ngModel]="mapEntryString('commands', key, 'model')"
-                    (ngModelChange)="setMapEntryString('commands', key, 'model', $event)"
+                  <agenstra-provider-model-select
+                    [inputId]="'agentConfig-commands-model-' + key"
+                    [value]="mapEntryString('commands', key, 'model')"
+                    (valueChange)="setMapEntryString('commands', key, 'model', $event)"
+                    [providers]="entryModelProviders()"
                   />
                 </agenstra-agent-config-settings-row>
               }
@@ -2037,7 +2045,6 @@
                             @if (isLocalEditorPathValue(plugin.packageName)) {
                               <fpc-button
                                 variant="secondary"
-                                size="sm"
                                 iconOnly
                                 [disabled]="plugin.inherited"
                                 (clicked)="onEditPathFile(plugin.packageName)"
@@ -2141,9 +2148,9 @@
                     [ngModel]="mapEntryString('agents', key, 'mode')"
                     (ngModelChange)="setMapEntryString('agents', key, 'mode', $event)"
                   >
-                    <option value=""></option>
+                    <option value="">{{ defaultOptionLabel }}</option>
                     @for (mode of agentModes; track mode) {
-                      <option [value]="mode">{{ mode }}</option>
+                      <option [value]="mode">{{ agentModeLabel(mode) }}</option>
                     }
                   </fpc-form-control>
                 </agenstra-agent-config-settings-row>
@@ -2154,9 +2161,11 @@
                   description="provider/model"
                   [dirty]="isMapEntryFieldDirty('agents', key, 'model')"
                 >
-                  <fpc-form-control
-                    [ngModel]="mapEntryString('agents', key, 'model')"
-                    (ngModelChange)="setMapEntryString('agents', key, 'model', $event)"
+                  <agenstra-provider-model-select
+                    [inputId]="'agentConfig-agents-model-' + key"
+                    [value]="mapEntryString('agents', key, 'model')"
+                    (valueChange)="setMapEntryString('agents', key, 'model', $event)"
+                    [providers]="entryModelProviders()"
                   />
                 </agenstra-agent-config-settings-row>
               }
@@ -2293,7 +2302,6 @@
                     @if (isLocalEditorPathValue(mapEntryString('references', key, 'path'))) {
                       <fpc-button
                         variant="secondary"
-                        size="sm"
                         iconOnly
                         [disabled]="isMapEntryInherited('references', key)"
                         (clicked)="onEditPathFile(mapEntryString('references', key, 'path'))"
@@ -2322,7 +2330,6 @@
                     @if (pathValueKind(mapEntryString('references', key, 'repository')) === 'url') {
                       <fpc-button
                         variant="secondary"
-                        size="sm"
                         iconOnly
                         (clicked)="onOpenExternalUrl(mapEntryString('references', key, 'repository'))"
                         i18n-ariaLabel="@@featureAgentConfig-openUrl"
@@ -3372,7 +3379,7 @@
                     (ngModelChange)="setWebsearchProvider($event)"
                     [disabled]="isLocked('/websearch')"
                   >
-                    <option value=""></option>
+                    <option value="">{{ defaultOptionLabel }}</option>
                     @for (provider of websearchProviders; track provider) {
                       <option [value]="provider">{{ provider }}</option>
                     }

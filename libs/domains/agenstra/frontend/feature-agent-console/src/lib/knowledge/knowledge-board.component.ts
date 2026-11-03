@@ -33,15 +33,19 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
+  FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
-  FpcListComponent,
-  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
-  FpcSearchFieldComponent,
   FpcTypeaheadSelectComponent,
+  type FpcBadgeTone,
+  FpcSectionRowComponent,
+  FpcSectionColumnComponent,
+  FpcDatePipe,
+  FpcTableCellDirective,
+  type FpcTableColumn,
 } from '@forepath/shared/frontend/ui-components';
 import {
   EMPTY,
@@ -60,11 +64,19 @@ import {
 import { resolveNamedDisplayLabel } from '../display-name.util';
 import { KnowledgeEditorComponent } from './knowledge-editor/knowledge-editor.component';
 import { KnowledgeTreeComponent } from './knowledge-tree/knowledge-tree.component';
+import { AttachmentChipsComponent } from '../shared/attachment-chips.component';
+import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
+import { WorkspaceSwitchTableComponent } from '../shared/workspace-switch-table.component';
 
 @Component({
   selector: 'framework-knowledge-board',
   standalone: true,
   imports: [
+    FpcDatePipe,
+    FpcDataTableComponent,
+    FpcTableCellDirective,
+    FpcSectionRowComponent,
+    FpcSectionColumnComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -75,12 +87,12 @@ import { KnowledgeTreeComponent } from './knowledge-tree/knowledge-tree.componen
     FpcButtonComponent,
     FpcEmptyStateComponent,
     FpcFormControlComponent,
-    FpcListComponent,
-    FpcListItemComponent,
     FpcModalComponent,
+    AttachmentChipsComponent,
+    WorkspaceChipComponent,
+    WorkspaceSwitchTableComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
-    FpcSearchFieldComponent,
     FpcTypeaheadSelectComponent,
   ],
   templateUrl: './knowledge-board.component.html',
@@ -89,16 +101,13 @@ import { KnowledgeTreeComponent } from './knowledge-tree/knowledge-tree.componen
 export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
   readonly pageTitle = $localize`:@@featureKnowledgeBoard-title:Knowledge`;
   readonly switchWorkspaceTitle = $localize`:@@featureKnowledgeBoard-switchWorkspaceTitle:Switch workspace`;
-  readonly searchPagesTitle = $localize`:@@featureKnowledgeBoard-searchPagesTitle:Search pages`;
 
   private readonly RELATION_TARGET_KIND_KNOWLEDGE = 'knowledge';
   private readonly RELATION_TARGET_KIND_TICKET = 'ticket';
   @ViewChild(KnowledgeTreeComponent, { static: false })
   private knowledgeTreeComponent?: KnowledgeTreeComponent;
-  @ViewChild('knowledgeTreeSidebar', { static: false })
+  @ViewChild('knowledgeTreeSidebar', { static: false, read: ElementRef })
   private knowledgeTreeSidebar?: ElementRef<HTMLDivElement>;
-  @ViewChild('globalSearchInput', { static: false })
-  private globalSearchInput?: ElementRef<HTMLElement>;
   @ViewChild('selectedNodeTitleInput', { static: false })
   private selectedNodeTitleInput?: ElementRef<HTMLElement>;
   @ViewChild('relationsSearchInput', { static: false })
@@ -114,7 +123,6 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private readonly ngZone = inject(NgZone);
   readonly workspaceSwitchModalOpen = signal(false);
-  readonly globalSearchModalOpen = signal(false);
   readonly relationsModalOpen = signal(false);
 
   private readonly SIDEBAR_MIN_WIDTH = 150;
@@ -146,6 +154,33 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
   readonly relations = toSignal(this.knowledgeFacade.relations$, { initialValue: [] });
   readonly relationsLoading = toSignal(this.knowledgeFacade.relationsLoading$, { initialValue: false });
   readonly activity = toSignal(this.knowledgeFacade.activity$, { initialValue: [] as KnowledgePageActivityDto[] });
+  readonly activityLabel = $localize`:@@featureKnowledgeBoard-activityHeading:Activity`;
+  /** Activity feed as a nested table like the ticket details: Action (state badge) · Time · Actor. */
+  readonly activityColumns: FpcTableColumn<KnowledgePageActivityDto>[] = [
+    {
+      id: 'action',
+      label: $localize`:@@featureKnowledgeBoard-colActivityAction:Action`,
+      type: 'state',
+      state: (event) => ({
+        label: this.activityActionLabel(event.actionType),
+        tone: this.activityActionBadgeTone(event.actionType),
+      }),
+      iconOnly: false,
+    },
+    {
+      id: 'time',
+      label: $localize`:@@featureKnowledgeBoard-colActivityTime:Time`,
+      value: (event) => event.occurredAt,
+      required: true,
+      priority: 1,
+    },
+    {
+      id: 'actor',
+      label: $localize`:@@featureKnowledgeBoard-colActivityActor:Actor`,
+      value: (event) => event.actorEmail ?? event.actorType,
+      priority: 1,
+    },
+  ];
   readonly activityLoading = toSignal(this.knowledgeFacade.activityLoading$, { initialValue: false });
   readonly error = toSignal(this.knowledgeFacade.error$, { initialValue: null });
 
@@ -157,11 +192,13 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
   private skipSelectionClearForOpenNodeCleanup = false;
   readonly workspaceSwitchSearch = signal('');
   readonly workspaceSwitchSearch$ = toObservable(this.workspaceSwitchSearch);
-  readonly globalSearchQuery = signal('');
-  readonly globalSearchQuery$ = toObservable(this.globalSearchQuery);
-  readonly globalSearchTree = signal<KnowledgeNodeDto[]>([]);
-  readonly globalSearchLoading = signal(false);
-  readonly globalSearchSuggestionsOpen = signal(false);
+  /** Tree toolbar search: the server returns the matches with their ancestor folders. */
+  readonly treeSearch = signal('');
+  /** Results of the current search (`null` until the first response arrives, and while no search is active). */
+  readonly treeSearchResults = signal<KnowledgeNodeDto[] | null>(null);
+  readonly treeSearchLoading = signal(false);
+  readonly treeSearching = computed(() => !!this.treeSearch().trim() && this.treeSearchResults() !== null);
+  readonly treeNodes = computed(() => (this.treeSearching() ? (this.treeSearchResults() ?? []) : this.tree()));
   readonly relationsSearchQuery = signal('');
   readonly relationSuggestionsOpen = signal(false);
   readonly selectedRelationTargets = signal<
@@ -183,26 +220,6 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
   relationKnowledgeTitle(title: string | null | undefined): string {
     return resolveNamedDisplayLabel(title);
   }
-
-  nodeTypeLabel(nodeType: KnowledgeNodeType): string {
-    return nodeType === 'folder'
-      ? $localize`:@@featureKnowledgeBoard-nodeTypeFolder:Folder`
-      : $localize`:@@featureKnowledgeBoard-nodeTypePage:Page`;
-  }
-
-  readonly globalSearchHits = computed(() => {
-    const hits: KnowledgeNodeDto[] = [];
-    const walk = (nodes: KnowledgeNodeDto[]) => {
-      for (const node of nodes) {
-        hits.push(node);
-        walk(node.children ?? []);
-      }
-    };
-
-    walk(this.globalSearchTree());
-
-    return hits;
-  });
 
   readonly relationCandidates = computed(() => {
     const selected = this.selectedNode();
@@ -272,28 +289,36 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
         this.clientsFacade.loadClients({ search: search.trim() || undefined });
       });
 
-    this.globalSearchQuery$
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((query) => {
-        const trimmed = query.trim();
-        const clientId = this.activeClientId();
+    // Re-runs on every tree reload too (create / rename / move / realtime), so the results stay current.
+    combineLatest([
+      toObservable(this.treeSearch).pipe(
+        map((query) => query.trim()),
+        debounceTime(300),
+        distinctUntilChanged(),
+      ),
+      toObservable(this.tree),
+    ])
+      .pipe(
+        switchMap(([query]) => {
+          const clientId = this.activeClientId();
 
-        if (!trimmed || !clientId) {
-          this.globalSearchTree.set([]);
-          this.globalSearchLoading.set(false);
+          if (!query || !clientId) {
+            this.treeSearchResults.set(null);
+            this.treeSearchLoading.set(false);
 
-          return;
-        }
+            return EMPTY;
+          }
 
-        this.globalSearchLoading.set(true);
-        this.knowledgeService
-          .getTree(clientId, trimmed)
-          .pipe(
+          this.treeSearchLoading.set(true);
+
+          return this.knowledgeService.getTree(clientId, query).pipe(
             catchError(() => of([] as KnowledgeNodeDto[])),
-            finalize(() => this.globalSearchLoading.set(false)),
-          )
-          .subscribe((tree) => this.globalSearchTree.set(tree));
-      });
+            finalize(() => this.treeSearchLoading.set(false)),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((results) => this.treeSearchResults.set(results));
 
     this.clientsFacade.activeClientId$
       .pipe(
@@ -470,58 +495,12 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
     void this.router.navigate(['/clients']);
   }
 
-  openGlobalSearchModal(): void {
-    this.globalSearchQuery.set('');
-    this.globalSearchTree.set([]);
-    this.globalSearchLoading.set(false);
-    this.globalSearchSuggestionsOpen.set(false);
-    this.globalSearchModalOpen.set(true);
-    setTimeout(() => this.focusGlobalSearchInput({ preventScroll: true }), 0);
-  }
+  onTreeSearchChange(query: string): void {
+    this.treeSearch.set(query);
 
-  onCloseGlobalSearchModal(): void {
-    this.globalSearchModalOpen.set(false);
-    this.globalSearchQuery.set('');
-    this.globalSearchTree.set([]);
-    this.globalSearchLoading.set(false);
-    this.globalSearchSuggestionsOpen.set(false);
-  }
-
-  onGlobalSearchQueryChange(value: string): void {
-    this.globalSearchQuery.set(value);
-    const term = value.trim();
-
-    if (!term) {
-      this.globalSearchTree.set([]);
-      this.globalSearchLoading.set(false);
-      this.globalSearchSuggestionsOpen.set(false);
-
-      return;
+    if (!query.trim()) {
+      this.treeSearchResults.set(null);
     }
-
-    this.globalSearchTree.set([]);
-    this.globalSearchLoading.set(true);
-    this.globalSearchSuggestionsOpen.set(true);
-  }
-
-  onGlobalSearchSuggestionsOpenChange(open: boolean): void {
-    if (!open) {
-      this.globalSearchSuggestionsOpen.set(false);
-
-      return;
-    }
-
-    this.globalSearchSuggestionsOpen.set(this.globalSearchQuery().trim().length > 0);
-  }
-
-  onGlobalSearchResultClick(node: KnowledgeNodeDto, event?: MouseEvent): void {
-    event?.preventDefault();
-    this.globalSearchModalOpen.set(false);
-    this.globalSearchQuery.set('');
-    this.globalSearchTree.set([]);
-    this.globalSearchLoading.set(false);
-    this.globalSearchSuggestionsOpen.set(false);
-    this.onSelectNode(node);
   }
 
   onSelectWorkspaceForKnowledge(client: ClientResponseDto): void {
@@ -749,46 +728,56 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
     this.knowledgeFacade.deleteRelation(relation.id);
   }
 
+  /** Every backend `KnowledgeActionType` has a label; the fallback only covers types added later. */
   activityActionLabel(actionType: string): string {
     switch (actionType) {
       case 'CREATED':
-        return 'Created';
+        return $localize`:@@featureKnowledgeBoard-activityCreated:Created`;
       case 'FIELD_UPDATED':
-        return 'Details updated';
+        return $localize`:@@featureKnowledgeBoard-activityFieldUpdated:Details updated`;
       case 'CONTENT_UPDATED':
-        return 'Content updated';
+        return $localize`:@@featureKnowledgeBoard-activityContentUpdated:Content updated`;
       case 'PARENT_CHANGED':
-        return 'Parent changed';
+        return $localize`:@@featureKnowledgeBoard-activityParentChanged:Parent changed`;
       case 'SORT_ORDER_CHANGED':
-        return 'Order changed';
+        return $localize`:@@featureKnowledgeBoard-activitySortOrderChanged:Order changed`;
+      case 'DELETED':
+        return $localize`:@@featureKnowledgeBoard-activityDeleted:Deleted`;
       case 'DUPLICATED':
-        return 'Duplicated';
+        return $localize`:@@featureKnowledgeBoard-activityDuplicated:Duplicated`;
       case 'RELATION_ADDED':
-        return 'Relation added';
+        return $localize`:@@featureKnowledgeBoard-activityRelationAdded:Relation added`;
       case 'RELATION_REMOVED':
-        return 'Relation removed';
+        return $localize`:@@featureKnowledgeBoard-activityRelationRemoved:Relation removed`;
+      case 'ATTACHMENT_ADDED':
+        return $localize`:@@featureKnowledgeBoard-activityAttachmentAdded:Attachment added`;
+      case 'ATTACHMENT_REMOVED':
+        return $localize`:@@featureKnowledgeBoard-activityAttachmentRemoved:Attachment removed`;
       default:
-        return 'Unknown activity';
+        return $localize`:@@featureKnowledgeBoard-activityUnknown:Unknown activity`;
     }
   }
 
-  activityActionBadgeClass(actionType: string): string {
+  activityActionBadgeTone(actionType: string): FpcBadgeTone {
     switch (actionType) {
       case 'CREATED':
       case 'DUPLICATED':
-        return 'knowledge-board__chip--activity-created';
+        return 'success';
       case 'CONTENT_UPDATED':
       case 'FIELD_UPDATED':
-        return 'knowledge-board__chip--activity-muted';
+        return 'neutral';
       case 'PARENT_CHANGED':
       case 'SORT_ORDER_CHANGED':
-        return 'knowledge-board__chip--activity-status';
+        return 'primary';
       case 'RELATION_ADDED':
-        return 'knowledge-board__chip--activity-comment';
+      case 'ATTACHMENT_ADDED':
+        return 'info';
       case 'RELATION_REMOVED':
-        return 'knowledge-board__chip--activity-deleted';
+      case 'ATTACHMENT_REMOVED':
+      case 'DELETED':
+        return 'danger';
       default:
-        return 'knowledge-board__chip--activity-muted';
+        return 'neutral';
     }
   }
 
@@ -1024,10 +1013,6 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
     document.removeEventListener('mouseup', this.boundOnResizeEnd);
     document.removeEventListener('touchmove', this.boundOnResizeMove);
     document.removeEventListener('touchend', this.boundOnResizeEnd);
-  }
-
-  private focusGlobalSearchInput(options?: FocusOptions): void {
-    this.globalSearchInput?.nativeElement?.querySelector<HTMLInputElement>('input')?.focus(options);
   }
 
   private focusSelectedNodeTitleInput(options?: FocusOptions): void {

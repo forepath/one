@@ -19,23 +19,22 @@ import {
   issueSupplierInvoice,
   loadAdminSupplierInvoiceManager,
   loadAdminSupplierInvoiceSummary,
-  loadMoreAdminSupplierInvoiceManager,
   parseSupplierInvoiceDocument,
   updateSupplierInvoice,
 } from './admin-supplier-invoice-manager.actions';
 import {
   selectAdminSupplierInvoiceManagerActionLoading,
-  selectAdminSupplierInvoiceManagerAppendError,
-  selectAdminSupplierInvoiceManagerAppendLoading,
   selectAdminSupplierInvoiceManagerCreating,
   selectAdminSupplierInvoiceManagerDeleting,
   selectAdminSupplierInvoiceManagerError,
-  selectAdminSupplierInvoiceManagerHasMore,
   selectAdminSupplierInvoiceManagerInvoices,
   selectAdminSupplierInvoiceManagerIssuing,
   selectAdminSupplierInvoiceManagerLoading,
   selectAdminSupplierInvoiceManagerParsing,
+  selectAdminSupplierInvoiceManagerPage,
+  selectAdminSupplierInvoiceManagerPageSize,
   selectAdminSupplierInvoiceManagerState,
+  selectAdminSupplierInvoiceManagerTotal,
   selectAdminSupplierInvoiceManagerUpdating,
   selectAdminSupplierInvoiceParseError,
   selectAdminSupplierInvoiceParsePreview,
@@ -62,33 +61,34 @@ export class AdminSupplierInvoiceManagerFacade {
   readonly parseError$ = this.store.select(selectAdminSupplierInvoiceParseError);
   readonly actionLoading$ = this.store.select(selectAdminSupplierInvoiceManagerActionLoading);
   readonly error$ = this.store.select(selectAdminSupplierInvoiceManagerError);
-  readonly hasMore$ = this.store.select(selectAdminSupplierInvoiceManagerHasMore);
-  readonly appendLoading$ = this.store.select(selectAdminSupplierInvoiceManagerAppendLoading);
-  readonly appendError$ = this.store.select(selectAdminSupplierInvoiceManagerAppendError);
+  readonly total$ = this.store.select(selectAdminSupplierInvoiceManagerTotal);
+  readonly page$ = this.store.select(selectAdminSupplierInvoiceManagerPage);
+  readonly pageSize$ = this.store.select(selectAdminSupplierInvoiceManagerPageSize);
 
   loadSummary(params?: SupplierExpenseStatisticsParams): void {
     this.store.dispatch(loadAdminSupplierInvoiceSummary({ params }));
   }
 
-  loadInvoices(params?: { search?: string; status?: string }): void {
+  /** Loads page 1 (or the given page) of the filtered list; the page replaces the current rows. */
+  loadInvoices(params?: { search?: string; status?: string; page?: number; pageSize?: number }): void {
     this.store.dispatch(loadAdminSupplierInvoiceManager(params ?? {}));
   }
 
-  loadMore(): void {
+  /** Loads another page of the current filter (replace-page). */
+  loadPage(page: number, pageSize?: number): void {
     this.store
       .select(selectAdminSupplierInvoiceManagerState)
       .pipe(take(1))
-      .subscribe((state) => {
-        if (!state.hasMore || state.appendLoading || state.loading) return;
-
+      .subscribe((state) =>
         this.store.dispatch(
-          loadMoreAdminSupplierInvoiceManager({
-            offset: state.nextOffset,
+          loadAdminSupplierInvoiceManager({
             search: state.search ?? undefined,
             status: state.status ?? undefined,
+            page,
+            pageSize: pageSize ?? state.pageSize,
           }),
-        );
-      });
+        ),
+      );
   }
 
   parseDocument(file: File): void {

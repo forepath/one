@@ -168,7 +168,7 @@ export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined):
     case 'agenstra_handoff_agents':
     case 'handoff_agents':
       return {
-        label: $localize`:@@featureChat-toolDisplayHandoffAgents:List agents`,
+        label: $localize`:@@featureChat-toolDisplayHandoffAgents:List environments`,
         icon: 'people',
       };
     case 'agenstra_handoff_create':
@@ -181,7 +181,7 @@ export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined):
     case 'agenstra_handoff_profile_get':
     case 'handoff_profile_get':
       return {
-        label: $localize`:@@featureChat-toolDisplayHandoffProfileGet:Read agent profile`,
+        label: $localize`:@@featureChat-toolDisplayHandoffProfileGet:Read environment profile`,
         icon: 'person-vcard',
       };
     case 'agenstra_handoff_profile_update':

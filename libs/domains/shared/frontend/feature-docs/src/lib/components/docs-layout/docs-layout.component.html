@@ -16,6 +16,10 @@
       <h5 class="mb-0 d-none d-md-block text-truncate" i18n="@@featureDocsLayout-documentation">Documentation</h5>
     </a>
 
+    @if (isBrowser) {
+      <framework-docs-search />
+    }
+
     <fpc-language-switcher
       data-bs-theme="dark"
       [locales]="localeService.getAvailableLocales()"
@@ -23,10 +27,6 @@
       [ariaLabel]="languageSwitcherAriaLabel"
       (localeChange)="onLocaleChange($event)"
     />
-
-    @if (isBrowser) {
-      <framework-docs-search [searchField]="!isMobile()" />
-    }
 
     <fpc-button
       class="d-none d-md-inline-flex fpc-top-bar__action"

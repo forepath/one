@@ -67,3 +67,10 @@ export class UsageMeterEntryResponseDto {
   usagePayload!: Record<string, unknown>;
   createdAt!: Date;
 }
+
+export class PaginatedUsageMeterEntriesResponseDto {
+  items!: UsageMeterEntryResponseDto[];
+  total!: number;
+  limit!: number;
+  offset!: number;
+}

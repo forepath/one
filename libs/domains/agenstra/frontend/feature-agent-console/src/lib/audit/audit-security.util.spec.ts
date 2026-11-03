@@ -1,6 +1,8 @@
 import {
   alignSecuritySeries,
   egressDecisionColor,
+  countAxisScale,
+  filterBreakdownLabel,
   formatBytes,
   formatEgressDecision,
   formatEgressKind,
@@ -90,5 +92,59 @@ describe('audit-security.util', () => {
     expect(formatBytes(512)).toBe('512 B');
     expect(formatBytes(1536)).toBe('1.5 KB');
     expect(formatBytes(50 * 1024 * 1024)).toBe('50 MB');
+  });
+});
+
+describe('filterBreakdownLabel', () => {
+  it('uses the rule display name shown in the tables', () => {
+    expect(
+      filterBreakdownLabel(
+        'Drop',
+        { filterType: 'pii-email', filterDisplayName: 'Personal data: email address' },
+        'Incoming',
+      ),
+    ).toBe('Drop: Personal data: email address (Incoming)');
+  });
+
+  it('falls back to the filter key for rows without a display name', () => {
+    expect(filterBreakdownLabel('Flag', { filterType: 'pii-iban', filterDisplayName: null }, 'Outgoing')).toBe(
+      'Flag: pii-iban (Outgoing)',
+    );
+    expect(filterBreakdownLabel('Flag', { filterType: 'pii-iban', filterDisplayName: '  ' }, 'Outgoing')).toBe(
+      'Flag: pii-iban (Outgoing)',
+    );
+  });
+});
+
+describe('countAxisScale', () => {
+  it('uses one whole-number tick per unit for small counts', () => {
+    expect(countAxisScale([[0, 2, 1]])).toEqual({
+      min: 0,
+      max: 2,
+      tickAmount: 2,
+      forceNiceScale: false,
+      decimalsInFloat: 0,
+    });
+  });
+
+  it('shows 0–1 for an empty range instead of fractional ticks', () => {
+    expect(countAxisScale([[0, 0]])).toMatchObject({ max: 1, tickAmount: 1 });
+    expect(countAxisScale([])).toMatchObject({ max: 1, tickAmount: 1 });
+  });
+
+  it('sums stacked series per bucket', () => {
+    expect(
+      countAxisScale(
+        [
+          [1, 2],
+          [2, 2],
+        ],
+        true,
+      ),
+    ).toMatchObject({ max: 4, tickAmount: 4 });
+  });
+
+  it('lets larger counts use a nice integer scale', () => {
+    expect(countAxisScale([[3, 40]])).toEqual({ min: 0, forceNiceScale: true, decimalsInFloat: 0 });
   });
 });

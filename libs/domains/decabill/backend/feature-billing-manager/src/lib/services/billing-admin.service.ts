@@ -1,5 +1,5 @@
 import { UsersRepository } from '@forepath/identity/backend';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 
 import type { SubscriptionResponseDto } from '../dto/subscription-response.dto';
 import type {
@@ -11,7 +11,9 @@ import { SubscriptionStatus, type SubscriptionEntity } from '../entities/subscri
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
+import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { resolveCustomerNamesByUserId } from '../utils/customer-display-name.util';
 
 import { InvoiceCreationService } from './invoice-creation.service';
 import { SubscriptionService } from './subscription.service';
@@ -26,6 +28,7 @@ export class BillingAdminService {
     private readonly subscriptionService: SubscriptionService,
     private readonly usersRepository: UsersRepository,
     private readonly servicePlansRepository: ServicePlansRepository,
+    @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
   ) {}
 
   async getGlobalSummary(): Promise<AdminBillingSummaryResponseDto> {
@@ -129,6 +132,8 @@ export class BillingAdminService {
     const planIds = [...new Set(mapped.map((subscription) => subscription.planId))];
     const userEmailById = new Map<string, string>();
     const planNameById = new Map<string, string>();
+    const planIntervalById = new Map<string, { type: string; value: number }>();
+    const customerNameById = await resolveCustomerNamesByUserId(this.customerProfilesRepository, userIds);
 
     await Promise.all(
       userIds.map(async (userId) => {
@@ -147,13 +152,20 @@ export class BillingAdminService {
         if (plan?.name) {
           planNameById.set(planId, plan.name);
         }
+
+        if (plan?.billingIntervalType) {
+          planIntervalById.set(planId, { type: plan.billingIntervalType, value: plan.billingIntervalValue });
+        }
       }),
     );
 
     return mapped.map((subscription) => ({
       ...subscription,
       userEmail: userEmailById.get(subscription.userId),
+      customerName: customerNameById.get(subscription.userId),
       planName: subscription.planName ?? planNameById.get(subscription.planId),
+      billingIntervalType: planIntervalById.get(subscription.planId)?.type,
+      billingIntervalValue: planIntervalById.get(subscription.planId)?.value,
     }));
   }
 }

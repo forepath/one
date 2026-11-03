@@ -21,6 +21,7 @@ import type {
   PaginatedAdminInvoicesResponse,
   PaginatedAdminSubscriptionsResponse,
   PaginatedBillingAuditLogsResponse,
+  PaginatedUsageMeterEntriesResponse,
   AdminInvoiceListItem,
   AdminSubscriptionListItem,
   ServerInfoResponse,
@@ -364,9 +365,16 @@ export class AdminBillingService {
     });
   }
 
-  listSubscriptionMeterEntries(subscriptionId: string): Observable<UsageMeterEntryResponse[]> {
-    return this.http.get<UsageMeterEntryResponse[]>(
+  /** One page of a subscription's meter entries (newest first) with the total. */
+  listSubscriptionMeterEntries(
+    subscriptionId: string,
+    params: { limit: number; offset: number },
+  ): Observable<PaginatedUsageMeterEntriesResponse> {
+    const httpParams = new HttpParams().set('limit', String(params.limit)).set('offset', String(params.offset));
+
+    return this.http.get<PaginatedUsageMeterEntriesResponse>(
       `${this.apiUrl}/admin/billing/subscriptions/${subscriptionId}/meter-entries`,
+      { params: httpParams },
     );
   }
 

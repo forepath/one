@@ -1,33 +1,12 @@
 <div class="section__content-wrapper d-flex flex-column border-top">
-  <fpc-page-header>
-    <div fpcPageHeaderTitle class="d-flex align-items-center flex-wrap gap-3 min-w-0">
-      <h1 class="fpc-page-header__title h5 mb-0 fw-semibold">{{ pageTitle }}</h1>
-      @if (effectiveWorkspace(); as ew) {
-        <fpc-button
-          variant="link"
-          btnClass="text-decoration-none text-body"
-          (clicked)="openWorkspaceSwitchModal()"
-          [title]="switchWorkspaceTitle"
-        >
-          <fpc-badge variant="info" color="secondary">
-            <i class="bi bi-building" aria-hidden="true"></i>
-            <span class="text-truncate">{{ workspaceDisplayName(ew.name) }}</span>
-          </fpc-badge>
-        </fpc-button>
-      }
-    </div>
-    @if (effectiveClientId() !== null) {
-      <fpc-button
-        fpcPageHeaderActions
-        variant="dark"
-        size="sm"
-        iconOnly
-        [ariaLabel]="searchPagesTitle"
-        [title]="searchPagesTitle"
-        (clicked)="openGlobalSearchModal()"
-      >
-        <i class="bi bi-search" aria-hidden="true"></i>
-      </fpc-button>
+  <fpc-page-header [title]="pageTitle">
+    @if (effectiveWorkspace(); as ew) {
+      <framework-workspace-chip
+        fpcPageHeaderContext
+        [name]="workspaceDisplayName(ew.name)"
+        [title]="switchWorkspaceTitle"
+        (switch)="openWorkspaceSwitchModal()"
+      />
     }
   </fpc-page-header>
 
@@ -45,7 +24,7 @@
           routerLink="/clients"
           i18n="@@featureKnowledgeBoard-goToSpaces"
         >
-          Go to Spaces
+          Go to workspaces
         </fpc-button>
       </fpc-empty-state>
     } @else {
@@ -70,29 +49,29 @@
       <fpc-alert variant="danger" [flush]="true" [message]="err" />
     }
 
-    <section class="section__row flex-grow-1 d-flex">
-      <div
-        #knowledgeTreeSidebar
-        class="section__column knowledge-tree-sidebar border-end"
-        [style.flex-basis.px]="sidebarWidth()"
-      >
+    <fpc-section-row class="flex-grow-1" [stacked]="true">
+      <fpc-section-column class="knowledge-tree-sidebar" #knowledgeTreeSidebar [style.flex-basis.px]="sidebarWidth()">
         <framework-knowledge-tree
           [workspaceId]="effectiveClientId()"
-          [nodes]="tree()"
+          [nodes]="treeNodes()"
           [selectedNodeId]="selectedNode()?.id ?? null"
           [loading]="loading()"
           [mutatingIds]="mutatingIds()"
+          [searchQuery]="treeSearch()"
+          [searching]="treeSearching()"
+          [searchLoading]="treeSearchLoading()"
+          (searchQueryChange)="onTreeSearchChange($event)"
           (selectNode)="onSelectNode($event)"
           (refreshTree)="onRefreshTree()"
           (createNode)="onCreateNode($event)"
           (renameNode)="onRenameNode($event)"
           (moveNode)="onMoveNode($event)"
         ></framework-knowledge-tree>
-      </div>
+      </fpc-section-column>
 
       <div class="resize-handle" (mousedown)="onResizeStart($event)" (touchstart)="onResizeStart($event)"></div>
 
-      <div class="section__column d-flex flex-column flex-grow-1">
+      <fpc-section-column class="d-flex flex-grow-1">
         @if (selectedNode()?.nodeType === 'page') {
           <fpc-page-header>
             <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-width-0 flex-grow-1">
@@ -102,8 +81,9 @@
               @if (selectedNodeTitleEditing()) {
                 <fpc-form-control
                   #selectedNodeTitleInput
+                  class="flex-grow-1 min-width-0"
                   size="sm"
-                  controlClass="flex-grow-1 min-width-0"
+                  controlClass="w-100"
                   [ngModel]="selectedNodeTitleDraft()"
                   (ngModelChange)="selectedNodeTitleDraft.set($event)"
                   (focusout)="onSavePageTitle()"
@@ -124,209 +104,167 @@
               }
             </div>
           </fpc-page-header>
-          <div class="flex-grow-1 p-3 knowledge-editor-area">
-            <div class="d-flex flex-column gap-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
-                  <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-descriptionHeading">Description</h3>
+          <!-- Like the ticket details: content left, activity right; both columns scroll on their own (stacked below lg). -->
+          <div class="row g-0 knowledge-board__detail-columns">
+            <div class="col-lg-7 knowledge-board__detail-pane p-3">
+              <div class="d-flex flex-column gap-3">
+                <div>
+                  <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+                    <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-descriptionHeading">Description</h3>
+                  </div>
+                  <framework-knowledge-editor
+                    [markdown]="editContent()"
+                    (markdownChange)="editContent.set($event)"
+                    (blurred)="onSavePage()"
+                  ></framework-knowledge-editor>
                 </div>
-                <framework-knowledge-editor
-                  [markdown]="editContent()"
-                  (markdownChange)="editContent.set($event)"
-                  (blurred)="onSavePage()"
-                ></framework-knowledge-editor>
-              </div>
 
-              <div>
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                  <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-attachmentsHeading">Attachments</h3>
-                  <input
-                    #pageAttachmentInput
-                    type="file"
-                    class="d-none"
-                    multiple
-                    (change)="onPageAttachmentSelected($event, selectedNode())"
-                  />
-                  <fpc-button
-                    variant="dark"
-                    size="sm"
-                    iconOnly
-                    (clicked)="pageAttachmentInput.click()"
-                    i18n-title="@@featureKnowledgeBoard-addAttachment"
-                    title="Add attachment"
-                    i18n-ariaLabel="@@featureKnowledgeBoard-addAttachment"
-                    ariaLabel="Add attachment"
+                <div>
+                  <div
+                    class="fpc-lane-header__actions d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2"
                   >
-                    <i class="bi bi-paperclip" aria-hidden="true"></i>
-                  </fpc-button>
+                    <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-attachmentsHeading">Attachments</h3>
+                    <input
+                      #pageAttachmentInput
+                      type="file"
+                      class="d-none"
+                      multiple
+                      (change)="onPageAttachmentSelected($event, selectedNode())"
+                    />
+                    <fpc-button
+                      variant="dark"
+                      size="sm"
+                      iconOnly
+                      (clicked)="pageAttachmentInput.click()"
+                      i18n-title="@@featureKnowledgeBoard-addAttachment"
+                      title="Add attachment"
+                      i18n-ariaLabel="@@featureKnowledgeBoard-addAttachment"
+                      ariaLabel="Add attachment"
+                    >
+                      <i class="bi bi-paperclip" aria-hidden="true"></i>
+                    </fpc-button>
+                  </div>
+                  @if ((selectedNode()?.attachments ?? []).length === 0) {
+                    <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-attachmentsEmpty">
+                      No attachments yet.
+                    </p>
+                  } @else {
+                    <framework-attachment-chips
+                      [attachments]="selectedNode()?.attachments ?? []"
+                      (download)="downloadPageAttachment($event)"
+                      (remove)="deletePageAttachment(selectedNode(), $event)"
+                    />
+                  }
                 </div>
-                @if ((selectedNode()?.attachments ?? []).length === 0) {
-                  <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-attachmentsEmpty">
-                    No attachments yet.
-                  </p>
-                } @else {
-                  <fpc-list [flush]="true" class="border rounded small mb-0">
-                    @for (attachment of selectedNode()?.attachments ?? []; track attachment.id) {
-                      <fpc-list-item>
-                        <div fpcListItemTitle class="text-truncate" [title]="attachment.fileName">
-                          <i class="bi bi-paperclip me-1" aria-hidden="true"></i>{{ attachment.fileName }}
-                        </div>
-                        <div fpcListItemMeta>{{ attachment.byteSize | number }} B</div>
-                        <span fpcListItemActions class="d-inline-flex align-items-center gap-1">
-                          <fpc-button
-                            variant="outline-secondary"
-                            size="sm"
-                            iconOnly
-                            (clicked)="downloadPageAttachment(attachment)"
-                            i18n-title="@@featureKnowledgeBoard-downloadAttachment"
-                            title="Download attachment"
-                            i18n-ariaLabel="@@featureKnowledgeBoard-downloadAttachment"
-                            ariaLabel="Download attachment"
-                          >
-                            <i class="bi bi-download" aria-hidden="true"></i>
-                          </fpc-button>
-                          <fpc-button
-                            variant="outline-danger"
-                            size="sm"
-                            iconOnly
-                            (clicked)="deletePageAttachment(selectedNode(), attachment)"
-                            i18n-title="@@featureKnowledgeBoard-deleteAttachment"
-                            title="Delete attachment"
-                            i18n-ariaLabel="@@featureKnowledgeBoard-deleteAttachment"
-                            ariaLabel="Delete attachment"
-                          >
-                            <i class="bi bi-trash" aria-hidden="true"></i>
-                          </fpc-button>
-                        </span>
-                      </fpc-list-item>
-                    }
-                  </fpc-list>
-                }
-              </div>
 
-              <div>
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                  <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-relationsHeading">Relations</h3>
-                  <fpc-button
-                    variant="dark"
-                    size="sm"
-                    [iconOnly]="true"
-                    (clicked)="openRelationsModal()"
-                    i18n-title="@@featureKnowledgeBoard-addRelations"
-                    title="Add relations"
-                    i18n-ariaLabel="@@featureKnowledgeBoard-addRelations"
-                    ariaLabel="Add relations"
+                <div>
+                  <div
+                    class="fpc-lane-header__actions d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2"
                   >
-                    <i class="bi bi-plus" aria-hidden="true"></i>
-                  </fpc-button>
+                    <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-relationsHeading">Relations</h3>
+                    <fpc-button
+                      variant="dark"
+                      size="sm"
+                      [iconOnly]="true"
+                      (clicked)="openRelationsModal()"
+                      i18n-title="@@featureKnowledgeBoard-addRelations"
+                      title="Add relations"
+                      i18n-ariaLabel="@@featureKnowledgeBoard-addRelations"
+                      ariaLabel="Add relations"
+                    >
+                      <i class="bi bi-plus" aria-hidden="true"></i>
+                    </fpc-button>
+                  </div>
+                  @if (relationsLoading()) {
+                    <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-loadingRelations">
+                      Loading relations...
+                    </p>
+                  } @else if (relations().length === 0) {
+                    <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-relationsEmpty">
+                      No relations yet.
+                    </p>
+                  } @else {
+                    <ul
+                      class="list-group list-group-flush knowledge-board__detail-relations border rounded small mb-0"
+                      role="list"
+                    >
+                      @for (relation of relations(); track relation.id) {
+                        @let relationNode = relationNodeById(relation.targetNodeId);
+                        <li class="list-group-item knowledge-board__detail-relation-row py-2 px-3" role="listitem">
+                          <div class="d-flex align-items-center gap-2 min-width-0">
+                            <fpc-button
+                              variant="link"
+                              [block]="true"
+                              btnClass="p-0 text-start text-decoration-none justify-content-start"
+                              class="knowledge-board__detail-relation-btn flex-grow-1 min-width-0"
+                              (clicked)="onRelationClick(relation)"
+                              i18n-title="@@featureKnowledgeBoard-openRelationTitle"
+                              title="Open relation"
+                            >
+                              <span class="d-flex align-items-center gap-2 w-100 min-width-0">
+                                <fpc-badge variant="info" color="secondary" class="flex-shrink-0">{{
+                                  relation.targetType === 'folder'
+                                    ? 'Folder'
+                                    : relation.targetType === 'page'
+                                      ? 'Page'
+                                      : 'Ticket'
+                                }}</fpc-badge>
+                                @if (relation.targetType === 'ticket') {
+                                  <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
+                                    relationTicketShortSha(relation.targetTicketLongSha)
+                                  }}</small>
+                                } @else if (relationNode?.shas?.short) {
+                                  <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
+                                    relationNode?.shas?.short
+                                  }}</small>
+                                }
+                                <span class="fw-medium text-break flex-grow-1 min-width-0">{{
+                                  relation.targetType === 'ticket'
+                                    ? relationTicketDisplay(relation.targetTicketLongSha)
+                                    : relationKnowledgeTitle(relationNode?.title)
+                                }}</span>
+                              </span>
+                            </fpc-button>
+                            <fpc-button
+                              variant="danger"
+                              size="sm"
+                              class="flex-shrink-0"
+                              [iconOnly]="true"
+                              (clicked)="onRemoveRelation(relation)"
+                              i18n-title="@@featureKnowledgeBoard-removeRelationTitle"
+                              title="Remove relation"
+                              i18n-ariaLabel="@@featureKnowledgeBoard-removeRelationTitle"
+                              ariaLabel="Remove relation"
+                            >
+                              <i class="bi bi-trash" aria-hidden="true"></i>
+                            </fpc-button>
+                          </div>
+                        </li>
+                      }
+                    </ul>
+                  }
                 </div>
-                @if (relationsLoading()) {
-                  <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-loadingRelations">
-                    Loading relations...
-                  </p>
-                } @else if (relations().length === 0) {
-                  <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-relationsEmpty">
-                    No relations yet.
-                  </p>
-                } @else {
-                  <ul
-                    class="list-group list-group-flush knowledge-board__detail-relations border rounded small mb-0"
-                    role="list"
-                  >
-                    @for (relation of relations(); track relation.id) {
-                      @let relationNode = relationNodeById(relation.targetNodeId);
-                      <li class="list-group-item knowledge-board__detail-relation-row py-2 px-3" role="listitem">
-                        <div class="d-flex align-items-center gap-2 min-width-0">
-                          <fpc-button
-                            variant="link"
-                            [block]="true"
-                            btnClass="p-0 text-start text-decoration-none justify-content-start"
-                            class="knowledge-board__detail-relation-btn flex-grow-1 min-width-0"
-                            (clicked)="onRelationClick(relation)"
-                            i18n-title="@@featureKnowledgeBoard-openRelationTitle"
-                            title="Open relation"
-                          >
-                            <span class="d-flex align-items-center gap-2 w-100 min-width-0">
-                              <fpc-badge variant="info" color="secondary" class="flex-shrink-0">{{
-                                relation.targetType === 'folder'
-                                  ? 'Folder'
-                                  : relation.targetType === 'page'
-                                    ? 'Page'
-                                    : 'Ticket'
-                              }}</fpc-badge>
-                              @if (relation.targetType === 'ticket') {
-                                <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
-                                  relationTicketShortSha(relation.targetTicketLongSha)
-                                }}</small>
-                              } @else if (relationNode?.shas?.short) {
-                                <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
-                                  relationNode?.shas?.short
-                                }}</small>
-                              }
-                              <span class="fw-medium text-break flex-grow-1 min-width-0">{{
-                                relation.targetType === 'ticket'
-                                  ? relationTicketDisplay(relation.targetTicketLongSha)
-                                  : relationKnowledgeTitle(relationNode?.title)
-                              }}</span>
-                            </span>
-                          </fpc-button>
-                          <fpc-button
-                            variant="danger"
-                            size="sm"
-                            class="flex-shrink-0"
-                            [iconOnly]="true"
-                            (clicked)="onRemoveRelation(relation)"
-                            i18n-title="@@featureKnowledgeBoard-removeRelationTitle"
-                            title="Remove relation"
-                            i18n-ariaLabel="@@featureKnowledgeBoard-removeRelationTitle"
-                            ariaLabel="Remove relation"
-                          >
-                            <i class="bi bi-trash" aria-hidden="true"></i>
-                          </fpc-button>
-                        </div>
-                      </li>
-                    }
-                  </ul>
-                }
               </div>
+            </div>
 
+            <div class="col-lg-5 knowledge-board__detail-pane knowledge-board__detail-sidebar p-3">
               <div>
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
                   <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-activityHeading">Activity</h3>
                 </div>
-                @if (activity().length > 0) {
-                  <ul class="list-unstyled small mb-0">
-                    @for (ev of activity(); track ev.id) {
-                      <li class="mb-2 pb-2 border-bottom border-opacity-50">
-                        <div class="d-flex flex-wrap align-items-center column-gap-2 row-gap-1 small">
-                          <fpc-badge
-                            variant="info"
-                            color="secondary"
-                            [ngClass]="activityActionBadgeClass(ev.actionType)"
-                            [attr.title]="ev.actionType"
-                            >{{ activityActionLabel(ev.actionType) }}</fpc-badge
-                          >
-                          <span class="text-body-secondary">{{ ev.occurredAt | date: 'MMM d, y, h:mm a' }}</span>
-                          @if (ev.actorEmail) {
-                            <span class="text-body-secondary text-truncate">{{ ev.actorEmail }}</span>
-                          } @else {
-                            <span class="text-body-secondary text-truncate fst-italic">{{ ev.actorType }}</span>
-                          }
-                        </div>
-                      </li>
-                    }
-                  </ul>
-                } @else if (activityLoading()) {
-                  <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-loadingActivity">
-                    Loading activity...
-                  </p>
-                } @else {
-                  <fpc-empty-state
-                    size="sm"
-                    message="No activity yet"
-                    i18n-message="@@featureKnowledgeBoard-noActivity"
-                  />
-                }
+                <fpc-data-table
+                  nested
+                  [ariaLabel]="activityLabel"
+                  [columns]="activityColumns"
+                  [rows]="activity()"
+                  [loading]="activityLoading() && activity().length === 0"
+                  paging="client"
+                  persistKey="agenstra-knowledge-activity"
+                  [searchable]="false"
+                  data-testid="knowledge-activity"
+                >
+                  <ng-template fpcTableCell="time" let-row>{{ row.occurredAt | fpcDate: 'datetime' }}</ng-template>
+                </fpc-data-table>
               </div>
             </div>
           </div>
@@ -337,72 +275,14 @@
             i18n-message="@@featureKnowledgeBoard-selectPageHint"
           />
         }
-      </div>
-    </section>
+      </fpc-section-column>
+    </fpc-section-row>
   }
 </div>
 
 <fpc-modal
-  [(open)]="globalSearchModalOpen"
-  i18n-title="@@featureKnowledgeBoard-searchPagesModalTitle"
-  title="Search pages"
-  [scrollable]="true"
-  (closed)="onCloseGlobalSearchModal()"
->
-  <label class="visually-hidden" for="globalSearchInput" i18n="@@featureKnowledgeBoard-searchPagesLabel">
-    Search pages
-  </label>
-  <fpc-typeahead-select
-    #globalSearchInput
-    inputId="globalSearchInput"
-    listboxId="knowledgeGlobalSearchInput-listbox"
-    variant="inline"
-    [openOnFocus]="false"
-    [loading]="globalSearchLoading()"
-    i18n-placeholder="@@featureKnowledgeBoard-searchPagesPlaceholder"
-    placeholder="Search by title or id"
-    i18n-ariaLabel="@@featureKnowledgeBoard-searchPagesLabel"
-    ariaLabel="Search pages"
-    [query]="globalSearchQuery()"
-    (queryChange)="onGlobalSearchQueryChange($event)"
-    [open]="globalSearchSuggestionsOpen()"
-    (openChange)="onGlobalSearchSuggestionsOpenChange($event)"
-    (cleared)="onGlobalSearchQueryChange('')"
-  >
-    <div fpcTypeaheadSuggestions>
-      @if (globalSearchHits().length > 0) {
-        @for (node of globalSearchHits(); track node.id) {
-          <button
-            type="button"
-            class="dropdown-item py-2 text-start"
-            (mousedown)="onGlobalSearchResultClick(node, $event)"
-          >
-            <span class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
-              @if (node.shas.short) {
-                <span class="font-monospace text-body-secondary small flex-shrink-0">{{ node.shas.short }}</span>
-              }
-              <span class="fw-medium text-break flex-grow-1 min-width-0">{{ node.title }}</span>
-              <fpc-badge variant="info" color="secondary" class="flex-shrink-0">{{
-                nodeTypeLabel(node.nodeType)
-              }}</fpc-badge>
-            </span>
-          </button>
-        }
-      } @else if (globalSearchQuery().trim()) {
-        <span class="dropdown-item-text text-body-secondary small" i18n="@@featureKnowledgeBoard-noMatchingNodes"
-          >No matching pages or folders</span
-        >
-      }
-    </div>
-  </fpc-typeahead-select>
-  @if (globalSearchQuery().trim() === '') {
-    <p class="text-body-secondary small mb-0 mt-2" i18n="@@featureKnowledgeBoard-searchPagesHint">
-      Type to search all pages and folders in this workspace.
-    </p>
-  }
-</fpc-modal>
-
-<fpc-modal
+  cancelLabel="Cancel"
+  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="relationsModalOpen"
   i18n-title="@@featureKnowledgeBoard-relationsModalTitle"
   title="Add relations"
@@ -499,49 +379,15 @@
         i18n="@@featureKnowledgeBoard-goToSpaces"
         (clicked)="goToSpaces($event)"
       >
-        Go to Spaces
+        Go to workspaces
       </fpc-button>
     </fpc-empty-state>
   } @else {
-    <fpc-search-field
-      class="mb-3"
-      inputId="workspaceSwitchSearch"
-      [value]="workspaceSwitchSearch()"
-      (valueChange)="workspaceSwitchSearch.set($event)"
-      i18n-placeholder="@@featureKnowledgeBoard-searchWorkspacesPlaceholder"
-      placeholder="Search workspaces"
+    <framework-workspace-switch-table
+      [clients]="clients()"
+      [currentId]="activeClientId()"
+      [(query)]="workspaceSwitchSearch"
+      (selectWorkspace)="onSelectWorkspaceForKnowledge($event)"
     />
-    @if (clients().length === 0) {
-      <fpc-empty-state
-        size="sm"
-        icon="search"
-        message="No search results"
-        i18n-message="@@featureKnowledgeBoard-noSearchResults"
-      />
-    } @else {
-      <fpc-list [flush]="true" class="border rounded">
-        @for (c of clients(); track c.id) {
-          <fpc-list-item
-            [active]="c.id === activeClientId()"
-            [clickable]="true"
-            (selected)="onSelectWorkspaceForKnowledge(c)"
-          >
-            <div fpcListItemTitle class="text-truncate text-start">{{ workspaceDisplayName(c.name) }}</div>
-            @if (c.id === activeClientId()) {
-              <div fpcListItemActions>
-                <fpc-badge
-                  color="light"
-                  [pill]="true"
-                  class="flex-shrink-0"
-                  i18n="@@featureKnowledgeBoard-currentWorkspace"
-                >
-                  Current
-                </fpc-badge>
-              </div>
-            }
-          </fpc-list-item>
-        }
-      </fpc-list>
-    }
   }
 </fpc-modal>

@@ -387,8 +387,14 @@ export class KnowledgeTreeService {
     return await Promise.all(rows.map((row) => this.mapNode(row)));
   }
 
+  /**
+   * Nested tree of the workspace. With `search`, the matches come with their ancestor folders (so a match inside an
+   * unmatched folder stays reachable); every node then carries `searchMatch` (`false` on context-only ancestors).
+   */
   async getTree(clientId: string, req?: RequestWithUser, search?: string): Promise<KnowledgeNodeResponseDto[]> {
-    const rows = await this.listNodes(clientId, req, search);
+    const rows = sanitizeListSearch(search)
+      ? await this.withSearchAncestors(clientId, await this.listNodes(clientId, req, search))
+      : await this.listNodes(clientId, req);
     const byParent = new Map<string | null, KnowledgeNodeResponseDto[]>();
 
     for (const row of rows) {
@@ -411,6 +417,42 @@ export class KnowledgeTreeService {
     };
 
     return build(null);
+  }
+
+  /** Marks the search matches and adds their missing ancestor folders (`searchMatch: false`). */
+  private async withSearchAncestors(
+    clientId: string,
+    matches: KnowledgeNodeResponseDto[],
+  ): Promise<KnowledgeNodeResponseDto[]> {
+    if (matches.length === 0) {
+      return [];
+    }
+
+    const matchedIds = new Set(matches.map((node) => node.id));
+    const all = await this.knowledgeNodeRepo.find({ where: { clientId } });
+    const byId = new Map(all.map((node) => [node.id, node]));
+    const ancestorIds = new Set<string>();
+
+    for (const match of matches) {
+      let parentId = match.parentId ?? null;
+
+      while (parentId && !matchedIds.has(parentId) && !ancestorIds.has(parentId)) {
+        ancestorIds.add(parentId);
+        parentId = byId.get(parentId)?.parentId ?? null;
+      }
+    }
+
+    const ancestors = await Promise.all(
+      [...ancestorIds]
+        .map((id) => byId.get(id))
+        .filter((node): node is KnowledgeNodeEntity => !!node)
+        .map((node) => this.mapNode(node)),
+    );
+
+    return [
+      ...matches.map((node) => ({ ...node, searchMatch: true })),
+      ...ancestors.map((node) => ({ ...node, searchMatch: false })),
+    ];
   }
 
   async getNode(id: string, req?: RequestWithUser): Promise<KnowledgeNodeResponseDto> {

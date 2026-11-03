@@ -31,8 +31,10 @@ import {
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
+  FpcListToolbarComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
+  FpcSearchFieldComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
@@ -75,8 +77,10 @@ const ALLOWED_UPLOAD_EXTENSIONS = new Set(['.md', '.mmd', '.txt']);
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
+    FpcListToolbarComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
+    FpcSearchFieldComponent,
     FpcSpinnerComponent,
   ],
   templateUrl: './knowledge-tree.component.html',
@@ -115,12 +119,23 @@ export class KnowledgeTreeComponent implements OnChanges {
   @Input() loading = false;
   @Input() workspaceId: string | null = null;
   @Input() mutatingIds: ReadonlySet<string> | Set<string> = new Set();
+  /** Search term of the toolbar (the board loads the matching tree and passes it as `nodes`). */
+  @Input() searchQuery = '';
+  /** `nodes` are search results: matches plus their ancestor folders (`searchMatch: false`), all expanded. */
+  @Input() searching = false;
+  @Input() searchLoading = false;
 
   @Output() selectNode = new EventEmitter<KnowledgeNodeDto>();
   @Output() createNode = new EventEmitter<{ parentId: string | null; nodeType: KnowledgeNodeType; title: string }>();
   @Output() refreshTree = new EventEmitter<void>();
   @Output() renameNode = new EventEmitter<{ id: string; title: string }>();
   @Output() moveNode = new EventEmitter<{ id: string; parentId: string | null }>();
+  @Output() searchQueryChange = new EventEmitter<string>();
+
+  readonly searchPlaceholder = $localize`:@@featureKnowledgeTree-searchPlaceholder:Search pages`;
+  readonly searchAriaLabel = $localize`:@@featureKnowledgeTree-searchAria:Search pages and folders by title, content or id`;
+  /** Folders expanded before the search started; restored when the search is cleared. */
+  private expandedBeforeSearch: Set<string> | null = null;
 
   readonly selectedIds = signal<Set<string>>(new Set());
   readonly selectionAnchorId = signal<string | null>(null);
@@ -162,10 +177,79 @@ export class KnowledgeTreeComponent implements OnChanges {
     if (!this.loading && this.workspaceId) {
       this.hasLoadedWorkspaceTree.set(true);
     }
+
+    if (changes['searching'] || (this.searching && changes['nodes'])) {
+      this.syncSearchExpansion();
+    }
+
+    if (changes['selectedNodeId'] || changes['nodes']) {
+      this.revealSelectedNode();
+    }
+  }
+
+  /** Results open fully (every match visible); clearing the search brings back the folders the user had open. */
+  private syncSearchExpansion(): void {
+    if (!this.searching) {
+      if (this.expandedBeforeSearch) {
+        this.expandedNodeIds.set(this.expandedBeforeSearch);
+        this.expandedBeforeSearch = null;
+      }
+
+      return;
+    }
+
+    this.expandedBeforeSearch ??= new Set(this.expandedNodeIds());
+
+    const folderIds = new Set(this.expandedNodeIds());
+    const walk = (nodes: KnowledgeNodeDto[]) => {
+      for (const node of nodes) {
+        if (node.nodeType === 'folder') folderIds.add(node.id);
+        walk(node.children ?? []);
+      }
+    };
+
+    walk(this.nodes);
+    this.expandedNodeIds.set(folderIds);
+  }
+
+  /** An ancestor folder shown only as the path to a search match. */
+  isSearchContext(node: KnowledgeNodeDto): boolean {
+    return this.searching && node.searchMatch === false;
+  }
+
+  /** Id of the open page whose path was last expanded; the reveal runs once per opened page, so collapsing later sticks. */
+  private revealedNodeId: string | null = null;
+
+  /**
+   * Reveals the open page (deep link `?openNodeId=`, chat links, search): expands its ancestor folders once the tree
+   * contains it and scrolls its row into view (AG-06).
+   */
+  private revealSelectedNode(): void {
+    const id = this.selectedNodeId;
+
+    if (!id) {
+      this.revealedNodeId = null;
+
+      return;
+    }
+
+    if (id === this.revealedNodeId || !this.findNodeById(this.nodes, id)) {
+      return;
+    }
+
+    this.revealedNodeId = id;
+    this.expandPathToNode(id, false);
+    setTimeout(() => {
+      const rows = Array.from(
+        (this.hostElement.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('[data-node-id]'),
+      );
+
+      rows.find((row) => row.dataset['nodeId'] === id)?.scrollIntoView?.({ block: 'nearest' });
+    }, 0);
   }
 
   shouldShowInitialLoadingSpinner(): boolean {
-    return this.loading && !this.hasLoadedWorkspaceTree();
+    return (this.loading && !this.hasLoadedWorkspaceTree()) || (this.searchLoading && !this.searching);
   }
 
   isNodeSelected(id: string): boolean {

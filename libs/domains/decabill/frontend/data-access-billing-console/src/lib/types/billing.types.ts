@@ -446,6 +446,14 @@ export interface UsageMeterEntryResponse {
   createdAt: string;
 }
 
+/** `GET /admin/billing/subscriptions/:id/meter-entries?limit&offset` (newest first). */
+export interface PaginatedUsageMeterEntriesResponse {
+  items: UsageMeterEntryResponse[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface CreateUsageMeterEntryDto {
   meterId: string;
   value: number;
@@ -1096,6 +1104,8 @@ export interface InvoiceResponse {
   totalGross?: number | null;
   subscriptionNumber?: string | null;
   createdAt: string;
+  /** Issue date (null for drafts). */
+  issuedAt?: string | null;
   dueDate?: string | null;
   paidAt?: string | null;
   canPay: boolean;
@@ -1171,6 +1181,8 @@ export interface InvoicesSummaryResponse {
   /** Minimum balance due required for Checkout / payment-method charges. */
   minCheckoutPaymentAmount?: number;
   pendingOffersCount?: number;
+  /** Size of the invoice history (pager total without search). */
+  historyCount?: number;
 }
 
 /** Catalog counts for the current user (independent of list pagination / search). */
@@ -1295,6 +1307,11 @@ export interface ListParams {
   search?: string;
 }
 
+/** Backorder list query: `status` = only these statuses (e.g. `['pending', 'retrying']`). */
+export interface BackordersListParams extends ListParams {
+  status?: string[];
+}
+
 // Admin Billing
 export interface AdminBillingSummaryResponse {
   subscriptionsCount: number;
@@ -1317,6 +1334,8 @@ export interface AdminBillNowResponse {
 export interface AdminInvoiceListItem extends InvoiceResponse {
   userId: string;
   userEmail?: string;
+  /** Billing-profile name (company, else first + last name); shown instead of the email in admin lists. */
+  customerName?: string;
 }
 
 export interface PaginatedAdminInvoicesResponse {
@@ -1328,7 +1347,12 @@ export interface PaginatedAdminInvoicesResponse {
 
 export interface AdminSubscriptionListItem extends SubscriptionResponse {
   userEmail?: string;
+  /** Billing-profile name (company, else first + last name); shown instead of the email in admin lists. */
+  customerName?: string;
   planName?: string;
+  /** Plan billing interval (price cell `€5.95 / Monthly`). */
+  billingIntervalType?: BillingIntervalType | string;
+  billingIntervalValue?: number;
 }
 
 export interface AdminSubscriptionsListParams {

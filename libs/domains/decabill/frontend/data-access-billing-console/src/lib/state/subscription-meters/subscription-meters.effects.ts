@@ -1,7 +1,9 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, mergeMap, of, switchMap } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { catchError, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
 
+import { billingPageWindow } from '../../constants/list-paging.constants';
 import { AdminBillingService } from '../../services/admin-billing.service';
 import { UsageService } from '../../services/usage.service';
 
@@ -22,6 +24,7 @@ import {
   updateMeterEntryFailure,
   updateMeterEntrySuccess,
 } from './subscription-meters.actions';
+import { selectSubscriptionMetersState } from './subscription-meters.selectors';
 
 function normalizeError(error: unknown): string {
   if (error instanceof Error) return error.message;
@@ -49,11 +52,28 @@ export const loadMeterEntries$ = createEffect(
   (actions$ = inject(Actions), adminBillingService = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(loadMeterEntries),
-      switchMap(({ subscriptionId }) =>
-        adminBillingService.listSubscriptionMeterEntries(subscriptionId).pipe(
-          map((entries) => loadMeterEntriesSuccess({ subscriptionId, entries })),
+      switchMap(({ subscriptionId, page, pageSize }) => {
+        const { limit, offset } = billingPageWindow(page, pageSize);
+
+        return adminBillingService.listSubscriptionMeterEntries(subscriptionId, { limit, offset }).pipe(
+          map((response) =>
+            loadMeterEntriesSuccess({ subscriptionId, entries: response.items, total: response.total }),
+          ),
           catchError((error) => of(loadMeterEntriesFailure({ error: normalizeError(error) }))),
-        ),
+        );
+      }),
+    ),
+  { functional: true },
+);
+
+/** After a create / delete the current entries page is reloaded (replace-page: server order and total). */
+export const reloadMeterEntriesAfterMutation$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) =>
+    actions$.pipe(
+      ofType(createMeterEntrySuccess, deleteMeterEntrySuccess),
+      withLatestFrom(store.select(selectSubscriptionMetersState)),
+      map(([{ subscriptionId }, state]) =>
+        loadMeterEntries({ subscriptionId, page: state.entriesPage, pageSize: state.entriesPageSize }),
       ),
     ),
   { functional: true },

@@ -1,6 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
+
 import type {
   AdminBillNowDto,
   AdminBillingStatisticsParams,
@@ -26,6 +28,7 @@ import {
   selectAdminAuditLogsByInvoice,
   selectAdminAuditLogsError,
   selectAdminAuditLogsLoading,
+  selectAdminAuditLogsTotalByInvoice,
   selectAdminBillingSummary,
   selectAdminBillingSummaryError,
   selectAdminBillingSummaryLoading,
@@ -75,6 +78,7 @@ export class AdminBillingFacade {
 
   readonly auditLogsByInvoice$ = this.store.select(selectAdminAuditLogsByInvoice);
   readonly auditLogsLoading$ = this.store.select(selectAdminAuditLogsLoading);
+  readonly auditLogsTotalByInvoice$ = this.store.select(selectAdminAuditLogsTotalByInvoice);
   readonly auditLogsError$ = this.store.select(selectAdminAuditLogsError);
 
   loadSummary(): void {
@@ -113,7 +117,10 @@ export class AdminBillingFacade {
     this.store.dispatch(loadAdminStatisticsByCountry({ params }));
   }
 
-  loadAuditLogs(invoiceRefId: string, limit?: number, offset?: number): void {
-    this.store.dispatch(loadAdminAuditLogs({ invoiceRefId, limit, offset }));
+  /** One page of an invoice's audit log (replace-page; 1-based page, 25 by default). */
+  loadAuditLogs(invoiceRefId: string, page = 1, pageSize = BILLING_LIST_PAGE_SIZE): void {
+    const window = billingPageWindow(page, pageSize);
+
+    this.store.dispatch(loadAdminAuditLogs({ invoiceRefId, limit: window.limit, offset: window.offset }));
   }
 }

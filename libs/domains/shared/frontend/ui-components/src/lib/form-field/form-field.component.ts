@@ -25,7 +25,7 @@ import { FpcLabelComponent } from '../label/label.component';
     @if (error()) {
       <p class="fpc-form-field__error invalid-feedback d-block" [id]="errorId()" role="alert">{{ error() }}</p>
     }
-    <div class="fpc-form-field__error-slot invalid-feedback d-block">
+    <div class="fpc-form-field__error-slot invalid-feedback">
       <ng-content select="[fpcFormFieldError]" />
     </div>
 

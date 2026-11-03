@@ -13,10 +13,6 @@ export const loadAdminDatevExports = createAction(
   '[AdminDatevExports] Load',
   props<{ params: AdminDatevExportListParams; preserveScope?: boolean }>(),
 );
-export const loadAdminDatevExportsBatch = createAction(
-  '[AdminDatevExports] Load Batch',
-  props<{ params: AdminDatevExportListParams; offset: number; accumulatedItems: AdminDatevExportListItem[] }>(),
-);
 export const loadAdminDatevExportsSuccess = createAction(
   '[AdminDatevExports] Load Success',
   props<{
@@ -50,6 +46,12 @@ export const downloadDatevExportSuccess = createAction('[AdminDatevExports] Down
 export const downloadDatevExportFailure = createAction(
   '[AdminDatevExports] Download Failure',
   props<{ error: string }>(),
+);
+
+/** Exports of a queued period's year (poll result): resolves the matching queued placeholders. */
+export const resolveQueuedDatevExports = createAction(
+  '[AdminDatevExports] Resolve Queued',
+  props<{ items: AdminDatevExportListItem[]; loadedScope: DatevExportScope }>(),
 );
 
 export const expireQueuedDatevExports = createAction('[AdminDatevExports] Expire Queued');

@@ -152,6 +152,8 @@ export class AdminOfferListItemDto {
   id!: string;
   userId!: string;
   userEmail?: string;
+  /** Billing-profile name (company, else first + last name). */
+  customerName?: string;
   offerNumber?: string | null;
   status!: OfferStatus;
   currency!: string;
@@ -209,6 +211,14 @@ export class CustomerOfferListItemDto {
   archivedAt?: string | null;
   acceptedAt?: string | null;
   declinedAt?: string | null;
+}
+
+/** One page of the caller's own offers (`GET /offers/pending|history?limit&offset&search`). */
+export class PaginatedCustomerOffersResponseDto {
+  items!: CustomerOfferListItemDto[];
+  total!: number;
+  limit!: number;
+  offset!: number;
 }
 
 export class CustomerOfferDetailResponseDto extends CustomerOfferListItemDto {

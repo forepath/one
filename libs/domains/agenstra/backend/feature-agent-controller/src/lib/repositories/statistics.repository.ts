@@ -694,7 +694,7 @@ export class StatisticsRepository {
     to?: string;
   }): Promise<{
     filterDropCount: number;
-    filterTypesBreakdown: { filterType: string; direction: string; count: number }[];
+    filterTypesBreakdown: { filterType: string; filterDisplayName: string | null; direction: string; count: number }[];
     uniqueFilterTypes: string[];
   }> {
     const { statisticsClientIds, agentId, from, to } = params;
@@ -722,6 +722,8 @@ export class StatisticsRepository {
     const breakdownQb = this.statisticsChatFilterDrops
       .createQueryBuilder('fd')
       .select('fd.filter_type', 'filterType')
+      // Human-readable rule name (same as the table rows) for chart legends; one name per type.
+      .addSelect('MAX(fd.filter_display_name)', 'filterDisplayName')
       .addSelect('fd.direction', 'direction')
       .addSelect('COUNT(fd.id)', 'count')
       .where('fd.statistics_client_id IN (:...ids)', { ids: statisticsClientIds })
@@ -739,9 +741,15 @@ export class StatisticsRepository {
 
     if (to) breakdownQb.andWhere('fd.occurred_at <= :to', { to });
 
-    const breakdownRows = await breakdownQb.getRawMany<{ filterType: string; direction: string; count: string }>();
+    const breakdownRows = await breakdownQb.getRawMany<{
+      filterType: string;
+      filterDisplayName: string | null;
+      direction: string;
+      count: string;
+    }>();
     const filterTypesBreakdown = breakdownRows.map((r) => ({
       filterType: r.filterType,
+      filterDisplayName: r.filterDisplayName || null,
       direction: r.direction,
       count: parseInt(r.count ?? '0', 10),
     }));
@@ -879,7 +887,7 @@ export class StatisticsRepository {
     to?: string;
   }): Promise<{
     filterFlagCount: number;
-    filterTypesBreakdown: { filterType: string; direction: string; count: number }[];
+    filterTypesBreakdown: { filterType: string; filterDisplayName: string | null; direction: string; count: number }[];
     uniqueFilterTypes: string[];
   }> {
     const { statisticsClientIds, agentId, from, to } = params;
@@ -907,6 +915,7 @@ export class StatisticsRepository {
     const breakdownQb = this.statisticsChatFilterFlags
       .createQueryBuilder('ff')
       .select('ff.filter_type', 'filter_type')
+      .addSelect('MAX(ff.filter_display_name)', 'filter_display_name')
       .addSelect('ff.direction', 'direction')
       .addSelect('COUNT(ff.id)', 'count')
       .where('ff.statistics_client_id IN (:...ids)', { ids: statisticsClientIds })
@@ -924,9 +933,15 @@ export class StatisticsRepository {
 
     if (to) breakdownQb.andWhere('ff.occurred_at <= :to', { to });
 
-    const breakdownRows = await breakdownQb.getRawMany<{ filter_type: string; direction: string; count: string }>();
+    const breakdownRows = await breakdownQb.getRawMany<{
+      filter_type: string;
+      filter_display_name: string | null;
+      direction: string;
+      count: string;
+    }>();
     const filterTypesBreakdown = breakdownRows.map((r) => ({
       filterType: r.filter_type,
+      filterDisplayName: r.filter_display_name || null,
       direction: r.direction,
       count: parseInt(r.count ?? '0', 10),
     }));

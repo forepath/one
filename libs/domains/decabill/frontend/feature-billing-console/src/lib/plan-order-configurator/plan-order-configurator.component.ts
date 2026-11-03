@@ -38,7 +38,11 @@ import {
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { combineLatest, filter, take } from 'rxjs';
 
-import { getMeterAggregatorLabel, getProviderDisplayName } from '../billing-status-labels';
+import {
+  getBillingIntervalDurationLabel,
+  getMeterAggregatorLabel,
+  getProviderDisplayName,
+} from '../billing-status-labels';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
@@ -60,6 +64,7 @@ import {
   createDefaultIntegratedOrderConfig,
   type IntegratedOrderFormConfig,
 } from './plan-order-requested-config.util';
+import { formatBillingMoney } from '../billing-format';
 
 @Component({
   selector: 'framework-plan-order-configurator',
@@ -190,6 +195,10 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
     }
 
     return this.resolvePlanAllowedProviders(plan);
+  }
+
+  durationLabel(value: number, type: string): string {
+    return getBillingIntervalDurationLabel(value, type);
   }
 
   providerLabel(providerId: string): string {
@@ -410,7 +419,7 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
   }
 
   formatCurrencyAmount(amount: number): string {
-    return `€${amount.toFixed(2)}`;
+    return formatBillingMoney(amount);
   }
 
   pricingLeadingRows(): PricingTotalsLeadingRow[] {
@@ -440,7 +449,7 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
 
     if ((pricing.addonLines?.length ?? 0) > 0) {
       rows.push({
-        label: $localize`:@@featureSubscriptions-addonsTotal:Addons total`,
+        label: $localize`:@@featureSubscriptions-addonsTotal:Add-ons total`,
         amount: pricing.addonsTotal ?? 0,
         strong: true,
         borderBottom: true,
@@ -483,7 +492,7 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
   }
 
   formatMeterPrice(meter: { effectiveUnitPriceNet: number; unitLabel?: string | null }): string {
-    const price = this.formatCurrencyAmount(meter.effectiveUnitPriceNet);
+    const price = formatBillingMoney(meter.effectiveUnitPriceNet, undefined, { unitPrice: true });
     const unit = meter.unitLabel?.trim();
 
     return unit ? `${price} / ${unit}` : price;

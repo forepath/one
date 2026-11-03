@@ -35,7 +35,17 @@ describe('SubscriptionMetersFacade', () => {
     facade.loadAll('sub-1');
 
     expect(store.dispatch).toHaveBeenCalledWith(loadSubscriptionMeters({ subscriptionId: 'sub-1' }));
-    expect(store.dispatch).toHaveBeenCalledWith(loadMeterEntries({ subscriptionId: 'sub-1' }));
+    expect(store.dispatch).toHaveBeenCalledWith(
+      loadMeterEntries({ subscriptionId: 'sub-1', page: undefined, pageSize: undefined }),
+    );
+  });
+
+  it('requests a given entries page / size (replace-page)', () => {
+    facade.loadEntries('sub-1', 3, 50);
+
+    expect(store.dispatch).toHaveBeenLastCalledWith(
+      loadMeterEntries({ subscriptionId: 'sub-1', page: 3, pageSize: 50 }),
+    );
   });
 
   it('dispatches entry mutations', () => {

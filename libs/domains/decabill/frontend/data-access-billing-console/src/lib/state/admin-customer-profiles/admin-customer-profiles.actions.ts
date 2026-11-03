@@ -11,15 +11,11 @@ import type {
 
 export const loadAdminCustomerProfiles = createAction(
   '[AdminCustomerProfiles] Load Profiles',
-  props<{ search?: string }>(),
-);
-export const loadAdminCustomerProfilesBatch = createAction(
-  '[AdminCustomerProfiles] Load Profiles Batch',
-  props<{ offset: number; accumulatedProfiles: AdminCustomerProfileListItem[]; search?: string }>(),
+  props<{ search?: string; page?: number; pageSize?: number }>(),
 );
 export const loadAdminCustomerProfilesSuccess = createAction(
   '[AdminCustomerProfiles] Load Profiles Success',
-  props<{ profiles: AdminCustomerProfileListItem[] }>(),
+  props<{ profiles: AdminCustomerProfileListItem[]; total: number }>(),
 );
 export const loadAdminCustomerProfilesFailure = createAction(
   '[AdminCustomerProfiles] Load Profiles Failure',

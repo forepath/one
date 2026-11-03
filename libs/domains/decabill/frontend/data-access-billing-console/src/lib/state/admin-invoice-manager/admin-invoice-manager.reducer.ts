@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 
 import type { AdminInvoiceListItem } from '../../types/billing.types';
 
@@ -24,9 +25,6 @@ import {
   loadAdminInvoiceManager,
   loadAdminInvoiceManagerFailure,
   loadAdminInvoiceManagerSuccess,
-  loadMoreAdminInvoiceManager,
-  loadMoreAdminInvoiceManagerFailure,
-  loadMoreAdminInvoiceManagerSuccess,
   updateManualInvoice,
   updateManualInvoiceFailure,
   updateManualInvoiceSuccess,
@@ -41,10 +39,10 @@ export interface AdminInvoiceManagerState {
   deleting: boolean;
   actionLoading: boolean;
   error: string | null;
-  hasMore: boolean;
-  nextOffset: number;
-  appendLoading: boolean;
-  appendError: string | null;
+  /** Replace-page paging: total of the server list, 1-based page and its size. */
+  total: number;
+  page: number;
+  pageSize: number;
   search: string | null;
   userId: string | null;
 }
@@ -58,10 +56,9 @@ export const initialAdminInvoiceManagerState: AdminInvoiceManagerState = {
   deleting: false,
   actionLoading: false,
   error: null,
-  hasMore: false,
-  nextOffset: 0,
-  appendLoading: false,
-  appendError: null,
+  total: 0,
+  page: 1,
+  pageSize: BILLING_LIST_PAGE_SIZE,
   search: null,
   userId: null,
 };
@@ -118,49 +115,32 @@ function mapDetailToListItem(invoice: {
 
 export const adminInvoiceManagerReducer = createReducer(
   initialAdminInvoiceManagerState,
-  on(loadAdminInvoiceManager, (state, { search, userId }) => ({
-    ...state,
-    invoices: [],
-    loading: true,
-    error: null,
-    appendError: null,
-    appendLoading: false,
-    hasMore: false,
-    nextOffset: 0,
-    search: search?.trim() ? search.trim() : null,
-    userId: userId ?? null,
-  })),
-  on(loadAdminInvoiceManagerSuccess, (state, { invoices, hasMore, nextOffset }) => ({
+  on(loadAdminInvoiceManager, (state, { search, userId, page, pageSize }) => {
+    const window = billingPageWindow(page, pageSize ?? state.pageSize);
+
+    return {
+      ...state,
+      loading: true,
+      error: null,
+      page: window.page,
+      pageSize: window.pageSize,
+      search: search?.trim() ? search.trim() : null,
+      userId: userId ?? null,
+    };
+  }),
+  on(loadAdminInvoiceManagerSuccess, (state, { invoices, total }) => ({
     ...state,
     invoices,
-    hasMore,
-    nextOffset,
+    total,
     loading: false,
     error: null,
   })),
   on(loadAdminInvoiceManagerFailure, (state, { error }) => ({
     ...state,
+    invoices: [],
+    total: 0,
     loading: false,
     error,
-    hasMore: false,
-  })),
-  on(loadMoreAdminInvoiceManager, (state) => ({
-    ...state,
-    appendLoading: true,
-    appendError: null,
-  })),
-  on(loadMoreAdminInvoiceManagerSuccess, (state, { invoices, hasMore, nextOffset }) => ({
-    ...state,
-    invoices: [...state.invoices, ...invoices],
-    hasMore,
-    nextOffset,
-    appendLoading: false,
-    appendError: null,
-  })),
-  on(loadMoreAdminInvoiceManagerFailure, (state, { error }) => ({
-    ...state,
-    appendLoading: false,
-    appendError: error,
   })),
   on(createManualInvoice, (state) => ({ ...state, creating: true, error: null })),
   on(createManualInvoiceSuccess, (state, { invoice }) => ({

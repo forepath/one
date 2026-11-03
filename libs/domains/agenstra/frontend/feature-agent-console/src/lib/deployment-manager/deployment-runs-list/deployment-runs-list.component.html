@@ -1,64 +1,79 @@
 <div class="deployment-runs-list-container d-flex flex-column flex-grow-1 min-h-0">
-  @if (loadingRuns$ | async) {
-    <div class="d-flex justify-content-center align-items-center p-4">
-      <fpc-spinner
-        size="sm"
-        variant="primary"
-        i18n-label="@@featureDeploymentRunsList-loadingRuns"
-        label="Loading runs..."
-      />
-    </div>
-  } @else {
-    <fpc-search-field
-      class="border-bottom flex-shrink-0"
-      name="search"
-      [bordered]="false"
-      i18n-placeholder="@@featureDeploymentRunsList-searchPlaceholder"
-      placeholder="Search deployment runs"
-      [(value)]="searchRunsQuery"
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="deployment-runs-bulk-result"
     />
-    <div class="min-h-0 flex-grow-1 overflow-auto d-flex flex-column">
-      @if (!hasRuns()) {
-        @if (searchRunsQuery().trim()) {
-          <fpc-empty-state
-            size="sm"
-            icon="search"
-            message="No search results"
-            i18n-message="@@featureDeploymentRunsList-noSearchResults"
-          />
-        } @else {
-          <fpc-empty-state
-            size="sm"
-            message="No deployment runs yet"
-            i18n-message="@@featureDeploymentRunsList-noRunsFound"
-          />
-        }
-      } @else {
-        <fpc-list [flush]="true">
-          @for (run of filteredRuns(); track run.id) {
-            <fpc-list-item [active]="selectedRunId() === run.id" [clickable]="true" (selected)="onRunClick(run.id)">
-              <div fpcListItemTitle class="d-flex justify-content-between align-items-center gap-2">
-                <strong class="text-truncate me-2">{{ getRunDisplayName(run.runName) }}</strong>
-                <fpc-badge class="flex-shrink-0" [color]="getStatusBadgeColor(run.status)" [attr.title]="run.status">
-                  <i class="bi" [ngClass]="getStatusIcon(run.status)"></i>
-                  {{ run.status }}
-                </fpc-badge>
-              </div>
-              <div fpcListItemMeta class="small d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                <span class="me-2"> <i class="bi bi-git me-1" aria-hidden="true"></i>{{ run.ref }} </span>
-                <span class="me-2">
-                  <i class="bi bi-clock me-1" aria-hidden="true"></i>{{ formatDate(run.createdAt) }}
-                </span>
-              </div>
-            </fpc-list-item>
-          }
-        </fpc-list>
-      }
-    </div>
   }
 
-  <!-- Error Display (404 errors are hidden since empty state is handled by hasRuns check) -->
-  @if (filteredError(); as error) {
-    <fpc-alert class="m-3" variant="danger" [message]="error" />
-  }
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="tableLabel"
+    [columns]="columns"
+    [rows]="pageRuns()"
+    [activeRowId]="selectedRunId()"
+    paging="server"
+    [(page)]="page"
+    [(pageSize)]="pageSize"
+    [hasNext]="hasNext()"
+    persistKey="agenstra-deployment-runs"
+    [(query)]="searchRunsQuery"
+    [searchPlaceholder]="searchPlaceholder"
+    [filtered]="!!searchRunsQuery().trim()"
+    [loading]="loadingRuns()"
+    [error]="filteredError()"
+    selectable
+    [(selected)]="selectedIds"
+    [rowMenu]="runRowMenu"
+    (rowAction)="onRunAction($event.row, $event.item.id)"
+    (rowActivate)="onRunClick($event.id)"
+    emptyIcon="rocket-takeoff"
+    data-testid="deployment-runs-table"
+  >
+    <!-- Toolbar actions of the host page (e.g. Refresh) land in the table head. -->
+    <ng-container ngProjectAs="[fpcDataTableToolbar]"><ng-content select="[fpcDataTableToolbar]" /></ng-container>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      size="sm"
+      [disabled]="bulkBusy() || cancellableSelected().length === 0"
+      (clicked)="bulkCancelConfirmOpen.set(true)"
+      data-testid="deployment-runs-bulk-cancel"
+      iconOnly
+      [ariaLabel]="cancelLabel"
+      [title]="cancelLabel"
+    >
+      <i class="bi bi-slash-circle" aria-hidden="true"></i>
+    </fpc-button>
+
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        size="sm"
+        icon="rocket-takeoff"
+        message="No deployment runs yet"
+        i18n-message="@@featureDeploymentRunsList-noRunsFound"
+      />
+    </span>
+
+    <ng-template fpcTableCell="created" let-row>{{ row.createdAt | fpcDate: 'datetime' }}</ng-template>
+  </fpc-data-table>
+
+  <fpc-confirm-dialog
+    [(open)]="bulkCancelConfirmOpen"
+    i18n-title="@@featureDeploymentRunsList-bulkCancelTitle"
+    title="Cancel runs"
+    i18n-confirmLabel="@@featureDeploymentRunsList-cancelRun"
+    confirmLabel="Cancel run"
+    [danger]="true"
+    [busy]="bulkBusy()"
+    (confirmed)="onConfirmBulkCancel()"
+  >
+    <p class="mb-0" i18n="@@featureDeploymentRunsList-bulkCancelBody">
+      Cancel the selected queued or running runs? In-progress jobs may be stopped. This cannot be undone.
+    </p>
+  </fpc-confirm-dialog>
 </div>

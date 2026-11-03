@@ -1,7 +1,9 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, mergeMap, of, switchMap, tap } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { catchError, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
 
+import { billingPageWindow } from '../../constants/list-paging.constants';
 import { InvoicesService } from '../../services/invoices.service';
 
 import {
@@ -27,6 +29,7 @@ import {
   loadOpenOverdueInvoicesFailure,
   loadOpenOverdueInvoicesSuccess,
 } from './invoices.actions';
+import { selectInvoicesState } from './invoices.selectors';
 
 function normalizeError(error: unknown): string {
   if (error instanceof Error) return error.message;
@@ -57,12 +60,17 @@ export const loadOpenOverdueInvoices$ = createEffect(
   (actions$ = inject(Actions), invoicesService = inject(InvoicesService)) => {
     return actions$.pipe(
       ofType(loadOpenOverdueInvoices),
-      switchMap(({ search }) =>
-        invoicesService.getOpenOverdueInvoices(search).pipe(
-          map((invoices) => loadOpenOverdueInvoicesSuccess({ invoices })),
+      switchMap(({ search, page, pageSize }) => {
+        // Array API without a total: one extra row tells whether a next page exists (replace-page).
+        const { limit, offset } = billingPageWindow(page, pageSize);
+
+        return invoicesService.getOpenOverdueInvoices({ search, limit: limit + 1, offset }).pipe(
+          map((invoices) =>
+            loadOpenOverdueInvoicesSuccess({ invoices: invoices.slice(0, limit), hasMore: invoices.length > limit }),
+          ),
           catchError((error) => of(loadOpenOverdueInvoicesFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     );
   },
   { functional: true },
@@ -72,12 +80,17 @@ export const loadHistoryInvoices$ = createEffect(
   (actions$ = inject(Actions), invoicesService = inject(InvoicesService)) => {
     return actions$.pipe(
       ofType(loadHistoryInvoices),
-      switchMap(({ search }) =>
-        invoicesService.getHistoryInvoices(search).pipe(
-          map((invoices) => loadHistoryInvoicesSuccess({ invoices })),
+      switchMap(({ search, page, pageSize }) => {
+        // Array API without a total: one extra row tells whether a next page exists (replace-page).
+        const { limit, offset } = billingPageWindow(page, pageSize);
+
+        return invoicesService.getHistoryInvoices({ search, limit: limit + 1, offset }).pipe(
+          map((invoices) =>
+            loadHistoryInvoicesSuccess({ invoices: invoices.slice(0, limit), hasMore: invoices.length > limit }),
+          ),
           catchError((error) => of(loadHistoryInvoicesFailure({ error: normalizeError(error) }))),
-        ),
-      ),
+        );
+      }),
     );
   },
   { functional: true },
@@ -114,13 +127,28 @@ export const createInvoice$ = createEffect(
 );
 
 export const reloadInvoicesAfterCreate$ = createEffect(
-  (actions$ = inject(Actions)) => {
+  (actions$ = inject(Actions), store = inject(Store)) => {
     return actions$.pipe(
       ofType(createInvoiceSuccess),
-      mergeMap(({ subscriptionId }) => [
+      // The current page (search, page, size) of both lists, not page 1.
+      switchMap(({ subscriptionId }) =>
+        store.select(selectInvoicesState).pipe(
+          take(1),
+          map((state) => ({ subscriptionId, state })),
+        ),
+      ),
+      mergeMap(({ subscriptionId, state }) => [
         loadInvoices({ subscriptionId }),
-        loadHistoryInvoices({}),
-        loadOpenOverdueInvoices({}),
+        loadHistoryInvoices({
+          search: state?.historySearch ?? undefined,
+          page: state?.historyPage,
+          pageSize: state?.historyPageSize,
+        }),
+        loadOpenOverdueInvoices({
+          search: state?.openOverdueSearch ?? undefined,
+          page: state?.openOverduePage,
+          pageSize: state?.openOverduePageSize,
+        }),
         loadInvoicesSummary(),
       ]),
     );

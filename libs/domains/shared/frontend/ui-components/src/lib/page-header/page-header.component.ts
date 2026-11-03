@@ -8,6 +8,8 @@ export type FpcPageHeaderDensity = 'default' | 'compact';
  * Slots:
  * - `[fpcPageHeaderBreadcrumbs]` - back link / crumbs above the title row
  * - `[fpcPageHeaderTitle]` - rich title when the `title` input is not enough
+ * - `[fpcPageHeaderContext]` - context chip right of the title (scope / project / workspace: an
+ *   `fpc-badge variant="info" size="sm"` or an `fpc-button` wrapping one), like Agenstra's workspace chip
  * - `[fpcPageHeaderActions]` - trailing actions (usually `fpc-button`)
  * - default - optional content below the title row
  *
@@ -36,10 +38,13 @@ export type FpcPageHeaderDensity = 'default' | 'compact';
           <i class="bi bi-{{ icon() }} fpc-page-header__icon" aria-hidden="true"></i>
         }
         <div class="fpc-page-header__title-block min-w-0">
-          @if (title()) {
-            <h1 [class]="titleClasses()">{{ title() }}</h1>
-          }
-          <ng-content select="[fpcPageHeaderTitle]" />
+          <div class="fpc-page-header__title-line">
+            @if (title()) {
+              <h1 [class]="titleClasses()">{{ title() }}</h1>
+            }
+            <ng-content select="[fpcPageHeaderTitle]" />
+            <span class="fpc-page-header__context"><ng-content select="[fpcPageHeaderContext]" /></span>
+          </div>
           @if (subtitle()) {
             <p class="fpc-page-header__subtitle text-body-secondary mb-0">{{ subtitle() }}</p>
           }
