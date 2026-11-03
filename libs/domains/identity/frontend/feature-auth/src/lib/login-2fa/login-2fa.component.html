@@ -1,4 +1,4 @@
-<fpc-section-row [marketingHidden]="!showAuthMarketingPanel">
+<fpc-section-row class="fpc-density-comfortable" [marketingHidden]="!showAuthMarketingPanel">
   <fpc-section-column
     variant="marketing"
     class="d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
@@ -32,7 +32,7 @@
             <fpc-alert variant="danger" [message]="error" />
           }
 
-          <p class="text-body-secondary mb-3">
+          <p class="mb-3">
             @if (isTotpMethod) {
               <ng-container i18n="@@featureLogin2fa-totpHint"
                 >Enter the 6-digit code from your authenticator app for <strong>{{ email }}</strong
@@ -47,8 +47,16 @@
           </p>
 
           <div class="border rounded-3 p-3 mb-3">
-            <fpc-form-field i18n-label="@@featureLogin2fa-codeLabel" label="Verification Code" [required]="true">
+            <fpc-form-field
+              forId="verificationCode"
+              i18n-label="@@featureLogin2fa-codeLabel"
+              label="Verification code"
+              [required]="true"
+            >
               <fpc-otp-input
+                controlId="verificationCode"
+                i18n-ariaLabel="@@featureLogin2fa-codeLabel"
+                ariaLabel="Verification code"
                 formControlName="code"
                 [invalid]="
                   (form.get('code')?.invalid &&

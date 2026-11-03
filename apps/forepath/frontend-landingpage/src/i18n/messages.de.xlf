@@ -2262,10 +2262,6 @@
         <source>Analysis effort</source>
         <target>Analyseaufwand</target>
       </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-memoryProfileSwitcherAriaLabel" datatype="html">
-        <source>Analysis effort profile</source>
-        <target>Profil für Analyseaufwand</target>
-      </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-liteProfileWarningAriaLabel" datatype="html">
         <source>Lite analysis effort warning</source>
         <target>Hinweis zur Lite-Analyse</target>
@@ -3283,7 +3279,7 @@
         <target>Ausstellende zuständige Behörde</target>
       </trans-unit>
       <trans-unit id="featureForepathLegalContentReport-formMemberStateLabel" datatype="html">
-        <source>Member State</source>
+        <source>Member state</source>
         <target>Mitgliedstaat</target>
       </trans-unit>
       <trans-unit id="featureForepathLegalContentReport-formOfficialNameLabel" datatype="html">

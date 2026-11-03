@@ -19,7 +19,6 @@
     <span fpcListToolbarActions class="d-inline-flex gap-2">
       <fpc-button
         variant="primary"
-        size="sm"
         iconOnly
         [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'file'"
         (clicked)="onCreateItem('file')"
@@ -30,7 +29,6 @@
       </fpc-button>
       <fpc-button
         variant="primary"
-        size="sm"
         iconOnly
         [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'directory'"
         (clicked)="onCreateItem('directory')"
@@ -41,7 +39,6 @@
       </fpc-button>
       <fpc-button
         variant="primary"
-        size="sm"
         iconOnly
         (clicked)="onUploadFile()"
         i18n-title="@@featureFileTree-uploadFileTitle"
@@ -51,7 +48,6 @@
       </fpc-button>
       <fpc-button
         variant="dark"
-        size="sm"
         iconOnly
         (clicked)="onRefreshRoot()"
         i18n-title="@@featureFileTree-refreshTitle"
@@ -124,16 +120,17 @@
           <div class="create-item-input px-2 py-1" [style.padding-left.px]="24">
             <div class="input-group input-group-sm">
               <fpc-form-control
-                size="sm"
                 [(ngModel)]="newItemName"
                 (keydown.enter)="onConfirmCreate()"
                 (keydown.escape)="onCancelCreate()"
                 [placeholder]="getCreateItemPlaceholder()"
+                i18n-ariaLabel="@@featureFileTree-nameAria"
+                ariaLabel="Name"
               />
-              <fpc-button variant="primary" size="sm" iconOnly (clicked)="onConfirmCreate()">
+              <fpc-button variant="primary" iconOnly (clicked)="onConfirmCreate()">
                 <i class="bi bi-check"></i>
               </fpc-button>
-              <fpc-button variant="dark" size="sm" iconOnly (clicked)="onCancelCreate()">
+              <fpc-button variant="dark" iconOnly (clicked)="onCancelCreate()">
                 <i class="bi bi-x"></i>
               </fpc-button>
             </div>
@@ -147,16 +144,17 @@
               <div class="create-item-input px-2 py-1" [style.padding-left.px]="24">
                 <div class="input-group input-group-sm">
                   <fpc-form-control
-                    size="sm"
                     [(ngModel)]="newItemName"
                     (keydown.enter)="onConfirmCreate()"
                     (keydown.escape)="onCancelCreate()"
                     [placeholder]="getCreateItemPlaceholder()"
+                    i18n-ariaLabel="@@featureFileTree-nameAria"
+                    ariaLabel="Name"
                   />
-                  <fpc-button variant="primary" size="sm" iconOnly (clicked)="onConfirmCreate()">
+                  <fpc-button variant="primary" iconOnly (clicked)="onConfirmCreate()">
                     <i class="bi bi-check"></i>
                   </fpc-button>
-                  <fpc-button variant="dark" size="sm" iconOnly (clicked)="onCancelCreate()">
+                  <fpc-button variant="dark" iconOnly (clicked)="onCancelCreate()">
                     <i class="bi bi-x"></i>
                   </fpc-button>
                 </div>
@@ -285,7 +283,6 @@
             @if (node.type === 'directory') {
               <fpc-button
                 variant="dark"
-                size="sm"
                 iconOnly
                 [class.active]="creatingItem()?.path === node.path && creatingItem()?.type === 'file'"
                 (clicked)="onCreateItem('file', node.path); $event.stopPropagation()"
@@ -296,7 +293,6 @@
               </fpc-button>
               <fpc-button
                 variant="dark"
-                size="sm"
                 iconOnly
                 [class.active]="creatingItem()?.path === node.path && creatingItem()?.type === 'directory'"
                 (clicked)="onCreateItem('directory', node.path); $event.stopPropagation()"
@@ -307,7 +303,6 @@
               </fpc-button>
               <fpc-button
                 variant="dark"
-                size="sm"
                 iconOnly
                 (clicked)="onUploadFile(node.path); $event.stopPropagation()"
                 i18n-title="@@featureFileTree-uploadFileTitle"
@@ -318,7 +313,6 @@
             }
             <fpc-button
               variant="danger"
-              size="sm"
               iconOnly
               (clicked)="onDeleteItem(node.path); $event.stopPropagation()"
               i18n-title="@@featureFileTree-deleteTitle"
@@ -336,16 +330,17 @@
       <div class="create-item-input px-2 py-1" [style.padding-left.px]="(level + 1) * 20 + 24">
         <div class="input-group input-group-sm">
           <fpc-form-control
-            size="sm"
             [(ngModel)]="newItemName"
             (keydown.enter)="onConfirmCreate()"
             (keydown.escape)="onCancelCreate()"
             [placeholder]="getCreateItemPlaceholder()"
+            i18n-ariaLabel="@@featureFileTree-nameAria"
+            ariaLabel="Name"
           />
-          <fpc-button variant="primary" size="sm" iconOnly (clicked)="onConfirmCreate()">
+          <fpc-button variant="primary" iconOnly (clicked)="onConfirmCreate()">
             <i class="bi bi-check"></i>
           </fpc-button>
-          <fpc-button variant="dark" size="sm" iconOnly (clicked)="onCancelCreate()">
+          <fpc-button variant="dark" iconOnly (clicked)="onCancelCreate()">
             <i class="bi bi-x"></i>
           </fpc-button>
         </div>
@@ -513,9 +508,10 @@
   title="Name already exists"
   i18n-confirmLabel="@@featureFileTree-replace"
   confirmLabel="Replace"
-  i18n-cancelLabel="@@featureFileTree-keepBoth"
-  cancelLabel="Keep both"
+  i18n-alternativeLabel="@@featureFileTree-keepBoth"
+  alternativeLabel="Keep both"
   (confirmed)="onNameCollisionReplace()"
+  (alternative)="onNameCollisionKeepBoth()"
   (cancelled)="onNameCollisionKeepBoth()"
 >
   <p>
@@ -527,15 +523,9 @@
   </p>
 </fpc-confirm-dialog>
 
-<fpc-modal
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
-  [(open)]="renameFileModalOpen"
-  [title]="getRenameModalTitle()"
-  (closed)="cancelRenameItem()"
->
+<fpc-modal [(open)]="renameFileModalOpen" [title]="getRenameModalTitle()" (closed)="cancelRenameItem()">
   <p>{{ getRenameModalMessage() }}</p>
-  <fpc-form-field forId="renameNewName" i18n-label="@@featureFileTree-newNameLabel" label="New Name">
+  <fpc-form-field forId="renameNewName" i18n-label="@@featureFileTree-newNameLabel" label="New name">
     <fpc-form-control
       controlId="renameNewName"
       [(ngModel)]="renameNewName"
@@ -555,18 +545,12 @@
   </div>
 </fpc-modal>
 
-<fpc-modal
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
-  [(open)]="moveFileModalOpen"
-  [title]="getMoveModalTitle()"
-  (closed)="cancelMoveItem()"
->
+<fpc-modal [(open)]="moveFileModalOpen" [title]="getMoveModalTitle()" (closed)="cancelMoveItem()">
   <p>{{ getMoveModalMessage() }}</p>
   <fpc-form-field
     forId="moveDestinationPath"
     i18n-label="@@featureFileTree-destinationPathLabel"
-    label="Destination Path"
+    label="Destination path"
   >
     <fpc-form-control
       controlId="moveDestinationPath"
@@ -576,14 +560,13 @@
       i18n-placeholder="@@featureFileTree-moveDestinationPlaceholder"
       placeholder="Enter destination path (e.g., 'folder' or 'folder/subfolder')"
     />
-    <span fpcFormFieldHint i18n="@@featureFileTree-moveDestinationHint">
-      Use '.' for root directory, or enter a relative path like 'folder' or 'folder/subfolder'
+    <span fpcFormFieldHint class="d-block" i18n="@@featureFileTree-moveDestinationHint">
+      Use '.' for the root or a relative path, e.g. 'folder/sub'.
+    </span>
+    <span fpcFormFieldHint class="d-block">
+      <i class="bi bi-info-circle me-1" aria-hidden="true"></i>{{ getMoveDestinationLabel() }}
     </span>
   </fpc-form-field>
-  <p class="text-body-secondary small mb-0">
-    <i class="bi bi-info-circle me-1"></i>
-    {{ getMoveDestinationLabel() }}
-  </p>
   <div *fpcModalFooter>
     <fpc-button
       variant="primary"

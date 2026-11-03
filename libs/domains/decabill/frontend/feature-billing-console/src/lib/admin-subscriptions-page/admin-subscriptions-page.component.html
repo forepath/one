@@ -63,7 +63,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="dark"
-      size="sm"
       [disabled]="selectedWithStatus('pending_cancel').length === 0"
       (clicked)="resumeSelected()"
       data-testid="admin-subscriptions-bulk-resume"
@@ -76,7 +75,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="selectedWithStatus('active').length === 0"
       (clicked)="openBulkCancelConfirm()"
       data-testid="admin-subscriptions-bulk-cancel"
@@ -131,8 +129,7 @@
   [(open)]="cancelSubscriptionModalOpen"
   [title]="cancelDialogTitle()"
   [message]="cancelDialogMessage()"
-  i18n-confirmLabel="@@featureSubscriptions-cancel"
-  confirmLabel="Cancel"
+  [confirmLabel]="cancelDialogConfirmLabel()"
   [busy]="(canceling$ | async) === true"
   (confirmed)="bulkCancel() ? cancelSelected() : confirmCancelSubscription()"
 ></fpc-confirm-dialog>
@@ -171,7 +168,7 @@
   i18n-message="@@featureAdminSubscriptions-instantCancelConfirm"
   message="Force-remove this subscription immediately. Access ends now. Arrear plans are billed for used time; prepaid plans refund unused time like a statutory withdrawal. This cannot be resumed."
   i18n-confirmLabel="@@featureAdminSubscriptions-instantCancel"
-  confirmLabel="Instant cancel"
+  confirmLabel="Cancel now"
   [danger]="true"
   [busy]="(instantCanceling$ | async) === true"
   (confirmed)="confirmInstantCancelSubscription()"
@@ -247,7 +244,6 @@
         <fpc-button
           fpcDataTableBatch
           variant="danger"
-          size="sm"
           [disabled]="selectedEntries().length === 0"
           (clicked)="confirmBulkEntryDelete.set(true)"
           data-testid="admin-subscription-meter-entries-bulk-delete"
@@ -436,7 +432,6 @@
   [title]="bulkEntryDeleteTitle"
   [message]="bulkEntryDeleteMessage()"
   [confirmLabel]="deleteEntryLabel"
-  [cancelLabel]="dialogCancelLabel"
   [danger]="true"
   (confirmed)="deleteSelectedEntries()"
 />

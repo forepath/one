@@ -325,7 +325,7 @@
         } @else if (view.targetAgentId && view.targetChatId) {
           <div class="agent-chat-tool-embed__meta">{{ handoffPendingLabel }}</div>
           <div>
-            <fpc-button variant="primary" size="sm" (clicked)="openHandoffChat(view.targetAgentId, view.targetChatId)">
+            <fpc-button variant="primary" (clicked)="openHandoffChat(view.targetAgentId, view.targetChatId)">
               <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>{{ openHandoffChatLabel }}
             </fpc-button>
           </div>

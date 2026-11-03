@@ -37,7 +37,6 @@
     <fpc-button
       fpcDataTableToolbar
       variant="primary"
-      size="sm"
       iconOnly
       [disabled]="(saving$ | async) === true"
       [ariaLabel]="addTokenTitle"
@@ -49,7 +48,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="bulkBusy()"
       (clicked)="bulkRevokeOpen.set(true)"
       data-testid="token-manager-bulk-revoke"
@@ -111,8 +109,6 @@
   title="Create personal access token"
   size="lg"
   [closable]="(saving$ | async) !== true"
-  [cancelLabel]="lastCreatedPlaintext() ? null : cancelLabel"
-  [cancelDisabled]="(saving$ | async) === true"
   (closed)="onCreateDone()"
 >
   @if (lastCreatedPlaintext(); as plaintext) {
@@ -122,18 +118,13 @@
       <code class="d-block p-2 bg-body-tertiary rounded user-select-all text-break">{{ plaintext }}</code>
     </fpc-alert>
     <div *fpcModalFooter>
-      <fpc-button-group>
-        <fpc-button variant="dark" (clicked)="copyPlaintext()">
-          @if (copied()) {
-            <span i18n="@@featureTokenManager-copied">Copied</span>
-          } @else {
-            <span i18n="@@featureTokenManager-copy">Copy</span>
-          }
-        </fpc-button>
-        <fpc-button variant="primary" (clicked)="onCreateDone()">
-          <span i18n="@@featureTokenManager-done">Done</span>
-        </fpc-button>
-      </fpc-button-group>
+      <fpc-button variant="primary" (clicked)="copyPlaintext()">
+        @if (copied()) {
+          <span i18n="@@featureTokenManager-copied">Copied</span>
+        } @else {
+          <span i18n="@@featureTokenManager-copy">Copy</span>
+        }
+      </fpc-button>
     </div>
   } @else {
     <form (ngSubmit)="onSubmitCreateToken()">
@@ -170,9 +161,9 @@
         <div class="col-12">
           <fpc-label i18n="@@featureTokenManager-scopesLabel" [required]="true">Scopes</fpc-label>
           @if ((scopesLoading$ | async) === true) {
-            <div class="text-body-secondary small" i18n="@@featureTokenManager-loadingScopes">Loading scopes...</div>
+            <p class="form-text mb-0" i18n="@@featureTokenManager-loadingScopes">Loading scopes...</p>
           } @else if (scopes().length === 0) {
-            <div class="text-body-secondary small" i18n="@@featureTokenManager-noScopes">No scopes available</div>
+            <p class="form-text mb-0" i18n="@@featureTokenManager-noScopes">No scopes available</p>
           } @else {
             <div class="scope-list border rounded p-2">
               @for (scopeItem of scopes(); track scopeItem.scope) {
@@ -208,8 +199,6 @@
   title="Edit personal access token"
   size="lg"
   [closable]="(saving$ | async) !== true"
-  [cancelLabel]="cancelLabel"
-  [cancelDisabled]="(saving$ | async) === true"
   (closed)="cancelEditToken()"
 >
   <form (ngSubmit)="onSubmitEditToken()">
@@ -228,9 +217,9 @@
       <div class="col-12">
         <fpc-label i18n="@@featureTokenManager-scopesLabel" [required]="true">Scopes</fpc-label>
         @if ((scopesLoading$ | async) === true) {
-          <div class="text-body-secondary small" i18n="@@featureTokenManager-loadingScopes">Loading scopes...</div>
+          <p class="form-text mb-0" i18n="@@featureTokenManager-loadingScopes">Loading scopes...</p>
         } @else if (scopes().length === 0) {
-          <div class="text-body-secondary small" i18n="@@featureTokenManager-noScopes">No scopes available</div>
+          <p class="form-text mb-0" i18n="@@featureTokenManager-noScopes">No scopes available</p>
         } @else {
           <div class="scope-list border rounded p-2">
             @for (scopeItem of scopes(); track scopeItem.scope) {
@@ -253,7 +242,7 @@
         [disabled]="(saving$ | async) === true || !isFormValid(editForm)"
         [loading]="(saving$ | async) === true"
       >
-        <span i18n="@@featureTokenManager-update">Save changes</span>
+        <span i18n="@@featureTokenManager-update">Save</span>
       </fpc-button>
     </div>
   </form>

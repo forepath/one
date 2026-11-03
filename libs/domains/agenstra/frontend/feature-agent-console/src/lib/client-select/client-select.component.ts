@@ -16,7 +16,6 @@ export class ClientSelectComponent {
   /** Optional cache for resolving the selected client label (e.g. store list on parent page). */
   readonly clients = input<ClientResponseDto[]>([]);
   readonly selectedClientId = model<string>('');
-  readonly size = input<'sm' | 'md'>('md');
   readonly disabled = input(false);
   readonly required = input(false);
   readonly inputId = input('clientSelect');

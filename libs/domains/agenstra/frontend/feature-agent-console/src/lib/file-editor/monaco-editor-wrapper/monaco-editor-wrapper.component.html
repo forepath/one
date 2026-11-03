@@ -5,7 +5,6 @@
       <div class="preview-header d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary">
         <span class="small fw-semibold" i18n="@@featureMonacoEditor-imagePreview">Image Preview</span>
         <fpc-button
-          size="sm"
           iconOnly
           variant="secondary"
           (clicked)="onDownload()"
@@ -23,8 +22,7 @@
         } @else {
           <fpc-empty-state
             icon="image"
-            i18n-message="@@featureMonacoEditor-imagePreviewUnavailable"
-            [message]="bodyOmitted() ? 'File too large to preview' : 'Image preview unavailable'"
+            [message]="bodyOmitted() ? previewText.tooLarge : previewText.image"
             size="sm"
           />
         }
@@ -37,7 +35,6 @@
       <div class="preview-header d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary">
         <span class="small fw-semibold" i18n="@@featureMonacoEditor-pdfPreview">PDF Preview</span>
         <fpc-button
-          size="sm"
           iconOnly
           variant="secondary"
           (clicked)="onDownload()"
@@ -53,8 +50,7 @@
         } @else {
           <fpc-empty-state
             icon="file-earmark-pdf"
-            i18n-message="@@featureMonacoEditor-pdfPreviewUnavailable"
-            [message]="bodyOmitted() ? 'File too large to preview' : 'PDF preview unavailable'"
+            [message]="bodyOmitted() ? previewText.tooLarge : previewText.pdf"
             size="sm"
           />
         }
@@ -67,7 +63,6 @@
       <div class="preview-header d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary">
         <span class="small fw-semibold" i18n="@@featureMonacoEditor-videoPreview">Video Preview</span>
         <fpc-button
-          size="sm"
           iconOnly
           variant="secondary"
           (clicked)="onDownload()"
@@ -81,12 +76,7 @@
         @if (mediaPreviewHref(); as videoUrl) {
           <video [src]="videoUrl" controls playsinline class="mw-100 mh-100"></video>
         } @else {
-          <fpc-empty-state
-            icon="film"
-            i18n-message="@@featureMonacoEditor-videoPreviewUnavailable"
-            [message]="bodyOmitted() ? 'File too large to preview' : 'Video preview unavailable'"
-            size="sm"
-          />
+          <fpc-empty-state icon="film" [message]="bodyOmitted() ? previewText.tooLarge : previewText.video" size="sm" />
         }
       </div>
     </div>
@@ -97,7 +87,6 @@
       <div class="preview-header d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary">
         <span class="small fw-semibold" i18n="@@featureMonacoEditor-audioPreview">Audio Preview</span>
         <fpc-button
-          size="sm"
           iconOnly
           variant="secondary"
           (clicked)="onDownload()"
@@ -113,8 +102,7 @@
         } @else {
           <fpc-empty-state
             icon="music-note-beamed"
-            i18n-message="@@featureMonacoEditor-audioPreviewUnavailable"
-            [message]="bodyOmitted() ? 'File too large to preview' : 'Audio preview unavailable'"
+            [message]="bodyOmitted() ? previewText.tooLarge : previewText.audio"
             size="sm"
           />
         }
@@ -125,7 +113,6 @@
   <div class="monaco-editor-container d-flex flex-column">
     <div class="preview-header d-flex align-items-center justify-content-end p-2 border-bottom bg-body-tertiary">
       <fpc-button
-        size="sm"
         iconOnly
         variant="secondary"
         (clicked)="onDownload()"
@@ -145,7 +132,6 @@
   <div class="monaco-editor-container d-flex flex-column">
     <div class="preview-header d-flex align-items-center justify-content-end p-2 border-bottom bg-body-tertiary">
       <fpc-button
-        size="sm"
         iconOnly
         variant="secondary"
         (clicked)="onDownload()"
@@ -176,7 +162,6 @@
           <fpc-button-group size="sm" class="me-2">
             <fpc-button
               variant="dark"
-              size="sm"
               iconOnly
               (clicked)="undo()"
               [disabled]="isBinary()"
@@ -189,7 +174,6 @@
             </fpc-button>
             <fpc-button
               variant="dark"
-              size="sm"
               iconOnly
               (clicked)="redo()"
               [disabled]="isBinary()"
@@ -205,7 +189,6 @@
             <div class="d-flex align-items-center gap-1">
               @if (isPreviewable()) {
                 <fpc-button
-                  size="sm"
                   iconOnly
                   [variant]="previewVisible() ? 'primary' : 'secondary'"
                   (clicked)="togglePreview()"
@@ -217,7 +200,6 @@
               }
               @if (showDownload()) {
                 <fpc-button
-                  size="sm"
                   iconOnly
                   variant="secondary"
                   (clicked)="onDownload()"
@@ -244,14 +226,13 @@
               <fpc-button-group size="sm">
                 <fpc-button
                   variant="primary"
-                  size="sm"
                   iconOnly
                   (clicked)="onSave()"
                   [disabled]="!filePath() || !isDirty() || saving()"
                   [loading]="saving()"
                   i18n-title="@@featureFileEditor-saveTitle"
                   title="Save (Ctrl+S)"
-                  i18n-aria-label="@@featureFileEditor-saveTitle"
+                  i18n-ariaLabel="@@featureFileEditor-saveTitle"
                   ariaLabel="Save (Ctrl+S)"
                 >
                   <i class="bi bi-save" aria-hidden="true"></i>
@@ -284,7 +265,6 @@
             <span class="small fw-semibold" i18n="@@featureMonacoEditor-preview">Preview</span>
             <fpc-button
               variant="dark"
-              size="sm"
               iconOnly
               (clicked)="closePreview()"
               i18n-ariaLabel="@@featureMonacoEditor-closePreviewAriaLabel"

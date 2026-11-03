@@ -4,7 +4,6 @@
       <h6 class="mb-0 fw-semibold" i18n="@@featureGitManager-versionControlHeader">Version Control</h6>
       <fpc-button-group size="sm">
         <fpc-button
-          size="sm"
           iconOnly
           [variant]="(fetchError$ | async) ? 'danger' : 'secondary'"
           (clicked)="onFetch()"
@@ -21,7 +20,6 @@
           }
         </fpc-button>
         <fpc-button
-          size="sm"
           iconOnly
           [variant]="(pullError$ | async) ? 'danger' : 'secondary'"
           (clicked)="onPull()"
@@ -38,7 +36,6 @@
           }
         </fpc-button>
         <fpc-button
-          size="sm"
           iconOnly
           [variant]="(pushError$ | async) ? 'danger' : 'secondary'"
           (clicked)="onPush()"
@@ -58,7 +55,6 @@
         </fpc-button>
         <fpc-button
           variant="primary"
-          size="sm"
           iconOnly
           (clicked)="onForcePush()"
           [disabled]="(pushing$ | async) || (pushError$ | async) || (anyError$ | async)"
@@ -90,12 +86,11 @@
               <fpc-form-field
                 forId="commitMessage"
                 i18n-label="@@featureGitManager-commitMessageLabel"
-                label="Commit Message"
+                label="Commit message"
               >
                 <fpc-form-control
                   controlType="textarea"
                   controlId="commitMessage"
-                  size="sm"
                   [rows]="3"
                   [(ngModel)]="commitMessage"
                   i18n-placeholder="@@featureGitManager-commitMessagePlaceholder"
@@ -106,7 +101,6 @@
               </fpc-form-field>
               <fpc-button
                 variant="primary"
-                size="sm"
                 block
                 (clicked)="onCommit()"
                 [disabled]="!commitMessage().trim() || (isAnyOperationInProgress$ | async)"
@@ -131,13 +125,12 @@
                   </h6>
                   <fpc-button
                     variant="dark"
-                    size="sm"
                     iconOnly
                     (clicked)="onUnstageAll()"
                     [disabled]="isAnyOperationInProgress$ | async"
                     i18n-title="@@featureGitManager-unstageAllTitle"
                     title="Unstage all"
-                    i18n-aria-label="@@featureGitManager-unstageAllTitle"
+                    i18n-ariaLabel="@@featureGitManager-unstageAllTitle"
                     ariaLabel="Unstage all"
                   >
                     <i class="bi bi-dash-circle" aria-hidden="true"></i>
@@ -157,7 +150,6 @@
                     <fpc-button-group size="sm" class="ms-2">
                       <fpc-button
                         variant="dark"
-                        size="sm"
                         iconOnly
                         (clicked)="onUnstageFile(file.path); $event.stopPropagation()"
                         [disabled]="isAnyOperationInProgress$ | async"
@@ -187,13 +179,12 @@
                   </h6>
                   <fpc-button
                     variant="dark"
-                    size="sm"
                     iconOnly
                     (clicked)="onStageAll()"
                     [disabled]="isAnyOperationInProgress$ | async"
                     i18n-title="@@featureGitManager-stageAllTitle"
                     title="Stage all"
-                    i18n-aria-label="@@featureGitManager-stageAllTitle"
+                    i18n-ariaLabel="@@featureGitManager-stageAllTitle"
                     ariaLabel="Stage all"
                   >
                     <i class="bi bi-plus" aria-hidden="true"></i>
@@ -213,7 +204,6 @@
                     <fpc-button-group size="sm" class="ms-2">
                       <fpc-button
                         variant="success"
-                        size="sm"
                         iconOnly
                         (clicked)="onStageFile(file.path); $event.stopPropagation()"
                         [disabled]="isAnyOperationInProgress$ | async"

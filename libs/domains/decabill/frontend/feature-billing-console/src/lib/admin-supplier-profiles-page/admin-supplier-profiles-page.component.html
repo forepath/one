@@ -40,7 +40,6 @@
     <fpc-button
       fpcDataTableToolbar
       variant="primary"
-      size="sm"
       iconOnly
       [disabled]="(creating$ | async) === true"
       [ariaLabel]="addProfileAriaLabel"
@@ -52,7 +51,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="selectedProfiles().length === 0"
       (clicked)="confirmBulkDelete.set(true)"
       data-testid="admin-supplier-profiles-bulk-delete"
@@ -80,7 +78,6 @@
   [title]="bulkDeleteTitle"
   [message]="bulkDeleteMessage()"
   [confirmLabel]="deleteLabel"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   (confirmed)="deleteSelected()"
 />
@@ -90,8 +87,6 @@
   size="lg"
   i18n-title="@@featureAdminSupplierProfiles-createTitle"
   title="Create supplier profile"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <ng-container *ngTemplateOutlet="profileFields; context: { form: createForm, prefix: 'create' }"></ng-container>
   <div *fpcModalFooter class="d-flex justify-content-end gap-2">
@@ -111,8 +106,6 @@
   size="lg"
   i18n-title="@@featureAdminSupplierProfiles-editTitle"
   title="Edit supplier profile"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <div class="row">
     <div class="col-md-6">
@@ -174,10 +167,8 @@
   size="lg"
   i18n-title="@@featureAdminSupplierProfiles-customDataTitle"
   title="Custom data"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
-  <p class="text-body-secondary small mb-3" i18n="@@featureAdminSupplierProfiles-customDataHelp">
+  <p class="form-text fpc-form-text--wrap mb-3" i18n="@@featureAdminSupplierProfiles-customDataHelp">
     Admin-only key/value pairs for linking this supplier to external systems. Values are stored encrypted.
   </p>
   @if (customDataProfile) {
@@ -188,7 +179,6 @@
       </div>
       <fpc-button
         variant="primary"
-        size="sm"
         iconOnly
         (clicked)="addCustomDataRow()"
         [disabled]="customDataLoading() || customDataSaving()"
@@ -221,6 +211,7 @@
             [readOnly]="row.existingKey"
             placeholder="Key"
             i18n-placeholder="@@featureAdminSupplierProfiles-customDataKeyPlaceholder"
+            [ariaLabel]="customDataKeyLabel + ' ' + (i + 1)"
           />
         </div>
         <div class="col">
@@ -230,10 +221,11 @@
             [name]="'customDataValue' + i"
             placeholder="Value"
             i18n-placeholder="@@featureAdminSupplierProfiles-customDataValuePlaceholder"
+            [ariaLabel]="customDataValueLabel + ' ' + (row.key || i + 1)"
           />
         </div>
         <div class="col-auto">
-          <fpc-button variant="danger" size="sm" iconOnly (clicked)="removeCustomDataRow(i)">
+          <fpc-button variant="danger" iconOnly (clicked)="removeCustomDataRow(i)">
             <i class="bi bi-trash" aria-hidden="true"></i>
           </fpc-button>
         </div>
@@ -310,8 +302,17 @@
     </div>
   </div>
   @if (prefix === 'edit') {
-    <fpc-form-field i18n-label="@@featureAdminSupplierProfiles-vatIdValidationStatus" label="VAT ID validation">
-      <fpc-form-control [value]="vatIdValidationStatusLabel(editForm.vatIdValidationStatus)" readOnly disabled />
+    <fpc-form-field
+      forId="editSupplierVatIdValidation"
+      i18n-label="@@featureAdminSupplierProfiles-vatIdValidationStatus"
+      label="VAT ID validation"
+    >
+      <fpc-form-control
+        controlId="editSupplierVatIdValidation"
+        [value]="vatIdValidationStatusLabel(editForm.vatIdValidationStatus)"
+        readOnly
+        disabled
+      />
     </fpc-form-field>
   }
   <fpc-form-field [forId]="prefix + 'Email'" i18n-label="@@featureAdminSupplierProfiles-email" label="Email">
@@ -359,7 +360,7 @@
       <fpc-form-field
         [forId]="prefix + 'State'"
         i18n-label="@@featureAdminSupplierProfiles-state"
-        label="State / Region"
+        label="State / region"
       >
         <fpc-form-control [controlId]="prefix + 'State'" [(ngModel)]="form.state" [name]="prefix + 'State'" />
       </fpc-form-field>

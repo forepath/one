@@ -61,7 +61,6 @@
     <fpc-button
       fpcDataTableToolbar
       variant="primary"
-      size="sm"
       iconOnly
       [disabled]="(saving$ | async) === true"
       [ariaLabel]="addWebhookTitle"
@@ -73,7 +72,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="bulkBusy() || selectedEnabledEndpoints().length === 0"
       (clicked)="onBulkTest()"
       data-testid="webhook-manager-bulk-test"
@@ -86,7 +84,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="bulkBusy()"
       (clicked)="onBulkSetEnabled(true)"
       data-testid="webhook-manager-bulk-enable"
@@ -99,7 +96,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="bulkBusy()"
       (clicked)="onBulkSetEnabled(false)"
       data-testid="webhook-manager-bulk-disable"
@@ -112,7 +108,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="bulkBusy()"
       (clicked)="bulkDeleteOpen.set(true)"
       data-testid="webhook-manager-bulk-delete"
@@ -151,8 +146,6 @@
   title="Create webhook"
   size="lg"
   [closable]="(saving$ | async) !== true"
-  [cancelLabel]="lastCreatedSigningSecret() ? null : cancelLabel"
-  [cancelDisabled]="(saving$ | async) === true"
   (closed)="onCreateDone()"
 >
   @if (lastCreatedSigningSecret(); as signingSecret) {
@@ -163,11 +156,6 @@
       </p>
       <code class="d-block p-2 bg-body-tertiary rounded user-select-all">{{ signingSecret }}</code>
     </fpc-alert>
-    <div *fpcModalFooter>
-      <fpc-button variant="primary" (clicked)="onCreateDone()">
-        <span i18n="@@featureNotifications-done">Done</span>
-      </fpc-button>
-    </div>
   } @else {
     <form (ngSubmit)="onSubmitCreateWebhook()">
       <ng-container
@@ -196,8 +184,6 @@
   title="Edit webhook"
   size="lg"
   [closable]="(saving$ | async) !== true"
-  [cancelLabel]="cancelLabel"
-  [cancelDisabled]="(saving$ | async) === true"
   (closed)="cancelEditWebhook()"
 >
   <form (ngSubmit)="onSubmitEditWebhook()">
@@ -219,7 +205,7 @@
         [disabled]="(saving$ | async) === true || !isEditFormValid()"
         [loading]="(saving$ | async) === true"
       >
-        <span i18n="@@featureNotifications-update">Save changes</span>
+        <span i18n="@@featureNotifications-update">Save</span>
       </fpc-button>
     </div>
   </form>
@@ -368,8 +354,7 @@
             inputType="password"
             [(ngModel)]="form.authValue"
             [name]="formPrefix + 'AuthValue'"
-            [placeholder]="hasExistingAuthValue ? 'Leave empty to keep current' : ''"
-            i18n-placeholder="@@featureNotifications-authValueKeepPlaceholder"
+            [placeholder]="hasExistingAuthValue ? keepAuthValuePlaceholder : ''"
             [disabled]="(saving$ | async) === true || readonly"
           />
           @if (hasExistingAuthValue) {
@@ -383,11 +368,9 @@
     <div class="col-12">
       <fpc-label i18n="@@featureNotifications-subscribedEventsLabel" [required]="true">Subscribed events</fpc-label>
       @if ((eventTypesLoading$ | async) === true) {
-        <div class="text-body-secondary small" i18n="@@featureNotifications-loadingEventTypes">
-          Loading event types...
-        </div>
+        <p class="form-text mb-0" i18n="@@featureNotifications-loadingEventTypes">Loading event types...</p>
       } @else if (eventTypes().length === 0) {
-        <div class="text-body-secondary small" i18n="@@featureNotifications-noEventTypes">No event types available</div>
+        <p class="form-text mb-0" i18n="@@featureNotifications-noEventTypes">No event types available</p>
       } @else {
         <div class="event-type-list border rounded p-2">
           @for (eventType of eventTypes(); track eventType.type) {

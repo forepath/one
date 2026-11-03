@@ -87,8 +87,6 @@ export class IdentityUserManagerComponent implements OnInit {
 
   /** Modal footer Cancel (3.38 R14: [Cancel `dark`, Primary]); the shared identity unit exists in every console. */
 
-  readonly cancelLabel = $localize`:@@identityLogoutConfirm-cancel:Cancel`;
-
   readonly pageTitle = $localize`:@@featureUserManager-title:User management`;
   readonly addUserTitle = $localize`:@@featureUserManager-addUserTitle:Add user`;
   readonly searchUsersPlaceholder = $localize`:@@featureUserManager-searchUsersPlaceholder:Search users`;

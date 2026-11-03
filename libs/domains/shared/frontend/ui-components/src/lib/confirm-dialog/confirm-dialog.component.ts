@@ -24,7 +24,11 @@ import { FpcModalAccent, FpcModalComponent, FpcModalSize } from '../modal/modal.
  * `danger` / `warning` drive both the confirm button variant and the modal corner close accent
  * (fill + X ink match that button’s text/background colors).
  *
- * Enter confirms while the dialog is open (unless busy, or focus is on Cancel / a multiline field).
+ * One action in the footer (no Cancel: the header X, Escape and the backdrop dismiss and emit `cancelled`). Label it
+ * with the outcome's verb ("Delete", "Revoke"), never "Confirm" / "OK" / "Yes". A real second choice (e.g. "Keep
+ * both" next to "Replace") goes in `alternativeLabel` / `(alternative)`, never a dismiss.
+ *
+ * Enter confirms while the dialog is open (unless busy, or focus is on a button / a multiline field).
  */
 @Component({
   selector: 'fpc-confirm-dialog',
@@ -49,14 +53,20 @@ import { FpcModalAccent, FpcModalComponent, FpcModalSize } from '../modal/modal.
       <ng-content />
 
       <div *fpcModalFooter>
-        <fpc-button-group>
-          <fpc-button variant="dark" [disabled]="busy()" (clicked)="onCancel()">
-            {{ cancelLabel() }}
-          </fpc-button>
+        @if (alternativeLabel(); as alternative) {
+          <fpc-button-group>
+            <fpc-button variant="secondary" [disabled]="busy()" (clicked)="onAlternative()">{{
+              alternative
+            }}</fpc-button>
+            <fpc-button [variant]="confirmVariant()" [loading]="busy()" (clicked)="onConfirm()">
+              {{ confirmLabel() }}
+            </fpc-button>
+          </fpc-button-group>
+        } @else {
           <fpc-button [variant]="confirmVariant()" [loading]="busy()" (clicked)="onConfirm()">
             {{ confirmLabel() }}
           </fpc-button>
-        </fpc-button-group>
+        }
       </div>
     </fpc-modal>
   `,
@@ -66,7 +76,8 @@ export class FpcConfirmDialogComponent {
   readonly title = input('Are you sure?');
   readonly message = input<string | null>(null);
   readonly confirmLabel = input('Confirm');
-  readonly cancelLabel = input('Cancel');
+  /** Optional second action before the confirm (a real alternative outcome, not a dismiss). */
+  readonly alternativeLabel = input<string | null>(null);
   readonly size = input<FpcModalSize>('md');
   /** Destructive confirm (danger button + close accent). Wins over `warning`. */
   readonly danger = input(false, { transform: booleanAttribute });
@@ -78,6 +89,7 @@ export class FpcConfirmDialogComponent {
   // `confirm` and `cancel` are standard DOM event names, so the outputs use the past tense.
   readonly confirmed = output<void>();
   readonly cancelled = output<void>();
+  readonly alternative = output<void>();
 
   protected readonly accent = computed<FpcModalAccent>(() => {
     if (this.danger()) {
@@ -104,7 +116,7 @@ export class FpcConfirmDialogComponent {
       return;
     }
 
-    // Let focused buttons/links keep native Enter activation (e.g. Cancel).
+    // Let focused buttons/links keep native Enter activation (e.g. the header X).
     if (target.closest('button, a, [role="button"]')) {
       return;
     }
@@ -126,8 +138,8 @@ export class FpcConfirmDialogComponent {
     }
   }
 
-  protected onCancel(): void {
-    this.cancelled.emit();
+  protected onAlternative(): void {
+    this.alternative.emit();
     this.open.set(false);
   }
 

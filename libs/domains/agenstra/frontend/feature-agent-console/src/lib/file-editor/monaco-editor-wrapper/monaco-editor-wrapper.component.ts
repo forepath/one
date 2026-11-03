@@ -74,6 +74,15 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
   revision = input<number | null>(null);
   /** True when open used HEAD only and skipped the body. */
   bodyOmitted = input<boolean>(false);
+
+  /** Empty-state messages of the binary previews (bound, so they live here as `$localize` messages). */
+  protected readonly previewText = {
+    tooLarge: $localize`:@@featureMonacoEditor-fileTooLarge:File too large to preview`,
+    image: $localize`:@@featureMonacoEditor-imagePreviewUnavailable:Image preview unavailable`,
+    pdf: $localize`:@@featureMonacoEditor-pdfPreviewUnavailable:PDF preview unavailable`,
+    video: $localize`:@@featureMonacoEditor-videoPreviewUnavailable:Video preview unavailable`,
+    audio: $localize`:@@featureMonacoEditor-audioPreviewUnavailable:Audio preview unavailable`,
+  };
   isDirty = input<boolean>(false);
   autosaveEnabled = input<boolean>(false);
   /** When true, show Autosave + Save in the editor toolbar (e.g. layer VFS IDE). */

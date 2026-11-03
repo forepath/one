@@ -13,6 +13,7 @@ import {
   provideFpcListToolbarLabels,
   provideFpcStepStripLabels,
   provideFpcTabGroupLabels,
+  provideFpcControlSize,
   provideFpcDensity,
   provideFpcOverlayPortal,
 } from '@forepath/shared/frontend/ui-components';
@@ -26,6 +27,9 @@ export const appConfig: ApplicationConfig = {
     // Modals / context menus / `appendTo="body"` dropdowns render at <body> level (z-index scale).
     provideFpcOverlayPortal(),
     provideFpcDensity(),
+    // Dense UI behind the auth guard (buttons, fields, labels); public routes (sign-in, registration, public
+    // withdrawal) set `md`.
+    provideFpcControlSize('sm'),
     // Data tables (3.38 D1–D4): localized once; a table's own `labels` still win.
     provideFpcDataTableLabels({
       search: $localize`:@@fpcDataTable-search:Search`,

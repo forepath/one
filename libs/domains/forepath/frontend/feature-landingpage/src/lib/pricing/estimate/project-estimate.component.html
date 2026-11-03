@@ -181,6 +181,7 @@
               <div class="estimate-chat__memory-profile mb-3 d-flex justify-content-end">
                 <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 gap-sm-3">
                   <span
+                    id="project-estimate-memory-profile-label"
                     class="small fw-semibold text-body"
                     i18n="@@featureForepathProjectEstimate-activeModelProfileLabel"
                   >
@@ -189,8 +190,7 @@
                   <div
                     class="estimate-chat__memory-profile-switcher"
                     role="group"
-                    i18n-aria-label="@@featureForepathProjectEstimate-memoryProfileSwitcherAriaLabel"
-                    aria-label="Analysis effort profile"
+                    aria-labelledby="project-estimate-memory-profile-label"
                   >
                     @for (option of memoryProfileOptions(); track option.profileId) {
                       @if (option.isActive) {
@@ -265,7 +265,7 @@
                 <span i18n="@@featureForepathProjectEstimate-sendButton">Send</span>
               </fpc-button>
             </div>
-            <p class="small text-muted mt-2 mb-0 text-end" i18n="@@featureForepathProjectEstimate-keyboardHint">
+            <p class="form-text mb-0 text-end" i18n="@@featureForepathProjectEstimate-keyboardHint">
               Press Enter to send. Use Ctrl+Enter for a new line.
             </p>
           </div>

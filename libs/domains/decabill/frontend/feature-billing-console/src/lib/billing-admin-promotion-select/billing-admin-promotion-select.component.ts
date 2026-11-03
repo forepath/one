@@ -5,7 +5,12 @@ import {
   AdminPromotionsService,
   type AdminPromotionResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { FpcBadgeComponent, FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
+import {
+  FpcBadgeComponent,
+  FpcFormControlComponent,
+  FpcTypeaheadSelectComponent,
+  FpcFormTextDirective,
+} from '@forepath/shared/frontend/ui-components';
 import { catchError, debounceTime, distinctUntilChanged, map, of, skip, switchMap, tap } from 'rxjs';
 
 import { isAccessDeniedError } from '../billing-access-denied.util';
@@ -17,13 +22,18 @@ import { isAccessDeniedError } from '../billing-access-denied.util';
 @Component({
   selector: 'framework-billing-admin-promotion-select',
   standalone: true,
-  imports: [CommonModule, FpcBadgeComponent, FpcTypeaheadSelectComponent],
+  imports: [
+    FpcFormTextDirective,
+    CommonModule,
+    FpcBadgeComponent,
+    FpcFormControlComponent,
+    FpcTypeaheadSelectComponent,
+  ],
   templateUrl: './billing-admin-promotion-select.component.html',
   styleUrls: ['../billing-admin-user-select/billing-admin-user-select.component.scss'],
 })
 export class BillingAdminPromotionSelectComponent {
   readonly selectedCode = model<string>('');
-  readonly size = input<'sm' | 'md'>('md');
   readonly disabled = input(false);
   readonly required = input(false);
   readonly inputId = input('billingAdminPromotionSelect');

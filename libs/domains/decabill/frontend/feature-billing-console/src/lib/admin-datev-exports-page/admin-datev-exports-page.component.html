@@ -55,7 +55,6 @@
     <fpc-button
       fpcDataTableToolbar
       variant="primary"
-      size="sm"
       iconOnly
       [disabled]="(triggerLoading$ | async) === true"
       [ariaLabel]="exportMonthAriaLabel"
@@ -67,7 +66,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="selectedCompleted().length === 0"
       (clicked)="downloadSelected()"
       data-testid="datev-exports-bulk-download"
@@ -90,13 +88,7 @@
   </fpc-data-table>
 </div>
 
-<fpc-modal
-  [(open)]="exportModalOpen"
-  i18n-title="@@featureAdminDatevExports-exportModalTitle"
-  title="Export month"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="exportModalOpen" i18n-title="@@featureAdminDatevExports-exportModalTitle" title="Export month">
   <fpc-form-field forId="datevYear" i18n-label="@@featureAdminDatevExports-year" label="Year">
     <fpc-form-control controlId="datevYear" inputType="number" [(ngModel)]="triggerYear" name="datevYear" />
   </fpc-form-field>

@@ -96,7 +96,6 @@
           <fpc-button
             fpcDataTableToolbar
             variant="primary"
-            size="sm"
             iconOnly
             [disabled]="(mutating$ | async) === true"
             [ariaLabel]="createOfferAriaLabel"
@@ -105,17 +104,21 @@
           >
             <i class="bi bi-plus-lg" aria-hidden="true"></i>
           </fpc-button>
-          <fpc-form-field fpcDataTableFilters i18n-label="@@featureAdminOffers-customerFilter" label="Customer">
+          <fpc-form-field
+            fpcDataTableFilters
+            forId="offersTableCustomerFilter"
+            i18n-label="@@featureAdminOffers-customerFilter"
+            label="Customer"
+          >
             <framework-billing-admin-user-select
+              inputId="offersTableCustomerFilter"
               [(selectedUserId)]="offersUserIdDraft"
-              [size]="'sm'"
             ></framework-billing-admin-user-select>
           </fpc-form-field>
 
           <fpc-button
             fpcDataTableBatch
             variant="secondary"
-            size="sm"
             [disabled]="selectedDrafts().length === 0"
             (clicked)="sendSelected()"
             data-testid="admin-offers-bulk-send"
@@ -128,7 +131,6 @@
           <fpc-button
             fpcDataTableBatch
             variant="secondary"
-            size="sm"
             [disabled]="selectedPendingResponse().length === 0"
             (clicked)="pendingBulk.set('revoke')"
             data-testid="admin-offers-bulk-revoke"
@@ -141,7 +143,6 @@
           <fpc-button
             fpcDataTableBatch
             variant="danger"
-            size="sm"
             [disabled]="selectedDrafts().length === 0"
             (clicked)="pendingBulk.set('delete')"
             data-testid="admin-offers-bulk-delete"
@@ -176,17 +177,20 @@
           (applied)="filterState.apply()"
           (cleared)="onResetFilters()"
         >
-          <fpc-form-field i18n-label="@@featureAdminOffers-customerFilter" label="Customer">
+          <fpc-form-field
+            forId="offersCustomerFilter"
+            i18n-label="@@featureAdminOffers-customerFilter"
+            label="Customer"
+          >
             <framework-billing-admin-user-select
+              inputId="offersCustomerFilter"
               [(selectedUserId)]="filterUserId"
-              [size]="'sm'"
             ></framework-billing-admin-user-select>
           </fpc-form-field>
           <fpc-form-field forId="offersFromDate" i18n-label="@@featureAdminOffers-fromDate" label="From">
             <fpc-form-control
               controlId="offersFromDate"
               inputType="date"
-              size="sm"
               [ngModel]="filterState.draft().from"
               (ngModelChange)="filterState.patch({ from: $event })"
               name="fromDate"
@@ -196,7 +200,6 @@
             <fpc-form-control
               controlId="offersToDate"
               inputType="date"
-              size="sm"
               [ngModel]="filterState.draft().to"
               (ngModelChange)="filterState.patch({ to: $event })"
               name="toDate"
@@ -206,7 +209,6 @@
             <fpc-form-control
               controlType="select"
               controlId="offersGroupBy"
-              size="sm"
               [ngModel]="filterState.draft().groupBy"
               (ngModelChange)="filterState.patch({ groupBy: $event })"
               name="groupBy"
@@ -259,14 +261,14 @@
   [title]="bulkConfirmTitle()"
   [message]="bulkConfirmMessage()"
   [confirmLabel]="bulkConfirmLabel()"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   (confirmed)="runPendingBulk()"
 />
 
 <fpc-modal [(open)]="createModalOpen" size="lg" i18n-title="@@featureAdminOffers-createTitle" title="Create offer">
-  <fpc-form-field i18n-label="@@featureAdminOffers-customer" label="Customer">
+  <fpc-form-field forId="createOfferCustomer" i18n-label="@@featureAdminOffers-customer" label="Customer">
     <framework-billing-admin-user-select
+      inputId="createOfferCustomer"
       #createOfferUserSelect
       [(selectedUserId)]="createUserId"
     ></framework-billing-admin-user-select>
@@ -299,14 +301,6 @@
       [summary]="createLineEditor?.draftSummary() ?? null"
     ></framework-pricing-totals-summary>
     <div class="d-flex justify-content-end gap-2 w-100">
-      <fpc-button
-        variant="dark"
-        type="button"
-        (clicked)="createModalOpen.set(false)"
-        i18n="@@featureBillingModal-cancel"
-      >
-        Cancel
-      </fpc-button>
       <fpc-button
         variant="primary"
         [disabled]="!canSubmitCreate() || (mutating$ | async)"
@@ -356,16 +350,13 @@
       ></framework-pricing-totals-summary>
     }
     <div class="d-flex justify-content-end gap-2 w-100">
-      <fpc-button variant="dark" (clicked)="editModalOpen.set(false)" i18n="@@featureAdminOffers-cancel">
-        Cancel
-      </fpc-button>
       <fpc-button
         variant="primary"
         [disabled]="!canSubmitEdit() || (mutating$ | async)"
         (clicked)="submitEdit()"
         i18n="@@featureAdminOffers-saveChanges"
       >
-        Save changes
+        Save
       </fpc-button>
     </div>
   </div>

@@ -39,7 +39,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="bulkBusy() || cancellableSelected().length === 0"
       (clicked)="bulkCancelConfirmOpen.set(true)"
       data-testid="deployment-runs-bulk-cancel"

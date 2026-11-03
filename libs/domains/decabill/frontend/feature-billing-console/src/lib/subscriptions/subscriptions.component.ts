@@ -92,6 +92,7 @@ import {
   type FpcBadgeTone,
   FpcStepStripComponent,
   FpcStepStripDirective,
+  FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
 import {
   combineLatest,
@@ -180,6 +181,7 @@ type ConfigChangeWizardStep = {
   selector: 'framework-billing-subscriptions',
   standalone: true,
   imports: [
+    FpcFormTextDirective,
     FpcStepStripComponent,
     FpcStepStripDirective,
     CommonModule,

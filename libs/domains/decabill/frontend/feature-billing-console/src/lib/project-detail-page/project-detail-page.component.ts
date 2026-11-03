@@ -50,6 +50,7 @@ import {
   FpcDatePipe,
   FpcMoneyPipe,
   FpcBadgeComponent,
+  FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
 import {
   filter,
@@ -83,14 +84,7 @@ import {
   hasProjectTargetHours,
   type ProjectSummaryProgressBar,
 } from '../project-summary-progress.utils';
-import {
-  DB_DL_CANCEL,
-  dbBulkSummary,
-  dbCopyIdItem,
-  type DbBulkResult,
-  DB_DL_EDIT,
-  DB_DL_DELETE,
-} from '../shared/data-list';
+import { dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT, DB_DL_DELETE } from '../shared/data-list';
 import { timeEntryBillingState } from '../shared/table-states';
 
 import { isProjectDetailTab, parseProjectDetailTab, type ProjectDetailTab } from './project-detail-tabs';
@@ -105,6 +99,7 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
   selector: 'framework-project-detail-page',
   standalone: true,
   imports: [
+    FpcFormTextDirective,
     FpcBadgeComponent,
     FpcButtonGroupComponent,
     FpcMoneyPipe,
@@ -214,7 +209,6 @@ export class ProjectDetailPageComponent implements OnInit {
 
   readonly timeEntriesLabel = $localize`:@@featureProjectDetail-timeEntries:Time entries`;
   readonly deleteTimeLabel = $localize`:@@featureProjectDetail-deleteTime:Delete`;
-  readonly cancelLabel = DB_DL_CANCEL;
   readonly timeBulkDeleteTitle = $localize`:@@featureProjectDetail-timeBulkDeleteTitle:Delete time entries?`;
 
   /** Time entries (one server page): State (billed) · Entry · date · time · duration; server paging with total. */

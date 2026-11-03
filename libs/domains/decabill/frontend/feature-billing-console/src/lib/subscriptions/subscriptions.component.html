@@ -34,7 +34,6 @@
         </span>
         <fpc-button
           variant="outline-secondary"
-          size="sm"
           iconOnly
           fpcSummaryCardActions
           (clicked)="openEditProfileModal()"
@@ -112,7 +111,6 @@
           <fpc-button
             fpcDataTableToolbar
             variant="primary"
-            size="sm"
             iconOnly
             (clicked)="openOrderPlanModal()"
             [disabled]="(isCustomerProfileComplete$ | async) !== true"
@@ -124,7 +122,6 @@
           <fpc-button
             fpcDataTableBatch
             variant="dark"
-            size="sm"
             [disabled]="resumableSelection().length === 0"
             (clicked)="resumeSelected()"
             data-testid="subscriptions-bulk-resume"
@@ -195,7 +192,6 @@
           <fpc-button
             fpcDataTableBatch
             variant="dark"
-            size="sm"
             [disabled]="selectedBackorders().length === 0"
             (clicked)="retrySelectedBackorders()"
             data-testid="backorders-bulk-retry"
@@ -239,11 +235,6 @@
           list.
         </p>
       </div>
-    </div>
-    <div *fpcModalFooter>
-      <fpc-button variant="primary" (clicked)="orderPlanModalOpen.set(false)" i18n="@@featureSubscriptions-close">
-        Close
-      </fpc-button>
     </div>
   } @else {
     <form (ngSubmit)="onSubmitOrderPlan()" #orderForm="ngForm">
@@ -348,17 +339,15 @@
                                       >{{ formatCurrencyAmount(addon.periodPrice) }}</span
                                     >
                                   </span>
-                                  @if (addon.description) {
-                                    <span class="d-block small text-body-secondary">{{ addon.description }}</span>
-                                  }
-                                  @if (addon.mandatory) {
-                                    <span
-                                      class="d-block small text-body-secondary"
-                                      i18n="@@featureSubscriptions-mandatoryAddonHint"
-                                      >Included with this plan and cannot be removed.</span
-                                    >
-                                  }
                                 </label>
+                                @if (addon.description) {
+                                  <div class="form-text">{{ addon.description }}</div>
+                                }
+                                @if (addon.mandatory) {
+                                  <div class="form-text" i18n="@@featureSubscriptions-mandatoryAddonHint">
+                                    Included with this plan and cannot be removed.
+                                  </div>
+                                }
                               </fpc-form-check>
                               @if (addon.meters?.length) {
                                 <ul class="list-unstyled small text-body-secondary ms-4 mb-0 mt-1">
@@ -665,7 +654,7 @@
                                     >
                                       <span
                                         id="orderDisableSignupHelp"
-                                        class="form-text text-body-secondary d-block"
+                                        class="form-text d-block"
                                         i18n="@@featureSubscriptions-disableSignupHelp"
                                       >
                                         Prevents new user registration on this instance.
@@ -677,7 +666,7 @@
                                   <fpc-form-field
                                     forId="orderStaticApiKey"
                                     i18n-label="@@featureSubscriptions-staticApiKey"
-                                    label="Static API Key"
+                                    label="Static API key"
                                     i18n-hint="@@featureSubscriptions-staticApiKeyHelp"
                                     hint="API key for authenticating requests. Required when using api-key authentication."
                                   >
@@ -694,53 +683,86 @@
                                   <fieldset class="mb-3">
                                     <legend class="fs-6" i18n="@@featureSubscriptions-keycloakSection">Keycloak</legend>
                                     <div class="mb-2">
-                                      <fpc-form-control
-                                        inputType="url"
-                                        controlId="orderKeycloakServerUrl"
-                                        name="keycloakServerUrl"
-                                        [(ngModel)]="orderRequestedConfig.keycloak.serverUrl"
-                                        placeholder="https://keycloak.example.com"
-                                        [disabled]="(subscriptionsCreating$ | async) === true"
-                                      />
+                                      <fpc-form-field
+                                        class="mb-0"
+                                        forId="orderKeycloakServerUrl"
+                                        i18n-label="@@featureSubscriptions-keycloakServerUrlLabel"
+                                        label="Server URL"
+                                      >
+                                        <fpc-form-control
+                                          inputType="url"
+                                          controlId="orderKeycloakServerUrl"
+                                          name="keycloakServerUrl"
+                                          [(ngModel)]="orderRequestedConfig.keycloak.serverUrl"
+                                          placeholder="https://keycloak.example.com"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                        />
+                                      </fpc-form-field>
                                     </div>
                                     <div class="mb-2">
-                                      <fpc-form-control
-                                        inputType="url"
-                                        controlId="orderKeycloakAuthServerUrl"
-                                        name="keycloakAuthServerUrl"
-                                        [(ngModel)]="orderRequestedConfig.keycloak.authServerUrl"
-                                        placeholder="https://keycloak.example.com/auth"
-                                        [disabled]="(subscriptionsCreating$ | async) === true"
-                                      />
+                                      <fpc-form-field
+                                        class="mb-0"
+                                        forId="orderKeycloakAuthServerUrl"
+                                        i18n-label="@@featureSubscriptions-keycloakAuthServerUrlLabel"
+                                        label="Auth server URL"
+                                      >
+                                        <fpc-form-control
+                                          inputType="url"
+                                          controlId="orderKeycloakAuthServerUrl"
+                                          name="keycloakAuthServerUrl"
+                                          [(ngModel)]="orderRequestedConfig.keycloak.authServerUrl"
+                                          placeholder="https://keycloak.example.com/auth"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                        />
+                                      </fpc-form-field>
                                     </div>
                                     <div class="row g-2 mb-2">
                                       <div class="col-md-6">
-                                        <fpc-form-control
-                                          controlId="orderKeycloakRealm"
-                                          name="keycloakRealm"
-                                          [(ngModel)]="orderRequestedConfig.keycloak.realm"
-                                          placeholder="realm"
-                                          [disabled]="(subscriptionsCreating$ | async) === true"
-                                        />
+                                        <fpc-form-field
+                                          class="mb-0"
+                                          forId="orderKeycloakRealm"
+                                          i18n-label="@@featureSubscriptions-keycloakRealmLabel"
+                                          label="Realm"
+                                        >
+                                          <fpc-form-control
+                                            controlId="orderKeycloakRealm"
+                                            name="keycloakRealm"
+                                            [(ngModel)]="orderRequestedConfig.keycloak.realm"
+                                            [disabled]="(subscriptionsCreating$ | async) === true"
+                                          />
+                                        </fpc-form-field>
                                       </div>
                                       <div class="col-md-6">
-                                        <fpc-form-control
-                                          controlId="orderKeycloakClientId"
-                                          name="keycloakClientId"
-                                          [(ngModel)]="orderRequestedConfig.keycloak.clientId"
-                                          placeholder="client-id"
-                                          [disabled]="(subscriptionsCreating$ | async) === true"
-                                        />
+                                        <fpc-form-field
+                                          class="mb-0"
+                                          forId="orderKeycloakClientId"
+                                          i18n-label="@@featureSubscriptions-keycloakClientIdLabel"
+                                          label="Client ID"
+                                        >
+                                          <fpc-form-control
+                                            controlId="orderKeycloakClientId"
+                                            name="keycloakClientId"
+                                            [(ngModel)]="orderRequestedConfig.keycloak.clientId"
+                                            [disabled]="(subscriptionsCreating$ | async) === true"
+                                          />
+                                        </fpc-form-field>
                                       </div>
                                     </div>
                                     <div>
-                                      <fpc-form-control
-                                        inputType="password"
-                                        controlId="orderKeycloakClientSecret"
-                                        name="keycloakClientSecret"
-                                        [(ngModel)]="orderRequestedConfig.keycloak.clientSecret"
-                                        [disabled]="(subscriptionsCreating$ | async) === true"
-                                      />
+                                      <fpc-form-field
+                                        class="mb-0"
+                                        forId="orderKeycloakClientSecret"
+                                        i18n-label="@@featureSubscriptions-keycloakClientSecretLabel"
+                                        label="Client secret"
+                                      >
+                                        <fpc-form-control
+                                          inputType="password"
+                                          controlId="orderKeycloakClientSecret"
+                                          name="keycloakClientSecret"
+                                          [(ngModel)]="orderRequestedConfig.keycloak.clientSecret"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                        />
+                                      </fpc-form-field>
                                     </div>
                                   </fieldset>
                                 }
@@ -750,63 +772,95 @@
                               <legend class="fs-6" i18n="@@featureSubscriptions-smtpSection">SMTP (optional)</legend>
                               <div class="row g-2 mb-2">
                                 <div class="col-md-8">
-                                  <fpc-form-control
-                                    controlId="orderSmtpHost"
-                                    name="smtpHost"
-                                    [(ngModel)]="orderRequestedConfig.smtp.host"
-                                    placeholder="mailhog"
-                                    [disabled]="(subscriptionsCreating$ | async) === true"
-                                  />
+                                  <fpc-form-field
+                                    class="mb-0"
+                                    forId="orderSmtpHost"
+                                    i18n-label="@@featureSubscriptions-smtpHostLabel"
+                                    label="SMTP host"
+                                  >
+                                    <fpc-form-control
+                                      controlId="orderSmtpHost"
+                                      name="smtpHost"
+                                      [(ngModel)]="orderRequestedConfig.smtp.host"
+                                      placeholder="mailhog"
+                                      [disabled]="(subscriptionsCreating$ | async) === true"
+                                    />
+                                  </fpc-form-field>
                                 </div>
                                 <div class="col-md-4">
-                                  <fpc-form-control
-                                    inputType="number"
-                                    controlId="orderSmtpPort"
-                                    name="smtpPort"
-                                    [(ngModel)]="orderRequestedConfig.smtp.port"
-                                    placeholder="1025"
-                                    [min]="1"
-                                    [max]="65535"
-                                    [disabled]="(subscriptionsCreating$ | async) === true"
-                                  />
+                                  <fpc-form-field
+                                    class="mb-0"
+                                    forId="orderSmtpPort"
+                                    i18n-label="@@featureSubscriptions-smtpPortLabel"
+                                    label="Port"
+                                  >
+                                    <fpc-form-control
+                                      inputType="number"
+                                      controlId="orderSmtpPort"
+                                      name="smtpPort"
+                                      [(ngModel)]="orderRequestedConfig.smtp.port"
+                                      placeholder="1025"
+                                      [min]="1"
+                                      [max]="65535"
+                                      [disabled]="(subscriptionsCreating$ | async) === true"
+                                    />
+                                  </fpc-form-field>
                                 </div>
                               </div>
                               <div class="row g-2 mb-2">
                                 <div class="col-md-6">
-                                  <fpc-form-control
-                                    controlId="orderSmtpUser"
-                                    name="smtpUser"
-                                    [(ngModel)]="orderRequestedConfig.smtp.user"
-                                    [disabled]="(subscriptionsCreating$ | async) === true"
-                                  />
+                                  <fpc-form-field
+                                    class="mb-0"
+                                    forId="orderSmtpUser"
+                                    i18n-label="@@featureSubscriptions-smtpUserLabel"
+                                    label="Username"
+                                  >
+                                    <fpc-form-control
+                                      controlId="orderSmtpUser"
+                                      name="smtpUser"
+                                      [(ngModel)]="orderRequestedConfig.smtp.user"
+                                      [disabled]="(subscriptionsCreating$ | async) === true"
+                                    />
+                                  </fpc-form-field>
                                 </div>
                                 <div class="col-md-6">
-                                  <fpc-form-control
-                                    inputType="password"
-                                    controlId="orderSmtpPassword"
-                                    name="smtpPassword"
-                                    [(ngModel)]="orderRequestedConfig.smtp.password"
-                                    [disabled]="(subscriptionsCreating$ | async) === true"
-                                  />
+                                  <fpc-form-field
+                                    class="mb-0"
+                                    forId="orderSmtpPassword"
+                                    i18n-label="@@featureSubscriptions-smtpPasswordLabel"
+                                    label="Password"
+                                  >
+                                    <fpc-form-control
+                                      inputType="password"
+                                      controlId="orderSmtpPassword"
+                                      name="smtpPassword"
+                                      [(ngModel)]="orderRequestedConfig.smtp.password"
+                                      [disabled]="(subscriptionsCreating$ | async) === true"
+                                    />
+                                  </fpc-form-field>
                                 </div>
                               </div>
                               <div>
-                                <fpc-form-control
-                                  controlId="orderSmtpFrom"
-                                  name="smtpFrom"
-                                  [(ngModel)]="orderRequestedConfig.smtp.from"
-                                  placeholder="noreply@localhost"
-                                  [disabled]="(subscriptionsCreating$ | async) === true"
-                                />
+                                <fpc-form-field
+                                  class="mb-0"
+                                  forId="orderSmtpFrom"
+                                  i18n-label="@@featureSubscriptions-smtpFromLabel"
+                                  label="Sender address"
+                                >
+                                  <fpc-form-control
+                                    controlId="orderSmtpFrom"
+                                    name="smtpFrom"
+                                    [(ngModel)]="orderRequestedConfig.smtp.from"
+                                    placeholder="noreply@localhost"
+                                    [disabled]="(subscriptionsCreating$ | async) === true"
+                                  />
+                                </fpc-form-field>
                               </div>
                             </fieldset>
                             @if (orderRequestedConfig.service === 'agenstra-manager') {
                               <fieldset class="mt-3 mb-0">
                                 <legend class="fs-6" i18n="@@featureSubscriptions-gitSection">Git (optional)</legend>
-                                <p
-                                  class="form-text text-body-secondary small mb-2"
-                                  i18n="@@featureSubscriptions-gitHelp"
-                                >
+                                <p class="form-text fpc-form-text--wrap mb-2" i18n="@@featureSubscriptions-gitHelp">
                                   Git configuration for the agent manager (repository setup, credentials, commit
                                   author). Leave clone fields empty if not using a remote repository.
                                 </p>
@@ -835,79 +889,126 @@
                                 </fpc-form-field>
                                 @if (isOrderGitCloneMode()) {
                                   <div class="mb-2">
-                                    <fpc-form-control
-                                      inputType="url"
-                                      controlId="orderGitRepositoryUrl"
-                                      name="gitRepositoryUrl"
-                                      [(ngModel)]="orderRequestedConfig.git.repositoryUrl"
-                                      placeholder="https://github.com/org/repo.git or git@github.com:org/repo.git"
-                                      [disabled]="(subscriptionsCreating$ | async) === true"
-                                    />
+                                    <fpc-form-field
+                                      class="mb-0"
+                                      forId="orderGitRepositoryUrl"
+                                      i18n-label="@@featureSubscriptions-gitRepositoryUrlLabel"
+                                      label="Repository URL"
+                                    >
+                                      <fpc-form-control
+                                        inputType="url"
+                                        controlId="orderGitRepositoryUrl"
+                                        name="gitRepositoryUrl"
+                                        [(ngModel)]="orderRequestedConfig.git.repositoryUrl"
+                                        placeholder="https://github.com/org/repo.git or git@github.com:org/repo.git"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                      />
+                                    </fpc-form-field>
                                   </div>
                                   <div class="row g-2 mb-2">
                                     <div class="col-md-6">
-                                      <fpc-form-control
-                                        controlId="orderGitUsername"
-                                        name="gitUsername"
-                                        [(ngModel)]="orderRequestedConfig.git.username"
-                                        placeholder="Username (HTTPS)"
-                                        [disabled]="(subscriptionsCreating$ | async) === true"
-                                      />
+                                      <fpc-form-field
+                                        class="mb-0"
+                                        forId="orderGitUsername"
+                                        i18n-label="@@featureSubscriptions-gitUsernameLabel"
+                                        label="HTTPS username"
+                                      >
+                                        <fpc-form-control
+                                          controlId="orderGitUsername"
+                                          name="gitUsername"
+                                          [(ngModel)]="orderRequestedConfig.git.username"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                        />
+                                      </fpc-form-field>
                                     </div>
                                     <div class="col-md-6">
+                                      <fpc-form-field
+                                        class="mb-0"
+                                        forId="orderGitToken"
+                                        i18n-label="@@featureSubscriptions-gitTokenLabel"
+                                        label="Access token"
+                                      >
+                                        <fpc-form-control
+                                          inputType="password"
+                                          controlId="orderGitToken"
+                                          name="gitToken"
+                                          [(ngModel)]="orderRequestedConfig.git.token"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                          autocomplete="off"
+                                        />
+                                      </fpc-form-field>
+                                    </div>
+                                  </div>
+                                  <div class="mb-2">
+                                    <fpc-form-field
+                                      class="mb-0"
+                                      forId="orderGitPassword"
+                                      i18n-label="@@featureSubscriptions-gitPasswordLabel"
+                                      label="Password"
+                                      i18n-hint="@@featureSubscriptions-gitPasswordHint"
+                                      hint="Alternative to the access token."
+                                    >
                                       <fpc-form-control
                                         inputType="password"
-                                        controlId="orderGitToken"
-                                        name="gitToken"
-                                        [(ngModel)]="orderRequestedConfig.git.token"
-                                        placeholder="Token / PAT"
+                                        controlId="orderGitPassword"
+                                        name="gitPassword"
+                                        [(ngModel)]="orderRequestedConfig.git.password"
                                         [disabled]="(subscriptionsCreating$ | async) === true"
                                         autocomplete="off"
                                       />
-                                    </div>
+                                    </fpc-form-field>
                                   </div>
                                   <div class="mb-2">
-                                    <fpc-form-control
-                                      inputType="password"
-                                      controlId="orderGitPassword"
-                                      name="gitPassword"
-                                      [(ngModel)]="orderRequestedConfig.git.password"
-                                      placeholder="Password (alternative to token)"
-                                      [disabled]="(subscriptionsCreating$ | async) === true"
-                                      autocomplete="off"
-                                    />
-                                  </div>
-                                  <div class="mb-2">
-                                    <fpc-form-control
-                                      controlType="textarea"
-                                      controlId="orderGitPrivateKey"
-                                      name="gitPrivateKey"
-                                      controlClass="font-monospace small"
-                                      [rows]="4"
-                                      [(ngModel)]="orderRequestedConfig.git.privateKey"
-                                      placeholder="-----BEGIN OPENSSH PRIVATE KEY----- ... (for git@ URLs)"
-                                      [disabled]="(subscriptionsCreating$ | async) === true"
-                                    />
+                                    <fpc-form-field
+                                      class="mb-0"
+                                      forId="orderGitPrivateKey"
+                                      i18n-label="@@featureSubscriptions-gitPrivateKeyLabel"
+                                      label="SSH private key"
+                                    >
+                                      <fpc-form-control
+                                        controlType="textarea"
+                                        controlId="orderGitPrivateKey"
+                                        name="gitPrivateKey"
+                                        controlClass="font-monospace small"
+                                        [rows]="4"
+                                        [(ngModel)]="orderRequestedConfig.git.privateKey"
+                                        placeholder="-----BEGIN OPENSSH PRIVATE KEY----- ... (for git@ URLs)"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                      />
+                                    </fpc-form-field>
                                   </div>
                                   <div class="row g-2 mb-2">
                                     <div class="col-md-6">
-                                      <fpc-form-control
-                                        controlId="orderGitCommitAuthorName"
-                                        name="gitCommitAuthorName"
-                                        [(ngModel)]="orderRequestedConfig.git.commitAuthorName"
-                                        placeholder="Author name"
-                                        [disabled]="(subscriptionsCreating$ | async) === true"
-                                      />
+                                      <fpc-form-field
+                                        class="mb-0"
+                                        forId="orderGitCommitAuthorName"
+                                        i18n-label="@@featureSubscriptions-gitCommitAuthorNameLabel"
+                                        label="Commit author name"
+                                      >
+                                        <fpc-form-control
+                                          controlId="orderGitCommitAuthorName"
+                                          name="gitCommitAuthorName"
+                                          [(ngModel)]="orderRequestedConfig.git.commitAuthorName"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                        />
+                                      </fpc-form-field>
                                     </div>
                                     <div class="col-md-6">
-                                      <fpc-form-control
-                                        inputType="email"
-                                        controlId="orderGitCommitAuthorEmail"
-                                        name="gitCommitAuthorEmail"
-                                        [(ngModel)]="orderRequestedConfig.git.commitAuthorEmail"
-                                        placeholder="author@example.com"
-                                        [disabled]="(subscriptionsCreating$ | async) === true"
-                                      />
+                                      <fpc-form-field
+                                        class="mb-0"
+                                        forId="orderGitCommitAuthorEmail"
+                                        i18n-label="@@featureSubscriptions-gitCommitAuthorEmailLabel"
+                                        label="Commit author email"
+                                      >
+                                        <fpc-form-control
+                                          inputType="email"
+                                          controlId="orderGitCommitAuthorEmail"
+                                          name="gitCommitAuthorEmail"
+                                          [(ngModel)]="orderRequestedConfig.git.commitAuthorEmail"
+                                          placeholder="author@example.com"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                        />
+                                      </fpc-form-field>
                                     </div>
                                   </div>
                                 }
@@ -922,7 +1023,7 @@
                                   Provisioning (optional)
                                 </legend>
                                 <p
-                                  class="form-text text-body-secondary small mb-2"
+                                  class="form-text fpc-form-text--wrap mb-2"
                                   i18n="@@featureSubscriptions-provisioningHelp"
                                 >
                                   If you want this instance to provision additional servers via Hetzner or DigitalOcean,
@@ -1441,11 +1542,6 @@
         </p>
       </div>
     </div>
-    <div *fpcModalFooter>
-      <fpc-button variant="primary" (clicked)="modifyConfigModalOpen.set(false)" i18n="@@featureSubscriptions-close">
-        Close
-      </fpc-button>
-    </div>
   } @else {
     <form (ngSubmit)="onSubmitConfigChange()">
       <div #modifyConfigModalScroll>
@@ -1519,14 +1615,10 @@
                               </option>
                             }
                           </fpc-form-control>
+                          <span fpcFormFieldHint i18n="@@featureSubscriptions-configChangeServerTypeHint">
+                            Location stays the same. Pick a type with a different price.
+                          </span>
                         </fpc-form-field>
-                        <p
-                          class="text-body-secondary small mb-0 mt-3"
-                          i18n="@@featureSubscriptions-configChangeServerTypeHint"
-                        >
-                          Your server keeps its current location. Choosing a server type at the same price is not
-                          possible.
-                        </p>
                       } @else {
                         <div class="text-body-secondary small" i18n="@@featureSubscriptions-configChangeNoServerTypes">
                           No alternative server types are available for this plan.
@@ -1579,10 +1671,10 @@
                                     </span>
                                     <span class="text-nowrap">{{ formatCurrencyAmount(addon.periodPrice) }}</span>
                                   </span>
-                                  @if (addon.description) {
-                                    <span class="d-block small text-body-secondary">{{ addon.description }}</span>
-                                  }
                                 </label>
+                                @if (addon.description) {
+                                  <div class="form-text">{{ addon.description }}</div>
+                                }
                               </fpc-form-check>
                               @if (addon.meters?.length) {
                                 <ul class="list-unstyled small text-body-secondary ms-4 mb-0 mt-1">
@@ -1601,10 +1693,10 @@
                                 (addon.orderFields?.length ?? 0) > 0
                               ) {
                                 <p
-                                  class="text-body-secondary small mb-0 mt-2 ms-4"
+                                  class="form-text mb-0 mt-2 ms-4"
                                   i18n="@@featureSubscriptions-configChangeAddonConfigLocked"
                                 >
-                                  The configuration of this add-on is locked and cannot be changed here.
+                                  This add-on's configuration can't be changed here.
                                 </p>
                               }
                               @if (showConfigChangeAddonFields(addon)) {
@@ -1617,7 +1709,6 @@
                                       [required]="field.required"
                                     >
                                       <fpc-form-control
-                                        size="sm"
                                         [inputType]="isSecretOrderField(field) ? 'password' : 'text'"
                                         [controlId]="'configChangeAddonConfig_' + addon.id + '_' + field.key"
                                         [name]="'configChangeAddonConfig_' + addon.id + '_' + field.key"
@@ -1877,7 +1968,7 @@
                   >Configuration change in progress, please wait</span
                 >
               }
-              <span i18n="@@featureSubscriptions-configChangeSubmit">Apply changes</span>
+              <span i18n="@@featureSubscriptions-configChangeSubmit">Apply</span>
             </fpc-button>
           }
         </fpc-button-group>
@@ -1893,7 +1984,7 @@
   i18n-message="@@featureSubscriptions-cancelSubscriptionConfirm"
   message="Are you sure you want to cancel this subscription? It will remain active until the end of the current period."
   i18n-confirmLabel="@@featureSubscriptions-cancel"
-  confirmLabel="Cancel"
+  confirmLabel="Cancel subscription"
   [busy]="(subscriptionsCanceling$ | async) === true"
   (confirmed)="confirmCancelSubscription()"
 />
@@ -1963,15 +2054,12 @@
   [closeOnEscape]="(customerProfileUpdating$ | async) !== true"
   i18n-title="@@featureSubscriptions-editProfileTitle"
   title="Edit customer profile"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
-  [cancelDisabled]="!((customerProfileUpdating$ | async) !== true)"
 >
   <form (ngSubmit)="onSubmitProfile()">
     @if (customerProfileError$ | async; as err) {
       <fpc-alert class="mb-3" variant="danger" [message]="err" />
     }
-    <p class="text-body-secondary small mb-3" i18n="@@featureSubscriptions-editProfileHint">
+    <p class="form-text fpc-form-text--wrap mb-3" i18n="@@featureSubscriptions-editProfileHint">
       First name, last name, email, address line 1, city and country are required for invoicing.
     </p>
     @if (customerProfile$ | async; as profile) {
@@ -2047,8 +2135,13 @@
       </div>
     </div>
     @if (customerProfile$ | async; as validationProfile) {
-      <fpc-form-field i18n-label="@@featureSubscriptions-vatIdValidationStatus" label="VAT ID validation">
+      <fpc-form-field
+        forId="profileVatIdValidation"
+        i18n-label="@@featureSubscriptions-vatIdValidationStatus"
+        label="VAT ID validation"
+      >
         <fpc-form-control
+          controlId="profileVatIdValidation"
           [value]="vatIdValidationStatusLabel(validationProfile.vatIdValidationStatus)"
           readOnly
           disabled
@@ -2108,7 +2201,7 @@
         </fpc-form-field>
       </div>
       <div class="col-md-4">
-        <fpc-form-field forId="profileState" i18n-label="@@featureSubscriptions-state" label="State / Region">
+        <fpc-form-field forId="profileState" i18n-label="@@featureSubscriptions-state" label="State / region">
           <fpc-form-control
             controlId="profileState"
             name="state"
@@ -2150,7 +2243,7 @@
       @if (profile.supportsAutoPayment !== false && (isCustomerProfileComplete$ | async) === true) {
         <div class="bg-body-tertiary border rounded p-4 mt-3">
           <h3 class="h6" i18n="@@featureSubscriptions-autoBillingHeading">Auto-billing</h3>
-          <p class="text-body-secondary small mb-3" i18n="@@featureSubscriptions-autoBillingHint">
+          <p class="form-text fpc-form-text--wrap mb-3" i18n="@@featureSubscriptions-autoBillingHint">
             When enabled, open invoices are charged automatically. Manual payment is blocked until auto-payment succeeds
             or retries are exhausted.
           </p>
@@ -2184,7 +2277,6 @@
           <div class="d-flex flex-wrap gap-2">
             <fpc-button
               variant="dark"
-              size="sm"
               [disabled]="(customerProfileUpdating$ | async) === true || autoBillingSetupFeedback === 'waiting'"
               (clicked)="onSetupAutoBilling()"
               i18n="@@featureSubscriptions-addPaymentMethod"
@@ -2194,7 +2286,6 @@
             @if (!profile.autoBillingEnabled) {
               <fpc-button
                 variant="primary"
-                size="sm"
                 [disabled]="(customerProfileUpdating$ | async) === true || !profile.hasPaymentMethodOnFile"
                 (clicked)="onEnableAutoBilling()"
                 i18n="@@featureSubscriptions-enableAutoBilling"
@@ -2204,7 +2295,6 @@
             } @else {
               <fpc-button
                 variant="danger"
-                size="sm"
                 [disabled]="(customerProfileUpdating$ | async) === true"
                 (clicked)="onDisableAutoBilling()"
                 i18n="@@featureSubscriptions-disableAutoBilling"

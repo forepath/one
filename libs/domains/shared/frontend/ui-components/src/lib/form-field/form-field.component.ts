@@ -1,6 +1,7 @@
 import { booleanAttribute, ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-import { FpcLabelComponent } from '../label/label.component';
+import { FpcLabelComponent, FpcLabelSize } from '../label/label.component';
+import { FpcFormTextDirective } from '../truncate-title/form-text.directive';
 
 /**
  * Label + control + hint/error wrapper. The control is projected as default content; hint and
@@ -11,11 +12,11 @@ import { FpcLabelComponent } from '../label/label.component';
   selector: 'fpc-form-field',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FpcLabelComponent],
+  imports: [FpcLabelComponent, FpcFormTextDirective],
   host: { class: 'fpc-form-field' },
   template: `
     @if (label()) {
-      <fpc-label [forId]="forId()" [required]="required()">{{ label() }}</fpc-label>
+      <fpc-label [forId]="forId()" [required]="required()" [size]="size()">{{ label() }}</fpc-label>
     }
 
     <div class="fpc-form-field__control">
@@ -45,6 +46,8 @@ export class FpcFormFieldComponent {
   readonly required = input(false, { transform: booleanAttribute });
   readonly hint = input<string | null>(null);
   readonly error = input<string | null>(null);
+  /** Tier of the projected control, for the label's text size; defaults to `FPC_CONTROL_SIZE` like the control. */
+  readonly size = input<FpcLabelSize | undefined>(undefined);
 
   /** Convenience id consumers can point `aria-describedby` at. */
   protected readonly hintId = computed(() => (this.forId() ? `${this.forId()}-hint` : null));

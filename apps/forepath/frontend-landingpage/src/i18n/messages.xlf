@@ -2837,7 +2837,7 @@
         <source>Issuing competent authority</source>
         </trans-unit>
       <trans-unit id="featureForepathLegalContentReport-formMemberStateLabel" datatype="html">
-        <source>Member State</source>
+        <source>Member state</source>
         </trans-unit>
       <trans-unit id="featureForepathLegalContentReport-formOfficialNameLabel" datatype="html">
         <source>Authorized official&apos;s name</source>
@@ -4034,9 +4034,6 @@
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-activeModelProfileLabel" datatype="html">
         <source> Analysis effort </source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-memoryProfileSwitcherAriaLabel" datatype="html">
-        <source>Analysis effort profile</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-liteProfileWarningAriaLabel" datatype="html">
         <source>Lite analysis effort warning</source>

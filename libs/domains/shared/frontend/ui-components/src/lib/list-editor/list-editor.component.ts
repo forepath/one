@@ -17,6 +17,10 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 
+import { FPC_CONTROL_SIZE } from '../control-size/control-size';
+import { FpcFormTextDirective } from '../truncate-title/form-text.directive';
+import { FpcTruncateTitleDirective } from '../truncate-title/truncate-title.directive';
+
 /** Texts of `fpc-list-editor` (English defaults; consumers pass localized ones). `{label}` = the item's label. */
 export interface FpcListEditorLabels {
   add: string;
@@ -100,7 +104,7 @@ let nextListEditorId = 0;
   selector: 'fpc-list-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, FpcTruncateTitleDirective, FpcFormTextDirective],
   host: {
     class: 'fpc-list-editor',
     role: 'group',
@@ -111,7 +115,11 @@ let nextListEditorId = 0;
   template: `
     @if (label()) {
       <div class="fpc-list-editor__heading">
-        <span class="fpc-list-editor__label form-label mb-0" [id]="headingId"
+        <span
+          class="fpc-list-editor__label form-label mb-0"
+          [class.fpc-form-label--sm]="compactLabel"
+          [id]="headingId"
+          fpcTruncateTitle
           >{{ label() }}
           @if (required()) {
             <span class="text-danger" aria-hidden="true">*</span>
@@ -228,6 +236,7 @@ let nextListEditorId = 0;
 export class FpcListEditorComponent<T = unknown> {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
+  protected readonly compactLabel = inject(FPC_CONTROL_SIZE) === 'sm';
 
   readonly items = model<readonly T[]>([]);
   /** Factory of a new row (Add); without it Add only emits `add`. */

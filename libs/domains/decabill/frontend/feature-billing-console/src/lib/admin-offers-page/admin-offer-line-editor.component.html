@@ -5,7 +5,6 @@
         <fpc-button
           fpcListHeaderActions
           variant="dark"
-          size="sm"
           iconOnly
           (clicked)="removeLine(i)"
           title="Remove line"
@@ -275,7 +274,7 @@
   </section>
 }
 
-<fpc-button variant="outline-secondary" size="sm" (clicked)="addLine()">
+<fpc-button variant="outline-secondary" (clicked)="addLine()">
   <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
   <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
 </fpc-button>

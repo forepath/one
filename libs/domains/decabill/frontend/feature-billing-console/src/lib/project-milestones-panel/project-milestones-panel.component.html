@@ -36,7 +36,6 @@
       <fpc-button
         fpcDataTableToolbar
         variant="primary"
-        size="sm"
         iconOnly
         [ariaLabel]="addTitle"
         [title]="addTitle"
@@ -49,7 +48,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="dark"
-      size="sm"
       [disabled]="lockableSelection().length === 0"
       (clicked)="lockSelected()"
       data-testid="milestones-bulk-lock"
@@ -62,7 +60,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="lockableSelection().length === 0"
       (clicked)="confirmBulkDelete.set(true)"
       data-testid="milestones-bulk-delete"
@@ -85,13 +82,7 @@
   </fpc-data-table>
 </div>
 
-<fpc-modal
-  [(open)]="createModalOpen"
-  i18n-title="@@featureProjectMilestones-createTitle"
-  title="Create milestone"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="createModalOpen" i18n-title="@@featureProjectMilestones-createTitle" title="Create milestone">
   <fpc-form-field forId="milestoneName" i18n-label="@@featureProjectMilestones-nameLabel" label="Name">
     <fpc-form-control
       controlId="milestoneName"
@@ -113,13 +104,7 @@
   </div>
 </fpc-modal>
 
-<fpc-modal
-  [(open)]="editModalOpen"
-  i18n-title="@@featureProjectMilestones-editTitle"
-  title="Edit milestone"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="editModalOpen" i18n-title="@@featureProjectMilestones-editTitle" title="Edit milestone">
   <fpc-form-field forId="editMilestoneName" i18n-label="@@featureProjectMilestones-nameLabel" label="Name">
     <fpc-form-control
       controlId="editMilestoneName"
@@ -188,7 +173,6 @@
   [title]="bulkDeleteTitle"
   [message]="bulkDeleteMessage()"
   [confirmLabel]="deleteLabel"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   (confirmed)="deleteSelected()"
 />

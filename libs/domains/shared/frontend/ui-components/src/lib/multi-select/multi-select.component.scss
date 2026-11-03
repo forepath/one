@@ -123,3 +123,13 @@
 :host(.fpc-multi-select--disabled) .fpc-multi-select__box {
   background-color: var(--bs-secondary-bg);
 }
+
+// `sm` forms: option rows at the sm text size and row height, like the fields around them.
+:host(.fpc-multi-select--sm) .fpc-multi-select__option {
+  padding-block: 0.25rem;
+  font-size: 0.765625rem;
+}
+
+:host(.fpc-multi-select--sm) .fpc-multi-select__hint {
+  font-size: 0.75rem;
+}

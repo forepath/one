@@ -75,7 +75,6 @@
         <span fpcDataTableToolbar class="d-inline-flex gap-2">
           <fpc-button
             variant="dark"
-            size="sm"
             iconOnly
             [disabled]="(loading$ | async) === true"
             [ariaLabel]="refreshTitle"
@@ -86,7 +85,6 @@
           </fpc-button>
           <fpc-button
             variant="primary"
-            size="sm"
             iconOnly
             [ariaLabel]="addConnectionLabel"
             [title]="addConnectionLabel"
@@ -99,7 +97,6 @@
         <fpc-button
           fpcDataTableBatch
           variant="secondary"
-          size="sm"
           [disabled]="bulkBusy()"
           (clicked)="onBulkTestConnections()"
           data-testid="atlassian-connections-bulk-test"
@@ -112,7 +109,6 @@
         <fpc-button
           fpcDataTableBatch
           variant="danger"
-          size="sm"
           [disabled]="bulkBusy()"
           (clicked)="bulkDeleteConnectionsOpen.set(true)"
           data-testid="atlassian-connections-bulk-delete"
@@ -157,7 +153,6 @@
         <span fpcDataTableToolbar class="d-inline-flex gap-2">
           <fpc-button
             variant="dark"
-            size="sm"
             iconOnly
             [disabled]="(loading$ | async) === true"
             [ariaLabel]="refreshTitle"
@@ -168,7 +163,6 @@
           </fpc-button>
           <fpc-button
             variant="primary"
-            size="sm"
             iconOnly
             [ariaLabel]="addConfigLabel"
             [title]="addConfigLabel"
@@ -181,7 +175,6 @@
         <fpc-button
           fpcDataTableBatch
           variant="primary"
-          size="sm"
           [disabled]="bulkBusy() || selectedEnabledConfigs().length === 0"
           (clicked)="onBulkRunConfigs()"
           data-testid="atlassian-configs-bulk-run"
@@ -194,7 +187,6 @@
         <fpc-button
           fpcDataTableBatch
           variant="secondary"
-          size="sm"
           [disabled]="bulkBusy()"
           (clicked)="onBulkSetConfigsEnabled(true)"
           data-testid="atlassian-configs-bulk-enable"
@@ -207,7 +199,6 @@
         <fpc-button
           fpcDataTableBatch
           variant="secondary"
-          size="sm"
           [disabled]="bulkBusy()"
           (clicked)="onBulkSetConfigsEnabled(false)"
           data-testid="atlassian-configs-bulk-disable"
@@ -220,7 +211,6 @@
         <fpc-button
           fpcDataTableBatch
           variant="danger"
-          size="sm"
           [disabled]="bulkBusy()"
           (clicked)="bulkDeleteConfigsOpen.set(true)"
           data-testid="atlassian-configs-bulk-delete"
@@ -292,8 +282,6 @@
   </fpc-confirm-dialog>
 
   <fpc-modal
-    cancelLabel="Cancel"
-    i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
     [(open)]="createConnectionModalOpen"
     i18n-title="@@featureAtlassianImportAdmin-newConnectionTitle"
     title="Create connection"
@@ -308,14 +296,13 @@
           i18n-label="@@featureAtlassianImportAdmin-newConnLabel"
           label="Label (optional)"
         >
-          <fpc-form-control controlId="newConnLabel" size="sm" [(ngModel)]="newConnection.label" />
+          <fpc-form-control controlId="newConnLabel" [(ngModel)]="newConnection.label" />
         </fpc-form-field>
       </div>
       <div class="col-md-6">
         <fpc-form-field forId="newConnBase" i18n-label="@@featureAtlassianImportAdmin-newConnBaseUrl" label="Base URL">
           <fpc-form-control
             controlId="newConnBase"
-            size="sm"
             [(ngModel)]="newConnection.baseUrl"
             placeholder="https://your-site.atlassian.net"
             i18n-placeholder="@@featureAtlassianImportAdmin-newConnBaseUrlPlaceholder"
@@ -328,7 +315,7 @@
           i18n-label="@@featureAtlassianImportAdmin-newConnAccountEmail"
           label="Account email"
         >
-          <fpc-form-control controlId="newConnEmail" size="sm" [(ngModel)]="newConnection.accountEmail" />
+          <fpc-form-control controlId="newConnEmail" [(ngModel)]="newConnection.accountEmail" />
         </fpc-form-field>
       </div>
       <div class="col-md-6">
@@ -339,7 +326,6 @@
         >
           <fpc-form-control
             controlId="newConnToken"
-            size="sm"
             inputType="password"
             [(ngModel)]="newConnection.apiToken"
             autocomplete="new-password"
@@ -355,14 +341,12 @@
         (clicked)="submitNewConnection()"
         i18n="@@featureAtlassianImportAdmin-createConnectionSubmit"
       >
-        Create connection
+        Create
       </fpc-button>
     </div>
   </fpc-modal>
 
   <fpc-modal
-    cancelLabel="Cancel"
-    i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
     [(open)]="createConfigModalOpen"
     i18n-title="@@featureAtlassianImportAdmin-newConfigTitle"
     title="Create import config"
@@ -377,12 +361,7 @@
           i18n-label="@@featureAtlassianImportAdmin-fieldConnection"
           label="Connection"
         >
-          <fpc-form-control
-            controlType="select"
-            controlId="newCfgConn"
-            size="sm"
-            [(ngModel)]="newConfig.atlassianConnectionId"
-          >
+          <fpc-form-control controlType="select" controlId="newCfgConn" [(ngModel)]="newConfig.atlassianConnectionId">
             <option value="" i18n="@@featureAtlassianImportAdmin-selectPlaceholder">Select...</option>
             @for (c of connections(); track c.id) {
               <option [value]="c.id">{{ connectionLabel(c) }}</option>
@@ -399,7 +378,6 @@
           <fpc-form-control
             controlType="select"
             controlId="newCfgClient"
-            size="sm"
             [(ngModel)]="newConfig.clientId"
             (ngModelChange)="onWorkspaceDataLoad($event)"
           >
@@ -415,7 +393,6 @@
           <fpc-form-control
             controlType="select"
             controlId="newCfgKind"
-            size="sm"
             [ngModel]="newConfig.importKind"
             (ngModelChange)="onNewConfigKindChange($event)"
           >
@@ -441,7 +418,6 @@
           >
             <fpc-form-control
               controlId="newCfgBoard"
-              size="sm"
               [(ngModel)]="newConfigJiraBoardIdText"
               placeholder="e.g. 123"
               i18n-placeholder="@@featureAtlassianImportAdmin-boardIdExamplePlaceholder"
@@ -455,13 +431,7 @@
             label="JQL"
             [required]="true"
           >
-            <fpc-form-control
-              controlType="textarea"
-              controlId="newCfgJql"
-              size="sm"
-              [rows]="2"
-              [(ngModel)]="newConfig.jql"
-            />
+            <fpc-form-control controlType="textarea" controlId="newCfgJql" [rows]="2" [(ngModel)]="newConfig.jql" />
             <span fpcFormFieldHint i18n="@@featureAtlassianImportAdmin-jqlHelp">
               Required. Imported issues are not capped per run.
             </span>
@@ -476,7 +446,6 @@
             <fpc-form-control
               controlType="select"
               controlId="newCfgSwimlane"
-              size="sm"
               name="newCfgSwimlane"
               [(ngModel)]="newConfig.importTargetTicketStatus"
             >
@@ -495,7 +464,6 @@
             <fpc-typeahead-select
               inputId="newCfgParentTicket"
               listboxId="newCfgParentTicket-listbox"
-              size="sm"
               [openOnFocus]="true"
               placeholder="Search by title or ID"
               i18n-placeholder="@@featureAtlassianImportAdmin-searchParentTicketPlaceholder"
@@ -527,7 +495,6 @@
                 </span>
                 <fpc-button
                   variant="link"
-                  size="sm"
                   class="p-0"
                   (clicked)="clearNewParentTicket()"
                   i18n="@@featureAtlassianImportAdmin-clearSelection"
@@ -545,7 +512,7 @@
             i18n-label="@@featureAtlassianImportAdmin-newSpaceKeyOptional"
             label="Space key (optional)"
           >
-            <fpc-form-control controlId="newCfgSpace" size="sm" [(ngModel)]="newConfig.confluenceSpaceKey" />
+            <fpc-form-control controlId="newCfgSpace" [(ngModel)]="newConfig.confluenceSpaceKey" />
           </fpc-form-field>
         </div>
         <div class="col-md-4">
@@ -554,7 +521,7 @@
             i18n-label="@@featureAtlassianImportAdmin-newRootPageIdOptional"
             label="Root page ID (optional)"
           >
-            <fpc-form-control controlId="newCfgRoot" size="sm" [(ngModel)]="newConfig.confluenceRootPageId" />
+            <fpc-form-control controlId="newCfgRoot" [(ngModel)]="newConfig.confluenceRootPageId" />
           </fpc-form-field>
         </div>
         <div class="col-md-12">
@@ -564,15 +531,9 @@
             label="CQL"
             [required]="true"
           >
-            <fpc-form-control
-              controlType="textarea"
-              controlId="newCfgCql"
-              size="sm"
-              [rows]="2"
-              [(ngModel)]="newConfig.cql"
-            />
+            <fpc-form-control controlType="textarea" controlId="newCfgCql" [rows]="2" [(ngModel)]="newConfig.cql" />
             <span fpcFormFieldHint i18n="@@featureAtlassianImportAdmin-cqlHelp">
-              Required. Matching pages are fetched in full (paginated against Confluence).
+              Required. Matching pages are fetched in full, paginated.
             </span>
           </fpc-form-field>
         </div>
@@ -585,7 +546,6 @@
             <fpc-typeahead-select
               inputId="newCfgParentFolder"
               listboxId="newCfgParentFolder-listbox"
-              size="sm"
               [openOnFocus]="true"
               placeholder="Search folder title or SHA"
               i18n-placeholder="@@featureAtlassianImportAdmin-searchParentFolderPlaceholder"
@@ -622,7 +582,6 @@
                 </span>
                 <fpc-button
                   variant="link"
-                  size="sm"
                   class="p-0"
                   (clicked)="clearNewParentFolder()"
                   i18n="@@featureAtlassianImportAdmin-clearSelection"
@@ -643,14 +602,12 @@
         (clicked)="submitNewConfig()"
         i18n="@@featureAtlassianImportAdmin-createConfigSubmit"
       >
-        Create import config
+        Create
       </fpc-button>
     </div>
   </fpc-modal>
 
   <fpc-modal
-    cancelLabel="Cancel"
-    i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
     [(open)]="editConnectionModalOpen"
     i18n-title="@@featureAtlassianImportAdmin-editConnectionTitleHeading"
     title="Edit connection"
@@ -661,7 +618,7 @@
       <div class="row g-2">
         <div class="col-md-6">
           <fpc-form-field forId="editConnLabel" i18n-label="@@featureAtlassianImportAdmin-editConnLabel" label="Label">
-            <fpc-form-control controlId="editConnLabel" size="sm" [(ngModel)]="editConnection.label" />
+            <fpc-form-control controlId="editConnLabel" [(ngModel)]="editConnection.label" />
           </fpc-form-field>
         </div>
         <div class="col-md-6">
@@ -670,7 +627,7 @@
             i18n-label="@@featureAtlassianImportAdmin-editConnBaseUrl"
             label="Base URL"
           >
-            <fpc-form-control controlId="editConnBase" size="sm" [(ngModel)]="editConnection.baseUrl" />
+            <fpc-form-control controlId="editConnBase" [(ngModel)]="editConnection.baseUrl" />
           </fpc-form-field>
         </div>
         <div class="col-md-6">
@@ -679,7 +636,7 @@
             i18n-label="@@featureAtlassianImportAdmin-editConnAccountEmail"
             label="Account email"
           >
-            <fpc-form-control controlId="editConnEmail" size="sm" [(ngModel)]="editConnection.accountEmail" />
+            <fpc-form-control controlId="editConnEmail" [(ngModel)]="editConnection.accountEmail" />
           </fpc-form-field>
         </div>
         <div class="col-md-6">
@@ -690,7 +647,6 @@
           >
             <fpc-form-control
               controlId="editConnToken"
-              size="sm"
               inputType="password"
               [(ngModel)]="editConnection.apiToken"
               autocomplete="new-password"
@@ -708,19 +664,13 @@
           (clicked)="submitEditConnection()"
           i18n="@@featureAtlassianImportAdmin-save"
         >
-          Save changes
+          Save
         </fpc-button>
       </div>
     }
   </fpc-modal>
 
-  <fpc-modal
-    cancelLabel="Cancel"
-    i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
-    [(open)]="editConfigModalOpen"
-    size="lg"
-    (closed)="onEditConfigModalHidden()"
-  >
+  <fpc-modal [(open)]="editConfigModalOpen" size="lg" (closed)="onEditConfigModalHidden()">
     @if (configToEdit; as cfg) {
       <span fpcModalTitle i18n="@@featureAtlassianImportAdmin-editConfigHeading">
         Edit import config ({{ cfg.importKind }})
@@ -737,7 +687,6 @@
             <fpc-form-control
               controlType="select"
               controlId="editCfgConn"
-              size="sm"
               [(ngModel)]="editConfig.atlassianConnectionId"
             >
               @for (c of connections(); track c.id) {
@@ -755,7 +704,6 @@
             <fpc-form-control
               controlType="select"
               controlId="editCfgClient"
-              size="sm"
               [(ngModel)]="editConfig.clientId"
               (ngModelChange)="onWorkspaceDataLoad($event)"
             >
@@ -780,7 +728,7 @@
               i18n-label="@@featureAtlassianImportAdmin-editBoardId"
               label="Board ID"
             >
-              <fpc-form-control controlId="editCfgBoard" size="sm" [(ngModel)]="editConfigJiraBoardIdText" />
+              <fpc-form-control controlId="editCfgBoard" [(ngModel)]="editConfigJiraBoardIdText" />
             </fpc-form-field>
           </div>
           <div class="col-md-8">
@@ -790,13 +738,7 @@
               label="JQL"
               [required]="true"
             >
-              <fpc-form-control
-                controlType="textarea"
-                controlId="editCfgJql"
-                size="sm"
-                [rows]="2"
-                [(ngModel)]="editConfig.jql"
-              />
+              <fpc-form-control controlType="textarea" controlId="editCfgJql" [rows]="2" [(ngModel)]="editConfig.jql" />
             </fpc-form-field>
           </div>
           <div class="col-md-6">
@@ -808,7 +750,6 @@
               <fpc-form-control
                 controlType="select"
                 controlId="editCfgSwimlane"
-                size="sm"
                 name="editCfgSwimlane"
                 [(ngModel)]="editConfig.importTargetTicketStatus"
               >
@@ -827,7 +768,6 @@
               <fpc-typeahead-select
                 inputId="editCfgParentTicket"
                 listboxId="editCfgParentTicket-listbox"
-                size="sm"
                 [openOnFocus]="true"
                 placeholder="Search by title or ID"
                 i18n-placeholder="@@featureAtlassianImportAdmin-searchParentTicketPlaceholder"
@@ -859,7 +799,6 @@
                   </span>
                   <fpc-button
                     variant="link"
-                    size="sm"
                     class="p-0"
                     (clicked)="clearEditParentTicket()"
                     i18n="@@featureAtlassianImportAdmin-clearSelection"
@@ -877,7 +816,7 @@
               i18n-label="@@featureAtlassianImportAdmin-editSpaceKey"
               label="Space key"
             >
-              <fpc-form-control controlId="editCfgSpace" size="sm" [(ngModel)]="editConfig.confluenceSpaceKey" />
+              <fpc-form-control controlId="editCfgSpace" [(ngModel)]="editConfig.confluenceSpaceKey" />
             </fpc-form-field>
           </div>
           <div class="col-md-4">
@@ -886,7 +825,7 @@
               i18n-label="@@featureAtlassianImportAdmin-editRootPageId"
               label="Root page ID"
             >
-              <fpc-form-control controlId="editCfgRoot" size="sm" [(ngModel)]="editConfig.confluenceRootPageId" />
+              <fpc-form-control controlId="editCfgRoot" [(ngModel)]="editConfig.confluenceRootPageId" />
             </fpc-form-field>
           </div>
           <div class="col-md-12">
@@ -896,13 +835,7 @@
               label="CQL"
               [required]="true"
             >
-              <fpc-form-control
-                controlType="textarea"
-                controlId="editCfgCql"
-                size="sm"
-                [rows]="2"
-                [(ngModel)]="editConfig.cql"
-              />
+              <fpc-form-control controlType="textarea" controlId="editCfgCql" [rows]="2" [(ngModel)]="editConfig.cql" />
             </fpc-form-field>
           </div>
           <div class="col-md-6">
@@ -914,7 +847,6 @@
               <fpc-typeahead-select
                 inputId="editCfgParentFolder"
                 listboxId="editCfgParentFolder-listbox"
-                size="sm"
                 [openOnFocus]="true"
                 placeholder="Search folder title or SHA"
                 i18n-placeholder="@@featureAtlassianImportAdmin-searchParentFolderPlaceholder"
@@ -951,7 +883,6 @@
                   </span>
                   <fpc-button
                     variant="link"
-                    size="sm"
                     class="p-0"
                     (clicked)="clearEditParentFolder()"
                     i18n="@@featureAtlassianImportAdmin-clearSelection"
@@ -974,7 +905,7 @@
           (clicked)="submitEditConfig()"
           i18n="@@featureAtlassianImportAdmin-save"
         >
-          Save changes
+          Save
         </fpc-button>
       </div>
     }

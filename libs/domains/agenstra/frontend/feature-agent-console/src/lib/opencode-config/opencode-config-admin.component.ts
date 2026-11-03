@@ -22,7 +22,6 @@ import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.componen
         <fpc-button
           fpcPageHeaderActions
           variant="dark"
-          size="sm"
           iconOnly
           [disabled]="!editor() || (editor()?.loading() ?? true)"
           [title]="editor()?.modeToggleTitle() ?? modeToggleFallback"
@@ -38,7 +37,6 @@ import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.componen
         <fpc-button
           fpcPageHeaderActions
           variant="primary"
-          size="sm"
           iconOnly
           [loading]="editor()?.saving() ?? false"
           [disabled]="!(editor()?.canSave() ?? false)"

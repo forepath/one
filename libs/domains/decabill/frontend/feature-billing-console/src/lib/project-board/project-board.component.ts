@@ -94,14 +94,7 @@ import {
 import { ProjectMilestoneSelectComponent } from '../project-milestone-select/project-milestone-select.component';
 import { ProjectTicketEditorComponent } from '../project-ticket-editor/project-ticket-editor.component';
 import { projectTicketLaneStatusLabel } from '../project-ticket-lane-status-label';
-import {
-  dbBulkSummary,
-  dbCopyIdItem,
-  dbOpenItem,
-  DB_DL_CANCEL,
-  DB_DL_DELETE,
-  type DbBulkResult,
-} from '../shared/data-list';
+import { dbBulkSummary, dbCopyIdItem, dbOpenItem, DB_DL_DELETE, type DbBulkResult } from '../shared/data-list';
 import { timeEntryBillingState } from '../shared/table-states';
 import {
   bulkDeleteProjectTickets,
@@ -190,7 +183,6 @@ export class ProjectBoardComponent implements OnInit {
   readonly bulkDeleteTitle = $localize`:@@featureProjectBoard-bulkDeleteTitle:Delete tickets`;
   readonly moveToHeading = $localize`:@@featureProjectBoard-moveTo:Move to`;
   readonly deleteLabel = DB_DL_DELETE;
-  readonly cancelLabel = DB_DL_CANCEL;
 
   @Input({ required: true }) projectId!: string;
   @Input() isAdmin = false;

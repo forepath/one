@@ -6,7 +6,6 @@
       fpcPageHeaderContext
       class="d-md-none admin-billing__perspective-select"
       controlType="select"
-      size="sm"
       controlId="adminBillingPerspective"
       name="adminBillingPerspective"
       [ngModel]="billingPerspective()"
@@ -116,7 +115,6 @@
               <fpc-form-field forId="adminBillingUser" i18n-label="@@featureAdminBilling-userFilter" label="Customer">
                 <framework-billing-admin-user-select
                   inputId="adminBillingUser"
-                  [size]="'sm'"
                   [users]="users()"
                   [selectedUserId]="filterState.draft().user ?? ''"
                   (selectedUserIdChange)="filterState.patch({ user: $event || null })"
@@ -126,7 +124,6 @@
                 <fpc-form-control
                   controlId="adminBillingFrom"
                   inputType="date"
-                  size="sm"
                   name="adminBillingFrom"
                   [ngModel]="filterState.draft().from"
                   (ngModelChange)="filterState.patch({ from: $event })"
@@ -136,7 +133,6 @@
                 <fpc-form-control
                   controlId="adminBillingTo"
                   inputType="date"
-                  size="sm"
                   name="adminBillingTo"
                   [ngModel]="filterState.draft().to"
                   (ngModelChange)="filterState.patch({ to: $event })"
@@ -146,7 +142,6 @@
                 <fpc-form-control
                   controlType="select"
                   controlId="adminBillingGroupBy"
-                  size="sm"
                   name="adminBillingGroupBy"
                   [ngModel]="filterState.draft().groupBy"
                   (ngModelChange)="filterState.patch({ groupBy: $event })"
@@ -265,7 +260,6 @@
               <span fpcDataTableToolbar class="d-inline-flex gap-2">
                 <fpc-button
                   variant="dark"
-                  size="sm"
                   iconOnly
                   [class.d-none]="billingPerspective() === 'supplier'"
                   [disabled]="billingPerspective() === 'supplier'"
@@ -277,7 +271,6 @@
                 </fpc-button>
                 <fpc-button
                   variant="primary"
-                  size="sm"
                   iconOnly
                   [disabled]="(invoicesCreating$ | async) === true"
                   [ariaLabel]="addInvoiceAriaLabel"
@@ -290,7 +283,6 @@
               <fpc-button
                 fpcDataTableBatch
                 variant="dark"
-                size="sm"
                 [disabled]="invoiceBulkTargets('markPaid').length === 0"
                 (clicked)="runInvoiceBulk('markPaid')"
                 data-testid="admin-invoices-bulk-mark-paid"
@@ -303,7 +295,6 @@
               <fpc-button
                 fpcDataTableBatch
                 variant="danger"
-                size="sm"
                 [disabled]="invoiceBulkTargets('void').length === 0"
                 (clicked)="pendingBulk.set('void')"
                 data-testid="admin-invoices-bulk-void"
@@ -316,7 +307,6 @@
               <fpc-button
                 fpcDataTableBatch
                 variant="danger"
-                size="sm"
                 [disabled]="invoiceBulkTargets('delete').length === 0"
                 (clicked)="pendingBulk.set('delete')"
                 data-testid="admin-invoices-bulk-delete"
@@ -417,7 +407,6 @@
               >
                 <framework-billing-admin-supplier-select
                   inputId="adminSupplierBillingSupplier"
-                  [size]="'sm'"
                   [suppliers]="supplierFilterOptions()"
                   [selectedSupplierId]="filterState.draft().supplier ?? ''"
                   (selectedSupplierIdChange)="filterState.patch({ supplier: $event || null })"
@@ -427,7 +416,6 @@
                 <fpc-form-control
                   controlId="adminSupplierBillingFrom"
                   inputType="date"
-                  size="sm"
                   name="adminSupplierBillingFrom"
                   [ngModel]="filterState.draft().from"
                   (ngModelChange)="filterState.patch({ from: $event })"
@@ -437,7 +425,6 @@
                 <fpc-form-control
                   controlId="adminSupplierBillingTo"
                   inputType="date"
-                  size="sm"
                   name="adminSupplierBillingTo"
                   [ngModel]="filterState.draft().to"
                   (ngModelChange)="filterState.patch({ to: $event })"
@@ -451,7 +438,6 @@
                 <fpc-form-control
                   controlType="select"
                   controlId="adminSupplierBillingGroupBy"
-                  size="sm"
                   name="adminSupplierBillingGroupBy"
                   [ngModel]="filterState.draft().groupBy"
                   (ngModelChange)="filterState.patch({ groupBy: $event })"
@@ -527,7 +513,6 @@
               <fpc-button
                 fpcDataTableToolbar
                 variant="primary"
-                size="sm"
                 iconOnly
                 [disabled]="(invoicesCreating$ | async) === true"
                 [ariaLabel]="addInvoiceAriaLabel"
@@ -539,7 +524,6 @@
               <fpc-button
                 fpcDataTableBatch
                 variant="dark"
-                size="sm"
                 [disabled]="supplierBulkTargets('markPaid').length === 0"
                 (clicked)="runSupplierBulk('markPaid')"
                 data-testid="admin-supplier-invoices-bulk-mark-paid"
@@ -552,7 +536,6 @@
               <fpc-button
                 fpcDataTableBatch
                 variant="danger"
-                size="sm"
                 [disabled]="supplierBulkTargets('delete').length === 0"
                 (clicked)="pendingBulk.set('supplier-delete')"
                 data-testid="admin-supplier-invoices-bulk-delete"
@@ -578,13 +561,7 @@
   </div>
 </div>
 
-<fpc-modal
-  [(open)]="billNowModalOpen"
-  i18n-title="@@featureAdminBilling-billNowTitle"
-  title="Bill now"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="billNowModalOpen" i18n-title="@@featureAdminBilling-billNowTitle" title="Bill now">
   <fpc-form-check-group class="mb-3">
     <fpc-form-check
       class="mb-2"
@@ -609,13 +586,15 @@
     />
   </fpc-form-check-group>
   @if (billNowScope() === 'user') {
-    <framework-billing-admin-user-select
-      #billNowUserSelect
-      inputId="billNowUser"
-      [users]="users()"
-      [(selectedUserId)]="billNowUserId"
-      [showSuggestionsOnFocus]="true"
-    />
+    <fpc-form-field forId="billNowUserSelect" i18n-label="@@featureAdminBilling-userFilter" label="Customer">
+      <framework-billing-admin-user-select
+        #billNowUserSelect
+        inputId="billNowUserSelect"
+        [users]="users()"
+        [(selectedUserId)]="billNowUserId"
+        [showSuggestionsOnFocus]="true"
+      />
+    </fpc-form-field>
   }
   @if (billNowError$ | async; as err) {
     <fpc-alert class="mt-3" variant="danger" [message]="err" />
@@ -636,7 +615,7 @@
       @if (billNowLoading$ | async) {
         <fpc-spinner size="sm" />
       } @else {
-        <span i18n="@@featureAdminBilling-confirmBillNow">Bill now</span>
+        <span i18n="@@featureAdminBilling-confirmBillNow">Bill</span>
       }
     </fpc-button>
   </div>
@@ -646,8 +625,6 @@
   [(open)]="actionConfirmModalOpen"
   i18n-title="@@featureAdminBilling-confirmActionTitle"
   title="Confirm action"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   @if (pendingAction() === 'markPaid') {
     <fpc-form-field
@@ -661,7 +638,6 @@
       <fpc-form-control
         controlId="actionPaidAt"
         inputType="datetime-local"
-        size="sm"
         name="actionPaidAt"
         [ngModel]="actionPaidAt()"
         (ngModelChange)="actionPaidAt.set($event)"
@@ -673,7 +649,6 @@
     <fpc-form-control
       controlType="textarea"
       controlId="actionReason"
-      size="sm"
       [rows]="2"
       name="actionReason"
       [ngModel]="actionReason()"
@@ -689,9 +664,8 @@
       (clicked)="confirmAction()"
       [disabled]="(pendingSupplierInvoice() ? (supplierActionLoading$ | async) : (actionLoading$ | async)) === true"
       [loading]="(pendingSupplierInvoice() ? (supplierActionLoading$ | async) : (actionLoading$ | async)) === true"
-      i18n="@@featureAdminBilling-confirm"
     >
-      Confirm
+      {{ actionConfirmLabel() }}
     </fpc-button>
   </div>
 </fpc-modal>
@@ -908,7 +882,7 @@
         "
       ></ng-container>
     }
-    <fpc-button variant="outline-secondary" size="sm" (clicked)="addLineItem('create')">
+    <fpc-button variant="outline-secondary" (clicked)="addLineItem('create')">
       <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
       <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
     </fpc-button>
@@ -1006,7 +980,7 @@
         "
       ></ng-container>
     }
-    <fpc-button variant="outline-secondary" size="sm" (clicked)="addLineItem('createSupplier')">
+    <fpc-button variant="outline-secondary" (clicked)="addLineItem('createSupplier')">
       <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
       <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
     </fpc-button>
@@ -1017,14 +991,6 @@
       [summary]="draftTotalsSummary(createInvoiceType === 'supplier' ? createSupplierLineItems : createLineItems)"
     ></framework-pricing-totals-summary>
     <div class="d-flex justify-content-end gap-2 w-100">
-      <fpc-button
-        variant="dark"
-        type="button"
-        (clicked)="createModalOpen.set(false)"
-        i18n="@@featureBillingModal-cancel"
-      >
-        Cancel
-      </fpc-button>
       <fpc-button
         variant="primary"
         (clicked)="submitCreate()"
@@ -1116,7 +1082,7 @@
         "
       ></ng-container>
     }
-    <fpc-button variant="outline-secondary" size="sm" (clicked)="addLineItem('editSupplier')">
+    <fpc-button variant="outline-secondary" (clicked)="addLineItem('editSupplier')">
       <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
       <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
     </fpc-button>
@@ -1129,7 +1095,7 @@
         "
       ></ng-container>
     }
-    <fpc-button variant="outline-secondary" size="sm" (clicked)="addLineItem('edit')">
+    <fpc-button variant="outline-secondary" (clicked)="addLineItem('edit')">
       <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
       <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
     </fpc-button>
@@ -1140,9 +1106,6 @@
       [summary]="draftTotalsSummary(editSupplierInvoiceId ? editSupplierLineItems : editLineItems)"
     ></framework-pricing-totals-summary>
     <div class="d-flex justify-content-end gap-2 w-100">
-      <fpc-button variant="dark" type="button" (clicked)="editModalOpen.set(false)" i18n="@@featureBillingModal-cancel">
-        Cancel
-      </fpc-button>
       <fpc-button
         variant="primary"
         (clicked)="submitEdit()"
@@ -1156,13 +1119,7 @@
   </div>
 </fpc-modal>
 
-<fpc-modal
-  [(open)]="issueModalOpen"
-  i18n-title="@@featureAdminInvoices-issueTitle"
-  title="Issue invoice"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="issueModalOpen" i18n-title="@@featureAdminInvoices-issueTitle" title="Issue invoice">
   @if (issueSupplierInvoiceId) {
     <fpc-form-field
       forId="issueSupplierInvoiceNumber"
@@ -1264,7 +1221,6 @@
         <fpc-button
           fpcListHeaderActions
           variant="dark"
-          size="sm"
           iconOnly
           (clicked)="removeLineItem(target, i)"
           title="Remove line"
@@ -1379,7 +1335,6 @@
   [title]="bulkConfirmTitle()"
   [message]="bulkConfirmMessage()"
   [confirmLabel]="bulkConfirmLabel()"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   (confirmed)="confirmPendingBulk()"
 />

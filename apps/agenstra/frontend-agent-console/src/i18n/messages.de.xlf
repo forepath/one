@@ -115,8 +115,8 @@
         <target>API-Token</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-save" datatype="html">
-        <source> Save changes </source>
-        <target>Änderungen speichern</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-newConfigTitle" datatype="html">
         <source>Create import config</source>
@@ -199,8 +199,8 @@
         <target>CQL</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-cqlHelp" datatype="html">
-        <source> Required. Matching pages are fetched in full (paginated against Confluence). </source>
-        <target>Erforderlich. Passende Seiten werden vollständig abgerufen (paginiert gegen Confluence).</target>
+        <source> Required. Matching pages are fetched in full, paginated. </source>
+        <target> Erforderlich. Passende Seiten werden vollständig abgerufen. </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-newParentFolderOptional" datatype="html">
         <source>Parent folder (optional)</source>
@@ -1274,10 +1274,6 @@
         <source>Remove attachment</source>
         <target>Anhang entfernen</target>
       </trans-unit>
-      <trans-unit id="featureChat-done" datatype="html">
-        <source> Done </source>
-        <target> Fertig </target>
-      </trans-unit>
       <trans-unit id="featureChat-deleteWorkspaceModalTitle" datatype="html">
         <source>Delete workspace</source>
         <target>Workspace löschen</target>
@@ -1323,20 +1319,20 @@
         <target>Standard-Docker bietet eine geringere Isolation als die empfohlene Isolationsstufe. Der Container interagiert über die üblichen Namespace-, Capability- und Seccomp-Kontrollen von Docker mit dem Linux-Kernel des Workspace-Hosts.</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationConfirmStandardConfirm" datatype="html">
-        <source>Use Standard Docker</source>
-        <target>Standard-Docker verwenden</target>
+        <source>Use</source>
+        <target>Verwenden</target>
       </trans-unit>
       <trans-unit id="featureChat-existingWorkspace" datatype="html">
-        <source>Existing Workspace</source>
+        <source>Existing workspace</source>
         <target>Vorhandener Workspace</target>
       </trans-unit>
       <trans-unit id="featureChat-provisionServer" datatype="html">
-        <source>Provision server</source>
-        <target>Server bereitstellen</target>
+        <source>Provision</source>
+        <target>Bereitstellen</target>
       </trans-unit>
       <trans-unit id="featureChat-provisionServerSubmit" datatype="html">
-        <source>Provision server</source>
-        <target>Server bereitstellen</target>
+        <source>Provision</source>
+        <target>Bereitstellen</target>
       </trans-unit>
       <trans-unit id="featureChat-nameLabel" datatype="html">
         <source>Name</source>
@@ -1355,7 +1351,7 @@
         <target>Anbieter auswählen</target>
       </trans-unit>
       <trans-unit id="featureChat-serverTypeLabel" datatype="html">
-        <source>Server Type</source>
+        <source>Server type</source>
         <target>Servertyp</target>
       </trans-unit>
       <trans-unit id="featureChat-selectServerType" datatype="html">
@@ -1371,7 +1367,7 @@
         <target>https://example.com</target>
       </trans-unit>
       <trans-unit id="featureChat-authTypeLabel" datatype="html">
-        <source>Authentication Type</source>
+        <source>Authentication type</source>
         <target>Authentifizierungstyp</target>
       </trans-unit>
       <trans-unit id="featureChat-apiKeyAutoGeneratePlaceholder" datatype="html">
@@ -1403,16 +1399,16 @@
         <target>Deaktiviert</target>
       </trans-unit>
       <trans-unit id="featureChat-provisionAutoEnrichHint" datatype="html">
-        <source>Sets AUTO_ENRICH_ENABLED_GLOBAL on the new workspace agent-manager.</source>
-        <target>Setzt AUTO_ENRICH_ENABLED_GLOBAL im neuen Workspace-Agent-Manager.</target>
+        <source>Sets AUTO_ENRICH_ENABLED_GLOBAL on the new agent-manager.</source>
+        <target>Setzt AUTO_ENRICH_ENABLED_GLOBAL im neuen Agent-Manager.</target>
       </trans-unit>
       <trans-unit id="featureChat-provisionVectorMaxCosLabel" datatype="html">
         <source>Vector auto-enrichment max cosine distance</source>
         <target>Maximaler Kosinusabstand für Vektor-Anreicherung</target>
       </trans-unit>
       <trans-unit id="featureChat-provisionVectorMaxCosHint" datatype="html">
-        <source>0 to 2 (pgvector &lt;=&gt;). Only knowledge chunks at or below this distance are used; default 1.</source>
-        <target>0 bis 2 (pgvector &lt;=&gt;). Es werden nur Wissensabschnitte mit diesem Abstand oder kleiner verwendet; Standard 1.</target>
+        <source>0 to 2 (pgvector &lt;=&gt;); only closer chunks are used. Default: 1.</source>
+        <target>0 bis 2 (pgvector &lt;=&gt;); nur nähere Abschnitte werden genutzt. Standard: 1.</target>
       </trans-unit>
       <trans-unit id="featureChat-gitRepoPlaceholder" datatype="html">
         <source>https://github.com/user/repo.git</source>
@@ -1427,8 +1423,8 @@
 -----END OPENSSH PRIVATE KEY-----</target>
       </trans-unit>
       <trans-unit id="featureChat-createWorkspace" datatype="html">
-        <source>Create workspace</source>
-        <target>Workspace anlegen</target>
+        <source>Create</source>
+        <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationLabel" datatype="html">
         <source>Container isolation</source>
@@ -1475,8 +1471,8 @@
         <target>Sandboxed (gVisor auf KVM) führt den Anwendungskernel von gVisor auf dem Workspace-Host aus. Die empfohlene Stufe betreibt die Umgebung in einer eigenen virtuellen Maschine mit separatem Linux-Kernel, sodass eine Schwachstelle auf Kernel-Ebene innerhalb der VM bleibt.</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationConfirmSandboxedKvmConfirm" datatype="html">
-        <source>Use Sandboxed (gVisor on KVM)</source>
-        <target>Sandboxed (gVisor auf KVM) verwenden</target>
+        <source>Use</source>
+        <target>Verwenden</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationConfirmSandboxedTitle" datatype="html">
         <source>Use the gVisor sandbox without KVM?</source>
@@ -1487,8 +1483,8 @@
         <target>Sandboxed (gVisor) betreibt den Anwendungskernel von gVisor ohne Hardwarevirtualisierung. Die empfohlene Stufe isoliert ihn zusätzlich mit KVM, sodass eine Schwachstelle in gVisor schwerer auszunutzen ist.</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationConfirmSandboxedConfirm" datatype="html">
-        <source>Use Sandboxed (gVisor)</source>
-        <target>Sandboxed (gVisor) verwenden</target>
+        <source>Use</source>
+        <target>Verwenden</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationSandboxedUnavailable" datatype="html">
         <source>Not available on this workspace:</source>
@@ -1503,8 +1499,8 @@
         <target> Isolationsunterstützung wird geprüft… </target>
       </trans-unit>
       <trans-unit id="featureChat-isolationStaleHint" datatype="html">
-        <source>The workspace host could not be reached; isolation support may be outdated.</source>
-        <target>Der Workspace-Host war nicht erreichbar; die Isolationsunterstützung ist möglicherweise veraltet.</target>
+        <source>Host unreachable; isolation support may be outdated.</source>
+        <target>Host nicht erreichbar; Isolationsdaten evtl. veraltet.</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationCapabilitiesChanged" datatype="html">
         <source>The isolation capabilities of this workspace changed. Review the isolation level.</source>
@@ -1535,31 +1531,31 @@
         <target>Leeres Repository (git init)</target>
       </trans-unit>
       <trans-unit id="featureChat-agentGitSetupModeHint" datatype="html">
-        <source>Choose whether to clone a repository or initialize an empty local Git repository.</source>
-        <target>Wählen Sie, ob ein Repository geklont oder ein leeres lokales Git-Repository initialisiert werden soll.</target>
+        <source>Clone a repository or initialize an empty local one.</source>
+        <target>Repository klonen oder ein leeres lokales initialisieren.</target>
       </trans-unit>
       <trans-unit id="featureChat-workspaceGitSetupModeHint" datatype="html">
-        <source>Choose whether to clone an existing repository or start with a new local Git repository.</source>
-        <target>Wählen Sie, ob ein vorhandenes Repository geklont oder ein neues lokales Git-Repository gestartet werden soll.</target>
+        <source>Clone an existing repository or start a new local one.</source>
+        <target>Vorhandenes Repository klonen oder ein neues lokales anlegen.</target>
       </trans-unit>
       <trans-unit id="featureChat-workspaceGitDefault" datatype="html">
         <source>Workspace default: <x id="INTERPOLATION" equiv-text="{{ getWorkspaceGitSetupModeDefaultLabel(workspaceGitMode) }}"/></source>
         <target>Workspace-Standard: <x id="INTERPOLATION" equiv-text="{{ getWorkspaceGitSetupModeDefaultLabel(workspaceGitMode) }}"/></target>
       </trans-unit>
       <trans-unit id="featureChat-gitRepositoryUrlLabel" datatype="html">
-        <source>Git Repository URL</source>
+        <source>Git repository URL</source>
         <target>Git-Repository-URL</target>
       </trans-unit>
       <trans-unit id="featureChat-agentGitRepoUrlHint" datatype="html">
-        <source>Optional. Defaults to workspace Git repository URL if not specified.</source>
-        <target>Optional. Standard ist die Git-Repository-URL des Workspaces, wenn nichts angegeben ist.</target>
+        <source>Optional. Defaults to the workspace repository URL.</source>
+        <target>Optional. Standard ist die Repository-URL des Workspaces.</target>
       </trans-unit>
       <trans-unit id="featureChat-workspaceGitRepoUrlHint" datatype="html">
         <source>Git repository URL for the environment&apos;s workspace</source>
         <target>Git-Repository-URL für den Workspace der Umgebung</target>
       </trans-unit>
       <trans-unit id="featureChat-gitUsernameLabel" datatype="html">
-        <source>Git Username</source>
+        <source>Git username</source>
         <target>Git-Benutzername</target>
       </trans-unit>
       <trans-unit id="featureChat-gitUsernameHint" datatype="html">
@@ -1567,7 +1563,7 @@
         <target>Git-Benutzername für den Repository-Zugriff</target>
       </trans-unit>
       <trans-unit id="featureChat-gitTokenLabel" datatype="html">
-        <source>Git Token</source>
+        <source>Git token</source>
         <target>Git-Token</target>
       </trans-unit>
       <trans-unit id="featureChat-gitTokenHint" datatype="html">
@@ -1575,7 +1571,7 @@
         <target>Git-Token bzw. Personal Access Token für den Repository-Zugriff</target>
       </trans-unit>
       <trans-unit id="featureChat-gitPasswordLabel" datatype="html">
-        <source>Git Password</source>
+        <source>Git password</source>
         <target>Git-Passwort</target>
       </trans-unit>
       <trans-unit id="featureChat-gitPasswordHint" datatype="html">
@@ -1583,16 +1579,16 @@
         <target>Git-Passwort für den Repository-Zugriff (Alternative zum Token)</target>
       </trans-unit>
       <trans-unit id="featureChat-gitPrivateKeyLabel" datatype="html">
-        <source>Git Private Key (SSH)</source>
+        <source>Git private key (SSH)</source>
         <target>Git-Privatschlüssel (SSH)</target>
       </trans-unit>
       <trans-unit id="featureChat-gitPrivateKeyHint" datatype="html">
-        <source>SSH private key for cloning repositories via SSH (alternative to username/token)</source>
-        <target>SSH-Privatschlüssel zum Klonen von Repositories per SSH (Alternative zu Benutzername/Token)</target>
+        <source>SSH key for cloning via SSH (instead of username/token)</source>
+        <target>SSH-Schlüssel zum Klonen per SSH (statt Benutzername/Token)</target>
       </trans-unit>
       <trans-unit id="featureChat-createEnvironment" datatype="html">
-        <source>Create environment</source>
-        <target>Umgebung anlegen</target>
+        <source>Create</source>
+        <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureChat-updateWorkspaceTitle" datatype="html">
         <source>Edit workspace</source>
@@ -1627,16 +1623,16 @@
         <target> Die Isolationsunterstützung wurde noch nicht geprüft. </target>
       </trans-unit>
       <trans-unit id="featureChat-updateWorkspace" datatype="html">
-        <source>Save changes</source>
-        <target>Änderungen speichern</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureChat-updateEnvironmentTitle" datatype="html">
         <source>Edit environment</source>
         <target>Umgebung bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureChat-updateEnvironment" datatype="html">
-        <source>Save changes</source>
-        <target>Änderungen speichern</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureChat-manageWorkspaceConfiguration" datatype="html">
         <source>Manage workspace configuration</source>
@@ -1679,7 +1675,7 @@
         <target>Neue Umgebungsvariable hinzufügen</target>
       </trans-unit>
       <trans-unit id="featureChat-envVarNameLabel" datatype="html">
-        <source>Variable Name</source>
+        <source>Variable name</source>
         <target>Variablenname</target>
       </trans-unit>
       <trans-unit id="featureChat-envVarValueLabel" datatype="html">
@@ -1767,8 +1763,8 @@
         <target>Zurücksetzen</target>
       </trans-unit>
       <trans-unit id="featureTicketAutonomyManager-save" datatype="html">
-        <source>Save changes</source>
-        <target>Änderungen speichern</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureChat-manageClientUsersModalTitle" datatype="html">
         <source>Manage workspace users</source>
@@ -2119,7 +2115,7 @@
         <target>Workflow auswählen</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-workflowInputsLabel" datatype="html">
-        <source>Workflow Inputs (optional)</source>
+        <source>Workflow inputs (optional)</source>
         <target>Workflow-Eingaben (optional)</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-removeInputTitle" datatype="html">
@@ -2143,7 +2139,7 @@
         <target> Konfiguration erstellen </target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-providerTypeLabel" datatype="html">
-        <source>Provider Type</source>
+        <source>Provider type</source>
         <target>Anbietertyp</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-githubOption" datatype="html">
@@ -2183,7 +2179,7 @@
         <target>workflow.yml</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-gitlabBaseUrlLabel" datatype="html">
-        <source>GitLab Base URL (optional)</source>
+        <source>GitLab base URL (optional)</source>
         <target>GitLab-Basis-URL (optional)</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-gitlabUrlPlaceholder" datatype="html">
@@ -2215,11 +2211,11 @@
         <target>Deployment-Konfiguration erstellen</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-githubTokenLabel" datatype="html">
-        <source>GitHub Token</source>
+        <source>GitHub token</source>
         <target>GitHub-Token</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-gitlabTokenLabel" datatype="html">
-        <source>GitLab Token</source>
+        <source>GitLab token</source>
         <target>GitLab-Token</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-tokenHintKeepCurrent" datatype="html">
@@ -2239,8 +2235,8 @@
         <target>Token eingeben</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-create" datatype="html">
-        <source>Create configuration</source>
-        <target>Konfiguration anlegen</target>
+        <source>Create</source>
+        <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureDeploymentManager-configurationHeader" datatype="html">
         <source>Deployment configuration</source>
@@ -2601,7 +2597,7 @@
         <target>Löschen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-newNameLabel" datatype="html">
-        <source>New Name</source>
+        <source>New name</source>
         <target>Neuer Name</target>
       </trans-unit>
       <trans-unit id="featureFileTree-rename" datatype="html">
@@ -2609,7 +2605,7 @@
         <target>Umbenennen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-destinationPathLabel" datatype="html">
-        <source>Destination Path</source>
+        <source>Destination path</source>
         <target>Zielpfad</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDestinationPlaceholder" datatype="html">
@@ -2617,8 +2613,8 @@
         <target>Zielpfad eingeben (z. B. 'ordner' oder 'ordner/unterordner')</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDestinationHint" datatype="html">
-        <source> Use &apos;.&apos; for root directory, or enter a relative path like &apos;folder&apos; or &apos;folder/subfolder&apos; </source>
-        <target>Verwenden Sie '.' für das Stammverzeichnis oder geben Sie einen relativen Pfad wie 'ordner' oder 'ordner/unterordner' ein</target>
+        <source> Use &apos;.&apos; for the root or a relative path, e.g. &apos;folder/sub&apos;. </source>
+        <target> &apos;.&apos; für das Stammverzeichnis oder ein relativer Pfad, z. B. &apos;ordner/unter&apos;. </target>
       </trans-unit>
       <trans-unit id="featureFileTree-move" datatype="html">
         <source> Move </source>
@@ -2633,7 +2629,7 @@
         <target>Ordnernamen eingeben...</target>
       </trans-unit>
       <trans-unit id="featureFileTree-deleteMultipleTitle" datatype="html">
-        <source>Delete Items</source>
+        <source>Delete items</source>
         <target>Elemente löschen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-statusClean" datatype="html">
@@ -2653,11 +2649,11 @@
         <target>Aktueller Branch: <x id="branch" equiv-text="branch"/></target>
       </trans-unit>
       <trans-unit id="featureFileTree-deleteDirectoryTitle" datatype="html">
-        <source>Delete Directory</source>
+        <source>Delete directory</source>
         <target>Ordner löschen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-deleteFileTitle" datatype="html">
-        <source>Delete File</source>
+        <source>Delete file</source>
         <target>Datei löschen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-deleteMultipleMessage" datatype="html">
@@ -2681,19 +2677,19 @@
         <target>Geben Sie einen neuen Namen für die Datei <x id="path" equiv-text="path"/> ein</target>
       </trans-unit>
       <trans-unit id="featureFileTree-renameDirectoryTitle" datatype="html">
-        <source>Rename Directory</source>
+        <source>Rename directory</source>
         <target>Ordner umbenennen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-renameFileTitle" datatype="html">
-        <source>Rename File</source>
+        <source>Rename file</source>
         <target>Datei umbenennen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDirectoryTitle" datatype="html">
-        <source>Move Directory</source>
+        <source>Move directory</source>
         <target>Ordner verschieben</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveFileTitle" datatype="html">
-        <source>Move File</source>
+        <source>Move file</source>
         <target>Datei verschieben</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDirectoryMessage" datatype="html">
@@ -2713,20 +2709,20 @@
         <target>Die Datei wird verschoben nach: <x id="result" equiv-text="result"/></target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-header" datatype="html">
-        <source>Git Branches</source>
+        <source>Git branches</source>
         <target>Git-Branches</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-currentBranchLabel" datatype="html">
-        <source>Current Branch</source>
+        <source>Current branch</source>
         <target>Aktueller Branch</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-quickSwitchLabel" datatype="html">
-        <source>Quick Switch to Branch</source>
+        <source>Quick switch to branch</source>
         <target>Schnell zu Branch wechseln</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-quickSwitchHint" datatype="html">
-        <source> Enter the name (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>) or a remote ref (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>origin/feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>). </source>
-        <target> Geben Sie den Namen (z. B. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>) oder eine Remote-Referenz (z. B. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>origin/feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>) ein. </target>
+        <source> Branch name or remote ref, e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>origin/feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>. </source>
+        <target> Branch-Name oder Remote-Referenz, z. B. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>origin/feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>. </target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-branchNamePlaceholder" datatype="html">
         <source>Enter branch name or remote ref</source>
@@ -2765,7 +2761,7 @@
         <target>Auschecken und lokalen Tracking-Branch erstellen</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-createBranchLabel" datatype="html">
-        <source>Create New Branch</source>
+        <source>Create new branch</source>
         <target>Neuen Branch erstellen</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-conventionalPrefixLabel" datatype="html">
@@ -2777,7 +2773,7 @@
         <target>Typ</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-branchNameLabel" datatype="html">
-        <source>Branch Name</source>
+        <source>Branch name</source>
         <target>Branch-Name</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-branchNamePlaceholderShort" datatype="html">
@@ -2837,7 +2833,7 @@
         <target>Arbeitsbaum ist sauber</target>
       </trans-unit>
       <trans-unit id="featureGitManager-commitMessageLabel" datatype="html">
-        <source>Commit Message</source>
+        <source>Commit message</source>
         <target>Commit-Nachricht</target>
       </trans-unit>
       <trans-unit id="featureGitManager-commitMessagePlaceholder" datatype="html">
@@ -3321,7 +3317,7 @@
         <target>Eine Seite namens <x id="name" equiv-text="name"/> ist bereits vorhanden</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeTree-deleteMultipleTitle" datatype="html">
-        <source>Delete Items</source>
+        <source>Delete items</source>
         <target>Elemente löschen</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeTree-delete" datatype="html">
@@ -3581,8 +3577,8 @@
         <target>Modell für Automatisierung</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationPreferredModelHint" datatype="html">
-        <source> Required when automation is enabled. OpenCode has no auto model selection. </source>
-        <target> Erforderlich, wenn die Automatisierung aktiviert ist. OpenCode hat keine Auto-Modellauswahl. </target>
+        <source> Required for automation; OpenCode can&apos;t pick a model itself. </source>
+        <target> Für Automatisierung nötig; OpenCode wählt kein Modell selbst. </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-acceptanceLabel" datatype="html">
         <source> Acceptance <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-body-secondary small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;
@@ -3765,8 +3761,8 @@
         <target>Beim nächsten Lauf einen neuen Branch erzwingen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationForceNewBranchHint" datatype="html">
-        <source>Use when a run is stuck; the flag clears after the next run starts.</source>
-        <target>Nutzen Sie dies, wenn ein Lauf hängt; das Flag wird zurückgesetzt, sobald der nächste Lauf startet.</target>
+        <source>For stuck runs; clears after the next run starts.</source>
+        <target>Für hängende Läufe; wird beim nächsten Lauf zurückgesetzt.</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationVerifierHeading" datatype="html">
         <source>Verifier commands</source>
@@ -4001,12 +3997,8 @@
         <target>Priorität</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-create" datatype="html">
-        <source>Create ticket</source>
-        <target>Ticket anlegen</target>
-      </trans-unit>
-      <trans-unit id="featureTicketsBoard-createSubtaskSubmit" datatype="html">
-        <source>Create subtask</source>
-        <target>Unteraufgabe anlegen</target>
+        <source>Create</source>
+        <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherTitle" datatype="html">
         <source>Switch workspace</source>
@@ -4237,7 +4229,7 @@
         <target>Bitte geben Sie eine gültige E-Mail-Adresse ein.</target>
       </trans-unit>
       <trans-unit id="featureConfirmEmail-codeLabel" datatype="html">
-        <source>Confirmation Code</source>
+        <source>Confirmation code</source>
         <target>Bestätigungscode</target>
       </trans-unit>
       <trans-unit id="featureConfirmEmail-codeRequired" datatype="html">
@@ -4293,11 +4285,11 @@
         <target>Anmelden</target>
       </trans-unit>
       <trans-unit id="featureLogin-controllerApiHost" datatype="html">
-        <source>Controller API Host</source>
+        <source>Controller API host</source>
         <target>Controller-API-Host</target>
       </trans-unit>
       <trans-unit id="featureLogin-controllerApiKey" datatype="html">
-        <source>Controller API Key</source>
+        <source>Controller API key</source>
         <target>Controller-API-Schlüssel</target>
       </trans-unit>
       <trans-unit id="featureLogin-apiKeyPlaceholder" datatype="html">
@@ -4405,7 +4397,7 @@
         <target>Passwort muss mindestens 8 Zeichen haben.</target>
       </trans-unit>
       <trans-unit id="featureRegister-confirmPasswordLabel" datatype="html">
-        <source>Confirm Password</source>
+        <source>Confirm password</source>
         <target>Passwort bestätigen</target>
       </trans-unit>
       <trans-unit id="featureRegister-confirmPasswordPlaceholder" datatype="html">
@@ -4493,7 +4485,7 @@
         <target>Bitte geben Sie eine gültige E-Mail-Adresse ein.</target>
       </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-codeLabel" datatype="html">
-        <source>Reset Code</source>
+        <source>Reset code</source>
         <target>Reset-Code</target>
       </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-codeRequired" datatype="html">
@@ -4505,7 +4497,7 @@
         <target>Code muss genau 6 Zeichen sein (Großbuchstaben und Zahlen).</target>
       </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-newPasswordLabel" datatype="html">
-        <source>New Password</source>
+        <source>New password</source>
         <target>Neues Passwort</target>
       </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-newPasswordPlaceholder" datatype="html">
@@ -4521,7 +4513,7 @@
         <target>Passwort muss mindestens 8 Zeichen haben.</target>
       </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-confirmNewPasswordLabel" datatype="html">
-        <source>Confirm New Password</source>
+        <source>Confirm new password</source>
         <target>Neues Passwort bestätigen</target>
       </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-confirmNewPasswordPlaceholder" datatype="html">
@@ -4625,7 +4617,7 @@
         <target>Bitte geben Sie eine gültige E-Mail-Adresse ein.</target>
       </trans-unit>
       <trans-unit id="featureResetPassword-codeLabel" datatype="html">
-        <source>Reset Code</source>
+        <source>Reset code</source>
         <target>Reset-Code</target>
       </trans-unit>
       <trans-unit id="featureResetPassword-codeRequired" datatype="html">
@@ -4637,7 +4629,7 @@
         <target>Code muss genau 6 Zeichen sein (Großbuchstaben und Zahlen).</target>
       </trans-unit>
       <trans-unit id="featureResetPassword-newPasswordLabel" datatype="html">
-        <source>New Password</source>
+        <source>New password</source>
         <target>Neues Passwort</target>
       </trans-unit>
       <trans-unit id="featureResetPassword-newPasswordPlaceholder" datatype="html">
@@ -4653,7 +4645,7 @@
         <target>Passwort muss mindestens 8 Zeichen haben.</target>
       </trans-unit>
       <trans-unit id="featureResetPassword-confirmNewPasswordLabel" datatype="html">
-        <source>Confirm New Password</source>
+        <source>Confirm new password</source>
         <target>Neues Passwort bestätigen</target>
       </trans-unit>
       <trans-unit id="featureResetPassword-confirmNewPasswordPlaceholder" datatype="html">
@@ -4745,7 +4737,7 @@
         <target>Benutzer bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureUserManager-newPasswordLabel" datatype="html">
-        <source>New Password</source>
+        <source>New password</source>
         <target>Neues Passwort</target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordKeepCurrentPlaceholder" datatype="html">
@@ -4757,11 +4749,11 @@
         <target> Leer lassen, um das aktuelle Passwort zu behalten </target>
       </trans-unit>
       <trans-unit id="featureUserManager-update" datatype="html">
-        <source>Save changes</source>
-        <target>Änderungen speichern</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureUserManager-deleteUserModalTitle" datatype="html">
-        <source>Delete User</source>
+        <source>Delete user</source>
         <target>Benutzer löschen</target>
       </trans-unit>
       <trans-unit id="featureUserManager-deleteUserConfirm" datatype="html">
@@ -4821,10 +4813,6 @@
       <trans-unit id="featureTokenManager-copy" datatype="html">
         <source>Copy</source>
         <target>Kopieren</target>
-      </trans-unit>
-      <trans-unit id="featureTokenManager-done" datatype="html">
-        <source>Done</source>
-        <target>Fertig</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-nameLabel" datatype="html">
         <source>Name</source>
@@ -5049,12 +5037,12 @@
         <target>Cookie-Richtlinie</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-createConnectionSubmit" datatype="html">
-        <source> Create connection </source>
-        <target>Verbindung anlegen</target>
+        <source>Create</source>
+        <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-createConfigSubmit" datatype="html">
-        <source> Create import config </source>
-        <target>Import-Konfiguration anlegen</target>
+        <source>Create</source>
+        <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-delete" datatype="html">
         <source>Delete</source>
@@ -5073,8 +5061,8 @@
         <target>Webhooks</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-save" datatype="html">
-        <source>Save changes</source>
-        <target>Änderungen speichern</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-delete" datatype="html">
         <source>Delete</source>
@@ -5085,8 +5073,8 @@
         <target>Lauf abbrechen</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-save" datatype="html">
-        <source>Save</source>
-        <target>Speichern</target>
+        <source>Override</source>
+        <target>Überschreiben</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-relationsAdd" datatype="html">
         <source>Add</source>
@@ -5095,10 +5083,6 @@
       <trans-unit id="featureTicketsBoard-move" datatype="html">
         <source> Move </source>
         <target>Verschieben</target>
-      </trans-unit>
-      <trans-unit id="identityLogoutConfirm-cancel" datatype="html">
-        <source>Cancel</source>
-        <target>Abbrechen</target>
       </trans-unit>
       <trans-unit id="identityLogoutConfirm-confirm" datatype="html">
         <source>Log out</source>
@@ -5141,8 +5125,8 @@
         <target>Persönlichen Zugriffstoken bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-update" datatype="html">
-        <source>Save changes</source>
-        <target>Änderungen speichern</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us </source>
@@ -5304,10 +5288,6 @@
         <source> Copy this signing secret now. It will not be shown again. </source>
         <target>Kopieren Sie diesen Signaturgeheimnis-Schlüssel jetzt. Er wird nicht erneut angezeigt.</target>
       </trans-unit>
-      <trans-unit id="featureNotifications-done" datatype="html">
-        <source>Done</source>
-        <target>Erledigt</target>
-      </trans-unit>
       <trans-unit id="featureNotifications-create" datatype="html">
         <source>Create</source>
         <target>Erstellen</target>
@@ -5317,8 +5297,8 @@
         <target>Webhook bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureNotifications-update" datatype="html">
-        <source>Save changes</source>
-        <target>Änderungen speichern</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureNotifications-nameLabel" datatype="html">
         <source>Name</source>
@@ -5725,7 +5705,7 @@
         <target>Zurück zur Anmeldung</target>
       </trans-unit>
       <trans-unit id="featureLogin2fa-codeLabel" datatype="html">
-        <source>Verification Code</source>
+        <source>Verification code</source>
         <target>Bestätigungscode</target>
       </trans-unit>
       <trans-unit id="featureLogin2fa-codePatternEmail" datatype="html">
@@ -5939,12 +5919,12 @@
       &gt;"/> entfernen? Anschließend kann ein neuer Authenticator eingerichtet werden. </target>
       </trans-unit>
       <trans-unit id="featureUserManager-clearTotpModalTitle" datatype="html">
-        <source>Remove Authenticator</source>
+        <source>Remove authenticator</source>
         <target>Authenticator entfernen</target>
       </trans-unit>
       <trans-unit id="featureUserManager-removeAuthenticator" datatype="html">
-        <source>Remove authenticator</source>
-        <target>Authenticator entfernen</target>
+        <source>Remove</source>
+        <target>Entfernen</target>
       </trans-unit>
       <trans-unit id="featureUserManager-totpEnabled" datatype="html">
         <source>Authenticator</source>
@@ -5974,9 +5954,13 @@
         <source>Configuration JSON</source>
         <target>Konfigurations-JSON</target>
       </trans-unit>
-      <trans-unit id="featureAgentConfig-rawJsonHelp" datatype="html">
-        <source> Composed view of structured settings plus Advanced overrides for this layer. Saving absorbs the JSON into structured config and clears overrides. </source>
+      <trans-unit id="featureAgentConfig-rawJsonHelpFull" datatype="html">
+        <source>Composed view of structured settings plus Advanced overrides for this layer. Saving absorbs the JSON into structured config and clears overrides.</source>
         <target>Zusammengesetzte Ansicht der strukturierten Einstellungen plus erweiterte Overrides für diese Ebene. Beim Speichern wird das JSON in die strukturierte Konfiguration übernommen und die Overrides werden geleert.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-rawJsonHelp" datatype="html">
+        <source> Structured settings plus overrides; saving merges them. </source>
+        <target> Einstellungen plus Overrides; Speichern führt sie zusammen. </target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-providerSelectLabel" datatype="html">
         <source>Provider</source>
@@ -6319,8 +6303,8 @@
         <target>Filtermodus</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressModeHelp" datatype="html">
-        <source>off: no guard, monitor: record would-be blocks, enforce: apply the lists, offline: block all egress</source>
-        <target>off: kein Guard, monitor: mögliche Sperren protokollieren, enforce: Listen anwenden, offline: gesamten ausgehenden Verkehr sperren</target>
+        <source>off, monitor (log only), enforce (apply lists), offline (block all)</source>
+        <target>off, monitor (nur Log), enforce (Listen), offline (alles sperren)</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-inheritOption" datatype="html">
         <source>(inherit)</source>
@@ -6391,8 +6375,8 @@
         <target>Hostname oder URL</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressTesterHelp" datatype="html">
-        <source>Evaluated against the effective policy including unsaved changes on this layer</source>
-        <target>Ausgewertet gegen die wirksame Richtlinie inklusive ungespeicherter Änderungen dieser Ebene</target>
+        <source>Uses the effective policy, including unsaved changes</source>
+        <target>Nutzt die wirksame Richtlinie inkl. ungespeicherter Änderungen</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-tabMessageFilters" datatype="html">
         <source>Message filters</source>
@@ -6427,8 +6411,8 @@
         <target>Muster</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldMessageFilterPatternHelp" datatype="html">
-        <source>JavaScript regular expression (nested quantifiers such as (a+)+ are rejected)</source>
-        <target>Regulärer JavaScript-Ausdruck (verschachtelte Quantoren wie (a+)+ werden abgelehnt)</target>
+        <source>JavaScript regex; nested quantifiers like (a+)+ are rejected</source>
+        <target>JavaScript-Regex; verschachtelte Quantoren wie (a+)+ abgelehnt</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldMessageFilterFlags" datatype="html">
         <source>Flags</source>
@@ -6443,8 +6427,8 @@
         <target>Aktion</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldMessageFilterActionHelp" datatype="html">
-        <source>drop: block the message, replace: rewrite matches, flag: record only</source>
-        <target>drop: Nachricht verwerfen, replace: Treffer ersetzen, flag: nur protokollieren</target>
+        <source>drop: block, replace: rewrite matches, flag: record only</source>
+        <target>drop: verwerfen, replace: Treffer ersetzen, flag: nur protokollieren</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldMessageFilterReplacement" datatype="html">
         <source>Replacement</source>
@@ -6463,8 +6447,8 @@
         <target>Beispielnachricht</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldMessageFilterTesterHelp" datatype="html">
-        <source>Evaluated against all effective rules including unsaved changes on this layer</source>
-        <target>Ausgewertet gegen alle wirksamen Regeln inklusive ungespeicherter Änderungen dieser Ebene</target>
+        <source>Uses all effective rules, including unsaved changes</source>
+        <target>Nutzt alle wirksamen Regeln inkl. ungespeicherter Änderungen</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-directionIncoming" datatype="html">
         <source>incoming (user to agent)</source>
@@ -6551,48 +6535,48 @@
         <target>Private Netzwerke sperren</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressBlockPrivateHelp" datatype="html">
-        <source>Deny loopback, link-local, RFC 1918 and cloud metadata addresses unless explicitly allowed</source>
-        <target>Loopback-, Link-Local-, RFC-1918- und Cloud-Metadaten-Adressen sperren, sofern nicht ausdrücklich erlaubt</target>
+        <source>Deny loopback, private and metadata addresses unless allowed</source>
+        <target>Loopback-, private und Metadaten-Adressen sperren, außer erlaubt</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressBlockIpLiterals" datatype="html">
         <source>Block IP literals</source>
         <target>IP-Literale sperren</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressBlockIpLiteralsHelp" datatype="html">
-        <source>Deny connections to raw IP addresses (and TLS without a hostname) unless the address is allowed</source>
-        <target>Verbindungen zu reinen IP-Adressen (und TLS ohne Hostnamen) sperren, sofern die Adresse nicht erlaubt ist</target>
+        <source>Deny raw IP addresses (and TLS without hostname) unless allowed</source>
+        <target>Reine IP-Adressen (und TLS ohne Hostname) sperren, außer erlaubt</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressLogAllowed" datatype="html">
         <source>Record allowed traffic</source>
         <target>Erlaubten Verkehr protokollieren</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressLogAllowedHelp" datatype="html">
-        <source>Include allowed destinations in the audit log (blocked traffic is always recorded)</source>
-        <target>Erlaubte Ziele in das Audit-Protokoll aufnehmen (gesperrter Verkehr wird immer protokolliert)</target>
+        <source>Also log allowed destinations (blocks are always logged)</source>
+        <target>Auch erlaubte Ziele protokollieren (Sperren immer)</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressDenyHosts" datatype="html">
         <source>Denylist</source>
         <target>Sperrliste</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressDenyHostsHelp" datatype="html">
-        <source>Hostnames (subdomains match too; *.example.com is equivalent), IP addresses or CIDRs, one per line. Always wins.</source>
-        <target>Hostnamen (Subdomains passen ebenfalls; *.example.com ist gleichwertig), IP-Adressen oder CIDRs, einer pro Zeile. Hat immer Vorrang.</target>
+        <source>Hosts (incl. subdomains), IPs or CIDRs, one per line. Always wins.</source>
+        <target>Hosts (inkl. Subdomains), IPs oder CIDRs, je Zeile. Hat Vorrang.</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressAllowHosts" datatype="html">
         <source>Allowlist</source>
         <target>Erlaubnisliste</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressAllowHostsHelp" datatype="html">
-        <source>When not empty, only these destinations are reachable. Same syntax as the denylist.</source>
-        <target>Wenn nicht leer, sind nur diese Ziele erreichbar. Gleiche Syntax wie die Sperrliste.</target>
+        <source>If set, only these are reachable. Same syntax as the denylist.</source>
+        <target>Wenn gesetzt, nur diese erreichbar. Syntax wie die Sperrliste.</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressDenyUrlPatterns" datatype="html">
         <source>Blocked plain-HTTP URL patterns</source>
         <target>Gesperrte HTTP-URL-Muster</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressDenyUrlPatternsHelp" datatype="html">
-        <source>Regular expressions matched against http:// URLs (HTTPS paths are not visible), one per line.</source>
-        <target>Reguläre Ausdrücke für http://-URLs (HTTPS-Pfade sind nicht sichtbar), einer pro Zeile.</target>
+        <source>Regexes for http:// URLs (HTTPS paths are hidden), one per line</source>
+        <target>Regex für http://-URLs (HTTPS-Pfade verborgen), je Zeile</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-switchToRaw" datatype="html">
         <source>Switch to raw JSON</source>
@@ -6822,10 +6806,6 @@
         <source>Search built-in providers...</source>
         <target>Integrierte Anbieter durchsuchen...</target>
       </trans-unit>
-      <trans-unit id="featureAgentConfig-providerTypeaheadAria" datatype="html">
-        <source>Search built-in providers</source>
-        <target>Built-in-Provider durchsuchen</target>
-      </trans-unit>
       <trans-unit id="featureAgentConfig-fieldDisabledProviders" datatype="html">
         <source>Provider denylist</source>
         <target>Provider-Sperrliste</target>
@@ -6849,10 +6829,6 @@
       <trans-unit id="featureAgentConfig-mcpTypeaheadPlaceholder" datatype="html">
         <source>Search MCP registry...</source>
         <target>MCP-Registry durchsuchen...</target>
-      </trans-unit>
-      <trans-unit id="featureAgentConfig-mcpTypeaheadAria" datatype="html">
-        <source>Search MCP registry servers</source>
-        <target>MCP-Registry-Server durchsuchen</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-addCustomMcpAllowDenyToken" datatype="html">
         <source> Add “custom” </source>
@@ -7279,8 +7255,8 @@
         <target>Anweisungen</target>
       </trans-unit>
       <trans-unit id="featureAgentTasks-promptHint" datatype="html">
-        <source>Runs start without the chat history, so describe the task completely.</source>
-        <target>Ausführungen starten ohne den Chatverlauf, beschreibe die Aufgabe daher vollständig.</target>
+        <source>Runs start without chat history; describe the task fully.</source>
+        <target>Läufe starten ohne Chatverlauf; beschreibe die Aufgabe vollständig.</target>
       </trans-unit>
       <trans-unit id="featureAgentTasks-presetLabel" datatype="html">
         <source>Schedule</source>
@@ -7303,12 +7279,12 @@
         <target>Zeitzone</target>
       </trans-unit>
       <trans-unit id="featureAgentTasks-save" datatype="html">
-        <source>Save changes</source>
-        <target>Änderungen speichern</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureAgentTasks-createSubmit" datatype="html">
-        <source>Create task</source>
-        <target>Aufgabe anlegen</target>
+        <source>Create</source>
+        <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureAgentTasks-deleteConfirmTitle" datatype="html">
         <source>Delete task</source>
@@ -7458,9 +7434,13 @@
         <source>Handoff profile</source>
         <target>Übergabeprofil</target>
       </trans-unit>
-      <trans-unit id="featureChat-handoffProfileHelp" datatype="html">
+      <trans-unit id="featureChat-handoffProfileHelpFull" datatype="html">
         <source>What this environment is responsible for and which tasks other environments of the workspace can hand over to it. The agent can also maintain it itself.</source>
         <target>Wofür diese Umgebung zuständig ist und welche Aufgaben andere Umgebungen des Workspaces an sie übergeben können. Der Agent kann es auch selbst pflegen.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-handoffProfileHelp" datatype="html">
+        <source>Its duties and which tasks others may hand over to it.</source>
+        <target>Zuständigkeit und welche Aufgaben andere übergeben dürfen.</target>
       </trans-unit>
       <trans-unit id="featureAgentTasks-pendingApproval" datatype="html">
         <source>Awaiting approval</source>
@@ -7821,10 +7801,6 @@
       <trans-unit id="featureTicketsBoard-bulkDeleteTitle" datatype="html">
         <source>Delete tickets</source>
         <target>Tickets löschen</target>
-      </trans-unit>
-      <trans-unit id="featureTicketsBoard-bulkDeleteCancel" datatype="html">
-        <source>Cancel</source>
-        <target>Abbrechen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-bulkDeleteOne" datatype="html">
         <source>Delete &quot;<x id="title" equiv-text="pending[0].title"/>&quot;? This cannot be undone.</source>
@@ -8957,6 +8933,98 @@
       <trans-unit id="featureTicketsBoard-automationContentWritesHint" datatype="html">
         <source> Autonomous runs may make these changes without asking, only to tickets of this ticket&apos;s tree (updates only to its subtasks). Leave empty to keep runs from changing tickets. </source>
         <target>Autonome Läufe dürfen diese Änderungen ohne Rückfrage vornehmen, nur an Tickets im Baum dieses Tickets (Aktualisierungen nur an seinen Unteraufgaben). Leer lassen, damit Läufe keine Tickets ändern.</target>
+      </trans-unit>
+      <trans-unit id="featureFileTree-nameAria" datatype="html">
+        <source>Name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeTree-titleAria" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeTree-renameTitleLabel" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-detailTitleAria" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-titleAria" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-pathEntryAria" datatype="html">
+        <source>Path</source>
+        <target>Pfad</target>
+      </trans-unit>
+      <trans-unit id="featureChat-messageAria" datatype="html">
+        <source>Message</source>
+        <target>Nachricht</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planRefineAria" datatype="html">
+        <source>Plan feedback</source>
+        <target>Feedback zum Plan</target>
+      </trans-unit>
+      <trans-unit id="featureChat-renameChatSessionAria" datatype="html">
+        <source>Rename chat session</source>
+        <target>Chat-Sitzung umbenennen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-deleteChatSessionAria" datatype="html">
+        <source>Delete chat session</source>
+        <target>Chat-Sitzung löschen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planExecuteAria" datatype="html">
+        <source>Execute plan</source>
+        <target>Plan ausführen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planRetryAria" datatype="html">
+        <source>Retry plan</source>
+        <target>Plan wiederholen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planStopAria" datatype="html">
+        <source>Stop plan</source>
+        <target>Plan stoppen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-selectContextAria" datatype="html">
+        <source>Select context</source>
+        <target>Kontext auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planPromptAria" datatype="html">
+        <source>Create plan with AI</source>
+        <target>Plan mit KI erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-enhancePromptAria" datatype="html">
+        <source>Enhance prompt with AI</source>
+        <target>Prompt mit KI verbessern</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planRefineSubmitAria" datatype="html">
+        <source>Refine plan</source>
+        <target>Plan verfeinern</target>
+      </trans-unit>
+      <trans-unit id="featureMonacoEditor-fileTooLarge" datatype="html">
+        <source>File too large to preview</source>
+        <target>Datei zu groß für die Vorschau</target>
+      </trans-unit>
+      <trans-unit id="featureMonacoEditor-imagePreviewUnavailable" datatype="html">
+        <source>Image preview unavailable</source>
+        <target>Bildvorschau nicht verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureMonacoEditor-pdfPreviewUnavailable" datatype="html">
+        <source>PDF preview unavailable</source>
+        <target>PDF-Vorschau nicht verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureMonacoEditor-videoPreviewUnavailable" datatype="html">
+        <source>Video preview unavailable</source>
+        <target>Videovorschau nicht verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureMonacoEditor-audioPreviewUnavailable" datatype="html">
+        <source>Audio preview unavailable</source>
+        <target>Audiovorschau nicht verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-authValueKeepPlaceholder" datatype="html">
+        <source>Leave empty to keep current</source>
+        <target>Leer lassen, um den aktuellen Wert zu behalten</target>
       </trans-unit>
     </body>
   </file>

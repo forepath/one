@@ -1,4 +1,8 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+
+import { FPC_CONTROL_SIZE } from '../control-size/control-size';
+import { FpcFormTextDirective } from '../truncate-title/form-text.directive';
+import { FpcTruncateTitleDirective } from '../truncate-title/truncate-title.directive';
 
 /**
  * Optional fieldset wrapper for related `fpc-form-check` radios or checkboxes.
@@ -8,6 +12,7 @@ import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@an
   selector: 'fpc-form-check-group',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FpcTruncateTitleDirective, FpcFormTextDirective],
   host: {
     class: 'fpc-form-check-group',
     '[class.fpc-form-check-group--inline]': 'inline()',
@@ -16,7 +21,14 @@ import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@an
   },
   template: `
     @if (label()) {
-      <div class="fpc-form-check-group__legend form-label" [id]="legendId()">{{ label() }}</div>
+      <div
+        class="fpc-form-check-group__legend form-label"
+        [class.fpc-form-label--sm]="compactLabel"
+        [id]="legendId()"
+        fpcTruncateTitle
+      >
+        {{ label() }}
+      </div>
     }
     <div
       class="fpc-form-check-group__items"
@@ -33,6 +45,8 @@ import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@an
   styleUrl: './form-check-group.component.scss',
 })
 export class FpcFormCheckGroupComponent {
+  protected readonly compactLabel = inject(FPC_CONTROL_SIZE) === 'sm';
+
   readonly label = input<string | null>(null);
   readonly hint = input<string | null>(null);
   readonly inline = input(false, { transform: booleanAttribute });

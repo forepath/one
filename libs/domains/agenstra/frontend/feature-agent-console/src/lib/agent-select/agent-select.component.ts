@@ -18,7 +18,6 @@ export class AgentSelectComponent {
   /** Optional cache for resolving the selected agent label (e.g. board-loaded agents). */
   readonly agents = input<AgentResponseDto[]>([]);
   readonly selectedAgentId = model<string | null>(null);
-  readonly size = input<'sm' | 'md'>('md');
   readonly disabled = input(false);
   readonly required = input(false);
   readonly inputId = input('agentSelect');

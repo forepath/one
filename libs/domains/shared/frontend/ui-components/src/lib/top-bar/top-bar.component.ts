@@ -15,9 +15,9 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
  *   themes; `active` for the current route; `fpc-top-bar__action--attention` = warning-tone state chip;
  *   a count is an `fpc-badge pill` inside the button). Never raw `.btn` / `btn-link`.
  * - primary actions (Create `+`): `fpc-button variant="primary" size="sm" iconOnly`.
- * - Logout: `fpc-button variant="primary" size="sm" mdSize="md" [title]="…"` (rightmost) with
- *   `<i class="bi bi-box-arrow-right fpc-top-bar__phone-icon" aria-hidden="true"></i>` +
- *   `<span class="fpc-top-bar__label">Logout</span>`: icon-only square below sm, label from sm up.
+ * - Logout: `fpc-button variant="primary" iconOnly [title]="…" [ariaLabel]="…"` (rightmost; the console's `sm` tier like
+ *   every other button) with only `<i class="bi bi-power" aria-hidden="true"></i>`: a calm sign-out square at
+ *   every width, the label lives in the tooltip / accessible name.
  *
  * Phones (< 576 px): meta chips collapse to their icon, the language switcher drops its glyph, every
  * `.fpc-top-bar__label` becomes visually hidden (its button turns square, `.fpc-top-bar__phone-icon` shows)

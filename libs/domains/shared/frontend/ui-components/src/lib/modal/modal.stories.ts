@@ -64,10 +64,7 @@ const meta: Meta<ModalStoryArgs> = {
         >
             <p class="mb-0">Pick a project and a billing period to generate a draft invoice.</p>
             <div *fpcModalFooter>
-                <fpc-button-group>
-                    <fpc-button variant="secondary">Cancel</fpc-button>
-                    <fpc-button variant="primary">Create</fpc-button>
-                </fpc-button-group>
+                <fpc-button variant="primary">Create</fpc-button>
             </div>
         </fpc-modal>`,
   }),

@@ -125,9 +125,6 @@
       <trans-unit id="featureAddons-createTitle" datatype="html">
         <source>Create add-on</source>
         </trans-unit>
-      <trans-unit id="featureBillingModal-cancel" datatype="html">
-        <source>Cancel</source>
-        </trans-unit>
       <trans-unit id="featureAddons-create" datatype="html">
         <source>Create</source>
         </trans-unit>
@@ -135,7 +132,7 @@
         <source>Edit add-on</source>
         </trans-unit>
       <trans-unit id="featureAddons-save" datatype="html">
-        <source>Save changes</source>
+        <source>Save</source>
         </trans-unit>
       <trans-unit id="featureAddons-key" datatype="html">
         <source>Key</source>
@@ -408,7 +405,7 @@
         <source>Billing queued for <x id="INTERPOLATION" equiv-text="{{ result.userCount }}"/> customer(s). Request ID: <x id="INTERPOLATION_1" equiv-text="{{ result.requestId }}"/>.</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-confirmBillNow" datatype="html">
-        <source>Bill now</source>
+        <source>Bill</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-confirmActionTitle" datatype="html">
         <source>Confirm action</source>
@@ -421,9 +418,6 @@
         </trans-unit>
       <trans-unit id="featureAdminBilling-reasonOptional" datatype="html">
         <source>Reason (optional)</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-confirm" datatype="html">
-        <source> Confirm </source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-auditHistoryTitle" datatype="html">
         <source>Audit history</source>
@@ -816,7 +810,7 @@
         <source>City</source>
         </trans-unit>
       <trans-unit id="featureAdminProfiles-state" datatype="html">
-        <source>State / Region</source>
+        <source>State / region</source>
         </trans-unit>
       <trans-unit id="featureAdminProfiles-country" datatype="html">
         <source>Country</source>
@@ -1124,11 +1118,8 @@
       <trans-unit id="featureAdminOffers-editTitle" datatype="html">
         <source>Edit offer</source>
         </trans-unit>
-      <trans-unit id="featureAdminOffers-cancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
       <trans-unit id="featureAdminOffers-saveChanges" datatype="html">
-        <source> Save changes </source>
+        <source> Save </source>
         </trans-unit>
       <trans-unit id="featureAdminOffers-deleteTitle" datatype="html">
         <source>Delete draft offer?</source>
@@ -1319,6 +1310,9 @@
       <trans-unit id="featureAdminPromotions-create" datatype="html">
         <source> Create promotion </source>
         </trans-unit>
+      <trans-unit id="featureAdminPromotions-createSubmit" datatype="html">
+        <source> Create </source>
+        </trans-unit>
       <trans-unit id="featureAdminPromotions-editTitle" datatype="html">
         <source>Edit promotion</source>
         </trans-unit>
@@ -1443,7 +1437,7 @@
         <source>No subscriptions yet</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-cancel" datatype="html">
-        <source>Cancel</source>
+        <source>Cancel subscription</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawSubscriptionTitle" datatype="html">
         <source>Withdraw subscription?</source>
@@ -1467,7 +1461,7 @@
         <source>Force-remove this subscription immediately. Access ends now. Arrear plans are billed for used time; prepaid plans refund unused time like a statutory withdrawal. This cannot be resumed.</source>
         </trans-unit>
       <trans-unit id="featureAdminSubscriptions-instantCancel" datatype="html">
-        <source>Instant cancel</source>
+        <source>Cancel now</source>
         </trans-unit>
       <trans-unit id="featureAdminSubscriptions-metersTitle" datatype="html">
         <source>Usage meters</source>
@@ -1613,6 +1607,9 @@
       <trans-unit id="featureAdminSubscriptions-bulkCancelTitle" datatype="html">
         <source>Cancel subscriptions?</source>
         </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-bulkCancelConfirm" datatype="html">
+        <source>Cancel subscriptions</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-cancelSubscriptionTitle" datatype="html">
         <source>Cancel subscription?</source>
         </trans-unit>
@@ -1725,7 +1722,7 @@
         <source>City</source>
         </trans-unit>
       <trans-unit id="featureAdminSupplierProfiles-state" datatype="html">
-        <source>State / Region</source>
+        <source>State / region</source>
         </trans-unit>
       <trans-unit id="featureAdminSupplierProfiles-country" datatype="html">
         <source>Country</source>
@@ -2622,7 +2619,7 @@
         <source>Edit meter</source>
         </trans-unit>
       <trans-unit id="featureMeters-save" datatype="html">
-        <source>Save changes</source>
+        <source>Save</source>
         </trans-unit>
       <trans-unit id="featureMeters-key" datatype="html">
         <source>Key</source>
@@ -2709,7 +2706,7 @@
         <source>Gross</source>
         </trans-unit>
       <trans-unit id="featureOffers-downloadPdf" datatype="html">
-        <source>Download PDF</source>
+        <source>Download</source>
         </trans-unit>
       <trans-unit id="featureOffers-decline" datatype="html">
         <source> Decline </source>
@@ -2723,11 +2720,8 @@
       <trans-unit id="featureOffers-declineConfirmBody" datatype="html">
         <source>This offer will be marked as declined and removed from your pending list.</source>
         </trans-unit>
-      <trans-unit id="featureOffers-cancel" datatype="html">
-        <source>Cancel</source>
-        </trans-unit>
       <trans-unit id="featureOffers-declineConfirm" datatype="html">
-        <source>Decline offer</source>
+        <source>Decline</source>
         </trans-unit>
       <trans-unit id="featureOffers-searchPending" datatype="html">
         <source>Search pending offers</source>
@@ -2792,26 +2786,20 @@
       <trans-unit id="featureOverview-sshAccessConfirmBody" datatype="html">
         <source> Viewing the SSH access key for this service may limit technical support for that specific service. The key can only be retrieved once. After you continue, this action cannot be repeated. </source>
         </trans-unit>
-      <trans-unit id="featureOverview-sshAccessCancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
       <trans-unit id="featureOverview-sshAccessConfirm" datatype="html">
-        <source> Reveal key </source>
+        <source> Reveal </source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessDisplayTitle" datatype="html">
         <source>SSH access key</source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessDisplayHint" datatype="html">
-        <source> Store this private key securely. It will not be shown again in the billing console. </source>
+        <source> Store this key securely. It won't be shown again. </source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessCopied" datatype="html">
         <source>Copied</source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessCopy" datatype="html">
         <source>Copy</source>
-        </trans-unit>
-      <trans-unit id="featureOverview-sshAccessClose" datatype="html">
-        <source> Close </source>
         </trans-unit>
       <trans-unit id="featureOverview-cloudInstances" datatype="html">
         <source>Cloud instances</source>
@@ -2949,10 +2937,64 @@
         <source>Disable signup</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-staticApiKey" datatype="html">
-        <source>Static API Key</source>
+        <source>Static API key</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-keycloakSection" datatype="html">
         <source>Keycloak</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-keycloakServerUrlLabel" datatype="html">
+        <source>Server URL</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-keycloakAuthServerUrlLabel" datatype="html">
+        <source>Auth server URL</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-keycloakRealmLabel" datatype="html">
+        <source>Realm</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-keycloakClientIdLabel" datatype="html">
+        <source>Client ID</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-keycloakClientSecretLabel" datatype="html">
+        <source>Client secret</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-smtpHostLabel" datatype="html">
+        <source>SMTP host</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-smtpPortLabel" datatype="html">
+        <source>Port</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-smtpUserLabel" datatype="html">
+        <source>Username</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-smtpPasswordLabel" datatype="html">
+        <source>Password</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-smtpFromLabel" datatype="html">
+        <source>Sender address</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitRepositoryUrlLabel" datatype="html">
+        <source>Repository URL</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitUsernameLabel" datatype="html">
+        <source>HTTPS username</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitTokenLabel" datatype="html">
+        <source>Access token</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitPasswordLabel" datatype="html">
+        <source>Password</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitPasswordHint" datatype="html">
+        <source>Alternative to the access token.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitPrivateKeyLabel" datatype="html">
+        <source>SSH private key</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitCommitAuthorNameLabel" datatype="html">
+        <source>Commit author name</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitCommitAuthorEmailLabel" datatype="html">
+        <source>Commit author email</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-orderTermsTitle" datatype="html">
         <source>Runtime &amp; terms</source>
@@ -3291,6 +3333,9 @@
       <trans-unit id="featureProjectDetail-save" datatype="html">
         <source> Save </source>
         </trans-unit>
+      <trans-unit id="featureProjectDetail-timeReportDownload" datatype="html">
+        <source> Download </source>
+        </trans-unit>
       <trans-unit id="featureProjectDetail-deleteTimeTitle" datatype="html">
         <source>Delete time entry</source>
         </trans-unit>
@@ -3313,7 +3358,7 @@
         <source>To</source>
         </trans-unit>
       <trans-unit id="featureProjectDetail-billTimeRangeHint" datatype="html">
-        <source> Only time entries fully within the selected range are included (start on or after From, end on or before To). </source>
+        <source> Only entries fully within the range are included. </source>
         </trans-unit>
       <trans-unit id="featureProjectDetail-billTimeNoUnbilled" datatype="html">
         <source> No unbilled time entries to bill. </source>
@@ -3346,7 +3391,7 @@
         <source>To</source>
         </trans-unit>
       <trans-unit id="featureProjectDetail-timeReportRangeHint" datatype="html">
-        <source> Only time entries fully within the selected range are included (start on or after From, end on or before To). </source>
+        <source> Only entries fully within the range are included. </source>
         </trans-unit>
       <trans-unit id="featureProjectDetail-timeReportUnbilledOnly" datatype="html">
         <source>Only include unbilled positions</source>
@@ -3625,7 +3670,7 @@
         <source> Check code </source>
         </trans-unit>
       <trans-unit id="featurePromotions-redeemNow" datatype="html">
-        <source> Redeem now </source>
+        <source> Redeem </source>
         </trans-unit>
       <trans-unit id="featurePromotions-pageTitle" datatype="html">
         <source>Promotions</source>
@@ -4099,7 +4144,7 @@
         <source>Allow provider selection</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-allowCustomerProviderSelectionHelp" datatype="html">
-        <source> Customers may choose a cloud provider from the selected options when ordering. </source>
+        <source> Customers can pick a provider from the selected options. </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-allowedProviders" datatype="html">
         <source>Allowed providers</source>
@@ -4155,20 +4200,29 @@
       <trans-unit id="featureServicePlans-cancelAtPeriodEnd" datatype="html">
         <source>Cancel at period end</source>
         </trans-unit>
+      <trans-unit id="featureServicePlans-cancelAtPeriodEndHelpFull" datatype="html">
+        <source>Cancellation will be scheduled for the end of the current billing period. Unchecking this allows immediate cancellation mid-period.</source>
+      </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEndHelp" datatype="html">
-        <source> Cancellation will be scheduled for the end of the current billing period. Unchecking this allows immediate cancellation mid-period. </source>
+        <source> Cancellations take effect at the end of the billing period. </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-billInAdvance" datatype="html">
         <source>Bill in advance</source>
         </trans-unit>
+      <trans-unit id="featureServicePlans-billInAdvanceHelpFull" datatype="html">
+        <source>Charge the full period at its start (prepaid). Usage-based metering cannot be used with advance billing. Cancellation always takes effect at the end of the already-billed period.</source>
+      </trans-unit>
       <trans-unit id="featureServicePlans-billInAdvanceHelp" datatype="html">
-        <source> Charge the full period at its start (prepaid). Usage-based metering cannot be used with advance billing. Cancellation always takes effect at the end of the already-billed period. </source>
+        <source> Prepaid: bills each period upfront, without usage meters. </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-autoRecalculatePriceDaily" datatype="html">
         <source>Automatic daily price recalculation</source>
         </trans-unit>
+      <trans-unit id="featureServicePlans-autoRecalculatePriceDailyHelpFull" datatype="html">
+        <source>Opt in only when required for EU compliance. When enabled, the package price is recalculated nightly at midnight from the provider catalog. Checkout must disclose this and the statutory withdrawal restart when the price changes.</source>
+      </trans-unit>
       <trans-unit id="featureServicePlans-autoRecalculatePriceDailyHelp" datatype="html">
-        <source> Opt in only when required for EU compliance. When enabled, the package price is recalculated nightly at midnight from the provider catalog. Checkout must disclose this and the statutory withdrawal restart when the price changes. </source>
+        <source> Only for EU compliance: reprices nightly from the provider catalog. </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-active" datatype="html">
         <source>Active</source>
@@ -4569,9 +4623,6 @@
       <trans-unit id="featureSubscriptions-orderConfirmationMessage" datatype="html">
         <source> Your subscription is being provisioned. You can close this dialog and track progress in your subscriptions list. </source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-close" datatype="html">
-        <source> Close </source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-selectPlan" datatype="html">
         <source>Plan</source>
         </trans-unit>
@@ -4729,7 +4780,7 @@
         <source>New server type</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeServerTypeHint" datatype="html">
-        <source> Your server keeps its current location. Choosing a server type at the same price is not possible. </source>
+        <source> Location stays the same. Pick a type with a different price. </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeNoServerTypes" datatype="html">
         <source> No alternative server types are available for this plan. </source>
@@ -4741,7 +4792,7 @@
         <source>Will be removed</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeAddonConfigLocked" datatype="html">
-        <source> The configuration of this add-on is locked and cannot be changed here. </source>
+        <source> This add-on's configuration can't be changed here. </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeNoAddons" datatype="html">
         <source> No add-ons are available for this plan. </source>
@@ -4792,7 +4843,7 @@
         <source>Configuration change in progress, please wait</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeSubmit" datatype="html">
-        <source>Apply changes</source>
+        <source>Apply</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawOrderTitle" datatype="html">
         <source>Withdraw order?</source>
@@ -4846,7 +4897,7 @@
         <source>City</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-state" datatype="html">
-        <source>State / Region</source>
+        <source>State / region</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-country" datatype="html">
         <source>Country</source>
@@ -5032,7 +5083,7 @@
         <source>Please enter a valid email address.</source>
         </trans-unit>
       <trans-unit id="featureConfirmEmail-codeLabel" datatype="html">
-        <source>Confirmation Code</source>
+        <source>Confirmation code</source>
         </trans-unit>
       <trans-unit id="featureConfirmEmail-codeRequired" datatype="html">
         <source>Confirmation code is required.</source>
@@ -5136,7 +5187,7 @@
                 &gt;"/>.</source>
         </trans-unit>
       <trans-unit id="featureLogin2fa-codeLabel" datatype="html">
-        <source>Verification Code</source>
+        <source>Verification code</source>
         </trans-unit>
       <trans-unit id="featureLogin2fa-codeRequired" datatype="html">
         <source>Verification code is required.</source>
@@ -5160,10 +5211,10 @@
         <source>Login</source>
         </trans-unit>
       <trans-unit id="featureLogin-controllerApiHost" datatype="html">
-        <source>Controller API Host</source>
+        <source>Controller API host</source>
         </trans-unit>
       <trans-unit id="featureLogin-controllerApiKey" datatype="html">
-        <source>Controller API Key</source>
+        <source>Controller API key</source>
         </trans-unit>
       <trans-unit id="featureLogin-apiKeyPlaceholder" datatype="html">
         <source>Enter your API key</source>
@@ -5209,9 +5260,6 @@
         </trans-unit>
       <trans-unit id="identityLogoutConfirm-confirm" datatype="html">
         <source>Log out</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-cancel" datatype="html">
-        <source>Cancel</source>
         </trans-unit>
       <trans-unit id="identityLogoutConfirm-usersTitle" datatype="html">
         <source>Log out?</source>
@@ -5274,7 +5322,7 @@
         <source>Password must be at least 8 characters.</source>
         </trans-unit>
       <trans-unit id="featureRegister-confirmPasswordLabel" datatype="html">
-        <source>Confirm Password</source>
+        <source>Confirm password</source>
         </trans-unit>
       <trans-unit id="featureRegister-confirmPasswordPlaceholder" datatype="html">
         <source>Confirm your password</source>
@@ -5340,7 +5388,7 @@
         <source>Please enter a valid email address.</source>
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-codeLabel" datatype="html">
-        <source>Reset Code</source>
+        <source>Reset code</source>
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-codeRequired" datatype="html">
         <source>Reset code is required.</source>
@@ -5349,7 +5397,7 @@
         <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-newPasswordLabel" datatype="html">
-        <source>New Password</source>
+        <source>New password</source>
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-newPasswordPlaceholder" datatype="html">
         <source>Enter new password (min. 8 characters)</source>
@@ -5361,7 +5409,7 @@
         <source>Password must be at least 8 characters.</source>
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-confirmNewPasswordLabel" datatype="html">
-        <source>Confirm New Password</source>
+        <source>Confirm new password</source>
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-confirmNewPasswordPlaceholder" datatype="html">
         <source>Confirm new password</source>
@@ -5439,7 +5487,7 @@
         <source>Please enter a valid email address.</source>
         </trans-unit>
       <trans-unit id="featureResetPassword-codeLabel" datatype="html">
-        <source>Reset Code</source>
+        <source>Reset code</source>
         </trans-unit>
       <trans-unit id="featureResetPassword-codeRequired" datatype="html">
         <source>Reset code is required.</source>
@@ -5448,7 +5496,7 @@
         <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
         </trans-unit>
       <trans-unit id="featureResetPassword-newPasswordLabel" datatype="html">
-        <source>New Password</source>
+        <source>New password</source>
         </trans-unit>
       <trans-unit id="featureResetPassword-newPasswordPlaceholder" datatype="html">
         <source>Enter new password (min. 8 characters)</source>
@@ -5460,7 +5508,7 @@
         <source>Password must be at least 8 characters.</source>
         </trans-unit>
       <trans-unit id="featureResetPassword-confirmNewPasswordLabel" datatype="html">
-        <source>Confirm New Password</source>
+        <source>Confirm new password</source>
         </trans-unit>
       <trans-unit id="featureResetPassword-confirmNewPasswordPlaceholder" datatype="html">
         <source>Confirm new password</source>
@@ -5618,9 +5666,6 @@
       <trans-unit id="featureTokenManager-copy" datatype="html">
         <source>Copy</source>
         </trans-unit>
-      <trans-unit id="featureTokenManager-done" datatype="html">
-        <source>Done</source>
-        </trans-unit>
       <trans-unit id="featureTokenManager-nameLabel" datatype="html">
         <source>Name</source>
         </trans-unit>
@@ -5646,7 +5691,7 @@
         <source>Edit personal access token</source>
         </trans-unit>
       <trans-unit id="featureTokenManager-update" datatype="html">
-        <source>Save changes</source>
+        <source>Save</source>
         </trans-unit>
       <trans-unit id="featureTokenManager-revokeModalTitle" datatype="html">
         <source>Revoke token</source>
@@ -5722,7 +5767,7 @@
         <source>Edit user</source>
         </trans-unit>
       <trans-unit id="featureUserManager-newPasswordLabel" datatype="html">
-        <source>New Password</source>
+        <source>New password</source>
         </trans-unit>
       <trans-unit id="featureUserManager-passwordKeepCurrentPlaceholder" datatype="html">
         <source>Leave empty to keep current</source>
@@ -5731,10 +5776,10 @@
         <source> Leave empty to keep the current password </source>
         </trans-unit>
       <trans-unit id="featureUserManager-update" datatype="html">
-        <source>Save changes</source>
+        <source>Save</source>
         </trans-unit>
       <trans-unit id="featureUserManager-deleteUserModalTitle" datatype="html">
-        <source>Delete User</source>
+        <source>Delete user</source>
         </trans-unit>
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
@@ -5747,10 +5792,10 @@
         <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureUserManager-clearTotpModalTitle" datatype="html">
-        <source>Remove Authenticator</source>
+        <source>Remove authenticator</source>
         </trans-unit>
       <trans-unit id="featureUserManager-removeAuthenticator" datatype="html">
-        <source>Remove authenticator</source>
+        <source>Remove</source>
         </trans-unit>
       <trans-unit id="featureUserManager-clearTotpConfirm" datatype="html">
         <source> Remove the authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToClearTotp.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
@@ -6041,9 +6086,6 @@
       <trans-unit id="featureNotifications-signingSecretHint" datatype="html">
         <source> Copy this signing secret now. It will not be shown again. </source>
         </trans-unit>
-      <trans-unit id="featureNotifications-done" datatype="html">
-        <source>Done</source>
-        </trans-unit>
       <trans-unit id="featureNotifications-create" datatype="html">
         <source>Create</source>
         </trans-unit>
@@ -6051,7 +6093,7 @@
         <source>Edit webhook</source>
         </trans-unit>
       <trans-unit id="featureNotifications-update" datatype="html">
-        <source>Save changes</source>
+        <source>Save</source>
         </trans-unit>
       <trans-unit id="featureNotifications-nameLabel" datatype="html">
         <source>Name</source>
@@ -6402,6 +6444,12 @@
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
         </trans-unit>
+      <trans-unit id="featureNotifications-authValueKeepPlaceholder" datatype="html">
+        <source>Leave empty to keep current</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-targetTime" datatype="html">
+        <source>Target: <x id="PH" equiv-text="formatted"/></source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

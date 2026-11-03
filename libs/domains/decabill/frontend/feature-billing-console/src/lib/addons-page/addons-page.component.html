@@ -36,7 +36,6 @@
     <fpc-button
       fpcDataTableToolbar
       variant="primary"
-      size="sm"
       iconOnly
       (clicked)="openCreateModal()"
       [disabled]="(loadingAny$ | async) === true"
@@ -48,7 +47,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="!selectedAddons().some((addon) => !addon.isActive)"
       (clicked)="setActiveSelected(true)"
       data-testid="addons-bulk-activate"
@@ -61,7 +59,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="!selectedAddons().some((addon) => addon.isActive)"
       (clicked)="setActiveSelected(false)"
       data-testid="addons-bulk-deactivate"
@@ -74,7 +71,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="selectedAddons().length === 0"
       (clicked)="confirmBulkDelete.set(true)"
       data-testid="addons-bulk-delete"
@@ -96,19 +92,11 @@
   [title]="bulkDeleteTitle"
   [message]="bulkDeleteMessage()"
   [confirmLabel]="deleteLabel"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   (confirmed)="deleteSelected()"
 />
 
-<fpc-modal
-  [(open)]="createModalOpen"
-  size="xl"
-  i18n-title="@@featureAddons-createTitle"
-  title="Create add-on"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="createModalOpen" size="xl" i18n-title="@@featureAddons-createTitle" title="Create add-on">
   <form (ngSubmit)="onSubmitCreate()">
     <ng-container
       *ngTemplateOutlet="addonForm; context: { form: createForm, prefix: 'create', disabled: (creating$ | async) }"
@@ -121,21 +109,14 @@
   </form>
 </fpc-modal>
 
-<fpc-modal
-  [(open)]="editModalOpen"
-  size="xl"
-  i18n-title="@@featureAddons-editTitle"
-  title="Edit add-on"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="editModalOpen" size="xl" i18n-title="@@featureAddons-editTitle" title="Edit add-on">
   <form (ngSubmit)="onSubmitEdit()">
     <ng-container
       *ngTemplateOutlet="addonForm; context: { form: editForm, prefix: 'edit', disabled: (updating$ | async) }"
     ></ng-container>
     <div *fpcModalFooter class="d-flex justify-content-end gap-2">
       <fpc-button variant="primary" type="submit" [disabled]="(updating$ | async) === true">
-        <span i18n="@@featureAddons-save">Save changes</span>
+        <span i18n="@@featureAddons-save">Save</span>
       </fpc-button>
     </div>
   </form>
@@ -248,7 +229,7 @@
               i18n-title="@@featureAddons-moduleDefaults"
               [sticky]="false"
             />
-            <p class="form-text text-body-secondary small mb-3 mt-2" i18n="@@featureAddons-moduleDefaultsHelp">
+            <p class="form-text fpc-form-text--wrap mb-3 mt-2" i18n="@@featureAddons-moduleDefaultsHelp">
               Defaults for module environment variables. Schema is defined by the registered module; leave blank when
               unused.
             </p>
@@ -317,7 +298,6 @@
             <span fpcListHeaderActions class="d-flex align-items-center gap-1">
               <fpc-button
                 variant="primary"
-                size="sm"
                 iconOnly
                 (clicked)="addEnvVariable(form)"
                 [disabled]="disabled"
@@ -335,7 +315,6 @@
               <div class="col-12 col-md-2">
                 <fpc-form-field [forId]="prefix + 'EnvKey' + i" i18n-label="@@featureAddons-envKey" label="Key">
                   <fpc-form-control
-                    size="sm"
                     [controlId]="prefix + 'EnvKey' + i"
                     [(ngModel)]="row.key"
                     [name]="prefix + 'EnvKey' + i"
@@ -346,7 +325,6 @@
               <div class="col-12 col-md-2">
                 <fpc-form-field [forId]="prefix + 'EnvLabel' + i" i18n-label="@@featureAddons-envLabel" label="Label">
                   <fpc-form-control
-                    size="sm"
                     [controlId]="prefix + 'EnvLabel' + i"
                     [(ngModel)]="row.label"
                     [name]="prefix + 'EnvLabel' + i"
@@ -361,7 +339,6 @@
                   label="Description"
                 >
                   <fpc-form-control
-                    size="sm"
                     [controlId]="prefix + 'EnvDesc' + i"
                     [(ngModel)]="row.description"
                     [name]="prefix + 'EnvDesc' + i"
@@ -387,7 +364,6 @@
                     label="Default"
                   >
                     <fpc-form-control
-                      size="sm"
                       inputType="password"
                       [controlId]="prefix + 'EnvDefault' + i"
                       [(ngModel)]="row.defaultValue"
@@ -403,7 +379,6 @@
                     label="Length"
                   >
                     <fpc-form-control
-                      size="sm"
                       inputType="number"
                       [controlId]="prefix + 'EnvRandomLength' + i"
                       [(ngModel)]="row.randomDefaultLength"
@@ -436,7 +411,6 @@
               <div class="col-12 col-md-2 d-flex gap-1">
                 <fpc-button
                   variant="dark"
-                  size="sm"
                   (clicked)="moveEnvVariable(form, i, -1)"
                   [disabled]="disabled || i === 0"
                   iconOnly
@@ -449,7 +423,6 @@
                 </fpc-button>
                 <fpc-button
                   variant="dark"
-                  size="sm"
                   (clicked)="moveEnvVariable(form, i, 1)"
                   [disabled]="disabled || i === form.environmentVariableRows.length - 1"
                   iconOnly
@@ -462,7 +435,6 @@
                 </fpc-button>
                 <fpc-button
                   variant="danger"
-                  size="sm"
                   iconOnly
                   (clicked)="removeEnvVariable(form, i)"
                   [disabled]="disabled"
@@ -532,7 +504,7 @@
           i18n-title="@@featureAddons-meters"
           [sticky]="false"
         />
-        <p class="form-text text-body-secondary small mb-3" i18n="@@featureAddons-metersHelp">
+        <p class="form-text fpc-form-text--wrap mb-3" i18n="@@featureAddons-metersHelp">
           Attach usage meters to this add-on with optional unit price and included usage overrides.
         </p>
         @if (prefix === 'edit' && addonMeterAttachError) {
@@ -569,7 +541,6 @@
                       inputType="number"
                       min="0"
                       step="0.0001"
-                      size="sm"
                       [controlId]="prefix + 'AddonMeterOverride' + attached.meterId"
                       [value]="attachedMeterOverrideInput(attached)"
                       [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
@@ -587,7 +558,6 @@
                       inputType="number"
                       min="0"
                       step="1"
-                      size="sm"
                       [controlId]="prefix + 'AddonMeterIncludedUsage' + attached.meterId"
                       [value]="attachedMeterIncludedUsageOverrideInput(attached)"
                       [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
@@ -607,7 +577,6 @@
                   )
                 "
                 variant="primary"
-                size="sm"
                 iconOnly
                 [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
                 title="Update price"
@@ -621,7 +590,6 @@
                 <fpc-button
                   (clicked)="detachAddonMeter(prefix, attached.meterId)"
                   variant="danger"
-                  size="sm"
                   iconOnly
                   title="Detach meter"
                   i18n-title="@@featureAddons-detachMeter"
@@ -658,7 +626,6 @@
                     @if (prefix === 'create') {
                       <fpc-form-control
                         controlType="select"
-                        size="sm"
                         [controlId]="prefix + 'AttachAddonMeter'"
                         [(ngModel)]="createAddonMeterAttachMeterId"
                         [name]="prefix + 'AttachAddonMeter'"
@@ -672,7 +639,6 @@
                     } @else {
                       <fpc-form-control
                         controlType="select"
-                        size="sm"
                         [controlId]="prefix + 'AttachAddonMeter'"
                         [(ngModel)]="editAddonMeterAttachMeterId"
                         [name]="prefix + 'AttachAddonMeter'"
@@ -699,7 +665,6 @@
                             inputType="number"
                             min="0"
                             step="0.0001"
-                            size="sm"
                             [controlId]="prefix + 'AttachAddonMeterPrice'"
                             [(ngModel)]="createAddonMeterAttachUnitPrice"
                             [name]="prefix + 'AttachAddonMeterPrice'"
@@ -710,7 +675,6 @@
                             inputType="number"
                             min="0"
                             step="0.0001"
-                            size="sm"
                             [controlId]="prefix + 'AttachAddonMeterPrice'"
                             [(ngModel)]="editAddonMeterAttachUnitPrice"
                             [name]="prefix + 'AttachAddonMeterPrice'"
@@ -730,7 +694,6 @@
                             inputType="number"
                             min="0"
                             step="1"
-                            size="sm"
                             [controlId]="prefix + 'AttachAddonMeterIncludedUsage'"
                             [(ngModel)]="createAddonMeterAttachIncludedUsage"
                             [name]="prefix + 'AttachAddonMeterIncludedUsage'"
@@ -741,7 +704,6 @@
                             inputType="number"
                             min="0"
                             step="1"
-                            size="sm"
                             [controlId]="prefix + 'AttachAddonMeterIncludedUsage'"
                             [(ngModel)]="editAddonMeterAttachIncludedUsage"
                             [name]="prefix + 'AttachAddonMeterIncludedUsage'"
@@ -755,7 +717,6 @@
                 <div class="col-12 col-md-2 d-flex justify-content-md-end">
                   <fpc-button
                     variant="primary"
-                    size="sm"
                     iconOnly
                     (clicked)="attachAddonMeter(prefix)"
                     [disabled]="

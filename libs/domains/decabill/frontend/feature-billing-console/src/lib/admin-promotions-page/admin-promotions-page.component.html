@@ -41,7 +41,6 @@
     <fpc-button
       fpcDataTableToolbar
       variant="primary"
-      size="sm"
       iconOnly
       [disabled]="(loadingAny$ | async) === true"
       [ariaLabel]="createPromotionAriaLabel"
@@ -53,7 +52,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="!selectedPromotions().some((promotion) => promotion.isActive)"
       (clicked)="confirmBulkDeactivate.set(true)"
       data-testid="admin-promotions-bulk-deactivate"
@@ -81,7 +79,6 @@
   [title]="bulkDeactivateTitle"
   [message]="bulkDeactivateMessage()"
   [confirmLabel]="deactivateLabel"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   (confirmed)="deactivateSelected()"
 />
@@ -91,27 +88,23 @@
   size="xl"
   i18n-title="@@featureAdminPromotions-createTitle"
   title="Create promotion"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <form (ngSubmit)="submitCreate()">
     <ng-container *ngTemplateOutlet="promotionForm; context: { form: createForm, prefix: 'create' }"></ng-container>
     <div *fpcModalFooter class="d-flex justify-content-end gap-2">
-      <fpc-button variant="primary" type="submit" [disabled]="creating$ | async" i18n="@@featureAdminPromotions-create">
-        Create promotion
+      <fpc-button
+        variant="primary"
+        type="submit"
+        [disabled]="creating$ | async"
+        i18n="@@featureAdminPromotions-createSubmit"
+      >
+        Create
       </fpc-button>
     </div>
   </form>
 </fpc-modal>
 
-<fpc-modal
-  [(open)]="editModalOpen"
-  size="xl"
-  i18n-title="@@featureAdminPromotions-editTitle"
-  title="Edit promotion"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="editModalOpen" size="xl" i18n-title="@@featureAdminPromotions-editTitle" title="Edit promotion">
   <form (ngSubmit)="submitEdit()">
     <ng-container *ngTemplateOutlet="promotionForm; context: { form: editForm, prefix: 'edit' }"></ng-container>
     <div *fpcModalFooter class="d-flex justify-content-end gap-2">

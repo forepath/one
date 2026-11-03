@@ -4,7 +4,6 @@
     <fpc-button
       fpcPageHeaderActions
       variant="dark"
-      size="sm"
       iconOnly
       [disabled]="(checking$ | async) === true || (fullLoading$ | async) === true"
       [title]="checkNowTitle"
@@ -47,7 +46,6 @@
               <fpc-button
                 fpcSummaryCardActions
                 variant="dark"
-                size="sm"
                 iconOnly
                 [href]="releaseUrl"
                 target="_blank"

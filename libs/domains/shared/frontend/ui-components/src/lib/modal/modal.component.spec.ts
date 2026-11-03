@@ -1,22 +1,23 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { FpcButtonComponent } from '../button/button.component';
+import { provideFpcControlSize } from '../control-size/control-size';
 import { FpcModalFooterDirective } from './modal-footer.directive';
 import { FpcModalComponent, fpcModalContentAtCap } from './modal.component';
 
 @Component({
   standalone: true,
-  imports: [FpcModalComponent, FpcModalFooterDirective],
+  imports: [FpcModalComponent, FpcModalFooterDirective, FpcButtonComponent],
   template: `
-    <fpc-modal [(open)]="open" title="Create thing" [cancelLabel]="cancel()">
-      <p>Body</p>
-      <ng-template fpcModalFooter><button type="button" class="primary">Create</button></ng-template>
+    <fpc-modal [(open)]="open" title="Create thing">
+      <p>Body <fpc-button class="body-action">Add row</fpc-button></p>
+      <ng-template fpcModalFooter><fpc-button class="primary">Create</fpc-button></ng-template>
     </fpc-modal>
   `,
 })
 class ModalHostComponent {
   readonly open = signal(true);
-  readonly cancel = signal<string | null>('Cancel');
 }
 
 describe('FpcModalComponent guardClose', () => {
@@ -57,34 +58,32 @@ describe('FpcModalComponent guardClose', () => {
 });
 
 describe('FpcModalComponent footer contract', () => {
-  function render(cancel: string | null) {
+  function render() {
+    // A dense console: buttons and fields default to `sm`.
+    TestBed.configureTestingModule({ providers: [provideFpcControlSize('sm')] });
+
     const fixture = TestBed.createComponent(ModalHostComponent);
 
-    fixture.componentInstance.cancel.set(cancel);
     fixture.detectChanges();
     fixture.detectChanges();
 
-    return fixture;
+    return document.body;
   }
 
-  it('renders the built-in Cancel before the projected primary and closes through it', () => {
-    const fixture = render('Cancel');
-    const footer = (fixture.nativeElement as HTMLElement).querySelector('.modal-footer');
-    const cancel = footer?.querySelector<HTMLButtonElement>('[data-testid="fpc-modal-cancel"] button');
+  afterEach(() => document.querySelectorAll('fpc-modal, .modal').forEach((el) => el.remove()));
 
-    expect(cancel?.textContent?.trim()).toBe('Cancel');
-    expect(footer?.firstElementChild?.getAttribute('data-testid')).toBe('fpc-modal-cancel');
-    expect(footer?.querySelector('button.primary')).not.toBeNull();
+  it('renders only the projected action(s), no Cancel', () => {
+    const footer = render().querySelector('.modal-footer');
 
-    cancel?.click();
-    fixture.detectChanges();
-    expect(fixture.componentInstance.open()).toBe(false);
+    expect(footer?.querySelectorAll('button')).toHaveLength(1);
+    expect(footer?.textContent?.trim()).toBe('Create');
   });
 
-  it('renders no Cancel without a label', () => {
-    const fixture = render(null);
+  it('sizes footer actions like every other button of the app tier', () => {
+    const root = render();
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="fpc-modal-cancel"]')).toBeNull();
+    expect(root.querySelector('.modal-footer .primary .btn')?.classList).toContain('btn-sm');
+    expect(root.querySelector('.modal-body .body-action .btn')?.classList).toContain('btn-sm');
   });
 });
 

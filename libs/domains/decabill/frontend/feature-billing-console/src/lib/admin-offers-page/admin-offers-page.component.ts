@@ -63,7 +63,6 @@ import { getUnavailableLabel } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import {
-  DB_DL_CANCEL,
   DB_DL_DELETE,
   dbBulkSummary,
   dbCopyIdItem,
@@ -293,7 +292,6 @@ export class AdminOffersPageComponent implements OnInit {
   readonly revokeLabel = $localize`:@@featureAdminOffers-revoke:Revoke`;
   readonly deleteLabel = DB_DL_DELETE;
   readonly deleteDraftsLabel = $localize`:@@featureAdminOffers-bulkDeleteDrafts:Delete drafts`;
-  readonly cancelLabel = DB_DL_CANCEL;
 
   readonly selected = signal<readonly string[]>([]);
   readonly bulkResult = signal<DbBulkResult | null>(null);

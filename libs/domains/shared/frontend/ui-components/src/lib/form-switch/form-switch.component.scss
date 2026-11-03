@@ -15,5 +15,10 @@
 }
 
 .form-check-label {
+  // One line like field labels; the full text shows on hover (`fpcTruncateTitle`). Rich projected labels wrap.
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   cursor: pointer;
 }

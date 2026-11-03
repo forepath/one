@@ -8,7 +8,7 @@ const meta: Meta<FpcConfirmDialogComponent> = {
   parameters: {
     docs: {
       description: {
-        component: `**When to use:** Constrained confirm/cancel dialogs for destructive or irreversible actions.
+        component: `**When to use:** Constrained confirmation dialogs (one action; the header X dismisses) for destructive or irreversible actions.
 
 **When not to:** Multi-field editors: use \`fpc-modal\`.
 
@@ -25,7 +25,6 @@ const meta: Meta<FpcConfirmDialogComponent> = {
     title: 'Delete project?',
     message: 'All tickets and time entries stay, but the project link is removed.',
     confirmLabel: 'Delete',
-    cancelLabel: 'Keep project',
     danger: true,
     warning: false,
     busy: false,
@@ -39,7 +38,6 @@ const meta: Meta<FpcConfirmDialogComponent> = {
             [title]="title"
             [message]="message"
             [confirmLabel]="confirmLabel"
-            [cancelLabel]="cancelLabel"
             [danger]="danger"
             [warning]="warning"
             [busy]="busy"
@@ -62,7 +60,6 @@ export const Caution: Story = {
     title: 'Overwrite file?',
     message: 'Unsaved changes in the editor will be discarded.',
     confirmLabel: 'Overwrite',
-    cancelLabel: 'Keep editing',
   },
 };
 
@@ -73,7 +70,6 @@ export const Neutral: Story = {
     title: 'Publish offer?',
     message: 'The customer receives an email immediately.',
     confirmLabel: 'Publish',
-    cancelLabel: 'Cancel',
   },
 };
 

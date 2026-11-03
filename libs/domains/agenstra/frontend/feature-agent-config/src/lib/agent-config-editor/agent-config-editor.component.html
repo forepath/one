@@ -33,7 +33,6 @@
       <fpc-button
         class="flex-shrink-0"
         variant="secondary"
-        size="sm"
         iconOnly
         [title]="modeToggleTitle()"
         [ariaLabel]="modeToggleTitle()"
@@ -83,11 +82,15 @@
             (ngModelChange)="onRawJsonChange($event)"
             [disabled]="isFullyLocked()"
           />
+          <span
+            fpcFormFieldHint
+            i18n="@@featureAgentConfig-rawJsonHelp"
+            i18n-title="@@featureAgentConfig-rawJsonHelpFull"
+            title="Composed view of structured settings plus Advanced overrides for this layer. Saving absorbs the JSON into structured config and clears overrides."
+          >
+            Structured settings plus overrides; saving merges them.
+          </span>
         </fpc-form-field>
-        <p class="text-secondary small mt-2 mb-0" i18n="@@featureAgentConfig-rawJsonHelp">
-          Composed view of structured settings plus Advanced overrides for this layer. Saving absorbs the JSON into
-          structured config and clears overrides.
-        </p>
         @if (rawError(); as rawErr) {
           <fpc-alert variant="warning" class="mt-2">{{ rawErr }}</fpc-alert>
         }
@@ -96,7 +99,7 @@
             <div class="form-label mb-1" i18n="@@featureAgentConfig-accumulatedJsonLabel">
               Accumulated configuration
             </div>
-            <p class="text-secondary small mb-2" i18n="@@featureAgentConfig-accumulatedJsonHelp">
+            <p class="form-text mt-0 mb-2" i18n="@@featureAgentConfig-accumulatedJsonHelp">
               Read-only merged result for this stage, including higher layers.
             </p>
             <pre
@@ -219,6 +222,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldShell"
                 title="Shell"
+                forId="agentConfigShell"
                 i18n-description="@@featureAgentConfig-fieldShellHelp"
                 description="Default shell for terminal tools"
                 [dirty]="isConfigPathDirty('shell')"
@@ -239,6 +243,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldUsername"
                 title="Username"
+                forId="agentConfigUsername"
                 i18n-description="@@featureAgentConfig-fieldUsernameHelp"
                 description="Display username override"
                 [dirty]="isConfigPathDirty('username')"
@@ -264,6 +269,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldShare"
                 title="Sharing"
+                forId="agentConfigShare"
                 i18n-description="@@featureAgentConfig-fieldShareHelp"
                 description="Share sessions manually, automatically, or never"
                 [dirty]="isConfigPathDirty('share')"
@@ -290,6 +296,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldUpdate"
                 title="Updates"
+                forId="agentConfigUpdate"
                 i18n-description="@@featureAgentConfig-fieldUpdateHelp"
                 description="Install updates automatically, only notify, or turn them off"
                 [dirty]="isConfigPathDirty('update')"
@@ -338,6 +345,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldSubagentDepth"
                 title="Subagent depth"
+                forId="agentConfigSubagentDepth"
                 i18n-description="@@featureAgentConfig-fieldSubagentDepthHelp"
                 description="Maximum nested subagent depth"
                 [dirty]="isConfigPathDirty('subagent_depth')"
@@ -365,6 +373,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldWorktree"
                 title="Worktree directory"
+                forId="agentConfigWorktree"
                 i18n-description="@@featureAgentConfig-fieldWorktreeHelp"
                 description="Parent directory for new worktrees"
                 [dirty]="isConfigPathDirty('worktree.directory')"
@@ -385,6 +394,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldWatcherIgnore"
                 title="Watcher ignore"
+                forId="agentConfigWatcherIgnore"
                 i18n-description="@@featureAgentConfig-fieldWatcherIgnoreHelp"
                 description="One glob per line"
                 [dirty]="isConfigPathDirty('watcher.ignore')"
@@ -425,6 +435,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldEnabledProviders"
                 title="Provider allowlist"
+                forId="agentConfigEnabledProviders"
                 i18n-description="@@featureAgentConfig-fieldEnabledProvidersHelp"
                 description="One provider id per line"
                 [dirty]="isConfigPathDirty('enabled_providers')"
@@ -453,8 +464,6 @@
                         listboxId="agentConfigEnabledKnownProvider-listbox"
                         i18n-placeholder="@@featureAgentConfig-providerTypeaheadPlaceholder"
                         placeholder="Search built-in providers..."
-                        i18n-ariaLabel="@@featureAgentConfig-providerTypeaheadAria"
-                        ariaLabel="Search built-in providers"
                         [loading]="enabledProviderTypeaheadLoading()"
                         [openOnFocus]="false"
                         [query]="enabledProviderTypeaheadQuery()"
@@ -488,6 +497,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldDisabledProviders"
                 title="Provider denylist"
+                forId="agentConfigDisabledProviders"
                 i18n-description="@@featureAgentConfig-fieldDisabledProvidersHelp"
                 description="Overrides allowlist when both match"
                 [dirty]="isConfigPathDirty('disabled_providers')"
@@ -516,8 +526,6 @@
                         listboxId="agentConfigDisabledKnownProvider-listbox"
                         i18n-placeholder="@@featureAgentConfig-providerTypeaheadPlaceholder"
                         placeholder="Search built-in providers..."
-                        i18n-ariaLabel="@@featureAgentConfig-providerTypeaheadAria"
-                        ariaLabel="Search built-in providers"
                         [loading]="disabledProviderTypeaheadLoading()"
                         [openOnFocus]="false"
                         [query]="disabledProviderTypeaheadQuery()"
@@ -552,6 +560,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldModelAllow"
                 title="Model allowlist"
+                forId="agentConfigModelAllow"
                 i18n-description="@@featureAgentConfig-fieldModelAllowHelp"
                 description="provider/model per line"
                 [dirty]="isConfigPathDirty('model_allow')"
@@ -595,8 +604,6 @@
                             listboxId="agentConfigAllowKnownModelProvider-listbox"
                             i18n-placeholder="@@featureAgentConfig-knownModelProviderPlaceholder"
                             placeholder="Provider"
-                            i18n-ariaLabel="@@featureAgentConfig-knownModelProviderAria"
-                            ariaLabel="Provider"
                             [loading]="allowModelProviderTypeaheadLoading()"
                             [openOnFocus]="false"
                             [query]="allowModelProviderTypeaheadQuery()"
@@ -672,6 +679,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldModelDeny"
                 title="Model denylist"
+                forId="agentConfigModelDeny"
                 i18n-description="@@featureAgentConfig-fieldModelDenyHelp"
                 description="Wins over allowlist"
                 [dirty]="isConfigPathDirty('model_deny')"
@@ -715,8 +723,6 @@
                             listboxId="agentConfigDenyKnownModelProvider-listbox"
                             i18n-placeholder="@@featureAgentConfig-knownModelProviderPlaceholder"
                             placeholder="Provider"
-                            i18n-ariaLabel="@@featureAgentConfig-knownModelProviderAria"
-                            ariaLabel="Provider"
                             [loading]="denyModelProviderTypeaheadLoading()"
                             [openOnFocus]="false"
                             [query]="denyModelProviderTypeaheadQuery()"
@@ -841,8 +847,6 @@
                     listboxId="agentConfigBuiltinProvider-listbox"
                     i18n-placeholder="@@featureAgentConfig-providerTypeaheadPlaceholder"
                     placeholder="Search built-in providers..."
-                    i18n-ariaLabel="@@featureAgentConfig-providerTypeaheadAria"
-                    ariaLabel="Search built-in providers"
                     [loading]="providerTypeaheadLoading()"
                     [openOnFocus]="false"
                     [query]="providerTypeaheadQuery()"
@@ -869,7 +873,6 @@
                   </fpc-typeahead-select>
                   <div class="d-flex justify-content-end mt-1">
                     <fpc-button
-                      size="sm"
                       variant="secondary"
                       (clicked)="startCustomProviderMode()"
                       i18n="@@featureAgentConfig-customProviderOption"
@@ -928,6 +931,7 @@
               @for (envKey of providerEnvKeys(key); track envKey) {
                 <agenstra-agent-config-settings-row
                   [title]="envKey"
+                  [forId]="'agentConfigProviderSecret_' + key + '_' + envKey"
                   [description]="secretSet(envKey) ? 'Set (enter new value to rotate, clear to remove)' : 'Not set'"
                   [dirty]="isSecretDirty(envKey)"
                 >
@@ -957,6 +961,7 @@
                 <agenstra-agent-config-settings-row
                   i18n-title="@@featureAgentConfig-addCredentialEnvTitle"
                   title="Add credential env"
+                  [forId]="'agentConfigProviderEnvAdd_' + key"
                   i18n-description="@@featureAgentConfig-addCredentialEnvHelp"
                   description="Env var name for this provider (value stored as a secret)"
                   [dirty]="false"
@@ -1061,6 +1066,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldMcpTimeoutStartup"
                 title="Startup timeout (ms)"
+                forId="agentConfigMcpStartup"
                 i18n-description="@@featureAgentConfig-fieldMcpTimeoutStartupHelp"
                 description="Max wait for an MCP server to become ready"
                 [dirty]="isConfigPathDirty('mcp.timeout.startup')"
@@ -1083,6 +1089,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldMcpTimeoutRequest"
                 title="Request timeout (ms)"
+                forId="agentConfigMcpRequest"
                 i18n-description="@@featureAgentConfig-fieldMcpTimeoutRequestHelp"
                 description="Max wait for a single MCP request round-trip"
                 [dirty]="isConfigPathDirty('mcp.timeout.request')"
@@ -1127,6 +1134,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldMcpAllow"
                 title="MCP allowlist"
+                forId="agentConfigMcpAllow"
                 i18n-description="@@featureAgentConfig-fieldMcpAllowHelp"
                 description="Registry names or custom, one per line"
                 [dirty]="isConfigPathDirty('mcp_allow')"
@@ -1155,8 +1163,6 @@
                         listboxId="agentConfigAllowKnownMcp-listbox"
                         i18n-placeholder="@@featureAgentConfig-mcpTypeaheadPlaceholder"
                         placeholder="Search MCP registry..."
-                        i18n-ariaLabel="@@featureAgentConfig-mcpTypeaheadAria"
-                        ariaLabel="Search MCP registry servers"
                         [loading]="allowMcpTypeaheadLoading()"
                         [openOnFocus]="false"
                         [query]="allowMcpTypeaheadQuery()"
@@ -1184,7 +1190,6 @@
                     </fpc-form-field>
                     <div class="d-flex justify-content-end mt-1">
                       <fpc-button
-                        size="sm"
                         variant="secondary"
                         [disabled]="stringListItems('mcp_allow').includes(customMcpAllowDenyToken)"
                         (clicked)="appendCustomMcpAllowDenyToken('mcp_allow')"
@@ -1201,6 +1206,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldMcpDeny"
                 title="MCP denylist"
+                forId="agentConfigMcpDeny"
                 i18n-description="@@featureAgentConfig-fieldMcpDenyHelp"
                 description="Overrides allowlist when both match"
                 [dirty]="isConfigPathDirty('mcp_deny')"
@@ -1229,8 +1235,6 @@
                         listboxId="agentConfigDenyKnownMcp-listbox"
                         i18n-placeholder="@@featureAgentConfig-mcpTypeaheadPlaceholder"
                         placeholder="Search MCP registry..."
-                        i18n-ariaLabel="@@featureAgentConfig-mcpTypeaheadAria"
-                        ariaLabel="Search MCP registry servers"
                         [loading]="denyMcpTypeaheadLoading()"
                         [openOnFocus]="false"
                         [query]="denyMcpTypeaheadQuery()"
@@ -1258,7 +1262,6 @@
                     </fpc-form-field>
                     <div class="d-flex justify-content-end mt-1">
                       <fpc-button
-                        size="sm"
                         variant="secondary"
                         [disabled]="stringListItems('mcp_deny').includes(customMcpAllowDenyToken)"
                         (clicked)="appendCustomMcpAllowDenyToken('mcp_deny')"
@@ -1287,8 +1290,6 @@
                     listboxId="agentConfigBuiltinMcp-listbox"
                     i18n-placeholder="@@featureAgentConfig-mcpTypeaheadPlaceholder"
                     placeholder="Search MCP registry..."
-                    i18n-ariaLabel="@@featureAgentConfig-mcpTypeaheadAria"
-                    ariaLabel="Search MCP registry servers"
                     [loading]="mcpTypeaheadLoading()"
                     [openOnFocus]="false"
                     [query]="mcpTypeaheadQuery()"
@@ -1316,7 +1317,6 @@
                   <div class="d-flex justify-content-end mt-1">
                     @if (customMcpAllowed()) {
                       <fpc-button
-                        size="sm"
                         variant="secondary"
                         (clicked)="startCustomMcpMode()"
                         i18n="@@featureAgentConfig-customMcpOption"
@@ -1376,7 +1376,6 @@
               @if (showMcpRuntimeAuth() && !entry.deleted) {
                 <fpc-button
                   [variant]="mcpAuthButtonVariant(key)"
-                  size="sm"
                   iconOnly
                   [disabled]="mcpAuthButtonDisabled(key)"
                   (clicked)="startMcpInteractiveAuth(key)"
@@ -1584,6 +1583,7 @@
               @for (envKey of mcpSecretEnvKeys(key); track envKey) {
                 <agenstra-agent-config-settings-row
                   [title]="envKey"
+                  [forId]="'agentConfigMcpSecretEnv_' + key + '_' + envKey"
                   [description]="secretSet(envKey) ? 'Set (enter new value to rotate, clear to remove)' : 'Not set'"
                   [dirty]="isSecretDirty(envKey)"
                 >
@@ -1642,6 +1642,7 @@
               @for (headerKey of mcpSecretHeaderKeys(key); track headerKey) {
                 <agenstra-agent-config-settings-row
                   [title]="headerKey"
+                  [forId]="'agentConfigMcpSecretHeader_' + key + '_' + headerKey"
                   [description]="secretSet(headerKey) ? 'Set (enter new value to rotate, clear to remove)' : 'Not set'"
                   [dirty]="isSecretDirty(headerKey)"
                 >
@@ -1916,6 +1917,7 @@
               @if (isRowVisible('/commands')) {
                 <agenstra-agent-config-settings-row
                   title="Agent"
+                  [forId]="'agentConfigCommandAgent-' + key"
                   description="Agent id to run this command as"
                   [dirty]="isMapEntryFieldDirty('commands', key, 'agent')"
                 >
@@ -1986,7 +1988,6 @@
             <div class="agent-config-editor__section-toolbar">
               <fpc-button
                 variant="secondary"
-                size="sm"
                 iconOnly
                 (clicked)="addPlugin()"
                 ariaLabel="Add plugin"
@@ -2019,7 +2020,6 @@
                     <div fpcListItemActions>
                       <fpc-button
                         variant="danger"
-                        size="sm"
                         iconOnly
                         [disabled]="plugin.inherited || plugin.deleted"
                         (clicked)="removePlugin(plugin.index)"
@@ -2422,7 +2422,6 @@
             <div class="agent-config-editor__section-toolbar">
               <fpc-button
                 variant="secondary"
-                size="sm"
                 iconOnly
                 [disabled]="isLocked('/permissions')"
                 (clicked)="addPermissionRule()"
@@ -2455,7 +2454,6 @@
                     <div fpcListItemActions class="d-flex gap-1">
                       <fpc-button
                         variant="secondary"
-                        size="sm"
                         iconOnly
                         [disabled]="isLocked('/permissions') || rule.__deleted || rule.__index === 0"
                         (clicked)="moveRule('permissions', rule.__index, -1)"
@@ -2465,7 +2463,6 @@
                       </fpc-button>
                       <fpc-button
                         variant="secondary"
-                        size="sm"
                         iconOnly
                         [disabled]="
                           isLocked('/permissions') ||
@@ -2479,7 +2476,6 @@
                       </fpc-button>
                       <fpc-button
                         variant="danger"
-                        size="sm"
                         iconOnly
                         [disabled]="isLocked('/permissions') || rule.__deleted"
                         (clicked)="removeRule('permissions', rule.__index)"
@@ -2545,7 +2541,6 @@
             <div class="agent-config-editor__section-toolbar">
               <fpc-button
                 variant="secondary"
-                size="sm"
                 iconOnly
                 [disabled]="isLocked('/experimental') || isLocked('/experimental/policies')"
                 (clicked)="addPolicyRule()"
@@ -2578,7 +2573,6 @@
                     <div fpcListItemActions class="d-flex gap-1">
                       <fpc-button
                         variant="secondary"
-                        size="sm"
                         iconOnly
                         [disabled]="
                           isLocked('/experimental') ||
@@ -2593,7 +2587,6 @@
                       </fpc-button>
                       <fpc-button
                         variant="secondary"
-                        size="sm"
                         iconOnly
                         [disabled]="
                           isLocked('/experimental') ||
@@ -2608,7 +2601,6 @@
                       </fpc-button>
                       <fpc-button
                         variant="danger"
-                        size="sm"
                         iconOnly
                         [disabled]="isLocked('/experimental') || isLocked('/experimental/policies') || rule.__deleted"
                         (clicked)="removeRule('experimental.policies', rule.__index)"
@@ -2696,6 +2688,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldToolOutputLines"
                 title="Tool output max lines"
+                forId="agentConfigToolOutputLines"
                 i18n-description="@@featureAgentConfig-fieldToolOutputLinesHelp"
                 description="Truncate tool stdout/stderr after this many lines"
                 [dirty]="isConfigPathDirty('tool_output.max_lines')"
@@ -2718,6 +2711,7 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldToolOutputBytes"
                 title="Tool output max bytes"
+                forId="agentConfigToolOutputBytes"
                 i18n-description="@@featureAgentConfig-fieldToolOutputBytesHelp"
                 description="Truncate tool output after this many bytes"
                 [dirty]="isConfigPathDirty('tool_output.max_bytes')"
@@ -2777,8 +2771,9 @@
               <agenstra-agent-config-settings-row
                 i18n-title="@@featureAgentConfig-fieldEgressMode"
                 title="Filtering mode"
+                forId="agentConfigEgressMode"
                 i18n-description="@@featureAgentConfig-fieldEgressModeHelp"
-                description="off: no guard, monitor: record would-be blocks, enforce: apply the lists, offline: block all egress"
+                description="off, monitor (log only), enforce (apply lists), offline (block all)"
                 [dirty]="isConfigPathDirty('egress.mode')"
                 [lockable]="showLockControl('/egress/mode')"
                 [locked]="isLocked('/egress/mode')"
@@ -2810,6 +2805,7 @@
               @if (isRowVisible('/egress/' + flag.key)) {
                 <agenstra-agent-config-settings-row
                   [title]="flag.title"
+                  [forId]="'agentConfigEgress_' + flag.key"
                   [description]="flag.help"
                   [dirty]="isConfigPathDirty('egress.' + flag.key)"
                   [lockable]="showLockControl('/egress/' + flag.key)"
@@ -2846,6 +2842,7 @@
               @if (isRowVisible('/egress/' + list.key)) {
                 <agenstra-agent-config-settings-row
                   [title]="list.title"
+                  [forId]="'agentConfigEgress_' + list.key"
                   [description]="list.help"
                   [dirty]="isConfigPathDirty('egress.' + list.key)"
                   [lockable]="showLockControl('/egress/' + list.key)"
@@ -2900,7 +2897,6 @@
             <div class="agent-config-editor__section-toolbar">
               <fpc-button
                 variant="secondary"
-                size="sm"
                 iconOnly
                 [disabled]="isLocked('/egress/network_allow')"
                 (clicked)="addEgressNetworkRule()"
@@ -2942,7 +2938,6 @@
                     <div fpcListItemActions class="d-flex gap-1">
                       <fpc-button
                         variant="danger"
-                        size="sm"
                         iconOnly
                         [disabled]="isLocked('/egress/network_allow') || rule.__deleted"
                         (clicked)="removeRule('egress.network_allow', rule.__index)"
@@ -3021,8 +3016,9 @@
             <agenstra-agent-config-settings-row
               i18n-title="@@featureAgentConfig-fieldEgressTester"
               title="Hostname or URL"
+              forId="agentConfigEgressTester"
               i18n-description="@@featureAgentConfig-fieldEgressTesterHelp"
-              description="Evaluated against the effective policy including unsaved changes on this layer"
+              description="Uses the effective policy, including unsaved changes"
             >
               <fpc-form-control
                 controlId="agentConfigEgressTester"
@@ -3095,7 +3091,6 @@
             <div class="agent-config-editor__section-toolbar">
               <fpc-button
                 variant="secondary"
-                size="sm"
                 iconOnly
                 [disabled]="isLocked('/message_filters')"
                 (clicked)="addMessageFilterRule()"
@@ -3147,7 +3142,6 @@
                     <div fpcListItemActions class="d-flex gap-1">
                       <fpc-button
                         variant="secondary"
-                        size="sm"
                         iconOnly
                         [disabled]="isLocked('/message_filters') || rule.__deleted || rule.__index === 0"
                         (clicked)="moveRule('message_filters', rule.__index, -1)"
@@ -3157,7 +3151,6 @@
                       </fpc-button>
                       <fpc-button
                         variant="secondary"
-                        size="sm"
                         iconOnly
                         [disabled]="
                           isLocked('/message_filters') ||
@@ -3171,7 +3164,6 @@
                       </fpc-button>
                       <fpc-button
                         variant="danger"
-                        size="sm"
                         iconOnly
                         [disabled]="isLocked('/message_filters') || rule.__deleted"
                         (clicked)="removeRule('message_filters', rule.__index)"
@@ -3199,7 +3191,7 @@
                           i18n-title="@@featureAgentConfig-fieldMessageFilterPattern"
                           title="Pattern"
                           i18n-description="@@featureAgentConfig-fieldMessageFilterPatternHelp"
-                          description="JavaScript regular expression (nested quantifiers such as (a+)+ are rejected)"
+                          description="JavaScript regex; nested quantifiers like (a+)+ are rejected"
                           [dirty]="isRuleFieldDirty('message_filters', rule.__index, 'pattern')"
                         >
                           <fpc-form-control
@@ -3240,7 +3232,7 @@
                           i18n-title="@@featureAgentConfig-fieldMessageFilterAction"
                           title="Action"
                           i18n-description="@@featureAgentConfig-fieldMessageFilterActionHelp"
-                          description="drop: block the message, replace: rewrite matches, flag: record only"
+                          description="drop: block, replace: rewrite matches, flag: record only"
                           [dirty]="isRuleFieldDirty('message_filters', rule.__index, 'action')"
                         >
                           <fpc-form-control
@@ -3295,7 +3287,7 @@
               i18n-title="@@featureAgentConfig-fieldMessageFilterTester"
               title="Sample message"
               i18n-description="@@featureAgentConfig-fieldMessageFilterTesterHelp"
-              description="Evaluated against all effective rules including unsaved changes on this layer"
+              description="Uses all effective rules, including unsaved changes"
             >
               <fpc-form-control
                 controlId="agentConfigMessageFilterTester"
@@ -3393,6 +3385,7 @@
             @for (key of ['HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'NODE_EXTRA_CA_CERTS']; track key) {
               <agenstra-agent-config-settings-row
                 [title]="key"
+                [forId]="'agentConfigNetwork_' + key"
                 [description]="networkSecretSet(key) ? 'Set (enter new value to rotate, clear to remove)' : 'Not set'"
                 [dirty]="isNetworkSecretDirty($any(key))"
               >
@@ -3794,6 +3787,7 @@
             <agenstra-agent-config-settings-row
               i18n-title="@@featureAgentConfig-overridesJsonTitle"
               title="Overrides JSON"
+              forId="agentConfigOverridesJson"
               [dirty]="isOverridesDirty()"
             >
               <fpc-form-control

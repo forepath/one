@@ -25,7 +25,6 @@ export class ProjectMilestoneSelectComponent {
   readonly placeholder = input($localize`:@@featureProjectMilestoneSelect-placeholder:Search milestones by name`);
   readonly showSuggestionsOnFocus = input(true);
   readonly suggestionLimit = input(20);
-  readonly compact = input(false);
 
   private readonly milestonesService = inject(ProjectMilestonesService);
   private readonly destroyRef = inject(DestroyRef);

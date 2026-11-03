@@ -1,9 +1,14 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, input, output } from '@angular/core';
 
+import { FpcFormTextDirective } from '@forepath/shared/frontend/ui-components';
+
+let nextSettingsRowId = 0;
+
 @Component({
   selector: 'agenstra-agent-config-settings-row',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FpcFormTextDirective],
   template: `
     <div
       class="agent-config-settings-row"
@@ -11,12 +16,20 @@ import { ChangeDetectionStrategy, Component, booleanAttribute, input, output } f
       [class.agent-config-settings-row--locked]="lockable() && locked()"
     >
       <div class="agent-config-settings-row__copy">
-        <div class="agent-config-settings-row__title">{{ title() }}</div>
+        @if (forId()) {
+          <label class="agent-config-settings-row__title" [id]="titleId" [attr.for]="forId()">{{ title() }}</label>
+        } @else {
+          <div class="agent-config-settings-row__title" [id]="titleId">{{ title() }}</div>
+        }
         @if (description()) {
-          <div class="agent-config-settings-row__description">{{ description() }}</div>
+          <div class="agent-config-settings-row__description form-text">{{ description() }}</div>
         }
       </div>
-      <div class="agent-config-settings-row__control">
+      <div
+        class="agent-config-settings-row__control"
+        [attr.role]="forId() ? null : 'group'"
+        [attr.aria-labelledby]="forId() ? null : titleId"
+      >
         <ng-content />
       </div>
       @if (lockable()) {
@@ -74,11 +87,9 @@ import { ChangeDetectionStrategy, Component, booleanAttribute, input, output } f
         min-width: 0;
       }
       .agent-config-settings-row__title {
+        display: block;
+        margin-bottom: 0;
         font-weight: 600;
-      }
-      .agent-config-settings-row__description {
-        font-size: 0.875rem;
-        color: var(--bs-secondary-color);
       }
       .agent-config-settings-row__control {
         flex: 0 1 32rem;
@@ -122,6 +133,12 @@ import { ChangeDetectionStrategy, Component, booleanAttribute, input, output } f
 })
 export class AgentConfigSettingsRowComponent {
   readonly title = input.required<string>();
+  /**
+   * Id of the row's single control: the title then renders as its `<label>` (the visible title names the control).
+   * Without it the title names the control area as a group (rows with several or unnamed controls).
+   */
+  readonly forId = input<string | null>(null);
+  protected readonly titleId = `agent-config-settings-row-title-${++nextSettingsRowId}`;
   readonly description = input<string | null>(null);
   /** True when this row's value differs from the last loaded/saved baseline. */
   readonly dirty = input(false, { transform: booleanAttribute });

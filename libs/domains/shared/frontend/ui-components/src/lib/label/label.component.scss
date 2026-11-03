@@ -1,11 +1,23 @@
 :host {
   display: block;
+  min-width: 0;
 }
 
+// Single-line rule and tier sizes are global (`styles/_controls.scss`); here the text ellipsizes on its own so the
+// required marker never gets cut off.
 .form-label {
+  display: flex;
+  align-items: baseline;
   margin-bottom: 0.25rem;
 }
 
+.fpc-label__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .fpc-label__required {
+  flex: 0 0 auto;
   margin-left: 0.125rem;
 }

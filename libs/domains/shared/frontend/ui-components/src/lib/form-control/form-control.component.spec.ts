@@ -23,4 +23,8 @@ describe('FpcFormControlComponent', () => {
   it('keeps form-control + size classes for text inputs', () => {
     expect(render({ size: 'sm' }).className).toBe('form-control form-control-sm');
   });
+
+  it('defaults to the standard (md) tier', () => {
+    expect(render({}).className).toBe('form-control');
+  });
 });

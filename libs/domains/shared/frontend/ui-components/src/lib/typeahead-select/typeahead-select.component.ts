@@ -3,6 +3,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   ElementRef,
   HostListener,
@@ -17,6 +18,7 @@ import {
   viewChild,
 } from '@angular/core';
 
+import { FPC_CONTROL_SIZE } from '../control-size/control-size';
 import { fpcFocusFromKeyboard } from '../focus-origin/focus-origin';
 import { FpcSpinnerComponent } from '../spinner/spinner.component';
 
@@ -47,7 +49,7 @@ export type FpcTypeaheadSelectVariant = 'menu' | 'inline';
   imports: [FpcSpinnerComponent],
   host: {
     class: 'fpc-typeahead-select',
-    '[class.fpc-typeahead-select--sm]': 'size() === "sm"',
+    '[class.fpc-typeahead-select--sm]': 'resolvedSize() === "sm"',
     '[class.fpc-typeahead-select--inline]': 'variant() === "inline"',
     '[class.fpc-typeahead-select--clearable]': 'clearable()',
   },
@@ -65,7 +67,7 @@ export type FpcTypeaheadSelectVariant = 'menu' | 'inline';
       <input
         type="text"
         class="form-control border-0 fpc-typeahead-select__input"
-        [class.form-control-sm]="size() === 'sm'"
+        [class.form-control-sm]="resolvedSize() === 'sm'"
         role="combobox"
         autocomplete="off"
         [id]="inputId()"
@@ -123,6 +125,7 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
   private readonly injector = inject(Injector);
   private readonly document = inject(DOCUMENT);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly defaultSize = inject(FPC_CONTROL_SIZE);
   private readonly anchorRef = viewChild<ElementRef<HTMLElement>>('anchor');
   private readonly menuRef = viewChild<ElementRef<HTMLElement>>('menu');
   private readonly onScrollReposition = (): void => this.syncMenuPosition();
@@ -143,7 +146,11 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
   readonly loading = input(false);
   readonly clearable = input(true);
   readonly required = input(false);
-  readonly size = input<FpcTypeaheadSelectSize>('md');
+  /** Defaults to `FPC_CONTROL_SIZE` (`lg` / `xl` contexts fall back to `md`). */
+  readonly size = input<FpcTypeaheadSelectSize | undefined>(undefined);
+  protected readonly resolvedSize = computed<FpcTypeaheadSelectSize>(
+    () => this.size() ?? (this.defaultSize === 'sm' ? 'sm' : 'md'),
+  );
   /** Opens the suggestion popup as soon as the input receives focus. */
   readonly openOnFocus = input(true);
   /**

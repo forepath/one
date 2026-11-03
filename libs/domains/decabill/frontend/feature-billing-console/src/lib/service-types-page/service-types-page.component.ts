@@ -38,6 +38,7 @@ import {
   FpcMoneyPipe,
   FpcMultiSelectComponent,
   type FpcMultiSelectOption,
+  FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
 import {
   catchError,
@@ -55,14 +56,7 @@ import {
 import { getProviderDisplayName } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { optionalNumberInputValue } from '../optional-number-input.util';
-import {
-  DB_DL_CANCEL,
-  DB_DL_DELETE,
-  dbBulkSummary,
-  dbCopyIdItem,
-  type DbBulkResult,
-  DB_DL_EDIT,
-} from '../shared/data-list';
+import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
 import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
 
@@ -75,6 +69,7 @@ const NONE_PROVIDER_SENTINEL = '';
   selector: 'framework-billing-service-types-page',
   standalone: true,
   imports: [
+    FpcFormTextDirective,
     FpcMultiSelectComponent,
     FpcMoneyPipe,
     FpcListHeaderComponent,
@@ -159,7 +154,6 @@ export class ServiceTypesPageComponent implements OnInit {
   ];
 
   readonly deleteLabel = DB_DL_DELETE;
-  readonly cancelLabel = DB_DL_CANCEL;
   readonly activateLabel = $localize`:@@featureMeters-bulkActivate:Activate`;
   readonly deactivateLabel = $localize`:@@featureMeters-bulkDeactivate:Deactivate`;
   readonly bulkDeleteTitle = $localize`:@@featureServiceTypes-bulkDeleteTitle:Delete service providers?`;

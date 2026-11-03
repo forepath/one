@@ -99,7 +99,6 @@
           <fpc-button
             fpcDataTableBatch
             variant="secondary"
-            size="sm"
             [disabled]="selectedOffers().length === 0"
             (clicked)="downloadSelected()"
             data-testid="offers-bulk-download"
@@ -149,7 +148,6 @@
           <fpc-button
             fpcDataTableBatch
             variant="secondary"
-            size="sm"
             [disabled]="selectedOffers().length === 0"
             (clicked)="downloadSelected()"
             data-testid="offers-bulk-download"
@@ -228,7 +226,7 @@
       <fpc-button-group>
         <fpc-button variant="dark" (clicked)="downloadOfferPdf(detail)">
           <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>
-          <span i18n="@@featureOffers-downloadPdf">Download PDF</span>
+          <span i18n="@@featureOffers-downloadPdf">Download</span>
         </fpc-button>
         @if (previewCanRespond(detail)) {
           <fpc-button
@@ -259,10 +257,8 @@
   title="Decline offer?"
   i18n-message="@@featureOffers-declineConfirmBody"
   message="This offer will be marked as declined and removed from your pending list."
-  i18n-cancelLabel="@@featureOffers-cancel"
-  cancelLabel="Cancel"
   i18n-confirmLabel="@@featureOffers-declineConfirm"
-  confirmLabel="Decline offer"
+  confirmLabel="Decline"
   [danger]="true"
   (confirmed)="confirmDecline()"
 />

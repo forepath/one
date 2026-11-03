@@ -69,6 +69,7 @@ import {
   type FpcBadgeTone,
   FpcBoardLaneComponent,
   FpcEmptyStateComponent,
+  FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
 import type { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexStroke, ApexXAxis } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
@@ -143,6 +144,7 @@ function isDashboardUrl(url: string | null | undefined): boolean {
   selector: 'framework-service-detail-page',
   standalone: true,
   imports: [
+    FpcFormTextDirective,
     FpcBoardLaneComponent,
     FpcEmptyStateComponent,
     CommonModule,

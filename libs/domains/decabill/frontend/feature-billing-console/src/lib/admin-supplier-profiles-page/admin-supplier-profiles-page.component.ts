@@ -26,6 +26,7 @@ import {
   FpcTableCellDirective,
   type FpcMenuItem,
   type FpcTableColumn,
+  FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
 import { firstValueFrom } from 'rxjs';
 
@@ -39,7 +40,6 @@ import {
   getVatIdValidationStatusLabel,
 } from '../billing-status-labels';
 import {
-  DB_DL_CANCEL,
   DB_DL_DELETE,
   dbBulkSummary,
   dbCopyIdItem,
@@ -55,6 +55,7 @@ import { formatBillingDate } from '../billing-format';
   selector: 'framework-admin-supplier-profiles-page',
   standalone: true,
   imports: [
+    FpcFormTextDirective,
     CommonModule,
     FormsModule,
     FpcAlertComponent,
@@ -155,7 +156,9 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
   ];
 
   readonly deleteLabel = DB_DL_DELETE;
-  readonly cancelLabel = DB_DL_CANCEL;
+  /** Accessible names of the custom-data row inputs (no visible label): "Key 1", "Value <key>". */
+  readonly customDataKeyLabel = $localize`:@@featureAdminSupplierProfiles-customDataKeyPlaceholder:Key`;
+  readonly customDataValueLabel = $localize`:@@featureAdminSupplierProfiles-customDataValuePlaceholder:Value`;
   readonly bulkDeleteTitle = $localize`:@@featureAdminSupplierProfiles-bulkDeleteTitle:Delete supplier profiles?`;
 
   readonly selected = signal<readonly string[]>([]);

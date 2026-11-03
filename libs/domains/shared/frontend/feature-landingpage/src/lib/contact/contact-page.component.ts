@@ -23,6 +23,7 @@ import {
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
+  FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
@@ -46,6 +47,7 @@ import { readAndClearContactMessagePrefill } from './contact-message-prefill.sto
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
+    FpcFormTextDirective,
     SharedContactPersonComponent,
   ],
   templateUrl: './contact-page.component.html',

@@ -5,7 +5,12 @@ import {
   AdminSupplierProfilesService,
   type SupplierContractResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { FpcBadgeComponent, FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
+import {
+  FpcBadgeComponent,
+  FpcFormControlComponent,
+  FpcTypeaheadSelectComponent,
+  FpcFormTextDirective,
+} from '@forepath/shared/frontend/ui-components';
 import { catchError, debounceTime, distinctUntilChanged, of, skip, switchMap, tap } from 'rxjs';
 
 import { isAccessDeniedError } from '../billing-access-denied.util';
@@ -13,7 +18,13 @@ import { isAccessDeniedError } from '../billing-access-denied.util';
 @Component({
   selector: 'framework-billing-admin-supplier-contract-select',
   standalone: true,
-  imports: [CommonModule, FpcBadgeComponent, FpcTypeaheadSelectComponent],
+  imports: [
+    FpcFormTextDirective,
+    CommonModule,
+    FpcBadgeComponent,
+    FpcFormControlComponent,
+    FpcTypeaheadSelectComponent,
+  ],
   templateUrl: './billing-admin-supplier-contract-select.component.html',
   styleUrls: ['../billing-admin-user-select/billing-admin-user-select.component.scss'],
 })

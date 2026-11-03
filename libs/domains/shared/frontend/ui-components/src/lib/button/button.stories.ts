@@ -168,6 +168,6 @@ export const AsLink: Story = {
 
 export const ResponsiveSize: Story = {
   render: () => ({
-    template: `<fpc-button variant="primary" size="sm" mdSize="md">Logout (sm on phones, md from md)</fpc-button>`,
+    template: `<fpc-button variant="primary" size="sm" mdSize="md">Save (sm on phones, md from md)</fpc-button>`,
   }),
 };

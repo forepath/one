@@ -2010,12 +2010,12 @@ export class FileTreeComponent implements OnInit {
     if (items.length === 0) return '';
 
     if (items.length > 1) {
-      return $localize`:@@featureFileTree-deleteMultipleTitle:Delete Items`;
+      return $localize`:@@featureFileTree-deleteMultipleTitle:Delete items`;
     }
 
     return items[0].type === 'directory'
-      ? $localize`:@@featureFileTree-deleteDirectoryTitle:Delete Directory`
-      : $localize`:@@featureFileTree-deleteFileTitle:Delete File`;
+      ? $localize`:@@featureFileTree-deleteDirectoryTitle:Delete directory`
+      : $localize`:@@featureFileTree-deleteFileTitle:Delete file`;
   }
 
   getDeleteModalMessage(): string {
@@ -2054,8 +2054,8 @@ export class FileTreeComponent implements OnInit {
     if (!item) return '';
 
     return item.type === 'directory'
-      ? $localize`:@@featureFileTree-renameDirectoryTitle:Rename Directory`
-      : $localize`:@@featureFileTree-renameFileTitle:Rename File`;
+      ? $localize`:@@featureFileTree-renameDirectoryTitle:Rename directory`
+      : $localize`:@@featureFileTree-renameFileTitle:Rename file`;
   }
 
   getMoveModalTitle(): string {
@@ -2064,8 +2064,8 @@ export class FileTreeComponent implements OnInit {
     if (!item) return '';
 
     return item.type === 'directory'
-      ? $localize`:@@featureFileTree-moveDirectoryTitle:Move Directory`
-      : $localize`:@@featureFileTree-moveFileTitle:Move File`;
+      ? $localize`:@@featureFileTree-moveDirectoryTitle:Move directory`
+      : $localize`:@@featureFileTree-moveFileTitle:Move file`;
   }
 
   getMoveModalMessage(): string {

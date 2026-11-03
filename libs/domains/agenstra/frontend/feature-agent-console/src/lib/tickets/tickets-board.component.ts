@@ -83,16 +83,9 @@ import {
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
-  FpcDataTableComponent,
-  FpcTableCellDirective,
   fpcCopyText,
-  fpcListQueryState,
-  type FpcBulkResult,
-  type FpcFilterChip,
-  type FpcMenuItem,
-  type FpcTableColumn,
-  type FpcTableRowDropEvent,
-  type FpcTableSort,
+  FpcDataTableComponent,
+  FpcDatePipe,
   FpcDropdownComponent,
   FpcDropdownItemComponent,
   FpcEmptyStateComponent,
@@ -100,7 +93,9 @@ import {
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcFormSwitchComponent,
+  FpcFormTextDirective,
   FpcLaneHeaderComponent,
+  fpcListQueryState,
   FpcListToolbarComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
@@ -112,10 +107,16 @@ import {
   FpcSpinnerComponent,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FpcTableCellDirective,
   FpcTypeaheadSelectComponent,
   type FpcBadgeColor,
   type FpcBadgeTone,
-  FpcDatePipe,
+  type FpcBulkResult,
+  type FpcFilterChip,
+  type FpcMenuItem,
+  type FpcTableColumn,
+  type FpcTableRowDropEvent,
+  type FpcTableSort,
 } from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import {
@@ -183,7 +184,7 @@ import {
 } from './ticket-table';
 import { agentContentWriteLabel } from '../shared/agent-content-write-labels';
 import { AttachmentChipsComponent } from '../shared/attachment-chips.component';
-import { agBulkSummary, agCopyIdItem, agOpenItem, AG_DL_CANCEL, AG_DL_CLOSE, AG_DL_DELETE } from '../shared/data-list';
+import { agBulkSummary, agCopyIdItem, agOpenItem, AG_DL_CANCEL, AG_DL_DELETE } from '../shared/data-list';
 import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
 import { WorkspaceSwitchTableComponent } from '../shared/workspace-switch-table.component';
 import { ticketModelPlaceholder } from './ticket-model-placeholder';
@@ -317,6 +318,7 @@ const AUTOMATION_RUN_ICON: Record<TicketAutomationRunStatus, string> = {
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormSwitchComponent,
+    FpcFormTextDirective,
     FpcLaneHeaderComponent,
     FpcListToolbarComponent,
     FpcPageHeaderComponent,
@@ -417,9 +419,7 @@ export class TicketsBoardComponent implements OnInit {
   readonly bulkStatusLabel = $localize`:@@featureTicketsBoard-bulkStatus:Set status…`;
   readonly bulkPriorityLabel = $localize`:@@featureTicketsBoard-bulkPriority:Set priority…`;
   readonly deleteLabel = AG_DL_DELETE;
-  readonly closeLabel = AG_DL_CLOSE;
   readonly bulkDeleteTitle = $localize`:@@featureTicketsBoard-bulkDeleteTitle:Delete tickets`;
-  readonly cancelLabel = $localize`:@@featureTicketsBoard-bulkDeleteCancel:Cancel`;
   readonly automationEligibleLabel = $localize`:@@featureTicketsBoard-automationEligibleTitle:Autonomous prototyping enabled`;
   readonly subtasksLabel = $localize`:@@featureTicketsBoard-subtasksHeading:Subtasks`;
   readonly automationRunsLabel = $localize`:@@featureTicketsBoard-automationRunsHeading:Runs`;

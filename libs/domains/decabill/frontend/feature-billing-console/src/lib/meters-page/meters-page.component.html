@@ -37,7 +37,6 @@
     <fpc-button
       fpcDataTableToolbar
       variant="primary"
-      size="sm"
       iconOnly
       [disabled]="(loadingAny$ | async) === true"
       [ariaLabel]="addMeterAriaLabel"
@@ -49,7 +48,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="!selectedMeters().some((meter) => !meter.isActive)"
       (clicked)="setActiveSelected(true)"
       data-testid="meters-bulk-activate"
@@ -62,7 +60,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="!selectedMeters().some((meter) => meter.isActive)"
       (clicked)="setActiveSelected(false)"
       data-testid="meters-bulk-deactivate"
@@ -75,7 +72,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="selectedMeters().length === 0"
       (clicked)="confirmBulkDelete.set(true)"
       data-testid="meters-bulk-delete"
@@ -97,19 +93,11 @@
   [title]="bulkDeleteTitle"
   [message]="bulkDeleteMessage()"
   [confirmLabel]="deleteLabel"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   (confirmed)="deleteSelected()"
 />
 
-<fpc-modal
-  [(open)]="createModalOpen"
-  size="lg"
-  i18n-title="@@featureMeters-createTitle"
-  title="Create meter"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="createModalOpen" size="lg" i18n-title="@@featureMeters-createTitle" title="Create meter">
   <form (ngSubmit)="onSubmitCreate()">
     <ng-container
       *ngTemplateOutlet="meterForm; context: { form: createForm, prefix: 'create', disabled: (creating$ | async) }"
@@ -122,21 +110,14 @@
   </form>
 </fpc-modal>
 
-<fpc-modal
-  [(open)]="editModalOpen"
-  size="lg"
-  i18n-title="@@featureMeters-editTitle"
-  title="Edit meter"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="editModalOpen" size="lg" i18n-title="@@featureMeters-editTitle" title="Edit meter">
   <form (ngSubmit)="onSubmitEdit()">
     <ng-container
       *ngTemplateOutlet="meterForm; context: { form: editForm, prefix: 'edit', disabled: (updating$ | async) }"
     ></ng-container>
     <div *fpcModalFooter class="d-flex justify-content-end gap-2">
       <fpc-button variant="primary" type="submit" [disabled]="(updating$ | async) === true">
-        <span i18n="@@featureMeters-save">Save changes</span>
+        <span i18n="@@featureMeters-save">Save</span>
       </fpc-button>
     </div>
   </form>

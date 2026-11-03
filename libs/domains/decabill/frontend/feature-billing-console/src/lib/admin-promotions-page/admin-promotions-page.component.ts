@@ -43,7 +43,7 @@ import {
 } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
-import { DB_DL_CANCEL, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
+import { dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { dbServerPaging } from '../shared/server-paging';
 import { activeState, redemptionState } from '../shared/table-states';
 import { formatBillingDateRange, formatBillingDateTime, formatBillingMoney } from '../billing-format';
@@ -209,7 +209,6 @@ export class AdminPromotionsPageComponent implements OnInit {
   ];
 
   readonly deactivateLabel = $localize`:@@featureAdminPromotions-deactivate:Deactivate`;
-  readonly cancelLabel = DB_DL_CANCEL;
   readonly bulkDeactivateTitle = $localize`:@@featureAdminPromotions-bulkDeactivateTitle:Deactivate promotions?`;
   readonly selected = signal<readonly string[]>([]);
   readonly confirmBulkDeactivate = signal(false);

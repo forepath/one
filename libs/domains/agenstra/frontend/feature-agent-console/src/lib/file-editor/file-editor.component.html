@@ -24,7 +24,6 @@
           <div class="d-flex align-items-center gap-2">
             <fpc-button
               variant="dark"
-              size="sm"
               iconOnly
               (clicked)="onCloseFileTree()"
               i18n-title="@@featureFileEditor-closeFileTreeTitle"
@@ -84,7 +83,6 @@
             <div class="d-flex align-items-center gap-2">
               <fpc-button
                 variant="dark"
-                size="sm"
                 iconOnly
                 (clicked)="onCloseGitManager()"
                 i18n-title="@@featureFileEditor-closeVersionControlTitle"
@@ -166,7 +164,6 @@
             <fpc-dropdown alignment="end" [(open)]="moreFilesMenuOpen">
               <fpc-button
                 fpcDropdownTrigger
-                size="sm"
                 variant="link"
                 btnClass="text-decoration-none dropdown-toggle border-start bg-primary text-white file-editor-more-button"
                 controlId="moreFilesDropdown"
@@ -232,14 +229,13 @@
           <fpc-button-group size="sm">
             <fpc-button
               variant="primary"
-              size="sm"
               iconOnly
               (clicked)="onSave()"
               [disabled]="!selectedFilePath() || !isDirty() || (isWritingFile$ | async)"
               [loading]="(isWritingFile$ | async) === true"
               i18n-title="@@featureFileEditor-saveTitle"
               title="Save (Ctrl+S)"
-              i18n-aria-label="@@featureFileEditor-saveTitle"
+              i18n-ariaLabel="@@featureFileEditor-saveTitle"
               ariaLabel="Save (Ctrl+S)"
             >
               <i class="bi bi-save" aria-hidden="true"></i>
@@ -313,7 +309,6 @@
             <div class="d-flex align-items-center gap-2">
               <fpc-button
                 variant="dark"
-                size="sm"
                 iconOnly
                 (clicked)="onCloseTerminal()"
                 i18n-title="@@featureFileEditor-closeTerminalTitle"
@@ -380,7 +375,7 @@
   i18n-title="@@featureFileEditor-overrideNewerTitle"
   title="Override newer changes?"
   i18n-confirmLabel="@@featureFileEditor-save"
-  confirmLabel="Save"
+  confirmLabel="Override"
   [danger]="true"
   (confirmed)="onConfirmSaveOverride()"
   (cancelled)="onCancelSaveOverride()"

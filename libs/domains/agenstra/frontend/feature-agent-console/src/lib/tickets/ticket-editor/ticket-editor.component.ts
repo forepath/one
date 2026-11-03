@@ -28,6 +28,8 @@ export class TicketEditorComponent implements AfterViewInit, OnChanges, OnDestro
   private editorHost!: ElementRef<HTMLDivElement>;
 
   @Input() markdown = '# Hello\n\nStart writing...';
+  /** Accessible name of the editable area (Milkdown's contenteditable root); a `label for` cannot target it. */
+  @Input() ariaLabel: string | null = null;
   @Output() markdownChange = new EventEmitter<string>();
   @Output() blurred = new EventEmitter<void>();
 
@@ -42,6 +44,10 @@ export class TicketEditorComponent implements AfterViewInit, OnChanges, OnDestro
   }
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
+    if (changes['ariaLabel'] && this.crepe) {
+      this.applyAriaLabel();
+    }
+
     if (!this.viewReady || !this.crepe || !changes['markdown']) return;
 
     const nextValue = changes['markdown'].currentValue ?? '';
@@ -88,6 +94,23 @@ export class TicketEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
     this.crepe = crepe;
     this.lastEmittedMarkdown = initialValue;
+    this.applyAriaLabel();
+  }
+
+  /** Names the editable element Crepe renders (ProseMirror keeps attributes it did not set itself). */
+  private applyAriaLabel(): void {
+    // The ProseMirror root, not nested `contenteditable="false"` widgets (code blocks, images).
+    const editable = this.editorHost.nativeElement.querySelector<HTMLElement>('.ProseMirror[contenteditable]');
+
+    if (!editable) return;
+
+    if (this.ariaLabel) {
+      editable.setAttribute('role', 'textbox');
+      editable.setAttribute('aria-multiline', 'true');
+      editable.setAttribute('aria-label', this.ariaLabel);
+    } else {
+      editable.removeAttribute('aria-label');
+    }
   }
 
   private async recreateEditor(value: string): Promise<void> {

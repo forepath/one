@@ -5,7 +5,6 @@
       <fpc-button-group size="sm">
         <fpc-button
           variant="primary"
-          size="sm"
           iconOnly
           [class.active]="creatingItem()?.parentPath === treeRoot() && creatingItem()?.type === 'file'"
           (clicked)="startCreate('file', treeRoot())"
@@ -16,7 +15,6 @@
         </fpc-button>
         <fpc-button
           variant="primary"
-          size="sm"
           iconOnly
           [class.active]="creatingItem()?.parentPath === treeRoot() && creatingItem()?.type === 'directory'"
           (clicked)="startCreate('directory', treeRoot())"
@@ -27,7 +25,6 @@
         </fpc-button>
         <fpc-button
           variant="dark"
-          size="sm"
           iconOnly
           (clicked)="refreshRoot()"
           i18n-title="@@featureFileTree-refreshTitle"
@@ -56,17 +53,18 @@
             <div class="create-item-input px-2 py-1" [style.padding-left.px]="24">
               <div class="input-group input-group-sm">
                 <fpc-form-control
-                  size="sm"
                   [ngModel]="newItemName()"
                   (ngModelChange)="newItemName.set($event)"
                   (keydown.enter)="confirmCreate()"
                   (keydown.escape)="cancelCreate()"
                   [placeholder]="createPlaceholder()"
+                  i18n-ariaLabel="@@featureFileTree-nameAria"
+                  ariaLabel="Name"
                 />
-                <fpc-button variant="primary" size="sm" iconOnly (clicked)="confirmCreate()">
+                <fpc-button variant="primary" iconOnly (clicked)="confirmCreate()">
                   <i class="bi bi-check" aria-hidden="true"></i>
                 </fpc-button>
-                <fpc-button variant="dark" size="sm" iconOnly (clicked)="cancelCreate()">
+                <fpc-button variant="dark" iconOnly (clicked)="cancelCreate()">
                   <i class="bi bi-x" aria-hidden="true"></i>
                 </fpc-button>
               </div>
@@ -130,7 +128,6 @@
           @if (node.type === 'directory') {
             <fpc-button
               variant="dark"
-              size="sm"
               iconOnly
               (clicked)="startCreate('file', node.path); $event.stopPropagation()"
               i18n-title="@@featureFileTree-newFileTitle"
@@ -140,7 +137,6 @@
             </fpc-button>
             <fpc-button
               variant="dark"
-              size="sm"
               iconOnly
               (clicked)="startCreate('directory', node.path); $event.stopPropagation()"
               i18n-title="@@featureFileTree-newDirectoryTitle"
@@ -151,7 +147,6 @@
           }
           <fpc-button
             variant="danger"
-            size="sm"
             iconOnly
             (clicked)="requestDelete(node.path); $event.stopPropagation()"
             i18n-title="@@featureFileTree-deleteTitle"
@@ -167,17 +162,18 @@
       <div class="create-item-input px-2 py-1" [style.padding-left.px]="(level + 1) * 20 + 24">
         <div class="input-group input-group-sm">
           <fpc-form-control
-            size="sm"
             [ngModel]="newItemName()"
             (ngModelChange)="newItemName.set($event)"
             (keydown.enter)="confirmCreate()"
             (keydown.escape)="cancelCreate()"
             [placeholder]="createPlaceholder()"
+            i18n-ariaLabel="@@featureFileTree-nameAria"
+            ariaLabel="Name"
           />
-          <fpc-button variant="primary" size="sm" iconOnly (clicked)="confirmCreate()">
+          <fpc-button variant="primary" iconOnly (clicked)="confirmCreate()">
             <i class="bi bi-check" aria-hidden="true"></i>
           </fpc-button>
-          <fpc-button variant="dark" size="sm" iconOnly (clicked)="cancelCreate()">
+          <fpc-button variant="dark" iconOnly (clicked)="cancelCreate()">
             <i class="bi bi-x" aria-hidden="true"></i>
           </fpc-button>
         </div>

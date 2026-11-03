@@ -29,7 +29,7 @@ import {
   SharedContactPersonComponent,
   storeContactMessagePrefill,
 } from '@forepath/shared/frontend/feature-landingpage';
-import { FpcAlertComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+import { FpcAlertComponent, FpcButtonComponent, FpcFormTextDirective } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { firstValueFrom, map } from 'rxjs';
@@ -49,6 +49,7 @@ import { ForepathProjectEstimateLoadingPanelComponent } from './project-estimate
     ForepathProjectEstimateLoadingPanelComponent,
     FpcAlertComponent,
     FpcButtonComponent,
+    FpcFormTextDirective,
     NgClass,
     RouterModule,
   ],

@@ -1,5 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, forwardRef, input, model, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, forwardRef, inject, input, model, signal } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+
+import { FPC_CONTROL_SIZE } from '../control-size/control-size';
+import { FpcFormTextDirective } from '../truncate-title/form-text.directive';
+import { FpcTruncateTitleDirective } from '../truncate-title/truncate-title.directive';
 
 let nextSwitchId = 0;
 
@@ -8,6 +12,7 @@ let nextSwitchId = 0;
   selector: 'fpc-form-switch',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FpcTruncateTitleDirective, FpcFormTextDirective],
   host: { class: 'fpc-form-switch' },
   providers: [
     {
@@ -17,7 +22,7 @@ let nextSwitchId = 0;
     },
   ],
   template: `
-    <div class="form-check form-switch">
+    <div class="form-check form-switch" [class.fpc-form-check--sm]="compact">
       <input
         class="form-check-input"
         type="checkbox"
@@ -31,7 +36,7 @@ let nextSwitchId = 0;
         (blur)="onBlur()"
       />
       @if (label()) {
-        <label class="form-check-label" [for]="resolvedId()">{{ label() }}</label>
+        <label class="form-check-label" [for]="resolvedId()" fpcTruncateTitle>{{ label() }}</label>
       }
       <ng-content />
       @if (hint()) {
@@ -42,6 +47,8 @@ let nextSwitchId = 0;
   styleUrl: './form-switch.component.scss',
 })
 export class FpcFormSwitchComponent implements ControlValueAccessor {
+  protected readonly compact = inject(FPC_CONTROL_SIZE) === 'sm';
+
   readonly checked = model(false);
   readonly disabled = input(false);
   readonly label = input<string | null>(null);

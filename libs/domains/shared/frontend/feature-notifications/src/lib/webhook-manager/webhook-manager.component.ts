@@ -26,6 +26,7 @@ import {
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcFormSwitchComponent,
+  FpcFormTextDirective,
   FpcLabelComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
@@ -94,6 +95,7 @@ const emptyForm = (): WebhookFormState => ({
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormSwitchComponent,
+    FpcFormTextDirective,
     FpcLabelComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
@@ -106,6 +108,9 @@ const emptyForm = (): WebhookFormState => ({
   standalone: true,
 })
 export class WebhookManagerComponent implements OnInit {
+  /** Placeholder of the auth value while one is stored (bound, so it is a `$localize` message). */
+  protected readonly keepAuthValuePlaceholder = $localize`:@@featureNotifications-authValueKeepPlaceholder:Leave empty to keep current`;
+
   private readonly facade = inject(AdminWebhooksFacade);
   private readonly endpointsService = inject(WebhookEndpointsService);
   private readonly destroyRef = inject(DestroyRef);
@@ -122,8 +127,6 @@ export class WebhookManagerComponent implements OnInit {
   readonly clientFilterEnabled = this.environment.clientFilterEnabled;
 
   /** Modal footer Cancel (3.38 R14: [Cancel `dark`, Primary]); the shared identity unit exists in every console. */
-
-  readonly cancelLabel = $localize`:@@identityLogoutConfirm-cancel:Cancel`;
 
   readonly pageTitle = $localize`:@@featureNotifications-title:Webhooks`;
   readonly addWebhookTitle = $localize`:@@featureNotifications-addWebhookTitle:Add webhook`;

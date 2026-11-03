@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   forwardRef,
+  inject,
   input,
   model,
   output,
@@ -11,9 +12,11 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
+import { FPC_CONTROL_SIZE, FpcControlSize } from '../control-size/control-size';
+
 export type FpcFormControlType = 'input' | 'select' | 'textarea';
 
-export type FpcFormControlSize = 'sm' | 'md' | 'lg' | 'xl';
+export type FpcFormControlSize = FpcControlSize;
 
 /**
  * Single wrapper for the three Bootstrap form controls. Works both as a plain two-way bound
@@ -114,10 +117,13 @@ export type FpcFormControlSize = 'sm' | 'md' | 'lg' | 'xl';
   styleUrl: './form-control.component.scss',
 })
 export class FpcFormControlComponent implements ControlValueAccessor {
+  private readonly defaultSize = inject(FPC_CONTROL_SIZE);
+
   readonly controlType = input<FpcFormControlType>('input');
   readonly controlId = input<string | null>(null);
   readonly name = input<string | null>(null);
-  readonly size = input<FpcFormControlSize>('md');
+  /** Defaults to `FPC_CONTROL_SIZE` (`sm` behind an auth guard, `md` on public pages); set only to deviate on purpose. */
+  readonly size = input<FpcFormControlSize | undefined>(undefined);
   readonly inputType = input('text');
   readonly placeholder = input<string | null>(null);
   readonly autocomplete = input<string | null>(null);
@@ -161,7 +167,7 @@ export class FpcFormControlComponent implements ControlValueAccessor {
     }
 
     const classes = [this.controlType() === 'select' ? 'form-select' : 'form-control'];
-    const size = this.size();
+    const size = this.size() ?? this.defaultSize;
 
     if (size === 'sm' || size === 'lg') {
       classes.push(this.controlType() === 'select' ? `form-select-${size}` : `form-control-${size}`);

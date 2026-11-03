@@ -402,7 +402,6 @@
             <fpc-form-control
               controlType="select"
               controlId="auditEgressDecision"
-              size="sm"
               [ngModel]="egressDecision()"
               (ngModelChange)="onEgressDecisionChange($event)"
             >
@@ -514,7 +513,6 @@
   <fpc-form-field forId="auditClientSelect" i18n-label="@@featureAudit-clientLabel" label="Workspace">
     <framework-client-select
       inputId="auditClientSelect"
-      [size]="'sm'"
       [clients]="clients()"
       [selectedClientId]="filterState.draft().client ?? ''"
       [placeholder]="allWorkspacesPlaceholder"
@@ -525,7 +523,6 @@
     <fpc-form-control
       controlId="auditFromDate"
       inputType="date"
-      size="sm"
       [ngModel]="filterState.draft().from"
       (ngModelChange)="filterState.patch({ from: $event })"
     />
@@ -534,7 +531,6 @@
     <fpc-form-control
       controlId="auditToDate"
       inputType="date"
-      size="sm"
       [ngModel]="filterState.draft().to"
       (ngModelChange)="filterState.patch({ to: $event })"
     />
@@ -543,7 +539,6 @@
     <fpc-form-control
       controlType="select"
       controlId="auditGroupBy"
-      size="sm"
       [ngModel]="filterState.draft().groupBy"
       (ngModelChange)="filterState.patch({ groupBy: $event })"
     >

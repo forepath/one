@@ -109,7 +109,6 @@ export interface ConfigMapEntryView {
                 }
                 <fpc-button
                   variant="secondary"
-                  size="sm"
                   iconOnly
                   [disabled]="disabled() || entry.deleted"
                   (clicked)="toggle(entry.key)"
@@ -120,7 +119,6 @@ export interface ConfigMapEntryView {
                 </fpc-button>
                 <fpc-button
                   variant="danger"
-                  size="sm"
                   iconOnly
                   [disabled]="disabled() || entry.inherited || entry.deleted"
                   (clicked)="remove.emit(entry.key)"

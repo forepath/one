@@ -1,4 +1,4 @@
-<fpc-section-row [marketingHidden]="!showAuthMarketingPanel">
+<fpc-section-row class="fpc-density-comfortable" [marketingHidden]="!showAuthMarketingPanel">
   <fpc-section-column
     variant="marketing"
     class="d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
@@ -41,7 +41,7 @@
             <fpc-form-field
               forId="apiBaseHostname"
               i18n-label="@@featureLogin-controllerApiHost"
-              label="Controller API Host"
+              label="Controller API host"
             >
               <fpc-input-group>
                 <span fpcInputGroupPrefix class="input-group-text">
@@ -58,7 +58,7 @@
           }
 
           <!-- API Key Input -->
-          <fpc-form-field forId="apiKey" i18n-label="@@featureLogin-controllerApiKey" label="Controller API Key">
+          <fpc-form-field forId="apiKey" i18n-label="@@featureLogin-controllerApiKey" label="Controller API key">
             <fpc-input-group>
               <span fpcInputGroupPrefix class="input-group-text">
                 <i class="bi bi-key-fill" aria-hidden="true"></i>
