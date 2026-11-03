@@ -1,3 +1,5 @@
+import type { AgentContentWriteOperation } from './content-platform';
+
 /**
  * Recurring agent tasks. Tasks are stored and scheduled by the agent-controller (BullMQ) and managed
  * in the console (`/tasks/:clientId`) or by the agent itself through the platform `agenstra` MCP server
@@ -85,7 +87,7 @@ export type AgentTaskRunTrigger = 'schedule' | 'manual';
 /**
  * Runs are unattended with every permission allowed, so a task only runs once a workspace user approved what it
  * does: tasks created by users are approved implicitly; tasks the agent creates, or whose prompt, model, schedule or
- * allowed handoff agents it changes (or re-enables), wait for approval in the console.
+ * allowed handoff agents or content writes it changes (or re-enables), wait for approval in the console.
  */
 export type AgentTaskApprovalStatus = 'approved' | 'pending';
 
@@ -106,6 +108,11 @@ export interface AgentTaskSummary {
    * moved to another workspace since are ignored.
    */
   allowedHandoffAgentIds: string[];
+  /**
+   * Ticket / knowledge changes the runs may make without asking (`agenstra_content_*`; approved content; empty:
+   * none).
+   */
+  allowedContentWrites: AgentContentWriteOperation[];
   nextRunAt: string | null;
   lastRunAt: string | null;
   lastRunStatus: AgentTaskRunStatus | null;
@@ -148,6 +155,11 @@ export interface AgentTaskCreateInput {
    * a workspace user approved the task. Defaults to none.
    */
   allowedHandoffAgentIds?: string[];
+  /**
+   * Ticket / knowledge changes the runs may make (`ticket.create`, `page.update`, ...). Proposed by the agent, it only
+   * takes effect once a workspace user approved the task. Defaults to none.
+   */
+  allowedContentWrites?: AgentContentWriteOperation[];
 }
 
 export type AgentTaskUpdateInput = Partial<AgentTaskCreateInput>;

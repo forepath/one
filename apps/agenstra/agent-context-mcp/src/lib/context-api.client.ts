@@ -2,12 +2,15 @@ import {
   AGENSTRA_CONTEXT_API_HEADERS,
   AGENSTRA_CONTEXT_API_ROUTE,
   AGENSTRA_CONTEXT_MCP_ENV,
+  AGENSTRA_CONTENT_CHANGES_API_SEGMENT,
   AGENSTRA_HANDOFFS_API_SEGMENT,
   AGENSTRA_TASKS_API_SEGMENT,
   type AgentContextAccessResponse,
   type AgentContextGetResponse,
   type AgentContextListResponse,
   type AgentContextSearchResponse,
+  type AgentContentChangeRequest,
+  type AgentContentChangeResponse,
   type AgentHandoffAgentSummary,
   type AgentHandoffAgentsResponse,
   type AgentHandoffProfileInput,
@@ -29,7 +32,7 @@ export interface ContextApiConfig {
   agentToken: string;
 }
 
-/** Plain requests stay short; access requests long-poll on the manager (user decision). */
+/** Plain requests stay short; access requests and content changes long-poll on the manager (user decision). */
 const DEFAULT_TIMEOUT_MS = 30_000;
 const ACCESS_REQUEST_TIMEOUT_MS = 150_000;
 /** Missing peer profiles are generated on request (the manager answers within 150 s). */
@@ -115,6 +118,24 @@ export class ContextApiClient {
     return this.request(
       'GET',
       `tickets/${encodeURIComponent(ticket)}/access-requests/${encodeURIComponent(requestId)}`,
+      undefined,
+      ACCESS_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  requestChange(ticket: string, change: AgentContentChangeRequest): Promise<AgentContentChangeResponse> {
+    return this.request(
+      'POST',
+      `tickets/${encodeURIComponent(ticket)}/${AGENSTRA_CONTENT_CHANGES_API_SEGMENT}`,
+      change,
+      ACCESS_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  changeStatus(ticket: string, requestId: string): Promise<AgentContentChangeResponse> {
+    return this.request(
+      'GET',
+      `tickets/${encodeURIComponent(ticket)}/${AGENSTRA_CONTENT_CHANGES_API_SEGMENT}/${encodeURIComponent(requestId)}`,
       undefined,
       ACCESS_REQUEST_TIMEOUT_MS,
     );

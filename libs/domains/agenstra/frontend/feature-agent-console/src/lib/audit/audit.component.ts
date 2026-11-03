@@ -715,8 +715,10 @@ export class AuditComponent implements OnInit {
 
   ngOnInit(): void {
     const stored = this.loadFilters();
-    // Filters from the URL (shared links, reload) win over the stored ones.
-    const fromUrl = this.filterState.activeCount() > 0;
+    // Filters from the URL (shared links, reload) win over the stored ones. Compared with the empty initial values,
+    // not `activeCount()`: that measures against the default range, which the still-empty dates never match.
+    const seeded = this.filterState.applied();
+    const fromUrl = !!seeded.client || !!seeded.from || !!seeded.to || seeded.groupBy !== 'day';
 
     if (stored) {
       if (!fromUrl) {
@@ -751,9 +753,9 @@ export class AuditComponent implements OnInit {
       if (stored.activeTab && AUDIT_TABS.includes(stored.activeTab)) this.activeTab.set(stored.activeTab);
     }
 
-    if (!stored?.fromDate) this.fromDate.set(this.formatDateForInput(this.getDefaultFromDate()));
+    if (!this.fromDate()) this.fromDate.set(this.formatDateForInput(this.getDefaultFromDate()));
 
-    if (!stored?.toDate) this.toDate.set(this.formatDateForInput(this.getDefaultToDate()));
+    if (!this.toDate()) this.toDate.set(this.formatDateForInput(this.getDefaultToDate()));
 
     this.authFacade.loadUsers();
     this.clientsFacade.loadClients();

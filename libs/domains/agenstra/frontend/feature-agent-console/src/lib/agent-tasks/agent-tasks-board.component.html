@@ -296,6 +296,14 @@
                     >
                   }
                 }
+                @if (contentWriteLabels(task); as contentWrites) {
+                  @if (contentWrites.length > 0) {
+                    <strong class="d-block mt-1" i18n="@@featureAgentTasks-pendingApprovalContentWritesHint"
+                      >Once approved, this task can make these changes without asking:
+                      {{ contentWrites.join(', ') }}</strong
+                    >
+                  }
+                }
               </span>
               <fpc-button variant="warning" size="sm" [disabled]="saving()" (clicked)="onApprove(task)">
                 <i class="bi bi-check2-circle me-1" aria-hidden="true"></i
@@ -326,6 +334,16 @@
                     {{ handoffAgents.join(', ') }}
                   } @else {
                     <span class="text-body-secondary" i18n="@@featureAgentTasks-noHandoffAgents">None</span>
+                  }
+                }
+              </dd>
+              <dt class="col-sm-3">{{ allowedContentWritesLabel }}</dt>
+              <dd class="col-sm-9">
+                @if (contentWriteLabels(task); as contentWrites) {
+                  @if (contentWrites.length > 0) {
+                    {{ contentWrites.join(', ') }}
+                  } @else {
+                    <span class="text-body-secondary" i18n="@@featureAgentTasks-noContentWrites">None</span>
                   }
                 }
               </dd>
@@ -605,6 +623,21 @@
       <p class="small text-body-secondary mb-0" i18n="@@featureAgentTasks-noOtherAgents">
         This workspace has no other environments.
       </p>
+    }
+  </fpc-form-check-group>
+  <fpc-form-check-group
+    class="d-block mb-3"
+    legendId="agentTaskEditorContentWritesLegend"
+    [label]="allowedContentWritesLabel"
+    [hint]="allowedContentWritesHint"
+  >
+    @for (option of contentWriteOptions; track option.operation) {
+      <fpc-form-check
+        [checkId]="'agentTaskEditorContentWrite-' + option.operation"
+        [label]="option.label"
+        [checked]="isEditorContentWriteAllowed(option.operation)"
+        (checkedChange)="onToggleEditorContentWrite(option.operation, $event)"
+      />
     }
   </fpc-form-check-group>
   <fpc-form-switch

@@ -7,7 +7,10 @@ import type { AgentTaskEntity } from '../entities/agent-task.entity';
  * transcript; the task text is repeated on every run because the user may have changed it in between.
  */
 export function buildAgentTaskRunPrompt(
-  task: Pick<AgentTaskEntity, 'title' | 'prompt' | 'cronExpression' | 'timezone' | 'allowedHandoffAgentIds'>,
+  task: Pick<
+    AgentTaskEntity,
+    'title' | 'prompt' | 'cronExpression' | 'timezone' | 'allowedHandoffAgentIds' | 'allowedContentWrites'
+  >,
   trigger: AgentTaskRunTrigger,
   scheduledFor: Date,
 ): string {
@@ -22,6 +25,7 @@ export function buildAgentTaskRunPrompt(
     'Earlier runs of this task are part of this session. End with a concise summary of what you did and the results;',
     'it is posted to the main chat.',
     ...handoffNotice(task.allowedHandoffAgentIds),
+    ...contentWritesNotice(task.allowedContentWrites),
     '',
     '## Task',
     '',
@@ -40,6 +44,18 @@ function handoffNotice(agentIds: string[] | undefined): string[] {
     `A user approved that this task may hand off work (agenstra_handoff_create, one handoff at a time) to these agents ` +
       `of your workspace: ${agentIds.join(', ')}. Their response arrives in this session; end your turn after ` +
       'handing off and continue when it arrives.',
+  ];
+}
+
+/** Approved content changes (platform-controlled operation names); anything else is refused by the platform. */
+function contentWritesNotice(operations: string[] | undefined): string[] {
+  if (!operations?.length) {
+    return [];
+  }
+
+  return [
+    `A user approved that this task may make these ticket / knowledge changes with the agenstra_content_* tools: ` +
+      `${operations.join(', ')}. Changes of existing elements need access to them (context_get returns the revision).`,
   ];
 }
 

@@ -8,8 +8,10 @@ const AGENT_TOOL_CALL_TTL_MS = 2 * 60 * 60_000;
 /** Per agent: one busy worker can never evict another agent's state. */
 const AGENT_TOOL_CALLS_MAX_PER_AGENT = 500;
 const AGENT_RELATIONS_MAX_PER_AGENT = 5_000;
-/** Only platform context tools authorize anything. */
-const TRACKED_TOOL_PREFIX = 'agenstra_context_';
+/** Only platform context / content tools authorize anything. */
+const TRACKED_TOOL_PREFIXES = ['agenstra_context_', 'agenstra_content_'];
+/** Unknown answer messages are looked up in their session at most this often (claims poll every 100 ms). */
+const MESSAGE_LOOKUP_INTERVAL_MS = 1_000;
 /** Subagents of subagents: bounded walk up the chain. */
 const MAX_CHAIN_DEPTH = 8;
 
@@ -18,11 +20,15 @@ const CONTEXT_TICKET_PATTERN = /ctx-[A-Za-z0-9_-]{16,}/g;
 interface ObservedToolCall {
   agentId: string;
   messageId: string;
+  sessionId?: string;
   tool: string;
   input: Record<string, unknown>;
   observedAt: number;
   claimed: boolean;
 }
+
+/** Messages of one OpenCode session (`info` of the session messages API), oldest first. */
+export type AgentSessionMessageLookup = (sessionId: string) => Promise<Array<Record<string, unknown>>>;
 
 interface ObservedMessage {
   sessionId: string;
@@ -60,6 +66,10 @@ export class AgentToolCallsService {
   private readonly ticketRoots = new Map<string, Map<string, string>>();
   /** Per agent: child sessionId → assistant message id holding the `task` tool call that started it. */
   private readonly subagentOrigins = new Map<string, Map<string, string>>();
+  /** Per agent: session messages lookup of its worker (registered by the runtime when it sends a prompt). */
+  private readonly messageLookups = new Map<string, AgentSessionMessageLookup>();
+  /** Per agent: sessionId → time of the last message lookup. */
+  private readonly lookupTimes = new Map<string, Map<string, number>>();
 
   /** Feed any raw OpenCode event of the agent's worker. */
   observe(agentId: string, event: unknown): void {
@@ -108,6 +118,15 @@ export class AgentToolCallsService {
   }
 
   /**
+   * Session messages of the agent's worker. The worker event stream is opened when a turn starts, so the creation of
+   * a turn's first answer message (with its parent) can precede it; such messages are looked up when a claim needs
+   * them (the same source the stream reports from).
+   */
+  registerMessageLookup(agentId: string, lookup: AgentSessionMessageLookup): void {
+    this.messageLookups.set(agentId, lookup);
+  }
+
+  /**
    * Claim one running call of `tool` that answers the platform's prompt carrying `ticket` (directly or in a subagent
    * started from it) and whose input satisfies `matches`. Waits briefly: the MCP request and the events race. Each
    * tool call authorizes exactly one request.
@@ -144,7 +163,53 @@ export class AgentToolCallsService {
         return false;
       }
 
+      await this.lookupUnknownMessages(agentId, tool);
       await new Promise((resolve) => setTimeout(resolve, AGENT_TOOL_CALL_CLAIM_POLL_MS));
+    }
+  }
+
+  /** Sessions with unclaimed calls of `tool` whose message is unknown: record their messages from the worker. */
+  private async lookupUnknownMessages(agentId: string, tool: string): Promise<void> {
+    const lookup = this.messageLookups.get(agentId);
+
+    if (!lookup) {
+      return;
+    }
+
+    const known = this.messages.get(agentId);
+    const sessions = new Set<string>();
+
+    for (const call of this.calls.values()) {
+      if (
+        !call.claimed &&
+        call.agentId === agentId &&
+        call.tool === tool &&
+        call.sessionId &&
+        !known?.has(call.messageId)
+      ) {
+        sessions.add(call.sessionId);
+      }
+    }
+
+    for (const sessionId of sessions) {
+      const last = this.lookupTimes.get(agentId)?.get(sessionId) ?? 0;
+
+      if (Date.now() - last < MESSAGE_LOOKUP_INTERVAL_MS) {
+        continue;
+      }
+
+      this.put(this.lookupTimes, agentId, sessionId, Date.now());
+
+      try {
+        for (const info of await lookup(sessionId)) {
+          // Only the call's own session: a lookup never moves messages into another session.
+          if (asString(info['sessionID']) === sessionId) {
+            this.observeMessage(agentId, info);
+          }
+        }
+      } catch {
+        // Worker unreachable: the claim keeps waiting for the stream.
+      }
     }
   }
 
@@ -200,12 +265,25 @@ export class AgentToolCallsService {
     const input = asRecord(state?.['input']);
     const key = `${agentId}|${callId}`;
 
-    if (!tool.startsWith(TRACKED_TOOL_PREFIX) || state?.['status'] !== 'running' || !input || this.calls.has(key)) {
+    if (
+      !TRACKED_TOOL_PREFIXES.some((prefix) => tool.startsWith(prefix)) ||
+      state?.['status'] !== 'running' ||
+      !input ||
+      this.calls.has(key)
+    ) {
       return;
     }
 
     this.purgeCalls(agentId);
-    this.calls.set(key, { agentId, messageId, tool, input, observedAt: Date.now(), claimed: false });
+    this.calls.set(key, {
+      agentId,
+      messageId,
+      sessionId: asString(part['sessionID']),
+      tool,
+      input,
+      observedAt: Date.now(),
+      claimed: false,
+    });
   }
 
   private isUserMessage(agentId: string, messageId: string): boolean {

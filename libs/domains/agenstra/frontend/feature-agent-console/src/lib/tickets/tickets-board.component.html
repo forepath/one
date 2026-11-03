@@ -1239,6 +1239,30 @@
                               </ul>
                             }
                           </div>
+                          <div class="mb-3">
+                            <span
+                              class="fw-semibold d-block mb-1"
+                              i18n="@@featureTicketsBoard-automationContentWritesHeading"
+                            >
+                              Ticket changes
+                            </span>
+                            <p
+                              class="text-body-secondary small mb-2"
+                              i18n="@@featureTicketsBoard-automationContentWritesHint"
+                            >
+                              Autonomous runs may make these changes without asking, only to tickets of this ticket's
+                              tree (updates only to its subtasks). Leave empty to keep runs from changing tickets.
+                            </p>
+                            @for (option of automationContentWriteOptions; track option.operation) {
+                              <fpc-form-check
+                                class="mb-1"
+                                [checkId]="'ticketAutomationContentWrite-' + option.operation"
+                                [label]="option.label"
+                                [checked]="isAutomationContentWriteAllowed(option.operation)"
+                                (checkedChange)="onAutomationContentWriteToggle(option.operation, $event)"
+                              />
+                            }
+                          </div>
                           <fpc-form-field
                             forId="ticketAutomationBranch"
                             i18n-label="@@featureTicketsBoard-automationDefaultBranch"

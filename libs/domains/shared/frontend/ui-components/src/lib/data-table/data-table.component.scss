@@ -370,7 +370,6 @@
 
 .fpc-data-table__table > * > tr > .fpc-data-table__cell--state:not(.fpc-data-table__cell--state-icon) {
   width: auto;
-  max-width: 12rem;
   text-align: start;
 }
 
@@ -486,8 +485,13 @@
   flex: 0 0 auto;
 }
 
-:host(.fpc-data-table--nested) :is(.fpc-data-table__scroller, .fpc-data-table__head-scroller) {
-  overflow: visible;
+// Auto height (the surrounding page scrolls vertically), but a table wider than its column scrolls sideways like any
+// table (head mirrored, overflow chevrons) instead of running out of its column (ticket activity, user 2026-11-03).
+// No vertical scrollbar, so no gutter either.
+:host(.fpc-data-table--nested) .fpc-data-table__scroller {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: auto;
 }
 
 // Responsive priorities (D2), opt-in since 2026-10-30 (`columnPriorities`): priority-3 columns only in wide tables,

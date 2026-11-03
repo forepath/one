@@ -14,6 +14,7 @@ const TASK: AgentTaskSummary = {
   model: 'openai/gpt-5',
   enabled: true,
   allowedHandoffAgentIds: [],
+  allowedContentWrites: [],
   nextRunAt: '2026-10-22T09:00:00.000Z',
   lastRunAt: null,
   lastRunStatus: null,

@@ -18,6 +18,7 @@ export function agentTaskEntityToDto(task: AgentTaskEntity): AgentTaskResponseDt
     model: task.model,
     enabled: task.enabled,
     allowedHandoffAgentIds: [...(task.allowedHandoffAgentIds ?? [])],
+    allowedContentWrites: [...(task.allowedContentWrites ?? [])],
     nextRunAt: iso(task.nextRunAt),
     lastRunAt: iso(task.lastRunAt),
     lastRunStatus: task.lastRunStatus ?? null,

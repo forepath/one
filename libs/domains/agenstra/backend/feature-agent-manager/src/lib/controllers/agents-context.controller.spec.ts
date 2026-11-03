@@ -2,6 +2,7 @@ import { IS_PUBLIC_KEY } from '@forepath/identity/backend';
 import { BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 
 import { AgentContextApiService } from '../services/agent-context-api.service';
+import { AgentContextChangesService } from '../services/agent-context-changes.service';
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
 import { AgentToolCallsService } from '../services/agent-tool-calls.service';
@@ -14,6 +15,7 @@ describe('AgentsContextController', () => {
   let contextMcp: { verifyAgentToken: jest.Mock };
   let tickets: AgentContextTicketsService;
   let api: { list: jest.Mock; search: jest.Mock; get: jest.Mock; requestAccess: jest.Mock; accessStatus: jest.Mock };
+  let changes: { parse: jest.Mock; requestChange: jest.Mock; changeStatus: jest.Mock };
   let controller: AgentsContextController;
   let ticket: string;
 
@@ -29,10 +31,17 @@ describe('AgentsContextController', () => {
       requestAccess: jest.fn().mockResolvedValue({ decision: 'granted' }),
       accessStatus: jest.fn().mockResolvedValue({ decision: 'pending' }),
     };
+    // Parsing is the real one: the controller derives the tool to match from the parsed operation.
+    changes = {
+      parse: jest.fn((body: unknown) => AgentContextChangesService.prototype.parse.call({}, body)),
+      requestChange: jest.fn().mockResolvedValue({ decision: 'applied' }),
+      changeStatus: jest.fn().mockResolvedValue({ decision: 'pending' }),
+    };
     controller = new AgentsContextController(
       contextMcp as unknown as AgentContextMcpService,
       tickets,
       api as unknown as AgentContextApiService,
+      changes as unknown as AgentContextChangesService,
     );
     ticket = tickets.mint({
       agentId,
@@ -87,6 +96,34 @@ describe('AgentsContextController', () => {
     expect(api.accessStatus).toHaveBeenCalledWith(expect.objectContaining({ ticket }), 'ctx_1');
   });
 
+  it('passes content changes and change status requests through', async () => {
+    const body = { operation: 'ticket.comment', ref: 'ticket:abcd1234', body: 'Done.' };
+
+    await controller.requestChange(ticket, body, agentId, auth);
+    await controller.changeStatus(ticket, 'ctx_chg_1', agentId, auth);
+
+    expect(changes.requestChange).toHaveBeenCalledWith(
+      expect.objectContaining({ ticket }),
+      expect.objectContaining({ request: expect.objectContaining({ operation: 'ticket.comment', body: 'Done.' }) }),
+    );
+    expect(changes.changeStatus).toHaveBeenCalledWith(expect.objectContaining({ ticket }), 'ctx_chg_1');
+  });
+
+  it('rejects content changes of unknown tickets and malformed changes', async () => {
+    const body = { operation: 'ticket.comment', ref: 'ticket:abcd1234', body: 'Done.' };
+
+    await expect(controller.requestChange('ctx-unknown', body, agentId, auth)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    await expect(
+      controller.requestChange(ticket, { operation: 'ticket.drop', ref: 'ticket:abcd1234' }, agentId, auth),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(controller.requestChange(ticket, body, agentId, 'Bearer wrong')).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+    expect(changes.requestChange).not.toHaveBeenCalled();
+  });
+
   it('rejects malformed access request bodies', async () => {
     await expect(controller.requestAccess(ticket, { refs: 'ticket:abcd' }, agentId, auth)).rejects.toBeInstanceOf(
       BadRequestException,
@@ -137,6 +174,7 @@ describe('AgentsContextController', () => {
         contextMcp as unknown as AgentContextMcpService,
         tickets,
         api as unknown as AgentContextApiService,
+        changes as unknown as AgentContextChangesService,
         toolCalls,
       );
       autoTicket = tickets.mint({
@@ -170,6 +208,30 @@ describe('AgentsContextController', () => {
         guarded.requestAccess(autoTicket, { refs: ['ticket:abcd1234'] }, agentId, auth),
       ).rejects.toBeInstanceOf(NotFoundException);
       expect(api.requestAccess).toHaveBeenCalledTimes(1);
+    });
+
+    it('only applies content changes issued as matching tool calls answering the platform prompt', async () => {
+      const body = { operation: 'ticket.comment', ref: 'ticket:abcd1234', body: 'Done.' };
+
+      await expect(guarded.requestChange(autoTicket, body, agentId, auth)).rejects.toBeInstanceOf(NotFoundException);
+
+      platformTurn();
+      toolCalls.observe(
+        agentId,
+        toolCall('c2', 'agenstra_content_ticket_comment', {
+          ticket: autoTicket,
+          ref: 'ticket:abcd1234',
+          body: 'Done.',
+        }),
+      );
+
+      // Another comment than the tool call carries: refused; the matching one: served once.
+      await expect(
+        guarded.requestChange(autoTicket, { ...body, body: 'Something else.' }, agentId, auth),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      await expect(guarded.requestChange(autoTicket, body, agentId, auth)).resolves.toEqual({ decision: 'applied' });
+      await expect(guarded.requestChange(autoTicket, body, agentId, auth)).rejects.toBeInstanceOf(NotFoundException);
+      expect(changes.requestChange).toHaveBeenCalledTimes(1);
     });
 
     it('keeps ask tickets unaffected', async () => {

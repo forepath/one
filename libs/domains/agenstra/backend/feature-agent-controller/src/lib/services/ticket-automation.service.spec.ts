@@ -252,6 +252,31 @@ describe('TicketAutomationService', () => {
         TicketActionType.AUTOMATION_APPROVAL_INVALIDATED,
       ]);
     });
+
+    it('treats allowed content writes as approval-relevant settings (canonical order, no-op when unchanged)', async () => {
+      automationRepo.findOne.mockResolvedValue(
+        baseAutomation({ requiresApproval: true, approvedAt: new Date('2024-06-01'), approvedByUserId: 'user-1' }),
+      );
+
+      const result = await service.patchAutomation(
+        tid,
+        { allowedContentWrites: ['ticket.comment', 'ticket.update', 'ticket.comment'] },
+        undefined,
+      );
+      const types = activityRepo.save.mock.calls.map((c) => (c[0] as { actionType: string }).actionType);
+
+      expect(result.allowedContentWrites).toEqual(['ticket.update', 'ticket.comment']);
+      expect(result.approvedAt).toBeNull();
+      expect(types).toEqual([
+        TicketActionType.AUTOMATION_SETTINGS_UPDATED,
+        TicketActionType.AUTOMATION_APPROVAL_INVALIDATED,
+      ]);
+
+      automationRepo.save.mockClear();
+      automationRepo.findOne.mockResolvedValue(baseAutomation({ allowedContentWrites: ['ticket.update'] }));
+      await service.patchAutomation(tid, { allowedContentWrites: ['ticket.update'] }, undefined);
+      expect(automationRepo.save).not.toHaveBeenCalled();
+    });
   });
 
   describe('cancelRun', () => {

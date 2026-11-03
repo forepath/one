@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-03T12:59:07.728Z",
+  "generatedAt": "2026-11-03T16:42:25.912Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -6232,6 +6232,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-content-changes.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-content-changes.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "type": "service",
       "attrs": {
@@ -11830,6 +11839,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-changes.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-changes.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -24818,6 +24836,16 @@
         "title": "Tools",
         "docPath": "docs/agenstra/ai-agents/context-mcp.md",
         "sectionAnchor": "tools",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-content-changes",
+      "type": "concept",
+      "attrs": {
+        "title": "Content changes",
+        "docPath": "docs/agenstra/ai-agents/context-mcp.md",
+        "sectionAnchor": "content-changes",
         "domain": "agenstra"
       }
     },
@@ -40100,6 +40128,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-content-changes.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "type": "contains"
     },
@@ -43191,6 +43224,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-changes.service.ts",
       "type": "contains"
     },
     {
@@ -49166,6 +49204,11 @@
     {
       "from": "file:docs/agenstra/ai-agents/context-mcp.md",
       "to": "concept:agenstra-tools",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/ai-agents/context-mcp.md",
+      "to": "concept:agenstra-content-changes",
       "type": "contains"
     },
     {
@@ -64674,6 +64717,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-content-changes.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-content-changes.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
       "type": "injects"
@@ -64681,6 +64734,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-content-changes.service.ts",
       "type": "injects"
     },
     {
@@ -69000,6 +69058,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-changes.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tool-calls.service.ts",
       "type": "injects"
     },
@@ -69076,6 +69139,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-changes.service.ts",
       "type": "injects"
     },
     {
@@ -69351,6 +69419,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-active-turns.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-changes.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-changes.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
       "type": "injects"
     },
     {
@@ -70266,6 +70344,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-content-changes.service.ts",
       "type": "provides"
     },
     {
@@ -72216,6 +72299,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-changes.service.ts",
       "type": "provides"
     },
     {
@@ -74786,6 +74874,16 @@
     {
       "from": "concept:agenstra-tools",
       "to": "api:HTTP:POST:/agent-context/handoffs",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-content-changes",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-content-changes",
+      "to": "api:HTTP:POST:/tickets",
       "type": "documents"
     },
     {
@@ -84025,6 +84123,11 @@
     },
     {
       "from": "concept:agenstra-tools",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-content-changes",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

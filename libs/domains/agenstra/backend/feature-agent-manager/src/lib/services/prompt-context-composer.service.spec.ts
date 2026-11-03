@@ -96,6 +96,9 @@ describe('PromptContextComposerService', () => {
     const contextTicket: AgentContextTicketRecord = {
       ticket: 'ctx-test',
       scopeAnchors: [],
+      writeGrants: [],
+      createdRefs: [],
+      changeCount: 0,
       agentId: 'agent-1',
       sessionKey: 'chat-1',
       ephemeral: false,

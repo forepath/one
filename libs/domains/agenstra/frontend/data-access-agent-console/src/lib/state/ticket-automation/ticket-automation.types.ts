@@ -1,3 +1,5 @@
+import type { AgentContentWriteOperation } from '@forepath/agenstra/shared/util-opencode-config';
+
 /** Mirrors backend `TicketVerifierProfileJson` (JSON over HTTP). */
 export interface TicketVerifierProfileJson {
   commands: Array<{ cmd: string; cwd?: string }>;
@@ -12,6 +14,8 @@ export interface UpdateTicketAutomationDto {
   includeWorkspaceContext?: boolean;
   contextEnvironmentIds?: string[];
   autoEnrichmentEnabled?: boolean;
+  /** Ticket changes autonomous runs may make (tickets of this ticket's tree only; empty: none). */
+  allowedContentWrites?: AgentContentWriteOperation[];
   verifierProfile?: TicketVerifierProfileJson;
   requiresApproval?: boolean;
   defaultBranchOverride?: string | null;
@@ -38,6 +42,7 @@ export interface TicketAutomationResponseDto {
   includeWorkspaceContext: boolean;
   contextEnvironmentIds: string[];
   autoEnrichmentEnabled: boolean;
+  allowedContentWrites: AgentContentWriteOperation[];
   verifierProfile: TicketVerifierProfileJson | null;
   requiresApproval: boolean;
   approvedAt: string | null;

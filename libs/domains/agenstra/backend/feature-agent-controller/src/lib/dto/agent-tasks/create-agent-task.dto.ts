@@ -1,8 +1,13 @@
-import { AGENT_TASK_LIMITS } from '@forepath/agenstra/shared/util-opencode-config';
+import {
+  AGENT_CONTENT_WRITE_OPERATIONS,
+  AGENT_TASK_LIMITS,
+  type AgentContentWriteOperation,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -52,4 +57,11 @@ export class CreateAgentTaskDto {
   @ArrayMaxSize(AGENT_TASK_LIMITS.allowedHandoffAgentsMax)
   @IsUUID('all', { each: true })
   allowedHandoffAgentIds?: string[];
+
+  /** Ticket / knowledge changes the runs may make without asking (empty: none). */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(AGENT_CONTENT_WRITE_OPERATIONS.length)
+  @IsIn(AGENT_CONTENT_WRITE_OPERATIONS, { each: true })
+  allowedContentWrites?: AgentContentWriteOperation[];
 }

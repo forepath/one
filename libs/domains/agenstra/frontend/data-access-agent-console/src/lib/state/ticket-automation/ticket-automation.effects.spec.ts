@@ -51,6 +51,7 @@ describe('TicketAutomationEffects', () => {
     includeWorkspaceContext: true,
     contextEnvironmentIds: [],
     autoEnrichmentEnabled: true,
+    allowedContentWrites: [],
     verifierProfile: null,
     requiresApproval: true,
     approvedAt: null,

@@ -1,5 +1,6 @@
 import {
   AGENT_TASK_REQUEST_EVENT,
+  type AgentContentWriteOperation,
   type AgentTaskControllerResponse,
   type AgentTaskCreateInput,
   type AgentTaskUpdateInput,
@@ -118,6 +119,12 @@ export class AgentTaskRequestHandlerService {
     if (Array.isArray(input['allowedHandoffAgentIds'])) {
       fields.allowedHandoffAgentIds = input['allowedHandoffAgentIds'].filter(
         (id): id is string => typeof id === 'string',
+      );
+    }
+
+    if (Array.isArray(input['allowedContentWrites'])) {
+      fields.allowedContentWrites = input['allowedContentWrites'].filter(
+        (operation): operation is AgentContentWriteOperation => typeof operation === 'string',
       );
     }
 

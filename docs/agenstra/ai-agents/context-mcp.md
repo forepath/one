@@ -38,12 +38,60 @@ sequenceDiagram
 | `agenstra_context_request_access` | Ask for refs that are not granted yet (returns `granted`, `denied`, `pending`) |
 
 Metadata is always searchable; content of elements that were not part of the prompt requires an access request.
+`agenstra_context_get` also returns the element's full `sha` and its `revision` (version), which content changes pass
+back.
 
 The same server exposes `agenstra_tasks_*` tools so the agent can manage its own recurring tasks (`/api/agent-context/tasks`,
 same agent token, forwarded to the controller as `agentTaskRequest`). See [Agent tasks](../features/agent-tasks.md).
 
 `agenstra_handoff_*` tools hand tasks over to other agents of the same workspace (`/api/agent-context/handoffs`,
 forwarded as `agentHandoffRequest`). See [Agent handoffs](../features/agent-handoffs.md).
+
+## Content changes
+
+`agenstra_content_*` tools create, change, comment on and delete tickets and knowledge pages. They take the same
+context ticket and are routed `POST /api/agent-context/tickets/:ticket/changes` (manager) → `agentContextRequest`
+with `op: 'change'` (controller).
+
+| Tool                              | Change                                                        |
+| --------------------------------- | ------------------------------------------------------------- |
+| `agenstra_content_ticket_create`  | New ticket, optionally below a readable ticket (`parentRef`)  |
+| `agenstra_content_ticket_update`  | Title, content, priority and / or status (`ref`, `revision`)  |
+| `agenstra_content_ticket_comment` | Comment on a readable ticket                                  |
+| `agenstra_content_ticket_delete`  | Delete a readable ticket without subtasks (`revision`)        |
+| `agenstra_content_page_create`    | New knowledge page or folder, optionally in a readable folder |
+| `agenstra_content_page_update`    | Title and / or content of a readable page (`revision`)        |
+| `agenstra_content_page_delete`    | Delete a readable page or empty folder (`revision`)           |
+| `agenstra_content_change_status`  | Keep waiting on a `pending` change (`requestId`)              |
+
+The tools deliberately do not share the `agenstra_context_*` prefix: plan sessions allow (and auto-answer) that prefix
+as read-only explore tools, so content tools stay denied there.
+
+- **Same gates as reading.** Only elements the ticket may read (granted, or created by a change of the same ticket) are
+  changed or receive children; refs are resolved to full SHAs first, like access requests.
+- **No blind overwrites.** Updates and deletes carry the `revision` from `agenstra_context_get`; the controller refuses
+  the change (`failed`) when the element changed since. Pre-granted prompt content is read again by SHA for that.
+- **Recorded as the agent.** Ticket / page activity uses the AI actor with `agentId` and `via` (`chat`, `task`,
+  `automation`) in the payload; board updates, notifications, search and embeddings run as for user changes, and a
+  change of approval-relevant ticket fields invalidates an automation approval like a user edit.
+
+| Session                                             | Content changes                                                                           |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Visible chat                                        | Prompt per change (subtype `context_change`): _Allow once_, _Allow for this chat_, _Deny_ |
+| Recurring task runs (`-task-*`, unattended)         | Only the operations a user approved for the task (`allowedContentWrites`, default none)   |
+| Ticket automation (`-ticket-auto-*`, unattended)    | Only the operations allowed for the ticket's automation (default none), in its tree       |
+| Chat plan explore / refine (`-plan-*`, read-only)   | Never                                                                                     |
+| Prompt enhancement, ticket body generation (hidden) | Never                                                                                     |
+
+- _Allow for this chat_ covers further changes of the **same operation on the same element** (creates: below the same
+  parent) in that chat only.
+- Ticket automation may only be allowed `ticket.create` (subtasks within its tree), `ticket.update` (tickets of its
+  tree except the automated ticket itself, whose change would void the run's approval) and `ticket.comment`; never
+  deletes or knowledge changes. The opt-in is an approval-relevant automation setting.
+- For unattended runs the controller is the authority: it re-reads the task (approved, operation allowed, a run
+  working) or the automation (exactly one working run of the agent, operation allowed, target in the tree) when it
+  applies the change. The manager only forwards the session's source, never agent input.
+- At most 50 changes per context ticket (turn).
 
 ## Access decisions
 

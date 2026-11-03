@@ -126,6 +126,55 @@ export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined):
         label: $localize`:@@featureChat-toolDisplayContextRequestAccess:Request context access`,
         icon: 'key',
       };
+    // Platform content tools (`agenstra_content_*`): ticket / knowledge changes approved per change or run.
+    case 'agenstra_content_ticket_create':
+    case 'content_ticket_create':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContentTicketCreate:Create ticket`,
+        icon: 'plus-square',
+      };
+    case 'agenstra_content_ticket_update':
+    case 'content_ticket_update':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContentTicketUpdate:Update ticket`,
+        icon: 'pencil-square',
+      };
+    case 'agenstra_content_ticket_comment':
+    case 'content_ticket_comment':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContentTicketComment:Comment on ticket`,
+        icon: 'chat-left-text',
+      };
+    case 'agenstra_content_ticket_delete':
+    case 'content_ticket_delete':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContentTicketDelete:Delete ticket`,
+        icon: 'trash',
+      };
+    case 'agenstra_content_page_create':
+    case 'content_page_create':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContentPageCreate:Create knowledge page`,
+        icon: 'file-earmark-plus',
+      };
+    case 'agenstra_content_page_update':
+    case 'content_page_update':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContentPageUpdate:Update knowledge page`,
+        icon: 'file-earmark-text',
+      };
+    case 'agenstra_content_page_delete':
+    case 'content_page_delete':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContentPageDelete:Delete knowledge page`,
+        icon: 'file-earmark-x',
+      };
+    case 'agenstra_content_change_status':
+    case 'content_change_status':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContentChangeStatus:Content change status`,
+        icon: 'hourglass-split',
+      };
     // Platform task tools (`agenstra_tasks_*`): the agent manages its own recurring tasks.
     case 'agenstra_tasks_list':
     case 'tasks_list':

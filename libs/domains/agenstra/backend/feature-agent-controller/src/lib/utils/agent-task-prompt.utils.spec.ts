@@ -7,6 +7,7 @@ describe('agent task prompt utils', () => {
     cronExpression: '0 9 * * *',
     timezone: 'UTC',
     allowedHandoffAgentIds: [] as string[],
+    allowedContentWrites: [] as Array<'ticket.create' | 'ticket.comment'>,
   };
   const at = new Date('2026-10-22T09:00:00.000Z');
 
@@ -17,6 +18,18 @@ describe('agent task prompt utils', () => {
     expect(prompt).toContain('scheduled for 2026-10-22T09:00:00.000Z (cron "0 9 * * *", UTC)');
     expect(prompt).toContain('do not ask');
     expect(prompt.trimEnd().endsWith('## Task\n\nSummarize open PRs.')).toBe(true);
+  });
+
+  it('names the approved content changes only when there are any', () => {
+    expect(buildAgentTaskRunPrompt(task, 'schedule', at)).not.toContain('agenstra_content_');
+
+    const prompt = buildAgentTaskRunPrompt(
+      { ...task, allowedContentWrites: ['ticket.create', 'ticket.comment'] },
+      'schedule',
+      at,
+    );
+
+    expect(prompt).toContain('agenstra_content_* tools: ticket.create, ticket.comment');
   });
 
   it('names the approved handoff agents only when there are any', () => {
@@ -46,6 +59,7 @@ describe('agent task prompt utils', () => {
         cronExpression: '0 9 * * *',
         timezone: 'UTC',
         allowedHandoffAgentIds: [],
+        allowedContentWrites: [],
       },
       'manual',
       new Date('2026-10-21T09:00:00.000Z'),

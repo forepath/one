@@ -70,6 +70,26 @@ describe('context tools', () => {
     expect(result.isError).toBeUndefined();
   });
 
+  it('names the full ref and revision content changes need', async () => {
+    client.get
+      .mockResolvedValueOnce({ ref: 'item:1', kind: 'ticket', title: 'Fix login', sha: 'abcd1234', content: 'BODY' })
+      .mockResolvedValueOnce({
+        ref: 'ticket:abcd1234',
+        kind: 'ticket',
+        title: 'Fix login',
+        sha: 'abcd1234',
+        revision: '2026-11-03T10:00:00.000Z',
+        content: 'BODY',
+      });
+
+    expect((await call('context_get', { ticket: 'ctx-1', ref: 'item:1' })).content[0].text).toBe(
+      '# Fix login (item:1)\nref: ticket:abcd1234\n\nBODY',
+    );
+    expect((await call('context_get', { ticket: 'ctx-1', ref: 'ticket:abcd1234' })).content[0].text).toBe(
+      '# Fix login (ticket:abcd1234)\nrevision: 2026-11-03T10:00:00.000Z\n\nBODY',
+    );
+  });
+
   it('requires a ref for context_get', async () => {
     expect((await call('context_get', { ticket: 'ctx-1' })).isError).toBe(true);
   });

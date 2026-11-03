@@ -53,6 +53,14 @@ import {
   tryAgenstraSearchIds,
 } from '../search/agenstra-search-list.util';
 import { derivePatchActionType, type FieldChange } from '../utils/ticket-activity-payload.utils';
+import {
+  agentContentAttribution,
+  assertAgentContentWriterWorkspace,
+  type ContentPrincipal,
+  isAgentContentWriter,
+  principalRequest,
+  principalUserId,
+} from '../utils/agent-content-writer.utils';
 import { assertValidPreferredModel } from '../utils/preferred-model.utils';
 import {
   buildDescendantCheckboxTaskTotalsByTicketId,
@@ -182,7 +190,11 @@ export class TicketsService {
     return authMethod === 'api-key' || (authMethod === undefined && !!process.env.STATIC_API_KEY);
   }
 
-  private resolveActor(req?: RequestWithUser): { actorType: TicketActorType; actorUserId?: string } {
+  private resolveActor(req?: ContentPrincipal): { actorType: TicketActorType; actorUserId?: string } {
+    if (isAgentContentWriter(req)) {
+      return { actorType: TicketActorType.AI };
+    }
+
     const info = getUserFromRequest(req || ({} as RequestWithUser));
 
     if (info.isApiKeyAuth || this.isApiKeyMode()) {
@@ -204,7 +216,13 @@ export class TicketsService {
     });
   }
 
-  private async assertClientAccess(clientId: string, req?: RequestWithUser): Promise<void> {
+  private async assertClientAccess(clientId: string, req?: ContentPrincipal): Promise<void> {
+    if (isAgentContentWriter(req)) {
+      assertAgentContentWriterWorkspace(req, clientId);
+
+      return;
+    }
+
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
   }
 
@@ -218,7 +236,7 @@ export class TicketsService {
     return ticket;
   }
 
-  private async assertTicketReadable(id: string, req?: RequestWithUser): Promise<TicketEntity> {
+  private async assertTicketReadable(id: string, req?: ContentPrincipal): Promise<TicketEntity> {
     const ticket = await this.loadTicketOrThrow(id);
 
     await this.assertClientAccess(ticket.clientId, req);
@@ -456,7 +474,7 @@ export class TicketsService {
 
   private async saveNewTicketWithCreatedActivity(
     em: EntityManager,
-    actor: { actorType: TicketActorType; actorUserId?: string },
+    actor: { actorType: TicketActorType; actorUserId?: string; attribution?: Record<string, string> },
     fields: {
       clientId: string;
       parentId: string | null;
@@ -486,6 +504,7 @@ export class TicketsService {
           title: inserted.title,
           clientId: inserted.clientId,
           parentId: inserted.parentId,
+          ...actor.attribution,
         },
       }),
     );
@@ -493,9 +512,8 @@ export class TicketsService {
     return inserted;
   }
 
-  async create(dto: CreateTicketDto, req?: RequestWithUser): Promise<TicketResponseDto> {
-    const actor = this.resolveActor(req);
-    const info = getUserFromRequest(req || ({} as RequestWithUser));
+  async create(dto: CreateTicketDto, req?: ContentPrincipal): Promise<TicketResponseDto> {
+    const actor = { ...this.resolveActor(req), attribution: agentContentAttribution(req) };
     let clientId = dto.clientId;
     const parentId = dto.parentId ?? null;
     if (parentId) {
@@ -513,7 +531,7 @@ export class TicketsService {
 
     const priority = dto.priority ?? TicketPriority.MEDIUM;
     const status = dto.status ?? TicketStatus.DRAFT;
-    const createdByUserId = info.userId ?? null;
+    const createdByUserId = principalUserId(req);
     const ticket = await this.ticketRepo.manager.transaction((em) =>
       this.saveNewTicketWithCreatedActivity(em, actor, {
         clientId: clientId!,
@@ -549,7 +567,7 @@ export class TicketsService {
     return ticketDto;
   }
 
-  async update(id: string, dto: UpdateTicketDto, req?: RequestWithUser): Promise<TicketResponseDto> {
+  async update(id: string, dto: UpdateTicketDto, req?: ContentPrincipal): Promise<TicketResponseDto> {
     const actor = this.resolveActor(req);
     const ticket = await this.assertTicketReadable(id, req);
     const changes: Record<string, FieldChange> = {};
@@ -655,7 +673,7 @@ export class TicketsService {
           actorType: actor.actorType,
           actorUserId: actor.actorUserId ?? null,
           actionType,
-          payload: { fields: changes },
+          payload: { fields: changes, ...agentContentAttribution(req) },
         }),
       );
     });
@@ -663,7 +681,7 @@ export class TicketsService {
     const changedKeys = Object.keys(changes);
 
     if (changedKeys.some((k) => TICKET_APPROVAL_INVALIDATION_FIELDS.has(k))) {
-      await this.ticketAutomationService.invalidateAfterTicketFieldChanges(id, changedKeys, req);
+      await this.ticketAutomationService.invalidateAfterTicketFieldChanges(id, changedKeys, principalRequest(req));
     }
 
     const refreshed = await this.loadTicketOrThrow(id);
@@ -792,7 +810,7 @@ export class TicketsService {
     return false;
   }
 
-  async remove(id: string, req?: RequestWithUser, releaseExternalSyncMarker = false): Promise<void> {
+  async remove(id: string, req?: ContentPrincipal, releaseExternalSyncMarker = false): Promise<void> {
     const actor = this.resolveActor(req);
     const ticket = await this.assertTicketReadable(id, req);
     const childCount = await this.ticketRepo.count({ where: { parentId: id } });
@@ -814,7 +832,7 @@ export class TicketsService {
           actorType: actor.actorType,
           actorUserId: actor.actorUserId ?? null,
           actionType: TicketActionType.DELETED,
-          payload: { title: ticket.title, clientId: ticket.clientId },
+          payload: { title: ticket.title, clientId: ticket.clientId, ...agentContentAttribution(req) },
         }),
       );
       await this.externalImportSyncMarkerService.applyTicketDeleteInTransaction(em, id, releaseExternalSyncMarker);
@@ -982,12 +1000,11 @@ export class TicketsService {
   async addComment(
     ticketId: string,
     dto: CreateTicketCommentDto,
-    req?: RequestWithUser,
+    req?: ContentPrincipal,
   ): Promise<TicketCommentResponseDto> {
     const actor = this.resolveActor(req);
 
     await this.assertTicketReadable(ticketId, req);
-    const info = getUserFromRequest(req || ({} as RequestWithUser));
     const { comment: saved, activityRow } = await this.ticketRepo.manager.transaction(async (em) => {
       const cRepo = em.getRepository(TicketCommentEntity);
       const aRepo = em.getRepository(TicketActivityEntity);
@@ -995,7 +1012,7 @@ export class TicketsService {
         cRepo.create({
           ticketId,
           body: dto.body.trim(),
-          authorUserId: info.userId ?? null,
+          authorUserId: principalUserId(req),
         }),
       );
       const activityRow = await aRepo.save(
@@ -1004,7 +1021,7 @@ export class TicketsService {
           actorType: actor.actorType,
           actorUserId: actor.actorUserId ?? null,
           actionType: TicketActionType.COMMENT_ADDED,
-          payload: { commentId: comment.id },
+          payload: { commentId: comment.id, ...agentContentAttribution(req) },
         }),
       );
 

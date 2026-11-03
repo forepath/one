@@ -42,3 +42,12 @@ export const AGENT_CONTEXT_MCP_STATUS_CACHE_TTL_MS = 30_000;
 /** Max refs per access request / items per search. */
 export const AGENT_CONTEXT_MAX_REFS_PER_REQUEST = 20;
 export const AGENT_CONTEXT_MAX_SEARCH_RESULTS = 50;
+
+/** Prefix of content change request ids (a `ctx_` id: answered on the permission reply endpoint like access requests). */
+export const AGENT_CONTEXT_CHANGE_REQUEST_ID_PREFIX = 'ctx_chg_';
+
+/** `question` event subtype of content change prompts (permission reply contract, like context access). */
+export const AGENT_CONTEXT_CHANGE_QUESTION_SUBTYPE = 'context_change';
+
+/** Characters of new content / comments shown in a change prompt. */
+export const AGENT_CONTEXT_CHANGE_PREVIEW_LENGTH = 600;

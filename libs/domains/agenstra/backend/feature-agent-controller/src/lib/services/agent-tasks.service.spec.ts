@@ -58,6 +58,7 @@ describe('AgentTasksService', () => {
       model: 'openai/gpt-5',
       enabled: true,
       allowedHandoffAgentIds: [],
+      allowedContentWrites: [],
       nextRunAt: new Date('2026-10-22T09:00:00.000Z'),
       lastRunAt: null,
       lastRunStatus: null,
@@ -266,6 +267,8 @@ describe('AgentTasksService', () => {
         // Proposed handoff targets only count once a user approved them.
         { allowedHandoffAgentIds: [peerId] },
         { allowedHandoffAgentIds: [] },
+        // Proposed content changes as well.
+        { allowedContentWrites: ['ticket.comment' as const] },
       ]) {
         taskRepo.findOne.mockResolvedValueOnce(existingTask());
 
@@ -321,8 +324,15 @@ describe('AgentTasksService', () => {
           model: 'openai/gpt-5',
           cronExpression: '0 9 * * *',
           allowedHandoffAgentIds: [peerId],
+          allowedContentWrites: ['ticket.create', 'ticket.comment'],
         }),
-      ).resolves.toEqual(expect.objectContaining({ approvalStatus: 'approved', allowedHandoffAgentIds: [peerId] }));
+      ).resolves.toEqual(
+        expect.objectContaining({
+          approvalStatus: 'approved',
+          allowedHandoffAgentIds: [peerId],
+          allowedContentWrites: ['ticket.create', 'ticket.comment'],
+        }),
+      );
     });
 
     it('never approves content the user did not submit (partial updates, enable switch)', async () => {
@@ -331,8 +341,16 @@ describe('AgentTasksService', () => {
         { title: 'Renamed' },
         { prompt: 'Only the prompt' },
         { allowedHandoffAgentIds: [peerId] },
-        // The edit form without the handoff agents is not the complete content.
+        { allowedContentWrites: ['page.update' as const] },
+        // The edit form without the handoff agents / content writes is not the complete content.
         { title: 'Report', prompt: 'Reviewed prompt', model: 'openai/gpt-5', cronExpression: '0 9 * * *' },
+        {
+          title: 'Report',
+          prompt: 'Reviewed prompt',
+          model: 'openai/gpt-5',
+          cronExpression: '0 9 * * *',
+          allowedHandoffAgentIds: [peerId],
+        },
       ]) {
         taskRepo.findOne.mockResolvedValueOnce(existingTask({ approvedAt: null, enabled: false, nextRunAt: null }));
 
@@ -340,6 +358,23 @@ describe('AgentTasksService', () => {
           expect.objectContaining({ approvalStatus: 'pending' }),
         );
       }
+    });
+
+    it('accepts only known content change operations (deduplicated, canonical order)', async () => {
+      await expect(
+        service.create(
+          clientId,
+          agentId,
+          { ...input, allowedContentWrites: ['page.update', 'ticket.create', 'page.update'] },
+          {} as never,
+        ),
+      ).resolves.toEqual(expect.objectContaining({ allowedContentWrites: ['ticket.create', 'page.update'] }));
+      await expect(
+        service.createForAgent(clientId, agentId, {
+          ...input,
+          allowedContentWrites: ['ticket.archive' as unknown as 'ticket.create'],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('accepts only other agents of the workspace as handoff targets', async () => {

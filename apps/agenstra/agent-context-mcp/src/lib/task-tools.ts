@@ -1,6 +1,8 @@
 import {
   AGENSTRA_TASKS_MCP_TOOL_NAMES,
+  AGENT_CONTENT_WRITE_OPERATIONS,
   AGENT_TASK_LIMITS,
+  normalizeAgentContentWriteOperations,
   type AgentTaskCreateInput,
   type AgentTaskUpdateInput,
 } from '@forepath/agenstra/shared/util-opencode-config';
@@ -43,6 +45,13 @@ const TASK_FIELD_PROPERTIES = {
       'Agents of your workspace (ids from handoff_agents) the runs may hand off work to with handoff_create. ' +
       'Only takes effect after a user approved the task; empty means the runs cannot hand off.',
   },
+  allowedContentWrites: {
+    type: 'array',
+    items: { type: 'string', enum: [...AGENT_CONTENT_WRITE_OPERATIONS] },
+    description:
+      'Ticket / knowledge page changes the runs may make with the agenstra_content_* tools (e.g. "ticket.create", ' +
+      '"ticket.comment"). Only takes effect after a user approved the task; empty means the runs cannot change any.',
+  },
 };
 
 export const TASK_TOOL_DEFINITIONS: ContextToolDefinition[] = [
@@ -80,7 +89,8 @@ export const TASK_TOOL_DEFINITIONS: ContextToolDefinition[] = [
     name: AGENSTRA_TASKS_MCP_TOOL_NAMES.update,
     description:
       'Change one of your tasks (only the given fields), e.g. pause it with enabled=false. Changing prompt, model, ' +
-      'schedule or the allowed handoff agents, or enabling it again, needs a new approval by a user before it runs.',
+      'schedule, the allowed handoff agents or content writes, or enabling it again, needs a new approval by a user ' +
+      'before it runs.',
     inputSchema: {
       type: 'object',
       properties: { taskId: TASK_ID_PROPERTY, ...TASK_FIELD_PROPERTIES },
@@ -140,6 +150,10 @@ function taskFields(args: Record<string, unknown>): AgentTaskUpdateInput {
 
   if (Array.isArray(args['allowedHandoffAgentIds'])) {
     fields.allowedHandoffAgentIds = args['allowedHandoffAgentIds'].filter((id): id is string => typeof id === 'string');
+  }
+
+  if (Array.isArray(args['allowedContentWrites'])) {
+    fields.allowedContentWrites = normalizeAgentContentWriteOperations(args['allowedContentWrites']);
   }
 
   return fields;

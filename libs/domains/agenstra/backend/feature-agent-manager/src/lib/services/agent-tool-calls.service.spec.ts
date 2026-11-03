@@ -145,4 +145,53 @@ describe('AgentToolCallsService', () => {
 
     await expect(calls.claim(agentId, ticket, 'agenstra_context_get', isGet, 0)).resolves.toBe(true);
   });
+
+  describe('answer messages created before the worker stream connected', () => {
+    /** The prompt root is known (runtime lookup), the first answer message's creation event was missed. */
+    const missedAnswer = (answerParent = 'msg-root') => {
+      calls.registerPromptRoot(agentId, 'ses', 'msg-root', `Context ticket: ${ticket}`);
+      calls.observe(agentId, tool('msg-answer', 'c1', 'agenstra_context_get', getInput));
+
+      return jest.fn().mockResolvedValue([
+        { id: 'msg-root', sessionID: 'ses', role: 'user' },
+        { id: 'msg-answer', sessionID: 'ses', role: 'assistant', parentID: answerParent },
+      ]);
+    };
+
+    it('looks the message up in its session when a claim needs it', async () => {
+      const lookup = missedAnswer();
+
+      await expect(calls.claim(agentId, ticket, 'agenstra_context_get', isGet, 0)).resolves.toBe(false);
+
+      calls.registerMessageLookup(agentId, lookup);
+
+      await expect(calls.claim(agentId, ticket, 'agenstra_context_get', isGet, 500)).resolves.toBe(true);
+      expect(lookup).toHaveBeenCalledWith('ses');
+    });
+
+    it('still rejects messages answering another prompt', async () => {
+      calls.registerMessageLookup(agentId, missedAnswer('msg-injected'));
+
+      await expect(calls.claim(agentId, ticket, 'agenstra_context_get', isGet, 300)).resolves.toBe(false);
+    });
+
+    it('ignores looked-up messages of other sessions and throttles lookups', async () => {
+      const lookup = jest
+        .fn()
+        .mockResolvedValue([{ id: 'msg-answer', sessionID: 'ses-other', role: 'assistant', parentID: 'msg-root' }]);
+
+      missedAnswer();
+      calls.registerMessageLookup(agentId, lookup);
+
+      await expect(calls.claim(agentId, ticket, 'agenstra_context_get', isGet, 500)).resolves.toBe(false);
+      expect(lookup).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps waiting when the worker cannot be reached', async () => {
+      missedAnswer();
+      calls.registerMessageLookup(agentId, jest.fn().mockRejectedValue(new Error('unreachable')));
+
+      await expect(calls.claim(agentId, ticket, 'agenstra_context_get', isGet, 200)).resolves.toBe(false);
+    });
+  });
 });

@@ -4,6 +4,7 @@ import { AgentsGateway } from '../gateways/agents.gateway';
 import { OpenCodeRuntimeService } from '../providers/opencode/opencode-runtime.service';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentContextApiService } from '../services/agent-context-api.service';
+import { AgentContextChangesService } from '../services/agent-context-changes.service';
 
 import { AgentsPermissionsController } from './agents-permissions.controller';
 
@@ -13,6 +14,7 @@ describe('AgentsPermissionsController', () => {
   let runtime: { replyPermission: jest.Mock; replyQuestion: jest.Mock };
   let gateway: { publishInteractionAnswered: jest.Mock };
   let contextApi: { decideAccess: jest.Mock };
+  let contextChanges: { decide: jest.Mock };
   let controller: AgentsPermissionsController;
 
   beforeEach(() => {
@@ -23,11 +25,13 @@ describe('AgentsPermissionsController', () => {
     };
     gateway = { publishInteractionAnswered: jest.fn() };
     contextApi = { decideAccess: jest.fn().mockReturnValue(['ctx_1']) };
+    contextChanges = { decide: jest.fn().mockResolvedValue(['ctx_chg_1']) };
     controller = new AgentsPermissionsController(
       agentsRepository as unknown as AgentsRepository,
       runtime as unknown as OpenCodeRuntimeService,
       gateway as unknown as AgentsGateway,
       contextApi as unknown as AgentContextApiService,
+      contextChanges as unknown as AgentContextChangesService,
     );
   });
 
@@ -45,6 +49,19 @@ describe('AgentsPermissionsController', () => {
     expect(contextApi.decideAccess).toHaveBeenCalledWith(agentId, 'ctx_1', 'once');
     expect(runtime.replyPermission).not.toHaveBeenCalled();
     expect(gateway.publishInteractionAnswered).toHaveBeenCalledWith(agentId, ['ctx_1'], 'Context access ctx_1: once');
+  });
+
+  it('decides content change prompts in the change service (which marks them answered)', async () => {
+    await controller.replyPermission(agentId, 'ctx_chg_1', { reply: 'always' });
+    await controller.replyQuestion(agentId, 'ctx_chg_2', { reply: 'reject' });
+
+    expect(contextChanges.decide.mock.calls).toEqual([
+      [agentId, 'ctx_chg_1', 'always'],
+      [agentId, 'ctx_chg_2', 'reject'],
+    ]);
+    expect(contextApi.decideAccess).not.toHaveBeenCalled();
+    expect(runtime.replyPermission).not.toHaveBeenCalled();
+    expect(gateway.publishInteractionAnswered).not.toHaveBeenCalled();
   });
 
   it('works for context prompts even when the worker container is stopped', async () => {

@@ -10,8 +10,9 @@ import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
-import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
+import { TicketActorType, TicketPriority, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { createAgentContentWriter } from '../utils/agent-content-writer.utils';
 
 import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 import { ClientsService } from './clients.service';
@@ -312,6 +313,29 @@ describe('TicketsService', () => {
       expect(result.shas.long).toHaveLength(40);
       expect(result.shas.long.startsWith(result.shas.short)).toBe(true);
       expect(activityRepo.save).toHaveBeenCalledTimes(1);
+    });
+
+    it('records agent writes as AI actor with the agent, scoped to its workspace only', async () => {
+      const { ensureClientAccess } = jest.requireMock('@forepath/identity/backend');
+      const writer = createAgentContentWriter(clientId, 'agent-1', 'chat');
+
+      (ensureClientAccess as jest.Mock).mockClear();
+      activityRepo.create.mockClear();
+
+      const result = await service.create({ clientId, title: 'From agent' }, writer);
+
+      expect(result.title).toBe('From agent');
+      expect(ensureClientAccess).not.toHaveBeenCalled();
+      expect(activityRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorType: TicketActorType.AI,
+          actorUserId: null,
+          payload: expect.objectContaining({ agentId: 'agent-1', via: 'chat' }),
+        }),
+      );
+      await expect(
+        service.create({ clientId: '00000000-0000-4000-8000-0000000000ff', title: 'Elsewhere' }, writer),
+      ).rejects.toThrow('Not found in this workspace');
     });
   });
 
