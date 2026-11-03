@@ -33,10 +33,7 @@ export const closeTicketDetail = createAction('[Tickets] Close Detail');
 
 export const createTicket = createAction('[Tickets] Create', props<{ dto: CreateTicketDto }>());
 
-export const createTicketSuccess = createAction(
-  '[Tickets] Create Success',
-  props<{ ticket: TicketResponseDto; createdChildTickets?: TicketResponseDto[] }>(),
-);
+export const createTicketSuccess = createAction('[Tickets] Create Success', props<{ ticket: TicketResponseDto }>());
 
 export const createTicketFailure = createAction('[Tickets] Create Failure', props<{ error: string }>());
 

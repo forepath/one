@@ -2,9 +2,6 @@ export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
 export type TicketStatus = 'draft' | 'todo' | 'in_progress' | 'prototype' | 'done' | 'closed';
 export type TicketActorType = 'human' | 'ai' | 'system';
 
-/** Request-only on create; not stored on the ticket. */
-export type TicketCreationTemplate = 'empty' | 'specification';
-
 /** Markdown checkboxes in ticket `content`: `[ ]` open, `[x]` / `[X]` done. */
 export interface TicketTasksDto {
   open: number;
@@ -79,13 +76,7 @@ export interface CreateTicketDto {
   content?: string;
   priority?: TicketPriority;
   status?: TicketStatus;
-  creationTemplate?: TicketCreationTemplate;
 }
-
-/** POST /tickets response; includes subtasks when template was `specification`. */
-export type CreateTicketResultDto = TicketResponseDto & {
-  createdChildTickets?: TicketResponseDto[];
-};
 
 export interface UpdateTicketDto {
   clientId?: string;

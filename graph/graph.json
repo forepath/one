@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-02T21:52:10.092Z",
+  "generatedAt": "2026-11-03T12:59:07.728Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -4760,15 +4760,6 @@
       "type": "diagram",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-http.mmd",
-        "languageOrKind": "mmd",
-        "projectName": "agenstra-backend-feature-agent-controller"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-ticket-specification-bundle.mmd",
-      "type": "diagram",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-ticket-specification-bundle.mmd",
         "languageOrKind": "mmd",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -15698,7 +15689,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "tickets/ticketUpsert",
-        "summary": "Full ticket row after create/update (aligns with OpenAPI TicketResponseDto).\nA single REST create with `creationTemplate: specification` emits one upsert per ticket (parent plus four subtasks).\n`POST /tickets/{id}/migrate` emits one `ticketRemoved` per id on the source workspace, then one `ticketUpsert` per migrated row on the target workspace.\n",
+        "summary": "Full ticket row after create/update (aligns with OpenAPI TicketResponseDto).\n`POST /tickets/{id}/migrate` emits one `ticketRemoved` per id on the source workspace, then one `ticketUpsert` per migrated row on the target workspace.\n",
         "specKind": "asyncapi"
       }
     },
@@ -39290,11 +39281,6 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-http.mmd",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-ticket-specification-bundle.mmd",
       "type": "contains"
     },
     {

@@ -46,11 +46,6 @@ export class TicketResponseDto {
   children?: TicketResponseDto[];
 }
 
-/** Response for `POST /tickets`; includes optional subtasks when `creationTemplate` was `specification`. */
-export class CreateTicketResponseDto extends TicketResponseDto {
-  createdChildTickets?: TicketResponseDto[];
-}
-
 export class PrototypePromptResponseDto {
   prompt!: string;
 }

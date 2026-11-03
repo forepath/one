@@ -1355,9 +1355,6 @@ paths:
           description: Forbidden
     post:
       summary: Create ticket
-      description: |
-        Optional `creationTemplate` is request-only and not stored. Value `specification` creates four spec-driven subtasks
-        under the new root ticket in one transaction; invalid with `parentId` (400).
       operationId: createTicket
       requestBody:
         required: true
@@ -1371,7 +1368,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateTicketResponseDto'
+                $ref: '#/components/schemas/TicketResponseDto'
   /tickets/{id}:
     parameters:
       - in: path
@@ -9031,22 +9028,6 @@ components:
           $ref: '#/components/schemas/TicketPriority'
         status:
           $ref: '#/components/schemas/TicketStatus'
-        creationTemplate:
-          type: string
-          enum: [empty, specification]
-          description: |
-            Not persisted. `specification` only allowed when creating a root ticket (omit `parentId`);
-            creates Proposal, Specifications, Technical design, and Implementation plan subtasks.
-    CreateTicketResponseDto:
-      allOf:
-        - $ref: '#/components/schemas/TicketResponseDto'
-        - type: object
-          properties:
-            createdChildTickets:
-              type: array
-              description: Present when `creationTemplate` was `specification` (four subtasks).
-              items:
-                $ref: '#/components/schemas/TicketResponseDto'
     MigrateTicketDto:
       type: object
       required: [targetClientId]

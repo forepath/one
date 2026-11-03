@@ -231,15 +231,9 @@ export const ticketsReducer = createReducer(
     activity: [],
   })),
   on(createTicket, (state) => ({ ...state, saving: true, error: null })),
-  on(createTicketSuccess, (state, { ticket, createdChildTickets = [] }) => {
-    let list = mergeTicketInList(state.list, ticket);
-    let detail = mergeCreatedChildIntoDetail(state.detail, ticket);
-
-    for (const c of createdChildTickets) {
-      list = mergeTicketInList(list, c);
-      detail = mergeCreatedChildIntoDetail(detail, c);
-    }
-
+  on(createTicketSuccess, (state, { ticket }) => {
+    const list = mergeTicketInList(state.list, ticket);
+    const detail = mergeCreatedChildIntoDetail(state.detail, ticket);
     const enriched = enrichTicketsWithSubtaskCounts(list, detail);
 
     return { ...state, saving: false, list: enriched.list, detail: enriched.detail };
