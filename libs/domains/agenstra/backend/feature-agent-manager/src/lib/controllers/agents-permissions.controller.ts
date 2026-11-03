@@ -17,6 +17,7 @@ import { OpenCodeRuntimeService } from '../providers/opencode/opencode-runtime.s
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentContextAccessService } from '../services/agent-context-access.service';
 import { AgentContextApiService } from '../services/agent-context-api.service';
+import { AgentContextChangesService } from '../services/agent-context-changes.service';
 
 /**
  * HTTP endpoints for OpenCode permission and question replies.
@@ -29,6 +30,7 @@ export class AgentsPermissionsController {
     private readonly openCodeRuntime: OpenCodeRuntimeService,
     private readonly agentsGateway: AgentsGateway,
     @Optional() private readonly contextApi?: AgentContextApiService,
+    @Optional() private readonly contextChanges?: AgentContextChangesService,
   ) {}
 
   private async requireRunningAgent(agentId: string): Promise<{ containerId: string }> {
@@ -52,7 +54,7 @@ export class AgentsPermissionsController {
     @Param('permissionId') permissionId: string,
     @Body() dto: ReplyPermissionDto,
   ): Promise<void> {
-    // Context access prompts (agenstra MCP) are decided by the manager, not by OpenCode.
+    // Context access and content change prompts (agenstra MCP) are decided by the manager, not by OpenCode.
     if (this.contextApi && AgentContextAccessService.isAccessRequestId(permissionId)) {
       if (!(await this.agentsRepository.findById(agentId))) {
         throw new NotFoundException(`Agent '${agentId}' was not found`);
@@ -63,6 +65,17 @@ export class AgentsPermissionsController {
       }
 
       try {
+        // Content changes (`ctx_chg_`) are applied when approved; the change service marks the prompt answered.
+        if (AgentContextChangesService.isChangeRequestId(permissionId)) {
+          if (!this.contextChanges) {
+            throw new NotFoundException('Unknown or expired content change request');
+          }
+
+          await this.contextChanges.decide(agentId, permissionId, dto.reply);
+
+          return;
+        }
+
         const answeredIds = this.contextApi.decideAccess(agentId, permissionId, dto.reply);
 
         this.agentsGateway.publishInteractionAnswered(

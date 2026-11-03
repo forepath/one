@@ -1,3 +1,7 @@
+import {
+  TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS,
+  type AgentContentWriteOperation,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -66,6 +70,13 @@ export class UpdateTicketAutomationDto {
   @IsOptional()
   @IsBoolean()
   autoEnrichmentEnabled?: boolean;
+
+  /** Ticket changes autonomous runs may make (tickets of this ticket's tree only; empty: none). */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS.length)
+  @IsIn(TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS, { each: true })
+  allowedContentWrites?: AgentContentWriteOperation[];
 
   @IsOptional()
   @ValidateNested()

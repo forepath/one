@@ -169,37 +169,35 @@
           </thead>
         </table>
       </div>
-      @if (!nested()) {
-        <!-- Overflow indicators: small chevrons at the head's ends while the body scrolls sideways and has more columns
-             that way (shown / hidden by the component via frame classes, no change detection per scroll); a click pages
-             the body like the step strip's chevrons. A pointer convenience only: aria-hidden and out of the tab order
-             (keyboard focus moving into a clipped cell already scrolls it into view), so the ARIA table keeps only rows
-             as children; the tooltip names the action. -->
-        <button
-          type="button"
-          class="fpc-data-table__overflow fpc-data-table__overflow--start"
-          tabindex="-1"
-          aria-hidden="true"
-          [title]="text().previousColumns"
-          (mousedown)="$event.preventDefault()"
-          (click)="pageColumns(-1)"
-          data-testid="fpc-data-table-overflow-start"
-        >
-          <i class="bi bi-chevron-left" aria-hidden="true"></i>
-        </button>
-        <button
-          type="button"
-          class="fpc-data-table__overflow fpc-data-table__overflow--end"
-          tabindex="-1"
-          aria-hidden="true"
-          [title]="text().nextColumns"
-          (mousedown)="$event.preventDefault()"
-          (click)="pageColumns(1)"
-          data-testid="fpc-data-table-overflow-end"
-        >
-          <i class="bi bi-chevron-right" aria-hidden="true"></i>
-        </button>
-      }
+      <!-- Overflow indicators: small chevrons at the head's ends while the body scrolls sideways and has more columns
+           that way (shown / hidden by the component via frame classes, no change detection per scroll); a click pages
+           the body like the step strip's chevrons. A pointer convenience only: aria-hidden and out of the tab order
+           (keyboard focus moving into a clipped cell already scrolls it into view), so the ARIA table keeps only rows
+           as children; the tooltip names the action. -->
+      <button
+        type="button"
+        class="fpc-data-table__overflow fpc-data-table__overflow--start"
+        tabindex="-1"
+        aria-hidden="true"
+        [title]="text().previousColumns"
+        (mousedown)="$event.preventDefault()"
+        (click)="pageColumns(-1)"
+        data-testid="fpc-data-table-overflow-start"
+      >
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+      </button>
+      <button
+        type="button"
+        class="fpc-data-table__overflow fpc-data-table__overflow--end"
+        tabindex="-1"
+        aria-hidden="true"
+        [title]="text().nextColumns"
+        (mousedown)="$event.preventDefault()"
+        (click)="pageColumns(1)"
+        data-testid="fpc-data-table-overflow-end"
+      >
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+      </button>
     </div>
     <!-- Toolbar strip (search lead, chips, Filters drawer + Apply, Clear all, actions: Views, columns, Refresh, the
          consumer's toolbar slot) under the column heads, full visible width, outside the scrolling body; a page's own

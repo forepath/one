@@ -55,6 +55,8 @@ export interface AgentContextGatewayBridge {
     prompt: string,
     refs: ContentRef[],
   ): void;
+  /** Show a permission-style "allow this content change" prompt in the agent's chat. */
+  publishContextChangeQuestion(record: AgentContextTicketRecord, requestId: string, prompt: string): void;
   /** Mark the prompt answered (persisted status frame). */
   publishInteractionAnswered(agentId: string, questionIds: string[], message?: string): void;
 }
@@ -137,7 +139,14 @@ export class AgentContextApiService {
         throw new NotFoundException(`No context item ${rawRef} for this ticket`);
       }
 
-      return { ref: `item:${item.index}`, kind: item.kind, title: item.title, content: item.content };
+      return {
+        ref: `item:${item.index}`,
+        kind: item.kind,
+        title: item.title,
+        ...(item.sha ? { sha: item.sha } : {}),
+        ...(item.revision ? { revision: item.revision } : {}),
+        content: item.content,
+      };
     }
 
     if (!this.tickets.isGranted(record, ref.kind, ref.sha)) {
@@ -148,8 +157,10 @@ export class AgentContextApiService {
 
     const cached = this.tickets.findItemBySha(record, ref.kind, ref.sha);
 
-    if (cached) {
-      return { ref: `${cached.kind}:${cached.sha}`, kind: cached.kind, title: cached.title, content: cached.content };
+    // Pre-granted prompt content carries no revision (and changed elements are stale): read it again, so a following
+    // content change refers to the version the agent actually saw.
+    if (cached?.fresh) {
+      return this.toGetResponse(cached);
     }
 
     const content = await this.fetchGrantedContent(record, ref);
@@ -158,14 +169,26 @@ export class AgentContextApiService {
       throw new NotFoundException(`${ref.kind}:${ref.sha} was not found in this workspace`);
     }
 
-    const stored = this.tickets.rememberItem(record, {
-      kind: content.kind,
-      sha: content.sha.toLowerCase(),
-      title: content.title,
-      content: content.content,
-    });
+    return this.toGetResponse(
+      this.tickets.rememberItem(record, {
+        kind: content.kind,
+        sha: content.sha.toLowerCase(),
+        title: content.title,
+        ...(content.revision ? { revision: content.revision } : {}),
+        content: content.content,
+      }),
+    );
+  }
 
-    return { ref: `${stored.kind}:${stored.sha}`, kind: stored.kind, title: stored.title, content: stored.content };
+  private toGetResponse(item: AgentContextStoredItem): AgentContextGetResponse {
+    return {
+      ref: `${item.kind}:${item.sha}`,
+      kind: item.kind,
+      title: item.title,
+      ...(item.sha ? { sha: item.sha } : {}),
+      ...(item.revision ? { revision: item.revision } : {}),
+      content: item.content,
+    };
   }
 
   async requestAccess(
@@ -385,8 +408,33 @@ export class AgentContextApiService {
     };
   }
 
+  /** Raw controller answer (errors included) — content changes map refusals to decisions themselves. */
+  requestController(
+    record: AgentContextTicketRecord,
+    request: AgentContextControllerRequest,
+  ): Promise<AgentContextControllerResponse> {
+    if (!this.bridge) {
+      throw new ForbiddenException('Context lookup is unavailable');
+    }
+
+    return this.bridge.requestControllerContext(record, request);
+  }
+
+  /** Prompt for a content change (see {@link AgentContextChangesService}). */
+  publishChangeQuestion(record: AgentContextTicketRecord, requestId: string, prompt: string): void {
+    if (!this.bridge) {
+      throw new ForbiddenException('Content changes are unavailable');
+    }
+
+    this.bridge.publishContextChangeQuestion(record, requestId, prompt);
+  }
+
+  publishInteractionAnswered(agentId: string, questionIds: string[], message?: string): void {
+    this.bridge?.publishInteractionAnswered(agentId, questionIds, message);
+  }
+
   /** Auto-approval tickets belong to one hidden session (`suffix:<resumeSessionSuffix>`), which must be all that runs. */
-  private isExclusiveAutoSession(record: AgentContextTicketRecord): boolean {
+  isExclusiveAutoSession(record: AgentContextTicketRecord): boolean {
     if (!this.activeTurns) {
       return true;
     }
@@ -405,7 +453,7 @@ export class AgentContextApiService {
    * Resolve refs to the exact elements (full SHA + title) of the workspace. The controller resolves a short SHA only
    * when it is unique; unknown or ambiguous refs are dropped.
    */
-  private async resolveRefs(
+  async resolveRefs(
     record: AgentContextTicketRecord,
     refs: ContentRef[],
   ): Promise<Array<ContentRef & { title?: string }>> {
@@ -486,15 +534,11 @@ export class AgentContextApiService {
     };
   }
 
-  private async callController(
+  async callController(
     record: AgentContextTicketRecord,
     request: AgentContextControllerRequest,
   ): Promise<Extract<AgentContextControllerResponse, { ok: true }>> {
-    if (!this.bridge) {
-      throw new ForbiddenException('Context lookup is unavailable');
-    }
-
-    const response = await this.bridge.requestControllerContext(record, request);
+    const response = await this.requestController(record, request);
 
     if (response.ok === false) {
       throw new NotFoundException(response.error || 'Context lookup failed');

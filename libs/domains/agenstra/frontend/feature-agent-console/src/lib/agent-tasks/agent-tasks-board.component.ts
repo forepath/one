@@ -28,6 +28,10 @@ import {
   type ClientResponseDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
+  AGENT_CONTENT_WRITE_OPERATIONS,
+  type AgentContentWriteOperation,
+} from '@forepath/agenstra/shared/util-opencode-config';
+import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
@@ -85,6 +89,7 @@ import {
   AG_DL_EDIT,
   AG_DL_RUN_NOW,
 } from '../shared/data-list';
+import { agentContentWriteLabel } from '../shared/agent-content-write-labels';
 import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
 import { WorkspaceSwitchTableComponent } from '../shared/workspace-switch-table.component';
 
@@ -161,6 +166,8 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   readonly describeSchedule = describeAgentTaskSchedule;
   readonly isRunActive = isAgentTaskRunActive;
   readonly allowedHandoffAgentsLabel = $localize`:@@featureAgentTasks-allowedHandoffAgentsLabel:Allowed handoff environments`;
+  readonly allowedContentWritesLabel = $localize`:@@featureAgentTasks-allowedContentWritesLabel:Allowed ticket / knowledge changes`;
+  readonly allowedContentWritesHint = $localize`:@@featureAgentTasks-allowedContentWritesHint:Runs may make these changes without asking. Existing elements are only changed when the run may read them. Leave empty to keep runs from changing tickets and knowledge pages.`;
   readonly allowedHandoffAgentsHint = $localize`:@@featureAgentTasks-allowedHandoffAgentsHint:Runs may hand off work to these environments of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.`;
   readonly openHandoffChatLabel = $localize`:@@featureAgentTasks-openHandoffChat:Open handoff chat`;
   readonly tasksLabel = $localize`:@@featureAgentTasks-tasksTable:Tasks`;
@@ -415,6 +422,12 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   readonly editorModel = signal('');
   readonly editorEnabled = signal(true);
   readonly editorAllowedHandoffAgentIds = signal<string[]>([]);
+  readonly editorAllowedContentWrites = signal<AgentContentWriteOperation[]>([]);
+  /** Ticket / knowledge changes a task may be allowed to make (all operations). */
+  readonly contentWriteOptions = AGENT_CONTENT_WRITE_OPERATIONS.map((operation) => ({
+    operation,
+    label: agentContentWriteLabel(operation),
+  }));
   /** Other agents of the workspace the task's runs may hand off to. */
   readonly editorHandoffAgentOptions = computed(() =>
     this.agents().filter((agent) => agent.id !== this.editorAgentId()),
@@ -597,6 +610,21 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   /** Names of the agents a task may hand off to (ids of agents no longer in the workspace are shown as is). */
   handoffAgentNames(task: AgentTaskResponseDto): string[] {
     return (task.allowedHandoffAgentIds ?? []).map((agentId) => this.agentName(agentId));
+  }
+
+  /** Labels of the content changes a task may make. */
+  contentWriteLabels(task: AgentTaskResponseDto): string[] {
+    return (task.allowedContentWrites ?? []).map((operation) => agentContentWriteLabel(operation));
+  }
+
+  isEditorContentWriteAllowed(operation: AgentContentWriteOperation): boolean {
+    return this.editorAllowedContentWrites().includes(operation);
+  }
+
+  onToggleEditorContentWrite(operation: AgentContentWriteOperation, allowed: boolean): void {
+    const current = this.editorAllowedContentWrites().filter((entry) => entry !== operation);
+
+    this.editorAllowedContentWrites.set(allowed ? [...current, operation] : current);
   }
 
   isEditorHandoffAgentAllowed(agentId: string): boolean {
@@ -846,6 +874,7 @@ export class AgentTasksBoardComponent implements AfterViewInit {
     this.editorModel.set('');
     this.editorEnabled.set(true);
     this.editorAllowedHandoffAgentIds.set([]);
+    this.editorAllowedContentWrites.set([]);
     this.editorOpen.set(true);
   }
 
@@ -860,6 +889,7 @@ export class AgentTasksBoardComponent implements AfterViewInit {
     this.editorModel.set(task.model);
     this.editorEnabled.set(task.enabled);
     this.editorAllowedHandoffAgentIds.set([...(task.allowedHandoffAgentIds ?? [])]);
+    this.editorAllowedContentWrites.set([...(task.allowedContentWrites ?? [])]);
     this.editorOpen.set(true);
   }
 
@@ -895,6 +925,10 @@ export class AgentTasksBoardComponent implements AfterViewInit {
       // that left the workspace are dropped.
       allowedHandoffAgentIds: this.editorAllowedHandoffAgentIds().filter((id) =>
         this.editorHandoffAgentOptions().some((agent) => agent.id === id),
+      ),
+      // Always sent as well: the content changes runs may make are approved content.
+      allowedContentWrites: AGENT_CONTENT_WRITE_OPERATIONS.filter((operation) =>
+        this.editorAllowedContentWrites().includes(operation),
       ),
     };
     const task = this.selectedTask();

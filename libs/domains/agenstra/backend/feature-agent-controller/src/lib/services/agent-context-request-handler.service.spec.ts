@@ -32,6 +32,7 @@ describe('AgentContextRequestHandlerService', () => {
     longSha: 'aaaa1111bbbb2222cccc3333dddd4444eeee5555',
     status: TicketStatus.TODO,
     priority: TicketPriority.HIGH,
+    updatedAt: new Date('2026-11-03T10:00:00.000Z'),
   };
   const page = {
     id: 'n1',
@@ -41,11 +42,13 @@ describe('AgentContextRequestHandlerService', () => {
     content: 'Tokens rotate daily',
     nodeType: KnowledgeNodeType.PAGE,
     longSha: 'ffff6666',
+    updatedAt: new Date('2026-11-03T11:00:00.000Z'),
   };
   let ticketRepo: any;
   let knowledgeRepo: any;
   let ticketsService: any;
   let knowledgeTreeService: any;
+  let contentChanges: any;
   let service: AgentContextRequestHandlerService;
 
   beforeEach(() => {
@@ -67,7 +70,14 @@ describe('AgentContextRequestHandlerService', () => {
         .fn()
         .mockResolvedValue({ promptSections: ['Knowledge Page: A\nx', 'Knowledge Page: B\ny'] }),
     };
-    service = new AgentContextRequestHandlerService(ticketRepo, knowledgeRepo, ticketsService, knowledgeTreeService);
+    contentChanges = { handle: jest.fn().mockResolvedValue({ ok: true, changed: { kind: 'ticket' } }) };
+    service = new AgentContextRequestHandlerService(
+      ticketRepo,
+      knowledgeRepo,
+      ticketsService,
+      knowledgeTreeService,
+      contentChanges,
+    );
   });
 
   it('searches both kinds scoped to the workspace with escaped LIKE terms and bounded limits', async () => {
@@ -132,7 +142,15 @@ describe('AgentContextRequestHandlerService', () => {
     expect(ticketsService.getPrototypePromptByClientSha).toHaveBeenCalledWith(clientId, ticket.longSha);
     expect(result).toEqual({
       ok: true,
-      contents: [{ kind: 'ticket', sha: ticket.longSha, title: 'Fix login', content: 'TICKET PROMPT' }],
+      contents: [
+        {
+          kind: 'ticket',
+          sha: ticket.longSha,
+          title: 'Fix login',
+          revision: '2026-11-03T10:00:00.000Z',
+          content: 'TICKET PROMPT',
+        },
+      ],
     });
   });
 
@@ -193,6 +211,7 @@ describe('AgentContextRequestHandlerService', () => {
           kind: 'knowledge',
           sha: 'ffff6666',
           title: 'Auth design',
+          revision: '2026-11-03T11:00:00.000Z',
           content: 'Knowledge Page: Auth design\nTokens rotate daily',
         },
       ],
@@ -207,6 +226,15 @@ describe('AgentContextRequestHandlerService', () => {
     // Bound to this workspace's manager connection: system variant (no end-user identity on this path).
     expect(knowledgeTreeService.collectPromptContextsByHashesInternal).toHaveBeenCalledWith(clientId, ['ffff6666']);
     expect((folderResult as any).contents[0].content).toBe('Knowledge Page: A\nx\n\nKnowledge Page: B\ny');
+  });
+
+  it('delegates content changes with the workspace of the connection', async () => {
+    const change = { operation: 'ticket.comment', sha: ticket.longSha, body: 'Done.' };
+
+    await expect(
+      service.handle(clientId, { op: 'change', agentId: 'agent-1', change, source: { kind: 'chat' } }),
+    ).resolves.toEqual({ ok: true, changed: { kind: 'ticket' } });
+    expect(contentChanges.handle).toHaveBeenCalledWith(clientId, 'agent-1', change, { kind: 'chat' });
   });
 
   it('rejects unsupported operations', async () => {

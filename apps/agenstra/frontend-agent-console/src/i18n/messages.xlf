@@ -1994,6 +1994,30 @@
       <trans-unit id="featureChat-toolDisplayContextRequestAccess" datatype="html">
         <source>Request context access</source>
         </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentTicketCreate" datatype="html">
+        <source>Create ticket</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentTicketUpdate" datatype="html">
+        <source>Update ticket</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentTicketComment" datatype="html">
+        <source>Comment on ticket</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentTicketDelete" datatype="html">
+        <source>Delete ticket</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentPageCreate" datatype="html">
+        <source>Create knowledge page</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentPageUpdate" datatype="html">
+        <source>Update knowledge page</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentPageDelete" datatype="html">
+        <source>Delete knowledge page</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentChangeStatus" datatype="html">
+        <source>Content change status</source>
+        </trans-unit>
       <trans-unit id="featureChat-toolDisplayTasksList" datatype="html">
         <source>List tasks</source>
         </trans-unit>
@@ -6647,6 +6671,45 @@
         </trans-unit>
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-ticketCreate" datatype="html">
+        <source>Create tickets</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-ticketUpdate" datatype="html">
+        <source>Update tickets</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-ticketComment" datatype="html">
+        <source>Comment on tickets</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-ticketDelete" datatype="html">
+        <source>Delete tickets</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-pageCreate" datatype="html">
+        <source>Create knowledge pages</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-pageUpdate" datatype="html">
+        <source>Update knowledge pages</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-pageDelete" datatype="html">
+        <source>Delete knowledge pages</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedContentWritesLabel" datatype="html">
+        <source>Allowed ticket / knowledge changes</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedContentWritesHint" datatype="html">
+        <source>Runs may make these changes without asking. Existing elements are only changed when the run may read them. Leave empty to keep runs from changing tickets and knowledge pages.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApprovalContentWritesHint" datatype="html">
+        <source>Once approved, this task can make these changes without asking: <x id="INTERPOLATION" equiv-text="{{ contentWrites.join(&apos;, &apos;) }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noContentWrites" datatype="html">
+        <source>None</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContentWritesHeading" datatype="html">
+        <source> Ticket changes </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContentWritesHint" datatype="html">
+        <source> Autonomous runs may make these changes without asking, only to tickets of this ticket&apos;s tree (updates only to its subtasks). Leave empty to keep runs from changing tickets. </source>
         </trans-unit>
     </body>
   </file>

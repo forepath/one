@@ -734,6 +734,38 @@
         <source>Request context access</source>
         <target>Kontextzugriff anfordern</target>
       </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentTicketCreate" datatype="html">
+        <source>Create ticket</source>
+        <target>Ticket erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentTicketUpdate" datatype="html">
+        <source>Update ticket</source>
+        <target>Ticket aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentTicketComment" datatype="html">
+        <source>Comment on ticket</source>
+        <target>Ticket kommentieren</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentTicketDelete" datatype="html">
+        <source>Delete ticket</source>
+        <target>Ticket löschen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentPageCreate" datatype="html">
+        <source>Create knowledge page</source>
+        <target>Wissensseite erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentPageUpdate" datatype="html">
+        <source>Update knowledge page</source>
+        <target>Wissensseite aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentPageDelete" datatype="html">
+        <source>Delete knowledge page</source>
+        <target>Wissensseite löschen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentChangeStatus" datatype="html">
+        <source>Content change status</source>
+        <target>Status der Inhaltsänderung</target>
+      </trans-unit>
       <trans-unit id="featureChat-toolDisplayTasksList" datatype="html">
         <source>List tasks</source>
         <target>Aufgaben auflisten</target>
@@ -8873,6 +8905,58 @@
       <trans-unit id="featureTicketsBoard-colActivityActor" datatype="html">
         <source>Actor</source>
         <target>Ausgeführt von</target>
+      </trans-unit>
+      <trans-unit id="featureContentWrites-ticketCreate" datatype="html">
+        <source>Create tickets</source>
+        <target>Tickets erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureContentWrites-ticketUpdate" datatype="html">
+        <source>Update tickets</source>
+        <target>Tickets aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureContentWrites-ticketComment" datatype="html">
+        <source>Comment on tickets</source>
+        <target>Tickets kommentieren</target>
+      </trans-unit>
+      <trans-unit id="featureContentWrites-ticketDelete" datatype="html">
+        <source>Delete tickets</source>
+        <target>Tickets löschen</target>
+      </trans-unit>
+      <trans-unit id="featureContentWrites-pageCreate" datatype="html">
+        <source>Create knowledge pages</source>
+        <target>Wissensseiten erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureContentWrites-pageUpdate" datatype="html">
+        <source>Update knowledge pages</source>
+        <target>Wissensseiten aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureContentWrites-pageDelete" datatype="html">
+        <source>Delete knowledge pages</source>
+        <target>Wissensseiten löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedContentWritesLabel" datatype="html">
+        <source>Allowed ticket / knowledge changes</source>
+        <target>Erlaubte Ticket- / Wissensänderungen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedContentWritesHint" datatype="html">
+        <source>Runs may make these changes without asking. Existing elements are only changed when the run may read them. Leave empty to keep runs from changing tickets and knowledge pages.</source>
+        <target>Läufe dürfen diese Änderungen ohne Rückfrage vornehmen. Bestehende Elemente werden nur geändert, wenn der Lauf sie lesen darf. Leer lassen, damit Läufe keine Tickets und Wissensseiten ändern.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApprovalContentWritesHint" datatype="html">
+        <source>Once approved, this task can make these changes without asking: <x id="INTERPOLATION" equiv-text="{{ contentWrites.join(&apos;, &apos;) }}"/></source>
+        <target>Nach der Freigabe kann diese Aufgabe diese Änderungen ohne Rückfrage vornehmen: <x id="INTERPOLATION" equiv-text="{{ contentWrites.join(&apos;, &apos;) }}"/></target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-noContentWrites" datatype="html">
+        <source>None</source>
+        <target>Keine</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContentWritesHeading" datatype="html">
+        <source> Ticket changes </source>
+        <target>Ticketänderungen</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContentWritesHint" datatype="html">
+        <source> Autonomous runs may make these changes without asking, only to tickets of this ticket&apos;s tree (updates only to its subtasks). Leave empty to keep runs from changing tickets. </source>
+        <target>Autonome Läufe dürfen diese Änderungen ohne Rückfrage vornehmen, nur an Tickets im Baum dieses Tickets (Aktualisierungen nur an seinen Unteraufgaben). Leer lassen, damit Läufe keine Tickets ändern.</target>
       </trans-unit>
     </body>
   </file>

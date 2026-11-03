@@ -25,6 +25,7 @@ import { ENVIRONMENT_PROGRESS_EVENT } from '../constants/environment-progress.co
 import type { EnvironmentProgressDto } from '../dto/environment-progress.dto';
 import {
   AGENT_CONTEXT_ACCESS_QUESTION_SUBTYPE,
+  AGENT_CONTEXT_CHANGE_QUESTION_SUBTYPE,
   AGENT_CONTEXT_REQUEST_EVENT,
   AGENT_CONTEXT_REQUEST_TIMEOUT_MS,
 } from '../constants/agent-context.constants';
@@ -406,6 +407,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       requestControllerContext: (record, request) => this.requestControllerContext(record, request),
       publishContextAccessQuestion: (record, requestId, prompt) =>
         this.publishContextAccessQuestion(record, requestId, prompt),
+      publishContextChangeQuestion: (record, requestId, prompt) =>
+        this.publishContextAccessQuestion(record, requestId, prompt, AGENT_CONTEXT_CHANGE_QUESTION_SUBTYPE),
       publishInteractionAnswered: (agentId, questionIds, message) =>
         this.publishInteractionAnswered(agentId, questionIds, message),
     });
@@ -628,16 +631,18 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   }
 
   /**
-   * Resolve metadata / content through a controller connection of this agent (Socket.IO ack).
-   * The socket that sent the prompt is tried first, then any other socket logged into the agent.
+   * Resolve metadata / content (or apply a content change) through a controller connection of this agent (Socket.IO
+   * ack). The socket that sent the prompt is tried first, then any other socket logged into the agent.
    */
   private async requestControllerContext(
     record: AgentContextTicketRecord,
     request: AgentContextControllerRequest,
   ): Promise<AgentContextControllerResponse> {
     const candidates = this.controllerSocketsForAgent(record.agentId, record.socketId);
+    // Content changes use one socket only, so a slow ack cannot apply a change twice.
+    const attempts = request.op === 'change' ? candidates.slice(0, 1) : candidates;
 
-    for (const socket of candidates) {
+    for (const socket of attempts) {
       try {
         const response = (await socket
           .timeout(AGENT_CONTEXT_REQUEST_TIMEOUT_MS)
@@ -739,8 +744,15 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     return candidates;
   }
 
-  /** Permission-style prompt for additional context (answered via the permission reply endpoint). */
-  private publishContextAccessQuestion(record: AgentContextTicketRecord, requestId: string, prompt: string): void {
+  /**
+   * Permission-style prompt for additional context or a content change (answered via the permission reply endpoint).
+   */
+  private publishContextAccessQuestion(
+    record: AgentContextTicketRecord,
+    requestId: string,
+    prompt: string,
+    subtype: string = AGENT_CONTEXT_ACCESS_QUESTION_SUBTYPE,
+  ): void {
     const event: AgentEventEnvelope = {
       ...toAgentEventEnvelopeBase(record.agentId, record.correlationId, 0),
       kind: 'question',
@@ -752,7 +764,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
           { id: 'always', label: 'Allow for this chat' },
           { id: 'reject', label: 'Deny' },
         ],
-        subtype: AGENT_CONTEXT_ACCESS_QUESTION_SUBTYPE,
+        subtype,
       },
       ...(record.chatId ? { chatId: record.chatId } : {}),
     };

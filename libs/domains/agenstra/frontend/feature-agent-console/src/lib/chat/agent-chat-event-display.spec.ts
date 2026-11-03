@@ -375,6 +375,36 @@ describe('agent-chat-event-display', () => {
     });
   });
 
+  it('classifies Agenstra content change prompts as permission replies', () => {
+    const row = mapForwardedChatEventToDisplayRow({
+      payload: successEnvelope({
+        eventId: 'ev-chg',
+        agentId: 'a1',
+        correlationId: 'c1',
+        sequence: 1,
+        timestamp: '2026-11-03T12:00:00.000Z',
+        kind: 'question',
+        payload: {
+          questionId: 'ctx_chg_0123456789abcdef01234567',
+          prompt: 'The agent wants to comment on ticket abcd1234 "Billing".\nComment:\nDone.',
+          subtype: 'context_change',
+          options: [
+            { id: 'once', label: 'Allow once' },
+            { id: 'always', label: 'Allow for this chat' },
+            { id: 'reject', label: 'Deny' },
+          ],
+        },
+      }),
+      timestamp: 1000,
+    });
+
+    expect(row?.questionInteraction).toMatchObject({
+      questionId: 'ctx_chg_0123456789abcdef01234567',
+      replyKind: 'permission',
+      prompt: expect.stringContaining('Comment:\nDone.'),
+    });
+  });
+
   it('mapForwardedChatEventsToDisplayRows merges consecutive toolCall and toolResult with same id', () => {
     const rows = mapForwardedChatEventsToDisplayRows([
       {

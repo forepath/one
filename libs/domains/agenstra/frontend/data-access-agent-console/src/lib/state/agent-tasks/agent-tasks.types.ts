@@ -1,10 +1,12 @@
+import type { AgentContentWriteOperation } from '@forepath/agenstra/shared/util-opencode-config';
+
 import type {
   AgentTaskRunResponseDto,
   AgentTaskRunStatus,
   AgentTaskRunTrigger,
 } from '../container-socket/container-socket.types';
 
-export type { AgentTaskRunResponseDto, AgentTaskRunStatus, AgentTaskRunTrigger };
+export type { AgentContentWriteOperation, AgentTaskRunResponseDto, AgentTaskRunStatus, AgentTaskRunTrigger };
 
 /** Upper bound of peer agents a task may hand off to (matches the controller). */
 export const AGENT_TASK_ALLOWED_HANDOFF_AGENTS_MAX = 10;
@@ -30,6 +32,8 @@ export interface AgentTaskResponseDto {
   enabled: boolean;
   /** Agents of the workspace the runs may hand off work to (approved content; empty: no handoffs). */
   allowedHandoffAgentIds: string[];
+  /** Ticket / knowledge changes the runs may make without asking (approved content; empty: none). */
+  allowedContentWrites: AgentContentWriteOperation[];
   nextRunAt: string | null;
   lastRunAt: string | null;
   lastRunStatus: AgentTaskRunStatus | null;
@@ -53,6 +57,8 @@ export interface CreateAgentTaskDto {
    * (title, prompt, model, schedule, handoff agents) is what approves a task implicitly.
    */
   allowedHandoffAgentIds?: string[];
+  /** Ticket / knowledge changes the runs may make. The edit form always sends it (approved content). */
+  allowedContentWrites?: AgentContentWriteOperation[];
 }
 
 export type UpdateAgentTaskDto = Partial<CreateAgentTaskDto>;

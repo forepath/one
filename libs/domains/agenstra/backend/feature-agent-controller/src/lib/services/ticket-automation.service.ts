@@ -1,3 +1,4 @@
+import { normalizeAgentContentWriteOperations } from '@forepath/agenstra/shared/util-opencode-config';
 import {
   ClientUsersRepository,
   ensureClientAccess,
@@ -54,6 +55,7 @@ const APPROVAL_RELEVANT_AUTOMATION_FIELDS = new Set([
   'includeWorkspaceContext',
   'contextEnvironmentIds',
   'autoEnrichmentEnabled',
+  'allowedContentWrites',
   'verifierProfile',
   'requiresApproval',
   'defaultBranchOverride',
@@ -164,6 +166,7 @@ export class TicketAutomationService {
       includeWorkspaceContext: row.includeWorkspaceContext !== false,
       contextEnvironmentIds: sortUuidList(row.contextEnvironmentIds ?? []),
       autoEnrichmentEnabled: row.autoEnrichmentEnabled !== false,
+      allowedContentWrites: normalizeAgentContentWriteOperations(row.allowedContentWrites),
       verifierProfile: row.verifierProfile ?? null,
       requiresApproval: row.requiresApproval,
       approvedAt: row.approvedAt ?? null,
@@ -202,6 +205,7 @@ export class TicketAutomationService {
     const prevIncludeWorkspace = row.includeWorkspaceContext !== false;
     const prevContextEnvSorted = sortUuidList(row.contextEnvironmentIds ?? []);
     const prevAutoEnrichmentEnabled = row.autoEnrichmentEnabled !== false;
+    const prevContentWrites = normalizeAgentContentWriteOperations(row.allowedContentWrites);
     const prevVerifierJson = JSON.stringify(parseAndValidateVerifierProfile(row.verifierProfile ?? { commands: [] }));
     const prevDefaultBranch = normalizeDefaultBranch(row.defaultBranchOverride);
     const prevStrategy: TicketAutomationBranchStrategy =
@@ -261,6 +265,15 @@ export class TicketAutomationService {
     if (dto.autoEnrichmentEnabled !== undefined && dto.autoEnrichmentEnabled !== prevAutoEnrichmentEnabled) {
       row.autoEnrichmentEnabled = dto.autoEnrichmentEnabled;
       actuallyChanged.push('autoEnrichmentEnabled');
+    }
+
+    if (dto.allowedContentWrites !== undefined) {
+      const nextContentWrites = normalizeAgentContentWriteOperations(dto.allowedContentWrites);
+
+      if (JSON.stringify(nextContentWrites) !== JSON.stringify(prevContentWrites)) {
+        row.allowedContentWrites = nextContentWrites;
+        actuallyChanged.push('allowedContentWrites');
+      }
     }
 
     if (dto.verifierProfile !== undefined) {
@@ -336,6 +349,7 @@ export class TicketAutomationService {
         k === 'includeWorkspaceContext' ||
         k === 'contextEnvironmentIds' ||
         k === 'autoEnrichmentEnabled' ||
+        k === 'allowedContentWrites' ||
         k === 'verifierProfile' ||
         k === 'defaultBranchOverride' ||
         k === 'automationBranchStrategy' ||

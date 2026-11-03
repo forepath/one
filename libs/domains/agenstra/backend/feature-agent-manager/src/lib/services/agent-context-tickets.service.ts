@@ -40,6 +40,8 @@ export class AgentContextTicketsService {
   private readonly tickets = new Map<string, AgentContextTicketRecord>();
   /** "Allow for this chat" grants, keyed by `${agentId}|${sessionKey}`. */
   private readonly sessionGrants = new Map<string, AgentContextGrants & { lastUsedAt: number }>();
+  /** "Allow for this chat" content change grants (see {@link grantWrite}), same keys as {@link sessionGrants}. */
+  private readonly sessionWriteGrants = new Map<string, { keys: string[]; lastUsedAt: number }>();
 
   mint(input: MintAgentContextTicketInput): AgentContextTicketRecord {
     this.purgeExpired();
@@ -71,6 +73,9 @@ export class AgentContextTicketsService {
       scopeAnchors: [],
       workspace: input.workspace,
       environments: input.environments ?? [],
+      writeGrants: [],
+      createdRefs: [],
+      changeCount: 0,
       createdAt: now,
       lastUsedAt: now,
     };
@@ -97,10 +102,12 @@ export class AgentContextTicketsService {
 
     record.lastUsedAt = Date.now();
 
-    const session = this.sessionGrants.get(this.sessionGrantKey(record.agentId, record.sessionKey));
+    const key = this.sessionGrantKey(record.agentId, record.sessionKey);
 
-    if (session) {
-      session.lastUsedAt = record.lastUsedAt;
+    for (const session of [this.sessionGrants.get(key), this.sessionWriteGrants.get(key)]) {
+      if (session) {
+        session.lastUsedAt = record.lastUsedAt;
+      }
     }
 
     return record;
@@ -132,6 +139,56 @@ export class AgentContextTicketsService {
     }
   }
 
+  /**
+   * Content change grants: keys name the operation and its exact target (see the content changes service), granted
+   * for this ticket only (`once`) or for the whole chat session (`session`, "allow for this chat").
+   */
+  hasWriteGrant(record: AgentContextTicketRecord, key: string): boolean {
+    const session = this.sessionWriteGrants.get(this.sessionGrantKey(record.agentId, record.sessionKey));
+
+    return record.writeGrants.includes(key) || !!session?.keys.includes(key);
+  }
+
+  grantWrite(record: AgentContextTicketRecord, key: string, scope: 'once' | 'session'): void {
+    if (scope === 'once') {
+      record.writeGrants = Array.from(new Set([...record.writeGrants, key]));
+
+      return;
+    }
+
+    const sessionKey = this.sessionGrantKey(record.agentId, record.sessionKey);
+    const grants = this.sessionWriteGrants.get(sessionKey) ?? { keys: [], lastUsedAt: Date.now() };
+
+    grants.keys = Array.from(new Set([...grants.keys, key]));
+    this.sessionWriteGrants.set(sessionKey, grants);
+  }
+
+  /** An element created by a content change of this ticket: readable (and changeable) for the rest of the turn. */
+  rememberCreated(record: AgentContextTicketRecord, kind: 'ticket' | 'knowledge', sha: string): void {
+    const normalized = sha.trim().toLowerCase();
+
+    record.createdRefs = Array.from(new Set([...record.createdRefs, `${kind}:${normalized}`]));
+    this.grant(record, [{ kind, sha: normalized }], 'once');
+  }
+
+  isCreated(record: AgentContextTicketRecord, kind: 'ticket' | 'knowledge', sha: string): boolean {
+    return record.createdRefs.some((ref) => {
+      const [refKind, refSha] = ref.split(':');
+
+      return refKind === kind && agentContextShaMatches(refSha, sha);
+    });
+  }
+
+  /** Content of a changed element is stale: the next read by SHA fetches it again (item refs keep the prompt's). */
+  invalidateItem(record: AgentContextTicketRecord, kind: 'ticket' | 'knowledge', sha: string): void {
+    for (const item of record.items) {
+      if (item.kind === kind && item.sha && agentContextShaMatches(item.sha, sha)) {
+        item.revision = undefined;
+        item.fresh = false;
+      }
+    }
+  }
+
   findItemByIndex(record: AgentContextTicketRecord, index: number): AgentContextStoredItem | undefined {
     return record.items.find((item) => item.index === index);
   }
@@ -144,17 +201,25 @@ export class AgentContextTicketsService {
     return record.items.find((item) => item.kind === kind && item.sha && agentContextShaMatches(item.sha, sha));
   }
 
-  /** Cache content fetched after an approved access request so repeated reads stay local. */
+  /**
+   * Cache content fetched on demand (after an approved access request) so repeated reads stay local. A fetch
+   * refreshes the cached element (pre-granted prompt content, or content changed since) under its existing index.
+   */
   rememberItem(record: AgentContextTicketRecord, item: Omit<AgentContextStoredItem, 'index'>): AgentContextStoredItem {
     if (item.sha && (item.kind === 'ticket' || item.kind === 'knowledge')) {
       const existing = this.findItemBySha(record, item.kind, item.sha);
 
       if (existing) {
+        existing.title = item.title;
+        existing.content = item.content;
+        existing.revision = item.revision;
+        existing.fresh = true;
+
         return existing;
       }
     }
 
-    const stored: AgentContextStoredItem = { ...item, index: record.items.length + 1 };
+    const stored: AgentContextStoredItem = { ...item, fresh: true, index: record.items.length + 1 };
 
     record.items.push(stored);
 
@@ -174,9 +239,11 @@ export class AgentContextTicketsService {
       }
     }
 
-    for (const key of this.sessionGrants.keys()) {
-      if (key.startsWith(`${agentId}|`)) {
-        this.sessionGrants.delete(key);
+    for (const map of [this.sessionGrants, this.sessionWriteGrants]) {
+      for (const key of map.keys()) {
+        if (key.startsWith(`${agentId}|`)) {
+          map.delete(key);
+        }
       }
     }
   }
@@ -216,9 +283,11 @@ export class AgentContextTicketsService {
       }
     }
 
-    for (const [key, grants] of this.sessionGrants.entries()) {
-      if (grants.lastUsedAt < cutoff) {
-        this.sessionGrants.delete(key);
+    for (const map of [this.sessionGrants, this.sessionWriteGrants]) {
+      for (const [key, grants] of map.entries()) {
+        if (grants.lastUsedAt < cutoff) {
+          map.delete(key);
+        }
       }
     }
   }

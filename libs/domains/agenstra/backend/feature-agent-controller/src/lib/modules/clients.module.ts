@@ -100,6 +100,7 @@ import { AgentConsoleStatusRealtimeService } from '../services/agent-console-sta
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
 import { AgenstraMetricsCollectorService } from '../services/agenstra-metrics-collector.service';
+import { AgentContentChangesService } from '../services/agent-content-changes.service';
 import { AgentContextRequestHandlerService } from '../services/agent-context-request-handler.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { AutonomousRunOrchestratorService } from '../services/autonomous-run-orchestrator.service';
@@ -251,6 +252,7 @@ const authMethod = getAuthenticationMethod();
     KnowledgeTreeService,
     AutoContextResolverService,
     AgentContextRequestHandlerService,
+    AgentContentChangesService,
     AgentTasksService,
     AgentTaskRunnerService,
     AgentTaskRequestHandlerService,

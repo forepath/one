@@ -83,6 +83,10 @@ export interface AgentContextGetResponse {
   ref: string;
   kind: AgentContextItemKind;
   title: string;
+  /** Full SHA of tickets / knowledge elements (target of `agenstra_content_*` changes). */
+  sha?: string;
+  /** Version of a ticket / knowledge element; content changes pass it back (`revision`). */
+  revision?: string;
   content: string;
 }
 

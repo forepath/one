@@ -71,6 +71,10 @@ import {
   type ReferenceComboboxLoader,
 } from '@forepath/agenstra/frontend/feature-agent-config';
 import {
+  TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS,
+  type AgentContentWriteOperation,
+} from '@forepath/agenstra/shared/util-opencode-config';
+import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcBoardLaneComponent,
@@ -177,6 +181,7 @@ import {
   ticketTableColumns,
   type TicketStatusFilter,
 } from './ticket-table';
+import { agentContentWriteLabel } from '../shared/agent-content-write-labels';
 import { AttachmentChipsComponent } from '../shared/attachment-chips.component';
 import { agBulkSummary, agCopyIdItem, agOpenItem, AG_DL_CANCEL, AG_DL_CLOSE, AG_DL_DELETE } from '../shared/data-list';
 import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
@@ -209,6 +214,10 @@ function automationDtoMatchesServerConfig(dto: UpdateTicketAutomationDto, cfg: T
   }
 
   if ((dto.autoEnrichmentEnabled ?? true) !== (cfg.autoEnrichmentEnabled !== false)) {
+    return false;
+  }
+
+  if ((dto.allowedContentWrites ?? []).join(',') !== (cfg.allowedContentWrites ?? []).join(',')) {
     return false;
   }
 
@@ -853,6 +862,12 @@ export class TicketsBoardComponent implements OnInit {
   automationDraftPreferredModel = signal<string | null>(null);
   automationDraftIncludeWorkspaceContext = signal(true);
   automationDraftAutoEnrichmentEnabled = signal(true);
+  /** Ticket changes autonomous runs may make (canonical order, see {@link automationContentWriteOptions}). */
+  automationDraftAllowedContentWrites = signal<AgentContentWriteOperation[]>([]);
+  readonly automationContentWriteOptions = TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS.map((operation) => ({
+    operation,
+    label: agentContentWriteLabel(operation),
+  }));
   automationDraftContextEnvironmentIds = signal<string[]>([]);
   automationDraftDefaultBranch = signal('');
   automationDraftBranchStrategy = signal<TicketAutomationBranchStrategy>('reuse_per_ticket');
@@ -1219,6 +1234,7 @@ export class TicketsBoardComponent implements OnInit {
       this.automationDraftPreferredModel.set(cfg.preferredModel ?? null);
       this.automationDraftIncludeWorkspaceContext.set(cfg.includeWorkspaceContext !== false);
       this.automationDraftAutoEnrichmentEnabled.set(cfg.autoEnrichmentEnabled !== false);
+      this.automationDraftAllowedContentWrites.set([...(cfg.allowedContentWrites ?? [])]);
       this.automationDraftContextEnvironmentIds.set(normalizeAllowedAgentIdList(cfg.contextEnvironmentIds ?? []));
       this.automationDraftDefaultBranch.set(cfg.defaultBranchOverride ?? '');
       this.automationDraftBranchStrategy.set(cfg.automationBranchStrategy ?? 'reuse_per_ticket');
@@ -2493,12 +2509,25 @@ export class TicketsBoardComponent implements OnInit {
       preferredModel: this.automationDraftPreferredModel(),
       includeWorkspaceContext: this.automationDraftIncludeWorkspaceContext(),
       autoEnrichmentEnabled: this.automationDraftAutoEnrichmentEnabled(),
+      allowedContentWrites: TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS.filter((operation) =>
+        this.automationDraftAllowedContentWrites().includes(operation),
+      ),
       contextEnvironmentIds: this.automationDraftContextEnvironmentIds(),
       defaultBranchOverride: branch.length > 0 ? branch : null,
       automationBranchStrategy: this.automationDraftBranchStrategy(),
       forceNewAutomationBranchNextRun: this.automationDraftForceNewBranchNextRun(),
       verifierProfile: { commands },
     };
+  }
+
+  isAutomationContentWriteAllowed(operation: AgentContentWriteOperation): boolean {
+    return this.automationDraftAllowedContentWrites().includes(operation);
+  }
+
+  onAutomationContentWriteToggle(operation: AgentContentWriteOperation, allowed: boolean): void {
+    const current = this.automationDraftAllowedContentWrites().filter((entry) => entry !== operation);
+
+    this.automationDraftAllowedContentWrites.set(allowed ? [...current, operation] : current);
   }
 
   isAutomationContextEnvironmentSelected(agentId: string): boolean {

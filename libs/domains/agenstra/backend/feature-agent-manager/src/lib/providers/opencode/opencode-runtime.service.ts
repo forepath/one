@@ -330,6 +330,13 @@ export class OpenCodeRuntimeService {
       return;
     }
 
+    // Answer messages created before the worker event stream connected are looked up on demand (claims).
+    this.toolCalls.registerMessageLookup(agentId, async (id) =>
+      ((await client.session.messages({ path: { id } })).data ?? []).map(
+        (entry) => entry.info as unknown as Record<string, unknown>,
+      ),
+    );
+
     for (let attempt = 0; attempt < PROMPT_ROOT_LOOKUP_ATTEMPTS; attempt++) {
       try {
         const result = await client.session.messages({ path: { id: sessionId } });

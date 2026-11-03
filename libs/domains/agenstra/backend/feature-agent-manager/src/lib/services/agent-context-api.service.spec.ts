@@ -40,6 +40,7 @@ describe('AgentContextApiService', () => {
     bridge = {
       requestControllerContext: jest.fn(),
       publishContextAccessQuestion: jest.fn(),
+      publishContextChangeQuestion: jest.fn(),
       publishInteractionAnswered: jest.fn(),
     };
     service.registerBridge(bridge);
@@ -68,12 +69,48 @@ describe('AgentContextApiService', () => {
   });
 
   describe('get', () => {
-    it('serves pre-granted items by index and by sha without a controller round trip', async () => {
+    it('serves pre-granted items by index without a controller round trip', async () => {
       const record = mint();
 
-      await expect(service.get(record, 'item:1')).resolves.toMatchObject({ content: 'TICKET BODY' });
-      await expect(service.get(record, 'ticket:aaaa1111')).resolves.toMatchObject({ content: 'TICKET BODY' });
+      await expect(service.get(record, 'item:1')).resolves.toMatchObject({
+        content: 'TICKET BODY',
+        sha: 'aaaa111122223333',
+      });
       expect(bridge.requestControllerContext).not.toHaveBeenCalled();
+    });
+
+    it('reads pre-granted content again by sha (once) to return its revision', async () => {
+      const record = mint();
+
+      bridge.requestControllerContext.mockResolvedValue({
+        ok: true,
+        contents: [
+          {
+            kind: 'ticket',
+            sha: 'AAAA111122223333',
+            title: 'Fix login',
+            revision: '2026-11-03T10:00:00.000Z',
+            content: 'NEW',
+          },
+        ],
+      });
+
+      await expect(service.get(record, 'ticket:aaaa1111')).resolves.toEqual({
+        ref: 'ticket:aaaa111122223333',
+        kind: 'ticket',
+        title: 'Fix login',
+        sha: 'aaaa111122223333',
+        revision: '2026-11-03T10:00:00.000Z',
+        content: 'NEW',
+      });
+      await service.get(record, 'ticket:aaaa1111');
+
+      // Refreshed under the same index; a later change makes it stale again.
+      expect(record.items).toHaveLength(1);
+      expect(bridge.requestControllerContext).toHaveBeenCalledTimes(1);
+      tickets.invalidateItem(record, 'ticket', 'aaaa111122223333');
+      await service.get(record, 'ticket:aaaa1111');
+      expect(bridge.requestControllerContext).toHaveBeenCalledTimes(2);
     });
 
     it('rejects malformed refs and unknown items', async () => {
@@ -101,6 +138,7 @@ describe('AgentContextApiService', () => {
         ref: 'knowledge:bbbb2222cccc',
         kind: 'knowledge',
         title: 'Auth design',
+        sha: 'bbbb2222cccc',
         content: 'PAGE',
       });
       await service.get(record, 'knowledge:bbbb2222');

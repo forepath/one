@@ -1,3 +1,5 @@
+import type { AgentContentWriteOperation } from '@forepath/agenstra/shared/util-opencode-config';
+
 import type { TicketVerifierProfileJson } from '../../entities/ticket-automation.entity';
 
 export class TicketAutomationResponseDto {
@@ -8,6 +10,7 @@ export class TicketAutomationResponseDto {
   includeWorkspaceContext!: boolean;
   contextEnvironmentIds!: string[];
   autoEnrichmentEnabled!: boolean;
+  allowedContentWrites!: AgentContentWriteOperation[];
   verifierProfile!: TicketVerifierProfileJson | null;
   requiresApproval!: boolean;
   approvedAt!: Date | null;

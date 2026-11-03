@@ -28,6 +28,9 @@ function record(overrides: Partial<AgentContextTicketRecord> = {}): AgentContext
     scopeAnchors: [],
     attachments: [],
     environments: [],
+    writeGrants: [],
+    createdRefs: [],
+    changeCount: 0,
     createdAt: 0,
     lastUsedAt: 0,
     ...overrides,
@@ -94,5 +97,16 @@ describe('agent-context-items.utils', () => {
 
     expect(text).toContain('Only the items listed above are available');
     expect(text).not.toContain('request_access');
+    expect(text).not.toContain('content tools');
+  });
+
+  it('offers content changes in chats, conditionally in unattended runs and never in plans', () => {
+    const chat = buildAgentContextHintLines(record()).join('\n');
+    const task = buildAgentContextHintLines(record({ accessMode: 'auto', sessionKey: 'suffix:-task-1' })).join('\n');
+    const plan = buildAgentContextHintLines(record({ accessMode: 'auto', sessionKey: 'suffix:-plan-1' })).join('\n');
+
+    expect(chat).toContain('agenstra_content_* tools (the user approves each change');
+    expect(task).toContain('only work when a user allowed them for this run');
+    expect(plan).not.toContain('content tools');
   });
 });

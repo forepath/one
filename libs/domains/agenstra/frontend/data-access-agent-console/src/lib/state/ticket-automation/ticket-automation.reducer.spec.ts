@@ -38,6 +38,7 @@ describe('ticketAutomationReducer', () => {
     includeWorkspaceContext: true,
     contextEnvironmentIds: [],
     autoEnrichmentEnabled: true,
+    allowedContentWrites: [],
     verifierProfile: null,
     requiresApproval: false,
     approvedAt: null,

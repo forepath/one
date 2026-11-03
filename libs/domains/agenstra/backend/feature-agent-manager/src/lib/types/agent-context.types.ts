@@ -1,4 +1,9 @@
-import type { AgentContextItemKind } from '@forepath/agenstra/shared/util-opencode-config';
+import type {
+  AgentContentChangeResult,
+  AgentContentChangeSource,
+  AgentContentControllerChange,
+  AgentContextItemKind,
+} from '@forepath/agenstra/shared/util-opencode-config';
 
 /**
  * How additional (not pre-granted) context is handled for a ticket:
@@ -15,6 +20,10 @@ export interface AgentContextStoredItem {
   kind: AgentContextItemKind;
   title: string;
   sha?: string;
+  /** Element version when the content was fetched on demand (pre-granted prompt content has none). */
+  revision?: string;
+  /** Fetched on demand and not changed since (pre-granted prompt content is read again by SHA for its revision). */
+  fresh?: boolean;
   content: string;
 }
 
@@ -59,6 +68,12 @@ export interface AgentContextTicketRecord extends AgentContextTicketBinding {
   attachments: AgentContextAttachmentRef[];
   workspace?: { mountPath: string };
   environments: AgentContextEnvironmentRef[];
+  /** "Allow once" decisions are per change; approved "allow for this chat" write grants live in the session. */
+  writeGrants: string[];
+  /** Elements created through content changes of this ticket (readable and changeable by the same turn). */
+  createdRefs: string[];
+  /** Content changes requested with this ticket (bounded per turn). */
+  changeCount: number;
   createdAt: number;
   lastUsedAt: number;
 }
@@ -88,6 +103,13 @@ export type AgentContextControllerRequest =
       agentId: string;
       refs: Array<{ kind: 'ticket' | 'knowledge'; sha: string }>;
       anchors: string[];
+    }
+  /** Apply one content change (refs resolved to full SHAs); the controller checks the source's opt-in. */
+  | {
+      op: 'change';
+      agentId: string;
+      change: AgentContentControllerChange;
+      source: AgentContentChangeSource;
     };
 
 export interface AgentContextControllerMetadata {
@@ -105,9 +127,17 @@ export interface AgentContextControllerContent {
   kind: 'ticket' | 'knowledge';
   sha: string;
   title: string;
+  /** Element version (`updatedAt`), passed back with content changes. */
+  revision?: string;
   content: string;
 }
 
 export type AgentContextControllerResponse =
-  | { ok: true; items?: AgentContextControllerMetadata[]; contents?: AgentContextControllerContent[] }
-  | { ok: false; error: string };
+  | {
+      ok: true;
+      items?: AgentContextControllerMetadata[];
+      contents?: AgentContextControllerContent[];
+      changed?: AgentContentChangeResult;
+    }
+  /** `status` mirrors the HTTP status the controller would have answered with (change requests). */
+  | { ok: false; error: string; status?: number };

@@ -1,3 +1,4 @@
+import type { AgentContentWriteOperation } from '@forepath/agenstra/shared/util-opencode-config';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 import type { TicketAutomationBranchStrategy } from '../utils/ticket-automation-branch.constants';
@@ -53,6 +54,13 @@ export class TicketAutomationEntity {
    */
   @Column({ type: 'boolean', name: 'auto_enrichment_enabled', default: true })
   autoEnrichmentEnabled!: boolean;
+
+  /**
+   * Ticket changes (`agenstra_content_*`; tickets of this ticket's tree only) autonomous runs may make without asking.
+   * Empty (default): runs cannot change tickets. Approval-relevant like the other settings.
+   */
+  @Column({ type: 'jsonb', name: 'allowed_content_writes', default: () => "'[]'::jsonb" })
+  allowedContentWrites!: AgentContentWriteOperation[];
 
   @Column({ type: 'jsonb', name: 'verifier_profile', nullable: true })
   verifierProfile?: TicketVerifierProfileJson | null;

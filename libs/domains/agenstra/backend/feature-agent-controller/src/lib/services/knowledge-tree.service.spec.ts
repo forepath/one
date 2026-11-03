@@ -7,6 +7,7 @@ import {
   KnowledgeRelationSourceType,
   KnowledgeRelationTargetType,
 } from '../entities/knowledge-node.enums';
+import { createAgentContentWriter } from '../utils/agent-content-writer.utils';
 
 import { ExternalImportSyncMarkerService } from './external-import-sync-marker.service';
 import { KnowledgeTreeService } from './knowledge-tree.service';
@@ -417,6 +418,34 @@ describe('KnowledgeTreeService', () => {
         skip: 0,
       }),
     );
+  });
+
+  it('records agent page writes as AI actor with the agent, scoped to its workspace only', async () => {
+    const writer = createAgentContentWriter('client-1', 'agent-1', 'task');
+
+    // Other tests stub the access check on this shared instance: use the real one here.
+    (service as any).assertClientAccess = (KnowledgeTreeService.prototype as any).assertClientAccess;
+    (service as any).nextSortOrder = jest.fn().mockResolvedValue(0);
+    nodeRepo.save.mockImplementation(async (row: any) => ({
+      ...row,
+      id: row.id ?? 'new-page',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+    }));
+    pageActivityRepo.save.mockImplementation(async (row: any) => ({ ...row, id: 'activity-1' }));
+
+    await service.createNode({ clientId: 'client-1', nodeType: KnowledgeNodeType.PAGE, title: 'Runbook' }, writer);
+
+    expect(pageActivityRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorType: KnowledgeActorType.AI,
+        actorUserId: null,
+        payload: { title: 'Runbook', agentId: 'agent-1', via: 'task' },
+      }),
+    );
+    await expect(
+      service.createNode({ clientId: 'client-2', nodeType: KnowledgeNodeType.PAGE, title: 'Elsewhere' }, writer),
+    ).rejects.toThrow('Not found in this workspace');
   });
 
   describe('suggestNumberedTitle', () => {

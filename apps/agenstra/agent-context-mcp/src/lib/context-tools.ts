@@ -63,7 +63,8 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
     name: AGENSTRA_CONTEXT_MCP_TOOL_NAMES.get,
     description:
       'Read the full content of a context element: "item:<n>" from the prompt hint / context_list, or a granted ' +
-      '"ticket:<sha>" / "knowledge:<sha>".',
+      '"ticket:<sha>" / "knowledge:<sha>". Reading by "ticket:<sha>" / "knowledge:<sha>" also returns the ' +
+      'revision that agenstra_content_* updates and deletes need.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -152,7 +153,13 @@ export async function callContextTool(
 
         const item = await client.get(ticket, ref);
 
-        return text(`# ${item.title} (${item.ref})\n\n${item.content}`);
+        // Content changes (agenstra_content_*) need the element's full ref and its revision.
+        const meta = [
+          ...(item.sha && item.ref.startsWith('item:') ? [`ref: ${item.kind}:${item.sha}`] : []),
+          ...(item.revision ? [`revision: ${item.revision}`] : []),
+        ];
+
+        return text(`# ${item.title} (${item.ref})\n${meta.length ? `${meta.join('\n')}\n` : ''}\n${item.content}`);
       }
       case AGENSTRA_CONTEXT_MCP_TOOL_NAMES.requestAccess: {
         const requestId = stringArg(args, 'requestId');

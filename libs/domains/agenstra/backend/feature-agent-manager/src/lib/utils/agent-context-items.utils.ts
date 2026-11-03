@@ -1,5 +1,6 @@
 import { AGENSTRA_CONTEXT_MCP_SERVER_KEY } from '@forepath/agenstra/shared/util-opencode-config';
 
+import { isUnattendedAutomationResumeSessionSuffix } from '../constants/chat-session.constants';
 import type { AgentContextStoredItem, AgentContextTicketRecord } from '../types/agent-context.types';
 import type { ContextInjectionPayload } from '../types/context-injection.types';
 
@@ -129,8 +130,21 @@ export function buildAgentContextHintLines(record: AgentContextTicketRecord): st
 
   lines.push(`- ${access}`);
 
+  const content = `${AGENSTRA_CONTEXT_MCP_SERVER_KEY}_content_*`;
+  const suffix = record.sessionKey.startsWith('suffix:') ? record.sessionKey.slice('suffix:'.length) : undefined;
+
+  if (record.accessMode === 'ask') {
+    lines.push(
+      `- To create, change, comment on or delete tickets / knowledge pages use the ${content} tools (the user ` +
+        `approves each change; pass the revision ${tool('get')} returned).`,
+    );
+  } else if (record.accessMode === 'auto' && isUnattendedAutomationResumeSessionSuffix(suffix)) {
+    lines.push(`- Ticket / knowledge changes (${content} tools) only work when a user allowed them for this run.`);
+  }
+
   return [
-    `Context ticket: ${record.ticket} (pass it as \`ticket\` to every ${AGENSTRA_CONTEXT_MCP_SERVER_KEY}_context_* tool).`,
+    `Context ticket: ${record.ticket} (pass it as \`ticket\` to every ${AGENSTRA_CONTEXT_MCP_SERVER_KEY}_context_* ` +
+      `and ${content} tool).`,
     ...lines,
   ];
 }

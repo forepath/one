@@ -78,6 +78,7 @@ import { WorkspaceConfigurationOverridesRepository } from '../repositories/works
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentContextAccessService } from '../services/agent-context-access.service';
 import { AgentContextApiService } from '../services/agent-context-api.service';
+import { AgentContextChangesService } from '../services/agent-context-changes.service';
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
 import { AgentTasksApiService } from '../services/agent-tasks-api.service';
@@ -170,6 +171,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentContextAccessService,
     AgentContextMcpService,
     AgentContextApiService,
+    AgentContextChangesService,
     AgentTasksApiService,
     AgentHandoffsApiService,
     AgentActiveTurnsService,

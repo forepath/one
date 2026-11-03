@@ -3,7 +3,14 @@ import type {
   AgentTaskCreateInput,
   AgentTaskUpdateInput,
 } from '@forepath/agenstra/shared/util-opencode-config';
-import { AGENT_TASK_ACTIVE_RUN_STATUSES, AGENT_TASK_LIMITS } from '@forepath/agenstra/shared/util-opencode-config';
+import {
+  AGENT_CONTENT_WRITE_OPERATIONS,
+  AGENT_TASK_ACTIVE_RUN_STATUSES,
+  AGENT_TASK_LIMITS,
+  isAgentContentWriteOperation,
+  normalizeAgentContentWriteOperations,
+  type AgentContentWriteOperation,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import {
   ClientAgentCredentialsRepository,
   ClientUsersRepository,
@@ -278,6 +285,7 @@ export class AgentTasksService {
     const model = this.requireModel(input.model);
     const enabled = input.enabled !== false;
     const allowedHandoffAgentIds = await this.requireHandoffAgents(clientId, agentId, input.allowedHandoffAgentIds);
+    const allowedContentWrites = this.requireContentWrites(input.allowedContentWrites);
     const saved = await this.taskRepo.save(
       this.taskRepo.create({
         clientId,
@@ -288,6 +296,7 @@ export class AgentTasksService {
         model,
         enabled,
         allowedHandoffAgentIds,
+        allowedContentWrites,
         nextRunAt: enabled ? computeNextAgentTaskRunAt(schedule.cronExpression, schedule.timezone, new Date()) : null,
         createdByType: actor.type,
         createdByUserId: actor.userId ?? null,
@@ -376,7 +385,12 @@ export class AgentTasksService {
       task.enabled = input.enabled;
     }
 
-    // Everything the runs do (title, prompt, model, schedule, the agents they may hand off to) is approved content:
+    if (input.allowedContentWrites !== undefined) {
+      task.allowedContentWrites = this.requireContentWrites(input.allowedContentWrites);
+    }
+
+    // Everything the runs do (title, prompt, model, schedule, the agents they may hand off to, the content changes
+    // they may make) is approved content:
     // - the agent changing any of it, or switching the task on again, needs a user's approval;
     // - a user approves implicitly only by writing the complete content (the edit form) — partial user updates such
     //   as the enable switch never approve content the user did not submit. Disabling keeps the approval.
@@ -385,6 +399,7 @@ export class AgentTasksService {
       input.prompt !== undefined ||
       input.model !== undefined ||
       input.allowedHandoffAgentIds !== undefined ||
+      input.allowedContentWrites !== undefined ||
       scheduleChanged;
 
     if (actor.type === 'agent') {
@@ -397,7 +412,8 @@ export class AgentTasksService {
       input.prompt !== undefined &&
       input.model !== undefined &&
       input.cronExpression !== undefined &&
-      input.allowedHandoffAgentIds !== undefined
+      input.allowedHandoffAgentIds !== undefined &&
+      input.allowedContentWrites !== undefined
     ) {
       this.markApproved(task, actor);
     }
@@ -548,6 +564,21 @@ export class AgentTasksService {
     }
 
     return ids;
+  }
+
+  /** Content change operations the runs may make (known operations only, deduplicated). */
+  private requireContentWrites(value: AgentContentWriteOperation[] | undefined): AgentContentWriteOperation[] {
+    if (value === undefined) {
+      return [];
+    }
+
+    if (!Array.isArray(value) || value.some((operation) => !isAgentContentWriteOperation(operation))) {
+      throw new BadRequestException(
+        `allowedContentWrites must only contain ${AGENT_CONTENT_WRITE_OPERATIONS.join(', ')}`,
+      );
+    }
+
+    return normalizeAgentContentWriteOperations(value);
   }
 
   /** The controller only knows agents of a workspace through their stored credentials. */

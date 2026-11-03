@@ -108,8 +108,9 @@ export function buildQuestionInteractionFromPayload(
   const replyKind: AgentChatQuestionInteraction['replyKind'] =
     subtype === 'permission' ||
     subtype === 'permission.v2' ||
-    // Agenstra context access prompts (worker MCP) use the permission reply contract.
+    // Agenstra context access and content change prompts (worker MCP) use the permission reply contract.
     subtype === 'context_access' ||
+    subtype === 'context_change' ||
     questionId.startsWith('per_') ||
     questionId.startsWith('perm_')
       ? 'permission'

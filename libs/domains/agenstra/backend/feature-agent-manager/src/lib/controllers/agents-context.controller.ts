@@ -1,8 +1,12 @@
 import {
+  AGENSTRA_CONTENT_CHANGES_API_SEGMENT,
+  AGENSTRA_CONTENT_MCP_TOOL_NAMES,
   AGENSTRA_CONTEXT_API_HEADERS,
   AGENSTRA_CONTEXT_API_ROUTE,
   AGENSTRA_CONTEXT_MCP_SERVER_KEY,
   AGENSTRA_CONTEXT_MCP_TOOL_NAMES,
+  agentContentToolForOperation,
+  type AgentContentChangeResponse,
   type AgentContextAccessResponse,
   type AgentContextGetResponse,
   type AgentContextListResponse,
@@ -30,6 +34,7 @@ import {
   type AgentContextSearchQueryDto,
 } from '../dto/agent-context.dto';
 import { AgentContextApiService } from '../services/agent-context-api.service';
+import { AgentContextChangesService } from '../services/agent-context-changes.service';
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
 import { AgentToolCallsService } from '../services/agent-tool-calls.service';
@@ -38,6 +43,29 @@ import { authenticateAgentContextCall } from '../utils/agent-context-auth.utils'
 
 /** Session key of tickets minted for hidden sessions (see the agents gateway). */
 const HIDDEN_SESSION_KEY_PREFIX = 'suffix:';
+
+/** Change fields an MCP content tool call must carry unchanged (see {@link AgentsContextController.requestChange}). */
+const CHANGE_ARG_FIELDS = [
+  'ref',
+  'parentRef',
+  'revision',
+  'title',
+  'content',
+  'body',
+  'priority',
+  'status',
+  'nodeType',
+];
+
+/** The tool call carries exactly the change fields the request carries (absent or empty parents are equal). */
+function sameChangeArgs(input: Record<string, unknown>, body: Record<string, unknown>): boolean {
+  return CHANGE_ARG_FIELDS.every((field) => {
+    const left = typeof input[field] === 'string' ? input[field] : undefined;
+    const right = typeof body[field] === 'string' ? body[field] : undefined;
+
+    return (left || undefined) === (right || undefined);
+  });
+}
 
 /** Same refs (order and duplicates do not matter). */
 function sameRefs(requested: unknown, refs: string[]): boolean {
@@ -66,6 +94,7 @@ export class AgentsContextController {
     private readonly contextMcp: AgentContextMcpService,
     private readonly tickets: AgentContextTicketsService,
     private readonly api: AgentContextApiService,
+    private readonly changes: AgentContextChangesService,
     @Optional() private readonly toolCalls?: AgentToolCallsService,
   ) {}
 
@@ -159,6 +188,44 @@ export class AgentsContextController {
     );
 
     return this.api.accessStatus(record, requestId);
+  }
+
+  /** One ticket / knowledge change (`agenstra_content_*`): decided by the user or the run's opt-in, then applied. */
+  @Post(`tickets/:ticket/${AGENSTRA_CONTENT_CHANGES_API_SEGMENT}`)
+  @HttpCode(HttpStatus.OK)
+  async requestChange(
+    @Param('ticket') ticket: string,
+    @Body() body: unknown,
+    @Headers(AGENSTRA_CONTEXT_API_HEADERS.agentId) agentId: string | undefined,
+    @Headers('authorization') authorization: string | undefined,
+  ): Promise<AgentContentChangeResponse> {
+    const record = await this.resolveTicket(agentId, authorization, ticket);
+    const parsed = this.changes.parse(body);
+    const raw = (body ?? {}) as Record<string, unknown>;
+
+    await this.requireToolCall(record, agentContentToolForOperation(parsed.request.operation), (input) =>
+      sameChangeArgs(input, raw),
+    );
+
+    return this.changes.requestChange(record, parsed);
+  }
+
+  @Get(`tickets/:ticket/${AGENSTRA_CONTENT_CHANGES_API_SEGMENT}/:requestId`)
+  async changeStatus(
+    @Param('ticket') ticket: string,
+    @Param('requestId') requestId: string,
+    @Headers(AGENSTRA_CONTEXT_API_HEADERS.agentId) agentId: string | undefined,
+    @Headers('authorization') authorization: string | undefined,
+  ): Promise<AgentContentChangeResponse> {
+    const record = await this.resolveTicket(agentId, authorization, ticket);
+
+    await this.requireToolCall(
+      record,
+      AGENSTRA_CONTENT_MCP_TOOL_NAMES.changeStatus,
+      (input) => typeof input['requestId'] === 'string' && input['requestId'].trim() === requestId.trim(),
+    );
+
+    return this.changes.changeStatus(record, requestId);
   }
 
   /**

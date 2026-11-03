@@ -1,4 +1,8 @@
-import type { AgentTaskActorType, AgentTaskRunStatus } from '@forepath/agenstra/shared/util-opencode-config';
+import type {
+  AgentContentWriteOperation,
+  AgentTaskActorType,
+  AgentTaskRunStatus,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { ClientEntity } from '@forepath/identity/backend';
 import {
   Column,
@@ -57,6 +61,13 @@ export class AgentTaskEntity {
    */
   @Column({ type: 'jsonb', name: 'allowed_handoff_agent_ids', default: () => "'[]'::jsonb" })
   allowedHandoffAgentIds!: string[];
+
+  /**
+   * Ticket / knowledge changes (`agenstra_content_*` operations) the runs may make without asking (approved content
+   * like the prompt; empty: none). Checked again when a run requests a change.
+   */
+  @Column({ type: 'jsonb', name: 'allowed_content_writes', default: () => "'[]'::jsonb" })
+  allowedContentWrites!: AgentContentWriteOperation[];
 
   /** Next scheduled occurrence; `null` while disabled. */
   @Column({ type: 'timestamptz', name: 'next_run_at', nullable: true })

@@ -1,3 +1,4 @@
+import type { AgentContentChangeResult } from '@forepath/agenstra/shared/util-opencode-config';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Socket as ClientSocket } from 'socket.io-client';
@@ -7,6 +8,7 @@ import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgeNodeType } from '../entities/knowledge-node.enums';
 import { TicketEntity } from '../entities/ticket.entity';
 
+import { AgentContentChangesService } from './agent-content-changes.service';
 import { KnowledgeTreeService } from './knowledge-tree.service';
 import { TicketsService } from './tickets.service';
 
@@ -43,17 +45,24 @@ export interface AgentContextContent {
   kind: ContextKind;
   sha: string;
   title: string;
+  /** Element version (`updatedAt`), passed back with content changes. */
+  revision: string;
   content: string;
 }
 
 export type AgentContextRequestResponse =
-  | { ok: true; items?: AgentContextMetadata[]; contents?: AgentContextContent[] }
-  | { ok: false; error: string };
+  | {
+      ok: true;
+      items?: AgentContextMetadata[];
+      contents?: AgentContextContent[];
+      changed?: AgentContentChangeResult;
+    }
+  | { ok: false; error: string; status?: number };
 
 /**
  * Answers on-demand context requests from an agent-manager (worker `agenstra` MCP server → manager →
- * controller) over the Socket.IO connection the controller already holds. Every lookup is scoped to the
- * workspace (client) that connection belongs to.
+ * controller) over the Socket.IO connection the controller already holds. Every lookup (and content change, see
+ * {@link AgentContentChangesService}) is scoped to the workspace (client) that connection belongs to.
  */
 @Injectable()
 export class AgentContextRequestHandlerService {
@@ -66,6 +75,7 @@ export class AgentContextRequestHandlerService {
     private readonly knowledgeNodeRepo: Repository<KnowledgeNodeEntity>,
     private readonly ticketsService: TicketsService,
     private readonly knowledgeTreeService: KnowledgeTreeService,
+    private readonly contentChanges: AgentContentChangesService,
   ) {}
 
   /** Register the ack handler on a controller → manager socket for one workspace. */
@@ -112,6 +122,8 @@ export class AgentContextRequestHandlerService {
           ok: true,
           items: await this.scope(clientId, this.parseRefs(request['refs']), this.parseAnchors(request['anchors'])),
         };
+      case 'change':
+        return this.contentChanges.handle(clientId, request['agentId'], request['change'], request['source']);
       default:
         return { ok: false, error: 'Unsupported context request' };
     }
@@ -262,7 +274,13 @@ export class AgentContextRequestHandlerService {
           : null;
 
         if (ticket?.longSha && prompt?.prompt) {
-          contents.push({ kind: 'ticket', sha: ticket.longSha, title: ticket.title, content: prompt.prompt });
+          contents.push({
+            kind: 'ticket',
+            sha: ticket.longSha,
+            title: ticket.title,
+            revision: ticket.updatedAt.toISOString(),
+            content: prompt.prompt,
+          });
         }
 
         continue;
@@ -281,7 +299,13 @@ export class AgentContextRequestHandlerService {
               .promptSections;
 
       if (sections.length > 0) {
-        contents.push({ kind: 'knowledge', sha: node.longSha, title: node.title, content: sections.join('\n\n') });
+        contents.push({
+          kind: 'knowledge',
+          sha: node.longSha,
+          title: node.title,
+          revision: node.updatedAt.toISOString(),
+          content: sections.join('\n\n'),
+        });
       }
     }
 

@@ -53,6 +53,13 @@ import {
   tryAgenstraSearchIds,
 } from '../search/agenstra-search-list.util';
 
+import {
+  agentContentAttribution,
+  assertAgentContentWriterWorkspace,
+  type ContentPrincipal,
+  isAgentContentWriter,
+} from '../utils/agent-content-writer.utils';
+
 import { KnowledgeEmbeddingIndexService } from './embeddings/knowledge-embedding-index.service';
 import { ExternalImportSyncMarkerService } from './external-import-sync-marker.service';
 import { KNOWLEDGE_BOARD_EVENTS } from './knowledge-board-realtime.constants';
@@ -86,7 +93,13 @@ export class KnowledgeTreeService {
     private readonly externalImportSyncMarkerService: ExternalImportSyncMarkerService,
   ) {}
 
-  private async assertClientAccess(clientId: string, req?: RequestWithUser): Promise<void> {
+  private async assertClientAccess(clientId: string, req?: ContentPrincipal): Promise<void> {
+    if (isAgentContentWriter(req)) {
+      assertAgentContentWriterWorkspace(req, clientId);
+
+      return;
+    }
+
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
   }
 
@@ -100,7 +113,7 @@ export class KnowledgeTreeService {
     return node;
   }
 
-  private async assertNodeReadable(id: string, req?: RequestWithUser): Promise<KnowledgeNodeEntity> {
+  private async assertNodeReadable(id: string, req?: ContentPrincipal): Promise<KnowledgeNodeEntity> {
     const node = await this.getNodeOrThrow(id);
 
     await this.assertClientAccess(node.clientId, req);
@@ -246,7 +259,11 @@ export class KnowledgeTreeService {
     return authMethod === 'api-key' || (authMethod === undefined && !!process.env.STATIC_API_KEY);
   }
 
-  private resolveActor(req?: RequestWithUser): { actorType: KnowledgeActorType; actorUserId?: string } {
+  private resolveActor(req?: ContentPrincipal): { actorType: KnowledgeActorType; actorUserId?: string } {
+    if (isAgentContentWriter(req)) {
+      return { actorType: KnowledgeActorType.AI };
+    }
+
     const info = getUserFromRequest(req || ({} as RequestWithUser));
 
     if (info.isApiKeyAuth || this.isApiKeyMode()) {
@@ -286,7 +303,7 @@ export class KnowledgeTreeService {
     clientId: string,
     actionType: KnowledgeActionType,
     payload: Record<string, unknown>,
-    req?: RequestWithUser,
+    req?: ContentPrincipal,
   ): Promise<void> {
     const actor = this.resolveActor(req);
     const activityRow = await this.knowledgePageActivityRepo.save(
@@ -295,14 +312,14 @@ export class KnowledgeTreeService {
         actorType: actor.actorType,
         actorUserId: actor.actorUserId ?? null,
         actionType,
-        payload,
+        payload: { ...payload, ...agentContentAttribution(req) },
       }),
     );
 
     this.emitKnowledgePageActivityCreated(clientId, await this.mapPageActivity(activityRow));
   }
 
-  async createNode(dto: CreateKnowledgeNodeDto, req?: RequestWithUser): Promise<KnowledgeNodeResponseDto> {
+  async createNode(dto: CreateKnowledgeNodeDto, req?: ContentPrincipal): Promise<KnowledgeNodeResponseDto> {
     let clientId = dto.clientId;
 
     if (!dto.parentId && !clientId) {
@@ -461,7 +478,7 @@ export class KnowledgeTreeService {
     return await this.mapNode(node);
   }
 
-  async updateNode(id: string, dto: UpdateKnowledgeNodeDto, req?: RequestWithUser): Promise<KnowledgeNodeResponseDto> {
+  async updateNode(id: string, dto: UpdateKnowledgeNodeDto, req?: ContentPrincipal): Promise<KnowledgeNodeResponseDto> {
     const node = await this.assertNodeReadable(id, req);
     const before = {
       title: node.title,
@@ -559,7 +576,7 @@ export class KnowledgeTreeService {
     return await this.mapNode(saved);
   }
 
-  async deleteNode(id: string, req?: RequestWithUser, releaseExternalSyncMarker = false): Promise<void> {
+  async deleteNode(id: string, req?: ContentPrincipal, releaseExternalSyncMarker = false): Promise<void> {
     const node = await this.assertNodeReadable(id, req);
     const childCount = await this.knowledgeNodeRepo.count({ where: { parentId: node.id } });
 
