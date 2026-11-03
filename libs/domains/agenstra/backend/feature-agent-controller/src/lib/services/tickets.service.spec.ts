@@ -10,7 +10,7 @@ import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
-import { TicketCreationTemplate, TicketPriority, TicketStatus } from '../entities/ticket.enums';
+import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
 
 import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
@@ -304,70 +304,14 @@ describe('TicketsService', () => {
       ]);
     });
 
-    it('creates a single ticket when creationTemplate is empty', async () => {
-      const result = await service.create({ clientId, title: 'Root', creationTemplate: undefined }, undefined);
+    it('creates a single ticket with a CREATED activity', async () => {
+      const result = await service.create({ clientId, title: 'Root', content: 'desc' }, undefined);
 
       expect(result.title).toBe('Root');
-      expect(result).not.toHaveProperty('createdChildTickets');
-      expect(activityRepo.save).toHaveBeenCalledTimes(1);
-    });
-
-    it('creates parent and four children for specification template', async () => {
-      const result = await service.create(
-        {
-          clientId,
-          title: 'Feature',
-          content: 'desc',
-          creationTemplate: TicketCreationTemplate.SPECIFICATION,
-        },
-        undefined,
-      );
-
-      expect(result.title).toBe('Feature');
-      expect(result.createdChildTickets).toHaveLength(4);
-      expect(result.createdChildTickets?.map((c) => c.title)).toEqual([
-        'Proposal',
-        'Specifications',
-        'Technical design',
-        'Implementation plan',
-      ]);
       expect(result.shas.short).toHaveLength(7);
       expect(result.shas.long).toHaveLength(40);
       expect(result.shas.long.startsWith(result.shas.short)).toBe(true);
-
-      for (const child of result.createdChildTickets ?? []) {
-        expect(child.shas.short).toHaveLength(7);
-        expect(child.shas.long).toHaveLength(40);
-        expect(child.shas.long.startsWith(child.shas.short)).toBe(true);
-      }
-
-      expect(activityRepo.save).toHaveBeenCalledTimes(5);
-    });
-
-    it('rejects specification template with parentId', async () => {
-      ticketRepo.findOne.mockResolvedValueOnce({
-        id: '00000000-0000-4000-8000-00000000aaaa',
-        clientId,
-        parentId: null,
-        title: 'Parent',
-        content: null,
-        priority: TicketPriority.MEDIUM,
-        status: TicketStatus.DRAFT,
-        createdByUserId: null,
-        preferredChatAgentId: null,
-        createdAt: new Date('2024-01-01T00:00:00.000Z'),
-        updatedAt: new Date('2024-01-01T00:00:00.000Z'),
-      } as TicketEntity);
-      await expect(
-        service.create(
-          {
-            parentId: '00000000-0000-4000-8000-00000000aaaa',
-            title: 'Child',
-            creationTemplate: TicketCreationTemplate.SPECIFICATION,
-          },
-          undefined,
-        ),
-      ).rejects.toThrow(BadRequestException);
+      expect(activityRepo.save).toHaveBeenCalledTimes(1);
     });
   });
 

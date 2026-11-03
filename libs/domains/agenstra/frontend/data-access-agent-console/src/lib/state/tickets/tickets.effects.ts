@@ -96,14 +96,7 @@ export const createTicket$ = createEffect(
       ofType(createTicket),
       switchMap(({ dto }) =>
         ticketsService.createTicket(dto).pipe(
-          map((res) => {
-            const { createdChildTickets, ...ticket } = res;
-
-            return createTicketSuccess({
-              ticket,
-              ...(createdChildTickets?.length ? { createdChildTickets } : {}),
-            });
-          }),
+          map((ticket) => createTicketSuccess({ ticket })),
           catchError((error) => of(createTicketFailure({ error: normalizeError(error) }))),
         ),
       ),

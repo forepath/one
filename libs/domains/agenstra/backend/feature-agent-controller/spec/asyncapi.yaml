@@ -260,7 +260,6 @@ channels:
         $ref: '#/components/messages/TicketBoardTicketPayload'
     description: |
       Full ticket row after create/update (aligns with OpenAPI TicketResponseDto).
-      A single REST create with `creationTemplate: specification` emits one upsert per ticket (parent plus four subtasks).
       `POST /tickets/{id}/migrate` emits one `ticketRemoved` per id on the source workspace, then one `ticketUpsert` per migrated row on the target workspace.
   tickets/ticketRemoved:
     address: tickets/ticketRemoved

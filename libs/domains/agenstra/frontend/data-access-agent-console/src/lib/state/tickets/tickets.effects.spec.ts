@@ -128,21 +128,6 @@ describe('TicketsEffects', () => {
       });
     });
 
-    it('should strip createdChildTickets into createTicketSuccess payload', (done) => {
-      const dto = { clientId: 'client-1', title: 'New', creationTemplate: 'specification' as const };
-      const action = createTicket({ dto });
-      const child = { ...mockTicket, id: 'child-1', parentId: 'ticket-1', title: 'Proposal' };
-      const apiResponse = { ...mockTicket, createdChildTickets: [child] };
-      const outcome = createTicketSuccess({ ticket: mockTicket, createdChildTickets: [child] });
-
-      actions$ = of(action);
-      ticketsService.createTicket.mockReturnValue(of(apiResponse));
-      createTicket$(actions$, ticketsService).subscribe((result) => {
-        expect(result).toEqual(outcome);
-        done();
-      });
-    });
-
     it('should return createTicketFailure on error', (done) => {
       const action = createTicket({ dto: { title: 'x' } });
       const outcome = createTicketFailure({ error: 'x' });

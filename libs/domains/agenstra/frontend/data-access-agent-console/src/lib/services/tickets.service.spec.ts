@@ -102,22 +102,6 @@ describe('TicketsService', () => {
       expect(req.request.body).toEqual(dto);
       req.flush(mockTicket);
     });
-
-    it('should accept CreateTicketResultDto with createdChildTickets', (done) => {
-      const dto = { clientId: 'c1', title: 'Epic', creationTemplate: 'specification' as const };
-      const child = { ...mockTicket, id: 'child-1', parentId: mockTicket.id, title: 'Proposal' };
-      const res = { ...mockTicket, createdChildTickets: [child] };
-
-      service.createTicket(dto).subscribe((t) => {
-        expect(t.createdChildTickets).toEqual([child]);
-        expect(t.id).toBe(mockTicket.id);
-        done();
-      });
-      const req = httpMock.expectOne(`${apiUrl}/tickets`);
-
-      expect(req.request.body).toEqual(dto);
-      req.flush(res);
-    });
   });
 
   describe('updateTicket', () => {

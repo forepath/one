@@ -3960,18 +3960,6 @@
         <source>Optional details</source>
         <target>Optionale Details</target>
       </trans-unit>
-      <trans-unit id="featureTicketsBoard-createTemplateLabel" datatype="html">
-        <source>Template</source>
-        <target>Vorlage</target>
-      </trans-unit>
-      <trans-unit id="featureTicketsBoard-createTemplateEmpty" datatype="html">
-        <source>None</source>
-        <target>Keine</target>
-      </trans-unit>
-      <trans-unit id="featureTicketsBoard-createTemplateSpecification" datatype="html">
-        <source>Specification</source>
-        <target>Spezifikation</target>
-      </trans-unit>
       <trans-unit id="featureTicketsBoard-createStatusLabel" datatype="html">
         <source>Status</source>
         <target>Status</target>

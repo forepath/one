@@ -1908,24 +1908,6 @@
       placeholder="Optional details"
     ></framework-ticket-editor>
   </fpc-form-field>
-  @if (!createTicketParentId()) {
-    <fpc-form-field
-      forId="createTicketCreationTemplate"
-      i18n-label="@@featureTicketsBoard-createTemplateLabel"
-      label="Template"
-    >
-      <fpc-form-control
-        controlId="createTicketCreationTemplate"
-        controlType="select"
-        size="sm"
-        [ngModel]="createTicketCreationTemplate()"
-        (ngModelChange)="createTicketCreationTemplate.set($event)"
-      >
-        <option value="empty" i18n="@@featureTicketsBoard-createTemplateEmpty">None</option>
-        <option value="specification" i18n="@@featureTicketsBoard-createTemplateSpecification">Specification</option>
-      </fpc-form-control>
-    </fpc-form-field>
-  }
   <div class="row g-2">
     <div class="col-sm-6">
       <fpc-form-field forId="createTicketStatus" i18n-label="@@featureTicketsBoard-createStatusLabel" label="Status">

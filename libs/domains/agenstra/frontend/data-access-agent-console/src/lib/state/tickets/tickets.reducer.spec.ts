@@ -203,32 +203,6 @@ describe('ticketsReducer', () => {
 
       expect(next.detail?.children).toBeUndefined();
     });
-
-    it('should merge parent and createdChildTickets into list and detail.children', () => {
-      const prev: TicketsState = {
-        ...initialTicketsState,
-        saving: true,
-        list: [],
-        detail: null,
-        selectedTicketId: null,
-      };
-      const parent: TicketResponseDto = { ...mockTicket, id: 'root-1', title: 'Epic' };
-      const c1: TicketResponseDto = { ...mockTicket, id: 'c1', title: 'Proposal', parentId: 'root-1' };
-      const c2: TicketResponseDto = { ...mockTicket, id: 'c2', title: 'Specifications', parentId: 'root-1' };
-      const next = ticketsReducer(prev, createTicketSuccess({ ticket: parent, createdChildTickets: [c1, c2] }));
-
-      expect(next.list.map((t) => t.id).sort()).toEqual(['c1', 'c2', 'root-1']);
-      const openParent: TicketsState = {
-        ...initialTicketsState,
-        saving: true,
-        list: [],
-        detail: parent,
-        selectedTicketId: parent.id,
-      };
-      const next2 = ticketsReducer(openParent, createTicketSuccess({ ticket: parent, createdChildTickets: [c1, c2] }));
-
-      expect(next2.detail?.children?.map((c) => c.id).sort()).toEqual(['c1', 'c2']);
-    });
   });
 
   describe('createTicketFailure', () => {

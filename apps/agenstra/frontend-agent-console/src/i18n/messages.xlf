@@ -5001,15 +5001,6 @@
       <trans-unit id="featureTicketsBoard-createContentPlaceholder" datatype="html">
         <source>Optional details</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-createTemplateLabel" datatype="html">
-        <source>Template</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-createTemplateEmpty" datatype="html">
-        <source>None</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-createTemplateSpecification" datatype="html">
-        <source>Specification</source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-createStatusLabel" datatype="html">
         <source>Status</source>
         </trans-unit>
