@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException, ServiceUnavailableException } fr
 
 import { AgentsRepository } from '../../repositories/agents.repository';
 import { DockerService } from '../../services/docker.service';
+import { effectiveIsolationLevel, isMicrovmIsolationLevel } from '../../utils/container-isolation.utils';
 
 import { OPENCODE_SERVER_PORT, OPENCODE_SERVER_USERNAME_DEFAULT } from './opencode-provider.config';
 import type { CreateOpencodeClient, OpencodeClient } from './opencode-sdk.types';
@@ -11,6 +12,29 @@ interface CachedClient {
   baseUrl: string;
   password: string;
   containerId: string;
+}
+
+/**
+ * How long a worker's OpenCode server may take to answer `/global/health` (create, start, restart, recreate) unless a
+ * caller passes `timeoutMs`. MicroVM workers boot a guest kernel and desktop first; their cold start is measured in
+ * seconds-to-minutes and grows with host load, so they get their own (env-overridable) limit.
+ */
+export const OPENCODE_HEALTH_TIMEOUT_MS_ENV = 'OPENCODE_HEALTH_TIMEOUT_MS';
+export const OPENCODE_MICROVM_HEALTH_TIMEOUT_MS_ENV = 'OPENCODE_MICROVM_HEALTH_TIMEOUT_MS';
+export const OPENCODE_HEALTH_TIMEOUT_MS_DEFAULT = 60_000;
+export const OPENCODE_MICROVM_HEALTH_TIMEOUT_MS_DEFAULT = 600_000;
+
+function timeoutFromEnv(name: string, fallback: number): number {
+  const value = Number.parseInt(process.env[name] ?? '', 10);
+
+  return Number.isFinite(value) && value >= 5_000 ? value : fallback;
+}
+
+/** Default health wait for a worker of the given (stored) isolation level. */
+export function resolveOpencodeHealthTimeoutMs(isolationLevel: string | null | undefined): number {
+  return isMicrovmIsolationLevel(effectiveIsolationLevel(isolationLevel))
+    ? timeoutFromEnv(OPENCODE_MICROVM_HEALTH_TIMEOUT_MS_ENV, OPENCODE_MICROVM_HEALTH_TIMEOUT_MS_DEFAULT)
+    : timeoutFromEnv(OPENCODE_HEALTH_TIMEOUT_MS_ENV, OPENCODE_HEALTH_TIMEOUT_MS_DEFAULT);
 }
 
 export interface WaitForHealthyOptions {
@@ -139,15 +163,12 @@ export class OpenCodeClientFactory {
   ): Promise<void> {
     // Backward-compatible overload: waitForHealthy(id, containerId, timeoutMs)
     const normalized: WaitForHealthyOptions = typeof options === 'number' ? { timeoutMs: options } : (options ?? {});
-    const timeoutMs = normalized.timeoutMs ?? 60_000;
+    const agent =
+      normalized.password && normalized.timeoutMs !== undefined ? null : await this.agentsRepository.findById(agentId);
+    const timeoutMs = normalized.timeoutMs ?? resolveOpencodeHealthTimeoutMs(agent?.isolationLevel);
+    const startedAt = Date.now();
 
-    let password = normalized.password;
-
-    if (!password) {
-      const agent = await this.agentsRepository.findById(agentId);
-
-      password = agent?.opencodeServerPassword;
-    }
+    const password = normalized.password ?? agent?.opencodeServerPassword;
 
     if (!password) {
       throw new ServiceUnavailableException(`OpenCode server password is not configured for agent ${agentId}`);
@@ -173,7 +194,10 @@ export class OpenCodeClientFactory {
           const body = (await response.json()) as { healthy?: boolean };
 
           if (body.healthy) {
-            this.logger.debug(`OpenCode health check passed for agent ${agentId} at ${baseUrl}`);
+            // Logged (not debug): the time to healthy is what the isolation-level limits are sized from.
+            this.logger.log(
+              `OpenCode healthy for agent ${agentId} after ${Date.now() - startedAt} ms (limit ${timeoutMs} ms) at ${baseUrl}`,
+            );
 
             return;
           }
@@ -186,6 +210,11 @@ export class OpenCodeClientFactory {
         }
       } catch (error) {
         lastError = error;
+
+        // The container is gone (agent deleted or recreated meanwhile): it can never become healthy.
+        if (error instanceof NotFoundException) {
+          break;
+        }
       }
 
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -194,7 +223,10 @@ export class OpenCodeClientFactory {
     const message = lastError instanceof Error ? lastError.message : 'Unknown health check error';
     const endpointHint = lastBaseUrl ? ` (last endpoint: ${lastBaseUrl})` : '';
 
-    this.logger.error(`OpenCode health check failed for agent ${agentId}${endpointHint}: ${message}`);
+    this.logger.error(
+      `OpenCode health check failed for agent ${agentId} after ${Date.now() - startedAt} ms (limit ${timeoutMs} ms)` +
+        `${endpointHint}: ${message}`,
+    );
 
     throw new ServiceUnavailableException(`OpenCode server did not become healthy for agent ${agentId}: ${message}`);
   }

@@ -46,6 +46,7 @@ import {
   AgentContextRequestHandlerService,
 } from '../services/agent-context-request-handler.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
+import { ClientAgentMembershipService } from '../services/client-agent-membership.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
@@ -141,6 +142,9 @@ interface ContextInjectionPayload {
   autoEnrichmentEnabled?: boolean;
 }
 
+/** Manager-wide environment provisioning progress (agents gateway) — keep in sync with the manager constant. */
+const CLIENT_ENVIRONMENT_PROGRESS_EVENT = 'environmentProgress';
+
 /**
  * WebSocket gateway for client context management.
  * Handles WebSocket connections, authentication, and client context setup.
@@ -215,6 +219,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     @Optional() private readonly agentTaskRealtime?: AgentTaskRealtimeService,
     @Optional() private readonly agentTaskChatSync?: AgentTaskChatSyncService,
     @Optional() private readonly agentHandoffRequests?: AgentHandoffRequestHandlerService,
+    @Optional() private readonly agentMembership?: ClientAgentMembershipService,
   ) {}
 
   afterInit(server: Server): void {
@@ -680,18 +685,52 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
         // Only forward application-level events, not Socket.IO internal events
         if (!internalEvents.has(event)) {
-          // Check connection state before emitting (matches agents.gateway.ts pattern)
-          if (!socket.connected) {
+          const forward = () => {
+            // Check connection state before emitting (matches agents.gateway.ts pattern)
+            if (!socket.connected) {
+              return;
+            }
+
+            try {
+              // SECURITY: Emit only to the specific local socket (not broadcast to all clients)
+              socket.emit(event, ...args);
+            } catch (emitError) {
+              this.logger.error(`Failed to emit event '${event}' to local socket ${socket.id}: ${emitError}`);
+              // Don't rethrow - let the connection continue
+            }
+          };
+          // SECURITY: the manager also broadcasts events of agents of other workspaces it serves (environment progress,
+          // config syncs, ...). Events of agents this socket logged into (credentials of this workspace) go out at once,
+          // in order; any other agent's event only when the agent belongs to this socket's workspace.
+          const data = (args[0] as { data?: { agentId?: unknown; agentName?: unknown } } | undefined)?.data;
+          const eventAgentId = typeof data?.agentId === 'string' ? data.agentId : undefined;
+          const concernsAgent = !!eventAgentId || event === CLIENT_ENVIRONMENT_PROGRESS_EVENT;
+
+          if (
+            !concernsAgent ||
+            !this.agentMembership ||
+            (eventAgentId && this.loggedInAgentsBySocket.get(socket.id)?.has(eventAgentId))
+          ) {
+            forward();
+
             return;
           }
 
-          try {
-            // SECURITY: Emit only to the specific local socket (not broadcast to all clients)
-            socket.emit(event, ...args);
-          } catch (emitError) {
-            this.logger.error(`Failed to emit event '${event}' to local socket ${socket.id}: ${emitError}`);
-            // Don't rethrow - let the connection continue
+          if (!currentClientId) {
+            return;
           }
+
+          void this.agentMembership
+            .concernsWorkspace(currentClientId, {
+              agentId: eventAgentId ?? null,
+              agentName: typeof data?.agentName === 'string' ? data.agentName : null,
+            })
+            .then((concerns) => {
+              if (concerns) {
+                forward();
+              }
+            })
+            .catch(() => undefined);
         }
       });
       remote.on('connect_error', (err: Error) => {
