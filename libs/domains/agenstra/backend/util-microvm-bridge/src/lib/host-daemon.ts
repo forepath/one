@@ -9,6 +9,12 @@ import { BootConfig, parseErrorMessage, parseExecRequest } from './messages';
 export const CONTROL_STREAM = 0;
 export const WORKLOAD_STREAM = 1;
 const FIRST_DYNAMIC_STREAM = 2;
+/**
+ * Identical forwarding failures are logged at most this often (the manager's health probes hit the OpenCode port
+ * about every second while the guest is still booting).
+ */
+const FORWARD_FAILURE_LOG_INTERVAL_MS = 30_000;
+const FORWARD_FAILURE_MESSAGES_MAX = 64;
 
 /** Exit status of the launcher when the guest went away without reporting a workload exit. */
 export const MICROVM_UNEXPECTED_STOP_EXIT_CODE = 255;
@@ -47,6 +53,8 @@ export class HostDaemon {
   private nextStream = FIRST_DYNAMIC_STREAM;
   private readonly execs = new Map<number, RelayedExec>();
   private readonly tcp = new Map<number, net.Socket>();
+  /** Per distinct failure message: when it was last logged and how many repeats were suppressed since. */
+  private readonly forwardFailures = new Map<string, { loggedAt: number; suppressed: number }>();
   private readonly pending: { run: () => void; fail: (message: string) => void; timer: NodeJS.Timeout }[] = [];
   private workloadExit: number | null = null;
   private stopRequested = false;
@@ -305,7 +313,7 @@ export class HostDaemon {
         socket.end();
         break;
       case FrameType.Error:
-        this.options.log(`forwarded connection failed: ${parseErrorMessage(safeJson(frame.payload))}`);
+        this.logForwardFailure(parseErrorMessage(safeJson(frame.payload)));
         this.tcp.delete(frame.stream);
         this.guest?.closeOutbound(frame.stream);
         socket.destroy();
@@ -415,6 +423,29 @@ export class HostDaemon {
     }
 
     return null;
+  }
+
+  /** First occurrence of a failure is logged right away; repeats are summarized every interval. */
+  private logForwardFailure(message: string): void {
+    const now = Date.now();
+    const previous = this.forwardFailures.get(message);
+
+    if (previous && now - previous.loggedAt < FORWARD_FAILURE_LOG_INTERVAL_MS) {
+      previous.suppressed++;
+
+      return;
+    }
+
+    if (!previous && this.forwardFailures.size >= FORWARD_FAILURE_MESSAGES_MAX) {
+      this.forwardFailures.clear();
+    }
+
+    const repeats = previous?.suppressed
+      ? ` (${previous.suppressed} more in the last ${Math.round((now - previous.loggedAt) / 1000)} s)`
+      : '';
+
+    this.forwardFailures.set(message, { loggedAt: now, suppressed: 0 });
+    this.options.log(`forwarded connection failed: ${message}${repeats}`);
   }
 }
 

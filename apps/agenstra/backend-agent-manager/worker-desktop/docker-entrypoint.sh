@@ -117,6 +117,11 @@ cleanup() {
 
 trap cleanup EXIT INT TERM
 
+# OpenCode first: it does not need the desktop, and the manager waits for its health endpoint. Started after the
+# desktop it had to wait for Xvnc and compete with the whole session startup (minutes for microVM workers under load).
+"${run_as_agent[@]}" opencode serve --hostname "${hostname}" --port "${opencode_port}" &
+OPENCODE_PID=$!
+
 # Drop stale display locks left after docker restart / crash; otherwise Xvnc refuses to start
 # ("Server is already active") while nothing listens on the RFB port — websockify then accepts
 # the browser WebSocket and immediately closes it (noVNC: Connection closed code 1005).
@@ -183,9 +188,6 @@ WEBSOCKIFY_PID=$!
   VNC_WEBSOCKIFY_UPSTREAM_PORT="${websockify_upstream_port}" \
   node /usr/local/bin/vnc-auth-proxy.js &
 AUTH_PROXY_PID=$!
-
-"${run_as_agent[@]}" opencode serve --hostname "${hostname}" --port "${opencode_port}" &
-OPENCODE_PID=$!
 
 wait "${OPENCODE_PID}"
 exit_code=$?

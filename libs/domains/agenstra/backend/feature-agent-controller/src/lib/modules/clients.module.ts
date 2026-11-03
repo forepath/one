@@ -24,6 +24,7 @@ import {
 } from '@forepath/identity/backend';
 import { BullModule } from '@nestjs/bullmq';
 import { forwardRef, Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
@@ -100,6 +101,7 @@ import { AgentConsoleStatusRealtimeService } from '../services/agent-console-sta
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
 import { AgenstraMetricsCollectorService } from '../services/agenstra-metrics-collector.service';
+import { ClientAgentMembershipInterceptor } from '../interceptors/client-agent-membership.interceptor';
 import { AgentContentChangesService } from '../services/agent-content-changes.service';
 import { AgentContextRequestHandlerService } from '../services/agent-context-request-handler.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
@@ -111,6 +113,7 @@ import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentMessagesProxyService } from '../services/client-agent-messages-proxy.service';
 import { ClientAgentOpencodeConfigProxyService } from '../services/client-agent-opencode-config-proxy.service';
+import { ClientAgentMembershipService } from '../services/client-agent-membership.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientAgentVncProxyService } from '../services/client-agent-vnc-proxy.service';
 import { ControllerVncTicketService } from '../services/controller-vnc-ticket.service';
@@ -253,6 +256,9 @@ const authMethod = getAuthenticationMethod();
     AutoContextResolverService,
     AgentContextRequestHandlerService,
     AgentContentChangesService,
+    ClientAgentMembershipService,
+    // Agent routes of every controller only reach agents of the addressed workspace.
+    { provide: APP_INTERCEPTOR, useClass: ClientAgentMembershipInterceptor },
     AgentTasksService,
     AgentTaskRunnerService,
     AgentTaskRequestHandlerService,

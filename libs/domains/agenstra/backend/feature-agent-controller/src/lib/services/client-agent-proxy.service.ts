@@ -22,6 +22,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
@@ -38,6 +39,7 @@ import {
   tryAgenstraSearchIds,
 } from '../search/agenstra-search-list.util';
 
+import { ClientAgentMembershipService } from './client-agent-membership.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 
@@ -56,7 +58,13 @@ export class ClientAgentProxyService {
     private readonly clientAgentCredentialsService: ClientAgentCredentialsService,
     private readonly statisticsService: StatisticsService,
     private readonly searchIndex: AgenstraSearchIndexService,
+    @Optional() private readonly membership?: ClientAgentMembershipService,
   ) {}
+
+  /** Agents of the workspace only: the manager behind it may serve other workspaces too. */
+  private async ownAgents(clientId: string, agents: AgentResponseDto[]): Promise<AgentResponseDto[]> {
+    return this.membership ? await this.membership.filterMembers(clientId, agents) : agents;
+  }
 
   /**
    * Get authentication header for a client.
@@ -271,7 +279,7 @@ export class ClientAgentProxyService {
    * Page the agent manager's egress decision feed (monotonic `seq` cursor; all agents of the workspace).
    */
   async listClientEgressEvents(clientId: string, afterSeq: string, limit: number): Promise<AgentEgressEventsPageDto> {
-    return await this.makeRequest<AgentEgressEventsPageDto>(
+    const page = await this.makeRequest<AgentEgressEventsPageDto>(
       clientId,
       {
         method: 'GET',
@@ -281,6 +289,16 @@ export class ClientAgentProxyService {
       },
       'api',
     );
+
+    // The feed is manager-wide: only this workspace's agents (the cursor still advances over the others).
+    if (!this.membership || !Array.isArray(page?.events)) {
+      return page;
+    }
+
+    const membership = this.membership;
+    const own = await Promise.all(page.events.map((event) => membership.isMember(clientId, event.agentId)));
+
+    return { ...page, events: page.events.filter((_event, index) => own[index]) };
   }
 
   /**
@@ -292,6 +310,13 @@ export class ClientAgentProxyService {
    */
   async getClientAgents(clientId: string, limit = 10, offset = 0, search?: string): Promise<AgentResponseDto[]> {
     const sanitized = sanitizeListSearch(search);
+
+    // Pages are cut after filtering to the workspace's agents (manager pages would mix in other workspaces' agents).
+    const allOwnAgents = async () =>
+      this.ownAgents(
+        clientId,
+        await this.makeRequest<AgentResponseDto[]>(clientId, { method: 'GET', params: { limit: 1000, offset: 0 } }),
+      );
 
     if (sanitized) {
       const openSearchIds = await tryAgenstraSearchIds(
@@ -312,27 +337,23 @@ export class ClientAgentProxyService {
             return [];
           }
         } else {
-          const allAgents = await this.makeRequest<AgentResponseDto[]>(clientId, {
-            method: 'GET',
-            params: { limit: 1000, offset: 0 },
-          });
-
-          return orderItemsBySearchIds(allAgents, openSearchIds.ids);
+          return orderItemsBySearchIds(await allOwnAgents(), openSearchIds.ids);
         }
       }
 
-      const agents = await this.makeRequest<AgentResponseDto[]>(clientId, {
-        method: 'GET',
-        params: { limit: 1000, offset: 0 },
-      });
-
-      return agents.filter((agent) => matchesInMemoryListSearch(agent, sanitized)).slice(offset, offset + limit);
+      return (await allOwnAgents())
+        .filter((agent) => matchesInMemoryListSearch(agent, sanitized))
+        .slice(offset, offset + limit);
     }
 
-    return await this.makeRequest<AgentResponseDto[]>(clientId, {
-      method: 'GET',
-      params: { limit, offset },
-    });
+    if (!this.membership) {
+      return await this.makeRequest<AgentResponseDto[]>(clientId, {
+        method: 'GET',
+        params: { limit, offset },
+      });
+    }
+
+    return (await allOwnAgents()).slice(offset, offset + limit);
   }
 
   /**
@@ -346,7 +367,19 @@ export class ClientAgentProxyService {
       url: '/progress',
     });
 
-    return Array.isArray(operations) ? operations : [];
+    if (!Array.isArray(operations)) {
+      return [];
+    }
+
+    // Manager-wide: only operations of this workspace's agents, or of agents it is creating right now.
+    if (!this.membership) {
+      return operations;
+    }
+
+    const membership = this.membership;
+    const own = await Promise.all(operations.map((operation) => membership.concernsWorkspace(clientId, operation)));
+
+    return operations.filter((_operation, index) => own[index]);
   }
 
   /**
@@ -356,6 +389,10 @@ export class ClientAgentProxyService {
    * @returns The agent response DTO
    */
   async getClientAgent(clientId: string, agentId: string): Promise<AgentResponseDto> {
+    if (this.membership && !(await this.membership.isMember(clientId, agentId))) {
+      throw new NotFoundException(`Agent ${agentId} was not found in this workspace`);
+    }
+
     return await this.makeRequest<AgentResponseDto>(clientId, {
       method: 'GET',
       url: `/${agentId}`,
@@ -418,14 +455,23 @@ export class ClientAgentProxyService {
     createAgentDto: CreateAgentDto,
     userId?: string,
   ): Promise<CreateAgentResponseDto> {
-    const result = await this.makeRequest<CreateAgentResponseDto>(clientId, {
-      method: 'POST',
-      data: createAgentDto,
-    });
+    // Progress of the create is shown to this workspace while the agent has no id / credentials yet.
+    const releaseCreate = this.membership?.trackCreate(clientId, createAgentDto.name);
+    let result: CreateAgentResponseDto;
 
-    // Persist credentials for socket proxying
-    if (result?.id && result?.password) {
-      await this.clientAgentCredentialsService.saveCredentials(clientId, result.id, result.password);
+    try {
+      result = await this.makeRequest<CreateAgentResponseDto>(clientId, {
+        method: 'POST',
+        data: createAgentDto,
+      });
+
+      // Persist credentials for socket proxying (they also make the agent a member of this workspace)
+      if (result?.id && result?.password) {
+        await this.clientAgentCredentialsService.saveCredentials(clientId, result.id, result.password);
+        this.membership?.forget(clientId, result.id);
+      }
+    } finally {
+      releaseCreate?.();
     }
 
     if (result?.id) {
@@ -497,6 +543,7 @@ export class ClientAgentProxyService {
     });
     // Cleanup stored credentials for this client/agent pair
     await this.clientAgentCredentialsService.deleteCredentials(clientId, agentId);
+    this.membership?.forget(clientId, agentId);
   }
 
   /**
