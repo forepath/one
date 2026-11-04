@@ -87,6 +87,16 @@ export const FPC_CHART_AREA_FILL = {
   gradient: { shadeIntensity: 0, opacityFrom: 0.35, opacityTo: 0.02, stops: [0, 100] },
 };
 
+/**
+ * Stroke for every line / area chart: straight segments between the data points, never `smooth`.
+ *
+ * All our series are discrete samples (per-day / per-hour buckets of counts, turnover and meter usage, or periodic
+ * CPU / memory readings). A spline invents values between them and overshoots: a 0 → 40 → 0 count dips below zero,
+ * CPU exceeds 100 % and a spike looks wider than it was. Straight segments draw exactly the samples. If a series is
+ * ever piecewise-constant (a price or plan that holds until it changes), use `curve: 'stepline'` for that one chart.
+ */
+export const FPC_CHART_LINE_STROKE = { curve: 'straight' as const, width: 2 };
+
 // --- Chart defaults (X-07 / DB-17 / AG-08, 2026-10-29) ----------------------------------------------------------------
 
 /**
