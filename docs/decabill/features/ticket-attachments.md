@@ -9,6 +9,6 @@ Attachments are stored through the shared file-storage abstraction in the `proje
 Attachment endpoints require project access in addition to PAT scopes:
 
 - `attachments:read` for listing/downloading.
-- `attachments:write` for uploading/deleting metadata.
+- `attachments:admin` for uploading/deleting (admin-only).
 
 The API always resolves the project and ticket first; download access is never granted by storage key alone.

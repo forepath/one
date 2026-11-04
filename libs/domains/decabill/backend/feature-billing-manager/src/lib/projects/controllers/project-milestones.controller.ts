@@ -26,7 +26,7 @@ import { ProjectMilestonesService } from '../services/project-milestones.service
 export class ProjectMilestonesController {
   constructor(private readonly milestonesService: ProjectMilestonesService) {}
 
-  @RequireScopes('projects:read')
+  @RequireScopes('milestones:read')
   @Get()
   async list(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -36,7 +36,7 @@ export class ProjectMilestonesController {
     return await this.milestonesService.list(projectId, getAuthenticatedUserFromRequest(req), search);
   }
 
-  @RequireScopes('milestones:write')
+  @RequireScopes('milestones:admin')
   @Post()
   async create(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -46,7 +46,7 @@ export class ProjectMilestonesController {
     return await this.milestonesService.create(projectId, dto, getUserFromRequest(req));
   }
 
-  @RequireScopes('milestones:write')
+  @RequireScopes('milestones:admin')
   @Post(':id')
   async update(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -57,7 +57,7 @@ export class ProjectMilestonesController {
     return await this.milestonesService.update(projectId, id, dto, getUserFromRequest(req));
   }
 
-  @RequireScopes('milestones:write')
+  @RequireScopes('milestones:admin')
   @Post(':id/lock')
   async lock(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -67,7 +67,7 @@ export class ProjectMilestonesController {
     return await this.milestonesService.lock(projectId, id, getUserFromRequest(req));
   }
 
-  @RequireScopes('milestones:write')
+  @RequireScopes('milestones:admin')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(

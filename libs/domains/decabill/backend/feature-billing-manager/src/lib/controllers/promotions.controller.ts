@@ -65,6 +65,7 @@ export class PromotionsController {
   }
 
   @Post('redeem')
+  @RequireScopes('promotions:write')
   async redeem(@Body() dto: RedeemPromotionBodyDto, @Req() req: RequestWithUser) {
     const user = getUserFromRequest(req);
 

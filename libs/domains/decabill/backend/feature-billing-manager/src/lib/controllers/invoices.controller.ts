@@ -27,7 +27,7 @@ import { InvoiceCreationService } from '../services/invoice-creation.service';
 import { InvoiceService } from '../services/invoice.service';
 import { PaymentOrchestrationService } from '../services/payment-orchestration.service';
 import { SubscriptionService } from '../services/subscription.service';
-import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
+import { ensureAdminForForeignRecord, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
 import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
 
@@ -228,7 +228,7 @@ export class InvoicesController {
     return new StreamableFile(buffer);
   }
 
-  @RequireScopes('invoices:pay')
+  @RequireScopes('invoices:write')
   @Post('ref/:invoiceRefId/pay')
   async initiatePaymentByRef(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
@@ -297,7 +297,7 @@ export class InvoicesController {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
 
     if (subscription.userId !== userInfo.userId) {
-      ensureAdmin(userInfo);
+      ensureAdminForForeignRecord(userInfo, 'invoices:admin');
     }
 
     const invoice = await this.invoicesRepository.findByIdAndSubscriptionId(invoiceRefId, subscriptionId);
@@ -332,7 +332,7 @@ export class InvoicesController {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
 
     if (subscription.userId !== userInfo.userId) {
-      ensureAdmin(userInfo);
+      ensureAdminForForeignRecord(userInfo, 'invoices:admin');
     }
 
     const invoice = await this.invoicesRepository.findByIdAndSubscriptionId(invoiceRefId, subscriptionId);
@@ -367,7 +367,7 @@ export class InvoicesController {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
 
     if (subscription.userId !== userInfo.userId) {
-      ensureAdmin(userInfo);
+      ensureAdminForForeignRecord(userInfo, 'invoices:admin');
     }
 
     const invoice = await this.invoicesRepository.findByIdAndSubscriptionId(invoiceRefId, subscriptionId);
@@ -384,7 +384,7 @@ export class InvoicesController {
     return new StreamableFile(buffer);
   }
 
-  @RequireScopes('invoices:write')
+  @RequireScopes('invoices:admin')
   @Post(':subscriptionId')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -402,7 +402,7 @@ export class InvoicesController {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
 
     if (subscription.userId !== userInfo.userId) {
-      ensureAdmin(userInfo);
+      ensureAdminForForeignRecord(userInfo, 'invoices:admin');
     }
 
     return await this.invoiceCreationService.createInvoice(subscriptionId, subscription.userId, dto.description, {
@@ -410,7 +410,7 @@ export class InvoicesController {
     });
   }
 
-  @RequireScopes('invoices:write')
+  @RequireScopes('invoices:admin')
   @Post(':subscriptionId/ref/:invoiceRefId/void')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -428,7 +428,7 @@ export class InvoicesController {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
 
     if (subscription.userId !== userInfo.userId) {
-      ensureAdmin(userInfo);
+      ensureAdminForForeignRecord(userInfo, 'invoices:admin');
     }
 
     const voided = await this.invoiceService.voidInvoice(invoiceRefId, subscriptionId, userInfo.userId, {
@@ -438,7 +438,7 @@ export class InvoicesController {
     return this.invoiceService.mapToResponse(voided);
   }
 
-  @RequireScopes('invoices:pay')
+  @RequireScopes('invoices:write')
   @Post(':subscriptionId/ref/:invoiceRefId/pay')
   async initiatePayment(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,

@@ -13,7 +13,7 @@ Tasks are managed in two ways:
 
 ## Prerequisites
 
-- Workspace access (same rule as tickets and chat plans) and the `agents:chats` scope for PATs; tasks are prompts the
+- Workspace access (same rule as tickets and chat plans) and the `agent_chats:read` / `agent_chats:write` scope for PATs; tasks are prompts the
   agent runs.
 - A model (`provider/model`) per task. Tasks the agent creates without a model use the model of the chat it was asked in.
 - For agent-managed tasks: the [agent context MCP](../ai-agents/context-mcp.md) must be active for the environment

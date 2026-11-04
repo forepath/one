@@ -8,7 +8,7 @@ import { AdminFileManagerService, type UploadedVerifyDocument } from '../service
 @Controller('admin/billing/files')
 @KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
-@RequireScopes('billing_admin:read')
+@RequireScopes('files:admin')
 export class AdminFileManagerController {
   constructor(private readonly adminFileManagerService: AdminFileManagerService) {}
 

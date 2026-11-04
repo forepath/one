@@ -467,7 +467,7 @@ export class ClientsController {
    * @returns The agent response DTO
    */
   @Post(':id/agents/:agentId/start')
-  @RequireScopes('agents:lifecycle')
+  @RequireScopes('agents:write')
   async startClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -491,7 +491,7 @@ export class ClientsController {
    * @returns The agent response DTO
    */
   @Post(':id/agents/:agentId/stop')
-  @RequireScopes('agents:lifecycle')
+  @RequireScopes('agents:write')
   async stopClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -511,7 +511,7 @@ export class ClientsController {
    * @returns The agent response DTO
    */
   @Post(':id/agents/:agentId/restart')
-  @RequireScopes('agents:lifecycle')
+  @RequireScopes('agents:write')
   async restartClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -531,7 +531,7 @@ export class ClientsController {
    */
   @Post(':id/agents/:agentId/vnc/sessions')
   @HttpCode(HttpStatus.CREATED)
-  @RequireScopes('agents:vnc')
+  @RequireScopes('agent_vnc:write')
   async createClientAgentVncSession(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -691,7 +691,7 @@ export class ClientsController {
    */
   @Head(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.OK)
-  @RequireScopes('agents:files')
+  @RequireScopes('agent_files:read')
   async headFile(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -731,7 +731,7 @@ export class ClientsController {
    * Supports Range requests (206) and optional download disposition from the manager.
    */
   @Get(':id/agents/:agentId/files/*path')
-  @RequireScopes('agents:files')
+  @RequireScopes('agent_files:read')
   async readFile(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -794,7 +794,7 @@ export class ClientsController {
    */
   @Put(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @RequireScopes('agents:files')
+  @RequireScopes('agent_files:write')
   async writeFile(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -845,7 +845,7 @@ export class ClientsController {
    * @returns Array of file nodes
    */
   @Get(':id/agents/:agentId/files')
-  @RequireScopes('agents:files')
+  @RequireScopes('agent_files:read')
   async listDirectory(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -876,7 +876,7 @@ export class ClientsController {
    */
   @Post(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.CREATED)
-  @RequireScopes('agents:files')
+  @RequireScopes('agent_files:write')
   async createFileOrDirectory(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -921,7 +921,7 @@ export class ClientsController {
    */
   @Delete(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @RequireScopes('agents:files')
+  @RequireScopes('agent_files:write')
   async deleteFileOrDirectory(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -960,7 +960,7 @@ export class ClientsController {
    */
   @Patch(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @RequireScopes('agents:files')
+  @RequireScopes('agent_files:write')
   async moveFileOrDirectory(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1112,7 +1112,7 @@ export class ClientsController {
    * @returns Array of environment variable response DTOs
    */
   @Get(':id/agents/:agentId/environment')
-  @RequireScopes('agents:environment')
+  @RequireScopes('agent_environment:read')
   async getClientAgentEnvironmentVariables(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1139,7 +1139,7 @@ export class ClientsController {
    * @returns Count of environment variables
    */
   @Get(':id/agents/:agentId/environment/count')
-  @RequireScopes('agents:environment')
+  @RequireScopes('agent_environment:read')
   async countClientAgentEnvironmentVariables(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1161,7 +1161,7 @@ export class ClientsController {
    */
   @Post(':id/agents/:agentId/environment')
   @HttpCode(HttpStatus.CREATED)
-  @RequireScopes('agents:environment')
+  @RequireScopes('agent_environment:write')
   async createClientAgentEnvironmentVariable(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1184,7 +1184,7 @@ export class ClientsController {
    * @returns The updated environment variable response DTO
    */
   @Put(':id/agents/:agentId/environment/:envVarId')
-  @RequireScopes('agents:environment')
+  @RequireScopes('agent_environment:write')
   async updateClientAgentEnvironmentVariable(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1212,7 +1212,7 @@ export class ClientsController {
    */
   @Delete(':id/agents/:agentId/environment/:envVarId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @RequireScopes('agents:environment')
+  @RequireScopes('agent_environment:write')
   async deleteClientAgentEnvironmentVariable(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1233,7 +1233,7 @@ export class ClientsController {
    */
   @Delete(':id/agents/:agentId/environment')
   @HttpCode(HttpStatus.OK)
-  @RequireScopes('agents:environment')
+  @RequireScopes('agent_environment:write')
   async deleteAllClientAgentEnvironmentVariables(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1249,7 +1249,7 @@ export class ClientsController {
    * Only accessible if the user has access to the client.
    */
   @Get(':id/agents/:agentId/chats')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:read')
   async listClientAgentChatSessions(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1267,7 +1267,7 @@ export class ClientsController {
    * Only accessible if the user has access to the client.
    */
   @Get(':id/agents/:agentId/chats/count')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:read')
   async countClientAgentChatSessions(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1284,7 +1284,7 @@ export class ClientsController {
    */
   @Post(':id/agents/:agentId/chats')
   @HttpCode(HttpStatus.CREATED)
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:write')
   async createClientAgentChatSession(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1302,7 +1302,7 @@ export class ClientsController {
    * Only accessible if the user has access to the client.
    */
   @Get(':id/agents/:agentId/chats/:chatId')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:read')
   async getClientAgentChatSession(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1319,7 +1319,7 @@ export class ClientsController {
    * Only accessible if the user has access to the client.
    */
   @Put(':id/agents/:agentId/chats/:chatId')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:write')
   async updateClientAgentChatSession(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1338,7 +1338,7 @@ export class ClientsController {
    */
   @Delete(':id/agents/:agentId/chats/:chatId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:write')
   async deleteClientAgentChatSession(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -1354,7 +1354,7 @@ export class ClientsController {
    * Only accessible if the user has access to the client.
    */
   @Get(':id/agents/:agentId/chats/:chatId/messages')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:read')
   async listClientAgentChatSessionMessages(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,

@@ -61,7 +61,7 @@ The invoice list supports batch loading with client-side search in list-group st
 | GET    | `/admin/billing/subscriptions/{id}/meters`                                      | Meter summaries for the current period                     |
 | GET    | `/admin/billing/subscriptions/{id}/meters/history`                              | Meter history series (`from`, `to`, `groupBy`)             |
 
-Service-visibility admin APIs require `ADMIN` plus PAT scopes `billing_admin:read` / `billing_admin:write`. Meter-entry list/update/delete use the same `billing_admin:*` scopes; create remains on `usage:write` for ingestion keys. See [Service details](./service-details.md).
+Service-visibility admin APIs require `ADMIN` plus PAT scope `subscriptions:admin`. Meter history and meter-entry list/create/update/delete use `usage:admin`. See [Service details](./service-details.md).
 
 Instant cancel marks `instantRemoval` and queues `subscription-instant-cancel` jobs. See [Subscriptions — Admin instant cancel](./subscriptions.md#admin-instant-cancel).
 
@@ -137,7 +137,7 @@ PAT scope: `supplier_profile:admin`. See [Supplier profiles](./supplier-profiles
 
 ## Supplier Invoices (Accounts Payable)
 
-Inbound expense invoices under `/admin/billing/supplier-invoices`. PAT scopes: `billing_admin:read` / `billing_admin:write`.
+Inbound expense invoices under `/admin/billing/supplier-invoices`. PAT scope: `supplier_invoices:admin`.
 
 Draft → issue workflow mirrors manual AR invoices; supports document upload, EN16931 parse preview, void, and manual paid status. See [Supplier invoices](./supplier-invoices.md).
 
@@ -149,7 +149,7 @@ When the request tenant is listed in `TENANTS_ALLOW_GLOBAL_VIEWS`, the DATEV adm
 
 ## File Explorer
 
-Read-only admin browser for managed storage files (invoice PDFs, supplier documents, DATEV ZIPs). Frontend route: `/administration/file-explorer`. API under `/admin/billing/files` (`billing_admin:read`). Tenant enclosure and Unified consolidation use the same `TENANTS_ALLOW_GLOBAL_VIEWS` allowlist as DATEV. See [File Explorer](./file-explorer.md).
+Read-only admin browser for managed storage files (invoice PDFs, supplier documents, DATEV ZIPs). Frontend route: `/administration/file-explorer`. API under `/admin/billing/files` (`files:admin`). Tenant enclosure and Unified consolidation use the same `TENANTS_ALLOW_GLOBAL_VIEWS` allowlist as DATEV. See [File Explorer](./file-explorer.md).
 
 ## Admin Projects
 

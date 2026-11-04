@@ -35,7 +35,7 @@ export class ChatPlanController {
   ) {}
 
   @Get('chats/:chatId/plans')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:read')
   async listByChat(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -49,7 +49,7 @@ export class ChatPlanController {
 
   /** Plans page: every plan of the agent, newest first, searchable (title, original request, plan body). */
   @Get('plans')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:read')
   async listForAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -72,7 +72,7 @@ export class ChatPlanController {
   }
 
   @Get('plans/:planId')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:read')
   async getPlan(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -86,7 +86,7 @@ export class ChatPlanController {
 
   /** Edit a plan that has not been executed yet (409 once execution started, while drafting, or on a stale version). */
   @Patch('plans/:planId')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:write')
   async updatePlan(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -98,7 +98,7 @@ export class ChatPlanController {
   }
 
   @Get('plans/:planId/activity')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:read')
   async listPlanActivity(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -112,7 +112,7 @@ export class ChatPlanController {
 
   @Post('plans/:planId/cancel')
   @HttpCode(HttpStatus.OK)
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:write')
   async cancelPlan(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,

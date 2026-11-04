@@ -19,7 +19,6 @@ import type {
  * Workspace code search against controller-owned OpenSearch corpora (per clientId+agentId).
  */
 @Controller('clients/:id/agents/:agentId/workspace-search')
-@RequireScopes('agents:files')
 export class ClientsWorkspaceSearchController {
   constructor(
     private readonly workspaceSearch: WorkspaceSearchIndexService,
@@ -29,6 +28,7 @@ export class ClientsWorkspaceSearchController {
   ) {}
 
   @Get()
+  @RequireScopes('agent_files:read')
   async search(
     @Param('id', ParseUUIDPipe) clientId: string,
     @Param('agentId', ParseUUIDPipe) agentId: string,
@@ -51,6 +51,7 @@ export class ClientsWorkspaceSearchController {
   }
 
   @Get('status')
+  @RequireScopes('agent_files:read')
   async status(
     @Param('id', ParseUUIDPipe) clientId: string,
     @Param('agentId', ParseUUIDPipe) agentId: string,
@@ -63,6 +64,7 @@ export class ClientsWorkspaceSearchController {
 
   @Post('reindex')
   @HttpCode(HttpStatus.ACCEPTED)
+  @RequireScopes('agent_files:write')
   async reindex(
     @Param('id', ParseUUIDPipe) clientId: string,
     @Param('agentId', ParseUUIDPipe) agentId: string,

@@ -17,7 +17,7 @@ import { isAccessDeniedError } from '../billing-access-denied.util';
 
 /**
  * Admin promotion typeahead. The stored value is the promotion **code** (what the offer line API expects).
- * The admin promotions API needs `promotions:write`; without it (401 / 403) the select becomes a plain text input.
+ * The admin promotions API needs `promotions:admin`; without it (401 / 403) the select becomes a plain text input.
  */
 @Component({
   selector: 'framework-billing-admin-promotion-select',

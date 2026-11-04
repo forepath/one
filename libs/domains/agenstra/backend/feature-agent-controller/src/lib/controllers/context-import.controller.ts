@@ -34,7 +34,7 @@ import { ExternalImportConfigService } from '../services/external-import-config.
 import { ExternalImportSyncMarkerService } from '../services/external-import-sync-marker.service';
 
 @Controller('imports/atlassian')
-@RequireScopes('imports:write')
+@RequireScopes('imports:admin')
 export class ContextImportController {
   constructor(
     private readonly connections: AtlassianSiteConnectionService,

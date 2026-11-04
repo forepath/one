@@ -27,7 +27,6 @@ import { ClientAgentDeploymentsProxyService } from '../services/client-agent-dep
  * Proxies requests to remote agent-manager services for deployment operations.
  */
 @Controller('clients/:id/agents/:agentId/deployments')
-@RequireScopes('agents:deployments')
 export class ClientsDeploymentsController {
   constructor(
     private readonly proxyService: ClientAgentDeploymentsProxyService,
@@ -39,6 +38,7 @@ export class ClientsDeploymentsController {
    * Get deployment configuration for an agent (proxied).
    */
   @Get('configuration')
+  @RequireScopes('agent_deployments:read')
   async getConfiguration(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -53,6 +53,7 @@ export class ClientsDeploymentsController {
    * Create or update deployment configuration for an agent (proxied).
    */
   @Post('configuration')
+  @RequireScopes('agent_deployments:write')
   async upsertConfiguration(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -69,6 +70,7 @@ export class ClientsDeploymentsController {
    */
   @Delete('configuration')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_deployments:write')
   async deleteConfiguration(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -82,6 +84,7 @@ export class ClientsDeploymentsController {
    * List repositories accessible with the agent's deployment configuration (proxied).
    */
   @Get('repositories')
+  @RequireScopes('agent_deployments:read')
   async listRepositories(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -96,6 +99,7 @@ export class ClientsDeploymentsController {
    * List branches for a repository (proxied).
    */
   @Get('repositories/:repositoryId/branches')
+  @RequireScopes('agent_deployments:read')
   async listBranches(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -111,6 +115,7 @@ export class ClientsDeploymentsController {
    * List workflows for a repository (proxied).
    */
   @Get('repositories/:repositoryId/workflows')
+  @RequireScopes('agent_deployments:read')
   async listWorkflows(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -127,6 +132,7 @@ export class ClientsDeploymentsController {
    * Trigger a workflow run (proxied).
    */
   @Post('workflows/trigger')
+  @RequireScopes('agent_deployments:write')
   async triggerWorkflow(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -142,6 +148,7 @@ export class ClientsDeploymentsController {
    * List deployment runs for an agent (proxied).
    */
   @Get('runs')
+  @RequireScopes('agent_deployments:read')
   async listRuns(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -159,6 +166,7 @@ export class ClientsDeploymentsController {
    * Get the status of a pipeline run (proxied).
    */
   @Get('runs/:runId')
+  @RequireScopes('agent_deployments:read')
   async getRunStatus(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -174,6 +182,7 @@ export class ClientsDeploymentsController {
    * Get logs for a pipeline run (proxied).
    */
   @Get('runs/:runId/logs')
+  @RequireScopes('agent_deployments:read')
   async getRunLogs(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -189,6 +198,7 @@ export class ClientsDeploymentsController {
    * List jobs/steps for a pipeline run (proxied).
    */
   @Get('runs/:runId/jobs')
+  @RequireScopes('agent_deployments:read')
   async listRunJobs(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -204,6 +214,7 @@ export class ClientsDeploymentsController {
    * Get logs for a specific job/step (proxied).
    */
   @Get('runs/:runId/jobs/:jobId/logs')
+  @RequireScopes('agent_deployments:read')
   async getJobLogs(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -221,6 +232,7 @@ export class ClientsDeploymentsController {
    */
   @Post('runs/:runId/cancel')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_deployments:write')
   async cancelRun(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,

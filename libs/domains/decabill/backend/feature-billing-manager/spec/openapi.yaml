@@ -198,6 +198,8 @@ paths:
     get:
       summary: List service types
       operationId: listServiceTypes
+      security:
+        - bearerAuth: [catalog:read]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -220,6 +222,8 @@ paths:
     post:
       summary: Create service type (admin only)
       operationId: createServiceType
+      security:
+        - bearerAuth: [catalog:admin]
       requestBody:
         required: true
         content:
@@ -255,6 +259,8 @@ paths:
     get:
       summary: Get all provider details
       operationId: getProviderDetails
+      security:
+        - bearerAuth: [catalog:read]
       description: Returns registered provisioning providers with id, display name, and optional config schema for service type creation and subscription config.
       responses:
         '200':
@@ -275,6 +281,8 @@ paths:
     get:
       summary: Get server types for a provider
       operationId: getProviderServerTypes
+      security:
+        - bearerAuth: [catalog:read]
       description: Returns server types with specs and pricing for the given provider (e.g. hetzner, digital-ocean). Used by the billing console for server type dropdown and to auto-set plan base price when configSchema.basePriceFromField is set.
       parameters:
         - name: providerId
@@ -315,6 +323,8 @@ paths:
     get:
       summary: Get geography options for a provider
       operationId: getProviderLocations
+      security:
+        - bearerAuth: [catalog:read]
       description: Returns locations (Hetzner) or regions (DigitalOcean) with human-readable labels. Used by the billing console for geography enum dropdowns. Labels are resolved from the provider API with static fallbacks when the API is unavailable.
       parameters:
         - name: providerId
@@ -355,6 +365,8 @@ paths:
     get:
       summary: List meters attached to a service type
       operationId: listServiceTypeMeters
+      security:
+        - bearerAuth: [catalog:read]
       description: |
         Returns attached meters for the service type. Provider-declared meters are synced
         on read (ensured in catalog and sideloaded as required). Includes manual attachments.
@@ -384,6 +396,8 @@ paths:
     post:
       summary: Attach a catalog meter to a service type (admin only)
       operationId: attachServiceTypeMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - $ref: '#/components/parameters/ServiceTypeId'
       requestBody:
@@ -421,6 +435,8 @@ paths:
     post:
       summary: Update service type meter unit-price override (admin only)
       operationId: updateServiceTypeMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - $ref: '#/components/parameters/ServiceTypeId'
         - name: meterId
@@ -462,6 +478,8 @@ paths:
       summary: Detach meter from service type (admin only)
       description: Required (provider-sourced) meters cannot be detached.
       operationId: detachServiceTypeMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - $ref: '#/components/parameters/ServiceTypeId'
         - name: meterId
@@ -493,6 +511,8 @@ paths:
     get:
       summary: Get service type
       operationId: getServiceType
+      security:
+        - bearerAuth: [catalog:read]
       parameters:
         - $ref: '#/components/parameters/ServiceTypeId'
       responses:
@@ -517,6 +537,8 @@ paths:
     post:
       summary: Update service type (admin only)
       operationId: updateServiceType
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - $ref: '#/components/parameters/ServiceTypeId'
       requestBody:
@@ -559,6 +581,8 @@ paths:
     delete:
       summary: Delete service type (admin only)
       operationId: deleteServiceType
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - $ref: '#/components/parameters/ServiceTypeId'
       responses:
@@ -586,6 +610,8 @@ paths:
     get:
       summary: List service plans
       operationId: listServicePlans
+      security:
+        - bearerAuth: [catalog:read]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -608,6 +634,8 @@ paths:
     post:
       summary: Create service plan (admin only)
       operationId: createServicePlan
+      security:
+        - bearerAuth: [catalog:admin]
       requestBody:
         required: true
         content:
@@ -643,6 +671,8 @@ paths:
     get:
       summary: Get order form fields for a CloudInit config on a service plan
       operationId: getServicePlanCloudInitOrderFields
+      security:
+        - bearerAuth: [catalog:read]
       parameters:
         - $ref: '#/components/parameters/ServicePlanId'
         - name: configId
@@ -674,6 +704,8 @@ paths:
     get:
       summary: Get service plan
       operationId: getServicePlan
+      security:
+        - bearerAuth: [catalog:read]
       parameters:
         - $ref: '#/components/parameters/ServicePlanId'
       responses:
@@ -698,6 +730,8 @@ paths:
     post:
       summary: Update service plan (admin only)
       operationId: updateServicePlan
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - $ref: '#/components/parameters/ServicePlanId'
       requestBody:
@@ -740,6 +774,8 @@ paths:
     delete:
       summary: Delete service plan (admin only)
       operationId: deleteServicePlan
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - $ref: '#/components/parameters/ServicePlanId'
       responses:
@@ -769,10 +805,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /service-plans/{id}/order-provisioning-options:
+    get:
+      summary: List provisioning options offered when ordering a plan
+      description: >
+        Integrated product stacks and admin-defined cloud-init templates selectable for the plan.
+        Empty when the plan has no service type.
+      operationId: listServicePlanOrderProvisioningOptions
+      security:
+        - bearerAuth: [catalog:read]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Provisioning options
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderProvisioningOption'
+        '404':
+          description: Service plan not found
   /cloud-init-configs:
     get:
       summary: List CloudInit configs (admin only)
       operationId: listCloudInitConfigs
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -801,6 +864,8 @@ paths:
     post:
       summary: Create CloudInit config (admin only)
       operationId: createCloudInitConfig
+      security:
+        - bearerAuth: [catalog:admin]
       requestBody:
         required: true
         content:
@@ -836,6 +901,8 @@ paths:
     get:
       summary: Get CloudInit config (admin only)
       operationId: getCloudInitConfig
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -869,6 +936,8 @@ paths:
     post:
       summary: Update CloudInit config (admin only)
       operationId: updateCloudInitConfig
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -914,6 +983,8 @@ paths:
     delete:
       summary: Delete CloudInit config (admin only)
       operationId: deleteCloudInitConfig
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -950,6 +1021,8 @@ paths:
     get:
       summary: List usage meters (admin only)
       operationId: listMeters
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -966,6 +1039,8 @@ paths:
     post:
       summary: Create usage meter (admin only)
       operationId: createMeter
+      security:
+        - bearerAuth: [catalog:admin]
       requestBody:
         required: true
         content:
@@ -983,6 +1058,8 @@ paths:
     get:
       summary: Get usage meter (admin only)
       operationId: getMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -998,6 +1075,8 @@ paths:
     post:
       summary: Update usage meter (admin only)
       operationId: updateMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1020,6 +1099,8 @@ paths:
       summary: Delete usage meter (admin only)
       description: Blocked while plan links, addon links, or usage rows reference the meter. Prefer isActive=false.
       operationId: deleteMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1032,6 +1113,8 @@ paths:
     get:
       summary: List addons (admin only)
       operationId: listAddons
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -1060,6 +1143,8 @@ paths:
     post:
       summary: Create addon (admin only)
       operationId: createAddon
+      security:
+        - bearerAuth: [catalog:admin]
       requestBody:
         required: true
         content:
@@ -1083,6 +1168,8 @@ paths:
     get:
       summary: List registered addon modules (admin only)
       operationId: listAddonModules
+      security:
+        - bearerAuth: [catalog:admin]
       description: |
         Returns registered addon modules and their declared required meters.
         Used by the admin UI to preview fixed meters before saving a module addon.
@@ -1111,6 +1198,8 @@ paths:
     get:
       summary: Get addon (admin only)
       operationId: getAddon
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1132,6 +1221,8 @@ paths:
     post:
       summary: Update addon (admin only)
       operationId: updateAddon
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1153,6 +1244,8 @@ paths:
     delete:
       summary: Delete addon (admin only)
       operationId: deleteAddon
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1165,6 +1258,8 @@ paths:
     get:
       summary: List meters attached to an addon
       operationId: listAddonMeters
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1182,6 +1277,8 @@ paths:
     post:
       summary: Attach a meter to an addon
       operationId: attachAddonMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1204,6 +1301,8 @@ paths:
     post:
       summary: Update addon meter unit-price override
       operationId: updateAddonMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1229,6 +1328,8 @@ paths:
     delete:
       summary: Detach meter from addon
       operationId: detachAddonMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1245,6 +1346,8 @@ paths:
     get:
       summary: List meters attached to a service plan
       operationId: listServicePlanMeters
+      security:
+        - bearerAuth: [catalog:read]
       parameters:
         - name: id
           in: path
@@ -1262,6 +1365,8 @@ paths:
     post:
       summary: Attach a meter to a service plan
       operationId: attachServicePlanMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1284,6 +1389,8 @@ paths:
     post:
       summary: Update plan meter unit-price override
       operationId: updateServicePlanMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1309,6 +1416,8 @@ paths:
     delete:
       summary: Detach meter from service plan
       operationId: detachServicePlanMeter
+      security:
+        - bearerAuth: [catalog:admin]
       parameters:
         - name: id
           in: path
@@ -1325,6 +1434,8 @@ paths:
     get:
       summary: List orderable addons for a plan
       operationId: listServicePlanAddons
+      security:
+        - bearerAuth: [catalog:read]
       parameters:
         - name: id
           in: path
@@ -1348,6 +1459,8 @@ paths:
     post:
       summary: Check availability
       operationId: checkAvailability
+      security:
+        - bearerAuth: [subscriptions:write]
       requestBody:
         required: true
         content:
@@ -1377,6 +1490,8 @@ paths:
     post:
       summary: Get availability alternatives
       operationId: checkAvailabilityAlternatives
+      security:
+        - bearerAuth: [subscriptions:write]
       requestBody:
         required: true
         content:
@@ -1866,6 +1981,8 @@ paths:
     delete:
       summary: Admin remove authenticator 2FA from a user
       operationId: adminClearUserTotp
+      security:
+        - bearerAuth: [users:admin]
       parameters:
         - in: path
           name: id
@@ -1922,6 +2039,8 @@ paths:
     get:
       summary: List users (admin only)
       operationId: listUsers
+      security:
+        - bearerAuth: [users:admin]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -1949,6 +2068,8 @@ paths:
     post:
       summary: Create user (admin only)
       operationId: createUser
+      security:
+        - bearerAuth: [users:admin]
       requestBody:
         required: true
         content:
@@ -1984,6 +2105,8 @@ paths:
     get:
       summary: Get user (admin only)
       operationId: getUser
+      security:
+        - bearerAuth: [users:admin]
       parameters:
         - $ref: '#/components/parameters/UserId'
       responses:
@@ -2014,6 +2137,8 @@ paths:
     post:
       summary: Update user (admin only)
       operationId: updateUser
+      security:
+        - bearerAuth: [users:admin]
       parameters:
         - $ref: '#/components/parameters/UserId'
       requestBody:
@@ -2056,6 +2181,8 @@ paths:
     delete:
       summary: Delete user (admin only)
       operationId: deleteUser
+      security:
+        - bearerAuth: [users:admin]
       parameters:
         - $ref: '#/components/parameters/UserId'
       responses:
@@ -2079,10 +2206,64 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /users/{id}/lock:
+    post:
+      summary: Lock user account (admin only)
+      operationId: lockUser
+      security:
+        - bearerAuth: [users:admin]
+      description: >
+        Locks the target user account immediately. Locked users cannot authenticate in users-auth mode. Admins cannot lock themselves.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '201':
+          description: User locked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Self-lock is not allowed
+        '403':
+          description: Not an admin, or insufficient token scope
+        '404':
+          description: User not found
+  /users/{id}/unlock:
+    post:
+      summary: Unlock user account (admin only)
+      operationId: unlockUser
+      security:
+        - bearerAuth: [users:admin]
+      description: >
+        Unlocks the target user account by clearing the lock timestamp. Admins cannot unlock themselves.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '201':
+          description: User unlocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Self-unlock is not allowed
+        '403':
+          description: Not an admin, or insufficient token scope
+        '404':
+          description: User not found
   /subscriptions:
     get:
       summary: List subscriptions
       operationId: listSubscriptions
+      security:
+        - bearerAuth: [subscriptions:read]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -2105,6 +2286,8 @@ paths:
     post:
       summary: Create subscription
       operationId: createSubscription
+      security:
+        - bearerAuth: [subscriptions:write]
       requestBody:
         required: true
         content:
@@ -2136,6 +2319,8 @@ paths:
     get:
       summary: Subscription and backorder catalog counts for the current user
       operationId: getSubscriptionsSummary
+      security:
+        - bearerAuth: [subscriptions:read]
       responses:
         '200':
           description: True totals independent of list pagination
@@ -2153,6 +2338,8 @@ paths:
     get:
       summary: Get subscription
       operationId: getSubscription
+      security:
+        - bearerAuth: [subscriptions:read]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       responses:
@@ -2178,6 +2365,8 @@ paths:
     get:
       summary: Meter usage history for a subscription
       operationId: getSubscriptionMeterHistory
+      security:
+        - bearerAuth: [subscriptions:read]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: from
@@ -2228,6 +2417,8 @@ paths:
     get:
       summary: List meter summaries for a subscription
       operationId: listSubscriptionMeters
+      security:
+        - bearerAuth: [subscriptions:read]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       responses:
@@ -2249,6 +2440,8 @@ paths:
     post:
       summary: Cancel subscription
       operationId: cancelSubscription
+      security:
+        - bearerAuth: [subscriptions:write]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       requestBody:
@@ -2280,6 +2473,8 @@ paths:
     post:
       summary: Resume subscription
       operationId: resumeSubscription
+      security:
+        - bearerAuth: [subscriptions:write]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       requestBody:
@@ -2311,6 +2506,8 @@ paths:
     post:
       summary: Statutory withdrawal (Widerruf)
       operationId: withdrawSubscription
+      security:
+        - bearerAuth: [subscriptions:write]
       description: |
         Exercises the statutory withdrawal right, distinct from commercial cancellation.
         Unprovisioned orders are always withdrawable. Provisioned orders may withdraw within
@@ -2347,6 +2544,8 @@ paths:
     post:
       summary: Preview a subscription configuration change
       operationId: previewSubscriptionConfigChange
+      security:
+        - bearerAuth: [subscriptions:read]
       description: |
         Validates a mid-life configuration change (server type resize, addon add/remove) and returns
         the price delta, the prorated immediate adjustment, and the billing disclaimer the customer
@@ -2385,6 +2584,8 @@ paths:
     post:
       summary: Request a subscription configuration change
       operationId: requestSubscriptionConfigChange
+      security:
+        - bearerAuth: [subscriptions:write]
       description: |
         Moves the subscription to `pending_config_change` and records a pending change run.
         The change is applied asynchronously; poll the returned run for its status.
@@ -2419,6 +2620,8 @@ paths:
     get:
       summary: Get configuration change eligibility
       operationId: getSubscriptionConfigChangeEligibility
+      security:
+        - bearerAuth: [subscriptions:read]
       description: |
         Reports whether the subscription can currently be reconfigured, plus the server types and
         addons the plan offers. Provider capabilities are fail-closed.
@@ -2447,6 +2650,8 @@ paths:
     get:
       summary: List subscription items
       operationId: listSubscriptionItems
+      security:
+        - bearerAuth: [subscriptions:read]
       description: Returns items for the subscription (id, provisioningStatus, serviceTypeId, serviceTypeName). User must own the subscription.
       parameters:
         - name: subscriptionId
@@ -2480,6 +2685,8 @@ paths:
     get:
       summary: Get subscription item detail
       operationId: getSubscriptionItemDetail
+      security:
+        - bearerAuth: [subscriptions:read]
       description: |
         Returns a subscription item with optional server info when the service is active and provisioned.
         Removed or non-active items respond with 404.
@@ -2519,6 +2726,8 @@ paths:
     post:
       summary: Update subscription item display name
       operationId: updateSubscriptionItemDisplayName
+      security:
+        - bearerAuth: [subscriptions:write]
       description: Sets or clears the customer-defined display name for a subscription item.
       parameters:
         - name: subscriptionId
@@ -2568,6 +2777,8 @@ paths:
     get:
       summary: Get server info for a provisioned subscription item
       operationId: getSubscriptionItemServerInfo
+      security:
+        - bearerAuth: [subscriptions:read]
       description: Returns live server info from the provider and updates the cached snapshot. Only available when provisioning is finished (status active). User must own the subscription.
       parameters:
         - name: subscriptionId
@@ -2613,6 +2824,8 @@ paths:
     get:
       summary: Reveal provisioning SSH private key (one-time)
       operationId: getSubscriptionItemSshAccessKey
+      security:
+        - bearerAuth: [subscriptions:write]
       description: >
         Returns the provisioning SSH private key for a subscription item owned by the caller.
         Succeeds only once per item; sets sshAccessGranted on the item and blocks subsequent
@@ -2667,6 +2880,8 @@ paths:
     get:
       summary: List Docker containers for Container Manager
       operationId: listContainerManagerContainers
+      security:
+        - bearerAuth: [subscriptions:read]
       description: |
         Returns containers and live resource stats collected over SSH when the Container Manager
         addon is active on the subscription. User must own the subscription.
@@ -2713,6 +2928,8 @@ paths:
     get:
       summary: Get Container Manager stats history for a container
       operationId: getContainerManagerStatsHistory
+      security:
+        - bearerAuth: [subscriptions:read]
       description: |
         Returns persisted stats-history samples written by the contributor-collect worker.
         This endpoint does not collect live SSH stats. Empty `points` is valid when the job
@@ -2765,6 +2982,8 @@ paths:
     get:
       summary: Get Container Manager logs for a container
       operationId: getContainerManagerLogs
+      security:
+        - bearerAuth: [subscriptions:read]
       description: |
         Returns recent `docker logs` lines (with timestamps) collected over SSH for a container.
         User must own the subscription. Requires `subscriptions:read`.
@@ -2825,6 +3044,8 @@ paths:
     get:
       summary: List Docker networks and topology for Container Manager
       operationId: listContainerManagerNetworks
+      security:
+        - bearerAuth: [subscriptions:read]
       description: |
         Returns networks plus a simple topology graph collected over SSH when Container Manager
         is active. User must own the subscription. Requires `subscriptions:read`.
@@ -2870,6 +3091,8 @@ paths:
     post:
       summary: Start server for a provisioned subscription item
       operationId: startSubscriptionItemServer
+      security:
+        - bearerAuth: [subscriptions:write]
       description: User must own the subscription. Item must be provisioned (status active).
       parameters:
         - name: subscriptionId
@@ -2913,6 +3136,8 @@ paths:
     post:
       summary: Stop server for a provisioned subscription item
       operationId: stopSubscriptionItemServer
+      security:
+        - bearerAuth: [subscriptions:write]
       parameters:
         - name: subscriptionId
           in: path
@@ -2955,6 +3180,8 @@ paths:
     post:
       summary: Restart server for a provisioned subscription item
       operationId: restartSubscriptionItemServer
+      security:
+        - bearerAuth: [subscriptions:write]
       parameters:
         - name: subscriptionId
           in: path
@@ -2997,6 +3224,8 @@ paths:
     get:
       summary: List backorders
       operationId: listBackorders
+      security:
+        - bearerAuth: [subscriptions:read]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -3027,6 +3256,8 @@ paths:
     post:
       summary: Retry backorder
       operationId: retryBackorder
+      security:
+        - bearerAuth: [subscriptions:write]
       parameters:
         - $ref: '#/components/parameters/BackorderId'
       requestBody:
@@ -3058,6 +3289,8 @@ paths:
     post:
       summary: Cancel backorder
       operationId: cancelBackorder
+      security:
+        - bearerAuth: [subscriptions:write]
       parameters:
         - $ref: '#/components/parameters/BackorderId'
       requestBody:
@@ -3089,6 +3322,8 @@ paths:
     post:
       summary: Preview pricing
       operationId: previewPricing
+      security:
+        - bearerAuth: [catalog:read]
       requestBody:
         required: true
         content:
@@ -3118,6 +3353,8 @@ paths:
     post:
       summary: Preview tax treatment and rates for the authenticated customer
       operationId: previewTaxForCustomer
+      security:
+        - bearerAuth: [catalog:read]
       requestBody:
         required: false
         content:
@@ -3141,6 +3378,8 @@ paths:
     get:
       summary: Get customer profile
       operationId: getCustomerProfile
+      security:
+        - bearerAuth: [customer_profile:read]
       responses:
         '200':
           description: Customer profile
@@ -3157,6 +3396,8 @@ paths:
     post:
       summary: Update customer profile
       operationId: updateCustomerProfile
+      security:
+        - bearerAuth: [customer_profile:write]
       requestBody:
         required: true
         content:
@@ -3186,6 +3427,8 @@ paths:
     post:
       summary: Revalidate customer VAT ID via VIES
       operationId: revalidateCustomerVatId
+      security:
+        - bearerAuth: [customer_profile:write]
       responses:
         '200':
           description: Customer profile with updated VAT validation status
@@ -3209,6 +3452,8 @@ paths:
     post:
       summary: Start auto-billing payment method setup
       operationId: setupCustomerAutoBilling
+      security:
+        - bearerAuth: [customer_profile:write]
       description: Creates a hosted setup session for the default payment processor (requires supportsAutoPayment).
       responses:
         '200':
@@ -3233,6 +3478,8 @@ paths:
     post:
       summary: Enable auto-billing
       operationId: enableCustomerAutoBilling
+      security:
+        - bearerAuth: [customer_profile:write]
       description: Requires a payment method on file and a processor that supports auto-payment.
       responses:
         '200':
@@ -3257,6 +3504,8 @@ paths:
     post:
       summary: Disable auto-billing
       operationId: disableCustomerAutoBilling
+      security:
+        - bearerAuth: [customer_profile:write]
       description: Disables auto-billing and immediately unlocks manual payment on open invoices.
       responses:
         '200':
@@ -3275,6 +3524,8 @@ paths:
     get:
       summary: Get open and overdue invoices summary
       operationId: getInvoicesSummary
+      security:
+        - bearerAuth: [invoices:read]
       description: Returns count and total balance of open and overdue invoices for the current user across all subscriptions.
       responses:
         '200':
@@ -3293,6 +3544,8 @@ paths:
     get:
       summary: List open and overdue invoices
       operationId: listOpenOverdueInvoices
+      security:
+        - bearerAuth: [invoices:read]
       description: Returns all open and overdue invoices for the current user across subscriptions, with balance and optional subscription number.
       parameters:
         - $ref: '#/components/parameters/Search'
@@ -3317,6 +3570,8 @@ paths:
     get:
       summary: List invoice history
       operationId: listInvoiceHistory
+      security:
+        - bearerAuth: [invoices:read]
       description: |
         Returns paid and void invoices for the current user.
         Draft invoices are never included in customer-facing lists.
@@ -3343,6 +3598,8 @@ paths:
     get:
       summary: Get invoice details by reference (no subscription)
       operationId: getInvoiceDetailsByRef
+      security:
+        - bearerAuth: [invoices:read]
       description: |
         Returns invoice detail for the authenticated user when the invoice is not tied to a subscription
         (e.g. manual invoices). Access is scoped to invoices owned by the current user.
@@ -3376,6 +3633,8 @@ paths:
     get:
       summary: Download invoice PDF by reference (no subscription)
       operationId: downloadInvoicePdfByRef
+      security:
+        - bearerAuth: [invoices:read]
       description: Downloads the invoice PDF for the authenticated user when no subscription context is required.
       parameters:
         - name: invoiceRefId
@@ -3400,6 +3659,8 @@ paths:
     get:
       summary: Download void credit note PDF by reference (no subscription)
       operationId: downloadInvoiceVoidDocumentPdfByRef
+      security:
+        - bearerAuth: [invoices:read]
       description: Downloads the void document PDF for the authenticated user when no subscription context is required.
       parameters:
         - name: invoiceRefId
@@ -3426,6 +3687,8 @@ paths:
     get:
       summary: Download time report PDF by reference (no subscription)
       operationId: downloadInvoiceTimeReportPdfByRef
+      security:
+        - bearerAuth: [invoices:read]
       parameters:
         - name: invoiceRefId
           in: path
@@ -3451,6 +3714,8 @@ paths:
     post:
       summary: Initiate payment by reference (no subscription)
       operationId: initiateInvoicePaymentByRef
+      security:
+        - bearerAuth: [invoices:write]
       description: Starts Stripe Checkout for an invoice owned by the authenticated user without a subscription path segment.
       parameters:
         - name: invoiceRefId
@@ -3474,6 +3739,8 @@ paths:
     get:
       summary: List invoices
       operationId: listInvoices
+      security:
+        - bearerAuth: [invoices:read]
       description: Returns non-draft invoices for the subscription owned by the current user.
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
@@ -3495,6 +3762,8 @@ paths:
     post:
       summary: Create invoice (admin only)
       operationId: createInvoice
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       requestBody:
@@ -3526,6 +3795,8 @@ paths:
     get:
       summary: Get invoice details (preview)
       operationId: getInvoiceDetails
+      security:
+        - bearerAuth: [invoices:read]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: invoiceRefId
@@ -3557,6 +3828,8 @@ paths:
     get:
       summary: Download invoice PDF
       operationId: downloadInvoicePdf
+      security:
+        - bearerAuth: [invoices:read]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: invoiceRefId
@@ -3581,6 +3854,8 @@ paths:
     get:
       summary: Download void credit note PDF
       operationId: downloadInvoiceVoidDocumentPdf
+      security:
+        - bearerAuth: [invoices:read]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: invoiceRefId
@@ -3607,6 +3882,8 @@ paths:
     get:
       summary: Download time report PDF
       operationId: downloadInvoiceTimeReportPdf
+      security:
+        - bearerAuth: [invoices:read]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: invoiceRefId
@@ -3633,6 +3910,8 @@ paths:
     post:
       summary: Initiate payment (Stripe Checkout)
       operationId: initiateInvoicePayment
+      security:
+        - bearerAuth: [invoices:write]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: invoiceRefId
@@ -3656,6 +3935,8 @@ paths:
     post:
       summary: Void invoice (admin only)
       operationId: voidInvoice
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: invoiceRefId
@@ -3681,6 +3962,8 @@ paths:
       summary: Offer summary for current customer
       description: Requires `offers:read` scope for PAT callers.
       operationId: getOffersSummary
+      security:
+        - bearerAuth: [offers:read]
       responses:
         '200':
           description: Pending and history counts
@@ -3693,6 +3976,8 @@ paths:
       tags: [Offers]
       summary: List pending offers for current customer
       operationId: listPendingOffers
+      security:
+        - bearerAuth: [offers:read]
       parameters:
         - $ref: '#/components/parameters/Search'
         - name: limit
@@ -3715,6 +4000,8 @@ paths:
       tags: [Offers]
       summary: List offer history for current customer
       operationId: listOfferHistory
+      security:
+        - bearerAuth: [offers:read]
       parameters:
         - $ref: '#/components/parameters/Search'
         - name: limit
@@ -3737,6 +4024,8 @@ paths:
       tags: [Offers]
       summary: Get offer detail for current customer
       operationId: getCustomerOfferDetail
+      security:
+        - bearerAuth: [offers:read]
       parameters:
         - name: offerRefId
           in: path
@@ -3754,6 +4043,8 @@ paths:
       tags: [Offers]
       summary: Download offer PDF
       operationId: downloadCustomerOfferPdf
+      security:
+        - bearerAuth: [offers:read]
       parameters:
         - name: offerRefId
           in: path
@@ -3773,6 +4064,8 @@ paths:
       summary: Accept offer
       description: Requires `offers:write` scope for PAT callers.
       operationId: acceptCustomerOffer
+      security:
+        - bearerAuth: [offers:write]
       parameters:
         - name: offerRefId
           in: path
@@ -3791,6 +4084,8 @@ paths:
       summary: Decline offer
       description: Requires `offers:write` scope for PAT callers.
       operationId: declineCustomerOffer
+      security:
+        - bearerAuth: [offers:write]
       parameters:
         - name: offerRefId
           in: path
@@ -3815,6 +4110,8 @@ paths:
     get:
       summary: Usage summary
       operationId: getUsageSummary
+      security:
+        - bearerAuth: [usage:read]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       responses:
@@ -3838,6 +4135,8 @@ paths:
         Records billable usage for a subscription. Restricted to billing administrators and trusted
         `STATIC_API_KEY` automation callers. Customers cannot self-report usage via this endpoint.
       operationId: recordUsage
+      security:
+        - bearerAuth: [usage:admin]
       requestBody:
         required: true
         content:
@@ -3874,8 +4173,10 @@ paths:
       tags: [Admin Billing]
       summary: Meter usage history for a subscription (admin)
       description: |
-        Requires ADMIN role. PAT callers need `billing_admin:read`. Ownership is not required.
+        Requires ADMIN role. PAT callers need `usage:admin`. Ownership is not required.
       operationId: adminGetSubscriptionMeterHistory
+      security:
+        - bearerAuth: [usage:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: from
@@ -3933,10 +4234,12 @@ paths:
       tags: [Admin Billing]
       summary: Get subscription item detail (admin)
       operationId: adminGetSubscriptionItemDetail
+      security:
+        - bearerAuth: [subscriptions:admin]
       description: |
         Returns a subscription item with optional server info when the service is active and provisioned.
         Removed or non-active items respond with 404. Admin access does not require subscription ownership.
-        Requires ADMIN role. PAT callers need `billing_admin:read`.
+        Requires ADMIN role. PAT callers need `subscriptions:admin`.
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: itemId
@@ -3975,8 +4278,10 @@ paths:
       tags: [Admin Billing]
       summary: Update subscription item display name (admin)
       description: |
-        Requires ADMIN role. PAT callers need `billing_admin:write`. Ownership is not required.
+        Requires ADMIN role. PAT callers need `subscriptions:admin`. Ownership is not required.
       operationId: adminUpdateSubscriptionItemDisplayName
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: itemId
@@ -4003,8 +4308,10 @@ paths:
       tags: [Admin Billing]
       summary: Get subscription item server info (admin)
       description: |
-        Requires ADMIN role. PAT callers need `billing_admin:read`. Ownership is not required.
+        Requires ADMIN role. PAT callers need `subscriptions:admin`. Ownership is not required.
       operationId: adminGetSubscriptionItemServerInfo
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: itemId
@@ -4025,10 +4332,12 @@ paths:
       tags: [Admin Billing]
       summary: Reveal provisioning SSH private key (admin, one-time)
       description: |
-        Requires ADMIN role. PAT callers need `billing_admin:write`. Ownership is not required.
+        Requires ADMIN role. PAT callers need `subscriptions:admin`. Ownership is not required.
         Succeeds only once per item; sets sshAccessGranted and blocks subsequent reveals.
         Never log the response body.
       operationId: adminGetSubscriptionItemSshAccessKey
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: itemId
@@ -4061,9 +4370,11 @@ paths:
       tags: [Admin Billing]
       summary: List Docker containers for Container Manager (admin)
       operationId: adminListContainerManagerContainers
+      security:
+        - bearerAuth: [subscriptions:admin]
       description: |
         Returns containers and live resource stats collected over SSH when Container Manager
-        is active. Requires ADMIN role. PAT callers need `billing_admin:read`. Ownership is not required.
+        is active. Requires ADMIN role. PAT callers need `subscriptions:admin`. Ownership is not required.
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: itemId
@@ -4108,11 +4419,13 @@ paths:
       tags: [Admin Billing]
       summary: Get Container Manager stats history for a container (admin)
       operationId: adminGetContainerManagerStatsHistory
+      security:
+        - bearerAuth: [subscriptions:admin]
       description: |
         Returns persisted stats-history samples written by the contributor-collect worker.
         This endpoint does not collect live SSH stats. Empty `points` is valid when the job
         has not stored samples yet. Requires ADMIN role.
-        PAT callers need `billing_admin:read`. Ownership is not required.
+        PAT callers need `subscriptions:admin`. Ownership is not required.
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: itemId
@@ -4163,9 +4476,11 @@ paths:
       tags: [Admin Billing]
       summary: Get Container Manager logs for a container (admin)
       operationId: adminGetContainerManagerLogs
+      security:
+        - bearerAuth: [subscriptions:admin]
       description: |
         Returns recent `docker logs` lines collected over SSH. Requires ADMIN role.
-        PAT callers need `billing_admin:read`. Ownership is not required.
+        PAT callers need `subscriptions:admin`. Ownership is not required.
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: itemId
@@ -4225,9 +4540,11 @@ paths:
       tags: [Admin Billing]
       summary: List Docker networks and topology for Container Manager (admin)
       operationId: adminListContainerManagerNetworks
+      security:
+        - bearerAuth: [subscriptions:admin]
       description: |
         Returns networks plus a simple topology graph. Requires ADMIN role.
-        PAT callers need `billing_admin:read`. Ownership is not required.
+        PAT callers need `subscriptions:admin`. Ownership is not required.
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: itemId
@@ -4272,8 +4589,10 @@ paths:
       tags: [Admin Billing]
       summary: Start provisioned server (admin)
       description: |
-        Requires ADMIN role. PAT callers need `billing_admin:write`. Ownership is not required.
+        Requires ADMIN role. PAT callers need `subscriptions:admin`. Ownership is not required.
       operationId: adminStartSubscriptionItemServer
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: itemId
@@ -4294,8 +4613,10 @@ paths:
       tags: [Admin Billing]
       summary: Stop provisioned server (admin)
       description: |
-        Requires ADMIN role. PAT callers need `billing_admin:write`. Ownership is not required.
+        Requires ADMIN role. PAT callers need `subscriptions:admin`. Ownership is not required.
       operationId: adminStopSubscriptionItemServer
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: itemId
@@ -4316,8 +4637,10 @@ paths:
       tags: [Admin Billing]
       summary: Restart provisioned server (admin)
       description: |
-        Requires ADMIN role. PAT callers need `billing_admin:write`. Ownership is not required.
+        Requires ADMIN role. PAT callers need `subscriptions:admin`. Ownership is not required.
       operationId: adminRestartSubscriptionItemServer
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: itemId
@@ -4338,8 +4661,10 @@ paths:
       tags: [Admin Billing]
       summary: List subscription meter summaries (admin)
       description: |
-        Requires ADMIN role. PAT callers need `billing_admin:read`. Ownership is not required.
+        Requires ADMIN role. PAT callers need `usage:admin`. Ownership is not required.
       operationId: adminListSubscriptionMeters
+      security:
+        - bearerAuth: [usage:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       responses:
@@ -4356,6 +4681,8 @@ paths:
       tags: [Admin Billing]
       summary: List metered usage entries for a subscription
       operationId: adminListSubscriptionMeterEntries
+      security:
+        - bearerAuth: [usage:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: limit
@@ -4386,6 +4713,8 @@ paths:
       tags: [Admin Billing]
       summary: Create a metered usage entry for a subscription
       operationId: adminCreateSubscriptionMeterEntry
+      security:
+        - bearerAuth: [usage:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       requestBody:
@@ -4406,6 +4735,8 @@ paths:
       tags: [Admin Billing]
       summary: Update a metered usage entry
       operationId: adminUpdateSubscriptionMeterEntry
+      security:
+        - bearerAuth: [usage:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: entryId
@@ -4429,6 +4760,8 @@ paths:
       tags: [Admin Billing]
       summary: Delete a metered usage entry
       operationId: adminDeleteSubscriptionMeterEntry
+      security:
+        - bearerAuth: [usage:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: entryId
@@ -4443,6 +4776,8 @@ paths:
       tags: [Admin Billing]
       summary: Global billing KPI summary (admin only)
       operationId: getAdminBillingSummary
+      security:
+        - bearerAuth: [billing:admin]
       responses:
         '200':
           description: Global KPI cards
@@ -4459,6 +4794,8 @@ paths:
       tags: [Admin Billing]
       summary: Bill unbilled open positions now (admin only)
       operationId: adminBillNow
+      security:
+        - bearerAuth: [billing:admin]
       requestBody:
         content:
           application/json:
@@ -4476,6 +4813,8 @@ paths:
       tags: [Admin Billing]
       summary: List all subscriptions (admin only)
       operationId: listAdminSubscriptions
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - name: limit
           in: query
@@ -4506,6 +4845,8 @@ paths:
       tags: [Admin Billing]
       summary: Cancel subscription (admin only)
       operationId: adminCancelSubscription
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       requestBody:
@@ -4534,6 +4875,8 @@ paths:
       tags: [Admin Billing]
       summary: Withdraw subscription (admin only)
       operationId: adminWithdrawSubscription
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       requestBody:
@@ -4566,6 +4909,8 @@ paths:
         Marks the subscription `pending_instant_cancel` with `instantRemoval=true` for the dedicated teardown job.
         Arrear plans bill used time through cancel; prepaid plans refund unused period like statutory withdrawal.
       operationId: adminInstantCancelSubscription
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       requestBody:
@@ -4594,6 +4939,8 @@ paths:
       tags: [Admin Billing]
       summary: Resume subscription (admin only)
       operationId: adminResumeSubscription
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       requestBody:
@@ -4622,6 +4969,8 @@ paths:
       tags: [Admin Billing]
       summary: List subscriptions for a user (admin only)
       operationId: listAdminUserSubscriptions
+      security:
+        - bearerAuth: [subscriptions:admin]
       parameters:
         - name: userId
           in: path
@@ -4653,6 +5002,8 @@ paths:
       tags: [Admin Billing]
       summary: List all invoices (admin only)
       operationId: listAdminInvoices
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - name: limit
           in: query
@@ -4680,6 +5031,8 @@ paths:
       summary: List all invoices (deprecated alias)
       deprecated: true
       operationId: listAdminOpenOverdueInvoices
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - name: limit
           in: query
@@ -4705,6 +5058,8 @@ paths:
       tags: [Admin Billing]
       summary: Create manual invoice draft (admin only)
       operationId: createManualInvoice
+      security:
+        - bearerAuth: [invoices:admin]
       requestBody:
         required: true
         content:
@@ -4723,6 +5078,8 @@ paths:
       tags: [Admin Billing]
       summary: Get invoice detail (admin only)
       operationId: getAdminInvoiceDetail
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - name: invoiceRefId
           in: path
@@ -4739,6 +5096,8 @@ paths:
       tags: [Admin Billing]
       summary: Update manual invoice draft (admin only)
       operationId: updateManualInvoice
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - name: invoiceRefId
           in: path
@@ -4761,6 +5120,8 @@ paths:
       tags: [Admin Billing]
       summary: Delete manual invoice draft (admin only)
       operationId: deleteManualInvoice
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - name: invoiceRefId
           in: path
@@ -4774,6 +5135,8 @@ paths:
       tags: [Admin Billing]
       summary: Issue manual invoice draft (admin only)
       operationId: issueManualInvoice
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - name: invoiceRefId
           in: path
@@ -4796,6 +5159,8 @@ paths:
       tags: [Admin Billing]
       summary: Download invoice PDF (admin only)
       operationId: downloadAdminInvoicePdf
+      security:
+        - bearerAuth: [invoices:admin]
       description: Downloads the invoice PDF for any invoice by ID. Supports subscription and manual invoices.
       parameters:
         - name: invoiceRefId
@@ -4821,6 +5186,8 @@ paths:
       tags: [Admin Billing]
       summary: Download void credit note PDF (admin only)
       operationId: downloadAdminInvoiceVoidDocumentPdf
+      security:
+        - bearerAuth: [invoices:admin]
       description: Downloads the void document PDF for any voided invoice by ID.
       parameters:
         - name: invoiceRefId
@@ -4848,6 +5215,8 @@ paths:
       tags: [Admin Billing]
       summary: Download stored time report PDF (admin only)
       operationId: downloadAdminInvoiceTimeReportPdf
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - name: invoiceRefId
           in: path
@@ -4874,6 +5243,8 @@ paths:
       tags: [Promotions]
       summary: Validate a promotion code (simulated redemption)
       operationId: validatePromotionCode
+      security:
+        - bearerAuth: [promotions:read]
       requestBody:
         required: true
         content:
@@ -4892,6 +5263,8 @@ paths:
       tags: [Promotions]
       summary: Redeem a promotion code
       operationId: redeemPromotionCode
+      security:
+        - bearerAuth: [promotions:write]
       requestBody:
         required: true
         content:
@@ -4910,6 +5283,8 @@ paths:
       tags: [Promotions]
       summary: List promotion redemptions for current user
       operationId: listPromotionRedemptions
+      security:
+        - bearerAuth: [promotions:read]
       parameters:
         - name: limit
           in: query
@@ -4930,6 +5305,8 @@ paths:
       tags: [Promotions]
       summary: List active promotion benefits for current user
       operationId: listActivePromotions
+      security:
+        - bearerAuth: [promotions:read]
       parameters:
         - name: limit
           in: query
@@ -4950,6 +5327,8 @@ paths:
       tags: [Admin Billing]
       summary: List promotions (admin)
       operationId: listAdminPromotions
+      security:
+        - bearerAuth: [promotions:admin]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -4965,6 +5344,8 @@ paths:
       tags: [Admin Billing]
       summary: Create promotion (admin)
       operationId: createAdminPromotion
+      security:
+        - bearerAuth: [promotions:admin]
       requestBody:
         required: true
         content:
@@ -4983,6 +5364,8 @@ paths:
       tags: [Admin Billing]
       summary: Get promotion (admin)
       operationId: getAdminPromotion
+      security:
+        - bearerAuth: [promotions:admin]
       parameters:
         - name: id
           in: path
@@ -4999,6 +5382,8 @@ paths:
       tags: [Admin Billing]
       summary: Update promotion (admin)
       operationId: updateAdminPromotion
+      security:
+        - bearerAuth: [promotions:admin]
       parameters:
         - name: id
           in: path
@@ -5021,6 +5406,8 @@ paths:
       tags: [Admin Billing]
       summary: Deactivate promotion (admin)
       operationId: deactivateAdminPromotion
+      security:
+        - bearerAuth: [promotions:admin]
       parameters:
         - name: id
           in: path
@@ -5038,6 +5425,8 @@ paths:
       tags: [Admin Billing]
       summary: List redemptions for a promotion (admin)
       operationId: listAdminPromotionRedemptions
+      security:
+        - bearerAuth: [promotions:admin]
       parameters:
         - name: id
           in: path
@@ -5061,6 +5450,8 @@ paths:
       tags: [Admin Billing]
       summary: List offers (admin)
       operationId: listAdminOffers
+      security:
+        - bearerAuth: [offers:admin]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -5079,6 +5470,8 @@ paths:
       tags: [Admin Billing]
       summary: Create offer draft (admin)
       operationId: createAdminOffer
+      security:
+        - bearerAuth: [offers:admin]
       requestBody:
         required: true
         content:
@@ -5097,6 +5490,8 @@ paths:
       tags: [Admin Billing]
       summary: Offer statistics (admin)
       operationId: getAdminOfferStatistics
+      security:
+        - bearerAuth: [offers:admin]
       parameters:
         - name: from
           in: query
@@ -5122,6 +5517,8 @@ paths:
       tags: [Admin Billing]
       summary: Get offer (admin)
       operationId: getAdminOffer
+      security:
+        - bearerAuth: [offers:admin]
       parameters:
         - name: id
           in: path
@@ -5138,6 +5535,8 @@ paths:
       tags: [Admin Billing]
       summary: Update offer draft (admin)
       operationId: updateAdminOffer
+      security:
+        - bearerAuth: [offers:admin]
       parameters:
         - name: id
           in: path
@@ -5160,6 +5559,8 @@ paths:
       tags: [Admin Billing]
       summary: Delete offer draft (admin)
       operationId: deleteAdminOffer
+      security:
+        - bearerAuth: [offers:admin]
       parameters:
         - name: id
           in: path
@@ -5173,6 +5574,8 @@ paths:
       tags: [Admin Billing]
       summary: Archive offer and send to customer (admin)
       operationId: archiveAdminOffer
+      security:
+        - bearerAuth: [offers:admin]
       parameters:
         - name: id
           in: path
@@ -5190,6 +5593,8 @@ paths:
       tags: [Admin Billing]
       summary: Revoke archived offer (admin)
       operationId: revokeAdminOffer
+      security:
+        - bearerAuth: [offers:admin]
       parameters:
         - name: id
           in: path
@@ -5207,6 +5612,8 @@ paths:
       tags: [Admin Billing]
       summary: Download offer PDF (admin)
       operationId: downloadAdminOfferPdf
+      security:
+        - bearerAuth: [offers:admin]
       parameters:
         - name: id
           in: path
@@ -5225,6 +5632,8 @@ paths:
       tags: [Admin Billing]
       summary: List audit logs for offer (admin)
       operationId: listAdminOfferAuditLogs
+      security:
+        - bearerAuth: [offers:admin]
       parameters:
         - name: id
           in: path
@@ -5244,6 +5653,8 @@ paths:
       tags: [Admin Billing]
       summary: List customer billing profiles (admin only)
       operationId: listAdminCustomerProfiles
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -5259,6 +5670,8 @@ paths:
       tags: [Admin Billing]
       summary: Create customer billing profile (admin only)
       operationId: createAdminCustomerProfile
+      security:
+        - bearerAuth: [customer_profile:admin]
       requestBody:
         required: true
         content:
@@ -5277,6 +5690,8 @@ paths:
       tags: [Admin Billing]
       summary: Get customer billing profile (admin only)
       operationId: getAdminCustomerProfile
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - name: id
           in: path
@@ -5293,6 +5708,8 @@ paths:
       tags: [Admin Billing]
       summary: Update customer billing profile (admin only)
       operationId: updateAdminCustomerProfile
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - name: id
           in: path
@@ -5315,6 +5732,8 @@ paths:
       tags: [Admin Billing]
       summary: Delete customer billing profile (admin only)
       operationId: deleteAdminCustomerProfile
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - name: id
           in: path
@@ -5331,6 +5750,8 @@ paths:
         Adds a new key/value pair to the encrypted admin-only custom data map.
         Fails with 409 if the key already exists. Values are never included in webhook payloads.
       operationId: addAdminCustomerProfileCustomData
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - name: id
           in: path
@@ -5359,6 +5780,8 @@ paths:
         Updates an existing key in the encrypted admin-only custom data map.
         Fails with 404 if the key does not exist. Values are never included in webhook payloads.
       operationId: updateAdminCustomerProfileCustomData
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - name: id
           in: path
@@ -5394,6 +5817,8 @@ paths:
         Removes an existing key from the encrypted admin-only custom data map.
         Fails with 404 if the key does not exist. Values are never included in webhook payloads.
       operationId: deleteAdminCustomerProfileCustomData
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - name: id
           in: path
@@ -5421,6 +5846,8 @@ paths:
       tags: [Admin Billing]
       summary: Get customer trust score detail (admin only)
       operationId: getAdminCustomerProfileTrustScore
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - name: id
           in: path
@@ -5438,6 +5865,8 @@ paths:
       tags: [Admin Billing]
       summary: Recompute customer trust score (admin only)
       operationId: recomputeAdminCustomerProfileTrustScore
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - name: id
           in: path
@@ -5450,11 +5879,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomerTrustScoreResponse'
+  /admin/billing/customer-profiles/{id}/vat-id/revalidate:
+    post:
+      tags: [Admin Billing]
+      summary: Revalidate customer VAT ID via VIES (admin only)
+      operationId: revalidateAdminCustomerProfileVatId
+      security:
+        - bearerAuth: [customer_profile:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Customer profile with updated VAT validation status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileResponse'
+        '403':
+          description: Not an admin, or insufficient token scope
+        '404':
+          description: Customer profile not found
+  /admin/billing/customer-profiles/{id}/vat-id/mark-validated:
+    post:
+      tags: [Admin Billing]
+      summary: Mark customer VAT ID validated by admin (admin only)
+      operationId: markAdminCustomerProfileVatIdValidated
+      security:
+        - bearerAuth: [customer_profile:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Updated customer profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileResponse'
+        '403':
+          description: Not an admin, or insufficient token scope
+        '404':
+          description: Customer profile not found
   /admin/billing/customer-profiles/{id}/auto-billing/setup:
     post:
       tags: [Admin Billing]
       summary: Start auto-billing payment method setup for a customer (admin)
       operationId: adminSetupCustomerAutoBilling
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - name: id
           in: path
@@ -5478,6 +5955,8 @@ paths:
       tags: [Admin Billing]
       summary: Enable auto-billing for a customer (admin)
       operationId: adminEnableCustomerAutoBilling
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - name: id
           in: path
@@ -5501,6 +5980,8 @@ paths:
       tags: [Admin Billing]
       summary: Disable auto-billing for a customer (admin)
       operationId: adminDisableCustomerAutoBilling
+      security:
+        - bearerAuth: [customer_profile:admin]
       parameters:
         - name: id
           in: path
@@ -5518,6 +5999,8 @@ paths:
       tags: [Admin Billing]
       summary: Void invoice (admin only)
       operationId: adminVoidInvoice
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - name: invoiceRefId
           in: path
@@ -5535,6 +6018,8 @@ paths:
       tags: [Admin Billing]
       summary: Mark invoice paid manually (admin only)
       operationId: adminMarkInvoicePaid
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - name: invoiceRefId
           in: path
@@ -5557,6 +6042,8 @@ paths:
       tags: [Admin Billing]
       summary: Mark invoice unpaid manually (admin only)
       operationId: adminMarkInvoiceUnpaid
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - name: invoiceRefId
           in: path
@@ -5579,6 +6066,8 @@ paths:
       tags: [Admin Billing]
       summary: Audit history for invoice (admin only)
       operationId: listAdminInvoiceAuditLogs
+      security:
+        - bearerAuth: [invoices:admin]
       parameters:
         - name: invoiceRefId
           in: path
@@ -5602,6 +6091,8 @@ paths:
       tags: [Admin Billing]
       summary: Turnover time series (admin only)
       operationId: getAdminBillingStatisticsSummary
+      security:
+        - bearerAuth: [billing:admin]
       parameters:
         - name: from
           in: query
@@ -5627,6 +6118,8 @@ paths:
       tags: [Admin Billing]
       summary: Turnover by service plan (admin only)
       operationId: getAdminBillingStatisticsByProduct
+      security:
+        - bearerAuth: [billing:admin]
       parameters:
         - name: from
           in: query
@@ -5649,6 +6142,8 @@ paths:
       tags: [Admin Billing]
       summary: Turnover by buyer country (admin only)
       operationId: getAdminBillingStatisticsByCountry
+      security:
+        - bearerAuth: [billing:admin]
       parameters:
         - name: from
           in: query
@@ -5671,6 +6166,8 @@ paths:
       tags: [Admin Billing]
       summary: Billing feature capabilities for admin UI (admin only)
       operationId: getAdminBillingCapabilities
+      security:
+        - bearerAuth: [billing:admin]
       responses:
         '200':
           description: Feature flags for the current request tenant
@@ -5687,6 +6184,8 @@ paths:
       tags: [Admin Billing]
       summary: Preview tax treatment and rates (issuer or customer)
       operationId: previewTaxForAdmin
+      security:
+        - bearerAuth: [billing:admin]
       requestBody:
         required: false
         content:
@@ -5709,6 +6208,8 @@ paths:
       tags: [Admin Billing]
       summary: List virtual storage directory for managed billing files (admin only)
       operationId: listAdminBillingFiles
+      security:
+        - bearerAuth: [files:admin]
       parameters:
         - name: path
           in: query
@@ -5738,6 +6239,8 @@ paths:
       tags: [Admin Billing]
       summary: Download a managed billing file (admin only)
       operationId: downloadAdminBillingFile
+      security:
+        - bearerAuth: [files:admin]
       parameters:
         - name: path
           in: query
@@ -5769,6 +6272,8 @@ paths:
       tags: [Admin Billing]
       summary: Download a folder subtree of managed billing files as ZIP (admin only)
       operationId: downloadAdminBillingFileArchive
+      security:
+        - bearerAuth: [files:admin]
       parameters:
         - name: path
           in: query
@@ -5802,6 +6307,8 @@ paths:
       tags: [Admin Billing]
       summary: Verify an uploaded file against the signed stored-file registry (admin only; never persists upload)
       operationId: verifyAdminBillingFile
+      security:
+        - bearerAuth: [files:admin]
       requestBody:
         required: true
         content:
@@ -5830,6 +6337,8 @@ paths:
       tags: [Admin Billing]
       summary: Download a managed billing file by printed document ID (short or long SHA)
       operationId: downloadAdminBillingFileByDocumentId
+      security:
+        - bearerAuth: [files:admin]
       parameters:
         - name: documentId
           in: query
@@ -5853,6 +6362,8 @@ paths:
       tags: [Admin Billing]
       summary: List DATEV EXTF exports (admin only; requires BILLING_DATEV_EXPORT_ENABLED)
       operationId: listAdminDatevExports
+      security:
+        - bearerAuth: [datev:admin]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -5886,6 +6397,8 @@ paths:
       tags: [Admin Billing]
       summary: Trigger DATEV export for a calendar month (admin only)
       operationId: triggerAdminDatevExport
+      security:
+        - bearerAuth: [datev:admin]
       requestBody:
         required: true
         content:
@@ -5908,6 +6421,8 @@ paths:
       tags: [Admin Billing]
       summary: Get DATEV export metadata (admin only)
       operationId: getAdminDatevExport
+      security:
+        - bearerAuth: [datev:admin]
       parameters:
         - name: exportId
           in: path
@@ -5929,6 +6444,8 @@ paths:
       tags: [Admin Billing]
       summary: Download DATEV export ZIP (admin only)
       operationId: downloadAdminDatevExport
+      security:
+        - bearerAuth: [datev:admin]
       parameters:
         - name: exportId
           in: path
@@ -5951,6 +6468,8 @@ paths:
       tags: [Projects]
       summary: List projects assigned to the authenticated customer
       operationId: listCustomerProjects
+      security:
+        - bearerAuth: [projects:read]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -5967,6 +6486,8 @@ paths:
       tags: [Projects]
       summary: Project catalog counts for the authenticated customer
       operationId: getProjectsCatalogSummary
+      security:
+        - bearerAuth: [projects:read]
       responses:
         '200':
           description: True totals independent of list pagination
@@ -5979,6 +6500,8 @@ paths:
       tags: [Projects]
       summary: Get project detail (customer read-only)
       operationId: getCustomerProject
+      security:
+        - bearerAuth: [projects:read]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       responses:
@@ -5993,6 +6516,8 @@ paths:
       tags: [Projects]
       summary: Get project KPI summary
       operationId: getProjectSummary
+      security:
+        - bearerAuth: [projects:read]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       responses:
@@ -6007,6 +6532,8 @@ paths:
       tags: [Admin Billing]
       summary: List all projects (admin)
       operationId: listAdminProjects
+      security:
+        - bearerAuth: [projects:admin]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -6025,6 +6552,8 @@ paths:
       tags: [Admin Billing]
       summary: Create project (admin)
       operationId: createAdminProject
+      security:
+        - bearerAuth: [projects:admin]
       requestBody:
         required: true
         content:
@@ -6043,6 +6572,8 @@ paths:
       tags: [Admin Billing]
       summary: Get project detail (admin)
       operationId: getAdminProject
+      security:
+        - bearerAuth: [projects:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       responses:
@@ -6056,6 +6587,8 @@ paths:
       tags: [Admin Billing]
       summary: Update project (admin)
       operationId: updateAdminProject
+      security:
+        - bearerAuth: [projects:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       requestBody:
@@ -6075,6 +6608,8 @@ paths:
       tags: [Admin Billing]
       summary: Delete project when no unbilled time entries
       operationId: deleteAdminProject
+      security:
+        - bearerAuth: [projects:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       responses:
@@ -6085,6 +6620,8 @@ paths:
       tags: [Admin Billing]
       summary: Get project KPI summary (admin)
       operationId: getAdminProjectSummary
+      security:
+        - bearerAuth: [projects:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       responses:
@@ -6099,6 +6636,8 @@ paths:
       tags: [Admin Billing]
       summary: Unbilled time entry range for bill-time defaults
       operationId: getProjectUnbilledTimeBounds
+      security:
+        - bearerAuth: [projects:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       responses:
@@ -6113,6 +6652,8 @@ paths:
       tags: [Admin Billing]
       summary: Bill unbilled project time in range to invoice
       operationId: billProjectTime
+      security:
+        - bearerAuth: [projects:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       requestBody:
@@ -6133,6 +6674,8 @@ paths:
       tags: [Admin Billing]
       summary: Generate live time report PDF (admin only)
       operationId: generateProjectTimeReport
+      security:
+        - bearerAuth: [projects:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       requestBody:
@@ -6154,6 +6697,8 @@ paths:
       tags: [Project Board]
       summary: List project tickets
       operationId: listProjectTickets
+      security:
+        - bearerAuth: [tickets:read]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/Search'
@@ -6177,6 +6722,8 @@ paths:
       tags: [Project Board]
       summary: Create ticket (admin only)
       operationId: createProjectTicket
+      security:
+        - bearerAuth: [tickets:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       requestBody:
@@ -6198,6 +6745,8 @@ paths:
       summary: Get project ticket
       description: Requires `tickets:read`. Set `includeDescendants=true` to embed child tickets.
       operationId: getProjectTicket
+      security:
+        - bearerAuth: [tickets:read]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TicketId'
@@ -6216,6 +6765,8 @@ paths:
       summary: Update project ticket (admin write)
       description: Requires `tickets:write`. Locked tickets reject content mutations.
       operationId: updateProjectTicket
+      security:
+        - bearerAuth: [tickets:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TicketId'
@@ -6237,6 +6788,8 @@ paths:
       summary: Delete project ticket (admin write)
       description: Requires `tickets:write`.
       operationId: deleteProjectTicket
+      security:
+        - bearerAuth: [tickets:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TicketId'
@@ -6249,6 +6802,8 @@ paths:
       summary: List ticket activity
       description: Requires `tickets:read`.
       operationId: listProjectTicketActivity
+      security:
+        - bearerAuth: [tickets:read]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TicketId'
@@ -6268,6 +6823,8 @@ paths:
       tags: [Project Board]
       summary: List ticket comments
       operationId: listProjectTicketComments
+      security:
+        - bearerAuth: [tickets:read]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TicketId'
@@ -6284,6 +6841,8 @@ paths:
       tags: [Project Board]
       summary: Add ticket comment (customer or admin)
       operationId: createProjectTicketComment
+      security:
+        - bearerAuth: [tickets:write]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TicketId'
@@ -6306,6 +6865,8 @@ paths:
       summary: List ticket attachments
       description: Requires `attachments:read` and project read access.
       operationId: listProjectTicketAttachments
+      security:
+        - bearerAuth: [attachments:read]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TicketId'
@@ -6325,6 +6886,8 @@ paths:
       summary: Upload ticket attachment
       description: Requires `attachments:write` and project write access. Multipart field name is `file`.
       operationId: uploadProjectTicketAttachment
+      security:
+        - bearerAuth: [attachments:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TicketId'
@@ -6350,6 +6913,8 @@ paths:
       summary: Delete ticket attachment metadata
       description: Requires `attachments:write` and project write access.
       operationId: deleteProjectTicketAttachment
+      security:
+        - bearerAuth: [attachments:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TicketId'
@@ -6365,6 +6930,8 @@ paths:
       summary: Download ticket attachment
       description: Requires `attachments:read` and project read access.
       operationId: downloadProjectTicketAttachment
+      security:
+        - bearerAuth: [attachments:read]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TicketId'
@@ -6379,6 +6946,8 @@ paths:
       tags: [Projects]
       summary: List project milestones
       operationId: listProjectMilestones
+      security:
+        - bearerAuth: [milestones:read]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/Search'
@@ -6396,6 +6965,8 @@ paths:
       summary: Create project milestone (admin write)
       description: Requires `milestones:write`.
       operationId: createProjectMilestone
+      security:
+        - bearerAuth: [milestones:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       requestBody:
@@ -6417,6 +6988,8 @@ paths:
       summary: Update project milestone (admin write)
       description: Requires `milestones:write`. Locked milestones reject mutations.
       operationId: updateProjectMilestone
+      security:
+        - bearerAuth: [milestones:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/MilestoneId'
@@ -6438,6 +7011,8 @@ paths:
       summary: Delete project milestone (admin write)
       description: Requires `milestones:write`.
       operationId: deleteProjectMilestone
+      security:
+        - bearerAuth: [milestones:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/MilestoneId'
@@ -6450,6 +7025,8 @@ paths:
       summary: Lock project milestone (admin write)
       description: Requires `milestones:write`. Prevents further milestone edits and related ticket moves.
       operationId: lockProjectMilestone
+      security:
+        - bearerAuth: [milestones:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/MilestoneId'
@@ -6468,6 +7045,8 @@ paths:
         Requires `projects:read`. Assigned customers and admins can list entries for readable projects.
         Optional `ticketId` filters entries linked to a ticket.
       operationId: listProjectTimeEntries
+      security:
+        - bearerAuth: [time_entries:read]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/Limit'
@@ -6494,6 +7073,8 @@ paths:
       description: |
         Requires `time_entries:write`. Admin-only mutation. Entries with `billedAt` set are immutable after billing.
       operationId: createProjectTimeEntry
+      security:
+        - bearerAuth: [time_entries:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       requestBody:
@@ -6517,6 +7098,8 @@ paths:
         Requires `time_entries:write`. Admin-only mutation.
         Entries with `billedAt` set cannot be updated.
       operationId: updateProjectTimeEntry
+      security:
+        - bearerAuth: [time_entries:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TimeEntryId'
@@ -6540,6 +7123,8 @@ paths:
         Requires `time_entries:write`. Admin-only mutation.
         Entries with `billedAt` set cannot be deleted.
       operationId: deleteProjectTimeEntry
+      security:
+        - bearerAuth: [time_entries:admin]
       parameters:
         - $ref: '#/components/parameters/ProjectId'
         - $ref: '#/components/parameters/TimeEntryId'
@@ -6551,6 +7136,8 @@ paths:
       tags: [Admin Billing]
       summary: List webhook event types (admin)
       operationId: listAdminWebhookEventTypes
+      security:
+        - bearerAuth: [webhooks:admin]
       responses:
         '200':
           description: Event catalog
@@ -6565,6 +7152,8 @@ paths:
       tags: [Admin Billing]
       summary: List webhook endpoints (admin)
       operationId: listAdminWebhookEndpoints
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: limit
           in: query
@@ -6585,6 +7174,8 @@ paths:
       tags: [Admin Billing]
       summary: Create webhook endpoint (admin)
       operationId: createAdminWebhookEndpoint
+      security:
+        - bearerAuth: [webhooks:admin]
       requestBody:
         required: true
         content:
@@ -6603,6 +7194,8 @@ paths:
       tags: [Admin Billing]
       summary: Get webhook endpoint (admin)
       operationId: getAdminWebhookEndpoint
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: id
           in: path
@@ -6619,6 +7212,8 @@ paths:
       tags: [Admin Billing]
       summary: Update webhook endpoint (admin)
       operationId: updateAdminWebhookEndpoint
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: id
           in: path
@@ -6641,6 +7236,8 @@ paths:
       tags: [Admin Billing]
       summary: Delete webhook endpoint (admin)
       operationId: deleteAdminWebhookEndpoint
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: id
           in: path
@@ -6654,6 +7251,8 @@ paths:
       tags: [Admin Billing]
       summary: Send test webhook delivery (admin)
       operationId: testAdminWebhookEndpoint
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: id
           in: path
@@ -6671,6 +7270,8 @@ paths:
       tags: [Admin Billing]
       summary: List webhook deliveries (admin)
       operationId: listAdminWebhookDeliveries
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: id
           in: path
@@ -6694,6 +7295,8 @@ paths:
       tags: [Admin Billing]
       summary: Get full application updates state (admin)
       operationId: getBillingUpdatesFullState
+      security:
+        - bearerAuth: [updates:admin]
       responses:
         '200':
           description: Full updates state
@@ -6706,6 +7309,8 @@ paths:
       tags: [Admin Billing]
       summary: Get application updates status summary (admin)
       operationId: getBillingUpdatesStatusSummary
+      security:
+        - bearerAuth: [updates:admin]
       responses:
         '200':
           description: Updates status summary
@@ -6718,6 +7323,8 @@ paths:
       tags: [Admin Billing]
       summary: Trigger application update check (admin)
       operationId: triggerBillingUpdateCheck
+      security:
+        - bearerAuth: [updates:admin]
       responses:
         '202':
           description: Update check enqueued
@@ -6753,6 +7360,8 @@ paths:
       description: >
         Requires ADMIN role. PAT callers need `supplier_profile:admin`.
       operationId: listAdminSupplierProfiles
+      security:
+        - bearerAuth: [supplier_profile:admin]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -6771,6 +7380,8 @@ paths:
         Allocates a read-only supplier number (`SUP-######`) on create. Requires ADMIN role.
         PAT callers need `supplier_profile:admin`.
       operationId: createAdminSupplierProfile
+      security:
+        - bearerAuth: [supplier_profile:admin]
       requestBody:
         required: true
         content:
@@ -6789,6 +7400,8 @@ paths:
       tags: [Admin Billing]
       summary: Get supplier billing profile (admin only)
       operationId: getAdminSupplierProfile
+      security:
+        - bearerAuth: [supplier_profile:admin]
       parameters:
         - name: id
           in: path
@@ -6805,6 +7418,8 @@ paths:
       tags: [Admin Billing]
       summary: Update supplier billing profile (admin only)
       operationId: updateAdminSupplierProfile
+      security:
+        - bearerAuth: [supplier_profile:admin]
       parameters:
         - name: id
           in: path
@@ -6828,6 +7443,8 @@ paths:
       summary: Delete supplier billing profile (admin only)
       description: Blocked when the supplier has existing supplier invoices.
       operationId: deleteAdminSupplierProfile
+      security:
+        - bearerAuth: [supplier_profile:admin]
       parameters:
         - name: id
           in: path
@@ -6841,6 +7458,8 @@ paths:
       tags: [Admin Billing]
       summary: Revalidate supplier VAT ID via VIES (admin only)
       operationId: revalidateAdminSupplierProfileVatId
+      security:
+        - bearerAuth: [supplier_profile:admin]
       parameters:
         - name: id
           in: path
@@ -6858,6 +7477,8 @@ paths:
       tags: [Admin Billing]
       summary: Mark supplier VAT ID validated by admin (admin only)
       operationId: markAdminSupplierProfileVatIdValidated
+      security:
+        - bearerAuth: [supplier_profile:admin]
       parameters:
         - name: id
           in: path
@@ -6875,6 +7496,8 @@ paths:
       tags: [Admin Billing]
       summary: Add custom data key on supplier billing profile (admin only)
       operationId: addAdminSupplierProfileCustomData
+      security:
+        - bearerAuth: [supplier_profile:admin]
       parameters:
         - name: id
           in: path
@@ -6900,6 +7523,8 @@ paths:
       tags: [Admin Billing]
       summary: Update custom data value on supplier billing profile (admin only)
       operationId: updateAdminSupplierProfileCustomData
+      security:
+        - bearerAuth: [supplier_profile:admin]
       parameters:
         - name: id
           in: path
@@ -6932,6 +7557,8 @@ paths:
       tags: [Admin Billing]
       summary: Delete custom data key on supplier billing profile (admin only)
       operationId: deleteAdminSupplierProfileCustomData
+      security:
+        - bearerAuth: [supplier_profile:admin]
       parameters:
         - name: id
           in: path
@@ -6961,6 +7588,8 @@ paths:
       description: >
         Requires ADMIN role. PAT callers need `supplier_profile:admin`.
       operationId: listAdminSupplierContracts
+      security:
+        - bearerAuth: [supplier_profile:admin]
       parameters:
         - name: supplierId
           in: path
@@ -6981,6 +7610,8 @@ paths:
       tags: [Admin Billing]
       summary: Get or create supplier contract by number (admin only)
       operationId: getOrCreateAdminSupplierContract
+      security:
+        - bearerAuth: [supplier_profile:admin]
       parameters:
         - name: supplierId
           in: path
@@ -7007,10 +7638,12 @@ paths:
       tags: [Admin Billing]
       summary: Supplier expense statistics (admin only)
       description: >
-        Requires ADMIN role. PAT callers need `billing_admin:read`.
+        Requires ADMIN role. PAT callers need `supplier_invoices:admin`.
         Returns KPI totals plus an archived-expense time series for the selected period.
         Product and country breakdowns are not included for supplier expenses.
       operationId: getAdminSupplierExpenseStatistics
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       parameters:
         - name: from
           in: query
@@ -7036,8 +7669,10 @@ paths:
       tags: [Admin Billing]
       summary: List supplier invoices (admin only)
       description: >
-        Requires ADMIN role. PAT callers need `billing_admin:read`.
+        Requires ADMIN role. PAT callers need `supplier_invoices:admin`.
       operationId: listAdminSupplierInvoices
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       parameters:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
@@ -7062,8 +7697,10 @@ paths:
       summary: Create supplier invoice draft (admin only)
       description: >
         Multipart form with DTO fields and optional `document` PDF/XML upload.
-        Requires ADMIN role. PAT callers need `billing_admin:write`.
+        Requires ADMIN role. PAT callers need `supplier_invoices:admin`.
       operationId: createAdminSupplierInvoice
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       requestBody:
         required: true
         content:
@@ -7090,8 +7727,10 @@ paths:
       summary: Parse supplier invoice document preview (admin only)
       description: >
         Accepts PDF or EN16931 XML in multipart field `document`. Returns line-item preview and warnings.
-        Requires ADMIN role. PAT callers need `billing_admin:write`.
+        Requires ADMIN role. PAT callers need `supplier_invoices:admin`.
       operationId: parseSupplierInvoiceDocument
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       requestBody:
         required: true
         content:
@@ -7115,6 +7754,8 @@ paths:
       tags: [Admin Billing]
       summary: Get supplier invoice (admin only)
       operationId: getAdminSupplierInvoice
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       parameters:
         - name: id
           in: path
@@ -7132,8 +7773,10 @@ paths:
       summary: Update supplier invoice draft (admin only)
       description: >
         Draft only. Optional multipart `document` replaces or sets the uploaded PDF.
-        Requires ADMIN role. PAT callers need `billing_admin:write`.
+        Requires ADMIN role. PAT callers need `supplier_invoices:admin`.
       operationId: updateAdminSupplierInvoice
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       parameters:
         - name: id
           in: path
@@ -7162,6 +7805,8 @@ paths:
       tags: [Admin Billing]
       summary: Delete supplier invoice draft (admin only)
       operationId: deleteAdminSupplierInvoice
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       parameters:
         - name: id
           in: path
@@ -7176,8 +7821,10 @@ paths:
       summary: Issue supplier invoice draft (admin only)
       description: >
         Assigns `SINV-{year}-{nnnnn}` number. Generates PDF when no uploaded document exists.
-        Requires ADMIN role. PAT callers need `billing_admin:write`.
+        Requires ADMIN role. PAT callers need `supplier_invoices:admin`.
       operationId: issueAdminSupplierInvoice
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       parameters:
         - name: id
           in: path
@@ -7200,6 +7847,8 @@ paths:
       tags: [Admin Billing]
       summary: Void issued supplier invoice (admin only)
       operationId: voidAdminSupplierInvoice
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       parameters:
         - name: id
           in: path
@@ -7217,6 +7866,8 @@ paths:
       tags: [Admin Billing]
       summary: Mark supplier invoice paid manually (admin only)
       operationId: markAdminSupplierInvoicePaid
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       parameters:
         - name: id
           in: path
@@ -7239,6 +7890,8 @@ paths:
       tags: [Admin Billing]
       summary: Mark supplier invoice unpaid manually (admin only)
       operationId: markAdminSupplierInvoiceUnpaid
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       parameters:
         - name: id
           in: path
@@ -7261,6 +7914,8 @@ paths:
       tags: [Admin Billing]
       summary: Download supplier invoice document (admin only)
       operationId: downloadAdminSupplierInvoiceDocument
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       parameters:
         - name: id
           in: path
@@ -7277,6 +7932,8 @@ paths:
       tags: [Admin Billing]
       summary: Audit history for supplier invoice (admin only)
       operationId: listAdminSupplierInvoiceAuditLogs
+      security:
+        - bearerAuth: [supplier_invoices:admin]
       parameters:
         - name: id
           in: path
@@ -7300,6 +7957,13 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
+      description: |
+        Interactive session JWT, or a JWT exchanged from a personal access token (`POST /auth/token`).
+        For personal access tokens, the role names listed on an operation's `bearerAuth` requirement are the
+        PAT scopes it requires (OpenAPI 3.1 role names; not enforced for interactive sessions).
+        Scopes follow `<resource>:read|write|admin`; `write` implies `read`, and `admin` implies `write` and `read`.
+        `:admin` scopes are only grantable to and effective for admin users. Operations without listed scopes
+        either do not accept personal access tokens or are public.
     basicAuth:
       type: http
       scheme: basic
@@ -7408,6 +8072,28 @@ components:
         When default is disabled, missing, blank, or `default` values are rejected. Must be listed in the server
         `TENANTS` allowlist. Invalid values return 400.
   schemas:
+    OrderProvisioningOption:
+      type: object
+      required: [optionKey, type, label]
+      properties:
+        optionKey:
+          type: string
+        type:
+          type: string
+          enum: [integrated, custom]
+        service:
+          type: string
+          enum: [agenstra-controller, agenstra-manager, decabill-billing]
+          description: Integrated stack (type `integrated` only)
+        cloudInitConfigId:
+          type: string
+          format: uuid
+          description: Cloud-init template (type `custom` only)
+        label:
+          type: string
+        description:
+          type: string
+          nullable: true
     ErrorResponse:
       type: object
       properties:

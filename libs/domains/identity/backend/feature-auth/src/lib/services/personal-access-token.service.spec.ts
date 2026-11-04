@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { PersonalAccessTokenService } from './personal-access-token.service';
 
 describe('PersonalAccessTokenService', () => {
-  const catalog = ['usage:write', 'webhooks:admin', 'invoices:read'] as const;
+  const catalog = ['usage:admin', 'webhooks:admin', 'invoices:read'] as const;
   const mockTokensRepository = {
     create: jest.fn(),
     findByPrefix: jest.fn(),
@@ -54,11 +54,11 @@ describe('PersonalAccessTokenService', () => {
 
     const result = await service.create('u1', {
       name: 'CI',
-      scopes: ['usage:write'],
+      scopes: ['usage:admin'],
     });
 
     expect(result.token.startsWith('fp_pat_')).toBe(true);
-    expect(result.scopes).toEqual(['usage:write']);
+    expect(result.scopes).toEqual(['usage:admin']);
     expect(mockTokensRepository.create).toHaveBeenCalled();
   });
 
@@ -80,7 +80,7 @@ describe('PersonalAccessTokenService', () => {
 
     const result = await service.create('u1', {
       name: 'CI',
-      scopes: ['usage:write'],
+      scopes: ['usage:admin'],
     });
 
     expect(result.token.startsWith('fp_pat_')).toBe(true);
@@ -94,7 +94,7 @@ describe('PersonalAccessTokenService', () => {
       role: UserRole.ADMIN,
     });
 
-    await expect(service.create('u1', { name: 'x', scopes: ['usage:write'] })).rejects.toThrow(BadRequestException);
+    await expect(service.create('u1', { name: 'x', scopes: ['usage:admin'] })).rejects.toThrow(BadRequestException);
   });
 
   it('rejects unknown scopes', async () => {
@@ -106,7 +106,7 @@ describe('PersonalAccessTokenService', () => {
   it('rejects admin scopes when DB role is non-admin', async () => {
     mockUsersRepository.findByIdOrThrow.mockResolvedValue({ id: 'u1', passwordHash: 'hash', role: UserRole.USER });
 
-    await expect(service.create('u1', { name: 'x', scopes: ['usage:write'] })).rejects.toThrow(ForbiddenException);
+    await expect(service.create('u1', { name: 'x', scopes: ['usage:admin'] })).rejects.toThrow(ForbiddenException);
   });
 
   it('updates name and scopes for an owned active token', async () => {
@@ -126,11 +126,11 @@ describe('PersonalAccessTokenService', () => {
 
     const result = await service.update('u1', 't1', {
       name: '  Renamed  ',
-      scopes: ['usage:write', 'invoices:read'],
+      scopes: ['usage:admin', 'invoices:read'],
     });
 
     expect(result.name).toBe('Renamed');
-    expect(result.scopes).toEqual(['usage:write', 'invoices:read']);
+    expect(result.scopes).toEqual(['usage:admin', 'invoices:read']);
     expect(mockTokensRepository.save).toHaveBeenCalled();
   });
 
@@ -170,7 +170,7 @@ describe('PersonalAccessTokenService', () => {
       revokedAt: null,
     });
 
-    await expect(service.update('u1', 't1', { name: 'CI', scopes: ['usage:write'] })).rejects.toThrow(
+    await expect(service.update('u1', 't1', { name: 'CI', scopes: ['usage:admin'] })).rejects.toThrow(
       ForbiddenException,
     );
   });
@@ -183,7 +183,7 @@ describe('PersonalAccessTokenService', () => {
       id: 't1',
       userId: 'u1',
       tokenHash,
-      scopes: ['usage:write'],
+      scopes: ['usage:admin'],
       revokedAt: null,
       expiresAt: null,
     });
@@ -199,7 +199,7 @@ describe('PersonalAccessTokenService', () => {
     const verified = await service.verifyToken(plaintext);
 
     expect(verified.patId).toBe('t1');
-    expect(verified.scopes).toEqual(['usage:write']);
+    expect(verified.scopes).toEqual(['usage:admin']);
     expect(mockTokensRepository.touchLastUsedAtIfActive).toHaveBeenCalled();
   });
 
@@ -211,7 +211,7 @@ describe('PersonalAccessTokenService', () => {
       id: 't1',
       userId: 'u1',
       tokenHash,
-      scopes: ['usage:write', 'invoices:read'],
+      scopes: ['usage:admin', 'invoices:read'],
       revokedAt: null,
       expiresAt: null,
     });
@@ -232,7 +232,7 @@ describe('PersonalAccessTokenService', () => {
   it('rejects create with blank name after trim', async () => {
     mockUsersRepository.findByIdOrThrow.mockResolvedValue({ id: 'u1', passwordHash: 'hash', role: UserRole.ADMIN });
 
-    await expect(service.create('u1', { name: '   ', scopes: ['usage:write'] })).rejects.toThrow(BadRequestException);
+    await expect(service.create('u1', { name: '   ', scopes: ['usage:admin'] })).rejects.toThrow(BadRequestException);
   });
 
   it('rejects create with past expiresAt', async () => {
@@ -241,7 +241,7 @@ describe('PersonalAccessTokenService', () => {
     await expect(
       service.create('u1', {
         name: 'CI',
-        scopes: ['usage:write'],
+        scopes: ['usage:admin'],
         expiresAt: new Date('2020-01-01T00:00:00.000Z'),
       }),
     ).rejects.toThrow(BadRequestException);
@@ -251,12 +251,12 @@ describe('PersonalAccessTokenService', () => {
     mockTokensRepository.findById.mockResolvedValue({
       id: 't1',
       userId: 'u1',
-      scopes: ['usage:write'],
+      scopes: ['usage:admin'],
       revokedAt: new Date(),
       expiresAt: null,
     });
 
-    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:write'])).rejects.toThrow(UnauthorizedException);
+    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:admin'])).rejects.toThrow(UnauthorizedException);
   });
 
   it('assertPatJwtActive rejects when JWT scopes diverge from DB', async () => {
@@ -276,14 +276,14 @@ describe('PersonalAccessTokenService', () => {
       role: UserRole.ADMIN,
     });
 
-    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:write'])).rejects.toThrow(UnauthorizedException);
+    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:admin'])).rejects.toThrow(UnauthorizedException);
   });
 
   it('assertPatJwtActive rejects when email is unconfirmed', async () => {
     mockTokensRepository.findById.mockResolvedValue({
       id: 't1',
       userId: 'u1',
-      scopes: ['usage:write'],
+      scopes: ['usage:admin'],
       revokedAt: null,
       expiresAt: null,
       lastUsedAt: null,
@@ -296,14 +296,14 @@ describe('PersonalAccessTokenService', () => {
       role: UserRole.ADMIN,
     });
 
-    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:write'])).rejects.toThrow(UnauthorizedException);
+    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:admin'])).rejects.toThrow(UnauthorizedException);
   });
 
   it('assertPatJwtActive allows keycloak-linked users without passwordHash', async () => {
     mockTokensRepository.findById.mockResolvedValue({
       id: 't1',
       userId: 'u1',
-      scopes: ['usage:write'],
+      scopes: ['usage:admin'],
       revokedAt: null,
       expiresAt: null,
       lastUsedAt: null,
@@ -317,8 +317,8 @@ describe('PersonalAccessTokenService', () => {
       role: UserRole.ADMIN,
     });
 
-    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:write'])).resolves.toEqual({
-      scopes: ['usage:write'],
+    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:admin'])).resolves.toEqual({
+      scopes: ['usage:admin'],
     });
   });
 
@@ -326,7 +326,7 @@ describe('PersonalAccessTokenService', () => {
     mockTokensRepository.findById.mockResolvedValue({
       id: 't1',
       userId: 'u1',
-      scopes: ['usage:write'],
+      scopes: ['usage:admin'],
       revokedAt: null,
       expiresAt: null,
       lastUsedAt: null,
@@ -340,14 +340,14 @@ describe('PersonalAccessTokenService', () => {
       role: UserRole.ADMIN,
     });
 
-    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:write'])).rejects.toThrow(UnauthorizedException);
+    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:admin'])).rejects.toThrow(UnauthorizedException);
   });
 
   it('assertPatJwtActive touches lastUsedAt when stale', async () => {
     const entity = {
       id: 't1',
       userId: 'u1',
-      scopes: ['usage:write'],
+      scopes: ['usage:admin'],
       revokedAt: null,
       expiresAt: null,
       lastUsedAt: new Date(Date.now() - 10 * 60 * 1000),
@@ -362,8 +362,8 @@ describe('PersonalAccessTokenService', () => {
       role: UserRole.ADMIN,
     });
 
-    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:write'])).resolves.toEqual({
-      scopes: ['usage:write'],
+    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:admin'])).resolves.toEqual({
+      scopes: ['usage:admin'],
     });
     expect(mockTokensRepository.touchLastUsedAtIfActive).toHaveBeenCalledWith('t1', expect.any(Date));
     expect(mockTokensRepository.save).not.toHaveBeenCalled();
@@ -373,7 +373,7 @@ describe('PersonalAccessTokenService', () => {
     const entity = {
       id: 't1',
       userId: 'u1',
-      scopes: ['usage:write'],
+      scopes: ['usage:admin'],
       revokedAt: null,
       expiresAt: null,
       lastUsedAt: new Date(),
@@ -388,8 +388,8 @@ describe('PersonalAccessTokenService', () => {
       role: UserRole.ADMIN,
     });
 
-    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:write'])).resolves.toEqual({
-      scopes: ['usage:write'],
+    await expect(service.assertPatJwtActive('t1', 'u1', ['usage:admin'])).resolves.toEqual({
+      scopes: ['usage:admin'],
     });
     expect(mockTokensRepository.touchLastUsedAtIfActive).not.toHaveBeenCalled();
   });

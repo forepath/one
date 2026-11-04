@@ -6,7 +6,7 @@ This is an Agenstra productivity feature built on OpenCode (not a native OpenCod
 
 ## Prerequisites
 
-- Authenticated console user with access to the client and `agents:chats` scope
+- Authenticated console user with access to the client and `agent_chats:read` scope (`agent_chats:write` to edit or cancel plans)
 - Selected agent environment with a working OpenCode worker and up-to-date config sync (platform plan agent/skill injected)
 - Non-empty composer prompt and a selected visible chat session (`primary` or `user`)
 

@@ -89,17 +89,56 @@ PRODUCT_NAME=Decabill  # Issuer label on TOTP QR / authenticator entries (defaul
 
 User-bound tokens for scripts and CI (for example usage recording). They are **not** a billing-console login password. **Not available** when `AUTHENTICATION_METHOD=api-key`.
 
-| Concern                  | Behavior                                                                                                                                                   |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Create / update / revoke | Console **Personal Access Tokens** page (`/settings/tokens`); interactive console session only (password JWT or Keycloak OIDC)                             |
-| Exchange                 | `POST /auth/token` with `{ "token": "fp_pat_…" }` only (no email) → JWT with `amr: ["pat"]` and `scopes`                                                   |
-| Console                  | Login rejects `fp_pat_` secrets; SPA rejects JWTs whose `amr` includes `pat`; dashboard WebSockets reject PAT JWTs                                         |
-| Keycloak                 | Local `users` row is synced on first authenticated request (`keycloakSub`); PAT CRUD and exchange require `JWT_SECRET`                                     |
-| Scopes                   | `BILLING_PAT_SCOPES` covers catalog/subscriptions/invoices/usage/projects/tickets/… + `users:admin` / `webhooks:admin`; each enforced via `@RequireScopes` |
+| Concern                  | Behavior                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| Create / update / revoke | Console **Personal Access Tokens** page (`/settings/tokens`); interactive console session only (password JWT or Keycloak OIDC) |
+| Exchange                 | `POST /auth/token` with `{ "token": "fp_pat_…" }` only (no email) → JWT with `amr: ["pat"]` and `scopes`                       |
+| Console                  | Login rejects `fp_pat_` secrets; SPA rejects JWTs whose `amr` includes `pat`; dashboard WebSockets reject PAT JWTs             |
+| Keycloak                 | Local `users` row is synced on first authenticated request (`keycloakSub`); PAT CRUD and exchange require `JWT_SECRET`         |
+| Scopes                   | `BILLING_PAT_SCOPES` (see [Scope model](#scope-model)); each enforced via `@RequireScopes`                                     |
 
 Prefer PATs over a shared `STATIC_API_KEY` for multi-tenant automation (see accepted risk DR-002).
 
 Updating a token changes **name** and **scopes** only; the secret is never rotated by update. Exchanged PAT JWTs embed `patId`; each request re-checks the PAT row so **revoke**, **expiry**, and **scope updates** take effect immediately. **Role demotion** also takes effect immediately: request roles come from the live DB user (not the JWT claim), admin-only scopes are stripped from the effective grant set, and changing a user’s role bumps `tokenVersion` so outstanding JWTs are rejected.
+
+#### Scope model
+
+Scopes follow `<resource>:<level>` with three hierarchical levels per resource (similar to GitHub token permissions):
+
+| Level   | Grants                                                                           | Implies            |
+| ------- | -------------------------------------------------------------------------------- | ------------------ |
+| `read`  | Read operations in non-admin scope                                               | —                  |
+| `write` | All other non-admin operations on the resource                                   | `read`             |
+| `admin` | Operations reserved to admins and their console / API (admin role also required) | `write` and `read` |
+
+`:admin` scopes are only grantable to admins and are stripped from the effective grant set when the user is not an admin. Routes without `@RequireScopes` reject PATs (fail-closed). Each operation's required scope is listed in the OpenAPI spec as the role name on its `bearerAuth` security requirement.
+
+**Other users' records:** customer routes that also let admins act on records they do not own (backorder retry/cancel, invoice PDFs/create/void by subscription, project tickets, comments, attachments, milestones, time entries, project detail/summary) require the resource's `:admin` scope for PATs on the cross-owner path (e.g. `invoices:admin`, `subscriptions:admin`, `tickets:admin`, `projects:admin`). The route-level scope only covers the caller's own records; interactive admin sessions are unaffected.
+
+| Resource            | Levels               | Covers                                                                                                                                                |
+| ------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `catalog`           | read / admin         | Service plans/types, order options, plan addons/meters, pricing preview; admin: catalog management (plans, types, addons, meters, cloud-init configs) |
+| `subscriptions`     | read / write / admin | Subscriptions, items, servers, containers, backorders, availability, config changes; admin: all subscriptions and items                               |
+| `invoices`          | read / write / admin | Invoices and PDFs; write: pay; admin: manual invoices, issue, void, mark paid                                                                         |
+| `customer_profile`  | read / write / admin | Own customer profile and auto-billing; admin: all customer profiles                                                                                   |
+| `supplier_profile`  | admin                | Supplier profiles and contracts                                                                                                                       |
+| `supplier_invoices` | admin                | Supplier (expense) invoices                                                                                                                           |
+| `usage`             | read / admin         | Usage summaries; admin: record usage, subscription meters and meter entries                                                                           |
+| `promotions`        | read / write / admin | Validate and list promotions; write: redeem; admin: manage promotions                                                                                 |
+| `offers`            | read / write / admin | Offers; write: accept/decline; admin: manage offers                                                                                                   |
+| `projects`          | read / admin         | Projects and summaries; admin: project management, time reports, billing time                                                                         |
+| `milestones`        | read / admin         | Project milestones; admin: create, update, lock, delete                                                                                               |
+| `time_entries`      | read / admin         | Project time entries; admin: create, update, delete                                                                                                   |
+| `tickets`           | read / write / admin | Project tickets and activity; write: comments; admin: create, update, delete                                                                          |
+| `attachments`       | read / admin         | Project ticket attachments; admin: upload, delete                                                                                                     |
+| `billing`           | admin                | Billing summary, capabilities, tax preview, bill-now, statistics                                                                                      |
+| `files`             | admin                | Managed storage file explorer                                                                                                                         |
+| `datev`             | admin                | DATEV exports                                                                                                                                         |
+| `users`             | admin                | User management                                                                                                                                       |
+| `webhooks`          | admin                | Webhook endpoints                                                                                                                                     |
+| `updates`           | admin                | Application update checks                                                                                                                             |
+
+Stored tokens were migrated to this model (`RefactorPersonalAccessTokenScopes1793600000000`); legacy scopes that could only be mapped by granting additional writes were dropped, so affected tokens must be re-issued.
 
 ## Users Authentication Flow
 

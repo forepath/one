@@ -19,6 +19,7 @@ export class CustomerProfilesController {
   ) {}
 
   @Get()
+  @RequireScopes('customer_profile:read')
   async get(@Req() req?: RequestWithUser): Promise<CustomerProfileResponseDto | null> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
 

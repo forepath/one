@@ -16,7 +16,7 @@ export class AdminUsageController {
   ) {}
 
   @Post('record')
-  @RequireScopes('usage:write')
+  @RequireScopes('usage:admin')
   async record(@Body() body: CreateUsageRecordDto, @Req() req?: RequestWithUser) {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
 

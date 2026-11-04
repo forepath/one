@@ -81,7 +81,7 @@ export class ServicePlansController {
     private readonly planPriceMigrateEnqueue: PlanPriceMigrateEnqueuePort,
   ) {}
 
-  @RequireScopes('subscriptions:read')
+  @RequireScopes('catalog:read')
   @Get()
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -100,7 +100,7 @@ export class ServicePlansController {
     return await Promise.all(rows.map((row) => this.mapToResponse(row)));
   }
 
-  @RequireScopes('subscriptions:read')
+  @RequireScopes('catalog:read')
   @Get(':id/order-provisioning-options')
   async listOrderProvisioningOptions(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -114,7 +114,7 @@ export class ServicePlansController {
     return this.cloudInitConfigService.buildOrderProvisioningOptions(row.providerConfigDefaults ?? {});
   }
 
-  @RequireScopes('subscriptions:read')
+  @RequireScopes('catalog:read')
   @Get(':id/meters')
   async listPlanMeters(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -124,7 +124,7 @@ export class ServicePlansController {
     return await this.meterService.listEffectivePlanMeters(id, plan.serviceTypeId);
   }
 
-  @RequireScopes('catalog:write')
+  @RequireScopes('catalog:admin')
   @Post(':id/meters')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -137,7 +137,7 @@ export class ServicePlansController {
     return await this.meterService.attachPlanMeter(id, dto.meterId, dto.unitPriceNet, dto.includedUsage);
   }
 
-  @RequireScopes('catalog:write')
+  @RequireScopes('catalog:admin')
   @Post(':id/meters/:meterId')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -151,7 +151,7 @@ export class ServicePlansController {
     return await this.meterService.updatePlanMeter(id, meterId, dto.unitPriceNet, dto.includedUsage);
   }
 
-  @RequireScopes('catalog:write')
+  @RequireScopes('catalog:admin')
   @Delete(':id/meters/:meterId')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -164,7 +164,7 @@ export class ServicePlansController {
     await this.meterService.detachPlanMeter(id, meterId);
   }
 
-  @RequireScopes('subscriptions:read')
+  @RequireScopes('catalog:read')
   @Get(':id/addons')
   async listOrderAddons(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -218,7 +218,7 @@ export class ServicePlansController {
     );
   }
 
-  @RequireScopes('subscriptions:read')
+  @RequireScopes('catalog:read')
   @Get(':id/cloud-init-configs/:configId/order-fields')
   async getCloudInitOrderFields(
     @Param('id', new ParseUUIDPipe({ version: '4' })) planId: string,
@@ -233,7 +233,7 @@ export class ServicePlansController {
     return this.cloudInitConfigService.getOrderFieldsForPlan(planId, configId);
   }
 
-  @RequireScopes('subscriptions:read')
+  @RequireScopes('catalog:read')
   @Get(':id')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<ServicePlanResponseDto> {
     const row = await this.servicePlansRepository.findByIdOrThrow(id);
@@ -241,7 +241,7 @@ export class ServicePlansController {
     return await this.mapToResponse(row);
   }
 
-  @RequireScopes('catalog:write')
+  @RequireScopes('catalog:admin')
   @Post()
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -327,7 +327,7 @@ export class ServicePlansController {
     return await this.mapToResponse(row);
   }
 
-  @RequireScopes('catalog:write')
+  @RequireScopes('catalog:admin')
   @Post(':id')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -500,7 +500,7 @@ export class ServicePlansController {
     return await this.mapToResponse(row);
   }
 
-  @RequireScopes('catalog:write')
+  @RequireScopes('catalog:admin')
   @Delete(':id')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)

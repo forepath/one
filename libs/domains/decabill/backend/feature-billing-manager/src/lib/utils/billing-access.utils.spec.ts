@@ -2,6 +2,7 @@ import { UserRole } from '@forepath/identity/backend';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 import {
+  ensureAdminForForeignRecord,
   ensureAdmin,
   getAuthenticatedUserFromRequest,
   getUserFromRequest,
@@ -85,5 +86,34 @@ describe('billing-access.utils', () => {
         scopes: ['usage:write'],
       }),
     ).toThrow(ForbiddenException);
+  });
+
+  describe('ensureAdminForForeignRecord', () => {
+    it('rejects non-admins', () => {
+      expect(() =>
+        ensureAdminForForeignRecord({ userId: 'u1', userRole: UserRole.USER, isApiKeyAuth: false }, 'invoices:admin'),
+      ).toThrow(ForbiddenException);
+    });
+
+    it('lets interactive admins through', () => {
+      expect(() =>
+        ensureAdminForForeignRecord({ userId: 'a1', userRole: UserRole.ADMIN, isApiKeyAuth: false }, 'invoices:admin'),
+      ).not.toThrow();
+    });
+
+    it('requires the admin scope for admin PATs', () => {
+      const pat = (scopes: string[]) => ({
+        userId: 'a1',
+        userRole: UserRole.ADMIN,
+        isApiKeyAuth: false,
+        amr: ['pat'],
+        scopes,
+      });
+
+      expect(() => ensureAdminForForeignRecord(pat(['invoices:write']), 'invoices:admin')).toThrow(
+        /Missing: invoices:admin/,
+      );
+      expect(() => ensureAdminForForeignRecord(pat(['invoices:admin']), 'invoices:admin')).not.toThrow();
+    });
   });
 });

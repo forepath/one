@@ -20,7 +20,7 @@ import { BackorderRetryDto } from '../dto/backorder-retry.dto';
 import { BackorderStatus } from '../entities/backorder.entity';
 import { BackordersRepository } from '../repositories/backorders.repository';
 import { BackorderService } from '../services/backorder.service';
-import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
+import { ensureAdminForForeignRecord, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
 /** Largest page of the backorder list. */
 const MAX_BACKORDERS_LIMIT = 100;
@@ -93,7 +93,7 @@ export class BackordersController {
     const backorder = await this.backordersRepository.findByIdOrThrow(id);
 
     if (backorder.userId !== userInfo.userId) {
-      ensureAdmin(userInfo);
+      ensureAdminForForeignRecord(userInfo, 'subscriptions:admin');
     }
 
     const row = await this.backorderService.retry(id);
@@ -118,7 +118,7 @@ export class BackordersController {
     const backorder = await this.backordersRepository.findByIdOrThrow(id);
 
     if (backorder.userId !== userInfo.userId) {
-      ensureAdmin(userInfo);
+      ensureAdminForForeignRecord(userInfo, 'subscriptions:admin');
     }
 
     const row = await this.backorderService.cancel(id);

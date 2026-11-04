@@ -1,4 +1,4 @@
-import { UserRole } from '@forepath/identity/backend';
+import { assertPatScopes, UserRole } from '@forepath/identity/backend';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Request } from 'express';
 
@@ -68,4 +68,14 @@ export function ensureAdmin(userInfo: UserInfoFromRequest): void {
   if (userInfo.userRole !== UserRole.ADMIN) {
     throw new ForbiddenException('Admin access required');
   }
+}
+
+/**
+ * Gate the "acting on someone else's record" branch of owner-or-admin routes.
+ * Requires the admin role and, for personal access tokens, the resource's `:admin` scope
+ * (the route-level scope only covers the caller's own records).
+ */
+export function ensureAdminForForeignRecord(userInfo: UserInfoFromRequest, adminScope: string): void {
+  ensureAdmin(userInfo);
+  assertPatScopes(userInfo, adminScope);
 }

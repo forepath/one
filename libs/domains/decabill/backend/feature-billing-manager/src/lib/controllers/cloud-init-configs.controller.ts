@@ -21,7 +21,7 @@ import { CloudInitConfigsRepository } from '../repositories/cloud-init-configs.r
 import { CloudInitConfigService } from '../services/cloud-init-config.service';
 
 @Controller('cloud-init-configs')
-@RequireScopes('catalog:write')
+@RequireScopes('catalog:admin')
 export class CloudInitConfigsController {
   constructor(
     private readonly cloudInitConfigsRepository: CloudInitConfigsRepository,

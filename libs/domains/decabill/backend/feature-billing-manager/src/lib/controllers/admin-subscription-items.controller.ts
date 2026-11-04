@@ -19,7 +19,7 @@ export class AdminSubscriptionItemsController {
   constructor(private readonly subscriptionItemServerService: SubscriptionItemServerService) {}
 
   @Get(':itemId')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('subscriptions:admin')
   async getItemDetail(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('itemId', new ParseUUIDPipe({ version: '4' })) itemId: string,
@@ -32,7 +32,7 @@ export class AdminSubscriptionItemsController {
   }
 
   @Get(':itemId/ssh-access-key')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('subscriptions:admin')
   async getSshAccessKey(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('itemId', new ParseUUIDPipe({ version: '4' })) itemId: string,
@@ -50,7 +50,7 @@ export class AdminSubscriptionItemsController {
   }
 
   @Post(':itemId/display-name')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('subscriptions:admin')
   async updateDisplayName(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('itemId', new ParseUUIDPipe({ version: '4' })) itemId: string,
@@ -68,7 +68,7 @@ export class AdminSubscriptionItemsController {
   }
 
   @Get(':itemId/server-info')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('subscriptions:admin')
   async getServerInfo(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('itemId', new ParseUUIDPipe({ version: '4' })) itemId: string,
@@ -83,7 +83,7 @@ export class AdminSubscriptionItemsController {
   }
 
   @Post(':itemId/actions/start')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('subscriptions:admin')
   async startServer(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('itemId', new ParseUUIDPipe({ version: '4' })) itemId: string,
@@ -102,7 +102,7 @@ export class AdminSubscriptionItemsController {
   }
 
   @Post(':itemId/actions/stop')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('subscriptions:admin')
   async stopServer(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('itemId', new ParseUUIDPipe({ version: '4' })) itemId: string,
@@ -121,7 +121,7 @@ export class AdminSubscriptionItemsController {
   }
 
   @Post(':itemId/actions/restart')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('subscriptions:admin')
   async restartServer(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('itemId', new ParseUUIDPipe({ version: '4' })) itemId: string,

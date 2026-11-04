@@ -35,7 +35,7 @@ export class ProjectMilestonesService {
   ): Promise<ProjectMilestoneResponseDto[]> {
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
 
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'milestones:admin');
 
     const milestones = await this.milestonesRepository.findAllByProject(projectId, search);
 
@@ -50,7 +50,7 @@ export class ProjectMilestonesService {
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
 
     ensureProjectAdmin(userInfo);
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'milestones:admin');
 
     const milestone = await this.milestonesRepository.create({
       projectId,
@@ -83,7 +83,7 @@ export class ProjectMilestonesService {
     }
 
     ensureProjectAdmin(userInfo);
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'milestones:admin');
 
     if (milestone.lockedAt) {
       throw new BadRequestException('Cannot update locked milestone');
@@ -118,7 +118,7 @@ export class ProjectMilestonesService {
     }
 
     ensureProjectAdmin(userInfo);
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'milestones:admin');
 
     const updated = await this.milestonesRepository.update(milestoneId, {
       lockedAt: milestone.lockedAt ?? new Date(),
@@ -142,7 +142,7 @@ export class ProjectMilestonesService {
     }
 
     ensureProjectAdmin(userInfo);
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'milestones:admin');
 
     if (milestone.lockedAt) {
       throw new BadRequestException('Cannot delete locked milestone');

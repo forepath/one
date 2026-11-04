@@ -1,4 +1,4 @@
-import { getAuthenticationMethod, IS_PUBLIC_KEY } from '@forepath/identity/backend';
+import { getAuthenticationMethod, getMissingPatScopes, IS_PUBLIC_KEY } from '@forepath/identity/backend';
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
@@ -8,6 +8,7 @@ import type { AuthenticatedUsersRequestUser } from './users-auth.guard';
 
 /**
  * Enforces PAT scopes (fail-closed for `amr: pat`) and interactive-session-only routes.
+ * Scope levels are hierarchical per resource (`admin` ⊇ `write` ⊇ `read`); see {@link getMissingPatScopes}.
  * Interactive console sessions skip scope checks. Must run after auth guards set `request.user`.
  */
 @Injectable()
@@ -61,8 +62,7 @@ export class PatScopesGuard implements CanActivate {
       throw new ForbiddenException('Personal access token is not permitted for this endpoint.');
     }
 
-    const tokenScopes = new Set(user.scopes ?? []);
-    const missing = requiredScopes.filter((scope) => !tokenScopes.has(scope));
+    const missing = getMissingPatScopes(user.scopes ?? [], requiredScopes);
 
     if (missing.length > 0) {
       throw new ForbiddenException(`Insufficient token scope. Missing: ${missing.join(', ')}`);

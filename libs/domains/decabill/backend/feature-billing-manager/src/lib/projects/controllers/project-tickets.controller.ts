@@ -106,7 +106,7 @@ export class ProjectTicketsController {
     );
   }
 
-  @RequireScopes('tickets:write')
+  @RequireScopes('tickets:admin')
   @Post()
   async create(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -127,7 +127,7 @@ export class ProjectTicketsController {
     return await this.ticketsService.addComment(projectId, id, dto, req);
   }
 
-  @RequireScopes('tickets:write')
+  @RequireScopes('tickets:admin')
   @Post(':id')
   async update(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -138,7 +138,7 @@ export class ProjectTicketsController {
     return await this.ticketsService.update(projectId, id, dto, req);
   }
 
-  @RequireScopes('tickets:write')
+  @RequireScopes('tickets:admin')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(

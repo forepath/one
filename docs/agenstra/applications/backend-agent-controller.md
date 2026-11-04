@@ -96,7 +96,7 @@ In api-key mode, users do not play a role; these endpoints are not applicable.
 
 ### Proxied chat sessions
 
-User-visible chat sessions for an agent environment. See [Chat Interface](../features/chat-interface.md). PAT scope: `agents:chats`.
+User-visible chat sessions for an agent environment. See [Chat Interface](../features/chat-interface.md). PAT scopes: `agent_chats:read` / `agent_chats:write`.
 
 - `GET /api/clients/:id/agents/:agentId/chats` - List sessions (proxied; `limit`, `offset`)
 - `GET /api/clients/:id/agents/:agentId/chats/count` - Count sessions (proxied)

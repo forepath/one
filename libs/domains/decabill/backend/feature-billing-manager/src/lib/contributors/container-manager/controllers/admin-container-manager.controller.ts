@@ -17,7 +17,7 @@ export class AdminContainerManagerController {
   constructor(private readonly containerManagerService: ContainerManagerService) {}
 
   @Get('containers')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('subscriptions:admin')
   async listContainers(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('itemId', new ParseUUIDPipe({ version: '4' })) itemId: string,
@@ -30,7 +30,7 @@ export class AdminContainerManagerController {
   }
 
   @Get('containers/:containerId/stats-history')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('subscriptions:admin')
   async getStatsHistory(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('itemId', new ParseUUIDPipe({ version: '4' })) itemId: string,
@@ -46,7 +46,7 @@ export class AdminContainerManagerController {
   }
 
   @Get('containers/:containerId/logs')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('subscriptions:admin')
   async getLogs(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('itemId', new ParseUUIDPipe({ version: '4' })) itemId: string,
@@ -64,7 +64,7 @@ export class AdminContainerManagerController {
   }
 
   @Get('networks')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('subscriptions:admin')
   async listNetworks(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('itemId', new ParseUUIDPipe({ version: '4' })) itemId: string,

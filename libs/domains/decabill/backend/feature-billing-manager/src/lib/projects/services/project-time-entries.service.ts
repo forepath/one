@@ -40,7 +40,7 @@ export class ProjectTimeEntriesService {
   ): Promise<PaginatedProjectTimeEntriesResponseDto> {
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
 
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'time_entries:admin');
 
     if (ticketId) {
       const ticket = await this.ticketsRepository.findByIdOrThrow(ticketId);
@@ -75,7 +75,7 @@ export class ProjectTimeEntriesService {
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
 
     ensureProjectAdmin(userInfo);
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'time_entries:admin');
 
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
@@ -129,7 +129,7 @@ export class ProjectTimeEntriesService {
     }
 
     ensureProjectAdmin(userInfo);
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'time_entries:admin');
 
     if (entry.billedAt) {
       throw new BadRequestException('Cannot update billed time entry');
@@ -185,7 +185,7 @@ export class ProjectTimeEntriesService {
     }
 
     ensureProjectAdmin(userInfo);
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'time_entries:admin');
 
     if (entry.billedAt) {
       throw new BadRequestException('Cannot delete billed time entry');

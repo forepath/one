@@ -56,7 +56,7 @@ export class AdminSupplierInvoicesController {
   ) {}
 
   @Get('supplier-invoices/statistics')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('supplier_invoices:admin')
   async statistics(
     @Query('from') from?: string,
     @Query('to') to?: string,
@@ -74,7 +74,7 @@ export class AdminSupplierInvoicesController {
   }
 
   @Get('supplier-invoices')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('supplier_invoices:admin')
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
@@ -92,13 +92,13 @@ export class AdminSupplierInvoicesController {
   }
 
   @Get('supplier-invoices/:id')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('supplier_invoices:admin')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<SupplierInvoiceDetailResponseDto> {
     return await this.supplierInvoicesAdminService.getById(id);
   }
 
   @Get('supplier-invoices/:id/document')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('supplier_invoices:admin')
   async downloadDocument(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Res() res: Response,
@@ -111,7 +111,7 @@ export class AdminSupplierInvoicesController {
   }
 
   @Get('supplier-invoices/:id/audit-logs')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('supplier_invoices:admin')
   async listAuditLogs(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -129,7 +129,7 @@ export class AdminSupplierInvoicesController {
   }
 
   @Post('supplier-invoices/parse-document')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('supplier_invoices:admin')
   @UseInterceptors(FileInterceptor('document'))
   async parseDocument(
     @UploadedFile() document: UploadedSupplierDocument,
@@ -142,7 +142,7 @@ export class AdminSupplierInvoicesController {
   }
 
   @Post('supplier-invoices')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('supplier_invoices:admin')
   @UseInterceptors(FileInterceptor('document'))
   async create(
     @Body() dto: CreateSupplierInvoiceDto,
@@ -153,7 +153,7 @@ export class AdminSupplierInvoicesController {
   }
 
   @Post('supplier-invoices/:id')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('supplier_invoices:admin')
   @UseInterceptors(FileInterceptor('document'))
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -165,7 +165,7 @@ export class AdminSupplierInvoicesController {
   }
 
   @Post('supplier-invoices/:id/issue')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('supplier_invoices:admin')
   async issue(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: IssueSupplierInvoiceDto,
@@ -175,7 +175,7 @@ export class AdminSupplierInvoicesController {
   }
 
   @Post('supplier-invoices/:id/void')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('supplier_invoices:admin')
   async voidInvoice(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req: AdminRequest,
@@ -184,7 +184,7 @@ export class AdminSupplierInvoicesController {
   }
 
   @Post('supplier-invoices/:id/mark-paid')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('supplier_invoices:admin')
   async markPaid(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: MarkSupplierInvoicePaymentStatusDto,
@@ -194,7 +194,7 @@ export class AdminSupplierInvoicesController {
   }
 
   @Post('supplier-invoices/:id/mark-unpaid')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('supplier_invoices:admin')
   async markUnpaid(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: MarkSupplierInvoicePaymentStatusDto,
@@ -204,7 +204,7 @@ export class AdminSupplierInvoicesController {
   }
 
   @Delete('supplier-invoices/:id')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('supplier_invoices:admin')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Req() req: AdminRequest): Promise<void> {
     await this.supplierInvoicesAdminService.deleteDraft(id, req.user?.id ?? 'admin');

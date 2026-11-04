@@ -54,7 +54,7 @@ export class ProjectsService {
   async getByIdForUser(userInfo: UserInfoFromRequest, projectId: string): Promise<ProjectResponseDto> {
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
 
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'projects:admin');
 
     return this.mapResponse(project);
   }
@@ -62,7 +62,7 @@ export class ProjectsService {
   async getSummary(userInfo: UserInfoFromRequest, projectId: string): Promise<ProjectSummaryResponseDto> {
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
 
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'projects:admin');
 
     return await this.buildSummary(project);
   }

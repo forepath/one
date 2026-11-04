@@ -27,7 +27,7 @@ Each subscription item may store an optional `displayName` override (`billing_su
 
 Customer: `POST /subscriptions/{subscriptionId}/items/{itemId}/display-name`
 
-Admin: `POST /admin/billing/subscriptions/{subscriptionId}/items/{itemId}/display-name` (`billing_admin:write`)
+Admin: `POST /admin/billing/subscriptions/{subscriptionId}/items/{itemId}/display-name` (`subscriptions:admin`)
 
 ```json
 { "displayName": "Prod API" }
@@ -50,7 +50,7 @@ Customer: `GET /subscriptions/{subscriptionId}/items/{itemId}` returns the item 
 
 Detail-eligible only when the parent subscription is still live (`active`, `pending_cancel`, `pending_config_change`, or `pending_backorder`), `provisioningStatus === active`, and a live provider reference exists (`hasProviderReference` on list payloads; the reference value is never returned).
 
-Admin twins live under `/admin/billing/subscriptions/{subscriptionId}/items/...` (`billing_admin:read` / `billing_admin:write`) and do not require subscription ownership.
+Admin twins live under `/admin/billing/subscriptions/{subscriptionId}/items/...` (`subscriptions:admin`) and do not require subscription ownership.
 
 ## Tabs and extension registry
 
@@ -90,7 +90,7 @@ First-party integrated stacks currently declare no extra tabs; product-specific 
 | Audience | Path                                                                            | PAT scope                   |
 | -------- | ------------------------------------------------------------------------------- | --------------------------- |
 | Customer | `GET /subscriptions/{subscriptionId}/meters/history?from&to&groupBy=day\|month` | ownership + existing scopes |
-| Admin    | `GET /admin/billing/subscriptions/{subscriptionId}/meters/history?...`          | `billing_admin:read`        |
+| Admin    | `GET /admin/billing/subscriptions/{subscriptionId}/meters/history?...`          | `usage:admin`               |
 
 Returns per-meter series using each meter’s catalog aggregator within day/month buckets of `periodEnd`. The service detail page filters with a collapsible `from` / `to` / `groupBy` panel (customer-facing adaptation of admin billing filters; no `userId`).
 

@@ -23,7 +23,7 @@ import { resolveDefaultServerTypeForProvider } from '../utils/provider-server-ty
 import { resolveServerTypePriceMonthly } from '../utils/server-type-billing.utils';
 
 @Controller('pricing')
-@RequireScopes('subscriptions:read')
+@RequireScopes('catalog:read')
 export class PricingController {
   constructor(
     private readonly pricingService: PricingService,

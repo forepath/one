@@ -67,7 +67,7 @@ export class ProjectTicketsService {
   ): Promise<ProjectTicketResponseDto[]> {
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
 
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'tickets:admin');
 
     const rows = await this.ticketsRepository.findAllByProject(projectId, filters);
 
@@ -99,7 +99,7 @@ export class ProjectTicketsService {
       throw new ForbiddenException('Ticket does not belong to project');
     }
 
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'tickets:admin');
 
     const all = await this.ticketsRepository.findAllByProject(projectId);
     const descMap = buildDescendantCheckboxTaskTotalsByTicketId(all);
@@ -125,7 +125,7 @@ export class ProjectTicketsService {
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
 
     ensureProjectAdmin(userInfo);
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'tickets:admin');
 
     const parentId = dto.parentId ?? null;
 
@@ -193,7 +193,7 @@ export class ProjectTicketsService {
     }
 
     ensureProjectAdmin(userInfo);
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'tickets:admin');
 
     if (ticket.locked) {
       throw new BadRequestException('Cannot update locked ticket');
@@ -276,7 +276,7 @@ export class ProjectTicketsService {
     }
 
     ensureProjectAdmin(userInfo);
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'tickets:admin');
 
     if (ticket.locked) {
       throw new BadRequestException('Cannot delete locked ticket');
@@ -392,7 +392,7 @@ export class ProjectTicketsService {
       throw new ForbiddenException('Ticket does not belong to project');
     }
 
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'tickets:admin');
 
     return ticket;
   }

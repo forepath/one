@@ -57,4 +57,5 @@ export * from './lib/controllers/pat-token-exchange.controller';
 export * from './lib/modules/pat-auth.module';
 export * from './lib/modules/users-auth.module';
 export * from './lib/modules/keycloak-user-sync.module';
+export * from './lib/utils/audit-pat-route-scopes';
 export * from './lib/utils/get-keycloak-pat-auth-guards';

@@ -28,7 +28,7 @@ import { ProjectTimeEntriesService } from '../services/project-time-entries.serv
 export class ProjectTimeEntriesController {
   constructor(private readonly timeEntriesService: ProjectTimeEntriesService) {}
 
-  @RequireScopes('projects:read')
+  @RequireScopes('time_entries:read')
   @Get()
   async list(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -48,7 +48,7 @@ export class ProjectTimeEntriesController {
     );
   }
 
-  @RequireScopes('time_entries:write')
+  @RequireScopes('time_entries:admin')
   @Post()
   async create(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -58,7 +58,7 @@ export class ProjectTimeEntriesController {
     return await this.timeEntriesService.create(projectId, dto, req);
   }
 
-  @RequireScopes('time_entries:write')
+  @RequireScopes('time_entries:admin')
   @Post(':id')
   async update(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -69,7 +69,7 @@ export class ProjectTimeEntriesController {
     return await this.timeEntriesService.update(projectId, id, dto, req);
   }
 
-  @RequireScopes('time_entries:write')
+  @RequireScopes('time_entries:admin')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(

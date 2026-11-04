@@ -120,6 +120,21 @@ describe('client-access.utils', () => {
       expect(() => assertPatScopes({ isApiKeyAuth: true }, 'usage:write')).not.toThrow();
     });
 
+    it('treats admin ⊇ write ⊇ read per resource', () => {
+      const pat = (scopes: string[]) => ({
+        userId: 'u1',
+        userRole: UserRole.USER,
+        isApiKeyAuth: false,
+        amr: ['pat'],
+        scopes,
+      });
+
+      expect(() => assertPatScopes(pat(['tickets:write']), 'tickets:read')).not.toThrow();
+      expect(() => assertPatScopes(pat(['webhooks:admin']), 'webhooks:read')).not.toThrow();
+      expect(() => assertPatScopes(pat(['tickets:read']), 'tickets:write')).toThrow(/Missing: tickets:write/);
+      expect(() => assertPatScopes(pat(['tickets:admin']), 'webhooks:admin')).toThrow(/Missing: webhooks:admin/);
+    });
+
     it('allows PAT sessions that include required scopes', () => {
       expect(() =>
         assertPatScopes(
