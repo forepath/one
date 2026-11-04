@@ -18,22 +18,3 @@ export const REQUIRE_PASSWORD_SESSION_KEY = 'identity.require_password_session';
  * or when interactive login rejects `fp_pat_` secrets (cost 12).
  */
 export const DUMMY_PAT_BCRYPT_HASH = '$2b$12$lXC..FNUXmNW34wYlfnXpOnNCP2LCz0pK/WSd3QcdUXeqO17T.Ksq';
-
-/**
- * Admin-only scopes that non-admin users cannot grant on create/update.
- * Workspace/customer scopes (clients/tickets/projects/…) stay grantable to role=user.
- */
-export const ADMIN_ONLY_PAT_SCOPES = new Set([
-  'users:admin',
-  'webhooks:admin',
-  'updates:admin',
-  'usage:write',
-  'catalog:write',
-  'promotions:write',
-  'billing_admin:read',
-  'billing_admin:write',
-  'datev:write',
-  'imports:write',
-  'invoices:write',
-  'customer_profile:admin',
-]);

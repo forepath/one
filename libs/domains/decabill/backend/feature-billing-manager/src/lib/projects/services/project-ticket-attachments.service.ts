@@ -147,7 +147,7 @@ export class ProjectTicketAttachmentsService {
     const userInfo = getUserFromRequest(req);
     const ticket = await this.ticketsRepository.findByIdOrThrow(ticketId);
     if (ticket.projectId !== projectId) throw new NotFoundException('Attachment not found');
-    ensureProjectReadable(userInfo, project);
+    ensureProjectReadable(userInfo, project, 'attachments:admin');
     return { project, ticket, userInfo };
   }
 

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-04T17:57:41.162Z",
+  "generatedAt": "2026-11-04T21:02:51.148Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -17110,6 +17110,28 @@
       }
     },
     {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/permissions/{permissionId}/reply",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/permissions/{permissionId}/reply",
+        "operationId": "replyClientAgentPermission",
+        "summary": "Reply to a pending OpenCode permission request",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/questions/{questionId}/reply",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/questions/{questionId}/reply",
+        "operationId": "replyClientAgentQuestion",
+        "summary": "Answer or reject a pending OpenCode question",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/start",
       "type": "endpoint",
       "attrs": {
@@ -18320,6 +18342,17 @@
       }
     },
     {
+      "id": "api:HTTP:POST:/admin/opencode/config/files/ensure",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/opencode/config/files/ensure",
+        "operationId": "ensureGlobalOpencodeLayerFile",
+        "summary": "Ensure a global layer file or directory exists",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/admin/opencode/config/files/{path}",
       "type": "endpoint",
       "attrs": {
@@ -18393,6 +18426,17 @@
         "pathOrChannel": "/clients/{id}/opencode/config/files",
         "operationId": "createClientOpencodeLayerFile",
         "summary": "Create a workspace layer file or directory",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/opencode/config/files/ensure",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/opencode/config/files/ensure",
+        "operationId": "ensureClientOpencodeLayerFile",
+        "summary": "Ensure a workspace layer file or directory exists",
         "specKind": "openapi"
       }
     },
@@ -19376,6 +19420,17 @@
         "pathOrChannel": "/service-plans/{id}",
         "operationId": "deleteServicePlan",
         "summary": "Delete service plan (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/service-plans/{id}/order-provisioning-options",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/service-plans/{id}/order-provisioning-options",
+        "operationId": "listServicePlanOrderProvisioningOptions",
+        "summary": "List provisioning options offered when ordering a plan",
         "specKind": "openapi"
       }
     },
@@ -21059,6 +21114,28 @@
         "pathOrChannel": "/admin/billing/customer-profiles/{id}/trust-score/recompute",
         "operationId": "recomputeAdminCustomerProfileTrustScore",
         "summary": "Recompute customer trust score (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/revalidate",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/customer-profiles/{id}/vat-id/revalidate",
+        "operationId": "revalidateAdminCustomerProfileVatId",
+        "summary": "Revalidate customer VAT ID via VIES (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/mark-validated",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/customer-profiles/{id}/vat-id/mark-validated",
+        "operationId": "markAdminCustomerProfileVatIdValidated",
+        "summary": "Mark customer VAT ID validated by admin (admin only)",
         "specKind": "openapi"
       }
     },
@@ -45393,6 +45470,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/permissions/{permissionId}/reply",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/questions/{questionId}/reply",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/start",
       "type": "contains"
     },
@@ -45943,6 +46030,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/opencode/config/files/ensure",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/admin/opencode/config/files/{path}",
       "type": "contains"
     },
@@ -45974,6 +46066,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/clients/{id}/opencode/config/files",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/opencode/config/files/ensure",
       "type": "contains"
     },
     {
@@ -46498,6 +46595,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/service-plans/{id}/order-provisioning-options",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/cloud-init-configs",
       "type": "contains"
     },
@@ -46764,6 +46866,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:DELETE:/users/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/users/{id}/lock",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/users/{id}/unlock",
       "type": "contains"
     },
     {
@@ -47394,6 +47506,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/trust-score/recompute",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/revalidate",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/mark-validated",
       "type": "contains"
     },
     {
@@ -56538,6 +56660,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "to": "api:HTTP:POST:/admin/opencode/config/files/ensure",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/admin/opencode/config/files/ensure",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
       "to": "api:HTTP:GET:/admin/opencode/config/files/{path}",
       "type": "implements"
     },
@@ -56578,6 +56710,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "to": "api:HTTP:POST:/admin/opencode/config/files/ensure",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
       "to": "api:HTTP:GET:/admin/opencode/config/files/{path}",
       "type": "implements"
     },
@@ -56803,6 +56940,26 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/permissions/{permissionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/permissions/{permissionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/questions/{questionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/questions/{questionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
       "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/start",
       "type": "implements"
     },
@@ -57689,6 +57846,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:POST:/clients/{id}/opencode/config/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/opencode/config/files/ensure",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/opencode/config/files/ensure",
       "type": "implements"
     },
     {
@@ -59173,6 +59340,26 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/revalidate",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/revalidate",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/mark-validated",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/mark-validated",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/setup",
       "type": "implements"
     },
@@ -59879,6 +60066,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/trust-score/recompute",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/revalidate",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/mark-validated",
       "type": "implements"
     },
     {
@@ -60384,6 +60581,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/trust-score/recompute",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/revalidate",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/mark-validated",
       "type": "implements"
     },
     {
@@ -61359,6 +61566,16 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:DELETE:/service-plans/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-plans.controller.ts",
+      "to": "api:HTTP:GET:/service-plans/{id}/order-provisioning-options",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/service-plans/{id}/order-provisioning-options",
       "type": "implements"
     },
     {
@@ -73648,6 +73865,11 @@
     },
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-plans.service.ts",
+      "to": "api:HTTP:GET:/service-plans/{id}/order-provisioning-options",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-plans.service.ts",
       "to": "api:HTTP:GET:/service-plans/{id}/addons",
       "type": "calls"
     },
@@ -73879,6 +74101,16 @@
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agents.service.ts",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/models",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agents.service.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/permissions/{permissionId}/reply",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agents.service.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/questions/{questionId}/reply",
       "type": "calls"
     },
     {
@@ -74329,6 +74561,16 @@
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
       "to": "api:HTTP:POST:/clients/{id}/opencode/config/files",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:POST:/admin/opencode/config/files/ensure",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:POST:/clients/{id}/opencode/config/files/ensure",
       "type": "calls"
     },
     {
@@ -76648,32 +76890,17 @@
     },
     {
       "from": "concept:agenstra-authentication-methods",
-      "to": "api:HTTP:GET:/knowledge",
+      "to": "api:HTTP:GET:/admin/opencode/config",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-authentication-methods",
-      "to": "api:HTTP:POST:/knowledge",
+      "to": "api:HTTP:PUT:/admin/opencode/config",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-authentication-methods",
-      "to": "api:HTTP:GET:/tickets",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-authentication-methods",
-      "to": "api:HTTP:POST:/tickets",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-authentication-methods",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-authentication-methods",
-      "to": "api:HTTP:POST:/agents",
+      "to": "api:HTTP:GET:/config",
       "type": "documents"
     },
     {
@@ -77953,6 +78180,11 @@
     },
     {
       "from": "concept:decabill-billing-manager-http-api",
+      "to": "api:HTTP:GET:/service-plans/{id}/order-provisioning-options",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-billing-manager-http-api",
       "to": "api:HTTP:GET:/customer-profile",
       "type": "documents"
     },
@@ -77984,6 +78216,16 @@
     {
       "from": "concept:decabill-billing-manager-http-api",
       "to": "api:HTTP:DELETE:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-billing-manager-http-api",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/revalidate",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-billing-manager-http-api",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/mark-validated",
       "type": "documents"
     },
     {
@@ -78748,6 +78990,11 @@
     },
     {
       "from": "concept:decabill-plan-linkage",
+      "to": "api:HTTP:GET:/service-plans/{id}/order-provisioning-options",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-plan-linkage",
       "to": "api:HTTP:GET:/addons",
       "type": "documents"
     },
@@ -78888,27 +79135,12 @@
     },
     {
       "from": "concept:decabill-authentication-methods",
-      "to": "api:HTTP:GET:/tickets",
+      "to": "api:HTTP:GET:/meters",
       "type": "documents"
     },
     {
       "from": "concept:decabill-authentication-methods",
-      "to": "api:HTTP:POST:/tickets",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-authentication-methods",
-      "to": "api:HTTP:GET:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-authentication-methods",
-      "to": "api:HTTP:POST:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-authentication-methods",
-      "to": "api:HTTP:GET:/projects",
+      "to": "api:HTTP:POST:/meters",
       "type": "documents"
     },
     {
@@ -79639,6 +79871,11 @@
     {
       "from": "concept:decabill-customer-order-flow",
       "to": "api:HTTP:DELETE:/service-plans/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-customer-order-flow",
+      "to": "api:HTTP:GET:/service-plans/{id}/order-provisioning-options",
       "type": "documents"
     },
     {
@@ -81233,6 +81470,11 @@
     },
     {
       "from": "concept:decabill-service-plans",
+      "to": "api:HTTP:GET:/service-plans/{id}/order-provisioning-options",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-service-plans",
       "to": "api:HTTP:GET:/cloud-init-configs",
       "type": "documents"
     },
@@ -81994,6 +82236,11 @@
     {
       "from": "concept:decabill-vies-validation",
       "to": "api:HTTP:DELETE:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-vies-validation",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/vat-id/mark-validated",
       "type": "documents"
     },
     {

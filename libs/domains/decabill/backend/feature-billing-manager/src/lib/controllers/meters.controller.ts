@@ -19,7 +19,7 @@ import { MetersRepository } from '../repositories/meters.repository';
 import { MeterService } from '../services/meter.service';
 
 @Controller('meters')
-@RequireScopes('catalog:write')
+@RequireScopes('catalog:admin')
 export class MetersController {
   constructor(
     private readonly metersRepository: MetersRepository,
@@ -29,7 +29,7 @@ export class MetersController {
   @Get()
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
-  @RequireScopes('catalog:read')
+  @RequireScopes('catalog:admin')
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
@@ -43,7 +43,7 @@ export class MetersController {
   @Get(':id')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
-  @RequireScopes('catalog:read')
+  @RequireScopes('catalog:admin')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<MeterResponseDto> {
     const row = await this.metersRepository.findByIdOrThrow(id);
 

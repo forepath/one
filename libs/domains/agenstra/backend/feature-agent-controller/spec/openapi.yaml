@@ -457,6 +457,8 @@ paths:
     get:
       summary: List users (admin only)
       operationId: listUsers
+      security:
+        - bearerAuth: [users:admin]
       parameters:
         - in: query
           name: limit
@@ -480,6 +482,8 @@ paths:
     post:
       summary: Create user (admin only)
       operationId: createUser
+      security:
+        - bearerAuth: [users:admin]
       description: >
         Creates a new user. First user is auto-confirmed. Non-first users receive a
         confirmation email (same as self-registration); they must confirm before logging in.
@@ -502,6 +506,8 @@ paths:
     get:
       summary: Get user by id (admin only)
       operationId: getUser
+      security:
+        - bearerAuth: [users:admin]
       parameters:
         - in: path
           name: id
@@ -521,6 +527,8 @@ paths:
     post:
       summary: Update user (admin only)
       operationId: updateUser
+      security:
+        - bearerAuth: [users:admin]
       description: >
         Updates a user. When email is changed, the account is set unconfirmed and a
         confirmation email is sent to the new address (same as self-registration).
@@ -549,6 +557,8 @@ paths:
     delete:
       summary: Delete user (admin only)
       operationId: deleteUser
+      security:
+        - bearerAuth: [users:admin]
       parameters:
         - in: path
           name: id
@@ -565,6 +575,8 @@ paths:
     post:
       summary: Lock user account (admin only)
       operationId: lockUser
+      security:
+        - bearerAuth: [users:admin]
       description: >
         Locks the target user account immediately. Locked users cannot authenticate
         in users-auth mode. Admins cannot lock themselves.
@@ -590,6 +602,8 @@ paths:
     post:
       summary: Unlock user account (admin only)
       operationId: unlockUser
+      security:
+        - bearerAuth: [users:admin]
       description: >
         Unlocks the target user account by clearing lock timestamp.
         Admins cannot unlock themselves.
@@ -615,6 +629,8 @@ paths:
     delete:
       summary: Admin remove authenticator 2FA from a user
       operationId: adminClearUserTotp
+      security:
+        - bearerAuth: [users:admin]
       description: >
         Clears the user's authenticator enrollment without requiring their TOTP code.
         When force login 2FA is enabled, the user falls back to email OTP on next login.
@@ -634,6 +650,8 @@ paths:
     get:
       summary: List Atlassian site connections (admin only)
       operationId: listAtlassianSiteConnections
+      security:
+        - bearerAuth: [imports:admin]
       parameters:
         - in: query
           name: limit
@@ -670,6 +688,8 @@ paths:
     post:
       summary: Create Atlassian site connection (admin only)
       operationId: createAtlassianSiteConnection
+      security:
+        - bearerAuth: [imports:admin]
       requestBody:
         required: true
         content:
@@ -698,6 +718,8 @@ paths:
     get:
       summary: Get Atlassian site connection (admin only)
       operationId: getAtlassianSiteConnection
+      security:
+        - bearerAuth: [imports:admin]
       responses:
         '200':
           description: Connection
@@ -712,6 +734,8 @@ paths:
     put:
       summary: Update Atlassian site connection (admin only)
       operationId: updateAtlassianSiteConnection
+      security:
+        - bearerAuth: [imports:admin]
       requestBody:
         required: true
         content:
@@ -732,6 +756,8 @@ paths:
     delete:
       summary: Delete Atlassian site connection (admin only)
       operationId: deleteAtlassianSiteConnection
+      security:
+        - bearerAuth: [imports:admin]
       responses:
         '204':
           description: Deleted
@@ -743,6 +769,8 @@ paths:
     post:
       summary: Test Atlassian connection (admin only)
       operationId: testAtlassianSiteConnection
+      security:
+        - bearerAuth: [imports:admin]
       parameters:
         - in: path
           name: id
@@ -763,6 +791,8 @@ paths:
     get:
       summary: List external import configs (admin only)
       operationId: listExternalImportConfigs
+      security:
+        - bearerAuth: [imports:admin]
       parameters:
         - in: query
           name: limit
@@ -799,6 +829,8 @@ paths:
     post:
       summary: Create import config (admin only)
       operationId: createExternalImportConfig
+      security:
+        - bearerAuth: [imports:admin]
       requestBody:
         required: true
         content:
@@ -827,6 +859,8 @@ paths:
     get:
       summary: Get import config (admin only)
       operationId: getExternalImportConfig
+      security:
+        - bearerAuth: [imports:admin]
       responses:
         '200':
           description: Config
@@ -841,6 +875,8 @@ paths:
     put:
       summary: Update import config (admin only)
       operationId: updateExternalImportConfig
+      security:
+        - bearerAuth: [imports:admin]
       requestBody:
         required: true
         content:
@@ -861,6 +897,8 @@ paths:
     delete:
       summary: Delete import config (admin only)
       operationId: deleteExternalImportConfig
+      security:
+        - bearerAuth: [imports:admin]
       responses:
         '204':
           description: Deleted
@@ -872,6 +910,8 @@ paths:
     post:
       summary: Run import once for config (admin only)
       operationId: runExternalImportConfig
+      security:
+        - bearerAuth: [imports:admin]
       parameters:
         - in: path
           name: id
@@ -888,6 +928,8 @@ paths:
     delete:
       summary: Clear sync markers for config (admin only)
       operationId: clearExternalImportMarkers
+      security:
+        - bearerAuth: [imports:admin]
       parameters:
         - in: path
           name: id
@@ -907,6 +949,8 @@ paths:
         Requires `knowledge:read`. Returns flat node list for the given `clientId`.
         For realtime tree coherence, subscribe to Socket.IO namespace **pages** (AsyncAPI `pages/*`).
       operationId: listKnowledgeNodes
+      security:
+        - bearerAuth: [knowledge:read]
       parameters:
         - in: query
           name: clientId
@@ -930,6 +974,8 @@ paths:
       summary: Create knowledge node
       description: Requires `knowledge:write`.
       operationId: createKnowledgeNode
+      security:
+        - bearerAuth: [knowledge:write]
       requestBody:
         required: true
         content:
@@ -952,6 +998,8 @@ paths:
         `onConflict`: `reject` (default), `replace` (overwrite matching page content), or `number` (create as `Title (n)`).
         Colliding folder siblings are always numbered (cannot replace a folder).
       operationId: uploadKnowledgeTextFiles
+      security:
+        - bearerAuth: [knowledge:write]
       requestBody:
         required: true
         content:
@@ -977,6 +1025,8 @@ paths:
         together with their ancestor folders so every match stays reachable from the root; each node then carries
         `searchMatch` (`false` on ancestor folders included only as context).
       operationId: getKnowledgeTree
+      security:
+        - bearerAuth: [knowledge:read]
       parameters:
         - in: query
           name: clientId
@@ -1001,6 +1051,8 @@ paths:
       summary: Get knowledge node by content SHA
       description: Requires `knowledge:read`.
       operationId: getKnowledgeNodeBySha
+      security:
+        - bearerAuth: [knowledge:read]
       parameters:
         - in: query
           name: clientId
@@ -1024,6 +1076,8 @@ paths:
       summary: List knowledge relations for a source
       description: Requires `knowledge:read`.
       operationId: listKnowledgeRelations
+      security:
+        - bearerAuth: [knowledge:read]
       parameters:
         - in: query
           name: clientId
@@ -1050,6 +1104,8 @@ paths:
       summary: Create knowledge relation
       description: Requires `knowledge:write`. Emits `knowledgeRelationChanged` on pages and tickets namespaces.
       operationId: createKnowledgeRelation
+      security:
+        - bearerAuth: [knowledge:write]
       requestBody:
         required: true
         content:
@@ -1068,6 +1124,8 @@ paths:
       summary: Collect prompt context sections for a source
       description: Requires `knowledge:read`.
       operationId: getKnowledgePromptContext
+      security:
+        - bearerAuth: [knowledge:read]
       parameters:
         - in: query
           name: clientId
@@ -1093,6 +1151,8 @@ paths:
       summary: Delete knowledge relation
       description: Requires `knowledge:write`.
       operationId: deleteKnowledgeRelation
+      security:
+        - bearerAuth: [knowledge:write]
       parameters:
         - in: path
           name: id
@@ -1106,6 +1166,8 @@ paths:
       summary: Get knowledge node by id
       description: Requires `knowledge:read`.
       operationId: getKnowledgeNode
+      security:
+        - bearerAuth: [knowledge:read]
       parameters:
         - in: path
           name: id
@@ -1124,6 +1186,8 @@ paths:
       summary: Update knowledge node
       description: Requires `knowledge:write`.
       operationId: updateKnowledgeNode
+      security:
+        - bearerAuth: [knowledge:write]
       parameters:
         - in: path
           name: id
@@ -1147,6 +1211,8 @@ paths:
       description: |
         Requires `knowledge:write`. Optional `releaseExternalSyncMarker=true` clears external sync markers.
       operationId: deleteKnowledgeNode
+      security:
+        - bearerAuth: [knowledge:write]
       parameters:
         - in: path
           name: id
@@ -1163,6 +1229,8 @@ paths:
       summary: List knowledge page activity
       description: Requires `knowledge:read`.
       operationId: listKnowledgePageActivity
+      security:
+        - bearerAuth: [knowledge:read]
       parameters:
         - in: path
           name: id
@@ -1193,6 +1261,8 @@ paths:
       summary: List knowledge page attachments
       description: Requires `attachments:read`; caller must be able to read the page workspace.
       operationId: listKnowledgePageAttachments
+      security:
+        - bearerAuth: [attachments:read]
       responses:
         '200':
           description: Attachment list
@@ -1205,6 +1275,8 @@ paths:
       summary: Upload knowledge page attachment
       description: Requires `attachments:write`; multipart field name is `file`.
       operationId: uploadKnowledgePageAttachment
+      security:
+        - bearerAuth: [attachments:write]
       requestBody:
         required: true
         content:
@@ -1225,6 +1297,8 @@ paths:
       summary: Delete knowledge page attachment metadata
       description: Requires `attachments:write`; caller must be able to write the page workspace.
       operationId: deleteKnowledgePageAttachment
+      security:
+        - bearerAuth: [attachments:write]
       parameters:
         - in: path
           name: id
@@ -1241,6 +1315,8 @@ paths:
       summary: Upload chat context attachment
       description: Requires `attachments:write`; multipart field name is `file`. The returned id can be sent in chat `contextInjection.attachmentIds`.
       operationId: uploadChatAttachment
+      security:
+        - bearerAuth: [attachments:write]
       parameters:
         - in: query
           name: clientId
@@ -1266,6 +1342,8 @@ paths:
       summary: Download attachment
       description: Requires `attachments:read`; caller must be able to read the attachment workspace.
       operationId: downloadAttachment
+      security:
+        - bearerAuth: [attachments:read]
       parameters:
         - in: path
           name: id
@@ -1278,6 +1356,8 @@ paths:
       summary: Reorder knowledge node
       description: Requires `knowledge:write`.
       operationId: reorderKnowledgeNode
+      security:
+        - bearerAuth: [knowledge:write]
       parameters:
         - in: path
           name: id
@@ -1301,6 +1381,8 @@ paths:
       summary: Duplicate knowledge node
       description: Requires `knowledge:write`.
       operationId: duplicateKnowledgeNode
+      security:
+        - bearerAuth: [knowledge:write]
       parameters:
         - in: path
           name: id
@@ -1321,6 +1403,8 @@ paths:
         For realtime list coherence after mutations, subscribe to the Socket.IO **tickets** namespace
         (see AsyncAPI `tickets/*` channels in `spec/asyncapi.yaml`); REST remains the source of truth for loads.
       operationId: listTickets
+      security:
+        - bearerAuth: [tickets:read]
       parameters:
         - in: query
           name: clientId
@@ -1356,6 +1440,8 @@ paths:
     post:
       summary: Create ticket
       operationId: createTicket
+      security:
+        - bearerAuth: [tickets:write]
       requestBody:
         required: true
         content:
@@ -1380,6 +1466,8 @@ paths:
     get:
       summary: Get ticket
       operationId: getTicket
+      security:
+        - bearerAuth: [tickets:read]
       parameters:
         - in: query
           name: includeDescendants
@@ -1397,6 +1485,8 @@ paths:
     patch:
       summary: Update ticket
       operationId: updateTicket
+      security:
+        - bearerAuth: [tickets:write]
       requestBody:
         content:
           application/json:
@@ -1412,6 +1502,8 @@ paths:
     delete:
       summary: Delete ticket
       operationId: deleteTicket
+      security:
+        - bearerAuth: [tickets:write]
       parameters:
         - in: query
           name: releaseExternalSyncMarker
@@ -1431,6 +1523,8 @@ paths:
     get:
       summary: Build prototype prompt for ticket tree
       operationId: getTicketPrototypePrompt
+      security:
+        - bearerAuth: [tickets:read]
       parameters:
         - in: path
           name: id
@@ -1456,6 +1550,8 @@ paths:
     get:
       summary: List ticket comments
       operationId: listTicketComments
+      security:
+        - bearerAuth: [tickets:read]
       responses:
         '200':
           description: Ticket comments
@@ -1468,6 +1564,8 @@ paths:
     post:
       summary: Add ticket comment
       operationId: addTicketComment
+      security:
+        - bearerAuth: [tickets:write]
       requestBody:
         required: true
         content:
@@ -1491,6 +1589,8 @@ paths:
       summary: List ticket attachments
       description: Requires `attachments:read`; caller must be able to read the ticket workspace.
       operationId: listTicketAttachments
+      security:
+        - bearerAuth: [attachments:read]
       responses:
         '200':
           description: Attachment list
@@ -1503,6 +1603,8 @@ paths:
       summary: Upload ticket attachment
       description: Requires `attachments:write`; multipart field name is `file`.
       operationId: uploadTicketAttachment
+      security:
+        - bearerAuth: [attachments:write]
       requestBody:
         required: true
         content:
@@ -1523,6 +1625,8 @@ paths:
       summary: Delete ticket attachment metadata
       description: Requires `attachments:write`; caller must be able to write the ticket workspace.
       operationId: deleteTicketAttachment
+      security:
+        - bearerAuth: [attachments:write]
       parameters:
         - in: path
           name: id
@@ -1538,6 +1642,8 @@ paths:
     get:
       summary: List ticket activity
       operationId: listTicketActivity
+      security:
+        - bearerAuth: [tickets:read]
       parameters:
         - in: path
           name: id
@@ -1568,6 +1674,8 @@ paths:
     post:
       summary: Start AI body generation session
       operationId: startTicketBodyGenerationSession
+      security:
+        - bearerAuth: [tickets:write]
       parameters:
         - in: path
           name: id
@@ -1591,6 +1699,8 @@ paths:
     post:
       summary: Apply AI-generated ticket body
       operationId: applyTicketGeneratedBody
+      security:
+        - bearerAuth: [tickets:write]
       parameters:
         - in: path
           name: id
@@ -1621,6 +1731,8 @@ paths:
         target workspaces. Emits `ticketRemoved` for each id on the source workspace room and `ticketUpsert` on the
         target workspace room (tickets Socket.IO namespace). `targetClientId` must differ from the ticket workspace (400 otherwise).
       operationId: migrateTicketToWorkspace
+      security:
+        - bearerAuth: [tickets:write]
       parameters:
         - in: path
           name: id
@@ -1651,6 +1763,8 @@ paths:
     get:
       summary: Get ticket automation configuration
       operationId: getTicketAutomation
+      security:
+        - bearerAuth: [tickets:read]
       parameters:
         - in: path
           name: ticketId
@@ -1674,6 +1788,8 @@ paths:
         only when prior approval was meaningful (requiresApproval was true and approval existed), except that
         turning off the approval requirement alone does not emit AUTOMATION_APPROVAL_INVALIDATED.
       operationId: patchTicketAutomation
+      security:
+        - bearerAuth: [tickets:write]
       parameters:
         - in: path
           name: ticketId
@@ -1698,6 +1814,8 @@ paths:
     post:
       summary: Approve automation run (when requiresApproval is true)
       operationId: approveTicketAutomation
+      security:
+        - bearerAuth: [tickets:write]
       parameters:
         - in: path
           name: ticketId
@@ -1716,6 +1834,8 @@ paths:
     post:
       summary: Revoke automation approval (when requiresApproval is true)
       operationId: unapproveTicketAutomation
+      security:
+        - bearerAuth: [tickets:write]
       parameters:
         - in: path
           name: ticketId
@@ -1734,6 +1854,8 @@ paths:
     get:
       summary: List automation runs for a ticket
       operationId: listTicketAutomationRuns
+      security:
+        - bearerAuth: [tickets:read]
       parameters:
         - in: path
           name: ticketId
@@ -1754,6 +1876,8 @@ paths:
     get:
       summary: Get automation run detail including steps
       operationId: getTicketAutomationRun
+      security:
+        - bearerAuth: [tickets:read]
       parameters:
         - in: path
           name: ticketId
@@ -1778,6 +1902,8 @@ paths:
     post:
       summary: Cancel a pending or running automation run
       operationId: cancelTicketAutomationRun
+      security:
+        - bearerAuth: [tickets:write]
       parameters:
         - in: path
           name: ticketId
@@ -1805,6 +1931,8 @@ paths:
         Only agents returned here can be picked by the autonomous ticket scheduler for this workspace
         (intersection with each ticket's allowed-agent list). Matches `client_agent_autonomy.enabled = true`.
       operationId: listEnabledAutonomyAgentIds
+      security:
+        - bearerAuth: [agents:read]
       parameters:
         - in: path
           name: id
@@ -1831,6 +1959,8 @@ paths:
     get:
       summary: Get per-agent autonomy settings
       operationId: getClientAgentAutonomy
+      security:
+        - bearerAuth: [agents:read]
       parameters:
         - in: path
           name: id
@@ -1853,6 +1983,8 @@ paths:
         Requires workspace management rights (see ClientResponseDto.canManageWorkspaceConfiguration).
         Interactive user context required; API key auth may manage when applicable.
       operationId: upsertClientAgentAutonomy
+      security:
+        - bearerAuth: [agents:write]
       parameters:
         - in: path
           name: id
@@ -1889,6 +2021,8 @@ paths:
         - The user is in the client_users relationship table
         Global admins see all clients.
       operationId: listClients
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: query
           name: limit
@@ -1922,6 +2056,8 @@ paths:
         Creates a new client. The user_id is automatically set to the logged-in user.
         In api-key mode, user_id is set to null.
       operationId: createClient
+      security:
+        - bearerAuth: [clients:write]
       requestBody:
         required: true
         content:
@@ -1943,6 +2079,8 @@ paths:
         env `CLIENT_PING_TIMEOUT_MS`, default 5000). Used by the console to flag unreachable workspaces in the list
         without loading their environments. Never fails for an unreachable workspace; `reachable` is false instead.
       operationId: pingClient
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -1980,6 +2118,8 @@ paths:
         - The user is in the client_users relationship table
         In api-key mode, access is always granted.
       operationId: getClient
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -2003,6 +2143,8 @@ paths:
         client_users role `admin`, API key authentication, or api-key server mode (not plain client_users `user`).
         See `canManageWorkspaceConfiguration` on ClientResponseDto.
       operationId: updateClient
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -2032,6 +2174,8 @@ paths:
       description: |
         Deletes a client. Same workspace management requirement as POST /clients/{id} (not available to plain client_users `user`).
       operationId: deleteClient
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -2053,6 +2197,8 @@ paths:
         Only accessible if the user has access to the client.
         Note: In api-key mode, users do not play a role; this endpoint is intended for keycloak and users authentication.
       operationId: getClientUsers
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -2083,6 +2229,8 @@ paths:
         - Client users cannot add anyone
         Note: In api-key mode, users do not play a role; this endpoint is not applicable. Use keycloak or users authentication.
       operationId: addClientUser
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -2120,6 +2268,8 @@ paths:
         - Client users cannot remove anyone
         Note: In api-key mode, users do not play a role; this endpoint is not applicable. Use keycloak or users authentication.
       operationId: removeClientUser
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -2155,6 +2305,8 @@ paths:
         `supported: false` (standard only).
         Requires the `clients:read` scope and access to the client.
       operationId: getClientIsolation
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -2183,6 +2335,8 @@ paths:
         summary. Capability transitions are recorded and published as `isolation.*` notifications.
         Requires the `clients:write` scope and workspace management rights (see ClientResponseDto.canManageWorkspaceConfiguration).
       operationId: probeClientIsolation
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -2206,6 +2360,8 @@ paths:
     get:
       summary: List agents for a client
       operationId: listClientAgents
+      security:
+        - bearerAuth: [agents:read]
       parameters:
         - in: path
           name: id
@@ -2256,6 +2412,8 @@ paths:
         fails to start
         publishes `agent.sandbox_creation_failed` and is not retried on another runtime.
       operationId: createClientAgent
+      security:
+        - bearerAuth: [agents:write]
       parameters:
         - in: path
           name: id
@@ -2303,6 +2461,8 @@ paths:
         forwarded `environmentProgress` event on the clients socket (selected workspace) and as `environmentProgress`
         in status `statusSnapshot` / `statusPatch` (all workspaces).
       operationId: getClientEnvironmentProgress
+      security:
+        - bearerAuth: [agents:read]
       parameters:
         - in: path
           name: id
@@ -2326,6 +2486,8 @@ paths:
     get:
       summary: Get agent by id for a client
       operationId: getClientAgent
+      security:
+        - bearerAuth: [agents:read]
       parameters:
         - in: path
           name: id
@@ -2354,6 +2516,8 @@ paths:
       summary: Update agent for a client
       description: Requires workspace management rights (see ClientResponseDto.canManageWorkspaceConfiguration).
       operationId: updateClientAgent
+      security:
+        - bearerAuth: [agents:write]
       parameters:
         - in: path
           name: id
@@ -2388,6 +2552,8 @@ paths:
       summary: Delete agent for a client
       description: Requires workspace management rights.
       operationId: deleteClientAgent
+      security:
+        - bearerAuth: [agents:write]
       parameters:
         - in: path
           name: id
@@ -2412,6 +2578,8 @@ paths:
     get:
       summary: List models for an agent (proxied)
       operationId: listClientAgentModels
+      security:
+        - bearerAuth: [agents:read]
       description: |
         Proxies to the remote agent-manager `GET /api/agents/{agentId}/models`. Returns a map of model id to
         display name (possibly empty). Uses the same hybrid authentication as the rest of this API (Bearer /
@@ -2445,10 +2613,88 @@ paths:
           description: Agent or resource not found on remote agent-manager
         '400':
           description: Bad request from remote (e.g. provider does not support listing models)
+  /clients/{id}/agents/{agentId}/permissions/{permissionId}/reply:
+    post:
+      summary: Reply to a pending OpenCode permission request
+      description: Proxied to the agent-manager. Requires access to the client.
+      operationId: replyClientAgentPermission
+      security:
+        - bearerAuth: [agents:write]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: permissionId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentPermissionReplyDto'
+      responses:
+        '204':
+          description: Reply forwarded
+        '403':
+          description: No access to the client, or insufficient token scope
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/questions/{questionId}/reply:
+    post:
+      summary: Answer or reject a pending OpenCode question
+      description: Proxied to the agent-manager. Requires access to the client.
+      operationId: replyClientAgentQuestion
+      security:
+        - bearerAuth: [agents:write]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: questionId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentQuestionReplyDto'
+      responses:
+        '204':
+          description: Reply forwarded
+        '403':
+          description: No access to the client, or insufficient token scope
+        '404':
+          description: Client or agent not found
   /clients/{id}/agents/{agentId}/start:
     post:
       summary: Start agent environment for a client
       operationId: startClientAgent
+      security:
+        - bearerAuth: [agents:write]
       description: Start the agent Docker container. Proxied to agent-manager.
       parameters:
         - in: path
@@ -2480,6 +2726,8 @@ paths:
     post:
       summary: Stop agent environment for a client
       operationId: stopClientAgent
+      security:
+        - bearerAuth: [agents:write]
       description: Stop the agent Docker container. Proxied to agent-manager.
       parameters:
         - in: path
@@ -2511,6 +2759,8 @@ paths:
     post:
       summary: Restart agent environment for a client
       operationId: restartClientAgent
+      security:
+        - bearerAuth: [agents:write]
       description: Restart the agent Docker container. Proxied to agent-manager.
       parameters:
         - in: path
@@ -2540,7 +2790,7 @@ paths:
           description: Agent not found
   /clients/{id}/agents/{agentId}/files:
     description: |
-      Proxied, workspace-confined agent file API (client membership + `agents:files` scope for PATs).
+      Proxied, workspace-confined agent file API (client membership + `agent_files:read` / `agent_files:write` scope for PATs).
       Operations are limited to the agent workspace (normally /app): absolute paths outside it, `..` segments,
       and paths whose canonical (symlink-resolved) target leaves the workspace are rejected with 400.
       Files run as the unprivileged agent runtime user; root-owned injected configuration outside the
@@ -2552,6 +2802,8 @@ paths:
         Directory listing and metadata failures from the manager propagate as errors, not empty arrays.
         Paths outside the workspace (lexically or via symlinks) are rejected with 400.
       operationId: listClientAgentDirectory
+      security:
+        - bearerAuth: [agent_files:read]
       parameters:
         - in: path
           name: id
@@ -2592,6 +2844,8 @@ paths:
     get:
       summary: Search indexed workspace file paths and text content
       operationId: searchClientAgentWorkspace
+      security:
+        - bearerAuth: [agent_files:read]
       description: |
         Searches the controller-owned OpenSearch corpus for this clientId+agentId only (fail closed).
         Response always includes index `status`. When status is missing/indexing/error, hits are empty.
@@ -2670,6 +2924,8 @@ paths:
     get:
       summary: Workspace search index status for an agent
       operationId: getClientAgentWorkspaceSearchStatus
+      security:
+        - bearerAuth: [agent_files:read]
       parameters:
         - in: path
           name: id
@@ -2698,6 +2954,8 @@ paths:
     post:
       summary: Rebuild workspace search index for an agent
       operationId: reindexClientAgentWorkspace
+      security:
+        - bearerAuth: [agent_files:write]
       description: |
         Signals the agent-manager to emit a rebuild notification and starts controller re-hydration
         from the file proxy. Returns 202 Accepted immediately.
@@ -2738,6 +2996,8 @@ paths:
     head:
       summary: Probe file metadata without transferring the body (proxied)
       operationId: headClientAgentFile
+      security:
+        - bearerAuth: [agent_files:read]
       parameters:
         - in: path
           name: id
@@ -2780,6 +3040,8 @@ paths:
     get:
       summary: Read file content as raw bytes (proxied)
       operationId: readClientAgentFile
+      security:
+        - bearerAuth: [agent_files:read]
       parameters:
         - in: path
           name: id
@@ -2870,6 +3132,8 @@ paths:
     put:
       summary: Write file content as raw bytes (proxied; full file or Content-Range chunk)
       operationId: writeClientAgentFile
+      security:
+        - bearerAuth: [agent_files:write]
       parameters:
         - in: path
           name: id
@@ -2935,6 +3199,8 @@ paths:
     delete:
       summary: Delete file or directory (proxied)
       operationId: deleteClientAgentFileOrDirectory
+      security:
+        - bearerAuth: [agent_files:write]
       parameters:
         - in: path
           name: id
@@ -2969,6 +3235,8 @@ paths:
     patch:
       summary: Move file or directory (proxied)
       operationId: moveClientAgentFileOrDirectory
+      security:
+        - bearerAuth: [agent_files:write]
       parameters:
         - in: path
           name: id
@@ -3009,6 +3277,8 @@ paths:
     post:
       summary: Create file or directory (proxied)
       operationId: createClientAgentFileOrDirectory
+      security:
+        - bearerAuth: [agent_files:write]
       parameters:
         - in: path
           name: id
@@ -3050,6 +3320,8 @@ paths:
     get:
       summary: List environment variables for an agent (proxied)
       operationId: listClientAgentEnvironmentVariables
+      security:
+        - bearerAuth: [agent_environment:read]
       parameters:
         - in: path
           name: id
@@ -3094,6 +3366,8 @@ paths:
       summary: Create environment variable for an agent (proxied)
       description: Requires workspace management rights.
       operationId: createClientAgentEnvironmentVariable
+      security:
+        - bearerAuth: [agent_environment:write]
       parameters:
         - in: path
           name: id
@@ -3132,6 +3406,8 @@ paths:
       summary: Delete all environment variables for an agent (proxied)
       description: Requires workspace management rights.
       operationId: deleteAllClientAgentEnvironmentVariables
+      security:
+        - bearerAuth: [agent_environment:write]
       parameters:
         - in: path
           name: id
@@ -3166,6 +3442,8 @@ paths:
     get:
       summary: Get count of environment variables for an agent (proxied)
       operationId: countClientAgentEnvironmentVariables
+      security:
+        - bearerAuth: [agent_environment:read]
       parameters:
         - in: path
           name: id
@@ -3201,6 +3479,8 @@ paths:
       summary: Update environment variable for an agent (proxied)
       description: Requires workspace management rights.
       operationId: updateClientAgentEnvironmentVariable
+      security:
+        - bearerAuth: [agent_environment:write]
       parameters:
         - in: path
           name: id
@@ -3246,6 +3526,8 @@ paths:
       summary: Delete environment variable for an agent (proxied)
       description: Requires workspace management rights.
       operationId: deleteClientAgentEnvironmentVariable
+      security:
+        - bearerAuth: [agent_environment:write]
       parameters:
         - in: path
           name: id
@@ -3279,6 +3561,8 @@ paths:
     get:
       summary: List chat sessions for an agent (proxied)
       operationId: listClientAgentChatSessions
+      security:
+        - bearerAuth: [agent_chats:read]
       parameters:
         - in: path
           name: id
@@ -3322,6 +3606,8 @@ paths:
     post:
       summary: Create chat session for an agent (proxied)
       operationId: createClientAgentChatSession
+      security:
+        - bearerAuth: [agent_chats:write]
       parameters:
         - in: path
           name: id
@@ -3360,6 +3646,8 @@ paths:
     get:
       summary: Get count of chat sessions for an agent (proxied)
       operationId: countClientAgentChatSessions
+      security:
+        - bearerAuth: [agent_chats:read]
       parameters:
         - in: path
           name: id
@@ -3394,6 +3682,8 @@ paths:
     get:
       summary: Get chat session for an agent (proxied)
       operationId: getClientAgentChatSession
+      security:
+        - bearerAuth: [agent_chats:read]
       parameters:
         - in: path
           name: id
@@ -3430,6 +3720,8 @@ paths:
     put:
       summary: Update chat session for an agent (proxied)
       operationId: updateClientAgentChatSession
+      security:
+        - bearerAuth: [agent_chats:write]
       parameters:
         - in: path
           name: id
@@ -3474,6 +3766,8 @@ paths:
     delete:
       summary: Delete chat session for an agent (proxied)
       operationId: deleteClientAgentChatSession
+      security:
+        - bearerAuth: [agent_chats:write]
       parameters:
         - in: path
           name: id
@@ -3507,6 +3801,8 @@ paths:
     get:
       summary: List messages for a chat session (proxied)
       operationId: listClientAgentChatSessionMessages
+      security:
+        - bearerAuth: [agent_chats:read]
       parameters:
         - in: path
           name: id
@@ -3559,8 +3855,10 @@ paths:
       summary: List chat plans for a chat session
       description: >
         Returns durable chat plan-mode rows for the given visible chat session (explore/refine/execute lifecycle).
-        Requires `agents:chats` scope and client access.
+        Requires `agent_chats:read` scope and client access.
       operationId: listChatPlans
+      security:
+        - bearerAuth: [agent_chats:read]
       parameters:
         - in: path
           name: id
@@ -3601,8 +3899,10 @@ paths:
       summary: List the chat plans of an agent (plans page)
       description: >
         Every plan of the agent, newest first, paginated. `search` matches the plan title, the original request and the
-        plan body (case-insensitive, wildcards literal). Requires `agents:chats` scope and client access.
+        plan body (case-insensitive, wildcards literal). Requires `agent_chats:read` scope and client access.
       operationId: listAgentChatPlans
+      security:
+        - bearerAuth: [agent_chats:read]
       parameters:
         - in: path
           name: id
@@ -3656,6 +3956,8 @@ paths:
     get:
       summary: Get a chat plan by id
       operationId: getChatPlan
+      security:
+        - bearerAuth: [agent_chats:read]
       parameters:
         - in: path
           name: id
@@ -3693,6 +3995,8 @@ paths:
         plan still being editable: 409 when the plan changed meanwhile, while the agent drafts or refines it, and once
         execution started (executed plans are read-only). Execution always runs the latest saved version.
       operationId: updateChatPlan
+      security:
+        - bearerAuth: [agent_chats:write]
       parameters:
         - in: path
           name: id
@@ -3738,6 +4042,8 @@ paths:
       summary: Activity log of a chat plan
       description: Newest first. Creation, agent drafts, refine requests, user edits, execution, failure and cancel.
       operationId: listChatPlanActivity
+      security:
+        - bearerAuth: [agent_chats:read]
       parameters:
         - in: path
           name: id
@@ -3786,6 +4092,8 @@ paths:
     post:
       summary: Cancel an active chat plan
       operationId: cancelChatPlan
+      security:
+        - bearerAuth: [agent_chats:write]
       parameters:
         - in: path
           name: id
@@ -3819,8 +4127,10 @@ paths:
   /clients/{clientId}/agent-tasks:
     get:
       summary: List recurring agent tasks of a workspace
-      description: Requires workspace access and the `agents:chats` scope (PAT).
+      description: Requires workspace access and the `agent_chats:read` scope (PAT).
       operationId: listAgentTasks
+      security:
+        - bearerAuth: [agent_chats:read]
       parameters:
         - in: path
           name: clientId
@@ -3849,6 +4159,8 @@ paths:
     post:
       summary: Create a recurring agent task
       operationId: createAgentTask
+      security:
+        - bearerAuth: [agent_chats:write]
       parameters:
         - in: path
           name: clientId
@@ -3887,6 +4199,8 @@ paths:
     get:
       summary: Agent task with recent runs
       operationId: getAgentTask
+      security:
+        - bearerAuth: [agent_chats:read]
       parameters:
         - in: path
           name: clientId
@@ -3920,6 +4234,8 @@ paths:
     patch:
       summary: Update an agent task
       operationId: updateAgentTask
+      security:
+        - bearerAuth: [agent_chats:write]
       parameters:
         - in: path
           name: clientId
@@ -3961,6 +4277,8 @@ paths:
     delete:
       summary: Delete an agent task and its runs
       operationId: deleteAgentTask
+      security:
+        - bearerAuth: [agent_chats:write]
       parameters:
         - in: path
           name: clientId
@@ -3995,6 +4313,8 @@ paths:
         or allowed handoff agents it changed (or re-enabled) are only scheduled after a workspace user approved them.
         Approving also approves that the runs may hand off work to the listed agents without asking.
       operationId: approveAgentTask
+      security:
+        - bearerAuth: [agent_chats:write]
       parameters:
         - in: path
           name: clientId
@@ -4021,6 +4341,8 @@ paths:
     get:
       summary: Run history of an agent task (newest first)
       operationId: listAgentTaskRuns
+      security:
+        - bearerAuth: [agent_chats:read]
       parameters:
         - in: path
           name: clientId
@@ -4079,6 +4401,8 @@ paths:
     post:
       summary: Queue an immediate run (also for paused tasks)
       operationId: runAgentTaskNow
+      security:
+        - bearerAuth: [agent_chats:write]
       parameters:
         - in: path
           name: clientId
@@ -4121,6 +4445,8 @@ paths:
       summary: List effective workspace configuration overrides (proxied)
       description: Requires workspace management rights.
       operationId: listClientWorkspaceConfigurationOverrides
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -4147,6 +4473,8 @@ paths:
       summary: Create or update a workspace configuration override (proxied)
       description: Requires workspace management rights.
       operationId: upsertClientWorkspaceConfigurationOverride
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -4183,6 +4511,8 @@ paths:
       summary: Delete a workspace configuration override (proxied)
       description: Requires workspace management rights.
       operationId: deleteClientWorkspaceConfigurationOverride
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -4207,6 +4537,8 @@ paths:
     get:
       summary: Get git status (proxied)
       operationId: getClientAgentGitStatus
+      security:
+        - bearerAuth: [agent_vcs:read]
       parameters:
         - in: path
           name: id
@@ -4237,6 +4569,8 @@ paths:
     get:
       summary: List all branches (proxied)
       operationId: getClientAgentGitBranches
+      security:
+        - bearerAuth: [agent_vcs:read]
       parameters:
         - in: path
           name: id
@@ -4268,6 +4602,8 @@ paths:
     post:
       summary: Create a new branch (proxied)
       operationId: createClientAgentGitBranch
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4302,6 +4638,8 @@ paths:
     delete:
       summary: Delete a branch (proxied)
       operationId: deleteClientAgentGitBranch
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4335,6 +4673,8 @@ paths:
     post:
       summary: Switch to a branch (proxied)
       operationId: switchClientAgentGitBranch
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4368,6 +4708,8 @@ paths:
     get:
       summary: Get file diff (proxied)
       operationId: getClientAgentGitFileDiff
+      security:
+        - bearerAuth: [agent_vcs:read]
       parameters:
         - in: path
           name: id
@@ -4406,6 +4748,8 @@ paths:
     post:
       summary: Stage files (proxied)
       operationId: stageClientAgentFiles
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4440,6 +4784,8 @@ paths:
     post:
       summary: Unstage files (proxied)
       operationId: unstageClientAgentFiles
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4474,6 +4820,8 @@ paths:
     post:
       summary: Commit staged changes (proxied)
       operationId: commitClientAgentChanges
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4508,6 +4856,8 @@ paths:
     post:
       summary: Push changes to remote (proxied)
       operationId: pushClientAgentChanges
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4542,6 +4892,8 @@ paths:
     post:
       summary: Pull changes from remote (proxied)
       operationId: pullClientAgentChanges
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4570,6 +4922,8 @@ paths:
     post:
       summary: Fetch changes from remote (proxied)
       operationId: fetchClientAgentChanges
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4596,6 +4950,8 @@ paths:
     post:
       summary: Prepare clean workspace (fetch, reset --hard, clean) — proxied
       operationId: prepareCleanClientAgentWorkspace
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4630,6 +4986,8 @@ paths:
     post:
       summary: Run verifier shell commands in agent container (proxied)
       operationId: runClientAgentVerifierCommands
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4657,6 +5015,8 @@ paths:
     post:
       summary: Rebase current branch (proxied)
       operationId: rebaseClientAgentBranch
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4691,6 +5051,8 @@ paths:
     post:
       summary: Resolve merge conflict (proxied)
       operationId: resolveClientAgentConflict
+      security:
+        - bearerAuth: [agent_vcs:write]
       parameters:
         - in: path
           name: id
@@ -4725,6 +5087,8 @@ paths:
     get:
       summary: List available provisioning providers
       operationId: listProvisioningProviders
+      security:
+        - bearerAuth: [clients:read]
       responses:
         '200':
           description: Array of available provisioning providers
@@ -4738,6 +5102,8 @@ paths:
     get:
       summary: Get available server types for a provisioning provider
       operationId: getServerTypes
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: providerType
@@ -4761,6 +5127,8 @@ paths:
     get:
       summary: Get available geography options for a provisioning provider
       operationId: getProviderLocations
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: providerType
@@ -4784,6 +5152,8 @@ paths:
     post:
       summary: Provision a new server and create a client
       operationId: provisionServer
+      security:
+        - bearerAuth: [clients:write]
       requestBody:
         required: true
         content:
@@ -4803,6 +5173,8 @@ paths:
     get:
       summary: Get server information for a provisioned client
       operationId: getServerInfo
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -4824,6 +5196,8 @@ paths:
     delete:
       summary: Delete a provisioned server and its associated client
       operationId: deleteProvisionedServer
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -4843,6 +5217,8 @@ paths:
     get:
       summary: Get deployment configuration for an agent (proxied)
       operationId: getClientAgentDeploymentConfiguration
+      security:
+        - bearerAuth: [agent_deployments:read]
       parameters:
         - in: path
           name: id
@@ -4870,6 +5246,8 @@ paths:
     post:
       summary: Create or update deployment configuration for an agent (proxied)
       operationId: upsertClientAgentDeploymentConfiguration
+      security:
+        - bearerAuth: [agent_deployments:write]
       parameters:
         - in: path
           name: id
@@ -4905,6 +5283,8 @@ paths:
     delete:
       summary: Delete deployment configuration for an agent (proxied)
       operationId: deleteClientAgentDeploymentConfiguration
+      security:
+        - bearerAuth: [agent_deployments:write]
       parameters:
         - in: path
           name: id
@@ -4929,6 +5309,8 @@ paths:
     get:
       summary: List repositories accessible with the agent's deployment configuration (proxied)
       operationId: listClientAgentDeploymentRepositories
+      security:
+        - bearerAuth: [agent_deployments:read]
       parameters:
         - in: path
           name: id
@@ -4961,6 +5343,8 @@ paths:
     get:
       summary: List branches for a repository (proxied)
       operationId: listClientAgentDeploymentBranches
+      security:
+        - bearerAuth: [agent_deployments:read]
       parameters:
         - in: path
           name: id
@@ -4999,6 +5383,8 @@ paths:
     get:
       summary: List workflows for a repository (proxied)
       operationId: listClientAgentDeploymentWorkflows
+      security:
+        - bearerAuth: [agent_deployments:read]
       parameters:
         - in: path
           name: id
@@ -5040,6 +5426,8 @@ paths:
     post:
       summary: Trigger a workflow run (proxied)
       operationId: triggerClientAgentDeploymentWorkflow
+      security:
+        - bearerAuth: [agent_deployments:write]
       parameters:
         - in: path
           name: id
@@ -5076,6 +5464,8 @@ paths:
     get:
       summary: List deployment runs for an agent (proxied)
       operationId: listClientAgentDeploymentRuns
+      security:
+        - bearerAuth: [agent_deployments:read]
       parameters:
         - in: path
           name: id
@@ -5123,6 +5513,8 @@ paths:
     get:
       summary: Get the status of a pipeline run (proxied)
       operationId: getClientAgentDeploymentRunStatus
+      security:
+        - bearerAuth: [agent_deployments:read]
       parameters:
         - in: path
           name: id
@@ -5157,6 +5549,8 @@ paths:
     get:
       summary: Get logs for a pipeline run (proxied)
       operationId: getClientAgentDeploymentRunLogs
+      security:
+        - bearerAuth: [agent_deployments:read]
       parameters:
         - in: path
           name: id
@@ -5196,6 +5590,8 @@ paths:
     get:
       summary: List jobs/steps for a pipeline run (proxied)
       operationId: listClientAgentDeploymentRunJobs
+      security:
+        - bearerAuth: [agent_deployments:read]
       parameters:
         - in: path
           name: id
@@ -5232,6 +5628,8 @@ paths:
     get:
       summary: Get logs for a specific job/step (proxied)
       operationId: getClientAgentDeploymentJobLogs
+      security:
+        - bearerAuth: [agent_deployments:read]
       parameters:
         - in: path
           name: id
@@ -5277,6 +5675,8 @@ paths:
     post:
       summary: Cancel a running pipeline (proxied)
       operationId: cancelClientAgentDeploymentRun
+      security:
+        - bearerAuth: [agent_deployments:write]
       parameters:
         - in: path
           name: id
@@ -5312,6 +5712,8 @@ paths:
         path /socket/vnc using Sec-WebSocket-Protocol tokens `binary` and `agenstra.vnc.<ticket>`
         (do not put the ticket in the URL). Upstream manager/worker addresses are never returned to the browser.
       operationId: createClientAgentVncSession
+      security:
+        - bearerAuth: [agent_vnc:write]
       parameters:
         - in: path
           name: id
@@ -5343,6 +5745,8 @@ paths:
         Returns aggregate statistics (messages, words, chars, filter drops) for a client.
         Requires access to the client (creator, client_users, or admin/api-key).
       operationId: getClientStatisticsSummary
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: path
           name: id
@@ -5382,6 +5786,8 @@ paths:
     get:
       summary: Get chat I/O records for a client
       operationId: getClientStatisticsChatIo
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: path
           name: id
@@ -5456,6 +5862,8 @@ paths:
     get:
       summary: Get filter drops for a client
       operationId: getClientStatisticsFilterDrops
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: path
           name: id
@@ -5513,6 +5921,8 @@ paths:
         Returns paginated filter flags (messages flagged/modified by filters but NOT dropped).
         These messages were allowed through (possibly modified) and appear in Chat I/O.
       operationId: getClientStatisticsFilterFlags
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: path
           name: id
@@ -5570,6 +5980,8 @@ paths:
         Returns paginated egress guard decisions (web traffic filtering). Identical decisions
         within one collection cycle are aggregated into a single event with a `count`.
       operationId: getClientStatisticsEgressEvents
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: path
           name: id
@@ -5632,6 +6044,8 @@ paths:
     get:
       summary: Get entity lifecycle events for a client
       operationId: getClientStatisticsEntityEvents
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: path
           name: id
@@ -5690,6 +6104,8 @@ paths:
         Returns aggregate statistics across all accessible clients. When clientId is provided,
         validates access and returns data for that client only. 403 when clientId provided but no access.
       operationId: getStatisticsSummary
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: query
           name: clientId
@@ -5725,6 +6141,8 @@ paths:
     get:
       summary: Get chat I/O records (aggregate or by client)
       operationId: getStatisticsChatIo
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: query
           name: clientId
@@ -5798,6 +6216,8 @@ paths:
     get:
       summary: Get filter drops (aggregate or by client)
       operationId: getStatisticsFilterDrops
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: query
           name: clientId
@@ -5854,6 +6274,8 @@ paths:
         Returns paginated filter flags (messages flagged/modified by filters but NOT dropped).
         These messages were allowed through (possibly modified) and appear in Chat I/O.
       operationId: getStatisticsFilterFlags
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: query
           name: clientId
@@ -5910,6 +6332,8 @@ paths:
         Returns paginated egress guard decisions (web traffic filtering). Identical decisions
         within one collection cycle are aggregated into a single event with a `count`.
       operationId: getStatisticsEgressEvents
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: query
           name: clientId
@@ -5972,6 +6396,8 @@ paths:
     get:
       summary: Get entity events (aggregate or by client)
       operationId: getStatisticsEntityEvents
+      security:
+        - bearerAuth: [statistics:read]
       parameters:
         - in: query
           name: clientId
@@ -6027,6 +6453,8 @@ paths:
       tags: [Admin]
       summary: List webhook event types (admin)
       operationId: listAgenstraWebhookEventTypes
+      security:
+        - bearerAuth: [webhooks:admin]
       responses:
         '200':
           description: Event catalog
@@ -6041,6 +6469,8 @@ paths:
       tags: [Admin]
       summary: List webhook endpoints (admin)
       operationId: listAgenstraWebhookEndpoints
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: limit
           in: query
@@ -6061,6 +6491,8 @@ paths:
       tags: [Admin]
       summary: Create webhook endpoint (admin)
       operationId: createAgenstraWebhookEndpoint
+      security:
+        - bearerAuth: [webhooks:admin]
       requestBody:
         required: true
         content:
@@ -6079,6 +6511,8 @@ paths:
       tags: [Admin]
       summary: Get webhook endpoint (admin)
       operationId: getAgenstraWebhookEndpoint
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: id
           in: path
@@ -6095,6 +6529,8 @@ paths:
       tags: [Admin]
       summary: Update webhook endpoint (admin)
       operationId: updateAgenstraWebhookEndpoint
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: id
           in: path
@@ -6117,6 +6553,8 @@ paths:
       tags: [Admin]
       summary: Delete webhook endpoint (admin)
       operationId: deleteAgenstraWebhookEndpoint
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: id
           in: path
@@ -6130,6 +6568,8 @@ paths:
       tags: [Admin]
       summary: Send test webhook delivery (admin)
       operationId: testAgenstraWebhookEndpoint
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: id
           in: path
@@ -6147,6 +6587,8 @@ paths:
       tags: [Admin]
       summary: List webhook deliveries (admin)
       operationId: listAgenstraWebhookDeliveries
+      security:
+        - bearerAuth: [webhooks:admin]
       parameters:
         - name: id
           in: path
@@ -6170,6 +6612,8 @@ paths:
       tags: [Admin]
       summary: Get full application updates state (admin)
       operationId: getAgenstraUpdatesFullState
+      security:
+        - bearerAuth: [updates:admin]
       responses:
         '200':
           description: Full updates state
@@ -6182,6 +6626,8 @@ paths:
       tags: [Admin]
       summary: Get application updates status summary (admin)
       operationId: getAgenstraUpdatesStatusSummary
+      security:
+        - bearerAuth: [updates:admin]
       responses:
         '200':
           description: Updates status summary
@@ -6194,6 +6640,8 @@ paths:
       tags: [Admin]
       summary: Trigger application update check (admin)
       operationId: triggerAgenstraUpdateCheck
+      security:
+        - bearerAuth: [updates:admin]
       responses:
         '202':
           description: Update check enqueued
@@ -6211,6 +6659,8 @@ paths:
         Supports optional search (OpenSearch with ILIKE fallback) and pagination for typeahead UIs.
         Requires authenticated access with `clients:read`.
       operationId: listOpencodeProviders
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: query
           name: search
@@ -6244,6 +6694,8 @@ paths:
       tags: [OpenCode]
       summary: Get a cached OpenCode LLM provider
       operationId: getOpencodeProvider
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -6272,6 +6724,8 @@ paths:
         upstream cursor pages before upserting. Supports optional search (OpenSearch with ILIKE
         fallback) and pagination for typeahead UIs. Requires authenticated access with `clients:read`.
       operationId: listOpencodeMcpServers
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: query
           name: search
@@ -6305,6 +6759,8 @@ paths:
       tags: [OpenCode]
       summary: Get a cached MCP Registry server
       operationId: getOpencodeMcpServer
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: name
@@ -6328,6 +6784,8 @@ paths:
       tags: [Admin]
       summary: Get global OpenCode config
       operationId: getGlobalOpencodeConfig
+      security:
+        - bearerAuth: [clients:admin]
       responses:
         '200':
           description: Global OpenCode config overlay
@@ -6339,6 +6797,8 @@ paths:
       tags: [Admin]
       summary: Update global OpenCode config
       operationId: putGlobalOpencodeConfig
+      security:
+        - bearerAuth: [clients:admin]
       requestBody:
         required: true
         content:
@@ -6357,6 +6817,8 @@ paths:
       tags: [Admin]
       summary: List children under a global layer path
       operationId: listGlobalOpencodeLayerFiles
+      security:
+        - bearerAuth: [clients:admin]
       parameters:
         - in: query
           name: path
@@ -6374,6 +6836,8 @@ paths:
       tags: [Admin]
       summary: Create a global layer file or directory
       operationId: createGlobalOpencodeLayerFile
+      security:
+        - bearerAuth: [clients:admin]
       requestBody:
         required: true
         content:
@@ -6387,11 +6851,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
+  /admin/opencode/config/files/ensure:
+    post:
+      tags: [Admin]
+      summary: Ensure a global layer file or directory exists
+      description: |
+        Idempotent create: returns the existing entry when `path` is already stored, otherwise creates it
+        (kind from `entryKind` or inferred from the path). `.` returns the virtual listing root.
+        Admin only (role check in the controller).
+      operationId: ensureGlobalOpencodeLayerFile
+      security:
+        - bearerAuth: [clients:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOpencodeLayerFileDto'
+      responses:
+        '201':
+          description: Existing or newly created entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
+        '400':
+          description: Invalid path
+        '403':
+          description: Not an admin, or insufficient token scope
   /admin/opencode/config/files/{path}:
     get:
       tags: [Admin]
       summary: Get a global OpenCode layer file
       operationId: getGlobalOpencodeLayerFile
+      security:
+        - bearerAuth: [clients:admin]
       parameters:
         - in: path
           name: path
@@ -6412,6 +6906,8 @@ paths:
       tags: [Admin]
       summary: Create or update a global OpenCode layer file
       operationId: putGlobalOpencodeLayerFile
+      security:
+        - bearerAuth: [clients:admin]
       parameters:
         - in: path
           name: path
@@ -6435,6 +6931,8 @@ paths:
       tags: [Admin]
       summary: Delete a global OpenCode layer file
       operationId: deleteGlobalOpencodeLayerFile
+      security:
+        - bearerAuth: [clients:admin]
       parameters:
         - in: path
           name: path
@@ -6456,6 +6954,8 @@ paths:
     get:
       summary: Get workspace OpenCode config
       operationId: getClientOpencodeConfig
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -6473,6 +6973,8 @@ paths:
     put:
       summary: Update workspace OpenCode config
       operationId: putClientOpencodeConfig
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -6497,6 +6999,8 @@ paths:
     get:
       summary: List children under a workspace layer path
       operationId: listClientOpencodeLayerFiles
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -6519,6 +7023,8 @@ paths:
     post:
       summary: Create a workspace layer file or directory
       operationId: createClientOpencodeLayerFile
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -6539,10 +7045,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
+  /clients/{id}/opencode/config/files/ensure:
+    post:
+      summary: Ensure a workspace layer file or directory exists
+      description: |
+        Idempotent create: returns the existing entry when `path` is already stored, otherwise creates it
+        (kind from `entryKind` or inferred from the path). `.` returns the virtual listing root.
+        Requires workspace management access (see ClientResponseDto.canManageWorkspaceConfiguration).
+      operationId: ensureClientOpencodeLayerFile
+      security:
+        - bearerAuth: [clients:write]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOpencodeLayerFileDto'
+      responses:
+        '201':
+          description: Existing or newly created entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
+        '400':
+          description: Invalid path
+        '403':
+          description: No workspace management access, or insufficient token scope
   /clients/{id}/opencode/config/files/{path}:
     get:
       summary: Get a workspace OpenCode layer file
       operationId: getClientOpencodeLayerFile
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -6568,6 +7110,8 @@ paths:
     put:
       summary: Create or update a workspace OpenCode layer file
       operationId: putClientOpencodeLayerFile
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -6596,6 +7140,8 @@ paths:
     delete:
       summary: Delete a workspace OpenCode layer file
       operationId: deleteClientOpencodeLayerFile
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -6627,6 +7173,8 @@ paths:
         policy in force on the agent manager, the effective message filters and recent guard decisions.
         Requires the `clients:read` scope and workspace management access (exposes layered policy details, like the agent configuration endpoints).
       operationId: getClientAgentEgress
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -6659,6 +7207,8 @@ paths:
         egress policy (global, workspace, environment). Only `http://` and `https://` URLs are accepted.
         Requires the `clients:read` scope and workspace management access (exposes layered policy details, like the agent configuration endpoints).
       operationId: evaluateClientAgentEgressDestination
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -6695,6 +7245,8 @@ paths:
     get:
       summary: Get agent OpenCode config
       operationId: getClientAgentOpencodeConfig
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -6718,6 +7270,8 @@ paths:
     put:
       summary: Update agent OpenCode config
       operationId: putClientAgentOpencodeConfig
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -6748,6 +7302,8 @@ paths:
     get:
       summary: List effective OpenCode agents for a remote worker
       operationId: listClientAgentOpencodeAgents
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -6775,6 +7331,8 @@ paths:
         Proxies the agent-manager list of OpenCode `GET /command` entries (config commands,
         builtins, skills, MCP prompts).
       operationId: listClientAgentOpencodeCommands
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -6802,6 +7360,8 @@ paths:
         Environment-only. Proxies OpenCode `GET /mcp` via the agent manager. Use to detect
         servers that need interactive OAuth (`needs_auth` / `needs_client_registration`).
       operationId: listClientAgentOpencodeMcpStatuses
+      security:
+        - bearerAuth: [clients:read]
       parameters:
         - in: path
           name: id
@@ -6829,6 +7389,8 @@ paths:
         Environment-only. Builds a signed public callback URL, sets it as the worker
         oauth.redirectUri, then proxies OpenCode `POST /mcp/{name}/auth`.
       operationId: startClientAgentOpencodeMcpAuth
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -6859,6 +7421,8 @@ paths:
     delete:
       summary: Remove MCP OAuth credentials for an Environment MCP server
       operationId: removeClientAgentOpencodeMcpAuth
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -6893,6 +7457,8 @@ paths:
     post:
       summary: Complete MCP OAuth with authorization code
       operationId: completeClientAgentOpencodeMcpAuth
+      security:
+        - bearerAuth: [clients:write]
       parameters:
         - in: path
           name: id
@@ -7022,6 +7588,13 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
+      description: |
+        Interactive session JWT, or a JWT exchanged from a personal access token (`POST /auth/token`).
+        For personal access tokens, the role names listed on an operation's `bearerAuth` requirement are the
+        PAT scopes it requires (OpenAPI 3.1 role names; not enforced for interactive sessions).
+        Scopes follow `<resource>:read|write|admin`; `write` implies `read`, and `admin` implies `write` and `read`.
+        `:admin` scopes are only grantable to and effective for admin users. Operations without listed scopes
+        either do not accept personal access tokens or are public.
       bearerFormat: JWT
     basicAuth:
       type: http
@@ -7037,6 +7610,31 @@ components:
         default: app
       description: Proxied to agent-manager. `app` (default) is the workspace root under `/app`.
   schemas:
+    AgentPermissionReplyDto:
+      type: object
+      required: [reply]
+      properties:
+        reply:
+          type: string
+          enum: [once, always, reject]
+        sessionId:
+          type: string
+          description: OpenCode session the permission belongs to (optional)
+    AgentQuestionReplyDto:
+      type: object
+      properties:
+        answers:
+          type: array
+          items:
+            type: string
+          description: Answers to submit (omit when rejecting)
+        reply:
+          type: string
+          enum: [reject]
+          description: Set to `reject` to decline the question
+        sessionId:
+          type: string
+          description: OpenCode session the question belongs to (optional)
     AuthenticationType:
       type: string
       enum:

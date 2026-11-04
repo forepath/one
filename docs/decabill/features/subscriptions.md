@@ -225,7 +225,7 @@ Active subscriptions can change server type and addons without switching plans. 
 
 `SubscriptionResponse` embeds `items[]` and `meters[]`. Optional item `displayName` overrides the default service label without changing `SUB-*`.
 
-Admin twins for item detail, display-name, server-info, power actions, and meter history live under `/admin/billing/subscriptions/...` (`ADMIN` + `billing_admin:read` / `billing_admin:write`). See [Service details](./service-details.md) and [Billing administration](./billing-administration.md).
+Admin twins for item detail, display-name, server-info, power actions, and meter history live under `/admin/billing/subscriptions/...` (`ADMIN` + `subscriptions:admin`; meter history `usage:admin`). See [Service details](./service-details.md) and [Billing administration](./billing-administration.md).
 
 See [Billing Manager OpenAPI](/spec/billing-manager/openapi.yaml) for schemas.
 

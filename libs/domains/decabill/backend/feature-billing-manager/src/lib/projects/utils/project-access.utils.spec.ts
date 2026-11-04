@@ -21,6 +21,50 @@ describe('project-access.utils', () => {
     ).not.toThrow();
   });
 
+  describe('personal access tokens', () => {
+    const patAdmin = (scopes: string[]) => ({
+      userId: 'admin-1',
+      userRole: UserRole.ADMIN,
+      isApiKeyAuth: false,
+      amr: ['pat'],
+      scopes,
+    });
+
+    it('denies cross-owner access without an admin scope argument (fail-closed)', () => {
+      expect(() => ensureProjectReadable(patAdmin(['tickets:admin']), project)).toThrow(ForbiddenException);
+    });
+
+    it("requires the resource admin scope for other users' projects", () => {
+      expect(() => ensureProjectReadable(patAdmin(['tickets:read']), project, 'tickets:admin')).toThrow(
+        /Missing: tickets:admin/,
+      );
+      expect(() => ensureProjectReadable(patAdmin(['milestones:admin']), project, 'tickets:admin')).toThrow(
+        ForbiddenException,
+      );
+      expect(() => ensureProjectReadable(patAdmin(['tickets:admin']), project, 'tickets:admin')).not.toThrow();
+    });
+
+    it('lets owners pass with any scope', () => {
+      expect(() =>
+        ensureProjectReadable({ ...patAdmin(['tickets:read']), userId: 'user-1' }, project, 'tickets:admin'),
+      ).not.toThrow();
+    });
+
+    it('never lets non-admin PATs cross owners, even with an admin scope', () => {
+      expect(() =>
+        ensureProjectReadable(
+          { userId: 'user-2', userRole: UserRole.USER, isApiKeyAuth: false, amr: ['pat'], scopes: ['tickets:admin'] },
+          project,
+          'tickets:admin',
+        ),
+      ).toThrow(ForbiddenException);
+    });
+
+    it('ensureProjectComment needs tickets:admin on foreign projects', () => {
+      expect(() => ensureProjectComment(patAdmin(['tickets:write']), project)).toThrow(/Missing: tickets:admin/);
+    });
+  });
+
   it('allows assigned customer to read project', () => {
     expect(() =>
       ensureProjectReadable({ userId: 'user-1', userRole: UserRole.USER, isApiKeyAuth: false }, project),

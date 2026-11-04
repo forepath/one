@@ -40,7 +40,7 @@ export class AdminOffersController {
   ) {}
 
   @Get()
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('offers:admin')
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
@@ -51,7 +51,7 @@ export class AdminOffersController {
   }
 
   @Get('statistics')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('offers:admin')
   async statistics(
     @Query('from') from?: string,
     @Query('to') to?: string,
@@ -69,19 +69,19 @@ export class AdminOffersController {
   }
 
   @Post()
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('offers:admin')
   async create(@Body() dto: CreateAdminOfferDto, @Req() req: AdminRequest): Promise<AdminOfferDetailResponseDto> {
     return await this.offersAdminService.create(dto, getUserFromRequest(req)?.userId);
   }
 
   @Get(':id')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('offers:admin')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AdminOfferDetailResponseDto> {
     return await this.offersAdminService.get(id);
   }
 
   @Put(':id')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('offers:admin')
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: UpdateAdminOfferDto,
@@ -91,13 +91,13 @@ export class AdminOffersController {
   }
 
   @Delete(':id')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('offers:admin')
   async delete(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Req() req: AdminRequest): Promise<void> {
     await this.offersAdminService.delete(id, getUserFromRequest(req)?.userId);
   }
 
   @Post(':id/archive')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('offers:admin')
   async archive(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req: AdminRequest,
@@ -106,7 +106,7 @@ export class AdminOffersController {
   }
 
   @Post(':id/revoke')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('offers:admin')
   async revoke(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req: AdminRequest,
@@ -115,7 +115,7 @@ export class AdminOffersController {
   }
 
   @Get(':id/pdf')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('offers:admin')
   @Header('Content-Type', 'application/pdf')
   async downloadPdf(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<StreamableFile> {
     const { buffer, filename } = await this.offersAdminService.readPdf(id);
@@ -127,7 +127,7 @@ export class AdminOffersController {
   }
 
   @Get(':id/audit-logs')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('offers:admin')
   async listAuditLogs(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,

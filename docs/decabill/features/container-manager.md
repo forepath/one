@@ -21,13 +21,13 @@ Plans with integrated provisioning auto-attach Container Manager as **allowed an
 
 Requires an **active** subscription addon with `moduleKey: container-manager`, plus a reachable public IP and item SSH private key.
 
-| Audience | Method | Path                                                                                                      | Scope                |
-| -------- | ------ | --------------------------------------------------------------------------------------------------------- | -------------------- |
-| Customer | GET    | `/subscriptions/{subscriptionId}/items/{itemId}/container-manager/containers`                             | `subscriptions:read` |
-| Customer | GET    | `/subscriptions/{subscriptionId}/items/{itemId}/container-manager/containers/{containerId}/stats-history` | `subscriptions:read` |
-| Customer | GET    | `/subscriptions/{subscriptionId}/items/{itemId}/container-manager/containers/{containerId}/logs`          | `subscriptions:read` |
-| Customer | GET    | `/subscriptions/{subscriptionId}/items/{itemId}/container-manager/networks`                               | `subscriptions:read` |
-| Admin    | GET    | `/admin/billing/subscriptions/{subscriptionId}/items/{itemId}/container-manager/...` (same suffixes)      | `billing_admin:read` |
+| Audience | Method | Path                                                                                                      | Scope                 |
+| -------- | ------ | --------------------------------------------------------------------------------------------------------- | --------------------- |
+| Customer | GET    | `/subscriptions/{subscriptionId}/items/{itemId}/container-manager/containers`                             | `subscriptions:read`  |
+| Customer | GET    | `/subscriptions/{subscriptionId}/items/{itemId}/container-manager/containers/{containerId}/stats-history` | `subscriptions:read`  |
+| Customer | GET    | `/subscriptions/{subscriptionId}/items/{itemId}/container-manager/containers/{containerId}/logs`          | `subscriptions:read`  |
+| Customer | GET    | `/subscriptions/{subscriptionId}/items/{itemId}/container-manager/networks`                               | `subscriptions:read`  |
+| Admin    | GET    | `/admin/billing/subscriptions/{subscriptionId}/items/{itemId}/container-manager/...` (same suffixes)      | `subscriptions:admin` |
 
 Response shapes match OpenAPI `ContainerManagerContainersResponse`, `ContainerManagerStatsHistoryResponse`, `ContainerManagerLogsResponse`, and `ContainerManagerNetworksResponse`.
 
@@ -72,7 +72,7 @@ The Container Manager tab loads logs when a container is selected and refreshes 
 
 - Customer routes require subscription ownership; missing ownership returns 404 (no existence leak)
 - Access requires the same live subscription statuses as service details (`active`, `pending_cancel`, `pending_withdrawal`, `pending_instant_cancel`, `pending_config_change`, `pending_backorder`) and an active provisioned item
-- Admin routes require ADMIN + `billing_admin:read`; ownership is not required
+- Admin routes require ADMIN + `subscriptions:admin`; ownership is not required
 - Endpoints 404 when Container Manager is not active on the subscription
 - Collection failures use a generic message (`Unable to collect container information`); details stay in server logs only
 - SSH private keys remain server-side; Container Manager responses never include them

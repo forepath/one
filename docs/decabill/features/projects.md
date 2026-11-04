@@ -71,7 +71,7 @@ All admin routes require admin role (`@KeycloakRoles(ADMIN)` + `@UsersRoles(ADMI
 
 ## Time Entries
 
-Time is recorded under `/projects/{projectId}/time-entries`. Assigned customers and admins with `projects:read` can list entries. Create, update, and delete require `time_entries:write` (admin write).
+Time is recorded under `/projects/{projectId}/time-entries`. Assigned customers and admins with `time_entries:read` can list entries. Create, update, and delete are admin-only and require `time_entries:admin`.
 
 | Method | Path                                           | Purpose               |
 | ------ | ---------------------------------------------- | --------------------- |

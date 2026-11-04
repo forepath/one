@@ -39,7 +39,7 @@ Optional `scheduledAt` defers fulfillment to a BullMQ job.
 
 ## Admin API
 
-Base path: `/admin/billing/offers` — scopes `billing_admin:read` / `billing_admin:write`.
+Base path: `/admin/billing/offers` — scope `offers:admin`.
 
 - List with pagination and `?search=` (OpenSearch + PostgreSQL ILIKE fallback)
 - `GET /statistics` — pipeline KPIs (not invoice turnover)

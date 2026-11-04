@@ -88,17 +88,50 @@ PRODUCT_NAME=Agenstra  # Issuer label on TOTP QR / authenticator entries (defaul
 
 User-bound tokens for scripts and CI. They are **not** a console login password. **Not available** when `AUTHENTICATION_METHOD=api-key`.
 
-| Concern                  | Behavior                                                                                                                                                                                                 |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Create / update / revoke | Console **Personal Access Tokens** page (`/settings/tokens`); interactive console session only (password JWT or Keycloak OIDC)                                                                           |
-| Exchange                 | `POST /auth/token` with `{ "token": "fp_pat_…" }` only (no email) → JWT with `amr: ["pat"]` and `scopes`                                                                                                 |
-| Console                  | Login rejects `fp_pat_` secrets; SPA rejects JWTs whose `amr` includes `pat`; WebSockets reject PAT JWTs                                                                                                 |
-| Keycloak                 | Local `users` row is synced on first authenticated request (`keycloakSub`); PAT CRUD and exchange require `JWT_SECRET`                                                                                   |
-| Scopes                   | `AGENSTRA_PAT_SCOPES` covers clients/tickets/knowledge/agents (including `agents:chats` for chat-session REST)/imports/statistics + `users:admin` / `webhooks:admin`; each enforced via `@RequireScopes` |
+| Concern                  | Behavior                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| Create / update / revoke | Console **Personal Access Tokens** page (`/settings/tokens`); interactive console session only (password JWT or Keycloak OIDC) |
+| Exchange                 | `POST /auth/token` with `{ "token": "fp_pat_…" }` only (no email) → JWT with `amr: ["pat"]` and `scopes`                       |
+| Console                  | Login rejects `fp_pat_` secrets; SPA rejects JWTs whose `amr` includes `pat`; WebSockets reject PAT JWTs                       |
+| Keycloak                 | Local `users` row is synced on first authenticated request (`keycloakSub`); PAT CRUD and exchange require `JWT_SECRET`         |
+| Scopes                   | `AGENSTRA_PAT_SCOPES` (see [Scope model](#scope-model)); each enforced via `@RequireScopes`                                    |
 
 Compared to `STATIC_API_KEY`, PATs are per-user, scoped, rotatable, and do not grant cross-tenant admin by default.
 
 Updating a token changes **name** and **scopes** only; the secret is never rotated by update. Exchanged PAT JWTs embed `patId`; each request re-checks the PAT row so **revoke**, **expiry**, and **scope updates** take effect immediately. **Role demotion** also takes effect immediately: request roles come from the live DB user (not the JWT claim), admin-only scopes are stripped from the effective grant set, and changing a user’s role bumps `tokenVersion` so outstanding JWTs are rejected.
+
+#### Scope model
+
+Scopes follow `<resource>:<level>` with three hierarchical levels per resource (similar to GitHub token permissions):
+
+| Level   | Grants                                                                           | Implies            |
+| ------- | -------------------------------------------------------------------------------- | ------------------ |
+| `read`  | Read operations in non-admin scope                                               | —                  |
+| `write` | All other non-admin operations on the resource                                   | `read`             |
+| `admin` | Operations reserved to admins and their console / API (admin role also required) | `write` and `read` |
+
+`:admin` scopes are only grantable to admins and are stripped from the effective grant set when the user is not an admin. Routes without `@RequireScopes` reject PATs (fail-closed). Each operation's required scope is listed in the OpenAPI spec as the role name on its `bearerAuth` security requirement.
+
+| Resource            | Levels               | Covers                                                                                                                                                                                              |
+| ------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clients`           | read / write / admin | Workspaces, members, provisioning, isolation, egress, configuration overrides, workspace + agent OpenCode config, provider/MCP catalogs; admin: instance OpenCode config (`/admin/opencode/config`) |
+| `agents`            | read / write         | Agent CRUD, models, permission/question replies, autonomy, start/stop/restart                                                                                                                       |
+| `agent_files`       | read / write         | Agent workspace files and workspace search (write: edit files, reindex)                                                                                                                             |
+| `agent_environment` | read / write         | Agent environment variables                                                                                                                                                                         |
+| `agent_chats`       | read / write         | Chat sessions and messages, chat plans, scheduled agent tasks                                                                                                                                       |
+| `agent_vcs`         | read / write         | Git status/branches/diff; write: stage, commit, push, pull, rebase, branches, automation command checks                                                                                             |
+| `agent_deployments` | read / write         | CI/CD configuration, repositories, workflows, runs and logs; write: configure, trigger, cancel                                                                                                      |
+| `agent_vnc`         | write                | Remote desktop session tickets                                                                                                                                                                      |
+| `tickets`           | read / write         | Tickets, comments, activity, ticket automation                                                                                                                                                      |
+| `knowledge`         | read / write         | Knowledge tree, pages, relations                                                                                                                                                                    |
+| `attachments`       | read / write         | Ticket, knowledge and chat attachments                                                                                                                                                              |
+| `statistics`        | read                 | Workspace and aggregate statistics                                                                                                                                                                  |
+| `imports`           | admin                | Atlassian context import                                                                                                                                                                            |
+| `users`             | admin                | User management                                                                                                                                                                                     |
+| `webhooks`          | admin                | Webhook endpoints                                                                                                                                                                                   |
+| `updates`           | admin                | Application update checks                                                                                                                                                                           |
+
+Stored tokens were migrated to this model (`RefactorPersonalAccessTokenScopes1793600000000`); legacy scopes that could only be mapped by granting additional writes were dropped, so affected tokens must be re-issued.
 
 ## Users Authentication Flow
 

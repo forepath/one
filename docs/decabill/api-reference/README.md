@@ -58,12 +58,12 @@ Project endpoints are tagged **`Projects`**, **`Project Board`**, and **`Admin B
 
 #### Time entries
 
-| Method | Path                                               | `operationId`            | Auth                                                   |
-| ------ | -------------------------------------------------- | ------------------------ | ------------------------------------------------------ |
-| GET    | `/projects/{projectId}/time-entries`               | `listProjectTimeEntries` | `projects:read` (assigned customers and admins)        |
-| POST   | `/projects/{projectId}/time-entries`               | `createProjectTimeEntry` | `time_entries:write` (admin)                           |
-| POST   | `/projects/{projectId}/time-entries/{timeEntryId}` | `updateProjectTimeEntry` | `time_entries:write` (admin); billed entries immutable |
-| DELETE | `/projects/{projectId}/time-entries/{timeEntryId}` | `deleteProjectTimeEntry` | `time_entries:write` (admin); billed entries immutable |
+| Method | Path                                               | `operationId`            | Auth                                                |
+| ------ | -------------------------------------------------- | ------------------------ | --------------------------------------------------- |
+| GET    | `/projects/{projectId}/time-entries`               | `listProjectTimeEntries` | `time_entries:read` (assigned customers and admins) |
+| POST   | `/projects/{projectId}/time-entries`               | `createProjectTimeEntry` | `time_entries:admin`                                |
+| POST   | `/projects/{projectId}/time-entries/{timeEntryId}` | `updateProjectTimeEntry` | `time_entries:admin`; billed entries immutable      |
+| DELETE | `/projects/{projectId}/time-entries/{timeEntryId}` | `deleteProjectTimeEntry` | `time_entries:admin`; billed entries immutable      |
 
 List supports query params `limit`, `offset`, and optional `ticketId`.
 

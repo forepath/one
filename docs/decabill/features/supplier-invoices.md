@@ -12,10 +12,10 @@ There is no customer-facing or Stripe checkout flow for supplier invoices.
 
 All routes are under `/admin/billing/supplier-invoices` and require admin role plus PAT scopes:
 
-| Operation                        | Scope                 |
-| -------------------------------- | --------------------- |
-| List, get, statistics, download  | `billing_admin:read`  |
-| Create, update, issue, void, pay | `billing_admin:write` |
+| Operation                        | Scope                     |
+| -------------------------------- | ------------------------- |
+| List, get, statistics, download  | `supplier_invoices:admin` |
+| Create, update, issue, void, pay | `supplier_invoices:admin` |
 
 ## Workflow
 

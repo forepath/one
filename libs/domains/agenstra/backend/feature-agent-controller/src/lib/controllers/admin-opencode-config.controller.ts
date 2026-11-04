@@ -8,7 +8,7 @@ import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sy
 import { hasAgentConfigChanges, summarizeAgentConfigChange } from '../utils/agent-config-change.utils';
 
 @Controller('admin/opencode/config')
-@RequireScopes('clients:write')
+@RequireScopes('clients:admin')
 export class AdminOpencodeConfigController {
   private readonly logger = new Logger(AdminOpencodeConfigController.name);
 

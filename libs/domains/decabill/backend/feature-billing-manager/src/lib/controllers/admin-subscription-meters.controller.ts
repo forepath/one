@@ -43,7 +43,7 @@ export class AdminSubscriptionMetersController {
   ) {}
 
   @Get(':id/meters/history')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('usage:admin')
   async getMeterHistory(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Query() query: SubscriptionMeterHistoryQueryDto,
@@ -64,7 +64,7 @@ export class AdminSubscriptionMetersController {
   }
 
   @Get(':id/meters')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('usage:admin')
   async listMeters(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req?: RequestWithUser,
@@ -81,7 +81,7 @@ export class AdminSubscriptionMetersController {
   }
 
   @Get(':id/meter-entries')
-  @RequireScopes('billing_admin:read')
+  @RequireScopes('usage:admin')
   async listEntries(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req?: RequestWithUser,
@@ -100,7 +100,7 @@ export class AdminSubscriptionMetersController {
   }
 
   @Post(':id/meter-entries')
-  @RequireScopes('usage:write')
+  @RequireScopes('usage:admin')
   async createEntry(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() body: Omit<CreateUsageRecordDto, 'subscriptionId'>,
@@ -129,7 +129,7 @@ export class AdminSubscriptionMetersController {
   }
 
   @Post(':id/meter-entries/:entryId')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('usage:admin')
   async updateEntry(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('entryId', new ParseUUIDPipe({ version: '4' })) entryId: string,
@@ -144,7 +144,7 @@ export class AdminSubscriptionMetersController {
   }
 
   @Delete(':id/meter-entries/:entryId')
-  @RequireScopes('billing_admin:write')
+  @RequireScopes('usage:admin')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteEntry(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,

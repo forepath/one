@@ -96,6 +96,30 @@ describe('PatScopesGuard', () => {
     );
   });
 
+  const requireScopes = (scopes: string[]) =>
+    reflector.getAllAndOverride.mockImplementation((key: string) => (key === REQUIRE_SCOPES_KEY ? scopes : false));
+
+  it('lets higher levels on the same resource satisfy lower ones', () => {
+    requireScopes(['clients:read']);
+
+    expect(guard.canActivate(createContext({ id: 'u1', amr: ['pat'], scopes: ['clients:write'] }))).toBe(true);
+    expect(guard.canActivate(createContext({ id: 'u1', amr: ['pat'], scopes: ['clients:admin'] }))).toBe(true);
+  });
+
+  it('never lets lower levels or other resources satisfy a requirement', () => {
+    requireScopes(['clients:admin']);
+
+    expect(() => guard.canActivate(createContext({ id: 'u1', amr: ['pat'], scopes: ['clients:write'] }))).toThrow(
+      /Missing: clients:admin/,
+    );
+
+    requireScopes(['agent_files:read']);
+
+    expect(() => guard.canActivate(createContext({ id: 'u1', amr: ['pat'], scopes: ['agents:admin'] }))).toThrow(
+      ForbiddenException,
+    );
+  });
+
   it('rejects PAT on @RequirePasswordSession routes', () => {
     reflector.getAllAndOverride.mockImplementation((key: string) => {
       if (key === REQUIRE_PASSWORD_SESSION_KEY) {

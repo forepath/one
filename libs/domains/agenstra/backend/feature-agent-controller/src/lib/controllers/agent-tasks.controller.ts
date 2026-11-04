@@ -27,7 +27,7 @@ export class AgentTasksController {
   constructor(private readonly agentTasksService: AgentTasksService) {}
 
   @Get('agent-tasks')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:read')
   async list(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Query('agentId', new ParseUUIDPipe({ version: '4', optional: true })) agentId?: string,
@@ -37,7 +37,7 @@ export class AgentTasksController {
   }
 
   @Post('agents/:agentId/tasks')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:write')
   async create(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -48,7 +48,7 @@ export class AgentTasksController {
   }
 
   @Get('agents/:agentId/tasks/:taskId')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:read')
   async get(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -59,7 +59,7 @@ export class AgentTasksController {
   }
 
   @Patch('agents/:agentId/tasks/:taskId')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:write')
   async update(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -72,7 +72,7 @@ export class AgentTasksController {
 
   @Delete('agents/:agentId/tasks/:taskId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:write')
   async remove(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -83,7 +83,7 @@ export class AgentTasksController {
   }
 
   @Get('agents/:agentId/tasks/:taskId/runs')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:read')
   async listRuns(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -104,7 +104,7 @@ export class AgentTasksController {
 
   /** Approve a task the agent created or changed (runs are unattended with every permission allowed). */
   @Post('agents/:agentId/tasks/:taskId/approval')
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:write')
   async approve(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -117,7 +117,7 @@ export class AgentTasksController {
 
   @Post('agents/:agentId/tasks/:taskId/runs')
   @HttpCode(HttpStatus.ACCEPTED)
-  @RequireScopes('agents:chats')
+  @RequireScopes('agent_chats:write')
   async runNow(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,

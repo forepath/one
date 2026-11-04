@@ -44,7 +44,7 @@ export class ProjectTicketAttachmentsController {
     return await this.attachments.list(projectId, ticketId, req);
   }
 
-  @RequireScopes('attachments:write')
+  @RequireScopes('attachments:admin')
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async upload(
@@ -56,7 +56,7 @@ export class ProjectTicketAttachmentsController {
     return await this.attachments.upload(projectId, ticketId, file, req);
   }
 
-  @RequireScopes('attachments:write')
+  @RequireScopes('attachments:admin')
   @Delete(':attachmentId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(

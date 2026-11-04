@@ -25,7 +25,7 @@ export class ClientsAgentAutomationProxyController {
   ) {}
 
   @Post('verify-commands')
-  @RequireScopes('agents:vcs')
+  @RequireScopes('agent_vcs:write')
   async verifyCommands(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,

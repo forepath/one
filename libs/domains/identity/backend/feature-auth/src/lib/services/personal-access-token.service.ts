@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 
-import { UserEntity, UserPersonalAccessTokenEntity, UserRole } from '@forepath/identity/backend';
+import { isAdminPatScope, UserEntity, UserPersonalAccessTokenEntity, UserRole } from '@forepath/identity/backend';
 import {
   BadRequestException,
   ForbiddenException,
@@ -12,7 +12,6 @@ import {
 import * as bcrypt from 'bcrypt';
 
 import {
-  ADMIN_ONLY_PAT_SCOPES,
   DUMMY_PAT_BCRYPT_HASH,
   IDENTITY_PAT_SCOPE_CATALOG,
   PAT_LOOKUP_PREFIX_LENGTH,
@@ -72,7 +71,8 @@ export class PersonalAccessTokenService {
       return catalog;
     }
 
-    return catalog.filter((scope) => !ADMIN_ONLY_PAT_SCOPES.has(scope));
+    // `<resource>:admin` scopes are admin-only by convention (derived, so catalogs cannot drift).
+    return catalog.filter((scope) => !isAdminPatScope(scope));
   }
 
   /** Scope catalog for the user's current DB role (not JWT role). */

@@ -66,7 +66,7 @@ When global views are allowed, the page shows one tab per configured tenant plus
 
 ## API
 
-Admin-only (`ADMIN` roles + `billing_admin:read`):
+Admin-only (`ADMIN` roles + `files:admin`):
 
 - `GET /admin/billing/files`
 - `GET /admin/billing/files/download`

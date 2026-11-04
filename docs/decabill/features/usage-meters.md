@@ -17,7 +17,7 @@ Tenant-scoped usage meters drive arrear usage billing for service plans and addo
 - `default_included_usage` (default `0`) — free allowance per charge period before metered billing applies
 - `is_active`
 
-Admin API: `GET/POST /meters`, `GET/POST/DELETE /meters/{id}` (`catalog:read` / `catalog:write`).
+Admin API: `GET/POST /meters`, `GET/POST/DELETE /meters/{id}` (`catalog:admin`).
 
 Hard-delete is blocked while plan, addon, service-type, or usage rows reference the meter. Prefer `isActive=false`.
 
@@ -55,7 +55,7 @@ Nested APIs:
 
 ## Recording usage
 
-`POST /admin/usage/record` (admin or API key, `usage:write`):
+`POST /admin/usage/record` (admin or API key, `usage:admin`):
 
 ```json
 {
@@ -78,7 +78,7 @@ Rules:
 - `attachmentType=plan`: meter must be on the subscription’s plan or its service type.
 - `attachmentType=addon`: `addonId` required; subscription must have that addon billable; meter must be on that addon.
 
-Admin entry CRUD: `/admin/billing/subscriptions/{id}/meter-entries` (`billing_admin:read` / `billing_admin:write` for list/update/delete; `usage:write` for create).
+Admin entry CRUD: `/admin/billing/subscriptions/{id}/meter-entries` (`usage:admin` for list/create/update/delete; formerly split create).
 
 ## Collector job (pull)
 
@@ -99,9 +99,9 @@ Built-in Hetzner / DigitalOcean register stub collectors (empty samples) until r
 
 ## Subscription views
 
-- `GET /subscriptions/{id}/meters` and admin twin under `/admin/billing/subscriptions/{id}/meters` (`billing_admin:read`)
+- `GET /subscriptions/{id}/meters` and admin twin under `/admin/billing/subscriptions/{id}/meters` (`usage:admin`)
 - `SubscriptionResponse.meters` embeds the same summaries (effective price, effective included usage, aggregated value, billable value, estimated charge)
-- `GET /subscriptions/{id}/meters/history?from&to&groupBy=day|month` (admin twin under `/admin/billing/subscriptions/{id}/meters/history`, `billing_admin:read`) — per-meter time series for the service details UI
+- `GET /subscriptions/{id}/meters/history?from&to&groupBy=day|month` (admin twin under `/admin/billing/subscriptions/{id}/meters/history`, `usage:admin`) — per-meter time series for the service details UI
 - WebSocket `meterSummaryUpdate` on room `subscription:{id}` after usage mutations; ADMIN may subscribe without ownership (see [Service details](./service-details.md))
 
 ## Invoice charge path (arrear)

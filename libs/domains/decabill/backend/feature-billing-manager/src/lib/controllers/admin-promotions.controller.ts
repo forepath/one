@@ -13,7 +13,7 @@ import { PromotionAdminService } from '../services/promotion-admin.service';
 @Controller('admin/billing/promotions')
 @KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
-@RequireScopes('promotions:write')
+@RequireScopes('promotions:admin')
 export class AdminPromotionsController {
   constructor(private readonly promotionAdminService: PromotionAdminService) {}
 

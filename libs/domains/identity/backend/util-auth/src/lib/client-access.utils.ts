@@ -5,6 +5,7 @@ import type { ClientUserEntity } from './entities/client-user.entity';
 import { ClientUserRole } from './entities/client-user.entity';
 import type { ClientEntityLike } from './entities/client.entity.types';
 import { UserRole } from './entities/user.entity';
+import { getMissingPatScopes } from './identity-pat.scopes';
 
 /** Minimal interface for client access check - findById */
 export interface ClientAccessClientsRepository {
@@ -204,14 +205,14 @@ export function getUserFromRequest(req: RequestWithUser): UserInfoFromRequest {
 
 /**
  * When the caller authenticated via PAT, require all listed scopes (no-op for password/API-key).
+ * Higher levels on the same resource satisfy lower ones (`admin` ⊇ `write` ⊇ `read`).
  */
 export function assertPatScopes(userInfo: UserInfoFromRequest, ...requiredScopes: string[]): void {
   if (userInfo.isApiKeyAuth || !(userInfo.amr ?? []).includes('pat')) {
     return;
   }
 
-  const tokenScopes = new Set(userInfo.scopes ?? []);
-  const missing = requiredScopes.filter((scope) => !tokenScopes.has(scope));
+  const missing = getMissingPatScopes(userInfo.scopes ?? [], requiredScopes);
 
   if (missing.length > 0) {
     throw new ForbiddenException(`Insufficient token scope. Missing: ${missing.join(', ')}`);

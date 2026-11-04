@@ -27,7 +27,7 @@ import { MeterService } from '../services/meter.service';
 import { interpolateAddonScriptTemplate, parseAddonConfigFields } from '../utils/addon-config.utils';
 
 @Controller('addons')
-@RequireScopes('catalog:write')
+@RequireScopes('catalog:admin')
 export class AddonsController {
   constructor(
     private readonly addonsRepository: AddonsRepository,
@@ -51,7 +51,7 @@ export class AddonsController {
   @Get('modules')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
-  @RequireScopes('catalog:read')
+  @RequireScopes('catalog:admin')
   async listModules(): Promise<
     Array<{
       key: string;
@@ -73,7 +73,7 @@ export class AddonsController {
   @Get(':id/meters')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
-  @RequireScopes('catalog:read')
+  @RequireScopes('catalog:admin')
   async listMeters(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AttachedMeterResponseDto[]> {
     await this.addonsRepository.findByIdOrThrow(id);
 

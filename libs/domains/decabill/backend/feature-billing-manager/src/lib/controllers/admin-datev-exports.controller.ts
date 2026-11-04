@@ -27,7 +27,7 @@ import { getUserFromRequest, type RequestWithUser } from '../utils/billing-acces
 @Controller('admin/billing/datev-exports')
 @KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
-@RequireScopes('datev:write')
+@RequireScopes('datev:admin')
 @UseGuards(DatevExportEnabledGuard)
 export class AdminDatevExportsController {
   constructor(private readonly datevExportAdminService: DatevExportAdminService) {}

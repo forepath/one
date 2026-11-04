@@ -40,7 +40,6 @@ import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.s
  * Provides endpoints that proxy VCS requests to client endpoints.
  */
 @Controller('clients/:clientId/agents/:agentId/vcs')
-@RequireScopes('agents:vcs')
 export class ClientsVcsController {
   constructor(
     private readonly clientAgentVcsProxyService: ClientAgentVcsProxyService,
@@ -55,6 +54,7 @@ export class ClientsVcsController {
    * @returns Git status information
    */
   @Get('status')
+  @RequireScopes('agent_vcs:read')
   async getStatus(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -72,6 +72,7 @@ export class ClientsVcsController {
    * @returns Array of branch information
    */
   @Get('branches')
+  @RequireScopes('agent_vcs:read')
   async getBranches(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -90,6 +91,7 @@ export class ClientsVcsController {
    * @returns File diff information
    */
   @Get('diff')
+  @RequireScopes('agent_vcs:read')
   async getFileDiff(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -113,6 +115,7 @@ export class ClientsVcsController {
    */
   @Post('stage')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_vcs:write')
   async stageFiles(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -131,6 +134,7 @@ export class ClientsVcsController {
    */
   @Post('unstage')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_vcs:write')
   async unstageFiles(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -149,6 +153,7 @@ export class ClientsVcsController {
    */
   @Post('commit')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_vcs:write')
   async commit(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -167,6 +172,7 @@ export class ClientsVcsController {
    */
   @Post('push')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_vcs:write')
   async push(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -184,6 +190,7 @@ export class ClientsVcsController {
    */
   @Post('pull')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_vcs:write')
   async pull(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -200,6 +207,7 @@ export class ClientsVcsController {
    */
   @Post('workspace/prepare-clean')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_vcs:write')
   async prepareCleanWorkspace(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -212,6 +220,7 @@ export class ClientsVcsController {
 
   @Post('fetch')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_vcs:write')
   async fetch(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -229,6 +238,7 @@ export class ClientsVcsController {
    */
   @Post('rebase')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_vcs:write')
   async rebase(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -247,6 +257,7 @@ export class ClientsVcsController {
    */
   @Post('branches/:branch/switch')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_vcs:write')
   async switchBranch(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -265,6 +276,7 @@ export class ClientsVcsController {
    */
   @Post('branches')
   @HttpCode(HttpStatus.CREATED)
+  @RequireScopes('agent_vcs:write')
   async createBranch(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -283,6 +295,7 @@ export class ClientsVcsController {
    */
   @Delete('branches/:branch')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_vcs:write')
   async deleteBranch(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -301,6 +314,7 @@ export class ClientsVcsController {
    */
   @Post('conflicts/resolve')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agent_vcs:write')
   async resolveConflict(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,

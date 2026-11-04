@@ -1,34 +1,44 @@
+import { parsePatScope } from '@forepath/identity/backend';
+
 import { BILLING_PAT_SCOPES } from './billing-pat.scopes';
 
 describe('BILLING_PAT_SCOPES', () => {
   const expectedScopes = [
-    'catalog:write',
+    'catalog:read',
+    'catalog:admin',
     'subscriptions:read',
     'subscriptions:write',
+    'subscriptions:admin',
     'invoices:read',
     'invoices:write',
-    'invoices:pay',
-    'invoice:admin',
+    'invoices:admin',
+    'customer_profile:read',
     'customer_profile:write',
     'customer_profile:admin',
     'supplier_profile:admin',
+    'supplier_invoices:admin',
     'usage:read',
-    'usage:write',
+    'usage:admin',
     'promotions:read',
     'promotions:write',
+    'promotions:admin',
     'offers:read',
     'offers:write',
+    'offers:admin',
     'projects:read',
-    'projects:write',
+    'projects:admin',
+    'milestones:read',
+    'milestones:admin',
+    'time_entries:read',
+    'time_entries:admin',
     'tickets:read',
     'tickets:write',
+    'tickets:admin',
     'attachments:read',
-    'attachments:write',
-    'milestones:write',
-    'time_entries:write',
-    'billing_admin:read',
-    'billing_admin:write',
-    'datev:write',
+    'attachments:admin',
+    'billing:admin',
+    'files:admin',
+    'datev:admin',
     'users:admin',
     'webhooks:admin',
     'updates:admin',
@@ -36,6 +46,10 @@ describe('BILLING_PAT_SCOPES', () => {
 
   it('has unique entries', () => {
     expect(new Set(BILLING_PAT_SCOPES).size).toBe(BILLING_PAT_SCOPES.length);
+  });
+
+  it('only contains <resource>:read|write|admin scopes', () => {
+    expect(BILLING_PAT_SCOPES.filter((scope) => parsePatScope(scope) === undefined)).toEqual([]);
   });
 
   it('matches the full billing PAT catalog', () => {
