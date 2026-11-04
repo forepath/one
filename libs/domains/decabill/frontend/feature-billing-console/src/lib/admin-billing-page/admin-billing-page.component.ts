@@ -71,6 +71,7 @@ import {
   FpcTabComponent,
   FpcTabGroupComponent,
   FPC_CHART_AREA_FILL,
+  FPC_CHART_LINE_STROKE,
   FPC_CHART_GRID,
   FPC_CHART_SLICE_LABELS,
   FPC_CHART_SLICE_TOOLTIP,
@@ -1934,7 +1935,7 @@ export class AdminBillingPageComponent implements OnInit {
       series: [{ name: seriesName, data: filled.map((p) => p.totalGross) }] as ApexAxisChartSeries,
       chart: fpcChart('area', 240) as ApexChart,
       colors: [fpcChartColor(0)],
-      stroke: { curve: 'smooth', width: 2 } as ApexStroke,
+      stroke: FPC_CHART_LINE_STROKE as ApexStroke,
       fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
       // DB-17: thinned unrotated date ticks, compact currency ticks (`€25K`).

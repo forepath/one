@@ -55,6 +55,7 @@ import {
   FpcTabGroupComponent,
   FpcTableCellDirective,
   FPC_CHART_AREA_FILL,
+  FPC_CHART_LINE_STROKE,
   FPC_CHART_GRID,
   FPC_CHART_LEGEND,
   fpcChart,
@@ -818,8 +819,8 @@ export class AdminOffersPageComponent implements OnInit {
       chart: fpcChart('area', 240) as ApexChart,
       // Semantic series: archived (neutral), accepted (success), declined (danger).
       colors: ['var(--bs-secondary)', 'var(--bs-success)', 'var(--bs-danger)'],
-      // Counts: straight segments and whole-number ticks (DB-17 f).
-      stroke: { curve: 'straight', width: 2 } as ApexStroke,
+      // Counts: whole-number ticks (DB-17 f).
+      stroke: FPC_CHART_LINE_STROKE as ApexStroke,
       fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
       legend: { ...FPC_CHART_LEGEND, position: 'top' } as ApexLegend,

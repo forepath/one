@@ -62,6 +62,7 @@ import {
   FpcTabComponent,
   FpcTabGroupComponent,
   FPC_CHART_AREA_FILL,
+  FPC_CHART_LINE_STROKE,
   FPC_CHART_GRID,
   FPC_CHART_LABEL_STYLE,
   fpcChart,
@@ -967,7 +968,7 @@ export class ServiceDetailPageComponent implements OnInit {
       series: [{ name: meter.name, data: series.map((point) => point.value) }] as ApexAxisChartSeries,
       chart: fpcChart('area', 240) as ApexChart,
       colors: [color],
-      stroke: { curve: 'smooth', width: 2 } as ApexStroke,
+      stroke: FPC_CHART_LINE_STROKE as ApexStroke,
       fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
       xaxis: billingChartTimeAxis(
