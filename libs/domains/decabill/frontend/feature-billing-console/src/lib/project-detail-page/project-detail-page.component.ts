@@ -51,6 +51,7 @@ import {
   FpcMoneyPipe,
   FpcBadgeComponent,
   FpcFormTextDirective,
+  FpcItemCardComponent,
 } from '@forepath/shared/frontend/ui-components';
 import {
   filter,
@@ -125,6 +126,7 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
     FpcFormCheckGroupComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
+    FpcItemCardComponent,
     FpcConfirmDialogComponent,
     FpcDataTableComponent,
     FpcTableCellDirective,
@@ -595,6 +597,10 @@ export class ProjectDetailPageComponent implements OnInit {
 
   addBillTimeLineItem(): void {
     this.billCustomLineItems = [...this.billCustomLineItems, this.emptyBillTimeLineItem()];
+  }
+
+  lineTitle(lineIndex: number): string {
+    return $localize`:@@featureAdminOffers-lineTitle:Line ${lineIndex + 1}:position:`;
   }
 
   removeBillTimeLineItem(index: number): void {

@@ -79,6 +79,21 @@ describe('InvoicesComponent (bulk Download PDFs)', () => {
     expect(component.bulkResult()?.message).toContain('1 not allowed');
   });
 
+  it('preview Download saves the previewed invoice PDF for the subscription it was opened with', () => {
+    const click = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+
+    (facade['downloadInvoicePdf'] as jest.Mock).mockReturnValue(of(new Blob(['%PDF'])));
+    component.openPreview('s1', { id: 'i1', subscriptionId: 's1', canDownload: true } as never);
+
+    component.downloadPreviewInvoice({ id: 'i1', invoiceNumber: 'INV-1', canDownload: true } as never);
+    expect(facade['downloadInvoicePdf']).toHaveBeenCalledWith('s1', 'i1');
+
+    component.downloadPreviewInvoice({ id: 'i3', canDownload: false } as never);
+    expect(facade['downloadInvoicePdf']).toHaveBeenCalledTimes(1);
+    expect(click).toHaveBeenCalledTimes(1);
+    click.mockRestore();
+  });
+
   it('loads one server page of the shown tab only (hasNext list) and the other tab on switch', () => {
     const appRef = TestBed.inject(ApplicationRef);
 

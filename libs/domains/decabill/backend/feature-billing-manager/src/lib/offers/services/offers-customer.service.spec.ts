@@ -18,7 +18,7 @@ describe('OffersCustomerService status guards', () => {
     getByUserId: jest.fn(),
     isProfileComplete: jest.fn(),
   };
-  const offerPdfService = { readPdf: jest.fn() };
+  const offerArchiveService = { getPdfBuffer: jest.fn() };
   const offerFulfillmentService = { fulfillAcceptedOffer: jest.fn() };
   const billingEmailPublisher = { publishOfferAcceptedConfirmation: jest.fn() };
   const billingNotificationPublisher = { publishOffer: jest.fn() };
@@ -29,12 +29,12 @@ describe('OffersCustomerService status guards', () => {
     offersRepository as never,
     offerLineItemsRepository as never,
     customerProfilesService as never,
-    offerPdfService as never,
     offerFulfillmentService as never,
     billingEmailPublisher as never,
     billingNotificationPublisher as never,
     billingSearchIndexService as never,
     auditLog as never,
+    offerArchiveService as never,
   );
 
   beforeEach(() => {

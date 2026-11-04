@@ -194,4 +194,27 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
     expect(component.auditLogsTotal()).toBe(30);
     expect(billingFacade['loadAuditLogs']).not.toHaveBeenCalled();
   });
+
+  it('preview modal: Download is offered for the previewed customer / supplier invoice when a PDF is stored', () => {
+    const click = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+
+    Object.assign(URL, { createObjectURL: jest.fn(() => 'blob:x'), revokeObjectURL: jest.fn() });
+    billingService['getManualInvoiceDetail'] = jest.fn(() => of({ id: 'i1', lineItems: [], taxBreakdown: [] }));
+    billingService['downloadInvoicePdf'] = jest.fn(() => of(new Blob(['%PDF'])));
+    supplierService['getById'] = jest.fn(() => of({ id: 'si1', lineItems: [] }));
+    supplierService['downloadDocument'] = jest.fn(() => of(new Blob(['%PDF'])));
+
+    component.openPreview({ ...invoice('i1', 'issued'), canDownload: true } as never);
+    component.previewDownload()?.();
+    expect(billingService['downloadInvoicePdf']).toHaveBeenCalledWith('i1');
+
+    component.openPreview({ ...invoice('i2', 'issued'), canDownload: false } as never);
+    expect(component.previewDownload()).toBeNull();
+
+    component.openSupplierPreview({ ...invoice('si1', 'issued'), canDownload: true } as never);
+    component.previewDownload()?.();
+    expect(supplierService['downloadDocument']).toHaveBeenCalledWith('si1');
+    expect(click).toHaveBeenCalledTimes(2);
+    click.mockRestore();
+  });
 });

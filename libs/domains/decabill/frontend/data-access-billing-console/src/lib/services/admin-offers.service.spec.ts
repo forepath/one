@@ -21,6 +21,8 @@ describe('AdminOffersService', () => {
     totalGross: 119,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
+    canPreview: false,
+    canDownload: false,
   };
 
   beforeEach(() => {
@@ -155,6 +157,21 @@ describe('AdminOffersService', () => {
       billToOpenPositions: false,
       lineItems: [],
     });
+  });
+
+  it('downloads the offer PDF as a blob', (done) => {
+    const pdf = new Blob(['%PDF'], { type: 'application/pdf' });
+
+    service.downloadPdf('offer-1').subscribe((res) => {
+      expect(res).toBe(pdf);
+      done();
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/offers/offer-1/pdf`);
+
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    req.flush(pdf);
   });
 
   it('gets statistics with filters', (done) => {

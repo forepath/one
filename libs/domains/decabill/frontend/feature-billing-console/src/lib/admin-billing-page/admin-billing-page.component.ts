@@ -50,7 +50,7 @@ import {
   FpcFormFieldComponent,
   FpcKeyValueListComponent,
   FpcLaneHeaderComponent,
-  FpcListHeaderComponent,
+  FpcItemCardComponent,
   FpcConfirmDialogComponent,
   fpcCopyText,
   FpcDataTableComponent,
@@ -225,7 +225,7 @@ type AdminBillingPerspective = 'customer' | 'supplier';
     FpcDataTableComponent,
     FpcKeyValueListComponent,
     FpcLaneHeaderComponent,
-    FpcListHeaderComponent,
+    FpcItemCardComponent,
     FpcTableCellDirective,
     FpcConfirmDialogComponent,
     FpcModalComponent,
@@ -395,6 +395,9 @@ export class AdminBillingPageComponent implements OnInit {
   private supplierAuditRequest?: Subscription;
   readonly previewLoading = signal(false);
   readonly previewDetail = signal<InvoicePreviewView | null>(null);
+  /** Footer Download of the preview modal (customer PDF or supplier document); `null` when none is stored. */
+  readonly previewDownload = signal<(() => void) | null>(null);
+  readonly downloadLabel = DB_DL_DOWNLOAD;
 
   readonly summary$ = this.adminBillingFacade.summary$;
   readonly summaryLoading$ = this.adminBillingFacade.summaryLoading$;
@@ -1095,6 +1098,7 @@ export class AdminBillingPageComponent implements OnInit {
 
     this.previewLoading.set(true);
     this.previewDetail.set(null);
+    this.previewDownload.set(invoice.canDownload ? () => this.downloadInvoice(invoice) : null);
     showBillingModal(this.previewInvoiceModalOpen);
     this.adminBillingService
       .getManualInvoiceDetail(invoice.id)
@@ -1110,6 +1114,9 @@ export class AdminBillingPageComponent implements OnInit {
 
     this.previewLoading.set(true);
     this.previewDetail.set(null);
+    this.previewDownload.set(
+      this.canDownloadSupplierInvoice(invoice) ? () => this.downloadSupplierInvoice(invoice) : null,
+    );
     showBillingModal(this.previewInvoiceModalOpen);
     this.supplierInvoicesService
       .getById(invoice.id)

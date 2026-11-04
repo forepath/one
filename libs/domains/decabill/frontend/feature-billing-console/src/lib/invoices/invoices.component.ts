@@ -72,6 +72,7 @@ import {
   type DbBulkResult,
   DB_DL_PREVIEW,
   DB_DL_PAY,
+  DB_DL_DOWNLOAD,
   DB_DL_DOWNLOAD_PDF,
   DB_DL_CREDIT_NOTE,
   DB_DL_TIME_REPORT,
@@ -196,6 +197,7 @@ export class InvoicesComponent implements OnInit {
   readonly searchOpenOverdueLabel = $localize`:@@featureInvoices-searchOpenOverdue:Search invoices`;
   readonly searchHistoryLabel = $localize`:@@featureInvoices-searchHistory:Search invoice history`;
   readonly downloadPdfsLabel = $localize`:@@featureInvoices-downloadSelected:Download PDFs`;
+  readonly downloadLabel = DB_DL_DOWNLOAD;
 
   /** Open / overdue: State · Invoice · subscription · balance · issued · due. */
   readonly openColumns = this.invoiceColumns(false);
@@ -460,7 +462,15 @@ export class InvoicesComponent implements OnInit {
     return this.defaultMinCheckoutPaymentAmount;
   }
 
-  downloadInvoice(subscriptionId: string | undefined, inv: InvoiceResponse): void {
+  /** Footer Download of the preview modal: the subscription the preview was opened for, else the invoice's own. */
+  downloadPreviewInvoice(detail: InvoiceDetailResponse): void {
+    this.downloadInvoice(this.previewSubscriptionId$.value ?? undefined, detail);
+  }
+
+  downloadInvoice(
+    subscriptionId: string | undefined,
+    inv: Pick<InvoiceResponse, 'id' | 'subscriptionId' | 'invoiceNumber' | 'canDownload'>,
+  ): void {
     if (!inv.canDownload) return;
 
     const resolvedSubscriptionId = subscriptionId ?? inv.subscriptionId ?? undefined;

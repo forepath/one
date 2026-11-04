@@ -56,202 +56,218 @@
       />
     }
 
-    <fpc-tab-group class="flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="onTabChange($event)">
-      <fpc-tab id="offers" [label]="tabLabel('offers')" />
+    <!-- Phone: one column at a time; md and up show Statistics and Offers side by side (as billing admin). -->
+    <fpc-tab-group class="d-md-none flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="onTabChange($event)">
       <fpc-tab id="statistics" [label]="tabLabel('statistics')" />
+      <fpc-tab id="offers" [label]="tabLabel('offers')" />
     </fpc-tab-group>
 
-    @switch (activeTab()) {
-      @case ('offers') {
-        <!-- Server-paged offers: State · Offer number · customer · total · dates; ⋮ Edit / Audit / Send / Revoke /
-             Delete / Copy ID; bulk Send / Revoke / Delete drafts. -->
-        <fpc-data-table
-          class="flex-grow-1 min-h-0"
-          [ariaLabel]="pageTitle"
-          [columns]="columns"
-          [rows]="offers()"
-          paging="server"
-          [total]="total()"
-          [(page)]="paging.page"
-          [(pageSize)]="paging.pageSize"
-          persistKey="decabill-admin-offers"
-          [(query)]="paging.search"
-          [searchPlaceholder]="searchPlaceholder"
-          showFilterButton
-          [(filtersOpen)]="offerFiltersOpen"
-          [filtersActive]="offersUserId() ? 1 : 0"
-          (filtersApplied)="applyOfferFilters()"
-          (filtersCleared)="clearOfferFilters()"
-          [loading]="(loading$ | async) === true"
-          refreshable
-          (refresh)="paging.reload()"
-          selectable
-          [(selected)]="selected"
-          [rowMenu]="rowMenu"
-          (rowAction)="onRowAction($event.row, $event.item.id)"
-          (rowActivate)="onRowActivate($event)"
-          emptyIcon="file-earmark-text"
-          data-testid="admin-offers-list"
-        >
-          <fpc-button
-            fpcDataTableToolbar
-            variant="primary"
-            iconOnly
-            [disabled]="(mutating$ | async) === true"
-            [ariaLabel]="createOfferAriaLabel"
-            [title]="createOfferAriaLabel"
-            (clicked)="openCreateModal()"
+    <fpc-section-row class="flex-grow-1 min-h-0" [nowrap]="true">
+      <fpc-section-column class="d-flex d-md-flex" [class.d-none]="activeTab() !== 'statistics'">
+        <fpc-board-lane class="h-100">
+          <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+            <span fpcLaneHeaderTitle i18n="@@featureAdminOffers-statisticsTitle">Statistics</span>
+          </fpc-lane-header>
+          <fpc-list-toolbar
+            fpcBoardLaneSearch
+            [open]="!filtersCollapsed()"
+            (openChange)="onFiltersOpenChange($event)"
+            [title]="filtersPanelTitle"
+            [activeCount]="activeFilterCount()"
+            (applied)="filterState.apply()"
+            (cleared)="onResetFilters()"
           >
-            <i class="bi bi-plus-lg" aria-hidden="true"></i>
-          </fpc-button>
-          <fpc-form-field
-            fpcDataTableFilters
-            forId="offersTableCustomerFilter"
-            i18n-label="@@featureAdminOffers-customerFilter"
-            label="Customer"
-          >
-            <framework-billing-admin-user-select
-              inputId="offersTableCustomerFilter"
-              [(selectedUserId)]="offersUserIdDraft"
-            ></framework-billing-admin-user-select>
-          </fpc-form-field>
-
-          <fpc-button
-            fpcDataTableBatch
-            variant="secondary"
-            [disabled]="selectedDrafts().length === 0"
-            (clicked)="sendSelected()"
-            data-testid="admin-offers-bulk-send"
-            iconOnly
-            [ariaLabel]="sendLabel"
-            [title]="sendLabel"
-          >
-            <i class="bi bi-send" aria-hidden="true"></i>
-          </fpc-button>
-          <fpc-button
-            fpcDataTableBatch
-            variant="secondary"
-            [disabled]="selectedPendingResponse().length === 0"
-            (clicked)="pendingBulk.set('revoke')"
-            data-testid="admin-offers-bulk-revoke"
-            iconOnly
-            [ariaLabel]="revokeLabel"
-            [title]="revokeLabel"
-          >
-            <i class="bi bi-x-octagon" aria-hidden="true"></i>
-          </fpc-button>
-          <fpc-button
-            fpcDataTableBatch
-            variant="danger"
-            [disabled]="selectedDrafts().length === 0"
-            (clicked)="pendingBulk.set('delete')"
-            data-testid="admin-offers-bulk-delete"
-            iconOnly
-            [ariaLabel]="deleteDraftsLabel"
-            [title]="deleteDraftsLabel"
-          >
-            <i class="bi bi-trash" aria-hidden="true"></i>
-          </fpc-button>
-
-          <span fpcDataTableEmpty>
-            <fpc-empty-state
-              icon="file-earmark-text"
-              size="sm"
-              message="No offers yet"
-              i18n-message="@@featureAdminOffers-empty"
-            />
-          </span>
-          <ng-template fpcTableCell="customer" let-row
-            ><span [attr.title]="customerTitle(row)">{{ customerLabel(row) }}</span></ng-template
-          >
-          <ng-template fpcTableCell="total" let-row>{{ offerTotal(row) }}</ng-template>
-          <ng-template fpcTableCell="created" let-row>{{ formatDate(offerCreatedAt(row)) }}</ng-template>
-        </fpc-data-table>
-      }
-      @case ('statistics') {
-        <fpc-list-toolbar
-          [open]="!filtersCollapsed()"
-          (openChange)="onFiltersOpenChange($event)"
-          [title]="filtersPanelTitle"
-          [activeCount]="activeFilterCount()"
-          (applied)="filterState.apply()"
-          (cleared)="onResetFilters()"
-        >
-          <fpc-form-field
-            forId="offersCustomerFilter"
-            i18n-label="@@featureAdminOffers-customerFilter"
-            label="Customer"
-          >
-            <framework-billing-admin-user-select
-              inputId="offersCustomerFilter"
-              [(selectedUserId)]="filterUserId"
-            ></framework-billing-admin-user-select>
-          </fpc-form-field>
-          <fpc-form-field forId="offersFromDate" i18n-label="@@featureAdminOffers-fromDate" label="From">
-            <fpc-form-control
-              controlId="offersFromDate"
-              inputType="date"
-              [ngModel]="filterState.draft().from"
-              (ngModelChange)="filterState.patch({ from: $event })"
-              name="fromDate"
-            />
-          </fpc-form-field>
-          <fpc-form-field forId="offersToDate" i18n-label="@@featureAdminOffers-toDate" label="To">
-            <fpc-form-control
-              controlId="offersToDate"
-              inputType="date"
-              [ngModel]="filterState.draft().to"
-              (ngModelChange)="filterState.patch({ to: $event })"
-              name="toDate"
-            />
-          </fpc-form-field>
-          <fpc-form-field forId="offersGroupBy" i18n-label="@@featureAdminOffers-groupBy" label="Group by">
-            <fpc-form-control
-              controlType="select"
-              controlId="offersGroupBy"
-              [ngModel]="filterState.draft().groupBy"
-              (ngModelChange)="filterState.patch({ groupBy: $event })"
-              name="groupBy"
+            <span fpcListToolbarLead class="admin-offers__statistics-scope small text-body-secondary text-truncate">{{
+              statisticsScopeLabel()
+            }}</span>
+            <fpc-form-field
+              forId="offersCustomerFilter"
+              i18n-label="@@featureAdminOffers-customerFilter"
+              label="Customer"
             >
-              <option value="day" i18n="@@featureAdminOffers-groupByDay">Day</option>
-              <option value="month" i18n="@@featureAdminOffers-groupByMonth">Month</option>
-            </fpc-form-control>
-          </fpc-form-field>
-        </fpc-list-toolbar>
-
-        @if (statisticsError$ | async; as statsErr) {
-          <fpc-alert [flush]="true" variant="danger" [message]="statsErr" />
-        }
-
-        <fpc-panel-grid [columns]="1" [bordered]="false">
-          <fpc-panel [title]="offersChartTitle">
-            @if (statisticsLoading$ | async) {
-              <fpc-empty-state size="sm" loading />
-            } @else if (seriesChartOptions(); as chart) {
-              <apx-chart
-                [series]="chart.series"
-                [chart]="chart.chart"
-                [colors]="chart.colors"
-                [stroke]="chart.stroke"
-                [fill]="chart.fill"
-                [dataLabels]="chart.dataLabels"
-                [legend]="chart.legend"
-                [xaxis]="chart.xaxis"
-                [yaxis]="chart.yaxis"
-                [grid]="chart.grid"
-                [responsive]="chart.responsive"
-              ></apx-chart>
-            } @else {
-              <fpc-empty-state
-                size="sm"
-                message="No statistics for the selected period."
-                i18n-message="@@featureAdminOffers-noStatistics"
+              <framework-billing-admin-user-select
+                inputId="offersCustomerFilter"
+                [(selectedUserId)]="filterUserId"
+              ></framework-billing-admin-user-select>
+            </fpc-form-field>
+            <fpc-form-field forId="offersFromDate" i18n-label="@@featureAdminOffers-fromDate" label="From">
+              <fpc-form-control
+                controlId="offersFromDate"
+                inputType="date"
+                [ngModel]="filterState.draft().from"
+                (ngModelChange)="filterState.patch({ from: $event })"
+                name="fromDate"
               />
-            }
-          </fpc-panel>
-        </fpc-panel-grid>
-      }
-    }
+            </fpc-form-field>
+            <fpc-form-field forId="offersToDate" i18n-label="@@featureAdminOffers-toDate" label="To">
+              <fpc-form-control
+                controlId="offersToDate"
+                inputType="date"
+                [ngModel]="filterState.draft().to"
+                (ngModelChange)="filterState.patch({ to: $event })"
+                name="toDate"
+              />
+            </fpc-form-field>
+            <fpc-form-field forId="offersGroupBy" i18n-label="@@featureAdminOffers-groupBy" label="Group by">
+              <fpc-form-control
+                controlType="select"
+                controlId="offersGroupBy"
+                [ngModel]="filterState.draft().groupBy"
+                (ngModelChange)="filterState.patch({ groupBy: $event })"
+                name="groupBy"
+              >
+                <option value="day" i18n="@@featureAdminOffers-groupByDay">Day</option>
+                <option value="month" i18n="@@featureAdminOffers-groupByMonth">Month</option>
+              </fpc-form-control>
+            </fpc-form-field>
+          </fpc-list-toolbar>
+
+          @if (statisticsError$ | async; as statsErr) {
+            <fpc-alert [flush]="true" variant="danger" [message]="statsErr" />
+          }
+
+          <fpc-panel-grid [columns]="1" [bordered]="false">
+            <fpc-panel [title]="offersChartTitle">
+              @if (statisticsLoading$ | async) {
+                <fpc-empty-state size="sm" loading />
+              } @else if (seriesChartOptions(); as chart) {
+                <apx-chart
+                  [series]="chart.series"
+                  [chart]="chart.chart"
+                  [colors]="chart.colors"
+                  [stroke]="chart.stroke"
+                  [fill]="chart.fill"
+                  [dataLabels]="chart.dataLabels"
+                  [legend]="chart.legend"
+                  [xaxis]="chart.xaxis"
+                  [yaxis]="chart.yaxis"
+                  [grid]="chart.grid"
+                  [responsive]="chart.responsive"
+                ></apx-chart>
+              } @else {
+                <fpc-empty-state
+                  size="sm"
+                  message="No statistics for the selected period."
+                  i18n-message="@@featureAdminOffers-noStatistics"
+                />
+              }
+            </fpc-panel>
+          </fpc-panel-grid>
+        </fpc-board-lane>
+      </fpc-section-column>
+
+      <fpc-section-column class="d-md-flex" [class.d-none]="activeTab() !== 'offers'">
+        <fpc-board-lane class="h-100">
+          <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+            <span fpcLaneHeaderTitle i18n="@@featureAdminOffers-mobileOffers">Offers</span>
+          </fpc-lane-header>
+          <!-- Server-paged offers: State · Offer number · customer · total · dates; ⋮ Edit / Preview / Download PDF /
+               Audit / Send / Revoke / Delete / Copy ID; bulk Send / Revoke / Delete drafts. -->
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="pageTitle"
+            [columns]="columns"
+            [rows]="offers()"
+            paging="server"
+            [total]="total()"
+            [(page)]="paging.page"
+            [(pageSize)]="paging.pageSize"
+            persistKey="decabill-admin-offers"
+            [(query)]="paging.search"
+            [searchPlaceholder]="searchPlaceholder"
+            showFilterButton
+            [(filtersOpen)]="offerFiltersOpen"
+            [filtersActive]="offersUserId() ? 1 : 0"
+            (filtersApplied)="applyOfferFilters()"
+            (filtersCleared)="clearOfferFilters()"
+            [loading]="(loading$ | async) === true"
+            refreshable
+            (refresh)="paging.reload()"
+            selectable
+            [(selected)]="selected"
+            [rowMenu]="rowMenu"
+            (rowAction)="onRowAction($event.row, $event.item.id)"
+            (rowActivate)="onRowActivate($event)"
+            emptyIcon="file-earmark-text"
+            data-testid="admin-offers-list"
+          >
+            <fpc-button
+              fpcDataTableToolbar
+              variant="primary"
+              iconOnly
+              [disabled]="(mutating$ | async) === true"
+              [ariaLabel]="createOfferAriaLabel"
+              [title]="createOfferAriaLabel"
+              (clicked)="openCreateModal()"
+            >
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-form-field
+              fpcDataTableFilters
+              forId="offersTableCustomerFilter"
+              i18n-label="@@featureAdminOffers-customerFilter"
+              label="Customer"
+            >
+              <framework-billing-admin-user-select
+                inputId="offersTableCustomerFilter"
+                [(selectedUserId)]="offersUserIdDraft"
+              ></framework-billing-admin-user-select>
+            </fpc-form-field>
+
+            <fpc-button
+              fpcDataTableBatch
+              variant="secondary"
+              [disabled]="selectedDrafts().length === 0"
+              (clicked)="sendSelected()"
+              data-testid="admin-offers-bulk-send"
+              iconOnly
+              [ariaLabel]="sendLabel"
+              [title]="sendLabel"
+            >
+              <i class="bi bi-send" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              fpcDataTableBatch
+              variant="secondary"
+              [disabled]="selectedPendingResponse().length === 0"
+              (clicked)="pendingBulk.set('revoke')"
+              data-testid="admin-offers-bulk-revoke"
+              iconOnly
+              [ariaLabel]="revokeLabel"
+              [title]="revokeLabel"
+            >
+              <i class="bi bi-x-octagon" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              fpcDataTableBatch
+              variant="danger"
+              [disabled]="selectedDrafts().length === 0"
+              (clicked)="pendingBulk.set('delete')"
+              data-testid="admin-offers-bulk-delete"
+              iconOnly
+              [ariaLabel]="deleteDraftsLabel"
+              [title]="deleteDraftsLabel"
+            >
+              <i class="bi bi-trash" aria-hidden="true"></i>
+            </fpc-button>
+
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                icon="file-earmark-text"
+                size="sm"
+                message="No offers yet"
+                i18n-message="@@featureAdminOffers-empty"
+              />
+            </span>
+            <ng-template fpcTableCell="customer" let-row
+              ><span [attr.title]="customerTitle(row)">{{ customerLabel(row) }}</span></ng-template
+            >
+            <ng-template fpcTableCell="total" let-row>{{ offerTotal(row) }}</ng-template>
+            <ng-template fpcTableCell="created" let-row>{{ formatDate(offerCreatedAt(row)) }}</ng-template>
+          </fpc-data-table>
+        </fpc-board-lane>
+      </fpc-section-column>
+    </fpc-section-row>
   </div>
 </div>
 
@@ -402,5 +418,127 @@
       <span fpcDataTableEmpty i18n="@@featureAdminOffers-noAuditLogs">No audit entries.</span>
       <ng-template fpcTableCell="time" let-row>{{ formatDate(auditTime(row)) }}</ng-template>
     </fpc-data-table>
+  }
+</fpc-modal>
+
+<fpc-modal
+  class="offer-preview-modal"
+  [(open)]="previewOfferModalOpen"
+  size="xl"
+  [scrollable]="true"
+  i18n-title="@@featureOffers-previewTitle"
+  title="Offer preview"
+>
+  @if (previewLoading()) {
+    <div class="offer-preview-modal__loading">
+      <fpc-spinner size="sm" />
+      <span i18n="@@featureOffers-loadingPreview">Loading offer...</span>
+    </div>
+  } @else if (previewDetail(); as detail) {
+    <article class="offer-preview d-flex flex-column gap-3" data-testid="admin-offer-preview">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+              <h6 class="card-title fs-5 mb-2">{{ offerDisplayTitle(detail) }}</h6>
+              <fpc-badge class="d-inline-flex align-self-start" [tone]="offerStatusBadgeTone(detail.status)">
+                {{ offerStatusLabel(detail.status) }}
+              </fpc-badge>
+            </div>
+            <div class="row g-3 mb-0">
+              <div class="col-auto">
+                <div class="small text-body-secondary" i18n="@@featureAdminOffers-customer">Customer</div>
+                <div class="fw-medium" [attr.title]="customerTitle(detail)">{{ customerLabel(detail) }}</div>
+              </div>
+              <div class="col-auto">
+                <div class="small text-body-secondary" i18n="@@featureAdminOffers-colCreated">Created</div>
+                <div class="fw-medium">{{ formatDate(detail.createdAt) }}</div>
+              </div>
+              <div class="col-auto">
+                <div class="small text-body-secondary" i18n="@@featureOffers-colExpires">Expires</div>
+                <div class="fw-medium">{{ formatDate(detail.expiresAt) }}</div>
+              </div>
+              <div class="col-auto">
+                <div class="small text-body-secondary" i18n="@@featureInvoices-currency">Currency</div>
+                <div class="fw-medium">{{ detail.currency }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <fpc-lane-header>
+          <span fpcLaneHeaderTitle i18n="@@featureInvoices-lineItems">Line items</span>
+        </fpc-lane-header>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col" i18n="@@featureInvoices-lineDescription">Description</th>
+                <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineQty">Qty</th>
+                <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineUnitNet">Unit (net)</th>
+                <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineNet">Net</th>
+                <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineTax">Tax</th>
+                <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineGross">Gross</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of detail.lineItems; track line.id) {
+                <tr>
+                  <td class="text-break">{{ line.description }}</td>
+                  <td class="text-end text-nowrap">
+                    {{ line.quantity | number: '1.0-2' }}
+                    @if (line.unitLabel) {
+                      <small class="text-body-secondary">{{ line.unitLabel }}</small>
+                    }
+                  </td>
+                  <td class="text-end text-nowrap">{{ line.unitPriceNet | fpcMoney: detail.currency }}</td>
+                  <td class="text-end text-nowrap">{{ line.lineNet | fpcMoney: detail.currency }}</td>
+                  <td class="text-end">
+                    <span class="text-nowrap">{{ line.lineTax | fpcMoney: detail.currency }}</span>
+                    <br />
+                    <small class="text-body-secondary">{{ line.taxRate | number: '1.0-1' }}%</small>
+                  </td>
+                  <td class="text-end text-nowrap">{{ line.lineGross | fpcMoney: detail.currency }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="row g-3 justify-content-end">
+        @if (previewTaxItems().length > 0) {
+          <div class="col-md-6 col-lg-5">
+            <div class="card bg-body-tertiary h-100">
+              <fpc-lane-header>
+                <span fpcLaneHeaderTitle i18n="@@featureInvoices-taxBreakdown">Tax breakdown</span>
+              </fpc-lane-header>
+              <fpc-key-value-list class="d-block p-3" [items]="previewTaxItems()" />
+            </div>
+          </div>
+        }
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card bg-body-tertiary h-100">
+            <fpc-lane-header>
+              <span fpcLaneHeaderTitle i18n="@@featureInvoices-summary">Summary</span>
+            </fpc-lane-header>
+            <fpc-key-value-list class="d-block p-3" [items]="previewSummaryItems()" />
+          </div>
+        </div>
+      </div>
+    </article>
+  }
+  @if (previewDetail(); as detail) {
+    @if (canDownloadOffer(detail)) {
+      <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+        <fpc-button variant="dark" (clicked)="downloadOfferPdf(detail)" data-testid="admin-offer-preview-download">
+          <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>
+          <span i18n="@@featureOffers-downloadPdf">Download</span>
+        </fpc-button>
+      </div>
+    }
   }
 </fpc-modal>

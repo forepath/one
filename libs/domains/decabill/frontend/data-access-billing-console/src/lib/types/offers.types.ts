@@ -76,6 +76,10 @@ export interface AdminOfferListItem {
   expiresAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Server-decided, like invoices: `false` for drafts (no document yet). */
+  canPreview: boolean;
+  /** `false` for drafts and while no PDF is stored. */
+  canDownload: boolean;
 }
 
 export interface AdminOfferDetailResponse extends AdminOfferListItem {

@@ -42,7 +42,7 @@ import {
   FpcFormCheckGroupComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
-  FpcListHeaderComponent,
+  FpcItemCardComponent,
 } from '@forepath/shared/frontend/ui-components';
 
 import type { PricingTotalsLeadingRow } from '../pricing-totals-summary/pricing-totals.util';
@@ -61,7 +61,7 @@ import type { PricingTotalsLeadingRow } from '../pricing-totals-summary/pricing-
     FpcFormCheckGroupComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
-    FpcListHeaderComponent,
+    FpcItemCardComponent,
   ],
   templateUrl: './admin-offer-line-editor.component.html',
 })

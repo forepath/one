@@ -306,6 +306,16 @@
       </article>
     }
   }
+  @if (previewDetail$ | async; as detail) {
+    @if (detail.canDownload) {
+      <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+        <fpc-button variant="dark" (clicked)="downloadPreviewInvoice(detail)" data-testid="invoice-preview-download">
+          <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>
+          <span>{{ downloadLabel }}</span>
+        </fpc-button>
+      </div>
+    }
+  }
 </fpc-modal>
 
 <fpc-modal [(open)]="createInvoiceModalOpen" i18n-title="@@featureInvoices-createTitle" title="Create invoice">
