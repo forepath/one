@@ -1,0 +1,123 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.section__content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.section__row {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.section__column {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chat-plans-sidebar {
+  flex: 0 0 340px;
+  max-width: 45%;
+}
+
+.chat-plans-list {
+  min-height: 0;
+}
+
+// Phones (like the tasks page): one view at a time; an open plan replaces the list.
+@media (max-width: 767.98px) {
+  .chat-plans-row {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  .chat-plans-sidebar {
+    flex: 1 1 0;
+    max-width: none;
+    width: 100%;
+  }
+
+  .chat-plans-detail {
+    flex: 1 1 0;
+    width: 100%;
+  }
+
+  .chat-plans-row:not(.chat-plans-row--detail-open) .chat-plans-detail,
+  .chat-plans-row--detail-open .chat-plans-sidebar {
+    display: none !important;
+  }
+}
+
+.chat-plans-detail {
+  min-width: 0;
+}
+
+// Content left, activity right (knowledge / ticket details pattern).
+.chat-plans-detail__columns {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chat-plans-detail__pane {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.chat-plans-detail__sidebar {
+  @media (min-width: 992px) {
+    border-left: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}
+
+@media (max-width: 991.98px) {
+  .chat-plans-detail__columns {
+    overflow-y: auto;
+  }
+
+  .chat-plans-detail__pane {
+    height: auto;
+    overflow: visible;
+  }
+
+  .chat-plans-detail__sidebar {
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}
+
+.chat-plans-detail__markdown {
+  overflow-wrap: anywhere;
+}
+
+.chat-plans-detail__plain,
+.chat-plans-detail__request {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+}
+
+.chat-plans-detail__activity-detail {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+  word-break: break-word;
+}

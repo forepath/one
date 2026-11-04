@@ -108,7 +108,7 @@ describe('PromptContextComposerService', () => {
         { index: 1, kind: 'ticket', title: 'Fix login', sha: '329ec4f443e9', content: 'TICKET BODY' },
         { index: 2, kind: 'knowledge', title: 'Auth design', content: 'KNOWLEDGE BODY' },
       ],
-      grants: { ticket: ['329ec4f443e9'], knowledge: [] },
+      grants: { ticket: ['329ec4f443e9'], knowledge: [], plan: [] },
       attachments: [],
       environments: [],
       createdAt: 0,
@@ -167,5 +167,41 @@ describe('PromptContextComposerService', () => {
       expect(service.composeTicketBodyMessage('Title', undefined, injection, contextTicket)).toContain('ctx-test');
       expect(service.composeEnhanceMessage('Draft', injection, contextTicket)).not.toContain('TICKET BODY');
     });
+  });
+
+  it('inlines linked plans without a context ticket and lists plan refs with one', () => {
+    const injection = {
+      planShas: ['abcdef0'],
+      planContexts: ['Chat Plan: Login\nStatus: executed (execution started; read-only)\nPlan:\n- PLAN BODY'],
+      planContextRefs: [{ sha: 'abcdef0', title: 'Login' }],
+    };
+    const inline = service.composeChatMessage('Go', injection);
+
+    expect(inline).toContain('Plan context #1:');
+    expect(inline).toContain('PLAN BODY');
+    expect(inline).toContain('executed plans are read-only history');
+
+    const hinted = service.composeChatMessage('Go', injection, {
+      ticket: 'ctx-plan',
+      agentId: 'agent-1',
+      sessionKey: 'chat-1',
+      ephemeral: false,
+      correlationId: 'c',
+      accessMode: 'ask',
+      items: [{ index: 1, kind: 'plan', title: 'Login', sha: 'abcdef0', content: 'x' }],
+      grants: { ticket: [], knowledge: [], plan: ['abcdef0'] },
+      scopeAnchors: [],
+      attachments: [],
+      environments: [],
+      writeGrants: [],
+      createdRefs: [],
+      changeCount: 0,
+      createdAt: 0,
+      lastUsedAt: 0,
+    });
+
+    expect(hinted).toContain('Relevant plan references for context: abcdef0');
+    expect(hinted).toContain('item:1 [plan abcdef0] "Login"');
+    expect(hinted).not.toContain('PLAN BODY');
   });
 });

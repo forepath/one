@@ -38,7 +38,7 @@ describe('AgentContextTicketsService', () => {
 
     expect(record.ticket).toMatch(/^ctx-[A-Za-z0-9_-]{20,}$/);
     expect(record.items.map((item) => item.index)).toEqual([1, 2]);
-    expect(record.grants).toEqual({ ticket: ['abcdef1234'], knowledge: ['9999aaaa'] });
+    expect(record.grants).toEqual({ ticket: ['abcdef1234'], knowledge: ['9999aaaa'], plan: [] });
   });
 
   it('resolves tickets only for the owning agent', () => {
@@ -102,5 +102,18 @@ describe('AgentContextTicketsService', () => {
     expect(() => service.resolve('agent-1', record.ticket)).toThrow(NotFoundException);
     expect(service.resolve('agent-2', other.ticket)).toBe(other);
     expect(service.isGranted(service.mint(binding()), 'ticket', 'dddd4444')).toBe(false);
+  });
+
+  it('grants linked plans (items and explicit plan grants) like tickets and knowledge', () => {
+    const record = service.mint(
+      binding({
+        items: [{ kind: 'plan', title: 'Login plan', sha: 'ABCDEF9999', content: 'plan body' }],
+        grants: { plan: ['1234abcd'] },
+      }),
+    );
+
+    expect(record.grants.plan).toEqual(['1234abcd', 'abcdef9999']);
+    expect(service.isGranted(record, 'plan', 'abcdef9999')).toBe(true);
+    expect(service.isGranted(record, 'ticket', 'abcdef9999')).toBe(false);
   });
 });

@@ -99,6 +99,25 @@ export function deriveAgentContextItems(
     items.push({ ...describeKnowledgeSection(trimmed, i + 1), content: trimmed });
   });
 
+  const planRefs = contextInjection.planContextRefs ?? [];
+
+  (contextInjection.planContexts ?? []).forEach((content, i) => {
+    const trimmed = content.trim();
+    const ref = planRefs[i];
+    const sha = ref?.sha?.trim().toLowerCase();
+
+    if (!trimmed) {
+      return;
+    }
+
+    items.push({
+      kind: 'plan',
+      title: clip(ref?.title ?? '') || `Plan ${sha?.slice(0, 8) ?? i + 1}`,
+      ...(sha ? { sha } : {}),
+      content: trimmed,
+    });
+  });
+
   return items;
 }
 
@@ -126,7 +145,7 @@ export function buildAgentContextHintLines(record: AgentContextTicketRecord): st
   const access =
     record.accessMode === 'deny'
       ? 'Only the items listed above are available in this session.'
-      : `Other tickets / knowledge pages: find metadata with ${tool('search')}; ask for their content with ${tool('request_access')}.`;
+      : `Other tickets / knowledge pages / plans of this environment: find metadata with ${tool('search')}; ask for their content with ${tool('request_access')}.`;
 
   lines.push(`- ${access}`);
 
@@ -135,11 +154,14 @@ export function buildAgentContextHintLines(record: AgentContextTicketRecord): st
 
   if (record.accessMode === 'ask') {
     lines.push(
-      `- To create, change, comment on or delete tickets / knowledge pages use the ${content} tools (the user ` +
-        `approves each change; pass the revision ${tool('get')} returned).`,
+      `- To create, change, comment on or delete tickets / knowledge pages, or to update plans that were not executed ` +
+        `yet (executed plans are read-only), use the ${content} tools (the user approves each change; pass the ` +
+        `revision ${tool('get')} returned).`,
     );
   } else if (record.accessMode === 'auto' && isUnattendedAutomationResumeSessionSuffix(suffix)) {
-    lines.push(`- Ticket / knowledge changes (${content} tools) only work when a user allowed them for this run.`);
+    lines.push(
+      `- Ticket / knowledge / plan changes (${content} tools) only work when a user allowed them for this run.`,
+    );
   }
 
   return [

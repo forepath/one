@@ -24,7 +24,30 @@ Plan creation uses the **same composer context** as Send (`ContextInjectionPaylo
   - **Select context**
   - **Enhance prompt with AI**
   - an icon-only **Refine plan** submit action
-- The footer keeps terminal actions only (for example **Cancel plan**, icon-only **Execute plan**).
+- The footer keeps terminal actions only (for example **Cancel plan**, icon-only **Execute plan**) and **Open plan details**, which opens the plan on the plans page. The chat card has the same link as an icon button next to **View plan**.
+
+## Plans page
+
+The console page **Plans** (`/plans/:clientId?agentId=&openPlanId=`, sidebar between **Knowledge** and **Tasks**) lists every plan of one environment. It uses the same workspace picker as tickets, knowledge and tasks. Plans are agent specific, so one environment is always selected (filters drawer; the workspace's first environment by default).
+
+- **Search** (server-side, debounced) matches the plan title, the original request and the plan body. The **State** filter narrows to plans that are _not executed (editable)_ or _executed or in progress (read-only)_. The table pages server-side (newest first).
+- **Editing**: plans that never entered execution and are not being drafted (`ready`, `failed` or `cancelled`) are edited with the same markdown editor as knowledge pages and tickets (plus the title), saved explicitly with **Save** / **Discard changes**. The save is conditional on the version the user started from: if the agent refined the plan, another user saved, or execution started in between, it is refused (409) and the page offers **Load latest version**. Unsaved edits are never overwritten by live updates; a warning shows when the plan changed meanwhile.
+- **Read-only**: from the moment a plan enters `executing` for the first time (`chat_plan.execution_started_at`) it stays read-only for good, retries of a failed execution included. The page shows the executed version as rendered markdown. While the agent explores or refines, the content is locked as well.
+- **Refine with the agent**: ready plans can be refined from the page with the same `refineChatPlan` socket command as the chat modal (the stored context snapshot is reused). Unsaved edits must be saved or discarded first, because the agent refines the saved plan.
+- **Activity**: each plan has an activity log (`chat_plan_activity`): created, draft by agent, refinement requested (with the instructions), edited (fields), execution started (marked when it ran an edited version), executed, failed, cancelled, retry requested. Each row records the actor (user e-mail, agent or system).
+- **Open chat** jumps to the plan's chat session on the agent's chat page.
+
+### Plans as context
+
+Plans can be linked as context like tickets and knowledge pages (see [Agent Context MCP](../ai-agents/context-mcp.md#plans-as-context)):
+
+- **Users**: the chat composer's and plan refine's **Select context** modal has a _Plan context (this environment)_ picker (title or SHA; a plan never links itself when refining). The plans page shows each plan's reference (`plan:<short sha>`, copy button). Linked plans travel as `contextInjection.planShas`; the controller resolves them (user's workspace access, chat's environment only) into `planContexts` / `planContextRefs`.
+- **Agents**: `agenstra_context_search` / `_get` / `_request_access` accept `plan` / `plan:<sha>`, limited to the agent's own environment; `agenstra_content_plan_update` changes a plan that was not executed yet (asked in visible chats, opt-in for tasks, never for ticket automation).
+- Plan responses carry `shas: { short, long }` (`chat_plan.long_sha`).
+
+### Edited plans and execution
+
+User edits replace `chat_plan.plan_markdown`, the single source the orchestrator reads. Execute and refine read the plan **after** their conditional status transition, and edits are only accepted in editable statuses. So an execution always runs exactly the latest saved version; an edit saved a moment before execution starts is included, and one arriving after is refused. Execution runs in the plan's **visible chat** (`chatId`, not persisted as a user message via `suppressUserMessage`) with the chat's normal interactive permissions. The hidden `-plan-{id}` session stays explore-only and is used for explore / refine turns only. The execute prompt states that the plan below is the final version and supersedes every earlier draft. When a user edited the plan, the execute and refine prompts also state explicitly that earlier drafts must not be reintroduced or acted on.
 
 ## Phases (high level)
 
@@ -55,6 +78,7 @@ Source of truth is the controller `chat_plan` table (not chat message history). 
 ## HTTP and realtime
 
 - **REST** `GET /clients/{id}/agents/{agentId}/chats/{chatId}/plans`, `GET .../plans/{planId}`, `POST .../plans/{planId}/cancel` (OpenAPI operationIds `listChatPlans`, `getChatPlan`, `cancelChatPlan`)
+- **REST (plans page)** `GET /clients/{id}/agents/{agentId}/plans?search=&state=editable|readonly&limit=&offset=` (`listAgentChatPlans`, returns `{ items, total }`), `PATCH .../plans/{planId}` with `{ planMarkdown?, summary?, expectedUpdatedAt }` (`updateChatPlan`; 409 when stale, being drafted or executed), `GET .../plans/{planId}/activity` (`listChatPlanActivity`). Plan responses carry `editable`, `executionStartedAt`, `lastEditedAt` and `lastEditedByUserId`.
 - **WS (clients namespace, controller-handled)** `createChatPlan`, `refineChatPlan`, `executeChatPlan`, `cancelChatPlan`, `chatPlanUpsert`
 - Statistics kinds: `chat_plan_turn`, `chat_plan_execute`
 

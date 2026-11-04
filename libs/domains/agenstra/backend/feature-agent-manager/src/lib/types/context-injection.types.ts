@@ -16,5 +16,9 @@ export interface ContextInjectionPayload {
   ticketContextRefs?: Array<{ sha: string; title?: string }>;
   knowledgeShas?: string[];
   knowledgeContexts?: string[];
+  /** Plans of the agent's environment linked as context (controller-resolved, same order as `planContextRefs`). */
+  planShas?: string[];
+  planContexts?: string[];
+  planContextRefs?: Array<{ sha: string; title?: string }>;
   autoEnrichmentEnabled?: boolean;
 }

@@ -66,6 +66,14 @@ describe('resolveAgentChatToolDisplay', () => {
     expect(resolveAgentChatToolDisplay(' Agenstra-Handoff_Create ').label).toBe('Hand off task');
   });
 
+  it('maps the plan content tool with and without the server prefix', () => {
+    expect(resolveAgentChatToolDisplay('agenstra_content_plan_update')).toEqual({
+      label: 'Update plan',
+      icon: 'list-check',
+    });
+    expect(resolveAgentChatToolDisplay('content_plan_update')).toEqual({ label: 'Update plan', icon: 'list-check' });
+  });
+
   it('keeps unknown tools as reported', () => {
     expect(resolveAgentChatToolDisplay('github_create_issue')).toEqual({
       label: 'github_create_issue',

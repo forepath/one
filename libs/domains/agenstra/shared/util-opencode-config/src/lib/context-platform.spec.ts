@@ -96,4 +96,12 @@ describe('context-platform', () => {
     expect(isAgenstraPlanExplorePermission('agenstra_context_search')).toBe(true);
     expect(isAgenstraPlanWritePermission('agenstra_context_search')).toBe(false);
   });
+
+  describe('plan context refs', () => {
+    it('parses plan:<sha> refs like tickets and knowledge pages', () => {
+      expect(parseAgentContextRef('plan:ABCDEF12')).toEqual({ kind: 'plan', sha: 'abcdef12' });
+      expect(parseAgentContextRef('plan:abc')).toBeNull();
+      expect(parseAgentContextRef('plans:abcdef12')).toBeNull();
+    });
+  });
 });

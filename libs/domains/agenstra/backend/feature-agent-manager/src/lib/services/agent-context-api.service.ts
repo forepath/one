@@ -6,6 +6,7 @@ import {
   type AgentContextItemSummary,
   type AgentContextListResponse,
   type AgentContextSearchResponse,
+  type AgentContextElementKind,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import {
   BadRequestException,
@@ -36,7 +37,7 @@ import { AgentActiveTurnsService } from './agent-active-turns.service';
 import { AgentContextAccessService, type AgentContextAccessReply } from './agent-context-access.service';
 import { AgentContextTicketsService } from './agent-context-tickets.service';
 
-type ContentRef = { kind: 'ticket' | 'knowledge'; sha: string };
+type ContentRef = { kind: AgentContextElementKind; sha: string };
 
 /**
  * Runtime hooks provided by the agents gateway (registered on module init) so this service does
@@ -108,7 +109,7 @@ export class AgentContextApiService {
   async search(
     record: AgentContextTicketRecord,
     query: string | undefined,
-    kinds: Array<'ticket' | 'knowledge'> | undefined,
+    kinds: Array<AgentContextElementKind> | undefined,
     limit: number | undefined,
   ): Promise<AgentContextSearchResponse> {
     const boundedLimit = Math.min(Math.max(1, limit ?? 20), AGENT_CONTEXT_MAX_SEARCH_RESULTS);
@@ -129,7 +130,7 @@ export class AgentContextApiService {
     const ref = parseAgentContextRef(rawRef);
 
     if (!ref) {
-      throw new BadRequestException('ref must be item:<n>, ticket:<sha> or knowledge:<sha>');
+      throw new BadRequestException('ref must be item:<n>, ticket:<sha>, knowledge:<sha> or plan:<sha>');
     }
 
     if (ref.kind === 'item') {
@@ -331,7 +332,7 @@ export class AgentContextApiService {
 
   private parseContentRefs(rawRefs: string[]): ContentRef[] {
     if (!Array.isArray(rawRefs) || rawRefs.length === 0) {
-      throw new BadRequestException('refs must contain at least one ticket:<sha> or knowledge:<sha>');
+      throw new BadRequestException('refs must contain at least one ticket:<sha>, knowledge:<sha> or plan:<sha>');
     }
 
     if (rawRefs.length > AGENT_CONTEXT_MAX_REFS_PER_REQUEST) {
@@ -344,7 +345,9 @@ export class AgentContextApiService {
       const parsed = typeof raw === 'string' ? parseAgentContextRef(raw) : null;
 
       if (!parsed || parsed.kind === 'item') {
-        throw new BadRequestException(`Invalid ref '${String(raw)}' (expected ticket:<sha> or knowledge:<sha>)`);
+        throw new BadRequestException(
+          `Invalid ref '${String(raw)}' (expected ticket:<sha>, knowledge:<sha> or plan:<sha>)`,
+        );
       }
 
       refs.set(`${parsed.kind}:${parsed.sha}`, parsed);

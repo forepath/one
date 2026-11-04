@@ -373,7 +373,7 @@ paths:
           name: kinds
           schema:
             type: string
-          description: Comma-separated `ticket`, `knowledge`
+          description: Comma-separated `ticket`, `knowledge`, `plan` (plans of the authenticated agent only)
         - in: query
           name: limit
           schema:
@@ -2970,10 +2970,10 @@ components:
       properties:
         ref:
           type: string
-          description: '`item:<n>`, `ticket:<sha>` or `knowledge:<sha>`'
+          description: '`item:<n>`, `ticket:<sha>`, `knowledge:<sha>` or `plan:<sha>`'
         kind:
           type: string
-          enum: [ticket, knowledge, context]
+          enum: [ticket, knowledge, plan, context]
         title:
           type: string
         sha:

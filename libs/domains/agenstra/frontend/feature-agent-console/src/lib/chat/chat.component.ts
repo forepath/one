@@ -25,6 +25,7 @@ import {
   AgentsFacade,
   AgentsService,
   AuthenticationFacade,
+  ChatPlansService,
   ChatSessionsFacade,
   ChatTimelineFacade,
   ClientAgentAutonomyFacade,
@@ -368,6 +369,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly workspaceIsolationIndicatorLabel = getWorkspaceIsolationIndicatorLabel;
 
   readonly openTicketFromChatButtonLabel = $localize`:@@featureChat-openTicketFromAutomationCard:Open ticket`;
+  readonly openChatPlanDetailsLabel = $localize`:@@featureChat-openPlanDetails:Open plan details`;
   readonly chatPlanModalTitle = $localize`:@@featureChat-planModalTitle:Plan`;
   readonly chatPlanRefinePlaceholder = $localize`:@@featureChat-planRefinePlaceholder:Describe changes to the plan...`;
   readonly chatPlanRefineSubmitLabel = $localize`:@@featureChat-planRefineSubmit:Refine plan`;
@@ -398,6 +400,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly envFacade = inject(EnvFacade);
   private readonly workspaceConfigFacade = inject(WorkspaceConfigFacade);
   private readonly knowledgeFacade = inject(KnowledgeFacade);
+  private readonly chatPlansService = inject(ChatPlansService);
   private readonly autonomyFacade = inject(ClientAgentAutonomyFacade);
   private readonly deploymentsService = inject(DeploymentsService);
   private readonly agentsService = inject(AgentsService);
@@ -1001,6 +1004,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   selectedEnvironmentContextIds = signal<string[]>([]);
   selectedTicketContextShas = signal<string[]>([]);
   selectedKnowledgeContextShas = signal<string[]>([]);
+  /** Plans of the selected environment linked as context (plans are agent specific). */
+  selectedPlanContextShas = signal<string[]>([]);
   selectedAttachmentContexts = signal<ChatAttachmentDto[]>([]);
   readonly chatAttachmentDragActive = signal(false);
   private chatAttachmentDragDepth = 0;
@@ -1009,6 +1014,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   /** Keeps suggestion menu open while interacting (blur closes with delay for mousedown). */
   ticketContextSuggestionsOpen = signal<boolean>(false);
   knowledgeContextSuggestionsOpen = signal<boolean>(false);
+  planContextInput = signal<string>('');
+  planContextSuggestionsOpen = signal<boolean>(false);
+  /** Recent plans of the selected environment (loaded when "Select context" opens). */
+  readonly planContextOptions = signal<ChatPlanResponse[]>([]);
+  /** Titles of linked plans (chips keep their label when a plan is not among the loaded options). */
+  private readonly planContextTitles = signal<Record<string, string>>({});
   editorOpen = signal<boolean>(false);
   /** Workspace file editor root (`/app`). */
   fileManagerContext = signal<FileManagerContext>('app');
@@ -1525,6 +1536,27 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .slice(0, 20);
   });
 
+  /** Linkable plans: other plans of the environment (refining a plan never links the plan itself). */
+  readonly planContextSuggestions = computed(() => {
+    const q = this.planContextInput().trim().toLowerCase();
+    const excluded = this.contextSelectionReturnTarget() === 'planRefine' ? this.planDetailPlanId() : null;
+    const rows = this.planContextOptions().filter((plan) => !!plan.shas?.long && plan.id !== excluded);
+
+    if (!q) {
+      return rows.slice(0, 20);
+    }
+
+    return rows
+      .filter((plan) => {
+        const title = this.getChatPlanTitle(plan).toLowerCase();
+        const shortSha = plan.shas?.short?.toLowerCase() ?? '';
+        const longSha = plan.shas?.long?.toLowerCase() ?? '';
+
+        return title.includes(q) || shortSha.startsWith(q) || longSha.startsWith(q);
+      })
+      .slice(0, 20);
+  });
+
   private readonly agentsSnapshot = toSignal(this.agents$, {
     initialValue: [] as AgentResponseDto[],
   });
@@ -1589,6 +1621,22 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
       chips.push({
         trackKey: `knowledge:${longSha}`,
+        label: display,
+        title: display,
+      });
+    }
+
+    for (const rawSha of this.selectedPlanContextShas()) {
+      const longSha = rawSha.trim();
+
+      if (!longSha) {
+        continue;
+      }
+
+      const display = this.planContextChipDisplay(longSha);
+
+      chips.push({
+        trackKey: `plan:${longSha}`,
         label: display,
         title: display,
       });
@@ -3260,6 +3308,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             this.selectedEnvironmentContextIds.set(draft.contextInjection.selectedEnvironmentContextIds);
             this.selectedTicketContextShas.set(draft.contextInjection.selectedTicketContextShas ?? []);
             this.selectedKnowledgeContextShas.set(draft.contextInjection.selectedKnowledgeContextShas ?? []);
+            this.selectedPlanContextShas.set(draft.contextInjection.selectedPlanContextShas ?? []);
           }
 
           this.enhanceErrorMessage.set(null);
@@ -3835,6 +3884,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.planDetailModalOpen.set(true);
   }
 
+  /** Plans page (`/plans/:clientId`): search, edit (until executed) and the plan's activity log. */
+  openChatPlanDetailsPage(plan: Pick<ChatPlanResponse, 'id' | 'clientId' | 'agentId'>): void {
+    this.planDetailModalOpen.set(false);
+    void this.router.navigate(['/plans', plan.clientId], {
+      queryParams: { agentId: plan.agentId, openPlanId: plan.id },
+    });
+  }
+
   onClosePlanDetailModal(): void {
     this.planDetailContextSwapState.suspended = false;
     this.planDetailModalOpen.set(false);
@@ -4027,6 +4084,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (clientId) {
       this.ticketsFacade.loadTickets({ clientId });
       this.knowledgeFacade.loadTree(clientId);
+      this.loadPlanContextOptions(clientId);
     }
 
     this.contextSelectionReturnTarget.set(returnTarget);
@@ -4059,6 +4117,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.ticketContextSuggestionsOpen.set(false);
     this.knowledgeContextInput.set('');
     this.knowledgeContextSuggestionsOpen.set(false);
+    this.planContextInput.set('');
+    this.planContextSuggestionsOpen.set(false);
   }
 
   isEnvironmentContextSelected(environmentId: string): boolean {
@@ -4194,6 +4254,66 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.selectedKnowledgeContextShas.set(this.selectedKnowledgeContextShas().filter((sha) => sha !== longSha));
   }
 
+  onPlanContextInputChange(value: string): void {
+    this.planContextInput.set(value);
+    this.planContextSuggestionsOpen.set(value.trim().length > 0 && this.planContextSuggestions().length > 0);
+  }
+
+  onPlanContextSuggestionsOpenChange(open: boolean): void {
+    this.planContextSuggestionsOpen.set(
+      open && this.planContextInput().trim().length > 0 && this.planContextSuggestions().length > 0,
+    );
+  }
+
+  onPickPlanContextSuggestion(plan: ChatPlanResponse, event?: Event): void {
+    event?.preventDefault();
+
+    const longSha = plan.shas?.long;
+
+    if (longSha && plan.agentId === this.selectedAgentId()) {
+      if (!this.selectedPlanContextShas().includes(longSha)) {
+        this.selectedPlanContextShas.set([...this.selectedPlanContextShas(), longSha]);
+      }
+
+      this.planContextTitles.set({ ...this.planContextTitles(), [longSha]: this.getChatPlanTitle(plan) });
+    }
+
+    this.planContextInput.set('');
+    this.planContextSuggestionsOpen.set(false);
+  }
+
+  planContextChipDisplay(longSha: string): string {
+    const plan = this.planContextOptions().find((row) => row.shas?.long === longSha);
+    const title = plan ? this.getChatPlanTitle(plan) : this.planContextTitles()[longSha];
+
+    return title
+      ? $localize`:@@featureChat-planContextChip:Plan: ${title}:title: (${longSha.slice(0, 7)}:sha:)`
+      : $localize`:@@featureChat-planContextUnavailable:Unavailable plan (${longSha.slice(0, 7)}:sha:)`;
+  }
+
+  onRemovePlanContextSha(longSha: string): void {
+    this.selectedPlanContextShas.set(this.selectedPlanContextShas().filter((sha) => sha !== longSha));
+  }
+
+  /** Newest plans of the selected environment for the plan picker (server returns at most 100 per page). */
+  private loadPlanContextOptions(clientId: string): void {
+    const agentId = this.selectedAgentId();
+
+    if (!agentId) {
+      this.planContextOptions.set([]);
+
+      return;
+    }
+
+    this.chatPlansService
+      .listPlans(clientId, agentId, { limit: 100, offset: 0 })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ items }) => this.planContextOptions.set(items),
+        error: () => this.planContextOptions.set([]),
+      });
+  }
+
   private buildContextInjection(agentId: string):
     | {
         includeWorkspace?: boolean;
@@ -4201,6 +4321,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         attachmentIds?: string[];
         ticketShas?: string[];
         knowledgeShas?: string[];
+        planShas?: string[];
         autoEnrichmentEnabled?: boolean;
       }
     | undefined {
@@ -4224,6 +4345,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           .filter((sha) => sha),
       ),
     ];
+    const planShas = [
+      ...new Set(
+        this.selectedPlanContextShas()
+          .map((sha) => sha.trim())
+          .filter((sha) => sha),
+      ),
+    ];
     const attachmentIds = [
       ...new Set(
         this.selectedAttachmentContexts()
@@ -4238,12 +4366,21 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       environmentIds.length === 0 &&
       attachmentIds.length === 0 &&
       ticketShas.length === 0 &&
-      knowledgeShas.length === 0
+      knowledgeShas.length === 0 &&
+      planShas.length === 0
     ) {
       return undefined;
     }
 
-    return { includeWorkspace, environmentIds, attachmentIds, ticketShas, knowledgeShas, autoEnrichmentEnabled };
+    return {
+      includeWorkspace,
+      environmentIds,
+      attachmentIds,
+      ticketShas,
+      knowledgeShas,
+      ...(planShas.length ? { planShas } : {}),
+      autoEnrichmentEnabled,
+    };
   }
 
   onConnectSocket(): void {

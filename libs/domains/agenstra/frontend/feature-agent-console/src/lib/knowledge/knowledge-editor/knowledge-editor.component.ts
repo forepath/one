@@ -55,6 +55,14 @@ export class KnowledgeEditorComponent implements AfterViewInit, OnChanges, OnDes
     await this.destroyEditor();
   }
 
+  /**
+   * The editor's markdown right now. `markdownChange` is debounced by the listener plugin, so an explicit save
+   * (plans page) reads the content here instead of relying on the last emitted value. `null` before the editor exists.
+   */
+  getMarkdown(): string | null {
+    return this.crepe ? this.crepe.getMarkdown() : null;
+  }
+
   private async initEditor(initialValue = this.markdown): Promise<void> {
     if (this.destroyRef.destroyed) return;
 

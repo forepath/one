@@ -1,4 +1,7 @@
-import type { AgentContextAccessDecision } from '@forepath/agenstra/shared/util-opencode-config';
+import type {
+  AgentContextAccessDecision,
+  AgentContextElementKind,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 
@@ -13,7 +16,7 @@ export interface AgentContextAccessRequestRecord {
   id: string;
   agentId: string;
   ticket: string;
-  refs: Array<{ kind: 'ticket' | 'knowledge'; sha: string }>;
+  refs: Array<{ kind: AgentContextElementKind; sha: string }>;
   reason?: string;
   decision: AgentContextAccessDecision;
   reply?: AgentContextAccessReply;

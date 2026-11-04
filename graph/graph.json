@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-03T20:11:42.547Z",
+  "generatedAt": "2026-11-04T09:04:36.423Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -3973,6 +3973,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/chat-plans.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/chat-plans.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/chat-sessions.service.ts",
       "type": "service",
       "attrs": {
@@ -4149,6 +4158,24 @@
           "agents.reducer.ts",
           "agents.selectors.ts",
           "agents.types.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/chat-plans",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/chat-plans",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "chat-plans",
+        "memberFiles": [
+          "chat-plans.actions.ts",
+          "chat-plans.effects.ts",
+          "chat-plans.facade.ts",
+          "chat-plans.reducer.ts",
+          "chat-plans.selectors.ts",
+          "chat-plans.types.ts"
         ]
       }
     },
@@ -5134,6 +5161,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-activity-response.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-activity-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-chat-event.dto.ts",
       "type": "dto",
       "attrs": {
@@ -5147,6 +5183,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/update-chat-plan.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/update-chat-plan.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5606,6 +5651,15 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/atlassian-site-connection.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/chat-plan-activity.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/chat-plan-activity.entity.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6353,6 +6407,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/autonomous-run-orchestrator.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-activity.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-activity.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -17344,6 +17407,17 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/plans",
+        "operationId": "listAgentChatPlans",
+        "summary": "List the chat plans of an agent (plans page)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}",
       "type": "endpoint",
       "attrs": {
@@ -17351,6 +17425,28 @@
         "pathOrChannel": "/clients/{id}/agents/{agentId}/plans/{planId}",
         "operationId": "getChatPlan",
         "summary": "Get a chat plan by id",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PATCH:/clients/{id}/agents/{agentId}/plans/{planId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PATCH",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/plans/{planId}",
+        "operationId": "updateChatPlan",
+        "summary": "Edit a chat plan that has not been executed yet",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}/activity",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/plans/{planId}/activity",
+        "operationId": "listChatPlanActivity",
+        "summary": "Activity log of a chat plan",
         "specKind": "openapi"
       }
     },
@@ -27305,6 +27401,16 @@
         "title": "Console UX",
         "docPath": "docs/agenstra/features/chat-plan-mode.md",
         "sectionAnchor": "console-ux",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-plans-page",
+      "type": "concept",
+      "attrs": {
+        "title": "Plans page",
+        "docPath": "docs/agenstra/features/chat-plan-mode.md",
+        "sectionAnchor": "plans-page",
         "domain": "agenstra"
       }
     },
@@ -39007,6 +39113,11 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/chat-plans.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/chat-sessions.service.ts",
       "type": "contains"
     },
@@ -39093,6 +39204,11 @@
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agents",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/chat-plans",
       "type": "contains"
     },
     {
@@ -39527,12 +39643,22 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-activity-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-chat-event.dto.ts",
       "type": "contains"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/update-chat-plan.dto.ts",
       "type": "contains"
     },
     {
@@ -39788,6 +39914,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/atlassian-site-connection.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/chat-plan-activity.entity.ts",
       "type": "contains"
     },
     {
@@ -40203,6 +40334,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/autonomous-run-orchestrator.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-activity.service.ts",
       "type": "contains"
     },
     {
@@ -45392,7 +45528,22 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PATCH:/clients/{id}/agents/{agentId}/plans/{planId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}/activity",
       "type": "contains"
     },
     {
@@ -50993,6 +51144,11 @@
     {
       "from": "file:docs/agenstra/features/chat-plan-mode.md",
       "to": "concept:agenstra-console-ux",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/chat-plan-mode.md",
+      "to": "concept:agenstra-plans-page",
       "type": "contains"
     },
     {
@@ -56917,12 +57073,42 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:PATCH:/clients/{id}/agents/{agentId}/plans/{planId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:PATCH:/clients/{id}/agents/{agentId}/plans/{planId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}/activity",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}/activity",
       "type": "implements"
     },
     {
@@ -64746,6 +64932,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-content-changes.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
       "type": "injects"
@@ -64758,6 +64949,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-content-changes.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
       "type": "injects"
     },
     {
@@ -64901,6 +65097,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-activity.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-chat-sync.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-realtime.service.ts",
       "type": "injects"
@@ -64926,6 +65127,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-orchestrator.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-activity.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "injects"
@@ -64938,6 +65144,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-chat-sync.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-activity.service.ts",
       "type": "injects"
     },
     {
@@ -70442,6 +70653,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-activity.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-orchestrator.service.ts",
       "type": "provides"
     },
@@ -74693,6 +74909,11 @@
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agents",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agents.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/chat-plans",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/chat-plans.service.ts",
       "type": "contains"
     },
     {
@@ -85382,6 +85603,11 @@
     },
     {
       "from": "concept:agenstra-console-ux",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-plans-page",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

@@ -3,6 +3,7 @@ import type {
   AgentContentChangeSource,
   AgentContentControllerChange,
   AgentContextItemKind,
+  AgentContextElementKind,
 } from '@forepath/agenstra/shared/util-opencode-config';
 
 /**
@@ -41,6 +42,8 @@ export interface AgentContextEnvironmentRef {
 export interface AgentContextGrants {
   ticket: string[];
   knowledge: string[];
+  /** Plans of the agent's own environment (the controller never serves other environments' plans). */
+  plan: string[];
 }
 
 export interface AgentContextTicketBinding {
@@ -84,24 +87,24 @@ export type AgentContextControllerRequest =
       op: 'search';
       agentId: string;
       query?: string;
-      kinds?: Array<'ticket' | 'knowledge'>;
+      kinds?: Array<AgentContextElementKind>;
       limit?: number;
     }
   | {
       op: 'describe';
       agentId: string;
-      refs: Array<{ kind: 'ticket' | 'knowledge'; sha: string }>;
+      refs: Array<{ kind: AgentContextElementKind; sha: string }>;
     }
   | {
       op: 'content';
       agentId: string;
-      refs: Array<{ kind: 'ticket' | 'knowledge'; sha: string }>;
+      refs: Array<{ kind: AgentContextElementKind; sha: string }>;
     }
   /** Of `refs`, the tickets in the same ticket tree as one of the `anchors` (scoped automatic grants). */
   | {
       op: 'scope';
       agentId: string;
-      refs: Array<{ kind: 'ticket' | 'knowledge'; sha: string }>;
+      refs: Array<{ kind: AgentContextElementKind; sha: string }>;
       anchors: string[];
     }
   /** Apply one content change (refs resolved to full SHAs); the controller checks the source's opt-in. */
@@ -113,7 +116,7 @@ export type AgentContextControllerRequest =
     };
 
 export interface AgentContextControllerMetadata {
-  kind: 'ticket' | 'knowledge';
+  kind: AgentContextElementKind;
   sha: string;
   title: string;
   status?: string;
@@ -124,7 +127,7 @@ export interface AgentContextControllerMetadata {
 }
 
 export interface AgentContextControllerContent {
-  kind: 'ticket' | 'knowledge';
+  kind: AgentContextElementKind;
   sha: string;
   title: string;
   /** Element version (`updatedAt`), passed back with content changes. */

@@ -112,7 +112,7 @@ Known OpenCode tools (`bash`, `read`, `glob`, `grep`, `edit`, `write`, `apply_pa
 ### Sending a Message
 
 1. Type your message in the input field
-2. Optional: add **Select context** references (workspace, environments, tickets, knowledge) or use **Enhance prompt with AI**
+2. Optional: add **Select context** references (workspace, environments, tickets, knowledge, plans of this environment) or use **Enhance prompt with AI**
 3. Optional: use **Create plan with AI** to open the explore/refine plan workflow for the current prompt and selected context
 4. Press Enter or click Send
 5. Message is sent to the agent via WebSocket (`forward` → `chat`, with the active `chatId` when applicable)

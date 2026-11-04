@@ -44,11 +44,30 @@ export function buildRefinePromptPreamble(): string {
   );
 }
 
-export function buildRefinePrompt(refineMessage: string, currentPlanMarkdown?: string | null): string {
-  const planSection =
-    currentPlanMarkdown && currentPlanMarkdown.trim() ? `Current plan draft:\n${currentPlanMarkdown.trim()}\n\n` : '';
+export interface ChatPlanPromptOptions {
+  /** A workspace user edited the plan on the plans page after the agent drafted it. */
+  editedByUser?: boolean;
+}
 
-  return `${buildRefinePromptPreamble()}${planSection}` + `Refine instructions:\n${refineMessage.trim()}\n`;
+/**
+ * Note for turns after a user edit: the hidden session still holds the agent's earlier drafts, which the stored plan
+ * replaced.
+ */
+export const CHAT_PLAN_USER_EDIT_NOTE =
+  'The user edited this plan directly after it was drafted. The plan below is the authoritative version: it ' +
+  'replaces every earlier draft. Do not reintroduce or act on steps, files or decisions from earlier drafts that ' +
+  'are not part of it.';
+
+export function buildRefinePrompt(
+  refineMessage: string,
+  currentPlanMarkdown?: string | null,
+  options: ChatPlanPromptOptions = {},
+): string {
+  const plan = currentPlanMarkdown?.trim() ?? '';
+  const editNote = plan && options.editedByUser ? `${CHAT_PLAN_USER_EDIT_NOTE}\n\n` : '';
+  const planSection = plan ? `Current plan draft:\n${plan}\n\n` : '';
+
+  return `${buildRefinePromptPreamble()}${editNote}${planSection}` + `Refine instructions:\n${refineMessage.trim()}\n`;
 }
 
 /**
@@ -75,12 +94,29 @@ export function buildPlanRepairPrompt(currentPlanMarkdown?: string | null): stri
 export const CHAT_PLAN_EXECUTE_PROMPT_PREFIX =
   'Implement the following plan in the repository. Stay scoped to the plan below.';
 
+/** Always part of the execute prompt: only the stored (latest saved) plan may be implemented. */
+export const CHAT_PLAN_EXECUTE_AUTHORITATIVE_NOTE =
+  'The plan below is the final version saved for execution. It supersedes every earlier draft of this plan; ' +
+  'implement only what it contains.';
+
 /**
  * Wrapper sent to the agent when the user executes a ready plan.
- * Execution stays in the hidden plan session; UI observes progress through the plan card/modal.
+ * Execution runs in the plan's visible chat (normal permissions; the prompt itself is not shown as a user message).
+ * Earlier drafts may be known to the agent (chat history, plan cards), so the prompt states that the stored plan is
+ * the only version to implement (and calls out user edits made on the plans page explicitly).
  */
-export function buildExecutePrompt(planMarkdown: string, sourcePrompt?: string | null): string {
+export function buildExecutePrompt(
+  planMarkdown: string,
+  sourcePrompt?: string | null,
+  options: ChatPlanPromptOptions = {},
+): string {
   const requestSection = sourcePrompt && sourcePrompt.trim() ? `Original request:\n${sourcePrompt.trim()}\n\n` : '';
+  const editNote = options.editedByUser ? ` ${CHAT_PLAN_USER_EDIT_NOTE}` : '';
 
-  return `${CHAT_PLAN_EXECUTE_PROMPT_PREFIX}\n\n` + `${requestSection}` + `## Plan\n\n${planMarkdown.trim()}\n`;
+  return (
+    `${CHAT_PLAN_EXECUTE_PROMPT_PREFIX}\n\n` +
+    `${CHAT_PLAN_EXECUTE_AUTHORITATIVE_NOTE}${editNote}\n\n` +
+    `${requestSection}` +
+    `## Plan\n\n${planMarkdown.trim()}\n`
+  );
 }

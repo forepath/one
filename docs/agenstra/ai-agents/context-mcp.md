@@ -1,6 +1,6 @@
 # Agent Context MCP
 
-Chat prompts no longer carry the full text of referenced tickets and knowledge pages. The agent-manager adds a short
+Chat prompts no longer carry the full text of referenced tickets, knowledge pages and linked chat plans. The agent-manager adds a short
 hint (titles, sizes, refs and a **context ticket**) and the agent reads what it needs through the platform-managed
 `agenstra` MCP server that ships in the worker image.
 
@@ -14,7 +14,7 @@ sequenceDiagram
     participant O as OpenCode (worker)
     participant X as agenstra MCP (worker)
 
-    U->>C: chat + contextInjection (ticket / knowledge refs)
+    U->>C: chat + contextInjection (ticket / knowledge / plan refs)
     C->>C: auto-enrichment, resolve granted bodies
     C->>M: chat (bodies + refs over the existing socket)
     M->>M: mint context ticket (agent + chat bound), store items
@@ -30,12 +30,12 @@ sequenceDiagram
 
 ## Tools
 
-| Tool                              | Purpose                                                                        |
-| --------------------------------- | ------------------------------------------------------------------------------ |
-| `agenstra_context_list`           | Items granted for this prompt, attachments, workspace and environment mounts   |
-| `agenstra_context_search`         | Metadata of workspace tickets / knowledge (title, SHA, status, parent, size)   |
-| `agenstra_context_get`            | Full content of `item:<n>` or a granted `ticket:<sha>` / `knowledge:<sha>`     |
-| `agenstra_context_request_access` | Ask for refs that are not granted yet (returns `granted`, `denied`, `pending`) |
+| Tool                              | Purpose                                                                         |
+| --------------------------------- | ------------------------------------------------------------------------------- |
+| `agenstra_context_list`           | Items granted for this prompt, attachments, workspace and environment mounts    |
+| `agenstra_context_search`         | Metadata of workspace tickets / knowledge and of the agent's own plans          |
+| `agenstra_context_get`            | Full content of `item:<n>` or a granted `ticket:` / `knowledge:` / `plan:<sha>` |
+| `agenstra_context_request_access` | Ask for refs that are not granted yet (returns `granted`, `denied`, `pending`)  |
 
 Metadata is always searchable; content of elements that were not part of the prompt requires an access request.
 `agenstra_context_get` also returns the element's full `sha` and its `revision` (version), which content changes pass
@@ -47,9 +47,19 @@ same agent token, forwarded to the controller as `agentTaskRequest`). See [Agent
 `agenstra_handoff_*` tools hand tasks over to other agents of the same workspace (`/api/agent-context/handoffs`,
 forwarded as `agentHandoffRequest`). See [Agent handoffs](../features/agent-handoffs.md).
 
+### Plans as context
+
+Chat plans are a third context kind (`plan:<sha>`, sha1 of the plan id like tickets and knowledge nodes). Plans are
+**agent specific**: the console links only plans of the chat's environment ("Select context" → _Plan context_), and the
+controller serves search / describe / content only for plans of the requesting agent (the manager sends the
+authenticated `agentId` with every request) — plans of other environments are indistinguishable from missing ones.
+Plan content states the status and whether execution started (then read-only), the original request and the plan
+markdown. Plans are never auto-enriched.
+
 ## Content changes
 
-`agenstra_content_*` tools create, change, comment on and delete tickets and knowledge pages. They take the same
+`agenstra_content_*` tools create, change, comment on and delete tickets and knowledge pages, and update plans of the
+agent's environment that were not executed yet. They take the same
 context ticket and are routed `POST /api/agent-context/tickets/:ticket/changes` (manager) → `agentContextRequest`
 with `op: 'change'` (controller).
 
@@ -62,6 +72,7 @@ with `op: 'change'` (controller).
 | `agenstra_content_page_create`    | New knowledge page or folder, optionally in a readable folder |
 | `agenstra_content_page_update`    | Title and / or content of a readable page (`revision`)        |
 | `agenstra_content_page_delete`    | Delete a readable page or empty folder (`revision`)           |
+| `agenstra_content_plan_update`    | Title and / or markdown of a readable, not executed plan      |
 | `agenstra_content_change_status`  | Keep waiting on a `pending` change (`requestId`)              |
 
 The tools deliberately do not share the `agenstra_context_*` prefix: plan sessions allow (and auto-answer) that prefix
@@ -92,6 +103,11 @@ as read-only explore tools, so content tools stay denied there.
   working) or the automation (exactly one working run of the agent, operation allowed, target in the tree) when it
   applies the change. The manager only forwards the session's source, never agent input.
 - At most 50 changes per context ticket (turn).
+- **Plans keep the plans-page rules.** `plan.update` only applies to plans of the agent's own environment that never
+  entered execution and are not being drafted (`ready`, `failed`, `cancelled`), conditional on `revision` — the same
+  conditional write as a user edit, so an execution always runs exactly the latest saved version and executed plans
+  stay read-only. The edit is logged as _Edited_ by the agent in the plan's activity. Tasks need the explicit
+  `plan.update` opt-in; ticket automation can never be allowed it.
 
 ## Access decisions
 

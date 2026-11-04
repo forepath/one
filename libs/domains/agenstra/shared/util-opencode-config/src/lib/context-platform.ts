@@ -2,7 +2,7 @@ import type { JsonObject } from './types';
 
 /**
  * Platform-managed MCP server inside every worker that serves prompt context on demand
- * (tickets, knowledge, attachments) instead of inlining it into the prompt.
+ * (tickets, knowledge, chat plans of the agent's environment, attachments) instead of inlining it into the prompt.
  *
  * OpenCode names MCP tools `<server>_<tool>`, so the agent sees `agenstra_context_*`.
  */
@@ -40,11 +40,20 @@ export const AGENSTRA_CONTEXT_API_ROUTE = 'agent-context';
 /** Tool calls may long-poll while a user decides on an access request. */
 export const AGENSTRA_CONTEXT_MCP_TIMEOUT_MS = 180_000;
 
-export type AgentContextItemKind = 'ticket' | 'knowledge' | 'context';
+export type AgentContextItemKind = 'ticket' | 'knowledge' | 'plan' | 'context';
+
+/** Element kinds addressable by SHA (`<kind>:<sha>` refs, grants, search). Plans are scoped to the agent's environment. */
+export const AGENT_CONTEXT_ELEMENT_KINDS = ['ticket', 'knowledge', 'plan'] as const;
+
+export type AgentContextElementKind = (typeof AGENT_CONTEXT_ELEMENT_KINDS)[number];
+
+export function isAgentContextElementKind(value: unknown): value is AgentContextElementKind {
+  return typeof value === 'string' && (AGENT_CONTEXT_ELEMENT_KINDS as readonly string[]).includes(value);
+}
 
 /** Metadata about one context element. Content is only served for granted refs. */
 export interface AgentContextItemSummary {
-  /** Stable ref usable with `context_get`: `ticket:<sha>`, `knowledge:<sha>` or `item:<n>`. */
+  /** Stable ref usable with `context_get`: `ticket:<sha>`, `knowledge:<sha>`, `plan:<sha>` or `item:<n>`. */
   ref: string;
   kind: AgentContextItemKind;
   title: string;
@@ -83,9 +92,9 @@ export interface AgentContextGetResponse {
   ref: string;
   kind: AgentContextItemKind;
   title: string;
-  /** Full SHA of tickets / knowledge elements (target of `agenstra_content_*` changes). */
+  /** Full SHA of tickets / knowledge elements / plans (target of `agenstra_content_*` changes). */
   sha?: string;
-  /** Version of a ticket / knowledge element; content changes pass it back (`revision`). */
+  /** Version of a ticket / knowledge element / plan; content changes pass it back (`revision`). */
   revision?: string;
   content: string;
 }
@@ -99,12 +108,12 @@ export interface AgentContextAccessResponse {
   message?: string;
 }
 
-const REF_PATTERN = /^(ticket|knowledge):([0-9a-f]{4,40})$|^item:(\d{1,4})$/i;
+const REF_PATTERN = /^(ticket|knowledge|plan):([0-9a-f]{4,40})$|^item:(\d{1,4})$/i;
 
 /** Parse a context ref. SHAs are normalized to lower case; unknown shapes return null. */
 export function parseAgentContextRef(
   raw: string,
-): { kind: 'ticket' | 'knowledge'; sha: string } | { kind: 'item'; index: number } | null {
+): { kind: AgentContextElementKind; sha: string } | { kind: 'item'; index: number } | null {
   const match = REF_PATTERN.exec(raw.trim());
 
   if (!match) {
@@ -115,7 +124,7 @@ export function parseAgentContextRef(
     return { kind: 'item', index: Number.parseInt(match[3], 10) };
   }
 
-  return { kind: match[1].toLowerCase() as 'ticket' | 'knowledge', sha: match[2].toLowerCase() };
+  return { kind: match[1].toLowerCase() as AgentContextElementKind, sha: match[2].toLowerCase() };
 }
 
 /** True when two SHAs refer to the same element (full SHA vs. short prefix, min 4 chars). */

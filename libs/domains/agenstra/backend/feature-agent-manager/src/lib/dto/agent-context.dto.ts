@@ -1,9 +1,13 @@
+import {
+  isAgentContextElementKind,
+  type AgentContextElementKind,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { BadRequestException } from '@nestjs/common';
 
 /** Query of GET /agent-context/tickets/:ticket/search (raw strings; normalized by {@link parseAgentContextSearchQuery}). */
 export interface AgentContextSearchQueryDto {
   query?: string;
-  /** Comma-separated: `ticket`, `knowledge`. */
+  /** Comma-separated: `ticket`, `knowledge`, `plan`. */
   kinds?: string | string[];
   limit?: string;
 }
@@ -22,7 +26,7 @@ const MAX_REASON_LENGTH = 1000;
  */
 export function parseAgentContextSearchQuery(raw: AgentContextSearchQueryDto | undefined): {
   query?: string;
-  kinds?: Array<'ticket' | 'knowledge'>;
+  kinds?: Array<AgentContextElementKind>;
   limit?: number;
 } {
   const query = typeof raw?.query === 'string' ? raw.query.trim().slice(0, MAX_QUERY_LENGTH) : undefined;
@@ -30,11 +34,11 @@ export function parseAgentContextSearchQuery(raw: AgentContextSearchQueryDto | u
     .flatMap((value) => String(value).split(','))
     .map((value) => value.trim().toLowerCase())
     .filter((value) => value.length > 0);
-  const kinds: Array<'ticket' | 'knowledge'> = [];
+  const kinds: Array<AgentContextElementKind> = [];
 
   for (const value of kindValues) {
-    if (value !== 'ticket' && value !== 'knowledge') {
-      throw new BadRequestException(`Unknown kind '${value}' (expected ticket or knowledge)`);
+    if (!isAgentContextElementKind(value)) {
+      throw new BadRequestException(`Unknown kind '${value}' (expected ticket, knowledge or plan)`);
     }
 
     if (!kinds.includes(value)) {

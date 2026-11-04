@@ -9026,6 +9026,334 @@
         <source>Leave empty to keep current</source>
         <target>Leer lassen, um den aktuellen Wert zu behalten</target>
       </trans-unit>
+      <trans-unit id="featureAgentConsole-plansTitle" datatype="html">
+        <source>Plans :: Agenstra</source>
+        <target>Pläne :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureChat-openPlanDetails" datatype="html">
+        <source>Open plan details</source>
+        <target>Plandetails öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-activityCancelled" datatype="html">
+        <source>Cancelled</source>
+        <target>Abgebrochen</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-activityContentUpdated" datatype="html">
+        <source>Edited</source>
+        <target>Bearbeitet</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-activityCreated" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-activityDraftUpdated" datatype="html">
+        <source>Draft by agent</source>
+        <target>Entwurf vom Agenten</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-activityExecuted" datatype="html">
+        <source>Executed</source>
+        <target>Ausgeführt</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-activityExecutionStarted" datatype="html">
+        <source>Execution started</source>
+        <target>Ausführung gestartet</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-activityFailed" datatype="html">
+        <source>Failed</source>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-activityHeading" datatype="html">
+        <source>Activity</source>
+        <target>Aktivität</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-activityRefineRequested" datatype="html">
+        <source>Refinement requested</source>
+        <target>Überarbeitung angefordert</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-activityRetryRequested" datatype="html">
+        <source>Retry requested</source>
+        <target>Wiederholung angefordert</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-activityUnknown" datatype="html">
+        <source>Unknown activity</source>
+        <target>Unbekannte Aktivität</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-actorAgent" datatype="html">
+        <source>Agent</source>
+        <target>Agent</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-actorSystem" datatype="html">
+        <source>System</source>
+        <target>System</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-actorUser" datatype="html">
+        <source>User</source>
+        <target>Benutzer</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-backToPlans" datatype="html">
+        <source>Back to plans</source>
+        <target>Zurück zu den Plänen</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-changedWhileEditing" datatype="html">
+        <source>This plan changed after you started editing. Saving is refused until you load the latest version.</source>
+        <target>Dieser Plan wurde geändert, nachdem Sie mit der Bearbeitung begonnen haben. Speichern ist erst nach dem Laden der neuesten Version möglich.</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-chooseWorkspace" datatype="html">
+        <source> Choose workspace... </source>
+        <target> Workspace auswählen... </target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-colActivityAction" datatype="html">
+        <source>Action</source>
+        <target>Aktion</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-colActivityActor" datatype="html">
+        <source>Actor</source>
+        <target>Ausgeführt von</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-colActivityDetails" datatype="html">
+        <source>Details</source>
+        <target>Details</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-colActivityTime" datatype="html">
+        <source>Time</source>
+        <target>Zeit</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-colCreated" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-colEdited" datatype="html">
+        <source>Last edited</source>
+        <target>Zuletzt bearbeitet</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-colPlan" datatype="html">
+        <source>Plan</source>
+        <target>Plan</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-colState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-created" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-discard" datatype="html">
+        <source>Discard changes</source>
+        <target>Änderungen verwerfen</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-draftingHint" datatype="html">
+        <source>The agent is working on this plan. You can edit it once the draft is ready.</source>
+        <target>Der Agent arbeitet an diesem Plan. Sie können ihn bearbeiten, sobald der Entwurf bereit ist.</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-environment" datatype="html">
+        <source>Environment</source>
+        <target>Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-environmentFilterLabel" datatype="html">
+        <source>Environment</source>
+        <target>Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-executedEditedVersion" datatype="html">
+        <source>Edited version</source>
+        <target>Bearbeitete Version</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-executedHint" datatype="html">
+        <source>This plan has been executed and is read-only. The version below is what the agent implemented.</source>
+        <target>Dieser Plan wurde ausgeführt und ist schreibgeschützt. Die folgende Version hat der Agent umgesetzt.</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-executionStarted" datatype="html">
+        <source>Execution started</source>
+        <target>Ausführung gestartet</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-fieldPlan" datatype="html">
+        <source>Plan</source>
+        <target>Plan</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-fieldTitle" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-goToSpaces" datatype="html">
+        <source> Go to workspaces </source>
+        <target> Zu den Workspaces </target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-lastEdited" datatype="html">
+        <source>Last edited</source>
+        <target>Zuletzt bearbeitet</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-loadingPlan" datatype="html">
+        <source>Loading plan…</source>
+        <target>Plan wird geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-model" datatype="html">
+        <source>Model</source>
+        <target>Modell</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-noEnvironments" datatype="html">
+        <source>This workspace has no environments yet</source>
+        <target>Dieser Workspace hat noch keine Umgebungen</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-noMarkdown" datatype="html">
+        <source>No plan content yet.</source>
+        <target>Noch kein Planinhalt.</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-noPlans" datatype="html">
+        <source>No plans yet</source>
+        <target>Noch keine Pläne</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-noPlansHint" datatype="html">
+        <source> Use Plan in the chat of this environment to let the agent draft a plan. </source>
+        <target> Nutzen Sie „Plan“ im Chat dieser Umgebung, damit der Agent einen Plan entwirft. </target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-noWorkspaceSelected" datatype="html">
+        <source>No workspace selected yet</source>
+        <target>Noch kein Workspace ausgewählt</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-noWorkspaces" datatype="html">
+        <source>No workspaces yet</source>
+        <target>Noch keine Workspaces</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-openChat" datatype="html">
+        <source>Open chat</source>
+        <target>Chat öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-planHeading" datatype="html">
+        <source>Plan</source>
+        <target>Plan</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-plansTable" datatype="html">
+        <source>Plans</source>
+        <target>Pläne</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-readOnlyBadge" datatype="html">
+        <source>Read-only</source>
+        <target>Schreibgeschützt</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-refineHeading" datatype="html">
+        <source>Refine with the agent</source>
+        <target>Mit dem Agenten überarbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-refinePlaceholder" datatype="html">
+        <source>Describe how the agent should change the plan…</source>
+        <target>Beschreiben Sie, wie der Agent den Plan ändern soll…</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-refineSaveFirst" datatype="html">
+        <source>Save or discard your changes first: the agent refines the saved plan.</source>
+        <target>Speichern oder verwerfen Sie zuerst Ihre Änderungen: Der Agent überarbeitet den gespeicherten Plan.</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-refineTitle" datatype="html">
+        <source>Refine plan</source>
+        <target>Plan überarbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-refreshTitle" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-reloadLatest" datatype="html">
+        <source>Load latest version</source>
+        <target>Neueste Version laden</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-requestHeading" datatype="html">
+        <source>Original request</source>
+        <target>Ursprüngliche Anfrage</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-searchPlans" datatype="html">
+        <source>Search plans</source>
+        <target>Pläne durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-selectPlan" datatype="html">
+        <source>Select a plan to view, edit or refine it</source>
+        <target>Wählen Sie einen Plan aus, um ihn anzusehen, zu bearbeiten oder zu überarbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-stateAll" datatype="html">
+        <source>All plans</source>
+        <target>Alle Pläne</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-stateEditable" datatype="html">
+        <source>Not executed (editable)</source>
+        <target>Nicht ausgeführt (bearbeitbar)</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-stateFilterLabel" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-stateReadonly" datatype="html">
+        <source>Executed or in progress (read-only)</source>
+        <target>Ausgeführt oder in Arbeit (schreibgeschützt)</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-switchWorkspaceModalTitle" datatype="html">
+        <source>Switch workspace</source>
+        <target>Workspace wechseln</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-switchWorkspaceTitle" datatype="html">
+        <source>Switch workspace</source>
+        <target>Workspace wechseln</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-title" datatype="html">
+        <source>Plans</source>
+        <target>Pläne</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-titleLabel" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-unsaved" datatype="html">
+        <source>Unsaved changes</source>
+        <target>Ungespeicherte Änderungen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-plans" datatype="html">
+        <source>Plans</source>
+        <target>Pläne</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-plansTitle" datatype="html">
+        <source>Plans</source>
+        <target>Pläne</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planContextChip" datatype="html">
+        <source>Plan: <x id="title" equiv-text="title"/> (<x id="sha" equiv-text="longSha.slice(0, 7)"/>)</source>
+        <target>Plan: <x id="title" equiv-text="title"/> (<x id="sha" equiv-text="longSha.slice(0, 7)"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planContextHint" datatype="html">
+        <source>Plans are environment specific. Executed plans are linked as read-only history.</source>
+        <target>Pläne gehören zu einer Umgebung. Ausgeführte Pläne werden als schreibgeschützter Verlauf verknüpft.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planContextLabel" datatype="html">
+        <source>Plan context (this environment)</source>
+        <target>Plan-Kontext (diese Umgebung)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planContextPlaceholder" datatype="html">
+        <source>Title or short/long SHA</source>
+        <target>Titel oder kurze/lange SHA</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planContextUnavailable" datatype="html">
+        <source>Unavailable plan (<x id="sha" equiv-text="longSha.slice(0, 7)"/>)</source>
+        <target>Plan nicht verfügbar (<x id="sha" equiv-text="longSha.slice(0, 7)"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-removePlanContext" datatype="html">
+        <source>Remove plan context</source>
+        <target>Plan-Kontext entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentPlanUpdate" datatype="html">
+        <source>Update plan</source>
+        <target>Plan aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-copyReference" datatype="html">
+        <source>Copy context reference</source>
+        <target>Kontextreferenz kopieren</target>
+      </trans-unit>
+      <trans-unit id="featureChatPlans-reference" datatype="html">
+        <source>Context reference</source>
+        <target>Kontextreferenz</target>
+      </trans-unit>
+      <trans-unit id="featureContentWrites-planUpdate" datatype="html">
+        <source>Update plans that were not executed yet</source>
+        <target>Noch nicht ausgeführte Pläne aktualisieren</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

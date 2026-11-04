@@ -113,6 +113,17 @@
         <span class="small" i18n="@@featureContainer-pages">Knowledge</span>
       </a>
       <a
+        [routerLink]="plansSidebarLink()"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="sidebar__item"
+        i18n-title="@@featureContainer-plansTitle"
+        title="Plans"
+      >
+        <i class="bi bi-list-check me-1"></i>
+        <span class="small" i18n="@@featureContainer-plans">Plans</span>
+      </a>
+      <a
         [routerLink]="tasksSidebarLink()"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"

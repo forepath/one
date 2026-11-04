@@ -31,6 +31,8 @@ export class PromptContextComposerService {
     const ticketContexts = (contextInjection.ticketContexts ?? []).filter((ctx) => ctx.trim().length > 0);
     const knowledgeShas = (contextInjection.knowledgeShas ?? []).filter((sha) => sha.trim().length > 0);
     const knowledgeContexts = (contextInjection.knowledgeContexts ?? []).filter((ctx) => ctx.trim().length > 0);
+    const planShas = (contextInjection.planShas ?? []).filter((sha) => sha.trim().length > 0);
+    const planContexts = (contextInjection.planContexts ?? []).filter((ctx) => ctx.trim().length > 0);
     const attachmentContexts = (contextInjection.attachmentContexts ?? []).filter(
       (attachment) => attachment.agentPath?.trim().length > 0,
     );
@@ -46,6 +48,10 @@ export class PromptContextComposerService {
     if (contextTicket) {
       if (knowledgeShas.length > 0) {
         lines.push(`- Relevant knowledge references for context: ${knowledgeShas.join(', ')}`);
+      }
+
+      if (planShas.length > 0) {
+        lines.push(`- Relevant plan references for context: ${planShas.join(', ')}`);
       }
 
       lines.push(...buildAgentContextHintLines(contextTicket));
@@ -69,6 +75,15 @@ export class PromptContextComposerService {
 
       for (const [index, context] of knowledgeContexts.entries()) {
         lines.push(`Knowledge context #${index + 1}:`);
+        lines.push(context.trim());
+      }
+    }
+
+    if (!contextTicket && planContexts.length > 0) {
+      lines.push('- Linked plans of this environment (executed plans are read-only history) are provided below:');
+
+      for (const [index, context] of planContexts.entries()) {
+        lines.push(`Plan context #${index + 1}:`);
         lines.push(context.trim());
       }
     }

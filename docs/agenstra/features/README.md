@@ -16,7 +16,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Web IDE** Monaco Editor integration for code editing
 - **Chat Interface** AI chat functionality with real-time responses
 - **[File attachments](./file-attachments.md)** Attach/download files on tickets, knowledge pages, and chat context with read-only agent mirroring
-- **[Chat plan mode](./chat-plan-mode.md)** Explore-only OpenCode planning with refine and execute-into-chat
+- **[Chat plan mode](./chat-plan-mode.md)** Explore-only OpenCode planning with refine and execute-into-chat; a searchable **Plans** page edits plans until they run
 - **[Agent tasks](./agent-tasks.md)** Recurring, cron-scheduled agent prompts managed in the console or by the agent itself
 - **[Agent handoffs](./agent-handoffs.md)** Agents hand tasks to other agents of the same workspace and always get a response back
 - **Deployment** CI/CD pipeline management and deployment functionality
@@ -148,6 +148,7 @@ Explore-only OpenCode planning from the composer: live chat-scoped cards, refine
 - Explore-only hidden `-plan-*` sessions
 - Chat-scoped hydrate across hard reload
 - Execute plan into the current chat
+- Plans page: search, edit until executed (read-only afterwards), refine and activity log
 
 ### [Deployment](./deployment.md)
 

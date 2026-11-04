@@ -54,7 +54,7 @@ function contentWritesNotice(operations: string[] | undefined): string[] {
   }
 
   return [
-    `A user approved that this task may make these ticket / knowledge changes with the agenstra_content_* tools: ` +
+    `A user approved that this task may make these ticket / knowledge / plan changes with the agenstra_content_* tools: ` +
       `${operations.join(', ')}. Changes of existing elements need access to them (context_get returns the revision).`,
   ];
 }

@@ -169,6 +169,12 @@ export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined):
         label: $localize`:@@featureChat-toolDisplayContentPageDelete:Delete knowledge page`,
         icon: 'file-earmark-x',
       };
+    case 'agenstra_content_plan_update':
+    case 'content_plan_update':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContentPlanUpdate:Update plan`,
+        icon: 'list-check',
+      };
     case 'agenstra_content_change_status':
     case 'content_change_status':
       return {

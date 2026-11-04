@@ -29,7 +29,7 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
   {
     name: AGENSTRA_CONTEXT_MCP_TOOL_NAMES.list,
     description:
-      'List the context granted for this request: context items (tickets, knowledge pages, excerpts) with titles and ' +
+      'List the context granted for this request: context items (tickets, knowledge pages, plans, excerpts) with titles and ' +
       'sizes, mounted attachments, workspace and environment mounts. Content is read with context_get.',
     inputSchema: {
       type: 'object',
@@ -41,8 +41,9 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
   {
     name: AGENSTRA_CONTEXT_MCP_TOOL_NAMES.search,
     description:
-      'Search workspace tickets and knowledge pages by title or SHA. Returns metadata only (ref, title, status, ' +
-      'parent, size, granted). Read granted refs with context_get; request others with context_request_access.',
+      'Search workspace tickets and knowledge pages, and the chat plans of your own environment, by title or SHA ' +
+      '(plans also by request / plan text). Returns metadata only (ref, title, status, parent, size, granted). ' +
+      'Read granted refs with context_get; request others with context_request_access.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -50,8 +51,8 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
         query: { type: 'string', description: 'Title fragment or SHA prefix. Omit to list recent elements.' },
         kinds: {
           type: 'array',
-          items: { type: 'string', enum: ['ticket', 'knowledge'] },
-          description: 'Restrict to tickets and/or knowledge pages.',
+          items: { type: 'string', enum: ['ticket', 'knowledge', 'plan'] },
+          description: 'Restrict to tickets, knowledge pages and/or plans.',
         },
         limit: { type: 'integer', minimum: 1, maximum: 50, description: 'Max results (default 20).' },
       },
@@ -63,13 +64,13 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
     name: AGENSTRA_CONTEXT_MCP_TOOL_NAMES.get,
     description:
       'Read the full content of a context element: "item:<n>" from the prompt hint / context_list, or a granted ' +
-      '"ticket:<sha>" / "knowledge:<sha>". Reading by "ticket:<sha>" / "knowledge:<sha>" also returns the ' +
-      'revision that agenstra_content_* updates and deletes need.',
+      '"ticket:<sha>" / "knowledge:<sha>" / "plan:<sha>". Reading by SHA also returns the revision that ' +
+      'agenstra_content_* updates and deletes need. Plans state whether they were executed (read-only).',
     inputSchema: {
       type: 'object',
       properties: {
         ticket: TICKET_PROPERTY,
-        ref: { type: 'string', description: 'item:<n>, ticket:<sha> or knowledge:<sha>.' },
+        ref: { type: 'string', description: 'item:<n>, ticket:<sha>, knowledge:<sha> or plan:<sha>.' },
       },
       required: ['ticket', 'ref'],
       additionalProperties: false,
@@ -78,7 +79,7 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
   {
     name: AGENSTRA_CONTEXT_MCP_TOOL_NAMES.requestAccess,
     description:
-      'Ask for access to tickets / knowledge pages that are not granted yet (refs from context_search). The user ' +
+      'Ask for access to tickets / knowledge pages / plans that are not granted yet (refs from context_search). The user ' +
       'may be asked to approve; unattended sessions decide automatically. If the result is "pending", call again ' +
       'with the returned requestId to keep waiting.',
     inputSchema: {
@@ -89,7 +90,7 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
           type: 'array',
           items: { type: 'string' },
           maxItems: 20,
-          description: 'ticket:<sha> / knowledge:<sha> refs to request.',
+          description: 'ticket:<sha> / knowledge:<sha> / plan:<sha> refs to request.',
         },
         reason: { type: 'string', description: 'Why the content is needed (shown to the user).' },
         requestId: { type: 'string', description: 'Continue waiting on a pending request instead of creating one.' },
@@ -148,7 +149,7 @@ export async function callContextTool(
         const ref = stringArg(args, 'ref');
 
         if (!ref) {
-          return text('Missing "ref" (item:<n>, ticket:<sha> or knowledge:<sha>).', true);
+          return text('Missing "ref" (item:<n>, ticket:<sha>, knowledge:<sha> or plan:<sha>).', true);
         }
 
         const item = await client.get(ticket, ref);

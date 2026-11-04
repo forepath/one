@@ -782,6 +782,24 @@ components:
                 description: Optional knowledge page/folder SHA references for prompt enrichment.
                 items:
                   type: string
+              planShas:
+                type: array
+                description: Optional plan SHA references (plans of this agent's environment, resolved by the controller).
+                items:
+                  type: string
+              planContexts:
+                type: array
+                description: Controller-resolved plan sections (served as `plan` context items; inlined without MCP).
+                items:
+                  type: string
+              planContextRefs:
+                type: array
+                description: sha / title per `planContexts` entry (same order).
+                items:
+                  type: object
+                  properties:
+                    sha: { type: string }
+                    title: { type: string }
               attachmentIds:
                 type: array
                 description: Optional attachment ids uploaded by the controller for read-only mirroring into `/opt/agenstra/context/...`.
@@ -946,6 +964,10 @@ components:
                 type: array
                 items:
                   type: string
+              planShas:
+                type: array
+                items:
+                  type: string
               attachmentIds:
                 type: array
                 items:
@@ -1037,6 +1059,10 @@ components:
                 items:
                   type: string
               knowledgeShas:
+                type: array
+                items:
+                  type: string
+              planShas:
                 type: array
                 items:
                   type: string

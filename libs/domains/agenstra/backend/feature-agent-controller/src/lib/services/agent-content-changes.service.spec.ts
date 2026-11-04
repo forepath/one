@@ -44,7 +44,18 @@ describe('AgentContentChangesService', () => {
   let credentials: any;
   let ticketsService: any;
   let knowledgeTreeService: any;
+  let chatPlanService: any;
   let service: AgentContentChangesService;
+  const planSha = 'd'.repeat(40);
+  const plan = {
+    id: 'plan-1',
+    clientId,
+    agentId,
+    summary: 'Login plan',
+    sourcePrompt: 'Build login',
+    longSha: planSha,
+    updatedAt: new Date(revision),
+  };
 
   const handle = (change: Record<string, unknown>, source: Record<string, unknown> = { kind: 'chat' }) =>
     service.handle(clientId, agentId, change, source);
@@ -82,6 +93,12 @@ describe('AgentContentChangesService', () => {
       addComment: jest.fn().mockResolvedValue({}),
       remove: jest.fn().mockResolvedValue(undefined),
     };
+    chatPlanService = {
+      findForAgentBySha: jest.fn(async (_c: string, a: string, sha: string) =>
+        a === agentId && sha === planSha ? plan : null,
+      ),
+      updateForAgent: jest.fn(async () => ({ ...plan, updatedAt: new Date('2026-11-03T11:00:00.000Z') })),
+    };
     knowledgeTreeService = {
       createNode: jest.fn().mockResolvedValue({ id: 'new-page' }),
       updateNode: jest.fn().mockResolvedValue({}),
@@ -97,6 +114,7 @@ describe('AgentContentChangesService', () => {
       credentials,
       ticketsService,
       knowledgeTreeService,
+      chatPlanService,
     );
   });
 
@@ -288,6 +306,55 @@ describe('AgentContentChangesService', () => {
     ).resolves.toMatchObject({
       ok: false,
       status: 403,
+    });
+  });
+
+  describe('plan.update', () => {
+    it('updates a plan of the agent through the plan service (same edit rules) and reports the new revision', async () => {
+      await expect(
+        handle({ operation: 'plan.update', sha: planSha, revision, content: '# v2', title: 'Login v2' }),
+      ).resolves.toEqual({
+        ok: true,
+        changed: { kind: 'plan', sha: planSha, title: 'Login plan', revision: '2026-11-03T11:00:00.000Z' },
+      });
+
+      const [writer, sha, input] = chatPlanService.updateForAgent.mock.calls[0];
+
+      expect(isAgentContentWriter(writer)).toBe(true);
+      expect(writer).toMatchObject({ clientId, agentId, source: 'chat' });
+      expect(sha).toBe(planSha);
+      expect(input).toEqual({ revision, content: '# v2', title: 'Login v2' });
+    });
+
+    it('never changes plans that changed since the agent read them', async () => {
+      await expect(
+        handle({ operation: 'plan.update', sha: planSha, revision: '2026-01-01T00:00:00.000Z', content: '# v2' }),
+      ).resolves.toMatchObject({ ok: false, status: 409 });
+      expect(chatPlanService.updateForAgent).not.toHaveBeenCalled();
+    });
+
+    it('does not reach plans of other environments', async () => {
+      chatPlanService.findForAgentBySha.mockResolvedValueOnce(null);
+
+      await expect(
+        handle({ operation: 'plan.update', sha: planSha, revision, content: '# v2' }),
+      ).resolves.toMatchObject({ ok: false, status: 404 });
+    });
+
+    it('needs the explicit plan.update opt-in for task runs and is never allowed for ticket automation', async () => {
+      await expect(
+        handle({ operation: 'plan.update', sha: planSha, revision, content: '# v2' }, { kind: 'task', taskId }),
+      ).resolves.toMatchObject({ ok: false, status: 403 });
+
+      taskRepo.findOne.mockResolvedValue({ id: taskId, approvedAt: new Date(), allowedContentWrites: ['plan.update'] });
+      await expect(
+        handle({ operation: 'plan.update', sha: planSha, revision, content: '# v2' }, { kind: 'task', taskId }),
+      ).resolves.toMatchObject({ ok: true });
+
+      automationRepo.findOne.mockResolvedValue({ ticketId: 'root', allowedContentWrites: ['plan.update'] });
+      await expect(
+        handle({ operation: 'plan.update', sha: planSha, revision, content: '# v2' }, { kind: 'automation' }),
+      ).resolves.toMatchObject({ ok: false, status: 403 });
     });
   });
 });

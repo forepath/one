@@ -60,6 +60,7 @@ import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity'
 import { AgentTaskRunEntity } from '../entities/agent-task-run.entity';
 import { AgentTaskEntity } from '../entities/agent-task.entity';
 import { AgentHandoffEntity } from '../entities/agent-handoff.entity';
+import { ChatPlanActivityEntity } from '../entities/chat-plan-activity.entity';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
 import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
 import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
@@ -148,6 +149,7 @@ import { AgentTasksService } from '../services/agent-tasks.service';
 import { AgentHandoffRequestHandlerService } from '../services/agent-handoff-request-handler.service';
 import { AgentHandoffRunnerService } from '../services/agent-handoff-runner.service';
 import { AgentHandoffsService } from '../services/agent-handoffs.service';
+import { ChatPlanActivityService } from '../services/chat-plan-activity.service';
 import { ChatPlanChatSyncService } from '../services/chat-plan-chat-sync.service';
 import { ChatPlanOrchestratorService } from '../services/chat-plan-orchestrator.service';
 import { ChatPlanRealtimeService } from '../services/chat-plan-realtime.service';
@@ -188,6 +190,7 @@ const authMethod = getAuthenticationMethod();
       TicketAutomationLeaseEntity,
       TicketAutomationRunStepEntity,
       ChatPlanEntity,
+      ChatPlanActivityEntity,
       AgentTaskEntity,
       AgentTaskRunEntity,
       AgentHandoffEntity,
@@ -271,6 +274,7 @@ const authMethod = getAuthenticationMethod();
     LocalEmbeddingProvider,
     TicketAutomationService,
     ChatPlanService,
+    ChatPlanActivityService,
     ChatPlanOrchestratorService,
     ClientAgentAutonomyService,
     RemoteAgentsSessionService,

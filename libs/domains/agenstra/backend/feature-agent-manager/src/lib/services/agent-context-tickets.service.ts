@@ -1,4 +1,8 @@
-import { agentContextShaMatches } from '@forepath/agenstra/shared/util-opencode-config';
+import {
+  agentContextShaMatches,
+  isAgentContextElementKind,
+  type AgentContextElementKind,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 
@@ -68,6 +72,10 @@ export class AgentContextTicketsService {
           ...(input.grants?.knowledge ?? []),
           ...input.items.filter((i) => i.kind === 'knowledge' && i.sha).map((i) => i.sha as string),
         ]),
+        plan: normalizeShas([
+          ...(input.grants?.plan ?? []),
+          ...input.items.filter((i) => i.kind === 'plan' && i.sha).map((i) => i.sha as string),
+        ]),
       },
       attachments: input.attachments ?? [],
       scopeAnchors: [],
@@ -113,12 +121,12 @@ export class AgentContextTicketsService {
     return record;
   }
 
-  isGranted(record: AgentContextTicketRecord, kind: 'ticket' | 'knowledge', sha: string): boolean {
+  isGranted(record: AgentContextTicketRecord, kind: AgentContextElementKind, sha: string): boolean {
     return this.matchingGrants(record, kind, sha).length > 0;
   }
 
   /** Granted SHAs compatible with `sha` (content is always fetched by the granted SHA, never by the agent's ref). */
-  matchingGrants(record: AgentContextTicketRecord, kind: 'ticket' | 'knowledge', sha: string): string[] {
+  matchingGrants(record: AgentContextTicketRecord, kind: AgentContextElementKind, sha: string): string[] {
     const session = this.sessionGrants.get(this.sessionGrantKey(record.agentId, record.sessionKey));
     const pool = new Set([...record.grants[kind], ...(session?.[kind] ?? [])]);
 
@@ -128,7 +136,7 @@ export class AgentContextTicketsService {
   /** Grant refs for this ticket only (`once`) or for the whole chat session (`session`). */
   grant(
     record: AgentContextTicketRecord,
-    refs: Array<{ kind: 'ticket' | 'knowledge'; sha: string }>,
+    refs: Array<{ kind: AgentContextElementKind; sha: string }>,
     scope: 'once' | 'session',
   ): void {
     const target: AgentContextGrants =
@@ -164,14 +172,14 @@ export class AgentContextTicketsService {
   }
 
   /** An element created by a content change of this ticket: readable (and changeable) for the rest of the turn. */
-  rememberCreated(record: AgentContextTicketRecord, kind: 'ticket' | 'knowledge', sha: string): void {
+  rememberCreated(record: AgentContextTicketRecord, kind: AgentContextElementKind, sha: string): void {
     const normalized = sha.trim().toLowerCase();
 
     record.createdRefs = Array.from(new Set([...record.createdRefs, `${kind}:${normalized}`]));
     this.grant(record, [{ kind, sha: normalized }], 'once');
   }
 
-  isCreated(record: AgentContextTicketRecord, kind: 'ticket' | 'knowledge', sha: string): boolean {
+  isCreated(record: AgentContextTicketRecord, kind: AgentContextElementKind, sha: string): boolean {
     return record.createdRefs.some((ref) => {
       const [refKind, refSha] = ref.split(':');
 
@@ -180,7 +188,7 @@ export class AgentContextTicketsService {
   }
 
   /** Content of a changed element is stale: the next read by SHA fetches it again (item refs keep the prompt's). */
-  invalidateItem(record: AgentContextTicketRecord, kind: 'ticket' | 'knowledge', sha: string): void {
+  invalidateItem(record: AgentContextTicketRecord, kind: AgentContextElementKind, sha: string): void {
     for (const item of record.items) {
       if (item.kind === kind && item.sha && agentContextShaMatches(item.sha, sha)) {
         item.revision = undefined;
@@ -195,7 +203,7 @@ export class AgentContextTicketsService {
 
   findItemBySha(
     record: AgentContextTicketRecord,
-    kind: 'ticket' | 'knowledge',
+    kind: AgentContextElementKind,
     sha: string,
   ): AgentContextStoredItem | undefined {
     return record.items.find((item) => item.kind === kind && item.sha && agentContextShaMatches(item.sha, sha));
@@ -206,7 +214,7 @@ export class AgentContextTicketsService {
    * refreshes the cached element (pre-granted prompt content, or content changed since) under its existing index.
    */
   rememberItem(record: AgentContextTicketRecord, item: Omit<AgentContextStoredItem, 'index'>): AgentContextStoredItem {
-    if (item.sha && (item.kind === 'ticket' || item.kind === 'knowledge')) {
+    if (item.sha && isAgentContextElementKind(item.kind)) {
       const existing = this.findItemBySha(record, item.kind, item.sha);
 
       if (existing) {
@@ -253,7 +261,7 @@ export class AgentContextTicketsService {
     let grants = this.sessionGrants.get(key);
 
     if (!grants) {
-      grants = { ticket: [], knowledge: [], lastUsedAt: Date.now() };
+      grants = { ticket: [], knowledge: [], plan: [], lastUsedAt: Date.now() };
       this.sessionGrants.set(key, grants);
     }
 

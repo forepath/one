@@ -137,6 +137,11 @@ export class AgentConsoleContainerComponent implements OnInit {
     { initialValue: ['/knowledge'] },
   );
 
+  readonly plansSidebarLink = toSignal(
+    this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/plans', id] : ['/plans']))),
+    { initialValue: ['/plans'] },
+  );
+
   readonly tasksSidebarLink = toSignal(
     this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/tasks', id] : ['/tasks']))),
     { initialValue: ['/tasks'] },
@@ -257,6 +262,7 @@ export class AgentConsoleContainerComponent implements OnInit {
       path.includes('/tickets') ||
       path.includes('/imports') ||
       path.includes('/knowledge') ||
+      path.includes('/plans') ||
       path.includes('/tasks') ||
       path.includes('/agent-config') ||
       path.includes('/settings/tokens') ||
