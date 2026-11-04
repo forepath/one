@@ -139,6 +139,10 @@ interface ContextInjectionPayload {
   ticketContextRefs?: Array<{ sha: string; title?: string }>;
   knowledgeShas?: string[];
   knowledgeContexts?: string[];
+  /** Plans of the chat's environment linked as context (resolved by the controller, agent specific). */
+  planShas?: string[];
+  planContexts?: string[];
+  planContextRefs?: Array<{ sha: string; title?: string }>;
   autoEnrichmentEnabled?: boolean;
 }
 
@@ -1154,6 +1158,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         autoEnrichmentEnabled?: boolean;
         ticketShas?: string[];
         knowledgeShas?: string[];
+        planShas?: string[];
       };
     },
     @ConnectedSocket() socket: Socket,
@@ -1222,6 +1227,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         autoEnrichmentEnabled?: boolean;
         ticketShas?: string[];
         knowledgeShas?: string[];
+        planShas?: string[];
       };
     },
     @ConnectedSocket() socket: Socket,
@@ -1267,7 +1273,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         contextInjection = enrichedPayload.contextInjection ?? data.contextInjection;
       }
 
-      this.chatPlanOrchestrator.startRefine(planId, message, contextInjection);
+      this.chatPlanOrchestrator.startRefine(planId, message, contextInjection, this.socketUserId(socket));
       socket.emit('forwardAck', { received: true, event: CLIENT_CHAT_PLAN_EVENTS.refineChatPlan, planId });
     } catch (error: unknown) {
       socket.emit('error', { message: 'Plan not found' });
@@ -1304,7 +1310,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         return;
       }
 
-      this.chatPlanOrchestrator.startExecute(planId, data.correlationId);
+      this.chatPlanOrchestrator.startExecute(planId, data.correlationId, this.socketUserId(socket));
       socket.emit('forwardAck', { received: true, event: CLIENT_CHAT_PLAN_EVENTS.executeChatPlan, planId });
     } catch (error: unknown) {
       socket.emit('error', { message: 'Plan not found' });
@@ -1341,7 +1347,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         return;
       }
 
-      this.chatPlanOrchestrator.startRetry(planId, data.correlationId);
+      this.chatPlanOrchestrator.startRetry(planId, data.correlationId, this.socketUserId(socket));
       socket.emit('forwardAck', { received: true, event: CLIENT_CHAT_PLAN_EVENTS.retryChatPlan, planId });
     } catch (error: unknown) {
       socket.emit('error', { message: 'Plan not found' });
@@ -1791,8 +1797,33 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       new Set((resolvedContextInjection.knowledgeShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
     );
 
-    if (ticketShas.length === 0 && knowledgeShas.length === 0 && attachmentIds.length === 0) {
+    const planShas = Array.from(
+      new Set(
+        (resolvedContextInjection.planShas ?? [])
+          .map((sha) => sha.trim().toLowerCase())
+          .filter((sha) => /^[0-9a-f]{4,40}$/.test(sha)),
+      ),
+    );
+
+    if (ticketShas.length === 0 && knowledgeShas.length === 0 && planShas.length === 0 && attachmentIds.length === 0) {
       return payload;
+    }
+
+    // Plans are agent specific: only plans of the chat's environment resolve (with the user's workspace access).
+    let planContexts: string[] = [];
+    let planContextRefs: NonNullable<ContextInjectionPayload['planContextRefs']> = [];
+
+    if (agentId && planShas.length > 0) {
+      try {
+        const resolved = await this.chatPlanService.collectPromptContextsByShas(clientId, agentId, planShas, req);
+
+        planContexts = resolved.promptSections;
+        planContextRefs = resolved.refs;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        this.logger.warn(`Failed to resolve plan context for client ${clientId}: ${message}`);
+      }
     }
 
     let knowledgeContexts: string[] = [];
@@ -1848,6 +1879,9 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         ticketContexts,
         ticketContextRefs,
         knowledgeShas,
+        planShas: planContextRefs.map((ref) => ref.sha),
+        planContexts,
+        planContextRefs,
         knowledgeContexts: Array.from(
           new Set(
             [...knowledgeContexts, ...(resolvedContextInjection.knowledgeContexts ?? [])]
@@ -1957,6 +1991,11 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
       this.logger.warn(`Agent task chat hydrate failed for agent ${agentId}: ${message}`);
     });
+  }
+
+  /** Authenticated console user of a socket (activity attribution), `null` for API-key sockets. */
+  private socketUserId(socket: Socket): string | null {
+    return (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo?.userId ?? null;
   }
 
   private scheduleChatPlanHydrate(socket: Socket, clientId: string, agentId: string): void {

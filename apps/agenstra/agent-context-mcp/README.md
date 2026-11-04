@@ -4,7 +4,7 @@ Platform-managed MCP server (stdio) shipped in the worker image (`ghcr.io/forepa
 `/opt/agenstra/mcp/agenstra-context-mcp.cjs`. OpenCode starts it as the `agenstra` MCP server; the agent-manager
 registers it during OpenCode config sync.
 
-Prompts only carry hints and a context ticket; this server reads tickets / knowledge from the agent-manager context API
+Prompts only carry hints and a context ticket; this server reads tickets / knowledge / plans (of the agent's own environment) from the agent-manager context API
 (`/api/agent-context/*`). See [Agent Context MCP](../../../docs/agenstra/ai-agents/context-mcp.md).
 
 It also serves `tasks_*` tools (`agenstra_tasks_*` in OpenCode) for the agent's own recurring tasks

@@ -117,6 +117,19 @@ export const CONTENT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
     ['ref', 'revision'],
   ),
   tool(
+    AGENSTRA_CONTENT_MCP_TOOL_NAMES.planUpdate,
+    'Change title and/or plan markdown of a chat plan of your environment you may read (ref "plan:<sha>"). Only ' +
+      'plans that were never executed can change (executed plans are read-only); the saved version is exactly what ' +
+      'runs when the plan is executed. Pass the full new plan as content; only the given fields change.',
+    {
+      ref: { type: 'string', description: 'plan:<sha>.' },
+      revision: REVISION_PROPERTY,
+      title: TITLE_PROPERTY,
+      content: CONTENT_PROPERTY,
+    },
+    ['ref', 'revision'],
+  ),
+  tool(
     AGENSTRA_CONTENT_MCP_TOOL_NAMES.pageDelete,
     'Delete a knowledge page or empty folder you may read (ref "knowledge:<sha>").',
     { ref: { type: 'string', description: 'knowledge:<sha>.' }, revision: REVISION_PROPERTY },

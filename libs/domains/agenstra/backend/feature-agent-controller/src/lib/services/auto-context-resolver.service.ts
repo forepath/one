@@ -27,6 +27,8 @@ interface ContextInjectionPayload {
   ticketContexts?: string[];
   knowledgeShas?: string[];
   knowledgeContexts?: string[];
+  /** Passed through unchanged (plans are resolved by the gateway, never auto-enriched). */
+  planShas?: string[];
   autoEnrichmentEnabled?: boolean;
 }
 

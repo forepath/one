@@ -158,6 +158,8 @@ export interface ContextInjectionPayload {
   attachmentContexts?: ChatAttachmentDto[];
   ticketShas?: string[];
   knowledgeShas?: string[];
+  /** Plans of the chat's environment linked as context (resolved by the controller; agent specific). */
+  planShas?: string[];
   autoEnrichmentEnabled?: boolean;
 }
 
@@ -482,6 +484,8 @@ export type ChatPlanPhase = 'explore' | 'draft' | 'refine' | 'ready';
 /** REST / WS plan aggregate (dates are ISO-8601 strings on the wire). */
 export interface ChatPlanResponse {
   id: string;
+  /** Context reference (`plan:<sha>`) for chat context selection and the agent's context tools. */
+  shas?: { short: string; long: string } | null;
   clientId: string;
   agentId: string;
   chatId: string;
@@ -499,6 +503,13 @@ export interface ChatPlanResponse {
   createdByUserId: string | null;
   startedAt: string;
   finishedAt: string | null;
+  /** First entry into `executing`; once set the plan is read-only. */
+  executionStartedAt?: string | null;
+  /** Last content edit by a workspace user (plans page). */
+  lastEditedAt?: string | null;
+  lastEditedByUserId?: string | null;
+  /** Workspace users may edit the plan (plans page): never executed and not being drafted by the agent. */
+  editable?: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -64,6 +64,7 @@ import {
   agentTaskUpsertReceived,
 } from '../agent-tasks/agent-tasks.actions';
 import type { AgentTaskRemovedEvent, AgentTaskResponseDto } from '../agent-tasks/agent-tasks.types';
+import { chatPlanUpsertReceived } from '../chat-plans/chat-plans.actions';
 import {
   connectSocket,
   connectSocketFailure,
@@ -674,6 +675,11 @@ export const routeForwardedEvents$ = createEffect(
 
         if (event === CLIENT_CHAT_PLAN_SOCKET_EVENT && payload && typeof payload === 'object') {
           routed.push(chatTimelinePlanUpsert({ payload: payload as ChatPlanChatEventPayload }));
+
+          // Plans page (`/plans`): live status / content of listed and opened plans.
+          if ((payload as ChatPlanChatEventPayload).plan) {
+            routed.push(chatPlanUpsertReceived({ plan: (payload as ChatPlanChatEventPayload).plan }));
+          }
         }
 
         if (event === CLIENT_CHAT_AGENT_TASK_SOCKET_EVENT && payload && typeof payload === 'object') {

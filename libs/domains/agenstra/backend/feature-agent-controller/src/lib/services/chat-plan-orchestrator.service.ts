@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 
 import type { ChatPlanContextInjectionJson } from '../entities/chat-plan.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
-import { ChatPlanFailureCode, ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
+import { ChatPlanActionType, ChatPlanFailureCode, ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
 import {
   buildExecutePrompt,
   buildExplorePrompt,
@@ -16,12 +16,20 @@ import {
   type AgenstraPlanTurnStatusPayload,
 } from '../utils/chat-plan-turn-status';
 
+import {
+  CHAT_PLAN_AGENT_ACTOR,
+  CHAT_PLAN_SYSTEM_ACTOR,
+  ChatPlanActivityService,
+  chatPlanUserActor,
+} from './chat-plan-activity.service';
 import { ChatPlanChatSyncService } from './chat-plan-chat-sync.service';
 import { ChatPlanService } from './chat-plan.service';
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
 
 const UPSERT_THROTTLE_MS = 350;
 const PLAN_TURN_REPAIR_ATTEMPTS = 2;
+/** Refine instructions kept in the activity log. */
+const ACTIVITY_INSTRUCTIONS_MAX_LENGTH = 2000;
 
 const STREAMING_STATUSES: readonly ChatPlanStatus[] = [
   ChatPlanStatus.PENDING,
@@ -38,6 +46,7 @@ export class ChatPlanOrchestratorService {
     private readonly chatPlanService: ChatPlanService,
     private readonly chatPlanChatSync: ChatPlanChatSyncService,
     private readonly remoteAgents: RemoteAgentsSessionService,
+    private readonly chatPlanActivity: ChatPlanActivityService,
   ) {}
 
   /**
@@ -53,20 +62,25 @@ export class ChatPlanOrchestratorService {
    * @param contextInjection Optional replacement snapshot; when set it is persisted on the plan and reused by
    * subsequent refine/execute turns.
    */
-  startRefine(planId: string, refineMessage: string, contextInjection?: ChatPlanContextInjectionJson): void {
-    void this.runRefine(planId, refineMessage, contextInjection).catch((err) => {
+  startRefine(
+    planId: string,
+    refineMessage: string,
+    contextInjection?: ChatPlanContextInjectionJson,
+    actorUserId?: string | null,
+  ): void {
+    void this.runRefine(planId, refineMessage, contextInjection, actorUserId).catch((err) => {
       this.logger.warn(`startRefine failed for ${planId}: ${(err as Error).message}`);
     });
   }
 
-  startExecute(planId: string, correlationId?: string): void {
-    void this.runExecute(planId, correlationId).catch((err) => {
+  startExecute(planId: string, correlationId?: string, actorUserId?: string | null): void {
+    void this.runExecute(planId, correlationId, actorUserId).catch((err) => {
       this.logger.warn(`startExecute failed for ${planId}: ${(err as Error).message}`);
     });
   }
 
-  startRetry(planId: string, correlationId?: string): void {
-    void this.runRetry(planId, correlationId).catch((err) => {
+  startRetry(planId: string, correlationId?: string, actorUserId?: string | null): void {
+    void this.runRetry(planId, correlationId, actorUserId).catch((err) => {
       this.logger.warn(`startRetry failed for ${planId}: ${(err as Error).message}`);
     });
   }
@@ -90,7 +104,7 @@ export class ChatPlanOrchestratorService {
   }
 
   private async failPlan(planId: string, code: ChatPlanFailureCode, message: string): Promise<void> {
-    await this.chatPlanService.updateIfStatus(
+    const failed = await this.chatPlanService.updateIfStatus(
       planId,
       [
         ChatPlanStatus.PENDING,
@@ -106,6 +120,10 @@ export class ChatPlanOrchestratorService {
         failureMessage: message,
       },
     );
+
+    if (failed) {
+      await this.chatPlanActivity.append(planId, ChatPlanActionType.FAILED, CHAT_PLAN_SYSTEM_ACTOR, { code, message });
+    }
   }
 
   private async writeStreamingMarkdown(planId: string, draft: string, phase: ChatPlanPhase): Promise<void> {
@@ -201,16 +219,17 @@ export class ChatPlanOrchestratorService {
     planId: string,
     refineMessage: string,
     contextInjection?: ChatPlanContextInjectionJson,
+    actorUserId?: string | null,
   ): Promise<void> {
-    const plan = await this.chatPlanService.getEntityOrThrow(planId);
+    const before = await this.chatPlanService.getEntityOrThrow(planId);
 
-    if (plan.status === ChatPlanStatus.REFINING) {
+    if (before.status === ChatPlanStatus.REFINING) {
       this.logger.debug(`Ignoring concurrent refine for plan ${planId}`);
 
       return;
     }
 
-    if (plan.status !== ChatPlanStatus.READY) {
+    if (before.status !== ChatPlanStatus.READY) {
       return;
     }
 
@@ -232,7 +251,14 @@ export class ChatPlanOrchestratorService {
       return;
     }
 
+    // Read after the conditional transition: a user edit saved right before it is part of the draft being refined
+    // (edits are refused from here on until the plan is ready again).
+    const plan = await this.chatPlanService.getEntityOrThrow(planId);
     const effectiveContextInjection = contextInjection ?? plan.contextInjection ?? undefined;
+
+    await this.chatPlanActivity.append(planId, ChatPlanActionType.REFINE_REQUESTED, chatPlanUserActor(actorUserId), {
+      instructions: message.slice(0, ACTIVITY_INSTRUCTIONS_MAX_LENGTH),
+    });
 
     let lastDraft = '';
 
@@ -244,7 +270,7 @@ export class ChatPlanOrchestratorService {
           agentId: plan.agentId,
           message:
             attempt === 0
-              ? buildRefinePrompt(message, plan.planMarkdown)
+              ? buildRefinePrompt(message, plan.planMarkdown, { editedByUser: !!plan.lastEditedAt })
               : buildPlanRepairPrompt(lastDraft || plan.planMarkdown),
           correlationId: `${plan.id}:refine:${attempt === 0 ? randomUUID() : `repair:${attempt}:${randomUUID()}`}`,
           continue: true,
@@ -295,32 +321,30 @@ export class ChatPlanOrchestratorService {
     }
   }
 
-  private async runExecute(planId: string, correlationId?: string): Promise<void> {
-    const plan = await this.chatPlanService.getEntityOrThrow(planId);
+  private async runExecute(planId: string, correlationId?: string, actorUserId?: string | null): Promise<void> {
+    const before = await this.chatPlanService.getEntityOrThrow(planId);
 
-    if (plan.status === ChatPlanStatus.EXECUTING || plan.status === ChatPlanStatus.EXECUTED) {
-      this.logger.debug(`Ignoring execute for plan ${planId} in status ${plan.status}`);
+    if (before.status === ChatPlanStatus.EXECUTING || before.status === ChatPlanStatus.EXECUTED) {
+      this.logger.debug(`Ignoring execute for plan ${planId} in status ${before.status}`);
 
       return;
     }
 
     if (
-      plan.status !== ChatPlanStatus.READY &&
-      plan.status !== ChatPlanStatus.CANCELLED &&
-      plan.status !== ChatPlanStatus.FAILED
+      before.status !== ChatPlanStatus.READY &&
+      before.status !== ChatPlanStatus.CANCELLED &&
+      before.status !== ChatPlanStatus.FAILED
     ) {
       return;
     }
 
-    if (plan.phase !== ChatPlanPhase.READY) {
-      this.logger.debug(`Ignoring execute for plan ${planId} in phase ${plan.phase}`);
+    if (before.phase !== ChatPlanPhase.READY) {
+      this.logger.debug(`Ignoring execute for plan ${planId} in phase ${before.phase}`);
 
       return;
     }
 
-    const markdown = plan.planMarkdown?.trim();
-
-    if (!markdown) {
+    if (!before.planMarkdown?.trim()) {
       await this.failPlan(planId, ChatPlanFailureCode.INVALID_STATUS, 'Plan has no markdown to execute');
 
       return;
@@ -335,6 +359,8 @@ export class ChatPlanOrchestratorService {
         failureCode: null,
         failureMessage: null,
         finishedAt: null,
+        // First execution locks the plan for good (a retry of a failed execution keeps the original time).
+        executionStartedAt: before.executionStartedAt ?? new Date(),
       },
     );
 
@@ -342,15 +368,37 @@ export class ChatPlanOrchestratorService {
       return;
     }
 
+    // Read the plan only after the conditional transition: user edits are refused from that point on, so this is
+    // exactly the latest saved version — never a version loaded before a concurrent edit.
+    const plan = await this.chatPlanService.getEntityOrThrow(planId);
+    const markdown = plan.planMarkdown?.trim();
+
+    if (!markdown) {
+      await this.failPlan(planId, ChatPlanFailureCode.INVALID_STATUS, 'Plan has no markdown to execute');
+
+      return;
+    }
+
+    const editedByUser = !!plan.lastEditedAt;
+
+    await this.chatPlanActivity.append(planId, ChatPlanActionType.EXECUTION_STARTED, chatPlanUserActor(actorUserId), {
+      editedByUser,
+      planMarkdownLength: markdown.length,
+    });
+
     try {
       await this.remoteAgents.sendChatStreaming({
         clientId: plan.clientId,
         agentId: plan.agentId,
-        message: buildExecutePrompt(markdown, plan.sourcePrompt),
+        message: buildExecutePrompt(markdown, plan.sourcePrompt, { editedByUser }),
         correlationId: correlationId ?? `${plan.id}:execute`,
         continue: true,
-        resumeSessionSuffix: plan.resumeSessionSuffix,
-        ephemeral: true,
+        // Execution runs in the plan's visible chat with the chat's normal (interactive) permissions: the hidden
+        // `-plan-{id}` session is explore-only and cannot change the workspace. The execute prompt itself is not
+        // shown as a user message; the agent's work appears in the chat and on the plan card.
+        chatId: plan.chatId,
+        ephemeral: false,
+        suppressUserMessage: true,
         model: plan.model ?? undefined,
         contextInjection: plan.contextInjection ?? undefined,
         statisticsInteractionKind: StatisticsInteractionKind.CHAT_PLAN_EXECUTE,
@@ -367,6 +415,7 @@ export class ChatPlanOrchestratorService {
       });
 
       if (completed) {
+        await this.chatPlanActivity.append(planId, ChatPlanActionType.EXECUTED, CHAT_PLAN_AGENT_ACTOR, {});
         await this.emitThrottled(planId, true);
       }
     } catch (error: unknown) {
@@ -379,7 +428,7 @@ export class ChatPlanOrchestratorService {
     }
   }
 
-  private async runRetry(planId: string, correlationId?: string): Promise<void> {
+  private async runRetry(planId: string, correlationId?: string, actorUserId?: string | null): Promise<void> {
     const plan = await this.chatPlanService.getEntityOrThrow(planId);
 
     if (plan.status !== ChatPlanStatus.FAILED) {
@@ -387,9 +436,10 @@ export class ChatPlanOrchestratorService {
     }
 
     this.chatPlanChatSync.clearLiveEvents(planId);
+    await this.chatPlanActivity.append(planId, ChatPlanActionType.RETRY_REQUESTED, chatPlanUserActor(actorUserId), {});
 
     if (plan.phase === ChatPlanPhase.READY && plan.planMarkdown?.trim()) {
-      await this.runExecute(planId, correlationId);
+      await this.runExecute(planId, correlationId, actorUserId);
 
       return;
     }
@@ -442,8 +492,12 @@ export class ChatPlanOrchestratorService {
         ? effectiveStatus.summary.trim().slice(0, 512)
         : undefined;
 
+    let updated: boolean;
+    let phase: ChatPlanPhase;
+
     if (effectiveStatus?.status === 'ready' || (markdown && effectiveStatus?.status !== 'exploring')) {
-      await this.chatPlanService.updateIfStatus(planId, STREAMING_STATUSES, {
+      phase = ChatPlanPhase.READY;
+      updated = await this.chatPlanService.updateIfStatus(planId, STREAMING_STATUSES, {
         ...(markdown ? { planMarkdown: markdown } : {}),
         ...(summary ? { summary } : {}),
         status: ChatPlanStatus.READY,
@@ -452,7 +506,8 @@ export class ChatPlanOrchestratorService {
         finishedAt: null,
       });
     } else if (markdown) {
-      await this.chatPlanService.updateIfStatus(planId, STREAMING_STATUSES, {
+      phase = ChatPlanPhase.DRAFT;
+      updated = await this.chatPlanService.updateIfStatus(planId, STREAMING_STATUSES, {
         planMarkdown: markdown,
         ...(summary ? { summary } : {}),
         status: ChatPlanStatus.READY,
@@ -462,6 +517,13 @@ export class ChatPlanOrchestratorService {
       });
     } else {
       return false;
+    }
+
+    if (updated) {
+      await this.chatPlanActivity.append(planId, ChatPlanActionType.DRAFT_UPDATED, CHAT_PLAN_AGENT_ACTOR, {
+        phase,
+        ready: phase === ChatPlanPhase.READY,
+      });
     }
 
     await this.emitThrottled(planId, true);

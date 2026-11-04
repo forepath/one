@@ -40,6 +40,9 @@ export interface RemoteChatSyncParams {
     ticketContexts?: string[];
     ticketContextRefs?: Array<{ sha: string; title?: string }>;
     knowledgeContexts?: string[];
+    planShas?: string[];
+    planContexts?: string[];
+    planContextRefs?: Array<{ sha: string; title?: string }>;
   };
   /**
    * When true, settle only on final `result` frames (ignore intermediate status/question payloads)
@@ -82,6 +85,9 @@ export interface RemoteChatStreamingParams {
     environmentIds?: string[];
     autoEnrichmentEnabled?: boolean;
     ticketShas?: string[];
+    planShas?: string[];
+    planContexts?: string[];
+    planContextRefs?: Array<{ sha: string; title?: string }>;
   };
   onDeltaText?: (delta: string) => void | Promise<void>;
   onEvent?: (event: unknown) => void | Promise<void>;

@@ -56,4 +56,17 @@ describe('content platform', () => {
       AGENSTRA_CONTENT_MCP_TOOL_PERMISSION,
     );
   });
+
+  describe('plan.update', () => {
+    it('is a content operation with its own tool', () => {
+      expect(AGENT_CONTENT_WRITE_OPERATIONS).toContain('plan.update');
+      expect(AGENT_CONTENT_TOOL_OPERATIONS[AGENSTRA_CONTENT_MCP_TOOL_NAMES.planUpdate]).toBe('plan.update');
+      expect(agentContentToolForOperation('plan.update')).toBe('content_plan_update');
+      expect(normalizeAgentContentWriteOperations(['plan.update', 'plan.delete'])).toEqual(['plan.update']);
+    });
+
+    it('is never available to ticket automation (tickets of its own tree only)', () => {
+      expect(TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS as readonly string[]).not.toContain('plan.update');
+    });
+  });
 });

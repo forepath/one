@@ -1,0 +1,425 @@
+<div class="section__content-wrapper d-flex flex-column border-top">
+  <fpc-page-header [title]="pageTitle">
+    @if (effectiveWorkspace(); as ew) {
+      <!-- Same context slot as Tickets / Pages / Tasks (one title + chip layout). -->
+      <framework-workspace-chip
+        fpcPageHeaderContext
+        [name]="workspaceDisplayName(ew.name)"
+        [title]="switchWorkspaceTitle"
+        (switch)="openWorkspaceSwitchModal()"
+      />
+    }
+  </fpc-page-header>
+
+  @if (effectiveClientId() === null) {
+    @if (clients().length === 0) {
+      <fpc-empty-state class="flex-grow-1" message="No workspaces yet" i18n-message="@@featureChatPlans-noWorkspaces">
+        <fpc-button fpcEmptyStateActions variant="primary" routerLink="/clients" i18n="@@featureChatPlans-goToSpaces">
+          Go to workspaces
+        </fpc-button>
+      </fpc-empty-state>
+    } @else {
+      <fpc-empty-state
+        class="flex-grow-1"
+        message="No workspace selected yet"
+        i18n-message="@@featureChatPlans-noWorkspaceSelected"
+      >
+        <fpc-button
+          fpcEmptyStateActions
+          variant="primary"
+          (clicked)="openWorkspaceSwitchModal()"
+          i18n="@@featureChatPlans-chooseWorkspace"
+        >
+          Choose workspace...
+        </fpc-button>
+      </fpc-empty-state>
+    }
+  } @else {
+    @if (error() && !conflict()) {
+      <fpc-alert variant="danger" [flush]="true" [dismissible]="true" [message]="error()" (closed)="onDismissError()" />
+    }
+
+    <!-- Phones: the list runs full width; an open plan replaces it as its own view (back = close). -->
+    <fpc-section-row class="flex-grow-1 chat-plans-row" [class.chat-plans-row--detail-open]="!!selectedPlanId()">
+      <fpc-section-column class="chat-plans-sidebar d-flex">
+        <fpc-data-table
+          class="chat-plans-list flex-grow-1 min-h-0"
+          [ariaLabel]="plansLabel"
+          [columns]="planColumns"
+          [rows]="plans()"
+          [activeRowId]="selectedPlanId()"
+          paging="server"
+          [(page)]="page"
+          [(pageSize)]="pageSize"
+          [total]="total()"
+          [hasNext]="hasNext()"
+          persistKey="agenstra-chat-plans"
+          [query]="planSearch()"
+          (queryChange)="onSearchChange($event)"
+          [searchPlaceholder]="planSearchPlaceholder"
+          [filtered]="!!planSearch().trim() || !!stateFilter()"
+          [loading]="loading()"
+          [rowMenu]="planRowMenu"
+          (rowAction)="onPlanRowAction($event.row, $event.item.id)"
+          (rowActivate)="onSelectPlan($event)"
+          emptyIcon="list-check"
+          showFilterButton
+          [filtersActive]="stateFilter() ? 1 : 0"
+          (filtersCleared)="onStateFilterChange('')"
+          data-testid="chat-plans-table"
+        >
+          <span fpcDataTableToolbar class="d-inline-flex gap-2">
+            <fpc-button
+              variant="dark"
+              iconOnly
+              [ariaLabel]="refreshTitle"
+              [title]="refreshTitle"
+              [disabled]="loading()"
+              (clicked)="onRefresh()"
+            >
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </fpc-button>
+          </span>
+          <!-- Filters drawer like the tasks page: plans are agent specific, so one environment is always chosen. -->
+          <fpc-form-field fpcDataTableFilters forId="chatPlansAgentFilter" [label]="environmentFilterLabel">
+            <fpc-form-control
+              controlId="chatPlansAgentFilter"
+              controlType="select"
+              [ngModel]="agentId() ?? ''"
+              (ngModelChange)="onAgentChange($event)"
+            >
+              @for (agent of agents(); track agent.id) {
+                <option [value]="agent.id">{{ workspaceDisplayName(agent.name) }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+          <fpc-form-field fpcDataTableFilters forId="chatPlansStateFilter" [label]="stateFilterLabel">
+            <fpc-form-control
+              controlId="chatPlansStateFilter"
+              controlType="select"
+              [ngModel]="stateFilter() ?? ''"
+              (ngModelChange)="onStateFilterChange($event)"
+            >
+              <option value="" i18n="@@featureChatPlans-stateAll">All plans</option>
+              <option value="editable" i18n="@@featureChatPlans-stateEditable">Not executed (editable)</option>
+              <option value="readonly" i18n="@@featureChatPlans-stateReadonly">
+                Executed or in progress (read-only)
+              </option>
+            </fpc-form-control>
+          </fpc-form-field>
+
+          <span fpcDataTableEmpty>
+            @if (agents().length === 0) {
+              <fpc-empty-state
+                size="sm"
+                icon="hdd-network"
+                message="This workspace has no environments yet"
+                i18n-message="@@featureChatPlans-noEnvironments"
+              />
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                icon="list-check"
+                message="No plans yet"
+                i18n-message="@@featureChatPlans-noPlans"
+              >
+                <p class="small text-body-secondary mb-0" i18n="@@featureChatPlans-noPlansHint">
+                  Use Plan in the chat of this environment to let the agent draft a plan.
+                </p>
+              </fpc-empty-state>
+            }
+          </span>
+
+          <ng-template fpcTableCell="title" let-row>
+            <span class="d-block text-truncate" [title]="planTitle(row)">{{ planTitle(row) }}</span>
+          </ng-template>
+        </fpc-data-table>
+      </fpc-section-column>
+
+      <fpc-section-column class="d-flex flex-grow-1 chat-plans-detail">
+        @if (openPlan(); as plan) {
+          <fpc-page-header>
+            <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
+              <fpc-button
+                class="d-md-none flex-shrink-0"
+                variant="dark"
+                iconOnly
+                [ariaLabel]="backToPlansTitle"
+                [title]="backToPlansTitle"
+                (clicked)="onClosePlan()"
+                data-testid="chat-plan-back"
+              >
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-badge class="flex-shrink-0" [color]="stateBadgeColor(plan.status, plan.phase)">{{
+                stateLabel(plan.status, plan.phase)
+              }}</fpc-badge>
+              <h2 class="fpc-page-header__title h6 mb-0 fw-semibold text-truncate" [title]="planTitle(plan)">
+                {{ planTitle(plan) }}
+              </h2>
+              @if (executionLocked()) {
+                <fpc-badge color="secondary" i18n="@@featureChatPlans-readOnlyBadge">Read-only</fpc-badge>
+              }
+            </div>
+            <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
+              <fpc-button
+                variant="dark"
+                iconOnly
+                [ariaLabel]="openChatTitle"
+                [title]="openChatTitle"
+                (clicked)="onOpenChat(plan)"
+                data-testid="chat-plan-open-chat"
+              >
+                <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+              </fpc-button>
+            </div>
+          </fpc-page-header>
+
+          <!-- Content left, activity right like knowledge / ticket details; both columns scroll on their own. -->
+          <div class="row g-0 chat-plans-detail__columns">
+            <div class="col-lg-7 chat-plans-detail__pane p-3">
+              <div class="d-flex flex-column gap-3">
+                @if (executionLocked()) {
+                  <fpc-alert
+                    variant="secondary"
+                    i18n-message="@@featureChatPlans-executedHint"
+                    message="This plan has been executed and is read-only. The version below is what the agent implemented."
+                    data-testid="chat-plan-readonly"
+                  />
+                } @else if (drafting()) {
+                  <fpc-alert
+                    variant="info"
+                    i18n-message="@@featureChatPlans-draftingHint"
+                    message="The agent is working on this plan. You can edit it once the draft is ready."
+                    data-testid="chat-plan-drafting"
+                  />
+                }
+                @if (conflict()) {
+                  <div class="alert alert-warning d-flex flex-wrap align-items-center gap-2 mb-0" role="alert">
+                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                    <span class="flex-grow-1">{{ error() }}</span>
+                    <fpc-button variant="warning" (clicked)="onDiscard()" data-testid="chat-plan-reload">
+                      <span i18n="@@featureChatPlans-reloadLatest">Load latest version</span>
+                    </fpc-button>
+                  </div>
+                } @else if (changedWhileEditing()) {
+                  <fpc-alert
+                    variant="warning"
+                    i18n-message="@@featureChatPlans-changedWhileEditing"
+                    message="This plan changed after you started editing. Saving is refused until you load the latest version."
+                  />
+                }
+                @if (plan.failureMessage && plan.status === 'failed') {
+                  <fpc-alert variant="danger" [message]="plan.failureMessage" />
+                }
+
+                @if (openPlanEditable()) {
+                  <fpc-form-field forId="chatPlanTitle" [label]="titleLabel">
+                    <fpc-form-control
+                      controlId="chatPlanTitle"
+                      maxLength="512"
+                      [placeholder]="plan.sourcePrompt"
+                      [ngModel]="draftTitle()"
+                      (ngModelChange)="draftTitle.set($event)"
+                    />
+                  </fpc-form-field>
+                }
+
+                <div>
+                  <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+                    <h3 class="h6 mb-0" i18n="@@featureChatPlans-planHeading">Plan</h3>
+                    @if (openPlanEditable()) {
+                      <div class="d-flex align-items-center gap-2">
+                        @if (dirty()) {
+                          <small class="text-body-secondary" i18n="@@featureChatPlans-unsaved">Unsaved changes</small>
+                        }
+                        <fpc-button
+                          variant="secondary"
+                          [disabled]="!dirty() || saving()"
+                          (clicked)="onDiscard()"
+                          data-testid="chat-plan-discard"
+                          >{{ discardLabel }}</fpc-button
+                        >
+                        <fpc-button
+                          variant="primary"
+                          [loading]="saving()"
+                          [disabled]="!canSave()"
+                          (clicked)="onSave()"
+                          data-testid="chat-plan-save"
+                          >{{ saveLabel }}</fpc-button
+                        >
+                      </div>
+                    }
+                  </div>
+                  @if (openPlanEditable()) {
+                    <div class="chat-plans-detail__editor" data-testid="chat-plan-editor">
+                      <framework-knowledge-editor
+                        [markdown]="draftMarkdown()"
+                        (markdownChange)="draftMarkdown.set($event)"
+                      ></framework-knowledge-editor>
+                    </div>
+                  } @else {
+                    <div
+                      class="chat-plans-detail__markdown border rounded p-3 bg-body-tertiary"
+                      data-testid="chat-plan-markdown"
+                    >
+                      @if (renderMarkdown(plan.planMarkdown); as planHtml) {
+                        <div class="markdown-content" [innerHTML]="planHtml"></div>
+                      } @else if (plan.planMarkdown) {
+                        <div class="chat-plans-detail__plain">{{ plan.planMarkdown }}</div>
+                      } @else {
+                        <span class="text-body-secondary" i18n="@@featureChatPlans-noMarkdown"
+                          >No plan content yet.</span
+                        >
+                      }
+                    </div>
+                  }
+                </div>
+
+                @if (refineAvailable()) {
+                  <!-- Same refinement as the chat's plan modal: the agent revises the stored plan in its plan session. -->
+                  <div>
+                    <h3 class="h6 mb-2" i18n="@@featureChatPlans-refineHeading">Refine with the agent</h3>
+                    <div class="d-flex align-items-end gap-2">
+                      <fpc-form-control
+                        class="flex-grow-1"
+                        controlType="textarea"
+                        controlId="chatPlanRefine"
+                        [rows]="2"
+                        [placeholder]="refinePlaceholder"
+                        [ngModel]="refineMessage()"
+                        (ngModelChange)="refineMessage.set($event)"
+                        (keydown)="onRefineKeydown($event)"
+                        data-testid="chat-plan-refine-input"
+                      />
+                      <fpc-button
+                        variant="primary"
+                        iconOnly
+                        [ariaLabel]="refineTitle"
+                        [title]="refineTitle"
+                        [disabled]="!canRefine()"
+                        (clicked)="onRefine()"
+                        data-testid="chat-plan-refine"
+                      >
+                        <i class="bi bi-stars" aria-hidden="true"></i>
+                      </fpc-button>
+                    </div>
+                    @if (dirty()) {
+                      <small class="text-body-secondary d-block mt-1" i18n="@@featureChatPlans-refineSaveFirst"
+                        >Save or discard your changes first: the agent refines the saved plan.</small
+                      >
+                    }
+                  </div>
+                }
+
+                <dl class="row small mb-0">
+                  @if (plan.shas; as shas) {
+                    <dt class="col-sm-4" i18n="@@featureChatPlans-reference">Context reference</dt>
+                    <dd class="col-sm-8 d-flex align-items-center gap-2">
+                      <code class="small" [title]="'plan:' + shas.long" data-testid="chat-plan-ref"
+                        >plan:{{ shas.short }}</code
+                      >
+                      <fpc-button
+                        variant="link"
+                        size="sm"
+                        iconOnly
+                        [ariaLabel]="copyReferenceTitle"
+                        [title]="copyReferenceTitle"
+                        (clicked)="onCopyReference(shas.long)"
+                      >
+                        <i class="bi bi-copy" aria-hidden="true"></i>
+                      </fpc-button>
+                    </dd>
+                  }
+                  <dt class="col-sm-4" i18n="@@featureChatPlans-environment">Environment</dt>
+                  <dd class="col-sm-8">{{ agentName(plan.agentId) }}</dd>
+                  <dt class="col-sm-4" i18n="@@featureChatPlans-created">Created</dt>
+                  <dd class="col-sm-8">{{ formatDate(plan.startedAt) }}</dd>
+                  @if (plan.lastEditedAt) {
+                    <dt class="col-sm-4" i18n="@@featureChatPlans-lastEdited">Last edited</dt>
+                    <dd class="col-sm-8">{{ formatDate(plan.lastEditedAt) }}</dd>
+                  }
+                  @if (plan.executionStartedAt) {
+                    <dt class="col-sm-4" i18n="@@featureChatPlans-executionStarted">Execution started</dt>
+                    <dd class="col-sm-8">{{ formatDate(plan.executionStartedAt) }}</dd>
+                  }
+                  @if (plan.model) {
+                    <dt class="col-sm-4" i18n="@@featureChatPlans-model">Model</dt>
+                    <dd class="col-sm-8 font-monospace text-break">{{ plan.model }}</dd>
+                  }
+                </dl>
+                <div>
+                  <h3 class="h6" i18n="@@featureChatPlans-requestHeading">Original request</h3>
+                  <pre class="chat-plans-detail__request border rounded p-2 small mb-0">{{ plan.sourcePrompt }}</pre>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-5 chat-plans-detail__pane chat-plans-detail__sidebar p-3">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <h3 class="h6 mb-0">{{ activityLabel }}</h3>
+              </div>
+              <fpc-data-table
+                nested
+                [ariaLabel]="activityLabel"
+                [columns]="activityColumns"
+                [rows]="activity()"
+                [loading]="activityLoadingPlanId() === plan.id && activity().length === 0"
+                paging="client"
+                persistKey="agenstra-chat-plan-activity"
+                [searchable]="false"
+                data-testid="chat-plan-activity"
+              >
+                <ng-template fpcTableCell="time" let-row>{{ row.occurredAt | fpcDate: 'datetime' }}</ng-template>
+                <ng-template fpcTableCell="details" let-row let-value="value">
+                  <span class="chat-plans-detail__activity-detail" [title]="value">{{ value }}</span>
+                </ng-template>
+              </fpc-data-table>
+            </div>
+          </div>
+        } @else if (selectedPlanId() && selectedPlanLoading()) {
+          <fpc-empty-state
+            class="flex-grow-1"
+            icon="hourglass-split"
+            message="Loading plan…"
+            i18n-message="@@featureChatPlans-loadingPlan"
+          />
+        } @else {
+          <fpc-empty-state
+            class="flex-grow-1"
+            icon="list-check"
+            message="Select a plan to view, edit or refine it"
+            i18n-message="@@featureChatPlans-selectPlan"
+          />
+        }
+      </fpc-section-column>
+    </fpc-section-row>
+  }
+</div>
+
+<fpc-modal
+  [(open)]="workspaceSwitchModalOpen"
+  i18n-title="@@featureChatPlans-switchWorkspaceModalTitle"
+  title="Switch workspace"
+  [scrollable]="true"
+>
+  @if (clients().length === 0 && !workspaceSwitchSearch().trim()) {
+    <fpc-empty-state size="sm" message="No workspaces yet" i18n-message="@@featureChatPlans-noWorkspaces">
+      <fpc-button
+        fpcEmptyStateActions
+        variant="primary"
+        i18n="@@featureChatPlans-goToSpaces"
+        (clicked)="goToSpaces($event)"
+      >
+        Go to workspaces
+      </fpc-button>
+    </fpc-empty-state>
+  } @else {
+    <framework-workspace-switch-table
+      [clients]="clients()"
+      [currentId]="activeClientId()"
+      [(query)]="workspaceSwitchSearch"
+      (selectWorkspace)="onSelectWorkspace($event)"
+    />
+  }
+</fpc-modal>

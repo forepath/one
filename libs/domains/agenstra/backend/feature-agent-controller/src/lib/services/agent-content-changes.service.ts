@@ -34,7 +34,9 @@ import { TicketAutomationRunStatus } from '../entities/ticket-automation.enums';
 import { TicketEntity } from '../entities/ticket.entity';
 import type { TicketPriority, TicketStatus } from '../entities/ticket.enums';
 import { createAgentContentWriter, type AgentContentWriter } from '../utils/agent-content-writer.utils';
+import { chatPlanContextTitle } from '../utils/chat-plan-mappers';
 
+import { ChatPlanService } from './chat-plan.service';
 import { KnowledgeTreeService } from './knowledge-tree.service';
 import { TicketsService } from './tickets.service';
 
@@ -131,6 +133,7 @@ export class AgentContentChangesService {
     private readonly ticketsService: TicketsService,
     @Inject(forwardRef(() => KnowledgeTreeService))
     private readonly knowledgeTreeService: KnowledgeTreeService,
+    private readonly chatPlanService: ChatPlanService,
   ) {}
 
   async handle(
@@ -425,6 +428,33 @@ export class AgentContentChangesService {
         await this.knowledgeTreeService.deleteNode(node.id, writer);
 
         return { kind: 'knowledge', sha: node.longSha as string, title: node.title, deleted: true };
+      }
+      case 'plan.update': {
+        // Plans of the agent's own environment only; executed / drafting plans are refused by the plan service.
+        const plan = await this.chatPlanService.findForAgentBySha(
+          writer.clientId,
+          writer.agentId,
+          change.sha as string,
+        );
+
+        if (!plan?.longSha) {
+          throw new NotFoundException(`plan:${change.sha} was not found in this environment`);
+        }
+
+        this.assertRevision(`plan:${plan.longSha}`, plan.updatedAt, change.revision);
+
+        const saved = await this.chatPlanService.updateForAgent(writer, plan.longSha, {
+          revision: change.revision as string,
+          ...(change.title !== undefined ? { title: change.title } : {}),
+          ...(change.content !== undefined ? { content: change.content } : {}),
+        });
+
+        return {
+          kind: 'plan',
+          sha: saved.longSha as string,
+          title: chatPlanContextTitle(saved),
+          revision: saved.updatedAt.toISOString(),
+        };
       }
     }
   }

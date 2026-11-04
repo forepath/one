@@ -19,6 +19,7 @@ jest.mock('../constants/agent-context.constants', () => ({
 const TICKET_SHA = 'a'.repeat(40);
 const CREATED_SHA = 'c'.repeat(40);
 const PAGE_SHA = 'b'.repeat(40);
+const PLAN_SHA = 'd'.repeat(40);
 const TASK_ID = '22222222-2222-4222-8222-222222222222';
 
 describe('AgentContextChangesService', () => {
@@ -61,7 +62,7 @@ describe('AgentContextChangesService', () => {
               ok: true,
               items: request.refs.map((ref) => ({
                 kind: ref.kind,
-                sha: [TICKET_SHA, CREATED_SHA, PAGE_SHA].find((sha) => sha.startsWith(ref.sha)) ?? ref.sha,
+                sha: [TICKET_SHA, CREATED_SHA, PAGE_SHA, PLAN_SHA].find((sha) => sha.startsWith(ref.sha)) ?? ref.sha,
                 title: 'Element',
               })),
             };
@@ -102,6 +103,10 @@ describe('AgentContextChangesService', () => {
       [{ operation: 'page.create', title: 'x', nodeType: 'folder', content: 'no' }],
       [{ operation: 'ticket.comment', ref: `ticket:${TICKET_SHA}`, body: '' }],
       [{ operation: 'ticket.create', title: 'x'.repeat(501) }],
+      [{ operation: 'plan.update', ref: `knowledge:${PAGE_SHA}`, revision: 'r1', content: '# x' }],
+      [{ operation: 'plan.update', ref: `plan:${PLAN_SHA}`, revision: 'r1', status: 'done' }],
+      [{ operation: 'plan.update', ref: `plan:${PLAN_SHA}`, revision: 'r1', content: '   ' }],
+      [{ operation: 'plan.update', ref: `plan:${PLAN_SHA}`, content: '# x' }],
     ])('rejects %j', (body) => {
       expect(() => service.parse(body)).toThrow(BadRequestException);
     });
@@ -287,6 +292,69 @@ describe('AgentContextChangesService', () => {
 
     await expect(service.requestChange(record, service.parse(comment))).resolves.toMatchObject({
       decision: 'denied',
+    });
+  });
+
+  describe('plan.update', () => {
+    const planChange = {
+      operation: 'plan.update',
+      ref: `plan:${PLAN_SHA.slice(0, 8)}`,
+      revision: 'r1',
+      content: '# Plan v2',
+      reason: 'clarify',
+    };
+
+    it('parses plan refs as plan targets', () => {
+      expect(service.parse(planChange)).toEqual({
+        request: { ...planChange, reason: 'clarify' },
+        target: { kind: 'plan', sha: PLAN_SHA.slice(0, 8) },
+      });
+    });
+
+    it('asks the user in interactive chats and applies the approved change with the full plan SHA', async () => {
+      changeResponse = { ok: true, changed: { kind: 'plan', sha: PLAN_SHA, title: 'Login plan', revision: 'r2' } };
+
+      const record = mint({ items: [{ kind: 'plan', title: 'Login plan', sha: PLAN_SHA, content: 'PLAN' }] });
+      const pending = service.requestChange(record, service.parse(planChange));
+
+      await new Promise((resolve) => setTimeout(resolve, 5));
+
+      const prompt = bridge.publishContextChangeQuestion.mock.calls.at(-1)?.[2] as string;
+
+      expect(prompt).toContain(`plan ${PLAN_SHA.slice(0, 8)}`);
+      expect(prompt).toContain('not executed yet');
+      await service.decide(record.agentId, questionId(), 'once');
+      await expect(pending).resolves.toMatchObject({ decision: 'applied', ref: `plan:${PLAN_SHA}`, revision: 'r2' });
+      expect(changeCalls().at(-1)?.change).toEqual({
+        operation: 'plan.update',
+        sha: PLAN_SHA,
+        revision: 'r1',
+        content: '# Plan v2',
+      });
+    });
+
+    it('refuses plans that are not readable in the session', async () => {
+      await expect(service.requestChange(mint(), service.parse(planChange))).resolves.toMatchObject({
+        decision: 'denied',
+      });
+      expect(changeCalls()).toHaveLength(0);
+    });
+
+    it('reports a read-only (executed) plan as failed with the controller message', async () => {
+      changeResponse = { ok: false, error: 'This plan has been executed and is read-only.', status: 409 };
+
+      const record = mint({
+        accessMode: 'ask',
+        items: [{ kind: 'plan', title: 'Login plan', sha: PLAN_SHA, content: 'PLAN' }],
+      });
+      const pending = service.requestChange(record, service.parse(planChange));
+
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      await service.decide(record.agentId, questionId(), 'once');
+      await expect(pending).resolves.toMatchObject({
+        decision: 'failed',
+        message: 'This plan has been executed and is read-only.',
+      });
     });
   });
 });

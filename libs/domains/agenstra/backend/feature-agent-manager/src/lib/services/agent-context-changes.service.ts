@@ -27,7 +27,7 @@ import type { AgentContextAccessReply } from './agent-context-access.service';
 import { AgentContextApiService } from './agent-context-api.service';
 import { AgentContextTicketsService } from './agent-context-tickets.service';
 
-type ContentKind = 'ticket' | 'knowledge';
+type ContentKind = 'ticket' | 'knowledge' | 'plan';
 
 /** Session key of tickets minted for hidden sessions (see the agents gateway). */
 const AUTO_SESSION_KEY_PREFIX = 'suffix:';
@@ -54,7 +54,11 @@ interface ParsedChange {
 }
 
 function kindOf(operation: AgentContentWriteOperation): ContentKind {
-  return operation.startsWith('ticket.') ? 'ticket' : 'knowledge';
+  if (operation.startsWith('ticket.')) {
+    return 'ticket';
+  }
+
+  return operation.startsWith('plan.') ? 'plan' : 'knowledge';
 }
 
 function isCreate(operation: AgentContentWriteOperation): boolean {
@@ -106,7 +110,7 @@ function quote(value: string, maxLength = 120): string {
 }
 
 /**
- * Content changes of tickets / knowledge pages requested by the worker `agenstra` MCP server (`agenstra_content_*`).
+ * Content changes of tickets / knowledge pages / plans (update only) requested by the worker `agenstra` MCP server (`agenstra_content_*`).
  * Same gates as reading context, plus a decision per change:
  * - only elements the ticket may read (granted or created by this ticket) are changed or receive children;
  * - `ask` (visible chats): the user approves each change ("allow for this chat" covers the same operation on the same
@@ -207,7 +211,8 @@ export class AgentContextChangesService {
         };
       }
       case 'ticket.update':
-      case 'page.update': {
+      case 'page.update':
+      case 'plan.update': {
         const target = parseRef('ref') as { kind: ContentKind; sha: string };
         const fields = ticketFields();
 
@@ -215,8 +220,16 @@ export class AgentContextChangesService {
           throw new BadRequestException('ref is required');
         }
 
-        if (operation === 'page.update' && (fields.priority !== undefined || fields.status !== undefined)) {
-          throw new BadRequestException('Knowledge pages have no priority or status');
+        if (operation !== 'ticket.update' && (fields.priority !== undefined || fields.status !== undefined)) {
+          throw new BadRequestException(
+            operation === 'plan.update'
+              ? 'Plans have no priority or status'
+              : 'Knowledge pages have no priority or status',
+          );
+        }
+
+        if (operation === 'plan.update' && fields.content !== undefined && !fields.content?.trim()) {
+          throw new BadRequestException('A plan must not be empty');
         }
 
         if (Object.keys(fields).length === 0) {
@@ -514,7 +527,7 @@ export class AgentContextChangesService {
     parent: { kind: ContentKind; sha: string; title?: string } | undefined,
   ): string {
     const label = (ref: { kind: ContentKind; sha: string; title?: string }) =>
-      `${ref.kind === 'ticket' ? 'ticket' : 'knowledge'} ${ref.sha.slice(0, 8)}${ref.title ? ` ${quote(ref.title)}` : ''}`;
+      `${ref.kind} ${ref.sha.slice(0, 8)}${ref.title ? ` ${quote(ref.title)}` : ''}`;
     const preview = (value: string) => {
       const trimmed = value.trim();
 
@@ -541,6 +554,12 @@ export class AgentContextChangesService {
       case 'ticket.delete':
       case 'page.delete':
         lines.push(`The agent wants to delete ${label(target as NonNullable<typeof target>)}.`);
+        break;
+      case 'plan.update':
+        lines.push(
+          `The agent wants to change ${label(target as NonNullable<typeof target>)} (not executed yet; the new ` +
+            'version is what runs when the plan is executed).',
+        );
         break;
       default:
         lines.push(`The agent wants to change ${label(target as NonNullable<typeof target>)}.`);

@@ -130,7 +130,7 @@
         </trans-unit>
       <trans-unit id="featureAgentConfig-rawJsonHelpFull" datatype="html">
         <source>Composed view of structured settings plus Advanced overrides for this layer. Saving absorbs the JSON into structured config and clears overrides.</source>
-      </trans-unit>
+        </trans-unit>
       <trans-unit id="featureAgentConfig-rawJsonHelp" datatype="html">
         <source> Structured settings plus overrides; saving merges them. </source>
         </trans-unit>
@@ -893,6 +893,9 @@
       <trans-unit id="featureAgentConfig-removePathEntry" datatype="html">
         <source>Remove</source>
         </trans-unit>
+      <trans-unit id="featureAgentConfig-pathEntryAria" datatype="html">
+        <source>Path</source>
+        </trans-unit>
       <trans-unit id="featureAgentConfig-addPathLabel" datatype="html">
         <source>Path or URL</source>
         </trans-unit>
@@ -928,6 +931,9 @@
         </trans-unit>
       <trans-unit id="featureAgentConsole-knowledgeTitle" datatype="html">
         <source>Knowledge :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConsole-plansTitle" datatype="html">
+        <source>Plans :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featureAgentConsole-tasksTitle" datatype="html">
         <source>Tasks :: Agenstra</source>
@@ -1040,6 +1046,9 @@
       <trans-unit id="featureAgentTasks-pendingApprovalHandoffHint" datatype="html">
         <source>Once approved, this task can hand off work to these environments without asking: <x id="INTERPOLATION" equiv-text="{{ handoffAgents.join(&apos;, &apos;) }}"/></source>
         </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApprovalContentWritesHint" datatype="html">
+        <source>Once approved, this task can make these changes without asking: <x id="INTERPOLATION" equiv-text="{{ contentWrites.join(&apos;, &apos;) }}"/></source>
+        </trans-unit>
       <trans-unit id="featureAgentTasks-approve" datatype="html">
         <source>Approve</source>
         </trans-unit>
@@ -1056,6 +1065,9 @@
         <source>Model</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-noHandoffAgents" datatype="html">
+        <source>None</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noContentWrites" datatype="html">
         <source>None</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-promptHeading" datatype="html">
@@ -1075,9 +1087,6 @@
         </trans-unit>
       <trans-unit id="featureAgentTasks-selectTask" datatype="html">
         <source>Select a task to see its schedule and runs</source>
-        </trans-unit>
-      <trans-unit id="featureAgentConsoleDataList-cancel" datatype="html">
-        <source>Cancel</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-titleLabel" datatype="html">
         <source>Title</source>
@@ -1147,6 +1156,12 @@
         </trans-unit>
       <trans-unit id="featureAgentTasks-allowedHandoffAgentsLabel" datatype="html">
         <source>Allowed handoff environments</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedContentWritesLabel" datatype="html">
+        <source>Allowed ticket / knowledge changes</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedContentWritesHint" datatype="html">
+        <source>Runs may make these changes without asking. Existing elements are only changed when the run may read them. Leave empty to keep runs from changing tickets and knowledge pages.</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-allowedHandoffAgentsHint" datatype="html">
         <source>Runs may hand off work to these environments of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.</source>
@@ -1278,7 +1293,7 @@
         <source>API token</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-createConnectionSubmit" datatype="html">
-        <source>Create</source>
+        <source> Create </source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-newConfigTitle" datatype="html">
         <source>Create import config</source>
@@ -1356,7 +1371,7 @@
         <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentFolderId }}"/> </source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-createConfigSubmit" datatype="html">
-        <source>Create</source>
+        <source> Create </source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-editConnectionTitleHeading" datatype="html">
         <source>Edit connection</source>
@@ -1374,7 +1389,7 @@
         <source>New API token (optional)</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-save" datatype="html">
-        <source>Save</source>
+        <source> Save </source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-editConfigHeading" datatype="html">
         <source> Edit import config (<x id="INTERPOLATION" equiv-text="{{ cfg.importKind }}"/>) </source>
@@ -1853,6 +1868,216 @@
       <trans-unit id="featureAudit-eventTypeDeleted" datatype="html">
         <source>Deleted</source>
         </trans-unit>
+      <trans-unit id="featureChatPlans-activityCreated" datatype="html">
+        <source>Created</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-activityDraftUpdated" datatype="html">
+        <source>Draft by agent</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-activityRefineRequested" datatype="html">
+        <source>Refinement requested</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-activityContentUpdated" datatype="html">
+        <source>Edited</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-activityExecutionStarted" datatype="html">
+        <source>Execution started</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-activityExecuted" datatype="html">
+        <source>Executed</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-activityFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-activityCancelled" datatype="html">
+        <source>Cancelled</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-activityRetryRequested" datatype="html">
+        <source>Retry requested</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-activityUnknown" datatype="html">
+        <source>Unknown activity</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-actorAgent" datatype="html">
+        <source>Agent</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-actorUser" datatype="html">
+        <source>User</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-actorSystem" datatype="html">
+        <source>System</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-fieldTitle" datatype="html">
+        <source>Title</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-fieldPlan" datatype="html">
+        <source>Plan</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-executedEditedVersion" datatype="html">
+        <source>Edited version</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-noWorkspaces" datatype="html">
+        <source>No workspaces yet</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-goToSpaces" datatype="html">
+        <source> Go to workspaces </source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-noWorkspaceSelected" datatype="html">
+        <source>No workspace selected yet</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-chooseWorkspace" datatype="html">
+        <source> Choose workspace... </source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-stateAll" datatype="html">
+        <source>All plans</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-stateEditable" datatype="html">
+        <source>Not executed (editable)</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-stateReadonly" datatype="html">
+        <source> Executed or in progress (read-only) </source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-noEnvironments" datatype="html">
+        <source>This workspace has no environments yet</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-noPlans" datatype="html">
+        <source>No plans yet</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-noPlansHint" datatype="html">
+        <source> Use Plan in the chat of this environment to let the agent draft a plan. </source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-readOnlyBadge" datatype="html">
+        <source>Read-only</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-executedHint" datatype="html">
+        <source>This plan has been executed and is read-only. The version below is what the agent implemented.</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-draftingHint" datatype="html">
+        <source>The agent is working on this plan. You can edit it once the draft is ready.</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-reloadLatest" datatype="html">
+        <source>Load latest version</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-changedWhileEditing" datatype="html">
+        <source>This plan changed after you started editing. Saving is refused until you load the latest version.</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-planHeading" datatype="html">
+        <source>Plan</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-unsaved" datatype="html">
+        <source>Unsaved changes</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-noMarkdown" datatype="html">
+        <source>No plan content yet.</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-refineHeading" datatype="html">
+        <source>Refine with the agent</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-refineSaveFirst" datatype="html">
+        <source>Save or discard your changes first: the agent refines the saved plan.</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-reference" datatype="html">
+        <source>Context reference</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-environment" datatype="html">
+        <source>Environment</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-created" datatype="html">
+        <source>Created</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-lastEdited" datatype="html">
+        <source>Last edited</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-executionStarted" datatype="html">
+        <source>Execution started</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-model" datatype="html">
+        <source>Model</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-requestHeading" datatype="html">
+        <source>Original request</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-loadingPlan" datatype="html">
+        <source>Loading plan…</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-selectPlan" datatype="html">
+        <source>Select a plan to view, edit or refine it</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-switchWorkspaceModalTitle" datatype="html">
+        <source>Switch workspace</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-title" datatype="html">
+        <source>Plans</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-switchWorkspaceTitle" datatype="html">
+        <source>Switch workspace</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-refreshTitle" datatype="html">
+        <source>Refresh</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-plansTable" datatype="html">
+        <source>Plans</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-searchPlans" datatype="html">
+        <source>Search plans</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-environmentFilterLabel" datatype="html">
+        <source>Environment</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-stateFilterLabel" datatype="html">
+        <source>State</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-backToPlans" datatype="html">
+        <source>Back to plans</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-openChat" datatype="html">
+        <source>Open chat</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-discard" datatype="html">
+        <source>Discard changes</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-refineTitle" datatype="html">
+        <source>Refine plan</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-refinePlaceholder" datatype="html">
+        <source>Describe how the agent should change the plan…</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-activityHeading" datatype="html">
+        <source>Activity</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-titleLabel" datatype="html">
+        <source>Title</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-copyReference" datatype="html">
+        <source>Copy context reference</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-colState" datatype="html">
+        <source>State</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-colPlan" datatype="html">
+        <source>Plan</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-colCreated" datatype="html">
+        <source>Created</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-colEdited" datatype="html">
+        <source>Last edited</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-colActivityAction" datatype="html">
+        <source>Action</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-colActivityTime" datatype="html">
+        <source>Time</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-colActivityActor" datatype="html">
+        <source>Actor</source>
+        </trans-unit>
+      <trans-unit id="featureChatPlans-colActivityDetails" datatype="html">
+        <source>Details</source>
+        </trans-unit>
       <trans-unit id="featureChat-agentEventKindUser" datatype="html">
         <source>User</source>
         </trans-unit>
@@ -2011,6 +2236,9 @@
         </trans-unit>
       <trans-unit id="featureChat-toolDisplayContentPageDelete" datatype="html">
         <source>Delete knowledge page</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContentPlanUpdate" datatype="html">
+        <source>Update plan</source>
         </trans-unit>
       <trans-unit id="featureChat-toolDisplayContentChangeStatus" datatype="html">
         <source>Content change status</source>
@@ -2234,8 +2462,14 @@
       <trans-unit id="featureChat-chatSessionHandoffBadge" datatype="html">
         <source>(handoff)</source>
         </trans-unit>
+      <trans-unit id="featureChat-renameChatSessionAria" datatype="html">
+        <source>Rename chat session</source>
+        </trans-unit>
       <trans-unit id="featureChat-renameChatSessionTitle" datatype="html">
         <source>Rename</source>
+        </trans-unit>
+      <trans-unit id="featureChat-deleteChatSessionAria" datatype="html">
+        <source>Delete chat session</source>
         </trans-unit>
       <trans-unit id="featureChat-deleteChatSessionTitle" datatype="html">
         <source>Delete</source>
@@ -2291,10 +2525,19 @@
       <trans-unit id="featureChat-planExecuteTitle" datatype="html">
         <source>Execute plan</source>
         </trans-unit>
+      <trans-unit id="featureChat-planExecuteAria" datatype="html">
+        <source>Execute plan</source>
+        </trans-unit>
       <trans-unit id="featureChat-planRetryTitle" datatype="html">
         <source>Retry plan</source>
         </trans-unit>
+      <trans-unit id="featureChat-planRetryAria" datatype="html">
+        <source>Retry plan</source>
+        </trans-unit>
       <trans-unit id="featureChat-planStopTitle" datatype="html">
+        <source>Stop plan</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planStopAria" datatype="html">
         <source>Stop plan</source>
         </trans-unit>
       <trans-unit id="featureChat-waitingForResponse" datatype="html">
@@ -2321,13 +2564,25 @@
       <trans-unit id="featureChat-typeMessagePlaceholder" datatype="html">
         <source>Type a message or /command...</source>
         </trans-unit>
+      <trans-unit id="featureChat-messageAria" datatype="html">
+        <source>Message</source>
+        </trans-unit>
       <trans-unit id="featureChat-selectContextTitle" datatype="html">
+        <source>Select context</source>
+        </trans-unit>
+      <trans-unit id="featureChat-selectContextAria" datatype="html">
         <source>Select context</source>
         </trans-unit>
       <trans-unit id="featureChat-planPromptTitle" datatype="html">
         <source>Create plan with AI</source>
         </trans-unit>
+      <trans-unit id="featureChat-planPromptAria" datatype="html">
+        <source>Create plan with AI</source>
+        </trans-unit>
       <trans-unit id="featureChat-enhancePromptTitle" datatype="html">
+        <source>Enhance prompt with AI</source>
+        </trans-unit>
+      <trans-unit id="featureChat-enhancePromptAria" datatype="html">
         <source>Enhance prompt with AI</source>
         </trans-unit>
       <trans-unit id="featureChat-model" datatype="html">
@@ -2369,6 +2624,18 @@
       <trans-unit id="featureChat-removeKnowledgeContext" datatype="html">
         <source>Remove knowledge context</source>
         </trans-unit>
+      <trans-unit id="featureChat-planContextLabel" datatype="html">
+        <source>Plan context (this environment)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planContextHint" datatype="html">
+        <source>Plans are environment specific. Executed plans are linked as read-only history.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planContextPlaceholder" datatype="html">
+        <source>Title or short/long SHA</source>
+        </trans-unit>
+      <trans-unit id="featureChat-removePlanContext" datatype="html">
+        <source>Remove plan context</source>
+        </trans-unit>
       <trans-unit id="featureChat-attachmentContextLabel" datatype="html">
         <source>File attachments</source>
         </trans-unit>
@@ -2378,7 +2645,13 @@
       <trans-unit id="featureChat-removeAttachmentContext" datatype="html">
         <source>Remove attachment</source>
         </trans-unit>
+      <trans-unit id="featureChat-planRefineAria" datatype="html">
+        <source>Plan feedback</source>
+        </trans-unit>
       <trans-unit id="featureChat-planRefineSubmitTitle" datatype="html">
+        <source>Refine plan</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planRefineSubmitAria" datatype="html">
         <source>Refine plan</source>
         </trans-unit>
       <trans-unit id="featureChat-deleteWorkspaceModalTitle" datatype="html">
@@ -2597,13 +2870,13 @@
         <source> The workspace&apos;s agent manager does not support isolation levels yet; environments run with Standard Docker. </source>
         </trans-unit>
       <trans-unit id="featureChat-isolationProbing" datatype="html">
-        <source>A check is running; states reflect the previous check.</source>
+        <source> A check is running; states reflect the previous check. </source>
         </trans-unit>
       <trans-unit id="featureChat-isolationLastChecked" datatype="html">
-        <source>Last checked: <x id="INTERPOLATION" equiv-text="{{ editingIsolation.probedAt | fpcDate: &apos;datetime&apos; }}"/></source>
+        <source> Last checked: <x id="INTERPOLATION" equiv-text="{{ editingIsolation.probedAt | fpcDate: &apos;datetime&apos; }}"/> </source>
         </trans-unit>
       <trans-unit id="featureChat-isolationUnknown" datatype="html">
-        <source> Isolation support has not been checked yet. </source>
+        <source>Isolation support has not been checked yet.</source>
         </trans-unit>
       <trans-unit id="featureChat-updateWorkspace" datatype="html">
         <source>Save</source>
@@ -2616,7 +2889,7 @@
         </trans-unit>
       <trans-unit id="featureChat-handoffProfileHelpFull" datatype="html">
         <source>What this environment is responsible for and which tasks other environments of the workspace can hand over to it. The agent can also maintain it itself.</source>
-      </trans-unit>
+        </trans-unit>
       <trans-unit id="featureChat-handoffProfileHelp" datatype="html">
         <source>Its duties and which tasks others may hand over to it.</source>
         </trans-unit>
@@ -2767,6 +3040,9 @@
       <trans-unit id="featureChat-openTicketFromAutomationCard" datatype="html">
         <source>Open ticket</source>
         </trans-unit>
+      <trans-unit id="featureChat-openPlanDetails" datatype="html">
+        <source>Open plan details</source>
+        </trans-unit>
       <trans-unit id="featureChat-planModalTitle" datatype="html">
         <source>Plan</source>
         </trans-unit>
@@ -2911,6 +3187,12 @@
       <trans-unit id="featureChat-chatSessionUntitledTitle" datatype="html">
         <source>Untitled chat</source>
         </trans-unit>
+      <trans-unit id="featureChat-planContextChip" datatype="html">
+        <source>Plan: <x id="title" equiv-text="title"/> (<x id="sha" equiv-text="longSha.slice(0, 7)"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planContextUnavailable" datatype="html">
+        <source>Unavailable plan (<x id="sha" equiv-text="longSha.slice(0, 7)"/>)</source>
+        </trans-unit>
       <trans-unit id="featureChat-openVirtualDesktopNewWindow" datatype="html">
         <source>Open Virtual Desktop in New Window</source>
         </trans-unit>
@@ -3031,9 +3313,6 @@
       <trans-unit id="featureContainer-securityAuthenticatorSuggested" datatype="html">
         <source>Authenticator app is not enabled</source>
         </trans-unit>
-      <trans-unit id="featureContainer-logout" datatype="html">
-        <source>Logout</source>
-        </trans-unit>
       <trans-unit id="featureContainer-spacesTitle" datatype="html">
         <source>Workspaces</source>
         </trans-unit>
@@ -3054,6 +3333,12 @@
         </trans-unit>
       <trans-unit id="featureContainer-pages" datatype="html">
         <source>Knowledge</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-plansTitle" datatype="html">
+        <source>Plans</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-plans" datatype="html">
+        <source>Plans</source>
         </trans-unit>
       <trans-unit id="featureContainer-tasksTitle" datatype="html">
         <source>Tasks</source>
@@ -3123,6 +3408,9 @@
         </trans-unit>
       <trans-unit id="featureContainer-imports" datatype="html">
         <source>Imports</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-logout" datatype="html">
+        <source>Logout</source>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
@@ -3605,6 +3893,9 @@
       <trans-unit id="featureFileTree-noFiles" datatype="html">
         <source>No files</source>
         </trans-unit>
+      <trans-unit id="featureFileTree-nameAria" datatype="html">
+        <source>Name</source>
+        </trans-unit>
       <trans-unit id="featureFileTree-itemBusy" datatype="html">
         <source>Working...</source>
         </trans-unit>
@@ -3806,6 +4097,9 @@
       <trans-unit id="featureGitBranchModal-bulkDeleteTitle" datatype="html">
         <source>Delete branches</source>
         </trans-unit>
+      <trans-unit id="featureAgentConsoleDataList-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
       <trans-unit id="featureGitBranchModal-bulkDeleteBody" datatype="html">
         <source> Delete the selected local branches? Commits that exist only on them may be lost. </source>
         </trans-unit>
@@ -3976,6 +4270,21 @@
         </trans-unit>
       <trans-unit id="featureMonacoEditor-closePreviewAriaLabel" datatype="html">
         <source>Close preview</source>
+        </trans-unit>
+      <trans-unit id="featureMonacoEditor-fileTooLarge" datatype="html">
+        <source>File too large to preview</source>
+        </trans-unit>
+      <trans-unit id="featureMonacoEditor-imagePreviewUnavailable" datatype="html">
+        <source>Image preview unavailable</source>
+        </trans-unit>
+      <trans-unit id="featureMonacoEditor-pdfPreviewUnavailable" datatype="html">
+        <source>PDF preview unavailable</source>
+        </trans-unit>
+      <trans-unit id="featureMonacoEditor-videoPreviewUnavailable" datatype="html">
+        <source>Video preview unavailable</source>
+        </trans-unit>
+      <trans-unit id="featureMonacoEditor-audioPreviewUnavailable" datatype="html">
+        <source>Audio preview unavailable</source>
         </trans-unit>
       <trans-unit id="featureTerminal-refreshTerminalAriaLabel" datatype="html">
         <source>Refresh terminal</source>
@@ -4157,6 +4466,9 @@
       <trans-unit id="featureKnowledgeBoard-chooseWorkspace" datatype="html">
         <source> Choose workspace... </source>
         </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-titleAria" datatype="html">
+        <source>Title</source>
+        </trans-unit>
       <trans-unit id="featureKnowledgeBoard-descriptionHeading" datatype="html">
         <source>Description</source>
         </trans-unit>
@@ -4283,6 +4595,9 @@
       <trans-unit id="featureKnowledgeTree-titlePlaceholder" datatype="html">
         <source>Title</source>
         </trans-unit>
+      <trans-unit id="featureKnowledgeTree-titleAria" datatype="html">
+        <source>Title</source>
+        </trans-unit>
       <trans-unit id="featureKnowledgeTree-itemBusy" datatype="html">
         <source>Working...</source>
         </trans-unit>
@@ -4315,6 +4630,9 @@
         </trans-unit>
       <trans-unit id="featureKnowledgeTree-renameModalTitle" datatype="html">
         <source>Rename item</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-renameTitleLabel" datatype="html">
+        <source>Title</source>
         </trans-unit>
       <trans-unit id="featureKnowledgeTree-rename" datatype="html">
         <source>Rename</source>
@@ -4373,6 +4691,30 @@
       <trans-unit id="featureAgentConfig-layerFileDeleteConfirm" datatype="html">
         <source>Delete the selected items from the layer VFS?</source>
         </trans-unit>
+      <trans-unit id="featureContentWrites-ticketCreate" datatype="html">
+        <source>Create tickets</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-ticketUpdate" datatype="html">
+        <source>Update tickets</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-ticketComment" datatype="html">
+        <source>Comment on tickets</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-ticketDelete" datatype="html">
+        <source>Delete tickets</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-pageCreate" datatype="html">
+        <source>Create knowledge pages</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-pageUpdate" datatype="html">
+        <source>Update knowledge pages</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-pageDelete" datatype="html">
+        <source>Delete knowledge pages</source>
+        </trans-unit>
+      <trans-unit id="featureContentWrites-planUpdate" datatype="html">
+        <source>Update plans that were not executed yet</source>
+        </trans-unit>
       <trans-unit id="featureAgentConsoleAttachments-list" datatype="html">
         <source>Attachments</source>
         </trans-unit>
@@ -4388,8 +4730,8 @@
       <trans-unit id="featureAgentConsoleDataList-copyId" datatype="html">
         <source>Copy ID</source>
         </trans-unit>
-      <trans-unit id="featureAgentConsoleDataList-delete" datatype="html">
-        <source>Delete</source>
+      <trans-unit id="featureAgentConsoleDataList-cancel" datatype="html">
+        <source>Cancel</source>
         </trans-unit>
       <trans-unit id="featureAgentConsoleDataList-close" datatype="html">
         <source>Close</source>
@@ -4664,6 +5006,9 @@
       <trans-unit id="featureTicketsBoard-emptyCreate" datatype="html">
         <source>Create ticket</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-detailTitleAria" datatype="html">
+        <source>Title</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-automationEligibleTitle" datatype="html">
         <source>Autonomous prototyping enabled</source>
         </trans-unit>
@@ -4698,7 +5043,7 @@
         <source>Select environment...</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-modelLabel" datatype="html">
-        <source> Model for chat / AI </source>
+        <source>Model for chat / AI</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-acceptanceLabel" datatype="html">
         <source> Acceptance <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-body-secondary small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;
@@ -4786,7 +5131,7 @@
         <source>Configuration changes may require approval before runs execute.</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationAllowedAgents" datatype="html">
-        <source>Allowed environments</source>
+        <source> Allowed environments </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationAllowedAgentsHint" datatype="html">
         <source> If none are selected, every environment with prototype autonomy enabled for this workspace may run this ticket. Select specific environments to restrict who can pick it up. </source>
@@ -4821,6 +5166,12 @@
       <trans-unit id="featureTicketsBoard-automationContextNoEnvironments" datatype="html">
         <source> No environments available for context enrichment. </source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContentWritesHeading" datatype="html">
+        <source> Ticket changes </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContentWritesHint" datatype="html">
+        <source> Autonomous runs may make these changes without asking, only to tickets of this ticket&apos;s tree (updates only to its subtasks). Leave empty to keep runs from changing tickets. </source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-automationDefaultBranch" datatype="html">
         <source>Default branch override</source>
         </trans-unit>
@@ -4843,7 +5194,7 @@
         <source>For stuck runs; clears after the next run starts.</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationVerifierHeading" datatype="html">
-        <source>Verifier commands</source>
+        <source> Verifier commands </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationVerifierAdd" datatype="html">
         <source> Add command </source>
@@ -6351,7 +6702,7 @@
         <source>Subscribed events</source>
         </trans-unit>
       <trans-unit id="featureNotifications-loadingEventTypes" datatype="html">
-        <source> Loading event types... </source>
+        <source>Loading event types...</source>
         </trans-unit>
       <trans-unit id="featureNotifications-noEventTypes" datatype="html">
         <source>No event types available</source>
@@ -6383,6 +6734,9 @@
         </trans-unit>
       <trans-unit id="featureNotifications-deliveryResponse" datatype="html">
         <source>Response</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authValueKeepPlaceholder" datatype="html">
+        <source>Leave empty to keep current</source>
         </trans-unit>
       <trans-unit id="featureNotifications-title" datatype="html">
         <source>Webhooks</source>
@@ -6654,114 +7008,6 @@
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
         </trans-unit>
-      <trans-unit id="featureContentWrites-ticketCreate" datatype="html">
-        <source>Create tickets</source>
-        </trans-unit>
-      <trans-unit id="featureContentWrites-ticketUpdate" datatype="html">
-        <source>Update tickets</source>
-        </trans-unit>
-      <trans-unit id="featureContentWrites-ticketComment" datatype="html">
-        <source>Comment on tickets</source>
-        </trans-unit>
-      <trans-unit id="featureContentWrites-ticketDelete" datatype="html">
-        <source>Delete tickets</source>
-        </trans-unit>
-      <trans-unit id="featureContentWrites-pageCreate" datatype="html">
-        <source>Create knowledge pages</source>
-        </trans-unit>
-      <trans-unit id="featureContentWrites-pageUpdate" datatype="html">
-        <source>Update knowledge pages</source>
-        </trans-unit>
-      <trans-unit id="featureContentWrites-pageDelete" datatype="html">
-        <source>Delete knowledge pages</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-allowedContentWritesLabel" datatype="html">
-        <source>Allowed ticket / knowledge changes</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-allowedContentWritesHint" datatype="html">
-        <source>Runs may make these changes without asking. Existing elements are only changed when the run may read them. Leave empty to keep runs from changing tickets and knowledge pages.</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-pendingApprovalContentWritesHint" datatype="html">
-        <source>Once approved, this task can make these changes without asking: <x id="INTERPOLATION" equiv-text="{{ contentWrites.join(&apos;, &apos;) }}"/></source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-noContentWrites" datatype="html">
-        <source>None</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-automationContentWritesHeading" datatype="html">
-        <source> Ticket changes </source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-automationContentWritesHint" datatype="html">
-        <source> Autonomous runs may make these changes without asking, only to tickets of this ticket&apos;s tree (updates only to its subtasks). Leave empty to keep runs from changing tickets. </source>
-        </trans-unit>
-      <trans-unit id="featureFileTree-nameAria" datatype="html">
-        <source>Name</source>
-        </trans-unit>
-      <trans-unit id="featureKnowledgeTree-titleAria" datatype="html">
-        <source>Title</source>
-        </trans-unit>
-      <trans-unit id="featureKnowledgeTree-renameTitleLabel" datatype="html">
-        <source>Title</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-detailTitleAria" datatype="html">
-        <source>Title</source>
-        </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-titleAria" datatype="html">
-        <source>Title</source>
-        </trans-unit>
-      <trans-unit id="featureAgentConfig-pathEntryAria" datatype="html">
-        <source>Path</source>
-        </trans-unit>
-      <trans-unit id="featureChat-messageAria" datatype="html">
-        <source>Message</source>
-        </trans-unit>
-      <trans-unit id="featureChat-planRefineAria" datatype="html">
-        <source>Plan feedback</source>
-        </trans-unit>
-      <trans-unit id="featureChat-renameChatSessionAria" datatype="html">
-        <source>Rename chat session</source>
-      </trans-unit>
-      <trans-unit id="featureChat-deleteChatSessionAria" datatype="html">
-        <source>Delete chat session</source>
-      </trans-unit>
-      <trans-unit id="featureChat-planExecuteAria" datatype="html">
-        <source>Execute plan</source>
-      </trans-unit>
-      <trans-unit id="featureChat-planRetryAria" datatype="html">
-        <source>Retry plan</source>
-      </trans-unit>
-      <trans-unit id="featureChat-planStopAria" datatype="html">
-        <source>Stop plan</source>
-      </trans-unit>
-      <trans-unit id="featureChat-selectContextAria" datatype="html">
-        <source>Select context</source>
-      </trans-unit>
-      <trans-unit id="featureChat-planPromptAria" datatype="html">
-        <source>Create plan with AI</source>
-      </trans-unit>
-      <trans-unit id="featureChat-enhancePromptAria" datatype="html">
-        <source>Enhance prompt with AI</source>
-      </trans-unit>
-      <trans-unit id="featureChat-planRefineSubmitAria" datatype="html">
-        <source>Refine plan</source>
-      </trans-unit>
-      <trans-unit id="featureMonacoEditor-fileTooLarge" datatype="html">
-        <source>File too large to preview</source>
-      </trans-unit>
-      <trans-unit id="featureMonacoEditor-imagePreviewUnavailable" datatype="html">
-        <source>Image preview unavailable</source>
-      </trans-unit>
-      <trans-unit id="featureMonacoEditor-pdfPreviewUnavailable" datatype="html">
-        <source>PDF preview unavailable</source>
-      </trans-unit>
-      <trans-unit id="featureMonacoEditor-videoPreviewUnavailable" datatype="html">
-        <source>Video preview unavailable</source>
-      </trans-unit>
-      <trans-unit id="featureMonacoEditor-audioPreviewUnavailable" datatype="html">
-        <source>Audio preview unavailable</source>
-      </trans-unit>
-      <trans-unit id="featureNotifications-authValueKeepPlaceholder" datatype="html">
-        <source>Leave empty to keep current</source>
-      </trans-unit>
     </body>
   </file>
 </xliff>

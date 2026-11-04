@@ -1,6 +1,7 @@
 /**
- * Content changes: agents create, update, comment on and delete workspace tickets and knowledge pages through the
- * platform `agenstra` MCP server (`agenstra_content_*` tools). Changes use the context ticket of the prompt (like the
+ * Content changes: agents create, update, comment on and delete workspace tickets and knowledge pages, and update chat
+ * plans of their own environment that were not executed yet, through the platform `agenstra` MCP server
+ * (`agenstra_content_*` tools). Changes use the context ticket of the prompt (like the
  * `agenstra_context_*` read tools) and only target elements the session may read.
  *
  * Every change is decided by the manager before the controller applies it:
@@ -23,6 +24,7 @@ export const AGENSTRA_CONTENT_MCP_TOOL_NAMES = {
   pageCreate: 'content_page_create',
   pageUpdate: 'content_page_update',
   pageDelete: 'content_page_delete',
+  planUpdate: 'content_plan_update',
   changeStatus: 'content_change_status',
 } as const;
 
@@ -44,6 +46,7 @@ export const AGENT_CONTENT_WRITE_OPERATIONS = [
   'page.create',
   'page.update',
   'page.delete',
+  'plan.update',
 ] as const;
 
 export type AgentContentWriteOperation = (typeof AGENT_CONTENT_WRITE_OPERATIONS)[number];
@@ -64,6 +67,7 @@ export const AGENT_CONTENT_TOOL_OPERATIONS: Record<string, AgentContentWriteOper
   [AGENSTRA_CONTENT_MCP_TOOL_NAMES.pageCreate]: 'page.create',
   [AGENSTRA_CONTENT_MCP_TOOL_NAMES.pageUpdate]: 'page.update',
   [AGENSTRA_CONTENT_MCP_TOOL_NAMES.pageDelete]: 'page.delete',
+  [AGENSTRA_CONTENT_MCP_TOOL_NAMES.planUpdate]: 'plan.update',
 };
 
 /** Content tool of each change operation (tool-call matching, display). */
@@ -74,6 +78,8 @@ export function agentContentToolForOperation(operation: AgentContentWriteOperati
 /** Input bounds shared by the MCP server, the manager API and the controller (authoritative validation). */
 export const AGENT_CONTENT_LIMITS = {
   titleMaxLength: 500,
+  /** Plan titles (`chat_plan.summary`). */
+  planTitleMaxLength: 512,
   contentMaxLength: 200_000,
   commentMaxLength: 32_000,
   reasonMaxLength: 500,
@@ -126,7 +132,9 @@ export type AgentContentChangeInput =
   | { operation: 'ticket.delete'; ref: string; revision: string }
   | { operation: 'page.create'; parentRef?: string; title: string; content?: string; nodeType?: 'page' | 'folder' }
   | { operation: 'page.update'; ref: string; revision: string; title?: string; content?: string }
-  | { operation: 'page.delete'; ref: string; revision: string };
+  | { operation: 'page.delete'; ref: string; revision: string }
+  /** Plans that never entered execution only (executed plans are read-only); `title` empty clears it. */
+  | { operation: 'plan.update'; ref: string; revision: string; title?: string; content?: string };
 
 export type AgentContentChangeRequest = AgentContentChangeInput & { reason?: string };
 
@@ -165,11 +173,12 @@ export type AgentContentControllerChange =
   | (Omit<Extract<AgentContentChangeInput, { operation: 'ticket.delete' }>, 'ref'> & { sha: string })
   | (Omit<Extract<AgentContentChangeInput, { operation: 'page.create' }>, 'parentRef'> & { parentSha?: string })
   | (Omit<Extract<AgentContentChangeInput, { operation: 'page.update' }>, 'ref'> & { sha: string })
-  | (Omit<Extract<AgentContentChangeInput, { operation: 'page.delete' }>, 'ref'> & { sha: string });
+  | (Omit<Extract<AgentContentChangeInput, { operation: 'page.delete' }>, 'ref'> & { sha: string })
+  | (Omit<Extract<AgentContentChangeInput, { operation: 'plan.update' }>, 'ref'> & { sha: string });
 
 /** Element after an applied change (`deleted` for deletes; comments report the ticket). */
 export interface AgentContentChangeResult {
-  kind: 'ticket' | 'knowledge';
+  kind: 'ticket' | 'knowledge' | 'plan';
   sha: string;
   title: string;
   revision?: string;

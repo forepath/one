@@ -24,7 +24,7 @@ function record(overrides: Partial<AgentContextTicketRecord> = {}): AgentContext
     correlationId: 'corr',
     accessMode: 'ask',
     items: [],
-    grants: { ticket: [], knowledge: [] },
+    grants: { ticket: [], knowledge: [], plan: [] },
     scopeAnchors: [],
     attachments: [],
     environments: [],
@@ -108,5 +108,28 @@ describe('agent-context-items.utils', () => {
     expect(chat).toContain('agenstra_content_* tools (the user approves each change');
     expect(task).toContain('only work when a user allowed them for this run');
     expect(plan).not.toContain('content tools');
+  });
+
+  it('derives linked plans as plan items with their SHA (index-aligned refs)', () => {
+    const items = deriveAgentContextItems({
+      planContexts: ['Chat Plan: Login\nPlan:\n- step', '  '],
+      planContextRefs: [{ sha: 'ABCDEF0123456789ABCDEF0123456789ABCDEF01', title: 'Login' }],
+    });
+
+    expect(items).toEqual([
+      {
+        kind: 'plan',
+        title: 'Login',
+        sha: 'abcdef0123456789abcdef0123456789abcdef01',
+        content: 'Chat Plan: Login\nPlan:\n- step',
+      },
+    ]);
+  });
+
+  it('mentions plans in the access and change hints of interactive chats', () => {
+    const lines = buildAgentContextHintLines(record()).join('\n');
+
+    expect(lines).toContain('plans of this environment');
+    expect(lines).toContain('update plans that were not executed yet');
   });
 });

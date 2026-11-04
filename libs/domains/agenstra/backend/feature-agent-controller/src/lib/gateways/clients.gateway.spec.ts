@@ -239,6 +239,7 @@ describe('ClientsGateway', () => {
             create: jest.fn(),
             cancel: jest.fn(),
             getEntityOrThrow: jest.fn(),
+            collectPromptContextsByShas: jest.fn().mockResolvedValue({ promptSections: [], refs: [] }),
           },
         },
         {
@@ -329,7 +330,7 @@ describe('ClientsGateway', () => {
         socket,
       );
 
-      expect(orchestrator.startRefine).toHaveBeenCalledWith('plan-1', 'tweak step 2', undefined);
+      expect(orchestrator.startRefine).toHaveBeenCalledWith('plan-1', 'tweak step 2', undefined, null);
       expect(mockAutoContextResolverService.resolve).not.toHaveBeenCalled();
       expect(socket.emit).toHaveBeenCalledWith(
         'forwardAck',
@@ -358,7 +359,18 @@ describe('ClientsGateway', () => {
         'plan-1',
         'include the ticket',
         expect.objectContaining({ includeWorkspace: true, environmentIds: ['agent-uuid'] }),
+        null,
       );
+    });
+
+    it('should attribute the refine to the socket user (activity log)', async () => {
+      const { socket, orchestrator } = setupRefine();
+
+      (socket as unknown as { data: unknown }).data = { userInfo: { userId: 'user-7' } };
+
+      await gateway.handleRefineChatPlan({ agentId: 'agent-uuid', planId: 'plan-1', message: 'x' }, socket);
+
+      expect(orchestrator.startRefine).toHaveBeenCalledWith('plan-1', 'x', undefined, 'user-7');
     });
 
     it('should reject refine for a plan owned by another client', async () => {
@@ -483,6 +495,37 @@ describe('ClientsGateway', () => {
       identity,
     );
     expect(socket.emit).not.toHaveBeenCalledWith('error', expect.anything());
+  });
+
+  it('resolves linked plans for the chat agent only (with the user identity) into plan contexts and refs', async () => {
+    const chatPlanService = (gateway as any).chatPlanService as { collectPromptContextsByShas: jest.Mock };
+    const identity = { user: { id: 'user-1' } };
+    const planSha = 'abcd'.repeat(10);
+
+    mockAutoContextResolverService.resolve.mockImplementationOnce(async (input: any) => input.contextInjection);
+    chatPlanService.collectPromptContextsByShas.mockResolvedValueOnce({
+      promptSections: ['Chat Plan: Login\nPlan:\n- step'],
+      refs: [{ sha: planSha, title: 'Login' }],
+    });
+
+    const enriched = (await (gateway as any).enrichForwardPayloadWithTicketContext(
+      'client-uuid',
+      'agent-uuid',
+      { message: 'continue the login plan', contextInjection: { planShas: [' ABCD1234 ', 'not-a-sha'] } },
+      identity,
+    )) as { contextInjection: Record<string, unknown> };
+
+    expect(chatPlanService.collectPromptContextsByShas).toHaveBeenCalledWith(
+      'client-uuid',
+      'agent-uuid',
+      ['abcd1234'],
+      identity,
+    );
+    expect(enriched.contextInjection).toMatchObject({
+      planShas: [planSha],
+      planContexts: ['Chat Plan: Login\nPlan:\n- step'],
+      planContextRefs: [{ sha: planSha, title: 'Login' }],
+    });
   });
 
   it('should emit error on setClient when missing clientId', async () => {

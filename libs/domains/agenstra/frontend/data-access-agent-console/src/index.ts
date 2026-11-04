@@ -105,6 +105,7 @@ export {
 
 export * from './lib/utils/ticket-automation-chat-run-mapper';
 export * from './lib/services/agent-tasks.service';
+export * from './lib/services/chat-plans.service';
 export * from './lib/services/agents.service';
 export * from './lib/services/clients.service';
 export * from './lib/services/deployments.service';
@@ -126,6 +127,12 @@ export * from './lib/state/agent-tasks/agent-tasks.facade';
 export * from './lib/state/agent-tasks/agent-tasks.reducer';
 export * from './lib/state/agent-tasks/agent-tasks.selectors';
 export * from './lib/state/agent-tasks/agent-tasks.types';
+export * from './lib/state/chat-plans/chat-plans.actions';
+export * from './lib/state/chat-plans/chat-plans.effects';
+export * from './lib/state/chat-plans/chat-plans.facade';
+export * from './lib/state/chat-plans/chat-plans.reducer';
+export * from './lib/state/chat-plans/chat-plans.selectors';
+export * from './lib/state/chat-plans/chat-plans.types';
 export * from './lib/state/agents/agents.actions';
 export * from './lib/state/agents/agents.effects';
 export * from './lib/state/agents/agents.facade';

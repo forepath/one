@@ -1,3 +1,4 @@
+import { ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
 import { KnowledgeNodeType } from '../entities/knowledge-node.enums';
 import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
 
@@ -49,7 +50,23 @@ describe('AgentContextRequestHandlerService', () => {
   let ticketsService: any;
   let knowledgeTreeService: any;
   let contentChanges: any;
+  let planRepo: any;
+  let chatPlanService: any;
   let service: AgentContextRequestHandlerService;
+  const agentId = '11111111-1111-4111-8111-111111111111';
+  const plan = {
+    id: 'plan-1',
+    clientId,
+    agentId,
+    status: ChatPlanStatus.EXECUTED,
+    phase: ChatPlanPhase.READY,
+    summary: 'Login plan',
+    sourcePrompt: 'Build login',
+    planMarkdown: '# Plan\n- step',
+    executionStartedAt: new Date('2026-11-03T12:00:00.000Z'),
+    longSha: 'abcd'.repeat(10),
+    updatedAt: new Date('2026-11-03T12:30:00.000Z'),
+  };
 
   beforeEach(() => {
     ticketRepo = {
@@ -71,12 +88,16 @@ describe('AgentContextRequestHandlerService', () => {
         .mockResolvedValue({ promptSections: ['Knowledge Page: A\nx', 'Knowledge Page: B\ny'] }),
     };
     contentChanges = { handle: jest.fn().mockResolvedValue({ ok: true, changed: { kind: 'ticket' } }) };
+    planRepo = { createQueryBuilder: jest.fn(() => queryBuilder([plan])) };
+    chatPlanService = { findForAgentBySha: jest.fn().mockResolvedValue(plan) };
     service = new AgentContextRequestHandlerService(
       ticketRepo,
       knowledgeRepo,
+      planRepo,
       ticketsService,
       knowledgeTreeService,
       contentChanges,
+      chatPlanService,
     );
   });
 
@@ -264,5 +285,69 @@ describe('AgentContextRequestHandlerService', () => {
 
     // Requests without an ack callback are ignored.
     expect(() => handlers.get(AGENT_CONTEXT_REQUEST_EVENT)?.({ op: 'search' })).not.toThrow();
+  });
+
+  describe('plans (agent specific)', () => {
+    it('searches only the plans of the requesting agent, including request and plan text', async () => {
+      const result = await service.handle(clientId, { op: 'search', agentId, kinds: ['plan'], query: 'login' });
+      const qb = planRepo.createQueryBuilder.mock.results[0].value;
+
+      expect(qb.andWhere).toHaveBeenCalledWith('p.agent_id = :agentId', { agentId });
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('p.plan_markdown ILIKE :like'),
+        expect.anything(),
+      );
+      expect(result).toEqual({
+        ok: true,
+        items: [
+          {
+            kind: 'plan',
+            sha: plan.longSha,
+            title: 'Login plan',
+            status: 'executed (read-only)',
+            size: plan.planMarkdown.length,
+          },
+        ],
+      });
+    });
+
+    it('never searches plans without an agent', async () => {
+      await service.handle(clientId, { op: 'search', kinds: ['plan'] });
+
+      expect(planRepo.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('describes and serves plan content of the agent with its revision and read-only state', async () => {
+      const described = await service.handle(clientId, {
+        op: 'describe',
+        agentId,
+        refs: [{ kind: 'plan', sha: 'abcd1234' }],
+      });
+
+      expect(chatPlanService.findForAgentBySha).toHaveBeenCalledWith(clientId, agentId, 'abcd1234');
+      expect(described).toMatchObject({ ok: true, items: [{ kind: 'plan', title: 'Login plan' }] });
+
+      const content = (await service.handle(clientId, {
+        op: 'content',
+        agentId,
+        refs: [{ kind: 'plan', sha: plan.longSha }],
+      })) as any;
+
+      expect(content.contents[0]).toMatchObject({
+        kind: 'plan',
+        sha: plan.longSha,
+        revision: plan.updatedAt.toISOString(),
+      });
+      expect(content.contents[0].content).toContain('execution started; read-only');
+      expect(content.contents[0].content).toContain('# Plan');
+    });
+
+    it('serves nothing for plans of other environments', async () => {
+      chatPlanService.findForAgentBySha.mockResolvedValue(null);
+
+      await expect(
+        service.handle(clientId, { op: 'content', agentId, refs: [{ kind: 'plan', sha: plan.longSha }] }),
+      ).resolves.toEqual({ ok: true, contents: [] });
+    });
   });
 });

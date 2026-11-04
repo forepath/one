@@ -3596,6 +3596,62 @@ paths:
           description: User does not have access to this client
         '404':
           description: Client or agent not found
+  /clients/{id}/agents/{agentId}/plans:
+    get:
+      summary: List the chat plans of an agent (plans page)
+      description: >
+        Every plan of the agent, newest first, paginated. `search` matches the plan title, the original request and the
+        plan body (case-insensitive, wildcards literal). Requires `agents:chats` scope and client access.
+      operationId: listAgentChatPlans
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: search
+          schema:
+            type: string
+            maxLength: 200
+        - in: query
+          name: state
+          schema:
+            type: string
+            enum: [editable, readonly]
+          description: >
+            `editable` = never executed and not being drafted; `readonly` = executing / executed / being drafted.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Page of plans
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatPlanListResponseDto'
+        '400':
+          description: Invalid state filter
+        '403':
+          description: User does not have access to this client
   /clients/{id}/agents/{agentId}/plans/{planId}:
     get:
       summary: Get a chat plan by id
@@ -3626,6 +3682,102 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatPlanResponseDto'
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Plan not found for this client/agent
+    patch:
+      summary: Edit a chat plan that has not been executed yet
+      description: >
+        Saves a user edit of the plan body and / or title (plans page). Conditional on `expectedUpdatedAt` and on the
+        plan still being editable: 409 when the plan changed meanwhile, while the agent drafts or refines it, and once
+        execution started (executed plans are read-only). Execution always runs the latest saved version.
+      operationId: updateChatPlan
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: planId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateChatPlanDto'
+      responses:
+        '200':
+          description: Saved plan (also published as `chatPlanUpsert`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatPlanResponseDto'
+        '400':
+          description: Validation failed (for example an empty plan body)
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Plan not found for this client/agent
+        '409':
+          description: Plan changed since `expectedUpdatedAt`, is being drafted, or has been executed (read-only)
+  /clients/{id}/agents/{agentId}/plans/{planId}/activity:
+    get:
+      summary: Activity log of a chat plan
+      description: Newest first. Creation, agent drafts, refine requests, user edits, execution, failure and cancel.
+      operationId: listChatPlanActivity
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: planId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Activity rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatPlanActivityResponseDto'
         '403':
           description: User does not have access to this client
         '404':
@@ -9456,6 +9608,11 @@ components:
           type: array
           items:
             type: string
+        planShas:
+          type: array
+          description: Plans of the chat's environment linked as context (agent specific).
+          items:
+            type: string
         autoEnrichmentEnabled:
           type: boolean
     TicketAutomationRunChatEventDto:
@@ -9499,6 +9656,13 @@ components:
           updatedAt,
         ]
       properties:
+        shas:
+          type: object
+          nullable: true
+          description: Context reference (`plan:<sha>`; sha1 of the id). `short` = first 7 characters.
+          properties:
+            short: { type: string }
+            long: { type: string }
         id:
           type: string
           format: uuid
@@ -9563,12 +9727,92 @@ components:
           type: string
           format: date-time
           nullable: true
+        executionStartedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: First entry into `executing`. Once set the plan is read-only for good (retries included).
+        lastEditedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last content edit by a workspace user (plans page).
+        lastEditedByUserId:
+          type: string
+          format: uuid
+          nullable: true
+        editable:
+          type: boolean
+          description: >
+            True while a workspace user may edit the plan: it never entered execution and is not being drafted by the
+            agent (status `ready`, `failed` or `cancelled`).
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
+    ChatPlanListResponseDto:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatPlanResponseDto'
+        total:
+          type: integer
+          minimum: 0
+          description: Every plan matching the filter (all pages).
+    UpdateChatPlanDto:
+      type: object
+      required: [expectedUpdatedAt]
+      properties:
+        planMarkdown:
+          type: string
+          maxLength: 200000
+          description: New plan body (markdown, must not be blank).
+        summary:
+          type: string
+          maxLength: 512
+          description: Plan title; empty clears it (the original request is shown instead).
+        expectedUpdatedAt:
+          type: string
+          format: date-time
+          description: >
+            `updatedAt` of the version the user edited. A plan changed in between (agent refine, another user,
+            execution) is refused with 409.
+    ChatPlanActivityResponseDto:
+      type: object
+      required: [id, planId, occurredAt, actorType, actionType, payload]
+      properties:
+        id: { type: string, format: uuid }
+        planId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        actorType: { type: string, enum: [human, ai, system] }
+        actorUserId: { type: string, format: uuid, nullable: true }
+        actorEmail: { type: string, nullable: true }
+        actionType:
+          type: string
+          enum:
+            [
+              CREATED,
+              DRAFT_UPDATED,
+              REFINE_REQUESTED,
+              CONTENT_UPDATED,
+              EXECUTION_STARTED,
+              EXECUTED,
+              FAILED,
+              CANCELLED,
+              RETRY_REQUESTED,
+            ]
+        payload:
+          type: object
+          additionalProperties: true
+          description: >
+            Action details: `chatId` (CREATED), `phase` / `ready` (DRAFT_UPDATED), `instructions` (REFINE_REQUESTED),
+            `fields` (CONTENT_UPDATED), `editedByUser` / `planMarkdownLength` (EXECUTION_STARTED), `code` / `message`
+            (FAILED).
     CreateAgentTaskDto:
       type: object
       required: [title, prompt, cronExpression, model]

@@ -589,7 +589,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         ...binding,
         agentId: agentUuid,
         items: deriveAgentContextItems(contextInjection),
-        grants: { ticket: contextInjection.ticketShas, knowledge: contextInjection.knowledgeShas },
+        grants: {
+          ticket: contextInjection.ticketShas,
+          knowledge: contextInjection.knowledgeShas,
+          plan: contextInjection.planShas,
+        },
         attachments: (contextInjection.attachmentContexts ?? [])
           .filter((attachment) => typeof attachment.agentPath === 'string' && attachment.agentPath.trim())
           .map((attachment) => ({
@@ -1100,6 +1104,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
       knowledgeShas: contextInjection.knowledgeShas ?? [],
       knowledgeContextCount: contextInjection.knowledgeContexts?.length ?? 0,
+      planShas: contextInjection.planShas ?? [],
+      planContextCount: contextInjection.planContexts?.length ?? 0,
       attachmentCount: contextInjection.attachmentContexts?.length ?? 0,
     };
 
@@ -1124,6 +1130,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
           ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
           knowledgeShas: contextInjection.knowledgeShas ?? [],
           knowledgeContextCount: contextInjection.knowledgeContexts?.length ?? 0,
+          planShas: contextInjection.planShas ?? [],
+          planContextCount: contextInjection.planContexts?.length ?? 0,
           attachmentCount: contextInjection.attachmentContexts?.length ?? 0,
         },
         isError: false,
@@ -1349,6 +1357,29 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     const knowledgeContexts = Array.from(
       new Set((contextInjection.knowledgeContexts ?? []).map((ctx) => ctx.trim()).filter((ctx) => ctx.length > 0)),
     );
+    // Linked plans (controller-resolved for this agent's environment): contexts and refs stay index-aligned.
+    const planShas = Array.from(
+      new Set((contextInjection.planShas ?? []).map((sha) => sha.trim().toLowerCase()).filter((sha) => sha.length > 0)),
+    );
+    const planContexts: string[] = [];
+    const planContextRefs: NonNullable<ContextInjectionPayload['planContextRefs']> = [];
+    const rawPlanContextRefs = Array.isArray(contextInjection.planContextRefs) ? contextInjection.planContextRefs : [];
+
+    (contextInjection.planContexts ?? []).forEach((ctx, index) => {
+      const trimmed = typeof ctx === 'string' ? ctx.trim() : '';
+
+      if (!trimmed || planContexts.includes(trimmed)) {
+        return;
+      }
+
+      const ref = rawPlanContextRefs[index];
+
+      planContexts.push(trimmed);
+      planContextRefs.push({
+        sha: typeof ref?.sha === 'string' ? ref.sha.trim().toLowerCase() : '',
+        ...(typeof ref?.title === 'string' ? { title: ref.title } : {}),
+      });
+    });
     const attachmentIds = Array.from(
       new Set((contextInjection.attachmentIds ?? []).map((id) => id.trim()).filter((id) => id.length > 0)),
     );
@@ -1369,6 +1400,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       ticketContexts.length === 0 &&
       knowledgeShas.length === 0 &&
       knowledgeContexts.length === 0 &&
+      planShas.length === 0 &&
+      planContexts.length === 0 &&
       attachmentIds.length === 0 &&
       attachmentContexts.length === 0
     ) {
@@ -1384,6 +1417,9 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       ...(ticketContextRefs.some((ref) => ref.sha.length > 0) ? { ticketContextRefs } : {}),
       knowledgeShas,
       knowledgeContexts,
+      ...(planShas.length ? { planShas } : {}),
+      ...(planContexts.length ? { planContexts } : {}),
+      ...(planContextRefs.some((ref) => ref.sha.length > 0) ? { planContextRefs } : {}),
       ...(attachmentIds.length ? { attachmentIds } : {}),
       ...(attachmentContexts.length ? { attachmentContexts } : {}),
     };
@@ -2099,6 +2135,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
               ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
               knowledgeShas: contextInjection.knowledgeShas ?? [],
               knowledgeContextCount: contextInjection.knowledgeContexts?.length ?? 0,
+              planShas: contextInjection.planShas ?? [],
+              planContextCount: contextInjection.planContexts?.length ?? 0,
             },
             status: 'succeeded',
           },
@@ -2124,6 +2162,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
               ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
               knowledgeShas: contextInjection.knowledgeShas ?? [],
               knowledgeContextCount: contextInjection.knowledgeContexts?.length ?? 0,
+              planShas: contextInjection.planShas ?? [],
+              planContextCount: contextInjection.planContexts?.length ?? 0,
             },
             isError: false,
           },

@@ -15,6 +15,8 @@ info:
     Chat **plan mode** uses controller-handled events `createChatPlan` / `refineChatPlan` / `executeChatPlan` /
     `cancelChatPlan` (not proxied via `forward`) and emits `chatPlanUpsert` (see OpenAPI `ChatPlanChatEventDto`)
     for chat-scoped timeline cards; after login the controller also hydrates recent plans via unicast `chatPlanUpsert`.
+    User edits on the plans page (REST `PATCH /clients/{id}/agents/{agentId}/plans/{planId}`) are broadcast as
+    `chatPlanUpsert` too, so chat cards and the plans page show the saved version live.
     Recurring **agent tasks** emit `agentTaskRunChatUpsert` (run cards for the agent's main chat, also hydrated after
     login), `agentTaskUpsert` and `agentTaskRemoved` (task rows for the `/tasks` page) to the workspace room.
     For **socket/clients**, all connections require authentication via the `Authorization` header in the handshake
@@ -714,7 +716,7 @@ components:
               When event is "closeTerminal", the payload should contain {sessionId: string}.
               When event is "enhanceChat", the payload should contain { message: string, correlationId: string, model?: string }.
               When event is "generateTicketBody", the payload should contain { title: string, correlationId: string, model?: string }.
-              When event is "chat", the payload may include { message, correlationId?, model?, responseMode?: "single"|"stream"|"sync", ephemeral?: boolean, continue?: boolean, resumeSessionSuffix?: string, contextInjection?: { includeWorkspace?: boolean, environmentIds?: string[], ticketShas?: string[], knowledgeShas?: string[], attachmentIds?: string[], autoEnrichmentEnabled?: boolean } }.
+              When event is "chat", the payload may include { message, correlationId?, model?, responseMode?: "single"|"stream"|"sync", ephemeral?: boolean, continue?: boolean, resumeSessionSuffix?: string, contextInjection?: { includeWorkspace?: boolean, environmentIds?: string[], ticketShas?: string[], knowledgeShas?: string[], planShas?: string[] (plans of the target agent's environment), attachmentIds?: string[], autoEnrichmentEnabled?: boolean } }.
               The controller resolves ticket/page/chat attachments and forwards read-only agentPath metadata to the agent-manager.
               Response events forwarded from the agent-manager include "containerStats" (payload has status.running and optional stats), "environmentProgress" (environment create/update progress, sent without agent login), and "opencodeConfigSynced" (data.agentId identifies a successfully applied effective config; refresh cached models and slash commands).
           agentId:

@@ -2,6 +2,13 @@ import { Route } from '@angular/router';
 import {
   AgentTasksFacade,
   agentTasksReducer,
+  ChatPlansFacade,
+  chatPlansReducer,
+  loadChatPlan$,
+  loadChatPlanActivity$,
+  loadChatPlans$,
+  reloadChatPlanActivityAfterUpdate$,
+  updateChatPlan$,
   createAgentTask$,
   deleteAgentTask$,
   loadAgentTaskRuns$,
@@ -234,6 +241,7 @@ import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 
 import { AtlassianImportAdminComponent } from './atlassian-import-admin/atlassian-import-admin.component';
 import { AgentTasksBoardComponent } from './agent-tasks/agent-tasks-board.component';
+import { ChatPlansBoardComponent } from './chat-plans/chat-plans-board.component';
 import { AuditComponent } from './audit/audit.component';
 import { AgentConsoleChatComponent } from './chat/chat.component';
 import { AgentConsoleContainerComponent } from './container/container.component';
@@ -303,6 +311,18 @@ export const agentConsoleRoutes: Route[] = [
         canActivate: [authGuard, ticketsRequireActiveClientGuard],
         component: KnowledgeBoardComponent,
         title: $localize`:@@featureAgentConsole-knowledgeTitle:Knowledge :: Agenstra`,
+      },
+      {
+        path: 'plans/:clientId',
+        canActivate: [authGuard, ticketsRequireActiveClientGuard],
+        component: ChatPlansBoardComponent,
+        title: $localize`:@@featureAgentConsole-plansTitle:Plans :: Agenstra`,
+      },
+      {
+        path: 'plans',
+        canActivate: [authGuard, ticketsRequireActiveClientGuard],
+        component: ChatPlansBoardComponent,
+        title: $localize`:@@featureAgentConsole-plansTitle:Plans :: Agenstra`,
       },
       {
         path: 'tasks/:clientId',
@@ -384,6 +404,7 @@ export const agentConsoleRoutes: Route[] = [
       KnowledgeFacade,
       ClientAgentAutonomyFacade,
       AgentTasksFacade,
+      ChatPlansFacade,
       AtlassianContextImportFacade,
       WorkspaceConfigFacade,
       WorkspaceSearchFacade,
@@ -409,6 +430,7 @@ export const agentConsoleRoutes: Route[] = [
       provideState('knowledge', knowledgeReducer),
       provideState('clientAgentAutonomy', clientAgentAutonomyReducer),
       provideState('agentTasks', agentTasksReducer),
+      provideState('chatPlans', chatPlansReducer),
       provideState('atlassianContextImport', atlassianContextImportReducer),
       provideState('workspaceConfig', workspaceConfigReducer),
       provideState('notifications', notificationsReducer),
@@ -572,6 +594,11 @@ export const agentConsoleRoutes: Route[] = [
         runAgentTaskNow$,
         loadAgentTaskRuns$,
         loadMoreAgentTaskRuns$,
+        loadChatPlans$,
+        loadChatPlan$,
+        updateChatPlan$,
+        loadChatPlanActivity$,
+        reloadChatPlanActivityAfterUpdate$,
         loadAtlassianContextImport$,
         loadAtlassianContextImportBatch$,
         loadAtlassianConnections$,

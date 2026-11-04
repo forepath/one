@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 import { ChatPlanPhase, ChatPlanStatus } from './chat-plan.enums';
@@ -20,11 +21,17 @@ export type ChatPlanContextInjectionJson = {
   ticketContexts?: string[];
   knowledgeShas?: string[];
   knowledgeContexts?: string[];
+  /** Other plans of the same environment linked as context. */
+  planShas?: string[];
+  planContexts?: string[];
+  planContextRefs?: Array<{ sha: string; title?: string }>;
 };
 
 @Entity('chat_plan')
 @Index('IDX_chat_plan_client_agent_chat', ['clientId', 'agentId', 'chatId'])
 @Index('IDX_chat_plan_agent_chat_status', ['agentId', 'chatId', 'status'])
+@Index('IDX_chat_plan_client_agent_started', ['clientId', 'agentId', 'startedAt'])
+@Index('IDX_chat_plan_client_agent_long_sha', ['clientId', 'agentId', 'longSha'])
 export class ChatPlanEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id!: string;
@@ -92,9 +99,31 @@ export class ChatPlanEntity {
   @Column({ type: 'timestamptz', name: 'finished_at', nullable: true })
   finishedAt?: Date | null;
 
+  /**
+   * First time the plan entered `executing`. Once set the plan is read-only for good (retries of a failed execution
+   * included): what was executed must stay what the activity log and the session show.
+   */
+  @Column({ type: 'timestamptz', name: 'execution_started_at', nullable: true })
+  executionStartedAt?: Date | null;
+
+  /** Last content edit by a workspace user (plans page). */
+  @Column({ type: 'timestamptz', name: 'last_edited_at', nullable: true })
+  lastEditedAt?: Date | null;
+
+  @Column({ type: 'uuid', name: 'last_edited_by_user_id', nullable: true })
+  lastEditedByUserId?: string | null;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
   updatedAt!: Date;
+
+  /** Stable context reference (`plan:<sha>`), sha1 of the id like tickets and knowledge nodes. */
+  @Column({ type: 'varchar', length: 40, nullable: true, name: 'long_sha' })
+  longSha?: string | null;
+
+  static deriveLongSha(planId: string): string {
+    return createHash('sha1').update(planId).digest('hex');
+  }
 }

@@ -4,11 +4,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { Socket as ClientSocket } from 'socket.io-client';
 import { In, Repository } from 'typeorm';
 
+import { ChatPlanEntity } from '../entities/chat-plan.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgeNodeType } from '../entities/knowledge-node.enums';
 import { TicketEntity } from '../entities/ticket.entity';
+import { buildChatPlanContextSection, chatPlanContextTitle } from '../utils/chat-plan-mappers';
 
 import { AgentContentChangesService } from './agent-content-changes.service';
+import { ChatPlanService } from './chat-plan.service';
 import { KnowledgeTreeService } from './knowledge-tree.service';
 import { TicketsService } from './tickets.service';
 
@@ -23,7 +26,10 @@ const MAX_SCOPE_ANCHORS = 50;
 const MAX_TICKET_DEPTH = 50;
 const SHA_PATTERN = /^[0-9a-f]{4,40}$/;
 
-type ContextKind = 'ticket' | 'knowledge';
+/** Plans are agent specific: an agent only reaches the plans of its own environment. */
+type ContextKind = 'ticket' | 'knowledge' | 'plan';
+
+const CONTEXT_KINDS: readonly ContextKind[] = ['ticket', 'knowledge', 'plan'];
 
 interface ContextRef {
   kind: ContextKind;
@@ -73,9 +79,12 @@ export class AgentContextRequestHandlerService {
     private readonly ticketRepo: Repository<TicketEntity>,
     @InjectRepository(KnowledgeNodeEntity)
     private readonly knowledgeNodeRepo: Repository<KnowledgeNodeEntity>,
+    @InjectRepository(ChatPlanEntity)
+    private readonly planRepo: Repository<ChatPlanEntity>,
     private readonly ticketsService: TicketsService,
     private readonly knowledgeTreeService: KnowledgeTreeService,
     private readonly contentChanges: AgentContentChangesService,
+    private readonly chatPlanService: ChatPlanService,
   ) {}
 
   /** Register the ack handler on a controller → manager socket for one workspace. */
@@ -101,6 +110,8 @@ export class AgentContextRequestHandlerService {
 
   async handle(clientId: string, raw: unknown): Promise<AgentContextRequestResponse> {
     const request = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+    // The manager sends the authenticated agent with every request; plans are only served for that agent.
+    const agentId = typeof request['agentId'] === 'string' ? request['agentId'] : '';
 
     switch (request['op']) {
       case 'search':
@@ -108,15 +119,16 @@ export class AgentContextRequestHandlerService {
           ok: true,
           items: await this.search(
             clientId,
+            agentId,
             typeof request['query'] === 'string' ? request['query'] : undefined,
             this.parseKinds(request['kinds']),
             typeof request['limit'] === 'number' ? request['limit'] : undefined,
           ),
         };
       case 'describe':
-        return { ok: true, items: await this.describe(clientId, this.parseRefs(request['refs'])) };
+        return { ok: true, items: await this.describe(clientId, agentId, this.parseRefs(request['refs'])) };
       case 'content':
-        return { ok: true, contents: await this.content(clientId, this.parseRefs(request['refs'])) };
+        return { ok: true, contents: await this.content(clientId, agentId, this.parseRefs(request['refs'])) };
       case 'scope':
         return {
           ok: true,
@@ -131,6 +143,7 @@ export class AgentContextRequestHandlerService {
 
   async search(
     clientId: string,
+    agentId: string,
     query: string | undefined,
     kinds: ContextKind[],
     limit: number | undefined,
@@ -175,30 +188,71 @@ export class AgentContextRequestHandlerService {
       );
     }
 
+    if (kinds.includes('plan') && agentId) {
+      const qb = this.planRepo
+        .createQueryBuilder('p')
+        .where('p.client_id = :clientId', { clientId })
+        .andWhere('p.agent_id = :agentId', { agentId })
+        .andWhere('p.long_sha IS NOT NULL');
+
+      if (term) {
+        qb.andWhere(
+          '(p.summary ILIKE :like OR p.source_prompt ILIKE :like OR p.plan_markdown ILIKE :like OR p.long_sha LIKE :prefix)',
+          {
+            like: `%${this.escapeLike(term)}%`,
+            prefix: `${this.escapeLike(term.toLowerCase())}%`,
+          },
+        );
+      }
+
+      results.push(...this.mapPlans(await qb.orderBy('p.updated_at', 'DESC').take(bounded).getMany()));
+    }
+
     return results.slice(0, bounded);
   }
 
-  async describe(clientId: string, refs: ContextRef[]): Promise<AgentContextMetadata[]> {
+  async describe(clientId: string, agentId: string, refs: ContextRef[]): Promise<AgentContextMetadata[]> {
     const tickets: TicketEntity[] = [];
     const nodes: KnowledgeNodeEntity[] = [];
+    const plans: ChatPlanEntity[] = [];
 
     for (const ref of refs) {
-      if (ref.kind === 'ticket') {
-        const ticket = await this.findTicket(clientId, ref.sha);
+      switch (ref.kind) {
+        case 'ticket': {
+          const ticket = await this.findTicket(clientId, ref.sha);
 
-        if (ticket) {
-          tickets.push(ticket);
+          if (ticket) {
+            tickets.push(ticket);
+          }
+
+          break;
         }
-      } else {
-        const node = await this.findKnowledgeNode(clientId, ref.sha);
+        case 'knowledge': {
+          const node = await this.findKnowledgeNode(clientId, ref.sha);
 
-        if (node) {
-          nodes.push(node);
+          if (node) {
+            nodes.push(node);
+          }
+
+          break;
+        }
+        case 'plan': {
+          const plan = agentId ? await this.chatPlanService.findForAgentBySha(clientId, agentId, ref.sha) : null;
+
+          if (plan) {
+            plans.push(plan);
+          }
+
+          break;
         }
       }
     }
 
-    return [...(await this.mapTickets(clientId, tickets)), ...(await this.mapKnowledge(clientId, nodes))];
+    return [
+      ...(await this.mapTickets(clientId, tickets)),
+      ...(await this.mapKnowledge(clientId, nodes)),
+      ...this.mapPlans(plans),
+    ];
   }
 
   /**
@@ -263,10 +317,26 @@ export class AgentContextRequestHandlerService {
   }
 
   /** Full content in the exact format previously inlined into prompts. */
-  async content(clientId: string, refs: ContextRef[]): Promise<AgentContextContent[]> {
+  async content(clientId: string, agentId: string, refs: ContextRef[]): Promise<AgentContextContent[]> {
     const contents: AgentContextContent[] = [];
 
     for (const ref of refs) {
+      if (ref.kind === 'plan') {
+        const plan = agentId ? await this.chatPlanService.findForAgentBySha(clientId, agentId, ref.sha) : null;
+
+        if (plan?.longSha) {
+          contents.push({
+            kind: 'plan',
+            sha: plan.longSha,
+            title: chatPlanContextTitle(plan),
+            revision: plan.updatedAt.toISOString(),
+            content: buildChatPlanContextSection(plan),
+          });
+        }
+
+        continue;
+      }
+
       if (ref.kind === 'ticket') {
         const ticket = await this.findTicket(clientId, ref.sha);
         const prompt = ticket?.longSha
@@ -387,11 +457,24 @@ export class AgentContextRequestHandlerService {
       }));
   }
 
+  private mapPlans(rows: ChatPlanEntity[]): AgentContextMetadata[] {
+    return rows
+      .filter((row) => !!row.longSha)
+      .map((row) => ({
+        kind: 'plan' as const,
+        sha: row.longSha as string,
+        title: chatPlanContextTitle(row),
+        // Executed plans are read-only for good (shown to the agent like a status).
+        status: row.executionStartedAt ? `${row.status} (read-only)` : row.status,
+        size: row.planMarkdown?.length ?? 0,
+      }));
+  }
+
   private parseKinds(raw: unknown): ContextKind[] {
     const values = Array.isArray(raw) ? raw : [];
-    const kinds = values.filter((value): value is ContextKind => value === 'ticket' || value === 'knowledge');
+    const kinds = values.filter((value): value is ContextKind => CONTEXT_KINDS.includes(value as ContextKind));
 
-    return kinds.length > 0 ? [...new Set(kinds)] : ['ticket', 'knowledge'];
+    return kinds.length > 0 ? [...new Set(kinds)] : [...CONTEXT_KINDS];
   }
 
   private parseRefs(raw: unknown): ContextRef[] {
@@ -406,8 +489,8 @@ export class AgentContextRequestHandlerService {
       const kind = ref['kind'];
       const sha = typeof ref['sha'] === 'string' ? ref['sha'].trim().toLowerCase() : '';
 
-      if ((kind === 'ticket' || kind === 'knowledge') && SHA_PATTERN.test(sha)) {
-        refs.push({ kind, sha });
+      if (CONTEXT_KINDS.includes(kind as ContextKind) && SHA_PATTERN.test(sha)) {
+        refs.push({ kind: kind as ContextKind, sha });
       }
     }
 

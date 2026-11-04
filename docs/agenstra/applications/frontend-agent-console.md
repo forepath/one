@@ -12,6 +12,7 @@ This application provides:
 
 - **Chat Interface** Real-time bidirectional communication with AI agents via WebSocket
 - **Chat plan mode** Composer-driven explore/refine/execute planning flow with chat-scoped timeline cards and modal refinement UI ([Chat plan mode](../features/chat-plan-mode.md))
+- **Plans** `/plans/:clientId` (sidebar between Knowledge and Tasks): searchable plans of an environment, markdown editing until a plan is executed, refine with the agent, activity log, context reference (`plan:<sha>`); chat plan cards link here and **Select context** links plans of the environment as chat context ([Chat plan mode](../features/chat-plan-mode.md#plans-page))
 - **Monaco Editor** Integrated code editor with syntax highlighting and code completion
 - **File Management** Browse, read, write, create, and delete files in agent containers
 - **Version Control** Full Git operations (status, branches, commit, push, pull, rebase)
