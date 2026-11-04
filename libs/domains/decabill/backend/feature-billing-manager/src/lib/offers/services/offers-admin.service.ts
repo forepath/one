@@ -26,10 +26,10 @@ import { BillingNotificationPublisher } from '../../notifications/billing-notifi
 import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
 import { BillingSearchIndexService } from '../../search/billing-search-index.service';
 import { getRequiredTenantId } from '../../utils/tenant-query.utils';
+import { offerCapabilityFlags } from '../utils/offer-capabilities.util';
 import { assertOfferRevocable } from '../utils/offer-mutability.util';
 
 import { OfferArchiveService } from './offer-archive.service';
-import { OfferPdfService } from './offer-pdf.service';
 import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
 import { CustomerProfilesRepository } from '../../repositories/customer-profiles.repository';
@@ -66,7 +66,6 @@ export class OffersAdminService {
     private readonly auditLog: BillingAuditLogService,
     private readonly subscriptionOrderPreparationService: SubscriptionOrderPreparationService,
     private readonly offerArchiveService: OfferArchiveService,
-    private readonly offerPdfService: OfferPdfService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingSearchIndexService: BillingSearchIndexService,
     @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
@@ -188,12 +187,8 @@ export class OffersAdminService {
   async readPdf(id: string): Promise<{ buffer: Buffer; filename: string }> {
     const offer = await this.offersRepository.findByIdOrThrow(id);
 
-    if (!offer.pdfStorageKey) {
-      throw new NotFoundException('Offer PDF is not available');
-    }
-
     return {
-      buffer: await this.offerPdfService.readPdf(offer.pdfStorageKey),
+      buffer: await this.offerArchiveService.getPdfBuffer(offer),
       filename: `${offer.offerNumber ?? offer.id}.pdf`,
     };
   }
@@ -462,6 +457,7 @@ export class OffersAdminService {
       expiresAt: offer.expiresAt?.toISOString() ?? null,
       createdAt: offer.createdAt.toISOString(),
       updatedAt: offer.updatedAt.toISOString(),
+      ...offerCapabilityFlags(offer),
     };
   }
 

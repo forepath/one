@@ -19,7 +19,7 @@ import { getRequiredTenantId } from '../../utils/tenant-query.utils';
 import { mapOfferLineItemToResponse } from '../utils/map-offer-line-items.util';
 
 import { OfferFulfillmentService } from './offer-fulfillment.service';
-import { OfferPdfService } from './offer-pdf.service';
+import { OfferArchiveService } from './offer-archive.service';
 
 @Injectable()
 export class OffersCustomerService {
@@ -27,12 +27,12 @@ export class OffersCustomerService {
     private readonly offersRepository: OffersRepository,
     private readonly offerLineItemsRepository: OfferLineItemsRepository,
     private readonly customerProfilesService: CustomerProfilesService,
-    private readonly offerPdfService: OfferPdfService,
     private readonly offerFulfillmentService: OfferFulfillmentService,
     private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingSearchIndexService: BillingSearchIndexService,
     private readonly auditLog: BillingAuditLogService,
+    private readonly offerArchiveService: OfferArchiveService,
   ) {}
 
   async getSummary(userId: string): Promise<OffersSummaryResponseDto> {
@@ -93,12 +93,7 @@ export class OffersCustomerService {
 
   async readPdf(userId: string, offerId: string): Promise<{ buffer: Buffer; filename: string }> {
     const offer = await this.assertCustomerOffer(userId, offerId);
-
-    if (!offer.pdfStorageKey) {
-      throw new NotFoundException('Offer PDF is not available');
-    }
-
-    const buffer = await this.offerPdfService.readPdf(offer.pdfStorageKey);
+    const buffer = await this.offerArchiveService.getPdfBuffer(offer);
 
     return {
       buffer,

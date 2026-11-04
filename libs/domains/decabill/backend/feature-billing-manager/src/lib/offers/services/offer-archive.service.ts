@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { OfferStatus } from '../constants/offer-status.constants';
+import type { OfferEntity } from '../entities/offer.entity';
 import { OfferLineType } from '../constants/offer-line-type.constants';
 import type { AdminOfferDetailResponseDto } from '../dto/offer.dto';
 import { OfferLineItemsRepository } from '../repositories/offer-line-items.repository';
@@ -16,6 +17,7 @@ import { BillingNotificationPublisher } from '../../notifications/billing-notifi
 import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
 import { BillingSearchIndexService } from '../../search/billing-search-index.service';
 import { getRequiredTenantId } from '../../utils/tenant-query.utils';
+import { assertOfferHasPdf, offerCapabilityFlags } from '../utils/offer-capabilities.util';
 import { assertOfferDraftEditable } from '../utils/offer-mutability.util';
 import { mapOfferLineItemToResponse } from '../utils/map-offer-line-items.util';
 
@@ -190,6 +192,47 @@ export class OfferArchiveService {
     }
   }
 
+  /**
+   * PDF of a sent offer. Like invoices (`getPdfBuffer` / `ensurePdfStored`), a missing or unreadable stored
+   * file is rendered again from the offer and stored, so every sent offer can be downloaded.
+   */
+  async getPdfBuffer(offer: OfferEntity): Promise<Buffer> {
+    assertOfferHasPdf(offer);
+
+    if (offer.pdfStorageKey && process.env.BILLING_SKIP_FILE_CACHE !== 'true') {
+      try {
+        return await this.offerPdfService.readPdf(offer.pdfStorageKey);
+      } catch {
+        // Stored file missing or unreadable — regenerate below.
+      }
+    }
+
+    const storageKey = await this.ensurePdfStored(offer);
+
+    return await this.offerPdfService.readPdf(storageKey);
+  }
+
+  private async ensurePdfStored(offer: OfferEntity): Promise<string> {
+    const profile = await this.customerProfilesService.getByUserId(offer.userId);
+
+    if (!profile) {
+      throw new NotFoundException('Customer profile required for offer PDF');
+    }
+
+    this.billingIssuerConfig.assertConfigured();
+    const lines = await this.offerLineItemsRepository.findByOfferId(offer.id);
+    const storageKey = await this.offerPdfService.generateAndStore(
+      offer,
+      lines,
+      this.billingIssuerConfig.getConfig(),
+      profile,
+    );
+
+    await this.offersRepository.update(offer.id, { pdfStorageKey: storageKey });
+
+    return storageKey;
+  }
+
   private async mapDetail(id: string): Promise<AdminOfferDetailResponseDto> {
     const offer = await this.offersRepository.findByIdOrThrow(id, true);
     const user = await this.usersRepository.findByIdForTenant(offer.userId);
@@ -206,6 +249,7 @@ export class OfferArchiveService {
       expiresAt: offer.expiresAt?.toISOString() ?? null,
       createdAt: offer.createdAt.toISOString(),
       updatedAt: offer.updatedAt.toISOString(),
+      ...offerCapabilityFlags(offer),
       subtotalNet: Number(offer.subtotalNet),
       taxTotal: Number(offer.taxTotal),
       billToOpenPositions: offer.billToOpenPositions,

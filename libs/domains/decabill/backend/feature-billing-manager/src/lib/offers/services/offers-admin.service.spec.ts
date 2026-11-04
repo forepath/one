@@ -60,8 +60,7 @@ describe('OffersAdminService', () => {
   const subscriptionOrderPreparationService = {
     prepareForUser: jest.fn(),
   };
-  const offerArchiveService = { archive: jest.fn() };
-  const offerPdfService = { readPdf: jest.fn() };
+  const offerArchiveService = { archive: jest.fn(), getPdfBuffer: jest.fn() };
   const billingNotificationPublisher = { publishOffer: jest.fn() };
   const billingSearchIndexService = { scheduleUpsert: jest.fn() };
 
@@ -74,7 +73,6 @@ describe('OffersAdminService', () => {
     auditLog as never,
     subscriptionOrderPreparationService as never,
     offerArchiveService as never,
-    offerPdfService as never,
     billingNotificationPublisher as never,
     billingSearchIndexService as never,
   );
@@ -154,5 +152,33 @@ describe('OffersAdminService', () => {
     );
     expect(result.id).toBe('offer-1');
     expect(result.lineItems).toHaveLength(1);
+    expect(result).toEqual(expect.objectContaining({ canPreview: false, canDownload: false }));
+  });
+
+  it('serves the stored PDF of a sent offer and flags it previewable / downloadable', async () => {
+    const sent = {
+      id: 'offer-1',
+      userId: 'user-1',
+      offerNumber: 'OFF-1',
+      status: OfferStatus.ARCHIVED,
+      pdfStorageKey: 'user-1/offer-1.pdf',
+      currency: 'EUR',
+      subtotalNet: 100,
+      taxTotal: 19,
+      totalGross: 119,
+      billToOpenPositions: false,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      lineItems: [],
+    };
+
+    offersRepository.findByIdOrThrow.mockResolvedValue(sent);
+    offerArchiveService.getPdfBuffer.mockResolvedValue(Buffer.from('%PDF'));
+
+    await expect(service.readPdf('offer-1')).resolves.toEqual({ buffer: Buffer.from('%PDF'), filename: 'OFF-1.pdf' });
+    expect(offerArchiveService.getPdfBuffer).toHaveBeenCalledWith(sent);
+    await expect(service.get('offer-1')).resolves.toEqual(
+      expect.objectContaining({ canPreview: true, canDownload: true }),
+    );
   });
 });

@@ -7,7 +7,7 @@ import {
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { of, throwError } from 'rxjs';
 
-import { AdminOffersPageComponent } from './admin-offers-page.component';
+import { AdminOffersPageComponent, offerTaxBreakdown } from './admin-offers-page.component';
 
 jest.mock('keycloak-js', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('keycloak-angular', () => ({
@@ -35,15 +35,24 @@ const offer = (id: string, status: string): AdminOfferListItem =>
     totalGross: 100,
     createdAt: '2026-10-01T00:00:00Z',
     updatedAt: '2026-10-01T00:00:00Z',
+    // Mirrors the server's offerCapabilityFlags: drafts have no document.
+    canPreview: status !== 'draft',
+    canDownload: status !== 'draft',
   }) as AdminOfferListItem;
 
 describe('AdminOffersPageComponent (data list)', () => {
-  let service: { archive: jest.Mock; revoke: jest.Mock; delete: jest.Mock; get: jest.Mock };
+  let service: {
+    archive: jest.Mock;
+    revoke: jest.Mock;
+    delete: jest.Mock;
+    get: jest.Mock;
+    downloadPdf: jest.Mock;
+  };
   let facade: Record<string, unknown>;
   let component: AdminOffersPageComponent;
 
   beforeEach(() => {
-    service = { archive: jest.fn(), revoke: jest.fn(), delete: jest.fn(), get: jest.fn() };
+    service = { archive: jest.fn(), revoke: jest.fn(), delete: jest.fn(), get: jest.fn(), downloadPdf: jest.fn() };
     facade = new Proxy(
       {
         offers$: of([offer('d1', 'draft'), offer('d2', 'draft'), offer('p1', 'archived'), offer('a1', 'accepted')]),
@@ -132,5 +141,62 @@ describe('AdminOffersPageComponent (data list)', () => {
     expect(service.delete).toHaveBeenCalledTimes(1);
     expect(component.bulkResult()?.message).toContain('1 not allowed');
     expect(component.pendingBulk()).toBeNull();
+  });
+
+  it('offers Preview / Download PDF for sent offers only (drafts are edited)', () => {
+    const ids = (status: string) => component.rowMenu(offer('x', status)).map((item) => item.id);
+
+    expect(ids('draft')).toEqual(expect.arrayContaining(['edit']));
+    expect(ids('draft')).not.toEqual(expect.arrayContaining(['preview']));
+    expect(ids('draft')).not.toContain('download');
+
+    for (const status of ['archived', 'accepted', 'declined', 'expired', 'revoked']) {
+      expect(ids(status)).toEqual(expect.arrayContaining(['preview', 'download']));
+      expect(ids(status)).not.toContain('edit');
+    }
+  });
+
+  it('opens the preview from the detail endpoint (row activation of a sent offer too)', () => {
+    service.get.mockReturnValue(
+      of({ ...offer('p1', 'archived'), userEmail: 'p1@example.com', subtotalNet: 84, taxTotal: 16, lineItems: [] }),
+    );
+    const sent = { ...offer('p1', 'archived'), customerName: 'ACME GmbH' };
+
+    component.onRowActivate(sent);
+
+    expect(service.get).toHaveBeenCalledWith('p1');
+    expect(component.previewOfferModalOpen()).toBe(true);
+    expect(component.previewLoading()).toBe(false);
+    expect(component.previewDetail()?.customerName).toBe('ACME GmbH');
+    expect(component.previewSummaryItems().map((item) => item.key)).toEqual(['subtotal', 'tax', 'total']);
+
+    component.onRowAction(offer('d1', 'draft'), 'preview');
+    expect(service.get).toHaveBeenCalledTimes(1);
+  });
+
+  it('downloads the stored PDF of a sent offer through the admin endpoint', () => {
+    const blob = new Blob(['%PDF']);
+    const click = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+
+    URL.createObjectURL = jest.fn(() => 'blob:offer');
+    URL.revokeObjectURL = jest.fn();
+    service.downloadPdf.mockReturnValue(of(blob));
+
+    component.onRowAction(offer('p1', 'archived'), 'download');
+    expect(service.downloadPdf).toHaveBeenCalledWith('p1');
+    expect(click).toHaveBeenCalledTimes(1);
+
+    component.downloadOfferPdf(offer('d1', 'draft'));
+    expect(service.downloadPdf).toHaveBeenCalledTimes(1);
+    click.mockRestore();
+  });
+
+  it('sums line taxes per rate for the tax breakdown', () => {
+    const line = (taxRate: number, lineTax: number) => ({ taxRate, lineTax }) as never;
+
+    expect(offerTaxBreakdown({ lineItems: [line(7, 0.7), line(19, 1.9), line(19, 3.8), line(0, 0)] })).toEqual([
+      { taxRate: 19, taxAmount: 5.7 },
+      { taxRate: 7, taxAmount: 0.7 },
+    ]);
   });
 });

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-04T09:04:36.423Z",
+  "generatedAt": "2026-11-04T17:57:41.162Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -66508,11 +66508,6 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
-      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/search/billing-search-index.service.ts",
       "type": "injects"
     },
@@ -66538,11 +66533,6 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
-      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
       "type": "injects"
     },
@@ -66554,6 +66544,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
       "type": "injects"
     },
     {
@@ -73214,6 +73209,11 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
       "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/pdf",
       "type": "calls"
     },
     {

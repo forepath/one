@@ -57,6 +57,11 @@ export class AdminOffersService {
     return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/revoke`, {});
   }
 
+  /** Stored PDF of a sent offer (`404` while the offer is a draft). */
+  downloadPdf(id: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/admin/billing/offers/${id}/pdf`, { responseType: 'blob' });
+  }
+
   getStatistics(params?: AdminOfferStatisticsParams): Observable<OfferStatisticsResponse> {
     return this.http.get<OfferStatisticsResponse>(`${this.apiUrl}/admin/billing/offers/statistics`, {
       params: this.buildStatisticsParams(params),

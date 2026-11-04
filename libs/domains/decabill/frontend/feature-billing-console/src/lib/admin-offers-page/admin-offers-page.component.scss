@@ -11,3 +11,18 @@
   flex: 1 1 0;
   min-height: 0;
 }
+
+fpc-modal.offer-preview-modal ::ng-deep .modal-dialog {
+  max-width: 56rem;
+}
+
+fpc-modal.offer-preview-modal ::ng-deep {
+  .offer-preview-modal__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 12rem;
+    color: var(--bs-secondary-color);
+  }
+}

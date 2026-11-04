@@ -161,6 +161,10 @@ export class AdminOfferListItemDto {
   expiresAt?: string | null;
   createdAt!: string;
   updatedAt!: string;
+  /** `false` for drafts (no document yet), like invoices. */
+  canPreview!: boolean;
+  /** `false` for drafts and while no PDF is stored. */
+  canDownload!: boolean;
 }
 
 export class AdminOfferDetailResponseDto extends AdminOfferListItemDto {

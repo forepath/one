@@ -1,11 +1,23 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked, ViewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  LOCALE_ID,
+  OnInit,
+  signal,
+  untracked,
+  ViewChild,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   AdminOffersFacade,
   AdminOffersService,
   fillPeriodSeriesPoints,
+  type AdminOfferDetailResponse,
   type AdminOfferListItem,
   type BillingAuditLogResponse,
   type CreateAdminOfferDto,
@@ -13,6 +25,8 @@ import {
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
   FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcBoardLaneComponent,
   FpcButtonComponent,
   FpcListToolbarComponent,
   fpcListQueryState,
@@ -23,12 +37,16 @@ import {
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
+  FpcKeyValueListComponent,
+  FpcLaneHeaderComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcPanelComponent,
   FpcPanelGridComponent,
   fpcRunBulk,
+  FpcSectionColumnComponent,
+  FpcSectionRowComponent,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
   FpcSummaryCardComponent,
@@ -41,6 +59,9 @@ import {
   FPC_CHART_LEGEND,
   fpcChart,
   fpcChartCountAxis,
+  type FpcBadgeTone,
+  fpcFormatMoney,
+  type FpcKeyValueItem,
   type FpcMenuItem,
   type FpcTableColumn,
   FpcMoneyPipe,
@@ -56,10 +77,10 @@ import type {
   ApexYAxis,
 } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { firstValueFrom, of, switchMap } from 'rxjs';
+import { finalize, firstValueFrom, type Observable, of, switchMap } from 'rxjs';
 
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
-import { getUnavailableLabel } from '../billing-status-labels';
+import { getOfferStatusBadgeTone, getOfferStatusLabel, getUnavailableLabel } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import {
@@ -67,9 +88,12 @@ import {
   dbBulkSummary,
   dbCopyIdItem,
   type DbBulkResult,
+  DB_DL_DOWNLOAD_PDF,
   DB_DL_EDIT,
+  DB_DL_PREVIEW,
   DB_DL_SEND,
 } from '../shared/data-list';
+import { invoiceTaxItems } from '../shared/invoice-totals';
 import { dbServerPaging } from '../shared/server-paging';
 import { offerState } from '../shared/table-states';
 import { AdminOfferLineEditorComponent } from './admin-offer-line-editor.component';
@@ -87,7 +111,12 @@ import {
   type CustomerLabelSource,
 } from '../named-label.util';
 import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
-import { formatBillingDateTime, formatBillingMoney } from '../billing-format';
+import {
+  DEFAULT_BILLING_CURRENCY,
+  formatBillingDateRange,
+  formatBillingDateTime,
+  formatBillingMoney,
+} from '../billing-format';
 
 type AdminOffersTab = 'offers' | 'statistics';
 
@@ -103,11 +132,15 @@ type AdminOffersTab = 'offers' | 'statistics';
     AdminOfferLineEditorComponent,
     PricingTotalsSummaryComponent,
     FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcBoardLaneComponent,
     FpcButtonComponent,
     FpcDataTableComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormCheckComponent,
+    FpcKeyValueListComponent,
+    FpcLaneHeaderComponent,
     FpcEmptyStateComponent,
     FpcListToolbarComponent,
     FpcConfirmDialogComponent,
@@ -116,6 +149,8 @@ type AdminOffersTab = 'offers' | 'statistics';
     FpcPageHeaderComponent,
     FpcPanelComponent,
     FpcPanelGridComponent,
+    FpcSectionColumnComponent,
+    FpcSectionRowComponent,
     FpcSpinnerComponent,
     FpcSummaryBarComponent,
     FpcSummaryCardComponent,
@@ -140,19 +175,32 @@ export class AdminOffersPageComponent implements OnInit {
   readonly editModalOpen = signal(false);
   readonly deleteModalOpen = signal(false);
   readonly auditHistoryModalOpen = signal(false);
+  readonly previewOfferModalOpen = signal(false);
 
   private readonly facade = inject(AdminOffersFacade);
   private readonly adminOffersService = inject(AdminOffersService);
   private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly locale = inject(LOCALE_ID);
 
-  readonly activeTab = signal<AdminOffersTab>('offers');
+  /** Phone column switch (md and up show both columns side by side); statistics first, as billing admin. */
+  readonly activeTab = signal<AdminOffersTab>('statistics');
   readonly filtersCollapsed = signal(true);
   readonly filtersPanelTitle = $localize`:@@featureAdminOffers-filters:Filters`;
   readonly fromDate = signal('');
   readonly toDate = signal('');
   readonly groupBy = signal<'day' | 'month'>('day');
   readonly filtersOpen = computed(() => !this.filtersCollapsed());
+  /** Applied statistics scope (period · grouping) next to the Filters toggle, as on billing admin (DB-17 e). */
+  readonly statisticsScopeLabel = computed(() => {
+    const range = formatBillingDateRange(this.fromDate() || null, this.toDate() || null, '');
+    const grouping =
+      this.groupBy() === 'month'
+        ? $localize`:@@featureAdminBilling-scopeByMonth:By month`
+        : $localize`:@@featureAdminBilling-scopeByDay:By day`;
+
+    return [range, grouping].filter(Boolean).join(' · ');
+  });
   /** Applied range / grouping (+ party) in the URL (`?f=`); the drawer edits a draft until Apply (3.38 R12). */
   readonly filterState = fpcListQueryState({
     filters: { from: this.fromDate, to: this.toDate, groupBy: this.groupBy },
@@ -175,6 +223,34 @@ export class AdminOffersPageComponent implements OnInit {
 
   readonly searchPlaceholder = $localize`:@@featureAdminOffers-searchPlaceholder:Search offers`;
   readonly auditOfferId = signal<string | null>(null);
+
+  /** Offer preview (`GET /admin/billing/offers/:id`), same layout as the admin invoice preview. */
+  readonly previewLoading = signal(false);
+  readonly previewDetail = signal<AdminOfferDetailResponse | null>(null);
+  readonly previewTaxItems = computed<FpcKeyValueItem[]>(() => {
+    const detail = this.previewDetail();
+
+    return detail
+      ? invoiceTaxItems({ taxBreakdown: offerTaxBreakdown(detail), currency: detail.currency }, this.locale)
+      : [];
+  });
+  readonly previewSummaryItems = computed<FpcKeyValueItem[]>(() => {
+    const detail = this.previewDetail();
+
+    if (!detail) return [];
+
+    const money = (value: number) => fpcFormatMoney(value, detail.currency || DEFAULT_BILLING_CURRENCY, this.locale);
+
+    return [
+      {
+        key: 'subtotal',
+        label: $localize`:@@featureInvoices-subtotalNet:Subtotal (net)`,
+        value: money(detail.subtotalNet),
+      },
+      { key: 'tax', label: $localize`:@@featureInvoices-taxTotal:Tax total`, value: money(detail.taxTotal) },
+      { key: 'total', label: $localize`:@@featureInvoices-totalGross:Total`, value: money(detail.totalGross) },
+    ];
+  });
 
   readonly offers$ = this.facade.offers$;
   readonly loading$ = this.facade.loading$;
@@ -318,6 +394,8 @@ export class AdminOffersPageComponent implements OnInit {
   );
   readonly rowMenu = (offer: AdminOfferListItem): FpcMenuItem[] => [
     ...(this.canEditOffer(offer) ? [{ id: 'edit', label: DB_DL_EDIT, icon: 'pencil' }] : []),
+    ...(this.canPreviewOffer(offer) ? [{ id: 'preview', label: DB_DL_PREVIEW, icon: 'eye' }] : []),
+    ...(this.canDownloadOffer(offer) ? [{ id: 'download', label: DB_DL_DOWNLOAD_PDF, icon: 'file-earmark-pdf' }] : []),
     { id: 'audit', label: this.auditLabel, icon: 'clock-history' },
     ...(this.canArchiveOffer(offer) ? [{ id: 'send', label: DB_DL_SEND, icon: 'send' }] : []),
     ...(this.canRevokeOffer(offer) ? [{ id: 'revoke', label: this.revokeLabel, icon: 'slash-circle' }] : []),
@@ -411,11 +489,13 @@ export class AdminOffersPageComponent implements OnInit {
 
   onRowActivate(offer: AdminOfferListItem): void {
     if (this.canEditOffer(offer)) this.openEditModal(offer);
-    else this.openAuditHistory(offer);
+    else this.openPreview(offer);
   }
 
   onRowAction(offer: AdminOfferListItem, action: string): void {
     if (action === 'edit') this.openEditModal(offer);
+    else if (action === 'preview') this.openPreview(offer);
+    else if (action === 'download') this.downloadOfferPdf(offer);
     else if (action === 'audit') this.openAuditHistory(offer);
     else if (action === 'send') this.archiveOffer(offer);
     else if (action === 'revoke') this.revokeOffer(offer);
@@ -545,6 +625,40 @@ export class AdminOffersPageComponent implements OnInit {
     showBillingModal(this.auditHistoryModalOpen);
   }
 
+  openPreview(offer: AdminOfferListItem): void {
+    if (!this.canPreviewOffer(offer)) return;
+
+    this.previewLoading.set(true);
+    this.previewDetail.set(null);
+    showBillingModal(this.previewOfferModalOpen);
+    this.adminOffersService
+      .get(offer.id)
+      .pipe(
+        finalize(() => this.previewLoading.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        // The detail carries no billing-profile name; keep the list row's so the preview matches the table.
+        next: (detail) =>
+          this.previewDetail.set({ ...detail, customerName: detail.customerName ?? offer.customerName }),
+        error: () => this.previewDetail.set(null),
+      });
+  }
+
+  downloadOfferPdf(offer: Pick<AdminOfferListItem, 'id' | 'offerNumber' | 'canDownload'>): void {
+    if (!this.canDownloadOffer(offer)) return;
+
+    this.downloadPdfBlob(this.adminOffersService.downloadPdf(offer.id), `${offer.offerNumber ?? offer.id}.pdf`);
+  }
+
+  offerStatusLabel(status: string | null | undefined): string {
+    return getOfferStatusLabel(status);
+  }
+
+  offerStatusBadgeTone(status: string | null | undefined): FpcBadgeTone {
+    return getOfferStatusBadgeTone(status);
+  }
+
   submitCreate(): void {
     if (!this.createUserId || !isOfferFormValid(this.createLineItems)) {
       return;
@@ -627,6 +741,30 @@ export class AdminOffersPageComponent implements OnInit {
     return offer.status === 'archived';
   }
 
+  /** Server flag, like invoices: drafts have no document and are edited instead. */
+  canPreviewOffer(offer: Pick<AdminOfferListItem, 'canPreview'>): boolean {
+    return offer.canPreview === true;
+  }
+
+  /** Server flag: drafts have no PDF (it is rendered and stored when the offer is sent). */
+  canDownloadOffer(offer: Pick<AdminOfferListItem, 'canDownload'>): boolean {
+    return offer.canDownload === true;
+  }
+
+  private downloadPdfBlob(source: Observable<Blob>, filename: string): void {
+    source.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.click();
+        URL.revokeObjectURL(url);
+      },
+    });
+  }
+
   private loadStatistics(): void {
     this.facade.loadStatistics({
       from: this.fromDate(),
@@ -698,4 +836,21 @@ export class AdminOffersPageComponent implements OnInit {
 
     return this.datePipe.transform(`${period}T12:00:00.000Z`, format, 'UTC') ?? period;
   }
+}
+
+/** Tax per rate of an offer (offers carry no stored breakdown, unlike invoices): line taxes summed by rate. */
+export function offerTaxBreakdown(
+  detail: Pick<AdminOfferDetailResponse, 'lineItems'>,
+): { taxRate: number; taxAmount: number }[] {
+  const byRate = new Map<number, number>();
+
+  for (const line of detail.lineItems) {
+    if (!line.lineTax) continue;
+
+    byRate.set(line.taxRate, (byRate.get(line.taxRate) ?? 0) + line.lineTax);
+  }
+
+  return [...byRate.entries()]
+    .sort(([a], [b]) => b - a)
+    .map(([taxRate, taxAmount]) => ({ taxRate, taxAmount: Math.round(taxAmount * 100) / 100 }));
 }

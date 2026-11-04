@@ -1,0 +1,21 @@
+// The box owns its outer edge; `overflow: hidden` clips the header background to the rounded
+// corners (floating menus inside, e.g. `fpc-typeahead-select`, are portaled and stay unclipped).
+:host {
+  display: block;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--bs-body-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+}
+
+.fpc-item-card__body {
+  min-width: 0;
+  padding: 0.75rem 1rem;
+}
+
+// The padding closes the box: no trailing form-field / row margin below the last child.
+:host ::ng-deep .fpc-item-card__body > :last-child {
+  margin-bottom: 0;
+}

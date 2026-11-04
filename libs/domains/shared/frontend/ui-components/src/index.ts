@@ -148,6 +148,7 @@ export { FpcTruncateTitleDirective } from './lib/truncate-title/truncate-title.d
 export { FpcFormControlComponent } from './lib/form-control/form-control.component';
 export type { FpcFormControlSize, FpcFormControlType } from './lib/form-control/form-control.component';
 export { FpcFormFieldComponent } from './lib/form-field/form-field.component';
+export { FpcItemCardComponent } from './lib/item-card/item-card.component';
 export { FpcFormCheckComponent } from './lib/form-check/form-check.component';
 export type { FpcFormCheckType } from './lib/form-check/form-check.component';
 export { FpcFormCheckGroupComponent } from './lib/form-check-group/form-check-group.component';
