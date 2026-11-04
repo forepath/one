@@ -40,7 +40,6 @@
     <fpc-button
       fpcDataTableToolbar
       variant="primary"
-      size="sm"
       iconOnly
       [disabled]="(creating$ | async) === true"
       [ariaLabel]="addProjectAriaLabel"
@@ -52,7 +51,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="!canArchiveSelection()"
       (clicked)="archiveSelected()"
       data-testid="admin-projects-bulk-archive"
@@ -65,7 +63,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="selectedProjects().length === 0"
       (clicked)="confirmBulkDelete.set(true)"
       data-testid="admin-projects-bulk-delete"
@@ -85,20 +82,16 @@
   </fpc-data-table>
 </div>
 
-<fpc-modal
-  [(open)]="createModalOpen"
-  i18n-title="@@featureAdminProjects-createTitle"
-  title="Create project"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
-  <framework-billing-admin-user-select
-    #createUserSelect
-    inputId="createProjectUser"
-    [users]="usersWithoutProject()"
-    [(selectedUserId)]="createForm.userId"
-    [required]="true"
-  />
+<fpc-modal [(open)]="createModalOpen" i18n-title="@@featureAdminProjects-createTitle" title="Create project">
+  <fpc-form-field forId="createProjectUser" i18n-label="@@featureAdminProjects-colCustomer" label="Customer" required>
+    <framework-billing-admin-user-select
+      #createUserSelect
+      inputId="createProjectUser"
+      [users]="usersWithoutProject()"
+      [(selectedUserId)]="createForm.userId"
+      [required]="true"
+    />
+  </fpc-form-field>
   <fpc-form-field
     class="mt-3"
     forId="createProjectName"
@@ -146,13 +139,7 @@
   </div>
 </fpc-modal>
 
-<fpc-modal
-  [(open)]="editModalOpen"
-  i18n-title="@@featureAdminProjects-editTitle"
-  title="Edit project"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="editModalOpen" i18n-title="@@featureAdminProjects-editTitle" title="Edit project">
   <fpc-form-field forId="editProjectName" i18n-label="@@featureAdminProjects-nameLabel" label="Name">
     <fpc-form-control controlId="editProjectName" [(ngModel)]="editForm.name" name="editName" />
   </fpc-form-field>
@@ -227,7 +214,6 @@
   [title]="bulkDeleteTitle"
   [message]="bulkDeleteMessage()"
   [confirmLabel]="deleteLabel"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   (confirmed)="deleteSelected()"
 />

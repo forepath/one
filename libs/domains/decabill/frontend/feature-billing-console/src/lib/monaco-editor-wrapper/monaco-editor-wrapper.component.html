@@ -1,10 +1,10 @@
 <div class="monaco-editor-container d-flex flex-column" [style.height]="editorHeight()">
   <div class="editor-toolbar d-flex align-items-center p-2 border rounded-top bg-body-tertiary">
     <fpc-button-group size="sm">
-      <fpc-button iconOnly variant="dark" size="sm" (clicked)="undo()" [disabled]="readOnly()" title="Undo (Ctrl+Z)">
+      <fpc-button iconOnly variant="dark" (clicked)="undo()" [disabled]="readOnly()" title="Undo (Ctrl+Z)">
         <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
       </fpc-button>
-      <fpc-button iconOnly variant="dark" size="sm" (clicked)="redo()" [disabled]="readOnly()" title="Redo (Ctrl+Y)">
+      <fpc-button iconOnly variant="dark" (clicked)="redo()" [disabled]="readOnly()" title="Redo (Ctrl+Y)">
         <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
       </fpc-button>
     </fpc-button-group>

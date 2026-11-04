@@ -602,8 +602,8 @@ export class DeploymentConfigurationComponent {
 
   getTokenLabel(): string {
     return this.providerType() === 'github'
-      ? $localize`:@@featureDeploymentConfig-githubTokenLabel:GitHub Token`
-      : $localize`:@@featureDeploymentConfig-gitlabTokenLabel:GitLab Token`;
+      ? $localize`:@@featureDeploymentConfig-githubTokenLabel:GitHub token`
+      : $localize`:@@featureDeploymentConfig-gitlabTokenLabel:GitLab token`;
   }
 
   getTokenHint(): string {

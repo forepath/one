@@ -19,7 +19,6 @@
         <div class="fpc-lane-header__actions d-flex align-items-center gap-1">
           <div class="d-inline-flex align-items-center gap-1" role="group">
             <fpc-button
-              size="sm"
               iconOnly
               [variant]="fileTreeVisible() ? 'primary' : 'dark'"
               [ariaPressed]="fileTreeVisible()"
@@ -34,7 +33,6 @@
               ></i>
             </fpc-button>
             <fpc-button
-              size="sm"
               iconOnly
               [variant]="chatVisible() ? 'primary' : 'dark'"
               [ariaPressed]="chatVisible()"
@@ -49,7 +47,6 @@
               ></i>
             </fpc-button>
             <fpc-button
-              size="sm"
               iconOnly
               [variant]="terminalVisible() ? 'primary' : 'dark'"
               [ariaPressed]="terminalVisible()"
@@ -64,7 +61,6 @@
               ></i>
             </fpc-button>
             <fpc-button
-              size="sm"
               iconOnly
               [variant]="gitManagerVisible() ? 'primary' : 'dark'"
               [ariaPressed]="gitManagerVisible()"
@@ -76,7 +72,6 @@
           </div>
           <fpc-button
             [variant]="shareFileLinkCopied() ? 'success' : 'dark'"
-            size="sm"
             iconOnly
             [disabled]="!selectedFilePathForShare()"
             (clicked)="onShareFileLink()"
@@ -126,7 +121,6 @@
           <fpc-button
             fpcDataTableToolbar
             variant="primary"
-            size="sm"
             iconOnly
             [disabled]="(clientsCreating$ | async) === true"
             [title]="addWorkspaceTitle"
@@ -186,7 +180,6 @@
             <fpc-button
               class="d-block d-md-none flex-shrink-0"
               variant="dark"
-              size="sm"
               iconOnly
               [disabled]="!(activeClientId$ | async)"
               [title]="backToWorkspacesTitle"
@@ -237,7 +230,6 @@
               <fpc-button
                 fpcDataTableToolbar
                 variant="primary"
-                size="sm"
                 iconOnly
                 [disabled]="
                   !(activeClientId$ | async) || !!workspaceConnectionError || (agentsCreating$ | async) === true
@@ -360,7 +352,6 @@
             </div>
             <div class="d-flex align-items-center gap-2">
               <fpc-button
-                size="sm"
                 variant="dark"
                 iconOnly
                 i18n-title="@@featureVirtualDesktop-reconnectTitle"
@@ -394,7 +385,6 @@
             <fpc-button
               class="d-block d-md-none flex-shrink-0"
               variant="dark"
-              size="sm"
               iconOnly
               (clicked)="onChatBackButton()"
               [disabled]="!(selectedAgent$ | async)"
@@ -462,11 +452,10 @@
                     <span fpcDropdownItemEnd class="chat-session-actions">
                       <fpc-button
                         variant="link"
-                        size="sm"
                         iconOnly
                         class="chat-session-action"
                         (clicked)="onRenameChatSession(row.session, $event)"
-                        i18n-aria-label="@@featureChat-renameChatSessionAria"
+                        i18n-ariaLabel="@@featureChat-renameChatSessionAria"
                         ariaLabel="Rename chat session"
                         i18n-title="@@featureChat-renameChatSessionTitle"
                         title="Rename"
@@ -476,11 +465,10 @@
                       @if (row.session.kind !== 'primary') {
                         <fpc-button
                           variant="link"
-                          size="sm"
                           iconOnly
                           class="chat-session-action chat-session-action--danger"
                           (clicked)="onDeleteChatSession(row.session, $event)"
-                          i18n-aria-label="@@featureChat-deleteChatSessionAria"
+                          i18n-ariaLabel="@@featureChat-deleteChatSessionAria"
                           ariaLabel="Delete chat session"
                           i18n-title="@@featureChat-deleteChatSessionTitle"
                           title="Delete"
@@ -516,7 +504,6 @@
                     @if (status.running !== true) {
                       <fpc-button
                         variant="success"
-                        size="sm"
                         iconOnly
                         (clicked)="onStartAgent(activeClient.id, selectedAgent.id)"
                         [disabled]="(agentsStarting$ | async) === true"
@@ -531,7 +518,6 @@
                     @if (status.running === true) {
                       <fpc-button
                         variant="danger"
-                        size="sm"
                         iconOnly
                         (clicked)="onStopAgent(activeClient.id, selectedAgent.id)"
                         [disabled]="(agentsStopping$ | async) === true"
@@ -546,7 +532,6 @@
                     @if (status.running !== null && status.running !== undefined) {
                       <fpc-button
                         variant="warning"
-                        size="sm"
                         iconOnly
                         (clicked)="onRestartAgent(activeClient.id, selectedAgent.id)"
                         [disabled]="(agentsRestarting$ | async) === true"
@@ -566,7 +551,6 @@
               @if (socketConnected$ | async) {
                 <fpc-button
                   variant="success"
-                  size="sm"
                   iconOnly
                   [disabled]="socketDisconnecting$ | async"
                   [loading]="(socketReconnecting$ | async) === true"
@@ -580,7 +564,6 @@
                 @if (socketReconnecting$ | async; as isReconnecting) {
                   <fpc-button
                     variant="warning"
-                    size="sm"
                     [disabled]="true"
                     [loading]="true"
                     i18n-title="@@featureChat-reconnecting"
@@ -594,7 +577,6 @@
                 } @else {
                   <fpc-button
                     variant="danger"
-                    size="sm"
                     iconOnly
                     [disabled]="socketConnecting$ | async"
                     [loading]="(socketConnecting$ | async) === true"
@@ -611,7 +593,6 @@
             @if (!editorOpen()) {
               <fpc-button
                 variant="dark"
-                size="sm"
                 iconOnly
                 [class.open-editor-btn--git-dirty]="selectedEnvironmentGitDirty$ | async"
                 (clicked)="onOpenEditor()"
@@ -623,7 +604,6 @@
             @if (activeClient$ | async; as activeClient) {
               @if (selectedAgent$ | async; as selectedAgent) {
                 <fpc-button
-                  size="sm"
                   iconOnly
                   [variant]="deploymentManagerOpen() ? 'primary' : 'dark'"
                   [ariaPressed]="deploymentManagerOpen()"
@@ -633,7 +613,6 @@
                   <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
                 </fpc-button>
                 <fpc-button
-                  size="sm"
                   iconOnly
                   [variant]="virtualDesktopOpen() ? 'primary' : 'dark'"
                   [ariaPressed]="virtualDesktopOpen()"
@@ -677,7 +656,6 @@
                     <div class="d-flex justify-content-center">
                       <fpc-button
                         variant="dark"
-                        size="sm"
                         [loading]="(chatTimelineLoadingOlder$ | async) === true"
                         (clicked)="onLoadOlderMessages()"
                         data-testid="chat-load-older"
@@ -722,7 +700,7 @@
                                   ></div>
                                 }
                                 <div class="d-flex flex-wrap gap-2 mt-2">
-                                  <fpc-button variant="primary" size="sm" (clicked)="openHandoffLink(handoff.link)">
+                                  <fpc-button variant="primary" (clicked)="openHandoffLink(handoff.link)">
                                     <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
                                     >{{ handoffCardLinkLabel(handoff) }}
                                   </fpc-button>
@@ -888,19 +866,11 @@
                             </div>
                             <div class="d-flex flex-wrap gap-2 mt-2">
                               @if (item.payload.actions[0]; as act) {
-                                <fpc-button
-                                  variant="primary"
-                                  size="sm"
-                                  (clicked)="openTicketAutomationRunFromChat(item.payload)"
-                                >
+                                <fpc-button variant="primary" (clicked)="openTicketAutomationRunFromChat(item.payload)">
                                   {{ act.label }}
                                 </fpc-button>
                               }
-                              <fpc-button
-                                variant="primary"
-                                size="sm"
-                                (clicked)="openTicketDetailFromChat(item.payload)"
-                              >
+                              <fpc-button variant="primary" (clicked)="openTicketDetailFromChat(item.payload)">
                                 {{ openTicketFromChatButtonLabel }}
                               </fpc-button>
                             </div>
@@ -937,7 +907,7 @@
                               <div class="small text-danger mt-2 text-break">{{ item.payload.run.failureMessage }}</div>
                             }
                             <div class="d-flex flex-wrap gap-2 mt-2">
-                              <fpc-button variant="primary" size="sm" (clicked)="openAgentTaskFromChat(item.payload)">
+                              <fpc-button variant="primary" (clicked)="openAgentTaskFromChat(item.payload)">
                                 {{ openAgentTaskFromChatButtonLabel }}
                               </fpc-button>
                             </div>
@@ -969,7 +939,6 @@
                                 @if (act.type === 'openChatPlan') {
                                   <fpc-button
                                     variant="primary"
-                                    size="sm"
                                     class="flex-grow-1"
                                     (clicked)="openChatPlanFromChat(item.payload)"
                                   >
@@ -978,11 +947,10 @@
                                 } @else if (act.type === 'executeChatPlan') {
                                   <fpc-button
                                     variant="success"
-                                    size="sm"
                                     iconOnly
                                     i18n-title="@@featureChat-planExecuteTitle"
                                     title="Execute plan"
-                                    i18n-aria-label="@@featureChat-planExecuteAria"
+                                    i18n-ariaLabel="@@featureChat-planExecuteAria"
                                     ariaLabel="Execute plan"
                                     (clicked)="onExecuteChatPlan(act.planId)"
                                   >
@@ -991,11 +959,10 @@
                                 } @else if (act.type === 'retryChatPlan') {
                                   <fpc-button
                                     variant="warning"
-                                    size="sm"
                                     iconOnly
                                     i18n-title="@@featureChat-planRetryTitle"
                                     title="Retry plan"
-                                    i18n-aria-label="@@featureChat-planRetryAria"
+                                    i18n-ariaLabel="@@featureChat-planRetryAria"
                                     ariaLabel="Retry plan"
                                     (clicked)="onRetryChatPlan(act.planId)"
                                   >
@@ -1004,11 +971,10 @@
                                 } @else if (act.type === 'cancelChatPlan') {
                                   <fpc-button
                                     variant="danger"
-                                    size="sm"
                                     iconOnly
                                     i18n-title="@@featureChat-planStopTitle"
                                     title="Stop plan"
-                                    i18n-aria-label="@@featureChat-planStopAria"
+                                    i18n-ariaLabel="@@featureChat-planStopAria"
                                     ariaLabel="Stop plan"
                                     (clicked)="onCancelChatPlan(act.planId)"
                                   >
@@ -1194,6 +1160,8 @@
                 [rows]="3"
                 placeholder="Type a message or /command..."
                 i18n-placeholder="@@featureChat-typeMessagePlaceholder"
+                i18n-aria-label="@@featureChat-messageAria"
+                aria-label="Message"
                 [value]="chatMessage()"
                 (input)="onChatMessageInput($any($event.target).value)"
                 (focus)="onChatMessageFocus()"
@@ -1227,12 +1195,11 @@
                 }
                 <fpc-button
                   variant="dark"
-                  size="sm"
                   iconOnly
                   class="context-button"
                   i18n-title="@@featureChat-selectContextTitle"
                   title="Select context"
-                  i18n-aria-label="@@featureChat-selectContextAria"
+                  i18n-ariaLabel="@@featureChat-selectContextAria"
                   ariaLabel="Select context"
                   [disabled]="!(selectedAgent$ | async)"
                   (clicked)="onOpenContextSelectionModal()"
@@ -1241,11 +1208,10 @@
                 </fpc-button>
                 <fpc-button
                   variant="dark"
-                  size="sm"
                   iconOnly
                   i18n-title="@@featureChat-planPromptTitle"
                   title="Create plan with AI"
-                  i18n-aria-label="@@featureChat-planPromptAria"
+                  i18n-ariaLabel="@@featureChat-planPromptAria"
                   ariaLabel="Create plan with AI"
                   [disabled]="
                     !(socketConnected$ | async) ||
@@ -1264,11 +1230,10 @@
                 </fpc-button>
                 <fpc-button
                   variant="dark"
-                  size="sm"
                   iconOnly
                   i18n-title="@@featureChat-enhancePromptTitle"
                   title="Enhance prompt with AI"
-                  i18n-aria-label="@@featureChat-enhancePromptAria"
+                  i18n-ariaLabel="@@featureChat-enhancePromptAria"
                   ariaLabel="Enhance prompt with AI"
                   [disabled]="
                     !(socketConnected$ | async) ||
@@ -1286,7 +1251,6 @@
                 </fpc-button>
                 <fpc-button
                   variant="primary"
-                  size="sm"
                   iconOnly
                   class="chat-send-button"
                   [disabled]="
@@ -1310,15 +1274,18 @@
                truncating "GPT-5.5" / "Streaming" (AG-04). -->
           <div class="chat-composer-selects">
             <div>
-              <fpc-input-group size="sm" class="mt-2">
-                <span fpcInputGroupPrefix class="input-group-text small text-body-secondary" i18n="@@featureChat-model"
-                  >Model</span
+              <fpc-input-group class="mt-2">
+                <label
+                  fpcInputGroupPrefix
+                  class="input-group-text text-body-secondary"
+                  for="chatModelSelect"
+                  i18n="@@featureChat-model"
+                  >Model</label
                 >
                 <fpc-form-control
                   controlId="chatModelSelect"
                   controlType="select"
-                  size="sm"
-                  controlClass="small text-body"
+                  controlClass="text-body"
                   name="chatModelSelect"
                   [ngModel]="selectedChatModel() ?? ''"
                   (ngModelChange)="onChatModelChange($event)"
@@ -1338,18 +1305,18 @@
               </fpc-input-group>
             </div>
             <div>
-              <fpc-input-group size="sm" class="mt-2">
-                <span
+              <fpc-input-group class="mt-2">
+                <label
                   fpcInputGroupPrefix
-                  class="input-group-text small text-body-secondary"
+                  class="input-group-text text-body-secondary"
+                  for="chatResponseModeSelect"
                   i18n="@@featureChat-responseMode"
-                  >Response</span
+                  >Response</label
                 >
                 <fpc-form-control
                   controlId="chatResponseModeSelect"
                   controlType="select"
-                  size="sm"
-                  controlClass="small text-body"
+                  controlClass="text-body"
                   name="chatResponseModeSelect"
                   [ngModel]="(chatResponseMode$ | async) ?? 'stream'"
                   (ngModelChange)="onChatResponseModeChange($event)"
@@ -1409,16 +1376,16 @@
     [checked]="autoEnrichmentEnabled()"
     (checkedChange)="onAutoEnrichmentToggle($event)"
   />
-  <fpc-form-field
-    forId="environmentContextGroup"
+  <fpc-form-check-group
+    legendId="environmentContextLegend"
     i18n-label="@@featureChat-environmentContextLabel"
     label="Environment context"
   >
-    <p class="text-body-secondary small mb-2" i18n="@@featureChat-environmentContextHint">
+    <p class="form-text fpc-form-text--wrap mt-0 mb-2" i18n="@@featureChat-environmentContextHint">
       Select additional environments to enrich context more specifically. The active environment is included
       automatically.
     </p>
-    <div id="environmentContextGroup" class="d-flex flex-column gap-2">
+    <div class="d-flex flex-column gap-2">
       @if (agents$ | async; as agents) {
         @if (activeClient$ | async; as activeClient) {
           @for (agent of agents; track agent.id) {
@@ -1453,7 +1420,7 @@
         }
       }
     </div>
-  </fpc-form-field>
+  </fpc-form-check-group>
   <div class="mt-3">
     <fpc-form-field forId="ticketContextShaInput" label="Ticket context (SHA)">
       <fpc-typeahead-select
@@ -1592,11 +1559,6 @@
       </div>
     }
   </div>
-  <div *fpcModalFooter>
-    <fpc-button variant="primary" (clicked)="onCloseContextSelectionModal()" i18n="@@featureChat-done">
-      Done
-    </fpc-button>
-  </div>
 </fpc-modal>
 
 <!-- Chat Plan Detail Modal -->
@@ -1696,6 +1658,8 @@
           class="chat-plan-refine-textarea"
           rows="3"
           [placeholder]="chatPlanRefinePlaceholder"
+          i18n-aria-label="@@featureChat-planRefineAria"
+          aria-label="Plan feedback"
           [value]="planRefineMessage()"
           (input)="onPlanRefineMessageInput($any($event.target).value)"
           (focus)="onPlanRefineMessageFocus()"
@@ -1719,12 +1683,11 @@
           }
           <fpc-button
             variant="dark"
-            size="sm"
             iconOnly
             class="context-button"
             i18n-title="@@featureChat-selectContextTitle"
             title="Select context"
-            i18n-aria-label="@@featureChat-selectContextAria"
+            i18n-ariaLabel="@@featureChat-selectContextAria"
             ariaLabel="Select context"
             [disabled]="!(selectedAgent$ | async)"
             (clicked)="onOpenContextSelectionModal('planRefine')"
@@ -1733,11 +1696,10 @@
           </fpc-button>
           <fpc-button
             variant="dark"
-            size="sm"
             iconOnly
             i18n-title="@@featureChat-enhancePromptTitle"
             title="Enhance prompt with AI"
-            i18n-aria-label="@@featureChat-enhancePromptAria"
+            i18n-ariaLabel="@@featureChat-enhancePromptAria"
             ariaLabel="Enhance prompt with AI"
             [disabled]="
               !(socketConnected$ | async) ||
@@ -1755,11 +1717,10 @@
           </fpc-button>
           <fpc-button
             variant="primary"
-            size="sm"
             iconOnly
             i18n-title="@@featureChat-planRefineSubmitTitle"
             title="Refine plan"
-            i18n-aria-label="@@featureChat-planRefineSubmitAria"
+            i18n-ariaLabel="@@featureChat-planRefineSubmitAria"
             ariaLabel="Refine plan"
             [disabled]="
               plan.status === 'refining' ||
@@ -1788,11 +1749,10 @@
       @if (isChatPlanCancellable(plan.status)) {
         <fpc-button
           variant="danger"
-          size="sm"
           iconOnly
           i18n-title="@@featureChat-planStopTitle"
           title="Stop plan"
-          i18n-aria-label="@@featureChat-planStopAria"
+          i18n-ariaLabel="@@featureChat-planStopAria"
           ariaLabel="Stop plan"
           (clicked)="onCancelChatPlan(plan.id)"
         >
@@ -1802,11 +1762,10 @@
       @if (isChatPlanExecutable(plan.status, plan.phase)) {
         <fpc-button
           variant="success"
-          size="sm"
           iconOnly
           i18n-title="@@featureChat-planExecuteTitle"
           title="Execute plan"
-          i18n-aria-label="@@featureChat-planExecuteAria"
+          i18n-ariaLabel="@@featureChat-planExecuteAria"
           ariaLabel="Execute plan"
           (clicked)="onExecuteChatPlan(plan.id)"
         >
@@ -1816,11 +1775,10 @@
       @if (isChatPlanRetryable(plan.status)) {
         <fpc-button
           variant="warning"
-          size="sm"
           iconOnly
           i18n-title="@@featureChat-planRetryTitle"
           title="Retry plan"
-          i18n-aria-label="@@featureChat-planRetryAria"
+          i18n-ariaLabel="@@featureChat-planRetryAria"
           ariaLabel="Retry plan"
           (clicked)="onRetryChatPlan(plan.id)"
         >
@@ -1916,8 +1874,6 @@
 </fpc-confirm-dialog>
 <!-- Rename Chat Session Modal -->
 <fpc-modal
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="renameChatSessionModalOpen"
   i18n-title="@@featureChat-renameChatSessionModalTitle"
   title="Rename chat session"
@@ -1948,8 +1904,6 @@
 </fpc-modal>
 <!-- Add Workspace Modal -->
 <fpc-modal
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="addClientModalOpen"
   i18n-title="@@featureChat-addWorkspaceTitle"
   title="Create workspace"
@@ -1970,7 +1924,7 @@
           (valueSelect)="onProvisioningToggle(false)"
           [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
           i18n-label="@@featureChat-existingWorkspace"
-          label="Existing Workspace"
+          label="Existing workspace"
         />
         <fpc-form-check
           [type]="'radio'"
@@ -2036,7 +1990,7 @@
         <fpc-form-field
           forId="clientServerType"
           i18n-label="@@featureChat-serverTypeLabel"
-          label="Server Type"
+          label="Server type"
           required
         >
           <fpc-form-control
@@ -2106,7 +2060,7 @@
     <fpc-form-field
       forId="clientAuthenticationType"
       i18n-label="@@featureChat-authTypeLabel"
-      label="Authentication Type"
+      label="Authentication type"
       required
     >
       <fpc-form-control
@@ -2126,7 +2080,7 @@
 
     <!-- API Key fields (shown when authenticationType is 'api_key') -->
     @if (newClient().authenticationType === 'api_key') {
-      <fpc-form-field forId="clientApiKey" label="API Key">
+      <fpc-form-field forId="clientApiKey" label="API key">
         <fpc-form-control
           controlId="clientApiKey"
           name="apiKey"
@@ -2136,13 +2090,13 @@
           placeholder="Leave empty to auto-generate"
           [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
         />
-        <small fpcFormFieldHint>Leave empty to auto-generate a secure API key</small>
+        <span fpcFormFieldHint>Leave empty to auto-generate a secure API key</span>
       </fpc-form-field>
     }
 
     <!-- Keycloak fields (shown when authenticationType is 'keycloak') -->
     @if (newClient().authenticationType === 'keycloak') {
-      <fpc-form-field forId="clientKeycloakClientId" label="Keycloak Client ID" required>
+      <fpc-form-field forId="clientKeycloakClientId" label="Keycloak client ID" required>
         <fpc-form-control
           controlId="clientKeycloakClientId"
           name="keycloakClientId"
@@ -2152,7 +2106,7 @@
           [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
         />
       </fpc-form-field>
-      <fpc-form-field forId="clientKeycloakClientSecret" label="Keycloak Client Secret" required>
+      <fpc-form-field forId="clientKeycloakClientSecret" label="Keycloak client secret" required>
         <fpc-form-control
           controlId="clientKeycloakClientSecret"
           inputType="password"
@@ -2163,7 +2117,7 @@
           [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
         />
       </fpc-form-field>
-      <fpc-form-field forId="clientKeycloakRealm" label="Keycloak Realm">
+      <fpc-form-field forId="clientKeycloakRealm" label="Keycloak realm">
         <fpc-form-control
           controlId="clientKeycloakRealm"
           name="keycloakRealm"
@@ -2173,7 +2127,7 @@
         />
       </fpc-form-field>
       @if (useProvisioning()) {
-        <fpc-form-field forId="clientKeycloakAuthServerUrl" label="Keycloak Auth Server URL">
+        <fpc-form-field forId="clientKeycloakAuthServerUrl" label="Keycloak auth server URL">
           <fpc-form-control
             controlId="clientKeycloakAuthServerUrl"
             inputType="url"
@@ -2184,7 +2138,7 @@
             placeholder="http://keycloak:8080"
             [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
           />
-          <small fpcFormFieldHint>Optional. Defaults to environment variable if not specified.</small>
+          <span fpcFormFieldHint>Optional. Defaults to environment variable if not specified.</span>
         </fpc-form-field>
       }
     }
@@ -2195,7 +2149,7 @@
         <h6 class="mb-3">Additional Configuration</h6>
 
         <!-- Agent Configuration -->
-        <fpc-form-field forId="clientAgentDefaultImage" label="Agent Default Image">
+        <fpc-form-field forId="clientAgentDefaultImage" label="Agent default image">
           <fpc-form-control
             controlId="clientAgentDefaultImage"
             name="agentDefaultImage"
@@ -2205,7 +2159,7 @@
             placeholder="ghcr.io/forepath/agenstra-manager-worker:latest"
             [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
           />
-          <small fpcFormFieldHint>Default Docker image for agents</small>
+          <span fpcFormFieldHint>Default Docker image for agents</span>
         </fpc-form-field>
 
         <fpc-form-field
@@ -2224,8 +2178,8 @@
             <option value="true" i18n="@@featureChat-provisionAutoEnrichEnabled">Enabled</option>
             <option value="false" i18n="@@featureChat-provisionAutoEnrichDisabled">Disabled</option>
           </fpc-form-control>
-          <small fpcFormFieldHint i18n="@@featureChat-provisionAutoEnrichHint"
-            >Sets AUTO_ENRICH_ENABLED_GLOBAL on the new workspace agent-manager.</small
+          <span fpcFormFieldHint i18n="@@featureChat-provisionAutoEnrichHint"
+            >Sets AUTO_ENRICH_ENABLED_GLOBAL on the new agent-manager.</span
           >
         </fpc-form-field>
 
@@ -2245,8 +2199,8 @@
             (ngModelChange)="updateClientProvisioningVectorMaxCos($event)"
             [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
           />
-          <small fpcFormFieldHint i18n="@@featureChat-provisionVectorMaxCosHint"
-            >0 to 2 (pgvector &lt;=&gt;). Only knowledge chunks at or below this distance are used; default 1.</small
+          <span fpcFormFieldHint i18n="@@featureChat-provisionVectorMaxCosHint"
+            >0 to 2 (pgvector &lt;=&gt;); only closer chunks are used. Default: 1.</span
           >
         </fpc-form-field>
 
@@ -2267,8 +2221,8 @@
             <option value="clone" i18n="@@featureChat-gitSetupModeClone">Clone from remote</option>
             <option value="empty" i18n="@@featureChat-gitSetupModeEmpty">Empty repository (git init)</option>
           </fpc-form-control>
-          <small fpcFormFieldHint i18n="@@featureChat-workspaceGitSetupModeHint"
-            >Choose whether to clone an existing repository or start with a new local Git repository.</small
+          <span fpcFormFieldHint i18n="@@featureChat-workspaceGitSetupModeHint"
+            >Clone an existing repository or start a new local one.</span
           >
         </fpc-form-field>
 
@@ -2276,7 +2230,7 @@
           <fpc-form-field
             forId="clientGitRepositoryUrl"
             i18n-label="@@featureChat-gitRepositoryUrlLabel"
-            label="Git Repository URL"
+            label="Git repository URL"
           >
             <fpc-form-control
               controlId="clientGitRepositoryUrl"
@@ -2288,12 +2242,12 @@
               placeholder="https://github.com/user/repo.git"
               [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
             />
-            <small fpcFormFieldHint i18n="@@featureChat-workspaceGitRepoUrlHint"
-              >Git repository URL for the environment's workspace</small
+            <span fpcFormFieldHint i18n="@@featureChat-workspaceGitRepoUrlHint"
+              >Git repository URL for the environment's workspace</span
             >
           </fpc-form-field>
 
-          <fpc-form-field forId="clientGitUsername" i18n-label="@@featureChat-gitUsernameLabel" label="Git Username">
+          <fpc-form-field forId="clientGitUsername" i18n-label="@@featureChat-gitUsernameLabel" label="Git username">
             <fpc-form-control
               controlId="clientGitUsername"
               name="gitUsername"
@@ -2303,10 +2257,10 @@
               placeholder="Optional"
               [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
             />
-            <small fpcFormFieldHint i18n="@@featureChat-gitUsernameHint">Git username for repository access</small>
+            <span fpcFormFieldHint i18n="@@featureChat-gitUsernameHint">Git username for repository access</span>
           </fpc-form-field>
 
-          <fpc-form-field forId="clientGitToken" i18n-label="@@featureChat-gitTokenLabel" label="Git Token">
+          <fpc-form-field forId="clientGitToken" i18n-label="@@featureChat-gitTokenLabel" label="Git token">
             <fpc-form-control
               controlId="clientGitToken"
               inputType="password"
@@ -2317,12 +2271,12 @@
               placeholder="Optional"
               [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
             />
-            <small fpcFormFieldHint i18n="@@featureChat-gitTokenHint"
-              >Git token/personal access token for repository access</small
+            <span fpcFormFieldHint i18n="@@featureChat-gitTokenHint"
+              >Git token/personal access token for repository access</span
             >
           </fpc-form-field>
 
-          <fpc-form-field forId="clientGitPassword" i18n-label="@@featureChat-gitPasswordLabel" label="Git Password">
+          <fpc-form-field forId="clientGitPassword" i18n-label="@@featureChat-gitPasswordLabel" label="Git password">
             <fpc-form-control
               controlId="clientGitPassword"
               inputType="password"
@@ -2333,14 +2287,14 @@
               placeholder="Optional"
               [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
             />
-            <small fpcFormFieldHint i18n="@@featureChat-gitPasswordHint"
-              >Git password for repository access (alternative to token)</small
+            <span fpcFormFieldHint i18n="@@featureChat-gitPasswordHint"
+              >Git password for repository access (alternative to token)</span
             >
           </fpc-form-field>
           <fpc-form-field
             forId="clientGitPrivateKey"
             i18n-label="@@featureChat-gitPrivateKeyLabel"
-            label="Git Private Key (SSH)"
+            label="Git private key (SSH)"
           >
             <fpc-form-control
               controlType="textarea"
@@ -2353,8 +2307,8 @@
               placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"
               [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
             />
-            <small fpcFormFieldHint i18n="@@featureChat-gitPrivateKeyHint"
-              >SSH private key for cloning repositories via SSH (alternative to username/token)</small
+            <span fpcFormFieldHint i18n="@@featureChat-gitPrivateKeyHint"
+              >SSH key for cloning via SSH (instead of username/token)</span
             >
           </fpc-form-field>
         }
@@ -2368,9 +2322,9 @@
         [disabled]="!addClientForm.valid || (clientsCreating$ | async) === true || (provisioning$ | async) === true"
       >
         @if (useProvisioning()) {
-          <span i18n="@@featureChat-provisionServerSubmit">Provision server</span>
+          <span i18n="@@featureChat-provisionServerSubmit">Provision</span>
         } @else {
-          <span i18n="@@featureChat-createWorkspace">Create workspace</span>
+          <span i18n="@@featureChat-createWorkspace">Create</span>
         }
       </fpc-button>
     </div>
@@ -2474,9 +2428,7 @@
       </div>
     } @else if ((activeClient$ | async)?.isolation?.stale) {
       <div class="form-text mt-n2 mb-3">
-        <small i18n="@@featureChat-isolationStaleHint"
-          >The workspace host could not be reached; isolation support may be outdated.</small
-        >
+        <span i18n="@@featureChat-isolationStaleHint">Host unreachable; isolation support may be outdated.</span>
       </div>
     }
     <fpc-form-field
@@ -2495,13 +2447,13 @@
         <option value="clone" i18n="@@featureChat-gitSetupModeClone">Clone from remote</option>
         <option value="empty" i18n="@@featureChat-gitSetupModeEmpty">Empty repository (git init)</option>
       </fpc-form-control>
-      <small fpcFormFieldHint i18n="@@featureChat-agentGitSetupModeHint"
-        >Choose whether to clone a repository or initialize an empty local Git repository.</small
+      <span fpcFormFieldHint i18n="@@featureChat-agentGitSetupModeHint"
+        >Clone a repository or initialize an empty local one.</span
       >
       @if (activeClient$ | async; as activeClient) {
         @if (activeClient.config?.gitRepositorySetupMode; as workspaceGitMode) {
-          <small fpcFormFieldHint class="d-block" i18n="@@featureChat-workspaceGitDefault"
-            >Workspace default: {{ getWorkspaceGitSetupModeDefaultLabel(workspaceGitMode) }}</small
+          <span fpcFormFieldHint class="d-block" i18n="@@featureChat-workspaceGitDefault"
+            >Workspace default: {{ getWorkspaceGitSetupModeDefaultLabel(workspaceGitMode) }}</span
           >
         }
       }
@@ -2510,7 +2462,7 @@
       <fpc-form-field
         forId="agentGitRepositoryUrl"
         i18n-label="@@featureChat-gitRepositoryUrlLabel"
-        label="Git Repository URL"
+        label="Git repository URL"
       >
         <fpc-form-control
           controlId="agentGitRepositoryUrl"
@@ -2522,8 +2474,8 @@
           placeholder="https://github.com/user/repo.git"
           [disabled]="(agentsCreating$ | async) === true"
         />
-        <small fpcFormFieldHint i18n="@@featureChat-agentGitRepoUrlHint"
-          >Optional. Defaults to workspace Git repository URL if not specified.</small
+        <span fpcFormFieldHint i18n="@@featureChat-agentGitRepoUrlHint"
+          >Optional. Defaults to the workspace repository URL.</span
         >
       </fpc-form-field>
     }
@@ -2554,14 +2506,6 @@
         }
       }
       <fpc-button
-        variant="dark"
-        type="button"
-        (clicked)="cancelAddAgent()"
-        i18n="@@featureAgentConsoleDataList-cancel"
-        data-testid="add-environment-cancel"
-        >Cancel</fpc-button
-      >
-      <fpc-button
         variant="primary"
         type="submit"
         [loading]="(agentsCreating$ | async) === true"
@@ -2569,15 +2513,13 @@
           !addAgentForm.valid || (agentsCreating$ | async) === true || !!addAgentIsolationSubmission().blockedReason
         "
       >
-        <span i18n="@@featureChat-createEnvironment">Create environment</span>
+        <span i18n="@@featureChat-createEnvironment">Create</span>
       </fpc-button>
     </div>
   </form>
 </fpc-modal>
 <!-- Update Workspace Modal -->
 <fpc-modal
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="updateClientModalOpen"
   i18n-title="@@featureChat-updateWorkspaceTitle"
   title="Edit workspace"
@@ -2619,7 +2561,7 @@
         [disabled]="(clientsUpdating$ | async) === true"
       />
     </fpc-form-field>
-    <fpc-form-field forId="updateClientAuthenticationType" label="Authentication Type" required>
+    <fpc-form-field forId="updateClientAuthenticationType" label="Authentication type" required>
       <fpc-form-control
         controlType="select"
         controlId="updateClientAuthenticationType"
@@ -2637,7 +2579,7 @@
 
     <!-- API Key fields (shown when authenticationType is 'api_key') -->
     @if (editingClient().authenticationType === 'api_key') {
-      <fpc-form-field forId="updateClientApiKey" label="API Key">
+      <fpc-form-field forId="updateClientApiKey" label="API key">
         <fpc-form-control
           controlId="updateClientApiKey"
           name="apiKey"
@@ -2647,13 +2589,13 @@
           placeholder="Leave empty to keep current or auto-generate"
           [disabled]="(clientsUpdating$ | async) === true"
         />
-        <small fpcFormFieldHint>Leave empty to keep current API key or auto-generate a new one</small>
+        <span fpcFormFieldHint>Leave empty to keep current API key or auto-generate a new one</span>
       </fpc-form-field>
     }
 
     <!-- Keycloak fields (shown when authenticationType is 'keycloak') -->
     @if (editingClient().authenticationType === 'keycloak') {
-      <fpc-form-field forId="updateClientKeycloakClientId" label="Keycloak Client ID">
+      <fpc-form-field forId="updateClientKeycloakClientId" label="Keycloak client ID">
         <fpc-form-control
           controlId="updateClientKeycloakClientId"
           name="keycloakClientId"
@@ -2662,7 +2604,7 @@
           [disabled]="(clientsUpdating$ | async) === true"
         />
       </fpc-form-field>
-      <fpc-form-field forId="updateClientKeycloakClientSecret" label="Keycloak Client Secret">
+      <fpc-form-field forId="updateClientKeycloakClientSecret" label="Keycloak client secret">
         <fpc-form-control
           controlId="updateClientKeycloakClientSecret"
           inputType="password"
@@ -2673,9 +2615,9 @@
           placeholder="Leave empty to keep current"
           [disabled]="(clientsUpdating$ | async) === true"
         />
-        <small fpcFormFieldHint>Leave empty to keep current secret</small>
+        <span fpcFormFieldHint>Leave empty to keep current secret</span>
       </fpc-form-field>
-      <fpc-form-field forId="updateClientKeycloakRealm" label="Keycloak Realm">
+      <fpc-form-field forId="updateClientKeycloakRealm" label="Keycloak realm">
         <fpc-form-control
           controlId="updateClientKeycloakRealm"
           name="keycloakRealm"
@@ -2690,10 +2632,9 @@
     @let editingIsolationRefreshing = (editingClientIsolationRefreshing$ | async) === true;
     <div class="mb-3">
       <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-        <span class="form-label mb-0" i18n="@@featureChat-isolationLabel">Container isolation</span>
+        <fpc-label i18n="@@featureChat-isolationLabel">Container isolation</fpc-label>
         <fpc-button
           variant="secondary"
-          size="sm"
           [loading]="editingIsolationRefreshing"
           [disabled]="editingIsolationRefreshing || (clientsUpdating$ | async) === true"
           (clicked)="onRecheckClientIsolation()"
@@ -2704,7 +2645,7 @@
       </div>
       @if (editingClientIsolation$ | async; as editingIsolation) {
         @if (!editingIsolation.supported) {
-          <p class="small text-body-secondary mb-0" i18n="@@featureChat-isolationLegacyManagerSummary">
+          <p class="form-text fpc-form-text--wrap mb-0" i18n="@@featureChat-isolationLegacyManagerSummary">
             The workspace's agent manager does not support isolation levels yet; environments run with Standard Docker.
           </p>
         } @else {
@@ -2730,24 +2671,22 @@
             }
           </ul>
           @if (editingIsolation.probing) {
-            <small class="d-block text-body-secondary" i18n="@@featureChat-isolationProbing"
-              >A check is running; states reflect the previous check.</small
-            >
+            <div class="form-text" i18n="@@featureChat-isolationProbing">
+              A check is running; states reflect the previous check.
+            </div>
           } @else if (editingIsolation.probedAt) {
-            <small class="d-block text-body-secondary" i18n="@@featureChat-isolationLastChecked"
-              >Last checked: {{ editingIsolation.probedAt | fpcDate: 'datetime' }}</small
-            >
+            <div class="form-text" i18n="@@featureChat-isolationLastChecked">
+              Last checked: {{ editingIsolation.probedAt | fpcDate: 'datetime' }}
+            </div>
           }
           @if (editingIsolation.stale) {
-            <small class="d-block text-warning" i18n="@@featureChat-isolationStaleHint"
-              >The workspace host could not be reached; isolation support may be outdated.</small
-            >
+            <div class="form-text text-warning" i18n="@@featureChat-isolationStaleHint">
+              Host unreachable; isolation support may be outdated.
+            </div>
           }
         }
       } @else {
-        <p class="small text-body-secondary mb-0" i18n="@@featureChat-isolationUnknown">
-          Isolation support has not been checked yet.
-        </p>
+        <p class="form-text mb-0" i18n="@@featureChat-isolationUnknown">Isolation support has not been checked yet.</p>
       }
       @if (editingClientIsolationError$ | async; as editingIsolationError) {
         <fpc-alert class="mt-2" variant="danger" [message]="editingIsolationError" />
@@ -2761,7 +2700,7 @@
         [loading]="(clientsUpdating$ | async) === true"
         [disabled]="!updateClientForm.valid || (clientsUpdating$ | async) === true"
       >
-        <span i18n="@@featureChat-updateWorkspace">Save changes</span>
+        <span i18n="@@featureChat-updateWorkspace">Save</span>
       </fpc-button>
     </div>
   </form>
@@ -2800,9 +2739,14 @@
       forId="updateAgentHandoffProfile"
       i18n-label="@@featureChat-handoffProfileLabel"
       label="Handoff profile"
-      i18n-hint="@@featureChat-handoffProfileHelp"
-      hint="What this environment is responsible for and which tasks other environments of the workspace can hand over to it. The agent can also maintain it itself."
     >
+      <span
+        fpcFormFieldHint
+        i18n="@@featureChat-handoffProfileHelp"
+        i18n-title="@@featureChat-handoffProfileHelpFull"
+        title="What this environment is responsible for and which tasks other environments of the workspace can hand over to it. The agent can also maintain it itself."
+        >Its duties and which tasks others may hand over to it.</span
+      >
       <fpc-form-control
         controlType="textarea"
         controlId="updateAgentHandoffProfile"
@@ -2824,8 +2768,8 @@
           <small class="text-body-secondary font-monospace">{{ editingIsolationRuntime }}</small>
         }
       </div>
-      <small fpcFormFieldHint i18n="@@featureChat-isolationFixedHint"
-        >The isolation level is fixed when the environment is created.</small
+      <span fpcFormFieldHint i18n="@@featureChat-isolationFixedHint"
+        >The isolation level is fixed when the environment is created.</span
       >
     </fpc-form-field>
     <div *fpcModalFooter class="d-flex align-items-center justify-content-end gap-3 w-100">
@@ -2850,20 +2794,12 @@
         }
       }
       <fpc-button
-        variant="dark"
-        type="button"
-        (clicked)="cancelUpdateAgent()"
-        i18n="@@featureAgentConsoleDataList-cancel"
-        data-testid="update-environment-cancel"
-        >Cancel</fpc-button
-      >
-      <fpc-button
         variant="primary"
         type="submit"
         [loading]="(agentsUpdating$ | async) === true"
         [disabled]="!updateAgentForm.valid || (agentsUpdating$ | async) === true"
       >
-        <span i18n="@@featureChat-updateEnvironment">Save changes</span>
+        <span i18n="@@featureChat-updateEnvironment">Save</span>
       </fpc-button>
     </div>
   </form>
@@ -2900,9 +2836,9 @@
                 @if (isWorkspaceConfigurationSettingVisible(setting.settingKey, settings, managedClient.config)) {
                   <fpc-list-item>
                     <div class="mb-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
-                      <div class="fw-semibold">
+                      <fpc-label [forId]="'wc-' + setting.settingKey">
                         {{ getWorkspaceConfigurationSettingTitle(setting.settingKey) }}
-                      </div>
+                      </fpc-label>
                       <fpc-badge
                         variant="info"
                         [color]="getWorkspaceConfigurationSourceBadgeColor(setting)"
@@ -2911,15 +2847,15 @@
                         {{ getWorkspaceConfigurationSourceLabel(setting) }}
                       </fpc-badge>
                     </div>
-                    <div class="text-body-secondary small mb-2">
-                      <code class="text-break">{{ setting.envVarName }}</code>
+                    <div class="form-text mt-0 mb-2">
+                      <code>{{ setting.envVarName }}</code>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                       <div class="flex-grow-1 min-width-0">
                         @if (setting.settingKey === 'autoEnrichEnabledGlobal') {
                           <fpc-form-control
+                            [controlId]="'wc-' + setting.settingKey"
                             controlType="select"
-                            size="sm"
                             [name]="'wc-autoEnrich-' + setting.settingKey"
                             [ngModel]="getEditingWorkspaceConfigurationValue(setting)"
                             (ngModelChange)="onWorkspaceConfigurationValueChange(setting.settingKey, $event)"
@@ -2929,8 +2865,8 @@
                           </fpc-form-control>
                         } @else if (setting.settingKey === 'gitRepositorySetupMode') {
                           <fpc-form-control
+                            [controlId]="'wc-' + setting.settingKey"
                             controlType="select"
-                            size="sm"
                             [name]="'wc-gitSetupMode-' + setting.settingKey"
                             [ngModel]="getEditingWorkspaceConfigurationValue(setting) || 'clone'"
                             (ngModelChange)="onWorkspaceConfigurationValueChange(setting.settingKey, $event)"
@@ -2942,8 +2878,8 @@
                           </fpc-form-control>
                         } @else if (setting.settingKey === 'autoEnrichVectorMaxCosineDistance') {
                           <fpc-form-control
+                            [controlId]="'wc-' + setting.settingKey"
                             inputType="number"
-                            size="sm"
                             [name]="'wc-vectorMaxCos-' + setting.settingKey"
                             min="0"
                             max="2"
@@ -2953,8 +2889,8 @@
                           />
                         } @else if (setting.settingKey === 'gitPrivateKey') {
                           <fpc-form-control
+                            [controlId]="'wc-' + setting.settingKey"
                             controlType="textarea"
-                            size="sm"
                             [rows]="5"
                             [value]="getEditingWorkspaceConfigurationValue(setting)"
                             (valueChange)="onWorkspaceConfigurationValueChange(setting.settingKey, $event)"
@@ -2963,7 +2899,7 @@
                           />
                         } @else {
                           <fpc-form-control
-                            size="sm"
+                            [controlId]="'wc-' + setting.settingKey"
                             [value]="getEditingWorkspaceConfigurationValue(setting)"
                             (valueChange)="onWorkspaceConfigurationValueChange(setting.settingKey, $event)"
                             i18n-placeholder="@@featureChat-workspaceConfigurationValuePlaceholder"
@@ -2980,7 +2916,6 @@
                       <fpc-button-group size="sm">
                         <fpc-button
                           variant="dark"
-                          size="sm"
                           iconOnly
                           [disabled]="saveDisabled"
                           [loading]="isSaving"
@@ -2992,7 +2927,6 @@
                         </fpc-button>
                         <fpc-button
                           variant="danger"
-                          size="sm"
                           iconOnly
                           [disabled]="deleteDisabled"
                           [loading]="isDeleting"
@@ -3071,7 +3005,7 @@
             <fpc-form-field
               forId="envVarName"
               i18n-label="@@featureChat-envVarNameLabel"
-              label="Variable Name"
+              label="Variable name"
               required
             >
               <fpc-form-control
@@ -3142,9 +3076,10 @@
                 <fpc-list-item>
                   <div fpcListItemTitle class="fw-semibold">{{ envVar.variable }}</div>
                   @if (editingEnvVarId() === envVar.id) {
-                    <fpc-input-group size="sm">
+                    <fpc-input-group>
                       <fpc-form-control
                         [value]="editingEnvVarValue()"
+                        [ariaLabel]="envVar.variable"
                         (valueChange)="editingEnvVarValue.set($event)"
                         i18n-placeholder="@@featureChat-enterValuePlaceholder"
                         placeholder="Enter value"
@@ -3177,7 +3112,6 @@
                     @if (editingEnvVarId() !== envVar.id) {
                       <fpc-button
                         variant="warning"
-                        size="sm"
                         iconOnly
                         (clicked)="onEditEnvironmentVariableClick(envVar)"
                         i18n-title="@@featureChat-editValueTitle"
@@ -3187,7 +3121,6 @@
                       </fpc-button>
                       <fpc-button
                         variant="danger"
-                        size="sm"
                         iconOnly
                         (clicked)="onDeleteEnvironmentVariable(envVar.id)"
                         i18n-title="@@featureChat-deleteTitle"
@@ -3208,8 +3141,6 @@
 </fpc-modal>
 <!-- Prototype autonomy modal -->
 <fpc-modal
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="ticketAutonomyModalOpen"
   i18n-title="@@featureChat-ticketAutonomyModalTitle"
   title="Prototype autonomy"
@@ -3224,7 +3155,7 @@
     @if (autonomyError(); as err) {
       <fpc-alert variant="danger" class="mb-3" [message]="err" />
     }
-    <p class="text-body-secondary small" i18n="@@featureTicketAutonomyManager-intro">
+    <p class="form-text fpc-form-text--wrap mb-3" i18n="@@featureTicketAutonomyManager-intro">
       Control whether this environment may run autonomous ticket prototyping, including scope and safety limits.
     </p>
     <fpc-form-switch
@@ -3253,7 +3184,6 @@
           <fpc-form-control
             controlId="ticketAutonomyMaxRuntime"
             inputType="number"
-            size="sm"
             min="1"
             [ngModel]="ticketAutonomyDraftMaxRuntimeMs()"
             (ngModelChange)="ticketAutonomyDraftMaxRuntimeMs.set(+$event || 1)"
@@ -3269,7 +3199,6 @@
           <fpc-form-control
             controlId="ticketAutonomyMaxIter"
             inputType="number"
-            size="sm"
             min="1"
             [ngModel]="ticketAutonomyDraftMaxIterations()"
             (ngModelChange)="ticketAutonomyDraftMaxIterations.set(+$event || 1)"
@@ -3285,7 +3214,6 @@
       <fpc-form-control
         controlId="ticketAutonomyTokenBudget"
         inputType="number"
-        size="sm"
         min="0"
         [ngModel]="ticketAutonomyDraftTokenBudgetText()"
         (ngModelChange)="ticketAutonomyDraftTokenBudgetText.set($event)"
@@ -3305,7 +3233,7 @@
         [disabled]="autonomySaving() || autonomyLoading()"
         (clicked)="onSaveTicketAutonomy()"
       >
-        <span i18n="@@featureTicketAutonomyManager-save">Save changes</span>
+        <span i18n="@@featureTicketAutonomyManager-save">Save</span>
       </fpc-button>
     </fpc-button-group>
   </div>
@@ -3446,7 +3374,6 @@
                       <div fpcListItemActions>
                         <fpc-button
                           variant="danger"
-                          size="sm"
                           iconOnly
                           (clicked)="onRemoveClientUser(user.id)"
                           [disabled]="(getRemovingClientUser$(user.id) | async) === true"

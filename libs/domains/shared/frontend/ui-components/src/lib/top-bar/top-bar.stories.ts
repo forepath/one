@@ -55,7 +55,7 @@ The Default story logo follows the toolbar **Color set** (Bootstrap / Decabill /
               <i class="bi bi-person-badge" aria-hidden="true"></i>
               <span>CUS-000042</span>
             </fpc-badge>
-            <fpc-button variant="primary" size="sm">Logout</fpc-button>
+            <fpc-button variant="primary" size="sm" iconOnly title="Logout" ariaLabel="Logout"><i class="bi bi-power" aria-hidden="true"></i></fpc-button>
         </fpc-top-bar>`,
     };
   },

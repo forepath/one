@@ -19,6 +19,7 @@ import {
   FpcSpinnerComponent,
   FpcSectionRowComponent,
   FpcSectionColumnComponent,
+  FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
 import { isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
 import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
@@ -44,6 +45,7 @@ type AcknowledgeForm = {
 @Component({
   selector: 'framework-public-withdrawal',
   imports: [
+    FpcFormTextDirective,
     FpcSectionRowComponent,
     FpcSectionColumnComponent,
     CommonModule,

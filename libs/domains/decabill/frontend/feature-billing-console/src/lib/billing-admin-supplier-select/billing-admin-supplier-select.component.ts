@@ -18,7 +18,6 @@ import { catchError, debounceTime, distinctUntilChanged, map, of, skip, switchMa
 export class BillingAdminSupplierSelectComponent {
   readonly suppliers = input<AdminSupplierProfileListItem[]>([]);
   readonly selectedSupplierId = model<string>('');
-  readonly size = input<'sm' | 'md'>('md');
   readonly disabled = input(false);
   readonly required = input(false);
   readonly inputId = input('billingAdminSupplierSelect');

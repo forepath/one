@@ -34,10 +34,16 @@ const DEFAULT_CODE_LENGTH = 6;
   ],
   template: `
     <div class="otp-input d-flex align-items-center gap-2" (paste)="onPaste($event)" (focusout)="onBlur($event)">
-      <div class="otp-input__digits d-flex gap-1" [class.otp-input__digits--invalid]="invalid()">
+      <div
+        class="otp-input__digits d-flex gap-1"
+        [class.otp-input__digits--invalid]="invalid()"
+        role="group"
+        [attr.aria-label]="ariaLabel()"
+      >
         @for (index of digits(); track index) {
           <input
             #digitInput
+            [attr.id]="index === 0 ? controlId() : null"
             type="text"
             inputmode="text"
             pattern="[A-Z0-9]*"
@@ -68,6 +74,10 @@ export class FpcOtpInputComponent implements ControlValueAccessor {
   readonly invalidText = input('Invalid verification code');
   /** `{index}` and `{total}` are replaced with the 1-based position and the code length. */
   readonly ariaLabelTemplate = input('Character {index} of {total}');
+  /** Name of the digit group (use the visible label's text), so the code is announced as e.g. "Code, character 1 of 6". */
+  readonly ariaLabel = input<string | null>(null);
+  /** Id of the first digit: point an `fpc-form-field` `forId` / label `for` at it so clicking the label focuses the code. */
+  readonly controlId = input<string | null>(null);
 
   private readonly digitInputs = viewChildren<ElementRef<HTMLInputElement>>('digitInput');
   private readonly internalValue = signal('');

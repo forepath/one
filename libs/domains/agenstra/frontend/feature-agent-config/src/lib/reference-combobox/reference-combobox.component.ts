@@ -14,7 +14,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
+import { FpcFormTextDirective, FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
 import { catchError, map, Observable, of, Subject, switchMap } from 'rxjs';
 
 /** One suggestion: `value` is what the field stores; `label` / `detail` are display only. */
@@ -71,13 +71,12 @@ export function mergeReferenceOptions(
   selector: 'agenstra-reference-combobox',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FpcTypeaheadSelectComponent],
+  imports: [FpcFormTextDirective, FpcTypeaheadSelectComponent],
   host: { class: 'agenstra-reference-combobox d-block' },
   template: `
     <fpc-typeahead-select
       [inputId]="inputId()"
       [listboxId]="inputId() + '-listbox'"
-      [size]="size()"
       [placeholder]="placeholder()"
       [ariaLabel]="ariaLabel()"
       [disabled]="disabled()"
@@ -132,7 +131,6 @@ export class ReferenceComboboxComponent {
   /** External "may not list" state (for `options`). */
   readonly denied = input(false);
   readonly inputId = input('agenstraReferenceCombobox');
-  readonly size = input<'sm' | 'md'>('md');
   readonly placeholder = input<string | null>(null);
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false);

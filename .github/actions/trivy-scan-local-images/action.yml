@@ -13,10 +13,10 @@ inputs:
 runs:
   using: composite
   steps:
+    # Checksum-verified GitHub release install (aquasecurity/setup-trivy downloads from get.trivy.dev, which does not
+    # resolve).
     - name: Set up Trivy
-      uses: aquasecurity/setup-trivy@v0.2.6
-      with:
-        cache: true
+      uses: ./.github/actions/setup-trivy
 
     - name: Scan built container images
       id: scan

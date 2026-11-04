@@ -1,13 +1,13 @@
 <fpc-modal [(open)]="modalOpen" size="lg" (closed)="onClose()">
   <span fpcModalTitle>
-    <i class="bi bi-diagram-3 me-2"></i><span i18n="@@featureGitBranchModal-header">Git Branches</span>
+    <i class="bi bi-diagram-3 me-2"></i><span i18n="@@featureGitBranchModal-header">Git branches</span>
   </span>
   <!-- Current Branch - Show immediately (doesn't depend on branches list) -->
   @if (currentBranch$ | async; as currentBranch) {
     <fpc-form-field
       forId="gitCurrentBranch"
       i18n-label="@@featureGitBranchModal-currentBranchLabel"
-      label="Current Branch"
+      label="Current branch"
     >
       <fpc-input-group>
         <span fpcInputGroupPrefix class="input-group-text bg-primary text-white">
@@ -22,17 +22,16 @@
   <fpc-form-field
     forId="gitQuickSwitch"
     i18n-label="@@featureGitBranchModal-quickSwitchLabel"
-    label="Quick Switch to Branch"
+    label="Quick switch to branch"
   >
     <span fpcFormFieldHint i18n="@@featureGitBranchModal-quickSwitchHint">
-      Enter the name (e.g. <code>feature/new-ui</code>) or a remote ref (e.g. <code>origin/feature/new-ui</code>).
+      Branch name or remote ref, e.g. <code>origin/feature/new-ui</code>.
     </span>
     <div class="d-flex align-items-start gap-2">
       <agenstra-reference-combobox
         class="flex-grow-1"
         style="min-width: 0"
         inputId="gitQuickSwitch"
-        size="sm"
         i18n-placeholder="@@featureGitBranchModal-branchNamePlaceholder"
         placeholder="Enter branch name or remote ref"
         [monospace]="true"
@@ -46,7 +45,6 @@
       />
       <fpc-button
         variant="primary"
-        size="sm"
         (clicked)="onManualSwitchBranch()"
         [disabled]="!manualSwitchBranchName().trim() || !!(switchingBranch$ | async)"
         [loading]="manualSwitchInProgress()"
@@ -105,7 +103,6 @@
           <fpc-button
             fpcDataTableBatch
             variant="danger"
-            size="sm"
             [disabled]="bulkBusy() || deletableSelected().length === 0"
             (clicked)="bulkDeleteOpen.set(true)"
             data-testid="git-branch-bulk-delete"
@@ -161,7 +158,7 @@
 
   <!-- Create New Branch - Show immediately (doesn't depend on branches list) -->
   <div class="border-top pt-3">
-    <fpc-label class="fw-semibold" i18n="@@featureGitBranchModal-createBranchLabel">Create New Branch</fpc-label>
+    <fpc-label i18n="@@featureGitBranchModal-createBranchLabel">Create new branch</fpc-label>
     <div class="mb-2">
       <fpc-form-check
         checkId="useConventionalPrefix"
@@ -175,12 +172,7 @@
       <div class="row g-2">
         <div class="col-12 col-md-4">
           <fpc-form-field forId="conventionalType" i18n-label="@@featureGitBranchModal-typeLabel" label="Type">
-            <fpc-form-control
-              controlType="select"
-              controlId="conventionalType"
-              size="sm"
-              [(ngModel)]="conventionalType"
-            >
+            <fpc-form-control controlType="select" controlId="conventionalType" [(ngModel)]="conventionalType">
               <option value="feat">feat</option>
               <option value="fix">fix</option>
               <option value="chore">chore</option>
@@ -196,13 +188,12 @@
           <fpc-form-field
             forId="customBranchName"
             i18n-label="@@featureGitBranchModal-branchNameLabel"
-            label="Branch Name"
+            label="Branch name"
           >
-            <fpc-input-group size="sm">
+            <fpc-input-group>
               <span fpcInputGroupPrefix class="input-group-text">{{ conventionalType() }}/</span>
               <fpc-form-control
                 controlId="customBranchName"
-                size="sm"
                 [(ngModel)]="customBranchName"
                 i18n-placeholder="@@featureGitBranchModal-branchNamePlaceholderShort"
                 placeholder="branch-name"
@@ -216,11 +207,10 @@
       <fpc-form-field
         forId="customBranchNameFull"
         i18n-label="@@featureGitBranchModal-branchNameLabel"
-        label="Branch Name"
+        label="Branch name"
       >
         <fpc-form-control
           controlId="customBranchNameFull"
-          size="sm"
           [(ngModel)]="customBranchName"
           i18n-placeholder="@@featureGitBranchModal-enterBranchNamePlaceholder"
           placeholder="Enter branch name"
@@ -231,7 +221,6 @@
     <div class="d-flex flex-wrap align-items-center gap-2">
       <fpc-button
         variant="primary"
-        size="sm"
         (clicked)="onCreateBranch()"
         [disabled]="!customBranchName().trim() || (creatingBranch$ | async)"
         [loading]="(creatingBranch$ | async) === true"
@@ -239,8 +228,8 @@
         <span i18n="@@featureGitBranchModal-createBranchButton">Create Branch</span>
       </fpc-button>
       @if (branchName()) {
-        <small class="text-body-secondary text-break" i18n="@@featureGitBranchModal-willCreateLabel">
-          Will create: <code>{{ branchName() }}</code></small
+        <span class="form-text mt-0 min-w-0" i18n="@@featureGitBranchModal-willCreateLabel">
+          Will create: <code>{{ branchName() }}</code></span
         >
       }
     </div>
@@ -251,7 +240,8 @@
   [(open)]="bulkDeleteOpen"
   i18n-title="@@featureGitBranchModal-bulkDeleteTitle"
   title="Delete branches"
-  [confirmLabel]="deleteBranchLabel"
+  i18n-confirmLabel="@@featureAgentConsoleDataList-delete"
+  confirmLabel="Delete"
   [danger]="true"
   [busy]="bulkBusy()"
   (confirmed)="onConfirmBulkDelete()"

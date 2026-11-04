@@ -1,16 +1,13 @@
 <div class="billing-admin-user-select">
   @if (accessDenied()) {
-    <input
-      type="text"
-      class="form-control"
-      [class.form-control-sm]="size() === 'sm'"
-      [id]="inputId()"
+    <fpc-form-control
+      [controlId]="inputId()"
       [value]="selectedCode()"
       [disabled]="disabled()"
       [required]="required()"
       autocomplete="off"
-      [attr.aria-describedby]="inputId() + '-hint'"
-      (input)="onPlainInput($any($event.target).value)"
+      [ariaDescribedBy]="inputId() + '-hint'"
+      (valueChange)="onPlainInput($event)"
     />
     <div [id]="inputId() + '-hint'" class="form-text" i18n="@@featureBillingAdminPromotionSelect-accessDeniedHint">
       You can't list promotions. Type the promotion code.
@@ -36,7 +33,6 @@
     <fpc-typeahead-select
       [inputId]="inputId()"
       [listboxId]="inputId() + '-listbox'"
-      [size]="size()"
       [placeholder]="placeholder()"
       [disabled]="disabled()"
       [required]="required()"

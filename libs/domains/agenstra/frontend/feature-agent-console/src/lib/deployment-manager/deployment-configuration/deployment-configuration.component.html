@@ -27,7 +27,6 @@
             <fpc-button-group size="sm">
               <fpc-button
                 variant="warning"
-                size="sm"
                 [iconOnly]="true"
                 (clicked)="onShowConfigurationForm()"
                 i18n-title="@@featureDeploymentConfig-editConfigTitle"
@@ -37,7 +36,6 @@
               </fpc-button>
               <fpc-button
                 variant="danger"
-                size="sm"
                 [iconOnly]="true"
                 [loading]="(deletingConfiguration$ | async) === true"
                 [disabled]="!!(deletingConfiguration$ | async)"
@@ -69,7 +67,9 @@
 
     <!-- Repository Selection -->
     <div class="p-3 border-top">
-      <h6 class="fw-semibold mb-2" i18n="@@featureDeploymentConfig-repositoryHeader">Repository</h6>
+      <fpc-label forId="deploymentConfigRepositorySelect" i18n="@@featureDeploymentConfig-repositoryHeader"
+        >Repository</fpc-label
+      >
       @if (loadingRepositories$ | async) {
         <div class="d-flex justify-content-center p-3">
           <fpc-spinner size="sm" variant="primary" label="Loading..." />
@@ -80,8 +80,8 @@
         </p>
       } @else {
         <fpc-form-control
+          controlId="deploymentConfigRepositorySelect"
           controlType="select"
-          size="sm"
           [ngModel]="selectedRepositoryId() || ''"
           (ngModelChange)="onSelectRepository($event)"
         >
@@ -96,7 +96,7 @@
     <!-- Branch Selection -->
     @if (selectedRepositoryId()) {
       <div class="p-3 border-top">
-        <h6 class="fw-semibold mb-2" i18n="@@featureDeploymentConfig-branchHeader">Branch</h6>
+        <fpc-label forId="deploymentConfigBranchSelect" i18n="@@featureDeploymentConfig-branchHeader">Branch</fpc-label>
         @if (loadingBranches$ | async) {
           <div class="d-flex justify-content-center p-3">
             <fpc-spinner size="sm" variant="primary" label="Loading..." />
@@ -107,8 +107,8 @@
           </p>
         } @else {
           <fpc-form-control
+            controlId="deploymentConfigBranchSelect"
             controlType="select"
-            size="sm"
             [ngModel]="selectedBranch() || ''"
             (ngModelChange)="onSelectBranch($event)"
           >
@@ -124,7 +124,9 @@
     <!-- Workflow Selection -->
     @if (selectedRepositoryId()) {
       <div class="p-3 border-top">
-        <h6 class="fw-semibold mb-2" i18n="@@featureDeploymentConfig-workflowHeader">Workflow</h6>
+        <fpc-label forId="deploymentConfigWorkflowSelect" i18n="@@featureDeploymentConfig-workflowHeader"
+          >Workflow</fpc-label
+        >
         @if (loadingWorkflows$ | async) {
           <div class="d-flex justify-content-center p-3">
             <fpc-spinner size="sm" variant="primary" label="Loading..." />
@@ -135,8 +137,8 @@
           </p>
         } @else {
           <fpc-form-control
+            controlId="deploymentConfigWorkflowSelect"
             controlType="select"
-            size="sm"
             class="mb-2"
             [ngModel]="selectedWorkflowId() || ''"
             (ngModelChange)="onSelectWorkflow($event)"
@@ -150,21 +152,18 @@
           <!-- Workflow Inputs -->
           @if (showWorkflowInputs()) {
             <div class="mt-2">
-              <fpc-label class="small" i18n="@@featureDeploymentConfig-workflowInputsLabel"
-                >Workflow Inputs (optional)</fpc-label
-              >
+              <fpc-label i18n="@@featureDeploymentConfig-workflowInputsLabel">Workflow inputs (optional)</fpc-label>
               @for (input of workflowInputsEntries(); track input.key) {
-                <fpc-input-group size="sm" class="mb-2">
+                <fpc-input-group class="mb-2">
                   <fpc-form-control
-                    size="sm"
                     [placeholder]="input.key"
+                    [ariaLabel]="input.key"
                     [value]="input.value"
                     (valueChange)="onUpdateWorkflowInput(input.key, $event)"
                   />
                   <fpc-button
                     fpcInputGroupSuffix
                     variant="danger"
-                    size="sm"
                     [iconOnly]="true"
                     (clicked)="onRemoveWorkflowInput(input.key)"
                     i18n-title="@@featureDeploymentConfig-removeInputTitle"
@@ -174,7 +173,7 @@
                   </fpc-button>
                 </fpc-input-group>
               }
-              <fpc-button variant="dark" size="sm" [block]="true" (clicked)="onAddWorkflowInput()">
+              <fpc-button variant="dark" [block]="true" (clicked)="onAddWorkflowInput()">
                 <i class="bi bi-plus me-1"></i><span i18n="@@featureDeploymentConfig-addInputButton">Add input</span>
               </fpc-button>
             </div>
@@ -184,7 +183,6 @@
           @if (canTriggerWorkflow()) {
             <fpc-button
               variant="primary"
-              size="sm"
               class="w-100 mt-2"
               [block]="true"
               [loading]="(triggeringWorkflow$ | async) === true"
@@ -216,8 +214,6 @@
   }
 
   <fpc-modal
-    cancelLabel="Cancel"
-    i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
     [(open)]="configurationModalOpen"
     [title]="getModalTitle()"
     [closable]="!(creatingConfiguration$ | async) && !(updatingConfiguration$ | async)"
@@ -227,7 +223,7 @@
       <fpc-form-field
         forId="providerType"
         i18n-label="@@featureDeploymentConfig-providerTypeLabel"
-        label="Provider Type"
+        label="Provider type"
       >
         <fpc-form-control
           controlType="select"
@@ -300,7 +296,7 @@
         <fpc-form-field
           forId="providerBaseUrl"
           i18n-label="@@featureDeploymentConfig-gitlabBaseUrlLabel"
-          label="GitLab Base URL (optional)"
+          label="GitLab base URL (optional)"
         >
           <fpc-form-control
             controlId="providerBaseUrl"
@@ -333,9 +329,9 @@
         (clicked)="onSaveConfiguration()"
       >
         @if (hasConfiguration()) {
-          <span i18n="@@featureDeploymentConfig-save">Save changes</span>
+          <span i18n="@@featureDeploymentConfig-save">Save</span>
         } @else {
-          <span i18n="@@featureDeploymentConfig-create">Create configuration</span>
+          <span i18n="@@featureDeploymentConfig-create">Create</span>
         }
       </fpc-button>
     </div>

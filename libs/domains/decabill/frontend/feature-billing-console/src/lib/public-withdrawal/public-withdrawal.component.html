@@ -1,4 +1,4 @@
-<fpc-section-row [nowrap]="true" [marketingHidden]="!showAuthMarketingPanel">
+<fpc-section-row class="fpc-density-comfortable" [nowrap]="true" [marketingHidden]="!showAuthMarketingPanel">
   <fpc-section-column
     class="d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
     variant="marketing"
@@ -218,11 +218,15 @@
         <form [formGroup]="codeForm" (ngSubmit)="onSubmitCode()" class="needs-validation" novalidate>
           <div class="mb-3">
             <fpc-form-field
+              forId="withdrawalCode"
               i18n-label="@@featurePublicWithdrawal-codeLabel"
               label="Confirmation code"
               [required]="true"
             >
               <fpc-otp-input
+                controlId="withdrawalCode"
+                i18n-ariaLabel="@@featurePublicWithdrawal-codeLabel"
+                ariaLabel="Confirmation code"
                 formControlName="code"
                 [invalid]="
                   (codeForm.get('code')?.invalid &&

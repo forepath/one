@@ -9,7 +9,6 @@
         <fpc-dropdown [(open)]="sessionMenuOpen">
           <fpc-button
             fpcDropdownTrigger
-            size="sm"
             variant="primary"
             btnClass="dropdown-toggle"
             controlId="terminalSessionDropdown"
@@ -54,12 +53,11 @@
       <div class="d-flex align-items-center gap-2">
         <fpc-button
           variant="primary"
-          size="sm"
           iconOnly
           (clicked)="onCreateTerminal()"
           i18n-title="@@featureTerminal-newTerminalTitle"
           title="New Terminal"
-          i18n-aria-label="@@featureTerminal-newTerminalTitle"
+          i18n-ariaLabel="@@featureTerminal-newTerminalTitle"
           ariaLabel="New Terminal"
         >
           <i class="bi bi-plus" aria-hidden="true"></i>
@@ -82,12 +80,7 @@
             >Click "New" to create a terminal session</small
           >
           <div class="mt-3">
-            <fpc-button
-              variant="primary"
-              size="sm"
-              (clicked)="onCreateTerminal()"
-              i18n="@@featureTerminal-newTerminalButton"
-            >
+            <fpc-button variant="primary" (clicked)="onCreateTerminal()" i18n="@@featureTerminal-newTerminalButton">
               Create Terminal
             </fpc-button>
           </div>

@@ -173,11 +173,15 @@
               } @else if (email2faPending()) {
                 <form [formGroup]="emailConfirmForm" (ngSubmit)="onConfirmEmail2fa()" class="border rounded-3 p-3 mt-3">
                   <fpc-form-field
+                    forId="emailConfirmCode"
                     i18n-label="@@featureSecuritySettings-emailCodeLabel"
                     label="Confirmation code"
                     [required]="true"
                   >
                     <fpc-otp-input
+                      controlId="emailConfirmCode"
+                      i18n-ariaLabel="@@featureSecuritySettings-emailCodeLabel"
+                      ariaLabel="Confirmation code"
                       formControlName="code"
                       [invalid]="
                         (emailConfirmForm.get('code')?.invalid && emailConfirmForm.get('code')?.touched) ?? false
@@ -222,11 +226,15 @@
                 @if (showDisableTotp()) {
                   <form [formGroup]="totpDisableForm" (ngSubmit)="onDisableTotp()" class="border rounded-3 p-3 mt-3">
                     <fpc-form-field
+                      forId="disableTotpCode"
                       i18n-label="@@featureSecuritySettings-disableTotpCodeLabel"
                       label="Authenticator code to disable"
                       [required]="true"
                     >
                       <fpc-otp-input
+                        controlId="disableTotpCode"
+                        i18n-ariaLabel="@@featureSecuritySettings-disableTotpCodeLabel"
+                        ariaLabel="Authenticator code to disable"
                         formControlName="code"
                         [invalid]="
                           (totpDisableForm.get('code')?.invalid && totpDisableForm.get('code')?.touched) ?? false
@@ -247,7 +255,7 @@
                 }
               } @else if (totpSetup(); as setup) {
                 <div class="border rounded-3 p-3 mt-3">
-                  <p class="small mb-2" i18n="@@featureSecuritySettings-totpSetupHint">
+                  <p class="form-text fpc-form-text--wrap mt-0 mb-2" i18n="@@featureSecuritySettings-totpSetupHint">
                     Scan the QR code with your authenticator app, or enter the secret manually.
                   </p>
                   @if (qrDataUrl(); as qr) {
@@ -265,11 +273,15 @@
                   </div>
                   <form [formGroup]="totpConfirmForm" (ngSubmit)="onConfirmTotp()">
                     <fpc-form-field
+                      forId="totpConfirmCode"
                       i18n-label="@@featureSecuritySettings-totpConfirmLabel"
                       label="Confirm with code"
                       [required]="true"
                     >
                       <fpc-otp-input
+                        controlId="totpConfirmCode"
+                        i18n-ariaLabel="@@featureSecuritySettings-totpConfirmLabel"
+                        ariaLabel="Confirm with code"
                         formControlName="code"
                         [invalid]="
                           (totpConfirmForm.get('code')?.invalid && totpConfirmForm.get('code')?.touched) ?? false

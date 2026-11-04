@@ -41,6 +41,7 @@ import {
   updatePersonalAccessToken$,
   updateUser$,
 } from '@forepath/identity/frontend';
+import { provideFpcControlSize } from '@forepath/shared/frontend/ui-components';
 import { buildPageTitle } from '@forepath/shared/frontend/util-configuration';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
@@ -84,35 +85,43 @@ import { IdentityUserManagerComponent } from './user-manager/user-manager.compon
  * ];
  * ```
  */
+/** Sign-in / registration / reset pages are public: regular-size buttons and fields, not the console's dense `sm`. */
+const PUBLIC_UI_PROVIDERS = [provideFpcControlSize('md')];
+
 export const identityAuthRoutes: Route[] = [
   {
     path: 'login',
     component: IdentityLoginComponent,
     canActivate: [loginGuard],
+    providers: PUBLIC_UI_PROVIDERS,
     title: () => buildPageTitle($localize`:@@featureAuth-loginPage:Login`),
   },
   {
     path: 'login-2fa',
     component: IdentityLogin2faComponent,
     canActivate: [loginGuard],
+    providers: PUBLIC_UI_PROVIDERS,
     title: () => buildPageTitle($localize`:@@featureAuth-login2faPage:Two-Factor Authentication`),
   },
   {
     path: 'register',
     component: IdentityRegisterComponent,
     canActivate: [signupDisabledGuard, loginGuard],
+    providers: PUBLIC_UI_PROVIDERS,
     title: () => buildPageTitle($localize`:@@featureAuth-registerPage:Register`),
   },
   {
     path: 'request-password-reset',
     component: IdentityRequestPasswordResetComponent,
     canActivate: [loginGuard],
+    providers: PUBLIC_UI_PROVIDERS,
     title: () => buildPageTitle($localize`:@@featureAuth-requestPasswordResetPage:Request Password Reset`),
   },
   {
     path: 'request-password-reset-confirmation',
     component: IdentityRequestPasswordResetConfirmationComponent,
     canActivate: [loginGuard],
+    providers: PUBLIC_UI_PROVIDERS,
     title: () =>
       buildPageTitle($localize`:@@featureAuth-requestPasswordResetConfirmationPage:Password Reset Requested`),
   },
@@ -120,12 +129,14 @@ export const identityAuthRoutes: Route[] = [
     path: 'reset-password',
     component: IdentityResetPasswordComponent,
     canActivate: [loginGuard],
+    providers: PUBLIC_UI_PROVIDERS,
     title: () => buildPageTitle($localize`:@@featureAuth-resetPasswordPage:Reset Password`),
   },
   {
     path: 'confirm-email',
     component: IdentityConfirmEmailComponent,
     canActivate: [loginGuard],
+    providers: PUBLIC_UI_PROVIDERS,
     title: () => buildPageTitle($localize`:@@featureAuth-confirmEmailPage:Confirm Email`),
   },
   {

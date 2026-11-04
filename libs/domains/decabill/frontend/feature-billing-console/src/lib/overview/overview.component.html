@@ -25,7 +25,6 @@
           <fpc-button
             routerLink="/subscriptions"
             variant="outline-secondary"
-            size="sm"
             iconOnly
             title="View plans"
             i18n-title="@@featureOverview-viewPlansButtonTitle"
@@ -37,7 +36,6 @@
               routerLink="/subscriptions"
               [queryParams]="{ order: 'true' }"
               variant="outline-secondary"
-              size="sm"
               iconOnly
               title="Place order"
               i18n-title="@@featureOverview-orderPlanButtonTitle"
@@ -47,7 +45,6 @@
           } @else {
             <fpc-button
               variant="outline-secondary"
-              size="sm"
               iconOnly
               disabled
               title="Complete your billing profile to place an order"
@@ -70,7 +67,6 @@
           fpcSummaryCardActions
           routerLink="/projects"
           variant="outline-secondary"
-          size="sm"
           iconOnly
           title="View projects"
           i18n-title="@@featureOverview-viewProjectsButtonTitle"
@@ -101,7 +97,6 @@
           fpcSummaryCardActions
           routerLink="/invoices"
           variant="outline-secondary"
-          size="sm"
           iconOnly
           title="View invoices"
           i18n-title="@@featureOverview-viewInvoicesButtonTitle"
@@ -122,7 +117,6 @@
           routerLink="/subscriptions"
           [queryParams]="{ profile: 'true' }"
           variant="outline-secondary"
-          size="sm"
           iconOnly
           title="Edit billing profile"
           i18n-title="@@featureOverview-editProfileButtonTitle"
@@ -142,7 +136,6 @@
           routerLink="/subscriptions"
           [queryParams]="{ profile: 'true' }"
           variant="warning"
-          size="sm"
           i18n="@@featureOverview-editProfile"
         >
           Edit profile
@@ -193,7 +186,6 @@
       <fpc-button
         fpcDataTableBatch
         variant="dark"
-        size="sm"
         [disabled]="bulkTargets('start').length === 0"
         (clicked)="runServerBulk('start')"
         data-testid="overview-bulk-start"
@@ -206,7 +198,6 @@
       <fpc-button
         fpcDataTableBatch
         variant="dark"
-        size="sm"
         [disabled]="bulkTargets('stop').length === 0"
         (clicked)="confirmBulkStop.set(true)"
         data-testid="overview-bulk-stop"
@@ -219,7 +210,6 @@
       <fpc-button
         fpcDataTableBatch
         variant="dark"
-        size="sm"
         [disabled]="bulkTargets('restart').length === 0"
         (clicked)="runServerBulk('restart')"
         data-testid="overview-bulk-restart"
@@ -248,8 +238,7 @@
   [(open)]="confirmBulkStop"
   [title]="bulkStopTitle"
   [message]="bulkStopMessage()"
-  [confirmLabel]="stopLabel"
-  [cancelLabel]="cancelLabel"
+  [confirmLabel]="stopConfirmLabel"
   [danger]="true"
   (confirmed)="runServerBulk('stop')"
 />
@@ -267,55 +256,44 @@
     <fpc-alert class="mb-0" variant="danger" [message]="sshRevealError" />
   }
   <div *fpcModalFooter>
-    <fpc-button-group>
-      <fpc-button
-        variant="dark"
-        (clicked)="sshAccessConfirmModalOpen.set(false)"
-        i18n="@@featureOverview-sshAccessCancel"
-      >
-        Cancel
-      </fpc-button>
-      <fpc-button
-        variant="primary"
-        (clicked)="confirmSshAccessReveal()"
-        [disabled]="sshRevealLoading"
-        i18n="@@featureOverview-sshAccessConfirm"
-      >
-        Reveal key
-      </fpc-button>
-    </fpc-button-group>
+    <fpc-button
+      variant="primary"
+      (clicked)="confirmSshAccessReveal()"
+      [disabled]="sshRevealLoading"
+      i18n="@@featureOverview-sshAccessConfirm"
+    >
+      Reveal
+    </fpc-button>
   </div>
 </fpc-modal>
 
 <fpc-modal
   [(open)]="sshAccessDisplayModalOpen"
   size="lg"
+  (closed)="closeSshAccessDisplay()"
   i18n-title="@@featureOverview-sshAccessDisplayTitle"
   title="SSH access key"
 >
-  <p class="small text-body-secondary" i18n="@@featureOverview-sshAccessDisplayHint">
-    Store this private key securely. It will not be shown again in the billing console.
+  <p class="form-text" i18n="@@featureOverview-sshAccessDisplayHint">
+    Store this key securely. It won't be shown again.
   </p>
   <fpc-form-control
     controlType="textarea"
     controlId="sshAccessPrivateKey"
+    i18n-ariaLabel="@@featureOverview-sshAccessDisplayTitle"
+    ariaLabel="SSH access key"
     controlClass="font-monospace small"
     [rows]="12"
     readOnly
     [value]="revealedSshPrivateKey ?? ''"
   />
   <div *fpcModalFooter>
-    <fpc-button-group>
-      <fpc-button variant="dark" (clicked)="copySshPrivateKey()">
-        @if (sshAccessKeyCopied) {
-          <span i18n="@@featureOverview-sshAccessCopied">Copied</span>
-        } @else {
-          <span i18n="@@featureOverview-sshAccessCopy">Copy</span>
-        }
-      </fpc-button>
-      <fpc-button variant="primary" (clicked)="closeSshAccessDisplay()" i18n="@@featureOverview-sshAccessClose">
-        Close
-      </fpc-button>
-    </fpc-button-group>
+    <fpc-button variant="primary" (clicked)="copySshPrivateKey()">
+      @if (sshAccessKeyCopied) {
+        <span i18n="@@featureOverview-sshAccessCopied">Copied</span>
+      } @else {
+        <span i18n="@@featureOverview-sshAccessCopy">Copy</span>
+      }
+    </fpc-button>
   </div>
 </fpc-modal>

@@ -40,6 +40,7 @@ import {
   FpcMoneyPipe,
   FpcMultiSelectComponent,
   type FpcMultiSelectOption,
+  FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
 import {
   catchError,
@@ -58,14 +59,7 @@ import { getBillingIntervalLabel, resolveNamedLabel } from '../billing-status-la
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { MonacoEditorWrapperComponent } from '../monaco-editor-wrapper/monaco-editor-wrapper.component';
 import { optionalNumberInputValue } from '../optional-number-input.util';
-import {
-  DB_DL_CANCEL,
-  DB_DL_DELETE,
-  dbBulkSummary,
-  dbCopyIdItem,
-  type DbBulkResult,
-  DB_DL_EDIT,
-} from '../shared/data-list';
+import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
 import { formatBillingMoney } from '../billing-format';
 import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
@@ -105,6 +99,7 @@ const MIN_RANDOM_DEFAULT_LENGTH = 21;
   selector: 'framework-billing-addons-page',
   standalone: true,
   imports: [
+    FpcFormTextDirective,
     FpcMultiSelectComponent,
     FpcMoneyPipe,
     FpcListHeaderComponent,
@@ -216,7 +211,6 @@ export class AddonsPageComponent implements OnInit {
   ];
 
   readonly deleteLabel = DB_DL_DELETE;
-  readonly cancelLabel = DB_DL_CANCEL;
   readonly activateLabel = $localize`:@@featureMeters-bulkActivate:Activate`;
   readonly deactivateLabel = $localize`:@@featureMeters-bulkDeactivate:Deactivate`;
   readonly bulkDeleteTitle = $localize`:@@featureAddons-bulkDeleteTitle:Delete add-ons?`;

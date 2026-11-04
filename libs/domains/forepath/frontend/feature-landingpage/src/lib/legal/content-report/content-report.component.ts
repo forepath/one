@@ -28,6 +28,7 @@ import {
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
+  FpcLabelComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
@@ -45,6 +46,7 @@ import { NgxTurnstileComponent, NgxTurnstileModule } from 'ngx-turnstile';
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
+    FpcLabelComponent,
   ],
   styleUrls: ['./content-report.component.scss'],
   templateUrl: './content-report.component.html',

@@ -192,7 +192,6 @@ export interface AgentChatQuestionReplyRequest {
                   @for (opt of q.options; track opt.id) {
                     <fpc-button
                       [variant]="isOptionSelected(opt.id) ? 'primary' : 'outline-secondary'"
-                      size="sm"
                       [disabled]="replying()"
                       (clicked)="onOptionClick(opt)"
                     >
@@ -205,29 +204,18 @@ export interface AgentChatQuestionReplyRequest {
                 <div class="d-flex flex-wrap gap-2 mt-2">
                   <fpc-button
                     variant="primary"
-                    size="sm"
                     [disabled]="replying() || !hasMultiSelection()"
                     (clicked)="submitMulti()"
                   >
                     <span i18n="@@featureChat-questionSubmit">Submit</span>
                   </fpc-button>
-                  <fpc-button
-                    variant="outline-secondary"
-                    size="sm"
-                    [disabled]="replying()"
-                    (clicked)="rejectQuestion()"
-                  >
+                  <fpc-button variant="outline-secondary" [disabled]="replying()" (clicked)="rejectQuestion()">
                     <span i18n="@@featureChat-questionReject">Reject</span>
                   </fpc-button>
                 </div>
               } @else if (q.replyKind === 'question') {
                 <div class="mt-2">
-                  <fpc-button
-                    variant="outline-secondary"
-                    size="sm"
-                    [disabled]="replying()"
-                    (clicked)="rejectQuestion()"
-                  >
+                  <fpc-button variant="outline-secondary" [disabled]="replying()" (clicked)="rejectQuestion()">
                     <span i18n="@@featureChat-questionReject">Reject</span>
                   </fpc-button>
                 </div>

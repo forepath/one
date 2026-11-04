@@ -121,7 +121,6 @@
           <fpc-button
             fpcDataTableBatch
             variant="dark"
-            size="sm"
             [disabled]="downloadable(selectedOpen()).length === 0"
             (clicked)="downloadSelected(selectedOpen())"
             data-testid="invoices-open-bulk-download"
@@ -176,7 +175,6 @@
           <fpc-button
             fpcDataTableBatch
             variant="dark"
-            size="sm"
             [disabled]="downloadable(selectedHistory()).length === 0"
             (clicked)="downloadSelected(selectedHistory())"
             data-testid="invoices-history-bulk-download"
@@ -310,13 +308,7 @@
   }
 </fpc-modal>
 
-<fpc-modal
-  [(open)]="createInvoiceModalOpen"
-  i18n-title="@@featureInvoices-createTitle"
-  title="Create invoice"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="createInvoiceModalOpen" i18n-title="@@featureInvoices-createTitle" title="Create invoice">
   <fpc-form-field forId="createInvoiceDescription" i18n-label="@@featureInvoices-description" label="Description">
     <fpc-form-control
       controlId="createInvoiceDescription"

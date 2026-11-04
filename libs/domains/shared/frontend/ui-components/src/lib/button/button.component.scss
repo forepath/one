@@ -179,11 +179,12 @@
 // Responsive size (`mdSize`): the control tier switches at the md breakpoint. Restates Bootstrap's
 // size variables (the derived padding in `styles/_controls.scss` follows `--fpc-control-h`).
 @media (min-width: 768px) {
+  // sm buttons share the md text size and radius (`styles/_controls.scss`); only height and inline padding differ.
   .fpc-button__btn--md-sm {
     --fpc-control-h: var(--fpc-control-height-sm);
     --bs-btn-padding-x: #{chrome.$input-btn-padding-x-sm};
-    --bs-btn-font-size: #{chrome.$font-size-base * 0.875};
-    --bs-btn-border-radius: var(--bs-border-radius-sm);
+    --bs-btn-font-size: #{chrome.$font-size-base};
+    --bs-btn-border-radius: var(--bs-border-radius);
   }
 
   .fpc-button__btn--md-md {

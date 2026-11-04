@@ -20,7 +20,6 @@
         <fpc-button
           fpcEmptyStateActions
           variant="primary"
-          size="sm"
           routerLink="/clients"
           i18n="@@featureKnowledgeBoard-goToSpaces"
         >
@@ -36,7 +35,6 @@
         <fpc-button
           fpcEmptyStateActions
           variant="primary"
-          size="sm"
           (clicked)="openWorkspaceSwitchModal()"
           i18n="@@featureKnowledgeBoard-chooseWorkspace"
         >
@@ -82,11 +80,12 @@
                 <fpc-form-control
                   #selectedNodeTitleInput
                   class="flex-grow-1 min-width-0"
-                  size="sm"
                   controlClass="w-100"
                   [ngModel]="selectedNodeTitleDraft()"
                   (ngModelChange)="selectedNodeTitleDraft.set($event)"
                   (focusout)="onSavePageTitle()"
+                  i18n-ariaLabel="@@featureKnowledgeBoard-titleAria"
+                  ariaLabel="Title"
                   (keydown.enter)="onSavePageTitle()"
                   (keydown.escape)="onSelectedNodeTitleCancel()"
                 />
@@ -133,7 +132,6 @@
                     />
                     <fpc-button
                       variant="dark"
-                      size="sm"
                       iconOnly
                       (clicked)="pageAttachmentInput.click()"
                       i18n-title="@@featureKnowledgeBoard-addAttachment"
@@ -164,7 +162,6 @@
                     <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-relationsHeading">Relations</h3>
                     <fpc-button
                       variant="dark"
-                      size="sm"
                       [iconOnly]="true"
                       (clicked)="openRelationsModal()"
                       i18n-title="@@featureKnowledgeBoard-addRelations"
@@ -227,7 +224,6 @@
                             </fpc-button>
                             <fpc-button
                               variant="danger"
-                              size="sm"
                               class="flex-shrink-0"
                               [iconOnly]="true"
                               (clicked)="onRemoveRelation(relation)"
@@ -281,8 +277,6 @@
 </div>
 
 <fpc-modal
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="relationsModalOpen"
   i18n-title="@@featureKnowledgeBoard-relationsModalTitle"
   title="Add relations"
@@ -348,7 +342,7 @@
       }
     </div>
   } @else {
-    <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-searchRelationsHint">
+    <p class="form-text mb-0" i18n="@@featureKnowledgeBoard-searchRelationsHint">
       Search by title or SHA and add one or more relation targets.
     </p>
   }
@@ -375,7 +369,6 @@
       <fpc-button
         fpcEmptyStateActions
         variant="primary"
-        size="sm"
         i18n="@@featureKnowledgeBoard-goToSpaces"
         (clicked)="goToSpaces($event)"
       >

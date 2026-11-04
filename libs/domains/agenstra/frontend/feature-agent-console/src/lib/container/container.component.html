@@ -13,7 +13,6 @@
         routerLink="/settings/security"
         routerLinkActive="active"
         variant="link"
-        size="sm"
         iconOnly
         class="fpc-top-bar__action position-relative"
         i18n-title="@@featureContainer-securityTitle"
@@ -43,11 +42,16 @@
       (darkChange)="themeService.toggleTheme()"
     />
     @if (isAuthenticated$ | async) {
-      <!-- Shared top-bar phone contract (X-01): icon-only square below 576 px, label above. -->
-      <fpc-button variant="primary" size="sm" mdSize="md" [title]="logoutLabel" (clicked)="onLogoutClick()"
-        ><i class="bi bi-box-arrow-right fpc-top-bar__phone-icon" aria-hidden="true"></i
-        ><span class="fpc-top-bar__label" i18n="@@featureContainer-logout">Logout</span></fpc-button
-      >
+      <!-- Shared top-bar contract: Logout is an icon-only sign-out square (label as tooltip / accessible name). -->
+      <fpc-button
+        variant="primary"
+        iconOnly
+        [title]="logoutLabel"
+        [ariaLabel]="logoutLabel"
+        (clicked)="onLogoutClick()"
+        data-testid="top-bar-logout"
+        ><i class="bi bi-power" aria-hidden="true"></i
+      ></fpc-button>
     }
   </fpc-top-bar>
 } @else {

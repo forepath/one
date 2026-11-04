@@ -17,6 +17,7 @@ import {
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
+  FpcLabelComponent,
   FpcConfirmDialogComponent,
   fpcCopyText,
   FpcDataTableComponent,
@@ -34,14 +35,7 @@ import { debounceTime, distinctUntilChanged, firstValueFrom, skip, take } from '
 import { getUnavailableLabel } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { MonacoEditorWrapperComponent } from '../monaco-editor-wrapper/monaco-editor-wrapper.component';
-import {
-  DB_DL_CANCEL,
-  DB_DL_DELETE,
-  dbBulkSummary,
-  dbCopyIdItem,
-  type DbBulkResult,
-  DB_DL_EDIT,
-} from '../shared/data-list';
+import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
 
 interface EnvVariableFormRow {
@@ -133,6 +127,7 @@ const MIN_RANDOM_DEFAULT_LENGTH = 21;
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
+    FpcLabelComponent,
     FpcConfirmDialogComponent,
     FpcFormSwitchComponent,
     FpcModalComponent,
@@ -215,7 +210,6 @@ export class CloudInitConfigsPageComponent implements OnInit {
   ];
 
   readonly deleteLabel = DB_DL_DELETE;
-  readonly cancelLabel = DB_DL_CANCEL;
   readonly activateLabel = $localize`:@@featureMeters-bulkActivate:Activate`;
   readonly deactivateLabel = $localize`:@@featureMeters-bulkDeactivate:Deactivate`;
   readonly bulkDeleteTitle = $localize`:@@featureCloudInitConfigs-bulkDeleteTitle:Delete configs?`;

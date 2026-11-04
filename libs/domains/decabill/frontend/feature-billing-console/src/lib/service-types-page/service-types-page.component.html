@@ -37,7 +37,6 @@
     <fpc-button
       fpcDataTableToolbar
       variant="primary"
-      size="sm"
       iconOnly
       [disabled]="(loadingAny$ | async) === true"
       [ariaLabel]="addServiceProviderAriaLabel"
@@ -49,7 +48,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="!selectedServiceTypes().some((st) => !st.isActive)"
       (clicked)="setActiveSelected(true)"
       data-testid="service-types-bulk-activate"
@@ -62,7 +60,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="!selectedServiceTypes().some((st) => st.isActive)"
       (clicked)="setActiveSelected(false)"
       data-testid="service-types-bulk-deactivate"
@@ -75,7 +72,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="selectedServiceTypes().length === 0"
       (clicked)="confirmBulkDelete.set(true)"
       data-testid="service-types-bulk-delete"
@@ -102,7 +98,6 @@
   [title]="bulkDeleteTitle"
   [message]="bulkDeleteMessage()"
   [confirmLabel]="deleteLabel"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   (confirmed)="deleteSelected()"
 />
@@ -113,9 +108,6 @@
   i18n-title="@@featureServiceTypes-createTitle"
   title="Create service provider"
   [closable]="(creating$ | async) !== true"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
-  [cancelDisabled]="!((creating$ | async) !== true)"
 >
   <form (ngSubmit)="onSubmitCreate()">
     <fpc-form-field forId="createKey" i18n-label="@@featureServiceTypes-key" label="Key" required>
@@ -195,7 +187,6 @@
             <span fpcListHeaderActions class="d-flex align-items-center gap-1">
               <fpc-button
                 variant="dark"
-                size="sm"
                 data-bs-toggle="collapse"
                 data-bs-target="#createProviderDefaults"
                 [attr.aria-expanded]="createProviderDefaultsExpanded()"
@@ -218,7 +209,7 @@
             (shown.bs.collapse)="createProviderDefaultsExpanded.set(true)"
             (hidden.bs.collapse)="createProviderDefaultsExpanded.set(false)"
           >
-            <p class="form-text text-body-secondary small mb-3 mt-2" i18n="@@featureServiceTypes-providerDefaultsHelp">
+            <p class="form-text fpc-form-text--wrap mb-3 mt-2" i18n="@@featureServiceTypes-providerDefaultsHelp">
               Overrides platform environment variables for this service type. Leave blank to use the environment
               default.
             </p>
@@ -227,7 +218,7 @@
                 @for (group of groups; track group.providerId) {
                   <div class="border rounded p-3 mb-3">
                     <div
-                      class="form-text text-body-secondary small mb-2 mt-0"
+                      class="form-text fpc-form-text--wrap mb-2 mt-0"
                       i18n="@@featureServiceTypes-providerDefaultsGroupIntro"
                     >
                       Defaults for {{ group.label }}
@@ -318,9 +309,6 @@
   i18n-title="@@featureServiceTypes-editTitle"
   title="Edit service provider"
   [closable]="(updating$ | async) !== true"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
-  [cancelDisabled]="!((updating$ | async) !== true)"
 >
   <form (ngSubmit)="onSubmitEdit()">
     <fpc-form-field forId="editName" i18n-label="@@featureServiceTypes-name" label="Name">
@@ -390,7 +378,6 @@
             <span fpcListHeaderActions class="d-flex align-items-center gap-1">
               <fpc-button
                 variant="dark"
-                size="sm"
                 data-bs-toggle="collapse"
                 data-bs-target="#editProviderDefaults"
                 [attr.aria-expanded]="editProviderDefaultsExpanded()"
@@ -413,7 +400,7 @@
             (shown.bs.collapse)="editProviderDefaultsExpanded.set(true)"
             (hidden.bs.collapse)="editProviderDefaultsExpanded.set(false)"
           >
-            <p class="form-text text-body-secondary small mb-3 mt-2" i18n="@@featureServiceTypes-providerDefaultsHelp">
+            <p class="form-text fpc-form-text--wrap mb-3 mt-2" i18n="@@featureServiceTypes-providerDefaultsHelp">
               Overrides platform environment variables for this service type. Leave blank to use the environment
               default.
             </p>
@@ -422,7 +409,7 @@
                 @for (group of groups; track group.providerId) {
                   <div class="border rounded p-3 mb-3">
                     <div
-                      class="form-text text-body-secondary small mb-2 mt-0"
+                      class="form-text fpc-form-text--wrap mb-2 mt-0"
                       i18n="@@featureServiceTypes-providerDefaultsGroupIntro"
                     >
                       Defaults for {{ group.label }}
@@ -521,7 +508,7 @@
       i18n-title="@@featureServiceTypes-meters"
       [sticky]="false"
     />
-    <p class="form-text text-body-secondary small mb-3" i18n="@@featureServiceTypes-metersHelp">
+    <p class="form-text fpc-form-text--wrap mb-3" i18n="@@featureServiceTypes-metersHelp">
       Provider-declared meters are required. Attach extra catalog meters with optional unit price and included usage
       overrides.
     </p>

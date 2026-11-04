@@ -5,7 +5,6 @@
     @if (isAdmin) {
       <fpc-button
         variant="primary"
-        size="sm"
         iconOnly
         [ariaLabel]="addTitle"
         [title]="addTitle"
@@ -82,7 +81,6 @@
           <fpc-form-control
             controlType="select"
             controlId="projectBoardLanesFilterPriority"
-            size="sm"
             [ngModel]="ticketFilterState.draft().priority"
             (ngModelChange)="ticketFilterState.patch({ priority: $event })"
           >
@@ -96,7 +94,6 @@
           <fpc-button
             fpcListToolbarActions
             variant="link"
-            size="sm"
             btnClass="text-body-secondary text-nowrap"
             [title]="hiddenMatchesTitle"
             (clicked)="showHiddenMatches()"
@@ -243,7 +240,6 @@
         <fpc-form-control
           controlType="select"
           controlId="projectBoardFilterStatus"
-          size="sm"
           [ngModel]="ticketFilterState.draft().status"
           (ngModelChange)="ticketFilterState.patch({ status: $event })"
         >
@@ -256,7 +252,6 @@
         <fpc-form-control
           controlType="select"
           controlId="projectBoardFilterPriority"
-          size="sm"
           [ngModel]="ticketFilterState.draft().priority"
           (ngModelChange)="ticketFilterState.patch({ priority: $event })"
         >
@@ -277,7 +272,6 @@
         <fpc-button
           fpcDropdownTrigger
           variant="dark"
-          size="sm"
           iconOnly
           ariaHaspopup="menu"
           [ariaLabel]="bulkStatusLabel"
@@ -300,7 +294,6 @@
         <fpc-button
           fpcDropdownTrigger
           variant="dark"
-          size="sm"
           iconOnly
           ariaHaspopup="menu"
           [ariaLabel]="bulkPriorityLabel"
@@ -316,7 +309,6 @@
       <fpc-button
         fpcDataTableBatch
         variant="danger"
-        size="sm"
         iconOnly
         [ariaLabel]="deleteLabel"
         [title]="deleteLabel"
@@ -331,7 +323,6 @@
         <fpc-button
           fpcDataTableToolbar
           variant="link"
-          size="sm"
           btnClass="text-body-secondary text-nowrap"
           [title]="hiddenMatchesTitle"
           (clicked)="showHiddenMatches()"
@@ -346,7 +337,6 @@
             <fpc-button
               fpcEmptyStateActions
               variant="primary"
-              size="sm"
               (clicked)="showCreateTicketModal()"
               i18n="@@featureProjectBoard-emptyCreate"
               >New ticket</fpc-button
@@ -390,7 +380,6 @@
   [title]="bulkDeleteTitle"
   [message]="bulkDeleteMessage()"
   [confirmLabel]="deleteLabel"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   [busy]="bulkBusy()"
   (confirmed)="onConfirmBulkDelete()"
@@ -417,8 +406,9 @@
           <div class="flex-grow-1 min-width-0" (focusout)="onDetailTitleBlur()">
             <fpc-form-control
               #detailTitleInput
-              size="sm"
               controlClass="flex-grow-1 min-width-0"
+              i18n-ariaLabel="@@featureProjectBoard-titleLabel"
+              ariaLabel="Title"
               [ngModel]="detailTitleDraft()"
               (ngModelChange)="detailTitleDraft.set($event)"
               [disabled]="saving()"
@@ -484,7 +474,6 @@
           <fpc-button
             (clicked)="lockTicket(d.id)"
             variant="dark"
-            size="sm"
             [iconOnly]="true"
             [disabled]="saving()"
             i18n-title="@@featureProjectBoard-lockTicketTitle"
@@ -517,7 +506,6 @@
                     <!-- Full hash via Copy instead of a 40-character badge (DB-14 b). -->
                     <fpc-button
                       variant="link"
-                      size="sm"
                       iconOnly
                       class="p-0"
                       [title]="copyFullShaLabel"
@@ -529,12 +517,14 @@
                   }
                 </dd>
               }
-              <dt class="col-sm-3" i18n="@@featureProjectBoard-statusLabel">Status</dt>
+              <dt class="col-sm-3">
+                <label for="detailTicketStatus" i18n="@@featureProjectBoard-statusLabel">Status</label>
+              </dt>
               <dd class="col-sm-9 mb-0">
                 @if (isAdmin && !d.locked) {
                   <fpc-form-control
                     controlType="select"
-                    size="sm"
+                    controlId="detailTicketStatus"
                     [ngModel]="d.status"
                     (ngModelChange)="onDetailStatusChange(d.id, $event)"
                     [disabled]="saving()"
@@ -547,12 +537,14 @@
                   <fpc-badge [tone]="ticketStatusBadgeTone(d.status)">{{ laneLabel(d.status) }}</fpc-badge>
                 }
               </dd>
-              <dt class="col-sm-3 mt-2" i18n="@@featureProjectBoard-priorityLabel">Priority</dt>
+              <dt class="col-sm-3 mt-2">
+                <label for="detailTicketPriority" i18n="@@featureProjectBoard-priorityLabel">Priority</label>
+              </dt>
               <dd class="col-sm-9 mt-2 mb-0">
                 @if (isAdmin && !d.locked) {
                   <fpc-form-control
                     controlType="select"
-                    size="sm"
+                    controlId="detailTicketPriority"
                     [ngModel]="d.priority"
                     (ngModelChange)="onDetailPriorityChange(d.id, $event)"
                     [disabled]="saving()"
@@ -565,7 +557,9 @@
                   <fpc-badge [tone]="ticketPriorityBadgeTone(d.priority)">{{ priorityLabel(d.priority) }}</fpc-badge>
                 }
               </dd>
-              <dt class="col-sm-3 mt-2" i18n="@@featureProjectBoard-milestoneLabel">Milestone</dt>
+              <dt class="col-sm-3 mt-2">
+                <label for="detailTicketMilestone" i18n="@@featureProjectBoard-milestoneLabel">Milestone</label>
+              </dt>
               <dd class="col-sm-9 mt-2 mb-0">
                 @if (isAdmin && !d.locked) {
                   <framework-project-milestone-select
@@ -575,7 +569,6 @@
                     [selectedMilestoneId]="d.milestoneId ?? null"
                     (selectedMilestoneIdChange)="onDetailMilestoneChange(d.id, $event)"
                     [disabled]="saving()"
-                    [compact]="true"
                   />
                 } @else {
                   <span class="text-body-secondary">{{ milestoneLabel(d.milestoneId) }}</span>
@@ -658,7 +651,6 @@
                     />
                     <fpc-button
                       variant="dark"
-                      size="sm"
                       iconOnly
                       (clicked)="projectTicketAttachmentInput.click()"
                       i18n-title="@@featureProjectBoard-addAttachment"
@@ -687,7 +679,6 @@
                         <span fpcListItemActions class="d-inline-flex align-items-center gap-1 flex-shrink-0">
                           <fpc-button
                             variant="outline-secondary"
-                            size="sm"
                             iconOnly
                             (clicked)="downloadTicketAttachment(attachment, d)"
                             i18n-title="@@featureProjectBoard-downloadAttachment"
@@ -700,7 +691,6 @@
                           @if (isAdmin && !d.locked) {
                             <fpc-button
                               variant="outline-danger"
-                              size="sm"
                               iconOnly
                               (clicked)="deleteTicketAttachment(attachment, d)"
                               i18n-title="@@featureProjectBoard-deleteAttachment"
@@ -724,7 +714,6 @@
                   @if (isAdmin && !d.locked) {
                     <fpc-button
                       variant="dark"
-                      size="sm"
                       iconOnly
                       (clicked)="showCreateSubtaskModal()"
                       [disabled]="saving()"
@@ -775,7 +764,6 @@
                   @if (isAdmin && !d.locked) {
                     <fpc-button
                       variant="dark"
-                      size="sm"
                       iconOnly
                       (clicked)="showCreateTimeEntryModal()"
                       [disabled]="ticketTimeSaving()"
@@ -843,7 +831,6 @@
                   <div class="project-board__comment-send">
                     <fpc-button
                       variant="primary"
-                      size="sm"
                       iconOnly
                       (clicked)="submitComment()"
                       [disabled]="saving() || !commentBody().trim()"
@@ -948,15 +935,7 @@
   </p>
 </fpc-confirm-dialog>
 
-<fpc-modal
-  [(open)]="createModalOpen"
-  size="xl"
-  scrollable
-  [closeOnBackdrop]="false"
-  (closed)="onCreateModalClosed()"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="createModalOpen" size="xl" scrollable [closeOnBackdrop]="false" (closed)="onCreateModalClosed()">
   <div fpcModalTitle class="h5 mb-0">
     @if (createParentId()) {
       <span i18n="@@featureProjectBoard-createSubtaskTitle">New subtask</span>
@@ -967,7 +946,6 @@
   <fpc-form-field forId="createTicketTitle" i18n-label="@@featureProjectBoard-titleLabel" label="Title" required>
     <fpc-form-control
       controlId="createTicketTitle"
-      size="sm"
       [(ngModel)]="createForm.title"
       name="createTitle"
       i18n-placeholder="@@featureProjectBoard-createTitlePlaceholder"
@@ -985,7 +963,6 @@
         <fpc-form-control
           controlType="select"
           controlId="createTicketStatus"
-          size="sm"
           [(ngModel)]="createForm.status"
           name="createStatus"
         >
@@ -1000,7 +977,6 @@
         <fpc-form-control
           controlType="select"
           controlId="createTicketPriority"
-          size="sm"
           [(ngModel)]="createForm.priority"
           name="createPriority"
         >
@@ -1018,7 +994,6 @@
           [milestones]="milestones()"
           [selectedMilestoneId]="createForm.milestoneId ?? null"
           (selectedMilestoneIdChange)="onCreateMilestoneChange($event)"
-          [compact]="true"
         />
       </fpc-form-field>
     </div>
@@ -1036,8 +1011,6 @@
   title="Create time entry"
   [closeOnBackdrop]="false"
   (closed)="onCreateTimeModalClosed()"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <fpc-form-field forId="ticketTimeStartedAt" i18n-label="@@featureProjectBoard-timeStartLabel" label="Start" required>
     <fpc-form-control

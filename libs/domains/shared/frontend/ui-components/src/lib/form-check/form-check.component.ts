@@ -4,12 +4,17 @@ import {
   Component,
   computed,
   forwardRef,
+  inject,
   input,
   model,
   output,
   signal,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+
+import { FPC_CONTROL_SIZE } from '../control-size/control-size';
+import { FpcFormTextDirective } from '../truncate-title/form-text.directive';
+import { FpcTruncateTitleDirective } from '../truncate-title/truncate-title.directive';
 
 export type FpcFormCheckType = 'checkbox' | 'radio';
 
@@ -23,6 +28,7 @@ let nextCheckId = 0;
   selector: 'fpc-form-check',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FpcTruncateTitleDirective, FpcFormTextDirective],
   host: {
     class: 'fpc-form-check',
     '[class.fpc-form-check--inline]': 'inline()',
@@ -35,7 +41,7 @@ let nextCheckId = 0;
     },
   ],
   template: `
-    <div class="form-check" [class.form-check-inline]="inline()">
+    <div class="form-check" [class.form-check-inline]="inline()" [class.fpc-form-check--sm]="compact">
       <input
         [class]="inputClasses()"
         [type]="type()"
@@ -52,7 +58,7 @@ let nextCheckId = 0;
         (blur)="onBlur()"
       />
       @if (label()) {
-        <label class="form-check-label" [for]="resolvedId()">{{ label() }}</label>
+        <label class="form-check-label" [for]="resolvedId()" fpcTruncateTitle>{{ label() }}</label>
       }
       <ng-content />
       @if (hint()) {
@@ -63,6 +69,8 @@ let nextCheckId = 0;
   styleUrl: './form-check.component.scss',
 })
 export class FpcFormCheckComponent implements ControlValueAccessor {
+  protected readonly compact = inject(FPC_CONTROL_SIZE) === 'sm';
+
   readonly type = input<FpcFormCheckType>('checkbox');
   readonly checked = model(false);
   readonly disabled = input(false, { transform: booleanAttribute });

@@ -346,8 +346,8 @@ describe('isolation-level.util', () => {
         expect(isolationLevelDescription(level)).not.toBe('');
       }
 
-      expect(isolationDowngradeDialogTexts('standard').confirmLabel).toBe('Use Standard Docker');
-      expect(isolationDowngradeDialogTexts('sandboxed').confirmLabel).toBe('Use Sandboxed (gVisor)');
+      expect(isolationDowngradeDialogTexts('standard').confirmLabel).toBe('Use');
+      expect(isolationDowngradeDialogTexts('sandboxed').confirmLabel).toBe('Use');
       expect(isolationDowngradeDialogTexts('sandboxed').message).toContain('KVM');
     });
 
@@ -423,7 +423,7 @@ describe('isolation-level.util', () => {
       expect(isolationDowngradeDialogTexts('sandboxed-kvm')).toEqual({
         title: 'Use the gVisor sandbox instead of a microVM?',
         message: expect.stringContaining('its own virtual machine'),
-        confirmLabel: 'Use Sandboxed (gVisor on KVM)',
+        confirmLabel: 'Use',
       });
       // The Standard confirmation no longer names a specific recommended level.
       expect(isolationDowngradeDialogTexts('standard').message).toContain('the recommended isolation level');

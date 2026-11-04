@@ -313,6 +313,7 @@ import { ProjectsPageComponent } from './projects-page/projects-page.component';
 import { ProjectDetailPageComponent } from './project-detail-page/project-detail-page.component';
 import { ServiceDetailPageComponent } from './service-detail-page/service-detail-page.component';
 import { PublicWithdrawalComponent } from './public-withdrawal/public-withdrawal.component';
+import { provideFpcControlSize } from '@forepath/shared/frontend/ui-components';
 import { collectContributorNgrx, collectContributorRoutes } from './contributors/contributor-ui.registry';
 import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from './contributors/first-party-contributor-ui.modules';
 
@@ -339,6 +340,8 @@ export const billingConsoleRoutes: Route[] = [
         canActivate: [publicWithdrawalAccessGuard],
         title: () => buildPageTitle($localize`:@@featurePublicWithdrawal-page:Withdrawal`),
         providers: [
+          // Public page (no auth guard): regular-size buttons and fields, not the console's dense `sm`.
+          provideFpcControlSize('md'),
           PublicWithdrawalFacade,
           provideState('publicWithdrawal', publicWithdrawalReducer),
           provideEffects({

@@ -4,11 +4,14 @@ import {
   Component,
   computed,
   forwardRef,
+  inject,
   input,
   model,
   signal,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+
+import { FPC_CONTROL_SIZE } from '../control-size/control-size';
 
 /** One choice of an `fpc-multi-select`. */
 export interface FpcMultiSelectOption {
@@ -42,6 +45,7 @@ let nextMultiSelectId = 0;
   host: {
     class: 'fpc-multi-select',
     '[class.fpc-multi-select--disabled]': 'isDisabled()',
+    '[class.fpc-multi-select--sm]': 'compact',
   },
   template: `
     @if (selectedOptions().length > 0) {
@@ -111,6 +115,9 @@ let nextMultiSelectId = 0;
   styleUrl: './multi-select.component.scss',
 })
 export class FpcMultiSelectComponent implements ControlValueAccessor {
+  /** Option rows follow the form tier (`FPC_CONTROL_SIZE`); the search strip is always `sm`. */
+  protected readonly compact = inject(FPC_CONTROL_SIZE) === 'sm';
+
   readonly options = input<readonly FpcMultiSelectOption[]>([]);
   /** Selected option values (two-way; also the form value). */
   readonly value = model<readonly string[]>([]);

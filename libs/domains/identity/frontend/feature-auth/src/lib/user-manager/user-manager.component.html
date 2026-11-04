@@ -37,7 +37,6 @@
     <fpc-button
       fpcDataTableToolbar
       variant="primary"
-      size="sm"
       iconOnly
       [disabled]="(creatingUser$ | async) === true"
       [ariaLabel]="addUserTitle"
@@ -49,7 +48,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="bulkBusy()"
       (clicked)="onBulkLock(true)"
       data-testid="user-manager-bulk-lock"
@@ -62,7 +60,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="bulkBusy()"
       (clicked)="onBulkLock(false)"
       data-testid="user-manager-bulk-unlock"
@@ -75,7 +72,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="bulkBusy()"
       (clicked)="bulkDeleteOpen.set(true)"
       data-testid="user-manager-bulk-delete"
@@ -119,8 +115,6 @@
   title="Create user"
   size="md"
   [closable]="(creatingUser$ | async) !== true"
-  [cancelLabel]="cancelLabel"
-  [cancelDisabled]="(creatingUser$ | async) === true"
 >
   <form (ngSubmit)="onSubmitCreateUser()">
     <fpc-form-field forId="createUserEmail" i18n-label="@@featureUserManager-emailLabel" label="Email" required>
@@ -188,8 +182,6 @@
   title="Edit user"
   size="md"
   [closable]="(updatingUser$ | async) !== true"
-  [cancelLabel]="cancelLabel"
-  [cancelDisabled]="(updatingUser$ | async) === true"
 >
   <form (ngSubmit)="onSubmitEditUser()">
     <fpc-form-field forId="editUserEmail" i18n-label="@@featureUserManager-emailLabel" label="Email" required>
@@ -204,7 +196,7 @@
         [disabled]="(updatingUser$ | async) === true"
       />
     </fpc-form-field>
-    <fpc-form-field forId="editUserPassword" i18n-label="@@featureUserManager-newPasswordLabel" label="New Password">
+    <fpc-form-field forId="editUserPassword" i18n-label="@@featureUserManager-newPasswordLabel" label="New password">
       <fpc-form-control
         controlId="editUserPassword"
         inputType="password"
@@ -237,7 +229,7 @@
         [disabled]="!editForm.email.trim() || (updatingUser$ | async) === true"
         [loading]="(updatingUser$ | async) === true"
       >
-        <span i18n="@@featureUserManager-update">Save changes</span>
+        <span i18n="@@featureUserManager-update">Save</span>
       </fpc-button>
     </div>
   </form>
@@ -246,7 +238,7 @@
 <fpc-confirm-dialog
   [(open)]="deleteUserModalOpen"
   i18n-title="@@featureUserManager-deleteUserModalTitle"
-  title="Delete User"
+  title="Delete user"
   i18n-confirmLabel="@@featureUserManager-delete"
   confirmLabel="Delete"
   [danger]="true"
@@ -269,9 +261,9 @@
 <fpc-confirm-dialog
   [(open)]="clearTotpModalOpen"
   i18n-title="@@featureUserManager-clearTotpModalTitle"
-  title="Remove Authenticator"
+  title="Remove authenticator"
   i18n-confirmLabel="@@featureUserManager-removeAuthenticator"
-  confirmLabel="Remove authenticator"
+  confirmLabel="Remove"
   (confirmed)="confirmClearTotp()"
   (cancelled)="cancelClearTotp()"
 >

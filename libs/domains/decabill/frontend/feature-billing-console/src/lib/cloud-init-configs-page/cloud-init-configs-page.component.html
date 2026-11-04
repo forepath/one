@@ -37,7 +37,6 @@
     <fpc-button
       fpcDataTableToolbar
       variant="primary"
-      size="sm"
       iconOnly
       [disabled]="(loadingAny$ | async) === true"
       [ariaLabel]="addConfigAriaLabel"
@@ -49,7 +48,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="!selectedConfigs().some((config) => !config.isActive)"
       (clicked)="setActiveSelected(true)"
       data-testid="cloud-init-configs-bulk-activate"
@@ -62,7 +60,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="secondary"
-      size="sm"
       [disabled]="!selectedConfigs().some((config) => config.isActive)"
       (clicked)="setActiveSelected(false)"
       data-testid="cloud-init-configs-bulk-deactivate"
@@ -75,7 +72,6 @@
     <fpc-button
       fpcDataTableBatch
       variant="danger"
-      size="sm"
       [disabled]="selectedConfigs().length === 0"
       (clicked)="confirmBulkDelete.set(true)"
       data-testid="cloud-init-configs-bulk-delete"
@@ -102,7 +98,6 @@
   [title]="bulkDeleteTitle"
   [message]="bulkDeleteMessage()"
   [confirmLabel]="deleteLabel"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   (confirmed)="deleteSelected()"
 />
@@ -112,8 +107,6 @@
   size="xl"
   i18n-title="@@featureCloudInitConfigs-createTitle"
   title="Create cloud-init config"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <form (ngSubmit)="onSubmitCreate()">
     <div class="row g-3">
@@ -181,10 +174,8 @@
       @if (isComposeTemplateMode(createForm)) {
         <div class="col-12">
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
-            <span class="fw-semibold" id="createComposeTemplateLabel">Docker Compose template</span>
-            <fpc-button variant="dark" size="sm" (clicked)="resetComposeTemplate('create')">
-              Reset to default
-            </fpc-button>
+            <fpc-label>Docker Compose template</fpc-label>
+            <fpc-button variant="dark" (clicked)="resetComposeTemplate('create')"> Reset to default </fpc-button>
           </div>
           <fpc-form-field forId="createComposeTemplate" [hint]="templatePlaceholderHelp">
             <framework-monaco-editor-wrapper
@@ -208,10 +199,9 @@
       @if (isUserDataTemplateMode(createForm)) {
         <div class="col-12">
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
-            <span class="fw-semibold">Cloud-init user-data script</span>
+            <fpc-label>Cloud-init user-data script</fpc-label>
             <fpc-button
               variant="dark"
-              size="sm"
               iconOnly
               (clicked)="resetUserDataTemplate('create')"
               title="Load example"
@@ -282,7 +272,6 @@
         <span fpcListHeaderActions class="d-flex align-items-center gap-1">
           <fpc-button
             variant="primary"
-            size="sm"
             iconOnly
             (clicked)="addEnvVariable('create')"
             [disabled]="(creating$ | async) === true"
@@ -299,18 +288,12 @@
         <div class="row g-2 mb-2 align-items-end">
           <div class="col-12 col-md-2">
             <fpc-form-field [forId]="'createEnvKey' + i" label="Key">
-              <fpc-form-control
-                size="sm"
-                [controlId]="'createEnvKey' + i"
-                [(ngModel)]="row.key"
-                [name]="'createEnvKey' + i"
-              />
+              <fpc-form-control [controlId]="'createEnvKey' + i" [(ngModel)]="row.key" [name]="'createEnvKey' + i" />
             </fpc-form-field>
           </div>
           <div class="col-12 col-md-2">
             <fpc-form-field [forId]="'createEnvLabel' + i" label="Label">
               <fpc-form-control
-                size="sm"
                 [controlId]="'createEnvLabel' + i"
                 [(ngModel)]="row.label"
                 [name]="'createEnvLabel' + i"
@@ -320,7 +303,6 @@
           <div class="col-12 col-md-3">
             <fpc-form-field [forId]="'createEnvDesc' + i" label="Description">
               <fpc-form-control
-                size="sm"
                 [controlId]="'createEnvDesc' + i"
                 [(ngModel)]="row.description"
                 [name]="'createEnvDesc' + i"
@@ -339,7 +321,6 @@
             @if (!row.useRandomDefault) {
               <fpc-form-field [forId]="'createEnvDefault' + i" label="Default">
                 <fpc-form-control
-                  size="sm"
                   inputType="password"
                   [controlId]="'createEnvDefault' + i"
                   [(ngModel)]="row.defaultValue"
@@ -350,7 +331,6 @@
             } @else {
               <fpc-form-field [forId]="'createEnvRandomLength' + i" label="Length">
                 <fpc-form-control
-                  size="sm"
                   inputType="number"
                   [controlId]="'createEnvRandomLength' + i"
                   [(ngModel)]="row.randomDefaultLength"
@@ -378,7 +358,6 @@
           <div class="col-12 col-md-2 d-flex gap-1">
             <fpc-button
               variant="dark"
-              size="sm"
               (clicked)="moveEnvVariable('create', i, -1)"
               [disabled]="i === 0"
               iconOnly
@@ -391,7 +370,6 @@
             </fpc-button>
             <fpc-button
               variant="dark"
-              size="sm"
               (clicked)="moveEnvVariable('create', i, 1)"
               [disabled]="i === createForm.environmentVariableRows.length - 1"
               iconOnly
@@ -404,7 +382,6 @@
             </fpc-button>
             <fpc-button
               variant="danger"
-              size="sm"
               iconOnly
               (clicked)="removeEnvVariable('create', i)"
               title="Remove"
@@ -436,8 +413,6 @@
   size="xl"
   i18n-title="@@featureCloudInitConfigs-editTitle"
   title="Edit cloud-init config"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   <form (ngSubmit)="onSubmitEdit()">
     <div class="row g-3">
@@ -496,10 +471,8 @@
       @if (isComposeTemplateMode(editForm)) {
         <div class="col-12">
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
-            <span class="fw-semibold">Docker Compose template</span>
-            <fpc-button variant="dark" size="sm" (clicked)="resetComposeTemplate('edit')">
-              Reset to default
-            </fpc-button>
+            <fpc-label>Docker Compose template</fpc-label>
+            <fpc-button variant="dark" (clicked)="resetComposeTemplate('edit')"> Reset to default </fpc-button>
           </div>
           <fpc-form-field forId="editComposeTemplate" [hint]="templatePlaceholderHelp">
             <framework-monaco-editor-wrapper
@@ -523,10 +496,9 @@
       @if (isUserDataTemplateMode(editForm)) {
         <div class="col-12">
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
-            <span class="fw-semibold">Cloud-init user-data script</span>
+            <fpc-label>Cloud-init user-data script</fpc-label>
             <fpc-button
               variant="dark"
-              size="sm"
               iconOnly
               (clicked)="resetUserDataTemplate('edit')"
               title="Load example"
@@ -597,7 +569,6 @@
         <span fpcListHeaderActions class="d-flex align-items-center gap-1">
           <fpc-button
             variant="primary"
-            size="sm"
             iconOnly
             (clicked)="addEnvVariable('edit')"
             [disabled]="(updating$ | async) === true"
@@ -614,28 +585,17 @@
         <div class="row g-2 mb-2 align-items-end">
           <div class="col-12 col-md-2">
             <fpc-form-field [forId]="'editEnvKey' + i" label="Key">
-              <fpc-form-control
-                size="sm"
-                [controlId]="'editEnvKey' + i"
-                [(ngModel)]="row.key"
-                [name]="'editEnvKey' + i"
-              />
+              <fpc-form-control [controlId]="'editEnvKey' + i" [(ngModel)]="row.key" [name]="'editEnvKey' + i" />
             </fpc-form-field>
           </div>
           <div class="col-12 col-md-2">
             <fpc-form-field [forId]="'editEnvLabel' + i" label="Label">
-              <fpc-form-control
-                size="sm"
-                [controlId]="'editEnvLabel' + i"
-                [(ngModel)]="row.label"
-                [name]="'editEnvLabel' + i"
-              />
+              <fpc-form-control [controlId]="'editEnvLabel' + i" [(ngModel)]="row.label" [name]="'editEnvLabel' + i" />
             </fpc-form-field>
           </div>
           <div class="col-12 col-md-3">
             <fpc-form-field [forId]="'editEnvDesc' + i" label="Description">
               <fpc-form-control
-                size="sm"
                 [controlId]="'editEnvDesc' + i"
                 [(ngModel)]="row.description"
                 [name]="'editEnvDesc' + i"
@@ -654,7 +614,6 @@
             @if (!row.useRandomDefault) {
               <fpc-form-field [forId]="'editEnvDefault' + i" label="Default">
                 <fpc-form-control
-                  size="sm"
                   inputType="password"
                   [controlId]="'editEnvDefault' + i"
                   [(ngModel)]="row.defaultValue"
@@ -665,7 +624,6 @@
             } @else {
               <fpc-form-field [forId]="'editEnvRandomLength' + i" label="Length">
                 <fpc-form-control
-                  size="sm"
                   inputType="number"
                   [controlId]="'editEnvRandomLength' + i"
                   [(ngModel)]="row.randomDefaultLength"
@@ -693,7 +651,6 @@
           <div class="col-12 col-md-2 d-flex gap-1">
             <fpc-button
               variant="dark"
-              size="sm"
               (clicked)="moveEnvVariable('edit', i, -1)"
               [disabled]="i === 0"
               iconOnly
@@ -706,7 +663,6 @@
             </fpc-button>
             <fpc-button
               variant="dark"
-              size="sm"
               (clicked)="moveEnvVariable('edit', i, 1)"
               [disabled]="i === editForm.environmentVariableRows.length - 1"
               iconOnly
@@ -719,7 +675,6 @@
             </fpc-button>
             <fpc-button
               variant="danger"
-              size="sm"
               iconOnly
               (clicked)="removeEnvVariable('edit', i)"
               title="Remove"

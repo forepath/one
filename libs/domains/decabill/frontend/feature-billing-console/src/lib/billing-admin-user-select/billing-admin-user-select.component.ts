@@ -16,7 +16,6 @@ export class BillingAdminUserSelectComponent {
   /** Optional cache for resolving the selected user label (e.g. full user list on parent page). */
   readonly users = input<UserResponseDto[]>([]);
   readonly selectedUserId = model<string>('');
-  readonly size = input<'sm' | 'md'>('md');
   readonly disabled = input(false);
   readonly required = input(false);
   readonly inputId = input('billingAdminUserSelect');

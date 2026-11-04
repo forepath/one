@@ -13,8 +13,11 @@
 //                                other `sm` control in that row)
 //
 // Comfortable density = the natural Bootstrap metrics of the shared chrome (font sizes + control
-// padding in `brands/_chrome.scss`), so nothing moves there. `body.fpc-density-compact` (default
-// where `FpcDensityService` runs) steps every tier down a little.
+// padding in `brands/_chrome.scss`) for md / lg. `body.fpc-density-compact` (default where
+// `FpcDensityService` runs) steps every tier down a little. The sm tier is the default of every
+// button and field behind an auth guard (`FPC_CONTROL_SIZE`), so it sits at the header tier, just
+// under md (about the top bar's Logout), instead of Bootstrap's tight sm metrics: dense, but not
+// cramped next to md controls.
 //
 // The heights are applied by deriving the block padding from the token (single-line controls end
 // up exactly at the token; wrapped labels still grow). Utilities such as `p-0` / `py-*` keep
@@ -24,18 +27,18 @@ $_border: 1px;
 $_line-height: 1.5;
 $_font-size-sm: chrome.$font-size-base * 0.875;
 $_font-size-lg: chrome.$font-size-base * 1.25;
+$_font-size-xs: 0.6875rem;
 
-$control-height-sm: $_font-size-sm * $_line-height + 2 * chrome.$input-btn-padding-y-sm + math.div(2 * $_border, 16px) *
-  1rem;
 $control-height-md: chrome.$font-size-base * $_line-height + 2 * chrome.$input-btn-padding-y +
   math.div(2 * $_border, 16px) * 1rem;
 $control-height-lg: $_font-size-lg * $_line-height + 2 * chrome.$input-btn-padding-y-lg + math.div(2 * $_border, 16px) *
   1rem;
 $control-height-header: 2.35rem;
+$control-height-sm: $control-height-header;
 
-$control-height-sm-compact: 1.875rem;
 $control-height-md-compact: 2.25rem;
 $control-height-header-compact: 2.125rem;
+$control-height-sm-compact: $control-height-header-compact;
 
 :root {
   --fpc-control-height-sm: #{$control-height-sm};
@@ -48,6 +51,15 @@ body.fpc-density-compact {
   --fpc-control-height-sm: #{$control-height-sm-compact};
   --fpc-control-height-md: #{$control-height-md-compact};
   --fpc-control-height-header: #{$control-height-header-compact};
+}
+
+// Public pages rendered inside a dense console (sign-in flow, public withdrawal: the routes that provide
+// `provideFpcControlSize('md')`) put `fpc-density-comfortable` on their root, so their fields and buttons keep the
+// regular height whatever the console's density.
+.fpc-density-comfortable {
+  --fpc-control-height-sm: #{$control-height-sm};
+  --fpc-control-height-md: #{$control-height-md};
+  --fpc-control-height-header: #{$control-height-header};
 }
 
 // Page / object header rows: every `sm` control takes the header tier so text buttons, selects
@@ -66,28 +78,12 @@ body.fpc-density-compact :is(.fpc-page-header, .fpc-object-header__head) .dropdo
   --fpc-control-height-sm: #{$control-height-sm-compact};
 }
 
-// Top bar (from md, where Logout is `mdSize="md"`): every `sm` control in the bar (cluster chip, search trigger,
-// Create, icon actions, language switcher) takes the md tier, so the whole row is one height; their inline padding
-// steps up with it (`--fpc-top-bar-control-padding-x`, = Bootstrap's md button padding). Phones keep sm (Logout
-// too). Menus opened from the bar keep the regular `sm` tier. Compact bars (tool windows: language + theme only) take
-// the same tier, so the language select is one height in every bar (round 2, 2026-10-29).
+// Top bar (from md): every control in the bar (cluster chip, search trigger, Create, icon actions, language switcher,
+// Logout) is a plain `sm` control, the same height, text size and padding as every other console button (modal
+// footers included); the chip / search inline padding matches the sm button padding (`--fpc-top-bar-control-padding-x`).
 @media (min-width: 768px) {
   .fpc-top-bar {
-    --fpc-control-height-sm: var(--fpc-control-height-md);
-    --fpc-top-bar-control-padding-x: 0.75rem;
-
-    // One label size across the bar: `sm` buttons (Draft, icon actions) take the md text size like Logout / search.
-    .btn-sm:not(.dropdown-item) {
-      --bs-btn-font-size: #{chrome.$font-size-base};
-    }
-
-    .dropdown-menu {
-      --fpc-control-height-sm: #{$control-height-sm};
-    }
-  }
-
-  body.fpc-density-compact .fpc-top-bar .dropdown-menu {
-    --fpc-control-height-sm: #{$control-height-sm-compact};
+    --fpc-top-bar-control-padding-x: #{chrome.$input-btn-padding-x-sm};
   }
 }
 
@@ -107,8 +103,12 @@ body.fpc-density-compact :is(.fpc-page-header, .fpc-object-header__head) .dropdo
   @include _btn-padding;
 }
 
+// `sm` buttons keep only the compact height (and Bootstrap's sm inline padding, = the top bar's Logout): text size and
+// corner radius are the md ones, so every button reads the same as Logout, modal footers and toolbars included.
 .btn-sm {
   --fpc-control-h: var(--fpc-control-height-sm);
+  --bs-btn-font-size: #{chrome.$font-size-base};
+  --bs-btn-border-radius: var(--bs-border-radius);
 }
 
 .btn-lg {
@@ -120,7 +120,7 @@ body.fpc-density-compact :is(.fpc-page-header, .fpc-object-header__head) .dropdo
 .btn-group-sm > .btn,
 .input-group-sm > .btn {
   --fpc-control-h: var(--fpc-control-height-sm);
-  --bs-btn-font-size: #{$_font-size-sm};
+  --bs-btn-font-size: #{chrome.$font-size-base};
   @include _btn-padding;
   padding-top: var(--bs-btn-padding-y);
   padding-bottom: var(--bs-btn-padding-y);
@@ -166,6 +166,55 @@ $_select: '.form-select:not([multiple], [size])';
 .input-group-lg > #{$_select},
 .input-group-lg > .input-group-text {
   @include _field-height(var(--fpc-control-height-lg));
+}
+
+// --- Field labels -------------------------------------------------------------------------------
+// Labels above a field are always one line: longer text ellipsizes, the full text shows on hover (`fpcTruncateTitle`
+// on `fpc-label` / map / list editors / check groups). Their text size follows the control tier they label
+// (`FPC_CONTROL_SIZE`: `sm` behind an auth guard, `md` on public pages), so an `sm` field never carries an md label.
+.form-label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.form-label.fpc-form-label--sm {
+  font-size: $_font-size-sm;
+}
+
+.form-label.fpc-form-label--lg {
+  font-size: $_font-size-lg;
+}
+
+// Check / switch rows at the `sm` tier: box and label at the sm text size.
+.form-check.fpc-form-check--sm {
+  font-size: $_font-size-sm;
+}
+
+// --- Field / section subtexts ----------------------------------------------------------------------
+// Hints (`.form-text`) and errors (`.invalid-feedback`) under a field or form section follow the label rule: one line,
+// ellipsized, full text on hover (`FpcFormTextDirective`), one step below the tier's label size (md: the Bootstrap
+// small size; `sm` tier: `.fpc-form-text--sm`).
+.form-text,
+.invalid-feedback {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.form-text.fpc-form-text--sm,
+.invalid-feedback.fpc-form-text--sm {
+  font-size: $_font-size-xs;
+}
+
+// Descriptions of a whole form section (under its heading) explain more than one field: same subtext look and tier
+// size, but they wrap instead of ellipsizing. Field hints stay single-line.
+.form-text.fpc-form-text--wrap {
+  overflow: visible;
+  white-space: normal;
 }
 
 // --- Pagination ---------------------------------------------------------------------------------

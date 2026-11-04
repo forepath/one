@@ -168,10 +168,10 @@
             } @else {
               <form class="content-report-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
                 <div class="mb-4">
-                  <p class="form-label fw-semibold mb-2" i18n="@@featureForepathLegalContentReport-formTypeLabel">
+                  <fpc-label id="cr-report-type-label" i18n="@@featureForepathLegalContentReport-formTypeLabel">
                     Report type
-                  </p>
-                  <div class="row g-3 cr-report-type" role="radiogroup" aria-label="Report type">
+                  </fpc-label>
+                  <div class="row g-3 cr-report-type" role="radiogroup" aria-labelledby="cr-report-type-label">
                     <div class="col-md-6">
                       <label class="cr-report-type__option h-100">
                         <input class="form-check-input mt-1" type="radio" formControlName="reportType" value="dsa" />
@@ -380,7 +380,7 @@
                       <fpc-form-field
                         forId="cr-member-state"
                         i18n-label="@@featureForepathLegalContentReport-formMemberStateLabel"
-                        label="Member State"
+                        label="Member state"
                       >
                         <fpc-form-control
                           controlId="cr-member-state"
@@ -527,7 +527,7 @@
                           (filesChange)="onPdfFilesChange($event)"
                         />
                         @if (selectedPdfError()) {
-                          <div fpcFormFieldError class="text-danger">{{ selectedPdfError() }}</div>
+                          <div fpcFormFieldError>{{ selectedPdfError() }}</div>
                         }
                       </fpc-form-field>
                     </div>

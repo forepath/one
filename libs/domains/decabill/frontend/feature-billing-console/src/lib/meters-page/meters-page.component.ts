@@ -31,14 +31,7 @@ import { debounceTime, distinctUntilChanged, firstValueFrom, skip } from 'rxjs';
 
 import { getMeterAggregatorLabel } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
-import {
-  DB_DL_CANCEL,
-  DB_DL_DELETE,
-  dbBulkSummary,
-  dbCopyIdItem,
-  type DbBulkResult,
-  DB_DL_EDIT,
-} from '../shared/data-list';
+import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
 import { formatBillingMoney } from '../billing-format';
 
@@ -148,7 +141,6 @@ export class MetersPageComponent implements OnInit {
   ];
 
   readonly deleteLabel = DB_DL_DELETE;
-  readonly cancelLabel = DB_DL_CANCEL;
   readonly activateLabel = $localize`:@@featureMeters-bulkActivate:Activate`;
   readonly deactivateLabel = $localize`:@@featureMeters-bulkDeactivate:Deactivate`;
   readonly bulkDeleteTitle = $localize`:@@featureMeters-bulkDeleteTitle:Delete meters?`;

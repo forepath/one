@@ -23,7 +23,6 @@ export class IdentityLogoutConfirmModalComponent {
   readonly logoutAllSessions = signal(false);
 
   readonly confirmLabel = $localize`:@@identityLogoutConfirm-confirm:Log out`;
-  readonly cancelLabel = $localize`:@@identityLogoutConfirm-cancel:Cancel`;
 
   private readonly authenticationType = toSignal(this.authenticationFacade.authenticationType$, {
     initialValue: null,

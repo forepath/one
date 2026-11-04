@@ -97,7 +97,6 @@ export interface PathListEntryView {
                 @if (!entry.deleted && canOpenUrl(entry)) {
                   <fpc-button
                     variant="secondary"
-                    size="sm"
                     iconOnly
                     (clicked)="openUrl.emit(entry.value.trim())"
                     i18n-ariaLabel="@@featureAgentConfig-openUrl"
@@ -111,7 +110,6 @@ export interface PathListEntryView {
                 @if (!entry.deleted && canShowOpenFile(entry)) {
                   <fpc-button
                     variant="secondary"
-                    size="sm"
                     iconOnly
                     [disabled]="entry.inherited || disabled()"
                     (clicked)="onEditFile(entry)"
@@ -125,7 +123,6 @@ export interface PathListEntryView {
                 }
                 <fpc-button
                   variant="secondary"
-                  size="sm"
                   iconOnly
                   [disabled]="entry.inherited || entry.deleted || disabled()"
                   (clicked)="toggleEdit(entry)"
@@ -136,7 +133,6 @@ export interface PathListEntryView {
                 </fpc-button>
                 <fpc-button
                   variant="danger"
-                  size="sm"
                   iconOnly
                   [disabled]="entry.inherited || entry.deleted || disabled()"
                   (clicked)="onRemove(entry)"
@@ -150,6 +146,8 @@ export interface PathListEntryView {
                 <div class="agent-config-path-list__row-edit w-100">
                   <fpc-form-control
                     class="agent-config-path-list__control"
+                    i18n-ariaLabel="@@featureAgentConfig-pathEntryAria"
+                    ariaLabel="Path"
                     [ngModel]="entry.value"
                     (ngModelChange)="onChange(entry, $event)"
                   />

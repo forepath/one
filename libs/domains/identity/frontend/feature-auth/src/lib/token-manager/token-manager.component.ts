@@ -12,13 +12,13 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
   FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
+  FpcFormTextDirective,
   FpcLabelComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
@@ -55,13 +55,13 @@ const emptyForm = (): TokenFormState => ({
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
     FpcDataTableComponent,
     FpcEmptyStateComponent,
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
+    FpcFormTextDirective,
     FpcLabelComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
@@ -83,8 +83,6 @@ export class IdentityTokenManagerComponent implements OnInit {
   readonly revokeTokenModalOpen = signal(false);
 
   /** Modal footer Cancel (3.38 R14: [Cancel `dark`, Primary]); the shared identity unit exists in every console. */
-
-  readonly cancelLabel = $localize`:@@identityLogoutConfirm-cancel:Cancel`;
 
   readonly pageTitle = $localize`:@@featureTokenManager-title:Personal access tokens`;
   readonly addTokenTitle = $localize`:@@featureTokenManager-addTokenTitle:Create token`;

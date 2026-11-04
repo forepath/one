@@ -14,7 +14,6 @@
     />
     <span fpcListToolbarActions class="d-inline-flex gap-2">
       <fpc-button
-        size="sm"
         variant="primary"
         [iconOnly]="true"
         (clicked)="openCreate(null, 'page', $event)"
@@ -24,7 +23,6 @@
         <i class="bi bi-file-earmark-plus"></i>
       </fpc-button>
       <fpc-button
-        size="sm"
         variant="primary"
         [iconOnly]="true"
         (clicked)="openCreate(null, 'folder', $event)"
@@ -34,7 +32,6 @@
         <i class="bi bi-folder-plus"></i>
       </fpc-button>
       <fpc-button
-        size="sm"
         variant="primary"
         [iconOnly]="true"
         (clicked)="onUploadFile(undefined, $event)"
@@ -44,7 +41,6 @@
         <i class="bi bi-upload"></i>
       </fpc-button>
       <fpc-button
-        size="sm"
         variant="dark"
         [iconOnly]="true"
         (clicked)="onContextRefresh()"
@@ -85,18 +81,19 @@
         <div class="create-item-input px-2 py-1 flex-shrink-0" [style.padding-left.px]="24">
           <div class="input-group input-group-sm">
             <fpc-form-control
-              size="sm"
               [ngModel]="newNodeTitle()"
               (ngModelChange)="newNodeTitle.set($event)"
               (keydown.enter)="confirmCreate($event)"
               (keydown.escape)="cancelCreate($event)"
               i18n-placeholder="@@featureKnowledgeTree-titlePlaceholder"
               placeholder="Title"
+              i18n-ariaLabel="@@featureKnowledgeTree-titleAria"
+              ariaLabel="Title"
             />
-            <fpc-button variant="primary" size="sm" [iconOnly]="true" (clicked)="confirmCreate($event)">
+            <fpc-button variant="primary" [iconOnly]="true" (clicked)="confirmCreate($event)">
               <i class="bi bi-check"></i>
             </fpc-button>
-            <fpc-button variant="dark" size="sm" [iconOnly]="true" (clicked)="cancelCreate($event)">
+            <fpc-button variant="dark" [iconOnly]="true" (clicked)="cancelCreate($event)">
               <i class="bi bi-x"></i>
             </fpc-button>
           </div>
@@ -109,18 +106,19 @@
             <div class="create-item-input px-2 py-1" [style.padding-left.px]="24">
               <div class="input-group input-group-sm">
                 <fpc-form-control
-                  size="sm"
                   [ngModel]="newNodeTitle()"
                   (ngModelChange)="newNodeTitle.set($event)"
                   (keydown.enter)="confirmCreate($event)"
                   (keydown.escape)="cancelCreate($event)"
                   i18n-placeholder="@@featureKnowledgeTree-titlePlaceholder"
                   placeholder="Title"
+                  i18n-ariaLabel="@@featureKnowledgeTree-titleAria"
+                  ariaLabel="Title"
                 />
-                <fpc-button variant="primary" size="sm" [iconOnly]="true" (clicked)="confirmCreate($event)">
+                <fpc-button variant="primary" [iconOnly]="true" (clicked)="confirmCreate($event)">
                   <i class="bi bi-check"></i>
                 </fpc-button>
-                <fpc-button variant="dark" size="sm" [iconOnly]="true" (clicked)="cancelCreate($event)">
+                <fpc-button variant="dark" [iconOnly]="true" (clicked)="cancelCreate($event)">
                   <i class="bi bi-x"></i>
                 </fpc-button>
               </div>
@@ -218,7 +216,6 @@
           <fpc-button-group size="sm" class="ms-2">
             @if (node.nodeType === 'folder') {
               <fpc-button
-                size="sm"
                 [variant]="
                   creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'page' ? 'primary' : 'secondary'
                 "
@@ -230,7 +227,6 @@
                 <i class="bi bi-file-earmark-plus"></i>
               </fpc-button>
               <fpc-button
-                size="sm"
                 [variant]="
                   creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'folder' ? 'primary' : 'secondary'
                 "
@@ -242,7 +238,6 @@
                 <i class="bi bi-folder-plus"></i>
               </fpc-button>
               <fpc-button
-                size="sm"
                 variant="secondary"
                 [iconOnly]="true"
                 (clicked)="onUploadFile(node.id, $event)"
@@ -253,7 +248,6 @@
               </fpc-button>
             }
             <fpc-button
-              size="sm"
               variant="danger"
               [iconOnly]="true"
               (clicked)="onDelete(node, $event)"
@@ -272,18 +266,19 @@
     <div class="px-2 py-1 create-item-input" [style.padding-left.px]="(level + 1) * 16 + 38">
       <div class="input-group input-group-sm">
         <fpc-form-control
-          size="sm"
           [ngModel]="newNodeTitle()"
           (ngModelChange)="newNodeTitle.set($event)"
           (keydown.enter)="confirmCreate($event)"
           (keydown.escape)="cancelCreate($event)"
           i18n-placeholder="@@featureKnowledgeTree-titlePlaceholder"
           placeholder="Title"
+          i18n-ariaLabel="@@featureKnowledgeTree-titleAria"
+          ariaLabel="Title"
         />
-        <fpc-button variant="primary" size="sm" [iconOnly]="true" (clicked)="confirmCreate($event)">
+        <fpc-button variant="primary" [iconOnly]="true" (clicked)="confirmCreate($event)">
           <i class="bi bi-check"></i>
         </fpc-button>
-        <fpc-button variant="dark" size="sm" [iconOnly]="true" (clicked)="cancelCreate($event)">
+        <fpc-button variant="dark" [iconOnly]="true" (clicked)="cancelCreate($event)">
           <i class="bi bi-x"></i>
         </fpc-button>
       </div>
@@ -376,19 +371,20 @@
 }
 
 <fpc-modal
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="renameModalOpen"
   i18n-title="@@featureKnowledgeTree-renameModalTitle"
   title="Rename item"
   (closed)="onCancelRename()"
 >
-  <fpc-form-control
-    [ngModel]="renameDraft()"
-    (ngModelChange)="renameDraft.set($event)"
-    (keydown.enter)="onConfirmRename()"
-    (keydown.escape)="onCancelRename()"
-  />
+  <fpc-form-field forId="knowledgeRenameTitle" i18n-label="@@featureKnowledgeTree-renameTitleLabel" label="Title">
+    <fpc-form-control
+      controlId="knowledgeRenameTitle"
+      [ngModel]="renameDraft()"
+      (ngModelChange)="renameDraft.set($event)"
+      (keydown.enter)="onConfirmRename()"
+      (keydown.escape)="onCancelRename()"
+    />
+  </fpc-form-field>
   <div *fpcModalFooter>
     <fpc-button variant="primary" [disabled]="!renameDraft().trim()" (clicked)="onConfirmRename()">
       <span i18n="@@featureKnowledgeTree-rename">Rename</span>
@@ -397,8 +393,6 @@
 </fpc-modal>
 
 <fpc-modal
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureAgentConsoleDataList-cancel"
   [(open)]="moveModalOpen"
   i18n-title="@@featureKnowledgeTree-moveModalTitle"
   title="Move item"
@@ -453,10 +447,11 @@
   [title]="getNameCollisionTitle()"
   i18n-confirmLabel="@@featureKnowledgeTree-replace"
   confirmLabel="Replace"
-  i18n-cancelLabel="@@featureKnowledgeTree-keepBoth"
-  cancelLabel="Keep both"
+  i18n-alternativeLabel="@@featureKnowledgeTree-keepBoth"
+  alternativeLabel="Keep both"
   [warning]="true"
   (confirmed)="onNameCollisionReplace()"
+  (alternative)="onNameCollisionKeepBoth()"
   (cancelled)="onNameCollisionKeepBoth()"
 >
   <p i18n="@@featureKnowledgeTree-nameCollisionMessage">

@@ -29,14 +29,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
-import {
-  DB_DL_CANCEL,
-  DB_DL_DELETE,
-  dbBulkSummary,
-  dbCopyIdItem,
-  type DbBulkResult,
-  DB_DL_EDIT,
-} from '../shared/data-list';
+import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 
 type MilestoneEditForm = {
   id: string;
@@ -92,7 +85,6 @@ export class ProjectMilestonesPanelComponent implements OnInit {
 
   readonly lockLabel = $localize`:@@featureProjectMilestones-lock:Lock`;
   readonly deleteLabel = DB_DL_DELETE;
-  readonly cancelLabel = DB_DL_CANCEL;
   readonly bulkDeleteTitle = $localize`:@@featureProjectMilestones-bulkDeleteTitle:Delete milestones?`;
 
   readonly columns: FpcTableColumn<ProjectMilestoneResponse>[] = [

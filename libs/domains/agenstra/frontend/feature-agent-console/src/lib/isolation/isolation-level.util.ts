@@ -77,7 +77,7 @@ export function isolationDowngradeDialogTexts(level: IsolationLevel): IsolationD
     return {
       title: $localize`:@@featureChat-isolationConfirmSandboxedKvmTitle:Use the gVisor sandbox instead of a microVM?`,
       message: $localize`:@@featureChat-isolationConfirmSandboxedKvmMessage:Sandboxed (gVisor on KVM) runs gVisor's application kernel on the workspace host. The recommended level runs the environment in its own virtual machine with a separate Linux kernel, so a kernel-level flaw stays inside the VM.`,
-      confirmLabel: $localize`:@@featureChat-isolationConfirmSandboxedKvmConfirm:Use Sandboxed (gVisor on KVM)`,
+      confirmLabel: $localize`:@@featureChat-isolationConfirmSandboxedKvmConfirm:Use`,
     };
   }
 
@@ -85,14 +85,14 @@ export function isolationDowngradeDialogTexts(level: IsolationLevel): IsolationD
     return {
       title: $localize`:@@featureChat-isolationConfirmSandboxedTitle:Use the gVisor sandbox without KVM?`,
       message: $localize`:@@featureChat-isolationConfirmSandboxedMessage:Sandboxed (gVisor) runs gVisor's application kernel without hardware virtualization. The recommended level additionally isolates it with KVM, so a flaw in gVisor is harder to exploit.`,
-      confirmLabel: $localize`:@@featureChat-isolationConfirmSandboxedConfirm:Use Sandboxed (gVisor)`,
+      confirmLabel: $localize`:@@featureChat-isolationConfirmSandboxedConfirm:Use`,
     };
   }
 
   return {
     title: $localize`:@@featureChat-isolationConfirmStandardTitle:Use Standard Docker?`,
     message: $localize`:@@featureChat-isolationConfirmStandardMessage:Standard Docker has lower isolation than the recommended isolation level. The container will interact with the workspace host's Linux kernel through Docker's normal namespace, capability and seccomp controls.`,
-    confirmLabel: $localize`:@@featureChat-isolationConfirmStandardConfirm:Use Standard Docker`,
+    confirmLabel: $localize`:@@featureChat-isolationConfirmStandardConfirm:Use`,
   };
 }
 

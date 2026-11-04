@@ -80,15 +80,7 @@ import { AgentChatHandoffNavigationService } from '../chat/agent-chat-handoff-na
 import type { AgentChatHandoffCardView, AgentChatHandoffLink } from '../chat/agent-chat-handoff-view';
 import { sanitizeAndTrustMarkdownHtml } from '../chat/chat-markdown-html';
 import { resolveNamedDisplayLabel } from '../display-name.util';
-import {
-  agBulkSummary,
-  agCopyIdItem,
-  agOpenItem,
-  AG_DL_CANCEL,
-  AG_DL_DELETE,
-  AG_DL_EDIT,
-  AG_DL_RUN_NOW,
-} from '../shared/data-list';
+import { agBulkSummary, agCopyIdItem, agOpenItem, AG_DL_DELETE, AG_DL_EDIT, AG_DL_RUN_NOW } from '../shared/data-list';
 import { agentContentWriteLabel } from '../shared/agent-content-write-labels';
 import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
 import { WorkspaceSwitchTableComponent } from '../shared/workspace-switch-table.component';
@@ -177,7 +169,6 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   readonly pauseLabel = $localize`:@@featureAgentTasks-bulkPause:Pause`;
   readonly resumeLabel = $localize`:@@featureAgentTasks-bulkResume:Resume`;
   readonly deleteLabel = AG_DL_DELETE;
-  readonly cancelLabel = AG_DL_CANCEL;
   readonly bulkDeleteTitle = $localize`:@@featureAgentTasks-bulkDeleteTitle:Delete tasks`;
   readonly moreActionsTitle = $localize`:@@featureAgentTasks-moreActions:More actions`;
   readonly backToTasksTitle = $localize`:@@featureAgentTasks-backToTasks:Back to tasks`;

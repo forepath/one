@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+
+import { FPC_CONTROL_SIZE } from '../control-size/control-size';
 
 export type FpcInputGroupSize = 'sm' | 'md' | 'lg';
 
@@ -21,12 +23,15 @@ export type FpcInputGroupSize = 'sm' | 'md' | 'lg';
   styleUrl: './input-group.component.scss',
 })
 export class FpcInputGroupComponent {
-  readonly size = input<FpcInputGroupSize>('md');
+  private readonly defaultSize = inject(FPC_CONTROL_SIZE);
+
+  /** Defaults to `FPC_CONTROL_SIZE` (`xl` contexts fall back to `lg`); projected controls and buttons resolve the same tier. */
+  readonly size = input<FpcInputGroupSize | undefined>(undefined);
   readonly bordered = input(true);
 
   protected readonly groupClasses = computed(() => {
     const classes = ['input-group', 'fpc-input-group__group'];
-    const size = this.size();
+    const size = this.size() ?? (this.defaultSize === 'xl' ? 'lg' : this.defaultSize);
 
     if (size === 'sm' || size === 'lg') {
       classes.push(`input-group-${size}`);

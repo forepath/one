@@ -4,7 +4,6 @@
       <h6 class="mb-0 fw-semibold" i18n="@@featureWorkspaceSearch-header">Search</h6>
       <fpc-button
         variant="dark"
-        size="sm"
         iconOnly
         (clicked)="onRebuild()"
         i18n-title="@@featureWorkspaceSearch-rebuildTitle"
@@ -47,10 +46,9 @@
         />
       </fpc-form-check-group>
 
-      <fpc-form-field label="Query" i18n-label="@@featureWorkspaceSearch-queryLabel">
+      <fpc-form-field forId="workspaceSearchQuery" label="Query" i18n-label="@@featureWorkspaceSearch-queryLabel">
         <fpc-form-control
           controlId="workspaceSearchQuery"
-          size="sm"
           inputType="search"
           [ngModel]="query()"
           (ngModelChange)="onQueryInput($event)"
@@ -58,17 +56,18 @@
         />
       </fpc-form-field>
 
-      <fpc-form-field label="Include paths" i18n-label="@@featureWorkspaceSearch-includeLabel">
+      <fpc-form-field
+        forId="workspaceSearchInclude"
+        label="Include paths"
+        i18n-label="@@featureWorkspaceSearch-includeLabel"
+      >
         <fpc-typeahead-select
           inputId="workspaceSearchInclude"
           listboxId="workspaceSearchInclude-listbox"
-          size="sm"
           [openOnFocus]="false"
           [loading]="includeSuggestLoading()"
           i18n-placeholder="@@featureWorkspaceSearch-includePlaceholder"
           placeholder="Add path prefix..."
-          i18n-ariaLabel="@@featureWorkspaceSearch-includeLabel"
-          ariaLabel="Include paths"
           [query]="includeDraft()"
           (queryChange)="onIncludeDraftChange($event)"
           [open]="includeSuggestionsOpen()"
@@ -114,17 +113,18 @@
         </fpc-typeahead-select>
       </fpc-form-field>
 
-      <fpc-form-field label="Exclude paths" i18n-label="@@featureWorkspaceSearch-excludeLabel">
+      <fpc-form-field
+        forId="workspaceSearchExclude"
+        label="Exclude paths"
+        i18n-label="@@featureWorkspaceSearch-excludeLabel"
+      >
         <fpc-typeahead-select
           inputId="workspaceSearchExclude"
           listboxId="workspaceSearchExclude-listbox"
-          size="sm"
           [openOnFocus]="false"
           [loading]="excludeSuggestLoading()"
           i18n-placeholder="@@featureWorkspaceSearch-excludePlaceholder"
           placeholder="Exclude path prefix..."
-          i18n-ariaLabel="@@featureWorkspaceSearch-excludeLabel"
-          ariaLabel="Exclude paths"
           [query]="excludeDraft()"
           (queryChange)="onExcludeDraftChange($event)"
           [open]="excludeSuggestionsOpen()"

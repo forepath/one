@@ -205,7 +205,7 @@
               <fpc-form-field
                 [forId]="fieldId('StaticApiKey')"
                 i18n-label="@@featureSubscriptions-staticApiKey"
-                label="Static API Key"
+                label="Static API key"
               >
                 <fpc-form-control
                   inputType="password"
@@ -218,47 +218,79 @@
             }
             @if (integratedConfig.authenticationMethod === 'keycloak') {
               <fieldset class="mb-3">
-                <legend class="form-label fs-6" i18n="@@featureSubscriptions-keycloakSection">Keycloak</legend>
-                <fpc-form-control
-                  inputType="url"
-                  [(ngModel)]="integratedConfig.keycloak.serverUrl"
-                  (ngModelChange)="onIntegratedFieldChange()"
-                  [name]="fieldId('KeycloakServerUrl')"
-                  placeholder="https://keycloak.example.com"
-                />
-                <fpc-form-control
-                  class="mt-2"
-                  inputType="url"
-                  [(ngModel)]="integratedConfig.keycloak.authServerUrl"
-                  (ngModelChange)="onIntegratedFieldChange()"
-                  [name]="fieldId('KeycloakAuthServerUrl')"
-                  placeholder="https://keycloak.example.com/auth"
-                />
-                <div class="row g-2 mt-2">
+                <legend class="fs-6" i18n="@@featureSubscriptions-keycloakSection">Keycloak</legend>
+                <fpc-form-field
+                  [forId]="fieldId('KeycloakServerUrl')"
+                  i18n-label="@@featureSubscriptions-keycloakServerUrlLabel"
+                  label="Server URL"
+                >
+                  <fpc-form-control
+                    [controlId]="fieldId('KeycloakServerUrl')"
+                    inputType="url"
+                    [(ngModel)]="integratedConfig.keycloak.serverUrl"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('KeycloakServerUrl')"
+                    placeholder="https://keycloak.example.com"
+                  />
+                </fpc-form-field>
+                <fpc-form-field
+                  [forId]="fieldId('KeycloakAuthServerUrl')"
+                  i18n-label="@@featureSubscriptions-keycloakAuthServerUrlLabel"
+                  label="Auth server URL"
+                >
+                  <fpc-form-control
+                    [controlId]="fieldId('KeycloakAuthServerUrl')"
+                    inputType="url"
+                    [(ngModel)]="integratedConfig.keycloak.authServerUrl"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('KeycloakAuthServerUrl')"
+                    placeholder="https://keycloak.example.com/auth"
+                  />
+                </fpc-form-field>
+                <div class="row g-2">
                   <div class="col-md-6">
-                    <fpc-form-control
-                      [(ngModel)]="integratedConfig.keycloak.realm"
-                      (ngModelChange)="onIntegratedFieldChange()"
-                      [name]="fieldId('KeycloakRealm')"
-                      placeholder="realm"
-                    />
+                    <fpc-form-field
+                      [forId]="fieldId('KeycloakRealm')"
+                      i18n-label="@@featureSubscriptions-keycloakRealmLabel"
+                      label="Realm"
+                    >
+                      <fpc-form-control
+                        [controlId]="fieldId('KeycloakRealm')"
+                        [(ngModel)]="integratedConfig.keycloak.realm"
+                        (ngModelChange)="onIntegratedFieldChange()"
+                        [name]="fieldId('KeycloakRealm')"
+                      />
+                    </fpc-form-field>
                   </div>
                   <div class="col-md-6">
-                    <fpc-form-control
-                      [(ngModel)]="integratedConfig.keycloak.clientId"
-                      (ngModelChange)="onIntegratedFieldChange()"
-                      [name]="fieldId('KeycloakClientId')"
-                      placeholder="client-id"
-                    />
+                    <fpc-form-field
+                      [forId]="fieldId('KeycloakClientId')"
+                      i18n-label="@@featureSubscriptions-keycloakClientIdLabel"
+                      label="Client ID"
+                    >
+                      <fpc-form-control
+                        [controlId]="fieldId('KeycloakClientId')"
+                        [(ngModel)]="integratedConfig.keycloak.clientId"
+                        (ngModelChange)="onIntegratedFieldChange()"
+                        [name]="fieldId('KeycloakClientId')"
+                      />
+                    </fpc-form-field>
                   </div>
                 </div>
-                <fpc-form-control
-                  class="mt-2"
-                  inputType="password"
-                  [(ngModel)]="integratedConfig.keycloak.clientSecret"
-                  (ngModelChange)="onIntegratedFieldChange()"
-                  [name]="fieldId('KeycloakClientSecret')"
-                />
+                <fpc-form-field
+                  class="mb-0"
+                  [forId]="fieldId('KeycloakClientSecret')"
+                  i18n-label="@@featureSubscriptions-keycloakClientSecretLabel"
+                  label="Client secret"
+                >
+                  <fpc-form-control
+                    [controlId]="fieldId('KeycloakClientSecret')"
+                    inputType="password"
+                    [(ngModel)]="integratedConfig.keycloak.clientSecret"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('KeycloakClientSecret')"
+                  />
+                </fpc-form-field>
               </fieldset>
             }
           }

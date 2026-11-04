@@ -21,7 +21,6 @@ import {
 } from '@angular/core';
 
 import { FpcModalFooterDirective } from './modal-footer.directive';
-import { FpcButtonComponent } from '../button/button.component';
 import { FPC_OVERLAY_PORTAL, FpcBodyPortal } from '../overlay/body-portal';
 
 export type FpcModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen';
@@ -58,11 +57,12 @@ const MODAL_TRANSITION_MS = 150;
  * Open/close uses Bootstrap's fade classes: mount -> paint -> add `show`, and on close remove
  * `show` then unmount after the transition so enter/exit animate instead of popping.
  *
- * Footer contract (3.38 R14, X-03): [Cancel `dark`, Primary], right-aligned. Set `cancelLabel` (e.g.
- * `cancelLabel="Cancel" i18n-cancelLabel="@@…"`) and the modal renders the Cancel button before the projected footer
- * (it runs `requestClose()`, so `guardClose` applies); the footer template then only carries the primary action.
- * Titles: "Create <noun>" / "Edit <noun>", sentence case. Primary verbs: "Create" (create modals), "Save changes" (edit
- * modals); never "Save" / "Update" / "Add" / "Submit".
+ * Footer contract: only the action(s), right-aligned, at the app's tier like every other button (`FPC_CONTROL_SIZE`:
+ * `sm` in consoles, `md` on public pages; no explicit `size`). No Cancel / Close button: the header X, Escape and the backdrop dismiss the modal (a modal
+ * that turns `closable` off for good must bring its own dismiss action). Titles: "Create <noun>" / "Edit <noun>",
+ * sentence case. Action labels are short and precise: one imperative verb in sentence case that names the outcome
+ * ("Create", "Save", "Delete", "Revoke", "Send", "Import"); add an object only where the verb alone is ambiguous
+ * ("Cancel run"). Never "OK" / "Submit" / "Confirm" / "Yes" or trailing ellipses.
  *
  * Sizes by content: `sm` confirmations / one field, `md` (default) short forms up to ~6 fields, `lg` forms with
  * sections or side-by-side fields, `xl` editors / tables / previews, `fullscreen` tool windows.
@@ -78,7 +78,7 @@ const MODAL_TRANSITION_MS = 150;
   selector: 'fpc-modal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, FpcButtonComponent],
+  imports: [NgTemplateOutlet],
   host: {
     class: 'fpc-modal',
     '[class.fpc-modal--accent-primary]': 'accent() === "primary"',
@@ -122,16 +122,6 @@ const MODAL_TRANSITION_MS = 150;
 
             @if (footers().length > 0) {
               <div class="modal-footer" #footerSlot>
-                @if (cancelLabel(); as cancel) {
-                  <fpc-button
-                    variant="dark"
-                    class="fpc-modal__cancel"
-                    [disabled]="cancelDisabled()"
-                    (clicked)="requestClose()"
-                    data-testid="fpc-modal-cancel"
-                    >{{ cancel }}</fpc-button
-                  >
-                }
                 @for (footer of footers(); track footer) {
                   <ng-container [ngTemplateOutlet]="footer.templateRef" />
                 }
@@ -171,13 +161,6 @@ export class FpcModalComponent implements OnDestroy {
   readonly closeAriaLabel = input('Close dialog');
   /** Hover ink of the quiet close control (`danger` / `warning`); `primary` keeps the neutral ink. */
   readonly accent = input<FpcModalAccent>('primary');
-  /**
-   * Label of a built-in Cancel (`dark`) button at the start of the footer (only rendered with a footer template).
-   * `null` (default): the footer template brings its own buttons.
-   */
-  readonly cancelLabel = input<string | null>(null);
-  /** Disables the built-in Cancel (e.g. while the primary action runs). */
-  readonly cancelDisabled = input(false, { transform: booleanAttribute });
   /**
    * Guards user-initiated closing (close button, Escape, backdrop): instead of closing, `closeRequest` fires and the
    * consumer decides (e.g. a "Discard changes?" confirm while a form is dirty). Programmatic `open.set(false)` still

@@ -109,7 +109,6 @@ import { getInvoiceStatusBadgeTone, getInvoiceStatusLabel, getUnavailableLabel }
 import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import {
-  DB_DL_CANCEL,
   dbBulkSummary,
   dbCopyIdItem,
   type DbBulkResult,
@@ -369,6 +368,17 @@ export class AdminBillingPageComponent implements OnInit {
   billNowUserId = '';
 
   readonly pendingAction = signal<'void' | 'markPaid' | 'markUnpaid' | null>(null);
+  /** Footer action of the confirm-action modal: the verb of the pending action. */
+  readonly actionConfirmLabel = computed(() => {
+    switch (this.pendingAction()) {
+      case 'markPaid':
+        return DB_DL_MARK_PAID;
+      case 'markUnpaid':
+        return DB_DL_MARK_UNPAID;
+      default:
+        return DB_DL_VOID;
+    }
+  });
   readonly actionReason = signal('');
   readonly actionPaidAt = signal('');
   readonly pendingInvoice = signal<AdminInvoiceListItem | null>(null);
@@ -490,7 +500,6 @@ export class AdminBillingPageComponent implements OnInit {
   readonly voidLabel = $localize`:@@featureAdminInvoices-voidButtonTitle:Void invoice`;
   readonly markPaidLabel = $localize`:@@featureAdminInvoices-markPaidButtonTitle:Mark as paid`;
   readonly deleteDraftsLabel = $localize`:@@featureAdminBilling-deleteDraftsSelected:Delete drafts`;
-  readonly cancelLabel = DB_DL_CANCEL;
 
   /** Customer invoices: State · Invoice · customer · amount · created. */
   readonly invoiceColumns: FpcTableColumn<AdminInvoiceListItem>[] = [
@@ -597,7 +606,7 @@ export class AdminBillingPageComponent implements OnInit {
       ? $localize`:@@featureAdminBilling-bulkVoidTitle:Void invoices?`
       : $localize`:@@featureAdminBilling-bulkDeleteTitle:Delete drafts?`,
   );
-  readonly bulkConfirmLabel = computed(() => (this.pendingBulk() === 'void' ? this.voidLabel : this.deleteDraftsLabel));
+  readonly bulkConfirmLabel = computed(() => (this.pendingBulk() === 'void' ? DB_DL_VOID : DB_DL_DELETE));
   readonly bulkConfirmMessage = computed(() => {
     const pending = this.pendingBulk();
     const count =

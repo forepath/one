@@ -81,6 +81,7 @@ import {
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
+  FpcFormTextDirective,
   FpcInputGroupComponent,
   FpcListComponent,
   FpcListItemComponent,
@@ -168,6 +169,7 @@ function isPlainObject(value: unknown): value is JsonObject {
     FpcEmptyStateComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
+    FpcFormTextDirective,
     FpcInputGroupComponent,
     FpcListComponent,
     FpcListItemComponent,
@@ -232,36 +234,36 @@ export class AgentConfigEditorComponent implements OnInit {
       key: 'block_private_networks',
       hint: 'blockPrivateNetworks',
       title: $localize`:@@featureAgentConfig-fieldEgressBlockPrivate:Block private networks`,
-      help: $localize`:@@featureAgentConfig-fieldEgressBlockPrivateHelp:Deny loopback, link-local, RFC 1918 and cloud metadata addresses unless explicitly allowed`,
+      help: $localize`:@@featureAgentConfig-fieldEgressBlockPrivateHelp:Deny loopback, private and metadata addresses unless allowed`,
     },
     {
       key: 'block_ip_literals',
       hint: 'blockIpLiterals',
       title: $localize`:@@featureAgentConfig-fieldEgressBlockIpLiterals:Block IP literals`,
-      help: $localize`:@@featureAgentConfig-fieldEgressBlockIpLiteralsHelp:Deny connections to raw IP addresses (and TLS without a hostname) unless the address is allowed`,
+      help: $localize`:@@featureAgentConfig-fieldEgressBlockIpLiteralsHelp:Deny raw IP addresses (and TLS without hostname) unless allowed`,
     },
     {
       key: 'log_allowed',
       hint: 'logAllowed',
       title: $localize`:@@featureAgentConfig-fieldEgressLogAllowed:Record allowed traffic`,
-      help: $localize`:@@featureAgentConfig-fieldEgressLogAllowedHelp:Include allowed destinations in the audit log (blocked traffic is always recorded)`,
+      help: $localize`:@@featureAgentConfig-fieldEgressLogAllowedHelp:Also log allowed destinations (blocks are always logged)`,
     },
   ] as const;
   readonly egressListRows = [
     {
       key: 'deny_hosts',
       title: $localize`:@@featureAgentConfig-fieldEgressDenyHosts:Denylist`,
-      help: $localize`:@@featureAgentConfig-fieldEgressDenyHostsHelp:Hostnames (subdomains match too; *.example.com is equivalent), IP addresses or CIDRs, one per line. Always wins.`,
+      help: $localize`:@@featureAgentConfig-fieldEgressDenyHostsHelp:Hosts (incl. subdomains), IPs or CIDRs, one per line. Always wins.`,
     },
     {
       key: 'allow_hosts',
       title: $localize`:@@featureAgentConfig-fieldEgressAllowHosts:Allowlist`,
-      help: $localize`:@@featureAgentConfig-fieldEgressAllowHostsHelp:When not empty, only these destinations are reachable. Same syntax as the denylist.`,
+      help: $localize`:@@featureAgentConfig-fieldEgressAllowHostsHelp:If set, only these are reachable. Same syntax as the denylist.`,
     },
     {
       key: 'deny_url_patterns',
       title: $localize`:@@featureAgentConfig-fieldEgressDenyUrlPatterns:Blocked plain-HTTP URL patterns`,
-      help: $localize`:@@featureAgentConfig-fieldEgressDenyUrlPatternsHelp:Regular expressions matched against http:// URLs (HTTPS paths are not visible), one per line.`,
+      help: $localize`:@@featureAgentConfig-fieldEgressDenyUrlPatternsHelp:Regexes for http:// URLs (HTTPS paths are hidden), one per line`,
     },
   ] as const;
   readonly egressNetworkProtocols = EGRESS_NETWORK_PROTOCOLS;

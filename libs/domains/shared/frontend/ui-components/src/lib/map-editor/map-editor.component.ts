@@ -14,6 +14,10 @@ import {
   untracked,
 } from '@angular/core';
 
+import { FPC_CONTROL_SIZE } from '../control-size/control-size';
+import { FpcFormTextDirective } from '../truncate-title/form-text.directive';
+import { FpcTruncateTitleDirective } from '../truncate-title/truncate-title.directive';
+
 /** A map value of `fpc-map-editor` (labels, options, variables, per-key numbers). */
 export type FpcMapValue = Readonly<Record<string, string | number>>;
 
@@ -98,6 +102,7 @@ let nextMapEditorId = 0;
 @Component({
   selector: 'fpc-map-editor',
   standalone: true,
+  imports: [FpcTruncateTitleDirective, FpcFormTextDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'fpc-map-editor',
@@ -107,7 +112,11 @@ let nextMapEditorId = 0;
   },
   template: `
     @if (label()) {
-      <span class="form-label d-block mb-1" [id]="id + '-label'"
+      <span
+        class="form-label mb-1"
+        [class.fpc-form-label--sm]="resolvedSize() === 'sm'"
+        [id]="id + '-label'"
+        fpcTruncateTitle
         >{{ label() }}
         @if (required()) {
           <span class="text-danger" aria-hidden="true">*</span>
@@ -129,7 +138,7 @@ let nextMapEditorId = 0;
           <li class="fpc-map-editor__row" [attr.data-index]="index">
             <input
               class="form-control"
-              [class.form-control-sm]="size() === 'sm'"
+              [class.form-control-sm]="resolvedSize() === 'sm'"
               [class.is-invalid]="error === 'duplicate' || error === 'invalidKey' || error === 'requiredKey'"
               [id]="id + '-key-' + row.id"
               [value]="row.key"
@@ -144,7 +153,7 @@ let nextMapEditorId = 0;
             />
             <input
               class="form-control"
-              [class.form-control-sm]="size() === 'sm'"
+              [class.form-control-sm]="resolvedSize() === 'sm'"
               [class.is-invalid]="error === 'invalidValue'"
               [type]="valueType() === 'number' ? 'number' : 'text'"
               [value]="row.value"
@@ -194,6 +203,7 @@ let nextMapEditorId = 0;
 export class FpcMapEditorComponent {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
+  private readonly defaultSize = inject(FPC_CONTROL_SIZE);
 
   readonly value = model<FpcMapValue>({});
   readonly label = input<string | null>(null);
@@ -207,10 +217,12 @@ export class FpcMapEditorComponent {
   readonly valuePlaceholder = input<string | null>(null);
   readonly emptyText = input<string | null>(FPC_MAP_EDITOR_DEFAULT_LABELS.empty);
   readonly disabled = input(false, { transform: booleanAttribute });
-  readonly size = input<'sm' | 'md'>('md');
+  /** Defaults to `FPC_CONTROL_SIZE` (`lg` / `xl` contexts fall back to `md`). */
+  readonly size = input<'sm' | 'md' | undefined>(undefined);
   readonly labels = input<Partial<FpcMapEditorLabels>>({});
 
   protected readonly id = `fpc-map-editor-${nextMapEditorId++}`;
+  protected readonly resolvedSize = computed(() => this.size() ?? (this.defaultSize === 'sm' ? 'sm' : 'md'));
   protected readonly text = computed(() => ({ ...FPC_MAP_EDITOR_DEFAULT_LABELS, ...this.labels() }));
   protected readonly rows = signal<MapRow[]>([]);
   private nextRowId = 0;

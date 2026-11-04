@@ -4,7 +4,6 @@
       <ng-container ngProjectAs="[fpcPageHeaderActions]">
         <fpc-button
           variant="outline-secondary"
-          size="sm"
           iconOnly
           [ariaLabel]="searchAriaLabel"
           [title]="searchAriaLabel"
@@ -14,7 +13,6 @@
         </fpc-button>
         <fpc-button
           variant="outline-secondary"
-          size="sm"
           iconOnly
           [ariaLabel]="verifyAriaLabel"
           [title]="verifyAriaLabel"
@@ -27,7 +25,6 @@
     <fpc-button
       fpcPageHeaderActions
       variant="outline-secondary"
-      size="sm"
       iconOnly
       [ariaLabel]="refreshAriaLabel"
       [title]="refreshAriaLabel"
@@ -130,7 +127,6 @@
                 <fpc-button-group size="sm" class="file-tree-actions flex-shrink-0">
                   <fpc-button
                     variant="dark"
-                    size="sm"
                     iconOnly
                     [disabled]="(downloadLoading$ | async) === true"
                     [ariaLabel]="downloadAriaLabel"
@@ -149,13 +145,7 @@
   </div>
 </div>
 
-<fpc-modal
-  [(open)]="verifyModalOpen"
-  [title]="verifyModalTitle"
-  (closed)="onVerifyModalClosed()"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="verifyModalOpen" [title]="verifyModalTitle" (closed)="onVerifyModalClosed()">
   <fpc-form-field
     forId="fileExplorerVerifyDocument"
     i18n-label="@@featureAdminFileExplorer-verifyFileLabel"
@@ -212,13 +202,7 @@
   </div>
 </fpc-modal>
 
-<fpc-modal
-  [(open)]="searchModalOpen"
-  [title]="searchModalTitle"
-  (closed)="onSearchModalClosed()"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="searchModalOpen" [title]="searchModalTitle" (closed)="onSearchModalClosed()">
   <fpc-form-field
     forId="fileExplorerDocumentId"
     i18n-label="@@featureAdminFileExplorer-searchDocumentIdLabel"

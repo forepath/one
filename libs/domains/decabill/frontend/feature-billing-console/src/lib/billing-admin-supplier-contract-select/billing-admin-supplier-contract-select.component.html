@@ -1,14 +1,12 @@
 <div class="billing-admin-user-select">
   @if (accessDenied()) {
-    <input
-      type="text"
-      class="form-control"
-      [id]="inputId()"
+    <fpc-form-control
+      [controlId]="inputId()"
       [value]="selectedContractNumber()"
       [disabled]="disabled() || loading()"
       autocomplete="off"
-      [attr.aria-describedby]="inputId() + '-hint'"
-      (input)="onPlainInput($any($event.target).value)"
+      [ariaDescribedBy]="inputId() + '-hint'"
+      (valueChange)="onPlainInput($event)"
     />
     <div
       [id]="inputId() + '-hint'"

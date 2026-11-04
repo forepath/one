@@ -39,7 +39,6 @@
                 <fpc-button
                   fpcDataTableToolbar
                   variant="dark"
-                  size="sm"
                   [iconOnly]="true"
                   [loading]="(loadingRuns$ | async) === true"
                   [disabled]="!hasConfiguration() || !!(loadingRuns$ | async)"
@@ -89,7 +88,6 @@
           <fpc-button
             fpcPageHeaderActions
             variant="dark"
-            size="sm"
             [iconOnly]="true"
             [title]="closeRunDetailsTitle"
             [ariaLabel]="closeRunDetailsTitle"

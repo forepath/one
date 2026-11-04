@@ -55,7 +55,6 @@ import {
 } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import {
-  DB_DL_CANCEL,
   dbBulkSummary,
   dbCopyIdItem,
   type DbBulkResult,
@@ -289,7 +288,6 @@ export class AdminSubscriptionsPageComponent implements OnInit {
     },
   ];
   readonly deleteEntryLabel = $localize`:@@featureAdminSubscriptions-deleteEntryAction:Delete`;
-  readonly dialogCancelLabel = DB_DL_CANCEL;
   readonly bulkEntryDeleteTitle = $localize`:@@featureAdminSubscriptions-bulkDeleteEntriesTitle:Delete meter entries?`;
   readonly selectedEntries = signal<readonly string[]>([]);
   readonly confirmBulkEntryDelete = signal(false);
@@ -320,6 +318,11 @@ export class AdminSubscriptionsPageComponent implements OnInit {
     this.cancelDialogCount() > 1
       ? $localize`:@@featureAdminSubscriptions-bulkCancelTitle:Cancel subscriptions?`
       : $localize`:@@featureSubscriptions-cancelSubscriptionTitle:Cancel subscription?`,
+  );
+  readonly cancelDialogConfirmLabel = computed(() =>
+    this.cancelDialogCount() > 1
+      ? $localize`:@@featureAdminSubscriptions-bulkCancelConfirm:Cancel subscriptions`
+      : $localize`:@@featureSubscriptions-cancel:Cancel subscription`,
   );
   readonly cancelDialogMessage = computed(() =>
     this.cancelDialogCount() > 1

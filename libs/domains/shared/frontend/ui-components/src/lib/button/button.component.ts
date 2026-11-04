@@ -1,6 +1,7 @@
 import { booleanAttribute, ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
+import { FPC_CONTROL_SIZE } from '../control-size/control-size';
 import { FpcSpinnerComponent } from '../spinner/spinner.component';
 
 export type FpcButtonVariant =
@@ -60,7 +61,7 @@ export type FpcButtonType = 'button' | 'submit' | 'reset';
     '[class.fpc-button--link]': 'isLink()',
     // Primary actions are found by class (toolbar run steps in styles/_controls.scss), `:has()` can't nest there.
     '[class.fpc-button--primary]': 'variant() === "primary"',
-    '[class.fpc-button--xl]': 'size() === "xl"',
+    '[class.fpc-button--xl]': '(size() ?? defaultSize) === "xl"',
   },
   template: `
     <button
@@ -98,12 +99,14 @@ export class FpcButtonComponent {
   /** Present when the parent puts `routerLink` on this host (parent must import `RouterLink`). */
   private readonly hostRouterLink = inject(RouterLink, { optional: true, host: true });
   private readonly router = inject(Router, { optional: true });
+  protected readonly defaultSize = inject(FPC_CONTROL_SIZE);
 
   readonly variant = input<FpcButtonVariant>('primary');
-  readonly size = input<FpcButtonSize>('md');
+  /** Defaults to `FPC_CONTROL_SIZE` (`sm` behind an auth guard, `md` on public pages). */
+  readonly size = input<FpcButtonSize | undefined>(undefined);
   /**
    * Responsive size from the md breakpoint up (e.g. `size="sm" mdSize="md"`: compact on phones, default on
-   * wider screens, like the top-bar Logout). `null`: `size` everywhere.
+   * wider screens). `null`: `size` everywhere.
    */
   readonly mdSize = input<'sm' | 'md' | 'lg' | null>(null);
   readonly type = input<FpcButtonType>('button');
@@ -155,7 +158,7 @@ export class FpcButtonComponent {
 
   protected readonly buttonClasses = computed(() => {
     const classes = ['btn', `btn-${this.variant()}`, 'fpc-button__btn'];
-    const size = this.size();
+    const size = this.size() ?? this.defaultSize;
 
     if (size === 'sm' || size === 'lg') {
       classes.push(`btn-${size}`);

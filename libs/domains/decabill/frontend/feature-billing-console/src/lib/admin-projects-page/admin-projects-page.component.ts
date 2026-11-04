@@ -37,7 +37,6 @@ import {
 } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import {
-  DB_DL_CANCEL,
   DB_DL_DELETE,
   dbBulkSummary,
   dbCopyIdItem,
@@ -147,7 +146,6 @@ export class AdminProjectsPageComponent implements OnInit {
   ];
 
   readonly deleteLabel = DB_DL_DELETE;
-  readonly cancelLabel = DB_DL_CANCEL;
   readonly archiveLabel = $localize`:@@featureAdminProjects-archiveSelected:Archive`;
   readonly bulkDeleteTitle = $localize`:@@featureAdminProjects-bulkDeleteTitle:Delete projects?`;
 

@@ -36,7 +36,6 @@
         >
           <fpc-button
             [variant]="boardViewMode() === 'table' ? 'primary' : 'dark'"
-            size="sm"
             iconOnly
             [ariaLabel]="tableViewLabel"
             [title]="tableViewLabel"
@@ -48,7 +47,6 @@
           </fpc-button>
           <fpc-button
             [variant]="boardViewMode() === 'lanes' ? 'primary' : 'dark'"
-            size="sm"
             iconOnly
             [ariaLabel]="lanesViewLabel"
             [title]="lanesViewLabel"
@@ -243,7 +241,6 @@
               <ng-container ngProjectAs="[fpcDataTableToolbar]">
                 <fpc-button
                   variant="dark"
-                  size="sm"
                   iconOnly
                   (clicked)="openBillTimeModal()"
                   [disabled]="
@@ -261,7 +258,6 @@
                 </fpc-button>
                 <fpc-button
                   variant="dark"
-                  size="sm"
                   iconOnly
                   (clicked)="openTimeReportModal()"
                   [disabled]="timeReportSaving() || timeReportBoundsLoading()"
@@ -274,7 +270,6 @@
                 </fpc-button>
                 <fpc-button
                   variant="primary"
-                  size="sm"
                   iconOnly
                   (clicked)="openCreateTimeModal()"
                   i18n-title="@@featureProjectDetail-addTime"
@@ -290,7 +285,6 @@
               <fpc-button
                 fpcDataTableBatch
                 variant="danger"
-                size="sm"
                 [disabled]="deletableTimeSelection().length === 0"
                 (clicked)="confirmTimeBulkDelete.set(true)"
                 data-testid="time-entries-bulk-delete"
@@ -317,13 +311,7 @@
   </fpc-tab-group>
 </div>
 
-<fpc-modal
-  [(open)]="createTimeModalOpen"
-  i18n-title="@@featureProjectDetail-createTimeTitle"
-  title="Create time entry"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="createTimeModalOpen" i18n-title="@@featureProjectDetail-createTimeTitle" title="Create time entry">
   <fpc-form-field forId="timeStartedAt" i18n-label="@@featureProjectDetail-startLabel" label="Start" required>
     <fpc-form-control
       controlId="timeStartedAt"
@@ -357,13 +345,7 @@
   </div>
 </fpc-modal>
 
-<fpc-modal
-  [(open)]="editTimeModalOpen"
-  i18n-title="@@featureProjectDetail-editTimeTitle"
-  title="Edit time entry"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="editTimeModalOpen" i18n-title="@@featureProjectDetail-editTimeTitle" title="Edit time entry">
   <fpc-form-field forId="editTimeStartedAt" i18n-label="@@featureProjectDetail-startLabel" label="Start" required>
     <fpc-form-control
       controlId="editTimeStartedAt"
@@ -419,8 +401,6 @@
   size="lg"
   i18n-title="@@featureProjectDetail-billTimeTitle"
   title="Bill unbilled time"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
 >
   @if (billBoundsLoading()) {
     <div class="d-flex justify-content-center py-3">
@@ -450,8 +430,8 @@
         required
       />
     </fpc-form-field>
-    <p class="text-body-secondary small mb-3" i18n="@@featureProjectDetail-billTimeRangeHint">
-      Only time entries fully within the selected range are included (start on or after From, end on or before To).
+    <p class="form-text mb-3" i18n="@@featureProjectDetail-billTimeRangeHint">
+      Only entries fully within the range are included.
     </p>
     @if (billBoundsEntryCount() === 0) {
       <p class="text-body-secondary small mb-3" i18n="@@featureProjectDetail-billTimeNoUnbilled">
@@ -472,7 +452,7 @@
       />
     </fpc-form-field>
     <h6 class="mb-2" i18n="@@featureProjectDetail-billTimeAdditionalLines">Additional line items (optional)</h6>
-    <p class="text-body-secondary small" i18n="@@featureProjectDetail-billTimeAdditionalLinesHint">
+    <p class="form-text fpc-form-text--wrap" i18n="@@featureProjectDetail-billTimeAdditionalLinesHint">
       Unbilled time is billed as the first invoice line. Add extra lines here if needed.
     </p>
     @for (line of billCustomLineItems; track $index; let i = $index) {
@@ -482,7 +462,6 @@
     }
     <fpc-button
       variant="dark"
-      size="sm"
       iconOnly
       (clicked)="addBillTimeLineItem()"
       title="Add line item"
@@ -514,13 +493,7 @@
   </div>
 </fpc-modal>
 
-<fpc-modal
-  [(open)]="timeReportModalOpen"
-  i18n-title="@@featureProjectDetail-timeReportTitle"
-  title="Time report"
-  cancelLabel="Cancel"
-  i18n-cancelLabel="@@featureBillingModal-cancel"
->
+<fpc-modal [(open)]="timeReportModalOpen" i18n-title="@@featureProjectDetail-timeReportTitle" title="Time report">
   @if (timeReportBoundsLoading()) {
     <div class="d-flex justify-content-center py-3">
       <fpc-spinner
@@ -554,8 +527,8 @@
         required
       />
     </fpc-form-field>
-    <p class="text-body-secondary small mb-3" i18n="@@featureProjectDetail-timeReportRangeHint">
-      Only time entries fully within the selected range are included (start on or after From, end on or before To).
+    <p class="form-text mb-3" i18n="@@featureProjectDetail-timeReportRangeHint">
+      Only entries fully within the range are included.
     </p>
     <fpc-form-check
       class="mb-0"
@@ -574,9 +547,9 @@
       variant="primary"
       (clicked)="submitTimeReport()"
       [disabled]="timeReportSaving() || timeReportBoundsLoading() || !isTimeReportFormValid()"
-      i18n="@@featureProjectDetail-save"
+      i18n="@@featureProjectDetail-timeReportDownload"
     >
-      Save
+      Download
     </fpc-button>
   </div>
 </fpc-modal>
@@ -652,7 +625,6 @@
       </div>
       <fpc-button
         variant="danger"
-        size="sm"
         iconOnly
         (clicked)="removeBillTimeLineItem(i)"
         title="Remove line"
@@ -675,7 +647,6 @@
   [title]="timeBulkDeleteTitle"
   [message]="timeBulkDeleteMessage()"
   [confirmLabel]="deleteTimeLabel"
-  [cancelLabel]="cancelLabel"
   [danger]="true"
   (confirmed)="deleteSelectedTimeEntries()"
 />

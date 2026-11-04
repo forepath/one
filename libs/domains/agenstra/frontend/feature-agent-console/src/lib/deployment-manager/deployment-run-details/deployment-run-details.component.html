@@ -39,7 +39,6 @@
         <div class="mt-2">
           <fpc-button
             variant="danger"
-            size="sm"
             [loading]="(cancellingRun$ | async) === true"
             [disabled]="!!(cancellingRun$ | async)"
             (clicked)="onOpenCancelRunConfirm()"
@@ -59,7 +58,6 @@
           <fpc-button
             fpcLaneHeaderActions
             variant="primary"
-            size="sm"
             [iconOnly]="true"
             [loading]="(loadingRunLogs$ | async) === true"
             [disabled]="!!(loadingRunLogs$ | async)"
@@ -114,7 +112,7 @@
               - {{ selectedJob()!.name }}
             }
           </span>
-          <fpc-button fpcLaneHeaderActions variant="dark" size="sm" [iconOnly]="true" (clicked)="onCloseLogs()">
+          <fpc-button fpcLaneHeaderActions variant="dark" [iconOnly]="true" (clicked)="onCloseLogs()">
             <i class="bi bi-x" aria-hidden="true"></i>
           </fpc-button>
         </fpc-lane-header>

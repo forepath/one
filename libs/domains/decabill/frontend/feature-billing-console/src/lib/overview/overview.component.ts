@@ -30,7 +30,6 @@ import {
   FpcAlertComponent,
   FpcBadgeComponent,
   FpcButtonComponent,
-  FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
   fpcCopyText,
   FpcDataTableComponent,
@@ -49,6 +48,7 @@ import {
   FpcModalComponent,
   FpcModalFooterDirective,
   type FpcBadgeTone,
+  FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
 import type { Environment } from '@forepath/decabill/frontend/util-configuration';
 import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend/util-configuration';
@@ -61,7 +61,6 @@ import {
 } from '../billing-status-labels';
 import { hideBillingModal, showBillingModal } from '../billing-modal';
 import {
-  DB_DL_CANCEL,
   dbBulkSummary,
   dbCopyIdItem,
   dbOpenItem,
@@ -79,13 +78,13 @@ import { provisioningState } from '../shared/table-states';
   selector: 'framework-billing-overview',
   standalone: true,
   imports: [
+    FpcFormTextDirective,
     CommonModule,
     FormsModule,
     RouterLink,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
-    FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
     FpcDataTableComponent,
     FpcEmptyStateComponent,
@@ -166,8 +165,8 @@ export class OverviewComponent implements OnInit {
   readonly sshGrantedLabel = $localize`:@@featureOverview-sshAccessGrantedBadge:SSH access granted`;
   readonly startLabel = $localize`:@@featureOverview-serverStartButtonTitle:Start server`;
   readonly stopLabel = $localize`:@@featureOverview-serverStopButtonTitle:Stop server`;
+  readonly stopConfirmLabel = DB_DL_STOP;
   readonly restartLabel = $localize`:@@featureOverview-serverRestartButtonTitle:Restart server`;
-  readonly cancelLabel = DB_DL_CANCEL;
   readonly bulkStopTitle = $localize`:@@featureOverview-bulkStopTitle:Stop servers?`;
 
   readonly instanceRowId = (item: SubscriptionWithServerInfo): string => `${item.subscription.id}:${item.itemId}`;

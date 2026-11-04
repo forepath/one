@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Scan locally built ghcr.io/forepath/* and registry.forenet.internal/forepath/* images.
-# Requires Trivy on PATH (use aquasecurity/setup-trivy or trivy-action in the workflow first).
+# Requires Trivy on PATH (use ./.github/actions/setup-trivy in the workflow first).
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -25,7 +25,7 @@ fi
 echo "Scanning ${#images[@]} local image(s): ${images[*]}"
 
 if ! command -v trivy >/dev/null 2>&1; then
-  echo "trivy is not on PATH; add aquasecurity/setup-trivy before this script." >&2
+  echo "trivy is not on PATH; add ./.github/actions/setup-trivy before this script." >&2
   exit 1
 fi
 

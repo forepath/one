@@ -803,7 +803,7 @@ export class KnowledgeTreeComponent implements OnChanges {
     }
 
     if (items.length > 1) {
-      return $localize`:@@featureKnowledgeTree-deleteMultipleTitle:Delete Items`;
+      return $localize`:@@featureKnowledgeTree-deleteMultipleTitle:Delete items`;
     }
 
     return $localize`:@@featureKnowledgeTree-deleteModalTitle:Delete item`;

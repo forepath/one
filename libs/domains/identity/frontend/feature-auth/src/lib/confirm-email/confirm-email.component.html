@@ -1,4 +1,4 @@
-<fpc-section-row [marketingHidden]="!showAuthMarketingPanel">
+<fpc-section-row class="fpc-density-comfortable" [marketingHidden]="!showAuthMarketingPanel">
   <fpc-section-column
     variant="marketing"
     class="d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
@@ -74,8 +74,16 @@
 
             <!-- Confirmation Code Input (6-character OTP) -->
             <div class="border rounded-3 p-3 mb-3">
-              <fpc-form-field i18n-label="@@featureConfirmEmail-codeLabel" label="Confirmation Code" [required]="true">
+              <fpc-form-field
+                forId="confirmationCode"
+                i18n-label="@@featureConfirmEmail-codeLabel"
+                label="Confirmation code"
+                [required]="true"
+              >
                 <fpc-otp-input
+                  controlId="confirmationCode"
+                  i18n-ariaLabel="@@featureConfirmEmail-codeLabel"
+                  ariaLabel="Confirmation code"
                   formControlName="code"
                   [invalid]="
                     (form.get('code')?.invalid &&

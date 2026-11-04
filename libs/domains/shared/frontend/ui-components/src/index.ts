@@ -141,6 +141,10 @@ export { FpcSummaryCardValueDirective } from './lib/summary-card/summary-card-va
 export type { FpcSummaryCardTone } from './lib/summary-card/summary-card.component';
 
 // Forms
+export { FPC_CONTROL_SIZE, provideFpcControlSize } from './lib/control-size/control-size';
+export type { FpcControlSize } from './lib/control-size/control-size';
+export { FpcFormTextDirective } from './lib/truncate-title/form-text.directive';
+export { FpcTruncateTitleDirective } from './lib/truncate-title/truncate-title.directive';
 export { FpcFormControlComponent } from './lib/form-control/form-control.component';
 export type { FpcFormControlSize, FpcFormControlType } from './lib/form-control/form-control.component';
 export { FpcFormFieldComponent } from './lib/form-field/form-field.component';
@@ -176,6 +180,7 @@ export type { FpcStepStripLabels } from './lib/step-strip/step-strip.component';
 export { FpcInputGroupComponent } from './lib/input-group/input-group.component';
 export type { FpcInputGroupSize } from './lib/input-group/input-group.component';
 export { FpcLabelComponent } from './lib/label/label.component';
+export type { FpcLabelSize } from './lib/label/label.component';
 export { FpcMultiSelectComponent } from './lib/multi-select/multi-select.component';
 export type { FpcMultiSelectOption } from './lib/multi-select/multi-select.component';
 export { FpcOtpInputComponent } from './lib/otp-input/otp-input.component';
