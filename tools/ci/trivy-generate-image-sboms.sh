@@ -96,7 +96,7 @@ if [ "${#filtered_images[@]}" -eq 0 ]; then
 fi
 
 if ! command -v trivy >/dev/null 2>&1; then
-  echo "trivy is not on PATH; add aquasecurity/setup-trivy before this script." >&2
+  echo "trivy is not on PATH; add ./.github/actions/setup-trivy before this script." >&2
   exit 1
 fi
 

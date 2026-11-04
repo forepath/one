@@ -16,11 +16,12 @@ inputs:
 runs:
   using: composite
   steps:
+    # Checksum-verified GitHub release install (aquasecurity/setup-trivy downloads from get.trivy.dev, which does not
+    # resolve).
     - name: Set up Trivy
-      uses: aquasecurity/setup-trivy@v0.2.6
+      uses: ./.github/actions/setup-trivy
       with:
-        version: v0.69.3
-        cache: true
+        version: '0.69.3'
 
     - name: Generate container image CycloneDX SBOMs
       shell: bash

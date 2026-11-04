@@ -1,0 +1,63 @@
+name: Set up Trivy
+description: >
+  Install a pinned Trivy release from GitHub Releases, verify it against the release checksums, cache it and put it on
+  PATH. Replaces aquasecurity/setup-trivy, whose pinned install script downloads from get.trivy.dev (no DNS record,
+  curl exit code 6). Call the Trivy actions with `skip-setup-trivy: true` afterwards.
+
+inputs:
+  version:
+    description: Trivy version to install (without the leading v)
+    required: false
+    default: '0.70.0'
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve Trivy release asset
+      id: asset
+      shell: bash
+      run: |
+        case "${RUNNER_OS}-${RUNNER_ARCH}" in
+          Linux-X64) platform=Linux-64bit ;;
+          Linux-ARM64) platform=Linux-ARM64 ;;
+          *) echo "::error::No Trivy release asset for ${RUNNER_OS}-${RUNNER_ARCH}"; exit 1 ;;
+        esac
+        echo "tarball=trivy_${{ inputs.version }}_${platform}.tar.gz" >> "$GITHUB_OUTPUT"
+        echo "dir=${HOME}/.local/bin/trivy-bin" >> "$GITHUB_OUTPUT"
+
+    - name: Restore Trivy binary from cache
+      id: cache
+      uses: actions/cache/restore@v5
+      with:
+        path: ${{ steps.asset.outputs.dir }}
+        key: trivy-release-${{ inputs.version }}-${{ runner.os }}-${{ runner.arch }}
+
+    - name: Download and verify Trivy
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        TRIVY_VERSION: ${{ inputs.version }}
+        TRIVY_TARBALL: ${{ steps.asset.outputs.tarball }}
+        TRIVY_DIR: ${{ steps.asset.outputs.dir }}
+      run: |
+        set -euo pipefail
+        base="https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}"
+        work="$(mktemp -d)"
+        curl -fsSL --retry 3 -o "${work}/${TRIVY_TARBALL}" "${base}/${TRIVY_TARBALL}"
+        curl -fsSL --retry 3 -o "${work}/checksums.txt" "${base}/trivy_${TRIVY_VERSION}_checksums.txt"
+        (cd "${work}" && grep " ${TRIVY_TARBALL}\$" checksums.txt | sha256sum -c -)
+        mkdir -p "${TRIVY_DIR}"
+        tar -xzf "${work}/${TRIVY_TARBALL}" -C "${TRIVY_DIR}" trivy
+        rm -rf "${work}"
+        "${TRIVY_DIR}/trivy" --version
+
+    - name: Save Trivy binary to cache
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: ${{ steps.asset.outputs.dir }}
+        key: trivy-release-${{ inputs.version }}-${{ runner.os }}-${{ runner.arch }}
+
+    - name: Add Trivy to PATH
+      shell: bash
+      run: echo "${{ steps.asset.outputs.dir }}" >> "$GITHUB_PATH"

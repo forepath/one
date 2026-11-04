@@ -17,7 +17,7 @@ inputs:
     description: SARIF category for upload-sarif (must be unique per job)
     required: true
   skip-setup-trivy:
-    description: Skip Trivy installation on subsequent invocations in the same job
+    description: Skip Trivy installation (./.github/actions/setup-trivy) on subsequent invocations in the same job
     required: false
     default: 'false'
   upload-github-security:
@@ -39,6 +39,12 @@ runs:
       run: |
         echo "file=trivy-results-${{ inputs.sarif-category }}.sarif" >> "$GITHUB_OUTPUT"
 
+    # Trivy comes from our checksum-verified GitHub release install: the setup-trivy pinned by trivy-action downloads
+    # from get.trivy.dev, which does not resolve (curl exit code 6).
+    - name: Set up Trivy
+      if: inputs.skip-setup-trivy != 'true'
+      uses: ./.github/actions/setup-trivy
+
     - name: Run Trivy (SARIF report)
       uses: aquasecurity/trivy-action@v0.36.0
       with:
@@ -50,7 +56,7 @@ runs:
         output: ${{ steps.sarif-path.outputs.file }}
         exit-code: '0'
         hide-progress: true
-        skip-setup-trivy: ${{ inputs.skip-setup-trivy }}
+        skip-setup-trivy: true
 
     - name: Upload SARIF to GitHub Security
       id: upload-sarif
