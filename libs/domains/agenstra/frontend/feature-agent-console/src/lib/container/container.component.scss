@@ -114,3 +114,13 @@
     flex-shrink: 0;
   }
 }
+
+// Admin rail item: tinted danger so the switch into admin (tenant-wide, destructive) actions reads as such. Its
+// popover tiles stay neutral. Hover / active reuse the shared item rules through the sidebar tokens.
+.sidebar__item--danger {
+  --sidebar-item-hover-bg: color-mix(in srgb, var(--bs-danger) 28%, var(--bs-tertiary-bg));
+  --sidebar-item-active-bg: color-mix(in srgb, var(--bs-danger) 36%, var(--bs-tertiary-bg));
+
+  background-color: color-mix(in srgb, var(--bs-danger) 20%, var(--bs-tertiary-bg));
+  color: var(--bs-danger-text-emphasis);
+}

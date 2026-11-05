@@ -6,6 +6,8 @@ import { Store } from '@ngrx/store';
 import { catchError, tap, throwError } from 'rxjs';
 
 import {
+  APP_AUTHORIZATION_2FA_INVALID_CODE,
+  APP_AUTHORIZATION_2FA_REQUIRED_CODE,
   EMAIL_NOT_CONFIRMED_CODE,
   LOGIN_2FA_INVALID_CODE,
   LOGIN_2FA_REQUIRED_CODE,
@@ -35,7 +37,13 @@ const INTERACTIVE_AUTH_MESSAGES = new Set([
   'Current password is incorrect',
   'This account uses external authentication (Keycloak).',
 ]);
-const INTERACTIVE_AUTH_CODES = new Set([EMAIL_NOT_CONFIRMED_CODE, LOGIN_2FA_REQUIRED_CODE, LOGIN_2FA_INVALID_CODE]);
+const INTERACTIVE_AUTH_CODES = new Set([
+  EMAIL_NOT_CONFIRMED_CODE,
+  LOGIN_2FA_REQUIRED_CODE,
+  LOGIN_2FA_INVALID_CODE,
+  APP_AUTHORIZATION_2FA_REQUIRED_CODE,
+  APP_AUTHORIZATION_2FA_INVALID_CODE,
+]);
 /** Prevents a burst of parallel 401s from dispatching logout repeatedly. */
 let invalidAuthHandlingInProgress = false;
 

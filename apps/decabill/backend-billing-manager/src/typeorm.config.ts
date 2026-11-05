@@ -60,7 +60,15 @@ import {
 } from '@forepath/decabill/backend';
 import { WebhookDeliveryEntity, WebhookEndpointEntity, EmailDeliveryEntity } from '@forepath/shared/backend';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
-import { RevokedUserTokenEntity, UserEntity, UserPersonalAccessTokenEntity } from '@forepath/identity/backend';
+import {
+  IdentityAppAuthorizationCodeEntity,
+  IdentityAppEntity,
+  IdentityAppGrantEntity,
+  IdentityAppSessionEntity,
+  RevokedUserTokenEntity,
+  UserEntity,
+  UserPersonalAccessTokenEntity,
+} from '@forepath/identity/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 function parseTypeOrmLogLevelsFromEnv(
@@ -153,6 +161,10 @@ export const typeormConfig: DataSourceOptions = {
     UserEntity,
     RevokedUserTokenEntity,
     UserPersonalAccessTokenEntity,
+    IdentityAppEntity,
+    IdentityAppGrantEntity,
+    IdentityAppSessionEntity,
+    IdentityAppAuthorizationCodeEntity,
     WebhookEndpointEntity,
     WebhookDeliveryEntity,
     EmailDeliveryEntity,

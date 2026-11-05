@@ -19,7 +19,7 @@
             <fpc-spinner variant="primary" [label]="loadingLabel" />
           </div>
         } @else if (status(); as twoFactorStatus) {
-          <fpc-list [flush]="true">
+          <fpc-list class="security-settings__list" [flush]="true">
             <fpc-list-item>
               <div fpcListItemTitle class="fw-semibold" i18n="@@featureSecuritySettings-passwordTitle">Password</div>
               <p fpcListItemMeta class="mb-0" i18n="@@featureSecuritySettings-passwordDescription">
@@ -27,11 +27,7 @@
               </p>
 
               @if (showChangePassword()) {
-                <form
-                  [formGroup]="changePasswordForm"
-                  (ngSubmit)="onChangePassword()"
-                  class="border rounded-3 p-3 mt-3"
-                >
+                <form [formGroup]="changePasswordForm" (ngSubmit)="onChangePassword()" class="border rounded-3 p-3">
                   <fpc-form-field
                     forId="changePasswordCurrent"
                     i18n-label="@@featureSecuritySettings-currentPasswordLabel"
@@ -109,7 +105,7 @@
                   </div>
                 </form>
               } @else {
-                <fpc-button class="mt-3" variant="primary" (clicked)="onShowChangePassword()" [disabled]="loading()">
+                <fpc-button variant="primary" (clicked)="onShowChangePassword()" [disabled]="loading()">
                   <span i18n="@@featureSecuritySettings-changePasswordPrompt">Change password</span>
                 </fpc-button>
               }
@@ -133,7 +129,7 @@
               }
 
               @if (twoFactorStatus.forceEnabled) {
-                <fpc-badge class="text-wrap text-start mt-3 d-inline-flex align-items-center gap-2" color="warning">
+                <fpc-badge class="text-wrap text-start d-inline-flex align-items-center gap-2" color="warning">
                   <i class="bi bi-shield-lock" aria-hidden="true"></i>
                   <span i18n="@@featureSecuritySettings-emailForcedHint"
                     >Email verification is required by our organization and cannot be turned off</span
@@ -141,11 +137,7 @@
                 </fpc-badge>
               } @else if (twoFactorStatus.emailEnabled) {
                 @if (showDisableEmail()) {
-                  <form
-                    [formGroup]="emailDisableForm"
-                    (ngSubmit)="onDisableEmail2fa()"
-                    class="border rounded-3 p-3 mt-3"
-                  >
+                  <form [formGroup]="emailDisableForm" (ngSubmit)="onDisableEmail2fa()" class="border rounded-3 p-3">
                     <fpc-form-field
                       forId="disableEmailPassword"
                       i18n-label="@@featureSecuritySettings-currentPasswordLabel"
@@ -166,12 +158,12 @@
                     </div>
                   </form>
                 } @else {
-                  <fpc-button class="mt-3" variant="danger" (clicked)="onShowDisableEmail()" [disabled]="loading()">
+                  <fpc-button variant="danger" (clicked)="onShowDisableEmail()" [disabled]="loading()">
                     <span i18n="@@featureSecuritySettings-disableEmailPrompt">Disable email 2FA</span>
                   </fpc-button>
                 }
               } @else if (email2faPending()) {
-                <form [formGroup]="emailConfirmForm" (ngSubmit)="onConfirmEmail2fa()" class="border rounded-3 p-3 mt-3">
+                <form [formGroup]="emailConfirmForm" (ngSubmit)="onConfirmEmail2fa()" class="border rounded-3 p-3">
                   <fpc-form-field
                     forId="emailConfirmCode"
                     i18n-label="@@featureSecuritySettings-emailCodeLabel"
@@ -199,7 +191,7 @@
                   </div>
                 </form>
               } @else {
-                <fpc-button class="mt-3" variant="primary" (clicked)="onEnableEmail2fa()" [disabled]="loading()">
+                <fpc-button variant="primary" (clicked)="onEnableEmail2fa()" [disabled]="loading()">
                   <span i18n="@@featureSecuritySettings-enableEmail">Enable email 2FA</span>
                 </fpc-button>
               }
@@ -224,7 +216,7 @@
 
               @if (twoFactorStatus.totpEnabled) {
                 @if (showDisableTotp()) {
-                  <form [formGroup]="totpDisableForm" (ngSubmit)="onDisableTotp()" class="border rounded-3 p-3 mt-3">
+                  <form [formGroup]="totpDisableForm" (ngSubmit)="onDisableTotp()" class="border rounded-3 p-3">
                     <fpc-form-field
                       forId="disableTotpCode"
                       i18n-label="@@featureSecuritySettings-disableTotpCodeLabel"
@@ -249,12 +241,12 @@
                     </div>
                   </form>
                 } @else {
-                  <fpc-button class="mt-3" variant="danger" (clicked)="onShowDisableTotp()" [disabled]="loading()">
+                  <fpc-button variant="danger" (clicked)="onShowDisableTotp()" [disabled]="loading()">
                     <span i18n="@@featureSecuritySettings-disableTotp">Disable authenticator</span>
                   </fpc-button>
                 }
               } @else if (totpSetup(); as setup) {
-                <div class="border rounded-3 p-3 mt-3">
+                <div class="border rounded-3 p-3">
                   <p class="form-text fpc-form-text--wrap mt-0 mb-2" i18n="@@featureSecuritySettings-totpSetupHint">
                     Scan the QR code with your authenticator app, or enter the secret manually.
                   </p>
@@ -300,7 +292,7 @@
                   </form>
                 </div>
               } @else if (showSetupTotp()) {
-                <form [formGroup]="totpSetupForm" (ngSubmit)="onSetupTotp()" class="border rounded-3 p-3 mt-3">
+                <form [formGroup]="totpSetupForm" (ngSubmit)="onSetupTotp()" class="border rounded-3 p-3">
                   <fpc-form-field
                     forId="setupTotpPassword"
                     i18n-label="@@featureSecuritySettings-currentPasswordLabel"
@@ -321,7 +313,7 @@
                   </div>
                 </form>
               } @else {
-                <fpc-button class="mt-3" variant="primary" (clicked)="onShowSetupTotp()" [disabled]="loading()">
+                <fpc-button variant="primary" (clicked)="onShowSetupTotp()" [disabled]="loading()">
                   <span i18n="@@featureSecuritySettings-setupTotpPrompt">Set up authenticator</span>
                 </fpc-button>
               }

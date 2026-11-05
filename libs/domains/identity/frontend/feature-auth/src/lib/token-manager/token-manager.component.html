@@ -165,16 +165,51 @@
           } @else if (scopes().length === 0) {
             <p class="form-text mb-0" i18n="@@featureTokenManager-noScopes">No scopes available</p>
           } @else {
-            <div class="scope-list border rounded p-2">
-              @for (scopeItem of scopes(); track scopeItem.scope) {
-                <fpc-form-check
-                  [checkId]="'create-scope-' + scopeItem.scope"
-                  [checked]="isScopeSelected(createForm, scopeItem.scope)"
-                  (checkedChange)="toggleScope(createForm, scopeItem.scope, $event)"
-                  [label]="scopeItem.scope"
-                  [disabled]="(saving$ | async) === true"
+            <div class="scope-picker border rounded">
+              <div
+                class="scope-picker__header d-flex align-items-center justify-content-between gap-2 px-2 py-2 border-bottom bg-body-tertiary"
+              >
+                <div class="form-check mb-0">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="create-scope-all"
+                    [checked]="areAllScopesSelected(createForm)"
+                    [indeterminate]="areSomeScopesSelected(createForm)"
+                    [disabled]="(saving$ | async) === true"
+                    (change)="toggleAllScopes(createForm, $event)"
+                    i18n-aria-label="@@featureTokenManager-allScopesAriaLabel"
+                    aria-label="All scopes"
+                    data-testid="create-scope-all"
+                  />
+                </div>
+                <span class="small text-body-secondary text-nowrap" i18n="@@featureTokenManager-selectedScopesCount"
+                  >{{ selectedScopeCount(createForm) }} of {{ scopes().length }} selected</span
+                >
+              </div>
+              <div class="scope-picker__search fpc-board-lane__search border-bottom">
+                <fpc-search-field
+                  inputId="create-scope-search"
+                  [(value)]="scopeSearch"
+                  (keydown.enter)="$event.preventDefault()"
+                  [placeholder]="scopeSearchPlaceholder"
+                  [ariaLabel]="scopeSearchPlaceholder"
+                  data-testid="create-scope-search"
                 />
-              }
+              </div>
+              <div class="scope-list p-2">
+                @for (scopeItem of filteredScopes(); track scopeItem.scope) {
+                  <fpc-form-check
+                    [checkId]="'create-scope-' + scopeItem.scope"
+                    [checked]="isScopeSelected(createForm, scopeItem.scope)"
+                    (checkedChange)="toggleScope(createForm, scopeItem.scope, $event)"
+                    [label]="scopeItem.scope"
+                    [disabled]="(saving$ | async) === true"
+                  />
+                } @empty {
+                  <p class="form-text mb-0" i18n="@@featureScopePicker-noMatches">No scopes match your search</p>
+                }
+              </div>
             </div>
           }
         </div>
@@ -221,16 +256,51 @@
         } @else if (scopes().length === 0) {
           <p class="form-text mb-0" i18n="@@featureTokenManager-noScopes">No scopes available</p>
         } @else {
-          <div class="scope-list border rounded p-2">
-            @for (scopeItem of scopes(); track scopeItem.scope) {
-              <fpc-form-check
-                [checkId]="'edit-scope-' + scopeItem.scope"
-                [checked]="isScopeSelected(editForm, scopeItem.scope)"
-                (checkedChange)="toggleScope(editForm, scopeItem.scope, $event)"
-                [label]="scopeItem.scope"
-                [disabled]="(saving$ | async) === true"
+          <div class="scope-picker border rounded">
+            <div
+              class="scope-picker__header d-flex align-items-center justify-content-between gap-2 px-2 py-2 border-bottom bg-body-tertiary"
+            >
+              <div class="form-check mb-0">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="edit-scope-all"
+                  [checked]="areAllScopesSelected(editForm)"
+                  [indeterminate]="areSomeScopesSelected(editForm)"
+                  [disabled]="(saving$ | async) === true"
+                  (change)="toggleAllScopes(editForm, $event)"
+                  i18n-aria-label="@@featureTokenManager-allScopesAriaLabel"
+                  aria-label="All scopes"
+                  data-testid="edit-scope-all"
+                />
+              </div>
+              <span class="small text-body-secondary text-nowrap" i18n="@@featureTokenManager-selectedScopesCount"
+                >{{ selectedScopeCount(editForm) }} of {{ scopes().length }} selected</span
+              >
+            </div>
+            <div class="scope-picker__search fpc-board-lane__search border-bottom">
+              <fpc-search-field
+                inputId="edit-scope-search"
+                [(value)]="scopeSearch"
+                (keydown.enter)="$event.preventDefault()"
+                [placeholder]="scopeSearchPlaceholder"
+                [ariaLabel]="scopeSearchPlaceholder"
+                data-testid="edit-scope-search"
               />
-            }
+            </div>
+            <div class="scope-list p-2">
+              @for (scopeItem of filteredScopes(); track scopeItem.scope) {
+                <fpc-form-check
+                  [checkId]="'edit-scope-' + scopeItem.scope"
+                  [checked]="isScopeSelected(editForm, scopeItem.scope)"
+                  (checkedChange)="toggleScope(editForm, scopeItem.scope, $event)"
+                  [label]="scopeItem.scope"
+                  [disabled]="(saving$ | async) === true"
+                />
+              } @empty {
+                <p class="form-text mb-0" i18n="@@featureScopePicker-noMatches">No scopes match your search</p>
+              }
+            </div>
           </div>
         }
       </div>

@@ -118,4 +118,34 @@ describe('WebhookManagerComponent', () => {
 
     expect(service.listDeliveries).toHaveBeenLastCalledWith('w-1', { limit: 25, offset: 25 });
   });
+  it('toggles all visible event types, searches type and description, and keeps the counter on all events', () => {
+    const component = fixture.componentInstance;
+
+    (facade['eventTypes$'] as BehaviorSubject<unknown>).next([
+      { type: 'ticket.created', description: 'A ticket was created' },
+      { type: 'ticket.updated', description: 'A ticket was changed' },
+      { type: 'invoice.paid', description: 'An invoice was paid' },
+    ]);
+    fixture.detectChanges();
+
+    const form = { subscribedEvents: ['legacy.event'] } as Parameters<typeof component.toggleAllEvents>[0];
+    const change = (checked: boolean) => ({ target: { checked } }) as unknown as Event;
+
+    component.eventSearch.set('ticket');
+    component.toggleAllEvents(form, change(true));
+    expect(form.subscribedEvents).toEqual(['legacy.event', 'ticket.created', 'ticket.updated']);
+    expect(component.areAllEventsSelected(form)).toBe(true);
+    expect(component.selectedEventCount(form)).toBe(2);
+
+    component.eventSearch.set('PAID');
+    expect(component.filteredEventTypes().map((eventType) => eventType.type)).toEqual(['invoice.paid']);
+    expect(component.areAllEventsSelected(form)).toBe(false);
+
+    component.eventSearch.set('');
+    expect(component.areSomeEventsSelected(form)).toBe(true);
+
+    component.toggleAllEvents(form, change(false));
+    expect(form.subscribedEvents).toEqual(['legacy.event']);
+    expect(component.selectedEventCount(form)).toBe(0);
+  });
 });

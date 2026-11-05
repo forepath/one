@@ -20,6 +20,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
+import { APP_ACCESS_TOKEN_TTL_SECONDS, APP_JWT_AMR } from '../constants/app.constants';
 import {
   EMAIL_NOT_CONFIRMED_CODE,
   EMAIL_NOT_CONFIRMED_MESSAGE,
@@ -60,6 +61,23 @@ export interface GenerateTokenOptions {
   scopes?: string[];
   patId?: string;
 }
+
+export interface AppAccessTokenOptions {
+  scopes: string[];
+  appId: string;
+  appSessionId: string;
+}
+
+/** Error codes thrown by {@link AuthService.verifySecondFactor} (login vs. app grant page). */
+export interface SecondFactorErrorCodes {
+  required: string;
+  invalid: string;
+}
+
+const LOGIN_SECOND_FACTOR_CODES: SecondFactorErrorCodes = {
+  required: LOGIN_2FA_REQUIRED_CODE,
+  invalid: LOGIN_2FA_INVALID_CODE,
+};
 
 export interface ChangePasswordResponse {
   message: string;
@@ -122,7 +140,7 @@ export class AuthService {
       });
     }
 
-    await this.enforceLogin2fa(user, code);
+    await this.enforceLogin2fa(user, code, LOGIN_SECOND_FACTOR_CODES);
 
     const accessToken = this.generateToken(user, { amr: 'pwd' });
 
@@ -292,6 +310,61 @@ export class AuthService {
       user: { id: verified.user.id, email: verified.user.email, role: verified.user.role },
       scopes: verified.scopes,
     };
+  }
+
+  /**
+   * App access JWT (`amr: ['pat', 'app']`): scoped like a PAT JWT and live-checked against the app session.
+   * Short-lived; the app renews it with its rotating refresh token.
+   */
+  issueAppAccessToken(user: UserEntity, options: AppAccessTokenOptions): { accessToken: string; expiresIn: number } {
+    const accessToken = this.jwtService.sign(
+      {
+        sub: user.id,
+        email: user.email,
+        roles: [user.role],
+        amr: [...APP_JWT_AMR],
+        scopes: options.scopes,
+        appId: options.appId,
+        appSessionId: options.appSessionId,
+        tv: user.tokenVersion ?? 0,
+      },
+      { expiresIn: APP_ACCESS_TOKEN_TTL_SECONDS, jwtid: randomUUID() },
+    );
+
+    return { accessToken, expiresIn: APP_ACCESS_TOKEN_TTL_SECONDS };
+  }
+
+  /**
+   * Second factor the user must present for sensitive interactive confirmations, using the same rules as login:
+   * authenticator when enrolled, otherwise email when enabled or forced. External (Keycloak) accounts have no local
+   * second factor - their identity provider enforces MFA at sign-in.
+   */
+  getSecondFactorMethod(user: UserEntity): Login2faMethod | null {
+    if (!user.passwordHash) {
+      return null;
+    }
+
+    if (user.totpEnabledAt && user.totpSecret) {
+      return 'totp';
+    }
+
+    if (isForceLogin2faEnabled() || user.email2faEnabledAt) {
+      return 'email';
+    }
+
+    return null;
+  }
+
+  /**
+   * Verify (or, for email without a code, issue) the user's second factor. Throws 401 with `codes.required`
+   * when a code is needed and `codes.invalid` when it is wrong or expired. No-op without a second factor.
+   */
+  async verifySecondFactor(user: UserEntity, code: string | undefined, codes: SecondFactorErrorCodes): Promise<void> {
+    if (!this.getSecondFactorMethod(user)) {
+      return;
+    }
+
+    await this.enforceLogin2fa(user, code, codes);
   }
 
   async register(email: string, password: string): Promise<RegisterResponse> {
@@ -471,7 +544,11 @@ export class AuthService {
     }
   }
 
-  private async enforceLogin2fa(user: UserEntity, code?: string): Promise<void> {
+  private async enforceLogin2fa(
+    user: UserEntity,
+    code: string | undefined,
+    codes: SecondFactorErrorCodes,
+  ): Promise<void> {
     const totpEnabled = Boolean(user.totpEnabledAt && user.totpSecret);
     const forceEnabled = isForceLogin2faEnabled();
     const emailEnabled = Boolean(user.email2faEnabledAt);
@@ -483,13 +560,13 @@ export class AuthService {
 
     if (totpEnabled) {
       if (!code) {
-        this.throwLogin2faRequired('totp');
+        this.throwLogin2faRequired('totp', codes.required);
       }
 
       const valid = await verifyTotpCode(code, user.totpSecret as string);
 
       if (!valid) {
-        this.throwLogin2faInvalid('totp');
+        this.throwLogin2faInvalid('totp', undefined, codes.invalid);
       }
 
       return;
@@ -497,31 +574,35 @@ export class AuthService {
 
     if (!code) {
       await this.issueLogin2faEmailCode(user);
-      this.throwLogin2faRequired('email');
+      this.throwLogin2faRequired('email', codes.required);
     }
 
-    await this.verifyLogin2faEmailCode(user, code);
+    await this.verifyLogin2faEmailCode(user, code, codes.invalid);
 
     const expectedTokenHash = user.login2faEmailToken as string;
     const consumed = await this.usersRepository.consumeLogin2faEmailToken(user.id, expectedTokenHash);
 
     if (!consumed) {
-      this.throwLogin2faInvalid('email');
+      this.throwLogin2faInvalid('email', undefined, codes.invalid);
     }
   }
 
-  private throwLogin2faRequired(method: Login2faMethod): never {
+  private throwLogin2faRequired(method: Login2faMethod, errorCode: string = LOGIN_2FA_REQUIRED_CODE): never {
     throw new UnauthorizedException({
       message: LOGIN_2FA_REQUIRED_MESSAGE,
-      code: LOGIN_2FA_REQUIRED_CODE,
+      code: errorCode,
       method,
     });
   }
 
-  private throwLogin2faInvalid(method: Login2faMethod, message: string = LOGIN_2FA_INVALID_MESSAGE): never {
+  private throwLogin2faInvalid(
+    method: Login2faMethod,
+    message: string = LOGIN_2FA_INVALID_MESSAGE,
+    errorCode: string = LOGIN_2FA_INVALID_CODE,
+  ): never {
     throw new UnauthorizedException({
       message,
-      code: LOGIN_2FA_INVALID_CODE,
+      code: errorCode,
       method,
     });
   }
@@ -571,19 +652,27 @@ export class AuthService {
     }
   }
 
-  private async verifyLogin2faEmailCode(user: UserEntity, code: string): Promise<void> {
+  private async verifyLogin2faEmailCode(
+    user: UserEntity,
+    code: string,
+    errorCode: string = LOGIN_2FA_INVALID_CODE,
+  ): Promise<void> {
     if (!user.login2faEmailToken) {
-      this.throwLogin2faInvalid('email');
+      this.throwLogin2faInvalid('email', undefined, errorCode);
     }
 
     if (!user.login2faEmailTokenExpiresAt || user.login2faEmailTokenExpiresAt < new Date()) {
-      this.throwLogin2faInvalid('email', 'Verification code has expired. Sign in again to receive a new code.');
+      this.throwLogin2faInvalid(
+        'email',
+        'Verification code has expired. Sign in again to receive a new code.',
+        errorCode,
+      );
     }
 
     const valid = await validateConfirmationCode(code.toUpperCase(), user.login2faEmailToken);
 
     if (!valid) {
-      this.throwLogin2faInvalid('email');
+      this.throwLogin2faInvalid('email', undefined, errorCode);
     }
   }
 

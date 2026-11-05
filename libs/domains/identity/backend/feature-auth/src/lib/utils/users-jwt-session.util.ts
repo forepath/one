@@ -13,6 +13,10 @@ export interface UsersJwtSessionPayload {
   scopes?: string[];
   /** Personal access token id for live revoke/scope checks (`amr: pat` only). */
   patId?: string;
+  /** App id for app access tokens (`amr: ['pat', 'app']`). */
+  appId?: string;
+  /** App session id for live revoke/scope checks of app access tokens. */
+  appSessionId?: string;
   tv?: number;
   jti?: string;
   exp?: number;

@@ -703,4 +703,99 @@ describe('AuthService', () => {
       expect(mockJwtService.sign).not.toHaveBeenCalled();
     });
   });
+
+  describe('app grant second factor and app tokens', () => {
+    const appCodes = { required: 'APP_AUTHORIZATION_2FA_REQUIRED', invalid: 'APP_AUTHORIZATION_2FA_INVALID' };
+    const baseUser = {
+      id: 'user-9',
+      email: 'grant@example.com',
+      role: UserRole.USER,
+      passwordHash: '$2b$12$hash',
+      emailConfirmedAt: new Date('2026-01-01T00:00:00.000Z'),
+      tokenVersion: 3,
+    };
+    let originalForce: string | undefined;
+
+    beforeEach(() => {
+      originalForce = process.env.DISABLE_FORCE_LOGIN_2FA;
+    });
+
+    afterEach(() => {
+      if (originalForce === undefined) {
+        delete process.env.DISABLE_FORCE_LOGIN_2FA;
+      } else {
+        process.env.DISABLE_FORCE_LOGIN_2FA = originalForce;
+      }
+    });
+
+    it('uses the login rules: authenticator first, then enabled or forced email, none for Keycloak accounts', () => {
+      process.env.DISABLE_FORCE_LOGIN_2FA = 'true';
+      expect(service.getSecondFactorMethod(baseUser as any)).toBeNull();
+      expect(service.getSecondFactorMethod({ ...baseUser, email2faEnabledAt: new Date() } as any)).toBe('email');
+      expect(
+        service.getSecondFactorMethod({ ...baseUser, totpEnabledAt: new Date(), totpSecret: 'SECRET' } as any),
+      ).toBe('totp');
+
+      delete process.env.DISABLE_FORCE_LOGIN_2FA;
+      expect(service.getSecondFactorMethod(baseUser as any)).toBe('email');
+      expect(
+        service.getSecondFactorMethod({ ...baseUser, passwordHash: undefined, keycloakSub: 'kc' } as any),
+      ).toBeNull();
+    });
+
+    it('requires the authenticator code with the app error code', async () => {
+      process.env.DISABLE_FORCE_LOGIN_2FA = 'true';
+      const user = { ...baseUser, totpEnabledAt: new Date(), totpSecret: 'SECRET' };
+
+      await expect(service.verifySecondFactor(user as any, undefined, appCodes)).rejects.toMatchObject({
+        response: expect.objectContaining({ code: appCodes.required, method: 'totp' }),
+      });
+
+      jest.spyOn(totpUtils, 'verifyTotpCode').mockResolvedValue(false);
+      await expect(service.verifySecondFactor(user as any, '123456', appCodes)).rejects.toMatchObject({
+        response: expect.objectContaining({ code: appCodes.invalid, method: 'totp' }),
+      });
+
+      jest.spyOn(totpUtils, 'verifyTotpCode').mockResolvedValue(true);
+      await expect(service.verifySecondFactor(user as any, '123456', appCodes)).resolves.toBeUndefined();
+    });
+
+    it('sends an email code when email 2FA applies and no code was given', async () => {
+      delete process.env.DISABLE_FORCE_LOGIN_2FA;
+
+      await expect(service.verifySecondFactor({ ...baseUser } as any, undefined, appCodes)).rejects.toMatchObject({
+        response: expect.objectContaining({ code: appCodes.required, method: 'email' }),
+      });
+      expect(mockEmailDispatcher.publishEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ to: 'grant@example.com', templateKey: 'login-2fa' }),
+      );
+    });
+
+    it('passes without a second factor', async () => {
+      process.env.DISABLE_FORCE_LOGIN_2FA = 'true';
+
+      await expect(service.verifySecondFactor(baseUser as any, undefined, appCodes)).resolves.toBeUndefined();
+    });
+
+    it('issues short-lived app access JWTs marked as scoped machine tokens', () => {
+      const result = service.issueAppAccessToken(baseUser as any, {
+        scopes: ['tickets:read'],
+        appId: 'app-1',
+        appSessionId: 'session-1',
+      });
+
+      expect(result).toEqual({ accessToken: 'jwt-token', expiresIn: 3600 });
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sub: 'user-9',
+          amr: ['pat', 'app'],
+          scopes: ['tickets:read'],
+          appId: 'app-1',
+          appSessionId: 'session-1',
+          tv: 3,
+        }),
+        expect.objectContaining({ expiresIn: 3600 }),
+      );
+    });
+  });
 });

@@ -30,7 +30,7 @@ interface AdminNavItem {
   activePaths: string[];
   icon: string;
   label: string;
-  navKey?: 'updates';
+  navKey?: string;
   routerLink: string[];
   title: string;
 }
@@ -166,6 +166,60 @@ export class AgentConsoleContainerComponent implements OnInit {
 
   adminPopoverOpen = false;
 
+  readonly accountPopoverAriaLabel = $localize`:@@featureContainer-accountTitle:Account`;
+
+  /** Account popover (above Admin): the user's own security settings, tokens and authorized apps. */
+  readonly accountNavItems: AdminNavItem[] = [
+    ...(this.isUsersAuth
+      ? [
+          {
+            routerLink: ['/settings/security'],
+            activePaths: ['/settings/security'],
+            icon: 'bi-shield-lock',
+            navKey: 'security',
+            title: $localize`:@@featureContainer-securityTitle:Security`,
+            label: $localize`:@@featureContainer-security:Security`,
+          },
+        ]
+      : []),
+    ...(this.isPatUiEnabled
+      ? [
+          {
+            routerLink: ['/settings/tokens'],
+            activePaths: ['/settings/tokens'],
+            icon: 'bi-key',
+            navKey: 'tokens',
+            title: $localize`:@@featureContainer-tokensTitle:Personal access tokens`,
+            label: $localize`:@@featureContainer-tokens:Tokens`,
+          },
+          {
+            routerLink: ['/settings/apps'],
+            activePaths: ['/settings/apps'],
+            icon: 'bi-plug',
+            navKey: 'apps',
+            title: $localize`:@@featureContainer-authorizedAppsTitle:Authorized apps`,
+            label: $localize`:@@featureContainer-authorizedApps:Apps`,
+          },
+        ]
+      : []),
+  ];
+
+  readonly showAccountNav$ = this.authenticationFacade.isAuthenticated$.pipe(
+    map((authenticated) => authenticated && this.accountNavItems.length > 0),
+  );
+
+  readonly isAccountRouteActive = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => this.router.url),
+      startWith(this.router.url),
+      map((url) => this.isAccountNavUrl(url)),
+    ),
+    { initialValue: this.isAccountNavUrl(this.router.url) },
+  );
+
+  accountPopoverOpen = false;
+
   readonly adminNavItems: AdminNavItem[] = [
     {
       routerLink: ['/updates'],
@@ -188,6 +242,13 @@ export class AgentConsoleContainerComponent implements OnInit {
       icon: 'bi-people',
       title: $localize`:@@featureContainer-userManagementTitle:User management`,
       label: $localize`:@@featureContainer-users:Users`,
+    },
+    {
+      routerLink: ['/apps'],
+      activePaths: ['/apps'],
+      icon: 'bi-app-indicator',
+      title: $localize`:@@featureContainer-appsTitle:App management`,
+      label: $localize`:@@featureContainer-apps:Apps`,
     },
     {
       routerLink: ['/agent-config'],
@@ -266,6 +327,9 @@ export class AgentConsoleContainerComponent implements OnInit {
       path.includes('/tasks') ||
       path.includes('/agent-config') ||
       path.includes('/settings/tokens') ||
+      path.includes('/settings/apps') ||
+      path === '/apps' ||
+      path.startsWith('/apps/') ||
       path.includes('/settings/security');
 
     if (!onMainRoute) {
@@ -286,6 +350,8 @@ export class AgentConsoleContainerComponent implements OnInit {
 
     return (
       path.includes('/users') ||
+      path === '/apps' ||
+      path.startsWith('/apps/') ||
       path.includes('/agent-config') ||
       path.includes('/imports') ||
       path.includes('/webhooks') ||
@@ -367,5 +433,13 @@ export class AgentConsoleContainerComponent implements OnInit {
   onLogoutConfirmed(result: { invalidateAllSessions: boolean }): void {
     this.notificationsFacade.disconnectSocket();
     this.authenticationFacade.logout(result.invalidateAllSessions);
+  }
+
+  private isAccountNavUrl(url: string): boolean {
+    const path = url.split(/[?#]/)[0] ?? url;
+
+    return this.accountNavItems.some((item) =>
+      item.activePaths.some((active) => path === active || path.startsWith(`${active}/`)),
+    );
   }
 }

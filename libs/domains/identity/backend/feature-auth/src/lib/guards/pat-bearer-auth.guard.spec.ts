@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PatBearerAuthGuard } from './pat-bearer-auth.guard';
 
 describe('PatBearerAuthGuard', () => {
+  const appAuthorizationService = { assertAppJwtActive: jest.fn() };
   let guard: PatBearerAuthGuard;
   let jwtService: { verifyAsync: jest.Mock };
   let usersRepository: { findById: jest.Mock };
@@ -34,6 +35,7 @@ describe('PatBearerAuthGuard', () => {
       usersRepository as never,
       revokedUserTokensRepository as never,
       personalAccessTokenService as never,
+      appAuthorizationService as never,
     );
   });
 
@@ -125,5 +127,70 @@ describe('PatBearerAuthGuard', () => {
     const request = { headers: { authorization: 'Bearer pat-jwt' } };
 
     await expect(guard.canActivate(createContext(request))).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('accepts app access JWTs via the app session check (keycloak mode)', async () => {
+    jwtService.verifyAsync.mockResolvedValue({
+      sub: 'u1',
+      email: 'a@b.c',
+      amr: ['pat', 'app'],
+      appId: 'app-1',
+      appSessionId: 's1',
+      scopes: ['tickets:read'],
+      tv: 0,
+    });
+    usersRepository.findById.mockResolvedValue({
+      id: 'u1',
+      email: 'a@b.c',
+      role: UserRole.USER,
+      lockedAt: null,
+      tenantId: 'default',
+      tokenVersion: 0,
+    });
+    appAuthorizationService.assertAppJwtActive.mockResolvedValue({
+      scopes: ['tickets:read'],
+      appId: 'app-1',
+      appSessionId: 's1',
+    });
+
+    const request: Record<string, unknown> = { headers: { authorization: 'Bearer app-jwt' } };
+
+    await expect(guard.canActivate(createContext(request))).resolves.toBe(true);
+    expect(personalAccessTokenService.assertPatJwtActive).not.toHaveBeenCalled();
+    expect(request['patAuthenticated']).toBe(true);
+    expect(request['user']).toMatchObject({
+      id: 'u1',
+      amr: ['pat', 'app'],
+      scopes: ['tickets:read'],
+      appId: 'app-1',
+      appSessionId: 's1',
+      patId: undefined,
+    });
+  });
+
+  it('rejects app access JWTs whose session is gone', async () => {
+    jwtService.verifyAsync.mockResolvedValue({
+      sub: 'u1',
+      amr: ['pat', 'app'],
+      appId: 'app-1',
+      appSessionId: 's1',
+      scopes: ['tickets:read'],
+      tv: 0,
+    });
+    usersRepository.findById.mockResolvedValue({
+      id: 'u1',
+      email: 'a@b.c',
+      role: UserRole.USER,
+      lockedAt: null,
+      tenantId: 'default',
+      tokenVersion: 0,
+    });
+    appAuthorizationService.assertAppJwtActive.mockRejectedValue(
+      new UnauthorizedException('Session is no longer valid.'),
+    );
+
+    await expect(guard.canActivate(createContext({ headers: { authorization: 'Bearer app-jwt' } }))).rejects.toThrow(
+      UnauthorizedException,
+    );
   });
 });

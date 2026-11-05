@@ -4,6 +4,7 @@ export * from './lib/interceptors/users-session-invalidated.interceptor';
 export * from './lib/services/auth.service';
 export * from './lib/constants/auth-error.constants';
 export * from './lib/types/personal-access-token.types';
+export * from './lib/types/identity-app.types';
 export * from './lib/state/authentication/authentication.actions';
 export * from './lib/state/authentication/authentication.effects';
 export * from './lib/state/authentication/authentication.facade';
@@ -15,3 +16,8 @@ export * from './lib/state/personal-access-tokens/personal-access-tokens.effects
 export * from './lib/state/personal-access-tokens/personal-access-tokens.facade';
 export * from './lib/state/personal-access-tokens/personal-access-tokens.reducer';
 export * from './lib/state/personal-access-tokens/personal-access-tokens.selectors';
+export * from './lib/state/identity-apps/identity-apps.actions';
+export * from './lib/state/identity-apps/identity-apps.effects';
+export * from './lib/state/identity-apps/identity-apps.facade';
+export * from './lib/state/identity-apps/identity-apps.reducer';
+export * from './lib/state/identity-apps/identity-apps.selectors';

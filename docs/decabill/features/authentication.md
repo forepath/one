@@ -140,6 +140,38 @@ Scopes follow `<resource>:<level>` with three hierarchical levels per resource (
 
 Stored tokens were migrated to this model (`RefactorPersonalAccessTokenScopes1793600000000`); legacy scopes that could only be mapped by granting additional writes were dropped, so affected tokens must be re-issued.
 
+### Apps (third-party authorization; users and keycloak modes)
+
+Admins can register **apps**: external applications that act on behalf of users after the user authorizes them (similar to GitHub OAuth apps). Apps reuse the [PAT scope catalog](#scope-model). **Not available** when `AUTHENTICATION_METHOD=api-key`.
+
+| Concern        | Behavior                                                                                                                                                                                                        |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Management     | Console **Apps** page (`/apps`, admin, interactive session only): name, description, return URL, scopes. The app id is the row UUID; the app secret (`fp_aps_…`) is shown once and stored as a bcrypt hash only |
+| Return URL     | Absolute `https` URL (`http` only for `localhost` / `127.0.0.1`), no credentials, no fragment. Redirects only ever go to the registered URL (no caller-supplied redirect URI)                                   |
+| Grant page     | `/authorize?app_id=<uuid>&state=<opaque>[&code_challenge=<S256>&code_challenge_method=S256]`; shows the login mask first when needed, then app name, description and scopes                                     |
+| Scope cap      | A user only grants the requested scopes their own role may grant (`:admin` scopes only for admins); the rest is shown as "not granted". The cap is re-applied on every request                                  |
+| Second factor  | Approving a new (or changed) authorization requires the user's 2FA: authenticator code, or an emailed code when email 2FA is enabled or forced. Keycloak accounts rely on Keycloak MFA                          |
+| Skip consent   | An existing, up-to-date authorization redirects back immediately with a new code (no consent, no 2FA)                                                                                                           |
+| Redirect       | Approved: `status=approved&app_id&code&state`. Denied: `status=denied&error=access_denied&error_description&state`. No grantable scope: `status=error&error=invalid_scope`                                      |
+| Token exchange | `POST /auth/apps/token` (public, rate-limited, server-to-server) with `app_id`, `app_secret` and either the `code` (+ `code_verifier`) or a `refresh_token`; returns an access JWT (1 h) and a refresh token    |
+| Lifetime       | Authorizations never expire. Codes are single-use (10 min); refresh tokens rotate on every use. Replaying a code or an old refresh token revokes the affected session                                           |
+| Access tokens  | JWT with `amr: ["pat", "app"]`, `scopes`, `appId`, `appSessionId`. Treated exactly like PAT JWTs: fail-closed `@RequireScopes`, no interactive-only routes (token/app management, 2FA, password), no WebSockets |
+| Live checks    | Every request re-checks session, authorization, app, user (locked, unconfirmed, tenant, token version) and the effective scopes; any drift rejects the token so the app refreshes                               |
+| Re-auth        | When the app gains a scope (or the user can now grant more), tokens keep the previously consented scopes and the token response sets `reauthorization_required: true`; the grant page asks again                |
+| Revocation     | Admins revoke one or all authorizations of an app; users revoke their own under **Authorized apps** (`/settings/apps`). Revoking ends all sessions and forces the full consent flow next time                   |
+
+Effective scopes of an app token = consented scopes ∩ current app scopes ∩ scopes the user's current role may grant. Removing a scope from the app or demoting the user takes effect immediately; adding a scope requires re-authorization.
+
+Example token exchange:
+
+```bash
+curl -X POST https://<host>/api/auth/apps/token \
+  -H 'Content-Type: application/json' \
+  -d '{"grant_type":"authorization_code","app_id":"<app id>","app_secret":"fp_aps_…","code":"fp_apc_…"}'
+# → { "access_token": "…", "token_type": "Bearer", "expires_in": 3600, "refresh_token": "fp_apr_…",
+#     "scope": "tickets:read", "scopes": ["tickets:read"], "reauthorization_required": false, "user": { … } }
+```
+
 ## Users Authentication Flow
 
 ### Registration
@@ -249,6 +281,24 @@ Frontend runtime config should set `authentication.disableSignup` to match the b
 - `DELETE /auth/tokens/{id}` - Revoke own token
 - `GET /users/{userId}/tokens` - List tokens for a user (admin)
 - `DELETE /users/{userId}/tokens/{tokenId}` - Revoke a user's token (admin)
+
+### App Endpoints
+
+| Method   | Path                         | Auth                        | Purpose                                        |
+| -------- | ---------------------------- | --------------------------- | ---------------------------------------------- |
+| `POST`   | `/auth/apps/token`           | Public (app id + secret)    | Exchange code / refresh token for access token |
+| `GET`    | `/auth/apps/authorize`       | Interactive session         | Grant page data                                |
+| `POST`   | `/auth/apps/authorize`       | Interactive session (+ 2FA) | Approve or deny; returns redirect to the app   |
+| `GET`    | `/auth/apps/grants`          | Interactive session         | Own authorized apps                            |
+| `DELETE` | `/auth/apps/grants/:grantId` | Interactive session         | Revoke own authorization                       |
+| `GET`    | `/apps`                      | Admin, interactive session  | List apps                                      |
+| `POST`   | `/apps`                      | Admin, interactive session  | Create app (secret returned once)              |
+| `PATCH`  | `/apps/:id`                  | Admin, interactive session  | Update app                                     |
+| `DELETE` | `/apps/:id`                  | Admin, interactive session  | Delete app with all authorizations             |
+| `POST`   | `/apps/:id/secret`           | Admin, interactive session  | Regenerate secret (returned once)              |
+| `GET`    | `/apps/:id/grants`           | Admin, interactive session  | List user authorizations                       |
+| `DELETE` | `/apps/:id/grants`           | Admin, interactive session  | Revoke all authorizations                      |
+| `DELETE` | `/apps/:id/grants/:grantId`  | Admin, interactive session  | Revoke one authorization                       |
 
 ### User Management Endpoints (Admin Only)
 

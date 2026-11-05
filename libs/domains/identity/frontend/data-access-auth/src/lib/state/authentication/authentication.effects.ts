@@ -8,6 +8,7 @@ import { KeycloakService } from 'keycloak-angular';
 import { catchError, filter, from, map, of, switchMap, tap } from 'rxjs';
 
 import {
+  consumePostLoginReturnUrl,
   EMAIL_NOT_CONFIRMED_CODE,
   LOGIN_2FA_REQUIRED_CODE,
   PENDING_LOGIN_PASSWORD_STORAGE_KEY,
@@ -267,6 +268,15 @@ export const loginSuccessRedirect$ = createEffect(
     return actions$.pipe(
       ofType(loginSuccess),
       tap(() => {
+        // Resume the app grant page when login was started from it (allowlisted in-app URL only).
+        const returnUrl = consumePostLoginReturnUrl();
+
+        if (returnUrl) {
+          router.navigateByUrl(returnUrl);
+
+          return;
+        }
+
         router.navigate(redirectTarget);
       }),
     );

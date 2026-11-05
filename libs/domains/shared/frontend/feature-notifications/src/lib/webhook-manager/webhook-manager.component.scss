@@ -12,6 +12,20 @@
   min-height: 0;
 }
 
+// Select-all box, magnifier and event boxes share one inset (the header / list `px-2`).
+.event-type-picker {
+  --fpc-edge-inset: 0.5rem;
+}
+
+// `fpc-board-lane__search` gives the search the flat column-search strip look, like lane and table searches.
+.event-type-picker__search {
+  background: var(--bs-body-bg);
+}
+
+.event-type-picker__header .form-check {
+  min-height: 0;
+}
+
 .event-type-list {
   max-height: 12rem;
   overflow: auto;

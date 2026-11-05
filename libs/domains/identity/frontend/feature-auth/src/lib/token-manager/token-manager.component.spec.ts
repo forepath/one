@@ -91,4 +91,31 @@ describe('IdentityTokenManagerComponent', () => {
     expect(component.selectedTokenIds()).toEqual(['t-2']);
     expect(facade['load']).toHaveBeenCalledTimes(2);
   });
+  it('toggles all visible scopes of a form and keeps unrelated scopes when clearing', () => {
+    const component = fixture.componentInstance;
+
+    (facade['scopes$'] as BehaviorSubject<unknown>).next([
+      { scope: 'agents:read' },
+      { scope: 'agents:write' },
+      { scope: 'tickets:read' },
+    ]);
+    fixture.detectChanges();
+
+    const form = { name: 'x', expiresAt: '', scopes: ['legacy:read'] };
+    const change = (checked: boolean) => ({ target: { checked } }) as unknown as Event;
+
+    component.scopeSearch.set('agents');
+    component.toggleAllScopes(form, change(true));
+    expect(form.scopes).toEqual(['legacy:read', 'agents:read', 'agents:write']);
+    expect(component.areAllScopesSelected(form)).toBe(true);
+    expect(component.selectedScopeCount(form)).toBe(2);
+
+    component.scopeSearch.set('');
+    expect(component.areAllScopesSelected(form)).toBe(false);
+    expect(component.areSomeScopesSelected(form)).toBe(true);
+
+    component.toggleAllScopes(form, change(false));
+    expect(form.scopes).toEqual(['legacy:read']);
+    expect(component.selectedScopeCount(form)).toBe(0);
+  });
 });

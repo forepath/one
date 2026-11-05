@@ -2018,6 +2018,14 @@
         <source>Admin</source>
         <target>Admin</target>
       </trans-unit>
+      <trans-unit id="featureContainer-accountTitle" datatype="html">
+        <source>Account</source>
+        <target>Konto</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-account" datatype="html">
+        <source>Account</source>
+        <target>Konto</target>
+      </trans-unit>
       <trans-unit id="featureContainer-adminTitle" datatype="html">
         <source>Admin</source>
         <target>Admin</target>
@@ -4838,6 +4846,14 @@
         <source>No scopes available</source>
         <target>Keine Berechtigungen verfügbar</target>
       </trans-unit>
+      <trans-unit id="featureTokenManager-allScopesAriaLabel" datatype="html">
+        <source>All scopes</source>
+        <target>Alle Berechtigungen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-selectedScopesCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ selectedScopeCount(createForm) }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ scopes().length }}"/> selected</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ selectedScopeCount(createForm) }}"/> von <x id="INTERPOLATION_1" equiv-text="{{ scopes().length }}"/> ausgewählt</target>
+      </trans-unit>
       <trans-unit id="featureTokenManager-create" datatype="html">
         <source>Create</source>
         <target>Erstellen</target>
@@ -5367,6 +5383,22 @@
       <trans-unit id="featureNotifications-noEventTypes" datatype="html">
         <source>No event types available</source>
         <target>Keine Ereignistypen verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-allEventsAriaLabel" datatype="html">
+        <source>All events</source>
+        <target>Alle Ereignisse</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-selectedEventsCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ selectedEventCount(form) }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ eventTypes().length }}"/> selected</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ selectedEventCount(form) }}"/> von <x id="INTERPOLATION_1" equiv-text="{{ eventTypes().length }}"/> ausgewählt</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-noMatchingEvents" datatype="html">
+        <source>No events match your search</source>
+        <target>Keine Ereignisse entsprechen Ihrer Suche</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-eventSearchPlaceholder" datatype="html">
+        <source>Search events</source>
+        <target>Ereignisse durchsuchen</target>
       </trans-unit>
       <trans-unit id="featureNotifications-deleteWebhookModalTitle" datatype="html">
         <source>Delete webhook</source>
@@ -9353,6 +9385,414 @@
       <trans-unit id="featureContentWrites-planUpdate" datatype="html">
         <source>Update plans that were not executed yet</source>
         <target>Noch nicht ausgeführte Pläne aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-appsTitle" datatype="html">
+        <source>App management</source>
+        <target>App-Verwaltung</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-apps" datatype="html">
+        <source>Apps</source>
+        <target>Apps</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-authorizedAppsTitle" datatype="html">
+        <source>Authorized apps</source>
+        <target>Autorisierte Apps</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-authorizedApps" datatype="html">
+        <source>Apps</source>
+        <target>Apps</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-appsPage" datatype="html">
+        <source>Apps</source>
+        <target>Apps</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-authorizedAppsPage" datatype="html">
+        <source>Authorized apps</source>
+        <target>Autorisierte Apps</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-authorizeAppPage" datatype="html">
+        <source>Authorize app</source>
+        <target>App autorisieren</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-title" datatype="html">
+        <source>Authorized apps</source>
+        <target>Autorisierte Apps</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-searchPlaceholder" datatype="html">
+        <source>Search apps</source>
+        <target>Apps durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-empty" datatype="html">
+        <source>You have not authorized any apps</source>
+        <target>Sie haben noch keine Apps autorisiert</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-colState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-stateReauth" datatype="html">
+        <source>Requests more access</source>
+        <target>Fordert mehr Zugriff an</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-stateActive" datatype="html">
+        <source>Authorized</source>
+        <target>Autorisiert</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-colApp" datatype="html">
+        <source>App</source>
+        <target>App</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-colScopes" datatype="html">
+        <source>Scopes</source>
+        <target>Berechtigungen</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-colAuthorized" datatype="html">
+        <source>Authorized</source>
+        <target>Autorisiert</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-colLastUsed" datatype="html">
+        <source>Last used</source>
+        <target>Zuletzt verwendet</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-scopes" datatype="html">
+        <source>scopes</source>
+        <target>Berechtigungen</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-revokeTitle" datatype="html">
+        <source>Revoke access</source>
+        <target>Zugriff widerrufen</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-revokeBody" datatype="html">
+        <source> Revoke access for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ grantToRevoke.appName }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/>? The app is signed out immediately and has to ask for your authorization again. </source>
+        <target>Zugriff für <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ grantToRevoke.appName }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/> widerrufen? Die App wird sofort abgemeldet und muss erneut um Ihre Autorisierung bitten.</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-bulkRevokeTitle" datatype="html">
+        <source>Revoke access</source>
+        <target>Zugriff widerrufen</target>
+      </trans-unit>
+      <trans-unit id="featureAuthorizedApps-bulkRevokeBody" datatype="html">
+        <source> Revoke access for the selected apps? They are signed out immediately. </source>
+        <target>Zugriff für die ausgewählten Apps widerrufen? Sie werden sofort abgemeldet.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-title" datatype="html">
+        <source>Apps</source>
+        <target>Apps</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-addAppTitle" datatype="html">
+        <source>Create app</source>
+        <target>App erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-searchPlaceholder" datatype="html">
+        <source>Search apps</source>
+        <target>Apps durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-empty" datatype="html">
+        <source>No apps yet</source>
+        <target>Noch keine Apps</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-grantsTitle" datatype="html">
+        <source>Authorizations</source>
+        <target>Autorisierungen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-noGrants" datatype="html">
+        <source>No user has authorized this app yet</source>
+        <target>Noch kein Benutzer hat diese App autorisiert</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-createTitle" datatype="html">
+        <source>Create app</source>
+        <target>App erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-editTitle" datatype="html">
+        <source>Edit app</source>
+        <target>App bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-nameLabel" datatype="html">
+        <source>Name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-returnUrlLabel" datatype="html">
+        <source>Return URL</source>
+        <target>Rücksprung-URL</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-scopesLabel" datatype="html">
+        <source>Scopes</source>
+        <target>Berechtigungen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-colGrants" datatype="html">
+        <source>Authorizations</source>
+        <target>Autorisierungen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-colCreated" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-colGrantState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-grantNeedsReauth" datatype="html">
+        <source>Re-authorization pending</source>
+        <target>Erneute Autorisierung ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-grantActive" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-colUser" datatype="html">
+        <source>User</source>
+        <target>Benutzer</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-colSessions" datatype="html">
+        <source>Sessions</source>
+        <target>Sitzungen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-colLastUsed" datatype="html">
+        <source>Last used</source>
+        <target>Zuletzt verwendet</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-rotateSecret" datatype="html">
+        <source>Regenerate secret</source>
+        <target>Secret neu generieren</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-scopes" datatype="html">
+        <source>scopes</source>
+        <target>Berechtigungen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-bulkDeleteTitle" datatype="html">
+        <source>Delete apps</source>
+        <target>Apps löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-bulkDeleteBody" datatype="html">
+        <source> Delete the selected apps? All their authorizations are revoked and their tokens stop working immediately. This cannot be undone. </source>
+        <target>Die ausgewählten Apps löschen? Alle ihre Autorisierungen werden widerrufen und ihre Tokens funktionieren sofort nicht mehr. Dies kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-descriptionLabel" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-descriptionHint" datatype="html">
+        <source> Shown to users on the authorization page. </source>
+        <target>Wird Benutzern auf der Autorisierungsseite angezeigt.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-returnUrlInvalid" datatype="html">
+        <source> Use an absolute https URL (http only for localhost) without credentials or #fragment. </source>
+        <target>Verwenden Sie eine absolute https-URL (http nur für localhost) ohne Zugangsdaten oder #Fragment.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-returnUrlHint" datatype="html">
+        <source> Users are sent here after authorizing, with status, code and state as query parameters. </source>
+        <target>Benutzer werden nach der Autorisierung hierher geleitet, mit Status, Code und State als Query-Parameter.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-scopesHint" datatype="html">
+        <source> Users can only grant the scopes their own account has. Adding scopes later asks users to authorize again. </source>
+        <target>Benutzer können nur die Berechtigungen erteilen, die ihr eigenes Konto hat. Werden später Berechtigungen hinzugefügt, müssen Benutzer erneut autorisieren.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-loadingScopes" datatype="html">
+        <source>Loading scopes...</source>
+        <target>Berechtigungen werden geladen...</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-noScopes" datatype="html">
+        <source>No scopes available</source>
+        <target>Keine Berechtigungen verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureScopePicker-noMatches" datatype="html">
+        <source>No scopes match your search</source>
+        <target>Keine Berechtigungen entsprechen Ihrer Suche</target>
+      </trans-unit>
+      <trans-unit id="featureScopePicker-searchPlaceholder" datatype="html">
+        <source>Search scopes</source>
+        <target>Berechtigungen durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-allScopesAriaLabel" datatype="html">
+        <source>All scopes</source>
+        <target>Alle Berechtigungen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-selectedScopesCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ selectedScopeCount() }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ scopes().length }}"/> selected</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ selectedScopeCount() }}"/> von <x id="INTERPOLATION_1" equiv-text="{{ scopes().length }}"/> ausgewählt</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-create" datatype="html">
+        <source>Create</source>
+        <target>Erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-secretTitle" datatype="html">
+        <source>App credentials</source>
+        <target>App-Zugangsdaten</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-secretIntro" datatype="html">
+        <source> Configure <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> with these credentials. They authenticate the app when it exchanges an authorization code or refresh token. </source>
+        <target>Konfigurieren Sie <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> mit diesen Zugangsdaten. Sie authentifizieren die App beim Einlösen eines Autorisierungscodes oder Refresh-Tokens.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-appIdLabel" datatype="html">
+        <source>App ID</source>
+        <target>App-ID</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-copied" datatype="html">
+        <source>Copied</source>
+        <target>Kopiert</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-copy" datatype="html">
+        <source>Copy</source>
+        <target>Kopieren</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-secretLabel" datatype="html">
+        <source>App secret</source>
+        <target>App-Secret</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-secretHint" datatype="html">
+        <source> Copy this secret now. It will not be shown again; only a hash is stored. </source>
+        <target>Kopieren Sie dieses Secret jetzt. Es wird nicht erneut angezeigt; gespeichert wird nur ein Hash.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-secretCopied" datatype="html">
+        <source>Secret copied</source>
+        <target>Secret kopiert</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-copySecret" datatype="html">
+        <source>Copy secret</source>
+        <target>Secret kopieren</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-rotateTitle" datatype="html">
+        <source>Regenerate secret</source>
+        <target>Secret neu generieren</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-rotateConfirmLabel" datatype="html">
+        <source>Regenerate</source>
+        <target>Neu generieren</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-rotateBody" datatype="html">
+        <source> Regenerate the secret of <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? The current secret stops working right away; existing authorizations stay valid once the app uses the new secret. </source>
+        <target>Das Secret von <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> neu generieren? Das aktuelle Secret funktioniert sofort nicht mehr; bestehende Autorisierungen bleiben gültig, sobald die App das neue Secret verwendet.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-deleteTitle" datatype="html">
+        <source>Delete app</source>
+        <target>App löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-deleteBody" datatype="html">
+        <source> Delete the app <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? All authorizations are revoked and its tokens stop working immediately. </source>
+        <target>Die App <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> löschen? Alle Autorisierungen werden widerrufen und ihre Tokens funktionieren sofort nicht mehr.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-grantsHint" datatype="html">
+        <source> Revoking an authorization ends the app&apos;s sessions for that user. The user has to authorize the app again (incl. two-factor verification) before it regains access. </source>
+        <target>Das Widerrufen einer Autorisierung beendet die Sitzungen der App für diesen Benutzer. Der Benutzer muss die App erneut autorisieren (inkl. Zwei-Faktor-Bestätigung), bevor sie wieder Zugriff erhält.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-revokeAll" datatype="html">
+        <source>Revoke all</source>
+        <target>Alle widerrufen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-revokeGrantTitle" datatype="html">
+        <source>Revoke authorization</source>
+        <target>Autorisierung widerrufen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-revokeGrantBody" datatype="html">
+        <source> Revoke the authorization of <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ grantToRevoke.userEmail }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/>? The app loses access for this user until they authorize it again. </source>
+        <target>Die Autorisierung von <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ grantToRevoke.userEmail }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/> widerrufen? Die App verliert den Zugriff für diesen Benutzer, bis er sie erneut autorisiert.</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-revokeAllTitle" datatype="html">
+        <source>Revoke all authorizations</source>
+        <target>Alle Autorisierungen widerrufen</target>
+      </trans-unit>
+      <trans-unit id="featureAppManager-revokeAllBody" datatype="html">
+        <source> Revoke every user&apos;s authorization for this app? All its sessions end and every user has to authorize it again. </source>
+        <target>Die Autorisierungen aller Benutzer für diese App widerrufen? Alle Sitzungen enden und jeder Benutzer muss die App erneut autorisieren.</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-invalidLink" datatype="html">
+        <source>This authorization link is invalid. Return to the app and try again.</source>
+        <target>Dieser Autorisierungslink ist ungültig. Kehren Sie zur App zurück und versuchen Sie es erneut.</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-notFound" datatype="html">
+        <source>This app does not exist or the authorization link is invalid.</source>
+        <target>Diese App existiert nicht oder der Autorisierungslink ist ungültig.</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-redirectBlocked" datatype="html">
+        <source>The app returned an unexpected redirect.</source>
+        <target>Die App hat eine unerwartete Weiterleitung geliefert.</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-unexpectedError" datatype="html">
+        <source>Something went wrong. Please try again.</source>
+        <target>Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-levelRead" datatype="html">
+        <source>Read</source>
+        <target>Lesen</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-levelWrite" datatype="html">
+        <source>Read and write</source>
+        <target>Lesen und schreiben</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-levelAdmin" datatype="html">
+        <source>Administer</source>
+        <target>Verwalten</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-redirecting" datatype="html">
+        <source>Returning to the app...</source>
+        <target>Zurück zur App...</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-loading" datatype="html">
+        <source>Loading authorization request...</source>
+        <target>Autorisierungsanfrage wird geladen...</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-errorTitle" datatype="html">
+        <source>Authorization failed</source>
+        <target>Autorisierung fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-wantsAccess" datatype="html">
+        <source> wants to access your <x id="INTERPOLATION" equiv-text="{{ productName }}"/> account </source>
+        <target>möchte auf Ihr <x id="INTERPOLATION" equiv-text="{{ productName }}"/>-Konto zugreifen</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-signedInAs" datatype="html">
+        <source>Signed in as <x id="INTERPOLATION" equiv-text="{{ signedIn.email }}"/></source>
+        <target>Angemeldet als <x id="INTERPOLATION" equiv-text="{{ signedIn.email }}"/></target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-grantedTitle" datatype="html">
+        <source> This app will be able to </source>
+        <target>Diese App erhält folgende Berechtigungen</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-nothingGrantable" datatype="html">
+        <source> Your account has none of the permissions this app requests. </source>
+        <target>Ihr Konto hat keine der Berechtigungen, die diese App anfordert.</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-notGrantedTitle" datatype="html">
+        <source> Not granted (your account does not have these permissions) </source>
+        <target>Nicht erteilt (Ihr Konto hat diese Berechtigungen nicht)</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-totpHint" datatype="html">
+        <source>Confirm with the 6-digit code from your authenticator app.</source>
+        <target>Bestätigen Sie mit dem 6-stelligen Code aus Ihrer Authenticator-App.</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-emailHint" datatype="html">
+        <source>We sent a 6-character verification code to your email. Enter it to confirm.</source>
+        <target>Wir haben Ihnen einen 6-stelligen Bestätigungscode per E-Mail gesendet. Geben Sie ihn zur Bestätigung ein.</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-codeLabel" datatype="html">
+        <source>Verification code</source>
+        <target>Bestätigungscode</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-emailNotice" datatype="html">
+        <source> For your security, we will email you a verification code when you authorize. </source>
+        <target>Zu Ihrer Sicherheit senden wir Ihnen bei der Autorisierung einen Bestätigungscode per E-Mail.</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-redirectNotice" datatype="html">
+        <source>You will be redirected to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ returnHost() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        <target>Sie werden zu <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ returnHost() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> weitergeleitet</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="featureAppAuthorize-approve" datatype="html">
+        <source>Authorize</source>
+        <target>Autorisieren</target>
       </trans-unit>
     </body>
   </file>
