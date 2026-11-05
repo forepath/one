@@ -336,7 +336,7 @@ describe('ContainerManagerService', () => {
       BadRequestException,
     );
     expect(billingNotificationPublisher.publish).toHaveBeenCalledWith(
-      'addon.container_manager.collection_failed',
+      'addon.collection_failed',
       expect.objectContaining({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       'user-1',
     );

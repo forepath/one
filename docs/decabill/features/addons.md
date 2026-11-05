@@ -140,7 +140,7 @@ Addon responses embed attached meters (optional unit-price and included-usage ov
 
 ## Notifications
 
-See [Webhooks](./webhooks.md) and [Email notifications](./email-notifications.md) for `addon.*` events, including `addon.container_manager.collection_failed` (webhook-only).
+See [Webhooks](./webhooks.md) and [Email notifications](./email-notifications.md) for `addon.*` events, including `addon.collection_failed` (webhook-only).
 
 ## Related documentation
 

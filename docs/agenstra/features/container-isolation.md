@@ -31,7 +31,7 @@ When an environment is created without an explicit level, the strongest ready le
 The **Create environment** dialog shows the levels as a radio group (**MicroVM (KVM)**, **Sandboxed (gVisor on KVM)**, **Sandboxed (gVisor)**, **Standard Docker**) with the recommendation preselected. The KVM and microVM options are only shown when the workspace host reports the level. Unavailable levels are disabled and show the reason reported by the host.
 
 - Choosing the recommended level (or a stronger one) is recorded as `user-confirmed`.
-- Choosing a **weaker** level than the recommendation (for example `standard` on a host where `sandboxed` is ready, `sandboxed` / `standard` on a host where `sandboxed-kvm` is ready, or any other level on a host where `microvm` is ready) is an **override**. The console asks for confirmation before submitting, the selection is recorded as `user-override` together with the selecting user, and the controller publishes an `agent.isolation_override` notification.
+- Choosing a **weaker** level than the recommendation (for example `standard` on a host where `sandboxed` is ready, `sandboxed` / `standard` on a host where `sandboxed-kvm` is ready, or any other level on a host where `microvm` is ready) is an **override**. The console asks for confirmation before submitting, the selection is recorded as `user-override` together with the selecting user, and the controller publishes an `agent.isolation_overridden` notification.
 - An explicit level is **never replaced** by another one. If it is not ready (anymore), creation is rejected with `409 Conflict`.
 
 ### Capability revision (stale forms)
@@ -221,7 +221,7 @@ Agent managers that predate isolation levels have no `/api/isolation` endpoint a
 
 ### Upgrading to the sandboxed-kvm level
 
-- **Rollout order:** update the agent console and the agent controller together, and update the agent managers afterwards. An older console does not know `sandboxed-kvm`. If it shows the capabilities of a manager that recommends `sandboxed-kvm`, it preselects no level and does not ask for confirmation before a weaker level is chosen. The server still records such a choice as `user-override` and publishes `agent.isolation_override`.
+- **Rollout order:** update the agent console and the agent controller together, and update the agent managers afterwards. An older console does not know `sandboxed-kvm`. If it shows the capabilities of a manager that recommends `sandboxed-kvm`, it preselects no level and does not ask for confirmation before a weaker level is chosen. The server still records such a choice as `user-override` and publishes `agent.isolation_overridden`.
 - **Open forms:** the capability revision of every upgraded manager changes once, because the record now contains the `sandboxed-kvm` level. Create Environment dialogs that were already open are rejected once with `409` (stale revision) and have to be reviewed again.
 - **Host preparation:** re-running `agenstra-gvisor.sh install` on an existing host adds the KVM runtimes when the host exposes hardware virtualization. The systrap runtimes and running environments are not affected.
 
@@ -282,7 +282,7 @@ The controller keeps the last observed capability record per workspace (`client_
 | `isolation.microvm_available`       | The microvm level of a workspace host became `ready`                                                   |
 | `isolation.microvm_unavailable`     | The microvm level was `ready` and is not anymore                                                       |
 | `isolation.baseline_failed`         | The standard floor is not `ready` (host cannot run environments); once per new state                   |
-| `agent.isolation_override`          | An environment was created with a weaker level than recommended                                        |
+| `agent.isolation_overridden`        | An environment was created with a weaker level than recommended                                        |
 | `agent.sandbox_creation_failed`     | A sandboxed, sandboxed-kvm or microvm environment could not be started (not retried on a weaker level) |
 
 ## Host preparation

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-05T07:13:19.704Z",
+  "generatedAt": "2026-11-05T17:53:12.565Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -15598,6 +15598,14 @@
       }
     },
     {
+      "id": "file:docs/forepath/features/webhook-events.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/forepath/features/webhook-events.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/port-allocation.md",
       "type": "doc",
       "attrs": {
@@ -18883,19 +18891,37 @@
       }
     },
     {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.chat.failed",
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.chat_failed",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "agent.chat.failed",
+        "eventName": "agent.chat_failed",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
     },
     {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.isolation_override",
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.created",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "agent.isolation_override",
+        "eventName": "agent.created",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.deleted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "agent.deleted",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.isolation_overridden",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "agent.isolation_overridden",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
@@ -18928,37 +18954,10 @@
       }
     },
     {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:application.dependency_health_changed",
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.updated",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "application.dependency_health_changed",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:application.instance_outdated",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "application.instance_outdated",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:application.update_available",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "application.update_available",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:application.update_check_failed",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "application.update_check_failed",
+        "eventName": "agent.updated",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
@@ -19108,28 +19107,28 @@
       }
     },
     {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:environment.created",
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:environment_variable.created",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "environment.created",
+        "eventName": "environment_variable.created",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
     },
     {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:environment.deleted",
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:environment_variable.deleted",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "environment.deleted",
+        "eventName": "environment_variable.deleted",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
     },
     {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:environment.updated",
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:environment_variable.updated",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "environment.updated",
+        "eventName": "environment_variable.updated",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
@@ -19198,46 +19197,37 @@
       }
     },
     {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:knowledge_node.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "knowledge_node.created",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:knowledge_node.deleted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "knowledge_node.deleted",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:knowledge_node.updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "knowledge_node.updated",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
       "id": "webhook-event:agenstra-backend-feature-agent-controller:message_filter.triggered",
       "type": "webhook-event",
       "attrs": {
         "eventName": "message_filter.triggered",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:search.document.sync_failed",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "search.document.sync_failed",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:search.reindex.completed",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "search.reindex.completed",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:search.reindex.failed",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "search.reindex.failed",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:search.reindex.started",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "search.reindex.started",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
@@ -19274,6 +19264,15 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "ticket.updated",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:webhook_endpoints.subscribed_events",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "webhook_endpoints.subscribed_events",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
@@ -22429,10 +22428,10 @@
       }
     },
     {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:addon.container_manager.collection_failed",
+      "id": "webhook-event:decabill-backend-feature-billing-manager:addon.collection_failed",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "addon.container_manager.collection_failed",
+        "eventName": "addon.collection_failed",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -22492,37 +22491,19 @@
       }
     },
     {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:application.dependency_health_changed",
+      "id": "webhook-event:decabill-backend-feature-billing-manager:attachment.created",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "application.dependency_health_changed",
+        "eventName": "attachment.created",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
     },
     {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:application.instance_outdated",
+      "id": "webhook-event:decabill-backend-feature-billing-manager:attachment.deleted",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "application.instance_outdated",
-        "projectName": "decabill-backend-feature-billing-manager",
-        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:application.update_available",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "application.update_available",
-        "projectName": "decabill-backend-feature-billing-manager",
-        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:application.update_check_failed",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "application.update_check_failed",
+        "eventName": "attachment.deleted",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -22541,6 +22522,15 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "auto_billing.enabled",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:customer_profile.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "customer_profile.created",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -22568,6 +22558,24 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "customer_profile.custom_data_updated",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:customer_profile.deleted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "customer_profile.deleted",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:customer_profile.updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "customer_profile.updated",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -22640,6 +22648,15 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "invoice.issued",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:invoice.paid",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "invoice.paid",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -22816,28 +22833,28 @@
       }
     },
     {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:payment.auto.exhausted",
+      "id": "webhook-event:decabill-backend-feature-billing-manager:payment.auto_exhausted",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "payment.auto.exhausted",
+        "eventName": "payment.auto_exhausted",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
     },
     {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:payment.auto.initiated",
+      "id": "webhook-event:decabill-backend-feature-billing-manager:payment.auto_initiated",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "payment.auto.initiated",
+        "eventName": "payment.auto_initiated",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
     },
     {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:payment.auto.retry_scheduled",
+      "id": "webhook-event:decabill-backend-feature-billing-manager:payment.auto_retry_scheduled",
       "type": "webhook-event",
       "attrs": {
-        "eventName": "payment.auto.retry_scheduled",
+        "eventName": "payment.auto_retry_scheduled",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -22892,42 +22909,6 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "project.updated",
-        "projectName": "decabill-backend-feature-billing-manager",
-        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:search.document.sync_failed",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "search.document.sync_failed",
-        "projectName": "decabill-backend-feature-billing-manager",
-        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:search.reindex.completed",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "search.reindex.completed",
-        "projectName": "decabill-backend-feature-billing-manager",
-        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:search.reindex.failed",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "search.reindex.failed",
-        "projectName": "decabill-backend-feature-billing-manager",
-        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:search.reindex.started",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "search.reindex.started",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -23293,24 +23274,6 @@
       }
     },
     {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:ticket.attachment.created",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "ticket.attachment.created",
-        "projectName": "decabill-backend-feature-billing-manager",
-        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:decabill-backend-feature-billing-manager:ticket.attachment.deleted",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "ticket.attachment.deleted",
-        "projectName": "decabill-backend-feature-billing-manager",
-        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
-      }
-    },
-    {
       "id": "webhook-event:decabill-backend-feature-billing-manager:ticket.comment.created",
       "type": "webhook-event",
       "attrs": {
@@ -23432,6 +23395,15 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "vat_id.validation_unavailable",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:webhook_endpoints.subscribed_events",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "webhook_endpoints.subscribed_events",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -24891,6 +24863,42 @@
         "operationId": "createAgentVncSession",
         "summary": "Create a short-lived VNC desktop session ticket",
         "specKind": "openapi"
+      }
+    },
+    {
+      "id": "webhook-event:shared-backend-util-opensearch:search.document.sync_failed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "search.document.sync_failed",
+        "projectName": "shared-backend-util-opensearch",
+        "catalogPath": "libs/domains/shared/backend/util-opensearch/src/lib/search-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:shared-backend-util-opensearch:search.reindex.completed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "search.reindex.completed",
+        "projectName": "shared-backend-util-opensearch",
+        "catalogPath": "libs/domains/shared/backend/util-opensearch/src/lib/search-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:shared-backend-util-opensearch:search.reindex.failed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "search.reindex.failed",
+        "projectName": "shared-backend-util-opensearch",
+        "catalogPath": "libs/domains/shared/backend/util-opensearch/src/lib/search-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:shared-backend-util-opensearch:search.reindex.started",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "search.reindex.started",
+        "projectName": "shared-backend-util-opensearch",
+        "catalogPath": "libs/domains/shared/backend/util-opensearch/src/lib/search-notification.events.ts"
       }
     },
     {
@@ -28851,6 +28859,16 @@
       }
     },
     {
+      "id": "concept:agenstra-event-naming",
+      "type": "concept",
+      "attrs": {
+        "title": "Event naming",
+        "docPath": "docs/agenstra/features/webhooks.md",
+        "sectionAnchor": "event-naming",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-event-envelope",
       "type": "concept",
       "attrs": {
@@ -28877,6 +28895,16 @@
         "title": "Payload examples",
         "docPath": "docs/agenstra/features/webhooks.md",
         "sectionAnchor": "payload-examples",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-get-endpoints",
+      "type": "concept",
+      "attrs": {
+        "title": "GET endpoints",
+        "docPath": "docs/agenstra/features/webhooks.md",
+        "sectionAnchor": "get-endpoints",
         "domain": "agenstra"
       }
     },
@@ -34491,6 +34519,16 @@
       }
     },
     {
+      "id": "concept:decabill-event-naming",
+      "type": "concept",
+      "attrs": {
+        "title": "Event naming",
+        "docPath": "docs/decabill/features/webhooks.md",
+        "sectionAnchor": "event-naming",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-event-envelope",
       "type": "concept",
       "attrs": {
@@ -34517,6 +34555,16 @@
         "title": "Payload examples",
         "docPath": "docs/decabill/features/webhooks.md",
         "sectionAnchor": "payload-examples",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-get-endpoints",
+      "type": "concept",
+      "attrs": {
+        "title": "GET endpoints",
+        "docPath": "docs/decabill/features/webhooks.md",
+        "sectionAnchor": "get-endpoints",
         "domain": "decabill"
       }
     },
@@ -35647,6 +35695,66 @@
         "title": "API reference",
         "docPath": "docs/forepath/features/opentelemetry.md",
         "sectionAnchor": "api-reference",
+        "domain": "forepath"
+      }
+    },
+    {
+      "id": "concept:forepath-webhook-event-naming",
+      "type": "concept",
+      "attrs": {
+        "title": "Webhook event naming",
+        "docPath": "docs/forepath/features/webhook-events.md",
+        "sectionAnchor": "webhook-event-naming",
+        "domain": "forepath"
+      }
+    },
+    {
+      "id": "concept:forepath-convention",
+      "type": "concept",
+      "attrs": {
+        "title": "Convention",
+        "docPath": "docs/forepath/features/webhook-events.md",
+        "sectionAnchor": "convention",
+        "domain": "forepath"
+      }
+    },
+    {
+      "id": "concept:forepath-shared-event-groups",
+      "type": "concept",
+      "attrs": {
+        "title": "Shared event groups",
+        "docPath": "docs/forepath/features/webhook-events.md",
+        "sectionAnchor": "shared-event-groups",
+        "domain": "forepath"
+      }
+    },
+    {
+      "id": "concept:forepath-cross-application-events",
+      "type": "concept",
+      "attrs": {
+        "title": "Cross-application events",
+        "docPath": "docs/forepath/features/webhook-events.md",
+        "sectionAnchor": "cross-application-events",
+        "domain": "forepath"
+      }
+    },
+    {
+      "id": "concept:forepath-renamed-event-types",
+      "type": "concept",
+      "attrs": {
+        "title": "Renamed event types",
+        "docPath": "docs/forepath/features/webhook-events.md",
+        "sectionAnchor": "renamed-event-types",
+        "domain": "forepath"
+      }
+    },
+    {
+      "id": "concept:forepath-adding-an-event",
+      "type": "concept",
+      "attrs": {
+        "title": "Adding an event",
+        "docPath": "docs/forepath/features/webhook-events.md",
+        "sectionAnchor": "adding-an-event",
         "domain": "forepath"
       }
     },
@@ -46609,12 +46717,22 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.chat.failed",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.chat_failed",
       "type": "contains"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.isolation_override",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.deleted",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.isolation_overridden",
       "type": "contains"
     },
     {
@@ -46634,22 +46752,7 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:application.dependency_health_changed",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:application.instance_outdated",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:application.update_available",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:application.update_check_failed",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.updated",
       "type": "contains"
     },
     {
@@ -46734,17 +46837,17 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:environment.created",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:environment_variable.created",
       "type": "contains"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:environment.deleted",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:environment_variable.deleted",
       "type": "contains"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:environment.updated",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:environment_variable.updated",
       "type": "contains"
     },
     {
@@ -46784,27 +46887,22 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:knowledge_node.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:knowledge_node.deleted",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:knowledge_node.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "webhook-event:agenstra-backend-feature-agent-controller:message_filter.triggered",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:search.document.sync_failed",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:search.reindex.completed",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:search.reindex.failed",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:search.reindex.started",
       "type": "contains"
     },
     {
@@ -46825,6 +46923,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "webhook-event:agenstra-backend-feature-agent-controller:ticket.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:webhook_endpoints.subscribed_events",
       "type": "contains"
     },
     {
@@ -48509,7 +48612,7 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:addon.container_manager.collection_failed",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:addon.collection_failed",
       "type": "contains"
     },
     {
@@ -48544,22 +48647,12 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:application.dependency_health_changed",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:attachment.created",
       "type": "contains"
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:application.instance_outdated",
-      "type": "contains"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:application.update_available",
-      "type": "contains"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:application.update_check_failed",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:attachment.deleted",
       "type": "contains"
     },
     {
@@ -48570,6 +48663,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:auto_billing.enabled",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:customer_profile.created",
       "type": "contains"
     },
     {
@@ -48585,6 +48683,16 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:customer_profile.custom_data_updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:customer_profile.deleted",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:customer_profile.updated",
       "type": "contains"
     },
     {
@@ -48625,6 +48733,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:invoice.issued",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:invoice.paid",
       "type": "contains"
     },
     {
@@ -48724,17 +48837,17 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:payment.auto.exhausted",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:payment.auto_exhausted",
       "type": "contains"
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:payment.auto.initiated",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:payment.auto_initiated",
       "type": "contains"
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:payment.auto.retry_scheduled",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:payment.auto_retry_scheduled",
       "type": "contains"
     },
     {
@@ -48765,26 +48878,6 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:project.updated",
-      "type": "contains"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:search.document.sync_failed",
-      "type": "contains"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:search.reindex.completed",
-      "type": "contains"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:search.reindex.failed",
-      "type": "contains"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:search.reindex.started",
       "type": "contains"
     },
     {
@@ -48989,16 +49082,6 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:ticket.attachment.created",
-      "type": "contains"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "webhook-event:decabill-backend-feature-billing-manager:ticket.attachment.deleted",
-      "type": "contains"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:ticket.comment.created",
       "type": "contains"
     },
@@ -49065,6 +49148,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:vat_id.validation_unavailable",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:webhook_endpoints.subscribed_events",
       "type": "contains"
     },
     {
@@ -49765,6 +49853,26 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/otel/metrics",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-util-opensearch",
+      "to": "webhook-event:shared-backend-util-opensearch:search.document.sync_failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-util-opensearch",
+      "to": "webhook-event:shared-backend-util-opensearch:search.reindex.completed",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-util-opensearch",
+      "to": "webhook-event:shared-backend-util-opensearch:search.reindex.failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-util-opensearch",
+      "to": "webhook-event:shared-backend-util-opensearch:search.reindex.started",
       "type": "contains"
     },
     {
@@ -52634,6 +52742,11 @@
     },
     {
       "from": "file:docs/agenstra/features/webhooks.md",
+      "to": "concept:agenstra-event-naming",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/webhooks.md",
       "to": "concept:agenstra-event-envelope",
       "type": "contains"
     },
@@ -52645,6 +52758,11 @@
     {
       "from": "file:docs/agenstra/features/webhooks.md",
       "to": "concept:agenstra-payload-examples",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/webhooks.md",
+      "to": "concept:agenstra-get-endpoints",
       "type": "contains"
     },
     {
@@ -56414,6 +56532,11 @@
     },
     {
       "from": "file:docs/decabill/features/webhooks.md",
+      "to": "concept:decabill-event-naming",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/webhooks.md",
       "to": "concept:decabill-event-envelope",
       "type": "contains"
     },
@@ -56425,6 +56548,11 @@
     {
       "from": "file:docs/decabill/features/webhooks.md",
       "to": "concept:decabill-payload-examples",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/webhooks.md",
+      "to": "concept:decabill-get-endpoints",
       "type": "contains"
     },
     {
@@ -57115,6 +57243,36 @@
     {
       "from": "file:docs/forepath/features/opentelemetry.md",
       "to": "concept:forepath-api-reference",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/forepath/features/webhook-events.md",
+      "to": "concept:forepath-webhook-event-naming",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/forepath/features/webhook-events.md",
+      "to": "concept:forepath-convention",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/forepath/features/webhook-events.md",
+      "to": "concept:forepath-shared-event-groups",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/forepath/features/webhook-events.md",
+      "to": "concept:forepath-cross-application-events",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/forepath/features/webhook-events.md",
+      "to": "concept:forepath-renamed-event-types",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/forepath/features/webhook-events.md",
+      "to": "concept:forepath-adding-an-event",
       "type": "contains"
     },
     {
@@ -83398,6 +83556,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:forepath-convention",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
       "from": "project:@forepath/test/mounted-plugin-fixture",
       "to": "domain:shared",
       "type": "belongs_to"
@@ -85309,6 +85472,11 @@
     },
     {
       "from": "file:docs/forepath/features/opentelemetry.md",
+      "to": "domain:forepath",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/forepath/features/webhook-events.md",
       "to": "domain:forepath",
       "type": "belongs_to"
     },
@@ -87278,6 +87446,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-event-naming",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-event-envelope",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -87289,6 +87462,11 @@
     },
     {
       "from": "concept:agenstra-payload-examples",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-get-endpoints",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -90098,6 +90276,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-event-naming",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-event-envelope",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -90109,6 +90292,11 @@
     },
     {
       "from": "concept:decabill-payload-examples",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-get-endpoints",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -90674,6 +90862,36 @@
     },
     {
       "from": "concept:forepath-api-reference",
+      "to": "domain:forepath",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:forepath-webhook-event-naming",
+      "to": "domain:forepath",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:forepath-convention",
+      "to": "domain:forepath",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:forepath-shared-event-groups",
+      "to": "domain:forepath",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:forepath-cross-application-events",
+      "to": "domain:forepath",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:forepath-renamed-event-types",
+      "to": "domain:forepath",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:forepath-adding-an-event",
       "to": "domain:forepath",
       "type": "belongs_to"
     },

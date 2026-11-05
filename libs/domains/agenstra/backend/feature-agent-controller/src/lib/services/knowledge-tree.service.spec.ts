@@ -90,6 +90,82 @@ describe('KnowledgeTreeService', () => {
     jest.clearAllMocks();
   });
 
+  describe('knowledge node webhooks', () => {
+    const notificationPublisher = { publishKnowledgeNode: jest.fn() };
+    const publishing = new KnowledgeTreeService(
+      nodeRepo,
+      relationRepo,
+      pageActivityRepo,
+      attachmentRepo,
+      clientsRepository,
+      clientUsersRepository,
+      usersRepository,
+      ticketsService,
+      ticketBoardRealtime,
+      knowledgeBoardRealtime,
+      knowledgeEmbeddingIndexService,
+      searchIndex,
+      externalImportSyncMarkerService as ExternalImportSyncMarkerService,
+      notificationPublisher as never,
+    );
+
+    it('publishes knowledge_node.created with metadata only (no page content)', async () => {
+      (publishing as any).assertClientAccess = jest.fn().mockResolvedValue(undefined);
+      (publishing as any).assertValidParent = jest.fn().mockResolvedValue(undefined);
+      (publishing as any).nextSortOrder = jest.fn().mockResolvedValue(0);
+      (publishing as any).appendPageActivity = jest.fn().mockResolvedValue(undefined);
+      (publishing as any).mapNode = jest.fn().mockResolvedValue({});
+      nodeRepo.save.mockImplementation(async (row: any) => ({
+        ...row,
+        id: row.id ?? 'new-page',
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      }));
+
+      await publishing.createNode({
+        clientId: 'client-1',
+        nodeType: KnowledgeNodeType.PAGE,
+        title: ' Runbook ',
+        content: 'secret body',
+      } as never);
+
+      expect(notificationPublisher.publishKnowledgeNode).toHaveBeenCalledTimes(1);
+      const [type, payload] = notificationPublisher.publishKnowledgeNode.mock.calls[0];
+
+      expect(type).toBe('knowledge_node.created');
+      expect(payload).toEqual(
+        expect.objectContaining({
+          id: 'new-page',
+          clientId: 'client-1',
+          nodeType: KnowledgeNodeType.PAGE,
+          title: 'Runbook',
+        }),
+      );
+      expect(JSON.stringify(payload)).not.toContain('secret body');
+    });
+
+    it('publishes knowledge_node.deleted after the node was removed', async () => {
+      const node = {
+        id: 'node-1',
+        clientId: 'client-1',
+        nodeType: KnowledgeNodeType.PAGE,
+        title: 'Old',
+        parentId: null,
+        sortOrder: 0,
+      };
+
+      (publishing as any).assertNodeReadable = jest.fn().mockResolvedValue(node);
+      nodeRepo.count.mockResolvedValueOnce(0);
+
+      await publishing.deleteNode('node-1');
+
+      expect(notificationPublisher.publishKnowledgeNode).toHaveBeenCalledWith(
+        'knowledge_node.deleted',
+        expect.objectContaining({ id: 'node-1', clientId: 'client-1', title: 'Old' }),
+      );
+    });
+  });
+
   describe('getTree with search', () => {
     const row = (id: string, nodeType: KnowledgeNodeType, parentId: string | null, title: string) => ({
       id,

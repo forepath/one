@@ -1,5 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+import type { InvoiceEntity } from '../entities/invoice.entity';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import { PaymentRefundStatus } from '../entities/payment-refund.entity';
@@ -63,7 +65,15 @@ export class WithdrawalRefundService {
     private readonly invoicePdfService: InvoicePdfService,
     private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly auditLog: BillingAuditLogService,
+    @Optional() private readonly billingNotificationPublisher?: BillingNotificationPublisher,
   ) {}
+
+  /** Webhook `invoice.paid` when a credit settles the remaining balance (not when the invoice already was paid). */
+  private publishInvoicePaidTransition(wasPaid: boolean, invoice: InvoiceEntity | null | undefined): void {
+    if (!wasPaid && invoice?.status === InvoiceStatus.PAID) {
+      this.billingNotificationPublisher?.publishInvoice('invoice.paid', invoice);
+    }
+  }
 
   async estimateRefundGross(subscription: SubscriptionEntity): Promise<number | undefined> {
     const amounts = await this.calculateRefundAmounts(subscription, new Date());
@@ -152,18 +162,21 @@ export class WithdrawalRefundService {
       }
 
       const newBalanceDue = Math.max(0, Math.round((Number(invoice.balanceDue) - creditApplied) * 100) / 100);
-
-      await this.invoicesRepository.update(invoice.id, {
+      const wasPaid = invoice.status === InvoiceStatus.PAID;
+      const updated = await this.invoicesRepository.update(invoice.id, {
         balanceDue: newBalanceDue,
         ...(newBalanceDue <= 0 ? { status: InvoiceStatus.PAID, paidAt: invoice.paidAt ?? new Date() } : {}),
       });
+
+      this.publishInvoicePaidTransition(wasPaid, updated);
     } else if (invoice.status === InvoiceStatus.ISSUED || invoice.status === InvoiceStatus.OVERDUE) {
       const newBalanceDue = Math.max(0, Math.round((Number(invoice.balanceDue) - creditApplied) * 100) / 100);
-
-      await this.invoicesRepository.update(invoice.id, {
+      const updated = await this.invoicesRepository.update(invoice.id, {
         balanceDue: newBalanceDue,
         ...(newBalanceDue <= 0 ? { status: InvoiceStatus.PAID, paidAt: invoice.paidAt ?? new Date() } : {}),
       });
+
+      this.publishInvoicePaidTransition(false, updated);
     }
 
     await this.auditLog.log({

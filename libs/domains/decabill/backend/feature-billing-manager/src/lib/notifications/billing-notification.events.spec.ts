@@ -1,8 +1,39 @@
+import { findWebhookEventCatalogViolations } from '@forepath/shared/backend';
+
 import { BILLING_NOTIFICATION_EVENTS } from './billing-notification.events';
 
 describe('BILLING_NOTIFICATION_EVENTS', () => {
   it('contains unique event type strings', () => {
     expect(new Set(BILLING_NOTIFICATION_EVENTS).size).toBe(BILLING_NOTIFICATION_EVENTS.length);
+  });
+
+  it('follows the shared webhook event naming convention', () => {
+    expect(findWebhookEventCatalogViolations(BILLING_NOTIFICATION_EVENTS)).toEqual({ invalid: [], duplicates: [] });
+  });
+
+  it('no longer exposes legacy names (renamed by UnifyBillingWebhookEventNames1793800000000)', () => {
+    for (const legacy of [
+      'payment.auto.initiated',
+      'payment.auto.retry_scheduled',
+      'payment.auto.exhausted',
+      'addon.container_manager.collection_failed',
+      'ticket.attachment.created',
+      'ticket.attachment.deleted',
+    ]) {
+      expect(BILLING_NOTIFICATION_EVENTS).not.toContain(legacy);
+    }
+  });
+
+  it('includes cross-application sync events', () => {
+    expect(BILLING_NOTIFICATION_EVENTS).toEqual(
+      expect.arrayContaining([
+        'invoice.paid',
+        'customer_profile.created',
+        'customer_profile.updated',
+        'customer_profile.deleted',
+        'supplier_creditor.allocated',
+      ]),
+    );
   });
 
   it('includes identity, project, milestone, time entry, ticket, and auto-billing events', () => {
@@ -24,8 +55,8 @@ describe('BILLING_NOTIFICATION_EVENTS', () => {
         'ticket.updated',
         'ticket.deleted',
         'ticket.comment.created',
-        'ticket.attachment.created',
-        'ticket.attachment.deleted',
+        'attachment.created',
+        'attachment.deleted',
         'datev_export.started',
         'datev_export.completed',
         'datev_export.failed',
@@ -34,9 +65,9 @@ describe('BILLING_NOTIFICATION_EVENTS', () => {
         'auto_billing.disabled',
         'payment_method.attached',
         'customer_trust.level_changed',
-        'payment.auto.initiated',
-        'payment.auto.retry_scheduled',
-        'payment.auto.exhausted',
+        'payment.auto_initiated',
+        'payment.auto_retry_scheduled',
+        'payment.auto_exhausted',
         'subscription.cancel_scheduled',
         'subscription.resumed',
         'subscription.period_charged',
@@ -47,7 +78,7 @@ describe('BILLING_NOTIFICATION_EVENTS', () => {
         'service_plan.price_recalculated',
         'subscription.price_changed',
         'addon.activated',
-        'addon.container_manager.collection_failed',
+        'addon.collection_failed',
         'meter.created',
         'meter.updated',
         'meter.deleted',

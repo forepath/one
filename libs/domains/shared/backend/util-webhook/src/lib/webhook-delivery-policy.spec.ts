@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 
-import { assertWebhookEndpointDeliveryPolicy } from './webhook-delivery-policy';
+import { assertWebhookEndpointDeliveryPolicy, isWebhookSensitiveEventType } from './webhook-delivery-policy';
 
 describe('assertWebhookEndpointDeliveryPolicy', () => {
   const originalNodeEnv = process.env.NODE_ENV;
@@ -31,5 +31,17 @@ describe('assertWebhookEndpointDeliveryPolicy', () => {
         subscribedEvents: ['chat_message.created'],
       }),
     ).toThrow('GET webhooks cannot subscribe to sensitive event types');
+  });
+
+  it.each([
+    'agent.created',
+    'agent.updated',
+    'agent.deleted',
+    'knowledge_node.created',
+    'knowledge_node.updated',
+    'knowledge_node.deleted',
+    'invoice.paid',
+  ])('treats content-bearing event %s as sensitive (no GET delivery)', (eventType) => {
+    expect(isWebhookSensitiveEventType(eventType)).toBe(true);
   });
 });

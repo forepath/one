@@ -162,6 +162,7 @@ export class CustomerProfilesAdminService {
 
     await this.customerProfilesRepository.delete(id);
     this.billingSearchIndexService.scheduleDelete('customer-profiles', id);
+    this.billingNotificationPublisher.publishCustomerProfile('customer_profile.deleted', profile);
   }
 
   async addCustomData(id: string, key: string, value: string): Promise<AdminCustomerProfileDetailDto> {

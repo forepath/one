@@ -70,4 +70,27 @@ describe('DatevCreditorAccountService', () => {
 
     expect(billingNotificationPublisher.publishCreditorRangeExhausted).toHaveBeenCalled();
   });
+
+  it('publishes supplier_creditor.allocated when a new creditor number is allocated', async () => {
+    creditorAccountsRepository.findByTenantAndSupplierId.mockResolvedValue(null);
+    creditorAccountsRepository.findMaxCreditorNumber.mockResolvedValue(70_004);
+    creditorAccountsRepository.create.mockResolvedValue({ creditorNumber: 70_005 });
+
+    const number = await service.resolveCreditorNumber('default', 'supplier-1', config);
+
+    expect(number).toBe(70_005);
+    expect(billingNotificationPublisher.publishSupplierCreditorAllocated).toHaveBeenCalledWith({
+      tenantId: 'default',
+      supplierId: 'supplier-1',
+      creditorNumber: 70_005,
+    });
+  });
+
+  it('does not publish supplier_creditor.allocated for an existing creditor number', async () => {
+    creditorAccountsRepository.findByTenantAndSupplierId.mockResolvedValue({ creditorNumber: 70_001 });
+
+    await service.resolveCreditorNumber('default', 'supplier-1', config);
+
+    expect(billingNotificationPublisher.publishSupplierCreditorAllocated).not.toHaveBeenCalled();
+  });
 });

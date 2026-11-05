@@ -35,6 +35,102 @@ describe('AgenstraNotificationPublisher', () => {
     });
   });
 
+  it('publishes agent lifecycle events without credentials or git remotes', () => {
+    const dispatcher = {
+      publishFireAndForget: jest.fn(),
+    } as unknown as NotificationDispatcherService;
+    const publisher = new AgenstraNotificationPublisher(dispatcher);
+
+    publisher.publishAgent('agent.created', 'client-1', {
+      id: 'agent-1',
+      name: 'build-agent',
+      description: 'Builds things',
+      agentType: 'opencode',
+      git: { repositoryUrl: 'https://user:token@git.example/repo.git', setupMode: 'clone' },
+      isolation: { level: 'sandboxed', runtime: 'runsc-systrap' },
+      password: 'generated-secret',
+      createdAt: new Date('2026-07-01T10:00:00.000Z'),
+      updatedAt: new Date('2026-07-01T10:00:00.000Z'),
+    } as never);
+
+    const call = (dispatcher.publishFireAndForget as jest.Mock).mock.calls[0][0];
+
+    expect(call).toEqual({
+      type: 'agent.created',
+      scopeKey: INSTANCE_SCOPE_KEY,
+      clientId: 'client-1',
+      data: {
+        id: 'agent-1',
+        clientId: 'client-1',
+        name: 'build-agent',
+        description: 'Builds things',
+        agentType: 'opencode',
+        isolationLevel: 'sandboxed',
+        createdAt: '2026-07-01T10:00:00.000Z',
+        updatedAt: '2026-07-01T10:00:00.000Z',
+      },
+    });
+    expect(JSON.stringify(call)).not.toContain('generated-secret');
+    expect(JSON.stringify(call)).not.toContain('token@');
+  });
+
+  it('publishes agent.deleted with identifiers only', () => {
+    const dispatcher = {
+      publishFireAndForget: jest.fn(),
+    } as unknown as NotificationDispatcherService;
+    const publisher = new AgenstraNotificationPublisher(dispatcher);
+
+    publisher.publishAgent('agent.deleted', 'client-1', { id: 'agent-1', clientId: 'client-1' });
+
+    expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'agent.deleted',
+        clientId: 'client-1',
+        data: expect.objectContaining({ id: 'agent-1', clientId: 'client-1', name: null }),
+      }),
+    );
+  });
+
+  it('publishes knowledge node events without page content', () => {
+    const dispatcher = {
+      publishFireAndForget: jest.fn(),
+    } as unknown as NotificationDispatcherService;
+    const publisher = new AgenstraNotificationPublisher(dispatcher);
+
+    publisher.publishKnowledgeNode('knowledge_node.updated', {
+      id: 'node-1',
+      clientId: 'client-1',
+      nodeType: 'page',
+      title: 'Runbook',
+      parentId: 'folder-1',
+      sortOrder: 2,
+      longSha: 'abc',
+      content: 'secret body',
+      createdAt: new Date('2026-07-01T10:00:00.000Z'),
+      updatedAt: new Date('2026-07-02T10:00:00.000Z'),
+    } as never);
+
+    const call = (dispatcher.publishFireAndForget as jest.Mock).mock.calls[0][0];
+
+    expect(call).toEqual({
+      type: 'knowledge_node.updated',
+      scopeKey: INSTANCE_SCOPE_KEY,
+      clientId: 'client-1',
+      data: {
+        id: 'node-1',
+        clientId: 'client-1',
+        nodeType: 'page',
+        title: 'Runbook',
+        parentId: 'folder-1',
+        sortOrder: 2,
+        longSha: 'abc',
+        createdAt: '2026-07-01T10:00:00.000Z',
+        updatedAt: '2026-07-02T10:00:00.000Z',
+      },
+    });
+    expect(JSON.stringify(call)).not.toContain('secret body');
+  });
+
   it('publishes ticket events with workspace client id', () => {
     const dispatcher = {
       publishFireAndForget: jest.fn(),
@@ -228,7 +324,7 @@ describe('AgenstraNotificationPublisher', () => {
     });
 
     expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith({
-      type: 'agent.chat.failed',
+      type: 'agent.chat_failed',
       scopeKey: INSTANCE_SCOPE_KEY,
       clientId: 'client-1',
       data: expect.objectContaining({
@@ -302,7 +398,7 @@ describe('AgenstraNotificationPublisher', () => {
     } as unknown as NotificationDispatcherService;
     const publisher = new AgenstraNotificationPublisher(dispatcher);
 
-    publisher.publishEnvironment('environment.created', 'client-1', {
+    publisher.publishEnvironmentVariable('environment_variable.created', 'client-1', {
       id: 'env-1',
       agentId: 'agent-1',
       variable: 'API_KEY',
@@ -312,7 +408,7 @@ describe('AgenstraNotificationPublisher', () => {
     });
 
     expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith({
-      type: 'environment.created',
+      type: 'environment_variable.created',
       scopeKey: INSTANCE_SCOPE_KEY,
       clientId: 'client-1',
       data: {
@@ -402,7 +498,7 @@ describe('AgenstraNotificationPublisher', () => {
       data: expect.objectContaining({ state: 'probe-failed', reasonCode: 'E_PROBE_EXEC_FAILED' }),
     });
     expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'agent.isolation_override', clientId: 'client-1' }),
+      expect.objectContaining({ type: 'agent.isolation_overridden', clientId: 'client-1' }),
     );
     expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith(
       expect.objectContaining({ type: 'agent.sandbox_creation_failed', clientId: 'client-1' }),

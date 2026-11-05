@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import type { InvoiceCreditDocumentEntity } from '../entities/invoice-credit-document.entity';
 import { InvoiceEntity } from '../entities/invoice.entity';
@@ -91,6 +92,7 @@ export class SubscriptionConfigChangeBillingService {
     private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly auditLog: BillingAuditLogService,
     private readonly dataSource: DataSource,
+    @Optional() private readonly billingNotificationPublisher?: BillingNotificationPublisher,
   ) {}
 
   async apply(params: ConfigChangeBillingParams): Promise<SubscriptionConfigChangeBillingOutcome> {
@@ -334,7 +336,9 @@ export class SubscriptionConfigChangeBillingService {
     params: PeriodPriceChangeSettlementParams,
     credit: InvoiceCreditDocumentEntity,
   ): Promise<{ appliedGross: number; carriedGross: number }> {
-    return await this.dataSource.transaction(async (manager) => {
+    // Set inside the transaction, published only once it committed.
+    const settled: { invoice?: InvoiceEntity } = {};
+    const result = await this.dataSource.transaction(async (manager) => {
       const lockedCredit = await this.invoiceCreditDocumentsRepository.findByIdForUpdate(credit.id, manager);
 
       if (!lockedCredit || lockedCredit.settlementComplete) {
@@ -349,7 +353,13 @@ export class SubscriptionConfigChangeBillingService {
 
       const creditGross = Number(lockedCredit.creditGross);
       const creditNet = Number(lockedCredit.creditNet);
+      const wasPaid = invoice.status === InvoiceStatus.PAID;
       const appliedGross = await this.applyCreditToInvoiceBalance(invoice, creditGross, manager);
+
+      if (!wasPaid && invoice.status === InvoiceStatus.PAID) {
+        settled.invoice = invoice;
+      }
+
       const carriedGross = roundMoney(creditGross - appliedGross);
 
       if (carriedGross >= MIN_BILLABLE_AMOUNT && creditGross > 0) {
@@ -374,6 +384,12 @@ export class SubscriptionConfigChangeBillingService {
 
       return { appliedGross, carriedGross };
     });
+
+    if (settled.invoice) {
+      this.billingNotificationPublisher?.publishInvoice('invoice.paid', settled.invoice);
+    }
+
+    return result;
   }
 
   /** Returns the gross amount actually taken off the invoice balance. */

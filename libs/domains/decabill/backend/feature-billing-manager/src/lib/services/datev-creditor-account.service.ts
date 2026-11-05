@@ -62,6 +62,12 @@ export class DatevCreditorAccountService {
       try {
         const created = await this.creditorAccountsRepository.create(tenantId, supplierId, next, allocationScope);
 
+        this.billingNotificationPublisher.publishSupplierCreditorAllocated({
+          tenantId,
+          supplierId,
+          creditorNumber: created.creditorNumber,
+        });
+
         return created.creditorNumber;
       } catch (error) {
         if (!isUniqueConstraintViolation(error) || attempt === MAX_ALLOCATION_ATTEMPTS - 1) {

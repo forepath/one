@@ -290,6 +290,7 @@ export class PaymentOrchestrationService {
         externalId: update.externalId,
         mode,
       });
+      this.billingNotificationPublisher.publishInvoice('invoice.paid', paid);
       incrementCounter('forepath.decabill', 'decabill.invoices.paid', {
         tenant_id: getTenantIdOrDefault(),
         payment_source: mode,

@@ -632,7 +632,7 @@ export class ContainerManagerService {
       }
 
       this.billingNotificationPublisher.publish(
-        'addon.container_manager.collection_failed',
+        'addon.collection_failed',
         {
           subscriptionId,
           itemId,

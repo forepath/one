@@ -126,6 +126,11 @@ export class InvoiceIssuanceService {
     }
 
     this.billingNotificationPublisher.publishInvoice('invoice.issued', issued);
+
+    if (isPromotionalZeroBalance) {
+      // Issued directly as paid (promotion covers the full amount).
+      this.billingNotificationPublisher.publishInvoice('invoice.paid', issued);
+    }
     this.billingSearchIndexService.scheduleUpsert(
       'invoices',
       mapInvoiceToSearchDocument(issued, getRequiredTenantId(), {

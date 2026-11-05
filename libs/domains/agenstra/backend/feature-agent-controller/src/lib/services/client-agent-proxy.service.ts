@@ -31,6 +31,7 @@ import { StatisticsEntityType } from '../entities/statistics-entity-event.entity
 import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
 import {
   matchesInMemoryListSearch,
@@ -59,6 +60,7 @@ export class ClientAgentProxyService {
     private readonly statisticsService: StatisticsService,
     private readonly searchIndex: AgenstraSearchIndexService,
     @Optional() private readonly membership?: ClientAgentMembershipService,
+    @Optional() private readonly notificationPublisher?: AgenstraNotificationPublisher,
   ) {}
 
   /** Agents of the workspace only: the manager behind it may serve other workspaces too. */
@@ -489,6 +491,7 @@ export class ClientAgentProxyService {
           userId,
         )
         .catch(() => undefined);
+      this.notificationPublisher?.publishAgent('agent.created', clientId, result);
     }
 
     return result;
@@ -526,6 +529,7 @@ export class ClientAgentProxyService {
         userId,
       )
       .catch(() => undefined);
+    this.notificationPublisher?.publishAgent('agent.updated', clientId, result);
 
     return result;
   }
@@ -544,6 +548,7 @@ export class ClientAgentProxyService {
     // Cleanup stored credentials for this client/agent pair
     await this.clientAgentCredentialsService.deleteCredentials(clientId, agentId);
     this.membership?.forget(clientId, agentId);
+    this.notificationPublisher?.publishAgent('agent.deleted', clientId, { id: agentId, clientId });
   }
 
   /**

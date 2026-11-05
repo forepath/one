@@ -102,7 +102,7 @@ sequenceDiagram
             Mgr->>Mgr: persist isolation_level + isolation_selection, recordRuntimeSuccess
             Mgr-->>Ctl: 201 AgentResponseDto (isolation)
             opt Weaker level than recommended
-                Ctl->>Pub: agent.isolation_override
+                Ctl->>Pub: agent.isolation_overridden
             end
             Ctl-->>UI: 201
         else gVisor worker or microVM failed (sandboxed, sandboxed-kvm or microvm)

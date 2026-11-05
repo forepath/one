@@ -63,8 +63,13 @@ describe('ProjectTicketAttachmentsService', () => {
       expect.objectContaining({ actionType: ProjectTicketActionType.ATTACHMENT_ADDED }),
     );
     expect(notificationPublisher.publish).toHaveBeenCalledWith(
-      'ticket.attachment.created',
-      expect.any(Object),
+      'attachment.created',
+      expect.objectContaining({
+        ownerType: 'ticket',
+        ownerId: 'ticket-1',
+        ticketId: 'ticket-1',
+        projectId: 'project-1',
+      }),
       'user-1',
     );
   });

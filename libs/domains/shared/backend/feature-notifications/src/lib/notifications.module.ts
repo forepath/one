@@ -3,7 +3,11 @@ import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
 import { EmailService, EmailTemplateRendererService } from '@forepath/shared/backend/util-email';
-import { WebhookHttpClient, WebhookSignatureService } from '@forepath/shared/backend/util-webhook';
+import {
+  WebhookHttpClient,
+  WebhookSignatureService,
+  assertWebhookEventCatalog,
+} from '@forepath/shared/backend/util-webhook';
 
 import { NOTIFICATIONS_MODULE_OPTIONS } from './constants/notification.constants';
 import { createWebhookEndpointsController } from './controllers/webhook-endpoints.controller';
@@ -24,6 +28,9 @@ import { WebhookEndpointService } from './services/webhook-endpoint.service';
 @Module({})
 export class NotificationsModule {
   static register(options: NotificationsModuleOptions): DynamicModule {
+    // Endpoint subscriptions are validated against this catalog; reject malformed / duplicate names up front.
+    assertWebhookEventCatalog(options.eventCatalog);
+
     const optionsProvider: Provider = {
       provide: NOTIFICATIONS_MODULE_OPTIONS,
       useValue: options,

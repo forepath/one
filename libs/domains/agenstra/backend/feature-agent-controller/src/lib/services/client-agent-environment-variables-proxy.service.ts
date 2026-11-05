@@ -199,7 +199,7 @@ export class ClientAgentEnvironmentVariablesProxyService {
       data: createDto,
     });
 
-    this.notificationPublisher.publishEnvironment('environment.created', clientId, created);
+    this.notificationPublisher.publishEnvironmentVariable('environment_variable.created', clientId, created);
 
     return created;
   }
@@ -224,7 +224,7 @@ export class ClientAgentEnvironmentVariablesProxyService {
       data: updateDto,
     });
 
-    this.notificationPublisher.publishEnvironment('environment.updated', clientId, updated);
+    this.notificationPublisher.publishEnvironmentVariable('environment_variable.updated', clientId, updated);
 
     return updated;
   }
@@ -241,7 +241,7 @@ export class ClientAgentEnvironmentVariablesProxyService {
       url: `/${id}`,
     });
 
-    this.notificationPublisher.publishEnvironment('environment.deleted', clientId, {
+    this.notificationPublisher.publishEnvironmentVariable('environment_variable.deleted', clientId, {
       id,
       agentId,
     });

@@ -90,7 +90,11 @@ export class ProjectTicketAttachmentsService {
       payload: { attachmentId: row.id, fileName: row.fileName, byteSize: Number(row.byteSize) },
     });
     const dto = this.toDto(row, projectId);
-    this.notificationPublisher.publish('ticket.attachment.created', { ...dto, projectId }, project.userId);
+    this.notificationPublisher.publish(
+      'attachment.created',
+      this.toNotificationPayload(dto, projectId),
+      project.userId,
+    );
     return dto;
   }
 
@@ -107,8 +111,8 @@ export class ProjectTicketAttachmentsService {
       payload: { attachmentId: row.id, fileName: row.fileName, byteSize: Number(row.byteSize) },
     });
     this.notificationPublisher.publish(
-      'ticket.attachment.deleted',
-      { ...this.toDto(row, projectId), projectId },
+      'attachment.deleted',
+      this.toNotificationPayload(this.toDto(row, projectId), projectId),
       project.userId,
     );
   }
@@ -164,6 +168,11 @@ export class ProjectTicketAttachmentsService {
       .replace(/[\0\r\n]/g, '')
       .trim();
     return (base || 'attachment').slice(0, 255);
+  }
+
+  /** Cross-application `attachment.*` payload: owner reference mirrors Agenstra (`ownerType` / `ownerId`). */
+  private toNotificationPayload(dto: ProjectTicketAttachmentResponseDto, projectId: string): Record<string, unknown> {
+    return { ...dto, projectId, ownerType: 'ticket', ownerId: dto.ticketId };
   }
 
   private toDto(row: ProjectTicketAttachmentEntity, projectId: string): ProjectTicketAttachmentResponseDto {

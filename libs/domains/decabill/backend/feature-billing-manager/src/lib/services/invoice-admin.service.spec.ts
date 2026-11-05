@@ -16,6 +16,7 @@ describe('InvoiceAdminService', () => {
   const usersRepository = { findByIdForTenant: jest.fn() };
   const customerTrustScoreService = { triggerRecomputeForUser: jest.fn() };
   const customerProfilesRepository = { findByUserIds: jest.fn() };
+  const billingNotificationPublisher = { publishInvoice: jest.fn() };
   const service = new InvoiceAdminService(
     invoicesRepository as never,
     invoiceService as never,
@@ -23,6 +24,7 @@ describe('InvoiceAdminService', () => {
     usersRepository as never,
     customerTrustScoreService as never,
     customerProfilesRepository as never,
+    billingNotificationPublisher as never,
   );
   const baseInvoice = {
     id: 'inv-1',
@@ -85,6 +87,10 @@ describe('InvoiceAdminService', () => {
       }),
     );
     expect(customerTrustScoreService.triggerRecomputeForUser).toHaveBeenCalledWith('user-1');
+    expect(billingNotificationPublisher.publishInvoice).toHaveBeenCalledWith(
+      'invoice.paid',
+      expect.objectContaining({ id: 'inv-1', status: InvoiceStatus.PAID }),
+    );
   });
 
   it('markPaidManual rejects invalid status', async () => {
