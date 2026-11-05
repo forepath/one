@@ -46,7 +46,7 @@ Checkout payments also set `setup_future_usage=off_session` so successful Checko
 | `in_progress` / `retrying`                                    | Blocked                        |
 | `scheduled` / `exhausted` / `canceled` / `idle` / `succeeded` | Allowed when otherwise payable |
 
-**Retries:** max 3 attempts, immediate, then +1 day, then +3 days (`BILLING_AUTO_PAYMENT_RETRY_DELAY_1_MS`, `BILLING_AUTO_PAYMENT_RETRY_DELAY_2_MS`). Pending / SCA off-session results stay `in_progress` with a safety `autoPaymentNextRetryAt` (`BILLING_AUTO_PAYMENT_PENDING_SAFETY_DELAY_MS`, default 15 minutes); after that window the coordinator releases them to `retrying`. After exhaustion, `payment.auto.exhausted` is published and manual pay unlocks.
+**Retries:** max 3 attempts, immediate, then +1 day, then +3 days (`BILLING_AUTO_PAYMENT_RETRY_DELAY_1_MS`, `BILLING_AUTO_PAYMENT_RETRY_DELAY_2_MS`). Pending / SCA off-session results stay `in_progress` with a safety `autoPaymentNextRetryAt` (`BILLING_AUTO_PAYMENT_PENDING_SAFETY_DELAY_MS`, default 15 minutes); after that window the coordinator releases them to `retrying`. After exhaustion, `payment.auto_exhausted` is published and manual pay unlocks.
 
 **Jobs:** `invoice-auto-payment.coordinator` / `.unit` (interval `INVOICE_AUTO_PAYMENT_SCHEDULER_INTERVAL`, default 60s). Claims use an optimistic `UPDATE … WHERE status IN (scheduled, retrying)`.
 
@@ -58,10 +58,10 @@ Admin mark-paid / mark-unpaid remain available as operational overrides.
 | ------------------------------------------------ | ---------------------------------- |
 | `auto_billing.enabled` / `auto_billing.disabled` | Toggle                             |
 | `payment_method.attached`                        | Setup or Checkout captures PM      |
-| `payment.auto.initiated`                         | Off-session charge started         |
+| `payment.auto_initiated`                         | Off-session charge started         |
 | `payment.succeeded` / `payment.failed`           | With `mode: auto\|checkout`        |
-| `payment.auto.retry_scheduled`                   | Retry queued                       |
-| `payment.auto.exhausted`                         | Final failure; manual pay unlocked |
+| `payment.auto_retry_scheduled`                   | Retry queued                       |
+| `payment.auto_exhausted`                         | Final failure; manual pay unlocked |
 
 Duplicate Checkout / sync success paths short-circuit when the invoice is already paid (no second email). Checkout `payment_intent.*` webhooks are ignored; only `mode: auto` PaymentIntents use that path.
 

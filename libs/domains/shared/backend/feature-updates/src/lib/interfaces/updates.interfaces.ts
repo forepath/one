@@ -78,7 +78,23 @@ export interface UpdateCheckTriggerResult {
   enqueuedAt: string;
 }
 
-export type UpdatesPublishNotification = (type: string, data: Record<string, unknown>) => void;
+/**
+ * Application update webhook event types. Shared by every product; domain catalogs spread this in
+ * (same idea as `IDENTITY_NOTIFICATION_EVENTS`).
+ */
+export const APPLICATION_NOTIFICATION_EVENTS = [
+  'application.update_available',
+  'application.update_check_failed',
+  'application.instance_outdated',
+  'application.dependency_health_changed',
+] as const;
+
+export type ApplicationNotificationEventType = (typeof APPLICATION_NOTIFICATION_EVENTS)[number];
+
+export type UpdatesPublishNotification = (
+  type: ApplicationNotificationEventType,
+  data: Record<string, unknown>,
+) => void;
 
 export interface GitHubLatestRelease {
   tagName: string;

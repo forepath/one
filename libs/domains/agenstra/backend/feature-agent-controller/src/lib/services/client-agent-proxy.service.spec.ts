@@ -12,6 +12,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import axios, { AxiosError } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
 
 import { ClientAgentProxyService } from './client-agent-proxy.service';
@@ -82,6 +83,9 @@ describe('ClientAgentProxyService', () => {
     isEnabled: jest.fn().mockReturnValue(false),
     searchIds: jest.fn(),
   };
+  const mockNotificationPublisher = {
+    publishAgent: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -106,6 +110,10 @@ describe('ClientAgentProxyService', () => {
         {
           provide: AgenstraSearchIndexService,
           useValue: mockSearchIndex,
+        },
+        {
+          provide: AgenstraNotificationPublisher,
+          useValue: mockNotificationPublisher,
         },
       ],
     }).compile();
@@ -447,6 +455,11 @@ describe('ClientAgentProxyService', () => {
         mockCreateAgentResponse.id,
         mockCreateAgentResponse.password,
       );
+      expect(mockNotificationPublisher.publishAgent).toHaveBeenCalledWith(
+        'agent.created',
+        'client-uuid',
+        mockCreateAgentResponse,
+      );
     });
     it('should forward gitRepositorySetupMode when creating an agent', async () => {
       const createDto: CreateAgentDto = {
@@ -499,6 +512,11 @@ describe('ClientAgentProxyService', () => {
           data: updateDto,
         }),
       );
+      expect(mockNotificationPublisher.publishAgent).toHaveBeenCalledWith(
+        'agent.updated',
+        'client-uuid',
+        mockAgentResponse,
+      );
     });
   });
 
@@ -527,6 +545,10 @@ describe('ClientAgentProxyService', () => {
       };
 
       expect(credentialsService.deleteCredentials).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+      expect(mockNotificationPublisher.publishAgent).toHaveBeenCalledWith('agent.deleted', 'client-uuid', {
+        id: 'agent-uuid',
+        clientId: 'client-uuid',
+      });
     });
   });
 

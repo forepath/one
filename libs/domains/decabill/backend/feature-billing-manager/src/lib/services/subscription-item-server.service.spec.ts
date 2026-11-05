@@ -445,11 +445,15 @@ describe('SubscriptionItemServerService', () => {
 
       expect(subscriptionItemsRepository.updateDisplayName).toHaveBeenCalledWith('item-1', 'My Service');
       expect(result.displayName).toBe('My Service');
-      expect(billingNotificationPublisher.publish).toHaveBeenCalledWith('subscription.service.renamed', {
-        subscriptionId: 'sub-1',
-        itemId: 'item-1',
-        displayName: 'My Service',
-      });
+      expect(billingNotificationPublisher.publish).toHaveBeenCalledWith(
+        'subscription.service.renamed',
+        {
+          subscriptionId: 'sub-1',
+          itemId: 'item-1',
+          displayName: 'My Service',
+        },
+        'user-1',
+      );
     });
 
     it('clears display name for empty strings', async () => {
@@ -569,6 +573,30 @@ describe('SubscriptionItemServerService', () => {
 
     beforeEach(() => {
       subscriptionItemsRepository.findByIdAndSubscriptionId.mockResolvedValue(provisionedItem);
+    });
+
+    it('routes admin power-action webhooks to the subscription owner, not the acting admin', async () => {
+      await service.startServerAsAdmin('sub-1', 'item-1', 'admin-1');
+      await service.stopServerAsAdmin('sub-1', 'item-1', 'admin-1');
+      await service.restartServerAsAdmin('sub-1', 'item-1', 'admin-1');
+
+      for (const type of [
+        'subscription.service.started',
+        'subscription.service.stopped',
+        'subscription.service.restarted',
+      ]) {
+        expect(billingNotificationPublisher.publish).toHaveBeenCalledWith(
+          type,
+          { subscriptionId: 'sub-1', itemId: 'item-1' },
+          'user-1',
+        );
+      }
+
+      expect(billingNotificationPublisher.publish).not.toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        'admin-1',
+      );
     });
 
     it('publishes started notification after startServer', async () => {

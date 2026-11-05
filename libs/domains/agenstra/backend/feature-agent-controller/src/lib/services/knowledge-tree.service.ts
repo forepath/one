@@ -14,10 +14,12 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import {
   CreateKnowledgeNodeDto,
   KnowledgePageActivityResponseDto,
@@ -91,7 +93,26 @@ export class KnowledgeTreeService {
     private readonly searchIndex: AgenstraSearchIndexService,
     @Inject(forwardRef(() => ExternalImportSyncMarkerService))
     private readonly externalImportSyncMarkerService: ExternalImportSyncMarkerService,
+    @Optional() private readonly notificationPublisher?: AgenstraNotificationPublisher,
   ) {}
+
+  /** Webhook: knowledge node lifecycle (metadata only; page content is never included). */
+  private publishNodeEvent(
+    type: 'knowledge_node.created' | 'knowledge_node.updated' | 'knowledge_node.deleted',
+    node: KnowledgeNodeEntity,
+  ): void {
+    this.notificationPublisher?.publishKnowledgeNode(type, {
+      id: node.id,
+      clientId: node.clientId,
+      nodeType: node.nodeType,
+      title: node.title,
+      parentId: node.parentId ?? null,
+      sortOrder: node.sortOrder,
+      longSha: node.longSha ?? null,
+      createdAt: node.createdAt,
+      updatedAt: node.updatedAt,
+    });
+  }
 
   private async assertClientAccess(clientId: string, req?: ContentPrincipal): Promise<void> {
     if (isAgentContentWriter(req)) {
@@ -352,6 +373,7 @@ export class KnowledgeTreeService {
     const saved = await this.knowledgeNodeRepo.save(created);
 
     this.emitKnowledgeTreeChanged(saved.clientId);
+    this.publishNodeEvent('knowledge_node.created', saved);
 
     if (saved.nodeType === KnowledgeNodeType.PAGE) {
       await this.knowledgeEmbeddingIndexService.reindexPage(saved.clientId, saved.id, saved.title, saved.content ?? '');
@@ -517,6 +539,7 @@ export class KnowledgeTreeService {
     const saved = await this.knowledgeNodeRepo.save(node);
 
     this.emitKnowledgeTreeChanged(saved.clientId);
+    this.publishNodeEvent('knowledge_node.updated', saved);
 
     if (saved.nodeType === KnowledgeNodeType.PAGE) {
       await this.knowledgeEmbeddingIndexService.reindexPage(saved.clientId, saved.id, saved.title, saved.content ?? '');
@@ -562,6 +585,7 @@ export class KnowledgeTreeService {
     const saved = await this.knowledgeNodeRepo.save(node);
 
     this.emitKnowledgeTreeChanged(saved.clientId);
+    this.publishNodeEvent('knowledge_node.updated', saved);
 
     if (saved.nodeType === KnowledgeNodeType.PAGE) {
       await this.appendPageActivity(
@@ -595,6 +619,7 @@ export class KnowledgeTreeService {
     await this.knowledgeEmbeddingIndexService.deleteForNode(node.id);
     void this.searchIndex.deleteSafe('knowledge-nodes', node.id);
     this.emitKnowledgeTreeChanged(node.clientId);
+    this.publishNodeEvent('knowledge_node.deleted', node);
   }
 
   /**
@@ -657,6 +682,7 @@ export class KnowledgeTreeService {
       const saved = await this.knowledgeNodeRepo.save(node);
 
       this.emitKnowledgeTreeChanged(saved.clientId);
+      this.publishNodeEvent('knowledge_node.updated', saved);
       await this.knowledgeEmbeddingIndexService.reindexPage(saved.clientId, saved.id, saved.title, saved.content ?? '');
 
       if (before.parentId !== (saved.parentId ?? null)) {
@@ -702,6 +728,7 @@ export class KnowledgeTreeService {
     const saved = await this.knowledgeNodeRepo.save(created);
 
     this.emitKnowledgeTreeChanged(saved.clientId);
+    this.publishNodeEvent('knowledge_node.created', saved);
     await this.knowledgeEmbeddingIndexService.reindexPage(saved.clientId, saved.id, saved.title, saved.content ?? '');
     await this.appendPageActivity(
       saved.id,
@@ -757,6 +784,7 @@ export class KnowledgeTreeService {
       const saved = await this.knowledgeNodeRepo.save(node);
 
       this.emitKnowledgeTreeChanged(saved.clientId);
+      this.publishNodeEvent('knowledge_node.updated', saved);
 
       return await this.mapNode(saved);
     }
@@ -777,6 +805,7 @@ export class KnowledgeTreeService {
     const saved = await this.knowledgeNodeRepo.save(created);
 
     this.emitKnowledgeTreeChanged(saved.clientId);
+    this.publishNodeEvent('knowledge_node.created', saved);
 
     return await this.mapNode(saved);
   }
@@ -988,6 +1017,7 @@ export class KnowledgeTreeService {
 
       cloned.longSha = KnowledgeNodeEntity.deriveLongSha(cloned.id);
       const saved = await this.knowledgeNodeRepo.save(cloned);
+      this.publishNodeEvent('knowledge_node.created', saved);
       const children = byParent.get(source.id) ?? [];
 
       for (const child of children) {

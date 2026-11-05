@@ -2746,7 +2746,7 @@ paths:
         When omitted, the recommended (strongest ready) level is used. Explicit levels are never replaced by
         another level, stale `capabilityRevision` values are rejected, and the selection record (including
         the selecting user) is derived server-side. Choosing a weaker level than recommended publishes
-        `agent.isolation_override`; a gVisor (`sandboxed` / `sandboxed-kvm`) or microVM (`microvm`) container that
+        `agent.isolation_overridden`; a gVisor (`sandboxed` / `sandboxed-kvm`) or microVM (`microvm`) container that
         fails to start
         publishes `agent.sandbox_creation_failed` and is not retried on another runtime.
       operationId: createClientAgent

@@ -66,7 +66,7 @@ Operator-facing notification events (controller notification bus / webhooks). Fo
 | ------------------------- | ----------------------------------------------------- |
 | `agent.session_failed`    | Agent session failure (`AGENT_SESSION_FAILED`)        |
 | `agent.permission_denied` | Permission request denied (`AGENT_PERMISSION_DENIED`) |
-| `agent.chat.failed`       | Generic chat turn failure (`CHAT_ERROR`)              |
+| `agent.chat_failed`       | Generic chat turn failure (`CHAT_ERROR`)              |
 
 Streaming token deltas are not notified.
 

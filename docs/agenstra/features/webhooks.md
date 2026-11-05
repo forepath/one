@@ -12,6 +12,30 @@ Outbound webhook notifications let instance administrators register HTTPS endpoi
 
 Same as Decabill: `none`, `authorization`, `custom_header`, or `query_param` (GET only). Deliveries include `Forepath-Signature` HMAC headers.
 
+## Event naming
+
+Event types follow one convention across all Forepath applications (Stripe / Standard Webhooks style, see [Webhook event naming](../../forepath/features/webhook-events.md)). The notification module checks it at startup:
+
+- `<resource>.<action>`, for example `ticket.created`, `agent.deleted`
+- `<resource>.<child>.<action>` only when `<child>` is a dependent record with its own id, for example `ticket.comment.created`, `search.document.sync_failed`
+- Lowercase `snake_case` segments, two or three segments in total
+- `<resource>` is the singular form of the matching PAT scope resource (`tickets:read` → `ticket.*`, `agents:read` → `agent.*`, `knowledge:read` → `knowledge_node.*`)
+- `<action>` is a past-tense verb (`created`, `updated`, `deleted`, `failed`) or the resulting state (`available`). Attribute changes use `<noun>_<verb>` (`chat_failed`, `isolation_overridden`)
+- Modes, kinds and plugin keys are never a segment. They are payload fields (`ownerType`, `level`, `mode`)
+- The same concept uses the same event type in every application. Identity (`user.*`), application updates (`application.*`), search (`search.*`), tickets (`ticket.*`, `ticket.comment.created`) and attachments (`attachment.*`) are shared with Decabill.
+
+### Renamed events
+
+Migration `UnifyAgenstraWebhookEventNames1793800000000` rewrites stored endpoint subscriptions and the delivery log. Receivers that switch on `type` must accept the new names:
+
+| Previous                                                            | Current                                                                                        |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `agent.chat.failed`                                                 | `agent.chat_failed`                                                                            |
+| `agent.isolation_override`                                          | `agent.isolation_overridden`                                                                   |
+| `environment.created`, `environment.updated`, `environment.deleted` | `environment_variable.created`, `environment_variable.updated`, `environment_variable.deleted` |
+
+In Agenstra, "environment" means the agent environment itself. The old `environment.*` events described environment **variables**, so they were renamed.
+
 ## Event envelope
 
 ```json
@@ -35,10 +59,21 @@ Events are published from the **agent-controller** service after proxied operati
 - `client.created`, `client.updated`, `client.deleted`
 - `ticket.created`, `ticket.updated`, `ticket.deleted`
 - `ticket.comment.created`
+- `attachment.created`, `attachment.deleted`: a file was attached to or removed from a ticket, knowledge page or chat (`ownerType` is `ticket`, `knowledge_page` or `chat`)
+- `knowledge_node.created`, `knowledge_node.updated`, `knowledge_node.deleted`: a knowledge folder or page was created, changed (title, parent, order, content) or deleted. This includes external imports and duplicates. Page `content` is never included
 
 **Subtasks:** Subtasks are tickets with a `parentId`. Adding a subtask publishes `ticket.created` (payload includes `parentId`). Removing a subtask publishes `ticket.deleted`. Reparenting publishes `ticket.updated` with the new `parentId`. The parent ticket does **not** receive a separate event when children change.
 
 **Comments:** Adding a comment publishes `ticket.comment.created`. Comments cannot be updated or deleted via the API, so there are no update/delete comment events.
+
+### Agents (environments)
+
+- `agent.created`, `agent.updated`, `agent.deleted`: an agent environment was created, updated or deleted through the controller
+- `agent.session_failed`: the agent runtime session failed
+- `agent.permission_denied`: the agent was denied a permission
+- `agent.chat_failed`: a chat turn failed (`CHAT_ERROR`)
+
+Agent payloads never include the generated agent password, git remote URLs or chat contents.
 
 ### Chat, filters and egress
 
@@ -59,14 +94,14 @@ Events are published from the **agent-controller** service after proxied operati
 - `isolation.microvm_available`, the microvm (KVM microVM) isolation level of a workspace host became ready
 - `isolation.microvm_unavailable`, the microvm level of a workspace host was ready and is not anymore (probe failed, KVM or microVM image unavailable, or disabled)
 - `isolation.baseline_failed`, the standard (`runc`) baseline of a workspace host failed; the host cannot run environments
-- `agent.isolation_override`, an environment was created with a weaker isolation level than recommended (confirmed user choice)
+- `agent.isolation_overridden`, an environment was created with a weaker isolation level than recommended (confirmed user choice)
 - `agent.sandbox_creation_failed`, a sandboxed, sandboxed-kvm or microvm environment could not be started (never retried on a weaker runtime)
 
 Host transitions are detected against the controller's last stored capability snapshot and published once per transition. See [Container Isolation Levels](./container-isolation.md).
 
 ### Agent environment variables
 
-- `environment.created`, `environment.updated`, `environment.deleted`
+- `environment_variable.created`, `environment_variable.updated`, `environment_variable.deleted`
 
 Environment payloads include variable **name** and metadata only; secret **values are never included**.
 
@@ -86,6 +121,13 @@ Webhook-only (no email). Emitted by the agent-controller update-check job and in
 
 See [Application updates](./application-updates.md).
 
+### Search index
+
+- `search.reindex.started`, `search.reindex.completed`, `search.reindex.failed`: the OpenSearch reindex coordinator ran (`failed` also fires per failed batch, with `entityType` and `offset`)
+- `search.document.sync_failed`: a single document could not be written to or removed from the index (`entityType`, `id`, `action`, `error`, `failedAt`)
+
+These events are instance-wide (no `client_id`).
+
 ## Payload examples
 
 ### `ticket.comment.created`
@@ -101,6 +143,58 @@ See [Application updates](./application-updates.md).
 ```
 
 Author email is never included. Ticket body `content` is never included on ticket lifecycle events.
+
+### `agent.created` / `agent.updated` / `agent.deleted`
+
+```json
+{
+  "id": "agent-uuid",
+  "clientId": "client-uuid",
+  "name": "build-agent",
+  "description": "Builds the frontend",
+  "agentType": "opencode",
+  "isolationLevel": "sandboxed",
+  "createdAt": "2026-07-01T10:00:00.000Z",
+  "updatedAt": "2026-07-01T10:00:00.000Z"
+}
+```
+
+`agent.deleted` carries `id` and `clientId`. The other fields are `null`.
+
+### `knowledge_node.created` / `knowledge_node.updated` / `knowledge_node.deleted`
+
+```json
+{
+  "id": "node-uuid",
+  "clientId": "client-uuid",
+  "nodeType": "page",
+  "title": "Deploy runbook",
+  "parentId": "folder-uuid",
+  "sortOrder": 2,
+  "longSha": "4f1c...",
+  "createdAt": "2026-07-01T10:00:00.000Z",
+  "updatedAt": "2026-07-02T10:00:00.000Z"
+}
+```
+
+`nodeType` is `folder` or `page`. Fetch the page through the knowledge API (`knowledge:read`) when you need its content.
+
+### `attachment.created` / `attachment.deleted`
+
+```json
+{
+  "id": "attachment-uuid",
+  "clientId": "client-uuid",
+  "ownerType": "ticket",
+  "ownerId": "ticket-uuid",
+  "fileName": "trace.log",
+  "contentType": "text/plain",
+  "byteSize": 2048,
+  "contentSha256": "9f86d0...",
+  "createdByUserId": "user-uuid",
+  "createdAt": "2026-07-01T10:00:00.000Z"
+}
+```
 
 ### `chat_message.created`
 
@@ -217,7 +311,7 @@ Values are never included, only the changed root keys. Global-layer saves carry 
 
 `level` is `sandboxed` (`runtime` `runsc-systrap`) for `isolation.sandbox_available` / `_unavailable`, `sandboxed-kvm` (`runtime` `runsc-kvm`) for `isolation.sandbox_kvm_available` / `_unavailable`, `microvm` (`runtime` `runc`, the launcher container) for `isolation.microvm_available` / `_unavailable` and `standard` for `isolation.baseline_failed` (then `recommendedLevel` is `null`). `previousState` is `null` for the first observation of a workspace host. `reasonCode` is `null` when the level is `ready`.
 
-### `agent.isolation_override`
+### `agent.isolation_overridden`
 
 ```json
 {
@@ -244,7 +338,7 @@ Values are never included, only the changed root keys. Global-layer saves carry 
 
 For a sandboxed-kvm environment `isolationLevel` is `sandboxed-kvm`, `runtime` is `runsc-kvm` and `error` starts with `The sandboxed-kvm (gVisor on KVM) container could not be started: ...`. For a microvm environment `isolationLevel` is `microvm`, `runtime` is `runc` and `error` starts with `The microvm (KVM microVM) container could not be started: ...`. No `agentId` is included because the environment was not created. `error` is truncated to 500 characters.
 
-### `environment.created` / `environment.updated` / `environment.deleted`
+### `environment_variable.created` / `environment_variable.updated` / `environment_variable.deleted`
 
 ```json
 {
@@ -257,6 +351,10 @@ For a sandboxed-kvm environment `isolationLevel` is `sandboxed-kvm`, `runtime` i
 ```
 
 Delete events may omit `variable` and timestamps when only identifiers are available.
+
+## GET endpoints
+
+Endpoints that use `GET` receive the event as query parameters. They cannot subscribe to events that carry user content or personal data: chat, filter, egress decision, user, membership, ticket, comment, agent and knowledge node events.
 
 ## Delivery and retries
 

@@ -60,7 +60,7 @@ On-demand REST collection (containers, logs, networks) runs as `root` on port 22
 2. Run read-only Docker CLI (`docker ps`, `docker stats --no-stream`, `docker logs --timestamps --tail`, `docker network ls` / `inspect`)
 3. For the network map, also run read-only host networking (`ip -j addr`, `ip -j route`) when available; merge host interfaces, default gateway, and an `internet` egress node into the Docker topology (fail soft to Docker-only if `ip` is unavailable)
 4. Parse NDJSON / JSON / log text into DTOs; cap log payload size for the UI
-5. On failure, return a generic client error and publish `addon.container_manager.collection_failed`
+5. On failure, return a generic client error and publish `addon.collection_failed`
 
 The worker collect-stats path reuses the same docker `ps` + `stats --no-stream` parsing, writes samples, and publishes the same webhook on SSH failure (it does not throw to HTTP clients).
 
@@ -84,9 +84,9 @@ Primary delivery is **REST polling** from the Container Manager tab. AsyncAPI do
 
 ## Notifications
 
-| Event                                       | Channel            | When                                     |
-| ------------------------------------------- | ------------------ | ---------------------------------------- |
-| `addon.container_manager.collection_failed` | Webhook (no email) | SSH/Docker collection failed for an item |
+| Event                     | Channel            | When                                     |
+| ------------------------- | ------------------ | ---------------------------------------- |
+| `addon.collection_failed` | Webhook (no email) | SSH/Docker collection failed for an item |
 
 Payload includes subscription/plan/addon identifiers, `itemId`, and a generic `errorMessage`. Config snapshots and secrets are never included. See [Webhooks](./webhooks.md).
 

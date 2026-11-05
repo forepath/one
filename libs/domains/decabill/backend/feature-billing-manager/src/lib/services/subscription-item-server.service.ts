@@ -258,8 +258,8 @@ export class SubscriptionItemServerService {
     this.billingNotificationPublisher.publish('subscription.service.restarted', { subscriptionId, itemId }, userId);
   }
 
-  async startServerAsAdmin(subscriptionId: string, itemId: string, adminUserId: string): Promise<void> {
-    const item = await this.resolveItemForAdminAction(subscriptionId, itemId);
+  async startServerAsAdmin(subscriptionId: string, itemId: string, _adminUserId: string): Promise<void> {
+    const { item, ownerUserId } = await this.resolveItemForAdminAction(subscriptionId, itemId);
 
     await this.provisioningDispatchService.startServer(
       item.serviceType!.provider!,
@@ -267,11 +267,11 @@ export class SubscriptionItemServerService {
       getProvisioningCredentials(item.serviceType!.provider!, item.serviceType!.providerDefaults),
     );
 
-    this.billingNotificationPublisher.publish('subscription.service.started', { subscriptionId, itemId }, adminUserId);
+    this.billingNotificationPublisher.publish('subscription.service.started', { subscriptionId, itemId }, ownerUserId);
   }
 
-  async stopServerAsAdmin(subscriptionId: string, itemId: string, adminUserId: string): Promise<void> {
-    const item = await this.resolveItemForAdminAction(subscriptionId, itemId);
+  async stopServerAsAdmin(subscriptionId: string, itemId: string, _adminUserId: string): Promise<void> {
+    const { item, ownerUserId } = await this.resolveItemForAdminAction(subscriptionId, itemId);
 
     await this.provisioningDispatchService.stopServer(
       item.serviceType!.provider!,
@@ -279,11 +279,11 @@ export class SubscriptionItemServerService {
       getProvisioningCredentials(item.serviceType!.provider!, item.serviceType!.providerDefaults),
     );
 
-    this.billingNotificationPublisher.publish('subscription.service.stopped', { subscriptionId, itemId }, adminUserId);
+    this.billingNotificationPublisher.publish('subscription.service.stopped', { subscriptionId, itemId }, ownerUserId);
   }
 
-  async restartServerAsAdmin(subscriptionId: string, itemId: string, adminUserId: string): Promise<void> {
-    const item = await this.resolveItemForAdminAction(subscriptionId, itemId);
+  async restartServerAsAdmin(subscriptionId: string, itemId: string, _adminUserId: string): Promise<void> {
+    const { item, ownerUserId } = await this.resolveItemForAdminAction(subscriptionId, itemId);
 
     await this.provisioningDispatchService.restartServer(
       item.serviceType!.provider!,
@@ -294,7 +294,7 @@ export class SubscriptionItemServerService {
     this.billingNotificationPublisher.publish(
       'subscription.service.restarted',
       { subscriptionId, itemId },
-      adminUserId,
+      ownerUserId,
     );
   }
 
@@ -421,12 +421,15 @@ export class SubscriptionItemServerService {
     const normalized = this.normalizeDisplayName(displayName);
     await this.subscriptionItemsRepository.updateDisplayName(itemId, normalized);
 
-    // TODO: replace with dedicated publisher helper when subscription service rename notifications are wired end-to-end.
-    this.billingNotificationPublisher.publish('subscription.service.renamed', {
-      subscriptionId,
-      itemId,
-      displayName: normalized,
-    });
+    this.billingNotificationPublisher.publish(
+      'subscription.service.renamed',
+      {
+        subscriptionId,
+        itemId,
+        displayName: normalized,
+      },
+      subscription.userId,
+    );
 
     const refreshed = await this.subscriptionItemsRepository.findByIdAndSubscriptionId(itemId, subscriptionId);
 
@@ -517,7 +520,7 @@ export class SubscriptionItemServerService {
   private async resolveItemForAction(subscriptionId: string, itemId: string, userId: string) {
     await this.subscriptionService.getSubscription(subscriptionId, userId);
 
-    return await this.resolveItemForAdminAction(subscriptionId, itemId);
+    return (await this.resolveItemForAdminAction(subscriptionId, itemId)).item;
   }
 
   private async resolveItemForAdminAction(subscriptionId: string, itemId: string) {
@@ -539,7 +542,8 @@ export class SubscriptionItemServerService {
       throw new BadRequestException('Service type has no provider');
     }
 
-    return item;
+    // Webhook `client_id` is the subscription owner (customer), never the acting admin.
+    return { item, ownerUserId: subscription.userId };
   }
 
   private assertProvisioned(providerReference: string | undefined, status: ProvisioningStatus): void {

@@ -16,3 +16,4 @@ export {
   type OpenSearchSearchParams,
   type OpenSearchSearchResult,
 } from './lib/opensearch.types';
+export { SEARCH_NOTIFICATION_EVENTS, type SearchNotificationEventType } from './lib/search-notification.events';

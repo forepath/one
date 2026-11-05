@@ -29,6 +29,7 @@ describe('AutoBillingService', () => {
   const billingNotificationPublisher = {
     publish: jest.fn(),
     publishPayment: jest.fn(),
+    publishInvoice: jest.fn(),
   };
   const billingEmailPublisher = {
     publishPaymentSucceeded: jest.fn(),
@@ -243,6 +244,10 @@ describe('AutoBillingService', () => {
       expect.any(Object),
       expect.objectContaining({ mode: 'auto' }),
     );
+    expect(billingNotificationPublisher.publishInvoice).toHaveBeenCalledWith(
+      'invoice.paid',
+      expect.objectContaining({ id: 'inv-1', status: InvoiceStatus.PAID }),
+    );
   });
 
   it('defers auto-payment with a future nextRetryAt when profile becomes incomplete', async () => {
@@ -405,7 +410,7 @@ describe('AutoBillingService', () => {
     await service.attemptAutoPayment('inv-1');
 
     expect(billingNotificationPublisher.publish).toHaveBeenCalledWith(
-      'payment.auto.retry_scheduled',
+      'payment.auto_retry_scheduled',
       expect.objectContaining({ invoiceId: 'inv-1' }),
       'u1',
     );

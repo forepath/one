@@ -1,6 +1,7 @@
 import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import type {
   AdminInvoiceListItemDto,
@@ -28,6 +29,7 @@ export class InvoiceAdminService {
     private readonly usersRepository: UsersRepository,
     private readonly customerTrustScoreService: CustomerTrustScoreService,
     @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
+    @Optional() private readonly billingNotificationPublisher?: BillingNotificationPublisher,
   ) {}
 
   async listInvoices(params: {
@@ -107,6 +109,7 @@ export class InvoiceAdminService {
         adminUserId,
       },
     });
+    this.billingNotificationPublisher?.publishInvoice('invoice.paid', updated);
 
     this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
 

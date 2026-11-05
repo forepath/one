@@ -3,6 +3,7 @@ import { INSTANCE_SCOPE_KEY, NotificationDispatcherService } from '@forepath/sha
 import { Injectable } from '@nestjs/common';
 
 import type {
+  AgentResponseDto,
   ChatSessionResponseDto,
   EnvironmentVariableResponseDto,
 } from '@forepath/agenstra/backend/feature-agent-manager';
@@ -148,6 +149,30 @@ export type ChatSessionNotificationPayload = {
   updatedAt?: string | Date | null;
 };
 
+/** Agent (environment) lifecycle payload. Credentials, git remotes and chat contents are never included. */
+export type AgentNotificationPayload = {
+  id: string;
+  clientId: string;
+  name?: string | null;
+  description?: string | null;
+  agentType?: string | null;
+  isolationLevel?: string | null;
+  createdAt?: string | Date | null;
+  updatedAt?: string | Date | null;
+};
+
+export type KnowledgeNodeNotificationPayload = {
+  id: string;
+  clientId: string;
+  nodeType: string;
+  title: string;
+  parentId?: string | null;
+  sortOrder?: number | null;
+  longSha?: string | null;
+  createdAt?: string | Date | null;
+  updatedAt?: string | Date | null;
+};
+
 export type TicketCommentNotificationPayload = {
   id: string;
   ticketId: string;
@@ -174,6 +199,26 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
     client: ClientEntity | ClientResponseDto,
   ): void {
     this.publish(type, this.toClientPayload(client), client.id);
+  }
+
+  /**
+   * Agent (environment) lifecycle. Explicit allowlist: the create response also carries the generated agent
+   * password, which must never reach a webhook payload.
+   */
+  publishAgent(
+    type: 'agent.created' | 'agent.updated' | 'agent.deleted',
+    clientId: string,
+    agent: AgentResponseDto | AgentNotificationPayload,
+  ): void {
+    this.publish(type, this.toAgentPayload(clientId, agent), clientId);
+  }
+
+  /** Knowledge tree node (folder / page) lifecycle. Page `content` is never included. */
+  publishKnowledgeNode(
+    type: 'knowledge_node.created' | 'knowledge_node.updated' | 'knowledge_node.deleted',
+    node: KnowledgeNodeNotificationPayload,
+  ): void {
+    this.publish(type, this.toKnowledgeNodePayload(node), node.clientId);
   }
 
   publishTicket(type: 'ticket.created' | 'ticket.updated' | 'ticket.deleted', ticket: TicketResponseDto): void {
@@ -207,7 +252,7 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
     clientId: string,
     payload: { agentId: string; message?: string | null; code?: string | null },
   ): void {
-    this.publish('agent.chat.failed', payload, clientId);
+    this.publish('agent.chat_failed', payload, clientId);
   }
 
   publishMessageFilterTriggered(clientId: string, payload: MessageFilterTriggeredNotificationPayload): void {
@@ -248,15 +293,15 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
   }
 
   publishAgentIsolationOverride(clientId: string, payload: AgentIsolationOverrideNotificationPayload): void {
-    this.publish('agent.isolation_override', payload, clientId);
+    this.publish('agent.isolation_overridden', payload, clientId);
   }
 
   publishAgentSandboxCreationFailed(clientId: string, payload: AgentSandboxCreationFailedNotificationPayload): void {
     this.publish('agent.sandbox_creation_failed', payload, clientId);
   }
 
-  publishEnvironment(
-    type: 'environment.created' | 'environment.updated' | 'environment.deleted',
+  publishEnvironmentVariable(
+    type: 'environment_variable.created' | 'environment_variable.updated' | 'environment_variable.deleted',
     clientId: string,
     environment: EnvironmentVariableResponseDto | EnvironmentNotificationPayload,
   ): void {
@@ -300,6 +345,43 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
       authenticationType: client.authenticationType,
       createdAt: client.createdAt instanceof Date ? client.createdAt.toISOString() : client.createdAt,
       updatedAt: client.updatedAt instanceof Date ? client.updatedAt.toISOString() : client.updatedAt,
+    };
+  }
+
+  private toAgentPayload(
+    clientId: string,
+    agent: AgentResponseDto | AgentNotificationPayload,
+  ): Record<string, unknown> {
+    const isolationLevel =
+      'isolationLevel' in agent
+        ? (agent.isolationLevel ?? null)
+        : 'isolation' in agent
+          ? (agent.isolation?.level ?? null)
+          : null;
+
+    return {
+      id: agent.id,
+      clientId,
+      name: agent.name ?? null,
+      description: agent.description ?? null,
+      agentType: agent.agentType ?? null,
+      isolationLevel,
+      createdAt: this.toIsoString(agent.createdAt),
+      updatedAt: this.toIsoString(agent.updatedAt),
+    };
+  }
+
+  private toKnowledgeNodePayload(node: KnowledgeNodeNotificationPayload): Record<string, unknown> {
+    return {
+      id: node.id,
+      clientId: node.clientId,
+      nodeType: node.nodeType,
+      title: node.title,
+      parentId: node.parentId ?? null,
+      sortOrder: node.sortOrder ?? null,
+      longSha: node.longSha ?? null,
+      createdAt: this.toIsoString(node.createdAt),
+      updatedAt: this.toIsoString(node.updatedAt),
     };
   }
 

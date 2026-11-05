@@ -21,6 +21,30 @@ Each endpoint supports:
 
 Forepath also signs each delivery with HMAC-SHA256 in the `Forepath-Signature` header.
 
+## Event naming
+
+Event types follow one convention across all Forepath applications (Stripe / Standard Webhooks style, see [Webhook event naming](../../forepath/features/webhook-events.md)). The notification module checks it at startup:
+
+- `<resource>.<action>`, for example `invoice.paid`, `project.created`
+- `<resource>.<child>.<action>` only when `<child>` is a dependent record with its own id, for example `ticket.comment.created`, `offer.line.fulfilled`, `subscription.service.started`
+- Lowercase `snake_case` segments, two or three segments in total
+- `<resource>` is the singular form of the matching PAT scope resource (`invoices:read` → `invoice.*`, `customer_profile:read` → `customer_profile.*`, `attachments:read` → `attachment.*`)
+- `<action>` is a past-tense verb (`created`, `updated`, `deleted`, `paid`, `failed`) or the resulting state (`exhausted`). Attribute and relationship changes use `<noun>_<verb>` (`meter_attached`, `level_changed`, `auto_initiated`)
+- Modes, kinds and plugin keys are never a segment. They are payload fields (`mode`, `addonKey`, `ownerType`)
+- The same concept uses the same event type in every application. Identity (`user.*`), application updates (`application.*`), search (`search.*`), tickets (`ticket.*`, `ticket.comment.created`) and attachments (`attachment.*`) are shared with Agenstra.
+
+### Renamed events
+
+Migration `UnifyBillingWebhookEventNames1793800000000` rewrites stored endpoint subscriptions and the delivery log. Receivers that switch on `type` must accept the new names:
+
+| Previous                                                 | Current                                                                                       |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `payment.auto.initiated`                                 | `payment.auto_initiated`                                                                      |
+| `payment.auto.retry_scheduled`                           | `payment.auto_retry_scheduled`                                                                |
+| `payment.auto.exhausted`                                 | `payment.auto_exhausted`                                                                      |
+| `addon.container_manager.collection_failed`              | `addon.collection_failed` (the addon is identified by `addonKey`)                             |
+| `ticket.attachment.created`, `ticket.attachment.deleted` | `attachment.created`, `attachment.deleted` (payload adds `ownerType: "ticket"` and `ownerId`) |
+
 ## Event envelope
 
 ```json
@@ -46,13 +70,15 @@ Events are published from the **billing** service after successful mutations.
 ### Billing and subscriptions
 
 - `invoice.created`, `invoice.issued`, `invoice.voided`
+- `invoice.paid`: the invoice was fully settled by a checkout or auto payment, an admin marking it paid, a credit that covers the remaining balance, or issuance of a zero-balance (fully discounted) invoice (payload includes `paidAt`)
 - `offer.created`, `offer.updated`, `offer.archived`, `offer.revoked`, `offer.accepted`, `offer.declined`, `offer.expired`, `offer.line.fulfilled`, `offer.line.fulfillment_failed` (see [Offers](./offers.md))
 - `invoice.tax_mode_applied` (non-domestic tax modes at issue time)
 - `payment.initiated`, `payment.succeeded`, `payment.failed`
-- `payment.auto.initiated`, `payment.auto.retry_scheduled`, `payment.auto.exhausted`
+- `payment.auto_initiated`, `payment.auto_retry_scheduled`, `payment.auto_exhausted`
 - `auto_billing.enabled`, `auto_billing.disabled`
 - `payment_method.attached`
 - `customer_trust.level_changed`
+- `customer_profile.created`, `customer_profile.updated`, `customer_profile.deleted`: identifiers only (`profileId`, `userId`, `customerNumber`)
 - `customer_profile.custom_data_added`, `customer_profile.custom_data_updated`, `customer_profile.custom_data_deleted`
 - `supplier_profile.created`, `supplier_profile.updated`, `supplier_profile.deleted`
 - `supplier_profile.custom_data_added`, `supplier_profile.custom_data_updated`, `supplier_profile.custom_data_deleted`
@@ -65,10 +91,14 @@ Events are published from the **billing** service after successful mutations.
 - `subscription.provisioned`, `subscription.provision_failed` (itemId plus hostname/service/providerReference or errorMessage; never secrets)
 - `subscription.ssh_access_granted` (metadata only: subscription/item ids, hostname, grantedAt — never the private key)
 - `addon.activated`, `addon.deactivated`, `addon.provision_failed`, `addon.teardown_failed`
-- `addon.container_manager.collection_failed` (webhook-only; no email — Container Manager SSH/Docker collection failed)
+- `addon.collection_failed` (webhook-only; no email — Container Manager SSH/Docker collection failed)
 - `meter.created`, `meter.updated`, `meter.deleted`
 - `service_plan.meter_attached`, `service_plan.meter_updated`, `service_plan.meter_detached`
 - `addon.meter_attached`, `addon.meter_updated`, `addon.meter_detached`
+- `service_type.meter_attached`, `service_type.meter_updated`, `service_type.meter_detached`
+- `service_type.allowed_providers_changed`, `service_plan.allowed_providers_changed` (see [Customer provider selection](./customer-provider-selection.md))
+- `service_plan.price_recalculated`, `subscription.price_changed` (see [Automatic price recalculation](./automatic-price-recalculation.md))
+- `subscription.service.renamed`, `subscription.service.started`, `subscription.service.stopped`, `subscription.service.restarted`, `subscription.service.removed` (see [Service details](./service-details.md))
 - `usage.recorded`, `usage.updated`, `usage.deleted` (high volume; no email)
 
 `subscription.period_charged` may include `meterCharges[]` (`meterId`, `attachmentType`, optional `addonId`, `aggregatedValue`, `effectiveIncludedUsage`, `billableValue`, charge amounts). Meter catalog and attachment events include `defaultIncludedUsage` / `includedUsage` where applicable. See [Usage meters](./usage-meters.md).
@@ -77,7 +107,7 @@ Plans with `serviceTypeId: null` (billing-only, no deployment) do not emit `subs
 
 Addon payloads include subscription id/number, plan id/name, addon id/key/name, and status timestamps. Config snapshots and secrets are never included. See [Addons](./addons.md).
 
-`addon.container_manager.collection_failed` also includes `itemId` and a generic `errorMessage` (never Docker stdout or SSH material). See [Container Manager](./container-manager.md).
+`addon.collection_failed` also includes `itemId` and a generic `errorMessage` (never Docker stdout or SSH material). See [Container Manager](./container-manager.md).
 
 Config-change payloads carry the subscription payload plus `configChangeId`, `appliedSteps` (step keys such as `serverType` or `addonAdd:<addonId>`), `billingOutcome` (`none` | `charged` | `credited` | `deferred`), and `errorCode`. The requested payload is never included because addon configuration can hold credentials.
 
@@ -87,13 +117,17 @@ Admin instant cancel (like statutory withdrawal accept) emits `subscription.upda
 
 Payment success/failure payloads may include `mode` (`checkout` | `auto`). Auto-billing events are documented in [Auto-Billing](./auto-billing.md).
 `customer_trust.level_changed` only includes identifiers plus level and score metadata; it never includes billing-profile address fields or other PII.
-`customer_profile.custom_data_*` events include `profileId`, `userId`, and `key` only — custom data values are never included in webhook payloads.
+`customer_profile.created` / `updated` / `deleted` never include address, contact or tax fields. Fetch the profile through the API (`customer_profile:read`) when you need them. `customer_profile.updated` fires for customer self-service and admin edits. `customer_profile.custom_data_*` events include `profileId`, `userId`, and `key` only — custom data values are never included in webhook payloads.
 
 `supplier_profile.*` and `supplier_invoice.*` events are tenant-scoped admin operations; `client_id` is omitted. Custom data values are never included. See [Supplier profiles](./supplier-profiles.md) and [Supplier invoices](./supplier-invoices.md).
 
-`supplier_creditor.allocated` includes `tenantId`, `supplierId`, `profileId`, `supplierNumber`, and `creditorNumber` (no address fields).
+`supplier_creditor.allocated` fires when DATEV export assigns a new creditor account to a supplier. It includes `tenantId`, `supplierId` and `creditorNumber` (no address fields).
 
 `supplier_profile.custom_data_*` events include `profileId` and `key` only (no values).
+
+### Identity
+
+- `user.created`, `user.updated`, `user.deleted` (shared identity events, same names as Agenstra; `client_id` is omitted)
 
 ### Projects
 
@@ -111,12 +145,18 @@ Payment success/failure payloads may include `mode` (`checkout` | `auto`). Auto-
 
 - `ticket.created`, `ticket.updated`, `ticket.deleted`
 - `ticket.comment.created`
+- `attachment.created`, `attachment.deleted`: payload carries `ownerType: "ticket"`, `ownerId` (ticket id), `ticketId`, `projectId`, `fileName`, `contentType`, `byteSize` and `createdByUserId`
 
 Ticket payloads include metadata only; full ticket body content is not included in webhook events.
 
 **Subtasks:** Subtasks are tickets with a `parentId`. Adding a subtask publishes `ticket.created` (with `parentId`). Removing a subtask publishes `ticket.deleted`. Reparenting publishes `ticket.updated`. The parent ticket does not receive a separate event when children change.
 
 **Comments:** Adding a comment publishes `ticket.comment.created`. There is no comment update/delete API, so no corresponding webhook events.
+
+### Search index
+
+- `search.reindex.started`, `search.reindex.completed`, `search.reindex.failed`: the OpenSearch reindex for a tenant started, finished or failed (`tenantId`, `entityTypes`, timestamps; `failed` carries `error`, `message` is kept for compatibility)
+- `search.document.sync_failed`: a single document could not be written to or removed from the index (`tenantId`, `entityType`, `id`, `action`, `error`, `failedAt`)
 
 ### DATEV exports
 
@@ -267,6 +307,10 @@ User email is never included.
   "allocationScope": "__shared__"
 }
 ```
+
+## GET endpoints
+
+Endpoints that use `GET` receive the event as query parameters. They cannot subscribe to events that carry personal or financial data: `user.*`, `ticket.created|updated|deleted`, `ticket.comment.created`, `payment.initiated|succeeded|failed`, `invoice.created|issued|voided|paid` and `subscription.created|updated|canceled`.
 
 ## Delivery and retries
 

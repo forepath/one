@@ -15,6 +15,16 @@ Optional Prometheus metrics scrape and OTLP export for the communication service
 - HTTP Basic auth for scrapers
 - Chatwoot configuration health gauge
 
+### [Webhook event naming](./webhook-events.md)
+
+Naming convention for outbound webhook event types shared by Agenstra and Decabill, shared event groups, cross-application events and the rename history.
+
+**Key capabilities:**
+
+- `<resource>[.<child>].<action>` convention (Stripe / Standard Webhooks style), enforced at bootstrap
+- Shared identity, application-update and search event groups
+- Same event names for the same concept across applications (cross-application syncs)
+
 ### [Blog](./blog.md)
 
 Marketing blog pages on the ForePath landing site, fed by the Ghost Content API at `blog.forepath.io`.

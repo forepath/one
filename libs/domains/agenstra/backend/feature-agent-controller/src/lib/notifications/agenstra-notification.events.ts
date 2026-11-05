@@ -1,5 +1,10 @@
 import { IDENTITY_NOTIFICATION_EVENTS } from '@forepath/identity/backend';
+import { APPLICATION_NOTIFICATION_EVENTS, SEARCH_NOTIFICATION_EVENTS } from '@forepath/shared/backend';
 
+/**
+ * Agenstra webhook event catalog. Names follow the shared convention (`WEBHOOK_EVENT_TYPE_PATTERN`,
+ * `<resource>[.<child>].<action>`); renames need a `webhook_endpoints.subscribed_events` migration.
+ */
 export const AGENSTRA_NOTIFICATION_EVENTS = [
   ...IDENTITY_NOTIFICATION_EVENTS,
   'client.created',
@@ -11,10 +16,16 @@ export const AGENSTRA_NOTIFICATION_EVENTS = [
   'ticket.comment.created',
   'attachment.created',
   'attachment.deleted',
+  'knowledge_node.created',
+  'knowledge_node.updated',
+  'knowledge_node.deleted',
   'chat_message.created',
+  'agent.created',
+  'agent.updated',
+  'agent.deleted',
   'agent.session_failed',
   'agent.permission_denied',
-  'agent.chat.failed',
+  'agent.chat_failed',
   'message_filter.triggered',
   'agent_config.updated',
   'egress.blocked',
@@ -29,24 +40,18 @@ export const AGENSTRA_NOTIFICATION_EVENTS = [
   'isolation.microvm_available',
   'isolation.microvm_unavailable',
   'isolation.baseline_failed',
-  'agent.isolation_override',
+  'agent.isolation_overridden',
   'agent.sandbox_creation_failed',
-  'environment.created',
-  'environment.updated',
-  'environment.deleted',
+  'environment_variable.created',
+  'environment_variable.updated',
+  'environment_variable.deleted',
   'chat_session.created',
   'chat_session.updated',
   'chat_session.deleted',
   'client_user.created',
   'client_user.deleted',
-  'application.update_available',
-  'application.update_check_failed',
-  'application.instance_outdated',
-  'application.dependency_health_changed',
-  'search.reindex.started',
-  'search.reindex.completed',
-  'search.reindex.failed',
-  'search.document.sync_failed',
+  ...APPLICATION_NOTIFICATION_EVENTS,
+  ...SEARCH_NOTIFICATION_EVENTS,
 ] as const;
 
 export type AgenstraNotificationEventType = (typeof AGENSTRA_NOTIFICATION_EVENTS)[number];

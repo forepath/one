@@ -50,6 +50,59 @@ describe('BillingNotificationPublisher', () => {
     });
   });
 
+  it('publishes invoice.paid with paidAt', () => {
+    const dispatcher = {
+      publishFireAndForget: jest.fn(),
+    } as unknown as NotificationDispatcherService;
+    const publisher = new BillingNotificationPublisher(dispatcher);
+
+    publisher.publishInvoice('invoice.paid', {
+      id: 'inv-1',
+      userId: 'user-1',
+      status: InvoiceStatus.PAID,
+      currency: 'EUR',
+      totalGross: 100,
+      balanceDue: 0,
+      paidAt: new Date('2026-07-03T10:00:00.000Z'),
+      createdAt: new Date('2026-07-01T10:00:00.000Z'),
+    } as InvoiceEntity);
+
+    expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'invoice.paid',
+        clientId: 'user-1',
+        data: expect.objectContaining({ id: 'inv-1', status: InvoiceStatus.PAID, paidAt: '2026-07-03T10:00:00.000Z' }),
+      }),
+    );
+  });
+
+  it('publishes customer profile lifecycle events with identifiers only', () => {
+    const dispatcher = {
+      publishFireAndForget: jest.fn(),
+    } as unknown as NotificationDispatcherService;
+    const publisher = new BillingNotificationPublisher(dispatcher);
+
+    publisher.publishCustomerProfile('customer_profile.updated', {
+      id: 'profile-1',
+      userId: 'user-1',
+      customerNumber: 'C-1001',
+      email: 'jane@example.com',
+      addressLine1: 'Main Street 1',
+    } as never);
+
+    const call = (dispatcher.publishFireAndForget as jest.Mock).mock.calls[0][0];
+
+    expect(call).toEqual(
+      expect.objectContaining({
+        type: 'customer_profile.updated',
+        clientId: 'user-1',
+        data: { profileId: 'profile-1', userId: 'user-1', customerNumber: 'C-1001' },
+      }),
+    );
+    expect(JSON.stringify(call)).not.toContain('jane@example.com');
+    expect(JSON.stringify(call)).not.toContain('Main Street');
+  });
+
   it('publishes subscription events with serialized dates', () => {
     const dispatcher = {
       publishFireAndForget: jest.fn(),

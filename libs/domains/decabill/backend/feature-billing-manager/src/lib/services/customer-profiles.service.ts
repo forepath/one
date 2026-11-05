@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 
 import { CustomerType } from '../constants/customer-type.constants';
 import { VatIdValidationStatus } from '../constants/vat-id-validation.constants';
 import type { CustomerProfileDto } from '../dto/customer-profile.dto';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { CustomerNumberSequencesRepository } from '../repositories/customer-number-sequences.repository';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { normalizeVatId } from '../utils/vat-id.utils';
@@ -46,6 +47,7 @@ export class CustomerProfilesService {
     private readonly customerProfilesRepository: CustomerProfilesRepository,
     private readonly customerNumberSequencesRepository: CustomerNumberSequencesRepository,
     private readonly vatIdValidationService: VatIdValidationService,
+    @Optional() private readonly billingNotificationPublisher?: BillingNotificationPublisher,
   ) {}
 
   /**
@@ -73,7 +75,11 @@ export class CustomerProfilesService {
 
     if (existing) {
       const updated = await this.customerProfilesRepository.update(existing.id, prepared);
-      return await this.applyVatValidationIfNeeded(updated, existing, prepared);
+      const result = await this.applyVatValidationIfNeeded(updated, existing, prepared);
+
+      this.billingNotificationPublisher?.publishCustomerProfile('customer_profile.updated', result);
+
+      return result;
     }
 
     const allocated = await this.customerNumberSequencesRepository.nextCustomerNumber();
@@ -85,7 +91,11 @@ export class CustomerProfilesService {
       vatIdValidationStatus: prepared.vatIdValidationStatus ?? VatIdValidationStatus.NONE,
     });
 
-    return await this.applyVatValidationIfNeeded(created, null, prepared);
+    const result = await this.applyVatValidationIfNeeded(created, null, prepared);
+
+    this.billingNotificationPublisher?.publishCustomerProfile('customer_profile.created', result);
+
+    return result;
   }
 
   async revalidateVatId(userId: string): Promise<CustomerProfileEntity> {

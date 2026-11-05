@@ -2,6 +2,7 @@ import { IIdentityNotificationPublisher } from '@forepath/identity/backend';
 import { getTenantIdOrDefault, NotificationDispatcherService } from '@forepath/shared/backend';
 import { Injectable } from '@nestjs/common';
 
+import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import type { OfferEntity } from '../offers/entities/offer.entity';
 import type { OfferLineItemEntity } from '../offers/entities/offer-line-item.entity';
@@ -142,7 +143,10 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
     // Decabill does not use client-user membership webhooks.
   }
 
-  publishInvoice(type: 'invoice.created' | 'invoice.issued' | 'invoice.voided', invoice: InvoiceEntity): void {
+  publishInvoice(
+    type: 'invoice.created' | 'invoice.issued' | 'invoice.voided' | 'invoice.paid',
+    invoice: InvoiceEntity,
+  ): void {
     this.publish(type, this.toInvoicePayload(invoice), invoice.userId);
   }
 
@@ -459,6 +463,21 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
     });
   }
 
+  /**
+   * Customer profile lifecycle. Identifiers only (same as `customer_profile.custom_data_*`): address, contact and tax
+   * fields are PII and never part of the payload; consumers fetch the profile via the API (`customer_profile:*`).
+   */
+  publishCustomerProfile(
+    type: 'customer_profile.created' | 'customer_profile.updated' | 'customer_profile.deleted',
+    profile: Pick<CustomerProfileEntity, 'id' | 'userId'> & { customerNumber?: string | null },
+  ): void {
+    this.publish(
+      type,
+      { profileId: profile.id, userId: profile.userId, customerNumber: profile.customerNumber ?? null },
+      profile.userId,
+    );
+  }
+
   publishSupplierProfileCreated(payload: { profileId: string; supplierNumber: string }): void {
     this.publish('supplier_profile.created', payload);
   }
@@ -620,6 +639,7 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
       balanceDue: Number(invoice.balanceDue),
       issuedAt: invoice.issuedAt?.toISOString() ?? null,
       voidedAt: invoice.voidedAt?.toISOString() ?? null,
+      paidAt: invoice.paidAt?.toISOString() ?? null,
       createdAt: invoice.createdAt.toISOString(),
     };
   }

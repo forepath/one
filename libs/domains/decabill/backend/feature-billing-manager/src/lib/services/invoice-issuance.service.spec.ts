@@ -69,6 +69,12 @@ describe('InvoiceIssuanceService', () => {
     recordCrossBorderB2cNet: jest.fn(),
   };
   const billingSearchIndexService = { scheduleUpsert: jest.fn(), scheduleDelete: jest.fn() };
+  const billingNotificationPublisher = {
+    publishInvoice: jest.fn(),
+    publishPayment: jest.fn(),
+    publishSubscription: jest.fn(),
+    publish: jest.fn(),
+  };
   const service = new InvoiceIssuanceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -80,12 +86,7 @@ describe('InvoiceIssuanceService', () => {
     invoicePdfService as never,
     billingEmailPublisher as never,
     auditLog as never,
-    {
-      publishInvoice: jest.fn(),
-      publishPayment: jest.fn(),
-      publishSubscription: jest.fn(),
-      publish: jest.fn(),
-    } as never,
+    billingNotificationPublisher as never,
     {
       scheduleIfEligible: jest.fn(),
     } as never,
@@ -258,6 +259,31 @@ describe('InvoiceIssuanceService', () => {
       }),
     );
     expect(result.pdfStorageKey).toBe('manual/user-1/inv-1.pdf');
+  });
+
+  it('publishes invoice.paid when a promotional zero-balance invoice is issued as paid', async () => {
+    invoicesRepository.findByIdOrThrow.mockResolvedValue({ ...draftInvoice, balanceDue: 0 } as InvoiceEntity);
+    invoicesRepository.update.mockReset();
+    let stored = { ...draftInvoice, balanceDue: 0 } as InvoiceEntity;
+
+    invoicesRepository.update.mockImplementation(async (_id: string, patch: Partial<InvoiceEntity>) => {
+      stored = { ...stored, ...patch } as InvoiceEntity;
+
+      return stored;
+    });
+
+    await service.issueDraft('inv-1');
+
+    expect(billingNotificationPublisher.publishInvoice).toHaveBeenCalledWith(
+      'invoice.paid',
+      expect.objectContaining({ id: 'inv-1', status: InvoiceStatus.PAID }),
+    );
+  });
+
+  it('does not publish invoice.paid for a regular issued invoice', async () => {
+    await service.issueDraft('inv-1');
+
+    expect(billingNotificationPublisher.publishInvoice).not.toHaveBeenCalledWith('invoice.paid', expect.anything());
   });
 
   it('skips invoice email when skipNotification is set', async () => {

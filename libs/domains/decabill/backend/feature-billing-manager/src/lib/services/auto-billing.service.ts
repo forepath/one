@@ -359,7 +359,7 @@ export class AutoBillingService {
     const tenantId = getTenantIdOrDefault();
 
     this.billingNotificationPublisher.publish(
-      'payment.auto.initiated',
+      'payment.auto_initiated',
       {
         invoiceId: claimed.id,
         userId: claimed.userId,
@@ -472,7 +472,7 @@ export class AutoBillingService {
 
     if (willRetry && nextRetryAt) {
       this.billingNotificationPublisher.publish(
-        'payment.auto.retry_scheduled',
+        'payment.auto_retry_scheduled',
         {
           invoiceId: invoice.id,
           userId: invoice.userId,
@@ -486,7 +486,7 @@ export class AutoBillingService {
     }
 
     this.billingNotificationPublisher.publish(
-      'payment.auto.exhausted',
+      'payment.auto_exhausted',
       {
         invoiceId: invoice.id,
         userId: invoice.userId,
@@ -555,6 +555,7 @@ export class AutoBillingService {
       externalId,
       mode: 'auto',
     });
+    this.billingNotificationPublisher.publishInvoice('invoice.paid', paid);
     this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
     await this.billingEmailPublisher.publishPaymentSucceeded(paid, {
       processor: processorType,

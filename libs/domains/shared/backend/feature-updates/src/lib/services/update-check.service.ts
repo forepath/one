@@ -4,6 +4,7 @@ import { enqueueUnitJob, buildJobId } from '@forepath/shared/backend/util-queue'
 
 import { UPDATE_CHECK_JOB_NAME, UPDATES_MODULE_OPTIONS } from '../constants/updates.constants';
 import type {
+  ApplicationNotificationEventType,
   ReleaseSnapshot,
   ServiceInstanceRecord,
   UpdateCheckJobMeta,
@@ -169,7 +170,7 @@ export class UpdateCheckService {
     );
   }
 
-  private publishNotification(type: string, data: Record<string, unknown>): void {
+  private publishNotification(type: ApplicationNotificationEventType, data: Record<string, unknown>): void {
     this.options.publishNotification?.(type, data);
   }
 }

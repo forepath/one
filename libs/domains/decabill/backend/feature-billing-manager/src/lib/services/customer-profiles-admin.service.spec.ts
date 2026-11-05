@@ -25,7 +25,7 @@ describe('CustomerProfilesAdminService', () => {
     getSummaryForProfileId: jest.fn(),
     recomputeForProfileId: jest.fn(),
   };
-  const billingNotificationPublisher = { publish: jest.fn() };
+  const billingNotificationPublisher = { publish: jest.fn(), publishCustomerProfile: jest.fn() };
   const datevDebtorAccountsRepository = { findByTenantAndUserId: jest.fn() };
   const billingSearchIndexService = { scheduleUpsert: jest.fn(), scheduleDelete: jest.fn() };
   const offerProfileSummaryService = {
@@ -113,6 +113,10 @@ describe('CustomerProfilesAdminService', () => {
     await service.delete('profile-1');
 
     expect(customerProfilesRepository.delete).toHaveBeenCalledWith('profile-1');
+    expect(billingNotificationPublisher.publishCustomerProfile).toHaveBeenCalledWith(
+      'customer_profile.deleted',
+      profile,
+    );
   });
 
   it('list maps profiles with user emails', async () => {

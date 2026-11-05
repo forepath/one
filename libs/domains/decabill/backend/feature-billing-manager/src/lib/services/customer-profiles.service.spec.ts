@@ -104,6 +104,36 @@ describe('CustomerProfilesService', () => {
     );
   });
 
+  it('publishes customer_profile.created on create and customer_profile.updated on update', async () => {
+    const notificationPublisher = { publishCustomerProfile: jest.fn() };
+    const existing = createCompleteProfile();
+    const repository = {
+      findByUserId: jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(existing),
+      create: jest.fn().mockResolvedValue({ id: 'p1', userId: 'user-1', customerNumber: 'CUS-000001' }),
+      update: jest.fn().mockResolvedValue({ ...existing, firstName: 'Jane' }),
+    } as any;
+    const service = new CustomerProfilesService(
+      repository,
+      customerNumberSequencesRepository as never,
+      vatIdValidationService as never,
+      notificationPublisher as never,
+    );
+
+    await service.upsert('user-1', { firstName: 'Jane' });
+    await service.upsert('user-1', { firstName: 'Jane' });
+
+    expect(notificationPublisher.publishCustomerProfile).toHaveBeenNthCalledWith(
+      1,
+      'customer_profile.created',
+      expect.objectContaining({ id: 'p1', userId: 'user-1' }),
+    );
+    expect(notificationPublisher.publishCustomerProfile).toHaveBeenNthCalledWith(
+      2,
+      'customer_profile.updated',
+      expect.objectContaining({ id: existing.id }),
+    );
+  });
+
   it('infers business customer type from company and validates VAT on create', async () => {
     const repository = {
       findByUserId: jest.fn().mockResolvedValue(null),

@@ -41,6 +41,7 @@ export class SearchReindexJobHandler {
     this.billingNotificationPublisher.publish('search.reindex.started', {
       tenantId,
       entityTypes: this.listEntityTypes(),
+      startedAt: new Date().toISOString(),
     });
   }
 
@@ -48,6 +49,8 @@ export class SearchReindexJobHandler {
     this.billingNotificationPublisher.publish('search.reindex.completed', {
       tenantId,
       entityTypeCount,
+      entityTypes: this.listEntityTypes(),
+      completedAt: new Date().toISOString(),
     });
   }
 
@@ -55,6 +58,8 @@ export class SearchReindexJobHandler {
     this.billingNotificationPublisher.publish('search.reindex.failed', {
       tenantId,
       message,
+      error: message,
+      failedAt: new Date().toISOString(),
     });
   }
 
@@ -77,23 +82,35 @@ export class SearchReindexJobHandler {
   }
 
   async processSyncUnit(payload: SearchIndexSyncUnitPayload): Promise<void> {
-    if (payload.action === 'delete') {
-      await this.billingSearchIndexService.delete(payload.entityType, payload.id);
+    try {
+      if (payload.action === 'delete') {
+        await this.billingSearchIndexService.delete(payload.entityType, payload.id);
 
-      return;
+        return;
+      }
+
+      if (!payload.document || typeof payload.document['id'] !== 'string') {
+        this.logger.warn(`search-index-sync.unit missing document for ${payload.entityType}/${payload.id}`);
+
+        return;
+      }
+
+      await this.billingSearchIndexService.upsert(payload.entityType, {
+        ...(payload.document as { id: string; tenantId: string; entityType: BillingSearchEntityType }),
+        id: payload.id,
+        tenantId: payload.tenantId,
+        entityType: payload.entityType,
+      });
+    } catch (error) {
+      this.billingNotificationPublisher.publish('search.document.sync_failed', {
+        tenantId: payload.tenantId,
+        entityType: payload.entityType,
+        id: payload.id,
+        action: payload.action,
+        error: (error as Error).message,
+        failedAt: new Date().toISOString(),
+      });
+      throw error;
     }
-
-    if (!payload.document || typeof payload.document['id'] !== 'string') {
-      this.logger.warn(`search-index-sync.unit missing document for ${payload.entityType}/${payload.id}`);
-
-      return;
-    }
-
-    await this.billingSearchIndexService.upsert(payload.entityType, {
-      ...(payload.document as { id: string; tenantId: string; entityType: BillingSearchEntityType }),
-      id: payload.id,
-      tenantId: payload.tenantId,
-      entityType: payload.entityType,
-    });
   }
 }

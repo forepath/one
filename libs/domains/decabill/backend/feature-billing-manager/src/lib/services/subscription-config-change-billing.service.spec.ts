@@ -1,3 +1,4 @@
+import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 
 import {
@@ -80,6 +81,7 @@ describe('SubscriptionConfigChangeBillingService', () => {
   const invoicePdfService = { generatePartialCreditDocumentAndStore: jest.fn() };
   const billingEmailPublisher = { publishPartialCreditDocument: jest.fn() };
   const auditLog = { log: jest.fn() };
+  const billingNotificationPublisher = { publishInvoice: jest.fn() };
   const managerInvoiceSave = jest.fn(async (entity: unknown) => entity);
   const managerMock = {
     getRepository: jest.fn(() => ({
@@ -104,6 +106,7 @@ describe('SubscriptionConfigChangeBillingService', () => {
     billingEmailPublisher as never,
     auditLog as never,
     dataSource as never,
+    billingNotificationPublisher as never,
   );
 
   const subscription = {
@@ -267,6 +270,57 @@ describe('SubscriptionConfigChangeBillingService', () => {
     expect(managerInvoiceSave).toHaveBeenCalledWith(expect.objectContaining({ id: 'inv-1', balanceDue: 20 }));
     expect(billingEmailPublisher.publishPartialCreditDocument).toHaveBeenCalled();
     expect(openPositionsRepository.createUniqueBySourceRef).not.toHaveBeenCalled();
+    // Balance remains open: no settlement webhook.
+    expect(billingNotificationPublisher.publishInvoice).not.toHaveBeenCalled();
+  });
+
+  it('publishes invoice.paid after commit when the partial credit settles the remaining balance', async () => {
+    openPositionsRepository.hasUnbilledPeriodChargeForSubscription.mockResolvedValue(false);
+    invoicesRepository.findLatestBillableBySubscription.mockResolvedValue({
+      id: 'inv-1',
+      invoiceNumber: 'INV-1',
+      balanceDue: '10.00',
+      currency: 'EUR',
+      createdAt: PERIOD_START,
+      issuedAt: PERIOD_START,
+    });
+    invoicesRepository.findByIdForUpdate.mockResolvedValue({
+      id: 'inv-1',
+      invoiceNumber: 'INV-1',
+      status: InvoiceStatus.ISSUED,
+      balanceDue: '10.00',
+      currency: 'EUR',
+      createdAt: PERIOD_START,
+      issuedAt: PERIOD_START,
+    });
+
+    let committed = false;
+
+    dataSource.transaction.mockImplementationOnce(async (callback) => {
+      const result = await callback(managerMock);
+
+      expect(billingNotificationPublisher.publishInvoice).not.toHaveBeenCalled();
+      committed = true;
+
+      return result;
+    });
+
+    await service.apply({
+      subscription: subscription as never,
+      plan: buildPlan(true) as never,
+      change: buildChange({
+        currentPeriodNet: 100,
+        periodDeltaNet: -20,
+        immediateAdjustmentNet: -10,
+      }) as never,
+      changedAt: CHANGED_AT,
+    });
+
+    expect(committed).toBe(true);
+    expect(billingNotificationPublisher.publishInvoice).toHaveBeenCalledWith(
+      'invoice.paid',
+      expect.objectContaining({ id: 'inv-1', status: InvoiceStatus.PAID, balanceDue: 0 }),
+    );
   });
 
   it('skips re-settlement when a billed open position already marks the change', async () => {

@@ -1,3 +1,5 @@
+import { findWebhookEventCatalogViolations } from '@forepath/shared/backend';
+
 import { AGENSTRA_NOTIFICATION_EVENTS } from './agenstra-notification.events';
 
 describe('AGENSTRA_NOTIFICATION_EVENTS', () => {
@@ -8,6 +10,36 @@ describe('AGENSTRA_NOTIFICATION_EVENTS', () => {
         'filter_rule.updated',
         'filter_rule.deleted',
         'filter_rule.triggered',
+      ]),
+    );
+  });
+
+  it('follows the shared webhook event naming convention', () => {
+    expect(findWebhookEventCatalogViolations(AGENSTRA_NOTIFICATION_EVENTS)).toEqual({ invalid: [], duplicates: [] });
+  });
+
+  it('no longer exposes legacy names (renamed by UnifyAgenstraWebhookEventNames1793800000000)', () => {
+    for (const legacy of [
+      'agent.chat.failed',
+      'agent.isolation_override',
+      'environment.created',
+      'environment.updated',
+      'environment.deleted',
+    ]) {
+      expect(AGENSTRA_NOTIFICATION_EVENTS).not.toContain(legacy);
+    }
+  });
+
+  it('includes agent and knowledge node lifecycle events', () => {
+    expect(AGENSTRA_NOTIFICATION_EVENTS).toEqual(
+      expect.arrayContaining([
+        'agent.created',
+        'agent.updated',
+        'agent.deleted',
+        'knowledge_node.created',
+        'knowledge_node.updated',
+        'knowledge_node.deleted',
+        'search.document.sync_failed',
       ]),
     );
   });
@@ -27,7 +59,7 @@ describe('AGENSTRA_NOTIFICATION_EVENTS', () => {
         'chat_message.created',
         'agent.session_failed',
         'agent.permission_denied',
-        'agent.chat.failed',
+        'agent.chat_failed',
         'message_filter.triggered',
         'agent_config.updated',
         'egress.blocked',
@@ -38,11 +70,11 @@ describe('AGENSTRA_NOTIFICATION_EVENTS', () => {
         'isolation.sandbox_available',
         'isolation.sandbox_unavailable',
         'isolation.baseline_failed',
-        'agent.isolation_override',
+        'agent.isolation_overridden',
         'agent.sandbox_creation_failed',
-        'environment.created',
-        'environment.updated',
-        'environment.deleted',
+        'environment_variable.created',
+        'environment_variable.updated',
+        'environment_variable.deleted',
         'chat_session.created',
         'chat_session.updated',
         'chat_session.deleted',

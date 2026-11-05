@@ -5,3 +5,4 @@ export * from './lib/webhook-http.client';
 export * from './lib/webhook-endpoint-security';
 export * from './lib/webhook-delivery-policy';
 export * from './lib/webhook-response.util';
+export * from './lib/webhook-event-type';
