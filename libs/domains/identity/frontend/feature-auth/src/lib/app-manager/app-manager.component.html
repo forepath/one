@@ -1,0 +1,438 @@
+<div class="app-manager-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="app-manager-bulk-result"
+    />
+  }
+
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="apps()"
+    paging="client"
+    persistKey="shared-apps"
+    [(query)]="searchQuery"
+    [searchPlaceholder]="searchPlaceholder"
+    [filtered]="!!searchQuery().trim()"
+    [loading]="loading() && apps().length === 0"
+    refreshable
+    (refresh)="onRefresh()"
+    [error]="formModalOpen() ? null : error()"
+    selectable
+    [(selected)]="selectedAppIds"
+    [rowMenu]="appRowMenu"
+    (rowAction)="onAppAction($event.row, $event.item.id)"
+    (rowActivate)="onEditApp($event)"
+    emptyIcon="app-indicator"
+    data-testid="app-manager-table"
+  >
+    <fpc-button
+      fpcDataTableToolbar
+      variant="primary"
+      iconOnly
+      [disabled]="saving()"
+      [ariaLabel]="addAppTitle"
+      [title]="addAppTitle"
+      (clicked)="onAddApp()"
+      data-testid="app-manager-add"
+    >
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      [disabled]="bulkBusy()"
+      (clicked)="bulkDeleteOpen.set(true)"
+      data-testid="app-manager-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
+
+    <span fpcDataTableEmpty>
+      <fpc-empty-state icon="app-indicator" [message]="emptyMessage" />
+    </span>
+
+    <ng-template fpcTableCell="name" let-row>
+      <div class="fw-semibold">{{ row.name }}</div>
+      @if (row.description) {
+        <div class="small text-body-secondary text-truncate app-description">{{ row.description }}</div>
+      }
+    </ng-template>
+    <ng-template fpcTableCell="returnUrl" let-row>
+      <code class="small text-break">{{ row.returnUrl }}</code>
+    </ng-template>
+    <ng-template fpcTableCell="scopes" let-row>
+      <fpc-tooltip
+        [text]="scopesText(row.scopes)"
+        placement="top"
+        appearance="panel"
+        [nativeTitle]="false"
+        [tooltipId]="'app-scopes-' + row.id"
+      >
+        <fpc-badge variant="info" color="secondary" tabindex="0">
+          {{ row.scopes.length }}
+          <ng-container i18n="@@featureAppManager-scopes">scopes</ng-container>
+        </fpc-badge>
+      </fpc-tooltip>
+    </ng-template>
+    <ng-template fpcTableCell="grants" let-row>
+      <button
+        type="button"
+        class="app-manager__grants-badge"
+        [title]="grantsTitle"
+        (click)="onShowGrants(row)"
+        [attr.data-testid]="'app-grants-' + row.id"
+      >
+        <fpc-badge variant="info" [color]="row.grantCount > 0 ? 'primary' : 'secondary'">
+          <i class="bi bi-person-check" aria-hidden="true"></i>
+          {{ row.grantCount }}
+        </fpc-badge>
+      </button>
+    </ng-template>
+    <ng-template fpcTableCell="created" let-row>{{ row.createdAt | fpcDate: 'datetime' }}</ng-template>
+  </fpc-data-table>
+</div>
+
+<fpc-confirm-dialog
+  [(open)]="bulkDeleteOpen"
+  i18n-title="@@featureAppManager-bulkDeleteTitle"
+  title="Delete apps"
+  [confirmLabel]="deleteLabel"
+  [danger]="true"
+  [busy]="bulkBusy()"
+  (confirmed)="onConfirmBulkDelete()"
+>
+  <p class="mb-0" i18n="@@featureAppManager-bulkDeleteBody">
+    Delete the selected apps? All their authorizations are revoked and their tokens stop working immediately. This
+    cannot be undone.
+  </p>
+</fpc-confirm-dialog>
+
+<fpc-modal
+  [(open)]="formModalOpen"
+  [title]="appToEdit ? editTitle : createTitle"
+  size="lg"
+  [closable]="!saving()"
+  (closed)="cancelForm()"
+>
+  <form (ngSubmit)="onSubmitForm()" data-testid="app-manager-form">
+    @if (error(); as message) {
+      <fpc-alert variant="danger" [message]="message" />
+    }
+    <div class="row g-3">
+      <div class="col-12">
+        <fpc-form-field forId="appName" i18n-label="@@featureAppManager-nameLabel" label="Name" required>
+          <fpc-form-control
+            controlId="appName"
+            name="appName"
+            [(ngModel)]="form.name"
+            required
+            maxLength="255"
+            [disabled]="saving()"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-12">
+        <fpc-form-field forId="appDescription" i18n-label="@@featureAppManager-descriptionLabel" label="Description">
+          <fpc-form-control
+            controlType="textarea"
+            controlId="appDescription"
+            name="appDescription"
+            [rows]="3"
+            [(ngModel)]="form.description"
+            maxLength="2000"
+            [disabled]="saving()"
+          />
+          <div fpcFormFieldHint i18n="@@featureAppManager-descriptionHint">
+            Shown to users on the authorization page.
+          </div>
+        </fpc-form-field>
+      </div>
+      <div class="col-12">
+        <fpc-form-field
+          forId="appReturnUrl"
+          i18n-label="@@featureAppManager-returnUrlLabel"
+          label="Return URL"
+          required
+        >
+          <fpc-form-control
+            controlId="appReturnUrl"
+            name="appReturnUrl"
+            inputType="url"
+            [(ngModel)]="form.returnUrl"
+            required
+            placeholder="https://app.example.com/callback"
+            maxLength="2048"
+            [invalid]="isReturnUrlInvalid()"
+            [disabled]="saving()"
+          />
+          @if (isReturnUrlInvalid()) {
+            <div fpcFormFieldError i18n="@@featureAppManager-returnUrlInvalid">
+              Use an absolute https URL (http only for localhost) without credentials or #fragment.
+            </div>
+          } @else {
+            <div fpcFormFieldHint i18n="@@featureAppManager-returnUrlHint">
+              Users are sent here after authorizing, with status, code and state as query parameters.
+            </div>
+          }
+        </fpc-form-field>
+      </div>
+      <div class="col-12">
+        <fpc-label i18n="@@featureAppManager-scopesLabel" [required]="true">Scopes</fpc-label>
+        <p class="form-text mt-0" i18n="@@featureAppManager-scopesHint">
+          Users can only grant the scopes their own account has. Adding scopes later asks users to authorize again.
+        </p>
+        @if (scopesLoading()) {
+          <p class="form-text mb-0" i18n="@@featureAppManager-loadingScopes">Loading scopes...</p>
+        } @else if (scopes().length === 0) {
+          <p class="form-text mb-0" i18n="@@featureAppManager-noScopes">No scopes available</p>
+        } @else {
+          <div class="scope-picker border rounded">
+            <div
+              class="scope-picker__header d-flex align-items-center justify-content-between gap-2 px-2 py-2 border-bottom bg-body-tertiary"
+            >
+              <div class="form-check mb-0">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="app-scope-all"
+                  [checked]="areAllScopesSelected()"
+                  [indeterminate]="areSomeScopesSelected()"
+                  [disabled]="saving()"
+                  (change)="toggleAllScopes($event)"
+                  i18n-aria-label="@@featureAppManager-allScopesAriaLabel"
+                  aria-label="All scopes"
+                  data-testid="app-scope-all"
+                />
+              </div>
+              <span class="small text-body-secondary text-nowrap" i18n="@@featureAppManager-selectedScopesCount"
+                >{{ selectedScopeCount() }} of {{ scopes().length }} selected</span
+              >
+            </div>
+            <div class="scope-picker__search fpc-board-lane__search border-bottom">
+              <fpc-search-field
+                inputId="app-scope-search"
+                [(value)]="scopeSearch"
+                (keydown.enter)="$event.preventDefault()"
+                [placeholder]="scopeSearchPlaceholder"
+                [ariaLabel]="scopeSearchPlaceholder"
+                data-testid="app-scope-search"
+              />
+            </div>
+            <div class="scope-list p-2">
+              @for (scopeItem of filteredScopes(); track scopeItem.scope) {
+                <fpc-form-check
+                  [checkId]="'app-scope-' + scopeItem.scope"
+                  [checked]="isScopeSelected(scopeItem.scope)"
+                  (checkedChange)="toggleScope(scopeItem.scope, $event)"
+                  [label]="scopeItem.scope"
+                  [disabled]="saving()"
+                />
+              } @empty {
+                <p class="form-text mb-0" i18n="@@featureScopePicker-noMatches">No scopes match your search</p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+    <div *fpcModalFooter>
+      <fpc-button
+        type="submit"
+        variant="primary"
+        [disabled]="saving() || !isFormValid()"
+        [loading]="saving()"
+        data-testid="app-manager-submit"
+      >
+        @if (appToEdit) {
+          <span i18n="@@featureAppManager-save">Save</span>
+        } @else {
+          <span i18n="@@featureAppManager-create">Create</span>
+        }
+      </fpc-button>
+    </div>
+  </form>
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="secretModalOpen"
+  i18n-title="@@featureAppManager-secretTitle"
+  title="App credentials"
+  size="lg"
+  (closed)="onSecretDone()"
+>
+  @if (secretApp(); as app) {
+    <p class="mb-3" i18n="@@featureAppManager-secretIntro">
+      Configure <strong>{{ app.name }}</strong> with these credentials. They authenticate the app when it exchanges an
+      authorization code or refresh token.
+    </p>
+    <fpc-label i18n="@@featureAppManager-appIdLabel">App ID</fpc-label>
+    <div class="d-flex gap-2 align-items-center mb-3">
+      <code class="flex-grow-1 d-block p-2 bg-body-tertiary rounded user-select-all text-break" data-testid="app-id">{{
+        app.id
+      }}</code>
+      <fpc-button variant="secondary" size="sm" (clicked)="copy('id', app.id)">
+        @if (copied() === 'id') {
+          <span i18n="@@featureAppManager-copied">Copied</span>
+        } @else {
+          <span i18n="@@featureAppManager-copy">Copy</span>
+        }
+      </fpc-button>
+    </div>
+    @if (lastSecret(); as secret) {
+      <fpc-alert variant="warning">
+        <div class="fw-semibold mb-2" i18n="@@featureAppManager-secretLabel">App secret</div>
+        <p class="mb-2" i18n="@@featureAppManager-secretHint">
+          Copy this secret now. It will not be shown again; only a hash is stored.
+        </p>
+        <code class="d-block p-2 bg-body-tertiary rounded user-select-all text-break" data-testid="app-secret">{{
+          secret
+        }}</code>
+      </fpc-alert>
+    }
+  }
+  <div *fpcModalFooter>
+    <fpc-button variant="primary" [disabled]="!lastSecret()" (clicked)="copy('secret', lastSecret())">
+      @if (copied() === 'secret') {
+        <span i18n="@@featureAppManager-secretCopied">Secret copied</span>
+      } @else {
+        <span i18n="@@featureAppManager-copySecret">Copy secret</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="rotateDialogOpen"
+  i18n-title="@@featureAppManager-rotateTitle"
+  title="Regenerate secret"
+  i18n-confirmLabel="@@featureAppManager-rotateConfirmLabel"
+  confirmLabel="Regenerate"
+  [danger]="true"
+  [busy]="saving()"
+  (confirmed)="confirmRotate()"
+>
+  @if (activeApp(); as app) {
+    <p class="mb-0" i18n="@@featureAppManager-rotateBody">
+      Regenerate the secret of <strong>{{ app.name }}</strong
+      >? The current secret stops working right away; existing authorizations stay valid once the app uses the new
+      secret.
+    </p>
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [(open)]="deleteDialogOpen"
+  i18n-title="@@featureAppManager-deleteTitle"
+  title="Delete app"
+  [confirmLabel]="deleteLabel"
+  [danger]="true"
+  [busy]="deleting()"
+  (confirmed)="confirmDelete()"
+>
+  @if (activeApp(); as app) {
+    <p i18n="@@featureAppManager-deleteBody">
+      Delete the app <strong>{{ app.name }}</strong
+      >? All authorizations are revoked and its tokens stop working immediately.
+    </p>
+  }
+  <p class="text-danger mb-0">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <span i18n="@@featureAppManager-cannotUndo">This action cannot be undone.</span>
+  </p>
+</fpc-confirm-dialog>
+
+<fpc-modal [(open)]="grantsModalOpen" [title]="grantsModalTitle()" size="xl">
+  <p class="text-body-secondary" i18n="@@featureAppManager-grantsHint">
+    Revoking an authorization ends the app's sessions for that user. The user has to authorize the app again (incl.
+    two-factor verification) before it regains access.
+  </p>
+  <fpc-data-table
+    nested
+    [searchable]="false"
+    [ariaLabel]="grantsTitle"
+    [columns]="grantColumns"
+    [rows]="grants()"
+    [loading]="grantsLoading() && grants().length === 0"
+    refreshable
+    (refresh)="onRefreshGrants()"
+    [error]="grantsError()"
+    [rowMenu]="grantRowMenu"
+    (rowAction)="onGrantAction($event.row, $event.item.id)"
+    emptyIcon="people"
+    data-testid="app-manager-grants-table"
+  >
+    <span fpcDataTableEmpty>
+      <fpc-empty-state icon="people" [message]="noGrantsMessage" />
+    </span>
+    <ng-template fpcTableCell="grantScopes" let-row>
+      <fpc-tooltip
+        [text]="scopesText(row.scopes)"
+        placement="top"
+        appearance="panel"
+        [nativeTitle]="false"
+        [tooltipId]="'grant-scopes-' + row.id"
+      >
+        <fpc-badge variant="info" color="secondary" tabindex="0">
+          {{ row.scopes.length }}
+          <ng-container i18n="@@featureAppManager-scopes">scopes</ng-container>
+        </fpc-badge>
+      </fpc-tooltip>
+    </ng-template>
+    <ng-template fpcTableCell="lastUsed" let-row>{{ row.lastUsedAt | fpcDate: 'datetime' }}</ng-template>
+  </fpc-data-table>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="danger"
+      [disabled]="grantsRevoking() || grants().length === 0"
+      [loading]="grantsRevoking()"
+      (clicked)="revokeAllDialogOpen.set(true)"
+      data-testid="app-manager-revoke-all"
+    >
+      <span i18n="@@featureAppManager-revokeAll">Revoke all</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="revokeGrantDialogOpen"
+  i18n-title="@@featureAppManager-revokeGrantTitle"
+  title="Revoke authorization"
+  [confirmLabel]="revokeLabel"
+  [danger]="true"
+  [busy]="grantsRevoking()"
+  (confirmed)="confirmRevokeGrant()"
+>
+  @if (grantToRevoke) {
+    <p class="mb-0" i18n="@@featureAppManager-revokeGrantBody">
+      Revoke the authorization of <strong>{{ grantToRevoke.userEmail }}</strong
+      >? The app loses access for this user until they authorize it again.
+    </p>
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [(open)]="revokeAllDialogOpen"
+  i18n-title="@@featureAppManager-revokeAllTitle"
+  title="Revoke all authorizations"
+  i18n-confirmLabel="@@featureAppManager-revokeAll"
+  confirmLabel="Revoke all"
+  [danger]="true"
+  [busy]="grantsRevoking()"
+  (confirmed)="confirmRevokeAll()"
+>
+  <p class="mb-0" i18n="@@featureAppManager-revokeAllBody">
+    Revoke every user's authorization for this app? All its sessions end and every user has to authorize it again.
+  </p>
+</fpc-confirm-dialog>

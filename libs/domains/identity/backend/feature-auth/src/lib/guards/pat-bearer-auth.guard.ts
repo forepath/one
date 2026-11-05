@@ -12,6 +12,7 @@ import { Request } from 'express';
 
 import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
+import { IdentityAppAuthorizationService } from '../services/identity-app-authorization.service';
 import { PersonalAccessTokenService } from '../services/personal-access-token.service';
 import { assertUsersJwtSessionValid, type UsersJwtSessionPayload } from '../utils/users-jwt-session.util';
 
@@ -29,6 +30,7 @@ export class PatBearerAuthGuard implements CanActivate {
     private readonly usersRepository: UsersRepository,
     private readonly revokedUserTokensRepository: RevokedUserTokensRepository,
     private readonly personalAccessTokenService: PersonalAccessTokenService,
+    private readonly appAuthorizationService: IdentityAppAuthorizationService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -103,15 +105,27 @@ export class PatBearerAuthGuard implements CanActivate {
 
       await assertUsersJwtSessionValid(payload, user, this.revokedUserTokensRepository);
 
-      if (!payload.patId) {
-        throw new UnauthorizedException('Session is no longer valid.');
-      }
+      const isApp = amr.includes('app');
+      let scopes: string[];
 
-      const active = await this.personalAccessTokenService.assertPatJwtActive(
-        payload.patId,
-        payload.sub,
-        payload.scopes,
-      );
+      if (isApp) {
+        // App access token (`amr: ['pat', 'app']`): live session/grant/app check.
+        scopes = (
+          await this.appAuthorizationService.assertAppJwtActive({
+            appSessionId: payload.appSessionId,
+            appId: payload.appId,
+            userId: payload.sub,
+            jwtScopes: payload.scopes,
+          })
+        ).scopes;
+      } else {
+        if (!payload.patId) {
+          throw new UnauthorizedException('Session is no longer valid.');
+        }
+
+        scopes = (await this.personalAccessTokenService.assertPatJwtActive(payload.patId, payload.sub, payload.scopes))
+          .scopes;
+      }
 
       request.patAuthenticated = true;
       request.user = {
@@ -119,8 +133,10 @@ export class PatBearerAuthGuard implements CanActivate {
         email: user.email,
         roles: [user.role],
         amr,
-        scopes: active.scopes,
-        patId: payload.patId,
+        scopes,
+        patId: isApp ? undefined : payload.patId,
+        appId: isApp ? payload.appId : undefined,
+        appSessionId: isApp ? payload.appSessionId : undefined,
         jti: payload.jti,
         exp: typeof payload.exp === 'number' ? payload.exp : undefined,
       } satisfies AuthenticatedUsersRequestUser;

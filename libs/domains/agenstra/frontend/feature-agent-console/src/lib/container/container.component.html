@@ -8,27 +8,6 @@
 
 @if (!isToolWindowRoute()) {
   <fpc-top-bar brandSrc="assets/images/icon_light.svg" brandAlt="Agenstra" i18n-brandAlt="@@featureContainer-brandAlt">
-    @if (isUsersAuth && (isAuthenticated$ | async)) {
-      <fpc-button
-        routerLink="/settings/security"
-        routerLinkActive="active"
-        variant="link"
-        iconOnly
-        class="fpc-top-bar__action position-relative"
-        i18n-title="@@featureContainer-securityTitle"
-        title="Security"
-        i18n-ariaLabel="@@featureContainer-security"
-        ariaLabel="Security"
-      >
-        <i class="bi bi-shield-lock" aria-hidden="true"></i>
-        @if (showSecurityAuthenticatorBadge$ | async) {
-          <fpc-notification-indicator kind="security-warning" placement="absolute" />
-          <span class="visually-hidden" i18n="@@featureContainer-securityAuthenticatorSuggested"
-            >Authenticator app is not enabled</span
-          >
-        }
-      </fpc-button>
-    }
     <fpc-language-switcher
       data-bs-theme="dark"
       [locales]="localeService.getAvailableLocales()"
@@ -144,25 +123,59 @@
         <i class="bi bi-graph-up me-1"></i>
         <span class="small" i18n="@@featureContainer-audit">Audit</span>
       </a>
-      @if (isPatUiEnabled) {
-        <a
-          routerLink="/settings/tokens"
-          routerLinkActive="active"
-          class="sidebar__item"
-          i18n-title="@@featureContainer-tokensTitle"
-          title="Personal access tokens"
-        >
-          <i class="bi bi-key me-1"></i>
-          <span class="small" i18n="@@featureContainer-tokens">Tokens</span>
-        </a>
-      }
-      @if (canAccessUserManager$ | async) {
-        <div fpcSidebarFooter>
-          <fpc-sidebar-popover [(open)]="adminPopoverOpen" [ariaLabel]="adminPopoverAriaLabel">
+      <div fpcSidebarFooter>
+        @if (showAccountNav$ | async) {
+          <fpc-sidebar-popover [(open)]="accountPopoverOpen" [ariaLabel]="accountPopoverAriaLabel">
             <span
               fpcSidebarPopoverTrigger
               class="sidebar__item border-top position-relative"
+              [class.active]="isAccountRouteActive()"
+              tabindex="0"
+              role="button"
+              i18n-title="@@featureContainer-accountTitle"
+              title="Account"
+              i18n-aria-label="@@featureContainer-accountTitle"
+              aria-label="Account"
+              data-testid="sidebar-account"
+            >
+              <i class="bi bi-person-circle me-1"></i>
+              <span class="small" i18n="@@featureContainer-account">Account</span>
+              @if (isUsersAuth && (showSecurityAuthenticatorBadge$ | async)) {
+                <fpc-notification-indicator kind="security-warning" placement="absolute" />
+                <span class="visually-hidden" i18n="@@featureContainer-securityAuthenticatorSuggested"
+                  >Authenticator app is not enabled</span
+                >
+              }
+            </span>
+            @for (item of accountNavItems; track item.routerLink.join('/')) {
+              <a
+                [routerLink]="item.routerLink"
+                routerLinkActive="active"
+                class="sidebar__item position-relative"
+                [title]="item.title"
+                [attr.aria-label]="item.title"
+                [attr.data-testid]="'sidebar-account-' + item.navKey"
+                (click)="accountPopoverOpen = false"
+              >
+                <i class="bi {{ item.icon }} me-1" aria-hidden="true"></i>
+                <span class="small">{{ item.label }}</span>
+                @if (item.navKey === 'security' && (showSecurityAuthenticatorBadge$ | async)) {
+                  <fpc-notification-indicator kind="security-warning" placement="absolute" />
+                  <span class="visually-hidden" i18n="@@featureContainer-securityAuthenticatorSuggested"
+                    >Authenticator app is not enabled</span
+                  >
+                }
+              </a>
+            }
+          </fpc-sidebar-popover>
+        }
+        @if (canAccessUserManager$ | async) {
+          <fpc-sidebar-popover [(open)]="adminPopoverOpen" [ariaLabel]="adminPopoverAriaLabel">
+            <span
+              fpcSidebarPopoverTrigger
+              class="sidebar__item sidebar__item--danger border-top position-relative"
               [class.active]="isAdminRouteActive()"
+              data-testid="sidebar-admin"
               tabindex="0"
               role="button"
               i18n-title="@@featureContainer-adminTitle"
@@ -195,8 +208,8 @@
               </a>
             }
           </fpc-sidebar-popover>
-        </div>
-      }
+        }
+      </div>
     </fpc-sidebar>
   }
   <fpc-section-container>

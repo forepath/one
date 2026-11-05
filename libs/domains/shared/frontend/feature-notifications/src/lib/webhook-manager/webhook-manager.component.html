@@ -372,18 +372,55 @@
       } @else if (eventTypes().length === 0) {
         <p class="form-text mb-0" i18n="@@featureNotifications-noEventTypes">No event types available</p>
       } @else {
-        <div class="event-type-list border rounded p-2">
-          @for (eventType of eventTypes(); track eventType.type) {
-            <fpc-form-check
-              [checkId]="formPrefix + '-' + eventType.type"
-              [checked]="isEventSelected(form, eventType.type)"
-              (checkedChange)="toggleSubscribedEvent(form, eventType.type, $event)"
-              [label]="
-                eventType.description !== eventType.type ? eventType.type + ' ' + eventType.description : eventType.type
-              "
-              [disabled]="(saving$ | async) === true || readonly"
+        <div class="event-type-picker border rounded">
+          <div
+            class="event-type-picker__header d-flex align-items-center justify-content-between gap-2 px-2 py-2 border-bottom bg-body-tertiary"
+          >
+            <div class="form-check mb-0">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [id]="formPrefix + '-event-all'"
+                [checked]="areAllEventsSelected(form)"
+                [indeterminate]="areSomeEventsSelected(form)"
+                [disabled]="(saving$ | async) === true || readonly"
+                (change)="toggleAllEvents(form, $event)"
+                i18n-aria-label="@@featureNotifications-allEventsAriaLabel"
+                aria-label="All events"
+                [attr.data-testid]="formPrefix + '-event-all'"
+              />
+            </div>
+            <span class="small text-body-secondary text-nowrap" i18n="@@featureNotifications-selectedEventsCount"
+              >{{ selectedEventCount(form) }} of {{ eventTypes().length }} selected</span
+            >
+          </div>
+          <div class="event-type-picker__search fpc-board-lane__search border-bottom">
+            <fpc-search-field
+              [inputId]="formPrefix + '-event-search'"
+              [(value)]="eventSearch"
+              (keydown.enter)="$event.preventDefault()"
+              [placeholder]="eventSearchPlaceholder"
+              [ariaLabel]="eventSearchPlaceholder"
+              [attr.data-testid]="formPrefix + '-event-search'"
             />
-          }
+          </div>
+          <div class="event-type-list p-2">
+            @for (eventType of filteredEventTypes(); track eventType.type) {
+              <fpc-form-check
+                [checkId]="formPrefix + '-' + eventType.type"
+                [checked]="isEventSelected(form, eventType.type)"
+                (checkedChange)="toggleSubscribedEvent(form, eventType.type, $event)"
+                [label]="
+                  eventType.description !== eventType.type
+                    ? eventType.type + ' ' + eventType.description
+                    : eventType.type
+                "
+                [disabled]="(saving$ | async) === true || readonly"
+              />
+            } @empty {
+              <p class="form-text mb-0" i18n="@@featureNotifications-noMatchingEvents">No events match your search</p>
+            }
+          </div>
         </div>
       }
     </div>

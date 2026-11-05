@@ -12,6 +12,7 @@ import { Request } from 'express';
 
 import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
+import { IdentityAppAuthorizationService } from '../services/identity-app-authorization.service';
 import { PersonalAccessTokenService } from '../services/personal-access-token.service';
 import { assertUsersJwtSessionValid, UsersJwtSessionPayload } from '../utils/users-jwt-session.util';
 
@@ -24,6 +25,9 @@ export interface AuthenticatedUsersRequestUser {
   amr?: string[];
   scopes?: string[];
   patId?: string;
+  /** Set for app access tokens (`amr` includes `app`). */
+  appId?: string;
+  appSessionId?: string;
   jti?: string;
   exp?: number;
 }
@@ -36,6 +40,7 @@ export class UsersAuthGuard implements CanActivate {
     private readonly usersRepository: UsersRepository,
     private readonly revokedUserTokensRepository: RevokedUserTokensRepository,
     private readonly personalAccessTokenService: PersonalAccessTokenService,
+    private readonly appAuthorizationService: IdentityAppAuthorizationService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -112,7 +117,17 @@ export class UsersAuthGuard implements CanActivate {
       const amr = payload.amr ?? ['pwd'];
       let scopes = payload.scopes;
 
-      if (amr.includes('pat')) {
+      if (amr.includes('app')) {
+        // App access token: live session/grant/app check; scopes re-capped to app scopes and the user's role.
+        const active = await this.appAuthorizationService.assertAppJwtActive({
+          appSessionId: payload.appSessionId,
+          appId: payload.appId,
+          userId: payload.sub,
+          jwtScopes: payload.scopes,
+        });
+
+        scopes = active.scopes;
+      } else if (amr.includes('pat')) {
         if (!payload.patId) {
           throw new UnauthorizedException('Session is no longer valid.');
         }
@@ -134,6 +149,8 @@ export class UsersAuthGuard implements CanActivate {
         amr,
         scopes,
         patId: payload.patId,
+        appId: amr.includes('app') ? payload.appId : undefined,
+        appSessionId: amr.includes('app') ? payload.appSessionId : undefined,
         jti: payload.jti,
         exp: typeof payload.exp === 'number' ? payload.exp : undefined,
       } satisfies AuthenticatedUsersRequestUser;

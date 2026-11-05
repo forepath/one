@@ -1,0 +1,105 @@
+<div class="authorized-apps-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+    />
+  }
+
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="grants()"
+    paging="client"
+    persistKey="shared-authorized-apps"
+    [(query)]="searchQuery"
+    [searchPlaceholder]="searchPlaceholder"
+    [filtered]="!!searchQuery().trim()"
+    [loading]="loading() && grants().length === 0"
+    refreshable
+    (refresh)="onRefresh()"
+    [error]="error()"
+    selectable
+    [(selected)]="selectedIds"
+    [rowMenu]="rowMenu"
+    (rowAction)="onAction($event.row, $event.item.id)"
+    emptyIcon="app-indicator"
+    data-testid="authorized-apps-table"
+  >
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      [disabled]="bulkBusy()"
+      (clicked)="bulkRevokeOpen.set(true)"
+      iconOnly
+      [ariaLabel]="revokeLabel"
+      [title]="revokeLabel"
+    >
+      <i class="bi bi-x-octagon" aria-hidden="true"></i>
+    </fpc-button>
+
+    <span fpcDataTableEmpty>
+      <fpc-empty-state icon="app-indicator" [message]="emptyMessage" />
+    </span>
+
+    <ng-template fpcTableCell="app" let-row>
+      <div class="fw-semibold">{{ row.appName }}</div>
+      @if (row.appDescription) {
+        <div class="small text-body-secondary text-truncate app-description">{{ row.appDescription }}</div>
+      }
+    </ng-template>
+    <ng-template fpcTableCell="scopes" let-row>
+      <fpc-tooltip
+        [text]="scopesText(row)"
+        placement="top"
+        appearance="panel"
+        [nativeTitle]="false"
+        [tooltipId]="'authorized-app-scopes-' + row.id"
+      >
+        <fpc-badge variant="info" color="secondary" tabindex="0">
+          {{ row.scopes.length }}
+          <ng-container i18n="@@featureAuthorizedApps-scopes">scopes</ng-container>
+        </fpc-badge>
+      </fpc-tooltip>
+    </ng-template>
+    <ng-template fpcTableCell="authorized" let-row>{{ row.createdAt | fpcDate: 'datetime' }}</ng-template>
+    <ng-template fpcTableCell="lastUsed" let-row>{{ row.lastUsedAt | fpcDate: 'datetime' }}</ng-template>
+  </fpc-data-table>
+</div>
+
+<fpc-confirm-dialog
+  [(open)]="revokeDialogOpen"
+  i18n-title="@@featureAuthorizedApps-revokeTitle"
+  title="Revoke access"
+  [confirmLabel]="revokeLabel"
+  [danger]="true"
+  [busy]="revoking()"
+  (confirmed)="confirmRevoke()"
+>
+  @if (grantToRevoke) {
+    <p class="mb-0" i18n="@@featureAuthorizedApps-revokeBody">
+      Revoke access for <strong>{{ grantToRevoke.appName }}</strong
+      >? The app is signed out immediately and has to ask for your authorization again.
+    </p>
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [(open)]="bulkRevokeOpen"
+  i18n-title="@@featureAuthorizedApps-bulkRevokeTitle"
+  title="Revoke access"
+  [confirmLabel]="revokeLabel"
+  [danger]="true"
+  [busy]="bulkBusy()"
+  (confirmed)="onConfirmBulkRevoke()"
+>
+  <p class="mb-0" i18n="@@featureAuthorizedApps-bulkRevokeBody">
+    Revoke access for the selected apps? They are signed out immediately.
+  </p>
+</fpc-confirm-dialog>

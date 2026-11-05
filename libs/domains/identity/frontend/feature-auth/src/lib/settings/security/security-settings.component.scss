@@ -16,3 +16,11 @@
   display: block;
   background: #fff;
 }
+
+// Setting rows sit on the shared edge inset on every side (same offset as the page header and lane bodies), so titles,
+// action buttons and notice badges keep clear of the row separators. These are settings sections, not dense list rows:
+// the selector outranks the compact-density row padding (`body.fpc-density-compact .fpc-list-item.list-group-item`,
+// `styles/_density.scss`) without `!important`.
+.security-settings__list > fpc-list-item.fpc-list-item.list-group-item {
+  padding: var(--fpc-edge-inset, 1rem);
+}

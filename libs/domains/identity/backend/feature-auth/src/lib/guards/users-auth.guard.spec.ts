@@ -10,6 +10,7 @@ import { UsersRepository } from '../repositories/users.repository';
 import { UsersAuthGuard } from './users-auth.guard';
 
 describe('UsersAuthGuard', () => {
+  const appAuthorizationService = { assertAppJwtActive: jest.fn() };
   let guard: UsersAuthGuard;
   let jwtService: jest.Mocked<Pick<JwtService, 'verifyAsync'>>;
   let reflector: jest.Mocked<Pick<Reflector, 'getAllAndOverride'>>;
@@ -43,6 +44,7 @@ describe('UsersAuthGuard', () => {
       usersRepository as unknown as UsersRepository,
       revokedUserTokensRepository as unknown as RevokedUserTokensRepository,
       personalAccessTokenService as never,
+      appAuthorizationService as never,
     );
   });
 
@@ -165,6 +167,7 @@ describe('UsersAuthGuard', () => {
       usersRepository as unknown as UsersRepository,
       revokedUserTokensRepository as unknown as RevokedUserTokensRepository,
       personalAccessTokenService as never,
+      appAuthorizationService as never,
     );
 
     jwtService.verifyAsync.mockResolvedValue({
@@ -331,6 +334,7 @@ describe('UsersAuthGuard', () => {
       usersRepository as unknown as UsersRepository,
       revokedUserTokensRepository as unknown as RevokedUserTokensRepository,
       personalAccessTokenService as never,
+      appAuthorizationService as never,
     );
 
     jwtService.verifyAsync.mockResolvedValue({
@@ -374,5 +378,79 @@ describe('UsersAuthGuard', () => {
     } as never);
 
     await expect(guard.canActivate(createExecutionContext(request))).rejects.toThrow('Session is no longer valid.');
+  });
+
+  describe('app access tokens', () => {
+    const appPayload = {
+      sub: 'user-1',
+      email: 'a@b.com',
+      roles: [UserRole.ADMIN],
+      amr: ['pat', 'app'],
+      scopes: ['tickets:read'],
+      appId: 'app-1',
+      appSessionId: 'session-1',
+      tv: 1,
+      jti: 'jwt-1',
+    };
+    const activeUser = {
+      id: 'user-1',
+      email: 'a@b.com',
+      role: UserRole.USER,
+      tenantId: 'default',
+      lockedAt: null,
+      tokenVersion: 1,
+    };
+
+    it('validates the app session (not the PAT path) and uses live effective scopes', async () => {
+      const request: Record<string, unknown> = { headers: { authorization: 'Bearer app.jwt.token' } };
+
+      jwtService.verifyAsync.mockResolvedValue(appPayload);
+      usersRepository.findById.mockResolvedValue(activeUser as never);
+      appAuthorizationService.assertAppJwtActive.mockResolvedValue({
+        scopes: ['tickets:read'],
+        appId: 'app-1',
+        appSessionId: 'session-1',
+      });
+
+      await expect(guard.canActivate(createExecutionContext(request))).resolves.toBe(true);
+      expect(appAuthorizationService.assertAppJwtActive).toHaveBeenCalledWith({
+        appSessionId: 'session-1',
+        appId: 'app-1',
+        userId: 'user-1',
+        jwtScopes: ['tickets:read'],
+      });
+      expect(request['user']).toMatchObject({
+        id: 'user-1',
+        // Live DB role, not the JWT role.
+        roles: [UserRole.USER],
+        amr: ['pat', 'app'],
+        scopes: ['tickets:read'],
+        appId: 'app-1',
+        appSessionId: 'session-1',
+        patId: undefined,
+      });
+    });
+
+    it('rejects app tokens whose session or grant was revoked', async () => {
+      const request = { headers: { authorization: 'Bearer app.jwt.token' } };
+
+      jwtService.verifyAsync.mockResolvedValue(appPayload);
+      usersRepository.findById.mockResolvedValue(activeUser as never);
+      appAuthorizationService.assertAppJwtActive.mockRejectedValue(
+        new UnauthorizedException('Session is no longer valid.'),
+      );
+
+      await expect(guard.canActivate(createExecutionContext(request))).rejects.toThrow('Session is no longer valid.');
+    });
+
+    it('rejects app tokens after the user token version changed (password change / logout all)', async () => {
+      const request = { headers: { authorization: 'Bearer app.jwt.token' } };
+
+      jwtService.verifyAsync.mockResolvedValue(appPayload);
+      usersRepository.findById.mockResolvedValue({ ...activeUser, tokenVersion: 2 } as never);
+
+      await expect(guard.canActivate(createExecutionContext(request))).rejects.toThrow('Session is no longer valid.');
+      expect(appAuthorizationService.assertAppJwtActive).not.toHaveBeenCalled();
+    });
   });
 });

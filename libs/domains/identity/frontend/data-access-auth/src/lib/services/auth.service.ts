@@ -13,6 +13,15 @@ import type {
   UserResponseDto,
 } from '../state/authentication/authentication.types';
 import type {
+  AppAuthorizationDecisionDto,
+  AppAuthorizationDecisionResponseDto,
+  AppAuthorizationInfoDto,
+  AppAuthorizationRequestDto,
+  IdentityAppGrantResponseDto,
+  IdentityAppInputDto,
+  IdentityAppResponseDto,
+} from '../types/identity-app.types';
+import type {
   CreatePersonalAccessTokenDto,
   PersonalAccessTokenResponseDto,
   PersonalAccessTokenScopeDto,
@@ -191,5 +200,71 @@ export class AuthService {
 
   revokeUserPersonalAccessToken(userId: string, tokenId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/users/${userId}/tokens/${tokenId}`);
+  }
+
+  // --- Apps (admin) ---
+
+  listApps(): Observable<IdentityAppResponseDto[]> {
+    return this.http.get<IdentityAppResponseDto[]>(`${this.apiUrl}/apps`);
+  }
+
+  createApp(dto: IdentityAppInputDto): Observable<IdentityAppResponseDto> {
+    return this.http.post<IdentityAppResponseDto>(`${this.apiUrl}/apps`, dto);
+  }
+
+  updateApp(id: string, dto: IdentityAppInputDto): Observable<IdentityAppResponseDto> {
+    return this.http.patch<IdentityAppResponseDto>(`${this.apiUrl}/apps/${id}`, dto);
+  }
+
+  rotateAppSecret(id: string): Observable<IdentityAppResponseDto> {
+    return this.http.post<IdentityAppResponseDto>(`${this.apiUrl}/apps/${id}/secret`, {});
+  }
+
+  deleteApp(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/apps/${id}`);
+  }
+
+  listAppGrants(appId: string): Observable<IdentityAppGrantResponseDto[]> {
+    return this.http.get<IdentityAppGrantResponseDto[]>(`${this.apiUrl}/apps/${appId}/grants`);
+  }
+
+  revokeAppGrant(appId: string, grantId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/apps/${appId}/grants/${grantId}`);
+  }
+
+  revokeAllAppGrants(appId: string): Observable<{ revoked: number }> {
+    return this.http.delete<{ revoked: number }>(`${this.apiUrl}/apps/${appId}/grants`);
+  }
+
+  // --- App authorization (grant page) and own authorized apps ---
+
+  getAppAuthorization(request: AppAuthorizationRequestDto): Observable<AppAuthorizationInfoDto> {
+    let params = new HttpParams().set('app_id', request.app_id);
+
+    if (request.state) {
+      params = params.set('state', request.state);
+    }
+
+    if (request.code_challenge) {
+      params = params.set('code_challenge', request.code_challenge);
+    }
+
+    if (request.code_challenge_method) {
+      params = params.set('code_challenge_method', request.code_challenge_method);
+    }
+
+    return this.http.get<AppAuthorizationInfoDto>(`${this.apiUrl}/auth/apps/authorize`, { params });
+  }
+
+  decideAppAuthorization(dto: AppAuthorizationDecisionDto): Observable<AppAuthorizationDecisionResponseDto> {
+    return this.http.post<AppAuthorizationDecisionResponseDto>(`${this.apiUrl}/auth/apps/authorize`, dto);
+  }
+
+  listOwnAppGrants(): Observable<IdentityAppGrantResponseDto[]> {
+    return this.http.get<IdentityAppGrantResponseDto[]>(`${this.apiUrl}/auth/apps/grants`);
+  }
+
+  revokeOwnAppGrant(grantId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/auth/apps/grants/${grantId}`);
   }
 }

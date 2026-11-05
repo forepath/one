@@ -34,6 +34,13 @@ import { collectContributorNavItems } from '../contributors/contributor-ui.regis
 import type { ContributorNavItem } from '../contributors/contributor-ui.types';
 import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from '../contributors/first-party-contributor-ui.modules';
 
+/** Admin app management (`/apps`), not `/settings/apps` or the `/authorize` grant page. */
+function isAppsAdminUrl(url: string): boolean {
+  const path = url.split(/[?#]/)[0] ?? url;
+
+  return path === '/apps' || path.startsWith('/apps/');
+}
+
 @Component({
   selector: 'framework-billing-console-container',
   imports: [
@@ -110,6 +117,8 @@ export class BillingConsoleContainerComponent implements OnInit {
             url.includes('/webhooks') ||
             url.includes('/updates') ||
             url.includes('/settings/tokens') ||
+            url.includes('/settings/apps') ||
+            isAppsAdminUrl(url) ||
             url.includes('/settings/security'),
         ),
       ),
@@ -126,6 +135,8 @@ export class BillingConsoleContainerComponent implements OnInit {
         this.router.url.includes('/webhooks') ||
         this.router.url.includes('/updates') ||
         this.router.url.includes('/settings/tokens') ||
+        this.router.url.includes('/settings/apps') ||
+        isAppsAdminUrl(this.router.url) ||
         this.router.url.includes('/settings/security'),
     },
   );
@@ -177,6 +188,7 @@ export class BillingConsoleContainerComponent implements OnInit {
         (url) =>
           url.includes('/administration') ||
           url.includes('/users') ||
+          isAppsAdminUrl(url) ||
           url.includes('/webhooks') ||
           url.includes('/updates'),
       ),
@@ -185,12 +197,67 @@ export class BillingConsoleContainerComponent implements OnInit {
       initialValue:
         this.router.url.includes('/administration') ||
         this.router.url.includes('/users') ||
+        isAppsAdminUrl(this.router.url) ||
         this.router.url.includes('/webhooks') ||
         this.router.url.includes('/updates'),
     },
   );
 
   adminPopoverOpen = false;
+
+  readonly accountPopoverAriaLabel = $localize`:@@featureContainer-accountTitle:Account`;
+
+  /** Account popover (above Admin): the user's own security settings, tokens and authorized apps. */
+  readonly accountNavItems: ContributorNavItem[] = [
+    ...(this.isUsersAuth
+      ? [
+          {
+            routerLink: ['/settings/security'],
+            activePaths: ['/settings/security'],
+            icon: 'bi-shield-lock',
+            navKey: 'security',
+            title: $localize`:@@featureContainer-securityTitle:Security`,
+            label: $localize`:@@featureContainer-security:Security`,
+          },
+        ]
+      : []),
+    ...(this.isPatUiEnabled
+      ? [
+          {
+            routerLink: ['/settings/tokens'],
+            activePaths: ['/settings/tokens'],
+            icon: 'bi-key',
+            navKey: 'tokens',
+            title: $localize`:@@featureContainer-tokensTitle:Access Tokens`,
+            label: $localize`:@@featureContainer-tokens:Tokens`,
+          },
+          {
+            routerLink: ['/settings/apps'],
+            activePaths: ['/settings/apps'],
+            icon: 'bi-plug',
+            navKey: 'apps',
+            title: $localize`:@@featureContainer-authorizedAppsTitle:Authorized apps`,
+            label: $localize`:@@featureContainer-authorizedApps:Apps`,
+          },
+        ]
+      : []),
+  ];
+
+  readonly showAccountNav$ = this.authenticationFacade.isAuthenticated$.pipe(
+    map((authenticated) => authenticated && this.accountNavItems.length > 0),
+  );
+
+  readonly isAccountRouteActive = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => this.router.url),
+      startWith(this.router.url),
+      map((url) => this.isAccountNavUrl(url)),
+    ),
+    { initialValue: this.isAccountNavUrl(this.router.url) },
+  );
+
+  accountPopoverOpen = false;
 
   @ViewChild(IdentityLogoutConfirmModalComponent)
   private logoutConfirmModal?: IdentityLogoutConfirmModalComponent;
@@ -392,6 +459,13 @@ export class BillingConsoleContainerComponent implements OnInit {
         label: $localize`:@@featureContainer-users:Users`,
       },
       {
+        routerLink: ['/apps'],
+        activePaths: ['/apps'],
+        icon: 'bi-app-indicator',
+        title: $localize`:@@featureContainer-appsTitle:App management`,
+        label: $localize`:@@featureContainer-apps:Apps`,
+      },
+      {
         routerLink: ['/administration/customer-profiles'],
         activePaths: ['/administration/customer-profiles'],
         icon: 'bi-person-badge',
@@ -441,5 +515,13 @@ export class BillingConsoleContainerComponent implements OnInit {
     items.push(...collectContributorNavItems(FIRST_PARTY_CONTRIBUTOR_UI_MODULES).admin);
 
     return items;
+  }
+
+  private isAccountNavUrl(url: string): boolean {
+    const path = url.split(/[?#]/)[0] ?? url;
+
+    return this.accountNavItems.some((item) =>
+      item.activePaths.some((active) => path === active || path.startsWith(`${active}/`)),
+    );
   }
 }

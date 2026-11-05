@@ -23,6 +23,7 @@ import {
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
   FpcTableCellDirective,
   FpcTooltipComponent,
   fpcCopyText,
@@ -66,6 +67,7 @@ const emptyForm = (): TokenFormState => ({
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
     FpcTableCellDirective,
     FpcTooltipComponent,
   ],
@@ -117,6 +119,14 @@ export class IdentityTokenManagerComponent implements OnInit {
   readonly tokens = toSignal(this.tokens$, { initialValue: [] as PersonalAccessTokenResponseDto[] });
   readonly error = toSignal(this.error$, { initialValue: null as string | null });
   readonly scopes = toSignal(this.scopes$, { initialValue: [] });
+  readonly scopeSearch = signal('');
+  readonly filteredScopes = computed(() => {
+    const query = this.scopeSearch().trim().toLowerCase();
+    const scopes = this.scopes();
+
+    return query ? scopes.filter((item) => item.scope.toLowerCase().includes(query)) : scopes;
+  });
+  readonly scopeSearchPlaceholder = $localize`:@@featureScopePicker-searchPlaceholder:Search scopes`;
   readonly lastCreatedPlaintext = toSignal(this.lastCreatedPlaintext$, { initialValue: null as string | null });
 
   // Table (3.38: State column, ⋮ row actions, bulk Revoke via the single-token endpoint)
@@ -220,6 +230,7 @@ export class IdentityTokenManagerComponent implements OnInit {
     this.createForm = emptyForm();
     this.facade.clearCreatedPlaintext();
     this.copied.set(false);
+    this.scopeSearch.set('');
     this.createTokenModalOpen.set(true);
   }
 
@@ -254,6 +265,7 @@ export class IdentityTokenManagerComponent implements OnInit {
       scopes: [...token.scopes],
       expiresAt: '',
     };
+    this.scopeSearch.set('');
     this.editTokenModalOpen.set(true);
   }
 
@@ -306,6 +318,33 @@ export class IdentityTokenManagerComponent implements OnInit {
 
   isScopeSelected(form: TokenFormState, scope: string): boolean {
     return form.scopes.includes(scope);
+  }
+
+  selectedScopeCount(form: TokenFormState): number {
+    return this.scopes().filter((item) => form.scopes.includes(item.scope)).length;
+  }
+
+  areAllScopesSelected(form: TokenFormState): boolean {
+    const visible = this.filteredScopes();
+
+    return visible.length > 0 && visible.every((item) => form.scopes.includes(item.scope));
+  }
+
+  areSomeScopesSelected(form: TokenFormState): boolean {
+    const visible = this.filteredScopes();
+    const count = visible.filter((item) => form.scopes.includes(item.scope)).length;
+
+    return count > 0 && count < visible.length;
+  }
+
+  /** Selects or clears the scopes currently shown by the search filter. */
+  toggleAllScopes(form: TokenFormState, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const visible = this.filteredScopes().map((item) => item.scope);
+
+    form.scopes = checked
+      ? [...new Set([...form.scopes, ...visible])]
+      : form.scopes.filter((item) => !visible.includes(item));
   }
 
   isFormValid(form: TokenFormState): boolean {

@@ -1,0 +1,157 @@
+<fpc-section-row class="fpc-density-comfortable" [marketingHidden]="true">
+  <fpc-section-column variant="form" [scroll]="true" class="d-flex align-items-center">
+    <div class="p-4 my-auto" style="width: 500px; max-width: 100%" data-testid="app-authorize">
+      @if (loading() || redirecting()) {
+        <div class="d-flex align-items-center gap-3 py-5 justify-content-center">
+          <fpc-spinner />
+          @if (redirecting()) {
+            <span i18n="@@featureAppAuthorize-redirecting">Returning to the app...</span>
+          } @else {
+            <span i18n="@@featureAppAuthorize-loading">Loading authorization request...</span>
+          }
+        </div>
+      } @else if (fatalError(); as message) {
+        <h2 class="section__column-title mb-4" i18n="@@featureAppAuthorize-errorTitle">Authorization failed</h2>
+        <fpc-alert variant="danger" [message]="message" data-testid="app-authorize-fatal" />
+      } @else if (info(); as request) {
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div
+            class="app-authorize__avatar rounded-3 bg-primary-subtle text-primary-emphasis d-flex align-items-center justify-content-center flex-shrink-0"
+            aria-hidden="true"
+          >
+            <i class="bi bi-app-indicator"></i>
+          </div>
+          <div class="min-w-0">
+            <h2 class="section__column-title mb-1 text-break" data-testid="app-authorize-name">
+              {{ request.app.name }}
+            </h2>
+            <div class="text-body-secondary small" i18n="@@featureAppAuthorize-wantsAccess">
+              wants to access your {{ productName }} account
+            </div>
+          </div>
+        </div>
+
+        @if (request.app.description) {
+          <p class="mb-4 text-break" data-testid="app-authorize-description">{{ request.app.description }}</p>
+        }
+
+        @if (user(); as signedIn) {
+          <p class="small text-body-secondary mb-3">
+            <i class="bi bi-person-circle me-1" aria-hidden="true"></i>
+            <ng-container i18n="@@featureAppAuthorize-signedInAs">Signed in as {{ signedIn.email }}</ng-container>
+          </p>
+        }
+
+        @if (error(); as message) {
+          <fpc-alert variant="danger" [message]="message" data-testid="app-authorize-error" />
+        }
+
+        <div class="border rounded-3 mb-3">
+          <div class="px-3 py-2 border-bottom fw-semibold" i18n="@@featureAppAuthorize-grantedTitle">
+            This app will be able to
+          </div>
+          @if (grantableScopes().length === 0) {
+            <p class="px-3 py-2 mb-0 text-body-secondary" i18n="@@featureAppAuthorize-nothingGrantable">
+              Your account has none of the permissions this app requests.
+            </p>
+          } @else {
+            <ul class="list-unstyled mb-0 px-3 py-2 app-authorize__scopes" data-testid="app-authorize-scopes">
+              @for (scope of grantableScopes(); track scope.scope) {
+                <li class="d-flex align-items-start gap-2 py-1">
+                  <i class="bi bi-check-circle-fill text-success mt-1" aria-hidden="true"></i>
+                  <div>
+                    <span class="text-capitalize">{{ scope.resource }}</span>
+                    @if (scope.level) {
+                      <span class="text-body-secondary">: {{ levelLabel(scope.level) }}</span>
+                    }
+                    <div>
+                      <code class="small">{{ scope.scope }}</code>
+                    </div>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        @if (ungrantableScopes().length > 0) {
+          <div class="border rounded-3 mb-3">
+            <div class="px-3 py-2 border-bottom fw-semibold" i18n="@@featureAppAuthorize-notGrantedTitle">
+              Not granted (your account does not have these permissions)
+            </div>
+            <ul class="list-unstyled mb-0 px-3 py-2 app-authorize__scopes" data-testid="app-authorize-ungrantable">
+              @for (scope of ungrantableScopes(); track scope.scope) {
+                <li class="d-flex align-items-start gap-2 py-1 text-body-secondary">
+                  <i class="bi bi-dash-circle mt-1" aria-hidden="true"></i>
+                  <code class="small">{{ scope.scope }}</code>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (showCodeInput()) {
+          <div class="border rounded-3 p-3 mb-3" data-testid="app-authorize-2fa">
+            <p class="mb-3">
+              @if (secondFactor() === 'totp') {
+                <ng-container i18n="@@featureAppAuthorize-totpHint"
+                  >Confirm with the 6-digit code from your authenticator app.</ng-container
+                >
+              } @else {
+                <ng-container i18n="@@featureAppAuthorize-emailHint"
+                  >We sent a 6-character verification code to your email. Enter it to confirm.</ng-container
+                >
+              }
+            </p>
+            <fpc-form-field
+              forId="appAuthorizeCode"
+              i18n-label="@@featureAppAuthorize-codeLabel"
+              label="Verification code"
+              [required]="true"
+            >
+              <fpc-otp-input
+                controlId="appAuthorizeCode"
+                i18n-ariaLabel="@@featureAppAuthorize-codeLabel"
+                ariaLabel="Verification code"
+                [ngModel]="code()"
+                (ngModelChange)="code.set($event ?? '')"
+                [disabled]="submitting()"
+              />
+            </fpc-form-field>
+          </div>
+        } @else if (secondFactor() === 'email') {
+          <p class="small text-body-secondary mb-3" i18n="@@featureAppAuthorize-emailNotice">
+            For your security, we will email you a verification code when you authorize.
+          </p>
+        }
+
+        <p class="small text-body-secondary mb-4">
+          <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>
+          <ng-container i18n="@@featureAppAuthorize-redirectNotice"
+            >You will be redirected to <strong>{{ returnHost() }}</strong></ng-container
+          >
+        </p>
+
+        <div class="d-flex gap-2 justify-content-end">
+          <fpc-button
+            variant="secondary"
+            [disabled]="submitting()"
+            (clicked)="onDeny()"
+            data-testid="app-authorize-deny"
+          >
+            <span i18n="@@featureAppAuthorize-cancel">Cancel</span>
+          </fpc-button>
+          <fpc-button
+            variant="primary"
+            [disabled]="!canApprove()"
+            [loading]="submitting()"
+            (clicked)="onApprove()"
+            data-testid="app-authorize-approve"
+          >
+            <span i18n="@@featureAppAuthorize-approve">Authorize</span>
+          </fpc-button>
+        </div>
+      }
+    </div>
+  </fpc-section-column>
+</fpc-section-row>

@@ -53,6 +53,10 @@ import {
   RevokedUserTokenEntity,
   UserEntity,
   UserPersonalAccessTokenEntity,
+  IdentityAppEntity,
+  IdentityAppGrantEntity,
+  IdentityAppSessionEntity,
+  IdentityAppAuthorizationCodeEntity,
 } from '@forepath/identity/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
@@ -92,6 +96,10 @@ export const typeormConfig: DataSourceOptions = {
     UserEntity,
     RevokedUserTokenEntity,
     UserPersonalAccessTokenEntity,
+    IdentityAppEntity,
+    IdentityAppGrantEntity,
+    IdentityAppSessionEntity,
+    IdentityAppAuthorizationCodeEntity,
     StatisticsUserEntity,
     StatisticsClientEntity,
     StatisticsAgentEntity,

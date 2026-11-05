@@ -193,16 +193,8 @@ export class FpcTooltipComponent implements OnDestroy {
     this.portalBubbleToBody();
 
     const gap = 6;
-    const clip = this.clipRect();
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-
-    // Prefer room inside the clip ancestor so tips do not sit under sticky siblings (search strips).
-    // Still clamp into the viewport after portal so nothing paints off-screen.
-    const boundTop = Math.max(clip.top, 0);
-    const boundBottom = Math.min(clip.bottom, viewportHeight);
-    const boundLeft = Math.max(clip.left, 0);
-    const boundRight = Math.min(clip.right, viewportWidth);
 
     // Measure at the viewport origin with no width limits: a fixed bubble near the right edge would otherwise wrap
     // narrower than at its last / first position and come out taller than measured (first hover too short).
@@ -215,33 +207,22 @@ export class FpcTooltipComponent implements OnDestroy {
     const naturalHeight = bubble.offsetHeight;
     const naturalWidth = Math.ceil(bubble.getBoundingClientRect().width);
 
-    const spaceAbove = hostRect.top - boundTop - gap;
-    const spaceBelow = boundBottom - hostRect.bottom - gap;
-    const spaceStart = hostRect.left - boundLeft - gap;
-    const spaceEnd = boundRight - hostRect.right - gap;
+    // Prefer room inside the nearest scroll area so tips do not sit under sticky siblings (search strips), clamped
+    // into the viewport. When the bubble fits on neither side there (short table bodies, modals), it may use the whole
+    // viewport instead of being squeezed: it is portaled to <body>, so nothing clips it.
+    const viewport = new DOMRect(0, 0, viewportWidth, viewportHeight);
+    let layout = this.resolveSide(this.boundsWithin(this.clipRect()), hostRect, naturalWidth, naturalHeight, gap);
 
-    const preferred = this.placement();
-    let side: FpcTooltipPlacement = preferred;
-
-    if (preferred === 'top' || preferred === 'bottom') {
-      const fitsPreferred = preferred === 'top' ? naturalHeight <= spaceAbove : naturalHeight <= spaceBelow;
-      const fitsOpposite = preferred === 'top' ? naturalHeight <= spaceBelow : naturalHeight <= spaceAbove;
-
-      if (!fitsPreferred && fitsOpposite) {
-        side = preferred === 'top' ? 'bottom' : 'top';
-      } else if (!fitsPreferred && !fitsOpposite) {
-        side = spaceBelow >= spaceAbove ? 'bottom' : 'top';
-      }
-    } else {
-      const fitsPreferred = preferred === 'start' ? naturalWidth <= spaceStart : naturalWidth <= spaceEnd;
-      const fitsOpposite = preferred === 'start' ? naturalWidth <= spaceEnd : naturalWidth <= spaceStart;
-
-      if (!fitsPreferred && fitsOpposite) {
-        side = preferred === 'start' ? 'end' : 'start';
-      } else if (!fitsPreferred && !fitsOpposite) {
-        side = spaceEnd >= spaceStart ? 'end' : 'start';
-      }
+    if (!layout.fits) {
+      layout = this.resolveSide(this.boundsWithin(viewport), hostRect, naturalWidth, naturalHeight, gap);
     }
+
+    const { side, bounds, space } = layout;
+    const { top: boundTop, bottom: boundBottom, left: boundLeft, right: boundRight } = bounds;
+    const spaceAbove = space.above;
+    const spaceBelow = space.below;
+    const spaceStart = space.start;
+    const spaceEnd = space.end;
 
     let top = 0;
     let left = 0;
@@ -283,15 +264,19 @@ export class FpcTooltipComponent implements OnDestroy {
     this.bubbleMaxWidth.set(maxWidth);
   }
 
-  /** Nearest scroll/clip ancestor, otherwise the viewport. */
+  /**
+   * Nearest scroll area (`overflow: auto | scroll`), otherwise the viewport. `hidden` / `clip` ancestors are skipped:
+   * the bubble is portaled to <body>, so they cannot clip it, and many of them are tiny (truncating table cells, whose
+   * row height would otherwise squeeze the bubble).
+   */
   private clipRect(): DOMRect {
     let el: HTMLElement | null = this.elementRef.nativeElement.parentElement;
 
     while (el) {
       const { overflow, overflowX, overflowY } = getComputedStyle(el);
-      const clip = this.isClipValue(overflow) || this.isClipValue(overflowX) || this.isClipValue(overflowY);
+      const scrolls = this.isScrollValue(overflow) || this.isScrollValue(overflowX) || this.isScrollValue(overflowY);
 
-      if (clip) {
+      if (scrolls) {
         return el.getBoundingClientRect();
       }
 
@@ -299,6 +284,66 @@ export class FpcTooltipComponent implements OnDestroy {
     }
 
     return new DOMRect(0, 0, window.innerWidth, window.innerHeight);
+  }
+
+  /** Intersection of a rect with the viewport. */
+  private boundsWithin(rect: DOMRect): { top: number; bottom: number; left: number; right: number } {
+    return {
+      top: Math.max(rect.top, 0),
+      bottom: Math.min(rect.bottom, window.innerHeight),
+      left: Math.max(rect.left, 0),
+      right: Math.min(rect.right, window.innerWidth),
+    };
+  }
+
+  /** Picks the side for the bubble inside `bounds`; `fits` is false when neither the preferred nor the opposite side has room. */
+  private resolveSide(
+    bounds: { top: number; bottom: number; left: number; right: number },
+    hostRect: DOMRect,
+    naturalWidth: number,
+    naturalHeight: number,
+    gap: number,
+  ): {
+    side: FpcTooltipPlacement;
+    fits: boolean;
+    bounds: { top: number; bottom: number; left: number; right: number };
+    space: { above: number; below: number; start: number; end: number };
+  } {
+    const space = {
+      above: hostRect.top - bounds.top - gap,
+      below: bounds.bottom - hostRect.bottom - gap,
+      start: hostRect.left - bounds.left - gap,
+      end: bounds.right - hostRect.right - gap,
+    };
+    const preferred = this.placement();
+    const vertical = preferred === 'top' || preferred === 'bottom';
+    const size = vertical ? naturalHeight : naturalWidth;
+    const room = (side: FpcTooltipPlacement): number =>
+      side === 'top' ? space.above : side === 'bottom' ? space.below : side === 'start' ? space.start : space.end;
+    const opposite: FpcTooltipPlacement =
+      preferred === 'top' ? 'bottom' : preferred === 'bottom' ? 'top' : preferred === 'start' ? 'end' : 'start';
+
+    if (size <= room(preferred)) {
+      return { side: preferred, fits: true, bounds, space };
+    }
+
+    if (size <= room(opposite)) {
+      return { side: opposite, fits: true, bounds, space };
+    }
+
+    const fallback: FpcTooltipPlacement = vertical
+      ? space.below >= space.above
+        ? 'bottom'
+        : 'top'
+      : space.end >= space.start
+        ? 'end'
+        : 'start';
+
+    return { side: fallback, fits: false, bounds, space };
+  }
+
+  private isScrollValue(value: string): boolean {
+    return value === 'auto' || value === 'scroll';
   }
 
   private isClipValue(value: string): boolean {

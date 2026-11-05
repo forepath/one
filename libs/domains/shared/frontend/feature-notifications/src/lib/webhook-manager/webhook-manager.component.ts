@@ -31,6 +31,7 @@ import {
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
   FpcTableCellDirective,
   FpcTableRowDetailDirective,
   FPC_DEFAULT_PAGE_SIZE,
@@ -100,6 +101,7 @@ const emptyForm = (): WebhookFormState => ({
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
     FpcTableCellDirective,
     FpcTableRowDetailDirective,
   ],
@@ -164,6 +166,19 @@ export class WebhookManagerComponent implements OnInit {
   readonly lastCreatedSigningSecret = toSignal(this.lastCreatedSigningSecret$, { initialValue: null as string | null });
   readonly lastTestDelivery = toSignal(this.lastTestDelivery$, { initialValue: null });
   readonly eventTypes = toSignal(this.eventTypes$, { initialValue: [] });
+  readonly eventSearch = signal('');
+  readonly filteredEventTypes = computed(() => {
+    const query = this.eventSearch().trim().toLowerCase();
+    const eventTypes = this.eventTypes();
+
+    return query
+      ? eventTypes.filter(
+          (eventType) =>
+            eventType.type.toLowerCase().includes(query) || eventType.description.toLowerCase().includes(query),
+        )
+      : eventTypes;
+  });
+  readonly eventSearchPlaceholder = $localize`:@@featureNotifications-eventSearchPlaceholder:Search events`;
   readonly clients = toSignal(
     this.clientProvider ? this.clientProvider.getClients() : of([] as NotificationAdminClientOption[]),
     {
@@ -393,6 +408,7 @@ export class WebhookManagerComponent implements OnInit {
   onAddWebhook(): void {
     this.createForm = emptyForm();
     this.facade.clearCreatedSigningSecret();
+    this.eventSearch.set('');
     showNotificationModal(this.createWebhookModalOpen);
   }
 
@@ -430,6 +446,7 @@ export class WebhookManagerComponent implements OnInit {
       authValue: '',
       clientId: endpoint.clientId ?? '',
     };
+    this.eventSearch.set('');
     showNotificationModal(this.editWebhookModalOpen);
   }
 
@@ -588,6 +605,33 @@ export class WebhookManagerComponent implements OnInit {
 
   isEventSelected(form: WebhookFormState, eventType: string): boolean {
     return form.subscribedEvents.includes(eventType);
+  }
+
+  selectedEventCount(form: WebhookFormState): number {
+    return this.eventTypes().filter((eventType) => form.subscribedEvents.includes(eventType.type)).length;
+  }
+
+  areAllEventsSelected(form: WebhookFormState): boolean {
+    const visible = this.filteredEventTypes();
+
+    return visible.length > 0 && visible.every((eventType) => form.subscribedEvents.includes(eventType.type));
+  }
+
+  areSomeEventsSelected(form: WebhookFormState): boolean {
+    const visible = this.filteredEventTypes();
+    const count = visible.filter((eventType) => form.subscribedEvents.includes(eventType.type)).length;
+
+    return count > 0 && count < visible.length;
+  }
+
+  /** Selects or clears the event types currently shown by the search filter. */
+  toggleAllEvents(form: WebhookFormState, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const visible = this.filteredEventTypes().map((eventType) => eventType.type);
+
+    form.subscribedEvents = checked
+      ? [...new Set([...form.subscribedEvents, ...visible])]
+      : form.subscribedEvents.filter((item) => !visible.includes(item));
   }
 
   authValueRequired(authType: WebhookAuthType): boolean {

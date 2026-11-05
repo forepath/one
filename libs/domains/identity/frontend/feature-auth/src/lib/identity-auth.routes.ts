@@ -8,14 +8,21 @@ import {
   confirmEmail$,
   confirmEmailSuccessRedirect$,
   confirmTotp$,
+  createIdentityApp$,
   createPersonalAccessToken$,
   createUser$,
+  deleteIdentityApp$,
   deleteUser$,
   disableEmail2fa$,
   disableTotp$,
   enableEmail2fa$,
-  loadPersonalAccessTokenScopes$,
+  IdentityAppsFacade,
+  identityAppsReducer,
+  loadIdentityAppGrants$,
+  loadIdentityApps$,
+  loadOwnAppGrants$,
   loadPersonalAccessTokens$,
+  loadPersonalAccessTokenScopes$,
   loadTwoFactorStatus$,
   loadUsers$,
   loadUsersBatch$,
@@ -35,9 +42,14 @@ import {
   requestPasswordResetSuccessRedirect$,
   resetPassword$,
   resetPasswordSuccessRedirect$,
+  revokeAllIdentityAppGrants$,
+  revokeIdentityAppGrant$,
+  revokeOwnAppGrant$,
   revokePersonalAccessToken$,
+  rotateIdentityAppSecret$,
   setupTotp$,
   unlockUser$,
+  updateIdentityApp$,
   updatePersonalAccessToken$,
   updateUser$,
 } from '@forepath/identity/frontend';
@@ -46,8 +58,12 @@ import { buildPageTitle } from '@forepath/shared/frontend/util-configuration';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 
+import { IdentityAppAuthorizeComponent } from './app-authorize/app-authorize.component';
+import { IdentityAppManagerComponent } from './app-manager/app-manager.component';
+import { IdentityAuthorizedAppsComponent } from './authorized-apps/authorized-apps.component';
 import { IdentityConfirmEmailComponent } from './confirm-email/confirm-email.component';
 import { adminGuard } from './guards/admin.guard';
+import { appAuthorizeGuard } from './guards/app-authorize.guard';
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
 import { patUiGuard } from './guards/pat-ui.guard';
@@ -146,6 +162,26 @@ export const identityAuthRoutes: Route[] = [
     title: () => buildPageTitle($localize`:@@featureAuth-usersPage:User management`),
   },
   {
+    path: 'apps',
+    canActivate: [authGuard, adminGuard, patUiGuard],
+    component: IdentityAppManagerComponent,
+    title: () => buildPageTitle($localize`:@@featureAuth-appsPage:Apps`),
+  },
+  {
+    path: 'settings/apps',
+    canActivate: [authGuard, patUiGuard],
+    component: IdentityAuthorizedAppsComponent,
+    title: () => buildPageTitle($localize`:@@featureAuth-authorizedAppsPage:Authorized apps`),
+  },
+  {
+    // GitHub-style grant page apps send users to (`/authorize?app_id=…&state=…`). Login first when needed.
+    path: 'authorize',
+    component: IdentityAppAuthorizeComponent,
+    canActivate: [appAuthorizeGuard],
+    providers: PUBLIC_UI_PROVIDERS,
+    title: () => buildPageTitle($localize`:@@featureAuth-authorizeAppPage:Authorize app`),
+  },
+  {
     path: 'settings/tokens',
     canActivate: [authGuard, patUiGuard],
     component: IdentityTokenManagerComponent,
@@ -186,8 +222,10 @@ export const identityAuthRoutes: Route[] = [
 export const identityAuthProviders = [
   AuthenticationFacade,
   PersonalAccessTokensFacade,
+  IdentityAppsFacade,
   provideState('authentication', authenticationReducer),
   provideState('personalAccessTokens', personalAccessTokensReducer),
+  provideState('identityApps', identityAppsReducer),
   provideEffects({
     login$,
     loginSuccessRedirect$,
@@ -225,5 +263,15 @@ export const identityAuthProviders = [
     createPersonalAccessToken$,
     updatePersonalAccessToken$,
     revokePersonalAccessToken$,
+    loadIdentityApps$,
+    createIdentityApp$,
+    updateIdentityApp$,
+    rotateIdentityAppSecret$,
+    deleteIdentityApp$,
+    loadIdentityAppGrants$,
+    revokeIdentityAppGrant$,
+    revokeAllIdentityAppGrants$,
+    loadOwnAppGrants$,
+    revokeOwnAppGrant$,
   }),
 ];
