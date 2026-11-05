@@ -111,6 +111,18 @@ describe('agentsReducer', () => {
   });
 
   describe('loadMoreClientAgents', () => {
+    it('leaves the state untouched when no batch can start for the client', () => {
+      const noMore: AgentsState = { ...initialAgentsState, hasMore: { [clientId]: false } };
+      const appending: AgentsState = {
+        ...initialAgentsState,
+        hasMore: { [clientId]: true },
+        appendLoading: { [clientId]: true },
+      };
+
+      expect(agentsReducer(noMore, loadMoreClientAgents({ clientId }))).toBe(noMore);
+      expect(agentsReducer(appending, loadMoreClientAgents({ clientId }))).toBe(appending);
+    });
+
     it('should set appendLoading for the client', () => {
       const state: AgentsState = {
         ...initialAgentsState,

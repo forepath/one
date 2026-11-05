@@ -10,8 +10,15 @@ import {
   ClientUsersRepository,
   type RequestWithUser,
   SocketAuthService,
+  type SocketUserInfo,
+  attachMachineSocketSession,
   buildRequestFromSocketUser,
   ensureClientAccess,
+  getMissingPatScopes,
+  isMachineSocketUser,
+  isSocketEventPermitted,
+  socketRoomsForUser,
+  socketScopeDeniedMessage,
 } from '@forepath/identity/backend';
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { BadRequestException, Logger, Optional } from '@nestjs/common';
@@ -28,6 +35,12 @@ import {
 import { Server, Socket } from 'socket.io';
 import type { Socket as ClientSocket } from 'socket.io-client';
 
+import {
+  AGENSTRA_WEBSOCKETS,
+  CLIENTS_SOCKET_FORWARD_SCOPES,
+  CLIENTS_SOCKET_INBOUND_SCOPES,
+  CLIENTS_SOCKET_OUTBOUND_SCOPES,
+} from '../auth/agenstra-websocket.scopes';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
@@ -235,7 +248,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     server.use(async (socket, next) => {
       // Auth from headers (polling) or handshake.auth (WebSocket - browser cannot send custom headers)
       const authHeader = socket.handshake?.headers?.authorization ?? socket.handshake?.auth?.Authorization;
-      const userInfo = await this.socketAuthService.validateAndGetUser(authHeader);
+      const authOptions = { websocket: AGENSTRA_WEBSOCKETS.clients };
+      const userInfo = await this.socketAuthService.validateAndGetUser(authHeader, undefined, authOptions);
 
       if (!userInfo) {
         this.logger.warn(`WebSocket connection rejected: missing or invalid authorization for socket ${socket.id}`);
@@ -245,6 +259,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
 
       (socket as Socket & { data: { userInfo: typeof userInfo } }).data = { userInfo };
+      // PAT / app tokens: per-event scopes and live session re-checks (no-op for interactive sessions).
+      attachMachineSocketSession(socket, userInfo, {
+        inboundEvents: CLIENTS_SOCKET_INBOUND_SCOPES,
+        revalidate: () => this.socketAuthService.validateAndGetUser(authHeader, undefined, authOptions),
+        logger: this.logger,
+      });
       next();
     });
   }
@@ -260,7 +280,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     const prevClient = this.selectedClientBySocket.get(socket.id);
 
     if (prevClient) {
-      void socket.leave(TicketBoardRealtimeService.clientRoom(prevClient));
+      this.leaveClientRooms(socket, prevClient);
     }
 
     this.selectedClientBySocket.delete(socket.id);
@@ -317,7 +337,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     // Skip if already selected (unless it's a different clientId, which would be a change)
     if (currentSelectedClientId === clientId && !currentSettingClientId) {
       this.logger.debug(`Client ${clientId} already selected for socket ${socket.id}`);
-      void socket.join(TicketBoardRealtimeService.clientRoom(clientId));
+      void this.joinClientRooms(socket, clientId);
       // Still emit success to acknowledge the request
       socket.emit('setClientSuccess', { message: 'Client context already set', clientId });
 
@@ -348,10 +368,10 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       const previousSelectedClientId = this.selectedClientBySocket.get(socket.id);
 
       if (previousSelectedClientId && previousSelectedClientId !== clientId) {
-        await socket.leave(TicketBoardRealtimeService.clientRoom(previousSelectedClientId));
+        this.leaveClientRooms(socket, previousSelectedClientId);
       }
 
-      await socket.join(TicketBoardRealtimeService.clientRoom(clientId));
+      await this.joinClientRooms(socket, clientId);
 
       const client = await this.clientsRepository.findByIdOrThrow(clientId as string);
 
@@ -687,8 +707,9 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           }
         }
 
-        // Only forward application-level events, not Socket.IO internal events
-        if (!internalEvents.has(event)) {
+        // Only forward application-level events, not Socket.IO internal events.
+        // PAT / app token sockets only receive relayed events their scopes permit (fail-closed for unknown events).
+        if (!internalEvents.has(event) && this.mayReceive(socket, event)) {
           const forward = () => {
             // Check connection state before emitting (matches agents.gateway.ts pattern)
             if (!socket.connected) {
@@ -1413,6 +1434,19 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       return;
     }
 
+    // SECURITY: PAT / app tokens may only relay listed events their scopes permit (e.g. never terminal events).
+    const forwardedEvent = typeof data?.event === 'string' ? data.event : '';
+    const forwardingUser = this.socketUserInfo(socket);
+
+    if (
+      isMachineSocketUser(forwardingUser) &&
+      !isSocketEventPermitted(forwardingUser, forwardedEvent, CLIENTS_SOCKET_FORWARD_SCOPES)
+    ) {
+      socket.emit('error', { message: socketScopeDeniedMessage(forwardedEvent) });
+
+      return;
+    }
+
     const remote = this.remoteSocketBySocket.get(socket.id);
 
     if (!remote) {
@@ -1723,6 +1757,81 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   }
 
   /** Authenticated user of a console socket, for per-request workspace access checks in shared services. */
+  private socketUserInfo(socket: Socket): SocketUserInfo | undefined {
+    return (socket as Socket & { data?: { userInfo?: SocketUserInfo } }).data?.userInfo;
+  }
+
+  /** Whether the socket may receive `event` (always for interactive / API-key sockets). */
+  private mayReceive(socket: Socket, event: string): boolean {
+    const userInfo = this.socketUserInfo(socket);
+
+    return !isMachineSocketUser(userInfo) || isSocketEventPermitted(userInfo, event, CLIENTS_SOCKET_OUTBOUND_SCOPES);
+  }
+
+  /** Workspace room for interactive sockets; scope-permitted per-event rooms for PAT / app token sockets. */
+  private clientRooms(socket: Socket, clientId: string): string[] {
+    return socketRoomsForUser(
+      this.socketUserInfo(socket),
+      TicketBoardRealtimeService.clientRoom(clientId),
+      CLIENTS_SOCKET_OUTBOUND_SCOPES,
+    );
+  }
+
+  private async joinClientRooms(socket: Socket, clientId: string): Promise<void> {
+    for (const room of this.clientRooms(socket, clientId)) {
+      await socket.join(room);
+    }
+  }
+
+  private leaveClientRooms(socket: Socket, clientId: string): void {
+    for (const room of this.clientRooms(socket, clientId)) {
+      void socket.leave(room);
+    }
+  }
+
+  /**
+   * Drop context categories a PAT / app token cannot read over REST (tickets, knowledge pages, attachments).
+   * Interactive and API-key callers are returned unchanged.
+   */
+  private capContextInjectionToScopes(
+    contextInjection: ContextInjectionPayload,
+    req: RequestWithUser | undefined,
+  ): ContextInjectionPayload {
+    if (req?.apiKeyAuthenticated || !(req?.user?.amr ?? []).includes('pat')) {
+      return contextInjection;
+    }
+
+    const may = (scope: string) => this.contextScopeAllowed(req, scope);
+    const capped: ContextInjectionPayload = { ...contextInjection };
+
+    if (!may('tickets:read')) {
+      delete capped.ticketShas;
+      delete capped.ticketContexts;
+      delete capped.ticketContextRefs;
+    }
+
+    if (!may('knowledge:read')) {
+      delete capped.knowledgeShas;
+      delete capped.knowledgeContexts;
+    }
+
+    if (!may('attachments:read')) {
+      delete capped.attachmentIds;
+      delete capped.attachmentContexts;
+    }
+
+    return capped;
+  }
+
+  /** Whether the caller may use `scope`-protected context (always for interactive / API-key callers). */
+  private contextScopeAllowed(req: RequestWithUser | undefined, scope: string): boolean {
+    if (req?.apiKeyAuthenticated || !(req?.user?.amr ?? []).includes('pat')) {
+      return true;
+    }
+
+    return getMissingPatScopes(req?.user?.scopes ?? [], [scope]).length === 0;
+  }
+
   private requestForSocket(socket: Socket): RequestWithUser | undefined {
     const userInfo = (socket as Socket & { data?: { userInfo?: Parameters<typeof buildRequestFromSocketUser>[0] } })
       .data?.userInfo;
@@ -1744,12 +1853,15 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       return payload;
     }
 
-    const typed = payload as { contextInjection?: ContextInjectionPayload };
-    const contextInjection = typed.contextInjection;
+    const original = payload as { contextInjection?: ContextInjectionPayload };
 
-    if (!contextInjection) {
+    if (!original.contextInjection) {
       return payload;
     }
+
+    // PAT / app tokens: context categories the token cannot read over REST never reach the agent.
+    const typed = { ...original, contextInjection: this.capContextInjectionToScopes(original.contextInjection, req) };
+    const contextInjection = typed.contextInjection;
 
     const attachmentIds = Array.from(
       new Set((contextInjection.attachmentIds ?? []).map((id) => id.trim()).filter((id) => id.length > 0)),
@@ -1764,14 +1876,18 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       enabledGlobal: workspaceAutoEnrichEnabledGlobal,
       vectorMaxCosineDistance: workspaceAutoEnrichVectorMaxCosineDistance,
     } = await this.resolveWorkspaceAutoEnrichSettings(clientId);
-    const resolvedContextInjection = (await this.autoContextResolverService.resolve({
-      clientId,
-      prompt: promptForAutoContext,
-      contextInjection,
-      workspaceAutoEnrichEnabledGlobal,
-      workspaceAutoEnrichVectorMaxCosineDistance,
+    // Capped again after resolution: auto-enrichment may add tickets / pages the token cannot read.
+    const resolvedContextInjection = this.capContextInjectionToScopes(
+      (await this.autoContextResolverService.resolve({
+        clientId,
+        prompt: promptForAutoContext,
+        contextInjection,
+        workspaceAutoEnrichEnabledGlobal,
+        workspaceAutoEnrichVectorMaxCosineDistance,
+        req,
+      })) as ContextInjectionPayload,
       req,
-    })) as ContextInjectionPayload;
+    );
     const ticketShas = Array.from(
       new Set((resolvedContextInjection.ticketShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
     );
@@ -1806,7 +1922,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     );
 
     if (ticketShas.length === 0 && knowledgeShas.length === 0 && planShas.length === 0 && attachmentIds.length === 0) {
-      return payload;
+      return typed.contextInjection === original.contextInjection ? payload : typed;
     }
 
     // Plans are agent specific: only plans of the chat's environment resolve (with the user's workspace access).
@@ -1846,7 +1962,11 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
     let attachmentContexts: NonNullable<ContextInjectionPayload['attachmentContexts']> = [];
 
-    if (agentId && (attachmentIds.length > 0 || ticketShas.length > 0 || knowledgeShas.length > 0)) {
+    if (
+      agentId &&
+      this.contextScopeAllowed(req, 'attachments:read') &&
+      (attachmentIds.length > 0 || ticketShas.length > 0 || knowledgeShas.length > 0)
+    ) {
       try {
         attachmentContexts = await this.attachmentsService.resolveContextAttachments({
           clientId,

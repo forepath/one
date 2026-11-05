@@ -22,7 +22,8 @@ describe('TicketBoardRealtimeService', () => {
 
     service.attachServer(server as Server);
     service.emitToClient('client-1', TICKETS_BOARD_EVENTS.ticketRemoved, { id: 't1', clientId: 'client-1' });
-    expect(to).toHaveBeenCalledWith('client:client-1');
+    // Workspace room for interactive sockets plus the per-event room for permitted PAT / app token sockets.
+    expect(to).toHaveBeenCalledWith(['client:client-1', 'client:client-1#event:ticketRemoved']);
     expect(emit).toHaveBeenCalledWith(TICKETS_BOARD_EVENTS.ticketRemoved, { id: 't1', clientId: 'client-1' });
   });
 });

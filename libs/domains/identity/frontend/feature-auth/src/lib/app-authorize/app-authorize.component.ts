@@ -43,10 +43,11 @@ export interface ScopeView {
 }
 
 function toScopeView(scope: string): ScopeView {
-  const match = /^([a-z][a-z0-9_]*):(read|write|admin)$/.exec(scope);
+  // Same grammar as the backend: `<resource>:<level>`, resource optionally namespaced (`websocket:clients`).
+  const match = /^([a-z][a-z0-9_]*(?::[a-z][a-z0-9_]*)?):(read|write|admin)$/.exec(scope);
 
   return match
-    ? { scope, resource: match[1].replace(/_/g, ' '), level: match[2] as ScopeLevel }
+    ? { scope, resource: match[1].replace(/[_:]/g, ' '), level: match[2] as ScopeLevel }
     : { scope, resource: scope, level: null };
 }
 

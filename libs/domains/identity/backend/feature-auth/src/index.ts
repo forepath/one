@@ -68,3 +68,5 @@ export * from './lib/modules/keycloak-user-sync.module';
 export * from './lib/utils/audit-pat-route-scopes';
 export * from './lib/utils/get-keycloak-pat-auth-guards';
 export * from './lib/utils/identity-app.utils';
+export * from './lib/utils/machine-jwt-session.util';
+export * from './lib/utils/machine-socket-session.util';

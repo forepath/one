@@ -306,7 +306,7 @@ export class AgentConsoleStatusService {
     }
 
     if (changed.length) {
-      this.realtime.emitToUser(userId, 'statusPatch', {
+      this.realtime.emitToSocket(socketId, 'statusPatch', {
         generatedAt: new Date().toISOString(),
         environmentProgress: changed,
       } satisfies StatusPatchPayload);
@@ -317,7 +317,7 @@ export class AgentConsoleStatusService {
     const snapshot = await this.buildSnapshotForUser(userInfo);
 
     this.lastSnapshotBySocketId.set(socketId, snapshot);
-    this.realtime.emitToUser(resolveUserId(userInfo) ?? '', 'statusSnapshot', snapshot);
+    this.realtime.emitToSocket(socketId, 'statusSnapshot', snapshot);
 
     return snapshot;
   }
@@ -337,7 +337,7 @@ export class AgentConsoleStatusService {
     const patch = this.diffSnapshots(previous, next);
 
     if (patch) {
-      this.realtime.emitToUser(userId, 'statusPatch', patch);
+      this.realtime.emitToSocket(socketId, 'statusPatch', patch);
     }
   }
 

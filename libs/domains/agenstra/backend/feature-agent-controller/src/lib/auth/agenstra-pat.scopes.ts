@@ -41,6 +41,15 @@ export const AGENSTRA_PAT_SCOPES = [
   // Atlassian context import (admin console)
   'imports:admin',
   'statistics:read',
+  // WebSockets (connect + subscribe: read; state-changing events: write). Events stay capped by the domain scopes
+  // above (see agenstra-websocket.scopes.ts).
+  'websocket:clients:read',
+  'websocket:clients:write',
+  'websocket:status:read',
+  'websocket:status:write',
+  'websocket:tickets:read',
+  'websocket:pages:read',
+  'websocket:vnc:write',
   ...IDENTITY_PAT_SCOPES,
 ] as const;
 

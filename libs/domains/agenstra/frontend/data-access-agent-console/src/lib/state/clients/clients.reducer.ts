@@ -174,11 +174,12 @@ export const clientsReducer = createReducer(
     hasMore: false,
     appendLoading: false,
   })),
-  on(loadMoreClients, (state) => ({
-    ...state,
-    appendLoading: true,
-    appendError: null,
-  })),
+  // Only mark a batch as loading when one can start; the effect sees this state after the reducer ran.
+  on(loadMoreClients, (state) =>
+    state.hasMore && !state.loading && !state.appendLoading
+      ? { ...state, appendLoading: true, appendError: null }
+      : state,
+  ),
   on(loadMoreClientsSuccess, (state, { clients, hasMore, nextOffset }) => ({
     ...state,
     entities: [...state.entities, ...clients],

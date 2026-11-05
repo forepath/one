@@ -230,11 +230,16 @@ export const agentsReducer = createReducer(
     hasMore: { ...state.hasMore, [clientId]: false },
     appendLoading: { ...state.appendLoading, [clientId]: false },
   })),
-  on(loadMoreClientAgents, (state, { clientId }) => ({
-    ...state,
-    appendLoading: { ...state.appendLoading, [clientId]: true },
-    appendError: { ...state.appendError, [clientId]: null },
-  })),
+  // Only mark a batch as loading when one can start; the effect sees this state after the reducer ran.
+  on(loadMoreClientAgents, (state, { clientId }) =>
+    state.hasMore[clientId] && !state.loading[clientId] && !state.appendLoading[clientId]
+      ? {
+          ...state,
+          appendLoading: { ...state.appendLoading, [clientId]: true },
+          appendError: { ...state.appendError, [clientId]: null },
+        }
+      : state,
+  ),
   on(loadMoreClientAgentsSuccess, (state, { clientId, agents, hasMore, nextOffset }) => ({
     ...updateClientState(state, clientId, (clientState) => ({
       agents: [...clientState.agents, ...agents],

@@ -1,3 +1,4 @@
+import { socketBroadcastRooms } from '@forepath/identity/backend';
 import { Injectable, Logger } from '@nestjs/common';
 import type { Server } from 'socket.io';
 
@@ -24,6 +25,9 @@ export class KnowledgeBoardRealtimeService {
       return;
     }
 
-    this.server.to(KnowledgeBoardRealtimeService.clientRoom(clientId)).emit(event, payload);
+    // Per-event rooms reach PAT / app token sockets permitted to receive this event.
+    this.server
+      .to(socketBroadcastRooms(KnowledgeBoardRealtimeService.clientRoom(clientId), event))
+      .emit(event, payload);
   }
 }

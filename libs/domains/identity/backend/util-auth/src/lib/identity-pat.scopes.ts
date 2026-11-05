@@ -7,7 +7,8 @@ export const IDENTITY_PAT_SCOPES = ['users:admin', 'webhooks:admin', 'updates:ad
 export type IdentityPatScope = (typeof IDENTITY_PAT_SCOPES)[number];
 
 /**
- * PAT scope access levels, lowest → highest. Scopes follow `<resource>:<level>`:
+ * PAT scope access levels, lowest → highest. Scopes follow `<resource>:<level>`, where the resource may carry one
+ * namespace segment (`<namespace>:<name>`, e.g. `websocket:clients:read`):
  *
  * - `read`  — read operations in non-admin scope
  * - `write` — all other non-admin operations (implies `read`)
@@ -17,9 +18,9 @@ export const PAT_SCOPE_LEVELS = ['read', 'write', 'admin'] as const;
 
 export type PatScopeLevel = (typeof PAT_SCOPE_LEVELS)[number];
 
-const PAT_SCOPE_PATTERN = /^([a-z][a-z0-9_]*):(read|write|admin)$/;
+const PAT_SCOPE_PATTERN = /^([a-z][a-z0-9_]*(?::[a-z][a-z0-9_]*)?):(read|write|admin)$/;
 
-/** Split `<resource>:<level>`; `undefined` when the scope does not follow the pattern. */
+/** Split `<resource>:<level>` (resource optionally namespaced); `undefined` when the scope does not follow the pattern. */
 export function parsePatScope(scope: string): { resource: string; level: PatScopeLevel } | undefined {
   const match = PAT_SCOPE_PATTERN.exec(scope);
 

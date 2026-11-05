@@ -1,3 +1,4 @@
+import { socketBroadcastRooms } from '@forepath/identity/backend';
 import { Injectable, Logger } from '@nestjs/common';
 import type { Server } from 'socket.io';
 
@@ -30,6 +31,7 @@ export class TicketBoardRealtimeService {
 
     const room = TicketBoardRealtimeService.clientRoom(clientId);
 
-    this.server.to(room).emit(event, payload);
+    // Per-event rooms reach PAT / app token sockets permitted to receive this event.
+    this.server.to(socketBroadcastRooms(room, event)).emit(event, payload);
   }
 }

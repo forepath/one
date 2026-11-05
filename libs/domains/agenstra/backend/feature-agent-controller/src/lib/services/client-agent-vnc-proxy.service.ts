@@ -25,7 +25,12 @@ export class ClientAgentVncProxyService {
   async createSession(
     clientId: string,
     agentId: string,
-    access: { subject: string; isApiKeyAuth: boolean; userRole?: import('@forepath/identity/backend').UserRole },
+    access: {
+      subject: string;
+      isApiKeyAuth: boolean;
+      userRole?: import('@forepath/identity/backend').UserRole;
+      amr?: string[];
+    },
   ): Promise<CreateClientVncSessionResponseDto> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
 
@@ -83,6 +88,7 @@ export class ClientAgentVncProxyService {
       subject: access.subject,
       isApiKeyAuth: access.isApiKeyAuth,
       userRole: access.userRole,
+      ...(access.amr ? { amr: access.amr } : {}),
       managerTicket: managerSession.ticket,
       managerWsUrl,
       clientAuthHeader: authHeader,

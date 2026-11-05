@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-05T17:53:12.565Z",
+  "generatedAt": "2026-11-05T22:38:15.873Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -77922,6 +77922,26 @@
     },
     {
       "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
       "to": "api:HTTP:GET:/admin/opencode/config",
       "type": "documents"
     },
@@ -80178,6 +80198,11 @@
     {
       "from": "concept:decabill-authentication-methods",
       "to": "api:HTTP:POST:/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:GET:/projects",
       "type": "documents"
     },
     {

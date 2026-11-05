@@ -20,7 +20,7 @@ describe('ProjectBoardRealtimeService', () => {
     service.attachServer({ to } as never);
     service.emitToProject('p1', PROJECTS_BOARD_EVENTS.ticketUpsert, { id: 't1' });
 
-    expect(to).toHaveBeenCalledWith('project:p1');
+    expect(to).toHaveBeenCalledWith(['project:p1', 'project:p1#event:ticketUpsert']);
     expect(emit).toHaveBeenCalledWith(PROJECTS_BOARD_EVENTS.ticketUpsert, { id: 't1' });
   });
 });

@@ -79,4 +79,67 @@ describe('AgentConsoleStatusRealtimeService', () => {
     expect(service.getConnectedUserIds()).toEqual([]);
     expect(service.getUserRole('admin-1')).toBeUndefined();
   });
+  describe('machine tokens (PAT / app access tokens)', () => {
+    const machineInfo = (scopes: string[]) => ({
+      userId: 'user-1',
+      userRole: UserRole.ADMIN,
+      isApiKeyAuth: false,
+      amr: ['pat'],
+      scopes,
+    });
+
+    it('keeps machine sockets out of the per-user fan-out', () => {
+      service.registerSocket('user-1', 'interactive', UserRole.ADMIN);
+      service.registerSocket(
+        'user-1',
+        'machine',
+        UserRole.ADMIN,
+        machineInfo(['agents:read', 'agent_chats:read', 'agent_vcs:read']),
+      );
+
+      service.emitToUser('user-1', 'statusPatch', {});
+
+      expect(mockTo).toHaveBeenCalledWith('interactive');
+      expect(mockTo).not.toHaveBeenCalledWith('machine');
+      expect(service.getUserIdForSocket('machine')).toBe('user-1');
+    });
+
+    it('does not count machine-only users as connected status users (no admin push fan-out)', () => {
+      service.registerSocket('admin-1', 'machine', UserRole.ADMIN, machineInfo(['agents:read']));
+
+      expect(service.getConnectedUserIds()).toEqual([]);
+      expect(service.getUserRole('admin-1')).toBeUndefined();
+    });
+
+    it('emits per-socket events to machine sockets only with the event scopes', () => {
+      service.registerSocket('user-1', 'reader', UserRole.USER, machineInfo(['agents:read', 'agent_chats:read']));
+      service.registerSocket(
+        'user-1',
+        'full',
+        UserRole.USER,
+        machineInfo(['agents:read', 'agent_chats:read', 'agent_vcs:read']),
+      );
+
+      service.emitToSocket('reader', 'statusSnapshot', {});
+      service.emitToSocket('full', 'statusSnapshot', {});
+      service.emitToSocket('full', 'unlistedEvent', {});
+
+      expect(mockTo.mock.calls.map((call) => call[0])).toEqual(['full']);
+    });
+
+    it('emits per-socket events to interactive sockets unconditionally', () => {
+      service.registerSocket('user-1', 'interactive');
+
+      service.emitToSocket('interactive', 'statusSnapshot', {});
+
+      expect(mockTo).toHaveBeenCalledWith('interactive');
+    });
+
+    it('unregisters machine sockets', () => {
+      service.registerSocket('user-1', 'machine', UserRole.USER, machineInfo(['agents:read']));
+      service.unregisterSocket('machine');
+
+      expect(service.getUserIdForSocket('machine')).toBeUndefined();
+    });
+  });
 });

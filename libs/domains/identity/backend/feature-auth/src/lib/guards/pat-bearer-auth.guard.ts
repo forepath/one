@@ -14,6 +14,7 @@ import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens
 import { UsersRepository } from '../repositories/users.repository';
 import { IdentityAppAuthorizationService } from '../services/identity-app-authorization.service';
 import { PersonalAccessTokenService } from '../services/personal-access-token.service';
+import { resolveMachineJwtSession } from '../utils/machine-jwt-session.util';
 import { assertUsersJwtSessionValid, type UsersJwtSessionPayload } from '../utils/users-jwt-session.util';
 
 import type { AuthenticatedUsersRequestUser } from './users-auth.guard';
@@ -106,26 +107,11 @@ export class PatBearerAuthGuard implements CanActivate {
       await assertUsersJwtSessionValid(payload, user, this.revokedUserTokensRepository);
 
       const isApp = amr.includes('app');
-      let scopes: string[];
-
-      if (isApp) {
-        // App access token (`amr: ['pat', 'app']`): live session/grant/app check.
-        scopes = (
-          await this.appAuthorizationService.assertAppJwtActive({
-            appSessionId: payload.appSessionId,
-            appId: payload.appId,
-            userId: payload.sub,
-            jwtScopes: payload.scopes,
-          })
-        ).scopes;
-      } else {
-        if (!payload.patId) {
-          throw new UnauthorizedException('Session is no longer valid.');
-        }
-
-        scopes = (await this.personalAccessTokenService.assertPatJwtActive(payload.patId, payload.sub, payload.scopes))
-          .scopes;
-      }
+      // PAT or app access token (`amr: ['pat', 'app']`): live session/grant check.
+      const { scopes } = await resolveMachineJwtSession(payload, {
+        personalAccessTokenService: this.personalAccessTokenService,
+        appAuthorizationService: this.appAuthorizationService,
+      });
 
       request.patAuthenticated = true;
       request.user = {

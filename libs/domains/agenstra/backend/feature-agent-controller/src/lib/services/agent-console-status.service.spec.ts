@@ -70,6 +70,7 @@ describe('AgentConsoleStatusService', () => {
   };
   const realtime = {
     emitToUser: jest.fn(),
+    emitToSocket: jest.fn(),
     getUserIdForSocket: jest.fn(),
     getConnectedUserIds: jest.fn().mockReturnValue([]),
     getUserRole: jest.fn(),
@@ -331,7 +332,8 @@ describe('AgentConsoleStatusService', () => {
     });
 
     expect(snapshot.environments).toHaveLength(1);
-    expect(realtime.emitToUser).toHaveBeenCalledWith('user-1', 'statusSnapshot', snapshot);
+    expect(realtime.emitToSocket).toHaveBeenCalledWith('socket-1', 'statusSnapshot', snapshot);
+    expect(realtime.emitToUser).not.toHaveBeenCalled();
 
     vcsProxy.getStatus.mockResolvedValue({
       isClean: true,
@@ -346,7 +348,7 @@ describe('AgentConsoleStatusService', () => {
       user: { id: 'user-1', roles: [] },
     });
 
-    expect(realtime.emitToUser).toHaveBeenCalledWith('user-1', 'statusPatch', expect.any(Object));
+    expect(realtime.emitToSocket).toHaveBeenCalledWith('socket-1', 'statusPatch', expect.any(Object));
   });
 
   it('skips markEnvironmentRead when user id is missing', async () => {
@@ -498,13 +500,13 @@ describe('AgentConsoleStatusService', () => {
       jest.clearAllMocks();
 
       await service.runProgressPollForSocket('socket-1', userInfo);
-      expect(realtime.emitToUser).not.toHaveBeenCalled();
+      expect(realtime.emitToSocket).not.toHaveBeenCalled();
 
       const advanced = { ...runningOp, progress: 70, step: 'finalizing' as const, stepIndex: 3 };
 
       agentProxy.getClientEnvironmentProgress.mockResolvedValue([advanced]);
       await service.runProgressPollForSocket('socket-1', userInfo);
-      expect(realtime.emitToUser).toHaveBeenCalledWith('user-1', 'statusPatch', {
+      expect(realtime.emitToSocket).toHaveBeenCalledWith('socket-1', 'statusPatch', {
         generatedAt: expect.any(String),
         environmentProgress: [{ clientId: 'client-1', operations: [advanced] }],
       });
@@ -513,7 +515,7 @@ describe('AgentConsoleStatusService', () => {
       jest.clearAllMocks();
       agentProxy.getClientEnvironmentProgress.mockResolvedValue([]);
       await service.runProgressPollForSocket('socket-1', userInfo);
-      expect(realtime.emitToUser).toHaveBeenCalledWith('user-1', 'statusPatch', {
+      expect(realtime.emitToSocket).toHaveBeenCalledWith('socket-1', 'statusPatch', {
         generatedAt: expect.any(String),
         environmentProgress: [{ clientId: 'client-1', operations: [] }],
       });
@@ -524,7 +526,7 @@ describe('AgentConsoleStatusService', () => {
       await service.runProgressPollForSocket('unknown-socket', userInfo);
 
       expect(agentProxy.getClientEnvironmentProgress).not.toHaveBeenCalled();
-      expect(realtime.emitToUser).not.toHaveBeenCalled();
+      expect(realtime.emitToSocket).not.toHaveBeenCalled();
     });
 
     it('includes progress changes in regular poll patches', async () => {
@@ -534,8 +536,8 @@ describe('AgentConsoleStatusService', () => {
 
       await service.runPollForSocket('socket-1', userInfo);
 
-      expect(realtime.emitToUser).toHaveBeenCalledWith(
-        'user-1',
+      expect(realtime.emitToSocket).toHaveBeenCalledWith(
+        'socket-1',
         'statusPatch',
         expect.objectContaining({ environmentProgress: [{ clientId: 'client-1', operations: [runningOp] }] }),
       );

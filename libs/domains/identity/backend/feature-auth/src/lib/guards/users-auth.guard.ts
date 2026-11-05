@@ -14,6 +14,7 @@ import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens
 import { UsersRepository } from '../repositories/users.repository';
 import { IdentityAppAuthorizationService } from '../services/identity-app-authorization.service';
 import { PersonalAccessTokenService } from '../services/personal-access-token.service';
+import { resolveMachineJwtSession } from '../utils/machine-jwt-session.util';
 import { assertUsersJwtSessionValid, UsersJwtSessionPayload } from '../utils/users-jwt-session.util';
 
 export type UsersJwtPayload = UsersJwtSessionPayload;
@@ -117,28 +118,14 @@ export class UsersAuthGuard implements CanActivate {
       const amr = payload.amr ?? ['pwd'];
       let scopes = payload.scopes;
 
-      if (amr.includes('app')) {
-        // App access token: live session/grant/app check; scopes re-capped to app scopes and the user's role.
-        const active = await this.appAuthorizationService.assertAppJwtActive({
-          appSessionId: payload.appSessionId,
-          appId: payload.appId,
-          userId: payload.sub,
-          jwtScopes: payload.scopes,
-        });
-
-        scopes = active.scopes;
-      } else if (amr.includes('pat')) {
-        if (!payload.patId) {
-          throw new UnauthorizedException('Session is no longer valid.');
-        }
-
-        const active = await this.personalAccessTokenService.assertPatJwtActive(
-          payload.patId,
-          payload.sub,
-          payload.scopes,
-        );
-
-        scopes = active.scopes;
+      if (amr.includes('app') || amr.includes('pat')) {
+        // Machine JWT (PAT or app access token): live session check; scopes re-capped to the live grant and role.
+        scopes = (
+          await resolveMachineJwtSession(payload, {
+            personalAccessTokenService: this.personalAccessTokenService,
+            appAuthorizationService: this.appAuthorizationService,
+          })
+        ).scopes;
       }
 
       request.user = {

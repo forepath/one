@@ -32,6 +32,7 @@ export * from './lib/statistics.interface';
 export * from './lib/notification.interface';
 export * from './lib/identity-notification.events';
 export * from './lib/identity-pat.scopes';
+export * from './lib/socket-scope.utils';
 export * from './lib/email-dispatcher.interface';
 
 export * from './lib/token.utils';
