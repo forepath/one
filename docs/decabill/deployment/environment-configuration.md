@@ -29,16 +29,22 @@ Complete reference for environment variables used in Decabill.
 
 ### Authentication
 
-| Variable                   | Description                                                                                                           |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `AUTHENTICATION_METHOD`    | Explicit: `api-key`, `keycloak`, or `users`. If unset, inferred (see DR-004)                                          |
-| `STATIC_API_KEY`           | Static API key when using api-key mode                                                                                |
-| `STATIC_API_KEY_TENANT_ID` | Optional tenant bind for API key auth (see DR-002)                                                                    |
-| `DISABLE_SIGNUP`           | When `true`, disables self-registration for users mode                                                                |
-| `DISABLE_FORCE_LOGIN_2FA`  | When `true`, login 2FA is opt-in only; when unset/`false`, every users-mode login requires email OTP or enrolled TOTP |
-| `PRODUCT_NAME`             | TOTP issuer label in authenticator apps (otpauth); defaults to `Forepath`                                             |
-| `JWT_SECRET`               | Required for users and keycloak modes (sessions / PAT exchange)                                                       |
-| `KEYCLOAK_*`               | Keycloak URL, realm, client id/secret, token validation                                                               |
+| Variable                               | Description                                                                                                                                                           |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `AUTHENTICATION_METHOD`                | Explicit: `api-key`, `users`, `oidc`, or `saml`. If unset, inferred (see DR-004); other values fail at boot                                                           |
+| `STATIC_API_KEY`                       | Static API key when using api-key mode                                                                                                                                |
+| `STATIC_API_KEY_TENANT_ID`             | Optional tenant bind for API key auth (see DR-002)                                                                                                                    |
+| `DISABLE_SIGNUP`                       | When `true`, disables self-registration for users mode                                                                                                                |
+| `DISABLE_FORCE_LOGIN_2FA`              | When `true`, login 2FA is opt-in only; when unset/`false`, every users-mode login requires email OTP or enrolled TOTP                                                 |
+| `PRODUCT_NAME`                         | TOTP issuer label in authenticator apps (otpauth); defaults to `Forepath`                                                                                             |
+| `JWT_SECRET`                           | Required for users, oidc and saml modes (sessions / PAT exchange)                                                                                                     |
+| `OIDC_*`                               | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_TOKEN_VALIDATION`, `OIDC_AUDIENCE`, `OIDC_AUTHORIZED_PARTIES`, …                                         |
+| `TRUST_PROXY`                          | Express `trust proxy` (opt-in: hop count such as `1`, `loopback` or address list). Only when the API is reachable exclusively through the proxy                       | Prefer address-based values (`uniquelocal` or the proxy/docker subnet) over hop counts when the API port is also published directly. |
+| `EXTERNAL_AUTH_AUTO_PROVISION_TENANTS` | Tenants where unknown OIDC / SAML identities are auto-created (default all; list or `none`). Recommended with several tenants behind one IdP                          |
+| `OIDC_ALLOW_*`, `*_TRUST_EMAIL`        | `OIDC_ALLOW_INSECURE_HTTP`, `OIDC_ALLOW_UNRESTRICTED_AUDIENCE` (production opt-outs), `OIDC_TRUST_EMAIL` / `SAML_TRUST_EMAIL` (trust emails without `email_verified`) |
+| `SAML_*`                               | `SAML_IDP_SSO_URL`, `SAML_IDP_CERT`, `SAML_IDP_ISSUER`, `SAML_SP_ENTITY_ID`, `SAML_SP_ACS_URL`, `SAML_FRONTEND_CALLBACK_URL`, …                                       |
+
+See **[Authentication](../features/authentication.md)** for the full OIDC / SAML variable reference.
 
 ### Multi-tenancy
 
@@ -53,7 +59,7 @@ Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`
 | `BILLING_FRONTEND_URL`     | Billing console base URL for the `default` tenant (Stripe return redirects).                                                                                                                                                                                               |
 | `TENANT_FRONTEND_URLS`     | Per-tenant console URLs: `tenantId=https://…` pairs, comma-separated.                                                                                                                                                                                                      |
 
-**API key scope (accepted risk [DR-002](../security/accepted-risks.md#dr-002-billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment key grants **admin access to every tenant** in **`TENANTS`**, selected per request via **`X-Tenant`**. Set **`STATIC_API_KEY_TENANT_ID`** to bind the key to one tenant, or use **keycloak** / **users** for interactive multi-tenant console access.
+**API key scope (accepted risk [DR-002](../security/accepted-risks.md#dr-002-billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment key grants **admin access to every tenant** in **`TENANTS`**, selected per request via **`X-Tenant`**. Set **`STATIC_API_KEY_TENANT_ID`** to bind the key to one tenant, or use **oidc** / **saml** / **users** for interactive multi-tenant console access.
 
 ### CORS and Rate Limiting
 
@@ -367,7 +373,7 @@ Applies to **Backend Billing Manager**. See [OpenTelemetry](../features/opentele
 - `NODE_ENV=production`
 - `CORS_ORIGIN` **required** `RATE_LIMIT_ENABLED=true`
 - `ENCRYPTION_KEY` **required** for encrypted fields
-- Strong `STATIC_API_KEY` or Keycloak/users auth
+- Strong `STATIC_API_KEY` or oidc / saml / users auth
 - `QUEUE_BULL_BOARD_PASSWORD` **required** when Bull Board is enabled
 - `CONFIG_ALLOWED_HOSTS` when `CONFIG` is set on frontends
 

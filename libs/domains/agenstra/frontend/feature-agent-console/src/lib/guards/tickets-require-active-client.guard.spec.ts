@@ -1,7 +1,7 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router, type ActivatedRouteSnapshot, type UrlTree } from '@angular/router';
-// Match guard import: avoid data-access barrel (identity / Keycloak).
+// Match guard import: avoid data-access barrel (identity / OIDC client).
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { ClientsFacade } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { firstValueFrom, isObservable, of, type Observable } from 'rxjs';

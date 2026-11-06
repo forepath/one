@@ -98,7 +98,7 @@ graph TB
 
     subgraph "Infrastructure"
         DOCKER[Docker Daemon]
-        KEYCLOAK[Keycloak<br/>Optional]
+        IDP[OIDC / SAML IdP<br/>Optional]
     end
 
     FE -->|HTTP/WebSocket| AC
@@ -106,8 +106,8 @@ graph TB
     AC --> DB
     AM --> DB
     AM --> DOCKER
-    AC --> KEYCLOAK
-    AM --> KEYCLOAK
+    AC --> IDP
+    AM --> IDP
 ```
 
 ## Quick Start

@@ -1,11 +1,14 @@
 import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
-import { KeycloakService } from 'keycloak-angular';
-
-const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
-const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
+import {
+  API_KEY_STORAGE_KEY,
+  IDENTITY_AUTH_ENVIRONMENT,
+  isUsersConsoleJwtValid,
+  OidcAuthService,
+  USERS_JWT_STORAGE_KEY,
+  usesAppSessionJwt,
+} from '@forepath/identity/frontend';
 
 /**
  * Allows anonymous access to the public withdrawal page while sending already
@@ -16,18 +19,13 @@ export const publicWithdrawalAccessGuard: CanActivateFn = () => {
   const environment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT);
   const router = inject(Router);
   const subscriptionsUrl = router.createUrlTree(['/subscriptions']);
+  const type = environment.authentication.type;
 
-  if (environment.authentication.type === 'keycloak') {
-    const keycloakService = inject(KeycloakService, { optional: true });
-
-    if (keycloakService?.isLoggedIn()) {
-      return subscriptionsUrl;
-    }
-
-    return true;
+  if (type === 'oidc') {
+    return inject(OidcAuthService).isLoggedIn() ? subscriptionsUrl : true;
   }
 
-  if (environment.authentication.type === 'api-key') {
+  if (type === 'api-key') {
     if (environment.authentication.apiKey || localStorage.getItem(API_KEY_STORAGE_KEY)) {
       return subscriptionsUrl;
     }
@@ -35,23 +33,8 @@ export const publicWithdrawalAccessGuard: CanActivateFn = () => {
     return true;
   }
 
-  if (environment.authentication.type === 'users') {
-    const jwt = localStorage.getItem(USERS_JWT_STORAGE_KEY);
-
-    if (jwt) {
-      try {
-        const payload = JSON.parse(atob(jwt.split('.')[1] ?? '{}'));
-        const exp = payload.exp ? payload.exp * 1000 : 0;
-
-        if (exp > Date.now()) {
-          return subscriptionsUrl;
-        }
-      } catch {
-        return true;
-      }
-    }
-
-    return true;
+  if (usesAppSessionJwt(type)) {
+    return isUsersConsoleJwtValid(localStorage.getItem(USERS_JWT_STORAGE_KEY)) ? subscriptionsUrl : true;
   }
 
   return true;

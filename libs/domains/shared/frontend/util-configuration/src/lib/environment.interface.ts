@@ -1,7 +1,8 @@
 import type {
   ApiKeyAuthenticationConfig,
   AuthenticationConfig,
-  KeycloakAuthenticationConfig,
+  OidcAuthenticationConfig,
+  SamlAuthenticationConfig,
   UsersAuthenticationConfig,
 } from '@forepath/identity/frontend';
 
@@ -11,7 +12,8 @@ import type { AuthMarketing } from './auth-marketing.interface';
 export type {
   ApiKeyAuthenticationConfig,
   AuthenticationConfig,
-  KeycloakAuthenticationConfig,
+  OidcAuthenticationConfig,
+  SamlAuthenticationConfig,
   UsersAuthenticationConfig,
 };
 
@@ -33,7 +35,7 @@ export interface ApplicationEnvironment {
 
 /** Former top-level authentication + authMarketing + authLayout. */
 export interface AuthenticationEnvironment {
-  /** Provider/method config (users | keycloak | api-key) — former top-level `authentication`. */
+  /** Provider/method config (users | oidc | saml | api-key) — former top-level `authentication`. */
   config: AuthenticationConfig;
   /** Brand copy for login/register screens — former `authMarketing`. */
   marketing: AuthMarketing;

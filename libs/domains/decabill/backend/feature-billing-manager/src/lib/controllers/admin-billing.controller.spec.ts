@@ -1,7 +1,7 @@
 import { BadRequestException, NotFoundException, StreamableFile } from '@nestjs/common';
 import 'reflect-metadata';
 
-import { KEYCLOAK_ROLES_KEY, USERS_ROLES_KEY, UserRole } from '@forepath/identity/backend';
+import { USERS_ROLES_KEY, UserRole } from '@forepath/identity/backend';
 
 import { AdminBillingController } from './admin-billing.controller';
 
@@ -67,10 +67,8 @@ describe('AdminBillingController', () => {
   });
 
   it('has admin role guards on controller', () => {
-    const keycloakRoles = Reflect.getMetadata(KEYCLOAK_ROLES_KEY, AdminBillingController);
     const usersRoles = Reflect.getMetadata(USERS_ROLES_KEY, AdminBillingController);
 
-    expect(keycloakRoles).toContain(UserRole.ADMIN);
     expect(usersRoles).toContain(UserRole.ADMIN);
   });
 

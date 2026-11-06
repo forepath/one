@@ -1883,9 +1883,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     endpoint: '',
     authenticationType: undefined,
     apiKey: undefined,
-    keycloakClientId: undefined,
-    keycloakClientSecret: undefined,
-    keycloakRealm: undefined,
+    oidcClientId: undefined,
+    oidcClientSecret: undefined,
+    oidcIssuer: undefined,
+    oidcScope: undefined,
   });
 
   // Provisioning state
@@ -1949,9 +1950,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     endpoint: '',
     authenticationType: undefined,
     apiKey: undefined,
-    keycloakClientId: undefined,
-    keycloakClientSecret: undefined,
-    keycloakRealm: undefined,
+    oidcClientId: undefined,
+    oidcClientSecret: undefined,
+    oidcIssuer: undefined,
+    oidcScope: undefined,
   });
   readonly editingAgentId = signal<string | null>(null);
   readonly editingAgent = signal<Partial<UpdateAgentDto>>({
@@ -4941,9 +4943,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       endpoint: '',
       authenticationType: undefined,
       apiKey: undefined,
-      keycloakClientId: undefined,
-      keycloakClientSecret: undefined,
-      keycloakRealm: undefined,
+      oidcClientId: undefined,
+      oidcClientSecret: undefined,
+      oidcIssuer: undefined,
+      oidcScope: undefined,
     });
   }
 
@@ -5036,9 +5039,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           endpoint: '',
           authenticationType: undefined,
           apiKey: undefined,
-          keycloakClientId: undefined,
-          keycloakClientSecret: undefined,
-          keycloakRealm: undefined,
+          oidcClientId: undefined,
+          oidcClientSecret: undefined,
+          oidcIssuer: undefined,
+          oidcScope: undefined,
         });
       },
     });
@@ -5072,10 +5076,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       endpoint: '',
       authenticationType: undefined,
       apiKey: undefined,
-      keycloakClientId: undefined,
-      keycloakClientSecret: undefined,
-      keycloakRealm: undefined,
-      keycloakAuthServerUrl: undefined,
+      oidcClientId: undefined,
+      oidcClientSecret: undefined,
+      oidcIssuer: undefined,
+      oidcScope: undefined,
       gitRepositorySetupMode: 'clone',
       gitRepositoryUrl: undefined,
       gitUsername: undefined,
@@ -5193,9 +5197,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.newClient.set({
       ...current,
       apiKey: undefined,
-      keycloakClientId: undefined,
-      keycloakClientSecret: undefined,
-      keycloakRealm: undefined,
+      oidcClientId: undefined,
+      oidcClientSecret: undefined,
+      oidcIssuer: undefined,
+      oidcScope: undefined,
     });
   }
 
@@ -5291,21 +5296,21 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         provisionDto.apiKey = clientData.apiKey;
       }
 
-      if (clientData.authenticationType === 'keycloak') {
-        if (clientData.keycloakClientId) {
-          provisionDto.keycloakClientId = clientData.keycloakClientId;
+      if (clientData.authenticationType === 'oidc') {
+        if (clientData.oidcClientId) {
+          provisionDto.oidcClientId = clientData.oidcClientId;
         }
 
-        if (clientData.keycloakClientSecret) {
-          provisionDto.keycloakClientSecret = clientData.keycloakClientSecret;
+        if (clientData.oidcClientSecret) {
+          provisionDto.oidcClientSecret = clientData.oidcClientSecret;
         }
 
-        if (clientData.keycloakRealm) {
-          provisionDto.keycloakRealm = clientData.keycloakRealm;
+        if (clientData.oidcIssuer) {
+          provisionDto.oidcIssuer = clientData.oidcIssuer;
         }
 
-        if (clientData.keycloakAuthServerUrl) {
-          provisionDto.keycloakAuthServerUrl = clientData.keycloakAuthServerUrl;
+        if (clientData.oidcScope) {
+          provisionDto.oidcScope = clientData.oidcScope;
         }
       }
 
@@ -5374,17 +5379,21 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         createDto.apiKey = clientData.apiKey;
       }
 
-      if (clientData.authenticationType === 'keycloak') {
-        if (clientData.keycloakClientId) {
-          createDto.keycloakClientId = clientData.keycloakClientId;
+      if (clientData.authenticationType === 'oidc') {
+        if (clientData.oidcClientId) {
+          createDto.oidcClientId = clientData.oidcClientId;
         }
 
-        if (clientData.keycloakClientSecret) {
-          createDto.keycloakClientSecret = clientData.keycloakClientSecret;
+        if (clientData.oidcClientSecret) {
+          createDto.oidcClientSecret = clientData.oidcClientSecret;
         }
 
-        if (clientData.keycloakRealm) {
-          createDto.keycloakRealm = clientData.keycloakRealm;
+        if (clientData.oidcIssuer) {
+          createDto.oidcIssuer = clientData.oidcIssuer;
+        }
+
+        if (clientData.oidcScope) {
+          createDto.oidcScope = clientData.oidcScope;
         }
       }
 
@@ -5399,9 +5408,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       endpoint: '',
       authenticationType: undefined,
       apiKey: undefined,
-      keycloakClientId: undefined,
-      keycloakClientSecret: undefined,
-      keycloakRealm: undefined,
+      oidcClientId: undefined,
+      oidcClientSecret: undefined,
+      oidcIssuer: undefined,
+      oidcScope: undefined,
       autoEnrichEnabledGlobal: 'true',
       autoEnrichVectorMaxCosineDistance: 1,
     });
@@ -5575,9 +5585,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // Note: API key and secrets are not returned in ClientResponseDto for security
       // They will be undefined, and user can optionally set new values
       apiKey: undefined,
-      keycloakClientId: undefined,
-      keycloakClientSecret: undefined,
-      keycloakRealm: undefined,
+      oidcClientId: undefined,
+      oidcClientSecret: undefined,
+      oidcIssuer: undefined,
+      oidcScope: undefined,
     });
     this.clientsFacade.refreshClientIsolation(client.id);
     showAgentModal(this.updateClientModalOpen);
@@ -5622,9 +5633,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.editingClient.set({
       ...current,
       apiKey: undefined,
-      keycloakClientId: undefined,
-      keycloakClientSecret: undefined,
-      keycloakRealm: undefined,
+      oidcClientId: undefined,
+      oidcClientSecret: undefined,
+      oidcIssuer: undefined,
+      oidcScope: undefined,
     });
   }
 
@@ -5659,17 +5671,21 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       updateDto.apiKey = clientData.apiKey;
     }
 
-    if (clientData.authenticationType === 'keycloak') {
-      if (clientData.keycloakClientId !== undefined) {
-        updateDto.keycloakClientId = clientData.keycloakClientId;
+    if (clientData.authenticationType === 'oidc') {
+      if (clientData.oidcClientId !== undefined) {
+        updateDto.oidcClientId = clientData.oidcClientId;
       }
 
-      if (clientData.keycloakClientSecret !== undefined) {
-        updateDto.keycloakClientSecret = clientData.keycloakClientSecret;
+      if (clientData.oidcClientSecret !== undefined) {
+        updateDto.oidcClientSecret = clientData.oidcClientSecret;
       }
 
-      if (clientData.keycloakRealm !== undefined) {
-        updateDto.keycloakRealm = clientData.keycloakRealm;
+      if (clientData.oidcIssuer !== undefined) {
+        updateDto.oidcIssuer = clientData.oidcIssuer;
+      }
+
+      if (clientData.oidcScope !== undefined) {
+        updateDto.oidcScope = clientData.oidcScope;
       }
     }
 

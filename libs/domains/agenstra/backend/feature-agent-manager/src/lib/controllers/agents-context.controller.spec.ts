@@ -55,7 +55,8 @@ describe('AgentsContextController', () => {
 
   it('bypasses user authentication guards (agent token auth instead)', () => {
     expect(Reflect.getMetadata(IS_PUBLIC_KEY, AgentsContextController)).toBe(true);
-    expect(Reflect.getMetadata('public', AgentsContextController)).toBe(true);
+    // The removed nest-keycloak-connect `public` metadata is not needed: every guard honours IS_PUBLIC_KEY.
+    expect(Reflect.getMetadata('public', AgentsContextController)).toBeUndefined();
   });
 
   it('accepts the health probe with valid agent credentials only', async () => {

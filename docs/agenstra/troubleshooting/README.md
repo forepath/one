@@ -45,7 +45,7 @@ Debugging strategies and tools:
 
 ### Authentication Problems
 
-- Verify API keys or Keycloak configuration
+- Verify API keys or OIDC / SAML configuration
 - Check token expiration
 - Review authentication logs
 - Verify credentials

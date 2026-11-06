@@ -33,7 +33,7 @@ sequenceDiagram
 
     F->>AC: POST /api/clients/:id/agents
     AC->>AC: Load Client
-    AC->>AC: Get Auth Token (Keycloak/API Key)
+    AC->>AC: Get Auth Token (OIDC client credentials / API Key)
     AC->>AM: POST /api/agents (proxied with auth)
     AM->>AM: Validate Request
     AM->>DB: Save Agent Entity

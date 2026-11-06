@@ -9,7 +9,7 @@ import { AuthService } from '../services/auth.service';
 const AUTH_SECRET_THROTTLE = { default: { limit: 10, ttl: 60_000 } };
 
 /**
- * Public PAT exchange endpoint shared by users-mode and keycloak-mode.
+ * Public PAT exchange endpoint shared by users-, oidc- and saml-mode.
  * Full interactive auth (login/register) stays on AuthController (users-mode only).
  */
 @Controller('auth')

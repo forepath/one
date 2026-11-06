@@ -14,12 +14,12 @@ sequenceDiagram
 
     rect rgb(230, 240, 255)
         Note over User,DB: Step 1 - Create Client (HTTP)
-        User->>HTTP: POST /api/clients<br/>{name, endpoint, authType: API_KEY|KEYCLOAK, ...}
+        User->>HTTP: POST /api/clients<br/>{name, endpoint, authType: api_key|oidc, ...}
         HTTP->>Service: create(createClientDto)
         alt Authentication Type: API_KEY
             Service->>Service: generateRandomApiKey() (if not provided)
-        else Authentication Type: KEYCLOAK
-            Service->>Service: Validate keycloakClientId & keycloakClientSecret
+        else Authentication Type: OIDC
+            Service->>Service: Validate oidcClientId & oidcClientSecret
         end
         Service->>Repo: create(entity)
         Repo->>DB: INSERT client
@@ -34,7 +34,7 @@ sequenceDiagram
         User->>HTTP: POST /api/clients/{clientId}/agents<br/>{name, description?}
         HTTP->>Proxy: createClientAgent(clientId, createAgentDto)
         Proxy->>Proxy: getAuthHeader(clientId)
-        Note over Proxy: Authenticates with API_KEY or Keycloak JWT
+        Note over Proxy: Authenticates with API_KEY or OIDC access token
         Proxy->>RemoteHTTP: POST {endpoint}/api/agents<br/>Authorization: Bearer {token/apiKey}<br/>{name, description?}
         RemoteHTTP-->>Proxy: 201 Created<br/>{id, name, password, ...}
         Proxy->>CredService: createCredentials(clientId, agentId, password)
@@ -56,7 +56,7 @@ sequenceDiagram
         DB-->>Repo: client entity
         Repo-->>WS: client entity
         WS->>WS: getAuthHeader(clientId)
-        Note over WS: Gets API_KEY or Keycloak JWT token
+        Note over WS: Gets API_KEY or OIDC access token token
         WS->>WS: buildAgentsWsUrl(endpoint, agentWsPort)
         WS->>RemoteWS: Socket.IO Connect<br/>Authorization: Bearer {token/apiKey}
         RemoteWS-->>WS: connect event
@@ -132,8 +132,8 @@ sequenceDiagram
         Service->>Repo: findById(clientId)
         Repo->>DB: SELECT client WHERE id
         DB-->>Repo: client entity
-        alt Client is KEYCLOAK type
-            Service->>Service: Clear Keycloak token cache
+        alt Client is OIDC type
+            Service->>Service: Clear OIDC token cache
         end
         Service->>Repo: delete(clientId)
         Repo->>DB: DELETE client WHERE id<br/>(CASCADE deletes credentials)

@@ -184,7 +184,12 @@
                   <option value="users" i18n="@@featureSubscriptions-authUsers">Users</option>
                 }
                 <option value="api-key" i18n="@@featureSubscriptions-authApiKey">API Key</option>
-                <option value="keycloak" i18n="@@featureSubscriptions-authKeycloak">Keycloak</option>
+                <option value="oidc" i18n="@@featureSubscriptions-authOidc">OpenID Connect</option>
+                @if (
+                  integratedConfig.service === 'agenstra-controller' || integratedConfig.service === 'decabill-billing'
+                ) {
+                  <option value="saml" i18n="@@featureSubscriptions-authSaml">SAML 2.0</option>
+                }
               </fpc-form-control>
             </fpc-form-field>
             @if (
@@ -216,79 +221,157 @@
                 />
               </fpc-form-field>
             }
-            @if (integratedConfig.authenticationMethod === 'keycloak') {
+            @if (integratedConfig.authenticationMethod === 'oidc') {
               <fieldset class="mb-3">
-                <legend class="fs-6" i18n="@@featureSubscriptions-keycloakSection">Keycloak</legend>
+                <legend class="fs-6" i18n="@@featureSubscriptions-oidcSection">OpenID Connect</legend>
                 <fpc-form-field
-                  [forId]="fieldId('KeycloakServerUrl')"
-                  i18n-label="@@featureSubscriptions-keycloakServerUrlLabel"
-                  label="Server URL"
+                  [forId]="fieldId('OidcIssuer')"
+                  i18n-label="@@featureSubscriptions-oidcIssuerLabel"
+                  label="Issuer"
                 >
                   <fpc-form-control
-                    [controlId]="fieldId('KeycloakServerUrl')"
+                    [controlId]="fieldId('OidcIssuer')"
                     inputType="url"
-                    [(ngModel)]="integratedConfig.keycloak.serverUrl"
+                    [(ngModel)]="integratedConfig.oidc.issuer"
                     (ngModelChange)="onIntegratedFieldChange()"
-                    [name]="fieldId('KeycloakServerUrl')"
-                    placeholder="https://keycloak.example.com"
+                    [name]="fieldId('OidcIssuer')"
+                    placeholder="https://idp.example.com/realms/agenstra"
                   />
                 </fpc-form-field>
                 <fpc-form-field
-                  [forId]="fieldId('KeycloakAuthServerUrl')"
-                  i18n-label="@@featureSubscriptions-keycloakAuthServerUrlLabel"
-                  label="Auth server URL"
+                  [forId]="fieldId('OidcClientId')"
+                  i18n-label="@@featureSubscriptions-oidcClientIdLabel"
+                  label="Client ID (API)"
                 >
                   <fpc-form-control
-                    [controlId]="fieldId('KeycloakAuthServerUrl')"
-                    inputType="url"
-                    [(ngModel)]="integratedConfig.keycloak.authServerUrl"
+                    [controlId]="fieldId('OidcClientId')"
+                    [(ngModel)]="integratedConfig.oidc.clientId"
                     (ngModelChange)="onIntegratedFieldChange()"
-                    [name]="fieldId('KeycloakAuthServerUrl')"
-                    placeholder="https://keycloak.example.com/auth"
+                    [name]="fieldId('OidcClientId')"
                   />
                 </fpc-form-field>
-                <div class="row g-2">
-                  <div class="col-md-6">
-                    <fpc-form-field
-                      [forId]="fieldId('KeycloakRealm')"
-                      i18n-label="@@featureSubscriptions-keycloakRealmLabel"
-                      label="Realm"
-                    >
-                      <fpc-form-control
-                        [controlId]="fieldId('KeycloakRealm')"
-                        [(ngModel)]="integratedConfig.keycloak.realm"
-                        (ngModelChange)="onIntegratedFieldChange()"
-                        [name]="fieldId('KeycloakRealm')"
-                      />
-                    </fpc-form-field>
-                  </div>
-                  <div class="col-md-6">
-                    <fpc-form-field
-                      [forId]="fieldId('KeycloakClientId')"
-                      i18n-label="@@featureSubscriptions-keycloakClientIdLabel"
-                      label="Client ID"
-                    >
-                      <fpc-form-control
-                        [controlId]="fieldId('KeycloakClientId')"
-                        [(ngModel)]="integratedConfig.keycloak.clientId"
-                        (ngModelChange)="onIntegratedFieldChange()"
-                        [name]="fieldId('KeycloakClientId')"
-                      />
-                    </fpc-form-field>
-                  </div>
-                </div>
                 <fpc-form-field
-                  class="mb-0"
-                  [forId]="fieldId('KeycloakClientSecret')"
-                  i18n-label="@@featureSubscriptions-keycloakClientSecretLabel"
+                  [forId]="fieldId('OidcClientSecret')"
+                  i18n-label="@@featureSubscriptions-oidcClientSecretLabel"
                   label="Client secret"
                 >
                   <fpc-form-control
-                    [controlId]="fieldId('KeycloakClientSecret')"
+                    [controlId]="fieldId('OidcClientSecret')"
                     inputType="password"
-                    [(ngModel)]="integratedConfig.keycloak.clientSecret"
+                    [(ngModel)]="integratedConfig.oidc.clientSecret"
                     (ngModelChange)="onIntegratedFieldChange()"
-                    [name]="fieldId('KeycloakClientSecret')"
+                    [name]="fieldId('OidcClientSecret')"
+                  />
+                </fpc-form-field>
+                <fpc-form-field
+                  [forId]="fieldId('OidcAudience')"
+                  i18n-label="@@featureSubscriptions-oidcAudienceLabel"
+                  label="Audience (optional)"
+                >
+                  <fpc-form-control
+                    [controlId]="fieldId('OidcAudience')"
+                    [(ngModel)]="integratedConfig.oidc.audience"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('OidcAudience')"
+                  />
+                </fpc-form-field>
+                <fpc-form-field
+                  [forId]="fieldId('OidcFrontendClientId')"
+                  i18n-label="@@featureSubscriptions-oidcFrontendClientIdLabel"
+                  label="Console client ID (optional)"
+                >
+                  <fpc-form-control
+                    [controlId]="fieldId('OidcFrontendClientId')"
+                    [(ngModel)]="integratedConfig.oidc.frontendClientId"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('OidcFrontendClientId')"
+                  />
+                  <span fpcFormFieldHint i18n="@@featureSubscriptions-oidcFrontendClientIdHint"
+                    >Public client used by the console; defaults to the API client ID.</span
+                  >
+                </fpc-form-field>
+              </fieldset>
+            }
+            @if (integratedConfig.authenticationMethod === 'saml') {
+              <fieldset class="mb-3">
+                <legend class="fs-6" i18n="@@featureSubscriptions-samlSection">SAML 2.0</legend>
+                <fpc-form-field
+                  [forId]="fieldId('SamlIdpSsoUrl')"
+                  i18n-label="@@featureSubscriptions-samlIdpSsoUrlLabel"
+                  label="IdP sign-in URL"
+                >
+                  <fpc-form-control
+                    [controlId]="fieldId('SamlIdpSsoUrl')"
+                    inputType="url"
+                    [(ngModel)]="integratedConfig.saml.idpSsoUrl"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('SamlIdpSsoUrl')"
+                    placeholder="https://idp.example.com/realms/agenstra/protocol/saml"
+                  />
+                </fpc-form-field>
+                <fpc-form-field
+                  [forId]="fieldId('SamlIdpCert')"
+                  i18n-label="@@featureSubscriptions-samlIdpCertLabel"
+                  label="IdP signing certificate (PEM)"
+                >
+                  <fpc-form-control
+                    [controlId]="fieldId('SamlIdpCert')"
+                    controlType="textarea"
+                    [(ngModel)]="integratedConfig.saml.idpCert"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('SamlIdpCert')"
+                  />
+                </fpc-form-field>
+                <fpc-form-field
+                  [forId]="fieldId('SamlIdpIssuer')"
+                  i18n-label="@@featureSubscriptions-samlIdpIssuerLabel"
+                  label="IdP entity ID (optional)"
+                >
+                  <fpc-form-control
+                    [controlId]="fieldId('SamlIdpIssuer')"
+                    [(ngModel)]="integratedConfig.saml.idpIssuer"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('SamlIdpIssuer')"
+                  />
+                </fpc-form-field>
+                <fpc-form-field
+                  [forId]="fieldId('SamlSpEntityId')"
+                  i18n-label="@@featureSubscriptions-samlSpEntityIdLabel"
+                  label="SP entity ID (optional)"
+                >
+                  <fpc-form-control
+                    [controlId]="fieldId('SamlSpEntityId')"
+                    [(ngModel)]="integratedConfig.saml.spEntityId"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('SamlSpEntityId')"
+                  />
+                  <span fpcFormFieldHint i18n="@@featureSubscriptions-samlSpEntityIdHint"
+                    >Defaults to the instance URL.</span
+                  >
+                </fpc-form-field>
+                <fpc-form-field
+                  [forId]="fieldId('SamlNameIdFormat')"
+                  i18n-label="@@featureSubscriptions-samlNameIdFormatLabel"
+                  label="NameID format (optional)"
+                >
+                  <fpc-form-control
+                    [controlId]="fieldId('SamlNameIdFormat')"
+                    [(ngModel)]="integratedConfig.saml.nameIdFormat"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('SamlNameIdFormat')"
+                    placeholder="urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
+                  />
+                </fpc-form-field>
+                <fpc-form-field
+                  [forId]="fieldId('SamlEmailAttribute')"
+                  i18n-label="@@featureSubscriptions-samlEmailAttributeLabel"
+                  label="Email attribute (optional)"
+                >
+                  <fpc-form-control
+                    [controlId]="fieldId('SamlEmailAttribute')"
+                    [(ngModel)]="integratedConfig.saml.emailAttribute"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('SamlEmailAttribute')"
                   />
                 </fpc-form-field>
               </fieldset>

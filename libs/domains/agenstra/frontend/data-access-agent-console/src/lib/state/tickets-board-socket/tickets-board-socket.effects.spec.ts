@@ -4,7 +4,7 @@ import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { provideMockStore } from '@ngrx/store/testing';
-import { KeycloakService } from 'keycloak-angular';
+import { OidcAuthService } from '@forepath/identity/frontend';
 import { Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 
@@ -28,10 +28,6 @@ import { initialTicketsBoardSocketState } from './tickets-board-socket.reducer';
 
 jest.mock('socket.io-client', () => ({
   io: jest.fn(),
-}));
-
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
 }));
 
 describe('resolveTicketsBoardWebsocketUrl', () => {
@@ -109,7 +105,7 @@ describe('TicketsBoardSocketEffects', () => {
     console: { urls: { restApi: string; websocket: string | { default: string; tickets?: string } } };
     authentication: { config: { type: string; apiKey?: string } };
   };
-  let mockKeycloakService: jest.Mocked<Partial<KeycloakService>>;
+  let mockOidcAuthService: { getToken: jest.Mock };
 
   beforeEach(() => {
     actions$ = new Subject();
@@ -139,7 +135,7 @@ describe('TicketsBoardSocketEffects', () => {
       },
     };
 
-    mockKeycloakService = {
+    mockOidcAuthService = {
       getToken: jest.fn(),
     };
 
@@ -156,7 +152,7 @@ describe('TicketsBoardSocketEffects', () => {
           },
         }),
         { provide: ENVIRONMENT, useValue: mockEnvironment },
-        { provide: KeycloakService, useValue: mockKeycloakService },
+        { provide: OidcAuthService, useValue: mockOidcAuthService },
       ],
     });
 

@@ -1,4 +1,4 @@
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -31,7 +31,6 @@ interface RequestWithUser extends Request {
 @Controller('apps')
 @UseGuards(UsersAuthGuard)
 @RequireInteractiveSession()
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 export class IdentityAppsController {
   constructor(private readonly appsService: IdentityAppsService) {}

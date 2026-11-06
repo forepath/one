@@ -1,0 +1,18 @@
+<div class="d-flex align-items-center justify-content-center p-4" style="min-height: 60vh">
+  <div style="width: 500px; max-width: 100%">
+    @if (state() === 'failed') {
+      <h2 class="section__column-title mb-4" i18n="@@featureSamlCallback-failedTitle">Sign-in failed</h2>
+      <fpc-alert
+        variant="danger"
+        i18n-message="@@featureSamlCallback-failedMessage"
+        message="Single sign-on could not be completed. The sign-in link may have expired or was opened in another browser tab."
+      />
+      <a routerLink="/login" class="btn btn-primary mt-3" i18n="@@featureSamlCallback-retry">Try again</a>
+    } @else {
+      <div class="d-flex align-items-center gap-3" role="status">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span i18n="@@featureSamlCallback-signingIn">Signing you in…</span>
+      </div>
+    }
+  </div>
+</div>

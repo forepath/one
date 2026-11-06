@@ -2732,9 +2732,6 @@
       <trans-unit id="featureChat-apiKeyAutoGeneratePlaceholder" datatype="html">
         <source>Leave empty to auto-generate</source>
         </trans-unit>
-      <trans-unit id="featureChat-keycloakUrlPlaceholder" datatype="html">
-        <source>http://keycloak:8080</source>
-        </trans-unit>
       <trans-unit id="featureChat-agentImagePlaceholder" datatype="html">
         <source>ghcr.io/forepath/agenstra-manager-worker:latest</source>
         </trans-unit>
@@ -6138,17 +6135,11 @@
       <trans-unit id="identityLogoutConfirm-usersTitle" datatype="html">
         <source>Log out?</source>
         </trans-unit>
-      <trans-unit id="identityLogoutConfirm-keycloakTitle" datatype="html">
-        <source>Log out?</source>
-        </trans-unit>
       <trans-unit id="identityLogoutConfirm-defaultTitle" datatype="html">
         <source>Log out?</source>
         </trans-unit>
       <trans-unit id="identityLogoutConfirm-usersMessage" datatype="html">
         <source>You will be signed out of this browser only. Other devices and browsers will stay signed in unless you choose to sign out everywhere below.</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-keycloakMessage" datatype="html">
-        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
         </trans-unit>
       <trans-unit id="identityLogoutConfirm-defaultMessage" datatype="html">
         <source>Are you sure you want to log out?</source>
@@ -7339,6 +7330,42 @@
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
         </trans-unit>
+      <trans-unit id="identityLogoutConfirm-oidcTitle" datatype="html">
+        <source>Log out?</source>
+      </trans-unit>
+      <trans-unit id="identityLogoutConfirm-oidcMessage" datatype="html">
+        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
+      </trans-unit>
+      <trans-unit id="identityLogoutConfirm-samlMessage" datatype="html">
+        <source>You will be signed out of this browser only. Your single sign-on session at your identity provider stays active unless you sign out there.</source>
+      </trans-unit>
+      <trans-unit id="featureLogin-ssoFailed" datatype="html">
+        <source>Sign-in with your identity provider failed. Please try again or contact your administrator.</source>
+      </trans-unit>
+      <trans-unit id="featureLogin-ssoRedirecting" datatype="html">
+        <source>You are being redirected to your organization's sign-in page.</source>
+      </trans-unit>
+      <trans-unit id="featureLogin-ssoSubmit" datatype="html">
+        <source>Continue with single sign-on</source>
+      </trans-unit>
+      <trans-unit id="featureAuth-samlCallbackPage" datatype="html">
+        <source>Signing in</source>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-failedTitle" datatype="html">
+        <source>Sign-in failed</source>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-failedMessage" datatype="html">
+        <source>Single sign-on could not be completed. The sign-in link may have expired or was opened in another browser tab.</source>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-retry" datatype="html">
+        <source>Try again</source>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-signingIn" datatype="html">
+        <source>Signing you in…</source>
+      </trans-unit>
+      <trans-unit id="featureChat-oidcIssuerPlaceholder" datatype="html">
+        <source>https://idp.example.com/realms/agenstra</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

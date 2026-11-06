@@ -18,7 +18,7 @@ This application provides:
 - **Stripe integration** Checkout sessions and signed webhooks
 - **Invoice PDFs** ZUGFeRD-style generation and filesystem storage
 - **Multi-tenancy** Tenant allowlist and row-level isolation
-- **Authentication** API key, Keycloak, or built-in users (JWT)
+- **Authentication** API key, OIDC, SAML 2.0, or built-in users (JWT)
 - **Dynamic plugins** Optional payment processors and billing UI metadata
 - **Email** Invoice and reminder delivery via SMTP
 - **Rate limiting and CORS** Production-safe HTTP defaults
@@ -105,11 +105,12 @@ Volumes include `billing_file_data` mounted at `/data` (with `customer/`, `suppl
 
 Configure one method via `AUTHENTICATION_METHOD`:
 
-| Method     | Key variables                                                             | Console pairing                                                                       |
-| ---------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `api-key`  | `STATIC_API_KEY`                                                          | Automation; no dashboard WebSocket user stream                                        |
-| `keycloak` | `KEYCLOAK_*`                                                              | OAuth login in console                                                                |
-| `users`    | `JWT_SECRET`, `DISABLE_SIGNUP`, `DISABLE_FORCE_LOGIN_2FA`, `PRODUCT_NAME` | Built-in register and login; `PRODUCT_NAME` sets the TOTP issuer (default `Forepath`) |
+| Method    | Key variables                                                             | Console pairing                                                                       |
+| --------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `api-key` | `STATIC_API_KEY`                                                          | Automation; no dashboard WebSocket user stream                                        |
+| `oidc`    | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `JWT_SECRET`       | OIDC login in console (Authorization Code + PKCE)                                     |
+| `saml`    | `SAML_IDP_SSO_URL`, `SAML_IDP_CERT`, `SAML_SP_ACS_URL`, `JWT_SECRET`      | SAML 2.0 login in console (session JWT after assertion exchange)                      |
+| `users`   | `JWT_SECRET`, `DISABLE_SIGNUP`, `DISABLE_FORCE_LOGIN_2FA`, `PRODUCT_NAME` | Built-in register and login; `PRODUCT_NAME` sets the TOTP issuer (default `Forepath`) |
 
 Optional `STATIC_API_KEY_TENANT_ID` binds API key auth to one tenant.
 
@@ -145,7 +146,7 @@ AsyncAPI documents the **`billing`** namespace:
 - Client: `subscribeDashboardStatus`, `unsubscribeDashboardStatus`
 - Server: `dashboardStatusUpdate`, `error`
 
-Requires the same user JWT or Keycloak session as interactive REST calls. Connect to `http://<host>:3200/socket/billing` with authorization in the handshake.
+Requires the same user JWT (users / SAML) or OIDC access token as interactive REST calls. Connect to `http://<host>:3200/socket/billing` with authorization in the handshake.
 
 See **[Real-time Status](../features/real-time-status.md)**.
 

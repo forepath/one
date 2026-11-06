@@ -4,7 +4,7 @@ import {
   ClientEntity,
   ClientUserRole,
   ClientUsersRepository,
-  KeycloakTokenService,
+  OidcClientCredentialsService,
   UserRole,
 } from '@forepath/identity/backend';
 import { BadRequestException } from '@nestjs/common';
@@ -14,6 +14,7 @@ import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 
 import { ClientAgentProxyService } from './client-agent-proxy.service';
@@ -23,10 +24,17 @@ import { AgenstraSearchIndexService } from '../search/agenstra-search-index.serv
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 
+jest.mock('../utils/client-endpoint-security', () => ({
+  ...jest.requireActual('../utils/client-endpoint-security'),
+  validateClientEndpointWithDnsOrThrow: jest.fn().mockResolvedValue(undefined),
+}));
+
+const TRUSTED_OIDC_ISSUER = 'https://idp.example.com/realms/test';
+
 describe('ClientsService', () => {
   let service: ClientsService;
   let repository: jest.Mocked<ClientsRepository>;
-  let keycloakTokenService: jest.Mocked<KeycloakTokenService>;
+  let oidcClientCredentialsService: jest.Mocked<OidcClientCredentialsService>;
   let clientAgentProxyService: jest.Mocked<ClientAgentProxyService>;
   let provisioningReferencesRepository: jest.Mocked<ProvisioningReferencesRepository>;
   let clientUsersRepository: jest.Mocked<ClientUsersRepository>;
@@ -42,15 +50,16 @@ describe('ClientsService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-  const mockKeycloakClient: ClientEntity = {
-    id: 'keycloak-client-uuid',
-    name: 'Keycloak Client',
-    description: 'Keycloak Client Description',
+  const mockOidcClient: ClientEntity = {
+    id: 'oidc-client-uuid',
+    name: 'OIDC Client',
+    description: 'OIDC Client Description',
     endpoint: 'https://example.com/api',
-    authenticationType: AuthenticationType.KEYCLOAK,
-    keycloakClientId: 'keycloak-client-id',
-    keycloakClientSecret: 'keycloak-client-secret',
-    keycloakRealm: 'test-realm',
+    authenticationType: AuthenticationType.OIDC,
+    oidcClientId: 'oidc-client-id',
+    oidcClientSecret: 'oidc-client-secret',
+    oidcIssuer: null,
+    oidcScope: null,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
@@ -67,7 +76,7 @@ describe('ClientsService', () => {
     update: jest.fn(),
     delete: jest.fn(),
   };
-  const mockKeycloakTokenService = {
+  const mockOidcClientCredentialsService = {
     getAccessToken: jest.fn(),
     clearCache: jest.fn(),
     clearAllCache: jest.fn(),
@@ -92,6 +101,7 @@ describe('ClientsService', () => {
     // Avoid host STATIC_API_KEY / AUTHENTICATION_METHOD flipping isApiKeyMode() on.
     delete process.env.AUTHENTICATION_METHOD;
     delete process.env.STATIC_API_KEY;
+    process.env.OIDC_ISSUER = TRUSTED_OIDC_ISSUER;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -101,8 +111,8 @@ describe('ClientsService', () => {
           useValue: mockRepository,
         },
         {
-          provide: KeycloakTokenService,
-          useValue: mockKeycloakTokenService,
+          provide: OidcClientCredentialsService,
+          useValue: mockOidcClientCredentialsService,
         },
         {
           provide: ClientAgentProxyService,
@@ -142,7 +152,7 @@ describe('ClientsService', () => {
 
     service = module.get<ClientsService>(ClientsService);
     repository = module.get(ClientsRepository);
-    keycloakTokenService = module.get(KeycloakTokenService);
+    oidcClientCredentialsService = module.get(OidcClientCredentialsService);
     clientAgentProxyService = module.get(ClientAgentProxyService);
     provisioningReferencesRepository = module.get(ProvisioningReferencesRepository);
     clientUsersRepository = module.get(ClientUsersRepository);
@@ -150,6 +160,7 @@ describe('ClientsService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    delete process.env.OIDC_ISSUER;
 
     if (originalAuthMethod === undefined) {
       delete process.env.AUTHENTICATION_METHOD;
@@ -213,23 +224,21 @@ describe('ClientsService', () => {
       );
     });
 
-    it('should create client with Keycloak credentials for KEYCLOAK type', async () => {
+    it('should create client with OIDC credentials for OIDC type', async () => {
       const createDto: CreateClientDto = {
         name: 'New Client',
         endpoint: 'https://example.com/api',
-        authenticationType: AuthenticationType.KEYCLOAK,
-        keycloakClientId: 'keycloak-client-id',
-        keycloakClientSecret: 'keycloak-client-secret',
-        keycloakRealm: 'test-realm',
+        authenticationType: AuthenticationType.OIDC,
+        oidcClientId: 'oidc-client-id',
+        oidcClientSecret: 'oidc-client-secret',
+        oidcScope: ' manager:access ',
       };
       const createdClient: ClientEntity = {
-        ...mockKeycloakClient,
+        ...mockOidcClient,
         name: createDto.name,
         endpoint: createDto.endpoint,
         authenticationType: createDto.authenticationType,
-        keycloakClientId: createDto.keycloakClientId,
-        keycloakClientSecret: createDto.keycloakClientSecret,
-        keycloakRealm: createDto.keycloakRealm,
+        oidcScope: 'manager:access',
       };
 
       mockRepository.findByName.mockResolvedValue(null);
@@ -238,7 +247,7 @@ describe('ClientsService', () => {
       const result = await service.create(createDto);
 
       expect(result.name).toBe(createDto.name);
-      expect(result.authenticationType).toBe(AuthenticationType.KEYCLOAK);
+      expect(result.authenticationType).toBe(AuthenticationType.OIDC);
       expect(result.apiKey).toBeUndefined();
       expect(repository.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -247,26 +256,81 @@ describe('ClientsService', () => {
           endpoint: createDto.endpoint,
           authenticationType: createDto.authenticationType,
           apiKey: undefined,
-          keycloakClientId: createDto.keycloakClientId,
-          keycloakClientSecret: createDto.keycloakClientSecret,
-          keycloakRealm: createDto.keycloakRealm,
+          oidcClientId: createDto.oidcClientId,
+          oidcClientSecret: createDto.oidcClientSecret,
+          oidcIssuer: null,
+          oidcScope: 'manager:access',
           userId: null,
         }),
       );
+      // Default (operator configured) issuer is trusted: no SSRF validation.
+      expect(validateClientEndpointWithDnsOrThrow).not.toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException when KEYCLOAK type is missing credentials', async () => {
+    it('should validate a per-client OIDC issuer with the client endpoint SSRF policy', async () => {
       const createDto: CreateClientDto = {
         name: 'New Client',
         endpoint: 'https://example.com/api',
-        authenticationType: AuthenticationType.KEYCLOAK,
+        authenticationType: AuthenticationType.OIDC,
+        oidcClientId: 'oidc-client-id',
+        oidcClientSecret: 'oidc-client-secret',
+        oidcIssuer: 'https://other-idp.example.org/realms/x',
+      };
+
+      mockRepository.findByName.mockResolvedValue(null);
+      repository.create.mockResolvedValue({ ...mockOidcClient, oidcIssuer: createDto.oidcIssuer });
+
+      await service.create(createDto);
+
+      expect(validateClientEndpointWithDnsOrThrow).toHaveBeenCalledWith('https://other-idp.example.org/realms/x');
+    });
+
+    it('should reject a per-client OIDC issuer that violates the SSRF policy', async () => {
+      (validateClientEndpointWithDnsOrThrow as jest.Mock).mockRejectedValueOnce(
+        new BadRequestException('Client endpoint must not target private or loopback IP ranges'),
+      );
+      mockRepository.findByName.mockResolvedValue(null);
+
+      await expect(
+        service.create({
+          name: 'New Client',
+          endpoint: 'https://example.com/api',
+          authenticationType: AuthenticationType.OIDC,
+          oidcClientId: 'oidc-client-id',
+          oidcClientSecret: 'oidc-client-secret',
+          oidcIssuer: 'http://169.254.169.254/latest',
+        }),
+      ).rejects.toThrow('Client endpoint must not target private or loopback IP ranges');
+      expect(repository.create).not.toHaveBeenCalled();
+    });
+
+    it('should require an issuer when OIDC_ISSUER is not configured', async () => {
+      delete process.env.OIDC_ISSUER;
+      mockRepository.findByName.mockResolvedValue(null);
+
+      await expect(
+        service.create({
+          name: 'New Client',
+          endpoint: 'https://example.com/api',
+          authenticationType: AuthenticationType.OIDC,
+          oidcClientId: 'oidc-client-id',
+          oidcClientSecret: 'oidc-client-secret',
+        }),
+      ).rejects.toThrow('OIDC issuer is required because OIDC_ISSUER is not configured on the controller');
+    });
+
+    it('should throw BadRequestException when OIDC type is missing credentials', async () => {
+      const createDto: CreateClientDto = {
+        name: 'New Client',
+        endpoint: 'https://example.com/api',
+        authenticationType: AuthenticationType.OIDC,
       };
 
       mockRepository.findByName.mockResolvedValue(null);
 
       await expect(service.create(createDto)).rejects.toThrow(BadRequestException);
       await expect(service.create(createDto)).rejects.toThrow(
-        'Keycloak client ID and client secret are required for KEYCLOAK authentication type',
+        'OIDC client ID and client secret are required for OIDC authentication type',
       );
     });
 
@@ -570,19 +634,17 @@ describe('ClientsService', () => {
       expect(result.endpoint).toBe(updateDto.endpoint);
     });
 
-    it('should update authentication type to KEYCLOAK with credentials', async () => {
+    it('should update authentication type to OIDC with credentials', async () => {
       const updateDto: UpdateClientDto = {
-        authenticationType: AuthenticationType.KEYCLOAK,
-        keycloakClientId: 'keycloak-client-id',
-        keycloakClientSecret: 'keycloak-client-secret',
-        keycloakRealm: 'test-realm',
+        authenticationType: AuthenticationType.OIDC,
+        oidcClientId: 'oidc-client-id',
+        oidcClientSecret: 'oidc-client-secret',
       };
       const updatedClient = {
         ...mockClient,
         authenticationType: updateDto.authenticationType,
-        keycloakClientId: updateDto.keycloakClientId,
-        keycloakClientSecret: updateDto.keycloakClientSecret,
-        keycloakRealm: updateDto.keycloakRealm,
+        oidcClientId: updateDto.oidcClientId,
+        oidcClientSecret: updateDto.oidcClientSecret,
       };
 
       mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
@@ -592,12 +654,12 @@ describe('ClientsService', () => {
 
       const result = await service.update('test-uuid', updateDto, undefined, undefined, true);
 
-      expect(result.authenticationType).toBe(AuthenticationType.KEYCLOAK);
+      expect(result.authenticationType).toBe(AuthenticationType.OIDC);
     });
 
-    it('should throw BadRequestException when changing to KEYCLOAK without credentials', async () => {
+    it('should throw BadRequestException when changing to OIDC without credentials', async () => {
       const updateDto: UpdateClientDto = {
-        authenticationType: AuthenticationType.KEYCLOAK,
+        authenticationType: AuthenticationType.OIDC,
       };
 
       mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
@@ -608,35 +670,88 @@ describe('ClientsService', () => {
         BadRequestException,
       );
       await expect(service.update('test-uuid', updateDto)).rejects.toThrow(
-        'Keycloak client ID and client secret are required when changing authentication type to KEYCLOAK',
+        'OIDC client ID and client secret are required when changing authentication type to OIDC',
       );
     });
 
-    it('should update Keycloak credentials and clear cache', async () => {
-      const updateDto: UpdateClientDto = {
-        keycloakClientId: 'new-client-id',
-        keycloakClientSecret: 'new-client-secret',
-        keycloakRealm: 'new-realm',
-      };
-      const updatedClient = {
-        ...mockKeycloakClient,
-        ...updateDto,
-      };
-
-      process.env.KEYCLOAK_AUTH_SERVER_URL = 'https://keycloak.example.com';
-      mockRepository.findByIdOrThrow.mockResolvedValue(mockKeycloakClient);
+    it('should require both OIDC credentials when updating one of them', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockOidcClient);
       mockRepository.findByName.mockResolvedValue(null);
-      mockRepository.findById.mockResolvedValue(mockKeycloakClient);
-      repository.update.mockResolvedValue(updatedClient);
+      mockRepository.findById.mockResolvedValue(mockOidcClient);
 
-      await service.update('keycloak-client-uuid', updateDto, undefined, undefined, true);
+      await expect(
+        service.update('oidc-client-uuid', { oidcClientId: 'only-id' }, undefined, undefined, true),
+      ).rejects.toThrow('OIDC client ID and client secret must both be provided when updating credentials');
+    });
 
-      expect(keycloakTokenService.clearCache).toHaveBeenCalledWith(
-        'https://keycloak.example.com',
-        'new-realm',
-        'new-client-id',
+    it('should require an issuer on update when OIDC_ISSUER is not configured', async () => {
+      delete process.env.OIDC_ISSUER;
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
+      mockRepository.findByName.mockResolvedValue(null);
+      mockRepository.findById.mockResolvedValue(mockClient);
+
+      await expect(
+        service.update(
+          'test-uuid',
+          {
+            authenticationType: AuthenticationType.OIDC,
+            oidcClientId: 'oidc-client-id',
+            oidcClientSecret: 'oidc-client-secret',
+            oidcIssuer: '',
+          },
+          undefined,
+          undefined,
+          true,
+        ),
+      ).rejects.toThrow('OIDC issuer is required because OIDC_ISSUER is not configured on the controller');
+    });
+
+    it('should validate a changed per-client issuer on update', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockOidcClient);
+      mockRepository.findByName.mockResolvedValue(null);
+      mockRepository.findById.mockResolvedValue(mockOidcClient);
+      repository.update.mockResolvedValue(mockOidcClient);
+
+      await service.update(
+        'oidc-client-uuid',
+        { oidcIssuer: 'https://other-idp.example.org/realms/x' },
+        undefined,
+        undefined,
+        true,
       );
-      delete process.env.KEYCLOAK_AUTH_SERVER_URL;
+
+      expect(validateClientEndpointWithDnsOrThrow).toHaveBeenCalledWith('https://other-idp.example.org/realms/x');
+      expect(repository.update).toHaveBeenCalledWith(
+        'oidc-client-uuid',
+        expect.objectContaining({ oidcIssuer: 'https://other-idp.example.org/realms/x' }),
+      );
+    });
+
+    it('should update OIDC credentials and clear the cache of the previous configuration', async () => {
+      const updateDto: UpdateClientDto = {
+        oidcClientId: 'new-client-id',
+        oidcClientSecret: 'new-client-secret',
+      };
+
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockOidcClient);
+      mockRepository.findByName.mockResolvedValue(null);
+      mockRepository.findById.mockResolvedValue(mockOidcClient);
+      repository.update.mockResolvedValue({ ...mockOidcClient, ...updateDto });
+
+      await service.update('oidc-client-uuid', updateDto, undefined, undefined, true);
+
+      expect(oidcClientCredentialsService.clearCache).toHaveBeenCalledWith(TRUSTED_OIDC_ISSUER, 'oidc-client-id');
+    });
+
+    it('should not clear the token cache when nothing OIDC related changes', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockOidcClient);
+      mockRepository.findByName.mockResolvedValue(null);
+      mockRepository.findById.mockResolvedValue(mockOidcClient);
+      repository.update.mockResolvedValue({ ...mockOidcClient, name: 'Renamed' });
+
+      await service.update('oidc-client-uuid', { name: 'Renamed' }, undefined, undefined, true);
+
+      expect(oidcClientCredentialsService.clearCache).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException when new name conflicts', async () => {
@@ -739,118 +854,100 @@ describe('ClientsService', () => {
       expect(mockStatisticsService.recordEntityDeleted).toHaveBeenCalledWith(expect.anything(), 'test-uuid', undefined);
     });
 
-    it('should clear token cache when deleting Keycloak client', async () => {
-      process.env.KEYCLOAK_AUTH_SERVER_URL = 'https://keycloak.example.com';
-      mockRepository.findByIdOrThrow.mockResolvedValue(mockKeycloakClient);
+    it('should clear token cache when deleting OIDC client', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockOidcClient);
       repository.delete.mockResolvedValue(undefined);
 
-      await service.remove('keycloak-client-uuid', undefined, undefined, true);
+      await service.remove('oidc-client-uuid', undefined, undefined, true);
 
-      expect(keycloakTokenService.clearCache).toHaveBeenCalledWith(
-        'https://keycloak.example.com',
-        'test-realm',
-        'keycloak-client-id',
-      );
-      expect(repository.delete).toHaveBeenCalledWith('keycloak-client-uuid');
-      delete process.env.KEYCLOAK_AUTH_SERVER_URL;
+      expect(oidcClientCredentialsService.clearCache).toHaveBeenCalledWith(TRUSTED_OIDC_ISSUER, 'oidc-client-id');
+      expect(repository.delete).toHaveBeenCalledWith('oidc-client-uuid');
     });
   });
 
   describe('getAccessToken', () => {
-    beforeEach(() => {
-      process.env.KEYCLOAK_AUTH_SERVER_URL = 'https://keycloak.example.com';
-      process.env.KEYCLOAK_REALM = 'default-realm';
-    });
-
-    afterEach(() => {
-      delete process.env.KEYCLOAK_AUTH_SERVER_URL;
-      delete process.env.KEYCLOAK_REALM;
-    });
-
-    it('should get access token for Keycloak client', async () => {
+    it('should get access token for OIDC client from the trusted default issuer without SSRF hook', async () => {
       const expectedToken = 'jwt-access-token-123';
 
-      mockRepository.findByIdOrThrow.mockResolvedValue(mockKeycloakClient);
-      keycloakTokenService.getAccessToken.mockResolvedValue(expectedToken);
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockOidcClient);
+      oidcClientCredentialsService.getAccessToken.mockResolvedValue(expectedToken);
 
-      const result = await service.getAccessToken('keycloak-client-uuid');
+      const result = await service.getAccessToken('oidc-client-uuid');
 
       expect(result).toBe(expectedToken);
-      expect(keycloakTokenService.getAccessToken).toHaveBeenCalledWith(
-        'https://keycloak.example.com',
-        'test-realm',
-        'keycloak-client-id',
-        'keycloak-client-secret',
+      expect(oidcClientCredentialsService.getAccessToken).toHaveBeenCalledWith({
+        issuer: TRUSTED_OIDC_ISSUER,
+        clientId: 'oidc-client-id',
+        clientSecret: 'oidc-client-secret',
+        scope: undefined,
+        assertUrlAllowed: undefined,
+      });
+    });
+
+    it('should treat a client issuer equal to OIDC_ISSUER (trailing slash aside) as trusted', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue({ ...mockOidcClient, oidcIssuer: `${TRUSTED_OIDC_ISSUER}/` });
+      oidcClientCredentialsService.getAccessToken.mockResolvedValue('t');
+
+      await service.getAccessToken('oidc-client-uuid');
+
+      expect(oidcClientCredentialsService.getAccessToken).toHaveBeenCalledWith(
+        expect.objectContaining({ issuer: `${TRUSTED_OIDC_ISSUER}/`, assertUrlAllowed: undefined, lookup: undefined }),
       );
     });
 
-    it('should use environment realm when client realm is not set', async () => {
-      const clientWithoutRealm = {
-        ...mockKeycloakClient,
-        keycloakRealm: undefined,
-      };
-      const expectedToken = 'jwt-access-token-123';
+    it('should pass an SSRF hook for per-client issuers that differ from OIDC_ISSUER', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue({
+        ...mockOidcClient,
+        oidcIssuer: 'https://other-idp.example.org/realms/x',
+        oidcScope: 'manager:access',
+      });
+      oidcClientCredentialsService.getAccessToken.mockResolvedValue('t');
 
-      mockRepository.findByIdOrThrow.mockResolvedValue(clientWithoutRealm);
-      keycloakTokenService.getAccessToken.mockResolvedValue(expectedToken);
+      await service.getAccessToken('oidc-client-uuid');
 
-      const result = await service.getAccessToken('keycloak-client-uuid');
+      const request = oidcClientCredentialsService.getAccessToken.mock.calls[0][0];
 
-      expect(result).toBe(expectedToken);
-      expect(keycloakTokenService.getAccessToken).toHaveBeenCalledWith(
-        'https://keycloak.example.com',
-        'default-realm',
-        'keycloak-client-id',
-        'keycloak-client-secret',
+      expect(request).toEqual(
+        expect.objectContaining({
+          issuer: 'https://other-idp.example.org/realms/x',
+          scope: 'manager:access',
+          assertUrlAllowed: expect.any(Function),
+          // Connections are pinned to validated public addresses (no DNS rebinding).
+          lookup: expect.any(Function),
+        }),
       );
+
+      await request.assertUrlAllowed?.('https://other-idp.example.org/token');
+      expect(validateClientEndpointWithDnsOrThrow).toHaveBeenCalledWith('https://other-idp.example.org/token');
     });
 
-    it('should throw BadRequestException when client is not KEYCLOAK type', async () => {
+    it('should throw BadRequestException when client is not OIDC type', async () => {
       mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
 
       await expect(service.getAccessToken('test-uuid')).rejects.toThrow(BadRequestException);
       await expect(service.getAccessToken('test-uuid')).rejects.toThrow(
-        'Client is not configured for Keycloak authentication',
+        'Client is not configured for OIDC authentication',
       );
     });
 
-    it('should throw BadRequestException when Keycloak credentials are missing', async () => {
-      const clientWithoutCredentials = {
-        ...mockKeycloakClient,
-        keycloakClientId: undefined,
-        keycloakClientSecret: undefined,
-      };
+    it('should throw BadRequestException when OIDC credentials are missing', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue({
+        ...mockOidcClient,
+        oidcClientId: undefined,
+        oidcClientSecret: undefined,
+      });
 
-      mockRepository.findByIdOrThrow.mockResolvedValue(clientWithoutCredentials);
-
-      await expect(service.getAccessToken('keycloak-client-uuid')).rejects.toThrow(BadRequestException);
-      await expect(service.getAccessToken('keycloak-client-uuid')).rejects.toThrow(
-        'Keycloak client credentials are not configured for this client',
+      await expect(service.getAccessToken('oidc-client-uuid')).rejects.toThrow(
+        'OIDC client credentials are not configured for this client',
       );
     });
 
-    it('should throw BadRequestException when KEYCLOAK_AUTH_SERVER_URL is not set', async () => {
-      delete process.env.KEYCLOAK_AUTH_SERVER_URL;
-      mockRepository.findByIdOrThrow.mockResolvedValue(mockKeycloakClient);
+    it('should throw BadRequestException when no issuer is configured at all', async () => {
+      delete process.env.OIDC_ISSUER;
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockOidcClient);
 
-      await expect(service.getAccessToken('keycloak-client-uuid')).rejects.toThrow(BadRequestException);
-      await expect(service.getAccessToken('keycloak-client-uuid')).rejects.toThrow(
-        'KEYCLOAK_AUTH_SERVER_URL environment variable is not set',
-      );
-    });
-
-    it('should throw BadRequestException when realm is not configured', async () => {
-      delete process.env.KEYCLOAK_REALM;
-      const clientWithoutRealm = {
-        ...mockKeycloakClient,
-        keycloakRealm: undefined,
-      };
-
-      mockRepository.findByIdOrThrow.mockResolvedValue(clientWithoutRealm);
-
-      await expect(service.getAccessToken('keycloak-client-uuid')).rejects.toThrow(BadRequestException);
-      await expect(service.getAccessToken('keycloak-client-uuid')).rejects.toThrow(
-        'Keycloak realm is not configured for this client and KEYCLOAK_REALM is not set',
+      await expect(service.getAccessToken('oidc-client-uuid')).rejects.toThrow(
+        'OIDC issuer is not configured for this client and OIDC_ISSUER is not set',
       );
     });
   });

@@ -32,19 +32,19 @@ describe('ClientAgentDeploymentsProxyService', () => {
     endpoint: 'https://example.com/api',
     authenticationType: AuthenticationType.API_KEY,
     apiKey: 'test-api-key-123',
-    keycloakClientId: undefined,
-    keycloakClientSecret: undefined,
-    keycloakRealm: undefined,
+    oidcClientId: undefined,
+    oidcClientSecret: undefined,
+    oidcIssuer: undefined,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-  const mockKeycloakClientEntity: ClientEntity = {
+  const mockOidcClientEntity: ClientEntity = {
     ...mockClientEntity,
-    authenticationType: AuthenticationType.KEYCLOAK,
+    authenticationType: AuthenticationType.OIDC,
     apiKey: undefined,
-    keycloakClientId: 'keycloak-client-id',
-    keycloakClientSecret: 'keycloak-client-secret',
-    keycloakRealm: 'test-realm',
+    oidcClientId: 'oidc-client-id',
+    oidcClientSecret: 'oidc-client-secret',
+    oidcIssuer: 'https://idp.example.com/realms/test',
   };
   const mockConfiguration: DeploymentConfigurationResponseDto = {
     id: 'config-uuid',
@@ -116,9 +116,9 @@ describe('ClientAgentDeploymentsProxyService', () => {
       );
     });
 
-    it('should get configuration with Keycloak authentication', async () => {
-      clientsRepository.findByIdOrThrow.mockResolvedValue(mockKeycloakClientEntity);
-      clientsService.getAccessToken.mockResolvedValue('keycloak-jwt-token');
+    it('should get configuration with OIDC authentication', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockOidcClientEntity);
+      clientsService.getAccessToken.mockResolvedValue('oidc-access-token');
       mockedAxios.request.mockResolvedValue({ data: mockConfiguration, status: 200 });
 
       const result = await service.getConfiguration('client-uuid', 'agent-uuid');
@@ -127,7 +127,7 @@ describe('ClientAgentDeploymentsProxyService', () => {
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
           headers: expect.objectContaining({
-            Authorization: 'Bearer keycloak-jwt-token',
+            Authorization: 'Bearer oidc-access-token',
           }),
         }),
       );

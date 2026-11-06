@@ -7,7 +7,7 @@ flowchart TD
     E -->|Yes| G[Generate Authentication Config]
     G --> H{Authentication Type?}
     H -->|API_KEY| I[Generate API Key]
-    H -->|KEYCLOAK| J[Validate Keycloak Credentials]
+    H -->|OIDC| J[Validate OIDC Client Credentials]
     I --> K[Create User Data Script]
     J --> K
     K --> L[Call Provider.provisionServer]

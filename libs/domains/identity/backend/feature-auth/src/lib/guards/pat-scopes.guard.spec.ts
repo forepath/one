@@ -140,8 +140,8 @@ describe('PatScopesGuard', () => {
     expect(() => guard.canActivate(createContext(undefined))).toThrow(UnauthorizedException);
   });
 
-  it('enforces scopes under keycloak mode', () => {
-    process.env.AUTHENTICATION_METHOD = 'keycloak';
+  it.each(['oidc', 'saml'])('enforces scopes under %s mode', (method) => {
+    process.env.AUTHENTICATION_METHOD = method;
     reflector.getAllAndOverride.mockImplementation((key: string) => {
       if (key === REQUIRE_SCOPES_KEY) {
         return ['usage:write'];

@@ -368,6 +368,41 @@ describe('AgentsGateway', () => {
     });
   });
 
+  describe('afterInit (handshake authentication)', () => {
+    const envBackup = { ...process.env };
+    let middleware: (socket: unknown, next: (err?: Error) => void) => void;
+
+    beforeEach(() => {
+      const namespace = { use: jest.fn((fn) => (middleware = fn)) };
+
+      gateway.afterInit(namespace as never);
+    });
+
+    afterEach(() => {
+      process.env = { ...envBackup };
+    });
+
+    const handshake = (authorization?: string) =>
+      new Promise<Error | undefined>((resolve) =>
+        middleware({ id: 's1', handshake: { headers: authorization ? { authorization } : {} } }, resolve),
+      );
+
+    it('accepts the static API key and rejects anything else (api-key mode)', async () => {
+      process.env.AUTHENTICATION_METHOD = 'api-key';
+      process.env.STATIC_API_KEY = 'manager-key';
+
+      await expect(handshake('Bearer manager-key')).resolves.toBeUndefined();
+      await expect(handshake('Bearer wrong')).resolves.toBeInstanceOf(Error);
+      await expect(handshake()).resolves.toBeInstanceOf(Error);
+    });
+
+    it('rejects oidc handshakes when no verifier is available (fail-closed)', async () => {
+      process.env.AUTHENTICATION_METHOD = 'oidc';
+
+      await expect(handshake('Bearer some.jwt.token')).resolves.toBeInstanceOf(Error);
+    });
+  });
+
   describe('handleConnection', () => {
     it('should log connection and store socket reference', () => {
       const loggerSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();

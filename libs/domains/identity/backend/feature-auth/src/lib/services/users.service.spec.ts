@@ -13,6 +13,7 @@ describe('UsersService', () => {
     findAll: jest.fn(),
     findByEmail: jest.fn(),
     create: jest.fn(),
+    createWithTenantBootstrap: jest.fn(),
     remove: jest.fn(),
     incrementTokenVersion: jest.fn(),
   };
@@ -153,13 +154,15 @@ describe('UsersService', () => {
 
   it('publishes confirmation email when creating a non-first user', async () => {
     mockUsersRepository.findByEmail.mockResolvedValue(null);
-    mockUsersRepository.create.mockResolvedValue({
-      id: 'user-2',
-      email: 'new@example.com',
-      role: UserRole.USER,
-      createdAt: new Date('2026-01-01T00:00:00.000Z'),
-      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
-    });
+    mockUsersRepository.createWithTenantBootstrap.mockImplementation(async (build: (first: boolean) => object) => ({
+      user: {
+        id: 'user-2',
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+        ...build(false),
+      },
+      isFirstUser: false,
+    }));
     mockUsersRepository.update.mockResolvedValue({
       id: 'user-2',
       email: 'new@example.com',
@@ -168,7 +171,7 @@ describe('UsersService', () => {
       updatedAt: new Date('2026-01-01T00:00:00.000Z'),
     });
 
-    await service.create({ email: 'new@example.com', password: 'secret-pass' }, false);
+    await service.create({ email: 'new@example.com', password: 'secret-pass' });
 
     expect(mockEmailDispatcher.publishEmail).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -182,17 +185,30 @@ describe('UsersService', () => {
 
   it('does not publish confirmation email when creating the first user', async () => {
     mockUsersRepository.findByEmail.mockResolvedValue(null);
-    mockUsersRepository.create.mockResolvedValue({
-      id: 'user-1',
-      email: 'admin@example.com',
-      role: UserRole.ADMIN,
-      createdAt: new Date('2026-01-01T00:00:00.000Z'),
-      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
-    });
+    mockUsersRepository.createWithTenantBootstrap.mockImplementation(async (build: (first: boolean) => object) => ({
+      user: {
+        id: 'user-1',
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+        ...build(true),
+      },
+      isFirstUser: true,
+    }));
 
-    await service.create({ email: 'admin@example.com', password: 'secret-pass' }, true);
+    const created = await service.create({ email: 'admin@example.com', password: 'secret-pass' });
 
     expect(mockEmailDispatcher.publishEmail).not.toHaveBeenCalled();
+    // The first user of the tenant becomes admin and is confirmed immediately (decided inside the bootstrap lock).
+    expect(created.role).toBe(UserRole.ADMIN);
+
+    const build = mockUsersRepository.createWithTenantBootstrap.mock.calls[0][0] as (first: boolean) => {
+      role: UserRole;
+      emailConfirmedAt?: Date;
+    };
+
+    expect(build(false).role).toBe(UserRole.USER);
+    expect(build(false).emailConfirmedAt).toBeUndefined();
+    expect(build(true).emailConfirmedAt).toBeInstanceOf(Date);
   });
 
   it('publishes confirmation email when email changes', async () => {

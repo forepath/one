@@ -40,15 +40,19 @@ export class IdentityLogoutConfirmModalComponent {
   }
 
   showLogoutAllSessionsOption(): boolean {
-    return this.authenticationType() === 'users';
+    // users / saml sessions are app JWTs: "sign out everywhere" bumps the account's token version at the API.
+    const type = this.authenticationType();
+
+    return type === 'users' || type === 'saml';
   }
 
   modalTitle(): string {
     switch (this.authenticationType()) {
       case 'users':
+      case 'saml':
         return $localize`:@@identityLogoutConfirm-usersTitle:Log out?`;
-      case 'keycloak':
-        return $localize`:@@identityLogoutConfirm-keycloakTitle:Log out?`;
+      case 'oidc':
+        return $localize`:@@identityLogoutConfirm-oidcTitle:Log out?`;
       default:
         return $localize`:@@identityLogoutConfirm-defaultTitle:Log out?`;
     }
@@ -58,8 +62,10 @@ export class IdentityLogoutConfirmModalComponent {
     switch (this.authenticationType()) {
       case 'users':
         return $localize`:@@identityLogoutConfirm-usersMessage:You will be signed out of this browser only. Other devices and browsers will stay signed in unless you choose to sign out everywhere below.`;
-      case 'keycloak':
-        return $localize`:@@identityLogoutConfirm-keycloakMessage:You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.`;
+      case 'saml':
+        return $localize`:@@identityLogoutConfirm-samlMessage:You will be signed out of this browser only. Your single sign-on session at your identity provider stays active unless you sign out there.`;
+      case 'oidc':
+        return $localize`:@@identityLogoutConfirm-oidcMessage:You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.`;
       default:
         return $localize`:@@identityLogoutConfirm-defaultMessage:Are you sure you want to log out?`;
     }

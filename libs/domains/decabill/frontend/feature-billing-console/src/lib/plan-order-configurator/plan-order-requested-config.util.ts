@@ -3,7 +3,81 @@ import type { PlanAddonOptionDto } from '@forepath/decabill/frontend/data-access
 
 export type IntegratedOrderService = 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'custom';
 
-export type IntegratedOrderAuthMethod = 'users' | 'api-key' | 'keycloak';
+export type IntegratedOrderAuthMethod = 'users' | 'api-key' | 'oidc' | 'saml';
+
+/** OIDC settings of a provisioned instance (API resource server + console public client). */
+export interface IntegratedOrderOidcConfig {
+  issuer: string;
+  clientId: string;
+  clientSecret: string;
+  /** Optional required token audience (OIDC_AUDIENCE). */
+  audience: string;
+  /** Optional public client of the console; defaults to clientId. */
+  frontendClientId: string;
+}
+
+/** SAML identity provider settings of a provisioned instance (the API is the service provider). */
+export interface IntegratedOrderSamlConfig {
+  idpSsoUrl: string;
+  idpCert: string;
+  idpIssuer: string;
+  spEntityId: string;
+  nameIdFormat: string;
+  emailAttribute: string;
+}
+
+/** Whether the product service supports the auth method (agent-manager: API key or OIDC service tokens only). */
+export function isOrderAuthMethodSupported(
+  service: IntegratedOrderService,
+  method: IntegratedOrderAuthMethod,
+): boolean {
+  if (service === 'agenstra-manager') {
+    return method === 'api-key' || method === 'oidc';
+  }
+
+  return true;
+}
+
+export function createDefaultOidcOrderConfig(): IntegratedOrderOidcConfig {
+  return { issuer: '', clientId: '', clientSecret: '', audience: '', frontendClientId: '' };
+}
+
+export function createDefaultSamlOrderConfig(): IntegratedOrderSamlConfig {
+  return { idpSsoUrl: '', idpCert: '', idpIssuer: '', spEntityId: '', nameIdFormat: '', emailAttribute: '' };
+}
+
+function trimmedFields<T extends object>(value: T, required: (keyof T)[]): Record<string, string> {
+  const result: Record<string, string> = {};
+
+  for (const [key, raw] of Object.entries(value)) {
+    const trimmed = typeof raw === 'string' ? raw.trim() : '';
+
+    if (trimmed || required.includes(key as keyof T)) {
+      result[key] = trimmed;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Identity provider part of the requested config: `oidc` / `saml` objects (empty optional fields omitted).
+ */
+export function buildOrderAuthProviderConfig(cfg: {
+  authenticationMethod: IntegratedOrderAuthMethod;
+  oidc: IntegratedOrderOidcConfig;
+  saml: IntegratedOrderSamlConfig;
+}): Record<string, unknown> {
+  if (cfg.authenticationMethod === 'oidc') {
+    return { oidc: trimmedFields(cfg.oidc, ['issuer', 'clientId', 'clientSecret']) };
+  }
+
+  if (cfg.authenticationMethod === 'saml') {
+    return { saml: trimmedFields(cfg.saml, ['idpSsoUrl', 'idpCert']) };
+  }
+
+  return {};
+}
 
 export interface IntegratedOrderFormConfig {
   service: IntegratedOrderService;
@@ -11,7 +85,8 @@ export interface IntegratedOrderFormConfig {
   staticApiKey: string;
   disableSignup: boolean;
   smtp: { host: string; port: number; user: string; password: string; from: string };
-  keycloak: { serverUrl: string; authServerUrl: string; realm: string; clientId: string; clientSecret: string };
+  oidc: IntegratedOrderOidcConfig;
+  saml: IntegratedOrderSamlConfig;
   hetznerApiToken: string;
   digitaloceanApiToken: string;
   git: {
@@ -39,13 +114,8 @@ export function createDefaultIntegratedOrderConfig(): IntegratedOrderFormConfig 
       password: '',
       from: 'noreply@localhost',
     },
-    keycloak: {
-      serverUrl: '',
-      authServerUrl: '',
-      realm: '',
-      clientId: '',
-      clientSecret: '',
-    },
+    oidc: createDefaultOidcOrderConfig(),
+    saml: createDefaultSamlOrderConfig(),
     hetznerApiToken: '',
     digitaloceanApiToken: '',
     git: {
@@ -117,9 +187,7 @@ export function buildPlanOrderRequestedConfig(params: BuildPlanOrderRequestedCon
     requestedConfig['staticApiKey'] = cfg.staticApiKey.trim();
   }
 
-  if (cfg.authenticationMethod === 'keycloak') {
-    requestedConfig['keycloak'] = { ...cfg.keycloak };
-  }
+  Object.assign(requestedConfig, buildOrderAuthProviderConfig(cfg));
 
   if (cfg.service === 'agenstra-controller' || cfg.service === 'decabill-billing') {
     if (cfg.hetznerApiToken.trim()) {

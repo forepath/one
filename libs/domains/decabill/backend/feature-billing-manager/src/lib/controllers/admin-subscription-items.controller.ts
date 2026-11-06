@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import { BadRequestException, Body, Controller, Get, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
 
 import { ServerInfoResponseDto } from '../dto/server-info-response.dto';
@@ -13,7 +13,6 @@ import { toServerInfoResponse } from '../utils/subscription-item-response.utils'
 import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
 @Controller('admin/billing/subscriptions/:subscriptionId/items')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 export class AdminSubscriptionItemsController {
   constructor(private readonly subscriptionItemServerService: SubscriptionItemServerService) {}

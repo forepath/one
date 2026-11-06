@@ -1,7 +1,7 @@
 import { StreamableFile } from '@nestjs/common';
 import 'reflect-metadata';
 
-import { KEYCLOAK_ROLES_KEY, USERS_ROLES_KEY, UserRole } from '@forepath/identity/backend';
+import { USERS_ROLES_KEY, UserRole } from '@forepath/identity/backend';
 
 import { DatevExportScope, DatevExportStatus } from '../constants/datev-export.constants';
 
@@ -21,7 +21,6 @@ describe('AdminDatevExportsController', () => {
   });
 
   it('has admin role guards on controller', () => {
-    expect(Reflect.getMetadata(KEYCLOAK_ROLES_KEY, AdminDatevExportsController)).toContain(UserRole.ADMIN);
     expect(Reflect.getMetadata(USERS_ROLES_KEY, AdminDatevExportsController)).toContain(UserRole.ADMIN);
   });
 

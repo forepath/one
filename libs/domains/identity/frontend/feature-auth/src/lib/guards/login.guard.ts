@@ -1,94 +1,66 @@
-import { inject } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { inject, PLATFORM_ID } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import {
+  API_KEY_STORAGE_KEY,
+  consumePostLoginReturnUrl,
   IDENTITY_AUTH_ENVIRONMENT,
-  isUsersConsoleJwtValid,
-  jwtPayloadHasPatAmr,
-  parseJwtPayload,
+  OidcAuthService,
+  SSO_ERROR_QUERY_PARAM,
+  startSamlLogin,
+  usesAppSessionJwt,
 } from '@forepath/identity/frontend';
-import { KeycloakService } from 'keycloak-angular';
 
-/**
- * LocalStorage key for storing the API key
- */
-const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
-/**
- * LocalStorage key for storing the JWT (users authentication)
- */
-const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
+import { hasValidConsoleSessionJwt } from './auth.guard';
 
 /**
  * Guard that prevents authenticated users from accessing the login route.
- * - If authentication type is 'keycloak', checks if user is authenticated and redirects to /clients if so
- * - If authentication type is 'api-key', checks if API key exists in environment or localStorage and redirects to /clients if so
- * - If authentication type is 'users', checks if valid password-session JWT exists in localStorage and redirects to /clients if so
+ * - 'oidc' / 'saml': signed-in users go to /clients; otherwise sign-in starts at the identity provider right away
+ *   (unless the previous attempt failed: `?sso_error=…` keeps the login page with a retry button)
+ * - 'api-key': redirects to /clients when an API key exists in environment or localStorage
+ * - 'users': redirects to /clients when a valid password-session JWT exists in localStorage
  * - Personal access token JWTs are cleared so the login form remains reachable
  * - Otherwise, allows access to login route
  */
-export const loginGuard: CanActivateFn = (_route, _state) => {
+export const loginGuard: CanActivateFn = (route) => {
   const environment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT);
   const router = inject(Router);
+  const platformId = inject(PLATFORM_ID);
+  const type = environment.authentication.type;
 
-  if (environment.authentication.type === 'keycloak') {
-    const keycloakService = inject(KeycloakService, { optional: true });
-
-    if (keycloakService) {
-      // Check if user is authenticated
-      const isAuthenticated = keycloakService.isLoggedIn();
-
-      if (isAuthenticated) {
-        // User is already authenticated, redirect to dashboard
-        return router.createUrlTree(['/clients']);
-      } else {
-        // Login to Keycloak
-        keycloakService.login();
-      }
+  if (type === 'oidc' || type === 'saml') {
+    if (isPlatformServer(platformId)) {
+      return true;
     }
 
-    // User is not authenticated, allow access to login
-    return true;
-  }
+    const signedIn = type === 'oidc' ? inject(OidcAuthService).isLoggedIn() : hasValidConsoleSessionJwt();
 
-  if (environment.authentication.type === 'api-key') {
-    // Check if API key exists in environment
-    const envApiKey = environment.authentication.apiKey;
-
-    if (envApiKey) {
-      // API key found in environment, user is "logged in", redirect to dashboard
+    if (signedIn) {
       return router.createUrlTree(['/clients']);
     }
 
-    // Check if API key exists in localStorage
-    const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+    if (!route.queryParamMap.get(SSO_ERROR_QUERY_PARAM)) {
+      const returnUrl = consumePostLoginReturnUrl() ?? undefined;
 
-    if (storedApiKey) {
-      // API key found in localStorage, user is "logged in", redirect to dashboard
-      return router.createUrlTree(['/clients']);
+      void (type === 'oidc'
+        ? inject(OidcAuthService).login(returnUrl)
+        : startSamlLogin(environment.apiUrl, returnUrl, environment.tenantId));
     }
 
-    // No API key found, allow access to login
     return true;
   }
 
-  if (environment.authentication.type === 'users') {
-    const jwt = localStorage.getItem(USERS_JWT_STORAGE_KEY);
-
-    if (jwt) {
-      const payload = parseJwtPayload(jwt);
-
-      if (jwtPayloadHasPatAmr(payload)) {
-        localStorage.removeItem(USERS_JWT_STORAGE_KEY);
-
-        return true;
-      }
-
-      if (isUsersConsoleJwtValid(jwt)) {
-        return router.createUrlTree(['/clients']);
-      }
+  if (type === 'api-key') {
+    if (environment.authentication.apiKey || localStorage.getItem(API_KEY_STORAGE_KEY)) {
+      return router.createUrlTree(['/clients']);
     }
 
     return true;
+  }
+
+  if (usesAppSessionJwt(type)) {
+    return hasValidConsoleSessionJwt() ? router.createUrlTree(['/clients']) : true;
   }
 
   // For other authentication types, allow access to login

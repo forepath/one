@@ -3,7 +3,7 @@
  * Keep the database on the compose network only (no host port publish).
  */
 import { buildHealthyDependsOn, type CloudInitComposeServiceParams } from './compose-service.utils';
-import { quoteYamlScalar } from './env.utils';
+import { quoteComposeValue } from './env.utils';
 
 export const POSTGRES_COMPOSE_IMAGE = 'postgres:16-alpine';
 export const POSTGRES_PGVECTOR_COMPOSE_IMAGE = 'pgvector/pgvector:pg16';
@@ -44,9 +44,9 @@ export function buildPostgresComposeService(params: PostgresComposeServiceParams
     image: ${image}
     container_name: ${params.containerName}
     environment:
-      POSTGRES_USER: ${quoteYamlScalar(username)}
-      POSTGRES_PASSWORD: ${quoteYamlScalar(password)}
-      POSTGRES_DB: ${quoteYamlScalar(database)}
+      POSTGRES_USER: ${quoteComposeValue(username)}
+      POSTGRES_PASSWORD: ${quoteComposeValue(password)}
+      POSTGRES_DB: ${quoteComposeValue(database)}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

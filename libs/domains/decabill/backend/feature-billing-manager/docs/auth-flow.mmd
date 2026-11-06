@@ -8,7 +8,7 @@ sequenceDiagram
 
     alt API key auth
         AuthGuard-->>BillingAPI: apiKeyAuthenticated=true
-    else Keycloak/users auth
+    else OIDC / SAML / users auth
         AuthGuard-->>BillingAPI: user identity + roles
     end
 

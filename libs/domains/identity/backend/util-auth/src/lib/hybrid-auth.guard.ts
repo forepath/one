@@ -2,50 +2,18 @@ import { recordSharedCounter } from '@forepath/shared/backend/util-otel/metrics'
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 
-import {
-  BullBoardSkippingAuthGuard,
-  BullBoardSkippingResourceGuard,
-  BullBoardSkippingRoleGuard,
-} from './bull-board-keycloak.guards';
+import { getAuthenticationMethod } from './authentication-method';
 import { isBullBoardRequestPath } from './bull-board-request-path';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
+import { OidcAuthGuard } from './oidc/oidc-auth.guard';
 import { isOtelMetricsRequestPath } from './otel-metrics-request-path';
-
-/** Supported authentication methods. */
-export type AuthenticationMethod = 'api-key' | 'keycloak' | 'users';
-
-/** Default authentication method when AUTHENTICATION_METHOD is explicitly set to api-key. */
-export const DEFAULT_AUTHENTICATION_METHOD: AuthenticationMethod = 'api-key';
-
-/**
- * Resolves the effective authentication method from environment variables.
- * - `AUTHENTICATION_METHOD`: explicit choice (`api-key` | `keycloak` | `users`).
- * - When unset: if `STATIC_API_KEY` is set → `api-key` (backward compatibility); otherwise → `keycloak`.
- *
- * The implicit `keycloak` branch is intentional: Keycloak/OIDC is the IdP-integrated path and aligns
- * with enterprise deployments using the customer’s identity provider. Endpoints are not anonymous;
- * Keycloak- or users-mode guards still enforce authentication. See **AR-004** in `SECURITY.md`.
- */
-export function getAuthenticationMethod(): AuthenticationMethod {
-  const explicit = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
-
-  if (explicit === 'api-key' || explicit === 'keycloak' || explicit === 'users') {
-    return explicit;
-  }
-
-  // Backward compatibility: STATIC_API_KEY set -> api-key, else -> keycloak
-  if (process.env.STATIC_API_KEY) {
-    return 'api-key';
-  }
-
-  return 'keycloak';
-}
+import { secretsEqual } from './secret-compare';
 
 /**
  * Guard that validates static API key authentication.
  * When AUTHENTICATION_METHOD is 'api-key' (or STATIC_API_KEY is set for backward compatibility),
- * only API key authentication is used (no Keycloak fallback, no anonymous access).
- * When 'keycloak' or 'users', this guard allows requests to proceed to the respective auth guards.
+ * only API key authentication is used (no IdP fallback, no anonymous access).
+ * When 'users', 'oidc' or 'saml', this guard allows requests to proceed to the respective auth guards.
  */
 @Injectable()
 export class HybridAuthGuard implements CanActivate {
@@ -62,7 +30,7 @@ export class HybridAuthGuard implements CanActivate {
       return true;
     }
 
-    // Bull Board / OTEL metrics use their own HTTP Basic auth, not API key / Keycloak
+    // Bull Board / OTEL metrics use their own HTTP Basic auth, not API key / IdP tokens
     if (isBullBoardRequestPath(path) || isOtelMetricsRequestPath(path)) {
       return true;
     }
@@ -105,7 +73,7 @@ export class HybridAuthGuard implements CanActivate {
       const [scheme, providedKey] = parts;
 
       // Accept both "Bearer" and "ApiKey" schemes for API key
-      if ((scheme === 'Bearer' || scheme === 'ApiKey') && providedKey === staticApiKey) {
+      if ((scheme === 'Bearer' || scheme === 'ApiKey') && secretsEqual(providedKey, staticApiKey)) {
         // Attach user object: API key auth always implicates admin rights
         request.user = {
           id: 'api-key-user',
@@ -118,11 +86,11 @@ export class HybridAuthGuard implements CanActivate {
         return true;
       }
 
-      // API key doesn't match - reject (no Keycloak fallback, no anonymous access)
+      // API key doesn't match - reject (no IdP fallback, no anonymous access)
       this.rejectUnauthorized('Invalid API key');
     }
 
-    // keycloak or users: let respective guards handle authentication
+    // users / oidc / saml: let the respective guards handle authentication
     return true;
   }
 
@@ -133,14 +101,14 @@ export class HybridAuthGuard implements CanActivate {
 }
 
 /**
- * Guard providers that conditionally include API key guard and Keycloak guards.
- * - AUTHENTICATION_METHOD=api-key (and STATIC_API_KEY set): Only API key guard
- * - AUTHENTICATION_METHOD=keycloak: Keycloak guards
- * - AUTHENTICATION_METHOD=users: JWT guard (handled by UsersAuthModule)
+ * Guard providers for apps without a local users table (e.g. agent-manager) and the api-key mode:
+ * - AUTHENTICATION_METHOD=api-key (and STATIC_API_KEY set): only the API key guard
+ * - AUTHENTICATION_METHOD=oidc: API key guard (pass-through) + {@link OidcAuthGuard} (bearer token validation)
+ * - AUTHENTICATION_METHOD=users / saml: JWT guards are registered by UsersAuthModule / SamlAuthModule
  */
 export function getHybridAuthGuards() {
   const authMethod = getAuthenticationMethod();
-  const guards: Array<{ provide: typeof APP_GUARD; useClass: new (...args: unknown[]) => CanActivate }> = [];
+  const guards: Array<{ provide: typeof APP_GUARD; useClass: new (...args: never[]) => CanActivate }> = [];
 
   // Always add HybridAuthGuard (checks AUTHENTICATION_METHOD and STATIC_API_KEY)
   guards.push({
@@ -148,22 +116,11 @@ export function getHybridAuthGuards() {
     useClass: HybridAuthGuard,
   });
 
-  // Add Keycloak guards only when using keycloak auth
-  if (authMethod === 'keycloak') {
-    guards.push(
-      {
-        provide: APP_GUARD,
-        useClass: BullBoardSkippingAuthGuard,
-      },
-      {
-        provide: APP_GUARD,
-        useClass: BullBoardSkippingResourceGuard,
-      },
-      {
-        provide: APP_GUARD,
-        useClass: BullBoardSkippingRoleGuard,
-      },
-    );
+  if (authMethod === 'oidc') {
+    guards.push({
+      provide: APP_GUARD,
+      useClass: OidcAuthGuard,
+    });
   }
 
   return guards;

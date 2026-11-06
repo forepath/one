@@ -76,7 +76,7 @@ describe('clientsReducer', () => {
     id: 'client-2',
     name: 'Test Client 2',
     endpoint: 'https://example2.com/api',
-    authenticationType: 'keycloak',
+    authenticationType: 'oidc',
     isAutoProvisioned: false,
     canManageWorkspaceConfiguration: true,
     config: {

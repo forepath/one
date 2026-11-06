@@ -75,7 +75,11 @@ export class UsersService {
     return this.mapToResponseDto(user);
   }
 
-  async create(dto: CreateUserDto, isFirstUser: boolean): Promise<UserResponseDto> {
+  /**
+   * Creates a password user. Whether it is the tenant's first user (admin, confirmed immediately) is decided
+   * atomically with the insert, so concurrent registrations cannot both become admin.
+   */
+  async create(dto: CreateUserDto): Promise<UserResponseDto> {
     const existing = await this.usersRepository.findByEmail(dto.email);
 
     if (existing) {
@@ -83,14 +87,14 @@ export class UsersService {
     }
 
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
-    const role = dto.role ?? (isFirstUser ? UserRole.ADMIN : UserRole.USER);
-    const user = await this.usersRepository.create({
+    const { user, isFirstUser } = await this.usersRepository.createWithTenantBootstrap((first) => ({
       email: dto.email,
       passwordHash,
-      role,
-      emailConfirmedAt: isFirstUser ? new Date() : undefined,
+      role: dto.role ?? (first ? UserRole.ADMIN : UserRole.USER),
+      emailConfirmedAt: first ? new Date() : undefined,
       emailConfirmationToken: undefined,
-    });
+    }));
+    const role = user.role;
 
     this.statisticsService?.recordEntityCreated('user', user.id, { role }, undefined).catch(() => {
       /* fire and forget */

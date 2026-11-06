@@ -42,18 +42,12 @@ export class UsersRolesGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<{
       user?: { roles?: unknown };
-      patAuthenticated?: boolean;
     }>();
     const roles = request.user?.roles;
 
-    // Interactive Keycloak tokens use realm_access until KeycloakAuthGuard syncs local roles.
-    // Defer to KeycloakRolesGuard (`@KeycloakRoles`) in that case.
-    // Enforce `@UsersRoles` for: users-mode JWTs, and Keycloak-mode PAT JWTs (`patAuthenticated`).
-    // New admin routes under keycloak should set BOTH `@KeycloakRoles` and `@UsersRoles`.
-    if (getAuthenticationMethod() === 'keycloak' && !request.patAuthenticated && !Array.isArray(roles)) {
-      return true;
-    }
-
+    // Roles always come from the local users table: users/saml JWTs, PAT/app JWTs and OIDC sessions
+    // (ExternalIdentityAuthGuard replaces the token claims with the synced user before this guard runs).
+    // Without a resolved role array the route is denied (fail-closed).
     if (!Array.isArray(roles)) {
       return false;
     }

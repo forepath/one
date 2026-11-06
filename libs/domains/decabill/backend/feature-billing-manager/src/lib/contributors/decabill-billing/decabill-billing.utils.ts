@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 
 import { buildCertbotBootstrapScript } from '../../utils/cloud-init/certbot-bootstrap.script';
 import { buildComposeBridgeNetwork, buildComposeNamedVolumes } from '../../utils/cloud-init/compose-service.utils';
-import { formatEnvLines as formatEnv } from '../../utils/cloud-init/env.utils';
+import { formatEnvLines as formatEnv, shellSingleQuote } from '../../utils/cloud-init/env.utils';
 import { buildNginxComposeService } from '../../utils/cloud-init/nginx-compose.utils';
 import {
   OPENSEARCH_COMPOSE_DEPENDS_ON,
@@ -20,6 +20,20 @@ import {
   buildValkeyBackendEnvLines,
   buildValkeyComposeService,
 } from '../../utils/cloud-init/valkey-compose.utils';
+
+import {
+  assertConsoleOidcConfig,
+  buildConsoleAuthenticationConfig,
+  buildOidcEnvLines,
+  buildSamlEnvLines,
+  readProvisionedOidcConfig,
+  readProvisionedSamlConfig,
+  resolveConsoleAuthenticationMethod,
+  toNginxJsonReturnBody,
+  type ConsoleAuthenticationMethod,
+  type ProvisionedOidcConfig,
+  type ProvisionedSamlConfig,
+} from '../shared/external-auth-config.utils';
 
 export const DECABILL_BILLING_STACK_DIR = '/opt/decabill-billing';
 
@@ -61,15 +75,10 @@ export interface DecabillBillingCloudInitConfig {
       database: string;
     };
     authentication: {
-      authenticationMethod: string;
+      authenticationMethod: ConsoleAuthenticationMethod;
       staticApiKey?: string;
-      keycloak?: {
-        serverUrl: string;
-        authServerUrl: string;
-        realm: string;
-        clientId: string;
-        clientSecret: string;
-      };
+      oidc?: ProvisionedOidcConfig;
+      saml?: ProvisionedSamlConfig;
       disableSignup: boolean;
       disableForceLogin2fa?: boolean;
     };
@@ -113,7 +122,10 @@ export function buildDecabillBillingCloudInitConfigFromRequest(
   const databasePassword = randomBytes(24).toString('base64url');
   const fqdn = `${hostname}.${baseDomain}`;
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
-  const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
+  const oidc = readProvisionedOidcConfig(effectiveConfig.oidc);
+  const saml = readProvisionedSamlConfig(effectiveConfig.saml);
+
+  assertConsoleOidcConfig(resolveConsoleAuthenticationMethod(effectiveConfig.authenticationMethod ?? 'users'), oidc);
   const billingFrontendUrl = `https://${fqdn}`;
 
   return {
@@ -145,19 +157,12 @@ export function buildDecabillBillingCloudInitConfigFromRequest(
         database: 'postgres',
       },
       authentication: {
-        authenticationMethod: (effectiveConfig.authenticationMethod as string) ?? 'users',
+        authenticationMethod: resolveConsoleAuthenticationMethod(effectiveConfig.authenticationMethod ?? 'users'),
         disableSignup: (effectiveConfig.disableSignup as boolean) ?? false,
         disableForceLogin2fa: (effectiveConfig.disableForceLogin2fa as boolean) ?? false,
         staticApiKey: (effectiveConfig.staticApiKey as string) ?? '',
-        ...(keycloak && {
-          keycloak: {
-            serverUrl: (keycloak.serverUrl as string) ?? '',
-            authServerUrl: (keycloak.authServerUrl as string) ?? '',
-            realm: (keycloak.realm as string) ?? '',
-            clientId: (keycloak.clientId as string) ?? '',
-            clientSecret: (keycloak.clientSecret as string) ?? '',
-          },
-        }),
+        ...(oidc && { oidc }),
+        ...(saml && { saml }),
       },
       encryption: { encryptionKey, jwtSecret, fileSigningSecret },
       smtp: {
@@ -195,11 +200,12 @@ export function buildDecabillBillingCloudInitUserData(config: DecabillBillingClo
     `QUEUE_BULL_BOARD_PASSWORD: `,
     `AUTHENTICATION_METHOD: ${config.backend?.authentication?.authenticationMethod ?? 'api-key'}`,
     `STATIC_API_KEY: ${config.backend?.authentication?.staticApiKey ?? ''}`,
-    `KEYCLOAK_SERVER_URL: ${config.backend?.authentication?.keycloak?.serverUrl ?? ''}`,
-    `KEYCLOAK_AUTH_SERVER_URL: ${config.backend?.authentication?.keycloak?.authServerUrl ?? ''}`,
-    `KEYCLOAK_REALM: ${config.backend?.authentication?.keycloak?.realm ?? ''}`,
-    `KEYCLOAK_CLIENT_ID: ${config.backend?.authentication?.keycloak?.clientId ?? ''}`,
-    `KEYCLOAK_CLIENT_SECRET: ${config.backend?.authentication?.keycloak?.clientSecret ?? ''}`,
+    ...buildOidcEnvLines(config.backend?.authentication?.authenticationMethod, config.backend?.authentication?.oidc),
+    ...buildSamlEnvLines(
+      config.backend?.authentication?.authenticationMethod,
+      config.backend?.authentication?.saml,
+      config.host?.fqdn ?? config.host?.hostname ?? 'localhost',
+    ),
     `HETZNER_API_TOKEN: ${config.backend?.provisioning?.hetznerApiToken ?? ''}`,
     `DIGITALOCEAN_API_TOKEN: ${config.backend?.provisioning?.digitaloceanApiToken ?? ''}`,
     `DISABLE_SIGNUP: ${config.backend?.authentication?.disableSignup ?? 'false'}`,
@@ -240,7 +246,7 @@ export function buildDecabillBillingCloudInitUserData(config: DecabillBillingClo
     `CONFIG_ALLOWED_HOSTS: ${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
     `CSP_ENFORCE: ${config.frontend?.cspEnforce ?? 'true'}`,
   ]);
-  const authMethod = config.backend?.authentication?.authenticationMethod ?? 'users';
+  const authMethod = resolveConsoleAuthenticationMethod(config.backend?.authentication?.authenticationMethod);
   const provisionHost = config.host?.fqdn ?? config.host?.hostname ?? 'localhost';
   const provisionHttpsPort = config.proxy?.httpsPort ?? '443';
   const provisionWebsocketNamespace = config.backend?.websocketNamespace ?? 'socket/billing';
@@ -257,10 +263,10 @@ export function buildDecabillBillingCloudInitUserData(config: DecabillBillingClo
       },
     },
     authentication: {
-      config: {
-        type: authMethod === 'api-key' ? 'api-key' : authMethod === 'keycloak' ? 'keycloak' : 'users',
+      config: buildConsoleAuthenticationConfig(authMethod, {
+        oidc: config.backend?.authentication?.oidc,
         disableSignup: config.backend?.authentication?.disableSignup ?? false,
-      },
+      }),
     },
     cookieConsent: {
       domain: `.${provisionHost}`,
@@ -432,7 +438,7 @@ server {
     }
 
     location /config.json {
-        return 200 '${JSON.stringify(frontendConfig || {})}';
+        return 200 '${toNginxJsonReturnBody(frontendConfig)}';
     }
 }
 `;
@@ -503,7 +509,7 @@ server {
     }
 
     location /config.json {
-        return 200 '${JSON.stringify(frontendConfig || {})}';
+        return 200 '${toNginxJsonReturnBody(frontendConfig)}';
     }
 }
 `;
@@ -551,7 +557,7 @@ apt-get install -y openssh-server ssh
 
 log "Adding SSH public key..."
 mkdir -p /root/.ssh
-echo "${config.ssh?.publicKey ?? ''}" > /root/.ssh/authorized_keys
+printf '%s\\n' ${shellSingleQuote(config.ssh?.publicKey ?? '')} > /root/.ssh/authorized_keys
 chmod 600 /root/.ssh/authorized_keys
 
 log "Configuring SSH server..."

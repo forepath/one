@@ -1,7 +1,8 @@
 import type { AgentTypeCapabilities } from '../agents/agents.types';
 
 // Types based on OpenAPI spec
-export type ClientAuthenticationType = 'api_key' | 'keycloak';
+/** How the controller authenticates against the workspace's agent-manager. */
+export type ClientAuthenticationType = 'api_key' | 'oidc';
 
 export interface AgentTypeInfo {
   type: string;
@@ -111,10 +112,14 @@ export interface CreateClientDto {
   endpoint: string;
   authenticationType: ClientAuthenticationType;
   apiKey?: string;
-  keycloakClientId?: string;
-  keycloakClientSecret?: string;
-  keycloakRealm?: string;
-  keycloakAuthServerUrl?: string;
+  /** OIDC client (client credentials grant) the controller uses for the agent-manager. */
+  oidcClientId?: string;
+  /** Write-only; never returned by the API. */
+  oidcClientSecret?: string;
+  /** Issuer URL; defaults to the controller's `OIDC_ISSUER`. */
+  oidcIssuer?: string;
+  /** Optional scope requested with the client credentials grant. */
+  oidcScope?: string;
   gitRepositorySetupMode?: 'clone' | 'empty';
   gitRepositoryUrl?: string;
   gitUsername?: string;
@@ -134,9 +139,10 @@ export interface UpdateClientDto {
   endpoint?: string;
   authenticationType?: ClientAuthenticationType;
   apiKey?: string;
-  keycloakClientId?: string;
-  keycloakClientSecret?: string;
-  keycloakRealm?: string;
+  oidcClientId?: string;
+  oidcClientSecret?: string;
+  oidcIssuer?: string;
+  oidcScope?: string;
 }
 
 export interface CreateClientResponseDto extends ClientResponseDto {
@@ -181,10 +187,14 @@ export interface ProvisionServerDto {
   location?: string;
   authenticationType: ClientAuthenticationType;
   apiKey?: string;
-  keycloakClientId?: string;
-  keycloakClientSecret?: string;
-  keycloakRealm?: string;
-  keycloakAuthServerUrl?: string;
+  /** OIDC client (client credentials grant) the controller uses for the agent-manager. */
+  oidcClientId?: string;
+  /** Write-only; never returned by the API. */
+  oidcClientSecret?: string;
+  /** Issuer URL; defaults to the controller's `OIDC_ISSUER`. */
+  oidcIssuer?: string;
+  /** Optional scope requested with the client credentials grant. */
+  oidcScope?: string;
   gitRepositorySetupMode?: 'clone' | 'empty';
   gitRepositoryUrl?: string;
   gitUsername?: string;

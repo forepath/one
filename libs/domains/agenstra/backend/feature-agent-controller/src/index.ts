@@ -2,7 +2,6 @@
 // Consumers should migrate to importing directly from @forepath/identity/backend
 export {
   // Decorators
-  KeycloakRoles,
   UsersRoles,
   Public,
   // Entities
@@ -21,13 +20,12 @@ export {
   // Guards
   UsersAuthGuard,
   UsersRolesGuard,
-  KeycloakAuthGuard,
-  KeycloakRolesGuard,
+  ExternalIdentityAuthGuard,
   // Services
   AuthService,
   UsersService,
   SocketAuthService,
-  KeycloakTokenService,
+  OidcClientCredentialsService,
   ClientAgentCredentialsService,
   ClientUsersService,
   PasswordService,
@@ -36,7 +34,8 @@ export {
   UsersController,
   // Modules
   UsersAuthModule,
-  KeycloakUserSyncModule,
+  OidcAuthModule,
+  SamlAuthModule,
   // DTOs
   LoginDto,
   RegisterDto,

@@ -10,7 +10,7 @@ Before you begin, ensure you have:
 - **PostgreSQL** (running locally or in Docker)
 - **Valkey** or **Redis** (running locally or in Docker; billing compose uses host port **6380** by default)
 - **Git** (optional, for repository checkout)
-- **Keycloak** (optional; API key or users authentication work for local dev)
+- **OIDC / SAML IdP** (optional; [platform authentication](../../../apps/shared/platform-authentication/README.md) runs Keycloak locally; API key or users authentication work for local dev)
 
 For CPU, memory, and disk baselines by component, see **[System Requirements](./system-requirements.md)**. For install capacity and verification checklists, see **[Operator Runbook](./operator-runbook.md)**.
 

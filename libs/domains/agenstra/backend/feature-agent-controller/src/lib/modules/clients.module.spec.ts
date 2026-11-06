@@ -4,8 +4,7 @@ import {
   ClientAgentCredentialsService,
   ClientEntity,
   ClientUserEntity,
-  getAuthenticationMethod,
-  KeycloakTokenService,
+  OidcClientCredentialsService,
   RevokedUserTokenEntity,
   SocketAuthService,
   UserEntity,
@@ -17,7 +16,6 @@ import { getQueueToken } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE } from 'nest-keycloak-connect';
 
 import { ClientsController } from '../controllers/clients.controller';
 import { EgressEventIngestCursorEntity } from '../entities/egress-event-ingest-cursor.entity';
@@ -117,7 +115,7 @@ describe('ClientsModule', () => {
     remove: jest.fn(),
     count: jest.fn(),
     delete: jest.fn(),
-    findByKeycloakSub: jest.fn().mockResolvedValue(null),
+    findByExternalIdentity: jest.fn().mockResolvedValue(null),
   };
   const mockTicketRepository = {
     ...mockRepository,
@@ -141,19 +139,7 @@ describe('ClientsModule', () => {
       getMany: jest.fn().mockResolvedValue([]),
     }),
   };
-  const mockKeycloakInstance = {
-    grantManager: {
-      createGrant: jest.fn(),
-      validateAccessToken: jest.fn(),
-      validateToken: jest.fn(),
-    },
-  };
-  const mockKeycloakOptions = {
-    tokenValidation: 'ONLINE' as const,
-  };
-
   beforeEach(async () => {
-    const authMethod = getAuthenticationMethod();
     const moduleBuilder = Test.createTestingModule({
       imports: [ClientsModule],
     })
@@ -287,15 +273,6 @@ describe('ClientsModule', () => {
       .overrideProvider(UsersRepository)
       .useValue(mockRepository);
 
-    // Mock Keycloak providers if auth method is keycloak
-    if (authMethod === 'keycloak') {
-      moduleBuilder
-        .overrideProvider(KEYCLOAK_INSTANCE)
-        .useValue(mockKeycloakInstance)
-        .overrideProvider(KEYCLOAK_CONNECT_OPTIONS)
-        .useValue(mockKeycloakOptions);
-    }
-
     module = await moduleBuilder.compile();
   });
 
@@ -342,15 +319,15 @@ describe('ClientsModule', () => {
     expect(repository).toBeDefined();
   });
 
-  it('should provide KeycloakTokenService', () => {
-    const service = module.get<KeycloakTokenService>(KeycloakTokenService);
+  it('should provide OidcClientCredentialsService', () => {
+    const service = module.get<OidcClientCredentialsService>(OidcClientCredentialsService);
 
     expect(service).toBeDefined();
-    expect(service).toBeInstanceOf(KeycloakTokenService);
+    expect(service).toBeInstanceOf(OidcClientCredentialsService);
   });
 
-  it('should export KeycloakTokenService', () => {
-    const service = module.get<KeycloakTokenService>(KeycloakTokenService);
+  it('should export OidcClientCredentialsService', () => {
+    const service = module.get<OidcClientCredentialsService>(OidcClientCredentialsService);
 
     expect(service).toBeDefined();
   });
@@ -421,40 +398,11 @@ describe('ClientsModule', () => {
     expect(service).toBeInstanceOf(SocketAuthService);
   });
 
-  it('should provide SocketAuthService with optional Keycloak dependencies', () => {
+  it('should provide SocketAuthService with optional OIDC dependencies', () => {
     const service = module.get<SocketAuthService>(SocketAuthService);
 
     expect(service).toBeDefined();
-    // SocketAuthService should be instantiated even if Keycloak is not configured
+    // SocketAuthService should be instantiated even if OIDC is not configured
     expect(service).toBeInstanceOf(SocketAuthService);
-  });
-
-  describe('when authentication method is keycloak', () => {
-    beforeEach(() => {
-      // Ensure we're testing with keycloak auth method
-      // Note: This test will only run if AUTHENTICATION_METHOD=keycloak in test environment
-    });
-
-    it('should provide KEYCLOAK_INSTANCE when auth method is keycloak', () => {
-      const authMethod = getAuthenticationMethod();
-
-      if (authMethod === 'keycloak') {
-        const keycloakInstance = module.get(KEYCLOAK_INSTANCE);
-
-        expect(keycloakInstance).toBeDefined();
-        expect(keycloakInstance).toEqual(mockKeycloakInstance);
-      }
-    });
-
-    it('should provide KEYCLOAK_CONNECT_OPTIONS when auth method is keycloak', () => {
-      const authMethod = getAuthenticationMethod();
-
-      if (authMethod === 'keycloak') {
-        const keycloakOptions = module.get(KEYCLOAK_CONNECT_OPTIONS);
-
-        expect(keycloakOptions).toBeDefined();
-        expect(keycloakOptions).toEqual(mockKeycloakOptions);
-      }
-    });
   });
 });

@@ -23,7 +23,7 @@ Centralized control plane that enables you to manage multiple distributed agent-
 - WebSocket event forwarding
 - Server provisioning (Hetzner, DigitalOcean)
 - Atlassian import administration (Jira/Confluence; admin API)
-- Authentication (Keycloak or API key)
+- Authentication (OIDC, SAML, users or API key)
 
 **Ports**:
 

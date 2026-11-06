@@ -2151,7 +2151,7 @@
       >
         <option value="">Select authentication type</option>
         <option value="api_key">API Key</option>
-        <option value="keycloak">Keycloak</option>
+        <option value="oidc">OIDC (client credentials)</option>
       </fpc-form-control>
     </fpc-form-field>
 
@@ -2171,53 +2171,52 @@
       </fpc-form-field>
     }
 
-    <!-- Keycloak fields (shown when authenticationType is 'keycloak') -->
-    @if (newClient().authenticationType === 'keycloak') {
-      <fpc-form-field forId="clientKeycloakClientId" label="Keycloak client ID" required>
+    <!-- OIDC fields (shown when authenticationType is 'oidc'): client credentials for the agent-manager -->
+    @if (newClient().authenticationType === 'oidc') {
+      <fpc-form-field forId="clientOidcClientId" label="OIDC client ID" required>
         <fpc-form-control
-          controlId="clientKeycloakClientId"
-          name="keycloakClientId"
-          [ngModel]="newClient().keycloakClientId"
-          (ngModelChange)="updateClientField('keycloakClientId', $event)"
+          controlId="clientOidcClientId"
+          name="oidcClientId"
+          [ngModel]="newClient().oidcClientId"
+          (ngModelChange)="updateClientField('oidcClientId', $event)"
           required
           [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
         />
       </fpc-form-field>
-      <fpc-form-field forId="clientKeycloakClientSecret" label="Keycloak client secret" required>
+      <fpc-form-field forId="clientOidcClientSecret" label="OIDC client secret" required>
         <fpc-form-control
-          controlId="clientKeycloakClientSecret"
+          controlId="clientOidcClientSecret"
           inputType="password"
-          name="keycloakClientSecret"
-          [ngModel]="newClient().keycloakClientSecret"
-          (ngModelChange)="updateClientField('keycloakClientSecret', $event)"
+          name="oidcClientSecret"
+          [ngModel]="newClient().oidcClientSecret"
+          (ngModelChange)="updateClientField('oidcClientSecret', $event)"
           required
           [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
         />
       </fpc-form-field>
-      <fpc-form-field forId="clientKeycloakRealm" label="Keycloak realm">
+      <fpc-form-field forId="clientOidcIssuer" label="OIDC issuer">
         <fpc-form-control
-          controlId="clientKeycloakRealm"
-          name="keycloakRealm"
-          [ngModel]="newClient().keycloakRealm"
-          (ngModelChange)="updateClientField('keycloakRealm', $event)"
+          controlId="clientOidcIssuer"
+          inputType="url"
+          name="oidcIssuer"
+          [ngModel]="newClient().oidcIssuer"
+          (ngModelChange)="updateClientField('oidcIssuer', $event)"
+          i18n-placeholder="@@featureChat-oidcIssuerPlaceholder"
+          placeholder="https://idp.example.com/realms/agenstra"
           [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
         />
+        <span fpcFormFieldHint>Optional. Defaults to the controller's OIDC issuer.</span>
       </fpc-form-field>
-      @if (useProvisioning()) {
-        <fpc-form-field forId="clientKeycloakAuthServerUrl" label="Keycloak auth server URL">
-          <fpc-form-control
-            controlId="clientKeycloakAuthServerUrl"
-            inputType="url"
-            name="keycloakAuthServerUrl"
-            [ngModel]="newClient().keycloakAuthServerUrl"
-            (ngModelChange)="updateClientField('keycloakAuthServerUrl', $event)"
-            i18n-placeholder="@@featureChat-keycloakUrlPlaceholder"
-            placeholder="http://keycloak:8080"
-            [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
-          />
-          <span fpcFormFieldHint>Optional. Defaults to environment variable if not specified.</span>
-        </fpc-form-field>
-      }
+      <fpc-form-field forId="clientOidcScope" label="OIDC scope">
+        <fpc-form-control
+          controlId="clientOidcScope"
+          name="oidcScope"
+          [ngModel]="newClient().oidcScope"
+          (ngModelChange)="updateClientField('oidcScope', $event)"
+          [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
+        />
+        <span fpcFormFieldHint>Optional scope requested with the client credentials grant.</span>
+      </fpc-form-field>
     }
 
     <!-- Provisioning-specific configuration fields -->
@@ -2650,7 +2649,7 @@
       >
         <option value="">Select authentication type</option>
         <option value="api_key">API Key</option>
-        <option value="keycloak">Keycloak</option>
+        <option value="oidc">OIDC (client credentials)</option>
       </fpc-form-control>
     </fpc-form-field>
 
@@ -2670,36 +2669,49 @@
       </fpc-form-field>
     }
 
-    <!-- Keycloak fields (shown when authenticationType is 'keycloak') -->
-    @if (editingClient().authenticationType === 'keycloak') {
-      <fpc-form-field forId="updateClientKeycloakClientId" label="Keycloak client ID">
+    <!-- OIDC fields (shown when authenticationType is 'oidc'): client credentials for the agent-manager -->
+    @if (editingClient().authenticationType === 'oidc') {
+      <fpc-form-field forId="updateClientOidcClientId" label="OIDC client ID">
         <fpc-form-control
-          controlId="updateClientKeycloakClientId"
-          name="keycloakClientId"
-          [ngModel]="editingClient().keycloakClientId"
-          (ngModelChange)="updateEditingClientField('keycloakClientId', $event)"
+          controlId="updateClientOidcClientId"
+          name="oidcClientId"
+          [ngModel]="editingClient().oidcClientId"
+          (ngModelChange)="updateEditingClientField('oidcClientId', $event)"
           [disabled]="(clientsUpdating$ | async) === true"
         />
       </fpc-form-field>
-      <fpc-form-field forId="updateClientKeycloakClientSecret" label="Keycloak client secret">
+      <fpc-form-field forId="updateClientOidcClientSecret" label="OIDC client secret">
         <fpc-form-control
-          controlId="updateClientKeycloakClientSecret"
+          controlId="updateClientOidcClientSecret"
           inputType="password"
-          name="keycloakClientSecret"
-          [ngModel]="editingClient().keycloakClientSecret"
-          (ngModelChange)="updateEditingClientField('keycloakClientSecret', $event)"
+          name="oidcClientSecret"
+          [ngModel]="editingClient().oidcClientSecret"
+          (ngModelChange)="updateEditingClientField('oidcClientSecret', $event)"
           i18n-placeholder="@@featureChat-leaveEmptyKeepCurrentPlaceholder"
           placeholder="Leave empty to keep current"
           [disabled]="(clientsUpdating$ | async) === true"
         />
         <span fpcFormFieldHint>Leave empty to keep current secret</span>
       </fpc-form-field>
-      <fpc-form-field forId="updateClientKeycloakRealm" label="Keycloak realm">
+      <fpc-form-field forId="updateClientOidcIssuer" label="OIDC issuer">
         <fpc-form-control
-          controlId="updateClientKeycloakRealm"
-          name="keycloakRealm"
-          [ngModel]="editingClient().keycloakRealm"
-          (ngModelChange)="updateEditingClientField('keycloakRealm', $event)"
+          controlId="updateClientOidcIssuer"
+          inputType="url"
+          name="oidcIssuer"
+          [ngModel]="editingClient().oidcIssuer"
+          (ngModelChange)="updateEditingClientField('oidcIssuer', $event)"
+          i18n-placeholder="@@featureChat-oidcIssuerPlaceholder"
+          placeholder="https://idp.example.com/realms/agenstra"
+          [disabled]="(clientsUpdating$ | async) === true"
+        />
+        <span fpcFormFieldHint>Optional. Defaults to the controller's OIDC issuer.</span>
+      </fpc-form-field>
+      <fpc-form-field forId="updateClientOidcScope" label="OIDC scope">
+        <fpc-form-control
+          controlId="updateClientOidcScope"
+          name="oidcScope"
+          [ngModel]="editingClient().oidcScope"
+          (ngModelChange)="updateEditingClientField('oidcScope', $event)"
           [disabled]="(clientsUpdating$ | async) === true"
         />
       </fpc-form-field>

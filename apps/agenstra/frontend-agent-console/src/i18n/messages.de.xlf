@@ -1374,10 +1374,6 @@
         <source>Leave empty to auto-generate</source>
         <target>Leer lassen für automatische Erzeugung</target>
       </trans-unit>
-      <trans-unit id="featureChat-keycloakUrlPlaceholder" datatype="html">
-        <source>http://keycloak:8080</source>
-        <target>http://keycloak:8080</target>
-      </trans-unit>
       <trans-unit id="featureChat-optionalPlaceholder" datatype="html">
         <source>Optional</source>
         <target>Optional</target>
@@ -5108,10 +5104,6 @@
         <source>Log out?</source>
         <target>Abmelden?</target>
       </trans-unit>
-      <trans-unit id="identityLogoutConfirm-keycloakTitle" datatype="html">
-        <source>Log out?</source>
-        <target>Abmelden?</target>
-      </trans-unit>
       <trans-unit id="identityLogoutConfirm-defaultTitle" datatype="html">
         <source>Log out?</source>
         <target>Abmelden?</target>
@@ -5119,10 +5111,6 @@
       <trans-unit id="identityLogoutConfirm-usersMessage" datatype="html">
         <source>You will be signed out of this browser only. Other devices and browsers will stay signed in unless you choose to sign out everywhere below.</source>
         <target>Sie werden nur in diesem Browser abgemeldet. Andere Geräte und Browser bleiben angemeldet, außer Sie wählen unten die Abmeldung überall aus.</target>
-      </trans-unit>
-      <trans-unit id="identityLogoutConfirm-keycloakMessage" datatype="html">
-        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
-        <target>Sie werden in diesem Browser abgemeldet. Wenn Sie Single Sign-On verwenden, müssen Sie sich möglicherweise auch in anderen Anwendungen erneut anmelden.</target>
       </trans-unit>
       <trans-unit id="identityLogoutConfirm-defaultMessage" datatype="html">
         <source>Are you sure you want to log out?</source>
@@ -9793,6 +9781,54 @@
       <trans-unit id="featureAppAuthorize-approve" datatype="html">
         <source>Authorize</source>
         <target>Autorisieren</target>
+      </trans-unit>
+      <trans-unit id="identityLogoutConfirm-oidcTitle" datatype="html">
+        <source>Log out?</source>
+        <target>Abmelden?</target>
+      </trans-unit>
+      <trans-unit id="identityLogoutConfirm-oidcMessage" datatype="html">
+        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
+        <target>Sie werden in diesem Browser abgemeldet. Wenn Sie Single Sign-On verwenden, müssen Sie sich möglicherweise auch in anderen Anwendungen erneut anmelden.</target>
+      </trans-unit>
+      <trans-unit id="identityLogoutConfirm-samlMessage" datatype="html">
+        <source>You will be signed out of this browser only. Your single sign-on session at your identity provider stays active unless you sign out there.</source>
+        <target>Sie werden nur in diesem Browser abgemeldet. Ihre Single-Sign-On-Sitzung beim Identitätsanbieter bleibt aktiv, sofern Sie sich dort nicht abmelden.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin-ssoFailed" datatype="html">
+        <source>Sign-in with your identity provider failed. Please try again or contact your administrator.</source>
+        <target>Die Anmeldung über Ihren Identitätsanbieter ist fehlgeschlagen. Bitte versuchen Sie es erneut oder wenden Sie sich an Ihre Administration.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin-ssoRedirecting" datatype="html">
+        <source>You are being redirected to your organization's sign-in page.</source>
+        <target>Sie werden zur Anmeldeseite Ihrer Organisation weitergeleitet.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin-ssoSubmit" datatype="html">
+        <source>Continue with single sign-on</source>
+        <target>Mit Single Sign-On fortfahren</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-samlCallbackPage" datatype="html">
+        <source>Signing in</source>
+        <target>Anmeldung</target>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-failedTitle" datatype="html">
+        <source>Sign-in failed</source>
+        <target>Anmeldung fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-failedMessage" datatype="html">
+        <source>Single sign-on could not be completed. The sign-in link may have expired or was opened in another browser tab.</source>
+        <target>Single Sign-On konnte nicht abgeschlossen werden. Der Anmeldelink ist möglicherweise abgelaufen oder wurde in einem anderen Browser-Tab geöffnet.</target>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-retry" datatype="html">
+        <source>Try again</source>
+        <target>Erneut versuchen</target>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-signingIn" datatype="html">
+        <source>Signing you in…</source>
+        <target>Sie werden angemeldet…</target>
+      </trans-unit>
+      <trans-unit id="featureChat-oidcIssuerPlaceholder" datatype="html">
+        <source>https://idp.example.com/realms/agenstra</source>
+        <target>https://idp.example.com/realms/agenstra</target>
       </trans-unit>
     </body>
   </file>

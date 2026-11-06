@@ -33,7 +33,7 @@ The HTTP API includes:
 Unless documented as public, operations require authentication:
 
 - **Bearer JWT** when using built-in users
-- **Bearer Keycloak access token** when using Keycloak
+- **Bearer OIDC access token** when using `oidc` (SAML sign-in yields an app session JWT used like users mode)
 - **Bearer or ApiKey static key** when using `AUTHENTICATION_METHOD=api-key`
 
 Send **`X-Tenant`** on every request for multi-tenant deployments. Invalid tenant ids return **400**.
@@ -85,7 +85,7 @@ Product guides: **[Projects](../features/projects.md)** and **[Project Board](..
 
 The billing manager runs Socket.IO on the shared HTTP port **3200** (default) with two namespaces (`/socket/billing`, `/socket/projects`). Engine.IO path `/socket.io/`; REST `/api/`.
 
-Static API key authentication is **not** sufficient for dashboard or project board streams. Connections require an end-user JWT or Keycloak identity, matching REST billing rules.
+Static API key authentication is **not** sufficient for dashboard or project board streams. Connections require an end-user JWT (users / SAML) or OIDC identity, matching REST billing rules.
 
 ### AsyncAPI Specification
 

@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { KEYCLOAK_ROLES_KEY, USERS_ROLES_KEY, UserRole } from '@forepath/identity/backend';
+import { USERS_ROLES_KEY, UserRole } from '@forepath/identity/backend';
 
 import { AdminCustomerProfilesController } from './admin-customer-profiles.controller';
 
@@ -22,10 +22,8 @@ describe('AdminCustomerProfilesController', () => {
   });
 
   it('has admin role guards on controller', () => {
-    const keycloakRoles = Reflect.getMetadata(KEYCLOAK_ROLES_KEY, AdminCustomerProfilesController);
     const usersRoles = Reflect.getMetadata(USERS_ROLES_KEY, AdminCustomerProfilesController);
 
-    expect(keycloakRoles).toContain(UserRole.ADMIN);
     expect(usersRoles).toContain(UserRole.ADMIN);
   });
 

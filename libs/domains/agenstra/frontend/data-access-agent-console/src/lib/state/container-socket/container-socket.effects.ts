@@ -1,10 +1,10 @@
 import { inject } from '@angular/core';
 import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
 import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/agenstra/frontend/util-configuration';
+import { OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import type { Action } from '@ngrx/store';
-import { KeycloakService } from 'keycloak-angular';
 import {
   catchError,
   delay,
@@ -123,49 +123,6 @@ const INTERNAL_EVENTS = new Set([
   'ping',
   'pong',
 ]);
-const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
-const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
-
-/**
- * Gets the authentication header for socket connection.
- * Mirrors the HTTP auth interceptor: api-key (env or localStorage), keycloak, or users JWT.
- */
-function getAuthHeader(environment: Environment, keycloakService: KeycloakService | null): Observable<string | null> {
-  if (environment.authentication.config.type === 'api-key') {
-    const apiKey =
-      environment.authentication.config.apiKey ??
-      (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
-
-    if (apiKey) {
-      return of(`Bearer ${apiKey}`);
-    }
-
-    return of(null);
-  }
-
-  if (environment.authentication.config.type === 'keycloak' && keycloakService) {
-    return from(keycloakService.getToken()).pipe(
-      map((token) => (token ? `Bearer ${token}` : null)),
-      catchError((error) => {
-        console.warn('Failed to get Keycloak token:', error);
-
-        return of(null);
-      }),
-    );
-  }
-
-  if (environment.authentication.config.type === 'users') {
-    const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
-
-    if (jwt) {
-      return of(`Bearer ${jwt}`);
-    }
-
-    return of(null);
-  }
-
-  return of(null);
-}
 
 /**
  * Global socket instance - managed by the connect effect
@@ -187,7 +144,7 @@ export const connectSocket$ = createEffect(
   (
     actions$ = inject(Actions),
     environment = inject<Environment>(ENVIRONMENT),
-    keycloakService = inject(KeycloakService, { optional: true }),
+    oidcAuthService = inject(OidcAuthService),
     store = inject(Store),
   ) => {
     return actions$.pipe(
@@ -205,8 +162,8 @@ export const connectSocket$ = createEffect(
           socketInstance = null;
         }
 
-        // Get auth header (async for Keycloak)
-        return getAuthHeader(environment, keycloakService).pipe(
+        // Get auth header (async for OIDC token renewal)
+        return resolveAuthorizationHeader$(environment.authentication.config, oidcAuthService).pipe(
           switchMap((authHeader) => {
             // Create socket connection with reconnection enabled.
             // Use auth (not extraHeaders): browser WebSocket API does not support custom headers,

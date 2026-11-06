@@ -9,7 +9,6 @@ import {
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { Public } from '@forepath/identity/backend';
 import { Body, Controller, Delete, Get, Headers, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { Public as KeycloakPublic } from 'nest-keycloak-connect';
 
 import { parseAgentTaskCreate, parseAgentTaskId, parseAgentTaskUpdate } from '../dto/agent-task.dto';
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
@@ -24,7 +23,6 @@ import { authenticateAgentContextCall } from '../utils/agent-context-auth.utils'
  * only manage its own tasks.
  */
 @Public()
-@KeycloakPublic()
 @Controller(`${AGENSTRA_CONTEXT_API_ROUTE}/${AGENSTRA_TASKS_API_SEGMENT}`)
 export class AgentsTasksController {
   constructor(

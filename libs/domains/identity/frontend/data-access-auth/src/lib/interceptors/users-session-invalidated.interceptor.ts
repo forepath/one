@@ -1,7 +1,12 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IDENTITY_AUTH_ENVIRONMENT, USERS_JWT_STORAGE_KEY } from '@forepath/identity/frontend';
+import {
+  IDENTITY_AUTH_ENVIRONMENT,
+  isUrlWithinApiBase,
+  USERS_JWT_STORAGE_KEY,
+  usesAppSessionJwt,
+} from '@forepath/identity/frontend';
 import { Store } from '@ngrx/store';
 import { catchError, tap, throwError } from 'rxjs';
 
@@ -35,7 +40,7 @@ const INTERACTIVE_AUTH_PATH_SUFFIXES = [
 const INTERACTIVE_AUTH_MESSAGES = new Set([
   'Invalid email or password',
   'Current password is incorrect',
-  'This account uses external authentication (Keycloak).',
+  'This account uses external authentication (OIDC / SAML).',
 ]);
 const INTERACTIVE_AUTH_CODES = new Set([
   EMAIL_NOT_CONFIRMED_CODE,
@@ -95,7 +100,7 @@ function isInteractiveAuthFailure(error: HttpErrorResponse, requestUrl: string):
 
 /**
  * Any API 401 means credentials are no longer accepted (expired session, auth-mode
- * switch, Keycloak default Unauthorized, invalid API key), except interactive form
+ * switch, rejected IdP token, invalid API key), except interactive form
  * challenges on public auth endpoints / known password-check messages.
  */
 function isInvalidAuthError(error: HttpErrorResponse, requestUrl: string): boolean {
@@ -113,13 +118,13 @@ function requestMatchesAuthApi(
 ): boolean {
   const bases = [apiUrl, ...(additionalApiUrls ?? [])].filter((b): b is string => !!b);
 
-  return bases.some((base) => url.startsWith(base));
+  return bases.some((base) => isUrlWithinApiBase(url, base));
 }
 
 /**
- * On invalid-auth 401 for users, keycloak, or api-key: clears stored credentials when
+ * On invalid-auth 401 for users, saml, oidc, or api-key: clears stored credentials when
  * applicable, dispatches {@link logout}, and navigates to `/login` immediately for
- * users and api-key (Keycloak redirect stays on existing logout effects).
+ * users, saml and api-key (the OIDC provider logout redirect stays on the logout effect).
  */
 export const usersSessionInvalidatedInterceptor: HttpInterceptorFn = (req, next) => {
   const authEnv = inject(IDENTITY_AUTH_ENVIRONMENT);
@@ -127,7 +132,7 @@ export const usersSessionInvalidatedInterceptor: HttpInterceptorFn = (req, next)
   const router = inject(Router, { optional: true });
   const authType = authEnv.authentication.type;
 
-  if (authType !== 'users' && authType !== 'keycloak' && authType !== 'api-key') {
+  if (authType !== 'users' && authType !== 'saml' && authType !== 'oidc' && authType !== 'api-key') {
     return next(req);
   }
 
@@ -150,7 +155,7 @@ export const usersSessionInvalidatedInterceptor: HttpInterceptorFn = (req, next)
 
       invalidAuthHandlingInProgress = true;
 
-      if (authType === 'users') {
+      if (usesAppSessionJwt(authType)) {
         localStorage.removeItem(USERS_JWT_STORAGE_KEY);
       }
 
@@ -162,7 +167,7 @@ export const usersSessionInvalidatedInterceptor: HttpInterceptorFn = (req, next)
         store.dispatch(logout({}));
       }
 
-      if ((authType === 'users' || authType === 'api-key') && router) {
+      if ((usesAppSessionJwt(authType) || authType === 'api-key') && router) {
         void router.navigate(['/login']);
       } else if (!store && router) {
         void router.navigate(['/login']);

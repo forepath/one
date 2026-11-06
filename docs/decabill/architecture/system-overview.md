@@ -81,7 +81,7 @@ graph LR
 
 ### HTTP REST API
 
-The console and external integrators call the billing manager synchronously for CRUD, checkout initiation, availability checks, and admin operations. All authenticated routes expect a bearer token, Keycloak token, or API key depending on deployment configuration. Tenant scope travels in the `X-Tenant` header.
+The console and external integrators call the billing manager synchronously for CRUD, checkout initiation, availability checks, and admin operations. All authenticated routes expect a bearer token (users / SAML session JWT or OIDC access token) or API key depending on deployment configuration. Tenant scope travels in the `X-Tenant` header.
 
 Typical namespaces in the API include:
 

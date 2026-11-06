@@ -50,8 +50,8 @@ Create and manage clients (remote agent-manager instances). Connect to existing 
 **Key Capabilities**:
 
 - Create, read, update, and delete clients
-- Configure authentication (API key or Keycloak)
-- Per-client permissions (keycloak/users mode): add and remove users with roles
+- Configure authentication (API key or OIDC client credentials)
+- Per-client permissions (users / oidc / saml mode): add and remove users with roles
 - View client configuration and available agent types
 - Manage multiple agent-manager instances from one console
 
@@ -165,12 +165,12 @@ CI/CD pipeline management and deployment functionality. Configure CI/CD provider
 
 ### [Authentication](./authentication.md)
 
-Multiple authentication methods with configurable user registration. Support for API key, Keycloak OAuth2/OIDC, and built-in user authentication with optional signup disable.
+Multiple authentication methods with configurable user registration. Support for API key, OIDC, SAML 2.0, and built-in user authentication with optional signup disable.
 
 **Key Capabilities**:
 
 - API key authentication for simple deployments
-- Keycloak OAuth2/OIDC for enterprise SSO
+- OIDC (any provider, e.g. Keycloak) or SAML 2.0 for enterprise SSO
 - Built-in user registration with email confirmation
 - Password reset with 6-character alphanumeric codes
 - Admin user management

@@ -1,10 +1,10 @@
 import { inject } from '@angular/core';
 import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
+import { OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { KeycloakService } from 'keycloak-angular';
-import { catchError, filter, from, fromEvent, map, merge, Observable, of, switchMap, tap, withLatestFrom } from 'rxjs';
+import { filter, fromEvent, map, merge, of, switchMap, tap, withLatestFrom } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 
 import { resolveStatusWebsocketUrl } from './notifications-websocket-url';
@@ -33,34 +33,7 @@ import { STATUS_SOCKET_EVENTS } from './status-socket.constants';
 
 export { resolveStatusWebsocketUrl } from './notifications-websocket-url';
 
-const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
-const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 const NOTIFICATION_SOUND_URL = '/audio/notification-pling.wav';
-
-function getAuthHeader(environment: Environment, keycloakService: KeycloakService | null): Observable<string | null> {
-  if (environment.authentication.config.type === 'api-key') {
-    const apiKey =
-      environment.authentication.config.apiKey ??
-      (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
-
-    return of(apiKey ? `Bearer ${apiKey}` : null);
-  }
-
-  if (environment.authentication.config.type === 'keycloak' && keycloakService) {
-    return from(keycloakService.getToken()).pipe(
-      map((token) => (token ? `Bearer ${token}` : null)),
-      catchError(() => of(null)),
-    );
-  }
-
-  if (environment.authentication.config.type === 'users') {
-    const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
-
-    return of(jwt ? `Bearer ${jwt}` : null);
-  }
-
-  return of(null);
-}
 
 let statusSocketInstance: Socket | null = null;
 let notificationAudio: HTMLAudioElement | null = null;
@@ -119,7 +92,7 @@ export const connectNotificationsSocket$ = createEffect(
   (
     actions$ = inject(Actions),
     environment = inject<Environment>(ENVIRONMENT),
-    keycloakService = inject(KeycloakService, { optional: true }),
+    oidcAuthService = inject(OidcAuthService),
   ) =>
     actions$.pipe(
       ofType(connectNotificationsSocket),
@@ -135,7 +108,7 @@ export const connectNotificationsSocket$ = createEffect(
           statusSocketInstance = null;
         }
 
-        return getAuthHeader(environment, keycloakService).pipe(
+        return resolveAuthorizationHeader$(environment.authentication.config, oidcAuthService).pipe(
           switchMap((authHeader) => {
             statusSocketInstance = io(websocketUrl, {
               transports: ['websocket'],

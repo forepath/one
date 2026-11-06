@@ -9,7 +9,7 @@ Before you begin, ensure you have:
 - **Node.js** 24.22.1 or higher
 - **PostgreSQL** database (running locally or in Docker)
 - **Docker** and **Docker Compose** (for agent containers)
-- **Keycloak** server (optional, can use API key authentication)
+- **OIDC or SAML identity provider** (optional, can use API key or users authentication; [platform authentication](../../../apps/shared/platform-authentication/README.md) runs Keycloak locally)
 - **Git** repository (optional, for agent workspace)
 
 For CPU, memory, and disk baselines by role, see **[System Requirements](./system-requirements.md)**. For install capacity and verification checklists, see **[Operator Runbook](./operator-runbook.md)**.
@@ -70,19 +70,21 @@ DB_DATABASE=agent_controller
 # Authentication (choose one)
 STATIC_API_KEY=dev-api-key-123
 
-# OR Keycloak
+# OR OIDC
 
-# KEYCLOAK_AUTH_SERVER_URL=http://localhost:8380
+# AUTHENTICATION_METHOD=oidc
 
-# KEYCLOAK_REALM=agenstra
+# OIDC_ISSUER=http://localhost:8380/realms/platform
 
-# KEYCLOAK_CLIENT_ID=agent-controller
+# OIDC_CLIENT_ID=agent-controller
 
-# KEYCLOAK_CLIENT_SECRET=your-client-secret
+# OIDC_CLIENT_SECRET=your-client-secret
 
-# Optional: KEYCLOAK_SERVER_URL if different from auth server URL
+# JWT_SECRET=your-jwt-secret-key
 
-# Optional: KEYCLOAK_TOKEN_VALIDATION=ONLINE (default) or OFFLINE
+# Optional: OIDC_TOKEN_VALIDATION=ONLINE (default) or OFFLINE
+
+# OR SAML: AUTHENTICATION_METHOD=saml plus SAML_* (see Authentication docs)
 
 # Ports
 PORT=3100
@@ -139,10 +141,9 @@ Create `.env` file in `apps/agenstra/frontend-agent-console`:
 ```bash
 API_URL=http://localhost:3100
 WEBSOCKET_URL=http://localhost:3100/socket/clients
-KEYCLOAK_AUTH_SERVER_URL=http://localhost:8380
-KEYCLOAK_REALM=agenstra
-KEYCLOAK_CLIENT_ID=agent-manager
 ```
+
+Authentication is configured through the runtime config (`authentication.config`), for example `{ "type": "oidc", "issuer": "http://localhost:8380/realms/platform", "clientId": "agent-console" }` or `{ "type": "saml" }`.
 
 ## Running Applications
 

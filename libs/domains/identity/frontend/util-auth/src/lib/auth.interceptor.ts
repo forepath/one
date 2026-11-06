@@ -1,78 +1,48 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { KeycloakService } from 'keycloak-angular';
-import { from, switchMap } from 'rxjs';
+import { switchMap } from 'rxjs';
 
+import { isUrlWithinApiBase } from './api-url.utils';
 import { IDENTITY_AUTH_ENVIRONMENT } from './auth-environment';
+import { resolveAuthorizationHeader$ } from './auth-header.utils';
+import { OidcAuthService } from './oidc-auth.service';
 
-const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
-
-/** localStorage key for users-mode JWT; exported for session-invalidation handling. */
-export const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
+export { USERS_JWT_STORAGE_KEY } from './auth-storage';
 
 /**
- * HTTP interceptor that conditionally applies API key, Keycloak, or users JWT authentication
- * based on the identity auth environment configuration.
+ * HTTP interceptor that applies the console's credential (API key, OIDC access token, or the users / SAML
+ * session JWT) to requests against the configured API base URLs only.
  *
  * Requires `IDENTITY_AUTH_ENVIRONMENT` to be provided in the application.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authEnv = inject(IDENTITY_AUTH_ENVIRONMENT);
-  const keycloakService = inject(KeycloakService, { optional: true });
   const apiUrl = authEnv.apiUrl;
   const additionalUrls = authEnv.additionalApiUrls ?? [];
   const urlMatches =
-    (apiUrl && req.url.startsWith(apiUrl)) || additionalUrls.some((base) => base && req.url.startsWith(base));
+    isUrlWithinApiBase(req.url, apiUrl) || additionalUrls.some((base) => isUrlWithinApiBase(req.url, base));
 
   if (!urlMatches) {
     return next(req);
   }
 
-  if (authEnv.authentication.type === 'api-key') {
-    const apiKey = authEnv.authentication.apiKey ?? localStorage.getItem(API_KEY_STORAGE_KEY);
+  const oidcAuthService = authEnv.authentication.type === 'oidc' ? inject(OidcAuthService) : null;
 
-    if (apiKey) {
-      return next(req.clone({ setHeaders: { Authorization: `Bearer ${apiKey}` } }));
-    }
-
-    return next(req);
-  }
-
-  if (authEnv.authentication.type === 'keycloak' && keycloakService) {
-    return from(keycloakService.getToken()).pipe(
-      switchMap((token) => (token ? next(req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })) : next(req))),
-    );
-  }
-
-  if (authEnv.authentication.type === 'users') {
-    const jwt = localStorage.getItem(USERS_JWT_STORAGE_KEY);
-
-    if (jwt) {
-      return next(req.clone({ setHeaders: { Authorization: `Bearer ${jwt}` } }));
-    }
-  }
-
-  return next(req);
+  return resolveAuthorizationHeader$(authEnv.authentication, oidcAuthService).pipe(
+    switchMap((authorization) =>
+      authorization ? next(req.clone({ setHeaders: { Authorization: authorization } })) : next(req),
+    ),
+  );
 };
 
 /**
  * Returns the authentication HTTP interceptor function.
- * Use this with `withInterceptors` from `@angular/common/http` to enable
- * conditional API key, Keycloak, or users JWT authentication for API requests.
+ * Use this with `withInterceptors` from `@angular/common/http`.
  *
  * @example
  * ```typescript
- * import { provideHttpClient, withInterceptors } from '@angular/common/http';
- * import { getAuthInterceptor } from '@forepath/identity/frontend';
- *
- * bootstrapApplication(AppComponent, {
- *   providers: [
- *     provideHttpClient(withInterceptors([getAuthInterceptor()])),
- *   ],
- * });
+ * provideHttpClient(withInterceptors([getAuthInterceptor()]));
  * ```
- *
- * @returns The authentication interceptor function
  */
 export function getAuthInterceptor(): HttpInterceptorFn {
   return authInterceptor;

@@ -355,7 +355,6 @@ describe('AuthService', () => {
   });
 
   it('returns emailConfirmed true for the first registered account', async () => {
-    mockUsersRepository.countByTenant.mockResolvedValue(0);
     mockUsersService.create.mockResolvedValue({
       id: 'admin-1',
       email: 'admin@example.com',
@@ -365,10 +364,8 @@ describe('AuthService', () => {
 
     const result = await service.register('admin@example.com', 'password123');
 
-    expect(mockUsersService.create).toHaveBeenCalledWith(
-      { email: 'admin@example.com', password: 'password123', role: UserRole.ADMIN },
-      true,
-    );
+    // Role / first-user decision happens atomically inside UsersService.create.
+    expect(mockUsersService.create).toHaveBeenCalledWith({ email: 'admin@example.com', password: 'password123' });
     expect(result).toEqual({
       user: { id: 'admin-1', email: 'admin@example.com', role: UserRole.ADMIN },
       message: 'Account created successfully. You can log in immediately.',
@@ -377,7 +374,6 @@ describe('AuthService', () => {
   });
 
   it('returns emailConfirmed false for subsequent registrations', async () => {
-    mockUsersRepository.countByTenant.mockResolvedValue(1);
     mockUsersService.create.mockResolvedValue({
       id: 'user-1',
       email: 'user@example.com',
@@ -387,10 +383,7 @@ describe('AuthService', () => {
 
     const result = await service.register('user@example.com', 'password123');
 
-    expect(mockUsersService.create).toHaveBeenCalledWith(
-      { email: 'user@example.com', password: 'password123', role: UserRole.USER },
-      false,
-    );
+    expect(mockUsersService.create).toHaveBeenCalledWith({ email: 'user@example.com', password: 'password123' });
     expect(result).toEqual({
       user: { id: 'user-1', email: 'user@example.com', role: UserRole.USER },
       message:
@@ -728,7 +721,7 @@ describe('AuthService', () => {
       }
     });
 
-    it('uses the login rules: authenticator first, then enabled or forced email, none for Keycloak accounts', () => {
+    it('uses the login rules: authenticator first, then enabled or forced email, none for external (OIDC / SAML) accounts', () => {
       process.env.DISABLE_FORCE_LOGIN_2FA = 'true';
       expect(service.getSecondFactorMethod(baseUser as any)).toBeNull();
       expect(service.getSecondFactorMethod({ ...baseUser, email2faEnabledAt: new Date() } as any)).toBe('email');
@@ -739,7 +732,12 @@ describe('AuthService', () => {
       delete process.env.DISABLE_FORCE_LOGIN_2FA;
       expect(service.getSecondFactorMethod(baseUser as any)).toBe('email');
       expect(
-        service.getSecondFactorMethod({ ...baseUser, passwordHash: undefined, keycloakSub: 'kc' } as any),
+        service.getSecondFactorMethod({
+          ...baseUser,
+          passwordHash: undefined,
+          externalProvider: 'saml',
+          externalSubject: 'idp',
+        } as any),
       ).toBeNull();
     });
 

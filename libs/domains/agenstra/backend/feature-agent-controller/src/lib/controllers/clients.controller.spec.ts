@@ -343,18 +343,18 @@ describe('ClientsController', () => {
       expect(service.create).toHaveBeenCalledWith(createDto, undefined, undefined, true);
     });
 
-    it('should create new client with Keycloak credentials for KEYCLOAK type', async () => {
+    it('should create new client with OIDC credentials for OIDC type', async () => {
       const createDto: CreateClientDto = {
         name: 'New Client',
         endpoint: 'https://example.com/api',
-        authenticationType: AuthenticationType.KEYCLOAK,
-        keycloakClientId: 'keycloak-client-id',
-        keycloakClientSecret: 'keycloak-client-secret',
-        keycloakRealm: 'test-realm',
+        authenticationType: AuthenticationType.OIDC,
+        oidcClientId: 'oidc-client-id',
+        oidcClientSecret: 'oidc-client-secret',
+        oidcIssuer: 'https://idp.example.com/realms/test',
       };
       const responseWithoutApiKey: CreateClientResponseDto = {
         ...mockClientResponse,
-        authenticationType: AuthenticationType.KEYCLOAK,
+        authenticationType: AuthenticationType.OIDC,
         apiKey: undefined,
       };
       const mockReq = { apiKeyAuthenticated: true } as any;

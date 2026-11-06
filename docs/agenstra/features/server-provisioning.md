@@ -65,17 +65,17 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 - **`providerType`** Provider identifier (`"hetzner"` or `"digital-ocean"`)
 - **`serverType`** Server type identifier (e.g., `"cx11"` for Hetzner, `"s-1vcpu-1gb"` for DigitalOcean)
 - **`name`** Server name (auto-generated if not provided)
-- **`authenticationType`** Authentication type (`"api_key"` or `"keycloak"`)
+- **`authenticationType`** Authentication type (`"api_key"` or `"oidc"`)
 
 ### Optional Fields
 
 - **`description`** Server description
 - **`location`** Datacenter location slug (e.g., `"fsn1"`, `"nbg1"` for Hetzner; `"fra1"`, `"nyc3"` for DigitalOcean). UIs load human-readable labels from `GET /api/clients/provisioning/providers/:providerType/locations`.
 - **`apiKey`** API key for API_KEY authentication (auto-generated if not provided)
-- **`keycloakClientId`** Keycloak client ID (required for KEYCLOAK authentication)
-- **`keycloakClientSecret`** Keycloak client secret (required for KEYCLOAK authentication)
-- **`keycloakRealm`** Keycloak realm (optional, defaults to environment variable)
-- **`keycloakAuthServerUrl`** Keycloak auth server URL (optional, defaults to environment variable)
+- **`oidcClientId`** OIDC client ID (required for OIDC authentication)
+- **`oidcClientSecret`** OIDC client secret (required for OIDC authentication)
+- **`oidcIssuer`** OIDC issuer (optional, defaults to the controller's `OIDC_ISSUER`)
+- **`oidcScope`** Scopes for the client credentials grant (optional)
 - **`gitRepositoryUrl`** Git repository URL for agent workspace
 - **`gitUsername`** Git username for repository access
 - **`gitToken`** Git token/personal access token for repository access
@@ -89,7 +89,7 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 3. **gVisor Runtime (optional)**: The script first loads (and persists) the KVM modules when the CPU supports hardware virtualization, independently of gVisor, so `/dev/kvm` is available to the microvm level even if gVisor cannot be installed. It then installs a pinned, checksum-verified gVisor release, registers the Docker runtimes `runsc-systrap` / `runsc-systrap-hostnet` (`--platform=systrap`, no KVM required) next to the default `runc` runtime, and verifies them. On any failure the installation is rolled back; provisioning continues and the host offers the standard level only. Only if `/dev/kvm` is usable, the script then registers and verifies `runsc-kvm` / `runsc-kvm-hostnet` (`--platform=kvm`) for the sandboxed-kvm level; a KVM failure only rolls back the KVM runtimes. Hosts with a usable `/dev/kvm` can also offer the microvm level, which needs nothing else on the host (the manager pulls the microVM worker image). Hetzner Cloud servers and DigitalOcean droplets normally do not expose `/dev/kvm`, so sandboxed-kvm and microvm usually report `unsupported` there. See [Host preparation](./container-isolation.md#host-preparation)
 4. **Database Setup**: PostgreSQL container is started with health checks
 5. **Agent-Manager Deployment**: Agent-manager container is deployed with:
-   - Authentication configuration (API key or Keycloak)
+   - Authentication configuration (API key or OIDC)
    - Database connection to PostgreSQL
    - Git repository configuration (if provided)
    - Agent default image override (if provided)
@@ -106,7 +106,7 @@ The provisioned server exposes:
 
 All configuration values are properly interpolated into the docker-compose.yml file on the provisioned server:
 
-- **Authentication**: `STATIC_API_KEY` or Keycloak variables
+- **Authentication**: `STATIC_API_KEY` or `AUTHENTICATION_METHOD=oidc` with `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_AUTHORIZED_PARTIES=<clientId>`
 - **Git Configuration**: `GIT_REPOSITORY_URL`, `GIT_USERNAME`, `GIT_TOKEN`, `GIT_PASSWORD`
 - **Agent Image**: `AGENT_DEFAULT_IMAGE` (optional override for worker image)
 - **Container isolation**: the manager uses its defaults (`AGENT_SANDBOX_RUNTIME=runsc-systrap`, `AGENT_SANDBOX_KVM_RUNTIME=runsc-kvm`, probes enabled); the gVisor release and its SHA-512 checksums are pinned in the generated cloud-init script (the same step runs for Hetzner, DigitalOcean and Decabill-provisioned agent manager hosts)

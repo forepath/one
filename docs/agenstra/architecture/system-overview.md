@@ -42,7 +42,7 @@ graph TB
 
 - **Client Management** CRUD operations for clients (remote agent-manager instances)
 - **Event Forwarding** Forward WebSocket events between frontend and managers
-- **Authentication** Keycloak or API key authentication
+- **Authentication** OIDC, SAML, users or API key authentication
 - **Credential Management** Store and manage agent credentials
 - **Server Provisioning** Automated cloud server provisioning
 
@@ -190,7 +190,7 @@ sequenceDiagram
 sequenceDiagram
     participant C as Client
     participant AC as Agent Controller
-    participant K as Keycloak
+    participant K as OIDC provider
 
     C->>AC: HTTP Request
     AC->>K: Validate Token

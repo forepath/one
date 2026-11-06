@@ -3,19 +3,22 @@ import { BadRequestException } from '@nestjs/common';
 import {
   assertClientEndpointHostnameResolvesToPublicIps,
   assertSafeClientEndpointOrThrow,
+  createPinnedSocketAgent,
+  createPublicAddressLookup,
   getClientEndpointTlsPolicy,
   resetClientEndpointTlsWarningForTests,
   validateClientEndpointWithDnsOrThrow,
 } from './client-endpoint-security';
 
 jest.mock('node:dns', () => ({
+  lookup: jest.fn(),
   promises: {
     lookup: jest.fn(),
   },
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-const dns = require('node:dns') as { promises: { lookup: jest.Mock } };
+const dns = require('node:dns') as { lookup: jest.Mock; promises: { lookup: jest.Mock } };
 
 describe('client-endpoint-security', () => {
   const originalEnv = process.env;
@@ -140,6 +143,92 @@ describe('client-endpoint-security', () => {
       process.env['NODE_ENV'] = 'production';
 
       expect(() => getClientEndpointTlsPolicy()).toThrow('not allowed in production');
+    });
+  });
+
+  describe('createPublicAddressLookup (connection-time DNS pinning)', () => {
+    const resolveWith = (addresses: Array<{ address: string; family: number }>) =>
+      dns.lookup.mockImplementation((_host: string, _options: unknown, callback: (...args: unknown[]) => void) =>
+        callback(null, addresses),
+      );
+    const run = (all: boolean) =>
+      new Promise<{ error?: Error; result?: unknown }>((resolve) =>
+        (createPublicAddressLookup() as unknown as (h: string, o: object, cb: (...args: unknown[]) => void) => void)(
+          'idp.example.org',
+          { all },
+          (error: Error | null, address?: unknown, family?: unknown) =>
+            resolve(error ? { error } : { result: all ? address : { address, family } }),
+        ),
+      );
+
+    beforeEach(() => {
+      process.env.NODE_ENV = 'production';
+      delete process.env.CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST;
+    });
+
+    it('passes public addresses through (single and all)', async () => {
+      resolveWith([{ address: '93.184.216.34', family: 4 }]);
+
+      await expect(run(false)).resolves.toEqual({ result: { address: '93.184.216.34', family: 4 } });
+      await expect(run(true)).resolves.toEqual({ result: [{ address: '93.184.216.34', family: 4 }] });
+    });
+
+    it.each(['127.0.0.1', '10.0.0.5', '169.254.169.254', '::1', '192.168.1.2'])(
+      'rejects %s at connection time (DNS rebinding)',
+      async (address) => {
+        resolveWith([
+          { address: '93.184.216.34', family: 4 },
+          { address, family: address.includes(':') ? 6 : 4 },
+        ]);
+
+        const { error } = await run(false);
+
+        expect(error?.message).toMatch(/private or loopback/);
+      },
+    );
+
+    it('honours CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST', async () => {
+      process.env.CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST = 'true';
+      resolveWith([{ address: '10.0.0.5', family: 4 }]);
+
+      await expect(run(false)).resolves.toEqual({ result: { address: '10.0.0.5', family: 4 } });
+    });
+
+    it('propagates resolution errors', async () => {
+      dns.lookup.mockImplementation((_h: string, _o: unknown, callback: (...args: unknown[]) => void) =>
+        callback(Object.assign(new Error('ENOTFOUND'), { code: 'ENOTFOUND' })),
+      );
+
+      await expect(run(false)).resolves.toEqual({ error: expect.objectContaining({ code: 'ENOTFOUND' }) });
+    });
+  });
+
+  describe('createPinnedSocketAgent', () => {
+    it('creates a non-pooling agent (https for wss/https) whose lookup rejects private addresses', async () => {
+      process.env.NODE_ENV = 'production';
+      delete process.env.CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST;
+
+      const secure = createPinnedSocketAgent('https://manager.example.org/socket/agents', true) as unknown as {
+        protocol: string;
+        options: { keepAlive: boolean; lookup: (...args: unknown[]) => void; rejectUnauthorized?: boolean };
+      };
+      const plain = createPinnedSocketAgent('http://manager.example.org/socket/agents', true) as unknown as {
+        protocol: string;
+      };
+
+      expect(secure.protocol).toBe('https:');
+      expect(plain.protocol).toBe('http:');
+      expect(secure.options).toEqual(expect.objectContaining({ keepAlive: false, rejectUnauthorized: true }));
+
+      dns.lookup.mockImplementation((_h: string, _o: unknown, callback: (...args: unknown[]) => void) =>
+        callback(null, [{ address: '10.0.0.5', family: 4 }]),
+      );
+
+      const error = await new Promise<Error | null>((resolve) =>
+        secure.options.lookup('manager.example.org', {}, (err: Error | null) => resolve(err)),
+      );
+
+      expect(error?.message).toMatch(/private or loopback/);
     });
   });
 });

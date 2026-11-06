@@ -3,7 +3,7 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, Update
 
 /**
  * Shadow table for clients. Stores references to original clients for statistics
- * correlation. Does not contain secrets (api_key, keycloak_client_secret).
+ * correlation. Does not contain secrets (api_key, oidc_client_secret).
  */
 @Entity('statistics_clients')
 @Index('IDX_statistics_clients_original_client_id', ['originalClientId'], { unique: true })

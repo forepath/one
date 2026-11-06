@@ -85,7 +85,7 @@ docker exec <worker> id -u                           # expect: 0 only for the en
 - Build-time **`DOCKER_GID`** (default **995**) should match the host `docker` group when known at build time:
   `stat -c '%g' /var/run/docker.sock`
 - Entrypoint (as root): if the socket is present, sync the `docker` group GID, add `agenstra` to `docker`, then start Node via **`runuser`** + **`sg docker`** so socket access is effective without leaving Node as root.
-- Secrets (database, Keycloak, `STATIC_API_KEY`, etc.) are supplied at **deploy time**, not as default `ENV` in the image.
+- Secrets (database, OIDC / SAML, `STATIC_API_KEY`, etc.) are supplied at **deploy time**, not as default `ENV` in the image.
 - **`VERSION`** is baked at image build time (`ARG`/`ENV`, `--build-arg VERSION=$VERSION`). Release sets it from semantic-release (`release.yml` after `needs: publish`). Runtime `VERSION` / `APP_VERSION` may override.
 - Debian-based images (`Dockerfile.api`, worker) run `apt-get upgrade` after `apt-get update` so OS packages such as `perl-base` pick up Debian security fixes newer than the published base tag.
 - Ownership in images prefers **`APP_UID` / `APP_GID`** for `COPY --chown` and build-time `chown`; the login name remains **`agenstra`**.

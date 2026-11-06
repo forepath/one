@@ -26,7 +26,6 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { Public as KeycloakPublic } from 'nest-keycloak-connect';
 
 import {
   parseAgentContextAccessRequest,
@@ -87,7 +86,6 @@ function sameRefs(requested: unknown, refs: string[]): boolean {
  * context ticket minted for that same agent. User auth guards are bypassed on purpose (`@Public`).
  */
 @Public()
-@KeycloakPublic()
 @Controller(AGENSTRA_CONTEXT_API_ROUTE)
 export class AgentsContextController {
   constructor(

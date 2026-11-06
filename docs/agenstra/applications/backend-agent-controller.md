@@ -19,8 +19,8 @@ This application provides:
 - **Container isolation levels** Workspace isolation summaries, server-side validation of the isolation level on environment creation, and capability transition notifications; see [Container Isolation Levels](../features/container-isolation.md)
 - **Atlassian import** Admin-managed Atlassian site connections and Jira/Confluence import configurations (scheduled and on-demand)
 - **Agent configuration** Three-layer OpenCode V2 overlays (`/admin/opencode/config`, client and agent `/opencode/config`) with heredity locks and worker sync; see [Agent configuration](../features/agent-configuration.md)
-- **Per-Client Permissions** Fine-grained access control with user roles per client (keycloak/users mode)
-- **Secure Authentication** API key, Keycloak OAuth2/OIDC, or built-in users (JWT) for HTTP and WebSocket
+- **Per-Client Permissions** Fine-grained access control with user roles per client (users/oidc/saml mode)
+- **Secure Authentication** API key, OIDC, SAML 2.0, or built-in users (JWT) for HTTP and WebSocket
 - **Database Support** PostgreSQL with TypeORM for data persistence
 - **Auto Migrations** Automatic database schema migrations on startup
 - **Rate Limiting** Configurable rate limiting on all API endpoints
@@ -32,7 +32,7 @@ This application is built using:
 
 - **NestJS** Progressive Node.js framework
 - **TypeORM** Object-Relational Mapping for database operations
-- **Keycloak** Identity and access management (optional, can use API key)
+- **OIDC / SAML identity provider** (optional, can use API key or users)
 - **Socket.IO** WebSocket communication
 - **PostgreSQL** Database for client and credential storage
 
@@ -40,11 +40,11 @@ The thin Nest application composes **`ClientsModule`** and **`IdentityStatistics
 
 ## API Endpoints
 
-All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentication (or API key authentication if `STATIC_API_KEY` is set).
+All HTTP endpoints are prefixed with `/api` and protected by the configured authentication method (OIDC by default, or API key authentication if `STATIC_API_KEY` is set).
 
 ### Client Management
 
-- `GET /api/clients` - List all clients (filtered by user access in keycloak/users mode; supports `limit` and `offset`)
+- `GET /api/clients` - List all clients (filtered by user access in users/oidc/saml mode; supports `limit` and `offset`)
 - `GET /api/clients/:id` - Get a single client by UUID
 - `POST /api/clients` - Create a new client (returns API key if API_KEY authentication type)
 - `POST /api/clients/:id` - Update an existing client
@@ -61,7 +61,7 @@ See [Container Isolation Levels](../features/container-isolation.md).
 
 Capability transitions are stored in `client_isolation_snapshots` and published as `isolation.sandbox_available`, `isolation.sandbox_unavailable`, `isolation.sandbox_kvm_available`, `isolation.sandbox_kvm_unavailable`, `isolation.microvm_available`, `isolation.microvm_unavailable` and `isolation.baseline_failed`; environment creation publishes `agent.isolation_overridden` and `agent.sandbox_creation_failed` (see [Webhooks](../features/webhooks.md)). The `isolation-capabilities` coordinator job refreshes snapshots in the background. Summaries always list `standard`, `sandboxed`, `sandboxed-kvm` and `microvm`; levels an older manager does not report are filled as `unsupported` (`E_MANAGER_UNSUPPORTED`).
 
-### Client User Management (keycloak/users authentication only)
+### Client User Management (users/oidc/saml authentication only)
 
 - `GET /api/clients/:id/users` - List users associated with a client
 - `POST /api/clients/:id/users` - Add a user to a client by email
@@ -247,7 +247,8 @@ Connect with full namespace paths (e.g. `io('http://localhost:3100/socket/client
 WebSocket connections require authentication via the `Authorization` header (polling) or `handshake.auth.Authorization` (WebSocket transport). The same authentication methods as HTTP apply:
 
 - **API key**: `Bearer <static-api-key>` or `ApiKey <static-api-key>`
-- **Keycloak**: `Bearer <keycloak-jwt-token>`
+- **OIDC**: `Bearer <oidc-access-token>`
+- **Users / SAML**: `Bearer <session-jwt>`
 - **Users**: `Bearer <jwt-token>`
 
 Unauthenticated connections are rejected with `connect_error` "Unauthorized". The `setClient` operation enforces per-client authorization: only users with access to the requested client can set that client context. Unauthorized attempts emit an `error` event with message "You do not have access to this client".
@@ -313,9 +314,14 @@ All HTTP endpoints require authentication. The method depends on configuration:
 - Include the API key: `Authorization: Bearer <static-api-key>` or `ApiKey <static-api-key>`
 - All permission checks are bypassed
 
-**Keycloak** (`AUTHENTICATION_METHOD=keycloak`):
+**OIDC** (`AUTHENTICATION_METHOD=oidc`):
 
-- Include a valid Keycloak JWT: `Authorization: Bearer <keycloak-jwt-token>`
+- Include a valid OIDC access token: `Authorization: Bearer <access-token>`
+- Per-client permissions apply (global admin, client creator, or client_users entry)
+
+**SAML** (`AUTHENTICATION_METHOD=saml`):
+
+- Sign in via `GET /api/auth/saml/login` (see [Authentication](../features/authentication.md)), then use the session JWT: `Authorization: Bearer <session-jwt>`
 - Per-client permissions apply (global admin, client creator, or client_users entry)
 
 **Users** (`AUTHENTICATION_METHOD=users`):
@@ -407,15 +413,13 @@ See the application docs and environment configuration for complete environment 
 - `CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST` - Allow private/loopback targets and skip DNS rebinding check when `true` (same pattern as `CONFIG_*`: no separate skip-DNS flag)
 - `CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED` - TLS verify outbound HTTPS (set `false` only outside production)
 
-**Authentication:** `AUTHENTICATION_METHOD` - Authentication method: `api-key`, `keycloak`, or `users` (default: inferred from `STATIC_API_KEY`)
+**Authentication:** `AUTHENTICATION_METHOD` - Authentication method: `api-key`, `users`, `oidc`, or `saml` (default: inferred from `STATIC_API_KEY`: api-key if set, else oidc)
 
 - `STATIC_API_KEY` - Static API key (required when `AUTHENTICATION_METHOD=api-key`)
-- `KEYCLOAK_SERVER_URL` - Keycloak server URL (optional, used for server URL if different from auth server URL)
-- `KEYCLOAK_AUTH_SERVER_URL` - Keycloak authentication server URL (required for Keycloak auth)
-- `KEYCLOAK_REALM` - Keycloak realm name (required for Keycloak auth)
-- `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required for Keycloak auth)
-- `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required for Keycloak auth)
-- `KEYCLOAK_TOKEN_VALIDATION` - Token validation method: `ONLINE` or `OFFLINE` (optional, default: `ONLINE`)
+- `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_TOKEN_VALIDATION` (`ONLINE` default / `OFFLINE`), `OIDC_AUDIENCE`, `OIDC_AUTHORIZED_PARTIES` - OIDC mode (`OIDC_ISSUER` is also the default issuer for `oidc` clients)
+- `SAML_IDP_SSO_URL`, `SAML_IDP_CERT`, `SAML_IDP_ISSUER`, `SAML_SP_ENTITY_ID`, `SAML_SP_ACS_URL`, `SAML_FRONTEND_CALLBACK_URL` - SAML mode
+- `JWT_SECRET` - Required for users, oidc and saml modes (sessions, PATs)
+- Full reference: [Environment Configuration](../deployment/environment-configuration.md)
 
 **Database:** `DB_HOST` - Database host (default: `localhost`)
 
@@ -480,7 +484,7 @@ Before deploying to production, ensure:
 - `CORS_ORIGIN` is configured with your production domain(s)
 - `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
 - `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
-- `STATIC_API_KEY` or Keycloak credentials are configured
+- `STATIC_API_KEY` or OIDC / SAML settings are configured
 - Database credentials are secure
 - `ENCRYPTION_KEY` is set for sensitive data encryption
 

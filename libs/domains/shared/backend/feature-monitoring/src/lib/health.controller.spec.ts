@@ -1,7 +1,6 @@
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { IS_PUBLIC_KEY } from '@forepath/identity/backend/util-auth/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { META_PUBLIC } from 'nest-keycloak-connect';
 
 import { HealthController, HealthResponseDto } from './health.controller';
 
@@ -47,12 +46,8 @@ describe('HealthController', () => {
       });
     });
 
-    it('should be public for both auth systems', () => {
-      // "nest-keycloak-connect" uses metadata key "public"
-      expect(Reflect.getMetadata(META_PUBLIC, controllerClass)).toBe(true);
-      expect(Reflect.getMetadata(META_PUBLIC, getHealthHandler)).toBe(true);
-
-      // Hybrid auth uses metadata key "isPublic"
+    it('should be public for every auth method', () => {
+      // All guards (api-key, users, oidc, saml) honour the shared "isPublic" metadata key
       expect(Reflect.getMetadata(IS_PUBLIC_KEY, controllerClass)).toBe(true);
       expect(Reflect.getMetadata(IS_PUBLIC_KEY, getHealthHandler)).toBe(true);
     });

@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import { Controller, Get, Post, Query, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -6,7 +6,6 @@ import type { AdminFileManagerListResponseDto, AdminFileVerifyResponseDto } from
 import { AdminFileManagerService, type UploadedVerifyDocument } from '../services/admin-file-manager.service';
 
 @Controller('admin/billing/files')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 @RequireScopes('files:admin')
 export class AdminFileManagerController {

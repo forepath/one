@@ -1,4 +1,4 @@
-import { formatEnvLine, formatEnvLines, quoteYamlScalar } from './env.utils';
+import { formatEnvLine, formatEnvLines, quoteComposeValue, quoteYamlScalar, shellSingleQuote } from './env.utils';
 
 describe('env.utils', () => {
   describe('quoteYamlScalar', () => {
@@ -9,7 +9,8 @@ describe('env.utils', () => {
     it('leaves simple identifiers unquoted', () => {
       expect(quoteYamlScalar('production')).toBe('production');
       expect(quoteYamlScalar('redis')).toBe('redis');
-      expect(quoteYamlScalar('0.0.0.0')).toBe('0.0.0.0');
+      // Starts with a digit: quoted so YAML never reinterprets it (same string for compose).
+      expect(quoteYamlScalar('0.0.0.0')).toBe("'0.0.0.0'");
     });
 
     it('leaves integers unquoted', () => {
@@ -70,6 +71,47 @@ describe('env.utils', () => {
 
     it('handles single line', () => {
       expect(formatEnvLines(['NODE_ENV=production'])).toBe('      NODE_ENV: production');
+    });
+  });
+
+  describe('injection safety', () => {
+    it('keeps values with line breaks on one line as an escaped double-quoted scalar', () => {
+      expect(quoteYamlScalar('a\nEOF\nINJECTED: 1')).toBe('"a\\nEOF\\nINJECTED: 1"');
+      expect(formatEnvLine('KEY: -----BEGIN-----\nabc')).toBe('KEY: "-----BEGIN-----\\nabc"');
+    });
+
+    it('doubles $ in compose values so docker-compose does not interpolate them', () => {
+      expect(quoteComposeValue('p$ss${HOME}')).toBe("'p$$ss$${HOME}'");
+      expect(formatEnvLine('SECRET: a$b')).toBe("SECRET: 'a$$b'");
+      expect(quoteComposeValue('plain')).toBe('plain');
+    });
+  });
+
+  describe('YAML type safety', () => {
+    it.each(['null', 'NULL', 'true', 'False', 'yes', 'on', 'n', '1.10', '0123', '1e5', '0x1F', '-0', '.5'])(
+      'quotes %s so compose keeps it as the same string',
+      (value) => {
+        expect(quoteYamlScalar(value)).toBe(`'${value}'`);
+      },
+    );
+
+    it.each(['api-client', 'oidc', 'abc.def', '0', '42', '-7'])('keeps %s plain', (value) => {
+      expect(quoteYamlScalar(value)).toBe(value);
+    });
+  });
+
+  describe('shellSingleQuote', () => {
+    it('produces a literal that bash prints verbatim (no expansion / injection)', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+      const { execFileSync } = require('node:child_process') as typeof import('node:child_process');
+      const hostile = `ssh-ed25519 AAAAC3Nza x"; touch /tmp/should-not-exist-$$; echo "$(id) \`id\` 'q' \\`;
+      const output = execFileSync('bash', ['-c', `printf '%s\\n' ${shellSingleQuote(hostile)}`]).toString();
+
+      expect(output).toBe(`${hostile}\n`);
+    });
+
+    it('keeps the value on one line', () => {
+      expect(shellSingleQuote('a\nb')).toBe("'a b'");
     });
   });
 });

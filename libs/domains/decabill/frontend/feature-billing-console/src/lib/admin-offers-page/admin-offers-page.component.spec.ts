@@ -9,11 +9,6 @@ import { of, throwError } from 'rxjs';
 
 import { AdminOffersPageComponent, offerTaxBreakdown } from './admin-offers-page.component';
 
-jest.mock('keycloak-js', () => ({ __esModule: true, default: jest.fn() }));
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-  createAuthGuard: jest.fn((impl: unknown) => impl),
-}));
 jest.mock('../billing-country-options', () => ({ getCountryDisplayName: (code: string) => code }));
 jest.mock('ng-apexcharts', () => {
   const { NgModule } = jest.requireActual('@angular/core');

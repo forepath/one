@@ -91,14 +91,14 @@ describe('ClientAgentVcsProxyService', () => {
       );
     });
 
-    it('should use KEYCLOAK token when configured', async () => {
-      const keycloakClient = {
+    it('should use OIDC token when configured', async () => {
+      const oidcClient = {
         ...mockClientEntity,
-        authenticationType: AuthenticationType.KEYCLOAK,
+        authenticationType: AuthenticationType.OIDC,
         apiKey: undefined,
       };
 
-      clientsRepository.findByIdOrThrow.mockResolvedValue(keycloakClient);
+      clientsRepository.findByIdOrThrow.mockResolvedValue(oidcClient);
       clientsService.getAccessToken.mockResolvedValue('jwt-token');
       mockedAxios.request.mockResolvedValue({
         status: 200,

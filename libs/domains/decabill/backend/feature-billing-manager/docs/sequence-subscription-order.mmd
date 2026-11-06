@@ -7,7 +7,7 @@ sequenceDiagram
     participant HetznerAPI
     participant Database
 
-    %% requestedConfig includes service (controller|manager), authenticationMethod, smtp, keycloak, optional provisioning (controller only)
+    %% requestedConfig includes service (controller|manager), authenticationMethod, smtp, oidc / saml, optional provisioning (controller only)
     User->>BillingAPI: POST /subscriptions (planId, requestedConfig with service)
     BillingAPI->>CustomerProfilesService: getByUserId(userId)
     CustomerProfilesService-->>BillingAPI: profile

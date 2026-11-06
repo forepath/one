@@ -46,7 +46,7 @@ import { StatisticsService } from './statistics.service';
 
 /**
  * Service for proxying agent management requests to client endpoints.
- * Handles authentication (API key or Keycloak JWT) and forwards requests to the client's agent-manager service.
+ * Handles authentication (API key or OIDC client credentials token) and forwards requests to the client's agent-manager service.
  */
 @Injectable()
 export class ClientAgentProxyService {
@@ -83,7 +83,7 @@ export class ClientAgentProxyService {
       }
 
       return `Bearer ${clientEntity.apiKey}`;
-    } else if (clientEntity.authenticationType === AuthenticationType.KEYCLOAK) {
+    } else if (clientEntity.authenticationType === AuthenticationType.OIDC) {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;

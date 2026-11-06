@@ -20,8 +20,8 @@ import { assertUsersJwtSessionValid, type UsersJwtSessionPayload } from '../util
 import type { AuthenticatedUsersRequestUser } from './users-auth.guard';
 
 /**
- * Keycloak-mode hybrid: accept app-signed PAT JWTs (`amr: pat`) before nest-keycloak AuthGuard.
- * Non-PAT bearers pass through so Keycloak OIDC validation can run.
+ * OIDC-mode hybrid: accept app-signed PAT / app access JWTs (`amr: pat`) before `OidcAuthGuard`.
+ * Non-PAT bearers pass through so OIDC access token validation can run (OidcAuthGuard never accepts HS* tokens).
  */
 @Injectable()
 export class PatBearerAuthGuard implements CanActivate {
@@ -35,7 +35,7 @@ export class PatBearerAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    if (getAuthenticationMethod() !== 'keycloak') {
+    if (getAuthenticationMethod() !== 'oidc') {
       return true;
     }
 
@@ -76,7 +76,7 @@ export class PatBearerAuthGuard implements CanActivate {
     try {
       payload = await this.jwtService.verifyAsync<UsersJwtSessionPayload>(token);
     } catch {
-      // Not an app-signed JWT (likely Keycloak access token) — let Keycloak guards handle it.
+      // Not an app-signed JWT (likely an OIDC access token) — let OidcAuthGuard handle it.
       return true;
     }
 

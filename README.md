@@ -121,14 +121,14 @@ Feature notes live under [`docs/forepath/features/`](./docs/forepath/features/).
 
 Cross-product building blocks used by every product in the repository.
 
-| Component                                                         | Description                                                       |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [Platform authentication](./apps/shared/platform-authentication/) | Keycloak Docker Compose setup for local and shared auth           |
-| [MCP devkit](./apps/shared/mcp-devkit/)                           | Model Context Protocol server for workspace and Nx tooling        |
-| [MCP proxy](./apps/shared/mcp-proxy/)                             | Proxy that routes MCP clients to the devkit                       |
-| [Docs shell](./apps/shared/frontend-docs/)                        | Shared SSR docs app that the product docs sites patch             |
-| [Shared libraries](./libs/domains/shared/)                        | UI components, monitoring, configuration, SSR, queue, and crypto  |
-| [Identity libraries](./libs/domains/identity/)                    | Keycloak authentication for NestJS backends and Angular frontends |
+| Component                                                         | Description                                                          |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------- |
+| [Platform authentication](./apps/shared/platform-authentication/) | Local OIDC / SAML identity provider (Keycloak) for testing           |
+| [MCP devkit](./apps/shared/mcp-devkit/)                           | Model Context Protocol server for workspace and Nx tooling           |
+| [MCP proxy](./apps/shared/mcp-proxy/)                             | Proxy that routes MCP clients to the devkit                          |
+| [Docs shell](./apps/shared/frontend-docs/)                        | Shared SSR docs app that the product docs sites patch                |
+| [Shared libraries](./libs/domains/shared/)                        | UI components, monitoring, configuration, SSR, queue, and crypto     |
+| [Identity libraries](./libs/domains/identity/)                    | OIDC / SAML authentication for NestJS backends and Angular frontends |
 
 ## Quick start
 

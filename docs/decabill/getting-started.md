@@ -9,7 +9,7 @@ Before you begin, ensure you have:
 - **Node.js** 24.22.1 or higher
 - **Docker** and **Docker Compose** (recommended for Postgres, Valkey, and Mailhog)
 - **Git** (to clone the monorepo)
-- **Keycloak** (optional, for OAuth2/OIDC login in the billing console)
+- **OIDC or SAML identity provider** (optional, for SSO in the billing console; [platform authentication](../../apps/shared/platform-authentication/README.md) runs Keycloak locally)
 - **Stripe test keys** (optional, for checkout and payment flows)
 
 For CPU, memory, and disk baselines by component (API, worker, scheduler, frontends), see **[System Requirements](./deployment/system-requirements.md)**. For install capacity and verification checklists, see **[Operator Runbook](./deployment/operator-runbook.md)**.
@@ -125,17 +125,19 @@ QUEUE_ROLE=all
 AUTHENTICATION_METHOD=api-key
 STATIC_API_KEY=dev-api-key-123
 
-# Or Keycloak:
+# Or OIDC (any provider, e.g. local Keycloak):
 
-# AUTHENTICATION_METHOD=keycloak
+# AUTHENTICATION_METHOD=oidc
 
-# KEYCLOAK_AUTH_SERVER_URL=http://localhost:8380
+# OIDC_ISSUER=http://localhost:8380/realms/platform
 
-# KEYCLOAK_REALM=decabill
+# OIDC_CLIENT_ID=billing-manager
 
-# KEYCLOAK_CLIENT_ID=billing-manager
+# OIDC_CLIENT_SECRET=your-client-secret
 
-# KEYCLOAK_CLIENT_SECRET=your-client-secret
+# JWT_SECRET=your-jwt-secret-key
+
+# Or SAML: AUTHENTICATION_METHOD=saml plus SAML_* (see Authentication docs)
 
 # Or built-in users (default in local Angular environment):
 
@@ -196,12 +198,12 @@ API key auth grants admin access to billing administration REST routes. It does 
 
 Optional: set `STATIC_API_KEY_TENANT_ID` to bind the key to one tenant. See **[Multi-tenancy](./features/multi-tenancy.md)**.
 
-### Option B: Keycloak
+### Option B: OIDC or SAML
 
-1. Run or connect to a Keycloak realm and client for Decabill.
-2. Set `AUTHENTICATION_METHOD=keycloak` and the Keycloak environment variables on the billing manager.
-3. Configure the billing console for Keycloak (runtime config or build-time environment).
-4. Open `http://localhost:4202/login` and complete the OAuth2/OIDC flow.
+1. Run or connect to an identity provider (for example the local Keycloak from [platform authentication](../../apps/shared/platform-authentication/README.md)).
+2. Set `AUTHENTICATION_METHOD=oidc` with `OIDC_*` (or `saml` with `SAML_*`) on the billing manager; see [Authentication](./features/authentication.md).
+3. Configure the billing console runtime config: `{ "type": "oidc", "issuer", "clientId" }` or `{ "type": "saml" }`.
+4. Open `http://localhost:4202/login` and complete the sign-in flow.
 
 The first user synced into a tenant receives the admin role. Subsequent synced users receive the standard user role.
 
@@ -219,7 +221,7 @@ See **[Authentication](./features/authentication.md)** for flows, roles, and sec
 
 ## Verify the Stack
 
-After login (users or Keycloak) or API key verification:
+After login (users, OIDC or SAML) or API key verification:
 
 1. Open **Overview** at `/dashboard` to see subscriptions and server status.
 2. Open **Plans** at `/subscriptions` to browse service plans (admin users can manage catalog entries under **Administration**).

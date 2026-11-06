@@ -42,7 +42,8 @@ describe('AgentsHandoffsController', () => {
 
   it('bypasses user authentication guards (agent token auth instead)', () => {
     expect(Reflect.getMetadata(IS_PUBLIC_KEY, AgentsHandoffsController)).toBe(true);
-    expect(Reflect.getMetadata('public', AgentsHandoffsController)).toBe(true);
+    // The removed nest-keycloak-connect `public` metadata is not needed: every guard honours IS_PUBLIC_KEY.
+    expect(Reflect.getMetadata('public', AgentsHandoffsController)).toBeUndefined();
   });
 
   it('rejects invalid agent credentials before forwarding anything', async () => {

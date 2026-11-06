@@ -525,7 +525,7 @@ components:
       type: httpApiKey
       name: Authorization
       in: header
-      description: 'Bearer JWT from Keycloak, e.g. Authorization: Bearer <token>'
+      description: 'Bearer OIDC access token (AUTHENTICATION_METHOD=oidc) or static API key, e.g. Authorization: Bearer <token>'
   schemas:
     AttachmentContext:
       type: object

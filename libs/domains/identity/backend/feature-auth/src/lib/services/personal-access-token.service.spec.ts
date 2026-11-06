@@ -62,11 +62,12 @@ describe('PersonalAccessTokenService', () => {
     expect(mockTokensRepository.create).toHaveBeenCalled();
   });
 
-  it('creates a token for keycloak-linked users without passwordHash', async () => {
+  it('creates a token for externally linked (OIDC / SAML) users without passwordHash', async () => {
     mockUsersRepository.findByIdOrThrow.mockResolvedValue({
       id: 'u1',
       passwordHash: null,
-      keycloakSub: 'kc-sub-1',
+      externalProvider: 'oidc',
+      externalSubject: 'idp-sub-1',
       role: UserRole.ADMIN,
     });
     mockTokensRepository.create.mockImplementation(async (data: Record<string, unknown>) => ({
@@ -86,11 +87,12 @@ describe('PersonalAccessTokenService', () => {
     expect(result.token.startsWith('fp_pat_')).toBe(true);
   });
 
-  it('rejects create when account has neither passwordHash nor keycloakSub', async () => {
+  it('rejects create when account has neither passwordHash nor an external identity', async () => {
     mockUsersRepository.findByIdOrThrow.mockResolvedValue({
       id: 'u1',
       passwordHash: null,
-      keycloakSub: null,
+      externalProvider: null,
+      externalSubject: null,
       role: UserRole.ADMIN,
     });
 
@@ -299,7 +301,7 @@ describe('PersonalAccessTokenService', () => {
     await expect(service.assertPatJwtActive('t1', 'u1', ['usage:admin'])).rejects.toThrow(UnauthorizedException);
   });
 
-  it('assertPatJwtActive allows keycloak-linked users without passwordHash', async () => {
+  it('assertPatJwtActive allows externally linked users without passwordHash', async () => {
     mockTokensRepository.findById.mockResolvedValue({
       id: 't1',
       userId: 'u1',
@@ -311,7 +313,8 @@ describe('PersonalAccessTokenService', () => {
     mockUsersRepository.findById.mockResolvedValue({
       id: 'u1',
       passwordHash: null,
-      keycloakSub: 'kc-sub-1',
+      externalProvider: 'oidc',
+      externalSubject: 'idp-sub-1',
       emailConfirmedAt: new Date(),
       lockedAt: null,
       role: UserRole.ADMIN,
@@ -322,7 +325,7 @@ describe('PersonalAccessTokenService', () => {
     });
   });
 
-  it('assertPatJwtActive rejects when account has neither passwordHash nor keycloakSub', async () => {
+  it('assertPatJwtActive rejects when account has neither passwordHash nor an external identity', async () => {
     mockTokensRepository.findById.mockResolvedValue({
       id: 't1',
       userId: 'u1',
@@ -334,7 +337,8 @@ describe('PersonalAccessTokenService', () => {
     mockUsersRepository.findById.mockResolvedValue({
       id: 'u1',
       passwordHash: null,
-      keycloakSub: null,
+      externalProvider: null,
+      externalSubject: null,
       emailConfirmedAt: new Date(),
       lockedAt: null,
       role: UserRole.ADMIN,

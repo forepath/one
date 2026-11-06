@@ -2,10 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import type { IdentityAuthEnvironment, UsersAuthenticationConfig } from '@forepath/identity/frontend';
 import { AuthenticationFacade, loginSuccess } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT, isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
+import {
+  IDENTITY_AUTH_ENVIRONMENT,
+  isAuthMarketingPanelVisible,
+  SSO_ERROR_QUERY_PARAM,
+  usesExternalSignIn,
+} from '@forepath/identity/frontend';
 import {
   FpcAlertComponent,
   FpcButtonComponent,
@@ -43,6 +48,7 @@ export class IdentityLoginComponent implements OnInit {
   private readonly environment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT);
   private readonly actions$ = inject(Actions);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute, { optional: true });
 
   loginForm!: FormGroup;
   loading$: Observable<boolean> = this.authFacade.loading$;
@@ -56,6 +62,18 @@ export class IdentityLoginComponent implements OnInit {
    */
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';
+  }
+
+  /**
+   * Whether sign-in happens at an external identity provider (OIDC or SAML): no credentials are entered here.
+   */
+  get isExternalAuth(): boolean {
+    return usesExternalSignIn(this.environment.authentication.type);
+  }
+
+  /** Set when the previous external sign-in attempt failed (the guard then does not redirect automatically). */
+  get ssoFailed(): boolean {
+    return !!this.route?.snapshot.queryParamMap.get(SSO_ERROR_QUERY_PARAM);
   }
 
   /**
@@ -118,6 +136,8 @@ export class IdentityLoginComponent implements OnInit {
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required]],
       });
+    } else if (this.isExternalAuth) {
+      this.loginForm = this.fb.group({});
     } else {
       this.loginForm = this.fb.group({
         apiKey: ['', [Validators.required]],
@@ -135,6 +155,13 @@ export class IdentityLoginComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.isExternalAuth) {
+      // Redirects to the identity provider (OIDC) or the API's SAML sign-in endpoint.
+      this.authFacade.login();
+
+      return;
+    }
+
     if (this.loginForm.valid) {
       if (this.isUsersAuth) {
         const email = this.loginForm.get('email')?.value;

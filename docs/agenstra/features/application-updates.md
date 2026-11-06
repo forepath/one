@@ -63,7 +63,7 @@ Agent-manager processes (no Valkey) expose `GET /api/instance-status`. The
 controller **API** (or `QUEUE_ROLE=all`) scrapes API-key workspace endpoints about
 every 60 seconds and on each `update-check`, then upserts rows into controller Valkey
 (same 5-minute TTL as heartbeats). Without the periodic scrape, managers disappear
-from `/updates` a few minutes after the last check. Keycloak workspaces are skipped.
+from `/updates` a few minutes after the last check. OIDC workspaces are skipped.
 Manager roles use `AGENT_MANAGER_ROLE` when set.
 
 ## Update check job

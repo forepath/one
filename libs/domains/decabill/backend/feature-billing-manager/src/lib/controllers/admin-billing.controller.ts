@@ -1,5 +1,5 @@
 import { getTenantIdOrDefault } from '@forepath/shared/backend';
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -64,7 +64,6 @@ import { getUserFromRequest, type RequestWithUser } from '../utils/billing-acces
 import { TaxPreviewRequestDto } from '../dto/tax-preview.dto';
 
 @Controller('admin/billing')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 export class AdminBillingController {
   constructor(

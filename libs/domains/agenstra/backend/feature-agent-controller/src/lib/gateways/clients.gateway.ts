@@ -73,7 +73,11 @@ import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
-import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import {
+  createPinnedSocketAgent,
+  getClientEndpointTlsPolicy,
+  validateClientEndpointWithDnsOrThrow,
+} from '../utils/client-endpoint-security';
 import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
 
 type ChatOutputUsage = {
@@ -394,15 +398,31 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
 
       // establish remote socket connection to the client's agents namespace
-      const authHeader = await this.getAuthHeader(clientId);
+      // Resolve once up front so misconfigured credentials fail fast (same error handling as before).
+      await this.getAuthHeader(clientId);
 
       await validateClientEndpointWithDnsOrThrow(client.endpoint);
       const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
       const remoteUrl = this.buildAgentsWsUrl(client.endpoint);
       const remote = createCorrelationAwareSocketIoClient(remoteUrl, {
         transports: ['websocket'],
-        extraHeaders: { Authorization: authHeader },
+        // Credentials are sent in the handshake `auth` payload, re-evaluated on every (re)connect: the manager
+        // authenticates each handshake and OIDC client-credentials tokens expire, so a static header would make
+        // reconnects fail after token expiry.
+        auth: (callback: (data: Record<string, string>) => void) => {
+          this.getAuthHeader(clientId).then(
+            (authorization) => callback({ Authorization: authorization }),
+            (error: unknown) => {
+              this.logger.warn(
+                `Could not refresh agent-manager credentials for client ${clientId}: ${(error as Error).message}`,
+              );
+              callback({});
+            },
+          );
+        },
         rejectUnauthorized: tlsPolicy.rejectUnauthorized,
+        // Pin every (re)connect to a validated public address (DNS rebinding).
+        agent: createPinnedSocketAgent(remoteUrl, tlsPolicy.rejectUnauthorized),
         reconnection: true,
         reconnectionAttempts: parseInt(process.env.SOCKET_RECONNECTION_ATTEMPTS || '5'),
         reconnectionDelay: 1000,
@@ -2135,7 +2155,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       return `Bearer ${client.apiKey}`;
     }
 
-    if (client.authenticationType === AuthenticationType.KEYCLOAK) {
+    if (client.authenticationType === AuthenticationType.OIDC) {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;

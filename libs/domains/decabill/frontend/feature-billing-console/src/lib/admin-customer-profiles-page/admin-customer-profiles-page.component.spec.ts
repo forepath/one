@@ -10,11 +10,6 @@ import { of, throwError } from 'rxjs';
 
 import { AdminCustomerProfilesPageComponent } from './admin-customer-profiles-page.component';
 
-jest.mock('keycloak-js', () => ({ __esModule: true, default: jest.fn() }));
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-  createAuthGuard: jest.fn((impl: unknown) => impl),
-}));
 jest.mock('../billing-country-options', () => ({
   BILLING_COUNTRY_OPTIONS: [],
   DEFAULT_BILLING_COUNTRY_CODE: 'DE',

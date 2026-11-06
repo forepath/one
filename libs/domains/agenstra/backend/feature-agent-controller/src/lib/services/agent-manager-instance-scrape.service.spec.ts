@@ -5,7 +5,7 @@ jest.mock('@forepath/shared/backend/util-queue', () => ({
 }));
 
 jest.mock('@forepath/identity/backend', () => ({
-  AuthenticationType: { API_KEY: 'api_key', KEYCLOAK: 'keycloak' },
+  AuthenticationType: { API_KEY: 'api_key', OIDC: 'oidc' },
 }));
 
 jest.mock('@forepath/shared/backend', () => ({
@@ -122,12 +122,12 @@ describe('AgentManagerInstanceScrapeService', () => {
     );
   });
 
-  it('skips Keycloak workspaces', async () => {
+  it('skips OIDC workspaces', async () => {
     clientsRepository.findAll.mockResolvedValue([
       {
         id: 'client-2',
         endpoint: 'http://example.com',
-        authenticationType: AuthenticationType.KEYCLOAK,
+        authenticationType: AuthenticationType.OIDC,
         apiKey: null,
       },
     ]);

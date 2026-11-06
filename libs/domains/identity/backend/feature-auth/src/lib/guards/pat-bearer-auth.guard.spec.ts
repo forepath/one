@@ -24,7 +24,7 @@ describe('PatBearerAuthGuard', () => {
 
   beforeEach(() => {
     originalAuthMethod = process.env.AUTHENTICATION_METHOD;
-    process.env.AUTHENTICATION_METHOD = 'keycloak';
+    process.env.AUTHENTICATION_METHOD = 'oidc';
     jwtService = { verifyAsync: jest.fn() };
     usersRepository = { findById: jest.fn() };
     revokedUserTokensRepository = { isRevoked: jest.fn().mockResolvedValue(false) };
@@ -47,7 +47,7 @@ describe('PatBearerAuthGuard', () => {
     }
   });
 
-  it('no-ops when AUTHENTICATION_METHOD is not keycloak', async () => {
+  it('no-ops when AUTHENTICATION_METHOD is not oidc', async () => {
     process.env.AUTHENTICATION_METHOD = 'users';
     const request = { headers: { authorization: 'Bearer x' } };
 
@@ -57,7 +57,7 @@ describe('PatBearerAuthGuard', () => {
 
   it('passes through when bearer is not an app JWT', async () => {
     jwtService.verifyAsync.mockRejectedValue(new Error('invalid'));
-    const request = { headers: { authorization: 'Bearer keycloak-access-token' } };
+    const request = { headers: { authorization: 'Bearer oidc-access-token' } };
 
     await expect(guard.canActivate(createContext(request))).resolves.toBe(true);
     expect(request).not.toHaveProperty('patAuthenticated', true);
@@ -129,7 +129,7 @@ describe('PatBearerAuthGuard', () => {
     await expect(guard.canActivate(createContext(request))).rejects.toThrow(UnauthorizedException);
   });
 
-  it('accepts app access JWTs via the app session check (keycloak mode)', async () => {
+  it('accepts app access JWTs via the app session check (oidc mode)', async () => {
     jwtService.verifyAsync.mockResolvedValue({
       sub: 'u1',
       email: 'a@b.c',

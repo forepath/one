@@ -1,12 +1,9 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 
-import {
-  BullBoardSkippingAuthGuard,
-  BullBoardSkippingResourceGuard,
-  BullBoardSkippingRoleGuard,
-} from './bull-board-keycloak.guards';
-import { getAuthenticationMethod, getHybridAuthGuards, HybridAuthGuard } from './hybrid-auth.guard';
+import { getAuthenticationMethod } from './authentication-method';
+import { getHybridAuthGuards, HybridAuthGuard } from './hybrid-auth.guard';
+import { OidcAuthGuard } from './oidc/oidc-auth.guard';
 
 describe('HybridAuthGuard', () => {
   let guard: HybridAuthGuard;
@@ -90,13 +87,13 @@ describe('HybridAuthGuard', () => {
     });
   });
 
-  describe('when STATIC_API_KEY is not set (keycloak mode)', () => {
+  describe('when STATIC_API_KEY is not set (implicit oidc mode)', () => {
     beforeEach(() => {
       delete process.env.STATIC_API_KEY;
       delete process.env.AUTHENTICATION_METHOD;
     });
 
-    it('should allow request to proceed to Keycloak guards', () => {
+    it('should allow request to proceed to the OIDC guards', () => {
       const mockRequest = {
         url: '/api/some-other-endpoint',
         headers: {},
@@ -397,9 +394,25 @@ describe('getAuthenticationMethod', () => {
     expect(getAuthenticationMethod()).toBe('api-key');
   });
 
-  it('should return keycloak when AUTHENTICATION_METHOD=keycloak', () => {
+  it('should return oidc when AUTHENTICATION_METHOD=oidc', () => {
+    process.env.AUTHENTICATION_METHOD = 'oidc';
+    expect(getAuthenticationMethod()).toBe('oidc');
+  });
+
+  it('should return saml when AUTHENTICATION_METHOD=saml (case-insensitive)', () => {
+    process.env.AUTHENTICATION_METHOD = ' SAML ';
+    expect(getAuthenticationMethod()).toBe('saml');
+  });
+
+  it('should throw for the removed keycloak method instead of falling back', () => {
     process.env.AUTHENTICATION_METHOD = 'keycloak';
-    expect(getAuthenticationMethod()).toBe('keycloak');
+    expect(() => getAuthenticationMethod()).toThrow(/no longer supported/);
+  });
+
+  it('should throw for unknown methods even when STATIC_API_KEY is set', () => {
+    process.env.AUTHENTICATION_METHOD = 'none';
+    process.env.STATIC_API_KEY = 'k';
+    expect(() => getAuthenticationMethod()).toThrow(/Unsupported AUTHENTICATION_METHOD/);
   });
 
   it('should return users when AUTHENTICATION_METHOD=users', () => {
@@ -413,10 +426,10 @@ describe('getAuthenticationMethod', () => {
     expect(getAuthenticationMethod()).toBe('api-key');
   });
 
-  it('should return keycloak when neither AUTHENTICATION_METHOD nor STATIC_API_KEY set (backward compat)', () => {
+  it('should return oidc when neither AUTHENTICATION_METHOD nor STATIC_API_KEY set (implicit IdP mode)', () => {
     delete process.env.AUTHENTICATION_METHOD;
     delete process.env.STATIC_API_KEY;
-    expect(getAuthenticationMethod()).toBe('keycloak');
+    expect(getAuthenticationMethod()).toBe('oidc');
   });
 });
 
@@ -437,32 +450,30 @@ describe('getHybridAuthGuards', () => {
     else delete process.env.AUTHENTICATION_METHOD;
   });
 
-  describe('when AUTHENTICATION_METHOD is keycloak (STATIC_API_KEY not set)', () => {
+  describe('when AUTHENTICATION_METHOD is implicitly oidc (STATIC_API_KEY not set)', () => {
     beforeEach(() => {
       delete process.env.STATIC_API_KEY;
       delete process.env.AUTHENTICATION_METHOD;
     });
 
-    it('should return HybridAuthGuard and all Keycloak guards', () => {
+    it('should return HybridAuthGuard and the OIDC guard', () => {
       const guards = getHybridAuthGuards();
 
-      expect(guards).toHaveLength(4);
-      expect(guards[0]).toEqual({
-        provide: APP_GUARD,
-        useClass: HybridAuthGuard,
-      });
-      expect(guards[1]).toEqual({
-        provide: APP_GUARD,
-        useClass: BullBoardSkippingAuthGuard,
-      });
-      expect(guards[2]).toEqual({
-        provide: APP_GUARD,
-        useClass: BullBoardSkippingResourceGuard,
-      });
-      expect(guards[3]).toEqual({
-        provide: APP_GUARD,
-        useClass: BullBoardSkippingRoleGuard,
-      });
+      expect(guards).toEqual([
+        { provide: APP_GUARD, useClass: HybridAuthGuard },
+        { provide: APP_GUARD, useClass: OidcAuthGuard },
+      ]);
+    });
+  });
+
+  describe('when AUTHENTICATION_METHOD is saml', () => {
+    beforeEach(() => {
+      process.env.AUTHENTICATION_METHOD = 'saml';
+      delete process.env.STATIC_API_KEY;
+    });
+
+    it('should return only HybridAuthGuard (saml sessions use JWT guards from SamlAuthModule)', () => {
+      expect(getHybridAuthGuards()).toEqual([{ provide: APP_GUARD, useClass: HybridAuthGuard }]);
     });
   });
 
@@ -472,7 +483,7 @@ describe('getHybridAuthGuards', () => {
       delete process.env.AUTHENTICATION_METHOD;
     });
 
-    it('should return only HybridAuthGuard (no Keycloak guards)', () => {
+    it('should return only HybridAuthGuard (no IdP guards)', () => {
       const guards = getHybridAuthGuards();
 
       expect(guards).toHaveLength(1);
@@ -506,18 +517,11 @@ describe('getHybridAuthGuards', () => {
       delete process.env.AUTHENTICATION_METHOD;
     });
 
-    it('should return HybridAuthGuard and all Keycloak guards (empty string is falsy)', () => {
+    it('should return HybridAuthGuard and the OIDC guard (empty string is falsy)', () => {
       const guards = getHybridAuthGuards();
 
-      expect(guards).toHaveLength(4);
-      expect(guards[0]).toEqual({
-        provide: APP_GUARD,
-        useClass: HybridAuthGuard,
-      });
-      expect(guards[1]).toEqual({
-        provide: APP_GUARD,
-        useClass: BullBoardSkippingAuthGuard,
-      });
+      expect(guards).toHaveLength(2);
+      expect(guards[1]).toEqual({ provide: APP_GUARD, useClass: OidcAuthGuard });
     });
   });
 });

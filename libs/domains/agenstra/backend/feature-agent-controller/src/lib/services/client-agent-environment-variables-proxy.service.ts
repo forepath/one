@@ -17,7 +17,7 @@ import { ClientsService } from './clients.service';
 
 /**
  * Service for proxying agent environment variable requests to client endpoints.
- * Handles authentication (API key or Keycloak JWT) and forwards environment variable requests to the client's agent-manager service.
+ * Handles authentication (API key or OIDC client credentials token) and forwards environment variable requests to the client's agent-manager service.
  */
 @Injectable()
 export class ClientAgentEnvironmentVariablesProxyService {
@@ -44,7 +44,7 @@ export class ClientAgentEnvironmentVariablesProxyService {
       }
 
       return `Bearer ${clientEntity.apiKey}`;
-    } else if (clientEntity.authenticationType === AuthenticationType.KEYCLOAK) {
+    } else if (clientEntity.authenticationType === AuthenticationType.OIDC) {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;

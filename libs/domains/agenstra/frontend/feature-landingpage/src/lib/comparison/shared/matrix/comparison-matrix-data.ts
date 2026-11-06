@@ -81,7 +81,7 @@ const AGENSTRA_SCORES: readonly MatrixStrength[] = [
 ];
 const AGENSTRA_TOOLTIPS: readonly string[] = [
   $localize`:@@featurePortalComparison-agenstraT1:Controller + RBAC over many remote agent-manager endpoints from one console.`,
-  $localize`:@@featurePortalComparison-agenstraT2:Per-client users with admin/user roles; Keycloak or JWT users. API-key mode bypasses user checks.`,
+  $localize`:@@featurePortalComparison-agenstraT2:Per-client users with admin/user roles; OIDC/SAML single sign-on or JWT users. API-key mode bypasses user checks.`,
   $localize`:@@featurePortalComparison-agenstraT3:Dockerized controller and manager; you choose where they run. EU-friendly provider automation where offered.`,
   $localize`:@@featurePortalComparison-agenstraT4:WebSocket chat to Docker-backed agents with logs and container lifecycle via agent-manager.`,
   $localize`:@@featurePortalComparison-agenstraT5:Monaco editor plus proxied Git (status, branches, commit, push, pull, rebase, conflicts).`,
@@ -92,7 +92,7 @@ const AGENSTRA_TOOLTIPS: readonly string[] = [
   $localize`:@@featurePortalComparison-agenstraT10:Layered message filters and per-environment web traffic filtering (egress guard), pluggable chat filters, audit statistics for drops, flags, blocked destinations and entity events.`,
   $localize`:@@featurePortalComparison-agenstraT11:Statistics REST for chat I/O, filter incidents, and entity lifecycle (per client and aggregate).`,
   $localize`:@@featurePortalComparison-agenstraT12:Plugin agent providers and chat filters in agent-manager.`,
-  $localize`:@@featurePortalComparison-agenstraT13:Keycloak OIDC/SAML, built-in JWT users, or static API key. Federate corporate IdPs via Keycloak where needed.`,
+  $localize`:@@featurePortalComparison-agenstraT13:OIDC or SAML with any identity provider, built-in JWT users, or static API key. Connect corporate IdPs such as Entra ID, Okta or Keycloak directly.`,
 ];
 const COMPETITOR_SCORES: Record<ComparisonSlug, readonly MatrixStrength[]> = {
   devin: [

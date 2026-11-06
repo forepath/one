@@ -10,11 +10,6 @@ import { of, throwError } from 'rxjs';
 
 import { AdminProjectsPageComponent } from './admin-projects-page.component';
 
-jest.mock('keycloak-js', () => ({ __esModule: true, default: jest.fn() }));
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-  createAuthGuard: jest.fn((impl: unknown) => impl),
-}));
 jest.mock('../billing-country-options', () => ({ getCountryDisplayName: (code: string) => code }));
 
 const project = (id: string, status = 'active'): AdminProjectListItem =>

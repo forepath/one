@@ -17,12 +17,12 @@ Deploy **billing API, worker, and scheduler** from the **same release tag** when
 
 ## Authentication mode (backends)
 
-Resolution is implemented in **`getAuthenticationMethod`** (`libs/domains/identity/backend/util-auth/src/lib/hybrid-auth.guard.ts`):
+Resolution is implemented in **`getAuthenticationMethod`** (`libs/domains/identity/backend/util-auth/src/lib/authentication-method.ts`):
 
-- If **`AUTHENTICATION_METHOD`** is set to **`api-key`**, **`keycloak`**, or **`users`**, that value is used.
-- If **`AUTHENTICATION_METHOD`** is **unset** or invalid:
+- If **`AUTHENTICATION_METHOD`** is set to **`api-key`**, **`users`**, **`oidc`**, or **`saml`**, that value is used. Any other value (including the removed **`keycloak`**) fails at boot.
+- If **`AUTHENTICATION_METHOD`** is **unset**:
   - If **`STATIC_API_KEY`** is set → effective mode **`api-key`**.
-  - Otherwise → effective mode **`keycloak`**.
+  - Otherwise → effective mode **`oidc`**.
 
 **`api-key`** without **`STATIC_API_KEY`** fails at runtime. Health endpoints **`/api/health`** and **`/health`** remain unauthenticated by design.
 
@@ -36,7 +36,7 @@ Resolution is implemented in **`getAuthenticationMethod`** (`libs/domains/identi
 | **`TenantUserGuard`**          | Ensures authenticated users' **`tenant_id`** matches the request tenant.                                                                                                                                                                      |
 | **`STATIC_API_KEY_TENANT_ID`** | Optional bind of API key auth to one tenant.                                                                                                                                                                                                  |
 
-**Accepted risk [DR-002](./accepted-risks.md#dr-002-billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment API key grants **admin access to every tenant** in **`TENANTS`** (tenant chosen per request via **`X-Tenant`**). Interactive **keycloak** / **users** sessions remain limited to the user's tenant.
+**Accepted risk [DR-002](./accepted-risks.md#dr-002-billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment API key grants **admin access to every tenant** in **`TENANTS`** (tenant chosen per request via **`X-Tenant`**). Interactive **oidc** / **saml** / **users** sessions remain limited to the user's tenant.
 
 Code: `libs/domains/decabill/backend/feature-billing-manager/src/lib/guards/tenant-user.guard.ts`, `libs/domains/shared/backend/util-http-context/src/lib/tenant-id.middleware.ts`.
 

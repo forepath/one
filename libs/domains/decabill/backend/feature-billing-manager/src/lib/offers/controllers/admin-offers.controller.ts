@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -31,7 +31,6 @@ import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-ac
 type AdminRequest = RequestWithUser;
 
 @Controller('admin/billing/offers')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 export class AdminOffersController {
   constructor(

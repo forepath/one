@@ -9,7 +9,7 @@ This library enables the management of clients that connect to remote agent-mana
 - **HTTP REST API** for CRUD operations on clients (create, read, update, delete)
 - **HTTP REST API** for proxied agent operations (create, read, update, delete agents via client endpoints)
 - **WebSocket Gateway** for real-time bidirectional event forwarding to remote agent-manager WebSocket endpoints
-- **Authentication Support** for both API key and Keycloak OAuth2 Client Credentials flow
+- **Authentication Support** for both API key and OAuth 2.0 client credentials (any OIDC provider)
 - **Credential Management** for storing agent credentials to enable WebSocket auto-login
 
 Clients are entities that represent remote agent-manager services. The controller proxies HTTP requests to these services and forwards WebSocket events, enabling centralized management of distributed agent-manager instances.
@@ -18,8 +18,8 @@ Clients are entities that represent remote agent-manager services. The controlle
 
 - ✅ Auto-generated UUID primary keys
 - ✅ Auto-generated API keys for API_KEY authentication type
-- ✅ Keycloak OAuth2 Client Credentials flow support with token caching
-- ✅ HTTP REST API with Keycloak authentication
+- ✅ OIDC client credentials flow (provider-agnostic, discovered token endpoint) with token caching
+- ✅ HTTP REST API with OIDC, SAML, users (JWT) or API key authentication
 - ✅ WebSocket gateway for event forwarding to remote agent-manager services
 - ✅ Automatic agent login using stored credentials
 - ✅ Support for configurable agent WebSocket ports per client
@@ -47,13 +47,13 @@ The library follows Domain-Driven Design (DDD) principles with clear separation 
   - `ClientAgentFileSystemProxyService` - Proxies file system operations to remote agent-manager services
   - `ClientAgentEnvironmentVariablesProxyService` - Proxies environment variable operations to remote agent-manager services
   - `ClientAgentCredentialsService` - Manages stored agent credentials
-  - `KeycloakTokenService` - Handles Keycloak OAuth2 Client Credentials flow with token caching
+  - `OidcClientCredentialsService` (from `@forepath/identity/backend`) - OAuth 2.0 client credentials grant with token caching
 - **DTOs**: Data transfer objects for API boundaries
   - `CreateClientDto` - Input validation for creating clients
   - `UpdateClientDto` - Input validation for updating clients
   - `ClientResponseDto` - Safe API responses (excludes sensitive data, includes proxied config with agent types from remote agent-manager)
   - `CreateClientResponseDto` - Response when creating client (includes API key if applicable)
-- **Controllers**: `ClientsController` - HTTP endpoints for client and proxied agent management (protected by Keycloak)
+- **Controllers**: `ClientsController` - HTTP endpoints for client and proxied agent management (protected by the configured authentication method)
 - **Gateways**: `ClientsGateway` - WebSocket gateway for forwarding events to remote agent-manager WebSocket endpoints
 - **Modules**: `ClientsModule` - NestJS module wiring all dependencies
 
@@ -86,7 +86,7 @@ These diagrams provide comprehensive visual documentation of:
 
 - Component interactions and data flow
 - Error handling and edge cases
-- Authentication and authorization flows (API key and Keycloak)
+- Authentication and authorization flows (API key and OIDC client credentials)
 - Real-time communication patterns
 - Proxying and forwarding mechanisms
 
@@ -158,11 +158,11 @@ Each user-client relationship has a role:
 | Client User    | ❌                 | ✅ (assigned)        | ❌                     | ❌                  | ❌               |
 | API Key Mode   | ✅                 | ✅                   | ✅ (all)               | N/A                 | N/A              |
 
-**Note:** In api-key mode, users do not play a role; the client user management endpoints (`GET/POST/DELETE /api/clients/:id/users`) are intended for keycloak and users authentication only.
+**Note:** In api-key mode, users do not play a role; the client user management endpoints (`GET/POST/DELETE /api/clients/:id/users`) are intended for users, oidc and saml authentication only.
 
 ### Managing Client Users
 
-Users are added to clients by their email address. This applies to keycloak and users authentication; in api-key mode, users do not play a role and these endpoints are not applicable.
+Users are added to clients by their email address. This applies to users, oidc and saml authentication; in api-key mode, users do not play a role and these endpoints are not applicable.
 
 ```typescript
 // Add a user to a client
@@ -289,17 +289,17 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 - `providerType` - Provider identifier (e.g., `"hetzner"`, `"digital-ocean"`)
 - `serverType` - Server type identifier (e.g., `"cx11"` for Hetzner, `"s-1vcpu-1gb"` for DigitalOcean)
 - `name` - Server name (auto-generated if not provided)
-- `authenticationType` - Authentication type (`"api_key"` or `"keycloak"`)
+- `authenticationType` - Authentication type (`"api_key"` or `"oidc"`)
 
 **Optional Fields:**
 
 - `description` - Server description
 - `location` - Datacenter location (e.g., `"fsn1"`, `"nbg1"` for Hetzner; `"fra1"`, `"nyc3"` for DigitalOcean)
 - `apiKey` - API key for API_KEY authentication (auto-generated if not provided)
-- `keycloakClientId` - Keycloak client ID (required for KEYCLOAK authentication)
-- `keycloakClientSecret` - Keycloak client secret (required for KEYCLOAK authentication)
-- `keycloakRealm` - Keycloak realm (optional, defaults to environment variable)
-- `keycloakAuthServerUrl` - Keycloak auth server URL (optional, defaults to environment variable)
+- `oidcClientId` - OIDC client ID (required for OIDC authentication)
+- `oidcClientSecret` - OIDC client secret (required for OIDC authentication)
+- `oidcIssuer` - OIDC issuer (optional, defaults to `OIDC_ISSUER`)
+- `oidcScope` - Scopes for the client credentials grant (optional)
 - `gitRepositorySetupMode` - `clone` (default) or `empty` (git init without remote)
 - `gitRepositoryUrl` - Git repository URL for agent workspace (clone mode)
 - `gitUsername` - Git username for repository access
@@ -315,7 +315,7 @@ When provisioning a server:
 2. **Docker Installation**: The server automatically installs Docker CE via cloud-init user data script
 3. **Database Setup**: PostgreSQL container is started with health checks
 4. **Agent-Manager Deployment**: Agent-manager container is deployed with:
-   - Authentication configuration (API key or Keycloak)
+   - Authentication configuration (API key or OIDC)
    - Database connection to PostgreSQL
    - Git repository configuration (if provided)
    - Agent default image override (if provided)
@@ -335,7 +335,7 @@ The provisioned server exposes:
 
 All configuration values are properly interpolated into the docker-compose.yml file on the provisioned server:
 
-- **Authentication**: `STATIC_API_KEY` or Keycloak variables (`KEYCLOAK_AUTH_SERVER_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET`)
+- **Authentication**: `STATIC_API_KEY` or OIDC variables (`AUTHENTICATION_METHOD=oidc`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_AUTHORIZED_PARTIES=<clientId>`)
 - **Git Configuration**: `GIT_REPOSITORY_URL`, `GIT_USERNAME`, `GIT_TOKEN`, `GIT_PASSWORD`
 - **Agent Image**: `AGENT_DEFAULT_IMAGE`
 
@@ -518,7 +518,7 @@ Data is stored in shadow tables (`statistics_*`) with no secrets. See [Statistic
 The gateway authenticates with remote agent-manager services using:
 
 - **API Key**: If client authentication type is `API_KEY`, uses the client's stored API key
-- **Keycloak JWT**: If client authentication type is `KEYCLOAK`, fetches and caches a JWT token using OAuth2 Client Credentials flow
+- **OIDC access token**: If client authentication type is `OIDC`, fetches and caches an access token using the OAuth 2.0 client credentials grant
 
 When forwarding events with an `agentId`, the gateway automatically logs in the agent using stored credentials (saved when agents are created via proxied HTTP requests).
 
@@ -574,7 +574,8 @@ socket.on('error', (data) => {
 Authentication is configured via the `AUTHENTICATION_METHOD` environment variable:
 
 - **`api-key`** (default when `STATIC_API_KEY` is set): Static API key authentication. All requests require `Authorization: Bearer <key>` or `Authorization: ApiKey <key>`. API key auth always grants admin rights.
-- **`keycloak`**: Keycloak OAuth2/OIDC. Users authenticate via Keycloak. Keycloak users are synced to the users table; first user gets admin role, subsequent users get user role.
+- **`oidc`** (default when `STATIC_API_KEY` is unset): any OpenID Connect provider. Bearer access tokens are verified (JWKS, issuer, optional audience / `azp`, introspection with `ONLINE`); identities are linked to the users table; first user gets admin role, subsequent users get user role. Roles never come from IdP claims.
+- **`saml`**: SAML 2.0 single sign-on. The API is the service provider (`/api/auth/saml/*`) and issues users-mode session JWTs (`amr: ["saml"]`) after a validated assertion.
 - **`users`**: Built-in user registration with JWT. Users register, confirm email, and log in. First registered user gets admin role. Admins can manage users via CRUD endpoints.
 
 When using `users` auth, set `DISABLE_SIGNUP=true` to disable self-registration. The register endpoint will return 503 Service Unavailable. Use admin user creation for onboarding when signup is disabled.
@@ -586,7 +587,8 @@ See [Authentication Diagram](./docs/authentication.mmd) for a visual overview.
 All HTTP endpoints (except public auth endpoints) require authentication. The method depends on `AUTHENTICATION_METHOD`:
 
 - **api-key**: `Authorization: Bearer <STATIC_API_KEY>` or `Authorization: ApiKey <STATIC_API_KEY>`
-- **keycloak**: `Authorization: Bearer <keycloak-jwt-token>`
+- **oidc**: `Authorization: Bearer <oidc-access-token>`
+- **saml**: `Authorization: Bearer <session-jwt>` (from `POST /api/auth/saml/token`)
 - **users**: `Authorization: Bearer <jwt-access-token>` (from `POST /api/auth/login`)
 
 ### Users Auth Endpoints (when AUTHENTICATION_METHOD=users)
@@ -613,17 +615,18 @@ Clients can authenticate with remote agent-manager services using two methods:
 - Provide an `apiKey` (or let the system auto-generate one)
 - The API key is used in the `Authorization: Bearer <api-key>` header when proxying requests
 
-#### Keycloak OAuth2 Client Credentials
+#### OIDC Client Credentials
 
-- Set `authenticationType` to `KEYCLOAK` when creating a client
-- Provide `keycloakClientId`, `keycloakClientSecret`, and `keycloakRealm`
-- The system fetches a JWT token using OAuth2 Client Credentials flow
+- Set `authenticationType` to `oidc` when creating a client (the agent-manager runs `AUTHENTICATION_METHOD=oidc`)
+- Provide `oidcClientId` and `oidcClientSecret`; optionally `oidcIssuer` (defaults to `OIDC_ISSUER`) and `oidcScope`
+- A per-client issuer other than `OIDC_ISSUER` (and its discovered token endpoint) must pass the client endpoint SSRF policy
+- The system fetches an access token using the OAuth 2.0 client credentials grant
 - Tokens are cached and automatically refreshed when expired
 - The JWT token is used in the `Authorization: Bearer <jwt-token>` header when proxying requests
 
 ### WebSocket Gateway
 
-The WebSocket gateway authenticates with remote agent-manager services using the client's configured authentication method (API key or Keycloak JWT). When forwarding events with an `agentId`, the gateway automatically logs in the agent using stored credentials.
+The WebSocket gateway authenticates with remote agent-manager services using the client's configured authentication method (API key or OIDC access token). When forwarding events with an `agentId`, the gateway automatically logs in the agent using stored credentials.
 
 ## Dependencies
 
@@ -636,7 +639,7 @@ This library requires the following dependencies:
 - `@nestjs/websockets` - WebSocket support for NestJS
 - `socket.io` - WebSocket library
 - `socket.io-client` - Socket.IO client for connecting to remote agent-manager WebSocket endpoints
-- `nest-keycloak-connect` - Keycloak integration for NestJS
+- `@forepath/identity/backend` - OIDC / SAML / users authentication (`jsonwebtoken`, `@node-saml/node-saml`)
 - `axios` - HTTP client for proxying requests to remote agent-manager services
 
 ## Database Setup
@@ -653,11 +656,12 @@ The `ClientEntity` includes:
 - `name` (string, required, unique)
 - `description` (string, optional)
 - `endpoint` (string, required - URL of remote agent-manager service)
-- `authenticationType` (enum: `API_KEY` or `KEYCLOAK`)
+- `authenticationType` (enum: `api_key` or `oidc`)
 - `apiKey` (string, optional - for API_KEY authentication)
-- `keycloakClientId` (string, optional - for KEYCLOAK authentication)
-- `keycloakClientSecret` (string, optional - for KEYCLOAK authentication)
-- `keycloakRealm` (string, optional - for KEYCLOAK authentication)
+- `oidcClientId` (string, optional - for OIDC authentication)
+- `oidcClientSecret` (string, optional, encrypted at rest - for OIDC authentication)
+- `oidcIssuer` (string, optional - for OIDC authentication; null → `OIDC_ISSUER`)
+- `oidcScope` (string, optional - for OIDC authentication)
 - `createdAt` (timestamp)
 - `updatedAt` (timestamp)
 
@@ -688,11 +692,11 @@ nx test agenstra-backend-feature-agent-controller --coverage
 ## Security Considerations
 
 - **API Key Security**: API keys are auto-generated using cryptographically secure random bytes
-- **Sensitive Data**: API keys, Keycloak secrets, and agent passwords are never exposed in standard API responses
+- **Sensitive Data**: API keys, OIDC client secrets, and agent passwords are never exposed in standard API responses
 - **Input Validation**: All DTOs use class-validator for input validation
-- **HTTP Authentication**: All HTTP endpoints are protected by Keycloak
-- **WebSocket Authentication**: WebSocket authentication uses client's configured authentication method (API key or Keycloak JWT)
-- **Token Caching**: Keycloak tokens are cached with expiration tracking to minimize token requests
+- **HTTP Authentication**: All HTTP endpoints are protected by the configured authentication method (OIDC by default)
+- **WebSocket Authentication**: WebSocket authentication uses client's configured authentication method (API key or OIDC access token)
+- **Token Caching**: Client credentials tokens are cached with expiration tracking to minimize token requests
 - **Credential Storage**: Agent credentials are stored securely in the database for WebSocket auto-login
 - **Error Messages**: Generic error messages are used to prevent information disclosure
 - **Session Management**: WebSocket sessions are stored in memory and cleaned up on disconnect
@@ -701,9 +705,9 @@ nx test agenstra-backend-feature-agent-controller --coverage
 
 ### Backend API Environment Variables
 
-- `AUTHENTICATION_METHOD` - Authentication method: `api-key`, `keycloak`, or `users` (default: inferred from `STATIC_API_KEY`)
+- `AUTHENTICATION_METHOD` - Authentication method: `api-key`, `users`, `oidc`, or `saml` (default: inferred from `STATIC_API_KEY`: api-key if set, else oidc)
 - `STATIC_API_KEY` - Static API key (required when `AUTHENTICATION_METHOD=api-key`)
-- `JWT_SECRET` - JWT signing secret (required when `AUTHENTICATION_METHOD=users`)
+- `JWT_SECRET` - JWT signing secret (required when `AUTHENTICATION_METHOD=users`, `oidc` or `saml`)
 - `DISABLE_FORCE_LOGIN_2FA` - When `true`, login 2FA is opt-in only (default: `false`, force email OTP / TOTP)
 - `PRODUCT_NAME` - TOTP issuer label in authenticator apps (default: `Forepath`)
 - `WEBSOCKET_NAMESPACE` - Clients namespace (default: `socket/clients`)
@@ -711,10 +715,8 @@ nx test agenstra-backend-feature-agent-controller --coverage
 - `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge namespace (default: `socket/pages`)
 - `STATUS_WEBSOCKET_NAMESPACE` - Status namespace (default: `socket/status`)
 - **Migration:** `WEBSOCKET_PORT` and `CLIENTS_REMOTE_WS_PORT` removed; re-provision existing stacks
-- `KEYCLOAK_AUTH_SERVER_URL` - Keycloak server URL (required when `AUTHENTICATION_METHOD=keycloak`)
-- `KEYCLOAK_REALM` - Keycloak realm (required when `AUTHENTICATION_METHOD=keycloak`)
-- `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required when `AUTHENTICATION_METHOD=keycloak`)
-- `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required when `AUTHENTICATION_METHOD=keycloak`)
+- `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_TOKEN_VALIDATION`, `OIDC_AUDIENCE`, `OIDC_AUTHORIZED_PARTIES` - OIDC mode (`OIDC_ISSUER` is also the default issuer of `oidc` clients)
+- `SAML_IDP_SSO_URL`, `SAML_IDP_CERT`, `SAML_IDP_ISSUER`, `SAML_SP_ENTITY_ID`, `SAML_SP_ACS_URL`, `SAML_FRONTEND_CALLBACK_URL` - SAML mode (see the Authentication docs)
 
 ### Provisioning Provider Environment Variables
 

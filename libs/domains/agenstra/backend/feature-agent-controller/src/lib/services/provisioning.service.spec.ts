@@ -139,6 +139,34 @@ describe('ProvisioningService', () => {
       authenticationType: AuthenticationType.API_KEY,
     };
 
+    it('should emit STATIC_API_KEY and GIT_* values JSON-quoted on one line (no YAML / heredoc / compose injection)', async () => {
+      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
+      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
+      mockClientsService.create.mockResolvedValue(mockClient);
+      mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
+
+      await service.provisionServer({
+        ...provisionDto,
+        apiKey: 'k$ey\nDOCKER_COMPOSE_EOF\nINJECTED: 1',
+        gitRepositoryUrl: 'https://git.example.com/r.git',
+        gitToken: 't${HOME}',
+        gitPrivateKey: '-----BEGIN KEY-----\nabc\n-----END KEY-----',
+      });
+
+      const userData = Buffer.from(
+        (mockProvider.provisionServer as jest.Mock).mock.calls[0][0].userData,
+        'base64',
+      ).toString('utf-8');
+      const lines = userData.split('\n').map((line) => line.trim());
+
+      expect(lines).toContain('STATIC_API_KEY: "k$$ey\\nDOCKER_COMPOSE_EOF\\nINJECTED: 1"');
+      expect(lines).toContain('GIT_TOKEN: "t$${HOME}"');
+      expect(lines).toContain('GIT_PRIVATE_KEY: "-----BEGIN KEY-----\\nabc\\n-----END KEY-----"');
+      expect(lines.filter((line) => line === 'DOCKER_COMPOSE_EOF')).toHaveLength(1);
+      expect(lines.some((line) => line.startsWith('INJECTED:'))).toBe(false);
+    });
+
     it('should provision a server with API_KEY authentication and create client', async () => {
       mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
       mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
@@ -195,43 +223,121 @@ describe('ProvisioningService', () => {
       );
     });
 
-    it('should provision a server with KEYCLOAK authentication', async () => {
-      const keycloakDto: ProvisionServerDto = {
-        ...provisionDto,
-        authenticationType: AuthenticationType.KEYCLOAK,
-        keycloakClientId: 'keycloak-client-id',
-        keycloakClientSecret: 'keycloak-client-secret',
-        keycloakRealm: 'test-realm',
+    describe('with OIDC authentication', () => {
+      const originalIssuer = process.env.OIDC_ISSUER;
+
+      afterEach(() => {
+        if (originalIssuer === undefined) {
+          delete process.env.OIDC_ISSUER;
+        } else {
+          process.env.OIDC_ISSUER = originalIssuer;
+        }
+      });
+
+      const provisionOidc = async (dto: ProvisionServerDto): Promise<string> => {
+        mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
+        mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+        (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
+        mockClientsService.create.mockResolvedValue({
+          ...mockClient,
+          authenticationType: AuthenticationType.OIDC,
+          apiKey: undefined,
+        });
+        mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
+
+        await service.provisionServer(dto);
+
+        const provisionCall = (mockProvider.provisionServer as jest.Mock).mock.calls[0][0];
+
+        return Buffer.from(provisionCall.userData, 'base64').toString('utf-8');
       };
-      const keycloakClient: ClientEntity = {
-        ...mockClient,
-        authenticationType: AuthenticationType.KEYCLOAK,
-        keycloakClientId: 'keycloak-client-id',
-        keycloakClientSecret: 'keycloak-client-secret',
-        keycloakRealm: 'test-realm',
-        apiKey: undefined,
-      };
 
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
-      (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
-      mockClientsService.create.mockResolvedValue(keycloakClient);
-      mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
+      it('should provision a server with OIDC authentication', async () => {
+        process.env.OIDC_ISSUER = 'https://idp.example.com/realms/test';
 
-      const result = await service.provisionServer(keycloakDto);
+        const userData = await provisionOidc({
+          ...provisionDto,
+          authenticationType: AuthenticationType.OIDC,
+          oidcClientId: 'oidc-client-id',
+          oidcClientSecret: 'oidc-client-secret',
+        });
 
-      expect(result.authenticationType).toBe(AuthenticationType.KEYCLOAK);
-      expect(mockClientsService.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          authenticationType: AuthenticationType.KEYCLOAK,
-          keycloakClientId: 'keycloak-client-id',
-          keycloakClientSecret: 'keycloak-client-secret',
-          keycloakRealm: 'test-realm',
-        }),
-        undefined,
-        undefined,
-        false,
-      );
+        expect(userData).toContain('AUTHENTICATION_METHOD: oidc');
+        expect(userData).toContain('OIDC_ISSUER: "https://idp.example.com/realms/test"');
+        // OFFLINE validation pinned to the controller's own client; the manager never receives the client secret.
+        expect(userData).toContain('OIDC_TOKEN_VALIDATION: OFFLINE');
+        expect(userData).toContain('OIDC_AUTHORIZED_PARTIES: "oidc-client-id"');
+        expect(userData).not.toContain('OIDC_CLIENT_SECRET');
+        expect(userData).not.toContain('oidc-client-secret');
+        expect(userData).not.toContain('KEYCLOAK_');
+        expect(userData).not.toContain('STATIC_API_KEY:');
+        expect(mockClientsService.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            authenticationType: AuthenticationType.OIDC,
+            oidcClientId: 'oidc-client-id',
+            oidcClientSecret: 'oidc-client-secret',
+          }),
+          undefined,
+          undefined,
+          false,
+        );
+      });
+
+      it('should prefer the per-provision issuer over OIDC_ISSUER', async () => {
+        process.env.OIDC_ISSUER = 'https://idp.example.com/realms/test';
+
+        const userData = await provisionOidc({
+          ...provisionDto,
+          authenticationType: AuthenticationType.OIDC,
+          oidcClientId: 'oidc-client-id',
+          oidcClientSecret: 'oidc-client-secret',
+          oidcIssuer: 'https://other-idp.example.org/realms/x',
+        });
+
+        expect(userData).toContain('OIDC_ISSUER: "https://other-idp.example.org/realms/x"');
+      });
+
+      it('should emit values as single-line JSON-quoted values with escaped compose interpolation', async () => {
+        process.env.OIDC_ISSUER = 'https://idp.example.com/realms/test';
+
+        const userData = await provisionOidc({
+          ...provisionDto,
+          authenticationType: AuthenticationType.OIDC,
+          oidcClientId: 'a$b"c\nDOCKER_COMPOSE_EOF\nINJECTED: x',
+          oidcClientSecret: 'oidc-client-secret',
+        });
+        const lines = userData.split('\n').filter((line) => line.includes('OIDC_AUTHORIZED_PARTIES:'));
+
+        expect(lines).toHaveLength(1);
+        expect(lines[0].trim()).toBe('OIDC_AUTHORIZED_PARTIES: "a$$b\\"c\\nDOCKER_COMPOSE_EOF\\nINJECTED: x"');
+        expect(userData.split('\n').some((line) => line.trim().startsWith('INJECTED:'))).toBe(false);
+        expect(userData.split('\n').filter((line) => line.trim() === 'DOCKER_COMPOSE_EOF')).toHaveLength(1);
+      });
+
+      it('should reject OIDC provisioning without credentials', async () => {
+        process.env.OIDC_ISSUER = 'https://idp.example.com/realms/test';
+        mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
+        mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+
+        await expect(
+          service.provisionServer({ ...provisionDto, authenticationType: AuthenticationType.OIDC }),
+        ).rejects.toThrow('OIDC client ID and secret are required for OIDC authentication type');
+      });
+
+      it('should reject OIDC provisioning when no issuer is configured', async () => {
+        delete process.env.OIDC_ISSUER;
+        mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
+        mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+
+        await expect(
+          service.provisionServer({
+            ...provisionDto,
+            authenticationType: AuthenticationType.OIDC,
+            oidcClientId: 'oidc-client-id',
+            oidcClientSecret: 'oidc-client-secret',
+          }),
+        ).rejects.toThrow('OIDC issuer is required because OIDC_ISSUER is not configured on the controller');
+      });
     });
 
     it('should emit GIT_REPOSITORY_SETUP_MODE for empty git provisioning and omit clone credentials', async () => {

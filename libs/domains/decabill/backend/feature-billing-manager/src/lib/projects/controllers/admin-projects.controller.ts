@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -36,7 +36,6 @@ import type {
 import { ProjectsAdminService } from '../services/projects-admin.service';
 
 @Controller('admin/billing/projects')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 export class AdminProjectsController {
   constructor(private readonly projectsAdminService: ProjectsAdminService) {}

@@ -257,7 +257,7 @@ paths:
         Returns models reported by the agent's provider (e.g. by running the provider's list-models
         command in the agent container when a container exists). The response is an empty object if
         the container is missing, stopped, or the command fails. Requires the same authentication as
-        other agent manager HTTP endpoints (Bearer / Keycloak or configured static API key).
+        other agent manager HTTP endpoints (Bearer OIDC access token or configured static API key).
       parameters:
         - in: path
           name: id

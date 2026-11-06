@@ -62,7 +62,7 @@ Job names are defined in `apps/decabill/backend-billing-manager/src/queue/job-re
 
 - **Network tab**: Monitor API calls, WebSocket upgrade, Stripe redirects
 - **Console tab**: CSP violations, Angular errors
-- **Application tab**: Storage and cookies for Keycloak sessions
+- **Application tab**: Session storage for OIDC sessions, local storage for users / SAML session tokens
 
 ### Docker Debugging
 

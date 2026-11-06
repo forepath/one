@@ -74,7 +74,7 @@ const DECABILL_TOOLTIPS: readonly string[] = [
   $localize`:@@featureDecabillComparison-decabillT9:WebSocket-powered dashboards stream live provisioning and subscription status into operator and customer views.`,
   $localize`:@@featureDecabillComparison-decabillT10:Structured ZUGFeRD and EN 16931 invoices plus export posture aimed at German DATEV-style workflows and long-term e-archive requirements.`,
   $localize`:@@featureDecabillComparison-decabillT11:Stripe Checkout and webhook integration combined with pluggable payment providers so operators can keep their own PSP relationships.`,
-  $localize`:@@featureDecabillComparison-decabillT12:Supports Keycloak with OIDC and SAML plus built-in users and API-key based automation for agency and enterprise setups.`,
+  $localize`:@@featureDecabillComparison-decabillT12:Supports any OIDC or SAML identity provider plus built-in users and API-key based automation for agency and enterprise setups.`,
   $localize`:@@featureDecabillComparison-decabillT13:OpenAPI-described REST API for customers, subscriptions, invoices, and admin workflows enables deep integration without scraping UIs.`,
 ];
 

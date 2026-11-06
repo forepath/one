@@ -62,6 +62,7 @@ import {
   buildPlanOrderAddonConfigs,
   buildPlanOrderRequestedConfig,
   createDefaultIntegratedOrderConfig,
+  isOrderAuthMethodSupported,
   type IntegratedOrderFormConfig,
 } from './plan-order-requested-config.util';
 import { formatBillingMoney } from '../billing-format';
@@ -133,7 +134,7 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
   customOrderFieldsError = false;
 
   integratedConfig: IntegratedOrderFormConfig = createDefaultIntegratedOrderConfig();
-  authMethod = signal<'users' | 'api-key' | 'keycloak'>('users');
+  authMethod = signal<IntegratedOrderFormConfig['authenticationMethod']>('users');
 
   readonly pricingPreview = signal<PricingPreviewResponse | null>(null);
   pricingLoading = false;
@@ -375,7 +376,10 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
   onServiceChange(value: IntegratedOrderFormConfig['service']): void {
     this.integratedConfig = { ...this.integratedConfig, service: value };
 
-    if (value === 'agenstra-manager' && this.integratedConfig.authenticationMethod === 'users') {
+    if (
+      value === 'agenstra-manager' &&
+      !isOrderAuthMethodSupported('agenstra-manager', this.integratedConfig.authenticationMethod)
+    ) {
       this.integratedConfig = { ...this.integratedConfig, authenticationMethod: 'api-key' };
       this.authMethod.set('api-key');
     }
@@ -560,7 +564,8 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
   private mergeIntegratedConfigFromSnapshot(config: Record<string, unknown>): IntegratedOrderFormConfig {
     const defaults = createDefaultIntegratedOrderConfig();
     const smtp = config['smtp'];
-    const keycloak = config['keycloak'];
+    const oidc = config['oidc'];
+    const saml = config['saml'];
     const git = config['git'];
 
     return {
@@ -575,10 +580,14 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
         smtp && typeof smtp === 'object' && !Array.isArray(smtp)
           ? { ...defaults.smtp, ...(smtp as Partial<IntegratedOrderFormConfig['smtp']>) }
           : defaults.smtp,
-      keycloak:
-        keycloak && typeof keycloak === 'object' && !Array.isArray(keycloak)
-          ? { ...defaults.keycloak, ...(keycloak as Partial<IntegratedOrderFormConfig['keycloak']>) }
-          : defaults.keycloak,
+      oidc:
+        oidc && typeof oidc === 'object' && !Array.isArray(oidc)
+          ? { ...defaults.oidc, ...(oidc as Partial<IntegratedOrderFormConfig['oidc']>) }
+          : defaults.oidc,
+      saml:
+        saml && typeof saml === 'object' && !Array.isArray(saml)
+          ? { ...defaults.saml, ...(saml as Partial<IntegratedOrderFormConfig['saml']>) }
+          : defaults.saml,
       hetznerApiToken:
         typeof config['hetznerApiToken'] === 'string' ? config['hetznerApiToken'] : defaults.hetznerApiToken,
       digitaloceanApiToken:
@@ -752,7 +761,10 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
         service: option.service,
       };
 
-      if (option.service === 'agenstra-manager' && this.integratedConfig.authenticationMethod === 'users') {
+      if (
+        option.service === 'agenstra-manager' &&
+        !isOrderAuthMethodSupported('agenstra-manager', this.integratedConfig.authenticationMethod)
+      ) {
         this.integratedConfig = { ...this.integratedConfig, authenticationMethod: 'api-key' };
         this.authMethod.set('api-key');
       }

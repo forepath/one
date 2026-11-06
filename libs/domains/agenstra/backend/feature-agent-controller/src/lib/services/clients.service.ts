@@ -7,7 +7,8 @@ import {
   checkClientAccess,
   ClientEntity,
   ClientUsersRepository,
-  KeycloakTokenService,
+  getAuthenticationMethod,
+  OidcClientCredentialsService,
   UserRole,
 } from '@forepath/identity/backend';
 import {
@@ -26,6 +27,7 @@ import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { createPublicAddressLookup, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
@@ -38,7 +40,7 @@ import { StatisticsService } from './statistics.service';
 
 /**
  * Service for client business logic operations.
- * Orchestrates repository operations, API key generation, and Keycloak token management.
+ * Orchestrates repository operations, API key generation, and OIDC client credentials token management.
  */
 @Injectable()
 export class ClientsService {
@@ -47,7 +49,7 @@ export class ClientsService {
 
   constructor(
     private readonly clientsRepository: ClientsRepository,
-    private readonly keycloakTokenService: KeycloakTokenService,
+    private readonly oidcClientCredentialsService: OidcClientCredentialsService,
     @Inject(forwardRef(() => ClientAgentProxyService))
     private readonly clientAgentProxyService: ClientAgentProxyService,
     private readonly provisioningReferencesRepository: ProvisioningReferencesRepository,
@@ -99,9 +101,8 @@ export class ClientsService {
    * @returns True if api-key mode is active
    */
   private isApiKeyMode(): boolean {
-    const authMethod = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
-
-    return authMethod === 'api-key' || (authMethod === undefined && !!process.env.STATIC_API_KEY);
+    // Same resolution as the guards (an empty AUTHENTICATION_METHOD from compose `${VAR:-}` counts as unset).
+    return getAuthenticationMethod() === 'api-key';
   }
 
   /**
@@ -124,13 +125,13 @@ export class ClientsService {
       throw new BadRequestException(`Client with name '${createClientDto.name}' already exists`);
     }
 
-    // Validate Keycloak credentials if authentication type is KEYCLOAK
-    if (createClientDto.authenticationType === AuthenticationType.KEYCLOAK) {
-      if (!createClientDto.keycloakClientId || !createClientDto.keycloakClientSecret) {
-        throw new BadRequestException(
-          'Keycloak client ID and client secret are required for KEYCLOAK authentication type',
-        );
+    // Validate OIDC client credentials if authentication type is OIDC
+    if (createClientDto.authenticationType === AuthenticationType.OIDC) {
+      if (!createClientDto.oidcClientId || !createClientDto.oidcClientSecret) {
+        throw new BadRequestException('OIDC client ID and client secret are required for OIDC authentication type');
       }
+
+      await this.assertOidcIssuerUsable(createClientDto.oidcIssuer);
     }
 
     // Use provided API key or generate one for API_KEY authentication type
@@ -147,9 +148,10 @@ export class ClientsService {
       endpoint: createClientDto.endpoint,
       authenticationType: createClientDto.authenticationType,
       apiKey,
-      keycloakClientId: createClientDto.keycloakClientId,
-      keycloakClientSecret: createClientDto.keycloakClientSecret,
-      keycloakRealm: createClientDto.keycloakRealm,
+      oidcClientId: createClientDto.oidcClientId,
+      oidcClientSecret: createClientDto.oidcClientSecret,
+      oidcIssuer: createClientDto.oidcIssuer?.trim() || null,
+      oidcScope: createClientDto.oidcScope?.trim() || null,
       userId: userId ?? null,
     });
     const response = await this.mapToResponseDto(client, { userId, userRole, isApiKeyAuth });
@@ -399,56 +401,61 @@ export class ClientsService {
       }
     }
 
-    // If authentication type is being changed to KEYCLOAK, validate credentials
-    if (updateClientDto.authenticationType === AuthenticationType.KEYCLOAK) {
-      const existingClient = await this.clientsRepository.findById(id);
-      const isChangingToKeycloak = existingClient?.authenticationType !== AuthenticationType.KEYCLOAK;
+    const clientBeforeUpdate = await this.clientsRepository.findById(id);
 
-      // If changing to KEYCLOAK type, credentials are required
-      if (isChangingToKeycloak) {
-        if (!updateClientDto.keycloakClientId || !updateClientDto.keycloakClientSecret) {
+    // If authentication type is OIDC (new or kept), validate credentials
+    if (
+      updateClientDto.authenticationType === AuthenticationType.OIDC ||
+      (updateClientDto.authenticationType === undefined &&
+        clientBeforeUpdate?.authenticationType === AuthenticationType.OIDC)
+    ) {
+      const isChangingToOidc = clientBeforeUpdate?.authenticationType !== AuthenticationType.OIDC;
+
+      if (isChangingToOidc) {
+        // Changing to OIDC: credentials are required
+        if (!updateClientDto.oidcClientId || !updateClientDto.oidcClientSecret) {
           throw new BadRequestException(
-            'Keycloak client ID and client secret are required when changing authentication type to KEYCLOAK',
+            'OIDC client ID and client secret are required when changing authentication type to OIDC',
           );
         }
-      } else {
-        // If already KEYCLOAK and credentials are being updated, both must be provided
-        if (
-          (updateClientDto.keycloakClientId !== undefined || updateClientDto.keycloakClientSecret !== undefined) &&
-          (!updateClientDto.keycloakClientId || !updateClientDto.keycloakClientSecret)
-        ) {
-          throw new BadRequestException(
-            'Keycloak client ID and client secret must both be provided when updating credentials',
-          );
-        }
+      } else if (
+        (updateClientDto.oidcClientId !== undefined || updateClientDto.oidcClientSecret !== undefined) &&
+        (!updateClientDto.oidcClientId || !updateClientDto.oidcClientSecret)
+      ) {
+        // Already OIDC and credentials are being updated: both must be provided
+        throw new BadRequestException(
+          'OIDC client ID and client secret must both be provided when updating credentials',
+        );
+      }
+
+      if (updateClientDto.oidcIssuer !== undefined) {
+        await this.assertOidcIssuerUsable(updateClientDto.oidcIssuer);
       }
     }
 
-    // Prepare update data (including API key and Keycloak credentials if provided)
+    // Prepare update data (including API key and OIDC credentials if provided)
     const updateData: Partial<ClientEntity> = {
       name: updateClientDto.name,
       description: updateClientDto.description,
       endpoint: updateClientDto.endpoint,
       authenticationType: updateClientDto.authenticationType,
       apiKey: updateClientDto.apiKey,
-      keycloakClientId: updateClientDto.keycloakClientId,
-      keycloakClientSecret: updateClientDto.keycloakClientSecret,
-      keycloakRealm: updateClientDto.keycloakRealm,
+      oidcClientId: updateClientDto.oidcClientId,
+      oidcClientSecret: updateClientDto.oidcClientSecret,
+      oidcIssuer: updateClientDto.oidcIssuer === undefined ? undefined : updateClientDto.oidcIssuer.trim() || null,
+      oidcScope: updateClientDto.oidcScope === undefined ? undefined : updateClientDto.oidcScope.trim() || null,
     };
 
-    // If Keycloak credentials are being updated, clear the token cache
-    if (updateClientDto.keycloakClientId || updateClientDto.keycloakClientSecret || updateClientDto.keycloakRealm) {
-      const existingClient = await this.clientsRepository.findById(id);
-
-      if (existingClient) {
-        const authServerUrl = process.env.KEYCLOAK_AUTH_SERVER_URL || '';
-        const realm = updateClientDto.keycloakRealm || existingClient.keycloakRealm || process.env.KEYCLOAK_REALM || '';
-        const clientId = updateClientDto.keycloakClientId || existingClient.keycloakClientId || '';
-
-        if (authServerUrl && realm && clientId) {
-          this.keycloakTokenService.clearCache(authServerUrl, realm, clientId);
-        }
-      }
+    // If OIDC credentials or provider settings change, drop cached tokens of the old configuration
+    if (
+      clientBeforeUpdate?.oidcClientId &&
+      (updateClientDto.oidcClientId !== undefined ||
+        updateClientDto.oidcClientSecret !== undefined ||
+        updateClientDto.oidcIssuer !== undefined ||
+        updateClientDto.oidcScope !== undefined ||
+        updateClientDto.authenticationType !== undefined)
+    ) {
+      this.clearOidcTokenCache(clientBeforeUpdate);
     }
 
     // Remove undefined fields
@@ -501,13 +508,9 @@ export class ClientsService {
       );
     }
 
-    // Clear token cache if it's a Keycloak client
-    if (client.authenticationType === AuthenticationType.KEYCLOAK && client.keycloakClientId && client.keycloakRealm) {
-      const authServerUrl = process.env.KEYCLOAK_AUTH_SERVER_URL || '';
-
-      if (authServerUrl) {
-        this.keycloakTokenService.clearCache(authServerUrl, client.keycloakRealm, client.keycloakClientId);
-      }
+    // Clear token cache if it's an OIDC client
+    if (client.authenticationType === AuthenticationType.OIDC && client.oidcClientId) {
+      this.clearOidcTokenCache(client);
     }
 
     this.statisticsService
@@ -556,41 +559,88 @@ export class ClientsService {
   }
 
   /**
-   * Get a JWT access token for a client using Keycloak client credentials flow.
+   * Get an access token for a client using the OAuth 2.0 client credentials grant (any OpenID provider).
    * @param clientId - The UUID of the client
-   * @returns JWT access token
-   * @throws BadRequestException if client is not configured for Keycloak authentication
+   * @returns Access token for the client's agent-manager (`AUTHENTICATION_METHOD=oidc`)
+   * @throws BadRequestException if client is not configured for OIDC authentication
    * @throws NotFoundException if client is not found
    */
   async getAccessToken(clientId: string): Promise<string> {
     const client = await this.clientsRepository.findByIdOrThrow(clientId);
 
-    if (client.authenticationType !== AuthenticationType.KEYCLOAK) {
-      throw new BadRequestException('Client is not configured for Keycloak authentication');
+    if (client.authenticationType !== AuthenticationType.OIDC) {
+      throw new BadRequestException('Client is not configured for OIDC authentication');
     }
 
-    if (!client.keycloakClientId || !client.keycloakClientSecret) {
-      throw new BadRequestException('Keycloak client credentials are not configured for this client');
+    if (!client.oidcClientId || !client.oidcClientSecret) {
+      throw new BadRequestException('OIDC client credentials are not configured for this client');
     }
 
-    const authServerUrl = process.env.KEYCLOAK_AUTH_SERVER_URL;
+    const issuer = this.resolveOidcIssuer(client);
 
-    if (!authServerUrl) {
-      throw new BadRequestException('KEYCLOAK_AUTH_SERVER_URL environment variable is not set');
+    if (!issuer) {
+      throw new BadRequestException('OIDC issuer is not configured for this client and OIDC_ISSUER is not set');
     }
 
-    const realm = client.keycloakRealm || process.env.KEYCLOAK_REALM;
+    return await this.oidcClientCredentialsService.getAccessToken({
+      issuer,
+      clientId: client.oidcClientId,
+      clientSecret: client.oidcClientSecret,
+      scope: client.oidcScope ?? undefined,
+      // Per-client issuers are user supplied: same SSRF policy as client endpoints (operator-set OIDC_ISSUER is trusted).
+      assertUrlAllowed: this.isTrustedOidcIssuer(issuer)
+        ? undefined
+        : async (url) => {
+            await validateClientEndpointWithDnsOrThrow(url);
+          },
+      // Pin the connection to a validated public address (no DNS rebinding between check and request).
+      lookup: this.isTrustedOidcIssuer(issuer) ? undefined : createPublicAddressLookup(),
+    });
+  }
 
-    if (!realm) {
-      throw new BadRequestException('Keycloak realm is not configured for this client and KEYCLOAK_REALM is not set');
+  private resolveOidcIssuer(client: Pick<ClientEntity, 'oidcIssuer'>): string | undefined {
+    return client.oidcIssuer?.trim() || process.env.OIDC_ISSUER?.trim() || undefined;
+  }
+
+  /**
+   * Operator-configured issuers are trusted (no client-endpoint SSRF policy): the controller's own `OIDC_ISSUER` and
+   * `OIDC_TRUSTED_CLIENT_ISSUERS` (comma-separated, e.g. an internal `http://keycloak:8080/realms/x`). Issuers entered
+   * by users for a client are only reachable under the client-endpoint SSRF policy.
+   */
+  private isTrustedOidcIssuer(issuer: string): boolean {
+    const normalize = (value: string) => value.trim().replace(/\/+$/, '');
+    const trusted = [process.env.OIDC_ISSUER ?? '', ...(process.env.OIDC_TRUSTED_CLIENT_ISSUERS ?? '').split(',')]
+      .map(normalize)
+      .filter((value) => value.length > 0);
+
+    return trusted.includes(normalize(issuer));
+  }
+
+  /** Rejects per-client issuers that violate the client endpoint SSRF policy; requires some issuer to exist. */
+  private async assertOidcIssuerUsable(oidcIssuer: string | undefined): Promise<void> {
+    const issuer = oidcIssuer?.trim();
+
+    if (!issuer) {
+      if (!process.env.OIDC_ISSUER?.trim()) {
+        throw new BadRequestException(
+          'OIDC issuer is required because OIDC_ISSUER is not configured on the controller',
+        );
+      }
+
+      return;
     }
 
-    return await this.keycloakTokenService.getAccessToken(
-      authServerUrl,
-      realm,
-      client.keycloakClientId,
-      client.keycloakClientSecret,
-    );
+    if (!this.isTrustedOidcIssuer(issuer)) {
+      await validateClientEndpointWithDnsOrThrow(issuer);
+    }
+  }
+
+  private clearOidcTokenCache(client: Pick<ClientEntity, 'oidcIssuer' | 'oidcClientId'>): void {
+    const issuer = this.resolveOidcIssuer(client);
+
+    if (issuer && client.oidcClientId) {
+      this.oidcClientCredentialsService.clearCache(issuer, client.oidcClientId);
+    }
   }
 
   /**

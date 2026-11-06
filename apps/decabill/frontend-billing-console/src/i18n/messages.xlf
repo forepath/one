@@ -2936,32 +2936,11 @@
       <trans-unit id="featureSubscriptions-authApiKey" datatype="html">
         <source>API Key</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-authKeycloak" datatype="html">
-        <source>Keycloak</source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-disableSignup" datatype="html">
         <source>Disable signup</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-staticApiKey" datatype="html">
         <source>Static API key</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-keycloakSection" datatype="html">
-        <source>Keycloak</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-keycloakServerUrlLabel" datatype="html">
-        <source>Server URL</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-keycloakAuthServerUrlLabel" datatype="html">
-        <source>Auth server URL</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-keycloakRealmLabel" datatype="html">
-        <source>Realm</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-keycloakClientIdLabel" datatype="html">
-        <source>Client ID</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-keycloakClientSecretLabel" datatype="html">
-        <source>Client secret</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-smtpHostLabel" datatype="html">
         <source>SMTP host</source>
@@ -5270,17 +5249,11 @@
       <trans-unit id="identityLogoutConfirm-usersTitle" datatype="html">
         <source>Log out?</source>
         </trans-unit>
-      <trans-unit id="identityLogoutConfirm-keycloakTitle" datatype="html">
-        <source>Log out?</source>
-        </trans-unit>
       <trans-unit id="identityLogoutConfirm-defaultTitle" datatype="html">
         <source>Log out?</source>
         </trans-unit>
       <trans-unit id="identityLogoutConfirm-usersMessage" datatype="html">
         <source>You will be signed out of this browser only. Other devices and browsers will stay signed in unless you choose to sign out everywhere below.</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-keycloakMessage" datatype="html">
-        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
         </trans-unit>
       <trans-unit id="identityLogoutConfirm-defaultMessage" datatype="html">
         <source>Are you sure you want to log out?</source>
@@ -6779,6 +6752,90 @@
       <trans-unit id="featureAuth-authorizeAppPage" datatype="html">
         <source>Authorize app</source>
         </trans-unit>
+      <trans-unit id="identityLogoutConfirm-oidcTitle" datatype="html">
+        <source>Log out?</source>
+      </trans-unit>
+      <trans-unit id="identityLogoutConfirm-oidcMessage" datatype="html">
+        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
+      </trans-unit>
+      <trans-unit id="identityLogoutConfirm-samlMessage" datatype="html">
+        <source>You will be signed out of this browser only. Your single sign-on session at your identity provider stays active unless you sign out there.</source>
+      </trans-unit>
+      <trans-unit id="featureLogin-ssoFailed" datatype="html">
+        <source>Sign-in with your identity provider failed. Please try again or contact your administrator.</source>
+      </trans-unit>
+      <trans-unit id="featureLogin-ssoRedirecting" datatype="html">
+        <source>You are being redirected to your organization's sign-in page.</source>
+      </trans-unit>
+      <trans-unit id="featureLogin-ssoSubmit" datatype="html">
+        <source>Continue with single sign-on</source>
+      </trans-unit>
+      <trans-unit id="featureAuth-samlCallbackPage" datatype="html">
+        <source>Signing in</source>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-failedTitle" datatype="html">
+        <source>Sign-in failed</source>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-failedMessage" datatype="html">
+        <source>Single sign-on could not be completed. The sign-in link may have expired or was opened in another browser tab.</source>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-retry" datatype="html">
+        <source>Try again</source>
+      </trans-unit>
+      <trans-unit id="featureSamlCallback-signingIn" datatype="html">
+        <source>Signing you in…</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-authOidc" datatype="html">
+        <source>OpenID Connect</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-authSaml" datatype="html">
+        <source>SAML 2.0</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-oidcSection" datatype="html">
+        <source>OpenID Connect</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-samlSection" datatype="html">
+        <source>SAML 2.0</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-oidcIssuerLabel" datatype="html">
+        <source>Issuer</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-oidcClientIdLabel" datatype="html">
+        <source>Client ID (API)</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-oidcClientSecretLabel" datatype="html">
+        <source>Client secret</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-oidcAudienceLabel" datatype="html">
+        <source>Audience (optional)</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-oidcFrontendClientIdLabel" datatype="html">
+        <source>Console client ID (optional)</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-oidcFrontendClientIdHint" datatype="html">
+        <source>Public client used by the console; defaults to the API client ID.</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-samlIdpSsoUrlLabel" datatype="html">
+        <source>IdP sign-in URL</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-samlIdpCertLabel" datatype="html">
+        <source>IdP signing certificate (PEM)</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-samlIdpIssuerLabel" datatype="html">
+        <source>IdP entity ID (optional)</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-samlSpEntityIdLabel" datatype="html">
+        <source>SP entity ID (optional)</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-samlSpEntityIdHint" datatype="html">
+        <source>Defaults to the instance URL.</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-samlNameIdFormatLabel" datatype="html">
+        <source>NameID format (optional)</source>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-samlEmailAttributeLabel" datatype="html">
+        <source>Email attribute (optional)</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

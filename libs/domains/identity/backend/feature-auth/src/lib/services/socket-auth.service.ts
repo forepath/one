@@ -1,10 +1,16 @@
-import { getAuthenticationMethod, patScopeSatisfied, UserRole, websocketScope } from '@forepath/identity/backend';
+import {
+  getAuthenticationMethod,
+  OidcTokenVerifier,
+  patScopeSatisfied,
+  secretsEqual,
+  UserRole,
+  websocketScope,
+} from '@forepath/identity/backend';
 import type { SocketUserInfo } from '@forepath/identity/backend';
-import { DEFAULT_TENANT, getTenantIdOrDefault } from '@forepath/shared/backend';
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { DEFAULT_TENANT, getTenantIdOrDefault, runWithTenantId } from '@forepath/shared/backend';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE, TokenValidation } from 'nest-keycloak-connect';
 
 import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
@@ -14,23 +20,15 @@ import {
   normalizeMachineJwtAmr,
   resolveMachineJwtSession,
 } from '../utils/machine-jwt-session.util';
-import { assertUsersJwtSessionValid, UsersJwtSessionPayload } from '../utils/users-jwt-session.util';
+import {
+  assertUsersJwtSessionValid,
+  isInteractiveAmrAllowedForMethod,
+  UsersJwtSessionPayload,
+} from '../utils/users-jwt-session.util';
 
+import { ExternalIdentityService, parseEmailVerifiedClaim } from './external-identity.service';
 import { IdentityAppAuthorizationService } from './identity-app-authorization.service';
 import { PersonalAccessTokenService } from './personal-access-token.service';
-
-/** Minimal Keycloak interface for token validation */
-interface KeycloakInstance {
-  grantManager: {
-    createGrant: (p: { access_token: string }) => Promise<{ access_token: unknown }>;
-    validateAccessToken: (t: unknown) => Promise<unknown>;
-    validateToken: (t: unknown, type: string) => Promise<unknown>;
-  };
-}
-
-interface KeycloakConnectConfig {
-  tokenValidation?: TokenValidation;
-}
 
 export interface SocketAuthOptions {
   /**
@@ -45,22 +43,25 @@ export const SOCKET_MACHINE_JWT_VERIFIERS = 'IDENTITY_SOCKET_MACHINE_JWT_VERIFIE
 
 @Injectable()
 export class SocketAuthService {
-  private readonly logger = new Logger(SocketAuthService.name);
+  private readonly externalIdentityService: ExternalIdentityService;
 
   constructor(
-    @Optional() @Inject(KEYCLOAK_INSTANCE) private readonly keycloak: KeycloakInstance | null,
-    @Optional() @Inject(KEYCLOAK_CONNECT_OPTIONS) private readonly keycloakOpts: KeycloakConnectConfig | null,
+    @Optional() private readonly oidcVerifier: OidcTokenVerifier | null,
     @Optional() private readonly jwtService: JwtService | null,
     private readonly usersRepository: UsersRepository,
     @Optional() private readonly revokedUserTokensRepository: RevokedUserTokensRepository | null,
     @Optional() private readonly moduleRef?: ModuleRef | null,
     /** Explicit machine JWT verifiers (tests); otherwise resolved from the app's PatAuthModule. */
     @Optional() @Inject(SOCKET_MACHINE_JWT_VERIFIERS) private readonly machineVerifiers?: MachineJwtVerifiers | null,
-  ) {}
+    @Optional() externalIdentityService?: ExternalIdentityService | null,
+  ) {
+    // Same OIDC identity → local user mapping as the HTTP ExternalIdentityAuthGuard.
+    this.externalIdentityService = externalIdentityService ?? new ExternalIdentityService(usersRepository);
+  }
 
   /**
    * Validate Authorization header and return user info for client access checks.
-   * Uses same auth logic as HTTP: api-key, keycloak, or users (JWT).
+   * Uses same auth logic as HTTP: api-key, oidc (IdP access token), or users / saml (app session JWT).
    * Machine tokens (PAT / app access tokens) are only accepted with `options.websocket` and the matching
    * `websocket:<name>:read` scope; they carry live `scopes` that gateways enforce per event.
    */
@@ -85,11 +86,11 @@ export class SocketAuthService {
       return null;
     }
 
-    if (authMethod === 'keycloak' && this.keycloak) {
-      return this.validateKeycloakToken(token, tenantId, options);
+    if (authMethod === 'oidc' && this.oidcVerifier) {
+      return this.validateOidcToken(token, tenantId, options);
     }
 
-    if (authMethod === 'users' && this.jwtService) {
+    if ((authMethod === 'users' || authMethod === 'saml') && this.jwtService) {
       return await this.validateUsersToken(token, tenantId, options);
     }
 
@@ -111,7 +112,7 @@ export class SocketAuthService {
 
     const [scheme, providedKey] = parts;
 
-    if ((scheme === 'Bearer' || scheme === 'ApiKey') && providedKey === staticApiKey) {
+    if ((scheme === 'Bearer' || scheme === 'ApiKey') && secretsEqual(providedKey, staticApiKey)) {
       return {
         isApiKeyAuth: true,
         user: { id: 'api-key-user', roles: ['admin', 'user'] },
@@ -121,19 +122,19 @@ export class SocketAuthService {
     return null;
   }
 
-  private async validateKeycloakToken(
+  private async validateOidcToken(
     token: string,
     tenantId?: string,
     options?: SocketAuthOptions,
   ): Promise<SocketUserInfo | null> {
-    // App-signed machine JWTs (PAT / app access tokens) never reach Keycloak OIDC validation (same as PatBearerAuthGuard).
+    // App-signed machine JWTs (PAT / app access tokens) never reach OIDC validation (same as PatBearerAuthGuard).
     if (this.jwtService) {
       let appPayload: UsersJwtSessionPayload | undefined;
 
       try {
         appPayload = await this.jwtService.verifyAsync<UsersJwtSessionPayload>(token);
       } catch {
-        // Not an app-signed JWT — continue with Keycloak OIDC validation.
+        // Not an app-signed JWT — continue with OIDC validation.
       }
 
       if (appPayload && isMachineJwtAmr(appPayload.amr)) {
@@ -141,85 +142,38 @@ export class SocketAuthService {
       }
     }
 
-    // Use exact same validation logic as HTTP AuthGuard from nest-keycloak-connect
-    const tokenValidation = this.keycloakOpts?.tokenValidation || TokenValidation.ONLINE;
-    const gm = this.keycloak!.grantManager;
-    let grant: { access_token: unknown };
-
     try {
-      // Step 1: Create grant (validates token structure)
-      grant = await gm.createGrant({ access_token: token });
-    } catch (ex) {
-      // It will fail to create grants on invalid access token (i.e expired or wrong domain)
-      return null;
-    }
+      // Same verification as the HTTP OidcAuthGuard (signature, issuer, expiry, audience/azp, introspection).
+      const claims = await this.oidcVerifier!.verifyAccessToken(token);
+      // Socket.IO middleware runs before the tenant is bound to AsyncLocalStorage: resolve (and possibly create /
+      // link) the user explicitly in the socket's tenant, never in an implicit default.
+      const socketTenantId = tenantId ?? getTenantIdOrDefault();
+      const user = await runWithTenantId(socketTenantId, () =>
+        this.externalIdentityService.resolveUser({
+          provider: 'oidc',
+          subject: claims.sub,
+          email: this.oidcVerifier!.getEmail(claims),
+          emailVerified: parseEmailVerifiedClaim(claims.email_verified),
+        }),
+      );
 
-    const accessToken = grant.access_token;
-
-    this.logger.debug(`Using token validation method: ${tokenValidation.toUpperCase()}`);
-
-    try {
-      // Step 2: Validate token based on tokenValidation setting (same as HTTP AuthGuard)
-      let result: boolean | unknown;
-
-      switch (tokenValidation) {
-        case TokenValidation.ONLINE:
-          result = await gm.validateAccessToken(accessToken);
-
-          // validateAccessToken returns the token if valid, or false if invalid
-          if (result !== accessToken) {
-            return null;
-          }
-
-          break;
-        case TokenValidation.OFFLINE:
-          result = await gm.validateToken(accessToken, 'Bearer');
-
-          // validateToken returns the token if valid
-          if (result !== accessToken) {
-            return null;
-          }
-
-          break;
-        case TokenValidation.NONE:
-          // No validation, just trust the token
-          break;
-        default:
-          return null;
-      }
-
-      // Token is valid, parse payload
-      const payload = this.parseJwtPayload(token);
-
-      if (!payload.sub) {
+      if (!this.userMatchesTenant(user, tenantId)) {
         return null;
       }
 
-      const roles = payload.realm_access?.roles ?? [];
-      const isAdmin = roles.includes('admin') || roles.includes('realm-admin');
-      // Resolve Keycloak sub to our users table id for client_users lookups
-      let userId = payload.sub;
-      const syncedUser = await this.usersRepository.findByKeycloakSub(payload.sub);
+      const amr = ['oidc'];
 
-      if (syncedUser) {
-        if (syncedUser.lockedAt) {
-          return null;
-        }
-
-        if (!this.userMatchesTenant(syncedUser, tenantId)) {
-          return null;
-        }
-
-        userId = syncedUser.id;
-      }
-
+      // Role from the local users table (as on HTTP), never from IdP role claims.
       return {
-        userId,
-        userRole: isAdmin ? UserRole.ADMIN : UserRole.USER,
+        userId: user.id,
+        userRole: user.role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.USER,
         isApiKeyAuth: false,
+        amr,
         user: {
-          id: userId,
-          roles: roles,
+          id: user.id,
+          email: user.email,
+          roles: [user.role],
+          amr,
         },
       };
     } catch {
@@ -238,6 +192,10 @@ export class SocketAuthService {
       // Machine sessions (PAT / app access tokens) take the scope-checked path.
       if (isMachineJwtAmr(payload.amr ?? ['pwd'])) {
         return await this.validateMachineToken(payload, tenantId, options);
+      }
+
+      if (!isInteractiveAmrAllowedForMethod(payload.amr, getAuthenticationMethod())) {
+        return null;
       }
 
       const entity = await this.usersRepository.findById(payload.sub);
@@ -348,7 +306,7 @@ export class SocketAuthService {
     }
 
     try {
-      // PatAuthModule is registered by the host app (users / keycloak mode); absent in api-key mode → fail-closed.
+      // PatAuthModule is registered by the host app (users / oidc / saml mode); absent in api-key mode → fail-closed.
       const personalAccessTokenService = this.moduleRef.get(PersonalAccessTokenService, { strict: false });
       const appAuthorizationService = this.moduleRef.get(IdentityAppAuthorizationService, { strict: false });
 
@@ -366,15 +324,5 @@ export class SocketAuthService {
     }
 
     return user.tenantId === tenantId;
-  }
-
-  private parseJwtPayload(token: string): { sub: string; realm_access?: { roles?: string[] } } {
-    const parts = token.split('.');
-
-    if (parts.length < 2) {
-      return { sub: '' };
-    }
-
-    return JSON.parse(Buffer.from(parts[1], 'base64').toString());
   }
 }

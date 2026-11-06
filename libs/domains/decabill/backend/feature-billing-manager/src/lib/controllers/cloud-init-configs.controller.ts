@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -29,7 +29,6 @@ export class CloudInitConfigsController {
   ) {}
 
   @Get()
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -42,7 +41,6 @@ export class CloudInitConfigsController {
   }
 
   @Get(':id')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<CloudInitConfigResponseDto> {
     const row = await this.cloudInitConfigsRepository.findByIdOrThrow(id);
@@ -51,7 +49,6 @@ export class CloudInitConfigsController {
   }
 
   @Post()
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async create(@Body() dto: CreateCloudInitConfigDto): Promise<CloudInitConfigResponseDto> {
     const { environmentVariables, envDefaultValues } = this.cloudInitConfigService.sanitizeEnvironmentVariables(
@@ -102,7 +99,6 @@ export class CloudInitConfigsController {
   }
 
   @Post(':id')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -203,7 +199,6 @@ export class CloudInitConfigsController {
   }
 
   @Delete(':id')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {

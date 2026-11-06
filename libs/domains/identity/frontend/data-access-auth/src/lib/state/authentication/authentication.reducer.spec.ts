@@ -71,15 +71,15 @@ describe('authenticationReducer', () => {
       expect(newState.error).toBeNull();
     });
 
-    it('should set authenticationType to keycloak', () => {
+    it('should set authenticationType to oidc', () => {
       const state: AuthenticationState = {
         ...initialAuthenticationState,
         loading: true,
       };
-      const newState = authenticationReducer(state, loginSuccess({ authenticationType: 'keycloak' }));
+      const newState = authenticationReducer(state, loginSuccess({ authenticationType: 'oidc' }));
 
       expect(newState.isAuthenticated).toBe(true);
-      expect(newState.authenticationType).toBe('keycloak');
+      expect(newState.authenticationType).toBe('oidc');
       expect(newState.loading).toBe(false);
     });
 
@@ -169,7 +169,7 @@ describe('authenticationReducer', () => {
       const state: AuthenticationState = {
         ...initialAuthenticationState,
         isAuthenticated: true,
-        authenticationType: 'keycloak',
+        authenticationType: 'oidc',
         loading: true,
       };
       const newState = authenticationReducer(state, logoutFailure({ error: 'Logout failed' }));
@@ -229,28 +229,28 @@ describe('authenticationReducer', () => {
     it('should preserve existing authenticationType when not provided', () => {
       const state: AuthenticationState = {
         ...initialAuthenticationState,
-        authenticationType: 'keycloak',
+        authenticationType: 'oidc',
         loading: true,
       };
       const newState = authenticationReducer(state, checkAuthenticationSuccess({ isAuthenticated: true }));
 
       expect(newState.isAuthenticated).toBe(true);
-      expect(newState.authenticationType).toBe('keycloak'); // Preserved from previous state
+      expect(newState.authenticationType).toBe('oidc'); // Preserved from previous state
       expect(newState.loading).toBe(false);
     });
 
-    it('should set authenticationType to keycloak when authenticated with keycloak', () => {
+    it('should set authenticationType to oidc when authenticated with oidc', () => {
       const state: AuthenticationState = {
         ...initialAuthenticationState,
         loading: true,
       };
       const newState = authenticationReducer(
         state,
-        checkAuthenticationSuccess({ isAuthenticated: true, authenticationType: 'keycloak' }),
+        checkAuthenticationSuccess({ isAuthenticated: true, authenticationType: 'oidc' }),
       );
 
       expect(newState.isAuthenticated).toBe(true);
-      expect(newState.authenticationType).toBe('keycloak');
+      expect(newState.authenticationType).toBe('oidc');
       expect(newState.loading).toBe(false);
     });
 

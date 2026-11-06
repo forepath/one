@@ -12,9 +12,7 @@ import {
   ClientUserEntity,
   ClientUsersRepository,
   ClientUsersService,
-  getAuthenticationMethod,
-  KeycloakService,
-  KeycloakTokenService,
+  OidcClientCredentialsService,
   RevokedUserTokenEntity,
   RevokedUserTokensRepository,
   SocketAuthService,
@@ -26,7 +24,6 @@ import { BullModule } from '@nestjs/bullmq';
 import { forwardRef, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
 import { ClientAgentAutonomyDirectoryController } from '../controllers/client-agent-autonomy-directory.controller';
 import { AttachmentsController } from '../controllers/attachments.controller';
@@ -165,8 +162,6 @@ import { AgenstraUpdatesModule } from './agenstra-updates.module';
 import { ContextImportModule } from './context-import.module';
 import { StatisticsModule } from './statistics.module';
 
-const authMethod = getAuthenticationMethod();
-
 /**
  * Module for agent clients feature.
  * Provides controllers, services, and repository for agent CRUD operations and file system operations.
@@ -220,8 +215,6 @@ const authMethod = getAuthenticationMethod();
     AgenstraUpdatesModule,
     StatisticsModule,
     forwardRef(() => ContextImportModule),
-    // Import KeycloakConnectModule conditionally to make KEYCLOAK_INSTANCE available to SocketAuthService
-    ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
   controllers: [
     ClientsController,
@@ -284,7 +277,7 @@ const authMethod = getAuthenticationMethod();
     ClientUsersService,
     UsersRepository,
     RevokedUserTokensRepository,
-    KeycloakTokenService,
+    OidcClientCredentialsService,
     ClientAgentProxyService,
     ClientAgentFileSystemProxyService,
     WorkspaceSearchIndexService,
@@ -362,7 +355,7 @@ const authMethod = getAuthenticationMethod();
     ClientsRepository,
     ClientUsersRepository,
     ClientUsersService,
-    KeycloakTokenService,
+    OidcClientCredentialsService,
     ClientAgentProxyService,
     ClientAgentFileSystemProxyService,
     ClientAgentVcsProxyService,

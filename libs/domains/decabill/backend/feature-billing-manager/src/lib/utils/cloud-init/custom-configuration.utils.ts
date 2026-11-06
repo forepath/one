@@ -1,5 +1,5 @@
 import { CloudInitConfigEntity } from '../../entities/cloud-init-config.entity';
-import { formatEnvLines, quoteYamlScalar } from './env.utils';
+import { formatEnvLines, quoteComposeValue } from './env.utils';
 import {
   DEFAULT_COMPOSE_TEMPLATE,
   interpolateCloudInitTemplate,
@@ -71,7 +71,7 @@ function buildDockerCompose(config: CustomConfigurationCloudInitConfig): string 
 
   return `services:
   app:
-    image: ${quoteYamlScalar(config.app.dockerImage)}
+    image: ${quoteComposeValue(config.app.dockerImage)}
     container_name: custom-app
     restart: unless-stopped
     ports:

@@ -1,7 +1,6 @@
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { Public as HybridPublic } from '@forepath/identity/backend/util-auth/core';
 import { Controller, Get } from '@nestjs/common';
-import { Public as KeycloakPublic } from 'nest-keycloak-connect';
 
 /**
  * Health check response DTO.
@@ -16,7 +15,6 @@ export interface HealthResponseDto {
  * Provides health status for monitoring and load balancer checks.
  */
 @HybridPublic()
-@KeycloakPublic()
 @Controller('health')
 export class HealthController {
   /**
@@ -24,7 +22,6 @@ export class HealthController {
    * @returns Health status with timestamp
    */
   @HybridPublic()
-  @KeycloakPublic()
   @Get()
   getHealth(): HealthResponseDto {
     return {

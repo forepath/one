@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -386,7 +386,6 @@ export class InvoicesController {
 
   @RequireScopes('invoices:admin')
   @Post(':subscriptionId')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async create(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
@@ -412,7 +411,6 @@ export class InvoicesController {
 
   @RequireScopes('invoices:admin')
   @Post(':subscriptionId/ref/:invoiceRefId/void')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async voidInvoice(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,

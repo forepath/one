@@ -1,27 +1,23 @@
 import {
   BillingIdentityNotificationBridgeModule,
-  BillingKeycloakUserSyncModule,
   BillingModule,
-  BillingPatAuthModule,
   BillingUsersAuthModule,
+  createBillingOidcAuthModule,
+  createBillingSamlAuthModule,
   DecabillOtelModule,
   type RegisteredContributorNestModule,
 } from '@forepath/decabill/backend';
 import {
   BullBoardSkippingThrottlerGuard,
   getAuthenticationMethod,
-  getHybridAuthGuards,
-  getKeycloakPatAuthGuards,
+  getIdentityAuthGuards,
   getRateLimitConfig,
-  KeycloakModule,
-  KeycloakService,
 } from '@forepath/identity/backend';
 import { getTypeOrmOptionsForQueueRole, MonitoringModule } from '@forepath/shared/backend';
 import { DynamicModule, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
 import { BillingQueueModule } from '../queue/billing-queue.module';
 import { typeormConfig } from '../typeorm.config';
@@ -41,20 +37,14 @@ export class AppModule {
         ThrottlerModule.forRoot(getRateLimitConfig()),
         billing,
         BillingIdentityNotificationBridgeModule,
-        ...(authMethod === 'keycloak'
-          ? [
-              KeycloakModule,
-              KeycloakConnectModule.registerAsync({ useExisting: KeycloakService }),
-              BillingKeycloakUserSyncModule,
-              BillingPatAuthModule,
-            ]
-          : []),
+        ...(authMethod === 'oidc' ? [createBillingOidcAuthModule()] : []),
+        ...(authMethod === 'saml' ? [createBillingSamlAuthModule()] : []),
         ...(authMethod === 'users' ? [BillingUsersAuthModule] : []),
         DecabillOtelModule,
         MonitoringModule,
       ],
       providers: [
-        ...(authMethod === 'keycloak' ? getKeycloakPatAuthGuards() : getHybridAuthGuards()),
+        ...getIdentityAuthGuards(),
         {
           provide: APP_GUARD,
           useClass: BullBoardSkippingThrottlerGuard,

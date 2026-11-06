@@ -1,9 +1,8 @@
 import { inject } from '@angular/core';
 import type { Environment } from '@forepath/decabill/frontend/util-configuration';
 import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend/util-configuration';
+import { OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { KeycloakService } from 'keycloak-angular';
-import type { Observable } from 'rxjs';
 import { catchError, filter, from, fromEvent, map, merge, mergeMap, of, switchMap, take, takeUntil, tap } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 
@@ -27,42 +26,6 @@ import {
 } from './billing-dashboard-socket.actions';
 import { resolveBillingTenantId } from '../../interceptors/tenant.interceptor';
 
-const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
-const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
-
-function getAuthHeader(environment: Environment, keycloakService: KeycloakService | null): Observable<string | null> {
-  if (environment.authentication.config.type === 'api-key') {
-    const apiKey =
-      environment.authentication.config.apiKey ??
-      (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
-
-    if (apiKey) {
-      return of(`Bearer ${apiKey}`);
-    }
-
-    return of(null);
-  }
-
-  if (environment.authentication.config.type === 'keycloak' && keycloakService) {
-    return from(keycloakService.getToken()).pipe(
-      map((token) => (token ? `Bearer ${token}` : null)),
-      catchError(() => of(null)),
-    );
-  }
-
-  if (environment.authentication.config.type === 'users') {
-    const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
-
-    if (jwt) {
-      return of(`Bearer ${jwt}`);
-    }
-
-    return of(null);
-  }
-
-  return of(null);
-}
-
 let billingDashboardSocketInstance: Socket | null = null;
 
 export function getBillingDashboardSocketInstance(): Socket | null {
@@ -73,7 +36,7 @@ export const connectBillingDashboardSocket$ = createEffect(
   (
     actions$ = inject(Actions),
     environment = inject<Environment>(ENVIRONMENT),
-    keycloakService = inject(KeycloakService, { optional: true }),
+    oidcAuthService = inject(OidcAuthService),
   ) => {
     return actions$.pipe(
       ofType(connectBillingDashboardSocket),
@@ -89,7 +52,7 @@ export const connectBillingDashboardSocket$ = createEffect(
           billingDashboardSocketInstance = null;
         }
 
-        return getAuthHeader(environment, keycloakService).pipe(
+        return resolveAuthorizationHeader$(environment.authentication.config, oidcAuthService).pipe(
           switchMap((authHeader) => {
             if (!authHeader) {
               return of(connectBillingDashboardSocketFailure({ error: 'Not authenticated for WebSocket' }));

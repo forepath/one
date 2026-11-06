@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthController } from '../controllers/auth.controller';
 import { UsersController } from '../controllers/users.controller';
-import { KeycloakRolesGuard } from '../guards/keycloak-roles.guard';
 import { PatScopesGuard } from '../guards/pat-scopes.guard';
 import { UsersAuthGuard } from '../guards/users-auth.guard';
 import { UsersRolesGuard } from '../guards/users-roles.guard';
@@ -30,7 +29,6 @@ export class UsersAuthModule {
   static register(options: UsersAuthModuleOptions): DynamicModule {
     const providers: Provider[] = [
       UsersAuthGuard,
-      KeycloakRolesGuard,
       UsersRolesGuard,
       PatScopesGuard,
       { provide: APP_GUARD, useClass: UsersAuthGuard },

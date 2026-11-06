@@ -35,19 +35,19 @@ describe('ClientAgentProxyService', () => {
     endpoint: 'https://example.com/api',
     authenticationType: AuthenticationType.API_KEY,
     apiKey: 'test-api-key-123',
-    keycloakClientId: undefined,
-    keycloakClientSecret: undefined,
-    keycloakRealm: undefined,
+    oidcClientId: undefined,
+    oidcClientSecret: undefined,
+    oidcIssuer: undefined,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-  const mockKeycloakClientEntity: ClientEntity = {
+  const mockOidcClientEntity: ClientEntity = {
     ...mockClientEntity,
-    authenticationType: AuthenticationType.KEYCLOAK,
+    authenticationType: AuthenticationType.OIDC,
     apiKey: undefined,
-    keycloakClientId: 'keycloak-client-id',
-    keycloakClientSecret: 'keycloak-client-secret',
-    keycloakRealm: 'test-realm',
+    oidcClientId: 'oidc-client-id',
+    oidcClientSecret: 'oidc-client-secret',
+    oidcIssuer: 'https://idp.example.com/realms/test',
   };
   const mockAgentResponse: AgentResponseDto = {
     id: 'agent-uuid',
@@ -195,9 +195,9 @@ describe('ClientAgentProxyService', () => {
       );
     });
 
-    it('should return array of agents for KEYCLOAK client', async () => {
-      clientsRepository.findByIdOrThrow.mockResolvedValue(mockKeycloakClientEntity);
-      clientsService.getAccessToken.mockResolvedValue('keycloak-jwt-token');
+    it('should return array of agents for OIDC client', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockOidcClientEntity);
+      clientsService.getAccessToken.mockResolvedValue('oidc-access-token');
       mockedAxios.request.mockResolvedValue({
         data: [mockAgentResponse],
         status: 200,
@@ -213,7 +213,7 @@ describe('ClientAgentProxyService', () => {
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
           headers: expect.objectContaining({
-            Authorization: 'Bearer keycloak-jwt-token',
+            Authorization: 'Bearer oidc-access-token',
           }),
         }),
       );
@@ -636,15 +636,15 @@ describe('ClientAgentProxyService', () => {
       );
     });
 
-    it('should throw error if Keycloak credentials are missing', async () => {
-      const clientWithoutKeycloak: ClientEntity = {
-        ...mockKeycloakClientEntity,
-        keycloakClientId: undefined,
+    it('should throw error if OIDC credentials are missing', async () => {
+      const clientWithoutOIDC: ClientEntity = {
+        ...mockOidcClientEntity,
+        oidcClientId: undefined,
       };
 
-      clientsRepository.findByIdOrThrow.mockResolvedValue(clientWithoutKeycloak);
+      clientsRepository.findByIdOrThrow.mockResolvedValue(clientWithoutOIDC);
       clientsService.getAccessToken.mockRejectedValue(
-        new BadRequestException('Keycloak client credentials are not configured'),
+        new BadRequestException('OIDC client credentials are not configured'),
       );
 
       await expect(service.getClientAgents('client-uuid', 10, 0)).rejects.toThrow(BadRequestException);

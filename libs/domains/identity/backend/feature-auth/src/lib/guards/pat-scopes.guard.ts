@@ -1,4 +1,4 @@
-import { getAuthenticationMethod, getMissingPatScopes, IS_PUBLIC_KEY } from '@forepath/identity/backend';
+import { getMissingPatScopes, IS_PUBLIC_KEY, usesLocalUserAccounts } from '@forepath/identity/backend';
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
@@ -16,9 +16,7 @@ export class PatScopesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const authMethod = getAuthenticationMethod();
-
-    if (authMethod !== 'users' && authMethod !== 'keycloak') {
+    if (!usesLocalUserAccounts()) {
       return true;
     }
 

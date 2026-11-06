@@ -83,9 +83,10 @@ describe('authentication selectors', () => {
     expect(selectIsAdmin.projector({ id: '2', email: 'user@example.com', role: 'user' })).toBe(false);
   });
 
-  it('selectCanAccessUserManager requires authenticated admin users or keycloak admin', () => {
+  it('selectCanAccessUserManager requires authenticated admin users, oidc or saml admin', () => {
     expect(project(selectCanAccessUserManager)).toBe(true);
-    expect(selectCanAccessUserManager.projector(true, 'keycloak', true)).toBe(true);
+    expect(selectCanAccessUserManager.projector(true, 'oidc', true)).toBe(true);
+    expect(selectCanAccessUserManager.projector(true, 'saml', true)).toBe(true);
     expect(selectCanAccessUserManager.projector(true, 'users', false)).toBe(false);
     expect(selectCanAccessUserManager.projector(false, 'users', true)).toBe(false);
   });

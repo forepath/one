@@ -1,91 +1,81 @@
-# Platform Authentication (Keycloak)
+# Platform Authentication (local identity provider)
 
-This directory contains the Keycloak setup for the platform authentication service.
+Local, throw-away identity provider for developing and testing the `oidc` and `saml` authentication methods of the
+backends and consoles. It runs [Keycloak](https://www.keycloak.org/) purely as a **standards-based OIDC and SAML 2.0
+provider** — the applications contain no Keycloak specific code, any compliant provider (Entra ID, Okta, Auth0,
+authentik, ADFS, …) can be used instead.
 
-## Quick Start
+> Development only: fixed secrets, test users with trivial passwords, plain HTTP.
 
-Start Keycloak using Docker Compose:
-
-```bash
-docker compose up -d
-```
-
-Keycloak will be available at `http://localhost:8380`
-
-- Admin Console: `http://localhost:8380/admin`
-- Username: `admin`
-- Password: `admin`
-
-## Configure CSP for Framing
-
-By default, Keycloak prevents framing to protect against clickjacking attacks. For development, you can configure Keycloak to allow framing from any origin.
-
-### Option 1: Automatic Configuration (Recommended for Development)
-
-Run the configuration script after Keycloak starts:
+## Quick start
 
 ```bash
-# Wait for Keycloak to be ready (about 30 seconds), then run:
-KEYCLOAK_URL=http://localhost:8380 \
-ADMIN_USERNAME=admin \
-ADMIN_PASSWORD=admin \
-REALM_NAME=agenstra \
-./configure-keycloak-csp.sh
+npx nx run shared-platform-authentication:up   # or: docker compose up -d
 ```
 
-### Option 2: Manual Configuration via Admin Console
+- Admin console: `http://localhost:8380/admin` (`admin` / `admin`)
+- Realm `platform` is imported from [`realm/platform-realm.json`](./realm/platform-realm.json) on first start
+  (delete the `postgres_data` volume to re-import after changing it).
 
-1. Open Keycloak Admin Console: `http://localhost:8380/admin`
-2. Login with admin credentials (admin/admin)
-3. Select your realm (e.g., `agenstra`)
-4. Go to **Realm Settings** > **Security Defenses** > **Headers** tab
-5. Find the **Content-Security-Policy** field
-6. Update it to allow framing:
-   ```
-   frame-src 'self'; frame-ancestors *; object-src 'none';
-   ```
-7. Click **Save**
+The issuer must be identical for browsers and backends. By default Keycloak advertises
+`http://host.docker.internal:8380`; when everything runs on the host instead, start it with
+`KC_HOSTNAME=http://localhost:8380 docker compose up -d`.
 
-### Option 3: Configure for Specific Origins (Production)
+## What the realm contains
 
-For production, instead of allowing all origins (`*`), specify allowed origins:
+| Client / user               | Type                                                                        | Used for                                                                                                   |
+| --------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `console`                   | OIDC public client, code flow + PKCE                                        | Frontend `authentication.config` `{ type: 'oidc', issuer, clientId: 'console' }`; adds `aud: platform-api` |
+| `platform-api`              | OIDC confidential client                                                    | Backend `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` (token introspection) and `OIDC_AUDIENCE=platform-api`     |
+| `agent-manager-client`      | OIDC confidential, service account                                          | Controller → agent-manager client credentials (`authenticationType: oidc`)                                 |
+| `http://localhost:3100`     | SAML SP (signed response + assertion, persistent NameID, `email` attribute) | Agenstra controller `AUTHENTICATION_METHOD=saml`                                                           |
+| `http://localhost:3200`     | SAML SP (same settings)                                                     | Decabill billing manager `AUTHENTICATION_METHOD=saml`                                                      |
+| `admin` / `admin`           | user, verified email                                                        | `admin@example.com`                                                                                        |
+| `user` / `user`             | user, verified email                                                        | `user@example.com`                                                                                         |
+| `unverified` / `unverified` | user, **unverified** email                                                  | Verifies that unverified emails are never linked to existing local accounts                                |
 
+## Backend settings
+
+OIDC (`AUTHENTICATION_METHOD=oidc`):
+
+```dotenv
+OIDC_ISSUER=http://host.docker.internal:8380/realms/platform
+OIDC_CLIENT_ID=platform-api
+OIDC_CLIENT_SECRET=platform-api-secret
+OIDC_AUDIENCE=platform-api
 ```
-frame-src 'self'; frame-ancestors 'self' https://your-app-domain.com https://another-domain.com; object-src 'none';
+
+Agent-manager accepting only the controller's service account (`AUTHENTICATION_METHOD=oidc`; the manager
+does not need the client secret):
+
+```dotenv
+OIDC_ISSUER=http://host.docker.internal:8380/realms/platform
+OIDC_TOKEN_VALIDATION=OFFLINE
+OIDC_AUTHORIZED_PARTIES=agent-manager-client
 ```
 
-## Environment Variables
+SAML (`AUTHENTICATION_METHOD=saml`, controller on port 3100):
 
-The following environment variables can be configured in `docker-compose.yml`:
+```dotenv
+SAML_IDP_SSO_URL=http://host.docker.internal:8380/realms/platform/protocol/saml
+SAML_IDP_ISSUER=http://host.docker.internal:8380/realms/platform
+# Realm signing certificate: Realm settings → Keys → RS256 → Certificate (or the <ds:X509Certificate> in the
+# descriptor at /realms/platform/protocol/saml/descriptor)
+SAML_IDP_CERT=<base64 certificate>
+SAML_SP_ENTITY_ID=http://localhost:3100
+SAML_SP_ACS_URL=http://localhost:3100/api/auth/saml/acs
+SAML_FRONTEND_CALLBACK_URL=http://localhost:4100/login/saml/callback
+# Keycloak controls user emails in this realm
+SAML_TRUST_EMAIL=true
+```
 
-- `KC_BOOTSTRAP_ADMIN_USERNAME` - Admin username (default: `admin`)
-- `KC_BOOTSTRAP_ADMIN_PASSWORD` - Admin password (default: `admin`)
-- `KC_HOSTNAME_STRICT` - Disable strict hostname checking (default: `false` for development)
-- `KC_HOSTNAME_STRICT_HTTPS` - Disable strict HTTPS hostname checking (default: `false` for development)
+The certificate can be fetched with:
 
-## Security Notes
+```bash
+curl -s http://localhost:8380/realms/platform/protocol/saml/descriptor \
+  | sed -n 's:.*<ds\:X509Certificate>\(.*\)</ds\:X509Certificate>.*:\1:p' | head -1
+```
 
-⚠️ **Warning**: Allowing framing from any origin (`frame-ancestors *`) is a security risk and should only be used in development environments. In production:
-
-1. Configure CSP to allow framing only from trusted origins
-2. Use HTTPS for all connections
-3. Enable strict hostname checking
-4. Regularly review and update CSP settings
-
-## Troubleshooting
-
-### CSP Error: "frame-ancestors 'self'"
-
-If you see this error, Keycloak's CSP is blocking framing. Run the configuration script or configure CSP manually via Admin Console.
-
-### Keycloak Not Ready
-
-If the configuration script fails, wait a bit longer for Keycloak to fully initialize (it may take 30-60 seconds), then run the script again.
-
-### Script Requires jq
-
-The script uses `jq` for JSON processing. If `jq` is not available, install it:
-
-- macOS: `brew install jq`
-- Linux: `apt-get install jq` or `yum install jq`
-- Or configure CSP manually via Admin Console
+See the product authentication docs for all settings:
+[Agenstra](../../../docs/agenstra/features/authentication.md) ·
+[Decabill](../../../docs/decabill/features/authentication.md).

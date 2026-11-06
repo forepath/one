@@ -19,7 +19,8 @@ On the controller, Socket.IO namespaces **`socket/clients`**, **`socket/tickets`
 WebSocket connections to the controller require authentication. Pass the `Authorization` header in the handshake (same as HTTP):
 
 - **API key**: `Bearer <static-api-key>` or `ApiKey <static-api-key>`
-- **Keycloak**: `Bearer <keycloak-jwt-token>`
+- **OIDC**: `Bearer <oidc-access-token>`
+- **Users / SAML**: `Bearer <session-jwt>`
 - **Users**: `Bearer <jwt-token>`
 
 Unauthenticated connections are rejected with `connect_error` "Unauthorized". The `setClient` operation enforces per-client authorization: only users with access to the requested client (global admin, client creator, or client_users entry) can set that client context. Unauthorized attempts emit an `error` event with message "You do not have access to this client".
@@ -48,7 +49,7 @@ sequenceDiagram
     participant AC as Agent Controller
 
     F->>AC: WebSocket Connect (with Authorization header)
-    AC->>AC: Validate auth (api-key, keycloak, or users)
+    AC->>AC: Validate auth (api-key, oidc, users or saml)
     AC->>F: Connected
     F->>AC: setClient (clientId)
     AC->>AC: Check client access

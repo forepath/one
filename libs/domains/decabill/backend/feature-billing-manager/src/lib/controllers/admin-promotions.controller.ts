@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 
 import type {
@@ -11,7 +11,6 @@ import type {
 import { PromotionAdminService } from '../services/promotion-admin.service';
 
 @Controller('admin/billing/promotions')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 @RequireScopes('promotions:admin')
 export class AdminPromotionsController {

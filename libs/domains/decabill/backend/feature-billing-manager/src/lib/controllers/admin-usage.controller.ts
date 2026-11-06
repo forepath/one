@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import { BadRequestException, Body, Controller, Post, Req } from '@nestjs/common';
 
 import { CreateUsageRecordDto } from '../dto/create-usage-record.dto';
@@ -7,7 +7,6 @@ import { UsageService } from '../services/usage.service';
 import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
 @Controller('admin/usage')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 export class AdminUsageController {
   constructor(

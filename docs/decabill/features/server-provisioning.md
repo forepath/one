@@ -163,7 +163,7 @@ See [Webhooks](./webhooks.md).
 
 ## Optional Instance Configuration
 
-Subscription `requestedConfig` can include authentication mode for the provisioned stack (`users`, `api-key`, `keycloak`), SMTP settings, and Git or API credentials where the plan schema allows. Values are passed securely through user-data into the generated compose environment.
+Subscription `requestedConfig` can include authentication mode for the provisioned stack (`users`, `api-key`, `oidc`, `saml`), SMTP settings, and Git or API credentials where the plan schema allows. Values are passed securely through user-data into the generated compose environment.
 
 ## API Endpoints
 

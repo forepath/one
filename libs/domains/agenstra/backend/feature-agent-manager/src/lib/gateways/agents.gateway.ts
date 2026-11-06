@@ -6,6 +6,7 @@ import {
   type AgentTaskControllerRequest,
   type AgentTaskControllerResponse,
 } from '@forepath/agenstra/shared/util-opencode-config';
+import { authenticateServiceSocket, OidcTokenVerifier } from '@forepath/identity/backend';
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { BadRequestException, Logger, NotFoundException, OnModuleInit, Optional } from '@nestjs/common';
 import {
@@ -13,6 +14,7 @@ import {
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -335,10 +337,11 @@ function toAgentEventEnvelopeBase(
   },
   connectionStateRecovery: {
     maxDisconnectionDuration: parseInt(process.env.SOCKET_MAX_DISCONNECTION_DURATION || '120000'), // 2 minutes default
-    skipMiddlewares: true,
+    // Recovered sessions must pass the handshake authentication again (the controller re-sends its credentials).
+    skipMiddlewares: false,
   },
 })
-export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
+export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
   @WebSocketServer()
   server: Server;
 
@@ -384,7 +387,34 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     @Optional() private readonly contextApi?: AgentContextApiService,
     @Optional() private readonly agentTasksApi?: AgentTasksApiService,
     @Optional() private readonly agentHandoffsApi?: AgentHandoffsApiService,
+    @Optional() private readonly oidcVerifier?: OidcTokenVerifier,
   ) {}
+
+  /**
+   * Service authentication on the handshake (same credentials as the HTTP API: static API key or OIDC access token
+   * of the controller). Unauthenticated sockets are refused before they connect, so they never receive broadcasts.
+   */
+  afterInit(server: Server): void {
+    const namespace = server as unknown as {
+      use?: (fn: (socket: Socket, next: (err?: Error) => void) => void) => void;
+    };
+
+    namespace.use?.((socket, next) => {
+      void authenticateServiceSocket(socket, this.oidcVerifier).then(
+        (ok) => {
+          if (ok) {
+            next();
+
+            return;
+          }
+
+          this.logger.warn(`WebSocket connection rejected: missing or invalid authorization (${socket.id})`);
+          next(new Error('Unauthorized'));
+        },
+        () => next(new Error('Unauthorized')),
+      );
+    });
+  }
 
   onModuleInit(): void {
     this.openCodeConfigSync?.registerConfigSyncedBroadcaster((agentId) => {

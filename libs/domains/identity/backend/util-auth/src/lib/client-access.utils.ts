@@ -27,7 +27,7 @@ export interface RequestWithUser extends Request {
     scopes?: string[];
   };
   apiKeyAuthenticated?: boolean;
-  /** Set when Keycloak-mode accepts an app-signed PAT JWT instead of an OIDC token. */
+  /** Set when an app-signed PAT / app access JWT authenticated the request (oidc mode: instead of an IdP token). */
   patAuthenticated?: boolean;
 }
 

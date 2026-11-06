@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable, InjectionToken } from '@angular/core';
 import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
-import { Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 
 import type {
   CreateUserDto,
@@ -126,6 +126,22 @@ export class AuthService {
       newPassword,
       newPasswordConfirmation,
     });
+  }
+
+  /** SAML sign-in: exchange the one-time code from `/login/saml/callback` (PKCE bound) for a session JWT. */
+  exchangeSamlCode(code: string, codeVerifier: string): Observable<{ access_token: string }> {
+    return this.http.post<{ access_token: string }>(`${this.apiUrl}/auth/saml/token`, { code, codeVerifier });
+  }
+
+  /**
+   * Whether the signed-in user is an admin of this API (OIDC sessions carry no local role claim).
+   * Probes the admin-only user list; the API enforces roles regardless of what the UI shows.
+   */
+  probeAdminAccess(): Observable<boolean> {
+    return this.http.get<unknown>(`${this.apiUrl}/users`, { params: new HttpParams().set('limit', '1') }).pipe(
+      map(() => true),
+      catchError(() => of(false)),
+    );
   }
 
   logout(invalidateAllSessions = false): Observable<void> {

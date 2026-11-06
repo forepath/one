@@ -40,20 +40,26 @@ export class ClientEntity {
   })
   apiKey?: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true, name: 'keycloak_client_id' })
-  keycloakClientId?: string;
+  /** OAuth 2.0 client id used for the client credentials grant (authenticationType `oidc`). */
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'oidc_client_id' })
+  oidcClientId?: string;
 
   @Column({
     type: 'varchar',
     length: 1024,
     nullable: true,
-    name: 'keycloak_client_secret',
+    name: 'oidc_client_secret',
     transformer: createAes256GcmTransformer(),
   })
-  keycloakClientSecret?: string;
+  oidcClientSecret?: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true, name: 'keycloak_realm' })
-  keycloakRealm?: string;
+  /** Issuer of the OpenID provider; null → the controller's `OIDC_ISSUER`. */
+  @Column({ type: 'varchar', length: 1024, nullable: true, name: 'oidc_issuer' })
+  oidcIssuer?: string | null;
+
+  /** Optional space separated scopes requested with the client credentials grant. */
+  @Column({ type: 'varchar', length: 1024, nullable: true, name: 'oidc_scope' })
+  oidcScope?: string | null;
 
   @Column({ type: 'uuid', nullable: true, name: 'user_id' })
   userId?: string;

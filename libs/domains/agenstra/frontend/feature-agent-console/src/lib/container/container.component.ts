@@ -89,9 +89,8 @@ export class AgentConsoleContainerComponent implements OnInit {
   /** True when console uses users (email/password) authentication. */
   readonly isUsersAuth = this.authEnvironment.authentication.type === 'users';
 
-  /** True when Personal Access Tokens UI is available (users or keycloak; not api-key). */
-  readonly isPatUiEnabled =
-    this.authEnvironment.authentication.type === 'users' || this.authEnvironment.authentication.type === 'keycloak';
+  /** True when Personal Access Tokens UI is available (users, oidc or saml; not api-key). */
+  readonly isPatUiEnabled = this.authEnvironment.authentication.type !== 'api-key';
 
   /**
    * True when on the main clients mask (not editor, deployments, etc.)
@@ -148,7 +147,7 @@ export class AgentConsoleContainerComponent implements OnInit {
   );
 
   /**
-   * True when the user can access the user manager (admin with users/keycloak auth).
+   * True when the user can access the user manager (admin with users, oidc or saml auth).
    */
   readonly canAccessUserManager$ = this.authenticationFacade.canAccessUserManager$;
 

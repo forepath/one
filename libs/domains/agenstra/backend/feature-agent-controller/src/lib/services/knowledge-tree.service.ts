@@ -1,6 +1,7 @@
 import {
   ClientUsersRepository,
   ensureClientAccess,
+  getAuthenticationMethod,
   getUserFromRequest,
   type RequestWithUser,
   UsersRepository,
@@ -275,9 +276,8 @@ export class KnowledgeTreeService {
   }
 
   private isApiKeyMode(): boolean {
-    const authMethod = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
-
-    return authMethod === 'api-key' || (authMethod === undefined && !!process.env.STATIC_API_KEY);
+    // Same resolution as the guards (an empty AUTHENTICATION_METHOD from compose `${VAR:-}` counts as unset).
+    return getAuthenticationMethod() === 'api-key';
   }
 
   private resolveActor(req?: ContentPrincipal): { actorType: KnowledgeActorType; actorUserId?: string } {

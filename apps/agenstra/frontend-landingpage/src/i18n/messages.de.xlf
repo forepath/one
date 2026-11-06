@@ -787,8 +787,8 @@
         <target> Controller und RBAC für viele Remote-Agent-Manager-Endpunkte von einer Konsole aus. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT2" datatype="html">
-        <source>Per-client users with admin/user roles; Keycloak or JWT users. API-key mode bypasses user checks.</source>
-        <target> Pro-Mandant-Benutzer mit Admin- und User-Rollen; Keycloak- oder JWT-Benutzer. Im API-Key-Modus entfallen Benutzerprüfungen. </target>
+        <source>Per-client users with admin/user roles; OIDC/SAML single sign-on or JWT users. API-key mode bypasses user checks.</source>
+        <target> Pro-Mandant-Benutzer mit Admin- und User-Rollen; OIDC/SAML-Single-Sign-on oder JWT-Benutzer. Im API-Key-Modus entfallen Benutzerprüfungen. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT3" datatype="html">
         <source>Dockerized controller and manager; you choose where they run. EU-friendly provider automation where offered.</source>
@@ -831,8 +831,8 @@
         <target> Plugin-Agent-Provider und Chat-Filter im Agent-Manager. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT13" datatype="html">
-        <source>Keycloak OIDC/SAML, built-in JWT users, or static API key. Federate corporate IdPs via Keycloak where needed.</source>
-        <target> Keycloak OIDC/SAML, eingebaute JWT-Benutzer oder statischer API-Schlüssel. Unternehmens-IdPs bei Bedarf über Keycloak föderieren. </target>
+        <source>OIDC or SAML with any identity provider, built-in JWT users, or static API key. Connect corporate IdPs such as Entra ID, Okta or Keycloak directly.</source>
+        <target> OIDC oder SAML mit beliebigem Identity Provider, eingebaute JWT-Benutzer oder statischer API-Schlüssel. Unternehmens-IdPs wie Entra ID, Okta oder Keycloak direkt anbinden. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-devinT1" datatype="html">
         <source>Multi-org enterprise APIs exist; focus is vendor-hosted sessions, not your fleet of independent runtimes.</source>
@@ -3479,8 +3479,8 @@
         <target>Identität und Zugriff</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-componentIdentityDesc" datatype="html">
-        <source> Single sign-on through Keycloak, built-in users or API keys. Workspace roles decide who may see, chat with and change which environments. </source>
-        <target>Single Sign-on über Keycloak, integrierte Benutzerkonten oder API-Schlüssel. Workspace-Rollen legen fest, wer welche Umgebungen sehen, nutzen und ändern darf.</target>
+        <source> Single sign-on through OIDC or SAML, built-in users or API keys. Workspace roles decide who may see, chat with and change which environments. </source>
+        <target>Single Sign-on über OIDC oder SAML, integrierte Benutzerkonten oder API-Schlüssel. Workspace-Rollen legen fest, wer welche Umgebungen sehen, nutzen und ändern darf.</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-wire1Title" datatype="html">
         <source>Connections go one way</source>

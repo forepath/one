@@ -9,7 +9,7 @@ import {
   createCorrelationIdMiddleware,
   registerAxiosCorrelationIdPropagation,
 } from '@forepath/shared/backend/util-http-context';
-import { createOriginAllowlistMiddleware } from '@forepath/identity/backend';
+import { configureTrustProxy, createOriginAllowlistMiddleware } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import {
   getOtelMetricsGlobalPrefixExcludes,
@@ -113,6 +113,8 @@ export async function bootstrap(): Promise<void> {
       log: (message: string) => httpLogger.log(message),
     }),
   );
+  // Opt-in (TRUST_PROXY): real client addresses for rate limits behind a reverse proxy.
+  configureTrustProxy(app.getHttpAdapter().getInstance());
   app.use(createOriginAllowlistMiddleware(new Logger('OriginAllowlist')));
   const isProduction = process.env.NODE_ENV === 'production';
   const corsOrigin = process.env.CORS_ORIGIN;

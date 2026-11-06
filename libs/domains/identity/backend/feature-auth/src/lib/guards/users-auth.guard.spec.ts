@@ -282,8 +282,8 @@ describe('UsersAuthGuard', () => {
     expect(jwtService.verifyAsync).not.toHaveBeenCalled();
   });
 
-  it('under keycloak requires synced user id without verifying JWT locally', async () => {
-    process.env.AUTHENTICATION_METHOD = 'keycloak';
+  it('under oidc requires synced user id without verifying JWT locally', async () => {
+    process.env.AUTHENTICATION_METHOD = 'oidc';
 
     await expect(guard.canActivate(createExecutionContext({ headers: {} }))).rejects.toThrow(
       'Missing or invalid authorization token',
@@ -297,8 +297,48 @@ describe('UsersAuthGuard', () => {
     expect(jwtService.verifyAsync).not.toHaveBeenCalled();
   });
 
-  it('under keycloak accepts patAuthenticated sessions', async () => {
-    process.env.AUTHENTICATION_METHOD = 'keycloak';
+  it('under oidc does not accept raw IdP claims without a synced local id', async () => {
+    process.env.AUTHENTICATION_METHOD = 'oidc';
+
+    await expect(
+      guard.canActivate(createExecutionContext({ headers: {}, user: { sub: 'idp-sub', email: 'x@example.com' } })),
+    ).rejects.toThrow('Missing or invalid authorization token');
+  });
+
+  it('under saml verifies the app session JWT like users mode', async () => {
+    process.env.AUTHENTICATION_METHOD = 'saml';
+
+    await expect(guard.canActivate(createExecutionContext({ headers: {} }))).rejects.toThrow(
+      'Missing or invalid authorization token',
+    );
+
+    jwtService.verifyAsync.mockRejectedValue(new Error('invalid signature'));
+    await expect(
+      guard.canActivate(createExecutionContext({ headers: { authorization: 'Bearer forged' } })),
+    ).rejects.toThrow('Invalid or expired token');
+    expect(jwtService.verifyAsync).toHaveBeenCalledWith('forged');
+  });
+
+  it.each([
+    ['saml', ['pwd']],
+    ['users', ['saml']],
+  ])('in %s mode rejects interactive sessions issued by the other method (%j)', async (method, amr) => {
+    process.env.AUTHENTICATION_METHOD = method;
+    jwtService.verifyAsync.mockResolvedValue({
+      sub: 'user-1',
+      email: 'a@b.com',
+      roles: ['admin'],
+      amr,
+      tv: 0,
+    } as never);
+
+    await expect(
+      guard.canActivate(createExecutionContext({ headers: { authorization: 'Bearer old.session' } })),
+    ).rejects.toThrow('Session is no longer valid.');
+  });
+
+  it('under oidc accepts patAuthenticated sessions', async () => {
+    process.env.AUTHENTICATION_METHOD = 'oidc';
 
     const ok = await guard.canActivate(
       createExecutionContext({ headers: {}, patAuthenticated: true, user: { id: 'u1', amr: ['pat'] } }),

@@ -4,7 +4,7 @@ sequenceDiagram
     participant Service as ClientsService
     participant Repo as ClientsRepository
     participant DB as Database
-    participant Keycloak as KeycloakTokenService
+    participant OIDC as OidcClientCredentialsService
     participant CredRepo as ClientAgentCredentialsRepository
     participant RemoteWS as Remote Agent-Manager WS<br/>(namespace: /agents)
 
@@ -31,16 +31,16 @@ sequenceDiagram
             alt Authentication Type: API_KEY
                 Gateway->>Gateway: Extract apiKey from client entity
                 Gateway->>Gateway: authHeader = "Bearer {apiKey}"
-            else Authentication Type: KEYCLOAK
+            else Authentication Type: OIDC
                 Gateway->>Service: getAccessToken(clientId)
-                Service->>Keycloak: getAccessToken(authServerUrl, realm, clientId, secret)
-                Keycloak->>Keycloak: Check token cache
+                Service->>OIDC: getAccessToken(issuer, clientId, secret, scope)
+                OIDC->>OIDC: Check token cache
                 alt Token cached and valid
-                    Keycloak-->>Service: cached token
+                    OIDC-->>Service: cached token
                 else Token expired or missing
-                    Keycloak->>Keycloak: POST /realms/{realm}/protocol/openid-connect/token<br/>(OAuth2 Client Credentials)
-                    Keycloak->>Keycloak: Cache token with expiration
-                    Keycloak-->>Service: access_token
+                    OIDC->>OIDC: POST {discovered token_endpoint}<br/>(OAuth2 Client Credentials)
+                    OIDC->>OIDC: Cache token with expiration
+                    OIDC-->>Service: access_token
                 end
                 Service-->>Gateway: JWT token
                 Gateway->>Gateway: authHeader = "Bearer {token}"

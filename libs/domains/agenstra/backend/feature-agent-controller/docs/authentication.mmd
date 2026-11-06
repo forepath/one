@@ -3,7 +3,8 @@ flowchart TB
         direction TB
         AUTH_METHOD["AUTHENTICATION_METHOD env"]
         AUTH_METHOD --> API_KEY["api-key"]
-        AUTH_METHOD --> KEYCLOAK["keycloak"]
+        AUTH_METHOD --> OIDC["oidc"]
+        AUTH_METHOD --> SAML["saml"]
         AUTH_METHOD --> USERS["users"]
     end
 
@@ -13,11 +14,18 @@ flowchart TB
         AK2 --> AK3["Always admin rights"]
     end
 
-    subgraph KEYCLOAK_FLOW["Keycloak Flow"]
-        KEYCLOAK --> KC1["Keycloak OAuth2 / OIDC"]
-        KC1 --> KC2["User synced to users table"]
+    subgraph OIDC_FLOW["OIDC Flow"]
+        OIDC --> KC1["Access token verified (JWKS / introspection)"]
+        KC1 --> KC2["Identity linked to users table"]
         KC2 --> KC3["First user = admin, rest = user"]
-        KC3 --> KC4["HTTP/WebSocket: reject if synced user locked_at set"]
+        KC3 --> KC4["HTTP/WebSocket: reject if linked user locked_at set"]
+    end
+
+    subgraph SAML_FLOW["SAML Flow"]
+        SAML --> SF1["Signed assertion at /api/auth/saml/acs"]
+        SF1 --> SF2["One-time code + PKCE exchange"]
+        SF2 --> SF3["Session JWT (amr: saml), validated like users mode"]
+        SF1 --> KC2
     end
 
     subgraph USERS_FLOW["Users Flow (Built-in)"]

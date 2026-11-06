@@ -23,7 +23,8 @@ flowchart TB
     subgraph EFFECTS["⚡ Effects"]
         direction TB
         EFF_API["API key: localStorage"]
-        EFF_KEYCLOAK["Keycloak: KeycloakService"]
+        EFF_OIDC["OIDC: oidc-client-ts (Authorization Code + PKCE)"]
+        EFF_SAML["SAML: one-time code exchange → JWT in localStorage"]
         EFF_USERS["Users: AuthService → REST API<br/>JWT stored in localStorage"]
     end
 

@@ -1,4 +1,4 @@
-import { KeycloakService } from 'keycloak-angular';
+import { OidcAuthService } from '@forepath/identity/frontend';
 import { Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 
@@ -34,9 +34,6 @@ import { STATUS_SOCKET_EVENTS } from './status-socket.constants';
 
 jest.mock('socket.io-client', () => ({
   io: jest.fn(),
-}));
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
 }));
 
 const testEnvironment = {
@@ -266,8 +263,8 @@ describe('NotificationsEffects', () => {
     getItem.mockRestore();
   });
 
-  it('connect effect uses keycloak token when configured', async () => {
-    const keycloak = { getToken: jest.fn().mockResolvedValue('kc-token') } as unknown as KeycloakService;
+  it('connect effect uses the OIDC access token when configured', async () => {
+    const oidc = { getToken: jest.fn().mockResolvedValue('oidc-token') } as unknown as OidcAuthService;
 
     connectNotificationsSocket$(
       actions$ as never,
@@ -275,21 +272,23 @@ describe('NotificationsEffects', () => {
         ...testEnvironment,
         authentication: {
           config: {
-            type: 'keycloak' as const,
+            type: 'oidc' as const,
+            issuer: 'https://idp.example.com',
+            clientId: 'console',
           },
         },
       } as never,
-      keycloak,
+      oidc,
     ).subscribe();
 
     actions$.next(connectNotificationsSocket());
     await Promise.resolve();
 
-    expect(keycloak.getToken).toHaveBeenCalled();
+    expect(oidc.getToken).toHaveBeenCalled();
     expect(io).toHaveBeenCalledWith(
       'http://localhost:3100/socket/status',
       expect.objectContaining({
-        auth: { Authorization: 'Bearer kc-token' },
+        auth: { Authorization: 'Bearer oidc-token' },
       }),
     );
   });

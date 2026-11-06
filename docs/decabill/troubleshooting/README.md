@@ -41,7 +41,7 @@ Debugging strategies and tools:
 
 ### Authentication Problems
 
-- Verify API key or Keycloak token
+- Verify API key, OIDC access token or SAML session
 - Check **`X-Tenant`** header matches an allowed tenant
 - Review **`STATIC_API_KEY_TENANT_ID`** if API key auth fails for some tenants
 

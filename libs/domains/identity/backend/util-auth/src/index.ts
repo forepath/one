@@ -1,20 +1,19 @@
 // Existing exports
-export * from './lib/bull-board-keycloak.guards';
+export * from './lib/authentication-method';
 export * from './lib/bull-board-request-path';
 export * from './lib/otel-metrics-request-path';
 export * from './lib/bull-board-throttler.guard';
 export * from './lib/http-request-path.util';
 export * from './lib/hybrid-auth.guard';
-export * from './lib/keycloak.guard';
-export * from './lib/keycloak.module';
-export * from './lib/keycloak.service';
-export * from './lib/keycloak.types';
+export * from './lib/oidc';
 export * from './lib/origin-allowlist.middleware';
+export * from './lib/service-socket-auth';
+export * from './lib/secret-compare';
+export * from './lib/trust-proxy.config';
 export * from './lib/rate-limit.config';
 
 // Phase 2a: New exports
 export * from './lib/client-access.utils';
-export * from './lib/decorators/keycloak-roles.decorator';
 export * from './lib/decorators/public.decorator';
 export * from './lib/decorators/users-roles.decorator';
 export * from './lib/entities/authentication-type.enum';
@@ -26,6 +25,7 @@ export * from './lib/entities/identity-app.entity';
 export * from './lib/entities/identity-app-grant.entity';
 export * from './lib/entities/identity-app-session.entity';
 export * from './lib/entities/identity-app-authorization-code.entity';
+export * from './lib/entities/external-auth-state.entity';
 export * from './lib/entities/user.entity';
 export * from './lib/password.service';
 export * from './lib/statistics.interface';
@@ -46,3 +46,5 @@ export * from './lib/migrations/1776100000000_CreateUserPersonalAccessTokensTabl
 export * from './lib/migrations/1778000000000_AddUserLogin2faColumns';
 export * from './lib/migrations/1778000000001_EncryptUserTotpSecretColumn';
 export * from './lib/migrations/1793700000000_CreateIdentityAppsTables';
+export * from './lib/migrations/1793900000000_ReplaceKeycloakSubWithExternalIdentity';
+export * from './lib/migrations/1793900000001_CreateExternalAuthStatesTable';

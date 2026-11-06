@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -27,7 +27,6 @@ export class MetersController {
   ) {}
 
   @Get()
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @RequireScopes('catalog:admin')
   async list(
@@ -41,7 +40,6 @@ export class MetersController {
   }
 
   @Get(':id')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @RequireScopes('catalog:admin')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<MeterResponseDto> {
@@ -51,7 +49,6 @@ export class MetersController {
   }
 
   @Post()
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async create(@Body() dto: CreateMeterDto): Promise<MeterResponseDto> {
     const row = await this.meterService.createMeter(dto);
@@ -60,7 +57,6 @@ export class MetersController {
   }
 
   @Post(':id')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -72,7 +68,6 @@ export class MetersController {
   }
 
   @Delete(':id')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {

@@ -235,7 +235,7 @@ Managers run on separately provisioned hosts per client/workspace.
 | PostgreSQL                 |    Yes     |   Yes    | Separate databases per stack                                 |
 | Valkey                     |    Yes     |    No    | Controller BullMQ only                                       |
 | Docker socket              |  Optional  |   Yes    | Required for agent lifecycle                                 |
-| Keycloak / API key         |  Optional  | Optional | Match `AUTHENTICATION_METHOD`                                |
+| OIDC / SAML IdP / API key  |  Optional  | Optional | Match `AUTHENTICATION_METHOD`                                |
 | SMTP                       |  Optional  |    -     | Mailhog in local controller compose                          |
 | Hetzner / DigitalOcean API |  Optional  |    -     | Server provisioning from controller                          |
 | Provider API keys          |     -      | Optional | Agent workload credentials as required by OpenCode / plugins |

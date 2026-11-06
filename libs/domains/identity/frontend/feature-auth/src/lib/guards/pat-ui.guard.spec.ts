@@ -11,11 +11,6 @@ import { createMockIdentityAuthEnvironment } from '../../../../util-auth/src/lib
 
 import { patUiGuard } from './pat-ui.guard';
 
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-  createAuthGuard: jest.fn().mockReturnValue(() => Promise.resolve(true)),
-}));
-
 describe('patUiGuard', () => {
   let mockRouter: jest.Mocked<Router>;
   let mockRoute: ActivatedRouteSnapshot;
@@ -47,13 +42,14 @@ describe('patUiGuard', () => {
     expect(runInInjectionContext(injector, () => patUiGuard(mockRoute, mockState))).toBe(true);
   });
 
-  it('allows keycloak mode', () => {
-    const injector = setup({
-      type: 'keycloak',
-      authServerUrl: 'http://localhost:8080',
-      realm: 'test',
-      clientId: 'test',
-    });
+  it('allows oidc mode', () => {
+    const injector = setup({ type: 'oidc', issuer: 'https://idp.example.com', clientId: 'console' });
+
+    expect(runInInjectionContext(injector, () => patUiGuard(mockRoute, mockState))).toBe(true);
+  });
+
+  it('allows saml mode', () => {
+    const injector = setup({ type: 'saml' });
 
     expect(runInInjectionContext(injector, () => patUiGuard(mockRoute, mockState))).toBe(true);
   });

@@ -9,7 +9,6 @@ import {
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { Public } from '@forepath/identity/backend';
 import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { Public as KeycloakPublic } from 'nest-keycloak-connect';
 
 import {
   parseAgentHandoffCreate,
@@ -30,7 +29,6 @@ import { authenticateAgentContextCall } from '../utils/agent-context-auth.utils'
  * accepts targets of the same workspace.
  */
 @Public()
-@KeycloakPublic()
 @Controller(`${AGENSTRA_CONTEXT_API_ROUTE}/${AGENSTRA_HANDOFFS_API_SEGMENT}`)
 export class AgentsHandoffsController {
   constructor(

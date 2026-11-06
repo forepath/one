@@ -7,11 +7,29 @@ import type { AuthLayoutConfig, AuthMarketing } from '@forepath/shared/frontend/
  * in the application environment.
  */
 
-export interface KeycloakAuthenticationConfig {
-  type: 'keycloak';
-  authServerUrl: string;
-  realm: string;
+/**
+ * Generic OpenID Connect (any compliant provider, e.g. Keycloak, Entra ID, Auth0, Okta).
+ * The console runs the Authorization Code flow with PKCE as a public client and sends the access token
+ * to the API (`AUTHENTICATION_METHOD=oidc`).
+ */
+export interface OidcAuthenticationConfig {
+  type: 'oidc';
+  /** Issuer URL; discovery is loaded from `<issuer>/.well-known/openid-configuration`. */
+  issuer: string;
+  /** Public (SPA) client id registered at the provider. */
   clientId: string;
+  /** Requested scopes (default `openid profile email`). */
+  scope?: string;
+  /** Where the provider sends the browser after logout (default: console base URL). */
+  postLogoutRedirectUri?: string;
+}
+
+/**
+ * SAML 2.0 via the API (service provider): the console starts sign-in at `<apiUrl>/auth/saml/login`
+ * and exchanges the one-time code for an app session JWT (`AUTHENTICATION_METHOD=saml`).
+ */
+export interface SamlAuthenticationConfig {
+  type: 'saml';
 }
 
 export interface ApiKeyAuthenticationConfig {
@@ -27,9 +45,26 @@ export interface UsersAuthenticationConfig {
 }
 
 export type AuthenticationConfig =
-  | KeycloakAuthenticationConfig
+  | OidcAuthenticationConfig
+  | SamlAuthenticationConfig
   | ApiKeyAuthenticationConfig
   | UsersAuthenticationConfig;
+
+/** Authentication method of the console (`authentication.type`). */
+export type AuthenticationConfigType = AuthenticationConfig['type'];
+
+/**
+ * Whether the console session is an app-signed JWT kept in localStorage (`users` password login or `saml`
+ * assertion exchange). Interceptors, guards, sockets and logout share the users-mode handling for both.
+ */
+export function usesAppSessionJwt(type: AuthenticationConfigType | null | undefined): boolean {
+  return type === 'users' || type === 'saml';
+}
+
+/** Whether interactive sign-in happens at an external identity provider (OIDC or SAML). */
+export function usesExternalSignIn(type: AuthenticationConfigType | null | undefined): type is 'oidc' | 'saml' {
+  return type === 'oidc' || type === 'saml';
+}
 
 /**
  * Minimal environment interface required by identity auth features.
@@ -52,6 +87,8 @@ export interface IdentityAuthEnvironment {
   additionalApiUrls?: string[];
   /** Authentication configuration */
   authentication: AuthenticationConfig;
+  /** Optional tenant id of multi-tenant APIs (sent as `tenant` on SAML sign-in, which cannot carry `X-Tenant`). */
+  tenantId?: string;
   /**
    * Optional: The full REST API URL for the controller.
    * Used by the login component to display the API hostname for API-key auth.

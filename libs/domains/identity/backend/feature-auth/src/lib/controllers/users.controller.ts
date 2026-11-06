@@ -1,4 +1,4 @@
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -24,7 +24,6 @@ import { UsersService } from '../services/users.service';
 
 @Controller('users')
 @UseGuards(UsersAuthGuard)
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 @RequireScopes('users:admin')
 export class UsersController {
@@ -46,10 +45,7 @@ export class UsersController {
 
   @Post()
   async create(@Body() dto: CreateUserDto) {
-    const count = await this.usersService.getUsersCount();
-    const isFirstUser = count === 0;
-
-    return this.usersService.create(dto, isFirstUser);
+    return this.usersService.create(dto);
   }
 
   @Post(':id')

@@ -15,7 +15,7 @@
         <source>Chargebee is a mature subscription management platform for SaaS companies. It handles plans, coupons, dunning, revenue recognition, and integrations with major payment gateways from a hosted console. It fits when recurring SaaS is your primary model and you want a vendor to run billing logic while you focus on product delivery.</source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-chargebee-overviewDecabill" datatype="html">
-        <source>Decabill targets teams that outgrow subscription-only tooling. It combines SaaS billing with agency services and managed hosting, ships ZUGFeRD invoices, provisions Hetzner and DigitalOcean servers from subscriptions, and can run on your infrastructure with tenant isolation and Keycloak-backed SSO.</source>
+        <source>Decabill targets teams that outgrow subscription-only tooling. It combines SaaS billing with agency services and managed hosting, ships ZUGFeRD invoices, provisions Hetzner and DigitalOcean servers from subscriptions, and can run on your infrastructure with tenant isolation and OIDC / SAML single sign-on.</source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-hostbill-metaTitle" datatype="html">
         <source>HostBill vs Decabill</source>
@@ -195,7 +195,7 @@
         <source>Stripe Checkout and webhook integration combined with pluggable payment providers so operators can keep their own PSP relationships.</source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-decabillT12" datatype="html">
-        <source>Supports Keycloak with OIDC and SAML plus built-in users and API-key based automation for agency and enterprise setups.</source>
+        <source>Supports any OIDC or SAML identity provider plus built-in users and API-key based automation for agency and enterprise setups.</source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-decabillT13" datatype="html">
         <source>OpenAPI-described REST API for customers, subscriptions, invoices, and admin workflows enables deep integration without scraping UIs.</source>
@@ -444,7 +444,7 @@
         <source>Stripe Billing is the subscription and invoicing layer inside Stripe&apos;s payments platform. It excels at recurring SaaS pricing, usage meters, tax calculation, and a hosted customer portal tied to Stripe Checkout. It fits when payments are your center of gravity and you are comfortable building everything else around Stripe&apos;s APIs and hosted surfaces.</source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-stripe-overviewDecabill" datatype="html">
-        <source>Decabill is a billing platform you operate, not a payments processor you rent. It connects subscriptions, invoices, customer self-service, and cloud provisioning in one stack with ZUGFeRD output, Keycloak SSO, and multi-tenant isolation. You keep Stripe for payments while owning the catalog, consoles, and hosting lifecycle.</source>
+        <source>Decabill is a billing platform you operate, not a payments processor you rent. It connects subscriptions, invoices, customer self-service, and cloud provisioning in one stack with ZUGFeRD output, OIDC / SAML single sign-on, and multi-tenant isolation. You keep Stripe for payments while owning the catalog, consoles, and hosting lifecycle.</source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-whmcs-metaTitle" datatype="html">
         <source>WHMCS vs Decabill</source>

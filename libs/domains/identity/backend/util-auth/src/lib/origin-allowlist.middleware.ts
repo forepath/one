@@ -2,6 +2,7 @@ import { recordSharedCounter } from '@forepath/shared/backend/util-otel/metrics'
 import { ForbiddenException, Logger } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 
+import { getAuthenticationMethod } from './authentication-method';
 import { isBullBoardRequestPath } from './bull-board-request-path';
 import { isOtelMetricsRequestPath } from './otel-metrics-request-path';
 
@@ -25,6 +26,30 @@ function isUnsafeMethod(method: string | undefined): boolean {
   const m = String(method || '').toUpperCase();
 
   return m === 'POST' || m === 'PUT' || m === 'PATCH' || m === 'DELETE';
+}
+
+/**
+ * SAML Assertion Consumer Service: the IdP's auto-submitted form POST is cross-site by design (Origin is the IdP or
+ * `null`). The endpoint authenticates the message itself (XML signature, InResponseTo bound to an outstanding request,
+ * single-use RelayState) and login CSRF is prevented by the PKCE-bound code exchange, so the Origin check is skipped
+ * for exactly this route when SAML is the active method.
+ */
+function isSamlAssertionConsumerServicePost(req: Request, requestPath: string): boolean {
+  if (String(req.method || '').toUpperCase() !== 'POST') {
+    return false;
+  }
+
+  const path = requestPath.replace(/\/+$/, '');
+
+  if (path !== '/api/auth/saml/acs' && path !== '/auth/saml/acs') {
+    return false;
+  }
+
+  try {
+    return getAuthenticationMethod() === 'saml';
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -54,7 +79,11 @@ export function createOriginAllowlistMiddleware(
   return (req, _res, next) => {
     const requestPath = (req.originalUrl ?? req.url ?? '').split('?')[0] ?? '';
 
-    if (isBullBoardRequestPath(requestPath) || isOtelMetricsRequestPath(requestPath)) {
+    if (
+      isBullBoardRequestPath(requestPath) ||
+      isOtelMetricsRequestPath(requestPath) ||
+      isSamlAssertionConsumerServicePost(req, requestPath)
+    ) {
       next();
 
       return;

@@ -87,7 +87,7 @@ Completed and failed jobs are **not auto-removed** (`removeOnComplete: false`, `
 
 Unit jobs use a **stable jobId** as an in-flight lock: enqueue is skipped while a job with that id is waiting or active. Before add, `enqueueUnitJob` removes a completed or failed record with the same id and enqueues the next run. BullMQ 5 treats a second add with that id as a successful no-op, so coordinators would otherwise stay stuck behind Bull Board retention.
 
-Bull Board routes bypass the API **origin allowlist**, **HybridAuthGuard**, and **Keycloak guards** (when `AUTHENTICATION_METHOD=keycloak`) so dashboard actions (retry, delete, clean) are not blocked with `403 Forbidden` when the UI sends browser `Origin` headers or `Authorization: Basic` instead of the API key or OIDC token.
+Bull Board routes bypass the API **origin allowlist**, **HybridAuthGuard**, and **OIDC guards** (when `AUTHENTICATION_METHOD=oidc`) so dashboard actions (retry, delete, clean) are not blocked with `403 Forbidden` when the UI sends browser `Origin` headers or `Authorization: Basic` instead of the API key or OIDC token.
 
 Worker and scheduler containers set `QUEUE_BULL_BOARD_ENABLED=false` so they do not start an HTTP server solely for Bull Board.
 

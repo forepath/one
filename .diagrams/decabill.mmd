@@ -3,7 +3,7 @@ flowchart TB
   Customers(["Customers<br/>browser, API, PATs"])
   Admins(["Admins / operators<br/>billing administration, catalog, AR + AP"])
   Visitors(["Visitors<br/>marketing site, docs, pricing"])
-  Keycloak(["Keycloak / OIDC<br/>or built-in users (JWT) / static API key"])
+  IdP(["OIDC / SAML identity provider<br/>or built-in users (JWT) / static API key"])
   Smtp(["SMTP + webhook receivers"])
   Otel(["OpenTelemetry collector<br/>OTLP export, metrics scrape"])
   Stripe(["Stripe<br/>Checkout, setup sessions, off-session charges, refunds"])
@@ -29,7 +29,7 @@ flowchart TB
   Visitors --> Docs
 
   subgraph Manager["Billing manager (NestJS :3200, one image, QUEUE_ROLE = api | worker | scheduler | all)"]
-    BAuth["Authentication + tenancy<br/>api-key, keycloak (user sync), users, PAT scopes,<br/>X-Tenant header, tenant-user guard"]
+    BAuth["Authentication + tenancy<br/>api-key, oidc / saml (user sync), users, PAT scopes,<br/>X-Tenant header, tenant-user guard"]
     BApi["REST API /api<br/>public offerings, pricing + tax preview, availability,<br/>subscriptions, items, usage, invoices, customer profile,<br/>admin billing, catalog, offers, projects, public withdrawal"]
     StatusGw["Socket.IO socket/billing<br/>dashboard server status, live meter updates"]
     BoardGw["Socket.IO socket/projects<br/>live project board"]
@@ -65,7 +65,7 @@ flowchart TB
   BApi --> BAuth
   StatusGw --> BAuth
   BoardGw --> BAuth
-  BAuth -.OIDC.-> Keycloak
+  BAuth -.OIDC / SAML.-> IdP
   BApi --> Catalog & Subs & Invoicing & Payments & Offers & Projects & Suppliers & DatevExport & Profiles & FileExplorer & Search
   BoardGw --> Projects
   StatusGw -.poll provisioned items.-> Provisioning

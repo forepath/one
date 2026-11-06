@@ -19,9 +19,6 @@ import {
 jest.mock('socket.io-client', () => ({
   io: jest.fn(),
 }));
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-}));
 
 describe('resolveKnowledgeBoardWebsocketUrl', () => {
   it('derives /pages from /clients websocket URL', () => {

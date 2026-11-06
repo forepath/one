@@ -20,6 +20,14 @@ const AGENT_MANAGER_NETWORK = 'agent-manager-network';
  * Service for orchestrating server provisioning through cloud providers.
  * Handles provider selection, server provisioning, client creation, and reference storage.
  */
+/**
+ * Single-line, double-quoted YAML scalar for docker-compose env values (JSON strings are valid YAML).
+ * Newlines are escaped (cannot end the heredoc or add keys) and `$` is doubled (no compose interpolation).
+ */
+function composeEnvValue(value: string): string {
+  return JSON.stringify(value).replace(/\$/g, '$$$$');
+}
+
 @Injectable()
 export class ProvisioningService {
   private readonly logger = new Logger(ProvisioningService.name);
@@ -52,9 +60,9 @@ export class ProvisioningService {
 
   /**
    * Generate user data script with authentication, GIT, and other configuration.
-   * @param authenticationType - The authentication type (API_KEY or KEYCLOAK)
+   * @param authenticationType - The authentication type (API_KEY or OIDC)
    * @param apiKey - The API key (for API_KEY authentication)
-   * @param keycloakConfig - Keycloak configuration (for KEYCLOAK authentication)
+   * @param oidcConfig - OIDC client credentials of the controller (for OIDC authentication)
    * @param gitConfig - Git repository configuration
    * @param agentDefaultImage - Default image for agent containers
    * @param autoEnrichEnabledGlobal - When set, written as AUTO_ENRICH_ENABLED_GLOBAL for agent-manager (`true`|`false`)
@@ -64,7 +72,7 @@ export class ProvisioningService {
   private generateAuthUserData(
     authenticationType: AuthenticationType,
     apiKey?: string,
-    keycloakConfig?: { clientId: string; clientSecret: string; realm?: string; authServerUrl?: string },
+    oidcConfig?: { clientId: string; clientSecret: string; issuer?: string },
     gitConfig?: {
       setupMode?: GitRepositorySetupMode;
       repositoryUrl?: string;
@@ -85,19 +93,27 @@ export class ProvisioningService {
         throw new BadRequestException('API key is required for API_KEY authentication type');
       }
 
-      authEnvVars.push(`STATIC_API_KEY: ${apiKey}`);
-    } else if (authenticationType === AuthenticationType.KEYCLOAK) {
-      if (!keycloakConfig?.clientId || !keycloakConfig?.clientSecret) {
-        throw new BadRequestException('Keycloak client ID and secret are required for KEYCLOAK authentication type');
+      authEnvVars.push(`STATIC_API_KEY: ${composeEnvValue(apiKey)}`);
+    } else if (authenticationType === AuthenticationType.OIDC) {
+      if (!oidcConfig?.clientId || !oidcConfig?.clientSecret) {
+        throw new BadRequestException('OIDC client ID and secret are required for OIDC authentication type');
       }
 
-      const authServerUrl = keycloakConfig.authServerUrl || process.env.KEYCLOAK_AUTH_SERVER_URL || '';
-      const realm = keycloakConfig.realm || process.env.KEYCLOAK_REALM || '';
+      const issuer = oidcConfig.issuer?.trim() || process.env.OIDC_ISSUER?.trim() || '';
 
-      authEnvVars.push(`KEYCLOAK_AUTH_SERVER_URL: ${authServerUrl}`);
-      authEnvVars.push(`KEYCLOAK_REALM: ${realm}`);
-      authEnvVars.push(`KEYCLOAK_CLIENT_ID: ${keycloakConfig.clientId}`);
-      authEnvVars.push(`KEYCLOAK_CLIENT_SECRET: ${keycloakConfig.clientSecret}`);
+      if (!issuer) {
+        throw new BadRequestException(
+          'OIDC issuer is required because OIDC_ISSUER is not configured on the controller',
+        );
+      }
+
+      // The manager only accepts tokens issued to the controller's client (`azp`), validated OFFLINE (JWKS).
+      // It never receives the client secret: a compromised manager host must not be able to mint tokens that
+      // other managers (or the controller) would accept.
+      authEnvVars.push(`AUTHENTICATION_METHOD: oidc`);
+      authEnvVars.push(`OIDC_ISSUER: ${composeEnvValue(issuer)}`);
+      authEnvVars.push(`OIDC_TOKEN_VALIDATION: OFFLINE`);
+      authEnvVars.push(`OIDC_AUTHORIZED_PARTIES: ${composeEnvValue(oidcConfig.clientId)}`);
     }
 
     // Build GIT environment variables
@@ -107,23 +123,23 @@ export class ProvisioningService {
       gitEnvVars.push(`GIT_REPOSITORY_SETUP_MODE: ${GitRepositorySetupMode.EMPTY}`);
     } else if (gitConfig) {
       if (gitConfig.repositoryUrl) {
-        gitEnvVars.push(`GIT_REPOSITORY_URL: ${gitConfig.repositoryUrl}`);
+        gitEnvVars.push(`GIT_REPOSITORY_URL: ${composeEnvValue(gitConfig.repositoryUrl)}`);
       }
 
       if (gitConfig.username) {
-        gitEnvVars.push(`GIT_USERNAME: ${gitConfig.username}`);
+        gitEnvVars.push(`GIT_USERNAME: ${composeEnvValue(gitConfig.username)}`);
       }
 
       if (gitConfig.token) {
-        gitEnvVars.push(`GIT_TOKEN: ${gitConfig.token}`);
+        gitEnvVars.push(`GIT_TOKEN: ${composeEnvValue(gitConfig.token)}`);
       }
 
       if (gitConfig.password) {
-        gitEnvVars.push(`GIT_PASSWORD: ${gitConfig.password}`);
+        gitEnvVars.push(`GIT_PASSWORD: ${composeEnvValue(gitConfig.password)}`);
       }
 
       if (gitConfig.privateKey) {
-        gitEnvVars.push(`GIT_PRIVATE_KEY: ${gitConfig.privateKey}`);
+        gitEnvVars.push(`GIT_PRIVATE_KEY: ${composeEnvValue(gitConfig.privateKey)}`);
       }
     }
 
@@ -131,7 +147,7 @@ export class ProvisioningService {
     const agentEnvVars: string[] = [];
 
     if (agentDefaultImage) {
-      agentEnvVars.push(`AGENT_DEFAULT_IMAGE: ${agentDefaultImage}`);
+      agentEnvVars.push(`AGENT_DEFAULT_IMAGE: ${composeEnvValue(agentDefaultImage)}`);
     }
 
     if (autoEnrichEnabledGlobal === 'true' || autoEnrichEnabledGlobal === 'false') {
@@ -367,12 +383,11 @@ DOCKER_COMPOSE_EOF
     const authUserData = this.generateAuthUserData(
       provisionServerDto.authenticationType,
       apiKey,
-      provisionServerDto.authenticationType === AuthenticationType.KEYCLOAK
+      provisionServerDto.authenticationType === AuthenticationType.OIDC
         ? {
-            clientId: provisionServerDto.keycloakClientId || '',
-            clientSecret: provisionServerDto.keycloakClientSecret || '',
-            realm: provisionServerDto.keycloakRealm,
-            authServerUrl: provisionServerDto.keycloakAuthServerUrl,
+            clientId: provisionServerDto.oidcClientId || '',
+            clientSecret: provisionServerDto.oidcClientSecret || '',
+            issuer: provisionServerDto.oidcIssuer,
           }
         : undefined,
       provisionServerDto.gitRepositorySetupMode === GitRepositorySetupMode.EMPTY
@@ -418,9 +433,10 @@ DOCKER_COMPOSE_EOF
         endpoint: provisionedServer.endpoint,
         authenticationType: provisionServerDto.authenticationType,
         apiKey,
-        keycloakClientId: provisionServerDto.keycloakClientId,
-        keycloakClientSecret: provisionServerDto.keycloakClientSecret,
-        keycloakRealm: provisionServerDto.keycloakRealm,
+        oidcClientId: provisionServerDto.oidcClientId,
+        oidcClientSecret: provisionServerDto.oidcClientSecret,
+        oidcIssuer: provisionServerDto.oidcIssuer,
+        oidcScope: provisionServerDto.oidcScope,
       },
       userId,
       userRole,

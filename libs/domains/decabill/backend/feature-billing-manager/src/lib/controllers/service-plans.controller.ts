@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import {
   BadRequestException,
@@ -126,7 +126,6 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Post(':id/meters')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async attachPlanMeter(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -139,7 +138,6 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Post(':id/meters/:meterId')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async updatePlanMeter(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -153,7 +151,6 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Delete(':id/meters/:meterId')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   async detachPlanMeter(
@@ -243,7 +240,6 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Post()
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async create(@Body() dto: CreateServicePlanDto): Promise<ServicePlanResponseDto> {
     const dbServiceTypeId = fromApiServiceTypeId(dto.serviceTypeId);
@@ -329,7 +325,6 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Post(':id')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -502,7 +497,6 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Delete(':id')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
