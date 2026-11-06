@@ -10,7 +10,7 @@ Comprehensive checklist for deploying Agenstra to production.
 - `CORS_ORIGIN` is configured with your production domain(s)
 - `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
 - `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
-- `STATIC_API_KEY` or Keycloak credentials are configured
+- `STATIC_API_KEY` or OIDC / SAML settings are configured
 - Database credentials are secure and not using defaults
 - `ENCRYPTION_KEY` is set for sensitive data encryption (agent-controller)
 - **Backend agent-controller**: `CLIENT_ENDPOINT_ALLOWED_HOSTS` is set (comma-separated hostnames or `*`); the process exits on startup in production if unset (see [Environment configuration](./environment-configuration.md))
@@ -19,7 +19,7 @@ Comprehensive checklist for deploying Agenstra to production.
 
 - All default passwords are changed
 - API keys are strong and unique
-- Keycloak is properly configured (if using)
+- The OIDC / SAML identity provider is properly configured (if using); prefer `OIDC_AUDIENCE` / `OIDC_AUTHORIZED_PARTIES` and `SAML_IDP_ISSUER`
 - HTTPS/WSS is enabled for all connections
 - CORS is restricted to specific origins
 - Rate limiting is enabled
@@ -52,7 +52,7 @@ Comprehensive checklist for deploying Agenstra to production.
 
 ### Authentication
 
-- Use strong API keys or Keycloak with proper configuration
+- Use strong API keys or an OIDC / SAML identity provider with proper configuration
 - Consider setting **`AUTHENTICATION_METHOD`** explicitly in production if your policy requires fully unambiguous mode selection (see **[Accepted risks - AR-003](../security/accepted-risks.md)**)
 - Enable token expiration and refresh
 - Implement proper session management

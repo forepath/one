@@ -4,7 +4,7 @@ sequenceDiagram
     participant Service as ClientsService
     participant Repo as ClientsRepository
     participant DB as Database
-    participant Keycloak as KeycloakTokenService
+    participant OIDC as OidcClientCredentialsService
     participant Proxy as ClientAgentProxyService
     participant Remote as Remote Agent-Manager<br/>(/api/agents)
     participant CredService as ClientAgentCredentialsService
@@ -17,8 +17,8 @@ sequenceDiagram
         API->>Service: create(createClientDto)
         alt Authentication Type: API_KEY
             Service->>Service: generateRandomApiKey() (if not provided)
-        else Authentication Type: KEYCLOAK
-            Service->>Service: Validate keycloakClientId & keycloakClientSecret
+        else Authentication Type: OIDC
+            Service->>Service: Validate oidcClientId & oidcClientSecret (+ issuer SSRF policy)
         end
         Service->>Repo: create(entity)
         Repo->>DB: INSERT client
@@ -63,15 +63,15 @@ sequenceDiagram
     end
 
     rect rgb(255, 255, 230)
-        Note over Client,Keycloak: Update Client
+        Note over Client,OIDC: Update Client
         Client->>API: POST /api/clients/{id}<br/>{name?, endpoint?, authType?, ...}
         API->>Service: update(id, updateClientDto)
         Service->>Repo: findById(id)
         Repo->>DB: SELECT client WHERE id
         DB-->>Repo: client entity
         Repo-->>Service: client entity
-        alt Changing to KEYCLOAK or updating Keycloak credentials
-            Service->>Keycloak: clearCache(authServerUrl, realm, clientId)
+        alt Changing to OIDC or updating OIDC credentials
+            Service->>OIDC: clearCache(issuer, clientId)
         end
         Service->>Repo: update(id, updates)
         Repo->>DB: UPDATE client
@@ -92,8 +92,8 @@ sequenceDiagram
         Service->>Repo: findById(id)
         Repo->>DB: SELECT client WHERE id
         DB-->>Repo: client entity
-        alt Client is KEYCLOAK type
-            Service->>Keycloak: clearCache(authServerUrl, realm, clientId)
+        alt Client is OIDC type
+            Service->>OIDC: clearCache(issuer, clientId)
         end
         Service->>Repo: delete(id)
         Repo->>DB: DELETE client WHERE id<br/>(CASCADE deletes credentials)
@@ -113,17 +113,17 @@ sequenceDiagram
         Repo-->>Proxy: client entity
         alt Authentication Type: API_KEY
             Proxy->>Proxy: getAuthHeader(clientId)<br/>Returns: Bearer {apiKey}
-        else Authentication Type: KEYCLOAK
+        else Authentication Type: OIDC
             Proxy->>Service: getAccessToken(clientId)
-            Service->>Keycloak: getAccessToken(authServerUrl, realm, clientId, secret)
-            Keycloak->>Keycloak: Check token cache
+            Service->>OIDC: getAccessToken(issuer, clientId, secret, scope)
+            OIDC->>OIDC: Check token cache
             alt Token cached and valid
-                Keycloak-->>Service: cached token
+                OIDC-->>Service: cached token
             else Token expired or missing
-                Keycloak->>Remote: POST /realms/{realm}/protocol/openid-connect/token<br/>(OAuth2 Client Credentials)
-                Remote-->>Keycloak: {access_token, expires_in}
-                Keycloak->>Keycloak: Cache token
-                Keycloak-->>Service: access_token
+                OIDC->>Remote: POST {discovered token_endpoint}<br/>(OAuth2 Client Credentials)
+                Remote-->>OIDC: {access_token, expires_in}
+                OIDC->>OIDC: Cache token
+                OIDC-->>Service: access_token
             end
             Service-->>Proxy: JWT token
             Proxy->>Proxy: getAuthHeader(clientId)<br/>Returns: Bearer {token}

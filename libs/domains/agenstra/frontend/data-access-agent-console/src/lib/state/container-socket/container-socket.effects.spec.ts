@@ -4,7 +4,7 @@ import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { provideMockStore } from '@ngrx/store/testing';
-import { KeycloakService } from 'keycloak-angular';
+import { OidcAuthService } from '@forepath/identity/frontend';
 import { of } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 
@@ -38,16 +38,11 @@ jest.mock('socket.io-client', () => ({
   io: jest.fn(),
 }));
 
-// Mock KeycloakService to avoid ES module import issues in Jest
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-}));
-
 describe('SocketsEffects', () => {
   let actions$: Actions;
   let mockSocket: jest.Mocked<Partial<Socket>>;
   let mockEnvironment: any;
-  let mockKeycloakService: jest.Mocked<Partial<KeycloakService>>;
+  let mockOidcAuthService: { getToken: jest.Mock };
   const mockForwardedPayload: ForwardedEventPayload = {
     success: true,
     data: {
@@ -88,7 +83,7 @@ describe('SocketsEffects', () => {
       },
     };
 
-    mockKeycloakService = {
+    mockOidcAuthService = {
       getToken: jest.fn(),
     };
 
@@ -107,8 +102,8 @@ describe('SocketsEffects', () => {
           useValue: mockEnvironment,
         },
         {
-          provide: KeycloakService,
-          useValue: mockKeycloakService,
+          provide: OidcAuthService,
+          useValue: mockOidcAuthService,
         },
       ],
     });
@@ -190,17 +185,19 @@ describe('SocketsEffects', () => {
       });
     });
 
-    it('should create socket connection with Keycloak authentication', (done) => {
-      const keycloakEnvironment = {
+    it('should create socket connection with OIDC authentication', (done) => {
+      const oidcEnvironment = {
         ...mockEnvironment,
         authentication: {
           config: {
-            type: 'keycloak',
+            type: 'oidc',
+            issuer: 'https://idp.example.com',
+            clientId: 'console',
           },
         },
       };
 
-      mockKeycloakService.getToken = jest.fn().mockResolvedValue('keycloak-token-123');
+      mockOidcAuthService.getToken = jest.fn().mockResolvedValue('oidc-token-123');
 
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
@@ -215,11 +212,11 @@ describe('SocketsEffects', () => {
           }),
           {
             provide: ENVIRONMENT,
-            useValue: keycloakEnvironment,
+            useValue: oidcEnvironment,
           },
           {
-            provide: KeycloakService,
-            useValue: mockKeycloakService,
+            provide: OidcAuthService,
+            useValue: mockOidcAuthService,
           },
         ],
       });
@@ -240,7 +237,7 @@ describe('SocketsEffects', () => {
       connectSocket$(
         actions$,
         TestBed.inject(ENVIRONMENT),
-        TestBed.inject(KeycloakService),
+        TestBed.inject(OidcAuthService),
         TestBed.inject(Store),
       ).subscribe((result) => {
         expect(io).toHaveBeenCalledWith('http://localhost:3100/socket/clients', {
@@ -251,7 +248,7 @@ describe('SocketsEffects', () => {
           reconnectionDelay: 1000,
           reconnectionDelayMax: 5000,
           randomizationFactor: 0.5,
-          auth: { Authorization: 'Bearer keycloak-token-123' },
+          auth: { Authorization: 'Bearer oidc-token-123' },
         });
         expect(result).toEqual(connectSocketSuccess());
         done();

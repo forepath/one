@@ -261,7 +261,7 @@ export class PersonalAccessTokenService {
 
     const user = await this.usersRepository.findById(userId);
 
-    // Align with verifyToken: password or Keycloak-linked accounts, confirmed, not locked.
+    // Align with verifyToken: password or externally linked (OIDC / SAML) accounts, confirmed, not locked.
     if (!user || !this.isPatEligibleAccount(user) || !user.emailConfirmedAt || user.lockedAt) {
       throw new UnauthorizedException('Session is no longer valid.');
     }
@@ -290,7 +290,7 @@ export class PersonalAccessTokenService {
   }
 
   private isPatEligibleAccount(user: UserEntity): boolean {
-    return Boolean(user.passwordHash || user.keycloakSub);
+    return Boolean(user.passwordHash || user.externalSubject);
   }
 
   private filterScopesForRole(scopes: string[], role: UserRole): string[] {

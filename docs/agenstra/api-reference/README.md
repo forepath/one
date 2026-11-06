@@ -17,7 +17,7 @@ Canonical source in the monorepo: `libs/domains/agenstra/backend/feature-agent-c
 
 The Agent Controller HTTP API provides:
 
-- Client management (CRUD operations) and client user management (Keycloak/users modes)
+- Client management (CRUD operations) and client user management (users / oidc / saml modes)
 - Users authentication endpoints (`/auth/*`, `/users/*`) when `AUTHENTICATION_METHOD=users`
 - Tickets, comments, activity, migration, automation, and assisted body-generation flows (`/tickets/*`)
 - Knowledge tree and relations (`/knowledge/*`) for workspace pages/folders

@@ -2,7 +2,7 @@
  * Authentication state types for the identity domain.
  */
 
-export type AuthenticationType = 'api-key' | 'keycloak' | 'users';
+export type AuthenticationType = 'api-key' | 'users' | 'oidc' | 'saml';
 
 export type UserRole = 'user' | 'admin';
 

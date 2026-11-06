@@ -265,9 +265,9 @@ describe('usersSessionInvalidatedInterceptor', () => {
     });
   });
 
-  it('dispatches logout on locked-account 401 for keycloak mode without clearing users JWT or navigating', (done) => {
+  it('dispatches logout on locked-account 401 for oidc mode without clearing users JWT or navigating', (done) => {
     const env: IdentityAuthEnvironment = createMockIdentityAuthEnvironment({
-      authentication: { type: 'keycloak' },
+      authentication: { type: 'oidc', issuer: 'https://idp.example.com', clientId: 'console' },
     });
     const injector = setupInjector(env);
 
@@ -292,6 +292,38 @@ describe('usersSessionInvalidatedInterceptor', () => {
         expect(removeItemSpy).not.toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
         expect(storeDispatch).toHaveBeenCalledWith(logout({}));
         expect(routerNavigate).not.toHaveBeenCalled();
+        done();
+      },
+    });
+  });
+
+  it('clears the session JWT, dispatches logout and navigates on 401 for saml mode', (done) => {
+    const env: IdentityAuthEnvironment = createMockIdentityAuthEnvironment({
+      authentication: { type: 'saml' },
+    });
+    const injector = setupInjector(env);
+
+    mockNext.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 401,
+            url: 'http://localhost:3100/api/clients',
+            error: {
+              message: 'This account is locked. Please contact an administrator.',
+              statusCode: 401,
+            },
+          }),
+      ),
+    );
+
+    const req = new HttpRequest('GET', 'http://localhost:3100/api/clients');
+
+    runInInjectionContext(injector, () => usersSessionInvalidatedInterceptor(req, mockNext)).subscribe({
+      error: () => {
+        expect(removeItemSpy).toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
+        expect(storeDispatch).toHaveBeenCalledWith(logout({}));
+        expect(routerNavigate).toHaveBeenCalledWith(['/login']);
         done();
       },
     });

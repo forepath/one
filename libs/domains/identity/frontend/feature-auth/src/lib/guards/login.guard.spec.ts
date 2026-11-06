@@ -1,29 +1,33 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+import { convertToParamMap } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { createMockIdentityAuthEnvironment, IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
-import { KeycloakService } from 'keycloak-angular';
+import {
+  createMockIdentityAuthEnvironment,
+  IDENTITY_AUTH_ENVIRONMENT,
+  OidcAuthService,
+} from '@forepath/identity/frontend';
 
 import { loginGuard } from './login.guard';
 
-// Mock keycloak-angular to avoid ES module import issues with keycloak-js in Jest.
-// createAuthGuard is called at module load time by keycloak.guard.ts (re-exported via barrel).
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-  createAuthGuard: jest.fn().mockReturnValue(() => Promise.resolve(true)),
+// SAML sign-in leaves the app via `location.assign`; keep it observable instead.
+jest.mock('../../../../util-auth/src/lib/saml-login.utils', () => ({
+  ...jest.requireActual('../../../../util-auth/src/lib/saml-login.utils'),
+  startSamlLogin: jest.fn().mockResolvedValue(undefined),
 }));
+
+const { startSamlLogin } = jest.requireMock('../../../../util-auth/src/lib/saml-login.utils') as {
+  startSamlLogin: jest.Mock;
+};
 
 describe('loginGuard', () => {
   let mockRouter: jest.Mocked<Router>;
   let mockRoute: ActivatedRouteSnapshot;
   let mockState: RouterStateSnapshot;
   let mockEnvironment: IdentityAuthEnvironment;
-  let mockKeycloakService: jest.Mocked<Partial<KeycloakService>>;
-  const setupTestBed = (
-    environmentOverrides?: Partial<IdentityAuthEnvironment>,
-    keycloakServiceOverride?: Partial<KeycloakService> | null,
-  ): Injector => {
+  let mockOidcAuthService: { isLoggedIn: jest.Mock; login: jest.Mock };
+  const setupTestBed = (environmentOverrides?: Partial<IdentityAuthEnvironment>): Injector => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
@@ -36,8 +40,8 @@ describe('loginGuard', () => {
           useValue: mockRouter,
         },
         {
-          provide: KeycloakService,
-          useValue: keycloakServiceOverride ?? mockKeycloakService,
+          provide: OidcAuthService,
+          useValue: mockOidcAuthService,
         },
       ],
     });
@@ -66,10 +70,11 @@ describe('loginGuard', () => {
 
     mockEnvironment = createMockIdentityAuthEnvironment();
 
-    mockKeycloakService = {
+    mockOidcAuthService = {
       isLoggedIn: jest.fn(),
-      login: jest.fn(),
+      login: jest.fn().mockResolvedValue(undefined),
     };
+    startSamlLogin.mockClear();
 
     jest.clearAllMocks();
   });
@@ -79,56 +84,71 @@ describe('loginGuard', () => {
     (window.localStorage.getItem as jest.Mock).mockClear();
   });
 
-  describe('when authentication type is keycloak', () => {
+  describe('when authentication type is oidc', () => {
     beforeEach(() => {
       mockEnvironment = {
         ...mockEnvironment,
-        authentication: {
-          type: 'keycloak',
-          authServerUrl: 'http://localhost:8080',
-          realm: 'test-realm',
-          clientId: 'test-client',
-        },
+        authentication: { type: 'oidc', issuer: 'https://idp.example.com', clientId: 'console' },
       };
+      mockRoute = { queryParamMap: convertToParamMap({}) } as ActivatedRouteSnapshot;
     });
 
     it('should redirect to dashboard if user is authenticated', () => {
-      const mockIsLoggedIn = jest.fn().mockReturnValue(true);
-      const injector = setupTestBed(undefined, {
-        isLoggedIn: mockIsLoggedIn,
-      });
-      const mockUrlTree = {} as UrlTree;
+      const injector = setupTestBed();
+      const tree = {} as UrlTree;
 
-      mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
+      mockOidcAuthService.isLoggedIn.mockReturnValue(true);
+      mockRouter.createUrlTree = jest.fn().mockReturnValue(tree);
 
-      const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
-
-      expect(result).toBe(mockUrlTree);
+      expect(runInInjectionContext(injector, () => loginGuard(mockRoute, mockState))).toBe(tree);
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
-      expect(mockIsLoggedIn).toHaveBeenCalled();
     });
 
-    it('should call login and allow access if user is not authenticated', () => {
-      const mockLogin = jest.fn();
-      const mockIsLoggedIn = jest.fn().mockReturnValue(false);
-      const injector = setupTestBed(undefined, {
-        isLoggedIn: mockIsLoggedIn,
-        login: mockLogin,
-      });
-      const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
+    it('should start provider sign-in and allow the login page otherwise', () => {
+      const injector = setupTestBed();
 
-      expect(result).toBe(true);
-      expect(mockIsLoggedIn).toHaveBeenCalled();
-      expect(mockLogin).toHaveBeenCalled();
-      expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
+      mockOidcAuthService.isLoggedIn.mockReturnValue(false);
+
+      expect(runInInjectionContext(injector, () => loginGuard(mockRoute, mockState))).toBe(true);
+      expect(mockOidcAuthService.login).toHaveBeenCalled();
     });
 
-    it('should allow access if KeycloakService is not available', () => {
-      const injector = setupTestBed(undefined, null);
-      const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
+    it('should not redirect again after a failed sign-in', () => {
+      const injector = setupTestBed();
 
-      expect(result).toBe(true);
-      expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
+      mockOidcAuthService.isLoggedIn.mockReturnValue(false);
+      mockRoute = { queryParamMap: convertToParamMap({ sso_error: 'oidc' }) } as ActivatedRouteSnapshot;
+
+      expect(runInInjectionContext(injector, () => loginGuard(mockRoute, mockState))).toBe(true);
+      expect(mockOidcAuthService.login).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when authentication type is saml', () => {
+    beforeEach(() => {
+      mockEnvironment = { ...mockEnvironment, authentication: { type: 'saml' } };
+      mockRoute = { queryParamMap: convertToParamMap({}) } as ActivatedRouteSnapshot;
+    });
+
+    it('should redirect to dashboard with a valid session JWT', () => {
+      const exp = Math.floor(Date.now() / 1000) + 3600;
+
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(`h.${btoa(JSON.stringify({ amr: ['saml'], exp }))}.s`);
+      const injector = setupTestBed();
+      const tree = {} as UrlTree;
+
+      mockRouter.createUrlTree = jest.fn().mockReturnValue(tree);
+
+      expect(runInInjectionContext(injector, () => loginGuard(mockRoute, mockState))).toBe(tree);
+      expect(startSamlLogin).not.toHaveBeenCalled();
+    });
+
+    it('should start SAML sign-in without a session', () => {
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
+      const injector = setupTestBed();
+
+      expect(runInInjectionContext(injector, () => loginGuard(mockRoute, mockState))).toBe(true);
+      expect(startSamlLogin).toHaveBeenCalledWith('http://localhost:3100/api', undefined, undefined);
     });
   });
 

@@ -2,9 +2,16 @@ import { randomBytes } from 'crypto';
 
 import { buildGvisorHostScript, buildGvisorInstallScript } from '@forepath/shared/backend/util-container-runtime';
 
+import {
+  buildOidcEnvLines,
+  type ManagerAuthenticationMethod,
+  type ProvisionedOidcConfig,
+  readProvisionedOidcConfig,
+  resolveManagerAuthenticationMethod,
+} from '../shared/external-auth-config.utils';
 import { buildCertbotBootstrapScript } from '../../utils/cloud-init/certbot-bootstrap.script';
 import { buildComposeBridgeNetwork, buildComposeNamedVolumes } from '../../utils/cloud-init/compose-service.utils';
-import { formatEnvLines } from '../../utils/cloud-init/env.utils';
+import { formatEnvLines, shellSingleQuote } from '../../utils/cloud-init/env.utils';
 import { buildNginxComposeService } from '../../utils/cloud-init/nginx-compose.utils';
 import {
   POSTGRES_COMPOSE_DEPENDS_ON,
@@ -40,17 +47,11 @@ export interface AgentManagerCloudInitConfig {
       password: string;
       database: string;
     };
-    /** Manager supports only api-key or keycloak; not users */
+    /** Manager supports only api-key or oidc (headless API: no users / saml sign-in). */
     authentication: {
-      authenticationMethod: 'api-key' | 'keycloak';
+      authenticationMethod: ManagerAuthenticationMethod;
       staticApiKey?: string;
-      keycloak?: {
-        serverUrl: string;
-        authServerUrl: string;
-        realm: string;
-        clientId: string;
-        clientSecret: string;
-      };
+      oidc?: ProvisionedOidcConfig;
     };
     encryption: {
       encryptionKey: string;
@@ -88,8 +89,8 @@ export interface AgentManagerCloudInitConfig {
 
 /**
  * Builds AgentManagerCloudInitConfig from effectiveConfig (plan defaults + requestedConfig) and hostname.
- * Generates random encryptionKey and jwtSecret. Manager does not support 'users' auth: if
- * authenticationMethod is 'users', it is coerced to 'api-key'.
+ * Generates random encryptionKey and jwtSecret. Manager supports only 'api-key' and 'oidc': any other
+ * authenticationMethod (e.g. 'users', 'saml') is coerced to 'api-key'.
  * Does not read disableSignup or provisioning tokens (hetznerApiToken, digitaloceanApiToken).
  *
  * @param baseDomain - Base domain for FQDN (e.g. spirde.com). Defaults to spirde.com.
@@ -104,17 +105,9 @@ export function buildAgentManagerCloudInitConfigFromRequest(
   const contextTokenSecret = randomBytes(32).toString('base64url');
   const fqdn = `${hostname}.${baseDomain}`;
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
-  const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
+  const oidc = readProvisionedOidcConfig(effectiveConfig.oidc);
   const git = effectiveConfig.git as Record<string, unknown> | undefined;
-  let authMethod = (effectiveConfig.authenticationMethod as string) ?? 'api-key';
-
-  if (authMethod === 'users') {
-    authMethod = 'api-key';
-  }
-
-  if (authMethod !== 'api-key' && authMethod !== 'keycloak') {
-    authMethod = 'api-key';
-  }
+  const authMethod = resolveManagerAuthenticationMethod(effectiveConfig.authenticationMethod);
 
   return {
     ssh: {
@@ -138,17 +131,9 @@ export function buildAgentManagerCloudInitConfigFromRequest(
         database: 'postgres',
       },
       authentication: {
-        authenticationMethod: authMethod as 'api-key' | 'keycloak',
+        authenticationMethod: authMethod,
         staticApiKey: (effectiveConfig.staticApiKey as string) ?? '',
-        ...(keycloak && {
-          keycloak: {
-            serverUrl: (keycloak.serverUrl as string) ?? '',
-            authServerUrl: (keycloak.authServerUrl as string) ?? '',
-            realm: (keycloak.realm as string) ?? '',
-            clientId: (keycloak.clientId as string) ?? '',
-            clientSecret: (keycloak.clientSecret as string) ?? '',
-          },
-        }),
+        ...(oidc && { oidc }),
       },
       encryption: { encryptionKey, jwtSecret, contextTokenSecret },
       smtp: {
@@ -185,11 +170,9 @@ export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInit
     ...buildPostgresBackendEnvLines(config.backend?.database),
     `AUTHENTICATION_METHOD: ${config.backend?.authentication?.authenticationMethod ?? 'api-key'}`,
     `STATIC_API_KEY: ${config.backend?.authentication?.staticApiKey ?? ''}`,
-    `KEYCLOAK_SERVER_URL: ${config.backend?.authentication?.keycloak?.serverUrl ?? ''}`,
-    `KEYCLOAK_AUTH_SERVER_URL: ${config.backend?.authentication?.keycloak?.authServerUrl ?? ''}`,
-    `KEYCLOAK_REALM: ${config.backend?.authentication?.keycloak?.realm ?? ''}`,
-    `KEYCLOAK_CLIENT_ID: ${config.backend?.authentication?.keycloak?.clientId ?? ''}`,
-    `KEYCLOAK_CLIENT_SECRET: ${config.backend?.authentication?.keycloak?.clientSecret ?? ''}`,
+    ...buildOidcEnvLines(config.backend?.authentication?.authenticationMethod, config.backend?.authentication?.oidc, {
+      role: 'manager',
+    }),
     `ENCRYPTION_KEY: ${config.backend?.encryption?.encryptionKey ?? ''}`,
     `JWT_SECRET: ${config.backend?.encryption?.jwtSecret ?? ''}`,
     // Agent workers join the manager bridge so the worker context MCP server can reach the manager API.
@@ -427,7 +410,7 @@ apt-get install -y openssh-server ssh
 # Add SSH public key
 log "Adding SSH public key..."
 mkdir -p /root/.ssh
-echo "${config.ssh?.publicKey ?? ''}" > /root/.ssh/authorized_keys
+printf '%s\\n' ${shellSingleQuote(config.ssh?.publicKey ?? '')} > /root/.ssh/authorized_keys
 chmod 600 /root/.ssh/authorized_keys
 
 # Configure SSH server

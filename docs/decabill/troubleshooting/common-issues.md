@@ -23,7 +23,7 @@ Common problems and their solutions in Decabill.
 
 - Verify WebSocket URL: `http://localhost:3200/socket/billing`
 - Check `WEBSOCKET_CORS_ORIGIN` (or fallthrough `CORS_ORIGIN`) includes the console origin
-- Confirm you are using interactive auth (Keycloak/users); API key clients do not receive dashboard streams
+- Confirm you are using interactive auth (oidc / saml / users); API key clients do not receive dashboard streams
 - Ensure **`X-Tenant`** is sent on the handshake when using multi-tenant setups
 
 ## Authentication Problems
@@ -34,7 +34,7 @@ Common problems and their solutions in Decabill.
 
 **Solutions**:
 
-- Verify `Authorization` header or Keycloak token is valid
+- Verify `Authorization` header (session JWT or OIDC access token) is valid
 - Check `STATIC_API_KEY` matches server configuration
 - Review `AUTHENTICATION_METHOD` and implicit resolution (see **[DR-004](../security/accepted-risks.md#dr-004-backend-authentication-method-resolution)**)
 
@@ -47,15 +47,17 @@ Common problems and their solutions in Decabill.
 - Send **`X-Tenant`** header matching an id in **`TENANTS`** When **`TENANTS_ALLOW_DEFAULT=false`**, `default` is not allowed; missing, blank, or `default` **`X-Tenant`** values return 400
 - For user auth, ensure user's `tenant_id` matches **`X-Tenant`**. With API key auth, set **`STATIC_API_KEY_TENANT_ID`** if the key is bound to one tenant (see **[DR-002](../security/accepted-risks.md#dr-002-billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)**)
 
-### Keycloak Authentication Fails
+### OIDC / SAML Authentication Fails
 
-**Symptoms**: Login redirect loops or token errors
+**Symptoms**: Login redirect loops, `401 Invalid or expired token`, or SAML callback with `error=saml_failed`
 
 **Solutions**:
 
-- Verify Keycloak server URL, realm, client id, and secret
-- Check Keycloak client redirect URIs include the billing console URL
-- Review Keycloak server logs
+- OIDC: `OIDC_ISSUER` must equal the token `iss` exactly (the discovery document's `issuer` must match too); use `OIDC_DISCOVERY_URL` when the API reaches the IdP under another hostname
+- OIDC: with `OIDC_TOKEN_VALIDATION=ONLINE` (default) the IdP must expose an introspection endpoint and accept `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET`; otherwise use `OFFLINE`
+- OIDC: check `OIDC_AUDIENCE` / `OIDC_AUTHORIZED_PARTIES` match the token's `aud` / `azp`, and that the console client's redirect URIs include the console URL
+- SAML: verify `SAML_IDP_CERT`, `SAML_IDP_ISSUER`, that the IdP signs assertions or responses, uses a persistent (not transient) NameID and posts to `SAML_SP_ACS_URL`; backend logs record the rejection reason
+- `AUTHENTICATION_METHOD=keycloak` fails at boot: switch to `oidc` (see Authentication docs, "Migrating from keycloak")
 
 ## Stripe and Payment Issues
 

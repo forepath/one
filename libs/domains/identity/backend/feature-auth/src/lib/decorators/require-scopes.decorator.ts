@@ -9,10 +9,10 @@ import { REQUIRE_PASSWORD_SESSION_KEY, REQUIRE_SCOPES_KEY } from '../constants/p
 export const RequireScopes = (...scopes: string[]) => SetMetadata(REQUIRE_SCOPES_KEY, scopes);
 
 /**
- * Restrict the route to interactive console sessions (password JWT or Keycloak OIDC).
+ * Restrict the route to interactive console sessions (password JWT, OIDC or SAML session).
  * Rejects machine JWTs with `amr: pat`. Used for PAT CRUD so tokens cannot mint or revoke tokens.
  *
- * Keycloak interactive tokens typically have no `amr` claim; PatScopesGuard treats that as interactive.
+ * Interactive sessions carry `amr` `pwd`, `oidc` or `saml`; PatScopesGuard treats anything without `pat` as interactive.
  */
 export const RequireInteractiveSession = () => SetMetadata(REQUIRE_PASSWORD_SESSION_KEY, true);
 

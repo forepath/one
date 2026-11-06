@@ -67,7 +67,7 @@ export class AuthenticationFacade {
 
   readonly isAuthenticated$: Observable<boolean> = this.store.select(selectIsAuthenticated);
   readonly isNotAuthenticated$: Observable<boolean> = this.store.select(selectIsNotAuthenticated);
-  readonly authenticationType$: Observable<'api-key' | 'keycloak' | 'users' | null> =
+  readonly authenticationType$: Observable<'api-key' | 'users' | 'oidc' | 'saml' | null> =
     this.store.select(selectAuthenticationType);
   readonly user$: Observable<{ id: string; email: string; role: string } | null> = this.store.select(selectUser);
   readonly isAdmin$: Observable<boolean> = this.store.select(selectIsAdmin);

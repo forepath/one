@@ -5,7 +5,7 @@ import { Router, type CanActivateFn } from '@angular/router';
 import { IDENTITY_AUTH_ENVIRONMENT, type IdentityAuthEnvironment } from '../../../../util-auth/src';
 
 /**
- * Allows `/settings/tokens` only when auth mode supports PATs (users or keycloak).
+ * Allows `/settings/tokens` only when auth mode supports PATs (users, oidc or saml).
  * api-key mode has no PAT APIs - redirect home.
  */
 export const patUiGuard: CanActivateFn = () => {
@@ -13,7 +13,7 @@ export const patUiGuard: CanActivateFn = () => {
   const router = inject(Router);
   const type = environment.authentication.type;
 
-  if (type === 'users' || type === 'keycloak') {
+  if (type === 'users' || type === 'oidc' || type === 'saml') {
     return true;
   }
 

@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -33,7 +33,6 @@ import { parseMeterHistoryDateRange } from '../utils/meter-history-date.util';
 const METER_ENTRIES_MAX_LIMIT = 100;
 
 @Controller('admin/billing/subscriptions')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 export class AdminSubscriptionMetersController {
   constructor(

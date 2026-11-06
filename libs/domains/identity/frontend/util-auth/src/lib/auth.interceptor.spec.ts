@@ -1,25 +1,20 @@
 import { HttpRequest, HttpResponse } from '@angular/common/http';
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { KeycloakService } from 'keycloak-angular';
 import { of } from 'rxjs';
 
 import { IDENTITY_AUTH_ENVIRONMENT, IdentityAuthEnvironment } from './auth-environment';
 import { createMockIdentityAuthEnvironment } from './auth-environment.test-fixtures';
 import { authInterceptor } from './auth.interceptor';
-
-// Mock KeycloakService to avoid ES module import issues in Jest
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-}));
+import { OidcAuthService } from './oidc-auth.service';
 
 describe('authInterceptor', () => {
   const mockNext = jest.fn((req: HttpRequest<unknown>) => {
     return of(new HttpResponse({ body: null, status: 200, url: req.url, headers: req.headers }));
   });
   let mockAuthEnv: IdentityAuthEnvironment;
-  let mockKeycloakService: jest.Mocked<Partial<KeycloakService>>;
-  const setupTestBed = (envOverrides?: Partial<IdentityAuthEnvironment>, keycloakServiceOverride?: any): Injector => {
+  let mockOidcAuthService: { getToken: jest.Mock };
+  const setupTestBed = (envOverrides?: Partial<IdentityAuthEnvironment>, oidcServiceOverride?: any): Injector => {
     TestBed.resetTestingModule();
     const providers: any[] = [
       {
@@ -28,12 +23,10 @@ describe('authInterceptor', () => {
       },
     ];
 
-    if (keycloakServiceOverride !== null) {
-      providers.push({
-        provide: KeycloakService,
-        useValue: keycloakServiceOverride !== undefined ? keycloakServiceOverride : mockKeycloakService,
-      });
-    }
+    providers.push({
+      provide: OidcAuthService,
+      useValue: oidcServiceOverride !== undefined ? oidcServiceOverride : mockOidcAuthService,
+    });
 
     TestBed.configureTestingModule({
       providers,
@@ -50,7 +43,7 @@ describe('authInterceptor', () => {
       },
     });
 
-    mockKeycloakService = {
+    mockOidcAuthService = {
       getToken: jest.fn(),
     };
 
@@ -159,92 +152,70 @@ describe('authInterceptor', () => {
     });
   });
 
-  describe('when authentication type is keycloak', () => {
-    it('should add Authorization header with Keycloak token', (done) => {
-      const keycloakService = {
-        getToken: jest.fn().mockResolvedValue('keycloak-token-123'),
-      };
-      const injector = setupTestBed(
-        {
-          authentication: { type: 'keycloak', authServerUrl: '', realm: '', clientId: '' },
-        },
-        keycloakService,
-      );
+  describe('when authentication type is oidc', () => {
+    const oidcAuthentication = { type: 'oidc' as const, issuer: 'https://idp.example.com', clientId: 'console' };
+
+    it('should add Authorization header with the OIDC access token', (done) => {
+      const oidcService = { getToken: jest.fn().mockResolvedValue('oidc-token-123') };
+      const injector = setupTestBed({ authentication: oidcAuthentication }, oidcService);
       const req = new HttpRequest('GET', 'http://localhost:3100/api/clients');
       const result = runInInjectionContext(injector, () => authInterceptor(req, mockNext));
 
       result.subscribe((response) => {
-        expect(keycloakService.getToken).toHaveBeenCalled();
-        expect(response).toBeInstanceOf(HttpResponse);
-        const httpResponse = response as HttpResponse<unknown>;
-
-        expect(httpResponse.headers.get('Authorization')).toBe('Bearer keycloak-token-123');
+        expect(oidcService.getToken).toHaveBeenCalled();
+        expect((response as HttpResponse<unknown>).headers.get('Authorization')).toBe('Bearer oidc-token-123');
         done();
       });
     });
 
     it('should not add Authorization header if token is missing', (done) => {
-      const keycloakService = {
-        getToken: jest.fn().mockResolvedValue(null),
-      };
-      const injector = setupTestBed(
-        {
-          authentication: { type: 'keycloak', authServerUrl: '', realm: '', clientId: '' },
-        },
-        keycloakService,
-      );
+      const oidcService = { getToken: jest.fn().mockResolvedValue(null) };
+      const injector = setupTestBed({ authentication: oidcAuthentication }, oidcService);
       const req = new HttpRequest('GET', 'http://localhost:3100/api/clients');
       const result = runInInjectionContext(injector, () => authInterceptor(req, mockNext));
 
       result.subscribe((response) => {
-        expect(response).toBeInstanceOf(HttpResponse);
-        const httpResponse = response as HttpResponse<unknown>;
-
-        expect(httpResponse.headers.has('Authorization')).toBe(false);
+        expect((response as HttpResponse<unknown>).headers.has('Authorization')).toBe(false);
         done();
       });
     });
 
-    it('should handle KeycloakService errors gracefully', (done) => {
-      const keycloakService = {
-        getToken: jest.fn().mockRejectedValue(new Error('Token retrieval failed')),
-      };
-      const injector = setupTestBed(
-        {
-          authentication: { type: 'keycloak', authServerUrl: '', realm: '', clientId: '' },
-        },
-        keycloakService,
-      );
-      const req = new HttpRequest('GET', 'http://localhost:3100/api/clients');
-      const result = runInInjectionContext(injector, () => authInterceptor(req, mockNext));
-
-      result.subscribe({
-        next: () => {
-          done();
-        },
-        error: (error) => {
-          expect(error).toBeInstanceOf(Error);
-          expect(error.message).toBe('Token retrieval failed');
-          done();
-        },
-      });
-    });
-
-    it('should not add Authorization header if KeycloakService is not available', (done) => {
-      const injector = setupTestBed(
-        {
-          authentication: { type: 'keycloak', authServerUrl: '', realm: '', clientId: '' },
-        },
-        null,
-      );
+    it('should send the request without Authorization when token retrieval fails', (done) => {
+      const oidcService = { getToken: jest.fn().mockRejectedValue(new Error('Token retrieval failed')) };
+      const injector = setupTestBed({ authentication: oidcAuthentication }, oidcService);
       const req = new HttpRequest('GET', 'http://localhost:3100/api/clients');
       const result = runInInjectionContext(injector, () => authInterceptor(req, mockNext));
 
       result.subscribe((response) => {
-        expect(response).toBeInstanceOf(HttpResponse);
-        const httpResponse = response as HttpResponse<unknown>;
+        expect((response as HttpResponse<unknown>).headers.has('Authorization')).toBe(false);
+        done();
+      });
+    });
 
-        expect(httpResponse.headers.has('Authorization')).toBe(false);
+    it('should not request a token for URLs outside the API', (done) => {
+      const oidcService = { getToken: jest.fn().mockResolvedValue('oidc-token-123') };
+      const injector = setupTestBed({ authentication: oidcAuthentication }, oidcService);
+      const req = new HttpRequest('GET', 'https://other.example.com/data');
+      const result = runInInjectionContext(injector, () => authInterceptor(req, mockNext));
+
+      result.subscribe((response) => {
+        expect(oidcService.getToken).not.toHaveBeenCalled();
+        expect((response as HttpResponse<unknown>).headers.has('Authorization')).toBe(false);
+        done();
+      });
+    });
+  });
+
+  describe('when authentication type is saml', () => {
+    it('should add Authorization header with the session JWT from localStorage', (done) => {
+      Storage.prototype.getItem = jest.fn().mockReturnValue('saml-session-jwt');
+      const injector = setupTestBed({ authentication: { type: 'saml' } });
+      const req = new HttpRequest('GET', 'http://localhost:3100/api/clients');
+      const result = runInInjectionContext(injector, () => authInterceptor(req, mockNext));
+
+      result.subscribe((response) => {
+        expect(Storage.prototype.getItem).toHaveBeenCalledWith('agent-controller-users-jwt');
+        expect((response as HttpResponse<unknown>).headers.get('Authorization')).toBe('Bearer saml-session-jwt');
         done();
       });
     });

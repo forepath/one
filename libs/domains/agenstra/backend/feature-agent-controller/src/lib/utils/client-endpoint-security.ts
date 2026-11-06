@@ -1,4 +1,8 @@
+import * as dns from 'node:dns';
+import * as http from 'node:http';
+import * as https from 'node:https';
 import { promises as dnsPromises } from 'node:dns';
+import type { LookupFunction } from 'node:net';
 import * as net from 'node:net';
 
 import {
@@ -163,7 +167,8 @@ export async function assertClientEndpointHostnameResolvesToPublicIps(hostname: 
 export async function validateClientEndpointWithDnsOrThrow(endpoint: string): Promise<URL> {
   const url = assertSafeClientEndpointOrThrow(endpoint);
 
-  await assertClientEndpointHostnameResolvesToPublicIps(url.hostname);
+  // URL hostnames keep IPv6 brackets ("[2001:db8::1]"); strip them so literals are recognized as IPs.
+  await assertClientEndpointHostnameResolvesToPublicIps(url.hostname.replace(/^\[(.*)\]$/, '$1'));
 
   return url;
 }
@@ -189,4 +194,57 @@ export function assertProductionClientEndpointAllowlistConfigured(logger?: Produ
     process.stderr.write(`${msg}\n`);
     process.exit(1);
   }
+}
+
+/**
+ * DNS lookup for outbound requests to client-controlled hosts that rejects private / loopback addresses **at
+ * connection time** (pass as `lookup` to node:http(s)). Unlike a separate resolve-then-connect check this cannot be
+ * bypassed by DNS rebinding. Same exemptions as {@link assertClientEndpointHostnameResolvesToPublicIps}.
+ */
+export function createPublicAddressLookup(): LookupFunction {
+  return ((hostname: string, options: dns.LookupOptions, callback: (...args: unknown[]) => void) => {
+    const wantsAll = options?.all === true;
+
+    dns.lookup(hostname, { ...options, all: true }, (error, addresses) => {
+      if (error) {
+        callback(error);
+
+        return;
+      }
+
+      const list = addresses as dns.LookupAddress[];
+      const host = hostname.trim().toLowerCase();
+      const exempt = allowInternalClientEndpointHost() || process.env.NODE_ENV === 'test' || isDevSelfHost(host);
+
+      if (list.length === 0 || (!exempt && list.some((entry) => isPrivateOrLoopbackIp(entry.address)))) {
+        callback(
+          Object.assign(new Error('Client endpoint hostname resolves to a private or loopback address'), {
+            code: 'EACCES',
+          }),
+        );
+
+        return;
+      }
+
+      if (wantsAll) {
+        callback(null, list);
+      } else {
+        callback(null, list[0].address, list[0].family);
+      }
+    });
+  }) as unknown as LookupFunction;
+}
+
+/**
+ * Non-pooling HTTP(S) agent for socket.io connections to client endpoints whose connections resolve through
+ * {@link createPublicAddressLookup}. socket.io-client re-resolves DNS on every reconnect and sends fresh credentials,
+ * so pinning each connection to a validated public address prevents DNS rebinding from collecting manager tokens.
+ */
+export function createPinnedSocketAgent(endpointUrl: string, rejectUnauthorized: boolean): http.Agent {
+  const lookup = createPublicAddressLookup();
+  const secure = /^(wss|https):/i.test(endpointUrl);
+
+  return secure
+    ? new https.Agent({ keepAlive: false, lookup, rejectUnauthorized })
+    : new http.Agent({ keepAlive: false, lookup });
 }

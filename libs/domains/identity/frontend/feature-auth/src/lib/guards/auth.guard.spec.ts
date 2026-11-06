@@ -5,23 +5,16 @@ import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@a
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import type { IdentityAuthEnvironment } from '../../../../util-auth/src';
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { IDENTITY_AUTH_ENVIRONMENT, isAuthenticated } from '../../../../util-auth/src';
+import { IDENTITY_AUTH_ENVIRONMENT, OidcAuthService, startSamlLogin } from '../../../../util-auth/src';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { createMockIdentityAuthEnvironment } from '../../../../util-auth/src/lib/auth-environment.test-fixtures';
 
 import { authGuard } from './auth.guard';
 
-// Mock keycloak-angular to avoid ES module import issues with keycloak-js in Jest.
-// createAuthGuard is called at module load time by keycloak.guard.ts (re-exported via barrel).
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-  createAuthGuard: jest.fn().mockReturnValue(() => Promise.resolve(true)),
-}));
-
-// Mock isAuthenticated guard from util-auth barrel
+// SAML sign-in leaves the app via `location.assign`; keep it observable instead.
 jest.mock('../../../../util-auth/src', () => ({
   ...jest.requireActual('../../../../util-auth/src'),
-  isAuthenticated: jest.fn(),
+  startSamlLogin: jest.fn().mockResolvedValue(undefined),
 }));
 
 describe('authGuard', () => {
@@ -29,7 +22,7 @@ describe('authGuard', () => {
   let mockRoute: ActivatedRouteSnapshot;
   let mockState: RouterStateSnapshot;
   let mockEnvironment: IdentityAuthEnvironment;
-  let mockIsAuthenticated: jest.MockedFunction<typeof isAuthenticated>;
+  let mockOidcAuthService: { isLoggedIn: jest.Mock; login: jest.Mock };
   const setupTestBed = (environmentOverrides?: Partial<IdentityAuthEnvironment>): Injector => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -41,6 +34,10 @@ describe('authGuard', () => {
         {
           provide: Router,
           useValue: mockRouter,
+        },
+        {
+          provide: OidcAuthService,
+          useValue: mockOidcAuthService,
         },
       ],
     });
@@ -69,7 +66,7 @@ describe('authGuard', () => {
 
     mockEnvironment = createMockIdentityAuthEnvironment();
 
-    mockIsAuthenticated = isAuthenticated as jest.MockedFunction<typeof isAuthenticated>;
+    mockOidcAuthService = { isLoggedIn: jest.fn(), login: jest.fn().mockResolvedValue(undefined) };
 
     jest.clearAllMocks();
   });
@@ -79,39 +76,69 @@ describe('authGuard', () => {
     (window.localStorage.getItem as jest.Mock).mockClear();
   });
 
-  describe('when authentication type is keycloak', () => {
+  describe('when authentication type is oidc', () => {
     beforeEach(() => {
       mockEnvironment = {
         ...mockEnvironment,
-        authentication: {
-          type: 'keycloak',
-          authServerUrl: 'http://localhost:8080',
-          realm: 'test-realm',
-          clientId: 'test-client',
-        },
+        authentication: { type: 'oidc', issuer: 'https://idp.example.com', clientId: 'console' },
       };
+      mockState = { url: '/clients/1' } as RouterStateSnapshot;
     });
 
-    it('should delegate to isAuthenticated guard', () => {
+    it('should allow access with an OIDC session', () => {
       const injector = setupTestBed();
 
-      mockIsAuthenticated.mockReturnValue(true);
+      mockOidcAuthService.isLoggedIn.mockReturnValue(true);
 
-      const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
-
-      expect(mockIsAuthenticated).toHaveBeenCalledWith(mockRoute, mockState);
-      expect(result).toBe(true);
+      expect(runInInjectionContext(injector, () => authGuard(mockRoute, mockState))).toBe(true);
+      expect(mockOidcAuthService.login).not.toHaveBeenCalled();
     });
 
-    it('should return the result from isAuthenticated guard', () => {
+    it('should redirect to the identity provider and return to the requested URL', () => {
       const injector = setupTestBed();
-      const mockUrlTree = {} as UrlTree;
 
-      mockIsAuthenticated.mockReturnValue(mockUrlTree);
+      mockOidcAuthService.isLoggedIn.mockReturnValue(false);
 
-      const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
+      expect(runInInjectionContext(injector, () => authGuard(mockRoute, mockState))).toBe(false);
+      expect(mockOidcAuthService.login).toHaveBeenCalledWith('/clients/1');
+    });
+  });
 
-      expect(result).toBe(mockUrlTree);
+  describe('when authentication type is saml', () => {
+    beforeEach(() => {
+      mockEnvironment = { ...mockEnvironment, authentication: { type: 'saml' } };
+      mockState = { url: '/clients/1' } as RouterStateSnapshot;
+      (startSamlLogin as jest.Mock).mockClear();
+    });
+
+    it('should allow access with a valid SAML session JWT', () => {
+      const exp = Math.floor(Date.now() / 1000) + 3600;
+      const jwt = `h.${btoa(JSON.stringify({ sub: 'u', amr: ['saml'], exp }))}.s`;
+
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(jwt);
+      const injector = setupTestBed();
+
+      expect(runInInjectionContext(injector, () => authGuard(mockRoute, mockState))).toBe(true);
+      expect(startSamlLogin).not.toHaveBeenCalled();
+    });
+
+    it('should start SAML sign-in at the API without a session', () => {
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
+      const injector = setupTestBed();
+
+      expect(runInInjectionContext(injector, () => authGuard(mockRoute, mockState))).toBe(false);
+      expect(startSamlLogin).toHaveBeenCalledWith('http://localhost:3100/api', '/clients/1', undefined);
+    });
+
+    it('should clear PAT JWTs and start sign-in', () => {
+      const exp = Math.floor(Date.now() / 1000) + 3600;
+
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(`h.${btoa(JSON.stringify({ amr: ['pat'], exp }))}.s`);
+      const injector = setupTestBed();
+
+      expect(runInInjectionContext(injector, () => authGuard(mockRoute, mockState))).toBe(false);
+      expect(window.localStorage.removeItem).toHaveBeenCalledWith('agent-controller-users-jwt');
+      expect(startSamlLogin).toHaveBeenCalled();
     });
   });
 

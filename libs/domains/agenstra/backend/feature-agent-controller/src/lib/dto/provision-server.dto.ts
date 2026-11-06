@@ -1,7 +1,7 @@
 import { GitRepositorySetupMode } from '@forepath/agenstra/backend/feature-agent-manager';
 import { AuthenticationType } from '@forepath/identity/backend';
 import { Type } from 'class-transformer';
-import { IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, Max, MaxLength, Min } from 'class-validator';
 
 /**
  * DTO for provisioning a new server through a cloud provider.
@@ -28,7 +28,7 @@ export class ProvisionServerDto {
   location?: string;
 
   @IsNotEmpty({ message: 'Authentication type is required' })
-  @IsEnum(AuthenticationType, { message: 'Authentication type must be either api_key or keycloak' })
+  @IsEnum(AuthenticationType, { message: 'Authentication type must be either api_key or oidc' })
   authenticationType!: AuthenticationType;
 
   @IsOptional()
@@ -36,20 +36,29 @@ export class ProvisionServerDto {
   apiKey?: string;
 
   @IsOptional()
-  @IsString({ message: 'Keycloak client ID must be a string' })
-  keycloakClientId?: string;
+  @IsString({ message: 'OIDC client ID must be a string' })
+  @MaxLength(255)
+  oidcClientId?: string;
 
   @IsOptional()
-  @IsString({ message: 'Keycloak client secret must be a string' })
-  keycloakClientSecret?: string;
+  @IsString({ message: 'OIDC client secret must be a string' })
+  @MaxLength(512)
+  oidcClientSecret?: string;
 
+  /** OpenID provider issuer; defaults to the controller's `OIDC_ISSUER`. */
   @IsOptional()
-  @IsString({ message: 'Keycloak realm must be a string' })
-  keycloakRealm?: string;
+  @IsUrl(
+    { require_tld: false, require_protocol: true, protocols: ['http', 'https'] },
+    { message: 'OIDC issuer must be a valid http(s) URL' },
+  )
+  @MaxLength(1024)
+  oidcIssuer?: string;
 
+  /** Optional space separated scopes for the client credentials grant. */
   @IsOptional()
-  @IsString({ message: 'Keycloak auth server URL must be a string' })
-  keycloakAuthServerUrl?: string;
+  @IsString({ message: 'OIDC scope must be a string' })
+  @MaxLength(1024)
+  oidcScope?: string;
 
   @IsOptional()
   @IsEnum(GitRepositorySetupMode, {

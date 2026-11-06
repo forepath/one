@@ -11,7 +11,7 @@ flowchart TB
 
     subgraph USERS["👥 HTTP REST API - Client User Management (/api/clients/:id/users)"]
         direction TB
-        USERS_USE["Use Case: Per-Client Permissions<br/>keycloak/users auth only<br/>Add/Remove users by email"]
+        USERS_USE["Use Case: Per-Client Permissions<br/>users/oidc/saml auth only<br/>Add/Remove users by email"]
         USERS_USE --> USERS1["📋 List Client Users<br/>GET /api/clients/:id/users<br/>Returns: ClientUserResponseDto[]"]
         USERS_USE --> USERS2["➕ Add User to Client<br/>POST /api/clients/:id/users<br/>Accepts: AddClientUserDto"]
         USERS_USE --> USERS3["🗑️ Remove User from Client<br/>DELETE /api/clients/:id/users/:relationshipId<br/>Returns: 204 No Content"]
@@ -52,7 +52,7 @@ flowchart TB
     subgraph WS["🔶 WebSocket Gateway (namespace: /clients)"]
         direction TB
         WS_USE["Use Case: Real-time Event Forwarding<br/>Bidirectional Messages<br/>Persistent Connection"]
-        WS_USE --> WS1["🔐 Client Context Setup<br/>1. Connect to WebSocket (auth: api-key/Keycloak/users)<br/>2. setClient with clientId (per-client access check)<br/>3. Remote connection established<br/>4. Auto-authentication (API_KEY/Keycloak)"]
+        WS_USE --> WS1["🔐 Client Context Setup<br/>1. Connect to WebSocket (auth: api-key/oidc/users/saml)<br/>2. setClient with clientId (per-client access check)<br/>3. Remote connection established<br/>4. Auto-authentication (API_KEY/OIDC)"]
         WS_USE --> WS2["📤 Event Forwarding<br/>1. forward event with agentId?<br/>2. Auto-login if agentId provided<br/>3. Forward to remote agent-manager WS<br/>4. Relay responses back to client"]
     end
 

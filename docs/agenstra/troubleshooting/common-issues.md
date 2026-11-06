@@ -34,21 +34,22 @@ Common problems and their solutions in the Agenstra system.
 
 **Solutions**:
 
-- Verify API key or Keycloak token is valid
+- Verify API key, session JWT or OIDC access token is valid
 - Check token expiration
 - Verify authentication configuration
 - Review authentication logs
 
-### Keycloak Authentication Fails
+### OIDC / SAML Authentication Fails
 
-**Symptoms**: Keycloak authentication not working
+**Symptoms**: Login redirect loops, `401 Invalid or expired token`, or SAML callback with `error=saml_failed`
 
 **Solutions**:
 
-- Verify Keycloak server is running
-- Check Keycloak configuration (URL, realm, client ID, secret)
-- Verify Keycloak client is properly configured
-- Check Keycloak logs
+- OIDC: `OIDC_ISSUER` must equal the token `iss` exactly (the discovery document's `issuer` must match too); use `OIDC_DISCOVERY_URL` when the API reaches the IdP under another hostname
+- OIDC: with `OIDC_TOKEN_VALIDATION=ONLINE` (default) the IdP must expose an introspection endpoint and accept `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET`; otherwise use `OFFLINE`
+- OIDC: check `OIDC_AUDIENCE` / `OIDC_AUTHORIZED_PARTIES` match the token's `aud` / `azp`, and that the console client's redirect URIs include the console URL
+- SAML: verify `SAML_IDP_CERT`, `SAML_IDP_ISSUER`, that the IdP signs assertions or responses, uses a persistent (not transient) NameID and posts to `SAML_SP_ACS_URL`; backend logs record the rejection reason
+- `AUTHENTICATION_METHOD=keycloak` fails at boot: switch to `oidc` (see Authentication docs, "Migrating from keycloak")
 
 ## Container Issues
 

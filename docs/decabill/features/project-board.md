@@ -149,7 +149,7 @@ Backend environment variables:
 
 Pass the same credentials as HTTP in the Socket.IO handshake:
 
-- **Keycloak:** `Bearer <keycloak-jwt>` in `auth.Authorization` or handshake headers
+- **OIDC:** `Bearer <oidc-access-token>` in `auth.Authorization` or handshake headers
 - **Users:** `Bearer <jwt>` in `auth.Authorization` or handshake headers
 - **API key:** **Not supported**. `setProject` emits `error` with message "User not authenticated"
 
@@ -231,7 +231,7 @@ The `ProjectBoardComponent` loads tickets over REST on init, connects the socket
 
 - **[Projects](./projects.md)** Assignment, admin CRUD, bill-time, KPIs
 - **[Real-time Status](./real-time-status.md)** Separate `billing` namespace for server status
-- **[Authentication](./authentication.md)** JWT and Keycloak handshake
+- **[Authentication](./authentication.md)** JWT and OIDC handshake
 - **[Multi-tenancy](./multi-tenancy.md)** Tenant in handshake
 - **[Billing Manager AsyncAPI](/spec/billing-manager/asyncapi.yaml)** Full message schemas
 

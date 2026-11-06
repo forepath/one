@@ -1,80 +1,79 @@
 # Identity Backend Util Auth
 
-Backend authentication utilities for Keycloak integration in NestJS applications.
+Backend authentication utilities for NestJS applications: authentication method resolution, static API key guard, provider-agnostic OIDC access token validation, and shared auth entities.
 
 ## Overview
 
-This library provides Keycloak authentication configuration and guards for NestJS backend applications. It supports both API key authentication and Keycloak-based authentication with automatic fallback.
+`AUTHENTICATION_METHOD` selects one of `api-key`, `users`, `oidc` or `saml` (see `getAuthenticationMethod`). When unset, `api-key` is used if `STATIC_API_KEY` is set, otherwise `oidc`. Any other value (including the removed `keycloak`) throws at boot.
 
-## Features
+This library contains the parts that do not need the users table:
 
-- **Keycloak Integration** - Configure Keycloak authentication for NestJS applications
-- **Hybrid Authentication** - Support for both API key and Keycloak authentication
-- **Token Validation** - Configurable token validation (ONLINE/OFFLINE)
-- **Guards** - Authentication and authorization guards for route protection
+- **`HybridAuthGuard` / `getHybridAuthGuards()`** - static API key guard; adds `OidcAuthGuard` in `oidc` mode (used directly by the agent-manager)
+- **`OidcModule`** - global module providing `OidcTokenVerifier` and `OidcAuthGuard`
+- **`OidcTokenVerifier`** - verifies OIDC access tokens for any compliant provider
+- **`OidcAuthGuard`** - `Authorization: Bearer <access token>` guard; sets `request.user` / `request.oidcClaims`
+- Entities, migrations and helpers shared by the identity feature library (users, PATs, identity apps, external sign-in state)
 
-## Keycloak Configuration
+SAML sign-in, OIDC user mapping (`ExternalIdentityAuthGuard`), PATs and the users API live in the identity **feature-auth** library (`OidcAuthModule`, `SamlAuthModule`, `UsersAuthModule`, `getIdentityAuthGuards()`).
 
-The `KeycloakService` implements `KeycloakConnectOptionsFactory` to provide Keycloak configuration from environment variables.
+## OIDC token validation
+
+Each token is verified locally:
+
+- Signature against the provider JWKS (discovered from `<OIDC_ISSUER>/.well-known/openid-configuration`; unknown `kid`s trigger a rate-limited refetch). Only asymmetric algorithms (RS/PS/ES); `HS*` and `none` are rejected, so app-signed JWTs can never pass as OIDC tokens.
+- Exact `iss`, `exp` / `nbf`, required `sub`; tokens with a `typ` claim other than `Bearer` (ID / refresh tokens) are rejected.
+- Optional `aud` (`OIDC_AUDIENCE`) and `azp` (`OIDC_AUTHORIZED_PARTIES`) allowlists.
+- With `OIDC_TOKEN_VALIDATION=ONLINE` (default) the token must also be `active` at the RFC 7662 introspection endpoint (revoked sessions stop working immediately).
+
+OIDC token scopes are not enforced; route capabilities come from local roles and PAT scopes.
 
 ### Environment Variables
 
-- `KEYCLOAK_SERVER_URL` - Keycloak server URL (optional, used for server URL if different from auth server URL)
-- `KEYCLOAK_AUTH_SERVER_URL` - Keycloak authentication server URL (required)
-- `KEYCLOAK_REALM` - Keycloak realm name (required)
-- `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required)
-- `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required)
-- `KEYCLOAK_TOKEN_VALIDATION` - Token validation method: `ONLINE` or `OFFLINE` (optional, default: `ONLINE`)
+- `OIDC_ISSUER` - Issuer (required)
+- `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` - API client used for introspection (required for `ONLINE`)
+- `OIDC_TOKEN_VALIDATION` - `ONLINE` (default) or `OFFLINE`
+- `OIDC_AUDIENCE` - Optional comma-separated audiences
+- `OIDC_AUTHORIZED_PARTIES` - Optional comma-separated `azp` allowlist
+- `OIDC_DISCOVERY_URL` - Optional discovery URL override (issuer must still match)
+- `OIDC_ALLOWED_ALGORITHMS` - Optional subset of the asymmetric algorithms
+- `OIDC_EMAIL_CLAIM` - Claim used as account email (default `email`)
+- `OIDC_CLOCK_TOLERANCE_SECONDS` - Allowed clock skew (default `0`, max 300)
+- `OIDC_ALLOW_INSECURE_HTTP` - Allow http provider URLs in production (default `false`)
+- `OIDC_ALLOW_UNRESTRICTED_AUDIENCE` - Allow production without `OIDC_AUDIENCE` / `OIDC_AUTHORIZED_PARTIES` (default `false`)
+
+Configuration is read lazily and validated on first use; missing / unsafe settings throw.
 
 ### Usage
 
-Import `KeycloakModule` in your application module:
+Service without a users table (token validation only):
 
 ```typescript
-import { KeycloakModule } from '@forepath/identity/backend';
+import { getHybridAuthGuards, OidcModule } from '@forepath/identity/backend';
 
 @Module({
-  imports: [
-    KeycloakModule,
-    KeycloakConnectModule.registerAsync({
-      useExisting: KeycloakService,
-    }),
-  ],
+  imports: [OidcModule],
+  providers: [...getHybridAuthGuards()],
 })
 export class AppModule {}
 ```
+
+Apps with a users table use `OidcAuthModule` + `PatAuthModule.register(...)` and `getIdentityAuthGuards()` from the feature library.
 
 ## Guards
 
 ### HybridAuthGuard
 
-A guard that supports both API key and Keycloak authentication:
+- `api-key` mode: validates `Authorization: Bearer <key>` / `ApiKey <key>` against `STATIC_API_KEY` (no fallback, no anonymous access)
+- other modes: passes through to the method's guards
+- health, Bull Board and OTEL metrics paths and `@Public()` routes are skipped
 
-- If `STATIC_API_KEY` is set, only API key authentication is used
-- If `STATIC_API_KEY` is not set, Keycloak guards handle authentication
+### OidcAuthGuard
 
-### Keycloak Guards
-
-Standard Keycloak guards from `nest-keycloak-connect`:
-
-- `AuthGuard` - Validates authentication
-- `ResourceGuard` - Validates resource access
-- `RoleGuard` - Validates role-based access
-
-## Token Validation
-
-Token validation can be configured via `KEYCLOAK_TOKEN_VALIDATION`:
-
-- `ONLINE` (default) - Validates tokens online against Keycloak server
-- `OFFLINE` - Validates tokens offline using public keys (faster, but requires key refresh)
+Runs only in `oidc` mode. Skips public / ops routes and requests already authenticated by an app-signed PAT (`patAuthenticated`) or API key.
 
 ## Development Notes
 
-When using `localhost` or `host.docker.internal` in `KEYCLOAK_AUTH_SERVER_URL`, ensure that:
-
-- The URL matches the issuer in tokens issued by Keycloak
-- If tokens are issued with `localhost` (from frontend), backend should also use `localhost` for issuer validation
-- Docker containers accessing Keycloak via `host.docker.internal` may need issuer normalization
+Use the [platform authentication](../../../../../apps/shared/platform-authentication/README.md) stack for a local OIDC / SAML identity provider. The token `iss` must equal `OIDC_ISSUER` exactly; when containers reach the IdP under another hostname (for example `host.docker.internal`), keep `OIDC_ISSUER` at the public issuer and set `OIDC_DISCOVERY_URL` to the reachable URL only if the discovery document still reports the same issuer.
 
 ## Related documentation
 

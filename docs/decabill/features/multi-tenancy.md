@@ -81,7 +81,7 @@ Each tenant has independent:
 - Backorders
 - Projects (scoped via assigned user's `tenant_id`; customers see only their assigned projects)
 
-Admin and user routes filter by the request tenant. Interactive auth (Keycloak or users) additionally requires the authenticated user's `tenant_id` to match the request tenant.
+Admin and user routes filter by the request tenant. Interactive auth (oidc, saml or users) additionally requires the authenticated user's `tenant_id` to match the request tenant.
 
 ### Global admin views (`TENANTS_ALLOW_GLOBAL_VIEWS`)
 
@@ -112,12 +112,12 @@ A valid `STATIC_API_KEY` grants admin access to **every** tenant listed in `TENA
 
 **Mitigations:** Set `STATIC_API_KEY_TENANT_ID` when automation must target one tenant only
 
-- Prefer Keycloak or users auth for the billing console in multi-tenant production
+- Prefer oidc, saml or users auth for the billing console in multi-tenant production
 - Rotate and protect `STATIC_API_KEY` as a high-value secret
 - WebSocket dashboard status does not stream to API key clients
 - Project board WebSocket does not stream to API key clients
 
-Interactive Keycloak and users sessions always enforce the user's `tenant_id` regardless of the above.
+Interactive oidc, saml and users sessions always enforce the user's `tenant_id` regardless of the above.
 
 ## Public Catalog
 
@@ -144,7 +144,7 @@ sequenceDiagram
 
     Client->>API: Request with X-Tenant: one
     API->>API: Validate tenant in TENANTS allowlist
-    alt Interactive auth (keycloak / users)
+    alt Interactive auth (oidc / saml / users)
         API->>DB: Load user by id
         API->>API: user.tenant_id must match X-Tenant
     else API key auth

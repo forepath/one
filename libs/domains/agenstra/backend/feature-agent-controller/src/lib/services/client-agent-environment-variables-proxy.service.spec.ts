@@ -289,14 +289,14 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
       );
     });
 
-    it('should use Keycloak token for KEYCLOAK authentication type', async () => {
-      const keycloakClient: ClientEntity = {
+    it('should use OIDC token for OIDC authentication type', async () => {
+      const oidcClient: ClientEntity = {
         ...mockClientEntity,
-        authenticationType: AuthenticationType.KEYCLOAK,
+        authenticationType: AuthenticationType.OIDC,
       };
 
-      clientsRepository.findByIdOrThrow.mockResolvedValue(keycloakClient);
-      clientsService.getAccessToken.mockResolvedValue('keycloak-token');
+      clientsRepository.findByIdOrThrow.mockResolvedValue(oidcClient);
+      clientsService.getAccessToken.mockResolvedValue('oidc-token');
       mockedAxios.request.mockResolvedValue({
         status: 200,
         data: [],
@@ -308,7 +308,7 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
           headers: expect.objectContaining({
-            Authorization: 'Bearer keycloak-token',
+            Authorization: 'Bearer oidc-token',
           }),
         }),
       );

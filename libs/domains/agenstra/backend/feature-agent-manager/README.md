@@ -17,7 +17,7 @@ Agents are entities that can be created, authenticated, and interacted with thro
 
 - ✅ Auto-generated UUID primary keys
 - ✅ Secure password generation and hashing (bcrypt)
-- ✅ HTTP REST API with Keycloak authentication
+- ✅ HTTP REST API with OIDC (or static API key) authentication
 - ✅ WebSocket gateway with database-backed authentication
 - ✅ Real-time container log streaming
 - ✅ Chat message broadcasting
@@ -64,8 +64,8 @@ The library follows Domain-Driven Design (DDD) principles with clear separation 
   - `UpdateEnvironmentVariableDto` - Input validation for updating environment variables
   - `EnvironmentVariableResponseDto` - Safe API responses for environment variables
 - **Controllers**:
-  - `AgentsController` - HTTP endpoints for agent management (protected by Keycloak)
-  - `AgentsEnvironmentVariablesController` - HTTP endpoints for environment variable management (protected by Keycloak)
+  - `AgentsController` - HTTP endpoints for agent management (protected by OIDC / API key)
+  - `AgentsEnvironmentVariablesController` - HTTP endpoints for environment variable management (protected by OIDC / API key)
 - **Gateways**: `AgentsGateway` - WebSocket gateway for agent chat with database-backed authentication
 - **Modules**: `AgentsModule` - NestJS module wiring all dependencies
 
@@ -136,7 +136,7 @@ export class MyService {
 All HTTP endpoints require authentication. The authentication method depends on the `STATIC_API_KEY` environment variable:
 
 - If `STATIC_API_KEY` is set: API key authentication (use `Bearer <static-api-key>` or `ApiKey <static-api-key>` in the `Authorization` header)
-- If `STATIC_API_KEY` is not set: Keycloak authentication (use `Bearer <keycloak-jwt-token>` in the `Authorization` header)
+- If `STATIC_API_KEY` is not set: OIDC authentication (use `Bearer <access-token>` in the `Authorization` header)
   - ⚠️ **Note**: The JWT token must include the `agent_management` role to access agent-manager endpoints
 
 Base URL: `/api/agents`
@@ -364,7 +364,7 @@ HTTP endpoints support two authentication methods, determined by the `STATIC_API
 
 #### Static API Key Authentication (when `STATIC_API_KEY` is set)
 
-When `STATIC_API_KEY` is configured, all HTTP endpoints use API key authentication only (no Keycloak fallback, no anonymous access). Clients must include the static API key in the `Authorization` header using either format:
+When `STATIC_API_KEY` is configured, all HTTP endpoints use API key authentication only (no OIDC fallback, no anonymous access). Clients must include the static API key in the `Authorization` header using either format:
 
 ```
 Authorization: Bearer <static-api-key>
@@ -376,19 +376,17 @@ or
 Authorization: ApiKey <static-api-key>
 ```
 
-#### Keycloak Authentication (when `STATIC_API_KEY` is not set)
+#### OIDC Authentication (when `STATIC_API_KEY` is not set)
 
-When `STATIC_API_KEY` is not set, all HTTP endpoints are protected by Keycloak authentication. The `AgentsController` uses:
+When `STATIC_API_KEY` is not set (`AUTHENTICATION_METHOD=oidc`), all HTTP endpoints are protected by the global `OidcAuthGuard` from `@forepath/identity/backend` (signature via JWKS, exact issuer, expiry, optional `aud` / `azp` allowlists, and RFC 7662 introspection with `OIDC_TOKEN_VALIDATION=ONLINE`). The agent-manager accepts only `api-key` and `oidc`; any other method fails at boot.
 
-- Global Keycloak guards (`AuthGuard`, `ResourceGuard`, `RoleGuard`)
-
-Clients must include a valid Keycloak JWT bearer token in the `Authorization` header:
+Clients (normally the agent controller using client credentials) must include a valid access token in the `Authorization` header:
 
 ```
-Authorization: Bearer <keycloak-jwt-token>
+Authorization: Bearer <access-token>
 ```
 
-⚠️ **Note**: The JWT token must include the `agent_management` role to access agent-manager endpoints.
+⚠️ **Note**: Set `OIDC_AUTHORIZED_PARTIES=<controller client id>` (or `OIDC_AUDIENCE`) so other clients and users of the issuer cannot call the manager.
 
 ### WebSocket Gateway
 
@@ -411,7 +409,7 @@ This library requires the following dependencies:
 - `class-transformer` - Object transformation utilities
 - `@nestjs/websockets` - WebSocket support for NestJS
 - `socket.io` - WebSocket library
-- `nest-keycloak-connect` - Keycloak integration for NestJS
+- `jsonwebtoken` - OIDC access token signature verification (via `@forepath/identity/backend`)
 
 ## Database Setup
 
@@ -689,7 +687,7 @@ nx test agenstra-backend-feature-agent-manager --coverage
 - **Password Security**: Passwords are hashed using bcrypt with 10 salt rounds
 - **API Security**: Password hashes are never exposed in API responses
 - **Input Validation**: All DTOs use class-validator for input validation
-- **HTTP Authentication**: All HTTP endpoints are protected by Keycloak
+- **HTTP Authentication**: All HTTP endpoints are protected by OIDC access token validation or the static API key
 - **WebSocket Authentication**: WebSocket authentication validates credentials against the database
 - **Error Messages**: Generic error messages are used to prevent information disclosure
 - **Session Management**: WebSocket sessions are stored in memory and cleaned up on disconnect
@@ -700,11 +698,12 @@ nx test agenstra-backend-feature-agent-manager --coverage
 ### Backend API Environment Variables
 
 - `WEBSOCKET_NAMESPACE` - Agents namespace (default: `socket/agents`)
-- `KEYCLOAK_AUTH_SERVER_URL` - Keycloak server URL (required for HTTP authentication when `STATIC_API_KEY` is not set)
-- `KEYCLOAK_REALM` - Keycloak realm (required for HTTP authentication when `STATIC_API_KEY` is not set)
-- `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required for HTTP authentication when `STATIC_API_KEY` is not set)
-- `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required for HTTP authentication when `STATIC_API_KEY` is not set)
-- `STATIC_API_KEY` - Static API key for HTTP authentication (optional). If set, the API uses API key authentication only (no Keycloak fallback, no anonymous access). If not set, Keycloak authentication is used. The API key can be provided in the `Authorization` header using either `Bearer <key>` or `ApiKey <key>` format.
+- `AUTHENTICATION_METHOD` - `api-key` or `oidc` (default: api-key when `STATIC_API_KEY` is set, else oidc)
+- `OIDC_ISSUER` - OIDC issuer (required for HTTP authentication when `STATIC_API_KEY` is not set)
+- `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` - Client used for token introspection (required with `OIDC_TOKEN_VALIDATION=ONLINE`, the default)
+- `OIDC_TOKEN_VALIDATION` - `ONLINE` (default) or `OFFLINE`
+- `OIDC_AUTHORIZED_PARTIES` / `OIDC_AUDIENCE` - Optional `azp` / `aud` allowlists (recommended)
+- `STATIC_API_KEY` - Static API key for HTTP authentication (optional). If set, the API uses API key authentication only (no OIDC fallback, no anonymous access). If not set, OIDC authentication is used. The API key can be provided in the `Authorization` header using either `Bearer <key>` or `ApiKey <key>` format.
 - `OPENCODE_AGENT_DOCKER_IMAGE` - Docker image (including tag) for opencode agent containers (optional, defaults to `ghcr.io/forepath/agenstra-manager-worker:latest`)
 - `GIT_AUTHOR_NAME` - Git commit author name (optional, defaults to 'Agenstra')
 - `GIT_AUTHOR_EMAIL` - Git commit author email (optional, defaults to 'noreply@agenstra.com')

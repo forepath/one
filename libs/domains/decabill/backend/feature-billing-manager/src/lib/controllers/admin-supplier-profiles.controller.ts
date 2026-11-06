@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -23,7 +23,6 @@ import { AddSupplierProfileCustomDataDto, UpdateSupplierProfileCustomDataDto } f
 import { SupplierProfilesAdminService } from '../services/supplier-profiles-admin.service';
 
 @Controller('admin/billing/supplier-profiles')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 @RequireScopes('supplier_profile:admin')
 export class AdminSupplierProfilesController {

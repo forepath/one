@@ -1,23 +1,10 @@
 import { inject } from '@angular/core';
 import type { Environment } from '@forepath/decabill/frontend/util-configuration';
 import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend/util-configuration';
+import { OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { KeycloakService } from 'keycloak-angular';
-import {
-  catchError,
-  delay,
-  EMPTY,
-  from,
-  fromEvent,
-  map,
-  merge,
-  Observable,
-  of,
-  switchMap,
-  tap,
-  withLatestFrom,
-} from 'rxjs';
+import { catchError, delay, EMPTY, fromEvent, map, merge, of, switchMap, tap, withLatestFrom } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 
 import { resolveBillingTenantId } from '../../interceptors/tenant.interceptor';
@@ -51,9 +38,6 @@ import {
 import { PROJECT_BOARD_SOCKET_EVENTS } from './project-board-socket.constants';
 import { selectProjectBoardSocketSelectedProjectId } from './project-board-socket.selectors';
 
-const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
-const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
-
 export function resolveProjectBoardWebsocketUrl(environment: Environment): string | null {
   const explicit = resolveApiWebsocketUrl(environment.billing.urls.websocket, 'projects')?.trim();
 
@@ -72,31 +56,6 @@ export function resolveProjectBoardWebsocketUrl(environment: Environment): strin
   }
 }
 
-function getAuthHeader(environment: Environment, keycloakService: KeycloakService | null): Observable<string | null> {
-  if (environment.authentication.config.type === 'api-key') {
-    const apiKey =
-      environment.authentication.config.apiKey ??
-      (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
-
-    return apiKey ? of(`Bearer ${apiKey}`) : of(null);
-  }
-
-  if (environment.authentication.config.type === 'keycloak' && keycloakService) {
-    return from(keycloakService.getToken()).pipe(
-      map((token) => (token ? `Bearer ${token}` : null)),
-      catchError(() => of(null)),
-    );
-  }
-
-  if (environment.authentication.config.type === 'users') {
-    const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
-
-    return jwt ? of(`Bearer ${jwt}`) : of(null);
-  }
-
-  return of(null);
-}
-
 let projectBoardSocketInstance: Socket | null = null;
 
 export function getProjectBoardSocketInstance(): Socket | null {
@@ -107,7 +66,7 @@ export const connectProjectBoardSocket$ = createEffect(
   (
     actions$ = inject(Actions),
     environment = inject<Environment>(ENVIRONMENT),
-    keycloakService = inject(KeycloakService, { optional: true }),
+    oidcAuthService = inject(OidcAuthService),
   ) =>
     actions$.pipe(
       ofType(connectProjectBoardSocket),
@@ -127,7 +86,7 @@ export const connectProjectBoardSocket$ = createEffect(
           projectBoardSocketInstance = null;
         }
 
-        return getAuthHeader(environment, keycloakService).pipe(
+        return resolveAuthorizationHeader$(environment.authentication.config, oidcAuthService).pipe(
           switchMap((authHeader) => {
             if (!authHeader) {
               return of(connectProjectBoardSocketFailure({ error: 'Not authenticated for WebSocket' }));

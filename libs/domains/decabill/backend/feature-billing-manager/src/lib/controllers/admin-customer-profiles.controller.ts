@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -25,7 +25,6 @@ import type { CustomerTrustScoreResponseDto } from '../dto/customer-trust-score.
 import { CustomerProfilesAdminService } from '../services/customer-profiles-admin.service';
 
 @Controller('admin/billing/customer-profiles')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 @RequireScopes('customer_profile:admin')
 export class AdminCustomerProfilesController {

@@ -5,7 +5,7 @@ import {
   registerAxiosCorrelationIdPropagation,
   TenantAwareSocketIoAdapter,
 } from '@forepath/shared/backend/util-http-context';
-import { createOriginAllowlistMiddleware } from '@forepath/identity/backend';
+import { configureTrustProxy, createOriginAllowlistMiddleware } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import { assertProductionWebhookEscapeHatchesDisabled } from '@forepath/shared/backend/util-webhook';
 import {
@@ -108,6 +108,8 @@ export async function bootstrap(): Promise<void> {
     }),
   );
   app.use(createTenantIdMiddleware());
+  // Opt-in (TRUST_PROXY): real client addresses for rate limits behind a reverse proxy.
+  configureTrustProxy(app.getHttpAdapter().getInstance());
   app.use(createOriginAllowlistMiddleware(new Logger('OriginAllowlist')));
   app.useWebSocketAdapter(new TenantAwareSocketIoAdapter(app));
 

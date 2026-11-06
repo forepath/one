@@ -15,7 +15,7 @@ This application provides:
 - **Container Integration** Docker container management for agent execution. Containers of an environment are named `agenstra-<role>-<agentId>`: `agenstra-worker-<agentId>` (worker) and `agenstra-egress-<agentId>` (egress guard), both labelled `io.agenstra.agent-id=<agentId>` (workers also `io.agenstra.worker=1`). The agent id is assigned before any container is created, recreated containers keep the name, and containers of existing environments are renamed to the pattern on startup
 - **Container isolation levels** Per-environment Docker runtime (`runc`, gVisor `runsc-systrap` or gVisor on KVM `runsc-kvm`) or a KVM microVM (microVM worker image on `runc`), offered only after runtime probes pass; see [Container Isolation Levels](../features/container-isolation.md)
 - **Egress guard** Per-agent sidecar that filters outbound web traffic (Squid/dnsmasq/iptables) and reports decision events; see [Egress Filtering](../features/egress-filtering.md)
-- **Secure Authentication** Keycloak integration for HTTP endpoints and database-backed authentication for WebSocket
+- **Secure Authentication** OIDC access token validation (or static API key) for HTTP endpoints and database-backed authentication for WebSocket
 - **Database Support** PostgreSQL with TypeORM for data persistence
 - **Auto Migrations** Automatic database schema migrations on startup
 - **Rate Limiting** Configurable rate limiting on all API endpoints
@@ -28,16 +28,16 @@ This application is built using:
 
 - **NestJS** Progressive Node.js framework
 - **TypeORM** Object-Relational Mapping for database operations
-- **Keycloak** Identity and access management (optional, can use API key)
+- **OIDC identity provider** (optional, can use API key)
 - **Socket.IO** WebSocket communication
 - **Docker** Container management for agent execution
 - **PostgreSQL** Database for agent storage
 
-The Nest `AppModule` wires TypeORM, hybrid HTTP auth (Keycloak connect plus optional static API key), throttling, and the framework **`AgentsModule`** implementation.
+The Nest `AppModule` wires TypeORM, hybrid HTTP auth (OIDC access token guard or static API key), throttling, and the framework **`AgentsModule`** implementation.
 
 ## API Endpoints
 
-All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentication (or API key authentication if `STATIC_API_KEY` is set).
+All HTTP endpoints are prefixed with `/api` and protected by OIDC authentication (or API key authentication if `STATIC_API_KEY` is set).
 
 ### Agent Management
 
@@ -199,16 +199,16 @@ For complete WebSocket event specifications, authentication flow, and usage exam
 
 ## Authentication
 
-Built-in **users** registration and JWT login live on the **agent controller** only. The agent manager application always uses **Keycloak** (JWT with `agent_management` role) or **static API key** as configured, there are no `/auth/*` endpoints on this service. Operators typically never call the manager HTTP API directly from a browser; the console uses the controller, which proxies requests with stored client credentials.
+Built-in **users** registration and JWT login live on the **agent controller** only. The agent manager application uses **OIDC** (`AUTHENTICATION_METHOD=oidc`; access tokens, typically the controller's client credentials tokens) or **static API key** (`api-key`) as configured; any other method fails at boot and there are no `/auth/*` endpoints on this service. Operators typically never call the manager HTTP API directly from a browser; the console uses the controller, which proxies requests with stored client credentials.
 
 ### HTTP Endpoints
 
-All HTTP endpoints are protected by Keycloak authentication by default. If `STATIC_API_KEY` is set, API key authentication is used instead.
+All HTTP endpoints are protected by OIDC authentication by default. If `STATIC_API_KEY` is set (or `AUTHENTICATION_METHOD=api-key`), API key authentication is used instead.
 
-**Keycloak Authentication**:
+**OIDC Authentication**:
 
-- Include a valid Keycloak JWT bearer token in the `Authorization` header: `Bearer <keycloak-jwt-token>`
-- **Note**: The token must include the `agent_management` role to access agent-manager endpoints
+- Include a valid OIDC access token in the `Authorization` header: `Bearer <access-token>`
+- Configure `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` (introspection, `OIDC_TOKEN_VALIDATION=ONLINE` by default); set `OIDC_AUTHORIZED_PARTIES=<controller client id>` (provisioned managers get it automatically) or `OIDC_AUDIENCE` so only the controller's tokens are accepted
 
 **API Key Authentication**:
 
@@ -351,7 +351,7 @@ Before deploying to production, ensure:
 - `CORS_ORIGIN` is configured with your production domain(s)
 - `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
 - `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
-- `STATIC_API_KEY` or Keycloak credentials are configured
+- `STATIC_API_KEY` or OIDC settings are configured
 - Database credentials are secure
 - Docker socket is properly mounted for container management
 - Manager API and worker images are on matching release tags

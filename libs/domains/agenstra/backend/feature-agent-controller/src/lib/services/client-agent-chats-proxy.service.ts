@@ -26,7 +26,7 @@ export type ChatSessionMessageResponse = {
 
 /**
  * Service for proxying agent chat session requests to client endpoints.
- * Handles authentication (API key or Keycloak JWT) and forwards chat session requests to the client's agent-manager service.
+ * Handles authentication (API key or OIDC client credentials token) and forwards chat session requests to the client's agent-manager service.
  */
 @Injectable()
 export class ClientAgentChatsProxyService {
@@ -53,7 +53,7 @@ export class ClientAgentChatsProxyService {
       }
 
       return `Bearer ${clientEntity.apiKey}`;
-    } else if (clientEntity.authenticationType === AuthenticationType.KEYCLOAK) {
+    } else if (clientEntity.authenticationType === AuthenticationType.OIDC) {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;

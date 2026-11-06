@@ -1,26 +1,39 @@
 import { AgentsModule, AgenstraOtelModule } from '@forepath/agenstra/backend/feature-agent-manager';
 import { MonitoringModule } from '@forepath/shared/backend';
-import { getHybridAuthGuards, getRateLimitConfig, KeycloakModule, KeycloakService } from '@forepath/identity/backend';
+import {
+  getAuthenticationMethod,
+  getHybridAuthGuards,
+  getRateLimitConfig,
+  OidcModule,
+} from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
 import { typeormConfig } from '../typeorm.config';
+
+const authMethod = getAuthenticationMethod();
+
+// The agent-manager has no users table / console: only service authentication is supported.
+// Anything else would leave the API without an authenticating guard, so refuse to start.
+if (authMethod !== 'api-key' && authMethod !== 'oidc') {
+  throw new Error(
+    `AUTHENTICATION_METHOD=${authMethod} is not supported by the agent-manager. Use api-key (STATIC_API_KEY) or oidc (OIDC_* settings).`,
+  );
+}
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeormConfig),
     ThrottlerModule.forRoot(getRateLimitConfig()),
-    KeycloakModule,
-    KeycloakConnectModule.registerAsync({ useExisting: KeycloakService }),
+    ...(authMethod === 'oidc' ? [OidcModule] : []),
     AgentsModule,
     AgenstraOtelModule,
     MonitoringModule,
   ],
-  // Use hybrid guards (checks STATIC_API_KEY to determine authentication method)
   providers: [
+    // api-key: static API key guard; oidc: API key guard (pass-through) + OIDC access token guard
     ...getHybridAuthGuards(),
     // Apply rate limiting globally to all routes
     {

@@ -1,6 +1,9 @@
 import { EventEmitter } from 'events';
 
 import { AuthenticationType } from '@forepath/identity/backend';
+import { createCorrelationAwareSocketIoClient } from '@forepath/shared/backend/util-http-context';
+
+import { createPinnedSocketAgent } from '../utils/client-endpoint-security';
 
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
 
@@ -43,6 +46,7 @@ jest.mock('@forepath/shared/backend/util-http-context', () => ({
 jest.mock('../utils/client-endpoint-security', () => ({
   validateClientEndpointWithDnsOrThrow: jest.fn().mockResolvedValue(undefined),
   getClientEndpointTlsPolicy: jest.fn().mockReturnValue({ rejectUnauthorized: true }),
+  createPinnedSocketAgent: jest.fn().mockReturnValue({ pinned: true }),
 }));
 
 describe('RemoteAgentsSessionService.sendChatStreaming', () => {
@@ -145,5 +149,15 @@ describe('RemoteAgentsSessionService.sendChatStreaming', () => {
     fakeSocket.push('chatEvent', { success: true, data: { kind: 'assistantMessage', payload: { text: 'plan' } } });
 
     await expect(result).resolves.toEqual(expect.objectContaining({ text: 'plan' }));
+  });
+
+  it('connects through the DNS-pinned agent (no rebinding between validation and connect)', async () => {
+    const calls = (createCorrelationAwareSocketIoClient as jest.Mock).mock.calls;
+
+    expect(calls.length).toBeGreaterThan(0);
+    expect(
+      calls.every(([, options]: [string, { agent?: unknown }]) => (options.agent as { pinned?: boolean })?.pinned),
+    ).toBe(true);
+    expect(createPinnedSocketAgent).toHaveBeenCalledWith(expect.stringContaining('/socket/agents'), true);
   });
 });

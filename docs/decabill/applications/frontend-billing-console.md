@@ -58,7 +58,7 @@ Stripe return URLs typically land on `/invoices?payment=success` or `?payment=ca
 
 | Path                                   | Guard                               | Description                                                                   |
 | -------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------- |
-| `/login`                               | `loginGuard`                        | Email/password or Keycloak entry                                              |
+| `/login`                               | `loginGuard`                        | Email/password, OIDC or SAML entry                                            |
 | `/register`                            | `signupDisabledGuard`, `loginGuard` | Self-service registration                                                     |
 | `/request-password-reset`              | `loginGuard`                        | Request reset code                                                            |
 | `/request-password-reset-confirmation` | `loginGuard`                        | Confirmation message                                                          |

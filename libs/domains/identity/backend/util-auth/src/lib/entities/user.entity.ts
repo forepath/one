@@ -13,10 +13,13 @@ export enum UserRole {
   CONTROLLER = 'controller',
 }
 
+/** External identity provider kinds that can be linked to a local user row. */
+export type ExternalIdentityProvider = 'oidc' | 'saml';
+
 /**
  * User entity for the "users" authentication method.
  * Passwords are stored as bcrypt hashes (never use encryption transformer).
- * Keycloak-linked users have keycloak_sub set and password_hash null.
+ * Externally authenticated users (OIDC / SAML) have external_provider + external_subject set and password_hash null.
  */
 @Entity('users')
 export class UserEntity {
@@ -53,8 +56,13 @@ export class UserEntity {
   @Column({ type: 'timestamp', name: 'password_reset_token_expires_at', nullable: true })
   passwordResetTokenExpiresAt?: Date;
 
-  @Column({ type: 'varchar', length: 255, name: 'keycloak_sub', nullable: true })
-  keycloakSub?: string;
+  /** Identity provider kind that owns {@link externalSubject} (`oidc` | `saml`); null for local-only accounts. */
+  @Column({ type: 'varchar', length: 16, name: 'external_provider', nullable: true })
+  externalProvider?: ExternalIdentityProvider | null;
+
+  /** Stable subject at the external identity provider (OIDC `sub`, SAML NameID). Unique per tenant + provider. */
+  @Column({ type: 'varchar', length: 255, name: 'external_subject', nullable: true })
+  externalSubject?: string | null;
 
   /**
    * Base32 TOTP secret while pending enrollment or enabled.

@@ -15,7 +15,11 @@ import { UsersRepository } from '../repositories/users.repository';
 import { IdentityAppAuthorizationService } from '../services/identity-app-authorization.service';
 import { PersonalAccessTokenService } from '../services/personal-access-token.service';
 import { resolveMachineJwtSession } from '../utils/machine-jwt-session.util';
-import { assertUsersJwtSessionValid, UsersJwtSessionPayload } from '../utils/users-jwt-session.util';
+import {
+  assertUsersJwtSessionValid,
+  isInteractiveAmrAllowedForMethod,
+  UsersJwtSessionPayload,
+} from '../utils/users-jwt-session.util';
 
 export type UsersJwtPayload = UsersJwtSessionPayload;
 
@@ -69,9 +73,9 @@ export class UsersAuthGuard implements CanActivate {
       }
     >();
 
-    // Keycloak / api-key: global guards authenticate. When this guard is used at controller
-    // level (e.g. PAT CRUD), require a resolved local user id (synced OIDC or PAT).
-    if (authMethod === 'keycloak') {
+    // OIDC: global guards authenticate (OidcAuthGuard + ExternalIdentityAuthGuard, or PatBearerAuthGuard).
+    // When this guard is used at controller level (e.g. PAT CRUD), require a resolved local user id.
+    if (authMethod === 'oidc') {
       if (request.patAuthenticated || request.user?.id) {
         return true;
       }
@@ -79,7 +83,8 @@ export class UsersAuthGuard implements CanActivate {
       throw new UnauthorizedException('Missing or invalid authorization token');
     }
 
-    if (authMethod !== 'users') {
+    // users / saml: interactive sessions are app-signed JWTs (password login or SAML assertion exchange).
+    if (authMethod !== 'users' && authMethod !== 'saml') {
       return true;
     }
 
@@ -117,6 +122,11 @@ export class UsersAuthGuard implements CanActivate {
 
       const amr = payload.amr ?? ['pwd'];
       let scopes = payload.scopes;
+      const isMachine = amr.includes('app') || amr.includes('pat');
+
+      if (!isMachine && !isInteractiveAmrAllowedForMethod(amr, authMethod)) {
+        throw new UnauthorizedException('Session is no longer valid.');
+      }
 
       if (amr.includes('app') || amr.includes('pat')) {
         // Machine JWT (PAT or app access token): live session check; scopes re-capped to the live grant and role.

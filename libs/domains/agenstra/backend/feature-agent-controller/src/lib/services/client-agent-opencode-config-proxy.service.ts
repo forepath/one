@@ -39,7 +39,7 @@ export class ClientAgentOpencodeConfigProxyService {
       return `Bearer ${clientEntity.apiKey}`;
     }
 
-    if (clientEntity.authenticationType === AuthenticationType.KEYCLOAK) {
+    if (clientEntity.authenticationType === AuthenticationType.OIDC) {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;

@@ -266,7 +266,7 @@ curl http://localhost:3000/api/agents/{agentId}/deployments/runs/{runId}/logs \
 
 ### Authentication
 
-- All endpoints require authentication (Keycloak JWT or API key)
+- All endpoints require authentication (OIDC, SAML / users session JWT, or API key)
 - Provider tokens are never returned in API responses
 - Tokens are only used internally for provider API calls
 

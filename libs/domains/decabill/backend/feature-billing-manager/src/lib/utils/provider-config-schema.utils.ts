@@ -123,11 +123,12 @@ export const PRODUCT_FIELD_SERVICES: Record<string, IntegratedProductService[]> 
     IntegratedProvisioningService.AgenstraManager,
     IntegratedProvisioningService.DecabillBilling,
   ],
-  keycloak: [
+  oidc: [
     IntegratedProvisioningService.AgenstraController,
     IntegratedProvisioningService.AgenstraManager,
     IntegratedProvisioningService.DecabillBilling,
   ],
+  saml: [IntegratedProvisioningService.AgenstraController, IntegratedProvisioningService.DecabillBilling],
   disableSignup: [IntegratedProvisioningService.AgenstraController, IntegratedProvisioningService.DecabillBilling],
   disableForceLogin2fa: [
     IntegratedProvisioningService.AgenstraController,

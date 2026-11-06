@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import { BadRequestException, Controller, Get, Param, ParseUUIDPipe, Query, Req } from '@nestjs/common';
 
 import type {
@@ -11,7 +11,6 @@ import { ContainerManagerService } from '../services/container-manager.service';
 import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../../../utils/billing-access.utils';
 
 @Controller('admin/billing/subscriptions/:subscriptionId/items/:itemId/container-manager')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 export class AdminContainerManagerController {
   constructor(private readonly containerManagerService: ContainerManagerService) {}

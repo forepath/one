@@ -70,7 +70,7 @@ Production Docker Compose splits `api`, `worker`, and `scheduler` into separate 
 
 ### Authentication and Multi-Tenancy
 
-- HTTP and WebSocket accept JWT (users), Keycloak tokens, or static API key depending on `AUTHENTICATION_METHOD`
+- HTTP and WebSocket accept JWT (users / SAML sessions), OIDC access tokens, or static API key depending on `AUTHENTICATION_METHOD`
 - Optional `X-Tenant` header scopes data per tenant (`TENANTS` allowlist)
 - Dashboard WebSocket requires an end-user billing identity (API key alone is insufficient)
 

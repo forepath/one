@@ -16,7 +16,7 @@ This application provides:
 - **WebSocket Gateway** - Real-time bidirectional event forwarding to remote agent-manager services
 - **Server Provisioning** - Automated cloud server provisioning (Hetzner Cloud, DigitalOcean) with Docker and agent-manager deployment
 - **Per-Client Permissions** - Fine-grained access control with user roles per client (admin/user)
-- **Secure Authentication** - Keycloak integration for HTTP endpoints and API key fallback
+- **Secure Authentication** - OIDC, SAML 2.0, built-in users (JWT) or static API key
 - **Database Support** - PostgreSQL with TypeORM for data persistence
 - **Auto Migrations** - Automatic database schema migrations on startup
 
@@ -28,7 +28,7 @@ This application is built using:
 
 - **NestJS** - Progressive Node.js framework
 - **TypeORM** - Object-Relational Mapping for database operations
-- **Keycloak** - Identity and access management
+- **OIDC / SAML identity provider** - Identity and access management (optional)
 - **Socket.IO** - WebSocket communication
 
 The application integrates the `@forepath/agenstra/backend/feature-agent-controller` library, which provides the core client management functionality. See the [library documentation](../../libs/domains/agenstra/backend/feature-agent-controller/README.md#architecture) for detailed architecture information.
@@ -39,7 +39,7 @@ The application integrates the `@forepath/agenstra/backend/feature-agent-control
 
 - Node.js 24.22.1 or higher
 - PostgreSQL database
-- Keycloak server (for HTTP authentication, optional if using API key authentication)
+- OIDC or SAML identity provider (optional; API key or users authentication work without one). For local testing see [platform authentication](../../shared/platform-authentication/README.md)
 - Docker (for server provisioning)
 
 ### Installation
@@ -65,7 +65,7 @@ The application automatically runs pending migrations on startup when `synchroni
 
 ## API Endpoints
 
-All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentication (or API key authentication if `STATIC_API_KEY` is set).
+All HTTP endpoints are prefixed with `/api` and protected by the configured authentication method (OIDC by default, or API key authentication if `STATIC_API_KEY` is set).
 
 For complete API endpoint documentation, request/response schemas, and authentication requirements, see the [library documentation](../../libs/domains/agenstra/backend/feature-agent-controller/README.md#api-endpoints).
 
@@ -80,7 +80,8 @@ For complete WebSocket event specifications, authentication flow, and usage exam
 Authentication is configured via `AUTHENTICATION_METHOD`:
 
 - **`api-key`**: Static API key (requires `STATIC_API_KEY`). Use `Authorization: Bearer <key>`.
-- **`keycloak`**: Keycloak OAuth2 (requires Keycloak env vars). Users are synced to the users table.
+- **`oidc`**: Any OpenID Connect provider (requires `OIDC_*` and `JWT_SECRET`). Bearer access tokens are verified; identities are linked to the users table.
+- **`saml`**: SAML 2.0 single sign-on (requires `SAML_*` and `JWT_SECRET`). The API is the service provider and issues session JWTs.
 - **`users`**: Built-in user registration with JWT (requires `JWT_SECRET`). Register, confirm email, login.
 
 For detailed authentication requirements and users auth endpoints, see the [library documentation](../../libs/domains/agenstra/backend/feature-agent-controller/README.md#authentication).
@@ -222,15 +223,14 @@ See the [library documentation](../../libs/domains/agenstra/backend/feature-agen
 
 **Authentication:**
 
-- `AUTHENTICATION_METHOD` - `api-key`, `keycloak`, or `users` (default: api-key when STATIC_API_KEY set, else keycloak)
+- `AUTHENTICATION_METHOD` - `api-key`, `users`, `oidc`, or `saml` (default: api-key when STATIC_API_KEY set, else oidc; other values fail at boot)
 - `STATIC_API_KEY` - Static API key (required when AUTHENTICATION_METHOD=api-key)
-- `JWT_SECRET` - JWT signing secret (required when `AUTHENTICATION_METHOD=users` or `keycloak`; used for users sessions and PAT exchange)
-- `KEYCLOAK_SERVER_URL` - Keycloak server URL (optional, used for server URL if different from auth server URL)
-- `KEYCLOAK_AUTH_SERVER_URL` - Keycloak authentication server URL (required for Keycloak auth)
-- `KEYCLOAK_REALM` - Keycloak realm name (required for Keycloak auth)
-- `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required for Keycloak auth)
-- `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required for Keycloak auth)
-- `KEYCLOAK_TOKEN_VALIDATION` - Token validation method: `ONLINE` or `OFFLINE` (optional, default: `ONLINE`)
+- `JWT_SECRET` - JWT signing secret (required when `AUTHENTICATION_METHOD=users`, `oidc` or `saml`; used for sessions and PAT exchange)
+- `OIDC_ISSUER` - OIDC issuer (required for oidc; also the default issuer for `oidc` workspace clients)
+- `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` - API client for token introspection (required for `OIDC_TOKEN_VALIDATION=ONLINE`, the default)
+- `OIDC_TOKEN_VALIDATION` - `ONLINE` (default) or `OFFLINE`
+- `OIDC_AUDIENCE` / `OIDC_AUTHORIZED_PARTIES` - Optional `aud` / `azp` allowlists
+- `SAML_IDP_SSO_URL`, `SAML_IDP_CERT`, `SAML_IDP_ISSUER`, `SAML_SP_ENTITY_ID`, `SAML_SP_ACS_URL`, `SAML_FRONTEND_CALLBACK_URL` - SAML mode (see [Authentication](../../../docs/agenstra/features/authentication.md))
 
 **Database:**
 
@@ -297,7 +297,7 @@ Before deploying to production, ensure:
 - ✅ `CORS_ORIGIN` is configured with your production domain(s)
 - ✅ `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
 - ✅ `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
-- ✅ `STATIC_API_KEY` or Keycloak credentials are configured
+- ✅ `STATIC_API_KEY` or OIDC / SAML settings are configured
 - ✅ Database credentials are secure
 - ✅ `ENCRYPTION_KEY` is set for sensitive data encryption
 

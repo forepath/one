@@ -633,7 +633,13 @@
                                   <option value="users" i18n="@@featureSubscriptions-authUsers">Users</option>
                                 }
                                 <option value="api-key" i18n="@@featureSubscriptions-authApiKey">API Key</option>
-                                <option value="keycloak" i18n="@@featureSubscriptions-authKeycloak">Keycloak</option>
+                                <option value="oidc" i18n="@@featureSubscriptions-authOidc">OpenID Connect</option>
+                                @if (
+                                  orderRequestedConfig.service === 'agenstra-controller' ||
+                                  orderRequestedConfig.service === 'decabill-billing'
+                                ) {
+                                  <option value="saml" i18n="@@featureSubscriptions-authSaml">SAML 2.0</option>
+                                }
                               </fpc-form-control>
                             </fpc-form-field>
                             <div>
@@ -679,91 +685,161 @@
                                     />
                                   </fpc-form-field>
                                 }
-                                @case ('keycloak') {
+                                @case ('oidc') {
                                   <fieldset class="mb-3">
-                                    <legend class="fs-6" i18n="@@featureSubscriptions-keycloakSection">Keycloak</legend>
-                                    <div class="mb-2">
-                                      <fpc-form-field
-                                        class="mb-0"
-                                        forId="orderKeycloakServerUrl"
-                                        i18n-label="@@featureSubscriptions-keycloakServerUrlLabel"
-                                        label="Server URL"
+                                    <legend class="fs-6" i18n="@@featureSubscriptions-oidcSection">
+                                      OpenID Connect
+                                    </legend>
+                                    <fpc-form-field
+                                      forId="orderOidcIssuer"
+                                      i18n-label="@@featureSubscriptions-oidcIssuerLabel"
+                                      label="Issuer"
+                                    >
+                                      <fpc-form-control
+                                        controlId="orderOidcIssuer"
+                                        inputType="url"
+                                        name="oidcIssuer"
+                                        [(ngModel)]="orderRequestedConfig.oidc.issuer"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                        placeholder="https://idp.example.com/realms/agenstra"
+                                      />
+                                    </fpc-form-field>
+                                    <fpc-form-field
+                                      forId="orderOidcClientId"
+                                      i18n-label="@@featureSubscriptions-oidcClientIdLabel"
+                                      label="Client ID (API)"
+                                    >
+                                      <fpc-form-control
+                                        controlId="orderOidcClientId"
+                                        name="oidcClientId"
+                                        [(ngModel)]="orderRequestedConfig.oidc.clientId"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                      />
+                                    </fpc-form-field>
+                                    <fpc-form-field
+                                      forId="orderOidcClientSecret"
+                                      i18n-label="@@featureSubscriptions-oidcClientSecretLabel"
+                                      label="Client secret"
+                                    >
+                                      <fpc-form-control
+                                        controlId="orderOidcClientSecret"
+                                        inputType="password"
+                                        name="oidcClientSecret"
+                                        [(ngModel)]="orderRequestedConfig.oidc.clientSecret"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                      />
+                                    </fpc-form-field>
+                                    <fpc-form-field
+                                      forId="orderOidcAudience"
+                                      i18n-label="@@featureSubscriptions-oidcAudienceLabel"
+                                      label="Audience (optional)"
+                                    >
+                                      <fpc-form-control
+                                        controlId="orderOidcAudience"
+                                        name="oidcAudience"
+                                        [(ngModel)]="orderRequestedConfig.oidc.audience"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                      />
+                                    </fpc-form-field>
+                                    <fpc-form-field
+                                      forId="orderOidcFrontendClientId"
+                                      i18n-label="@@featureSubscriptions-oidcFrontendClientIdLabel"
+                                      label="Console client ID (optional)"
+                                    >
+                                      <fpc-form-control
+                                        controlId="orderOidcFrontendClientId"
+                                        name="oidcFrontendClientId"
+                                        [(ngModel)]="orderRequestedConfig.oidc.frontendClientId"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                      />
+                                      <span fpcFormFieldHint i18n="@@featureSubscriptions-oidcFrontendClientIdHint"
+                                        >Public client used by the console; defaults to the API client ID.</span
                                       >
-                                        <fpc-form-control
-                                          inputType="url"
-                                          controlId="orderKeycloakServerUrl"
-                                          name="keycloakServerUrl"
-                                          [(ngModel)]="orderRequestedConfig.keycloak.serverUrl"
-                                          placeholder="https://keycloak.example.com"
-                                          [disabled]="(subscriptionsCreating$ | async) === true"
-                                        />
-                                      </fpc-form-field>
-                                    </div>
-                                    <div class="mb-2">
-                                      <fpc-form-field
-                                        class="mb-0"
-                                        forId="orderKeycloakAuthServerUrl"
-                                        i18n-label="@@featureSubscriptions-keycloakAuthServerUrlLabel"
-                                        label="Auth server URL"
+                                    </fpc-form-field>
+                                  </fieldset>
+                                }
+                                @case ('saml') {
+                                  <fieldset class="mb-3">
+                                    <legend class="fs-6" i18n="@@featureSubscriptions-samlSection">SAML 2.0</legend>
+                                    <fpc-form-field
+                                      forId="orderSamlIdpSsoUrl"
+                                      i18n-label="@@featureSubscriptions-samlIdpSsoUrlLabel"
+                                      label="IdP sign-in URL"
+                                    >
+                                      <fpc-form-control
+                                        controlId="orderSamlIdpSsoUrl"
+                                        inputType="url"
+                                        name="samlIdpSsoUrl"
+                                        [(ngModel)]="orderRequestedConfig.saml.idpSsoUrl"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                        placeholder="https://idp.example.com/realms/agenstra/protocol/saml"
+                                      />
+                                    </fpc-form-field>
+                                    <fpc-form-field
+                                      forId="orderSamlIdpCert"
+                                      i18n-label="@@featureSubscriptions-samlIdpCertLabel"
+                                      label="IdP signing certificate (PEM)"
+                                    >
+                                      <fpc-form-control
+                                        controlId="orderSamlIdpCert"
+                                        controlType="textarea"
+                                        name="samlIdpCert"
+                                        [(ngModel)]="orderRequestedConfig.saml.idpCert"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                      />
+                                    </fpc-form-field>
+                                    <fpc-form-field
+                                      forId="orderSamlIdpIssuer"
+                                      i18n-label="@@featureSubscriptions-samlIdpIssuerLabel"
+                                      label="IdP entity ID (optional)"
+                                    >
+                                      <fpc-form-control
+                                        controlId="orderSamlIdpIssuer"
+                                        name="samlIdpIssuer"
+                                        [(ngModel)]="orderRequestedConfig.saml.idpIssuer"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                      />
+                                    </fpc-form-field>
+                                    <fpc-form-field
+                                      forId="orderSamlSpEntityId"
+                                      i18n-label="@@featureSubscriptions-samlSpEntityIdLabel"
+                                      label="SP entity ID (optional)"
+                                    >
+                                      <fpc-form-control
+                                        controlId="orderSamlSpEntityId"
+                                        name="samlSpEntityId"
+                                        [(ngModel)]="orderRequestedConfig.saml.spEntityId"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                      />
+                                      <span fpcFormFieldHint i18n="@@featureSubscriptions-samlSpEntityIdHint"
+                                        >Defaults to the instance URL.</span
                                       >
-                                        <fpc-form-control
-                                          inputType="url"
-                                          controlId="orderKeycloakAuthServerUrl"
-                                          name="keycloakAuthServerUrl"
-                                          [(ngModel)]="orderRequestedConfig.keycloak.authServerUrl"
-                                          placeholder="https://keycloak.example.com/auth"
-                                          [disabled]="(subscriptionsCreating$ | async) === true"
-                                        />
-                                      </fpc-form-field>
-                                    </div>
-                                    <div class="row g-2 mb-2">
-                                      <div class="col-md-6">
-                                        <fpc-form-field
-                                          class="mb-0"
-                                          forId="orderKeycloakRealm"
-                                          i18n-label="@@featureSubscriptions-keycloakRealmLabel"
-                                          label="Realm"
-                                        >
-                                          <fpc-form-control
-                                            controlId="orderKeycloakRealm"
-                                            name="keycloakRealm"
-                                            [(ngModel)]="orderRequestedConfig.keycloak.realm"
-                                            [disabled]="(subscriptionsCreating$ | async) === true"
-                                          />
-                                        </fpc-form-field>
-                                      </div>
-                                      <div class="col-md-6">
-                                        <fpc-form-field
-                                          class="mb-0"
-                                          forId="orderKeycloakClientId"
-                                          i18n-label="@@featureSubscriptions-keycloakClientIdLabel"
-                                          label="Client ID"
-                                        >
-                                          <fpc-form-control
-                                            controlId="orderKeycloakClientId"
-                                            name="keycloakClientId"
-                                            [(ngModel)]="orderRequestedConfig.keycloak.clientId"
-                                            [disabled]="(subscriptionsCreating$ | async) === true"
-                                          />
-                                        </fpc-form-field>
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <fpc-form-field
-                                        class="mb-0"
-                                        forId="orderKeycloakClientSecret"
-                                        i18n-label="@@featureSubscriptions-keycloakClientSecretLabel"
-                                        label="Client secret"
-                                      >
-                                        <fpc-form-control
-                                          inputType="password"
-                                          controlId="orderKeycloakClientSecret"
-                                          name="keycloakClientSecret"
-                                          [(ngModel)]="orderRequestedConfig.keycloak.clientSecret"
-                                          [disabled]="(subscriptionsCreating$ | async) === true"
-                                        />
-                                      </fpc-form-field>
-                                    </div>
+                                    </fpc-form-field>
+                                    <fpc-form-field
+                                      forId="orderSamlNameIdFormat"
+                                      i18n-label="@@featureSubscriptions-samlNameIdFormatLabel"
+                                      label="NameID format (optional)"
+                                    >
+                                      <fpc-form-control
+                                        controlId="orderSamlNameIdFormat"
+                                        name="samlNameIdFormat"
+                                        [(ngModel)]="orderRequestedConfig.saml.nameIdFormat"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                        placeholder="urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
+                                      />
+                                    </fpc-form-field>
+                                    <fpc-form-field
+                                      forId="orderSamlEmailAttribute"
+                                      i18n-label="@@featureSubscriptions-samlEmailAttributeLabel"
+                                      label="Email attribute (optional)"
+                                    >
+                                      <fpc-form-control
+                                        controlId="orderSamlEmailAttribute"
+                                        name="samlEmailAttribute"
+                                        [(ngModel)]="orderRequestedConfig.saml.emailAttribute"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                      />
+                                    </fpc-form-field>
                                   </fieldset>
                                 }
                               }

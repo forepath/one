@@ -15,7 +15,7 @@ This application provides:
 - **HTTP REST API** - Full CRUD operations for agent management
 - **WebSocket Gateway** - Real-time bidirectional communication with agents
 - **Container Integration** - Docker container management for agent execution
-- **Secure Authentication** - Keycloak integration for HTTP endpoints and database-backed authentication for WebSocket
+- **Secure Authentication** - OIDC access token validation (or static API key) for HTTP endpoints and database-backed authentication for WebSocket
 - **Database Support** - PostgreSQL with TypeORM for data persistence
 - **Auto Migrations** - Automatic database schema migrations on startup
 
@@ -27,7 +27,7 @@ This application is built using:
 
 - **NestJS** - Progressive Node.js framework
 - **TypeORM** - Object-Relational Mapping for database operations
-- **Keycloak** - Identity and access management
+- **OIDC identity provider** - Identity and access management (optional)
 - **Socket.IO** - WebSocket communication
 - **Docker** - Container management for agent execution
 
@@ -39,7 +39,7 @@ The application integrates the `@forepath/agenstra/backend/feature-agent-manager
 
 - Node.js 24.22.1 or higher
 - PostgreSQL database
-- Keycloak server (for HTTP authentication)
+- OIDC identity provider (for HTTP authentication, optional if using API key authentication)
 - Docker (for agent container management)
 
 ### Installation
@@ -65,7 +65,7 @@ The application automatically runs pending migrations on startup when `synchroni
 
 ## API Endpoints
 
-All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentication.
+All HTTP endpoints are prefixed with `/api` and protected by OIDC authentication (or API key authentication if `STATIC_API_KEY` is set).
 
 For complete API endpoint documentation, request/response schemas, and authentication requirements, see the [library documentation](../../libs/domains/agenstra/backend/feature-agent-manager/README.md#api-endpoints).
 
@@ -79,9 +79,9 @@ For complete WebSocket event specifications, authentication flow, and usage exam
 
 ### HTTP Endpoints
 
-All HTTP endpoints are protected by Keycloak authentication.
+All HTTP endpoints are protected by OIDC access token validation (`AUTHENTICATION_METHOD=oidc`, default when `STATIC_API_KEY` is unset) or the static API key. Other methods (`users`, `saml`) are rejected at boot.
 
-⚠️ **Note**: When using Keycloak authentication, the JWT token must include the `agent_management` role to access agent-manager endpoints.
+⚠️ **Note**: Set `OIDC_AUTHORIZED_PARTIES` (or `OIDC_AUDIENCE`) so only the controller's client credentials tokens are accepted; provisioned managers set `OIDC_AUTHORIZED_PARTIES=<clientId>` automatically.
 
 For detailed authentication requirements, see the [library documentation](../../libs/domains/agenstra/backend/feature-agent-manager/README.md#authentication).
 
@@ -273,7 +273,7 @@ Before deploying to production, ensure:
 - ✅ `CORS_ORIGIN` is configured with your production domain(s)
 - ✅ `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
 - ✅ `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
-- ✅ `STATIC_API_KEY` or Keycloak credentials are configured
+- ✅ `STATIC_API_KEY` or OIDC settings are configured
 - ✅ Database credentials are secure
 - ✅ Docker socket is properly mounted for container management
 - ✅ API and worker image tags match the same release

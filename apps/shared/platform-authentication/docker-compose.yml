@@ -1,7 +1,9 @@
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.2.2
-    command: start-dev
+    # Generic OIDC + SAML identity provider for local development / testing of AUTHENTICATION_METHOD=oidc|saml.
+    # The `platform` realm (clients, test users) is imported on first start; existing realms are left untouched.
+    command: start-dev --import-realm
     depends_on:
       - db
     environment:
@@ -15,6 +17,8 @@ services:
       KC_HOSTNAME_STRICT_HTTPS: ${KC_HOSTNAME_STRICT_HTTPS:-false}
       KC_HOSTNAME: ${KC_HOSTNAME:-host.docker.internal}
       KC_HTTP_RELATIVE_PATH: ${KC_HTTP_RELATIVE_PATH:-/}
+    volumes:
+      - ./realm:/opt/keycloak/data/import:ro
     ports:
       - '8380:8080'
     networks:

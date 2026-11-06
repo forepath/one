@@ -7,7 +7,11 @@ import type { AgenstraAutomationTurnStatus } from '@forepath/agenstra/shared/uti
 
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
-import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import {
+  createPinnedSocketAgent,
+  getClientEndpointTlsPolicy,
+  validateClientEndpointWithDnsOrThrow,
+} from '../utils/client-endpoint-security';
 import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
 import { extractAutomationTurnStatus } from '../utils/automation-turn-status';
 import { extractPlanTurnStatus, type AgenstraPlanTurnStatusPayload } from '../utils/chat-plan-turn-status';
@@ -131,7 +135,7 @@ export class RemoteAgentsSessionService {
       return `Bearer ${client.apiKey}`;
     }
 
-    if (client.authenticationType === AuthenticationType.KEYCLOAK) {
+    if (client.authenticationType === AuthenticationType.OIDC) {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;
@@ -246,6 +250,8 @@ export class RemoteAgentsSessionService {
       transports: ['websocket'],
       extraHeaders: { Authorization: authHeader },
       rejectUnauthorized: tlsPolicy.rejectUnauthorized,
+      // Pin every (re)connect to a validated public address (DNS rebinding).
+      agent: createPinnedSocketAgent(remoteUrl, tlsPolicy.rejectUnauthorized),
       reconnection: false,
     });
 
@@ -496,6 +502,8 @@ export class RemoteAgentsSessionService {
       transports: ['websocket'],
       extraHeaders: { Authorization: authHeader },
       rejectUnauthorized: tlsPolicy.rejectUnauthorized,
+      // Pin every (re)connect to a validated public address (DNS rebinding).
+      agent: createPinnedSocketAgent(remoteUrl, tlsPolicy.rejectUnauthorized),
       reconnection: false,
     });
 

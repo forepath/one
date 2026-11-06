@@ -31,7 +31,7 @@ export class ClientWorkspaceConfigurationOverridesProxyService {
       }
 
       return `Bearer ${clientEntity.apiKey}`;
-    } else if (clientEntity.authenticationType === AuthenticationType.KEYCLOAK) {
+    } else if (clientEntity.authenticationType === AuthenticationType.OIDC) {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;

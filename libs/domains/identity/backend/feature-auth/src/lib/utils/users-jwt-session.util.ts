@@ -38,3 +38,22 @@ export async function assertUsersJwtSessionValid(
     throw new UnauthorizedException('Session is no longer valid.');
   }
 }
+
+/**
+ * Interactive app session JWTs are only valid for the method that issued them: `pwd` (users mode) or `saml`
+ * (saml mode). Switching AUTHENTICATION_METHOD therefore ends sessions created under the other method even though
+ * they are signed with the same JWT_SECRET. Machine JWTs (`pat` / `app`) are checked separately.
+ */
+export function isInteractiveAmrAllowedForMethod(amr: readonly string[] | undefined, method: string): boolean {
+  const values = amr && amr.length > 0 ? amr : ['pwd'];
+
+  if (method === 'saml') {
+    return values.includes('saml');
+  }
+
+  if (method === 'users') {
+    return values.includes('pwd');
+  }
+
+  return false;
+}

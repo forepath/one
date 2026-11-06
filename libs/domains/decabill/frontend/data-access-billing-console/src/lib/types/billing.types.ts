@@ -658,13 +658,25 @@ export interface SmtpConfig {
   from?: string;
 }
 
-/** Keycloak configuration (when authenticationMethod is keycloak). */
-export interface KeycloakConfig {
-  serverUrl?: string;
-  authServerUrl?: string;
-  realm?: string;
+/** OpenID Connect configuration (when authenticationMethod is oidc). */
+export interface OidcConfig {
+  issuer?: string;
   clientId?: string;
   clientSecret?: string;
+  /** Required token audience of the API (OIDC_AUDIENCE). */
+  audience?: string;
+  /** Public client used by the console; defaults to clientId. */
+  frontendClientId?: string;
+}
+
+/** SAML 2.0 identity provider configuration (when authenticationMethod is saml). */
+export interface SamlConfig {
+  idpSsoUrl?: string;
+  idpCert?: string;
+  idpIssuer?: string;
+  spEntityId?: string;
+  nameIdFormat?: string;
+  emailAttribute?: string;
 }
 
 /** Git configuration for manager instances (GIT_* env vars). */
@@ -689,7 +701,8 @@ export interface RequestedConfigCloudInit {
   staticApiKey?: string;
   disableSignup?: boolean;
   smtp?: SmtpConfig;
-  keycloak?: KeycloakConfig;
+  oidc?: OidcConfig;
+  saml?: SamlConfig;
   /** Optional Hetzner API token for nested provisioning from the instance. */
   hetznerApiToken?: string;
   /** Optional DigitalOcean API token for nested provisioning from the instance. */

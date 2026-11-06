@@ -8,7 +8,7 @@ import {
 import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/agenstra/frontend/util-configuration';
 import { NOTIFICATION_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-notifications';
 import { UPDATES_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-updates';
-import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideKeycloak } from '@forepath/identity/frontend';
+import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideOidc } from '@forepath/identity/frontend';
 import {
   provideFpcDataTableLabels,
   provideFpcListToolbarLabels,
@@ -113,9 +113,10 @@ export const appConfig: ApplicationConfig = {
       provide: LOGIN_SUCCESS_REDIRECT_TARGET,
       useValue: ['/clients'],
     },
-    // Provide KeycloakService before HTTP client so interceptor can inject it
-    ...(environment.authentication.config.type === 'keycloak' ? provideKeycloak() : []),
-    // Provide HTTP client with auth interceptor (KeycloakService must be available)
+    // OIDC sign-in: completes the provider redirect before the first navigation. Registered unconditionally
+    // because the runtime config (`/config`) decides the auth method; it is a no-op unless the type is 'oidc'.
+    provideOidc(),
+    // Provide HTTP client with auth interceptor (API key, OIDC access token, or users / SAML session JWT)
     provideHttpClient(withInterceptors([getAuthInterceptor(), getUsersSessionInvalidationInterceptor()])),
     // NgRx Store - base store required at root level
     provideStore(),

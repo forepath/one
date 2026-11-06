@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-05T22:38:15.873Z",
+  "generatedAt": "2026-11-06T14:36:39.120Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -2138,6 +2138,14 @@
       }
     },
     {
+      "id": "package:@node-saml/node-saml",
+      "type": "package",
+      "attrs": {
+        "name": "@node-saml/node-saml",
+        "version": "5.2.0"
+      }
+    },
+    {
       "id": "package:@opencode-ai/sdk",
       "type": "package",
       "attrs": {
@@ -2322,19 +2330,11 @@
       }
     },
     {
-      "id": "package:keycloak-connect",
+      "id": "package:jsonwebtoken",
       "type": "package",
       "attrs": {
-        "name": "keycloak-connect",
-        "version": "24.0.1"
-      }
-    },
-    {
-      "id": "package:nest-keycloak-connect",
-      "type": "package",
-      "attrs": {
-        "name": "nest-keycloak-connect",
-        "version": "2.0.0-alpha.2"
+        "name": "jsonwebtoken",
+        "version": "9.0.3"
       }
     },
     {
@@ -2583,22 +2583,6 @@
       "attrs": {
         "name": "i18n-iso-countries",
         "version": "7.14.0"
-      }
-    },
-    {
-      "id": "package:keycloak-angular",
-      "type": "package",
-      "attrs": {
-        "name": "keycloak-angular",
-        "version": "21.0.0"
-      }
-    },
-    {
-      "id": "package:keycloak-js",
-      "type": "package",
-      "attrs": {
-        "name": "keycloak-js",
-        "version": "26.2.1"
       }
     },
     {
@@ -8730,10 +8714,28 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-oidc-auth.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-oidc-auth.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-pat-auth.module.ts",
       "type": "module",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-pat-auth.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-saml-auth.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-saml-auth.module.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -13153,6 +13155,15 @@
       }
     },
     {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
       "id": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/users.controller.ts",
       "type": "controller",
       "attrs": {
@@ -13297,6 +13308,15 @@
       }
     },
     {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/saml-token-exchange.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/dto/auth/saml-token-exchange.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
       "id": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/two-factor-status.dto.ts",
       "type": "dto",
       "attrs": {
@@ -13342,19 +13362,10 @@
       }
     },
     {
-      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/keycloak-auth.guard.ts",
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/external-identity-auth.guard.ts",
       "type": "guard",
       "attrs": {
-        "path": "libs/domains/identity/backend/feature-auth/src/lib/guards/keycloak-auth.guard.ts",
-        "languageOrKind": "ts",
-        "projectName": "identity-backend-feature-auth"
-      }
-    },
-    {
-      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/keycloak-roles.guard.ts",
-      "type": "guard",
-      "attrs": {
-        "path": "libs/domains/identity/backend/feature-auth/src/lib/guards/keycloak-roles.guard.ts",
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/guards/external-identity-auth.guard.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -13396,10 +13407,10 @@
       }
     },
     {
-      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/keycloak-user-sync.module.ts",
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/oidc-auth.module.ts",
       "type": "module",
       "attrs": {
-        "path": "libs/domains/identity/backend/feature-auth/src/lib/modules/keycloak-user-sync.module.ts",
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/modules/oidc-auth.module.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -13409,6 +13420,15 @@
       "type": "module",
       "attrs": {
         "path": "libs/domains/identity/backend/feature-auth/src/lib/modules/pat-auth.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/saml-auth.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/modules/saml-auth.module.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -13427,6 +13447,15 @@
       "type": "repository",
       "attrs": {
         "path": "libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/external-auth-states.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/repositories/external-auth-states.repository.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -13468,6 +13497,24 @@
       }
     },
     {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/saml/saml-auth.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/saml/saml-auth.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/saml/saml-state-cache.provider.ts",
+      "type": "provider",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/saml/saml-state-cache.provider.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
       "id": "file:libs/domains/identity/backend/feature-auth/src/lib/services/auth.service.ts",
       "type": "service",
       "attrs": {
@@ -13486,6 +13533,15 @@
       }
     },
     {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/services/external-identity.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/services/external-identity.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
       "id": "file:libs/domains/identity/backend/feature-auth/src/lib/services/identity-app-authorization.service.ts",
       "type": "service",
       "attrs": {
@@ -13499,15 +13555,6 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/identity/backend/feature-auth/src/lib/services/identity-apps.service.ts",
-        "languageOrKind": "ts",
-        "projectName": "identity-backend-feature-auth"
-      }
-    },
-    {
-      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/services/keycloak-token.service.ts",
-      "type": "service",
-      "attrs": {
-        "path": "libs/domains/identity/backend/feature-auth/src/lib/services/keycloak-token.service.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -13621,10 +13668,10 @@
       }
     },
     {
-      "id": "file:libs/domains/identity/frontend/util-auth/src/lib/guards/keycloak.guard.ts",
-      "type": "guard",
+      "id": "file:libs/domains/identity/frontend/util-auth/src/lib/oidc-auth.service.ts",
+      "type": "service",
       "attrs": {
-        "path": "libs/domains/identity/frontend/util-auth/src/lib/guards/keycloak.guard.ts",
+        "path": "libs/domains/identity/frontend/util-auth/src/lib/oidc-auth.service.ts",
         "languageOrKind": "ts",
         "projectName": "identity-frontend-util-auth"
       }
@@ -13670,6 +13717,15 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/identity/backend/util-auth/src/lib/entities/client-user.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-util-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/util-auth/src/lib/entities/external-auth-state.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/identity/backend/util-auth/src/lib/entities/external-auth-state.entity.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-util-auth"
       }
@@ -13747,28 +13803,28 @@
       }
     },
     {
-      "id": "file:libs/domains/identity/backend/util-auth/src/lib/keycloak.guard.ts",
+      "id": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc-auth.guard.ts",
       "type": "guard",
       "attrs": {
-        "path": "libs/domains/identity/backend/util-auth/src/lib/keycloak.guard.ts",
+        "path": "libs/domains/identity/backend/util-auth/src/lib/oidc/oidc-auth.guard.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-util-auth"
       }
     },
     {
-      "id": "file:libs/domains/identity/backend/util-auth/src/lib/keycloak.module.ts",
-      "type": "module",
-      "attrs": {
-        "path": "libs/domains/identity/backend/util-auth/src/lib/keycloak.module.ts",
-        "languageOrKind": "ts",
-        "projectName": "identity-backend-util-auth"
-      }
-    },
-    {
-      "id": "file:libs/domains/identity/backend/util-auth/src/lib/keycloak.service.ts",
+      "id": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc-token-verifier.service.ts",
       "type": "service",
       "attrs": {
-        "path": "libs/domains/identity/backend/util-auth/src/lib/keycloak.service.ts",
+        "path": "libs/domains/identity/backend/util-auth/src/lib/oidc/oidc-token-verifier.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-util-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/identity/backend/util-auth/src/lib/oidc/oidc.module.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-util-auth"
       }
@@ -16237,7 +16293,51 @@
         "method": "POST",
         "pathOrChannel": "/auth/logout",
         "operationId": "logout",
-        "summary": "Log out (users auth only; revokes current session by default)",
+        "summary": "Log out (users and saml auth; revokes current session by default)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/auth/saml/login",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/auth/saml/login",
+        "operationId": "samlLogin",
+        "summary": "Start SAML sign-in (saml auth only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/auth/saml/acs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/auth/saml/acs",
+        "operationId": "samlAssertionConsumerService",
+        "summary": "SAML Assertion Consumer Service (saml auth only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/auth/saml/token",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/auth/saml/token",
+        "operationId": "samlToken",
+        "summary": "Redeem SAML login code (saml auth only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/auth/saml/metadata",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/auth/saml/metadata",
+        "operationId": "samlMetadata",
+        "summary": "SAML service provider metadata (saml auth only)",
         "specKind": "openapi"
       }
     },
@@ -26629,72 +26729,82 @@
       }
     },
     {
-      "id": "concept:agenstra-or-keycloak",
+      "id": "concept:agenstra-or-oidc",
       "type": "concept",
       "attrs": {
-        "title": "OR Keycloak",
+        "title": "OR OIDC",
         "docPath": "docs/agenstra/deployment/local-development.md",
-        "sectionAnchor": "or-keycloak",
+        "sectionAnchor": "or-oidc",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-keycloak-auth-server-url-http-localhost-8380",
+      "id": "concept:agenstra-authentication-method-oidc",
       "type": "concept",
       "attrs": {
-        "title": "KEYCLOAK_AUTH_SERVER_URL=http://localhost:8380",
+        "title": "AUTHENTICATION_METHOD=oidc",
         "docPath": "docs/agenstra/deployment/local-development.md",
-        "sectionAnchor": "keycloak-auth-server-url-http-localhost-8380",
+        "sectionAnchor": "authentication-method-oidc",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-keycloak-realm-agenstra",
+      "id": "concept:agenstra-oidc-issuer-http-localhost-8380-realms-platform",
       "type": "concept",
       "attrs": {
-        "title": "KEYCLOAK_REALM=agenstra",
+        "title": "OIDC_ISSUER=http://localhost:8380/realms/platform",
         "docPath": "docs/agenstra/deployment/local-development.md",
-        "sectionAnchor": "keycloak-realm-agenstra",
+        "sectionAnchor": "oidc-issuer-http-localhost-8380-realms-platform",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-keycloak-client-id-agent-controller",
+      "id": "concept:agenstra-oidc-client-id-agent-controller",
       "type": "concept",
       "attrs": {
-        "title": "KEYCLOAK_CLIENT_ID=agent-controller",
+        "title": "OIDC_CLIENT_ID=agent-controller",
         "docPath": "docs/agenstra/deployment/local-development.md",
-        "sectionAnchor": "keycloak-client-id-agent-controller",
+        "sectionAnchor": "oidc-client-id-agent-controller",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-keycloak-client-secret-your-client-secret",
+      "id": "concept:agenstra-oidc-client-secret-your-client-secret",
       "type": "concept",
       "attrs": {
-        "title": "KEYCLOAK_CLIENT_SECRET=your-client-secret",
+        "title": "OIDC_CLIENT_SECRET=your-client-secret",
         "docPath": "docs/agenstra/deployment/local-development.md",
-        "sectionAnchor": "keycloak-client-secret-your-client-secret",
+        "sectionAnchor": "oidc-client-secret-your-client-secret",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-optional-keycloak-server-url-if-different-from-auth-server-url",
+      "id": "concept:agenstra-jwt-secret-your-jwt-secret-key",
       "type": "concept",
       "attrs": {
-        "title": "Optional: KEYCLOAK_SERVER_URL if different from auth server URL",
+        "title": "JWT_SECRET=your-jwt-secret-key",
         "docPath": "docs/agenstra/deployment/local-development.md",
-        "sectionAnchor": "optional-keycloak-server-url-if-different-from-auth-server-url",
+        "sectionAnchor": "jwt-secret-your-jwt-secret-key",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-optional-keycloak-token-validation-online-default-or-offline",
+      "id": "concept:agenstra-optional-oidc-token-validation-online-default-or-offline",
       "type": "concept",
       "attrs": {
-        "title": "Optional: KEYCLOAK_TOKEN_VALIDATION=ONLINE (default) or OFFLINE",
+        "title": "Optional: OIDC_TOKEN_VALIDATION=ONLINE (default) or OFFLINE",
         "docPath": "docs/agenstra/deployment/local-development.md",
-        "sectionAnchor": "optional-keycloak-token-validation-online-default-or-offline",
+        "sectionAnchor": "optional-oidc-token-validation-online-default-or-offline",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-or-saml-authentication-method-saml-plus-saml-see-authentication-docs",
+      "type": "concept",
+      "attrs": {
+        "title": "OR SAML: AUTHENTICATION_METHOD=saml plus SAML_* (see Authentication docs)",
+        "docPath": "docs/agenstra/deployment/local-development.md",
+        "sectionAnchor": "or-saml-authentication-method-saml-plus-saml-see-authentication-docs",
         "domain": "agenstra"
       }
     },
@@ -27725,6 +27835,16 @@
         "title": "Per-Client Permissions",
         "docPath": "docs/agenstra/features/authentication.md",
         "sectionAnchor": "per-client-permissions",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-migrating-from-keycloak",
+      "type": "concept",
+      "attrs": {
+        "title": "Migrating from `keycloak`",
+        "docPath": "docs/agenstra/features/authentication.md",
+        "sectionAnchor": "migrating-from-keycloak",
         "domain": "agenstra"
       }
     },
@@ -29109,12 +29229,32 @@
       }
     },
     {
-      "id": "concept:agenstra-option-2-keycloak-authentication",
+      "id": "concept:agenstra-option-2-oidc-authentication-authentication-method-oidc",
       "type": "concept",
       "attrs": {
-        "title": "Option 2: Keycloak authentication",
+        "title": "Option 2: OIDC authentication (AUTHENTICATION_METHOD=oidc)",
         "docPath": "docs/agenstra/getting-started.md",
-        "sectionAnchor": "option-2-keycloak-authentication",
+        "sectionAnchor": "option-2-oidc-authentication-authentication-method-oidc",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-optional-oidc-token-validation-online-default-or-offline-oidc-audience-oidc-authorized-parties",
+      "type": "concept",
+      "attrs": {
+        "title": "Optional: OIDC_TOKEN_VALIDATION=ONLINE (default) or OFFLINE, OIDC_AUDIENCE, OIDC_AUTHORIZED_PARTIES",
+        "docPath": "docs/agenstra/getting-started.md",
+        "sectionAnchor": "optional-oidc-token-validation-online-default-or-offline-oidc-audience-oidc-authorized-parties",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-option-2b-saml-authentication-authentication-method-saml-saml-variables-see-authentication-docs",
+      "type": "concept",
+      "attrs": {
+        "title": "Option 2b: SAML authentication (AUTHENTICATION_METHOD=saml) - SAML_* variables, see Authentication docs",
+        "docPath": "docs/agenstra/getting-started.md",
+        "sectionAnchor": "option-2b-saml-authentication-authentication-method-saml-saml-variables-see-authentication-docs",
         "domain": "agenstra"
       }
     },
@@ -29149,12 +29289,12 @@
       }
     },
     {
-      "id": "concept:agenstra-or-keycloak-configuration-same-as-above",
+      "id": "concept:agenstra-or-oidc-authentication-method-oidc-oidc-issuer-oidc-client-id-oidc-client-secret-the-manager-supports-api-key-and-oidc-o",
       "type": "concept",
       "attrs": {
-        "title": "OR Keycloak configuration (same as above)",
+        "title": "OR OIDC (AUTHENTICATION_METHOD=oidc, OIDC_ISSUER / OIDC_CLIENT_ID / OIDC_CLIENT_SECRET); the manager supports api-key and oidc only",
         "docPath": "docs/agenstra/getting-started.md",
-        "sectionAnchor": "or-keycloak-configuration-same-as-above",
+        "sectionAnchor": "or-oidc-authentication-method-oidc-oidc-issuer-oidc-client-id-oidc-client-secret-the-manager-supports-api-key-and-oidc-o",
         "domain": "agenstra"
       }
     },
@@ -31989,6 +32129,16 @@
       }
     },
     {
+      "id": "concept:decabill-migrating-from-keycloak",
+      "type": "concept",
+      "attrs": {
+        "title": "Migrating from `keycloak`",
+        "docPath": "docs/decabill/features/authentication.md",
+        "sectionAnchor": "migrating-from-keycloak",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-auto-billing",
       "type": "concept",
       "attrs": {
@@ -34669,62 +34819,72 @@
       }
     },
     {
-      "id": "concept:decabill-or-keycloak",
+      "id": "concept:decabill-or-oidc-any-provider-e-g-local-keycloak",
       "type": "concept",
       "attrs": {
-        "title": "Or Keycloak:",
+        "title": "Or OIDC (any provider, e.g. local Keycloak):",
         "docPath": "docs/decabill/getting-started.md",
-        "sectionAnchor": "or-keycloak",
+        "sectionAnchor": "or-oidc-any-provider-e-g-local-keycloak",
         "domain": "decabill"
       }
     },
     {
-      "id": "concept:decabill-authentication-method-keycloak",
+      "id": "concept:decabill-authentication-method-oidc",
       "type": "concept",
       "attrs": {
-        "title": "AUTHENTICATION_METHOD=keycloak",
+        "title": "AUTHENTICATION_METHOD=oidc",
         "docPath": "docs/decabill/getting-started.md",
-        "sectionAnchor": "authentication-method-keycloak",
+        "sectionAnchor": "authentication-method-oidc",
         "domain": "decabill"
       }
     },
     {
-      "id": "concept:decabill-keycloak-auth-server-url-http-localhost-8380",
+      "id": "concept:decabill-oidc-issuer-http-localhost-8380-realms-platform",
       "type": "concept",
       "attrs": {
-        "title": "KEYCLOAK_AUTH_SERVER_URL=http://localhost:8380",
+        "title": "OIDC_ISSUER=http://localhost:8380/realms/platform",
         "docPath": "docs/decabill/getting-started.md",
-        "sectionAnchor": "keycloak-auth-server-url-http-localhost-8380",
+        "sectionAnchor": "oidc-issuer-http-localhost-8380-realms-platform",
         "domain": "decabill"
       }
     },
     {
-      "id": "concept:decabill-keycloak-realm-decabill",
+      "id": "concept:decabill-oidc-client-id-billing-manager",
       "type": "concept",
       "attrs": {
-        "title": "KEYCLOAK_REALM=decabill",
+        "title": "OIDC_CLIENT_ID=billing-manager",
         "docPath": "docs/decabill/getting-started.md",
-        "sectionAnchor": "keycloak-realm-decabill",
+        "sectionAnchor": "oidc-client-id-billing-manager",
         "domain": "decabill"
       }
     },
     {
-      "id": "concept:decabill-keycloak-client-id-billing-manager",
+      "id": "concept:decabill-oidc-client-secret-your-client-secret",
       "type": "concept",
       "attrs": {
-        "title": "KEYCLOAK_CLIENT_ID=billing-manager",
+        "title": "OIDC_CLIENT_SECRET=your-client-secret",
         "docPath": "docs/decabill/getting-started.md",
-        "sectionAnchor": "keycloak-client-id-billing-manager",
+        "sectionAnchor": "oidc-client-secret-your-client-secret",
         "domain": "decabill"
       }
     },
     {
-      "id": "concept:decabill-keycloak-client-secret-your-client-secret",
+      "id": "concept:decabill-jwt-secret-your-jwt-secret-key",
       "type": "concept",
       "attrs": {
-        "title": "KEYCLOAK_CLIENT_SECRET=your-client-secret",
+        "title": "JWT_SECRET=your-jwt-secret-key",
         "docPath": "docs/decabill/getting-started.md",
-        "sectionAnchor": "keycloak-client-secret-your-client-secret",
+        "sectionAnchor": "jwt-secret-your-jwt-secret-key",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-or-saml-authentication-method-saml-plus-saml-see-authentication-docs",
+      "type": "concept",
+      "attrs": {
+        "title": "Or SAML: AUTHENTICATION_METHOD=saml plus SAML_* (see Authentication docs)",
+        "docPath": "docs/decabill/getting-started.md",
+        "sectionAnchor": "or-saml-authentication-method-saml-plus-saml-see-authentication-docs",
         "domain": "decabill"
       }
     },
@@ -37062,6 +37222,11 @@
     },
     {
       "from": "project:agenstra-backend-agent-controller",
+      "to": "package:@node-saml/node-saml",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-controller",
       "to": "package:@opencode-ai/sdk",
       "type": "depends_on"
     },
@@ -37177,12 +37342,7 @@
     },
     {
       "from": "project:agenstra-backend-agent-controller",
-      "to": "package:keycloak-connect",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-backend-agent-controller",
-      "to": "package:nest-keycloak-connect",
+      "to": "package:jsonwebtoken",
       "type": "depends_on"
     },
     {
@@ -37347,16 +37507,6 @@
     },
     {
       "from": "project:agenstra-frontend-billing-console",
-      "to": "package:keycloak-angular",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-billing-console",
-      "to": "package:keycloak-js",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-billing-console",
       "to": "package:monaco-editor",
       "type": "depends_on"
     },
@@ -37487,16 +37637,6 @@
     },
     {
       "from": "project:decabill-frontend-billing-console",
-      "to": "package:keycloak-angular",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-billing-console",
-      "to": "package:keycloak-js",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-billing-console",
       "to": "package:monaco-editor",
       "type": "depends_on"
     },
@@ -37623,16 +37763,6 @@
     {
       "from": "project:forepath-frontend-billing-console",
       "to": "package:i18n-iso-countries",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:forepath-frontend-billing-console",
-      "to": "package:keycloak-angular",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:forepath-frontend-billing-console",
-      "to": "package:keycloak-js",
       "type": "depends_on"
     },
     {
@@ -37748,6 +37878,11 @@
     {
       "from": "project:decabill-backend-billing-manager",
       "to": "package:@nestjs/websockets",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-backend-billing-manager",
+      "to": "package:@node-saml/node-saml",
       "type": "depends_on"
     },
     {
@@ -37872,12 +38007,7 @@
     },
     {
       "from": "project:decabill-backend-billing-manager",
-      "to": "package:keycloak-connect",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-backend-billing-manager",
-      "to": "package:nest-keycloak-connect",
+      "to": "package:jsonwebtoken",
       "type": "depends_on"
     },
     {
@@ -38043,16 +38173,6 @@
     {
       "from": "project:agenstra-frontend-agent-console",
       "to": "package:express",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-agent-console",
-      "to": "package:keycloak-angular",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-agent-console",
-      "to": "package:keycloak-js",
       "type": "depends_on"
     },
     {
@@ -38282,12 +38402,7 @@
     },
     {
       "from": "project:agenstra-backend-agent-manager",
-      "to": "package:keycloak-connect",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-backend-agent-manager",
-      "to": "package:nest-keycloak-connect",
+      "to": "package:jsonwebtoken",
       "type": "depends_on"
     },
     {
@@ -38477,12 +38592,12 @@
     },
     {
       "from": "project:forepath-backend-communication",
-      "to": "package:nest-cloudflare-turnstile",
+      "to": "package:jsonwebtoken",
       "type": "depends_on"
     },
     {
       "from": "project:forepath-backend-communication",
-      "to": "package:nest-keycloak-connect",
+      "to": "package:nest-cloudflare-turnstile",
       "type": "depends_on"
     },
     {
@@ -38578,16 +38693,6 @@
     {
       "from": "project:agenstra-frontend-landingpage",
       "to": "package:express",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-landingpage",
-      "to": "package:keycloak-angular",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-landingpage",
-      "to": "package:keycloak-js",
       "type": "depends_on"
     },
     {
@@ -38698,16 +38803,6 @@
     {
       "from": "project:decabill-frontend-landingpage",
       "to": "package:express",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-landingpage",
-      "to": "package:keycloak-angular",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-landingpage",
-      "to": "package:keycloak-js",
       "type": "depends_on"
     },
     {
@@ -42112,7 +42207,17 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-oidc-auth.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-pat-auth.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-saml-auth.module.ts",
       "type": "contains"
     },
     {
@@ -44542,6 +44647,11 @@
     },
     {
       "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/users.controller.ts",
       "type": "contains"
     },
@@ -44622,6 +44732,11 @@
     },
     {
       "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/saml-token-exchange.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/two-factor-status.dto.ts",
       "type": "contains"
     },
@@ -44647,12 +44762,7 @@
     },
     {
       "from": "project:identity-backend-feature-auth",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/keycloak-auth.guard.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:identity-backend-feature-auth",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/keycloak-roles.guard.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/external-identity-auth.guard.ts",
       "type": "contains"
     },
     {
@@ -44677,12 +44787,17 @@
     },
     {
       "from": "project:identity-backend-feature-auth",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/keycloak-user-sync.module.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/oidc-auth.module.ts",
       "type": "contains"
     },
     {
       "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/pat-auth.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/saml-auth.module.ts",
       "type": "contains"
     },
     {
@@ -44693,6 +44808,11 @@
     {
       "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/external-auth-states.repository.ts",
       "type": "contains"
     },
     {
@@ -44717,6 +44837,16 @@
     },
     {
       "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/saml/saml-auth.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/saml/saml-state-cache.provider.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/auth.service.ts",
       "type": "contains"
     },
@@ -44727,17 +44857,17 @@
     },
     {
       "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/external-identity.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/identity-app-authorization.service.ts",
       "type": "contains"
     },
     {
       "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/identity-apps.service.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:identity-backend-feature-auth",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/keycloak-token.service.ts",
       "type": "contains"
     },
     {
@@ -44802,7 +44932,7 @@
     },
     {
       "from": "project:identity-frontend-util-auth",
-      "to": "file:libs/domains/identity/frontend/util-auth/src/lib/guards/keycloak.guard.ts",
+      "to": "file:libs/domains/identity/frontend/util-auth/src/lib/oidc-auth.service.ts",
       "type": "contains"
     },
     {
@@ -44828,6 +44958,11 @@
     {
       "from": "project:identity-backend-util-auth",
       "to": "file:libs/domains/identity/backend/util-auth/src/lib/entities/client-user.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-util-auth",
+      "to": "file:libs/domains/identity/backend/util-auth/src/lib/entities/external-auth-state.entity.ts",
       "type": "contains"
     },
     {
@@ -44872,17 +45007,17 @@
     },
     {
       "from": "project:identity-backend-util-auth",
-      "to": "file:libs/domains/identity/backend/util-auth/src/lib/keycloak.guard.ts",
+      "to": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc-auth.guard.ts",
       "type": "contains"
     },
     {
       "from": "project:identity-backend-util-auth",
-      "to": "file:libs/domains/identity/backend/util-auth/src/lib/keycloak.module.ts",
+      "to": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc-token-verifier.service.ts",
       "type": "contains"
     },
     {
       "from": "project:identity-backend-util-auth",
-      "to": "file:libs/domains/identity/backend/util-auth/src/lib/keycloak.service.ts",
+      "to": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc.module.ts",
       "type": "contains"
     },
     {
@@ -45503,6 +45638,26 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/auth/logout",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/saml/login",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/saml/acs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/saml/token",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/saml/metadata",
       "type": "contains"
     },
     {
@@ -47358,6 +47513,26 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/auth/logout",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/saml/login",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/saml/acs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/saml/token",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/saml/metadata",
       "type": "contains"
     },
     {
@@ -51132,37 +51307,42 @@
     },
     {
       "from": "file:docs/agenstra/deployment/local-development.md",
-      "to": "concept:agenstra-or-keycloak",
+      "to": "concept:agenstra-or-oidc",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/deployment/local-development.md",
-      "to": "concept:agenstra-keycloak-auth-server-url-http-localhost-8380",
+      "to": "concept:agenstra-authentication-method-oidc",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/deployment/local-development.md",
-      "to": "concept:agenstra-keycloak-realm-agenstra",
+      "to": "concept:agenstra-oidc-issuer-http-localhost-8380-realms-platform",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/deployment/local-development.md",
-      "to": "concept:agenstra-keycloak-client-id-agent-controller",
+      "to": "concept:agenstra-oidc-client-id-agent-controller",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/deployment/local-development.md",
-      "to": "concept:agenstra-keycloak-client-secret-your-client-secret",
+      "to": "concept:agenstra-oidc-client-secret-your-client-secret",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/deployment/local-development.md",
-      "to": "concept:agenstra-optional-keycloak-server-url-if-different-from-auth-server-url",
+      "to": "concept:agenstra-jwt-secret-your-jwt-secret-key",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/deployment/local-development.md",
-      "to": "concept:agenstra-optional-keycloak-token-validation-online-default-or-offline",
+      "to": "concept:agenstra-optional-oidc-token-validation-online-default-or-offline",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/local-development.md",
+      "to": "concept:agenstra-or-saml-authentication-method-saml-plus-saml-see-authentication-docs",
       "type": "contains"
     },
     {
@@ -51848,6 +52028,11 @@
     {
       "from": "file:docs/agenstra/features/authentication.md",
       "to": "concept:agenstra-per-client-permissions",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/authentication.md",
+      "to": "concept:agenstra-migrating-from-keycloak",
       "type": "contains"
     },
     {
@@ -52942,17 +53127,17 @@
     },
     {
       "from": "file:docs/agenstra/getting-started.md",
-      "to": "concept:agenstra-option-2-keycloak-authentication",
+      "to": "concept:agenstra-option-2-oidc-authentication-authentication-method-oidc",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/getting-started.md",
-      "to": "concept:agenstra-optional-keycloak-server-url-if-different-from-auth-server-url",
+      "to": "concept:agenstra-optional-oidc-token-validation-online-default-or-offline-oidc-audience-oidc-authorized-parties",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/getting-started.md",
-      "to": "concept:agenstra-optional-keycloak-token-validation-online-default-or-offline",
+      "to": "concept:agenstra-option-2b-saml-authentication-authentication-method-saml-saml-variables-see-authentication-docs",
       "type": "contains"
     },
     {
@@ -52982,7 +53167,7 @@
     },
     {
       "from": "file:docs/agenstra/getting-started.md",
-      "to": "concept:agenstra-or-keycloak-configuration-same-as-above",
+      "to": "concept:agenstra-or-oidc-authentication-method-oidc-oidc-issuer-oidc-client-id-oidc-client-secret-the-manager-supports-api-key-and-oidc-o",
       "type": "contains"
     },
     {
@@ -54768,6 +54953,11 @@
     {
       "from": "file:docs/decabill/features/authentication.md",
       "to": "concept:decabill-authentication-flow-diagram",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/authentication.md",
+      "to": "concept:decabill-migrating-from-keycloak",
       "type": "contains"
     },
     {
@@ -56632,32 +56822,37 @@
     },
     {
       "from": "file:docs/decabill/getting-started.md",
-      "to": "concept:decabill-or-keycloak",
+      "to": "concept:decabill-or-oidc-any-provider-e-g-local-keycloak",
       "type": "contains"
     },
     {
       "from": "file:docs/decabill/getting-started.md",
-      "to": "concept:decabill-authentication-method-keycloak",
+      "to": "concept:decabill-authentication-method-oidc",
       "type": "contains"
     },
     {
       "from": "file:docs/decabill/getting-started.md",
-      "to": "concept:decabill-keycloak-auth-server-url-http-localhost-8380",
+      "to": "concept:decabill-oidc-issuer-http-localhost-8380-realms-platform",
       "type": "contains"
     },
     {
       "from": "file:docs/decabill/getting-started.md",
-      "to": "concept:decabill-keycloak-realm-decabill",
+      "to": "concept:decabill-oidc-client-id-billing-manager",
       "type": "contains"
     },
     {
       "from": "file:docs/decabill/getting-started.md",
-      "to": "concept:decabill-keycloak-client-id-billing-manager",
+      "to": "concept:decabill-oidc-client-secret-your-client-secret",
       "type": "contains"
     },
     {
       "from": "file:docs/decabill/getting-started.md",
-      "to": "concept:decabill-keycloak-client-secret-your-client-secret",
+      "to": "concept:decabill-jwt-secret-your-jwt-secret-key",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/getting-started.md",
+      "to": "concept:decabill-or-saml-authentication-method-saml-plus-saml-see-authentication-docs",
       "type": "contains"
     },
     {
@@ -64877,6 +65072,46 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/saml/login",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:GET:/auth/saml/login",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/saml/acs",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:POST:/auth/saml/acs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/saml/token",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:POST:/auth/saml/token",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/saml/metadata",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:GET:/auth/saml/metadata",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
       "to": "api:HTTP:GET:/auth/token-scopes",
       "type": "implements"
     },
@@ -65187,6 +65422,26 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:GET:/auth/saml/login",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/saml/acs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/saml/token",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:GET:/auth/saml/metadata",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
       "to": "api:HTTP:GET:/auth/token-scopes",
       "type": "implements"
     },
@@ -65232,6 +65487,146 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/apps/grants/{grantId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/login",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/2fa",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/email/enable",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/2fa/email",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/totp/setup",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/totp/confirm",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/2fa/totp",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/token",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/confirm-email",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/request-password-reset",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/reset-password",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/change-password",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/logout",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/saml/login",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/saml/acs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/saml/token",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/saml/metadata",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/token-scopes",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:PATCH:/auth/tokens/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/tokens/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/apps/token",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/apps/authorize",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/apps/authorize",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/apps/grants",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
       "to": "api:HTTP:DELETE:/auth/apps/grants/{grantId}",
       "type": "implements"
     },
@@ -66438,11 +66833,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/keycloak-token.service.ts",
       "type": "injects"
     },
     {
@@ -70681,6 +71071,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc-token-verifier.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "type": "injects"
@@ -71246,8 +71641,43 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/saml/saml-auth.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/auth.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/users.controller.ts",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/users.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/saml/saml-auth.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/external-auth-states.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/saml/saml-auth.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/external-identity.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/saml/saml-auth.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/saml/saml-auth.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/auth.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/saml/saml-state-cache.provider.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/external-auth-states.repository.ts",
       "type": "injects"
     },
     {
@@ -71277,6 +71707,11 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/services/client-users.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/services/external-identity.service.ts",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
       "type": "injects"
     },
@@ -71322,12 +71757,22 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/services/socket-auth.service.ts",
+      "to": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc-token-verifier.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/services/socket-auth.service.ts",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
       "type": "injects"
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/services/socket-auth.service.ts",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/revoked-user-tokens.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/services/socket-auth.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/external-identity.service.ts",
       "type": "injects"
     },
     {
@@ -71878,11 +72323,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/revoked-user-tokens.repository.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/keycloak-token.service.ts",
       "type": "provides"
     },
     {
@@ -73991,38 +74431,13 @@
       "type": "provides"
     },
     {
-      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/keycloak-user-sync.module.ts",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/users.controller.ts",
+      "from": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc.module.ts",
+      "to": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc-token-verifier.service.ts",
       "type": "provides"
     },
     {
-      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/keycloak-user-sync.module.ts",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/keycloak-user-sync.module.ts",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/users.service.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/keycloak-user-sync.module.ts",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/users-auth.guard.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/keycloak-user-sync.module.ts",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/keycloak-auth.guard.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/keycloak-user-sync.module.ts",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/keycloak-roles.guard.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/identity/backend/util-auth/src/lib/keycloak.module.ts",
-      "to": "file:libs/domains/identity/backend/util-auth/src/lib/keycloak.service.ts",
+      "from": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc.module.ts",
+      "to": "file:libs/domains/identity/backend/util-auth/src/lib/oidc/oidc-auth.guard.ts",
       "type": "provides"
     },
     {
@@ -75922,12 +76337,17 @@
     },
     {
       "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
-      "to": "api:HTTP:POST:/auth/logout",
+      "to": "api:HTTP:POST:/auth/saml/token",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
       "to": "api:HTTP:GET:/users",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
+      "to": "api:HTTP:POST:/auth/logout",
       "type": "calls"
     },
     {
@@ -77917,6 +78337,31 @@
     },
     {
       "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:POST:/auth/logout",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:GET:/auth/saml/login",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:POST:/auth/saml/acs",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:POST:/auth/saml/token",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:GET:/auth/saml/metadata",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
       "to": "api:HTTP:POST:/auth/apps/token",
       "type": "documents"
     },
@@ -77948,6 +78393,16 @@
     {
       "from": "concept:agenstra-authentication-methods",
       "to": "api:HTTP:PUT:/admin/opencode/config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -78028,6 +78483,11 @@
     {
       "from": "concept:agenstra-authentication-flow-diagram",
       "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-flow-diagram",
+      "to": "api:HTTP:POST:/auth/saml/acs",
       "type": "documents"
     },
     {
@@ -79091,6 +79551,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-authentication-problems",
+      "to": "api:HTTP:POST:/auth/login",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-container-issues",
       "to": "api:HTTP:GET:/health",
       "type": "documents"
@@ -79796,11 +80261,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-prerequisites",
-      "to": "api:HTTP:POST:/auth/login",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-container-configuration",
       "to": "api:HTTP:GET:/config",
       "type": "documents"
@@ -79843,16 +80303,6 @@
     {
       "from": "concept:decabill-frontend-applications-express-ssr",
       "to": "api:HTTP:GET:/config",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-environment-specific-defaults",
-      "to": "api:HTTP:GET:/users",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-environment-specific-defaults",
-      "to": "api:HTTP:POST:/users",
       "type": "documents"
     },
     {
@@ -79913,16 +80363,6 @@
     {
       "from": "concept:decabill-pre-deployment-checklist",
       "to": "api:HTTP:GET:/health",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-pre-deployment-checklist",
-      "to": "api:HTTP:GET:/users",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-pre-deployment-checklist",
-      "to": "api:HTTP:POST:/users",
       "type": "documents"
     },
     {
@@ -80187,6 +80627,31 @@
     },
     {
       "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:POST:/auth/logout",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:GET:/auth/saml/login",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:POST:/auth/saml/acs",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:POST:/auth/saml/token",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:GET:/auth/saml/metadata",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
       "to": "api:HTTP:POST:/auth/apps/token",
       "type": "documents"
     },
@@ -80363,6 +80828,11 @@
     {
       "from": "concept:decabill-authentication-flow-diagram",
       "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-flow-diagram",
+      "to": "api:HTTP:POST:/auth/saml/acs",
       "type": "documents"
     },
     {
@@ -83506,16 +83976,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-connection-issues",
-      "to": "api:HTTP:GET:/users",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-connection-issues",
-      "to": "api:HTTP:POST:/users",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-authentication-problems",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
@@ -86356,37 +86816,42 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-or-keycloak",
+      "from": "concept:agenstra-or-oidc",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-keycloak-auth-server-url-http-localhost-8380",
+      "from": "concept:agenstra-authentication-method-oidc",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-keycloak-realm-agenstra",
+      "from": "concept:agenstra-oidc-issuer-http-localhost-8380-realms-platform",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-keycloak-client-id-agent-controller",
+      "from": "concept:agenstra-oidc-client-id-agent-controller",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-keycloak-client-secret-your-client-secret",
+      "from": "concept:agenstra-oidc-client-secret-your-client-secret",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-optional-keycloak-server-url-if-different-from-auth-server-url",
+      "from": "concept:agenstra-jwt-secret-your-jwt-secret-key",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-optional-keycloak-token-validation-online-default-or-offline",
+      "from": "concept:agenstra-optional-oidc-token-validation-online-default-or-offline",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-or-saml-authentication-method-saml-plus-saml-see-authentication-docs",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -86902,6 +87367,11 @@
     },
     {
       "from": "concept:agenstra-per-client-permissions",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-migrating-from-keycloak",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -87596,7 +88066,17 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-option-2-keycloak-authentication",
+      "from": "concept:agenstra-option-2-oidc-authentication-authentication-method-oidc",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-optional-oidc-token-validation-online-default-or-offline-oidc-audience-oidc-authorized-parties",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-option-2b-saml-authentication-authentication-method-saml-saml-variables-see-authentication-docs",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -87616,7 +88096,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-or-keycloak-configuration-same-as-above",
+      "from": "concept:agenstra-or-oidc-authentication-method-oidc-oidc-issuer-oidc-client-id-oidc-client-secret-the-manager-supports-api-key-and-oidc-o",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -89036,6 +89516,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-migrating-from-keycloak",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-auto-billing",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -90376,32 +90861,37 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-or-keycloak",
+      "from": "concept:decabill-or-oidc-any-provider-e-g-local-keycloak",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-authentication-method-keycloak",
+      "from": "concept:decabill-authentication-method-oidc",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-keycloak-auth-server-url-http-localhost-8380",
+      "from": "concept:decabill-oidc-issuer-http-localhost-8380-realms-platform",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-keycloak-realm-decabill",
+      "from": "concept:decabill-oidc-client-id-billing-manager",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-keycloak-client-id-billing-manager",
+      "from": "concept:decabill-oidc-client-secret-your-client-secret",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-keycloak-client-secret-your-client-secret",
+      "from": "concept:decabill-jwt-secret-your-jwt-secret-key",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-or-saml-authentication-method-saml-plus-saml-see-authentication-docs",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

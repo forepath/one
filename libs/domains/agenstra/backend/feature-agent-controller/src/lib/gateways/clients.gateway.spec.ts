@@ -302,10 +302,29 @@ describe('ClientsGateway', () => {
 
     expect(io).toHaveBeenCalledWith(
       'http://localhost:3100/socket/agents',
-      expect.objectContaining({
-        extraHeaders: expect.objectContaining({ Authorization: expect.stringMatching(/^Bearer /) }),
-      }),
+      expect.objectContaining({ auth: expect.any(Function) }),
     );
+
+    // Credentials are resolved per (re)connect through the handshake `auth` callback (never a stale static header).
+    const options = io.mock.calls.at(-1)[1] as {
+      auth: (cb: (data: Record<string, string>) => void) => void;
+      extraHeaders?: Record<string, string>;
+    };
+
+    expect(options.extraHeaders?.Authorization).toBeUndefined();
+    // Every (re)connect resolves DNS through the pinned public-address lookup (non-pooling agent).
+    expect(
+      (options as unknown as { agent: { options: { lookup?: unknown; keepAlive?: boolean } } }).agent.options,
+    ).toEqual(expect.objectContaining({ lookup: expect.any(Function), keepAlive: false }));
+    await expect(new Promise((resolve) => options.auth(resolve))).resolves.toEqual({ Authorization: 'Bearer x' });
+
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'rotated',
+    } as any);
+    await expect(new Promise((resolve) => options.auth(resolve))).resolves.toEqual({ Authorization: 'Bearer rotated' });
   });
 
   describe('handleRefineChatPlan', () => {

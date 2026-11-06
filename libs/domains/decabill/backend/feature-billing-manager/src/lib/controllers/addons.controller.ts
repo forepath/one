@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -36,7 +36,6 @@ export class AddonsController {
   ) {}
 
   @Get()
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -49,7 +48,6 @@ export class AddonsController {
   }
 
   @Get('modules')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @RequireScopes('catalog:admin')
   async listModules(): Promise<
@@ -71,7 +69,6 @@ export class AddonsController {
   }
 
   @Get(':id/meters')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @RequireScopes('catalog:admin')
   async listMeters(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AttachedMeterResponseDto[]> {
@@ -81,7 +78,6 @@ export class AddonsController {
   }
 
   @Post(':id/meters')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async attachMeter(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -93,7 +89,6 @@ export class AddonsController {
   }
 
   @Post(':id/meters/:meterId')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async updateMeterAttachment(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -106,7 +101,6 @@ export class AddonsController {
   }
 
   @Delete(':id/meters/:meterId')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   async detachMeter(
@@ -118,7 +112,6 @@ export class AddonsController {
   }
 
   @Get(':id')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AddonResponseDto> {
     const row = await this.addonsRepository.findByIdOrThrow(id);
@@ -127,7 +120,6 @@ export class AddonsController {
   }
 
   @Post()
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async create(@Body() dto: CreateAddonDto): Promise<AddonResponseDto> {
     this.addonService.validateCreatePayload(dto);
@@ -169,7 +161,6 @@ export class AddonsController {
   }
 
   @Post(':id')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -262,7 +253,6 @@ export class AddonsController {
   }
 
   @Delete(':id')
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {

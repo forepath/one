@@ -4,10 +4,11 @@ Authentication system supporting multiple methods with configurable user registr
 
 ## Overview
 
-Decabill supports three authentication methods:
+Decabill supports four authentication methods:
 
 - **API Key Authentication** Static API key for automation and operator scripts
-- **Keycloak Authentication** OAuth2/OIDC via Keycloak
+- **OIDC Authentication** Any OpenID Connect provider (for example Keycloak)
+- **SAML Authentication** SAML 2.0 single sign-on
 - **Users Authentication** Built-in user registration with JWT
 
 Each method is configured via environment variables on the billing manager. The billing console runtime config must match the backend method.
@@ -34,27 +35,91 @@ When `STATIC_API_KEY` is set and `AUTHENTICATION_METHOD` is unset, the backend m
 - No interactive user identity; WebSocket dashboard status is rejected (see [Real-time Status](./real-time-status.md))
 - Combine with [Multi-tenancy](./multi-tenancy.md) and optional `STATIC_API_KEY_TENANT_ID`
 
-### Keycloak Authentication
+### OIDC Authentication
 
-Enterprise-grade authentication using Keycloak OAuth2/OIDC.
+Provider-agnostic OpenID Connect (any compliant IdP, for example Keycloak, Entra ID, Okta, Auth0, Authentik). The API acts as an OAuth 2.0 resource server and validates access tokens; the billing console signs in with Authorization Code + PKCE.
 
 **Configuration**:
 
 ```bash
-AUTHENTICATION_METHOD=keycloak
-KEYCLOAK_AUTH_SERVER_URL=http://localhost:8380
-KEYCLOAK_REALM=decabill
-KEYCLOAK_CLIENT_ID=billing-manager
-KEYCLOAK_CLIENT_SECRET=your-client-secret
+AUTHENTICATION_METHOD=oidc
+OIDC_ISSUER=https://idp.example.com/realms/decabill
+OIDC_CLIENT_ID=api-client            # confidential client of the API (introspection)
+OIDC_CLIENT_SECRET=your-client-secret
+OIDC_TOKEN_VALIDATION=ONLINE         # ONLINE (default): signature + RFC 7662 introspection; OFFLINE: JWKS only
+OIDC_AUDIENCE=                       # optional, comma-separated; token `aud` must contain one
+OIDC_AUTHORIZED_PARTIES=             # comma-separated `azp` allowlist (client ids); this or OIDC_AUDIENCE required in production
+JWT_SECRET=your-jwt-secret-key       # signs PAT / app access JWTs
 ```
+
+| Variable                           | Default                                     | Purpose                                                                                      |
+| ---------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `OIDC_ISSUER`                      | required                                    | Exact `iss`; discovery at `<issuer>/.well-known/openid-configuration`                        |
+| `OIDC_CLIENT_ID` / `_SECRET`       | required for `ONLINE`                       | Client credentials used for token introspection                                              |
+| `OIDC_TOKEN_VALIDATION`            | `ONLINE`                                    | `ONLINE` also requires `active: true` at the introspection endpoint                          |
+| `OIDC_AUDIENCE`                    | unset                                       | Restrict accepted tokens to this API (recommended where the IdP supports it)                 |
+| `OIDC_AUTHORIZED_PARTIES`          | unset                                       | Restrict accepted tokens to these `azp` client ids                                           |
+| `OIDC_DISCOVERY_URL`               | `<issuer>/.well-known/openid-configuration` | Override when the API reaches the IdP under another URL (issuer must still match)            |
+| `OIDC_ALLOWED_ALGORITHMS`          | RS/PS/ES 256–512                            | Asymmetric algorithms only; `HS*` and `none` are always rejected                             |
+| `OIDC_EMAIL_CLAIM`                 | `email`                                     | Claim used as the local account email                                                        |
+| `OIDC_CLOCK_TOLERANCE_SECONDS`     | `0`                                         | Allowed clock skew (max 300)                                                                 |
+| `OIDC_ALLOW_INSECURE_HTTP`         | `false`                                     | Production only accepts https provider URLs (issuer, JWKS, endpoints) unless `true`          |
+| `OIDC_ALLOW_UNRESTRICTED_AUDIENCE` | `false`                                     | Production requires `OIDC_AUDIENCE` or `OIDC_AUTHORIZED_PARTIES` unless `true`               |
+| `OIDC_TRUST_EMAIL`                 | `false`                                     | Treat emails without an `email_verified` claim as verified (only if the IdP controls emails) |
+
+Billing console runtime config (public SPA client, Authorization Code + PKCE):
+
+```json
+{ "authentication": { "config": { "type": "oidc", "issuer": "https://idp.example.com/realms/decabill", "clientId": "console", "scope": "openid profile email" } } }
+```
+
+`postLogoutRedirectUri` is optional.
 
 **Features**:
 
-- OAuth2/OIDC authentication flow in the billing console
-- Users are synced to the local `users` table
-- First synced user gets admin role, subsequent users get user role
-- Integration with existing identity providers and MFA via Keycloak
-- Per-user `tenant_id` enforced by [Multi-tenancy](./multi-tenancy.md)
+- Tokens are verified locally (JWKS signature, exact issuer, expiry, optional audience / `azp`); tokens carrying a `typ` claim other than `Bearer` (ID / refresh tokens) are rejected
+- OIDC identities are mapped to the local `users` table (`external_provider = oidc`, `external_subject = sub`)
+- First user per tenant gets admin role; **roles always come from the local user**, IdP role claims are not used
+- An existing local account is linked by email only when the email is trusted — `email_verified: true`, or no claim at all and `OIDC_TRUST_EMAIL=true` / `SAML_TRUST_EMAIL=true` (only set this when the IdP controls the addresses) — and the account is not linked to another identity yet. Untrusted emails are neither linked nor stored: the account gets a non-routable `…@external.invalid` placeholder, so nobody can claim an address (for example to be added to a workspace by email).
+- In production `OIDC_AUDIENCE` or `OIDC_AUTHORIZED_PARTIES` is required (boot fails otherwise; `OIDC_ALLOW_UNRESTRICTED_AUDIENCE=true` opts out) and provider URLs must use https (`OIDC_ALLOW_INSECURE_HTTP=true` opts out). ID tokens are rejected as bearer tokens (`typ`, `at_hash` / `c_hash`).
+- Provisioned OIDC consoles need a dedicated public console client (`oidc.frontendClientId`, different from `oidc.clientId`) or an `oidc.audience`, so the console API never accepts tokens of the API's own service client. Provisioned managers validate OFFLINE against the controller's client and never receive its secret.
+- New accounts are created on first sign-in in every tenant by default. With several tenants behind one IdP, set `EXTERNAL_AUTH_AUTO_PROVISION_TENANTS` (comma-separated tenant ids, or `none`) so IdP users cannot claim an empty tenant; elsewhere only existing or linkable accounts can sign in. The first user of a tenant becomes admin atomically (concurrent first sign-ins cannot both become admin).
+- SAML single logout (SLO) is not implemented: signing out at the IdP does not end an existing console session; use `POST /auth/logout` (or invalidate all sessions of the user).
+- Console sessions are bound to the method that issued them: after switching between `users` and `saml`, existing sessions of the other method are rejected.
+- Locked users are rejected; per-user `tenant_id` enforced
+- OIDC token scopes are not enforced (unchanged); PAT scopes are
+
+### SAML Authentication
+
+SAML 2.0 single sign-on. The API is the SAML service provider; after a validated assertion it issues the same session JWT as users mode (`amr: ["saml"]`).
+
+**Configuration**:
+
+```bash
+AUTHENTICATION_METHOD=saml
+SAML_IDP_SSO_URL=https://idp.example.com/sso          # HTTP-Redirect binding
+SAML_IDP_CERT="-----BEGIN CERTIFICATE-----..."        # PEM or bare base64; several allowed
+SAML_IDP_ISSUER=https://idp.example.com/entity        # recommended: pin the IdP entity id
+SAML_SP_ENTITY_ID=https://console.example.com         # default: origin of SAML_SP_ACS_URL
+SAML_SP_ACS_URL=https://console.example.com/api/auth/saml/acs
+SAML_FRONTEND_CALLBACK_URL=https://console.example.com/login/saml/callback
+JWT_SECRET=your-jwt-secret-key
+```
+
+Optional: `SAML_NAMEID_FORMAT` (default `urn:oasis:names:tc:SAML:2.0:nameid-format:persistent`; `unspecified` omits it; transient NameIDs are rejected), `SAML_EMAIL_ATTRIBUTE` (default: `email`, `mail`, `urn:oid:0.9.2342.19200300.100.1.3`, the emailaddress claim, or an email-format NameID), `SAML_WANT_ASSERTIONS_SIGNED` / `SAML_WANT_RESPONSE_SIGNED` (default `true`; not both `false`), `SAML_SP_PRIVATE_KEY` (sign AuthnRequests), `SAML_SP_DECRYPTION_PRIVATE_KEY` (encrypted assertions), `SAML_CLOCK_SKEW_MS` (default `0`).
+
+Billing console runtime config: `{ "authentication": { "config": { "type": "saml" } } }`.
+
+**Flow**:
+
+1. The console creates a PKCE verifier and opens `GET /api/auth/saml/login?code_challenge=…&redirect=/path`.
+2. The IdP posts the response to `POST /api/auth/saml/acs`; the API validates signature, audience (SP entity id), `InResponseTo` (consumed once; unsolicited / IdP-initiated responses are rejected) and assertion replay.
+3. The API redirects to `SAML_FRONTEND_CALLBACK_URL?code=…` with a single-use code (60 s).
+4. The console redeems it at `POST /api/auth/saml/token` with `{ "code", "codeVerifier" }` and receives the session JWT.
+
+Multi-tenant APIs: the browser redirect to `GET /api/auth/saml/login` cannot carry `X-Tenant`, so the console passes `tenant=<id>` (validated against `TENANTS` like the header). The tenant is bound to the single-use relay state and restored at the ACS; the code exchange then requires the same tenant (`X-Tenant`).
+
+`GET /api/auth/saml/metadata` serves SP metadata for IdP configuration. Logout uses `POST /auth/logout` as in users mode. Password login, registration and local 2FA endpoints are not available. Identity mapping, roles, locking and tenants work as in OIDC mode (`external_provider = saml`, `external_subject` = NameID).
 
 ### Users Authentication
 
@@ -85,17 +150,17 @@ PRODUCT_NAME=Decabill  # Issuer label on TOTP QR / authenticator entries (defaul
 - Optional signup disable for controlled onboarding
 - **Personal access tokens (PATs)** for machine/API automation (see below)
 
-### Personal access tokens (users and keycloak modes)
+### Personal access tokens (users, oidc and saml modes)
 
 User-bound tokens for scripts and CI (for example usage recording). They are **not** a billing-console login password. **Not available** when `AUTHENTICATION_METHOD=api-key`.
 
 | Concern                  | Behavior                                                                                                                           |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Create / update / revoke | Console **Personal Access Tokens** page (`/settings/tokens`); interactive console session only (password JWT or Keycloak OIDC)     |
+| Create / update / revoke | Console **Personal Access Tokens** page (`/settings/tokens`); interactive console session only (password, OIDC or SAML session)    |
 | Exchange                 | `POST /auth/token` with `{ "token": "fp_pat_…" }` only (no email) → JWT with `amr: ["pat"]` and `scopes`                           |
 | Console                  | Login rejects `fp_pat_` secrets; SPA rejects JWTs whose `amr` includes `pat`                                                       |
 | WebSockets               | Only with the socket's `websocket:<socket>:read` scope; every event is capped by its domain scopes (see [WebSockets](#websockets)) |
-| Keycloak                 | Local `users` row is synced on first authenticated request (`keycloakSub`); PAT CRUD and exchange require `JWT_SECRET`             |
+| OIDC / SAML              | Local `users` row is linked on first sign-in (`external_subject`); PAT CRUD and exchange require `JWT_SECRET`                      |
 | Scopes                   | `BILLING_PAT_SCOPES` (see [Scope model](#scope-model)); each enforced via `@RequireScopes`                                         |
 
 Prefer PATs over a shared `STATIC_API_KEY` for multi-tenant automation (see accepted risk DR-002).
@@ -157,7 +222,7 @@ PAT JWTs and app access tokens (machine tokens) may use the Socket.IO namespaces
 
 The per-event scope maps live in `billing-websocket.scopes.ts` (product) on top of the shared helpers in `@forepath/identity/backend`.
 
-### Apps (third-party authorization; users and keycloak modes)
+### Apps (third-party authorization; users, oidc and saml modes)
 
 Admins can register **apps**: external applications that act on behalf of users after the user authorizes them (similar to GitHub OAuth apps). Apps reuse the [PAT scope catalog](#scope-model). **Not available** when `AUTHENTICATION_METHOD=api-key`.
 
@@ -167,7 +232,7 @@ Admins can register **apps**: external applications that act on behalf of users 
 | Return URL     | Absolute `https` URL (`http` only for `localhost` / `127.0.0.1`), no credentials, no fragment. Redirects only ever go to the registered URL (no caller-supplied redirect URI)                                                                              |
 | Grant page     | `/authorize?app_id=<uuid>&state=<opaque>[&code_challenge=<S256>&code_challenge_method=S256]`; shows the login mask first when needed, then app name, description and scopes                                                                                |
 | Scope cap      | A user only grants the requested scopes their own role may grant (`:admin` scopes only for admins); the rest is shown as "not granted". The cap is re-applied on every request                                                                             |
-| Second factor  | Approving a new (or changed) authorization requires the user's 2FA: authenticator code, or an emailed code when email 2FA is enabled or forced. Keycloak accounts rely on Keycloak MFA                                                                     |
+| Second factor  | Approving a new (or changed) authorization requires the user's 2FA: authenticator code, or an emailed code when email 2FA is enabled or forced. OIDC / SAML accounts rely on the IdP's MFA                                                                 |
 | Skip consent   | An existing, up-to-date authorization redirects back immediately with a new code (no consent, no 2FA)                                                                                                                                                      |
 | Redirect       | Approved: `status=approved&app_id&code&state`. Denied: `status=denied&error=access_denied&error_description&state`. No grantable scope: `status=error&error=invalid_scope`                                                                                 |
 | Token exchange | `POST /auth/apps/token` (public, rate-limited, server-to-server) with `app_id`, `app_secret` and either the `code` (+ `code_verifier`) or a `refresh_token`; returns an access JWT (1 h) and a refresh token                                               |
@@ -267,8 +332,9 @@ Frontend runtime config should set `authentication.disableSignup` to match the b
 - **Logout** (`POST /auth/logout`) revokes the current JWT session by default; optional `invalidateAllSessions: true` ends every session
 - **Password change** increments `token_version` and returns a new JWT for the current browser; other sessions fail on their next request
 - **Password reset** and **admin password updates** increment `token_version`; affected users must log in again
-- Keycloak mode: session lifecycle is managed by Keycloak (optional "logout other sessions" in Keycloak password UI)
-- Keycloak mode applies the same lock check against the synced local user row
+- OIDC mode: session lifecycle is managed by the IdP (with `OIDC_TOKEN_VALIDATION=ONLINE` revoked IdP sessions stop working immediately)
+- SAML mode issues the same session JWT as users mode (`amr: ["saml"]`), so logout, token version and revocation apply
+- OIDC and SAML modes apply the same lock check against the linked local user row
 - SPA HTTP interceptor dispatches logout on 401 with session-ending messages
 
 ### Rate Limiting
@@ -287,7 +353,14 @@ Frontend runtime config should set `authentication.disableSignup` to match the b
 - `POST /auth/request-password-reset` - Request password reset
 - `POST /auth/reset-password` - Reset password with code
 - `POST /auth/change-password` - Change password (authenticated; returns new JWT)
-- `POST /auth/logout` - Log out and invalidate all JWT sessions (users auth only)
+- `POST /auth/logout` - Log out and invalidate all JWT sessions (users and saml auth)
+
+### SAML Endpoints (Public, saml mode only)
+
+- `GET /auth/saml/login` - Start sign-in (`code_challenge`, `redirect`); redirects to the IdP
+- `POST /auth/saml/acs` - Assertion Consumer Service; redirects to the console callback with a one-time code
+- `POST /auth/saml/token` - Redeem `{ code, codeVerifier }` for a session JWT
+- `GET /auth/saml/metadata` - SP metadata XML
 
 ### Personal Access Token Endpoints (Password session)
 
@@ -337,7 +410,8 @@ flowchart TB
         direction TB
         AUTH_METHOD["AUTHENTICATION_METHOD env"]
         AUTH_METHOD --> API_KEY["api-key"]
-        AUTH_METHOD --> KEYCLOAK["keycloak"]
+        AUTH_METHOD --> OIDC["oidc"]
+        AUTH_METHOD --> SAML["saml"]
         AUTH_METHOD --> USERS["users"]
     end
 
@@ -348,11 +422,18 @@ flowchart TB
         AK2 --> AK4["No WebSocket dashboard user stream"]
     end
 
-    subgraph KEYCLOAK_FLOW["Keycloak Flow"]
-        KEYCLOAK --> KC1["Keycloak OAuth2 / OIDC"]
-        KC1 --> KC2["User synced to users table"]
+    subgraph OIDC_FLOW["OIDC Flow"]
+        OIDC --> KC1["Access token verified (JWKS / introspection)"]
+        KC1 --> KC2["Identity linked to users table"]
         KC2 --> KC3["First user = admin, rest = user"]
         KC2 --> KC4["tenant_id enforced per request"]
+    end
+
+    subgraph SAML_FLOW["SAML Flow"]
+        SAML --> SF1["Signed assertion at /auth/saml/acs"]
+        SF1 --> SF2["One-time code + PKCE exchange"]
+        SF2 --> SF3["Session JWT (amr: saml)"]
+        SF1 --> KC2
     end
 
     subgraph USERS_FLOW["Users Flow"]
@@ -363,6 +444,21 @@ flowchart TB
         UF4 --> UF5["Admin CRUD and lock/unlock"]
     end
 ```
+
+## Migrating from `keycloak`
+
+The `keycloak` method was replaced by the provider-agnostic `oidc` method (Keycloak remains a supported OIDC and SAML identity provider). `AUTHENTICATION_METHOD=keycloak` now fails at boot.
+
+| Before                                                         | After                                                              |
+| -------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `AUTHENTICATION_METHOD=keycloak`                               | `AUTHENTICATION_METHOD=oidc`                                       |
+| `KEYCLOAK_AUTH_SERVER_URL` + `KEYCLOAK_REALM`                  | `OIDC_ISSUER=<KEYCLOAK_AUTH_SERVER_URL>/realms/<realm>`            |
+| `KEYCLOAK_CLIENT_ID` / `KEYCLOAK_CLIENT_SECRET`                | `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET`                            |
+| `KEYCLOAK_TOKEN_VALIDATION`                                    | `OIDC_TOKEN_VALIDATION` (`ONLINE` / `OFFLINE`; `NONE` was removed) |
+| `KEYCLOAK_SERVER_URL`                                          | removed (use `OIDC_DISCOVERY_URL` if the API needs another URL)    |
+| Console `{ type: 'keycloak', authServerUrl, realm, clientId }` | `{ type: 'oidc', issuer, clientId }`                               |
+
+Database migrations rename `users.keycloak_sub` to `external_subject` with `external_provider = 'oidc'`, so linked users keep their accounts (the Keycloak `sub` is unchanged).
 
 ## Related documentation
 

@@ -29,7 +29,7 @@ describe('resolveJwtModuleSecret', () => {
     process.env.NODE_ENV = 'production';
     process.env.JEST_WORKER_ID = '1';
 
-    expect(resolveJwtModuleSecret('keycloak')).toBe('test-jwt-secret');
+    expect(resolveJwtModuleSecret('oidc')).toBe('test-jwt-secret');
   });
 
   it('throws when not in test context and secret missing', () => {

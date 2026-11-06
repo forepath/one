@@ -10,13 +10,10 @@ import { MonitoringModule } from '@forepath/shared/backend';
 import {
   BullBoardSkippingThrottlerGuard,
   getAuthenticationMethod,
-  getHybridAuthGuards,
-  getKeycloakPatAuthGuards,
+  getIdentityAuthGuards,
   getRateLimitConfig,
-  KeycloakModule,
-  KeycloakService,
-  KeycloakUserSyncModule,
-  PatAuthModule,
+  OidcAuthModule,
+  SamlAuthModule,
   UsersAuthModule,
 } from '@forepath/identity/backend';
 import { getTypeOrmOptionsForQueueRole } from '@forepath/shared/backend';
@@ -24,7 +21,6 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
 import { ControllerQueueModule } from '../queue/controller-queue.module';
 import { typeormConfig } from '../typeorm.config';
@@ -36,14 +32,8 @@ const authMethod = getAuthenticationMethod();
     TypeOrmModule.forRoot(getTypeOrmOptionsForQueueRole(typeormConfig)),
     ControllerQueueModule,
     ThrottlerModule.forRoot(getRateLimitConfig()),
-    ...(authMethod === 'keycloak'
-      ? [
-          KeycloakModule,
-          KeycloakConnectModule.registerAsync({ useExisting: KeycloakService }),
-          KeycloakUserSyncModule,
-          PatAuthModule.register({ patScopeCatalog: AGENSTRA_PAT_SCOPES }),
-        ]
-      : []),
+    ...(authMethod === 'oidc' ? [OidcAuthModule.register({ patScopeCatalog: AGENSTRA_PAT_SCOPES })] : []),
+    ...(authMethod === 'saml' ? [SamlAuthModule.register({ patScopeCatalog: AGENSTRA_PAT_SCOPES })] : []),
     ...(authMethod === 'users' ? [UsersAuthModule.register({ patScopeCatalog: AGENSTRA_PAT_SCOPES })] : []),
     ClientsModule,
     IdentityStatisticsBridgeModule,
@@ -53,7 +43,7 @@ const authMethod = getAuthenticationMethod();
     MonitoringModule,
   ],
   providers: [
-    ...(authMethod === 'keycloak' ? getKeycloakPatAuthGuards() : getHybridAuthGuards()),
+    ...getIdentityAuthGuards(),
     {
       provide: APP_GUARD,
       useClass: BullBoardSkippingThrottlerGuard,

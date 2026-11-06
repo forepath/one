@@ -1,4 +1,4 @@
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -26,10 +26,10 @@ interface RequestWithUser extends Request {
 
 /**
  * PAT lifecycle (list/create/update/revoke). Auth:
- * - users mode: UsersAuthGuard (APP + controller) validates password JWT
- * - keycloak mode: global Keycloak/PAT chain authenticates; UsersAuthGuard requires synced `user.id`
+ * - users / saml mode: UsersAuthGuard (APP + controller) validates the app session JWT
+ * - oidc mode: global OIDC/PAT chain authenticates; UsersAuthGuard requires a synced local `user.id`
  *
- * Admin list/revoke use both `@KeycloakRoles` (interactive OIDC) and `@UsersRoles` (PAT JWT / users-mode).
+ * Admin list/revoke use `@UsersRoles` (roles always come from the local users table).
  */
 @Controller()
 @UseGuards(UsersAuthGuard)
@@ -84,7 +84,6 @@ export class PersonalAccessTokensController {
   }
 
   @RequireInteractiveSession()
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @Get('users/:userId/tokens')
   async listForUser(@Param('userId', ParseUUIDPipe) userId: string) {
@@ -92,7 +91,6 @@ export class PersonalAccessTokensController {
   }
 
   @RequireInteractiveSession()
-  @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   @Delete('users/:userId/tokens/:tokenId')
   @HttpCode(HttpStatus.NO_CONTENT)

@@ -2,10 +2,16 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT, jwtPayloadHasPatAmr, parseJwtPayload } from '@forepath/identity/frontend';
+import {
+  IDENTITY_AUTH_ENVIRONMENT,
+  jwtPayloadHasPatAmr,
+  OidcAuthService,
+  parseJwtPayload,
+  startSamlLogin,
+  usesAppSessionJwt,
+} from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { KeycloakService } from 'keycloak-angular';
-import { catchError, filter, from, map, of, switchMap, tap } from 'rxjs';
+import { catchError, EMPTY, filter, from, map, of, switchMap, tap } from 'rxjs';
 
 import {
   consumePostLoginReturnUrl,
@@ -86,62 +92,6 @@ import type { Login2faMethod } from './authentication.types';
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 
-/** Keycloak token structure with realm_access and resource_access. */
-interface KeycloakTokenPayload {
-  realm_access?: { roles?: unknown };
-  resource_access?: Record<string, { roles?: unknown }>;
-  [key: string]: unknown;
-}
-
-/**
- * Extracts roles from Keycloak token payload.
- * Mirrors backend KeycloakRolesGuard logic: realm_access.roles and resource_access.<client>.roles.
- */
-function getRolesFromKeycloakToken(token: unknown): string[] {
-  if (!token || typeof token !== 'object') {
-    return [];
-  }
-
-  const obj = token as Record<string, unknown>;
-
-  if (Array.isArray(obj['roles'])) {
-    return obj['roles'].filter((r): r is string => typeof r === 'string');
-  }
-
-  const tokenPayload = obj as KeycloakTokenPayload;
-  const roles: string[] = [];
-  const seen = new Set<string>();
-
-  function collectRoles(value: unknown): void {
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (typeof item === 'string' && !seen.has(item)) {
-          seen.add(item);
-          roles.push(item);
-        } else if (item !== null && typeof item === 'object') {
-          collectRoles(item);
-        }
-      }
-    } else if (value !== null && typeof value === 'object') {
-      for (const v of Object.values(value)) {
-        collectRoles(v);
-      }
-    }
-  }
-
-  collectRoles(tokenPayload.realm_access?.roles);
-
-  if (tokenPayload.resource_access && typeof tokenPayload.resource_access === 'object') {
-    for (const resource of Object.values(tokenPayload.resource_access)) {
-      if (resource !== null && typeof resource === 'object' && 'roles' in resource) {
-        collectRoles((resource as { roles?: unknown }).roles);
-      }
-    }
-  }
-
-  return roles;
-}
-
 function normalizeError(error: unknown): string {
   if (error instanceof HttpErrorResponse && error.error?.message) {
     return error.error.message;
@@ -196,7 +146,7 @@ export const login$ = createEffect(
   (
     actions$ = inject(Actions),
     authEnvironment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT),
-    keycloakService = inject(KeycloakService, { optional: true }),
+    oidcAuthService = inject(OidcAuthService),
     authService = inject(AuthService, { optional: true }),
   ) => {
     return actions$.pipe(
@@ -214,9 +164,20 @@ export const login$ = createEffect(
           return of(loginFailure({ error: 'API key is required for authentication' }));
         }
 
-        if (authEnvironment.authentication.type === 'keycloak' && keycloakService) {
-          return from(keycloakService.login()).pipe(
-            map(() => loginSuccess({ authenticationType: 'keycloak' })),
+        // External sign-in: the browser leaves for the identity provider; the session is established on return
+        // (OIDC: app initializer, SAML: /login/saml/callback). Resume the grant page when login started there.
+        if (authEnvironment.authentication.type === 'oidc') {
+          return from(oidcAuthService.login(consumePostLoginReturnUrl() ?? undefined)).pipe(
+            switchMap(() => EMPTY),
+            catchError((error) => of(loginFailure({ error: normalizeError(error) }))),
+          );
+        }
+
+        if (authEnvironment.authentication.type === 'saml') {
+          return from(
+            startSamlLogin(authEnvironment.apiUrl, consumePostLoginReturnUrl() ?? undefined, authEnvironment.tenantId),
+          ).pipe(
+            switchMap(() => EMPTY),
             catchError((error) => of(loginFailure({ error: normalizeError(error) }))),
           );
         }
@@ -324,7 +285,7 @@ export const logout$ = createEffect(
   (
     actions$ = inject(Actions),
     authEnvironment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT),
-    keycloakService = inject(KeycloakService, { optional: true }),
+    oidcAuthService = inject(OidcAuthService),
     authService = inject(AuthService, { optional: true }),
   ) => {
     return actions$.pipe(
@@ -336,14 +297,15 @@ export const logout$ = createEffect(
           return of(logoutSuccess());
         }
 
-        if (authEnvironment.authentication.type === 'keycloak' && keycloakService) {
-          return from(keycloakService.logout()).pipe(
+        if (authEnvironment.authentication.type === 'oidc') {
+          return from(oidcAuthService.logout()).pipe(
             map(() => logoutSuccess()),
             catchError((error) => of(logoutFailure({ error: normalizeError(error) }))),
           );
         }
 
-        if (authEnvironment.authentication.type === 'users' && authService) {
+        // users / saml: revoke the session JWT at the API, then drop it locally either way.
+        if (usesAppSessionJwt(authEnvironment.authentication.type) && authService) {
           return authService.logout(invalidateAllSessions === true).pipe(
             map(() => {
               localStorage.removeItem(USERS_JWT_STORAGE_KEY);
@@ -358,7 +320,7 @@ export const logout$ = createEffect(
           );
         }
 
-        if (authEnvironment.authentication.type === 'users') {
+        if (usesAppSessionJwt(authEnvironment.authentication.type)) {
           localStorage.removeItem(USERS_JWT_STORAGE_KEY);
 
           return of(logoutSuccess());
@@ -387,7 +349,8 @@ export const checkAuthentication$ = createEffect(
   (
     actions$ = inject(Actions),
     authEnvironment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT),
-    keycloakService = inject(KeycloakService, { optional: true }),
+    oidcAuthService = inject(OidcAuthService),
+    authService = inject(AuthService, { optional: true }),
   ) => {
     return actions$.pipe(
       ofType(checkAuthentication),
@@ -405,32 +368,31 @@ export const checkAuthentication$ = createEffect(
           );
         }
 
-        if (authEnvironment.authentication.type === 'keycloak' && keycloakService) {
-          try {
-            const isAuthenticated = keycloakService.isLoggedIn();
-            const instance = keycloakService.getKeycloakInstance();
-            const roles = getRolesFromKeycloakToken(instance?.tokenParsed);
-            const role = roles.includes('admin') ? 'admin' : 'user';
+        if (authEnvironment.authentication.type === 'oidc') {
+          if (!oidcAuthService.isLoggedIn()) {
+            return of(checkAuthenticationSuccess({ isAuthenticated: false }));
+          }
 
-            return of(
+          const profile = oidcAuthService.getProfile();
+          // Roles live in the API's users table (never in IdP claims): ask the API instead of reading the token.
+          const isAdmin$ = authService ? authService.probeAdminAccess() : of(false);
+
+          return isAdmin$.pipe(
+            map((isAdmin) =>
               checkAuthenticationSuccess({
-                isAuthenticated,
-                authenticationType: isAuthenticated ? 'keycloak' : undefined,
-                user: instance?.tokenParsed
-                  ? {
-                      id: instance.tokenParsed['sub'] ?? '',
-                      email: instance.tokenParsed['email'] ?? '',
-                      role: role,
-                    }
+                isAuthenticated: true,
+                authenticationType: 'oidc',
+                user: profile
+                  ? { id: profile.sub, email: profile.email ?? '', role: isAdmin ? 'admin' : 'user' }
                   : undefined,
               }),
-            );
-          } catch (error) {
-            return of(checkAuthenticationFailure({ error: normalizeError(error) }));
-          }
+            ),
+            catchError((error) => of(checkAuthenticationFailure({ error: normalizeError(error) }))),
+          );
         }
 
-        if (authEnvironment.authentication.type === 'users') {
+        if (usesAppSessionJwt(authEnvironment.authentication.type)) {
+          const sessionType = authEnvironment.authentication.type as 'users' | 'saml';
           const jwt = localStorage.getItem(USERS_JWT_STORAGE_KEY);
 
           if (jwt) {
@@ -461,7 +423,7 @@ export const checkAuthentication$ = createEffect(
               return of(
                 checkAuthenticationSuccess({
                   isAuthenticated,
-                  authenticationType: isAuthenticated ? 'users' : undefined,
+                  authenticationType: isAuthenticated ? sessionType : undefined,
                   user: isAuthenticated ? user : undefined,
                 }),
               );

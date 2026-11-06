@@ -1,10 +1,11 @@
 import { AgentResponseDto, GitStatusDto } from '@forepath/agenstra/backend/feature-agent-manager';
 import {
+  buildRequestFromSocketUser,
   checkClientAccess,
   ClientUsersRepository,
   ensureClientAccess,
+  getAuthenticationMethod,
   type SocketUserInfo,
-  buildRequestFromSocketUser,
   UserRole,
 } from '@forepath/identity/backend';
 import { ForbiddenException, forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
@@ -702,7 +703,7 @@ export class AgentConsoleStatusService {
       userIds.add(member.userId);
     }
 
-    if (userIds.size === 0 && process.env.STATIC_API_KEY) {
+    if (userIds.size === 0 && getAuthenticationMethod() === 'api-key') {
       userIds.add('api-key-user');
     }
 

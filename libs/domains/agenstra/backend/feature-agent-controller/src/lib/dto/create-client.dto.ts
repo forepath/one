@@ -1,5 +1,5 @@
 import { AuthenticationType } from '@forepath/identity/backend';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
 
 /**
  * DTO for creating a new client.
@@ -20,7 +20,7 @@ export class CreateClientDto {
   endpoint!: string;
 
   @IsNotEmpty({ message: 'Authentication type is required' })
-  @IsEnum(AuthenticationType, { message: 'Authentication type must be either api_key or keycloak' })
+  @IsEnum(AuthenticationType, { message: 'Authentication type must be either api_key or oidc' })
   authenticationType!: AuthenticationType;
 
   @IsOptional()
@@ -28,14 +28,27 @@ export class CreateClientDto {
   apiKey?: string;
 
   @IsOptional()
-  @IsString({ message: 'Keycloak client ID must be a string' })
-  keycloakClientId?: string;
+  @IsString({ message: 'OIDC client ID must be a string' })
+  @MaxLength(255)
+  oidcClientId?: string;
 
   @IsOptional()
-  @IsString({ message: 'Keycloak client secret must be a string' })
-  keycloakClientSecret?: string;
+  @IsString({ message: 'OIDC client secret must be a string' })
+  @MaxLength(512)
+  oidcClientSecret?: string;
 
+  /** OpenID provider issuer; defaults to the controller's `OIDC_ISSUER`. */
   @IsOptional()
-  @IsString({ message: 'Keycloak realm must be a string' })
-  keycloakRealm?: string;
+  @IsUrl(
+    { require_tld: false, require_protocol: true, protocols: ['http', 'https'] },
+    { message: 'OIDC issuer must be a valid http(s) URL' },
+  )
+  @MaxLength(1024)
+  oidcIssuer?: string;
+
+  /** Optional space separated scopes for the client credentials grant. */
+  @IsOptional()
+  @IsString({ message: 'OIDC scope must be a string' })
+  @MaxLength(1024)
+  oidcScope?: string;
 }

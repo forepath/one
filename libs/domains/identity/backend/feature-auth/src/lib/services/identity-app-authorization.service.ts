@@ -406,11 +406,11 @@ export class IdentityAppAuthorizationService {
     });
   }
 
-  /** Same eligibility as PATs: local password or Keycloak-linked, confirmed, not locked, same tenant as the app. */
+  /** Same eligibility as PATs: local password or externally linked (OIDC / SAML), confirmed, not locked, same tenant as the app. */
   private async loadEligibleUser(userId: string, appTenantId: string): Promise<UserEntity | null> {
     const user = await this.usersRepository.findById(userId);
 
-    if (!user || !(user.passwordHash || user.keycloakSub) || !user.emailConfirmedAt || user.lockedAt) {
+    if (!user || !(user.passwordHash || user.externalSubject) || !user.emailConfirmedAt || user.lockedAt) {
       return null;
     }
 

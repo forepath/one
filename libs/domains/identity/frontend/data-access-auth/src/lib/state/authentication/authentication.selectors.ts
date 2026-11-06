@@ -67,12 +67,12 @@ export const selectTotpSetup = createSelector(selectAuthenticationState, (state)
 export const selectIsAdmin = createSelector(selectUser, (user) => user?.role === 'admin');
 
 /**
- * True when the user can access the user manager (admin users/keycloak auth).
+ * True when the user can access the user manager (admins in users, OIDC or SAML auth).
  */
 export const selectCanAccessUserManager = createSelector(
   selectIsAuthenticated,
   selectAuthenticationType,
   selectIsAdmin,
   (isAuthenticated, authType, isAdmin) =>
-    isAuthenticated && (authType === 'users' || authType === 'keycloak') && isAdmin,
+    isAuthenticated && (authType === 'users' || authType === 'oidc' || authType === 'saml') && isAdmin,
 );

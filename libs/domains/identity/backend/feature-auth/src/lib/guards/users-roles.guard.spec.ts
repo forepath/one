@@ -53,20 +53,39 @@ describe('UsersRolesGuard', () => {
     ).toBe(true);
   });
 
-  it('under keycloak defers when interactive token has no roles array', () => {
-    process.env.AUTHENTICATION_METHOD = 'keycloak';
+  it('under oidc denies unsynced IdP claims (IdP role claims are never trusted)', () => {
+    process.env.AUTHENTICATION_METHOD = 'oidc';
 
     expect(
       guard.canActivate(
         createExecutionContext({
-          user: { sub: 'kc-sub', realm_access: { roles: ['admin'] } },
+          user: { sub: 'idp-sub', realm_access: { roles: ['admin'] }, roles: undefined },
         }),
       ),
+    ).toBe(false);
+  });
+
+  it('under oidc enforces roles of the synced local user', () => {
+    process.env.AUTHENTICATION_METHOD = 'oidc';
+
+    expect(
+      guard.canActivate(createExecutionContext({ user: { id: 'u1', roles: [UserRole.USER], amr: ['oidc'] } })),
+    ).toBe(false);
+    expect(
+      guard.canActivate(createExecutionContext({ user: { id: 'u1', roles: [UserRole.ADMIN], amr: ['oidc'] } })),
     ).toBe(true);
   });
 
-  it('under keycloak enforces roles for PAT JWTs', () => {
-    process.env.AUTHENTICATION_METHOD = 'keycloak';
+  it('under saml enforces roles of the session JWT user', () => {
+    process.env.AUTHENTICATION_METHOD = 'saml';
+
+    expect(
+      guard.canActivate(createExecutionContext({ user: { id: 'u1', roles: [UserRole.USER], amr: ['saml'] } })),
+    ).toBe(false);
+  });
+
+  it('under oidc enforces roles for PAT JWTs', () => {
+    process.env.AUTHENTICATION_METHOD = 'oidc';
 
     expect(
       guard.canActivate(

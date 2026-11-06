@@ -57,7 +57,8 @@ export interface LoginResponse {
 }
 
 export interface GenerateTokenOptions {
-  amr: 'pwd' | 'pat';
+  /** `pwd` password console session, `saml` SAML console session, `pat` personal access token. */
+  amr: 'pwd' | 'saml' | 'pat';
   scopes?: string[];
   patId?: string;
 }
@@ -124,7 +125,7 @@ export class AuthService {
     }
 
     if (!user.passwordHash) {
-      throw new UnauthorizedException('This account uses external authentication (Keycloak).');
+      throw new UnauthorizedException('This account uses external authentication (OIDC / SAML).');
     }
 
     const valid = await this.usersService.validatePassword(password, user.passwordHash);
@@ -336,7 +337,7 @@ export class AuthService {
 
   /**
    * Second factor the user must present for sensitive interactive confirmations, using the same rules as login:
-   * authenticator when enrolled, otherwise email when enabled or forced. External (Keycloak) accounts have no local
+   * authenticator when enrolled, otherwise email when enabled or forced. External (OIDC / SAML) accounts have no local
    * second factor - their identity provider enforces MFA at sign-in.
    */
   getSecondFactorMethod(user: UserEntity): Login2faMethod | null {
@@ -372,12 +373,8 @@ export class AuthService {
       throw new ServiceUnavailableException('Signup is disabled');
     }
 
-    const count = await this.usersRepository.countByTenant();
-    const isFirstUser = count === 0;
-    const created = await this.usersService.create(
-      { email, password, role: isFirstUser ? UserRole.ADMIN : UserRole.USER },
-      isFirstUser,
-    );
+    // First user of the tenant → admin; decided atomically inside UsersService.create.
+    const created = await this.usersService.create({ email, password });
     const emailConfirmed = Boolean(created.emailConfirmedAt);
 
     if (emailConfirmed) {
@@ -526,6 +523,14 @@ export class AuthService {
     if (options.jti && options.tokenExpiresAt) {
       await this.revokedUserTokensRepository.revoke(options.jti, userId, options.tokenExpiresAt);
     }
+  }
+
+  /**
+   * Console session JWT for a user authenticated by an external identity provider whose assertions cannot be
+   * forwarded as bearer tokens (SAML). Same shape, lifetime, revocation and token-version rules as password sessions.
+   */
+  issueExternalSessionToken(user: UserEntity, amr: 'saml'): string {
+    return this.generateToken(user, { amr });
   }
 
   async invalidateAllSessions(userId: string): Promise<number> {

@@ -37,7 +37,7 @@ describe('agent-manager.utils', () => {
       expect(config.backend.authentication.authenticationMethod).toBe('api-key');
     });
 
-    it('keeps authenticationMethod api-key and keycloak', () => {
+    it('keeps authenticationMethod api-key and oidc', () => {
       const configApiKey = buildAgentManagerCloudInitConfigFromRequest(
         { authenticationMethod: 'api-key', staticApiKey: 'key123' },
         'host1',
@@ -46,22 +46,23 @@ describe('agent-manager.utils', () => {
       expect(configApiKey.backend.authentication.authenticationMethod).toBe('api-key');
       expect(configApiKey.backend.authentication.staticApiKey).toBe('key123');
 
-      const configKeycloak = buildAgentManagerCloudInitConfigFromRequest(
+      const configOidc = buildAgentManagerCloudInitConfigFromRequest(
         {
-          authenticationMethod: 'keycloak',
-          keycloak: {
-            serverUrl: 'https://kc',
-            authServerUrl: 'https://kc/auth',
-            realm: 'r',
-            clientId: 'c',
-            clientSecret: 's',
-          },
+          authenticationMethod: 'oidc',
+          oidc: { issuer: 'https://idp.example.com/realms/r', clientId: 'c', clientSecret: 's' },
         },
         'host1',
       );
 
-      expect(configKeycloak.backend.authentication.authenticationMethod).toBe('keycloak');
-      expect(configKeycloak.backend.authentication.keycloak?.realm).toBe('r');
+      expect(configOidc.backend.authentication.authenticationMethod).toBe('oidc');
+      expect(configOidc.backend.authentication.oidc?.issuer).toBe('https://idp.example.com/realms/r');
+      expect(configOidc.backend.authentication.oidc?.clientId).toBe('c');
+    });
+
+    it.each(['saml', 'keycloak', 'users', undefined])('coerces authenticationMethod %s to api-key', (method) => {
+      const config = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: method }, 'host1');
+
+      expect(config.backend.authentication.authenticationMethod).toBe('api-key');
     });
 
     it('does not include provisioning or disableSignup in config shape', () => {
@@ -248,6 +249,52 @@ describe('agent-manager.utils', () => {
       expect(script).toContain("certbot renew -q --deploy-hook 'docker exec agent-manager-nginx nginx -s reload'");
       expect(script).toContain('subjectAltName=DNS:my-instance.example.com');
       expect(script).toContain('CN=my-instance.example.com');
+    });
+
+    it('emits OFFLINE OIDC env pinned to the controller client, without the client secret', () => {
+      const config = buildAgentManagerCloudInitConfigFromRequest(
+        {
+          authenticationMethod: 'oidc',
+          oidc: { issuer: 'https://idp.example.com/realms/r', clientId: 'controller-client', clientSecret: 'sec' },
+        },
+        'host1',
+      );
+      const script = Buffer.from(buildAgentManagerCloudInitUserData(config), 'base64').toString('utf-8');
+
+      expect(script).toContain('AUTHENTICATION_METHOD: oidc');
+      expect(script).toContain("OIDC_ISSUER: 'https://idp.example.com/realms/r'");
+      expect(script).toContain('OIDC_TOKEN_VALIDATION: OFFLINE');
+      expect(script).toContain('OIDC_AUTHORIZED_PARTIES: controller-client');
+      expect(script).not.toContain('OIDC_CLIENT_SECRET');
+      expect(script).not.toContain('OIDC_CLIENT_ID');
+      expect(script).not.toContain('OIDC_AUDIENCE');
+      expect(script).not.toContain('KEYCLOAK_');
+      expect(script).not.toContain('SAML_');
+    });
+
+    it('omits OIDC env in api-key mode', () => {
+      const config = buildAgentManagerCloudInitConfigFromRequest(
+        { authenticationMethod: 'api-key', staticApiKey: 'k', oidc: { issuer: 'https://idp', clientId: 'c' } },
+        'host1',
+      );
+      const script = Buffer.from(buildAgentManagerCloudInitUserData(config), 'base64').toString('utf-8');
+
+      expect(script).toContain('AUTHENTICATION_METHOD: api-key');
+      expect(script).not.toContain('OIDC_');
+    });
+
+    it('rejects OIDC values that could inject YAML / heredoc / nginx content', () => {
+      for (const oidc of [
+        { issuer: 'https://idp\nEOF\nrm -rf /', clientId: 'c', clientSecret: 's' },
+        { issuer: 'https://idp.example.com', clientId: 'c\n      EVIL: 1', clientSecret: 's' },
+        { issuer: "https://idp.example.com/'; return 302 x; '", clientId: 'c', clientSecret: 's' },
+        { issuer: 'https://idp.example.com/$host', clientId: 'c', clientSecret: 's' },
+        { issuer: 'file:///etc/passwd', clientId: 'c', clientSecret: 's' },
+      ]) {
+        expect(() =>
+          buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'oidc', oidc }, 'host1'),
+        ).toThrow(/oidc\./);
+      }
     });
 
     it('includes GIT_* env vars in backend container when config.backend.git is set', () => {

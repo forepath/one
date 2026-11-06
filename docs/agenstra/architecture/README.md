@@ -59,7 +59,7 @@ Agenstra uses a three-tier architecture:
 
 ### Authentication and Authorization
 
-- **HTTP Endpoints** Keycloak OAuth2 or API key authentication
+- **HTTP Endpoints** OIDC, SAML, users (JWT) or API key authentication
 - **WebSocket** Database-backed authentication (agents) or client context (controller)
 - **Token Caching** OAuth2 tokens are cached for efficiency
 
@@ -103,7 +103,7 @@ Agenstra uses a three-tier architecture:
 
 ### Security
 
-- **Authentication** Multiple authentication methods (Keycloak, API key)
+- **Authentication** Multiple authentication methods (OIDC, SAML, users, API key)
 - **Authorization** Role-based access control
 - **Secure Communication** HTTPS and WSS in production
 - **Credential Management** Secure storage and encryption

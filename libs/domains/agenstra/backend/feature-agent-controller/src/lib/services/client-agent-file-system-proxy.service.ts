@@ -127,7 +127,7 @@ function parseJsonErrorMessage(data: unknown): string | undefined {
 
 /**
  * Service for proxying agent file system requests to client endpoints.
- * Handles authentication (API key or Keycloak JWT) and forwards file system requests to the client's agent-manager service.
+ * Handles authentication (API key or OIDC client credentials token) and forwards file system requests to the client's agent-manager service.
  */
 @Injectable()
 export class ClientAgentFileSystemProxyService {
@@ -154,7 +154,7 @@ export class ClientAgentFileSystemProxyService {
       }
 
       return `Bearer ${clientEntity.apiKey}`;
-    } else if (clientEntity.authenticationType === AuthenticationType.KEYCLOAK) {
+    } else if (clientEntity.authenticationType === AuthenticationType.OIDC) {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;

@@ -70,7 +70,7 @@ When WebSocket URL is not configured:
 
 Users see only their own subscriptions and items. Server control actions verify subscription ownership on every request. Admin users using the customer overview still see only their personal subscriptions unless using admin routes.
 
-API key authentication does not populate an end-user identity on the overview WebSocket path; use Keycloak or users auth for the dashboard stream.
+API key authentication does not populate an end-user identity on the overview WebSocket path; use oidc, saml or users auth for the dashboard stream.
 
 ## Server Control Sequence
 

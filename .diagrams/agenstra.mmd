@@ -2,7 +2,7 @@
 flowchart TB
   Users(["Users<br/>browser, desktop app (Electron), API, PATs"])
   Visitors(["Visitors<br/>marketing site, docs, plans"])
-  Keycloak(["Keycloak / OIDC<br/>or built-in users (JWT) / static API key"])
+  IdP(["OIDC / SAML identity provider<br/>or built-in users (JWT) / static API key"])
   Smtp(["SMTP + webhook receivers"])
   Otel(["OpenTelemetry collector<br/>OTLP export, /otel/metrics scrape"])
   CloudProviders(["Server providers<br/>Hetzner, DigitalOcean, provider plugins"])
@@ -38,7 +38,7 @@ flowchart TB
   Decabill -.cloud-init: install controller / manager stacks.-> CloudProviders
 
   subgraph Controller["Agent controller (NestJS :3100, one image, QUEUE_ROLE = api | worker | scheduler)"]
-    CAuth["Authentication<br/>api-key, keycloak, users, PAT scopes"]
+    CAuth["Authentication<br/>api-key, oidc, saml, users, PAT scopes"]
     CApi["REST API /api<br/>clients (workspaces), agents proxy, files, VCS,<br/>deployments, env vars, isolation, statistics"]
     CGw["Socket.IO gateways<br/>socket/clients (forward to managers),<br/>socket/tickets, socket/pages, socket/status, WS /socket/vnc"]
     Tickets["Tickets + ticket automation<br/>autonomous run orchestrator, leases, verifier, commit + push"]
@@ -65,7 +65,7 @@ flowchart TB
   Console <-->|"Socket.IO + WS /socket/vnc"| CGw
   CApi --> CAuth
   CGw --> CAuth
-  CAuth -.OIDC.-> Keycloak
+  CAuth -.OIDC / SAML.-> IdP
   CApi --> Tickets & Knowledge & Plans & AgentTasks & Attachments & OcConfig & Provisioning & Import & Search
   CGw -.enrich prompts: refs, auto-context, granted bodies.-> Knowledge
   CGw -.ticket prototype prompts.-> Tickets
@@ -86,7 +86,7 @@ flowchart TB
 
   subgraph ManagerHost["Agent manager host (one per workspace, Docker + optional gVisor runsc-systrap / -hostnet,<br/>+ gVisor on KVM runsc-kvm / -hostnet and microVM launchers when /dev/kvm is available)"]
     subgraph Manager["Agent manager (NestJS :3000, docker.sock)"]
-      MAuth["Authentication<br/>api-key / keycloak, per-agent socket login"]
+      MAuth["Authentication<br/>api-key / oidc, per-agent socket login"]
       MApi["REST API /api<br/>agents, files, VCS, deployments, env vars, egress,<br/>isolation, workspace index, OpenCode config + MCP, permissions"]
       MGw["Socket.IO socket/agents<br/>chat, enhance, ticket body, terminals, events;<br/>WS /socket/vnc bridge"]
       Composer["Prompt context composer<br/>MCP mode: hints + context ticket<br/>fallback: inline hidden context"]
@@ -118,7 +118,7 @@ flowchart TB
   end
 
   CGw <-->|"Socket.IO socket/agents per console socket<br/>+ short-lived automation / plan / task / handoff sockets"| MGw
-  CApi -->|"REST /api (API key or Keycloak token)"| MApi
+  CApi -->|"REST /api (API key or OIDC client credentials token)"| MApi
   CGw -.WS VNC proxy.-> MGw
   CStatus -.scrape.-> MApi
   Queue -.config + layer file sync, egress events ingest, isolation.-> MApi

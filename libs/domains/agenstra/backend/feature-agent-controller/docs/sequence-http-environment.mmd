@@ -4,7 +4,7 @@ sequenceDiagram
     participant Proxy as ClientAgentEnvironmentVariablesProxyService
     participant Repo as ClientsRepository
     participant Service as ClientsService
-    participant Keycloak as KeycloakTokenService
+    participant OIDC as OidcClientCredentialsService
     participant Remote as Remote Agent-Manager<br/>(/api/agents/:agentId/environment)
 
     Note over Client,Remote: HTTP API - Environment Variables Proxy Operations
@@ -17,10 +17,10 @@ sequenceDiagram
         Repo-->>Proxy: client entity
         alt Authentication Type: API_KEY
             Proxy->>Proxy: getAuthHeader(clientId)<br/>Returns: Bearer {apiKey}
-        else Authentication Type: KEYCLOAK
+        else Authentication Type: OIDC
             Proxy->>Service: getAccessToken(clientId)
-            Service->>Keycloak: getAccessToken(authServerUrl, realm, clientId, secret)
-            Keycloak-->>Service: JWT token
+            Service->>OIDC: getAccessToken(issuer, clientId, secret, scope)
+            OIDC-->>Service: access token
             Service-->>Proxy: JWT token
             Proxy->>Proxy: getAuthHeader(clientId)<br/>Returns: Bearer {token}
         end

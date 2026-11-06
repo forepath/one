@@ -283,7 +283,7 @@ paths:
           description: Current password incorrect
   /auth/logout:
     post:
-      summary: Log out (users auth only; revokes current session by default)
+      summary: Log out (users and saml auth; revokes current session by default)
       operationId: logout
       requestBody:
         required: false
@@ -296,6 +296,91 @@ paths:
           description: Session invalidated
         '401':
           description: Unauthorized
+  /auth/saml/login:
+    get:
+      summary: Start SAML sign-in (saml auth only)
+      description: |
+        Redirects the browser to the IdP (HTTP-Redirect binding). The console generates a PKCE verifier and passes its
+        S256 challenge; only the browser holding the verifier can redeem the resulting code.
+      operationId: samlLogin
+      security: []
+      parameters:
+        - in: query
+          name: code_challenge
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9_-]{43}$'
+          description: base64url(SHA-256(code_verifier))
+        - in: query
+          name: redirect
+          required: false
+          schema:
+            type: string
+          description: Same-origin console path to return to (anything else falls back to `/`)
+      responses:
+        '302':
+          description: Redirect to the identity provider
+        '400':
+          description: Missing or invalid `code_challenge`
+  /auth/saml/acs:
+    post:
+      summary: SAML Assertion Consumer Service (saml auth only)
+      description: |
+        Receives the IdP response (HTTP-POST binding). Validates signatures, audience, issuer, `InResponseTo`
+        (single use; unsolicited responses are rejected) and assertion replay, links the identity to a local user,
+        and redirects to `SAML_FRONTEND_CALLBACK_URL` with `code` and `redirect`, or `error=saml_failed`.
+      operationId: samlAssertionConsumerService
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [SAMLResponse, RelayState]
+              properties:
+                SAMLResponse:
+                  type: string
+                RelayState:
+                  type: string
+      responses:
+        '303':
+          description: Redirect to the console callback
+  /auth/saml/token:
+    post:
+      summary: Redeem SAML login code (saml auth only)
+      description: |
+        Exchanges the single-use code (60 s) and PKCE verifier for a console session JWT (`amr: ["saml"]`).
+      operationId: samlToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SamlTokenExchangeDto'
+      responses:
+        '200':
+          description: Session JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SamlTokenResponse'
+        '401':
+          description: Invalid, expired or already used code, or verifier mismatch
+  /auth/saml/metadata:
+    get:
+      summary: SAML service provider metadata (saml auth only)
+      operationId: samlMetadata
+      security: []
+      responses:
+        '200':
+          description: SP metadata
+          content:
+            application/samlmetadata+xml:
+              schema:
+                type: string
   /auth/token-scopes:
     get:
       summary: List grantable PAT scopes for the current user
@@ -2533,7 +2618,7 @@ paths:
       description: |
         Returns all users associated with a client through the client_users relationship table.
         Only accessible if the user has access to the client.
-        Note: In api-key mode, users do not play a role; this endpoint is intended for keycloak and users authentication.
+        Note: In api-key mode, users do not play a role; this endpoint is intended for users, oidc and saml authentication.
       operationId: getClientUsers
       security:
         - bearerAuth: [clients:read]
@@ -2565,7 +2650,7 @@ paths:
         - Client creators can add any role
         - Client admins can only add 'user' role
         - Client users cannot add anyone
-        Note: In api-key mode, users do not play a role; this endpoint is not applicable. Use keycloak or users authentication.
+        Note: In api-key mode, users do not play a role; this endpoint is not applicable. Use users, oidc or saml authentication.
       operationId: addClientUser
       security:
         - bearerAuth: [clients:write]
@@ -2604,7 +2689,7 @@ paths:
         - Client creators can remove anyone
         - Client admins can remove users (but not other admins)
         - Client users cannot remove anyone
-        Note: In api-key mode, users do not play a role; this endpoint is not applicable. Use keycloak or users authentication.
+        Note: In api-key mode, users do not play a role; this endpoint is not applicable. Use users, oidc or saml authentication.
       operationId: removeClientUser
       security:
         - bearerAuth: [clients:write]
@@ -2921,7 +3006,7 @@ paths:
       description: |
         Proxies to the remote agent-manager `GET /api/agents/{agentId}/models`. Returns a map of model id to
         display name (possibly empty). Uses the same hybrid authentication as the rest of this API (Bearer /
-        Keycloak / users); caller must have access to the client. Remote errors (e.g. 400 when the provider
+        OIDC / users / SAML); caller must have access to the client. Remote errors (e.g. 400 when the provider
         does not support listing models) are forwarded as appropriate.
       parameters:
         - in: path
@@ -7928,6 +8013,7 @@ components:
       scheme: bearer
       description: |
         Interactive session JWT, or a JWT exchanged from a personal access token (`POST /auth/token`).
+        Interactive sessions are users / SAML session JWTs or, with `AUTHENTICATION_METHOD=oidc`, OIDC access tokens.
         For personal access tokens, the role names listed on an operation's `bearerAuth` requirement are the
         PAT scopes it requires (OpenAPI 3.1 role names; not enforced for interactive sessions).
         Scopes follow `<resource>:read|write|admin`; `write` implies `read`, and `admin` implies `write` and `read`.
@@ -8192,14 +8278,31 @@ components:
       type: string
       enum:
         - api_key
-        - keycloak
+        - oidc
     AuthenticationMethod:
       type: string
       enum:
         - api-key
-        - keycloak
         - users
-      description: Server authentication method (api-key, keycloak, or users)
+        - oidc
+        - saml
+      description: Server authentication method (api-key, users, oidc, or saml)
+    SamlTokenExchangeDto:
+      type: object
+      required: [code, codeVerifier]
+      properties:
+        code:
+          type: string
+          maxLength: 128
+        codeVerifier:
+          type: string
+          pattern: '^[A-Za-z0-9._~-]{43,128}$'
+    SamlTokenResponse:
+      type: object
+      required: [access_token]
+      properties:
+        access_token:
+          type: string
     LoginDto:
       type: object
       required: [email, password]
@@ -8578,15 +8681,20 @@ components:
         apiKey:
           type: string
           description: API key (optional, will be auto-generated if not provided for API_KEY type)
-        keycloakClientId:
+        oidcClientId:
           type: string
-          description: Keycloak client ID (required for KEYCLOAK authentication type)
-        keycloakClientSecret:
+          description: OIDC client ID (required for oidc authentication type)
+        oidcClientSecret:
           type: string
-          description: Keycloak client secret (required for KEYCLOAK authentication type)
-        keycloakRealm:
+          writeOnly: true
+          description: OIDC client secret (required for oidc authentication type; never returned)
+        oidcIssuer:
           type: string
-          description: Keycloak realm (optional, uses environment default if not provided)
+          format: uri
+          description: OIDC issuer (optional, defaults to the controller's OIDC_ISSUER; other issuers must pass the client endpoint SSRF policy)
+        oidcScope:
+          type: string
+          description: Optional space separated scopes for the client credentials grant
     UpdateClientDto:
       type: object
       properties:
@@ -8602,15 +8710,20 @@ components:
         apiKey:
           type: string
           description: API key (can be updated but will never be included in responses)
-        keycloakClientId:
+        oidcClientId:
           type: string
-          description: Keycloak client ID
-        keycloakClientSecret:
+          description: OIDC client ID (required for oidc authentication type)
+        oidcClientSecret:
           type: string
-          description: Keycloak client secret
-        keycloakRealm:
+          writeOnly: true
+          description: OIDC client secret (required for oidc authentication type; never returned)
+        oidcIssuer:
           type: string
-          description: Keycloak realm
+          format: uri
+          description: OIDC issuer (optional, defaults to the controller's OIDC_ISSUER; other issuers must pass the client endpoint SSRF policy)
+        oidcScope:
+          type: string
+          description: Optional space separated scopes for the client credentials grant
     CreateClientResponseDto:
       allOf:
         - $ref: '#/components/schemas/ClientResponseDto'
@@ -9264,15 +9377,20 @@ components:
         apiKey:
           type: string
           description: API key (optional, will be auto-generated if not provided for API_KEY type)
-        keycloakClientId:
+        oidcClientId:
           type: string
-          description: Keycloak client ID (required for KEYCLOAK authentication type)
-        keycloakClientSecret:
+          description: OIDC client ID (required for oidc authentication type)
+        oidcClientSecret:
           type: string
-          description: Keycloak client secret (required for KEYCLOAK authentication type)
-        keycloakRealm:
+          writeOnly: true
+          description: OIDC client secret (required for oidc authentication type; never returned)
+        oidcIssuer:
           type: string
-          description: Keycloak realm (optional, uses environment default if not provided)
+          format: uri
+          description: OIDC issuer (optional, defaults to the controller's OIDC_ISSUER; other issuers must pass the client endpoint SSRF policy)
+        oidcScope:
+          type: string
+          description: Optional space separated scopes for the client credentials grant
         gitRepositorySetupMode:
           type: string
           enum: [clone, empty]
@@ -9291,8 +9409,6 @@ components:
         gitPrivateKey:
           type: string
         agentDefaultImage:
-          type: string
-        keycloakAuthServerUrl:
           type: string
         autoEnrichEnabledGlobal:
           type: string

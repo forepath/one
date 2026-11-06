@@ -36,7 +36,7 @@ Customers can list and view tickets, milestones, and ticket comments. Ticket cre
 
 ## Admin CRUD
 
-All admin routes require admin role (`@KeycloakRoles(ADMIN)` + `@UsersRoles(ADMIN)`).
+All admin routes require admin role (`@UsersRoles(ADMIN)`).
 
 | Method | Path                                                       | Purpose                                                     |
 | ------ | ---------------------------------------------------------- | ----------------------------------------------------------- |
@@ -216,7 +216,7 @@ flowchart TD
 
 ## Authentication Notes
 
-- Project REST endpoints require an interactive user identity (JWT or Keycloak)
+- Project REST endpoints require an interactive user identity (users / SAML JWT or OIDC)
 - Static API key auth is rejected for customer project reads (`403 User not authenticated`)
 - Dashboard and project board WebSockets also reject API key auth
 

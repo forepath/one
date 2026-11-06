@@ -1,4 +1,4 @@
-import { UserEntity, UserRole } from '@forepath/identity/backend';
+import { type ExternalIdentityProvider, UserEntity, UserRole } from '@forepath/identity/backend';
 import { DEFAULT_TENANT, getTenantIdOrDefault } from '@forepath/shared/backend';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -33,8 +33,12 @@ export class UsersRepository {
     return this.repository.findOne({ where: { email: email.toLowerCase(), tenantId } });
   }
 
-  async findByKeycloakSub(keycloakSub: string, tenantId: string = getTenantIdOrDefault()): Promise<UserEntity | null> {
-    return this.repository.findOne({ where: { keycloakSub, tenantId } });
+  async findByExternalIdentity(
+    externalProvider: ExternalIdentityProvider,
+    externalSubject: string,
+    tenantId: string = getTenantIdOrDefault(),
+  ): Promise<UserEntity | null> {
+    return this.repository.findOne({ where: { externalProvider, externalSubject, tenantId } });
   }
 
   async count(): Promise<number> {
@@ -86,6 +90,75 @@ export class UsersRepository {
     });
 
     return this.repository.save(entity);
+  }
+
+  /**
+   * Links an external identity to a local account only if the account is not linked yet (atomic compare-and-set).
+   * Only called for trusted (IdP-verified) emails, so the account's email becomes confirmed.
+   *
+   * A never-confirmed account may have been pre-registered by someone else with the victim's address: its local
+   * credentials (password, pending confirmation / reset tokens, 2FA material) are discarded and its token version is
+   * bumped, so the identity provider becomes the only way into it. Confirmed accounts keep their credentials.
+   * Returns false when another identity won a concurrent link (or the confirmation state changed meanwhile).
+   */
+  async linkExternalIdentityIfUnlinked(
+    user: Pick<UserEntity, 'id' | 'emailConfirmedAt'>,
+    externalProvider: ExternalIdentityProvider,
+    externalSubject: string,
+  ): Promise<boolean> {
+    const query = this.repository.createQueryBuilder().update(UserEntity);
+
+    if (user.emailConfirmedAt) {
+      query
+        .set({ externalProvider, externalSubject })
+        .where('id = :id AND external_subject IS NULL AND email_confirmed_at IS NOT NULL', { id: user.id });
+    } else {
+      query
+        .set({
+          externalProvider,
+          externalSubject,
+          emailConfirmedAt: new Date(),
+          passwordHash: () => 'NULL',
+          emailConfirmationToken: () => 'NULL',
+          passwordResetToken: () => 'NULL',
+          passwordResetTokenExpiresAt: () => 'NULL',
+          totpSecret: () => 'NULL',
+          totpEnabledAt: () => 'NULL',
+          email2faEnabledAt: () => 'NULL',
+          login2faEmailToken: () => 'NULL',
+          login2faEmailTokenExpiresAt: () => 'NULL',
+          tokenVersion: () => '"token_version" + 1',
+        })
+        .where('id = :id AND external_subject IS NULL AND email_confirmed_at IS NULL', { id: user.id });
+    }
+
+    const result = await query.execute();
+
+    return (result.affected ?? 0) === 1;
+  }
+
+  /**
+   * Creates a user while deciding atomically whether it is the first user of its tenant (who becomes admin).
+   * The tenant's user count and the insert run in one transaction under a per-tenant advisory lock, so concurrent
+   * first sign-ups / sign-ins can never both become admin.
+   */
+  async createWithTenantBootstrap(
+    build: (isFirstUser: boolean) => Partial<UserEntity>,
+    tenantId: string = getTenantIdOrDefault(),
+  ): Promise<{ user: UserEntity; isFirstUser: boolean }> {
+    return this.repository.manager.transaction(async (manager) => {
+      await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`users:tenant-bootstrap:${tenantId}`]);
+
+      const isFirstUser = (await manager.count(UserEntity, { where: { tenantId } })) === 0;
+      const data = build(isFirstUser);
+      const entity = manager.create(UserEntity, {
+        ...data,
+        email: data.email?.toLowerCase(),
+        tenantId,
+      });
+
+      return { user: await manager.save(entity), isFirstUser };
+    });
   }
 
   async update(id: string, data: Partial<UserEntity>): Promise<UserEntity> {

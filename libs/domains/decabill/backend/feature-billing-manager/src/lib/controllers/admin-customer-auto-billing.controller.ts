@@ -1,4 +1,4 @@
-import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import { Controller, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 
 import type { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
@@ -8,7 +8,6 @@ import { CustomerProfilesAdminService } from '../services/customer-profiles-admi
 import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
 
 @Controller('admin/billing/customer-profiles/:id/auto-billing')
-@KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
 @RequireScopes('customer_profile:admin')
 export class AdminCustomerAutoBillingController {

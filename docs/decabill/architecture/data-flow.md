@@ -70,7 +70,7 @@ sequenceDiagram
     participant H as Provisioned Host
 
     C->>W: Connect (auth handshake, X-Tenant)
-    W->>W: Validate JWT / Keycloak user
+    W->>W: Validate JWT / OIDC user
     C->>W: subscribeDashboardStatus
     loop Each poll interval
         W->>S: Resolve user subscriptions

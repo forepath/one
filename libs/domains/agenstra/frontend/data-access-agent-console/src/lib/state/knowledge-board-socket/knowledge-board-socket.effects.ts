@@ -1,24 +1,10 @@
 import { inject } from '@angular/core';
 import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
 import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/agenstra/frontend/util-configuration';
+import { OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { KeycloakService } from 'keycloak-angular';
-import {
-  catchError,
-  delay,
-  EMPTY,
-  filter,
-  from,
-  fromEvent,
-  map,
-  merge,
-  Observable,
-  of,
-  switchMap,
-  tap,
-  withLatestFrom,
-} from 'rxjs';
+import { catchError, delay, EMPTY, filter, fromEvent, map, merge, of, switchMap, tap, withLatestFrom } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 
 import { loadKnowledgeRelations, loadKnowledgeTree, prependKnowledgeActivity } from '../knowledge/knowledge.actions';
@@ -43,8 +29,6 @@ import {
   selectKnowledgeBoardSocketSettingClient,
 } from './knowledge-board-socket.selectors';
 
-const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
-const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 const KNOWLEDGE_ACTION_TYPES: ReadonlySet<KnowledgeActionType> = new Set<KnowledgeActionType>([
   'CREATED',
   'FIELD_UPDATED',
@@ -77,31 +61,6 @@ export function resolveKnowledgeBoardWebsocketUrl(environment: Environment): str
   }
 }
 
-function getAuthHeader(environment: Environment, keycloakService: KeycloakService | null): Observable<string | null> {
-  if (environment.authentication.config.type === 'api-key') {
-    const apiKey =
-      environment.authentication.config.apiKey ??
-      (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
-
-    return of(apiKey ? `Bearer ${apiKey}` : null);
-  }
-
-  if (environment.authentication.config.type === 'keycloak' && keycloakService) {
-    return from(keycloakService.getToken()).pipe(
-      map((token) => (token ? `Bearer ${token}` : null)),
-      catchError(() => of(null)),
-    );
-  }
-
-  if (environment.authentication.config.type === 'users') {
-    const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
-
-    return of(jwt ? `Bearer ${jwt}` : null);
-  }
-
-  return of(null);
-}
-
 let knowledgeBoardSocketInstance: Socket | null = null;
 
 export function getKnowledgeBoardSocketInstance(): Socket | null {
@@ -112,7 +71,7 @@ export const connectKnowledgeBoardSocket$ = createEffect(
   (
     actions$ = inject(Actions),
     environment = inject<Environment>(ENVIRONMENT),
-    keycloakService = inject(KeycloakService, { optional: true }),
+    oidcAuthService = inject(OidcAuthService),
   ) =>
     actions$.pipe(
       ofType(connectKnowledgeBoardSocket),
@@ -128,7 +87,7 @@ export const connectKnowledgeBoardSocket$ = createEffect(
           knowledgeBoardSocketInstance = null;
         }
 
-        return getAuthHeader(environment, keycloakService).pipe(
+        return resolveAuthorizationHeader$(environment.authentication.config, oidcAuthService).pipe(
           switchMap((authHeader) => {
             knowledgeBoardSocketInstance = io(websocketUrl, {
               transports: ['websocket'],

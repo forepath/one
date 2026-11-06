@@ -97,7 +97,7 @@ tail -f /var/log/postgresql/postgresql.log
 2. Check token expiration
 3. Review authentication logs
 4. Test authentication manually
-5. Verify Keycloak configuration
+5. Verify OIDC / SAML configuration
 
 ### Container Issues
 

@@ -74,6 +74,7 @@ import { IdentityRegisterComponent } from './register/register.component';
 import { IdentityRequestPasswordResetComponent } from './request-password-reset/request-password-reset.component';
 import { IdentityRequestPasswordResetConfirmationComponent } from './request-password-reset-confirmation/request-password-reset-confirmation.component';
 import { IdentityResetPasswordComponent } from './reset-password/reset-password.component';
+import { IdentitySamlCallbackComponent } from './saml-callback/saml-callback.component';
 import { IdentitySecuritySettingsComponent } from './settings/security/security-settings.component';
 import { IdentityTokenManagerComponent } from './token-manager/token-manager.component';
 import { IdentityUserManagerComponent } from './user-manager/user-manager.component';
@@ -111,6 +112,20 @@ export const identityAuthRoutes: Route[] = [
     canActivate: [loginGuard],
     providers: PUBLIC_UI_PROVIDERS,
     title: () => buildPageTitle($localize`:@@featureAuth-loginPage:Login`),
+  },
+  {
+    // SAML: the API redirects here with a one-time code after validating the assertion (no guard: the session is
+    // only established by this page).
+    path: 'login/saml/callback',
+    component: IdentitySamlCallbackComponent,
+    providers: PUBLIC_UI_PROVIDERS,
+    title: () => buildPageTitle($localize`:@@featureAuth-samlCallbackPage:Signing in`),
+  },
+  {
+    // OIDC: the callback is completed by the app initializer (provideOidc) before routing; this only catches stale
+    // or replayed callback URLs.
+    path: 'login/oidc/callback',
+    redirectTo: 'login',
   },
   {
     path: 'login-2fa',

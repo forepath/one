@@ -12,11 +12,6 @@ import { of, throwError } from 'rxjs';
 
 import { AdminDatevExportsPageComponent } from './admin-datev-exports-page.component';
 
-jest.mock('keycloak-js', () => ({ __esModule: true, default: jest.fn() }));
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-  createAuthGuard: jest.fn((impl: unknown) => impl),
-}));
 jest.mock('../billing-country-options', () => ({ getCountryDisplayName: (code: string) => code }));
 
 const exportItem = (id: string, status: string, month = 1): AdminDatevExportListEntry =>

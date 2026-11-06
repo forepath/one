@@ -9,7 +9,7 @@ A client represents a connection to a remote agent-manager service. You can eith
 1. **Connect to an existing agent-manager** If you already have an agent-manager running
 2. **Provision a new server** Automatically provision a cloud server with agent-manager deployment
 
-When using keycloak or users authentication, Agenstra supports **per-client permissions** to enable multi-tenant scenarios. Each client has a creator and can have multiple associated users with different roles.
+When using users, oidc or saml authentication, Agenstra supports **per-client permissions** to enable multi-tenant scenarios. Each client has a creator and can have multiple associated users with different roles.
 
 ## Creating a Client
 
@@ -20,9 +20,9 @@ When using keycloak or users authentication, Agenstra supports **per-client perm
 3. Fill in the client details:
    - **Name**: A descriptive name for this client
    - **Endpoint**: The HTTP API endpoint of your agent-manager (e.g., `http://localhost:3000`). Socket.IO and VNC use the same origin (`/socket/agents`, `/socket/vnc`).
-   - **Authentication Type**: Choose `api_key` or `keycloak`
+   - **Authentication Type**: Choose `api_key` or `oidc`
    - **API Key** (if using API key): The API key for authentication
-   - **Keycloak Configuration** (if using Keycloak): Client ID, secret, realm, and auth server URL
+   - **OIDC client credentials** (if using OIDC): client ID, secret, optional issuer and scope
 4. Click "Create"
 
 The system will:
@@ -88,7 +88,7 @@ The console shows the levels on the workspace and offers a **Re-check isolation*
 
 ## Per-Client Permissions
 
-When using **keycloak** or **users** authentication, access to clients is controlled by per-client permissions. In **api-key** mode, users do not play a role and all permission checks are bypassed.
+When using **users**, **oidc** or **saml** authentication, access to clients is controlled by per-client permissions. In **api-key** mode, users do not play a role and all permission checks are bypassed.
 
 ### Access Control Rules
 
@@ -107,7 +107,7 @@ Each user-client relationship has a role:
 
 ### Managing Client Users
 
-Users are added to clients by their email address. This applies to keycloak and users authentication; in api-key mode, users do not play a role and these endpoints are not applicable.
+Users are added to clients by their email address. This applies to users, oidc and saml authentication; in api-key mode, users do not play a role and these endpoints are not applicable.
 
 **Permissions**:
 
@@ -125,18 +125,19 @@ Users are added to clients by their email address. This applies to keycloak and 
 - **Usage**: API key is used for all HTTP requests to the agent-manager
 - **Storage**: API key is stored securely in the database
 
-### Keycloak Authentication
+### OIDC Authentication
 
-- **Type**: `keycloak`
-- **Configuration**: Keycloak client ID, secret, realm, and auth server URL
-- **Usage**: OAuth2 Client Credentials flow with token caching
+- **Type**: `oidc` (the agent-manager runs `AUTHENTICATION_METHOD=oidc`)
+- **Configuration**: `oidcClientId`, `oidcClientSecret` (write only), optional `oidcIssuer` (defaults to the controller's `OIDC_ISSUER`) and `oidcScope`
+- **Usage**: OAuth 2.0 client credentials grant against the issuer's discovered token endpoint, with token caching
+- **SSRF policy**: a per-client issuer other than `OIDC_ISSUER` (and its token endpoint) must pass the same checks as client endpoints (`CLIENT_ENDPOINT_ALLOWED_HOSTS`, no private addresses)
 - **Token Management**: Tokens are automatically cached and refreshed
 
 ## API Endpoints
 
 ### Client Management
 
-- `GET /api/clients` - List all clients (filtered by user access in keycloak/users mode)
+- `GET /api/clients` - List all clients (filtered by user access in users/oidc/saml mode)
 - `GET /api/clients/:id` - Get a single client by UUID
 - `POST /api/clients` - Create a new client
 - `POST /api/clients/:id` - Update an existing client
@@ -144,7 +145,7 @@ Users are added to clients by their email address. This applies to keycloak and 
 - `GET /api/clients/:id/isolation` - Container isolation summary of the workspace host
 - `POST /api/clients/:id/isolation/probe` - Re-probe the container isolation levels of the workspace host
 
-### Client User Management (keycloak/users authentication only)
+### Client User Management (users/oidc/saml authentication only)
 
 - `GET /api/clients/:id/users` - List users associated with a client
 - `POST /api/clients/:id/users` - Add a user to a client by email

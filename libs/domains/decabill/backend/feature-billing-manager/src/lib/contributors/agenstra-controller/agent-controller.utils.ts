@@ -4,7 +4,7 @@ import { parseAllowedHosts } from '@forepath/shared/shared/util-network-address'
 
 import { buildCertbotBootstrapScript } from '../../utils/cloud-init/certbot-bootstrap.script';
 import { buildComposeBridgeNetwork, buildComposeNamedVolumes } from '../../utils/cloud-init/compose-service.utils';
-import { formatEnvLines as formatEnv } from '../../utils/cloud-init/env.utils';
+import { formatEnvLines as formatEnv, shellSingleQuote } from '../../utils/cloud-init/env.utils';
 import { buildNginxComposeService } from '../../utils/cloud-init/nginx-compose.utils';
 import {
   OPENSEARCH_COMPOSE_DEPENDS_ON,
@@ -23,6 +23,20 @@ import {
   buildValkeyBackendEnvLines,
   buildValkeyComposeService,
 } from '../../utils/cloud-init/valkey-compose.utils';
+
+import {
+  assertConsoleOidcConfig,
+  buildConsoleAuthenticationConfig,
+  buildOidcEnvLines,
+  buildSamlEnvLines,
+  readProvisionedOidcConfig,
+  readProvisionedSamlConfig,
+  resolveConsoleAuthenticationMethod,
+  toNginxJsonReturnBody,
+  type ConsoleAuthenticationMethod,
+  type ProvisionedOidcConfig,
+  type ProvisionedSamlConfig,
+} from '../shared/external-auth-config.utils';
 
 export interface AgentControllerCloudInitConfig {
   ssh: {
@@ -62,15 +76,10 @@ export interface AgentControllerCloudInitConfig {
       database: string;
     };
     authentication: {
-      authenticationMethod: string;
+      authenticationMethod: ConsoleAuthenticationMethod;
       staticApiKey?: string;
-      keycloak?: {
-        serverUrl: string;
-        authServerUrl: string;
-        realm: string;
-        clientId: string;
-        clientSecret: string;
-      };
+      oidc?: ProvisionedOidcConfig;
+      saml?: ProvisionedSamlConfig;
       disableSignup: boolean;
       disableForceLogin2fa?: boolean;
     };
@@ -189,7 +198,10 @@ export function buildAgentControllerCloudInitConfigFromRequest(
   const fqdn = `${hostname}.${baseDomain}`;
   const backendPort = 3100;
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
-  const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
+  const oidc = readProvisionedOidcConfig(effectiveConfig.oidc);
+  const saml = readProvisionedSamlConfig(effectiveConfig.saml);
+
+  assertConsoleOidcConfig(resolveConsoleAuthenticationMethod(effectiveConfig.authenticationMethod ?? 'users'), oidc);
 
   return {
     ssh: {
@@ -220,19 +232,12 @@ export function buildAgentControllerCloudInitConfigFromRequest(
         database: 'postgres',
       },
       authentication: {
-        authenticationMethod: (effectiveConfig.authenticationMethod as string) ?? 'users',
+        authenticationMethod: resolveConsoleAuthenticationMethod(effectiveConfig.authenticationMethod ?? 'users'),
         disableSignup: (effectiveConfig.disableSignup as boolean) ?? false,
         disableForceLogin2fa: (effectiveConfig.disableForceLogin2fa as boolean) ?? false,
         staticApiKey: (effectiveConfig.staticApiKey as string) ?? '',
-        ...(keycloak && {
-          keycloak: {
-            serverUrl: (keycloak.serverUrl as string) ?? '',
-            authServerUrl: (keycloak.authServerUrl as string) ?? '',
-            realm: (keycloak.realm as string) ?? '',
-            clientId: (keycloak.clientId as string) ?? '',
-            clientSecret: (keycloak.clientSecret as string) ?? '',
-          },
-        }),
+        ...(oidc && { oidc }),
+        ...(saml && { saml }),
       },
       encryption: { encryptionKey, jwtSecret },
       // Non-privileged published API port (OpenCode rejects privileged redirect ports).
@@ -286,11 +291,12 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     // Authentication method configuration
     `AUTHENTICATION_METHOD: ${config.backend?.authentication?.authenticationMethod ?? 'api-key'}`,
     `STATIC_API_KEY: ${config.backend?.authentication?.staticApiKey ?? ''}`,
-    `KEYCLOAK_SERVER_URL: ${config.backend?.authentication?.keycloak?.serverUrl ?? ''}`,
-    `KEYCLOAK_AUTH_SERVER_URL: ${config.backend?.authentication?.keycloak?.authServerUrl ?? ''}`,
-    `KEYCLOAK_REALM: ${config.backend?.authentication?.keycloak?.realm ?? ''}`,
-    `KEYCLOAK_CLIENT_ID: ${config.backend?.authentication?.keycloak?.clientId ?? ''}`,
-    `KEYCLOAK_CLIENT_SECRET: ${config.backend?.authentication?.keycloak?.clientSecret ?? ''}`,
+    ...buildOidcEnvLines(config.backend?.authentication?.authenticationMethod, config.backend?.authentication?.oidc),
+    ...buildSamlEnvLines(
+      config.backend?.authentication?.authenticationMethod,
+      config.backend?.authentication?.saml,
+      config.host?.fqdn ?? config.host?.hostname ?? 'localhost',
+    ),
     // Environment variables for the provisioning providers
     `HETZNER_API_TOKEN: ${config.backend?.provisioning?.hetznerApiToken ?? ''}`,
     `DIGITALOCEAN_API_TOKEN: ${config.backend?.provisioning?.digitaloceanApiToken ?? ''}`,
@@ -355,10 +361,13 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
       },
     },
     authentication: {
-      config: {
-        type: 'users',
-        disableSignup: false,
-      },
+      config: buildConsoleAuthenticationConfig(
+        resolveConsoleAuthenticationMethod(config.backend?.authentication?.authenticationMethod),
+        {
+          oidc: config.backend?.authentication?.oidc,
+          disableSignup: config.backend?.authentication?.disableSignup ?? false,
+        },
+      ),
     },
     chatModelOptions: {
       cursor: {},
@@ -529,7 +538,7 @@ server {
     }
 
     location /config.json {
-        return 200 '${JSON.stringify(frontendConfig || {})}';
+        return 200 '${toNginxJsonReturnBody(frontendConfig)}';
     }
 }
 `;
@@ -600,7 +609,7 @@ server {
     }
 
     location /config.json {
-        return 200 '${JSON.stringify(frontendConfig || {})}';
+        return 200 '${toNginxJsonReturnBody(frontendConfig)}';
     }
 }
 `;
@@ -654,7 +663,7 @@ apt-get install -y openssh-server ssh
 # Add SSH public key
 log "Adding SSH public key..."
 mkdir -p /root/.ssh
-echo "${config.ssh?.publicKey ?? ''}" > /root/.ssh/authorized_keys
+printf '%s\\n' ${shellSingleQuote(config.ssh?.publicKey ?? '')} > /root/.ssh/authorized_keys
 chmod 600 /root/.ssh/authorized_keys
 
 # Configure SSH server

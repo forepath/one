@@ -52,5 +52,11 @@ export function isTenantMiddlewareExcludedPath(urlPath: string): boolean {
     return true;
   }
 
+  // SAML browser redirects cannot carry the `x-tenant` header: login takes a validated `tenant` query parameter and
+  // the ACS restores the tenant bound to the single-use relay state (see identity SamlAuthService).
+  if (path === '/api/auth/saml/login' || path === '/api/auth/saml/acs' || path === '/api/auth/saml/metadata') {
+    return true;
+  }
+
   return isBullBoardRequestPath(path);
 }

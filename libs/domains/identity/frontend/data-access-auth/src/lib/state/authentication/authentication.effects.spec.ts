@@ -2,10 +2,13 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { createMockIdentityAuthEnvironment, IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+import {
+  createMockIdentityAuthEnvironment,
+  IDENTITY_AUTH_ENVIRONMENT,
+  OidcAuthService,
+} from '@forepath/identity/frontend';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
-import { KeycloakService } from 'keycloak-angular';
 import { of, throwError } from 'rxjs';
 
 import { LOGIN_SUCCESS_REDIRECT_TARGET } from '../../services/auth.service';
@@ -15,7 +18,6 @@ import {
   changePasswordFailure,
   changePasswordSuccess,
   checkAuthentication,
-  checkAuthenticationFailure,
   checkAuthenticationSuccess,
   confirmEmailSuccess,
   loadUsers,
@@ -58,17 +60,25 @@ import {
 } from './authentication.effects';
 import type { UserResponseDto } from './authentication.types';
 
-// Mock keycloak-angular to avoid ES module import issues with keycloak-js in Jest.
-// createAuthGuard is called at module load time by keycloak.guard.ts (re-exported via barrel).
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-  createAuthGuard: jest.fn().mockReturnValue(() => Promise.resolve(true)),
+// Avoid real browser navigation: SAML sign-in leaves the app via `location.assign`.
+jest.mock('../../../../../util-auth/src/lib/saml-login.utils', () => ({
+  ...jest.requireActual('../../../../../util-auth/src/lib/saml-login.utils'),
+  startSamlLogin: jest.fn().mockResolvedValue(undefined),
 }));
+
+const { startSamlLogin } = jest.requireMock('../../../../../util-auth/src/lib/saml-login.utils') as {
+  startSamlLogin: jest.Mock;
+};
 
 describe('AuthenticationEffects', () => {
   let actions$: Actions;
   let mockAuthEnvironment: IdentityAuthEnvironment;
-  let mockKeycloakService: jest.Mocked<Partial<KeycloakService>>;
+  let mockOidcAuthService: {
+    login: jest.Mock;
+    logout: jest.Mock;
+    isLoggedIn: jest.Mock;
+    getProfile: jest.Mock;
+  };
   let mockRouter: jest.Mocked<Partial<Router>>;
   const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 
@@ -86,11 +96,11 @@ describe('AuthenticationEffects', () => {
 
     mockAuthEnvironment = createMockIdentityAuthEnvironment();
 
-    mockKeycloakService = {
+    mockOidcAuthService = {
       login: jest.fn(),
       logout: jest.fn(),
       isLoggedIn: jest.fn(),
-      getKeycloakInstance: jest.fn().mockReturnValue(undefined),
+      getProfile: jest.fn().mockReturnValue(null),
     };
 
     mockRouter = {
@@ -105,8 +115,8 @@ describe('AuthenticationEffects', () => {
           useValue: mockAuthEnvironment,
         },
         {
-          provide: KeycloakService,
-          useValue: mockKeycloakService,
+          provide: OidcAuthService,
+          useValue: mockOidcAuthService,
         },
         {
           provide: Router,
@@ -148,8 +158,8 @@ describe('AuthenticationEffects', () => {
               useValue: mockAuthEnvironment,
             },
             {
-              provide: KeycloakService,
-              useValue: mockKeycloakService,
+              provide: OidcAuthService,
+              useValue: mockOidcAuthService,
             },
             {
               provide: LOGIN_SUCCESS_REDIRECT_TARGET,
@@ -165,7 +175,7 @@ describe('AuthenticationEffects', () => {
 
         actions$ = of(action);
 
-        login$(actions$, mockAuthEnvironment, mockKeycloakService as any, null).subscribe((result) => {
+        login$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           expect(window.localStorage.setItem).toHaveBeenCalledWith(API_KEY_STORAGE_KEY, 'test-api-key');
           done();
@@ -178,7 +188,7 @@ describe('AuthenticationEffects', () => {
 
         actions$ = of(action);
 
-        login$(actions$, mockAuthEnvironment, mockKeycloakService as any, null).subscribe((result) => {
+        login$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           expect(window.localStorage.setItem).toHaveBeenCalledWith(API_KEY_STORAGE_KEY, 'env-api-key');
           done();
@@ -196,7 +206,7 @@ describe('AuthenticationEffects', () => {
 
         actions$ = of(action);
 
-        login$(actions$, mockAuthEnvironment, mockKeycloakService as any, null).subscribe((result) => {
+        login$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           expect(window.localStorage.setItem).not.toHaveBeenCalled();
           done();
@@ -204,73 +214,56 @@ describe('AuthenticationEffects', () => {
       });
     });
 
-    describe('when authentication type is keycloak', () => {
+    describe('when authentication type is oidc', () => {
       beforeEach(() => {
         mockAuthEnvironment = createMockIdentityAuthEnvironment({
-          authentication: {
-            type: 'keycloak',
-            authServerUrl: 'http://localhost:8080',
-            realm: 'test-realm',
-            clientId: 'test-client',
+          authentication: { type: 'oidc', issuer: 'https://idp.example.com', clientId: 'console' },
+        });
+      });
+
+      it('should redirect to the identity provider without emitting', (done) => {
+        actions$ = of(login({}));
+        mockOidcAuthService.login.mockResolvedValue(undefined);
+        const results: unknown[] = [];
+
+        login$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe({
+          next: (result) => results.push(result),
+          complete: () => {
+            expect(mockOidcAuthService.login).toHaveBeenCalled();
+            expect(results).toEqual([]);
+            done();
           },
         });
-        TestBed.resetTestingModule();
-        TestBed.configureTestingModule({
-          providers: [
-            provideMockActions(() => actions$),
-            {
-              provide: IDENTITY_AUTH_ENVIRONMENT,
-              useValue: mockAuthEnvironment,
-            },
-            {
-              provide: KeycloakService,
-              useValue: mockKeycloakService,
-            },
-            {
-              provide: LOGIN_SUCCESS_REDIRECT_TARGET,
-              useValue: ['/clients'],
-            },
-          ],
-        });
       });
 
-      it('should call KeycloakService.login and return loginSuccess', (done) => {
-        const action = login({});
-        const outcome = loginSuccess({ authenticationType: 'keycloak' });
+      it('should return loginFailure when the redirect cannot start', (done) => {
+        actions$ = of(login({}));
+        mockOidcAuthService.login.mockRejectedValue(new Error('discovery failed'));
 
-        actions$ = of(action);
-        mockKeycloakService.login = jest.fn().mockResolvedValue(undefined);
-
-        login$(actions$, mockAuthEnvironment, mockKeycloakService as any, null).subscribe((result) => {
-          expect(result).toEqual(outcome);
-          expect(mockKeycloakService.login).toHaveBeenCalled();
+        login$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
+          expect(result).toEqual(loginFailure({ error: 'discovery failed' }));
           done();
         });
       });
+    });
 
-      it('should return loginFailure on Keycloak login error', (done) => {
-        const action = login({});
-        const error = new Error('Keycloak login failed');
-        const outcome = loginFailure({ error: 'Keycloak login failed' });
-
-        actions$ = of(action);
-        mockKeycloakService.login = jest.fn().mockRejectedValue(error);
-
-        login$(actions$, mockAuthEnvironment, mockKeycloakService as any, null).subscribe((result) => {
-          expect(result).toEqual(outcome);
-          done();
-        });
+    describe('when authentication type is saml', () => {
+      beforeEach(() => {
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({ authentication: { type: 'saml' } });
+        startSamlLogin.mockClear();
       });
 
-      it('should return loginFailure if KeycloakService is not available', (done) => {
-        const action = login({});
-        const outcome = loginFailure({ error: 'Authentication service not available' });
+      it('should start SAML sign-in at the API without emitting', (done) => {
+        actions$ = of(login({}));
+        const results: unknown[] = [];
 
-        actions$ = of(action);
-
-        login$(actions$, mockAuthEnvironment, null, null).subscribe((result) => {
-          expect(result).toEqual(outcome);
-          done();
+        login$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe({
+          next: (result) => results.push(result),
+          complete: () => {
+            expect(startSamlLogin).toHaveBeenCalledWith('http://localhost:3100/api', undefined, undefined);
+            expect(results).toEqual([]);
+            done();
+          },
         });
       });
     });
@@ -412,8 +405,8 @@ describe('AuthenticationEffects', () => {
               useValue: mockAuthEnvironment,
             },
             {
-              provide: KeycloakService,
-              useValue: mockKeycloakService,
+              provide: OidcAuthService,
+              useValue: mockOidcAuthService,
             },
             {
               provide: LOGIN_SUCCESS_REDIRECT_TARGET,
@@ -429,7 +422,7 @@ describe('AuthenticationEffects', () => {
 
         actions$ = of(action);
 
-        logout$(actions$, mockAuthEnvironment, mockKeycloakService as any, null).subscribe((result) => {
+        logout$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           expect(window.localStorage.removeItem).toHaveBeenCalledWith(API_KEY_STORAGE_KEY);
           done();
@@ -437,72 +430,46 @@ describe('AuthenticationEffects', () => {
       });
     });
 
-    describe('when authentication type is keycloak', () => {
+    describe('when authentication type is oidc', () => {
       beforeEach(() => {
         mockAuthEnvironment = createMockIdentityAuthEnvironment({
-          authentication: {
-            type: 'keycloak',
-            authServerUrl: 'http://localhost:8080',
-            realm: 'test-realm',
-            clientId: 'test-client',
-          },
-        });
-        TestBed.resetTestingModule();
-        TestBed.configureTestingModule({
-          providers: [
-            provideMockActions(() => actions$),
-            {
-              provide: IDENTITY_AUTH_ENVIRONMENT,
-              useValue: mockAuthEnvironment,
-            },
-            {
-              provide: KeycloakService,
-              useValue: mockKeycloakService,
-            },
-            {
-              provide: LOGIN_SUCCESS_REDIRECT_TARGET,
-              useValue: ['/clients'],
-            },
-          ],
+          authentication: { type: 'oidc', issuer: 'https://idp.example.com', clientId: 'console' },
         });
       });
 
-      it('should call KeycloakService.logout and return logoutSuccess', (done) => {
-        const action = logout({});
-        const outcome = logoutSuccess();
+      it('should log out at the provider and return logoutSuccess', (done) => {
+        actions$ = of(logout({}));
+        mockOidcAuthService.logout.mockResolvedValue(undefined);
 
-        actions$ = of(action);
-        mockKeycloakService.logout = jest.fn().mockResolvedValue(undefined);
-
-        logout$(actions$, mockAuthEnvironment, mockKeycloakService as any, null).subscribe((result) => {
-          expect(result).toEqual(outcome);
-          expect(mockKeycloakService.logout).toHaveBeenCalled();
+        logout$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
+          expect(result).toEqual(logoutSuccess());
+          expect(mockOidcAuthService.logout).toHaveBeenCalled();
           done();
         });
       });
 
-      it('should return logoutFailure on Keycloak logout error', (done) => {
-        const action = logout({});
-        const error = new Error('Keycloak logout failed');
-        const outcome = logoutFailure({ error: 'Keycloak logout failed' });
+      it('should return logoutFailure on provider logout error', (done) => {
+        actions$ = of(logout({}));
+        mockOidcAuthService.logout.mockRejectedValue(new Error('OIDC logout failed'));
 
-        actions$ = of(action);
-        mockKeycloakService.logout = jest.fn().mockRejectedValue(error);
-
-        logout$(actions$, mockAuthEnvironment, mockKeycloakService as any, null).subscribe((result) => {
-          expect(result).toEqual(outcome);
+        logout$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
+          expect(result).toEqual(logoutFailure({ error: 'OIDC logout failed' }));
           done();
         });
       });
+    });
 
-      it('should return logoutSuccess if KeycloakService is not available', (done) => {
-        const action = logout({});
-        const outcome = logoutSuccess();
+    describe('when authentication type is saml', () => {
+      it('should revoke the session at the API and clear the session JWT', (done) => {
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({ authentication: { type: 'saml' } });
+        const authService = { logout: jest.fn().mockReturnValue(of(undefined)) };
 
-        actions$ = of(action);
+        actions$ = of(logout({ invalidateAllSessions: true }));
 
-        logout$(actions$, mockAuthEnvironment, null, null).subscribe((result) => {
-          expect(result).toEqual(outcome);
+        logout$(actions$, mockAuthEnvironment, mockOidcAuthService as any, authService as any).subscribe((result) => {
+          expect(result).toEqual(logoutSuccess());
+          expect(authService.logout).toHaveBeenCalledWith(true);
+          expect(window.localStorage.removeItem).toHaveBeenCalledWith('agent-controller-users-jwt');
           done();
         });
       });
@@ -619,8 +586,8 @@ describe('AuthenticationEffects', () => {
               useValue: mockAuthEnvironment,
             },
             {
-              provide: KeycloakService,
-              useValue: mockKeycloakService,
+              provide: OidcAuthService,
+              useValue: mockOidcAuthService,
             },
             {
               provide: LOGIN_SUCCESS_REDIRECT_TARGET,
@@ -637,7 +604,7 @@ describe('AuthenticationEffects', () => {
         actions$ = of(action);
         (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
 
-        checkAuthentication$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           done();
         });
@@ -655,7 +622,7 @@ describe('AuthenticationEffects', () => {
         actions$ = of(action);
         (window.localStorage.getItem as jest.Mock).mockReturnValue('stored-api-key');
 
-        checkAuthentication$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           expect(window.localStorage.getItem).toHaveBeenCalledWith(API_KEY_STORAGE_KEY);
           done();
@@ -674,172 +641,120 @@ describe('AuthenticationEffects', () => {
         actions$ = of(action);
         (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
 
-        checkAuthentication$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           done();
         });
       });
     });
 
-    describe('when authentication type is keycloak', () => {
+    describe('when authentication type is oidc', () => {
       beforeEach(() => {
         mockAuthEnvironment = createMockIdentityAuthEnvironment({
-          authentication: {
-            type: 'keycloak',
-            authServerUrl: 'http://localhost:8080',
-            realm: 'test-realm',
-            clientId: 'test-client',
-          },
-        });
-        TestBed.resetTestingModule();
-        TestBed.configureTestingModule({
-          providers: [
-            provideMockActions(() => actions$),
-            {
-              provide: IDENTITY_AUTH_ENVIRONMENT,
-              useValue: mockAuthEnvironment,
-            },
-            {
-              provide: KeycloakService,
-              useValue: mockKeycloakService,
-            },
-            {
-              provide: LOGIN_SUCCESS_REDIRECT_TARGET,
-              useValue: ['/clients'],
-            },
-          ],
+          authentication: { type: 'oidc', issuer: 'https://idp.example.com', clientId: 'console' },
         });
       });
 
-      it('should return checkAuthenticationSuccess with true and authenticationType if user is logged in', (done) => {
-        const action = checkAuthentication();
-        const outcome = checkAuthenticationSuccess({ isAuthenticated: true, authenticationType: 'keycloak' });
+      it('should report admin from the API probe, not from token claims', (done) => {
+        mockOidcAuthService.isLoggedIn.mockReturnValue(true);
+        mockOidcAuthService.getProfile.mockReturnValue({ sub: 'sub-1', email: 'admin@example.com' });
+        const authService = { probeAdminAccess: jest.fn().mockReturnValue(of(true)) };
 
-        actions$ = of(action);
-        mockKeycloakService.isLoggedIn = jest.fn().mockReturnValue(true);
+        actions$ = of(checkAuthentication());
 
-        checkAuthentication$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
-          expect(result).toEqual(outcome);
-          expect(mockKeycloakService.isLoggedIn).toHaveBeenCalled();
-          done();
-        });
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, authService as any).subscribe(
+          (result) => {
+            expect(result).toEqual(
+              checkAuthenticationSuccess({
+                isAuthenticated: true,
+                authenticationType: 'oidc',
+                user: { id: 'sub-1', email: 'admin@example.com', role: 'admin' },
+              }),
+            );
+            done();
+          },
+        );
       });
 
-      it('should extract admin role from realm_access.roles in token', (done) => {
-        const action = checkAuthentication();
+      it('should report a regular user when the probe is denied', (done) => {
+        mockOidcAuthService.isLoggedIn.mockReturnValue(true);
+        mockOidcAuthService.getProfile.mockReturnValue({ sub: 'sub-2' });
+        const authService = { probeAdminAccess: jest.fn().mockReturnValue(of(false)) };
 
-        mockKeycloakService.isLoggedIn = jest.fn().mockReturnValue(true);
-        mockKeycloakService.getKeycloakInstance = jest.fn().mockReturnValue({
-          tokenParsed: {
-            sub: 'user-sub-123',
-            email: 'admin@example.com',
-            realm_access: { roles: ['admin', 'user'] },
+        actions$ = of(checkAuthentication());
+
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, authService as any).subscribe(
+          (result) => {
+            expect(result).toEqual(
+              checkAuthenticationSuccess({
+                isAuthenticated: true,
+                authenticationType: 'oidc',
+                user: { id: 'sub-2', email: '', role: 'user' },
+              }),
+            );
+            done();
           },
-        });
+        );
+      });
 
-        actions$ = of(action);
+      it('should return not authenticated without a session', (done) => {
+        mockOidcAuthService.isLoggedIn.mockReturnValue(false);
+        const authService = { probeAdminAccess: jest.fn() };
 
-        checkAuthentication$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
+        actions$ = of(checkAuthentication());
+
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, authService as any).subscribe(
+          (result) => {
+            expect(result).toEqual(checkAuthenticationSuccess({ isAuthenticated: false }));
+            expect(authService.probeAdminAccess).not.toHaveBeenCalled();
+            done();
+          },
+        );
+      });
+    });
+
+    describe('when authentication type is saml', () => {
+      it('should read the session JWT like users mode', (done) => {
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({ authentication: { type: 'saml' } });
+        const payload = {
+          sub: 'u1',
+          email: 'a@b.c',
+          roles: ['admin'],
+          amr: ['saml'],
+          exp: Math.floor(Date.now() / 1000) + 600,
+        };
+        const jwt = `h.${btoa(JSON.stringify(payload))}.s`;
+
+        (window.localStorage.getItem as jest.Mock).mockReturnValue(jwt);
+        actions$ = of(checkAuthentication());
+
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
           expect(result).toEqual(
             checkAuthenticationSuccess({
               isAuthenticated: true,
-              authenticationType: 'keycloak',
-              user: { id: 'user-sub-123', email: 'admin@example.com', role: 'admin' },
+              authenticationType: 'saml',
+              user: { id: 'u1', email: 'a@b.c', role: 'admin' },
             }),
           );
           done();
         });
       });
 
-      it('should extract user role when realm_access has no admin', (done) => {
-        const action = checkAuthentication();
+      it('should reject PAT JWTs', (done) => {
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({ authentication: { type: 'saml' } });
+        const payload = {
+          sub: 'u1',
+          email: 'a@b.c',
+          roles: ['admin'],
+          amr: ['pat'],
+          exp: Math.floor(Date.now() / 1000) + 600,
+        };
 
-        mockKeycloakService.isLoggedIn = jest.fn().mockReturnValue(true);
-        mockKeycloakService.getKeycloakInstance = jest.fn().mockReturnValue({
-          tokenParsed: {
-            sub: 'user-sub-456',
-            email: 'user@example.com',
-            realm_access: { roles: ['user'] },
-          },
-        });
+        (window.localStorage.getItem as jest.Mock).mockReturnValue(`h.${btoa(JSON.stringify(payload))}.s`);
+        actions$ = of(checkAuthentication());
 
-        actions$ = of(action);
-
-        checkAuthentication$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
-          expect(result).toEqual(
-            checkAuthenticationSuccess({
-              isAuthenticated: true,
-              authenticationType: 'keycloak',
-              user: { id: 'user-sub-456', email: 'user@example.com', role: 'user' },
-            }),
-          );
-          done();
-        });
-      });
-
-      it('should extract admin role from resource_access client roles', (done) => {
-        const action = checkAuthentication();
-
-        mockKeycloakService.isLoggedIn = jest.fn().mockReturnValue(true);
-        mockKeycloakService.getKeycloakInstance = jest.fn().mockReturnValue({
-          tokenParsed: {
-            sub: 'user-sub-789',
-            email: 'user@example.com',
-            realm_access: { roles: ['user'] },
-            resource_access: {
-              'test-client': { roles: ['admin'] },
-            },
-          },
-        });
-
-        actions$ = of(action);
-
-        checkAuthentication$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
-          expect(result).toMatchObject({
-            user: { id: 'user-sub-789', email: 'user@example.com', role: 'admin' },
-          });
-          done();
-        });
-      });
-
-      it('should return checkAuthenticationSuccess with false if user is not logged in', (done) => {
-        const action = checkAuthentication();
-        const outcome = checkAuthenticationSuccess({ isAuthenticated: false });
-
-        actions$ = of(action);
-        mockKeycloakService.isLoggedIn = jest.fn().mockReturnValue(false);
-
-        checkAuthentication$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
-          expect(result).toEqual(outcome);
-          expect(mockKeycloakService.isLoggedIn).toHaveBeenCalled();
-          done();
-        });
-      });
-
-      it('should return checkAuthenticationFailure on error', (done) => {
-        const action = checkAuthentication();
-        const error = new Error('Check failed');
-        const outcome = checkAuthenticationFailure({ error: 'Check failed' });
-
-        actions$ = of(action);
-        mockKeycloakService.isLoggedIn = jest.fn().mockImplementation(() => {
-          throw error;
-        });
-
-        checkAuthentication$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
-          expect(result).toEqual(outcome);
-          done();
-        });
-      });
-
-      it('should return checkAuthenticationSuccess with false if KeycloakService is not available', (done) => {
-        const action = checkAuthentication();
-        const outcome = checkAuthenticationSuccess({ isAuthenticated: false });
-
-        actions$ = of(action);
-
-        checkAuthentication$(actions$, mockAuthEnvironment, null).subscribe((result) => {
-          expect(result).toEqual(outcome);
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
+          expect(result).toEqual(checkAuthenticationSuccess({ isAuthenticated: false }));
           done();
         });
       });
@@ -866,7 +781,7 @@ describe('AuthenticationEffects', () => {
           key === USERS_JWT_STORAGE_KEY ? jwt : null,
         );
 
-        checkAuthentication$(actions$, mockAuthEnvironment, null).subscribe((result) => {
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
           expect(result).toEqual(
             checkAuthenticationSuccess({
               isAuthenticated: true,
@@ -888,7 +803,7 @@ describe('AuthenticationEffects', () => {
           key === USERS_JWT_STORAGE_KEY ? jwt : null,
         );
 
-        checkAuthentication$(actions$, mockAuthEnvironment, null).subscribe((result) => {
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
           expect(result).toEqual(checkAuthenticationSuccess({ isAuthenticated: false }));
           expect(window.localStorage.removeItem).toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
           done();
@@ -905,7 +820,7 @@ describe('AuthenticationEffects', () => {
           key === USERS_JWT_STORAGE_KEY ? jwt : null,
         );
 
-        checkAuthentication$(actions$, mockAuthEnvironment, null).subscribe((result) => {
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
           expect(result).toEqual(checkAuthenticationSuccess({ isAuthenticated: false }));
           expect(window.localStorage.removeItem).toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
           done();
@@ -932,8 +847,8 @@ describe('AuthenticationEffects', () => {
       });
     });
 
-    it('should navigate to /clients for keycloak authentication type', (done) => {
-      const action = loginSuccess({ authenticationType: 'keycloak' });
+    it('should navigate to /clients for oidc authentication type', (done) => {
+      const action = loginSuccess({ authenticationType: 'oidc' });
 
       actions$ = of(action);
       mockRouter.navigate = jest.fn().mockResolvedValue(true);

@@ -1,6 +1,4 @@
 import {
-  getAuthenticationMethod,
-  KeycloakService,
   RevokedUserTokenEntity,
   SocketAuthService,
   UserEntity,
@@ -27,7 +25,6 @@ import { FileStorageModule } from '@forepath/shared/backend/util-file-storage';
 import { DynamicModule, Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
 import { PAYMENT_PROCESSOR_INIT } from './constants/payment-processor-init.token';
 import { BillingEmailAttachmentResolver } from './email/billing-email-attachment.resolver';
@@ -352,8 +349,6 @@ import { CustomerTrustScoreService } from './trust-score/customer-trust-score.se
 import { InternalBillingTrustScoreProvider } from './trust-score/internal-billing-trust-score.provider';
 import { TrustScoreProviderRegistry } from './trust-score/trust-score-provider.registry';
 
-const authMethod = getAuthenticationMethod();
-
 @Module({
   imports: [
     BillingContributorHostModule,
@@ -433,7 +428,6 @@ const authMethod = getAuthenticationMethod();
     RedisCacheModule,
     FileStorageModule,
     BillingIdentityEmailBridgeModule,
-    ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
   controllers: [
     ServiceTypesController,

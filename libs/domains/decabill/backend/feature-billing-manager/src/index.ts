@@ -170,7 +170,6 @@ export * from './lib/projects/entities/project-time-entry.entity';
 export {
   UserEntity as BillingUserEntity,
   UserRole as BillingUserRole,
-  KeycloakUserSyncModule as BillingKeycloakUserSyncModule,
   AuthService,
   UsersService,
   UsersRepository,
@@ -178,11 +177,9 @@ export {
   UsersController,
   UsersAuthGuard,
   UsersRolesGuard,
-  KeycloakRolesGuard,
-  KeycloakAuthGuard,
+  ExternalIdentityAuthGuard,
   Public,
   UsersRoles,
-  KeycloakRoles,
   RequireScopes,
   LoginDto,
   RegisterDto,
@@ -196,6 +193,8 @@ export {
 } from '@forepath/identity/backend';
 
 export { BillingUsersAuthModule } from './lib/modules/billing-users-auth.module';
+export { createBillingSamlAuthModule } from './lib/modules/billing-saml-auth.module';
+export { createBillingOidcAuthModule } from './lib/modules/billing-oidc-auth.module';
 export { BillingPatAuthModule } from './lib/modules/billing-pat-auth.module';
 export * from './lib/auth/billing-pat.scopes';
 

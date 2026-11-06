@@ -7,7 +7,7 @@ export class CreateSubscriptionDto {
 
   /**
    * Optional configuration merged with plan defaults for provisioning.
-   * May include: authenticationMethod, disableSignup, smtp (host, port, user, password, from), keycloak.
+   * May include: authenticationMethod, disableSignup, smtp (host, port, user, password, from), oidc, saml.
    */
   @IsOptional()
   @IsObject({ message: 'Requested config must be an object' })

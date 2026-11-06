@@ -26,7 +26,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 - `@forepath/agenstra/backend` (Nest module: agent-controller feature bundle)
 - PostgreSQL database
-- Keycloak (optional, can use API key or users auth)
+- OIDC / SAML identity provider (optional, can use API key or users auth)
 
 **Ports**:
 
@@ -57,7 +57,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `@forepath/agenstra/backend` (Nest module: agent-manager feature bundle)
 - PostgreSQL database
 - Docker (for container management)
-- Keycloak (optional, can use API key)
+- OIDC identity provider (optional, can use API key)
 
 **Ports**:
 
@@ -258,7 +258,7 @@ graph TB
 
 - **PostgreSQL** Database for both controller and manager
 - **Docker** Container runtime for agent execution
-- **Keycloak** Identity and access management (optional)
+- **OIDC / SAML identity provider** (e.g. Keycloak) Identity and access management (optional)
 
 ### Cloud Providers
 

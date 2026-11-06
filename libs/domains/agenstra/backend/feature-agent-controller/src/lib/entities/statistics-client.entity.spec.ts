@@ -36,10 +36,10 @@ describe('StatisticsClientEntity', () => {
     expect(entity.authenticationType).toBe(AuthenticationType.API_KEY);
   });
 
-  it('should support KEYCLOAK authentication type', () => {
+  it('should support OIDC authentication type', () => {
     const entity = new StatisticsClientEntity();
 
-    entity.authenticationType = AuthenticationType.KEYCLOAK;
-    expect(entity.authenticationType).toBe(AuthenticationType.KEYCLOAK);
+    entity.authenticationType = AuthenticationType.OIDC;
+    expect(entity.authenticationType).toBe(AuthenticationType.OIDC);
   });
 });

@@ -37,12 +37,12 @@ describe('sanitizeProviderMetadata', () => {
     expect(result).not.toHaveProperty('providerApiKey');
   });
 
-  it('should remove keycloakClientSecret from metadata', () => {
-    const input = JSON.stringify({ realm: 'test', keycloakClientSecret: 'client-secret' });
+  it('should remove oidcClientSecret from metadata', () => {
+    const input = JSON.stringify({ realm: 'test', oidcClientSecret: 'client-secret' });
     const result = JSON.parse(sanitizeProviderMetadata(input));
 
     expect(result).toEqual({ realm: 'test' });
-    expect(result).not.toHaveProperty('keycloakClientSecret');
+    expect(result).not.toHaveProperty('oidcClientSecret');
   });
 
   it('should keep non-secret fields (location, image, serverType)', () => {

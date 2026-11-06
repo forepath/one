@@ -171,7 +171,7 @@ Full register: **[docs/agenstra/security/accepted-risks.md](./docs/agenstra/secu
 | ---------- | -------------------------- | --------------------------------------------------------------------------- |
 | **AR-001** | Desktop app                | No OS-trusted code signing; no in-app auto-update (checksum manifests)      |
 | **AR-002** | Web frontends              | CSP allows `unsafe-inline` / `unsafe-eval` for Monaco (report-only default) |
-| **AR-003** | Backend auth resolution    | `AUTHENTICATION_METHOD` optional; implicit keycloak when no API key set     |
+| **AR-003** | Backend auth resolution    | `AUTHENTICATION_METHOD` optional; implicit oidc when no API key set         |
 | **AR-004** | Desktop window open policy | Electron `setWindowOpenHandler` allows new windows                          |
 | **AR-005** | Trivy gate                 | Unfixed CVEs do not fail CI (`ignore-unfixed: true`)                        |
 

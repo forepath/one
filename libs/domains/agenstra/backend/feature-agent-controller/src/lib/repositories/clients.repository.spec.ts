@@ -14,9 +14,9 @@ describe('ClientsRepository', () => {
     endpoint: 'https://example.com/api',
     authenticationType: AuthenticationType.API_KEY,
     apiKey: 'test-api-key-123',
-    keycloakClientId: undefined,
-    keycloakClientSecret: undefined,
-    keycloakRealm: undefined,
+    oidcClientId: undefined,
+    oidcClientSecret: undefined,
+    oidcIssuer: undefined,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -200,15 +200,15 @@ describe('ClientsRepository', () => {
       expect(mockTypeOrmRepository.save).toHaveBeenCalledWith(createdClient);
     });
 
-    it('should create and save new client with KEYCLOAK type', async () => {
+    it('should create and save new client with OIDC type', async () => {
       const createData = {
-        name: 'New Keycloak Client',
+        name: 'New OIDC Client',
         description: 'New Description',
         endpoint: 'https://example.com/api',
-        authenticationType: AuthenticationType.KEYCLOAK,
-        keycloakClientId: 'keycloak-client-id',
-        keycloakClientSecret: 'keycloak-client-secret',
-        keycloakRealm: 'test-realm',
+        authenticationType: AuthenticationType.OIDC,
+        oidcClientId: 'oidc-client-id',
+        oidcClientSecret: 'oidc-client-secret',
+        oidcIssuer: 'https://idp.example.com/realms/test',
       };
       const createdClient = {
         ...mockClient,

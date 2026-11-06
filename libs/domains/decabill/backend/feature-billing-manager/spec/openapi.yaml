@@ -1833,7 +1833,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/logout:
     post:
-      summary: Log out (users auth only; revokes current session by default)
+      summary: Log out (users and saml auth; revokes current session by default)
       operationId: logout
       requestBody:
         required: false
@@ -1850,6 +1850,91 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /auth/saml/login:
+    get:
+      summary: Start SAML sign-in (saml auth only)
+      description: |
+        Redirects the browser to the IdP (HTTP-Redirect binding). The console generates a PKCE verifier and passes its
+        S256 challenge; only the browser holding the verifier can redeem the resulting code.
+      operationId: samlLogin
+      security: []
+      parameters:
+        - in: query
+          name: code_challenge
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9_-]{43}$'
+          description: base64url(SHA-256(code_verifier))
+        - in: query
+          name: redirect
+          required: false
+          schema:
+            type: string
+          description: Same-origin console path to return to (anything else falls back to `/`)
+      responses:
+        '302':
+          description: Redirect to the identity provider
+        '400':
+          description: Missing or invalid `code_challenge`
+  /auth/saml/acs:
+    post:
+      summary: SAML Assertion Consumer Service (saml auth only)
+      description: |
+        Receives the IdP response (HTTP-POST binding). Validates signatures, audience, issuer, `InResponseTo`
+        (single use; unsolicited responses are rejected) and assertion replay, links the identity to a local user,
+        and redirects to `SAML_FRONTEND_CALLBACK_URL` with `code` and `redirect`, or `error=saml_failed`.
+      operationId: samlAssertionConsumerService
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [SAMLResponse, RelayState]
+              properties:
+                SAMLResponse:
+                  type: string
+                RelayState:
+                  type: string
+      responses:
+        '303':
+          description: Redirect to the console callback
+  /auth/saml/token:
+    post:
+      summary: Redeem SAML login code (saml auth only)
+      description: |
+        Exchanges the single-use code (60 s) and PKCE verifier for a console session JWT (`amr: ["saml"]`).
+      operationId: samlToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SamlTokenExchangeDto'
+      responses:
+        '200':
+          description: Session JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SamlTokenResponse'
+        '401':
+          description: Invalid, expired or already used code, or verifier mismatch
+  /auth/saml/metadata:
+    get:
+      summary: SAML service provider metadata (saml auth only)
+      operationId: samlMetadata
+      security: []
+      responses:
+        '200':
+          description: SP metadata
+          content:
+            application/samlmetadata+xml:
+              schema:
+                type: string
   /auth/token-scopes:
     get:
       summary: List grantable PAT scopes for the current user
@@ -8297,6 +8382,7 @@ components:
       scheme: bearer
       description: |
         Interactive session JWT, or a JWT exchanged from a personal access token (`POST /auth/token`).
+        Interactive sessions are users / SAML session JWTs or, with `AUTHENTICATION_METHOD=oidc`, OIDC access tokens.
         For personal access tokens, the role names listed on an operation's `bearerAuth` requirement are the
         PAT scopes it requires (OpenAPI 3.1 role names; not enforced for interactive sessions).
         Scopes follow `<resource>:read|write|admin`; `write` implies `read`, and `admin` implies `write` and `read`.
@@ -8677,6 +8763,22 @@ components:
         invalidateAllSessions:
           type: boolean
           description: When true, invalidates every active JWT session for the user. Default is false (current session only).
+    SamlTokenExchangeDto:
+      type: object
+      required: [code, codeVerifier]
+      properties:
+        code:
+          type: string
+          maxLength: 128
+        codeVerifier:
+          type: string
+          pattern: '^[A-Za-z0-9._~-]{43,128}$'
+    SamlTokenResponse:
+      type: object
+      required: [access_token]
+      properties:
+        access_token:
+          type: string
     LoginDto:
       type: object
       required: [email, password]
@@ -9570,7 +9672,7 @@ components:
         serverType overrides are accepted only when the plan has allowCustomerServerTypeSelection and the value is listed in allowedServerTypes; otherwise serverType is stripped from requestedConfig before merge.
         The FQDN (hostname.DNS_BASE_DOMAIN) is used for SSL certificates and CORS; DNS_BASE_DOMAIN
         defaults to spirde.com when not set.
-        For service agenstra-manager, disableSignup and provisioning tokens are ignored; authenticationMethod must be api-key or keycloak (not users).
+        For service agenstra-manager, disableSignup and provisioning tokens are ignored; authenticationMethod must be api-key or oidc (anything else falls back to api-key).
       additionalProperties: true
       properties:
         provisioningOptionKey:
@@ -9596,7 +9698,8 @@ components:
           description: Hetzner-style location; use the key matching the service type schema (region or location).
         authenticationMethod:
           type: string
-          description: Authentication method (users, api-key, keycloak). Default users.
+          enum: [users, api-key, oidc, saml]
+          description: Authentication method (users, api-key, oidc, saml). Default users. agenstra-manager supports api-key and oidc only.
         staticApiKey:
           type: string
           description: Static API key for api-key authentication. Required when authenticationMethod is api-key.
@@ -9616,15 +9719,68 @@ components:
                 type: string,
                 description: 'From address (default noreply@localhost)',
               }
-        keycloak:
+        oidc:
           type: object
-          description: Keycloak config when authenticationMethod is keycloak.
+          description: OpenID Connect provider when authenticationMethod is oidc (written as OIDC_* env; console signs in with frontendClientId or clientId).
           properties:
-            serverUrl: { type: string }
-            authServerUrl: { type: string }
-            realm: { type: string }
-            clientId: { type: string }
-            clientSecret: { type: string }
+            issuer:
+              {
+                type: string,
+                description: 'Issuer URL (exact iss of access tokens)',
+              }
+            clientId:
+              {
+                type: string,
+                description: 'Confidential API client (token introspection)',
+              }
+            clientSecret:
+              {
+                type: string,
+                description: 'Secret of the API client. Sensitive.',
+              }
+            audience:
+              {
+                type: string,
+                description: 'Optional comma-separated aud allowlist',
+              }
+            frontendClientId:
+              {
+                type: string,
+                description: 'Public console client (Authorization Code + PKCE); defaults to clientId',
+              }
+        saml:
+          type: object
+          description: |
+            SAML 2.0 identity provider when authenticationMethod is saml (agenstra-controller, decabill-billing).
+            The instance is the service provider: ACS https://<fqdn>/api/auth/saml/acs, metadata https://<fqdn>/api/auth/saml/metadata.
+          properties:
+            idpSsoUrl:
+              {
+                type: string,
+                description: 'IdP single sign-on URL (HTTP-Redirect binding)',
+              }
+            idpCert:
+              {
+                type: string,
+                description: 'IdP signing certificate (PEM or base64 body)',
+              }
+            idpIssuer:
+              { type: string, description: 'Optional expected IdP entity id' }
+            spEntityId:
+              {
+                type: string,
+                description: 'Optional SP entity id; defaults to https://<fqdn>',
+              }
+            nameIdFormat:
+              {
+                type: string,
+                description: 'Optional NameID format; defaults to persistent',
+              }
+            emailAttribute:
+              {
+                type: string,
+                description: 'Optional assertion attribute holding the email address',
+              }
         hetznerApiToken:
           type: string
           description: Optional Hetzner API token for nested provisioning from the instance. Sensitive.

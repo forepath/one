@@ -79,6 +79,20 @@
           </fpc-form-field>
         }
 
+        @if (isExternalAuth) {
+          @if (ssoFailed) {
+            <fpc-alert
+              variant="danger"
+              i18n-message="@@featureLogin-ssoFailed"
+              message="Sign-in with your identity provider failed. Please try again or contact your administrator."
+            />
+          } @else {
+            <p class="text-body-secondary mb-4" i18n="@@featureLogin-ssoRedirecting">
+              You are being redirected to your organization's sign-in page.
+            </p>
+          }
+        }
+
         @if (isUsersAuth) {
           <!-- Email Input -->
           <fpc-form-field forId="email" i18n-label="@@featureLogin-emailLabel" label="Email">
@@ -156,6 +170,8 @@
           >
             @if ((loading$ | async) ?? false) {
               <span i18n="@@featureLogin-loggingIn">Logging in...</span>
+            } @else if (isExternalAuth) {
+              <span i18n="@@featureLogin-ssoSubmit">Continue with single sign-on</span>
             } @else {
               <span i18n="@@featureLogin-submit">Login</span>
             }

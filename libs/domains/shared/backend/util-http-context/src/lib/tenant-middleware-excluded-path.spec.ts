@@ -65,4 +65,12 @@ describe('tenant-middleware-excluded-path', () => {
     expect(isTenantMiddlewareExcludedPath('/api/subscriptions')).toBe(false);
     expect(isTenantMiddlewareExcludedPath('/api/public/service-plan-offerings')).toBe(false);
   });
+
+  it('excludes the SAML browser endpoints (tenant travels via query / relay state) but not the token exchange', () => {
+    expect(isTenantMiddlewareExcludedPath('/api/auth/saml/login')).toBe(true);
+    expect(isTenantMiddlewareExcludedPath('/api/auth/saml/acs')).toBe(true);
+    expect(isTenantMiddlewareExcludedPath('/api/auth/saml/metadata')).toBe(true);
+    expect(isTenantMiddlewareExcludedPath('/api/auth/saml/token')).toBe(false);
+    expect(isTenantMiddlewareExcludedPath('/api/auth/logout')).toBe(false);
+  });
 });

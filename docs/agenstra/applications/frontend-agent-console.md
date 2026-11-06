@@ -29,7 +29,7 @@ This application provides:
 - **Server Provisioning** Provision cloud servers (Hetzner, DigitalOcean) with automated deployment
 - **Audit** Audit views for administrators (`/audit`)
 - **State Management** NgRx for predictable state management
-- **Authentication** Keycloak or built-in users (JWT) via `@forepath/identity/frontend`, depending on deployment configuration
+- **Authentication** OIDC, SAML, built-in users (JWT) or API key via `@forepath/identity/frontend`, depending on deployment configuration
 
 ## Architecture
 
@@ -205,7 +205,8 @@ On reconnection:
 
 Behavior depends on controller configuration:
 
-- **Keycloak** Authorization code flow, tokens attached to HTTP and WebSocket handshakes, refresh handled by the identity frontend layer.
+- **OIDC** Authorization Code + PKCE (`oidc-client-ts`), tokens attached to HTTP and WebSocket handshakes, renewal handled by the identity frontend layer.
+- **SAML** Sign-in through the backend (`/api/auth/saml/login`), callback route `/login/saml/callback` exchanges a one-time code for a session JWT; afterwards it behaves like users mode.
 - **Users (JWT)** Email/password login and registration routes from `identityAuthRoutes`; tokens are stored and sent as `Bearer` on HTTP and on WebSocket handshakes.
 
 See [Authentication](../features/authentication.md) for environment variables and operational notes.
@@ -255,11 +256,10 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 - `API_URL` - Backend API endpoint (default: `http://localhost:3100`)
 - `WEBSOCKET_URL` - Socket.IO clients URL (default: `http://localhost:3100/socket/clients`)
 
-### Keycloak Configuration (Keycloak mode)
+### Authentication (runtime config)
 
-- `KEYCLOAK_AUTH_SERVER_URL` - Keycloak server URL
-- `KEYCLOAK_REALM` - Keycloak realm
-- `KEYCLOAK_CLIENT_ID` - Keycloak client ID
+- OIDC: `authentication.config = { "type": "oidc", "issuer": "…", "clientId": "…", "scope"?: "openid profile email", "postLogoutRedirectUri"?: "…" }` (public client)
+- SAML: `authentication.config = { "type": "saml" }`
 
 ## Development
 
@@ -294,7 +294,7 @@ Before deploying to production:
 1. Configure environment variables
 2. Set `API_URL` to production **agent controller** HTTP endpoint
 3. Set `WEBSOCKET_URL` to production controller WebSocket base (namespaces `clients` and `tickets` share this origin)
-4. Configure Keycloak client (or users auth) for the production domain
+4. Configure the OIDC / SAML client (or users auth) for the production domain
 5. (Optional) Set `CONFIG` environment variable to a remote JSON configuration URL for runtime configuration
 6. Build the application: `nx build agenstra-frontend-agent-console --configuration=production`
 7. Serve the built files using a web server (nginx, Apache, etc.)

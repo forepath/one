@@ -6,7 +6,7 @@ See also: [API Reference](../api-reference/README.md) for the published OpenAPI 
 
 ## Access Control
 
-All endpoints under `/admin/billing/*` require admin role (`@KeycloakRoles(ADMIN)` + `@UsersRoles(ADMIN)`). Frontend routes use `authGuard` + `billingAdminGuard`.
+All endpoints under `/admin/billing/*` require admin role (`@UsersRoles(ADMIN)`, resolved from the local users table in every mode). Frontend routes use `authGuard` + `billingAdminGuard`.
 
 **Multi-tenancy:** Admin and user routes are scoped by **`X-Tenant`** and the user's **`tenant_id`**. API key auth with **`STATIC_API_KEY`** and without **`STATIC_API_KEY_TENANT_ID`** can administer **all** configured tenants (accepted risk **[DR-002](../security/accepted-risks.md#dr-002-billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)**).
 

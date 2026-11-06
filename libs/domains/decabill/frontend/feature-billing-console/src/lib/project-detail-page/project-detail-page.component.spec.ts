@@ -13,11 +13,6 @@ import { EMPTY, of, throwError } from 'rxjs';
 
 import { ProjectDetailPageComponent } from './project-detail-page.component';
 
-jest.mock('keycloak-js', () => ({ __esModule: true, default: jest.fn() }));
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-  createAuthGuard: jest.fn((impl: unknown) => impl),
-}));
 jest.mock('../project-board/project-board.component', () => {
   const { Component } = jest.requireActual('@angular/core');
 

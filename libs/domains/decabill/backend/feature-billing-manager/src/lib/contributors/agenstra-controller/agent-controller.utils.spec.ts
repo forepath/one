@@ -212,11 +212,11 @@ describe('cloud-init.utils', () => {
       expect(script).not.toContain('"restApiUrl"');
       expect(script).not.toContain('"websocketUrl"');
       expect(script).toContain('CONFIG_ALLOWED_HOSTS: test.spirde.com');
-      expect(script).toContain('CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: true');
-      expect(script).toContain('CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: false');
+      expect(script).toContain("CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: 'true'");
+      expect(script).toContain("CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: 'false'");
       expect(script).toContain("CLIENT_ENDPOINT_ALLOWED_HOSTS: '*'");
       expect(script).toContain("CORS_ORIGIN: 'https://test.spirde.com'");
-      expect(script).toContain('CSP_ENFORCE: true');
+      expect(script).toContain("CSP_ENFORCE: 'true'");
     });
 
     it('embeds MCP OAuth public base URL and callback secret in backend environment', () => {
@@ -316,7 +316,7 @@ describe('cloud-init.utils', () => {
       expect(script).toContain('OPENSEARCH_HOST: opensearch');
       expect(script).toContain("OPENSEARCH_NODE: 'http://opensearch:9200'");
       expect(script).toContain('OPENSEARCH_INDEX_PREFIX: agenstra');
-      expect(script).toContain('SEARCH_REINDEX_INTERVAL: 15m');
+      expect(script).toContain("SEARCH_REINDEX_INTERVAL: '15m'");
       expect(script).toContain('vm.max_map_count=262144');
       expect(script).not.toContain('9200:9200');
       expect(script).toContain('EGRESS_EVENTS_INGEST_INTERVAL_MS: 30000');
@@ -363,8 +363,8 @@ describe('cloud-init.utils', () => {
       const b64 = buildBillingCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
 
-      expect(script).toContain('CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: true');
-      expect(script).toContain('CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: false');
+      expect(script).toContain("CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: 'true'");
+      expect(script).toContain("CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: 'false'");
       expect(script).toContain('CLIENT_ENDPOINT_ALLOWED_HOSTS: customer-am.example.com');
       expect(script).toContain('backend-agent-controller:');
     });
@@ -412,8 +412,8 @@ describe('cloud-init.utils', () => {
       const b64 = buildBillingCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
 
-      expect(script).toContain('CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: false');
-      expect(script).toContain('CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: true');
+      expect(script).toContain("CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: 'false'");
+      expect(script).toContain("CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: 'true'");
     });
 
     it('configures certbot webroot, letsencrypt paths and renewal for fqdn', () => {
@@ -565,6 +565,81 @@ describe('cloud-init.utils', () => {
           expect(result.stdout).toContain(expectedStatus === 0 ? 'Update completed' : 'ERROR: Update failed');
         }
       }
+    });
+  });
+
+  describe('external authentication (oidc / saml)', () => {
+    const decode = (b64: string): string => Buffer.from(b64, 'base64').toString('utf-8');
+
+    it('emits OIDC env and an oidc console config using the frontend client', () => {
+      const config = buildCloudInitConfigFromRequest(
+        {
+          authenticationMethod: 'oidc',
+          oidc: {
+            issuer: 'https://idp.example.com/realms/r',
+            clientId: 'api-client',
+            clientSecret: 'api-secret',
+            audience: 'api-client',
+            frontendClientId: 'console',
+          },
+        },
+        'host1',
+        'example.com',
+      );
+
+      expect(config.backend.authentication.authenticationMethod).toBe('oidc');
+
+      const script = decode(buildBillingCloudInitUserData(config));
+
+      expect(script).toContain('AUTHENTICATION_METHOD: oidc');
+      expect(script).toContain("OIDC_ISSUER: 'https://idp.example.com/realms/r'");
+      expect(script).toContain('OIDC_CLIENT_ID: api-client');
+      expect(script).toContain('OIDC_CLIENT_SECRET: api-secret');
+      expect(script).toContain('OIDC_AUDIENCE: api-client');
+      // Only tokens issued to the console's public client are accepted.
+      expect(script).toContain('OIDC_AUTHORIZED_PARTIES: console');
+      expect(script).not.toContain('KEYCLOAK_');
+      expect(script).not.toContain('SAML_');
+      expect(script).toContain(
+        '"config":{"type":"oidc","issuer":"https://idp.example.com/realms/r","clientId":"console"}',
+      );
+    });
+
+    it('emits SAML env with derived SP URLs, a single-line certificate and a saml console config', () => {
+      const config = buildCloudInitConfigFromRequest(
+        {
+          authenticationMethod: 'saml',
+          saml: {
+            idpSsoUrl: 'https://idp.example.com/sso',
+            idpCert: '-----BEGIN CERTIFICATE-----\nMIIBszCCAVmgAwIBAgIU\nAbCd+/eF==\n-----END CERTIFICATE-----\n',
+            idpIssuer: 'https://idp.example.com',
+          },
+        },
+        'host1',
+        'example.com',
+      );
+      const script = decode(buildBillingCloudInitUserData(config));
+
+      expect(script).toContain('AUTHENTICATION_METHOD: saml');
+      expect(script).toContain("SAML_IDP_SSO_URL: 'https://idp.example.com/sso'");
+      expect(script).toContain("SAML_IDP_CERT: 'MIIBszCCAVmgAwIBAgIUAbCd+/eF=='");
+      expect(script).toContain("SAML_IDP_ISSUER: 'https://idp.example.com'");
+      expect(script).toContain("SAML_SP_ENTITY_ID: 'https://host1.example.com'");
+      expect(script).toContain("SAML_SP_ACS_URL: 'https://host1.example.com/api/auth/saml/acs'");
+      expect(script).toContain("SAML_FRONTEND_CALLBACK_URL: 'https://host1.example.com/login/saml/callback'");
+      expect(script).not.toContain('BEGIN CERTIFICATE');
+      expect(script).not.toContain('OIDC_');
+      expect(script).toContain('"config":{"type":"saml"}');
+    });
+
+    it('rejects the removed keycloak method instead of provisioning a password console', () => {
+      expect(() =>
+        buildCloudInitConfigFromRequest(
+          { authenticationMethod: 'keycloak', keycloak: { realm: 'r' } },
+          'host1',
+          'example.com',
+        ),
+      ).toThrow(/no longer supported/);
     });
   });
 });

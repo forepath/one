@@ -12,7 +12,9 @@ export const HOST_PROVIDER_CONFIG_PROPERTIES: Record<string, Record<string, unkn
   },
   authenticationMethod: {
     type: 'string',
-    description: 'Authentication method for the agent (users, api-key, keycloak)',
+    description:
+      'Authentication method: users, api-key, oidc or saml (agenstra-manager supports api-key and oidc only; anything else falls back to api-key)',
+    enum: ['users', 'api-key', 'oidc', 'saml'],
   },
   staticApiKey: {
     type: 'string',
@@ -34,15 +36,31 @@ export const HOST_PROVIDER_CONFIG_PROPERTIES: Record<string, Record<string, unkn
       from: { type: 'string' },
     },
   },
-  keycloak: {
+  oidc: {
     type: 'object',
-    description: 'Keycloak configuration (when authenticationMethod is keycloak)',
+    description: 'OpenID Connect provider (when authenticationMethod is oidc)',
     properties: {
-      serverUrl: { type: 'string' },
-      authServerUrl: { type: 'string' },
-      realm: { type: 'string' },
-      clientId: { type: 'string' },
-      clientSecret: { type: 'string' },
+      issuer: { type: 'string', description: 'Issuer URL (exact `iss` of access tokens; discovery base)' },
+      clientId: { type: 'string', description: 'Confidential client of the API (token introspection)' },
+      clientSecret: { type: 'string', description: 'Secret of the confidential API client' },
+      audience: { type: 'string', description: 'Optional comma-separated `aud` allowlist for access tokens' },
+      frontendClientId: {
+        type: 'string',
+        description: 'Public client the console signs in with (Authorization Code + PKCE); defaults to clientId',
+      },
+    },
+  },
+  saml: {
+    type: 'object',
+    description:
+      'SAML 2.0 identity provider (when authenticationMethod is saml). The instance is the service provider: ACS https://<fqdn>/api/auth/saml/acs, metadata https://<fqdn>/api/auth/saml/metadata',
+    properties: {
+      idpSsoUrl: { type: 'string', description: 'IdP single sign-on URL (HTTP-Redirect binding)' },
+      idpCert: { type: 'string', description: 'IdP signing certificate (PEM or base64 body)' },
+      idpIssuer: { type: 'string', description: 'Optional expected IdP entity id (Issuer)' },
+      spEntityId: { type: 'string', description: 'Optional SP entity id; defaults to https://<fqdn>' },
+      nameIdFormat: { type: 'string', description: 'Optional NameID format; defaults to persistent' },
+      emailAttribute: { type: 'string', description: 'Optional assertion attribute holding the email address' },
     },
   },
   hetznerApiToken: {

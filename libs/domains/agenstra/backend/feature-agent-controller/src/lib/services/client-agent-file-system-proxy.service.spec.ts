@@ -226,15 +226,15 @@ describe('ClientAgentFileSystemProxyService', () => {
       );
     });
 
-    it('should proxy read file request successfully with KEYCLOAK auth', async () => {
-      const keycloakClient = {
+    it('should proxy read file request successfully with OIDC auth', async () => {
+      const oidcClient = {
         ...mockClientEntity,
-        authenticationType: AuthenticationType.KEYCLOAK,
+        authenticationType: AuthenticationType.OIDC,
         apiKey: undefined,
       };
 
-      clientsRepository.findByIdOrThrow.mockResolvedValue(keycloakClient);
-      clientsService.getAccessToken.mockResolvedValue('keycloak-jwt-token');
+      clientsRepository.findByIdOrThrow.mockResolvedValue(oidcClient);
+      clientsService.getAccessToken.mockResolvedValue('oidc-access-token');
       mockedAxios.request.mockResolvedValue({
         status: 200,
         data: mockFileBuffer,
@@ -251,7 +251,7 @@ describe('ClientAgentFileSystemProxyService', () => {
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
           headers: expect.objectContaining({
-            Authorization: 'Bearer keycloak-jwt-token',
+            Authorization: 'Bearer oidc-access-token',
           }),
           params: undefined,
         }),
@@ -486,18 +486,18 @@ describe('ClientAgentFileSystemProxyService', () => {
       );
     });
 
-    it('should proxy move file request successfully with KEYCLOAK auth', async () => {
+    it('should proxy move file request successfully with OIDC auth', async () => {
       const moveDto: MoveFileDto = {
         destination: 'new-location/file.txt',
       };
-      const keycloakClient = {
+      const oidcClient = {
         ...mockClientEntity,
-        authenticationType: AuthenticationType.KEYCLOAK,
+        authenticationType: AuthenticationType.OIDC,
         apiKey: undefined,
       };
 
-      clientsRepository.findByIdOrThrow.mockResolvedValue(keycloakClient);
-      clientsService.getAccessToken.mockResolvedValue('keycloak-jwt-token');
+      clientsRepository.findByIdOrThrow.mockResolvedValue(oidcClient);
+      clientsService.getAccessToken.mockResolvedValue('oidc-access-token');
       mockedAxios.request.mockResolvedValue({
         status: 204,
         data: undefined,
@@ -510,7 +510,7 @@ describe('ClientAgentFileSystemProxyService', () => {
         expect.objectContaining({
           method: 'PATCH',
           headers: expect.objectContaining({
-            Authorization: 'Bearer keycloak-jwt-token',
+            Authorization: 'Bearer oidc-access-token',
           }),
         }),
       );

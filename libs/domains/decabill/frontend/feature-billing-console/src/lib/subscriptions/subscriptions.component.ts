@@ -145,6 +145,15 @@ import {
 } from '../shared/data-list';
 import { dbPagerTotal, dbServerPaging } from '../shared/server-paging';
 import { backorderState, provisioningState, subscriptionState } from '../shared/table-states';
+import {
+  buildOrderAuthProviderConfig,
+  createDefaultOidcOrderConfig,
+  createDefaultSamlOrderConfig,
+  isOrderAuthMethodSupported,
+  type IntegratedOrderAuthMethod,
+  type IntegratedOrderOidcConfig,
+  type IntegratedOrderSamlConfig,
+} from '../plan-order-configurator/plan-order-requested-config.util';
 import { buildPromotionAdjustedOrderPricing } from '../promotion-pricing-preview.util';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import {
@@ -604,7 +613,7 @@ export class SubscriptionsComponent implements OnInit {
   private orderServerTypesRequestId = 0;
   orderPricingLoading = false;
   /** Signal for reactive conditional form fields; kept in sync with orderRequestedConfig.authenticationMethod. */
-  authMethod = signal<'users' | 'api-key' | 'keycloak'>('users');
+  authMethod = signal<IntegratedOrderAuthMethod>('users');
   readonly orderWizardStepIndex = signal(0);
   readonly orderOrderComplete = signal(false);
 
@@ -652,7 +661,10 @@ export class SubscriptionsComponent implements OnInit {
   onServiceChange(value: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing'): void {
     this.orderRequestedConfig = { ...this.orderRequestedConfig, service: value };
 
-    if (value === 'agenstra-manager' && this.orderRequestedConfig.authenticationMethod === 'users') {
+    if (
+      value === 'agenstra-manager' &&
+      !isOrderAuthMethodSupported('agenstra-manager', this.orderRequestedConfig.authenticationMethod)
+    ) {
       this.orderRequestedConfig = { ...this.orderRequestedConfig, authenticationMethod: 'api-key' };
       this.authMethod.set('api-key');
     }
@@ -660,7 +672,7 @@ export class SubscriptionsComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  onAuthMethodChange(value: 'users' | 'api-key' | 'keycloak'): void {
+  onAuthMethodChange(value: IntegratedOrderAuthMethod): void {
     this.orderRequestedConfig = { ...this.orderRequestedConfig, authenticationMethod: value };
     this.authMethod.set(value);
     this.cdr.detectChanges();
@@ -680,11 +692,12 @@ export class SubscriptionsComponent implements OnInit {
 
   orderRequestedConfig: {
     service: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'custom';
-    authenticationMethod: 'users' | 'api-key' | 'keycloak';
+    authenticationMethod: IntegratedOrderAuthMethod;
     staticApiKey: string;
     disableSignup: boolean;
     smtp: { host: string; port: number; user: string; password: string; from: string };
-    keycloak: { serverUrl: string; authServerUrl: string; realm: string; clientId: string; clientSecret: string };
+    oidc: IntegratedOrderOidcConfig;
+    saml: IntegratedOrderSamlConfig;
     hetznerApiToken: string;
     digitaloceanApiToken: string;
     git: {
@@ -709,13 +722,8 @@ export class SubscriptionsComponent implements OnInit {
       password: '',
       from: 'noreply@localhost',
     },
-    keycloak: {
-      serverUrl: '',
-      authServerUrl: '',
-      realm: '',
-      clientId: '',
-      clientSecret: '',
-    },
+    oidc: createDefaultOidcOrderConfig(),
+    saml: createDefaultSamlOrderConfig(),
     hetznerApiToken: '',
     digitaloceanApiToken: '',
     git: {
@@ -2018,7 +2026,10 @@ export class SubscriptionsComponent implements OnInit {
     if (option.type === 'integrated' && option.service) {
       this.orderRequestedConfig = { ...this.orderRequestedConfig, service: option.service };
 
-      if (option.service === 'agenstra-manager' && this.orderRequestedConfig.authenticationMethod === 'users') {
+      if (
+        option.service === 'agenstra-manager' &&
+        !isOrderAuthMethodSupported('agenstra-manager', this.orderRequestedConfig.authenticationMethod)
+      ) {
         this.orderRequestedConfig = { ...this.orderRequestedConfig, authenticationMethod: 'api-key' };
         this.authMethod.set('api-key');
       }
@@ -2464,9 +2475,7 @@ export class SubscriptionsComponent implements OnInit {
       requestedConfig['staticApiKey'] = cfg.staticApiKey.trim();
     }
 
-    if (cfg.authenticationMethod === 'keycloak') {
-      requestedConfig['keycloak'] = { ...cfg.keycloak };
-    }
+    Object.assign(requestedConfig, buildOrderAuthProviderConfig(cfg));
 
     if (cfg.service === 'agenstra-controller' || cfg.service === 'decabill-billing') {
       if (cfg.hetznerApiToken?.trim()) {
@@ -3344,13 +3353,8 @@ export class SubscriptionsComponent implements OnInit {
         password: '',
         from: 'noreply@localhost',
       },
-      keycloak: {
-        serverUrl: '',
-        authServerUrl: '',
-        realm: '',
-        clientId: '',
-        clientSecret: '',
-      },
+      oidc: createDefaultOidcOrderConfig(),
+      saml: createDefaultSamlOrderConfig(),
       hetznerApiToken: '',
       digitaloceanApiToken: '',
       git: {

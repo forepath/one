@@ -38,7 +38,7 @@ Environment variables on the backend:
 
 Pass the same credentials as HTTP in the Socket.IO handshake:
 
-- **Keycloak:** `Bearer <keycloak-jwt>` in `auth.Authorization` or handshake headers
+- **OIDC:** `Bearer <oidc-access-token>` in `auth.Authorization` or handshake headers
 - **Users:** `Bearer <jwt>` in `auth.Authorization` or handshake headers
 - **API key:** **Not supported** for dashboard status. `subscribeDashboardStatus` emits `error` with message "User not authenticated". This mirrors REST behavior for API-key-only requests.
 
@@ -116,7 +116,7 @@ When WebSocket is unavailable, [Dashboard and Server Control](./dashboard-and-se
 ## Related documentation
 
 - **[Dashboard and Server Control](./dashboard-and-server-control.md)** Overview UI and server actions
-- **[Authentication](./authentication.md)** JWT and Keycloak handshake
+- **[Authentication](./authentication.md)** JWT and OIDC handshake
 - **[Multi-tenancy](./multi-tenancy.md)** Tenant in handshake
 - **[Billing Manager AsyncAPI](/spec/billing-manager/asyncapi.yaml)** Full message schemas
 

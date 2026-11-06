@@ -8,11 +8,6 @@ import { of, throwError } from 'rxjs';
 
 import { InvoicesComponent } from './invoices.component';
 
-jest.mock('keycloak-js', () => ({ __esModule: true, default: jest.fn() }));
-jest.mock('keycloak-angular', () => ({
-  KeycloakService: jest.fn(),
-  createAuthGuard: jest.fn((impl: unknown) => impl),
-}));
 jest.mock('../billing-country-options', () => ({ getCountryDisplayName: (code: string) => code }));
 
 /** Facade stub: unknown members are spies returning `of([])` that can also be subscribed to. */

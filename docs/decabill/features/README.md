@@ -6,7 +6,7 @@ This section provides comprehensive documentation for all features in the Decabi
 
 Decabill provides a complete set of capabilities for subscription billing, invoicing, payments, and optional infrastructure provisioning:
 
-- **Authentication** Keycloak OAuth2/OIDC, built-in users with JWT, or static API key
+- **Authentication** OIDC, SAML 2.0, built-in users with JWT, or static API key
 - **Multi-tenancy** Tenant-scoped data with `X-Tenant` header and configurable tenant frontends
 - **Numbering** Shared or tenant-scoped invoice, subscription, and DATEV debtor number pools
 - **Subscriptions** Order, cancel, and resume service plans with optional cloud provisioning
@@ -36,12 +36,12 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 
 ### [Authentication](./authentication.md)
 
-Multiple authentication methods with configurable user registration. Supports API key, Keycloak OAuth2/OIDC, and built-in users with JWT.
+Multiple authentication methods with configurable user registration. Supports API key, OIDC, SAML 2.0, and built-in users with JWT.
 
 **Key Capabilities**:
 
 - Static API key for automation and single-operator deployments
-- Keycloak OAuth2/OIDC for enterprise SSO
+- OIDC (any provider, e.g. Keycloak) or SAML 2.0 for enterprise SSO
 - Built-in user registration with email confirmation
 - Password reset with 6-character alphanumeric codes
 - Admin user management and optional signup disable
@@ -204,7 +204,7 @@ Socket.IO dashboard status stream for provisioned subscription items.
 
 - `subscribeDashboardStatus` with configurable poll interval
 - User-scoped subscription selection on every tick
-- JWT or Keycloak handshake auth (API key rejected)
+- JWT (users / SAML) or OIDC handshake auth (API key rejected)
 - `dashboardStatusUpdate` events mirroring REST server-info shape
 
 ### [Backorders](./backorders.md)

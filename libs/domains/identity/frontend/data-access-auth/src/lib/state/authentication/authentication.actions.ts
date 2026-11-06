@@ -10,9 +10,9 @@ import type {
 } from './authentication.types';
 
 /**
- * Unified login action - works for API key, Keycloak, and users authentication
+ * Unified login action - works for every authentication type
  * For API key: pass the apiKey in the payload
- * For Keycloak: apiKey/email/password ignored, KeycloakService handles it
+ * For OIDC / SAML: payload ignored; redirects to the identity provider (the post-login return URL is honored)
  * For users: pass email and password (optional code for login 2FA)
  */
 export const login = createAction(
@@ -22,7 +22,10 @@ export const login = createAction(
 
 export const loginSuccess = createAction(
   '[Authentication] Login Success',
-  props<{ authenticationType: 'api-key' | 'keycloak' | 'users'; user?: { id: string; email: string; role: string } }>(),
+  props<{
+    authenticationType: 'api-key' | 'users' | 'oidc' | 'saml';
+    user?: { id: string; email: string; role: string };
+  }>(),
 );
 
 export const loginFailure = createAction(
@@ -54,7 +57,7 @@ export const checkAuthenticationSuccess = createAction(
   '[Authentication] Check Authentication Success',
   props<{
     isAuthenticated: boolean;
-    authenticationType?: 'api-key' | 'keycloak' | 'users';
+    authenticationType?: 'api-key' | 'users' | 'oidc' | 'saml';
     user?: { id: string; email: string; role: string };
   }>(),
 );

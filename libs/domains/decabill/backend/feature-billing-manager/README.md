@@ -25,9 +25,8 @@ Backend billing module providing subscription management, backorders, availabili
 
 ## Auth
 
-All endpoints require authentication. Admin-only routes use the same role guards as the agent controller:
+All endpoints require authentication. Admin-only routes use the same role guard as the agent controller (roles come from the local users table in every mode):
 
-- @KeycloakRoles(UserRole.ADMIN)
 - @UsersRoles(UserRole.ADMIN)
 
 API key auth is supported through the shared HybridAuthGuard at the app level.
@@ -46,7 +45,7 @@ When **`AUTHENTICATION_METHOD=api-key`** (or api-key is inferred from **`STATIC_
 
 - **`STATIC_API_KEY_TENANT_ID`** (optional) — when set, API key requests are only accepted when **`X-Tenant`** matches this value.
 - When **`STATIC_API_KEY_TENANT_ID`** is **unset**, a valid **`STATIC_API_KEY`** grants **admin access to every tenant** listed in **`TENANTS`**, selected per request via **`X-Tenant`**. This is **intentional and accepted** (single shared automation key); see **[AR-007](../../../docs/agenstra/security/accepted-risks.md#ar-007--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)**.
-- Interactive auth (**keycloak** / **users**) always enforces the user’s **`tenant_id`** regardless of the above.
+- Interactive auth (**oidc** / **saml** / **users**) always enforces the user’s **`tenant_id`** regardless of the above.
 
 ## Environment
 
@@ -155,7 +154,7 @@ For provisioning, the following provider-specific config keys are used:
   - `region` (string, required by default schema; enum pre-populated in UI)
   - `serverType` (string, required; options and price from GET .../server-types; selection can auto-set plan base price)
 
-Optional instance configuration (requestedConfig) can include authentication (users, api-key, keycloak), SMTP, and optional provisioning tokens so the instance can provision additional servers itself:
+Optional instance configuration (requestedConfig) can include authentication (users, api-key, oidc, saml), SMTP, and optional provisioning tokens so the instance can provision additional servers itself:
 
 - hetznerApiToken (string, optional) – Hetzner API token for nested provisioning from the instance
 - digitaloceanApiToken (string, optional) – DigitalOcean API token for nested provisioning from the instance

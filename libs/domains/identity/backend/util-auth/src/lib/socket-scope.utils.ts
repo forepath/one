@@ -3,7 +3,7 @@ import { getMissingPatScopes, type PatScopeLevel } from './identity-pat.scopes';
 /**
  * Scope rules for Socket.IO gateways, shared by every product.
  *
- * Interactive sessions (password / Keycloak OIDC) and the static API key are unaffected: they keep full access to
+ * Interactive sessions (password, OIDC or SAML) and the static API key are unaffected: they keep full access to
  * whatever their user access rules allow. Machine sessions (PAT and app access tokens, `amr` includes `pat`) are
  * fail-closed, exactly like `PatScopesGuard` on HTTP routes:
  *

@@ -47,6 +47,55 @@ describe('createOriginAllowlistMiddleware', () => {
     expect(nextError).toBeUndefined();
   });
 
+  describe('SAML assertion consumer service', () => {
+    beforeEach(() => {
+      process.env.NODE_ENV = 'production';
+      process.env.CORS_ORIGIN = 'https://app.example.com';
+    });
+
+    it('allows the IdP form POST to the ACS when saml is the active method', () => {
+      process.env.AUTHENTICATION_METHOD = 'saml';
+      const middleware = createOriginAllowlistMiddleware(new Logger('test'));
+
+      for (const origin of ['https://idp.example.com', 'null']) {
+        const { nextError, nextCalled } = run(middleware, {
+          method: 'POST',
+          originalUrl: '/api/auth/saml/acs',
+          headers: { origin },
+        });
+
+        expect(nextCalled).toBe(true);
+        expect(nextError).toBeUndefined();
+      }
+    });
+
+    it('still enforces the allowlist on the ACS path when saml is not active and on other SAML routes', () => {
+      process.env.AUTHENTICATION_METHOD = 'oidc';
+      const middleware = createOriginAllowlistMiddleware(new Logger('test'));
+
+      expect(
+        run(middleware, { method: 'POST', originalUrl: '/api/auth/saml/acs', headers: { origin: 'https://evil.com' } })
+          .nextError,
+      ).toBeInstanceOf(ForbiddenException);
+
+      process.env.AUTHENTICATION_METHOD = 'saml';
+      expect(
+        run(middleware, {
+          method: 'POST',
+          originalUrl: '/api/auth/saml/token',
+          headers: { origin: 'https://evil.com' },
+        }).nextError,
+      ).toBeInstanceOf(ForbiddenException);
+      expect(
+        run(middleware, {
+          method: 'POST',
+          originalUrl: '/api/auth/saml/acs/../logout',
+          headers: { origin: 'https://evil.com' },
+        }).nextError,
+      ).toBeInstanceOf(ForbiddenException);
+    });
+  });
+
   it('enforces in development when CORS_ORIGIN is set', () => {
     process.env.NODE_ENV = 'development';
     process.env.CORS_ORIGIN = 'https://app.example.com';

@@ -9,7 +9,7 @@ Before you begin, ensure you have:
 - **Node.js** 24.22.1 or higher
 - **PostgreSQL** database (for backend applications)
 - **Docker** and **Docker Compose** (for containerized deployment)
-- **Keycloak** server (optional, for authentication - can use API key authentication instead)
+- **OIDC or SAML identity provider** (optional - can use API key or users authentication instead; [platform authentication](../../apps/shared/platform-authentication/README.md) runs Keycloak locally)
 - **Git** repository (optional, for agent workspace)
 
 For CPU, memory, and disk baselines by role (controller stack, manager host, agent containers), see **[System Requirements](./deployment/system-requirements.md)**. For install capacity and verification checklists, see **[Operator Runbook](./deployment/operator-runbook.md)**.
@@ -76,15 +76,14 @@ AUTHENTICATION_METHOD=users
 # Option 1: API Key authentication
 STATIC_API_KEY=your-secure-api-key-here
 
-# Option 2: Keycloak authentication
-KEYCLOAK_AUTH_SERVER_URL=http://localhost:8380
-KEYCLOAK_REALM=agenstra
-KEYCLOAK_CLIENT_ID=agent-controller
-KEYCLOAK_CLIENT_SECRET=your-client-secret
+# Option 2: OIDC authentication (AUTHENTICATION_METHOD=oidc)
+OIDC_ISSUER=http://localhost:8380/realms/platform
+OIDC_CLIENT_ID=agent-controller
+OIDC_CLIENT_SECRET=your-client-secret
 
-# Optional: KEYCLOAK_SERVER_URL if different from auth server URL
+# Optional: OIDC_TOKEN_VALIDATION=ONLINE (default) or OFFLINE, OIDC_AUDIENCE, OIDC_AUTHORIZED_PARTIES
 
-# Optional: KEYCLOAK_TOKEN_VALIDATION=ONLINE (default) or OFFLINE
+# Option 2b: SAML authentication (AUTHENTICATION_METHOD=saml) - SAML_* variables, see Authentication docs
 
 # Option 3: Users authentication
 JWT_SECRET=your-jwt-secret-key
@@ -121,7 +120,7 @@ DB_DATABASE=agent_manager
 # Authentication
 STATIC_API_KEY=your-secure-api-key-here
 
-# OR Keycloak configuration (same as above)
+# OR OIDC (AUTHENTICATION_METHOD=oidc, OIDC_ISSUER / OIDC_CLIENT_ID / OIDC_CLIENT_SECRET); the manager supports api-key and oidc only
 
 # Ports
 PORT=3000
@@ -161,15 +160,15 @@ A client represents a connection to a remote agent-manager service. You can eith
 ### Connect to Existing Agent-Manager
 
 1. Open the frontend console at `http://localhost:4100`
-2. Log in (if using Keycloak) or use API key authentication
+2. Log in (users, OIDC or SAML) or use API key authentication
 3. Navigate to the Clients section
 4. Click "Add Client"
 5. Fill in the client details:
    - **Name**: A descriptive name for this client
    - **Endpoint**: The HTTP API endpoint of your agent-manager (e.g., `http://localhost:3000`)
-   - **Authentication Type**: Choose `api_key` or `keycloak`
+   - **Authentication Type**: Choose `api_key` or `oidc`
    - **API Key** (if using API key): The API key for authentication
-   - **Keycloak Configuration** (if using Keycloak): Client ID, secret, realm, and auth server URL
+   - **OIDC client credentials** (if using OIDC): client ID, secret, optional issuer (defaults to the controller's `OIDC_ISSUER`) and scope
 6. Click "Create"
 
 ### Provision a New Server

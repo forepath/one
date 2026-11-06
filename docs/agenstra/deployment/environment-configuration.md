@@ -26,20 +26,48 @@ Complete reference for all environment variables used in Agenstra.
 
 ### Authentication
 
-- `AUTHENTICATION_METHOD` - Explicit choice: `api-key`, `keycloak`, or `users`. If not set, inferred from `STATIC_API_KEY` (api-key if set, else keycloak).
+- `AUTHENTICATION_METHOD` - Explicit choice: `api-key`, `users`, `oidc`, or `saml`. If not set, inferred from `STATIC_API_KEY` (api-key if set, else oidc). Any other value (including the removed `keycloak`) fails at boot.
 
 **Option 1: API Key Authentication** (`AUTHENTICATION_METHOD=api-key`)
 
 - `STATIC_API_KEY` - Static API key for authentication (required)
 
-**Option 2: Keycloak Authentication** (`AUTHENTICATION_METHOD=keycloak`)
+**Option 2: OIDC Authentication** (`AUTHENTICATION_METHOD=oidc`)
 
-- `KEYCLOAK_SERVER_URL` - Keycloak server URL (optional, used for server URL if different from auth server URL)
-- `KEYCLOAK_AUTH_SERVER_URL` - Keycloak authentication server URL (required)
-- `KEYCLOAK_REALM` - Keycloak realm name (required)
-- `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required)
-- `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required)
-- `KEYCLOAK_TOKEN_VALIDATION` - Token validation method: `ONLINE` or `OFFLINE` (optional, default: `ONLINE`)
+- `OIDC_ISSUER` - Issuer of the OpenID provider (required; exact `iss` match, discovery at `<issuer>/.well-known/openid-configuration`)
+- `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` - Confidential client of the API, used for token introspection (required for `ONLINE`)
+- `OIDC_TOKEN_VALIDATION` - `ONLINE` (default: signature + RFC 7662 introspection) or `OFFLINE` (JWKS signature and claims only)
+- `OIDC_AUDIENCE` - Optional comma-separated audiences; the token `aud` must contain one
+- `OIDC_AUTHORIZED_PARTIES` - Optional comma-separated `azp` allowlist (client ids)
+- `OIDC_DISCOVERY_URL` - Optional discovery URL override (issuer must still match)
+- `OIDC_ALLOWED_ALGORITHMS` - Optional; asymmetric algorithms only (default RS/PS/ES 256–512)
+- `OIDC_EMAIL_CLAIM` - Claim used as account email (default: `email`)
+- `OIDC_CLOCK_TOLERANCE_SECONDS` - Allowed clock skew (default: `0`)
+- `OIDC_ALLOW_INSECURE_HTTP` - Allow http provider URLs in production (default: `false`)
+- `OIDC_ALLOW_UNRESTRICTED_AUDIENCE` - Allow running without `OIDC_AUDIENCE` / `OIDC_AUTHORIZED_PARTIES` in production (default: `false`)
+- `OIDC_TRUSTED_CLIENT_ISSUERS` - Comma-separated additional issuers that per-client OIDC credentials may use without the client-endpoint SSRF policy (e.g. an internal `http://keycloak:8080/realms/x`); the controller's `OIDC_ISSUER` is always trusted
+- `TRUST_PROXY` - Express `trust proxy` (opt-in): number of proxy hops (e.g. `1`) or `loopback` / address list. Enable only when the API is reachable exclusively through the proxy, so rate limits key on real client addresses Prefer address-based values (`uniquelocal` or the proxy/docker subnet) over hop counts when the API port is also published directly.
+- `EXTERNAL_AUTH_AUTO_PROVISION_TENANTS` - Tenants in which unknown OIDC / SAML identities get an account on first sign-in (default: all; comma-separated list or `none`)
+- `OIDC_TRUST_EMAIL` / `SAML_TRUST_EMAIL` - Trust emails the IdP does not mark as verified (default: `false`; untrusted emails are not linked or stored)
+- `JWT_SECRET` - Signs app-issued PAT / app access JWTs (required on the controller)
+
+**Option 2b: SAML Authentication** (`AUTHENTICATION_METHOD=saml`)
+
+- `SAML_IDP_SSO_URL` - IdP single sign-on URL, HTTP-Redirect binding (required)
+- `SAML_IDP_CERT` - IdP signing certificate(s), PEM or bare base64 (required)
+- `SAML_IDP_ISSUER` - Expected IdP entity id (recommended)
+- `SAML_SP_ENTITY_ID` - SP entity id / required audience (default: origin of `SAML_SP_ACS_URL`)
+- `SAML_SP_ACS_URL` - Public URL of `POST /api/auth/saml/acs` (required)
+- `SAML_FRONTEND_CALLBACK_URL` - Console callback route, e.g. `https://console.example.com/login/saml/callback` (required)
+- `SAML_NAMEID_FORMAT` - Default `urn:oasis:names:tc:SAML:2.0:nameid-format:persistent`; `unspecified` omits it; transient NameIDs are rejected
+- `SAML_EMAIL_ATTRIBUTE` - Attribute holding the email (default: `email`, `mail`, `urn:oid:0.9.2342.19200300.100.1.3`, emailaddress claim, or an email-format NameID)
+- `SAML_WANT_ASSERTIONS_SIGNED` / `SAML_WANT_RESPONSE_SIGNED` - Default `true`; must not both be `false`
+- `SAML_SP_PRIVATE_KEY` - Optional PEM key to sign AuthnRequests
+- `SAML_SP_DECRYPTION_PRIVATE_KEY` - Optional PEM key to decrypt encrypted assertions
+- `SAML_CLOCK_SKEW_MS` - Allowed clock skew (default: `0`)
+- `JWT_SECRET` - Signs the session JWT issued after the assertion exchange (required)
+
+See **[Authentication](../features/authentication.md)** for flows and migration from `keycloak`.
 
 **Option 3: Users Authentication** (`AUTHENTICATION_METHOD=users`)
 
@@ -48,7 +76,7 @@ Complete reference for all environment variables used in Agenstra.
 - `DISABLE_FORCE_LOGIN_2FA` - When `true`, login 2FA is not forced (users may still opt into email OTP or authenticator). When unset/`false`, every users-mode login requires email OTP or enrolled TOTP. (default: `false`)
 - `PRODUCT_NAME` - Display name used as the TOTP issuer in authenticator apps (otpauth label/issuer). Defaults to `Forepath` when unset.
 
-**Note for Backend Agent Manager**: When using Keycloak authentication, the JWT token must include the `agent_management` role to access agent-manager endpoints.
+**Note for Backend Agent Manager**: the agent-manager supports only `api-key` and `oidc`. In `oidc` mode it validates the controller's client credentials tokens; set `OIDC_AUTHORIZED_PARTIES` to the controller's client id.
 
 ### Email (SMTP)
 
@@ -146,15 +174,19 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 
 **Option 1: API Key Authentication** `STATIC_API_KEY` - Static API key for authentication
 
-**Option 2: Keycloak Authentication** `KEYCLOAK_SERVER_URL` - Keycloak server URL (optional, used for server URL if different from auth server URL)
+**Option 2: OIDC Authentication** (`AUTHENTICATION_METHOD=oidc`; `api-key` and `oidc` are the only methods the agent-manager accepts)
 
-- `KEYCLOAK_AUTH_SERVER_URL` - Keycloak authentication server URL (required)
-- `KEYCLOAK_REALM` - Keycloak realm name (required)
-- `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required)
-- `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required)
-- `KEYCLOAK_TOKEN_VALIDATION` - Token validation method: `ONLINE` or `OFFLINE` (optional, default: `ONLINE`)
+- `OIDC_ISSUER` - Issuer of the OpenID provider (required; exact `iss` match, discovery at `<issuer>/.well-known/openid-configuration`)
+- `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` - Confidential client of the API, used for token introspection (required for `ONLINE`)
+- `OIDC_TOKEN_VALIDATION` - `ONLINE` (default: signature + RFC 7662 introspection) or `OFFLINE` (JWKS signature and claims only)
+- `OIDC_AUDIENCE` - Optional comma-separated audiences; the token `aud` must contain one
+- `OIDC_AUTHORIZED_PARTIES` - Optional comma-separated `azp` allowlist (client ids)
+- `OIDC_DISCOVERY_URL` - Optional discovery URL override (issuer must still match)
+- `OIDC_ALLOWED_ALGORITHMS` - Optional; asymmetric algorithms only (default RS/PS/ES 256–512)
+- `OIDC_EMAIL_CLAIM` - Claim used as account email (default: `email`)
+- `OIDC_CLOCK_TOLERANCE_SECONDS` - Allowed clock skew (default: `0`)
 
-**Note for Backend Agent Manager**: When using Keycloak authentication, the JWT token must include the `agent_management` role to access agent-manager endpoints.
+Provisioned managers receive `OIDC_ISSUER`, `OIDC_TOKEN_VALIDATION=OFFLINE` and `OIDC_AUTHORIZED_PARTIES=<clientId>` (never the client secret), so only the controller's client credentials tokens are accepted.
 
 ### CORS Configuration
 
@@ -306,11 +338,13 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 - `API_URL` - Backend API endpoint (default: `http://localhost:3100`)
 - `WEBSOCKET_URL` - Socket.IO clients namespace URL (default: `http://localhost:3100/socket/clients`). Tickets/status/VNC URLs derive by swapping the `/socket/clients` suffix when unset.
 
-### Keycloak Configuration
+### Authentication (runtime config)
 
-- `KEYCLOAK_AUTH_SERVER_URL` - Keycloak server URL
-- `KEYCLOAK_REALM` - Keycloak realm
-- `KEYCLOAK_CLIENT_ID` - Keycloak client ID
+The console reads `authentication.config` from its runtime configuration:
+
+- OIDC: `{ "type": "oidc", "issuer": "https://idp.example.com/realms/agenstra", "clientId": "agent-console", "scope": "openid profile email" }` (public SPA client, Authorization Code + PKCE; optional `postLogoutRedirectUri`)
+- SAML: `{ "type": "saml" }` (sign-in via the backend; callback route `/login/saml/callback`)
+- `{ "type": "users" }` or `{ "type": "api-key" }` as before
 
 ## Valkey (or Redis) and BullMQ (background jobs)
 

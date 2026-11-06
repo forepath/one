@@ -10,7 +10,7 @@ Comprehensive checklist for deploying Decabill to production.
 - [ ] `CORS_ORIGIN` configured with production billing console and API origins
 - [ ] `RATE_LIMIT_ENABLED=true` (or leave unset; defaults to `true` in production)
 - [ ] `RATE_LIMIT_LIMIT` appropriate for expected traffic
-- [ ] `STATIC_API_KEY` or Keycloak/users credentials configured securely
+- [ ] `STATIC_API_KEY` or OIDC / SAML / users settings configured securely
 - [ ] `ENCRYPTION_KEY` set to a strong random value (required for encrypted subscription data)
 - [ ] Database credentials are not defaults
 - [ ] `TENANTS` lists only intended tenant ids
@@ -71,7 +71,7 @@ Comprehensive checklist for deploying Decabill to production.
 
 ### Authentication
 
-- Use Keycloak or users mode for interactive multi-tenant console access in production
+- Use oidc, saml or users mode for interactive multi-tenant console access in production
 - Set **`AUTHENTICATION_METHOD`** explicitly if policy requires unambiguous mode selection (see **[DR-004](../security/accepted-risks.md#dr-004-backend-authentication-method-resolution)**)
 - Rotate `STATIC_API_KEY` on a defined schedule if used for automation
 - Never expose API keys in frontend bundles or public `CONFIG` JSON

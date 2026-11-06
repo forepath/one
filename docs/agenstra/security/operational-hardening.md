@@ -9,7 +9,7 @@ First-party images are hardened for production use. Full detail (bind mounts, en
 | Practice                      | Detail                                                                                                                                                                                                                                                                        |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Non-root runtime**          | Debian-based backends and worker images run as **`agenstra`** (UID/GID **10001** by default); Alpine frontend servers run as **`node`** (**1000**). Entrypoints may start as root only for bootstrap, then drop via **`runuser`**.                                            |
-| **No baked-in secrets**       | Database, Keycloak, and API keys are **not** defaulted in image `ENV`; operators supply them at deploy time.                                                                                                                                                                  |
+| **No baked-in secrets**       | Database, IdP (OIDC / SAML), and API keys are **not** defaulted in image `ENV`; operators supply them at deploy time.                                                                                                                                                         |
 | **No sudoers**                | Images do **not** install `sudo` or `/etc/sudoers.d` allowlists. Privileged bootstrap (workspace `chown`, Docker socket GID sync) runs in the root entrypoint; Nest uses Docker **`exec` as UID 0** for in-worker ownership fixes after start.                                |
 | **Workspace mount ownership** | Worker entrypoints `chown` bind-mounted agent data to `APP_UID`/`APP_GID` when the host directory is root-owned, then drop to `agenstra`.                                                                                                                                     |
 | **Least privilege on socket** | Manager and controller API images mount the host Docker socket only when required. The entrypoint (as root) syncs the in-container `docker` group GID to the socket’s GID (`DOCKER_GID` build arg, default **995**), then starts Node as **`agenstra`** with **`sg docker`**. |
@@ -20,16 +20,16 @@ Deploy **manager API and worker images from the same release** when paths or use
 
 ## Authentication mode (backends)
 
-Resolution is implemented in **`getAuthenticationMethod`** (`libs/domains/identity/backend/util-auth/src/lib/hybrid-auth.guard.ts`):
+Resolution is implemented in **`getAuthenticationMethod`** (`libs/domains/identity/backend/util-auth/src/lib/authentication-method.ts`):
 
-- If **`AUTHENTICATION_METHOD`** is set to **`api-key`**, **`keycloak`**, or **`users`**, that value is used.
-- If **`AUTHENTICATION_METHOD`** is **unset** or invalid:
+- If **`AUTHENTICATION_METHOD`** is set to **`api-key`**, **`users`**, **`oidc`**, or **`saml`**, that value is used. Any other value (including the removed **`keycloak`**) fails at boot.
+- If **`AUTHENTICATION_METHOD`** is **unset**:
   - If **`STATIC_API_KEY`** is set → effective mode **`api-key`** (backward compatibility).
-  - Otherwise → effective mode **`keycloak`**.
+  - Otherwise → effective mode **`oidc`**.
 
-**`api-key`** without **`STATIC_API_KEY`** fails at runtime with an error. **Keycloak** and **users** modes rely on their respective guards after **`HybridAuthGuard`**. Health endpoints **`/api/health`** and **`/health`** remain unauthenticated by design.
+**`api-key`** without **`STATIC_API_KEY`** fails at runtime with an error. **OIDC**, **SAML** and **users** modes rely on their respective guards after **`HybridAuthGuard`**. Health endpoints **`/api/health`** and **`/health`** remain unauthenticated by design.
 
-**Operator note:** Set **`AUTHENTICATION_METHOD`** explicitly if your security policy requires unambiguous configuration. Implicit **keycloak** when neither an explicit mode nor **`STATIC_API_KEY`** is set is an **accepted risk**. See **AR-003** in **[Accepted risks](./accepted-risks.md)**.
+**Operator note:** Set **`AUTHENTICATION_METHOD`** explicitly if your security policy requires unambiguous configuration. Implicit **oidc** when neither an explicit mode nor **`STATIC_API_KEY`** is set is an **accepted risk**. See **AR-003** in **[Accepted risks](./accepted-risks.md)**.
 
 ## Agent Controller (remote client endpoints, SSRF)
 

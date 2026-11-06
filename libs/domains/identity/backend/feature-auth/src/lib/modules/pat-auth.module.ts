@@ -36,8 +36,8 @@ export interface PatAuthModuleOptions {
 }
 
 /**
- * Shared PAT stack for users-mode and keycloak-mode.
- * Host must register JwtModule (UsersAuthModule or KeycloakUserSyncModule).
+ * Shared PAT stack for users-, oidc- and saml-mode.
+ * Host must register JwtModule (UsersAuthModule, OidcAuthModule or SamlAuthModule).
  * APP_GUARD registration for PatScopesGuard / UsersRolesGuard / PatBearerAuthGuard
  * is owned by the host module so guard order stays correct.
  */
