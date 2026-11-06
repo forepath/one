@@ -3226,6 +3226,26 @@
         <source>API key is required.</source>
         <target>API-Schlüssel ist erforderlich.</target>
       </trans-unit>
+      <trans-unit id="featureLogin-clientCertificate" datatype="html">
+        <source>Client certificate</source>
+        <target>Client-Zertifikat</target>
+      </trans-unit>
+      <trans-unit id="featureLogin-clientCertificateHint" datatype="html">
+        <source>PEM with your certificate; may also contain the PKCS#8 key.</source>
+        <target>PEM mit Ihrem Zertifikat; darf auch den PKCS#8-Schlüssel enthalten.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin-clientCertificateRequired" datatype="html">
+        <source>A client certificate is required.</source>
+        <target>Ein Client-Zertifikat ist erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin-clientPrivateKey" datatype="html">
+        <source>Private key (optional)</source>
+        <target>Privater Schlüssel (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureLogin-clientPrivateKeyHint" datatype="html">
+        <source>Only for a separate key file. The key never leaves this browser.</source>
+        <target>Nur bei separater Schlüsseldatei. Der Schlüssel verlässt nie diesen Browser.</target>
+      </trans-unit>
       <trans-unit id="featureLogin-emailLabel" datatype="html">
         <source>Email</source>
         <target>E-Mail</target>

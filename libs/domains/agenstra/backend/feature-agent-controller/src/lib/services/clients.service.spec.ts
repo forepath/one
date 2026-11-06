@@ -10,6 +10,9 @@ import {
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
+// Test-only PKI builder of the identity domain.
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { createTestPki } from '../../../../../../identity/backend/util-auth/src/lib/mtls/testing/mtls-test-pki';
 import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
@@ -317,6 +320,62 @@ describe('ClientsService', () => {
           oidcClientSecret: 'oidc-client-secret',
         }),
       ).rejects.toThrow('OIDC issuer is required because OIDC_ISSUER is not configured on the controller');
+    });
+
+    describe('mtls', () => {
+      const pki = createTestPki();
+
+      it('should store a validated certificate / key pair and never return the key', async () => {
+        const createDto: CreateClientDto = {
+          name: 'mTLS Client',
+          endpoint: 'https://manager.example.com',
+          authenticationType: AuthenticationType.MTLS,
+          mtlsCertificate: pki.client.pem,
+          mtlsPrivateKey: pki.client.privateKeyPem,
+        };
+
+        mockRepository.findByName.mockResolvedValue(null);
+        repository.create.mockImplementation(async (data) => ({ ...mockClient, ...data }) as ClientEntity);
+
+        const result = await service.create(createDto);
+
+        expect(repository.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            authenticationType: AuthenticationType.MTLS,
+            apiKey: undefined,
+            mtlsCertificate: pki.client.pem,
+            mtlsPrivateKey: pki.client.privateKeyPem,
+          }),
+        );
+        expect(result.apiKey).toBeUndefined();
+        expect(result.mtlsCertificate).toEqual({
+          fingerprint256: pki.client.fingerprint256,
+          commonName: 'api-client',
+          validTo: expect.any(String),
+        });
+        expect(JSON.stringify(result)).not.toContain('PRIVATE KEY');
+      });
+
+      it.each([
+        [{}, 'Client certificate and private key are required for the mtls authentication type'],
+        [{ mtlsCertificate: 'x' }, 'Client certificate and private key are required for the mtls authentication type'],
+        [
+          { mtlsCertificate: pki.client.pem, mtlsPrivateKey: pki.foreignClient.privateKeyPem },
+          'The private key does not belong to the client certificate (the leaf certificate must come first).',
+        ],
+      ])('should reject invalid credentials %#', async (credentials, message) => {
+        mockRepository.findByName.mockResolvedValue(null);
+
+        await expect(
+          service.create({
+            name: 'mTLS Client',
+            endpoint: 'https://manager.example.com',
+            authenticationType: AuthenticationType.MTLS,
+            ...credentials,
+          }),
+        ).rejects.toThrow(new BadRequestException(message));
+        expect(repository.create).not.toHaveBeenCalled();
+      });
     });
 
     it('should throw BadRequestException when OIDC type is missing credentials', async () => {
@@ -752,6 +811,84 @@ describe('ClientsService', () => {
       await service.update('oidc-client-uuid', { name: 'Renamed' }, undefined, undefined, true);
 
       expect(oidcClientCredentialsService.clearCache).not.toHaveBeenCalled();
+    });
+
+    describe('mtls', () => {
+      const pki = createTestPki();
+      const mtlsClient = {
+        ...mockClient,
+        authenticationType: AuthenticationType.MTLS,
+        mtlsCertificate: pki.client.pem,
+        mtlsPrivateKey: pki.client.privateKeyPem,
+      } as ClientEntity;
+      const arrange = (before: ClientEntity) => {
+        mockRepository.findByIdOrThrow.mockResolvedValue(before);
+        mockRepository.findByName.mockResolvedValue(null);
+        mockRepository.findById.mockResolvedValue(before);
+        repository.update.mockImplementation(async (_id, data) => ({ ...before, ...data }) as ClientEntity);
+      };
+
+      it('should require a valid pair when switching to mtls', async () => {
+        arrange(mockClient);
+
+        await expect(
+          service.update('test-uuid', { authenticationType: AuthenticationType.MTLS }, undefined, undefined, true),
+        ).rejects.toThrow('Client certificate and private key are required for the mtls authentication type');
+
+        await service.update(
+          'test-uuid',
+          {
+            authenticationType: AuthenticationType.MTLS,
+            mtlsCertificate: pki.client.pem,
+            mtlsPrivateKey: pki.client.privateKeyPem,
+          },
+          undefined,
+          undefined,
+          true,
+        );
+
+        expect(repository.update).toHaveBeenCalledWith(
+          'test-uuid',
+          expect.objectContaining({ mtlsCertificate: pki.client.pem, mtlsPrivateKey: pki.client.privateKeyPem }),
+        );
+      });
+
+      it('should keep the stored pair for unrelated updates and require both to rotate it', async () => {
+        arrange(mtlsClient);
+
+        await service.update('test-uuid', { name: 'Renamed' }, undefined, undefined, true);
+
+        expect(repository.update).toHaveBeenLastCalledWith('test-uuid', { name: 'Renamed' });
+
+        await expect(
+          service.update('test-uuid', { mtlsCertificate: pki.intermediateClient.pem }, undefined, undefined, true),
+        ).rejects.toThrow(BadRequestException);
+      });
+
+      it('should drop the stored certificate and key when switching away from mtls', async () => {
+        arrange(mtlsClient);
+
+        await service.update(
+          'test-uuid',
+          { authenticationType: AuthenticationType.API_KEY, apiKey: 'new-key' },
+          undefined,
+          undefined,
+          true,
+        );
+
+        expect(repository.update).toHaveBeenCalledWith(
+          'test-uuid',
+          expect.objectContaining({ mtlsCertificate: null, mtlsPrivateKey: null, apiKey: 'new-key' }),
+        );
+      });
+
+      it('should reject certificates for other authentication types', async () => {
+        arrange(mockClient);
+
+        await expect(
+          service.update('test-uuid', { mtlsCertificate: pki.client.pem }, undefined, undefined, true),
+        ).rejects.toThrow('Client certificates are only used with the mtls authentication type');
+      });
     });
 
     it('should throw BadRequestException when new name conflicts', async () => {

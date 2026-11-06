@@ -2,10 +2,12 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import {
+  clearMtlsCredential,
   IDENTITY_AUTH_ENVIRONMENT,
   isUrlWithinApiBase,
   USERS_JWT_STORAGE_KEY,
   usesAppSessionJwt,
+  usesStaticCredential,
 } from '@forepath/identity/frontend';
 import { Store } from '@ngrx/store';
 import { catchError, tap, throwError } from 'rxjs';
@@ -122,9 +124,9 @@ function requestMatchesAuthApi(
 }
 
 /**
- * On invalid-auth 401 for users, saml, oidc, or api-key: clears stored credentials when
+ * On invalid-auth 401 for users, saml, oidc, api-key or mtls: clears stored credentials when
  * applicable, dispatches {@link logout}, and navigates to `/login` immediately for
- * users, saml and api-key (the OIDC provider logout redirect stays on the logout effect).
+ * users, saml, api-key and mtls (the OIDC provider logout redirect stays on the logout effect).
  */
 export const usersSessionInvalidatedInterceptor: HttpInterceptorFn = (req, next) => {
   const authEnv = inject(IDENTITY_AUTH_ENVIRONMENT);
@@ -132,7 +134,7 @@ export const usersSessionInvalidatedInterceptor: HttpInterceptorFn = (req, next)
   const router = inject(Router, { optional: true });
   const authType = authEnv.authentication.type;
 
-  if (authType !== 'users' && authType !== 'saml' && authType !== 'oidc' && authType !== 'api-key') {
+  if (!usesAppSessionJwt(authType) && authType !== 'oidc' && !usesStaticCredential(authType)) {
     return next(req);
   }
 
@@ -163,11 +165,16 @@ export const usersSessionInvalidatedInterceptor: HttpInterceptorFn = (req, next)
         localStorage.removeItem(API_KEY_STORAGE_KEY);
       }
 
+      if (authType === 'mtls') {
+        // Rejected certificate (expired, revoked, untrusted): drop it so the login page asks for a new one.
+        void clearMtlsCredential();
+      }
+
       if (store) {
         store.dispatch(logout({}));
       }
 
-      if ((usesAppSessionJwt(authType) || authType === 'api-key') && router) {
+      if ((usesAppSessionJwt(authType) || usesStaticCredential(authType)) && router) {
         void router.navigate(['/login']);
       } else if (!store && router) {
         void router.navigate(['/login']);

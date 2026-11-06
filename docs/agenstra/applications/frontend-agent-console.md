@@ -208,6 +208,7 @@ Behavior depends on controller configuration:
 - **OIDC** Authorization Code + PKCE (`oidc-client-ts`), tokens attached to HTTP and WebSocket handshakes, renewal handled by the identity frontend layer.
 - **SAML** Sign-in through the backend (`/api/auth/saml/login`), callback route `/login/saml/callback` exchanges a one-time code for a session JWT; afterwards it behaves like users mode.
 - **Users (JWT)** Email/password login and registration routes from `identityAuthRoutes`; tokens are stored and sent as `Bearer` on HTTP and on WebSocket handshakes.
+- **mTLS (client certificate)** The login page asks for a PEM certificate file (and optionally a separate PKCS#8 private key file). The key is imported non-extractable into IndexedDB; short-lived certificate assertions (`Authorization: Certificate …`) are attached to HTTP and WebSocket handshakes. Full access like the API key (no PAT / user management UI).
 
 See [Authentication](../features/authentication.md) for environment variables and operational notes.
 
@@ -260,6 +261,7 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 
 - OIDC: `authentication.config = { "type": "oidc", "issuer": "…", "clientId": "…", "scope"?: "openid profile email", "postLogoutRedirectUri"?: "…" }` (public client)
 - SAML: `authentication.config = { "type": "saml" }`
+- mTLS: `authentication.config = { "type": "mtls", "assertionLifetimeSeconds"?: 120, "audience"?: "…" }` (`audience` must equal the API's `MTLS_ASSERTION_AUDIENCE` when that is set; the lifetime must not exceed `MTLS_ASSERTION_MAX_LIFETIME`)
 
 ## Development
 

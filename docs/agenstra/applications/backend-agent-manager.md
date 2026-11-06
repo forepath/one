@@ -199,7 +199,7 @@ For complete WebSocket event specifications, authentication flow, and usage exam
 
 ## Authentication
 
-Built-in **users** registration and JWT login live on the **agent controller** only. The agent manager application uses **OIDC** (`AUTHENTICATION_METHOD=oidc`; access tokens, typically the controller's client credentials tokens) or **static API key** (`api-key`) as configured; any other method fails at boot and there are no `/auth/*` endpoints on this service. Operators typically never call the manager HTTP API directly from a browser; the console uses the controller, which proxies requests with stored client credentials.
+Built-in **users** registration and JWT login live on the **agent controller** only. The agent manager application uses **OIDC** (`AUTHENTICATION_METHOD=oidc`; access tokens, typically the controller's client credentials tokens) **static API key** (`api-key`) or **client certificates** (`mtls`) as configured; any other method fails at boot and there are no `/auth/*` endpoints on this service. Operators typically never call the manager HTTP API directly from a browser; the console uses the controller, which proxies requests with stored client credentials.
 
 ### HTTP Endpoints
 
@@ -213,6 +213,10 @@ All HTTP endpoints are protected by OIDC authentication by default. If `STATIC_A
 **API Key Authentication**:
 
 - Include the API key in the `Authorization` header: `Bearer <static-api-key>` or `ApiKey <static-api-key>`
+
+**mTLS Authentication** (`AUTHENTICATION_METHOD=mtls`):
+
+- Client certificates of a CA in `MTLS_CA_CERT` (typically the controller's certificate, configured on the client as authentication type `mtls`), presented as `Authorization: Certificate <assertion>` or in the TLS handshake of the optional native listener (`MTLS_SERVER_CERT` / `MTLS_SERVER_KEY`). The `/socket/agents` handshake accepts the same credentials. See [Authentication](../features/authentication.md#controller--agent-manager-over-mtls)
 
 ### WebSocket Gateway
 

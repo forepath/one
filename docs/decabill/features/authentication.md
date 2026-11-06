@@ -4,9 +4,10 @@ Authentication system supporting multiple methods with configurable user registr
 
 ## Overview
 
-Decabill supports four authentication methods:
+Decabill supports five authentication methods:
 
 - **API Key Authentication** Static API key for automation and operator scripts
+- **mTLS Authentication** Client certificates of a CA you control; full access like the API key
 - **OIDC Authentication** Any OpenID Connect provider (for example Keycloak)
 - **SAML Authentication** SAML 2.0 single sign-on
 - **Users Authentication** Built-in user registration with JWT
@@ -34,6 +35,89 @@ When `STATIC_API_KEY` is set and `AUTHENTICATION_METHOD` is unset, the backend m
 - API key authentication grants admin rights on billing admin routes
 - No interactive user identity; WebSocket dashboard status is rejected (see [Real-time Status](./real-time-status.md))
 - Combine with [Multi-tenancy](./multi-tenancy.md) and optional `STATIC_API_KEY_TENANT_ID`
+
+### mTLS (Client Certificate) Authentication
+
+Like API key authentication, but the credential is an X.509 client certificate issued by a CA you control instead of a shared secret. A trusted certificate grants **full admin access to every endpoint and websocket**, exactly like `STATIC_API_KEY`: there are no user accounts, roles, personal access tokens or apps. Use it when certificates are already your credential of choice (PKI, smart cards, short-lived CI certificates) or when a leaked bearer secret is an unacceptable risk.
+
+**Configuration**:
+
+```bash
+AUTHENTICATION_METHOD=mtls
+# PEM bundle of the CA(s) that issue API client certificates (inline with \n escapes, or a file)
+MTLS_CA_CERT_FILE=/run/secrets/api-client-ca.pem
+# Optional: native TLS listener that requests client certificates (see "Presenting the certificate")
+MTLS_SERVER_CERT_FILE=/run/secrets/server.crt
+MTLS_SERVER_KEY_FILE=/run/secrets/server.key
+```
+
+| Variable                                            | Required | Description                                                                                                                                         |
+| --------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MTLS_CA_CERT` / `MTLS_CA_CERT_FILE`                | yes      | Trusted client CA bundle (PEM). A self-signed client certificate without the CA flag can be listed to pin exactly that certificate.                 |
+| `MTLS_ALLOWED_FINGERPRINTS`                         | no       | Comma-separated SHA-256 fingerprints (hex, colons optional). When this or `MTLS_ALLOWED_SUBJECTS` is set, a certificate must match one of the lists |
+| `MTLS_ALLOWED_SUBJECTS`                             | no       | Comma-separated subject common names (`CN`)                                                                                                         |
+| `MTLS_REVOKED_FINGERPRINTS`                         | no       | Comma-separated SHA-256 fingerprints that are always rejected (revocation without a CRL)                                                            |
+| `MTLS_ASSERTION_MAX_LIFETIME`                       | no       | Maximum lifetime of a certificate assertion in seconds (default `300`, max `3600`)                                                                  |
+| `MTLS_ASSERTION_AUDIENCE`                           | no       | When set, certificate assertions must carry this `aud`                                                                                              |
+| `MTLS_SERVER_CERT[_FILE]`, `MTLS_SERVER_KEY[_FILE]` | no       | Serve HTTPS and request client certificates in the TLS handshake. Unset: plain HTTP (TLS terminated by a reverse proxy)                             |
+
+The API refuses to start when `MTLS_CA_CERT` is missing or invalid. `mtls` is never inferred: it must be selected explicitly.
+
+**Certificate requirements** (checked for both ways of presenting a certificate):
+
+- currently valid (`notBefore` / `notAfter`), not a CA certificate, chains to a trusted CA through valid CA intermediates (signatures verified; at most 5 certificates)
+- `clientAuth` extended key usage when the certificate restricts extended key usage
+- RSA ≥ 2048 bits, ECDSA P-256 / P-384 / P-521, or Ed25519
+- not listed in `MTLS_REVOKED_FINGERPRINTS`, and matching the allowlists when configured
+
+**Presenting the certificate**: the API accepts either of the following; both prove possession of the private key.
+
+1. **TLS handshake (native mTLS)**: with `MTLS_SERVER_CERT` / `MTLS_SERVER_KEY` set the API serves HTTPS and requests a client certificate. Unknown or missing certificates do not abort the handshake (health checks and assertion clients must still connect); every protected route then rejects the request. Best for CLIs and services that reach the API directly:
+
+   ```bash
+   curl --cacert server-ca.pem --cert client.pem --key client.key https://api.example.com/api/clients
+   ```
+
+2. **Certificate assertion** (`Authorization: Certificate <assertion>`): a short-lived JWS signed with the certificate's private key that carries the certificate chain (`x5c`). Use it when TLS is terminated by a reverse proxy, or from browsers (the consoles do this automatically). Format:
+   - header `{ "alg": "ES256" | "ES384" | "ES512" | "RS256" | "EdDSA", "typ": "cert-assertion+jwt", "x5c": ["<leaf DER, base64>", "<intermediate>", …] }`; `alg` must match the certificate key
+   - payload `{ "iat", "exp", "jti", "aud"? }` with `exp - iat ≤ MTLS_ASSERTION_MAX_LIFETIME` (30 s clock skew tolerated)
+
+   Node clients can use the shared helper:
+
+   ```ts
+   import { createMtlsAssertion } from '@forepath/identity/backend';
+
+   const assertion = createMtlsAssertion({ certificateChain: certificatePem, privateKey: privateKeyPem, lifetimeSeconds: 120 });
+   await fetch(`${apiUrl}/clients`, { headers: { Authorization: `Certificate ${assertion}` } });
+   ```
+
+**Console login**: with `authentication: { type: 'mtls' }` in the console's runtime configuration, the login page asks for a **certificate file** instead of an API key: a PEM file with the client certificate (and intermediates), plus the PKCS#8 private key in the same file or in a second, optional file. The console imports the key as a **non-extractable** WebCrypto key into IndexedDB (scripts can sign with it but never read it back), then signs a fresh assertion every ~90 seconds (lifetime 120 s, `assertionLifetimeSeconds` / `audience` configurable). HTTP requests and Socket.IO handshakes carry it like any other credential. Logout, an expired certificate or a 401 removes the stored key. Encrypted keys and PKCS#12 files are not read directly; convert them first:
+
+```bash
+openssl pkcs12 -in client.p12 -nodes -out client.pem          # PKCS#12 → PEM (certificate + key)
+openssl pkcs8 -topk8 -nocrypt -in client.key -out client.pk8   # PKCS#1 / SEC1 / encrypted → PKCS#8
+```
+
+**Issuing client certificates** (example with a dedicated CA):
+
+```bash
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes -days 3650 \
+  -subj "/CN=API Client CA" -keyout ca.key -out ca.pem \
+  -addext basicConstraints=critical,CA:TRUE -addext keyUsage=critical,keyCertSign,cRLSign
+openssl req -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes -subj "/CN=ci-runner" -keyout client.key -out client.csr
+openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial -days 90 -out client.pem \
+  -extfile <(printf "basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature\nextendedKeyUsage=clientAuth")
+```
+
+**WebSockets**: every Socket.IO namespace accepts the same credentials as HTTP (TLS client certificate of the handshake connection, or `Certificate <assertion>` in the `Authorization` header / `auth.Authorization`) and grants the same full access as the API key. Like API-key and interactive sockets, the certificate is checked at the handshake; reconnects present a fresh assertion.
+
+**Security notes**:
+
+- Use a CA **dedicated to API clients**: every certificate it issues is an administrator. Restrict shared CAs with `MTLS_ALLOWED_FINGERPRINTS` / `MTLS_ALLOWED_SUBJECTS`.
+- Revocation is not fetched (no CRL / OCSP): prefer short-lived certificates, and list compromised ones in `MTLS_REVOKED_FINGERPRINTS`.
+- Never give a reverse proxy an upstream client certificate issued by the trusted CA: with the native listener every request forwarded over that connection would be authenticated as the proxy.
+- A certificate assertion is a bearer credential for its short lifetime (≤ `MTLS_ASSERTION_MAX_LIFETIME`); set `MTLS_ASSERTION_AUDIENCE` when several APIs trust the same CA. Unlike a static API key, it expires on its own and the private key never leaves the client.
+- Rejections answer `401 Missing client certificate` / `401 Invalid client certificate`; the reason (expired, untrusted, revoked, …) is only logged.
 
 ### OIDC Authentication
 
@@ -152,7 +236,7 @@ PRODUCT_NAME=Decabill  # Issuer label on TOTP QR / authenticator entries (defaul
 
 ### Personal access tokens (users, oidc and saml modes)
 
-User-bound tokens for scripts and CI (for example usage recording). They are **not** a billing-console login password. **Not available** when `AUTHENTICATION_METHOD=api-key`.
+User-bound tokens for scripts and CI (for example usage recording). They are **not** a billing-console login password. **Not available** when `AUTHENTICATION_METHOD=api-key` or `mtls`.
 
 | Concern                  | Behavior                                                                                                                           |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -224,7 +308,7 @@ The per-event scope maps live in `billing-websocket.scopes.ts` (product) on top 
 
 ### Apps (third-party authorization; users, oidc and saml modes)
 
-Admins can register **apps**: external applications that act on behalf of users after the user authorizes them (similar to GitHub OAuth apps). Apps reuse the [PAT scope catalog](#scope-model). **Not available** when `AUTHENTICATION_METHOD=api-key`.
+Admins can register **apps**: external applications that act on behalf of users after the user authorizes them (similar to GitHub OAuth apps). Apps reuse the [PAT scope catalog](#scope-model). **Not available** when `AUTHENTICATION_METHOD=api-key` or `mtls`.
 
 | Concern        | Behavior                                                                                                                                                                                                                                                   |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -410,6 +494,7 @@ flowchart TB
         direction TB
         AUTH_METHOD["AUTHENTICATION_METHOD env"]
         AUTH_METHOD --> API_KEY["api-key"]
+        AUTH_METHOD --> MTLS["mtls"]
         AUTH_METHOD --> OIDC["oidc"]
         AUTH_METHOD --> SAML["saml"]
         AUTH_METHOD --> USERS["users"]
@@ -420,6 +505,12 @@ flowchart TB
         AK1 --> AK2["Authorization: Bearer or ApiKey header"]
         AK2 --> AK3["Admin rights on billing admin routes"]
         AK2 --> AK4["No WebSocket dashboard user stream"]
+    end
+
+    subgraph MTLS_FLOW["mTLS Flow"]
+        MTLS --> MT1["MTLS_CA_CERT required"]
+        MT1 --> MT2["TLS client certificate or Authorization: Certificate &lt;assertion&gt;"]
+        MT2 --> AK3
     end
 
     subgraph OIDC_FLOW["OIDC Flow"]

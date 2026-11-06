@@ -163,7 +163,7 @@ This framework includes several built-in security features:
 
 The products intentionally depart from stricter baselines in a few places. Each item below is **accepted** with compensating measures and a **review cadence**. Expanded register entries live in the product security docs linked below.
 
-### Agenstra (register AR-001 through AR-005)
+### Agenstra (register AR-001 through AR-006)
 
 Full register: **[docs/agenstra/security/accepted-risks.md](./docs/agenstra/security/accepted-risks.md)**
 
@@ -174,8 +174,9 @@ Full register: **[docs/agenstra/security/accepted-risks.md](./docs/agenstra/secu
 | **AR-003** | Backend auth resolution    | `AUTHENTICATION_METHOD` optional; implicit oidc when no API key set         |
 | **AR-004** | Desktop window open policy | Electron `setWindowOpenHandler` allows new windows                          |
 | **AR-005** | Trivy gate                 | Unfixed CVEs do not fail CI (`ignore-unfixed: true`)                        |
+| **AR-006** | mTLS authentication        | No CRL / OCSP; certificate assertions replayable within their lifetime      |
 
-### Decabill (register DR-001 through DR-005)
+### Decabill (register DR-001 through DR-006)
 
 Full register: **[docs/decabill/security/accepted-risks.md](./docs/decabill/security/accepted-risks.md)**
 
@@ -186,6 +187,7 @@ Full register: **[docs/decabill/security/accepted-risks.md](./docs/decabill/secu
 | **DR-003** | Web frontends                | CSP allows `unsafe-inline` / `unsafe-eval` (report-only default)    |
 | **DR-004** | Backend auth resolution      | Same implicit auth mode resolution as shared identity stack         |
 | **DR-005** | Trivy gate                   | Unfixed CVEs do not fail CI (monorepo-wide `trivy.yaml`)            |
+| **DR-006** | mTLS authentication          | No CRL / OCSP; certificate assertions replayable within lifetime    |
 
 ## Security Resources
 

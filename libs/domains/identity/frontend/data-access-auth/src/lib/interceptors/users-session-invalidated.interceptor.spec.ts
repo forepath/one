@@ -4,8 +4,12 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import {
   createMockIdentityAuthEnvironment,
+  hasMtlsCredential,
   IDENTITY_AUTH_ENVIRONMENT,
   IdentityAuthEnvironment,
+  type MtlsCredential,
+  resetMtlsCredentialStateForTests,
+  saveMtlsCredential,
   USERS_JWT_STORAGE_KEY,
 } from '@forepath/identity/frontend';
 import { Store } from '@ngrx/store';
@@ -234,6 +238,44 @@ describe('usersSessionInvalidatedInterceptor', () => {
         done();
       },
     });
+  });
+
+  it('clears the stored client certificate, dispatches logout, and navigates on 401 in mtls mode', async () => {
+    resetMtlsCredentialStateForTests();
+    await saveMtlsCredential({
+      privateKey: { type: 'private', usages: ['sign'] } as unknown as CryptoKey,
+      certificateChain: ['AAAA'],
+      algorithm: 'ES256',
+      notBefore: Date.now() - 1000,
+      notAfter: Date.now() + 60_000,
+    } satisfies MtlsCredential);
+    await expect(hasMtlsCredential()).resolves.toBe(true);
+
+    const injector = setupInjector(createMockIdentityAuthEnvironment({ authentication: { type: 'mtls' } }));
+
+    mockNext.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 401,
+            url: 'http://localhost:3100/api/clients',
+            error: { message: 'Invalid client certificate', statusCode: 401 },
+          }),
+      ),
+    );
+
+    const req = new HttpRequest('GET', 'http://localhost:3100/api/clients');
+
+    await new Promise<void>((resolve) => {
+      runInInjectionContext(injector, () => usersSessionInvalidatedInterceptor(req, mockNext)).subscribe({
+        error: () => resolve(),
+      });
+    });
+
+    await expect(hasMtlsCredential()).resolves.toBe(false);
+    expect(removeItemSpy).not.toHaveBeenCalledWith(API_KEY_STORAGE_KEY);
+    expect(storeDispatch).toHaveBeenCalledWith(logout({}));
+    expect(routerNavigate).toHaveBeenCalledWith(['/login']);
   });
 
   it('dispatches logout on Missing authorization header 401 for api-key mode', (done) => {

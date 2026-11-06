@@ -5,6 +5,7 @@ export * from './lib/otel-metrics-request-path';
 export * from './lib/bull-board-throttler.guard';
 export * from './lib/http-request-path.util';
 export * from './lib/hybrid-auth.guard';
+export * from './lib/mtls';
 export * from './lib/oidc';
 export * from './lib/origin-allowlist.middleware';
 export * from './lib/service-socket-auth';

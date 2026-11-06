@@ -1,5 +1,8 @@
 import {
+  API_KEY_PRINCIPAL_ID,
+  authenticateMtls,
   getAuthenticationMethod,
+  MTLS_PRINCIPAL_ID,
   OidcTokenVerifier,
   patScopeSatisfied,
   secretsEqual,
@@ -8,7 +11,7 @@ import {
 } from '@forepath/identity/backend';
 import type { SocketUserInfo } from '@forepath/identity/backend';
 import { DEFAULT_TENANT, getTenantIdOrDefault, runWithTenantId } from '@forepath/shared/backend';
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 
@@ -36,6 +39,11 @@ export interface SocketAuthOptions {
    * `websocket:<name>:read`. Without it machine tokens are rejected (fail-closed).
    */
   websocket?: string;
+  /**
+   * Underlying connection of the handshake (`socket.request.socket`). In `mtls` mode a client certificate presented in
+   * the TLS handshake authenticates without an `Authorization` value.
+   */
+  transportSocket?: unknown;
 }
 
 /** Optional injection token for explicit machine JWT verifiers (defaults to the app's PatAuthModule services). */
@@ -43,6 +51,7 @@ export const SOCKET_MACHINE_JWT_VERIFIERS = 'IDENTITY_SOCKET_MACHINE_JWT_VERIFIE
 
 @Injectable()
 export class SocketAuthService {
+  private readonly logger = new Logger(SocketAuthService.name);
   private readonly externalIdentityService: ExternalIdentityService;
 
   constructor(
@@ -61,7 +70,8 @@ export class SocketAuthService {
 
   /**
    * Validate Authorization header and return user info for client access checks.
-   * Uses same auth logic as HTTP: api-key, oidc (IdP access token), or users / saml (app session JWT).
+   * Uses same auth logic as HTTP: api-key, mtls (TLS client certificate or certificate assertion), oidc (IdP access
+   * token), or users / saml (app session JWT).
    * Machine tokens (PAT / app access tokens) are only accepted with `options.websocket` and the matching
    * `websocket:<name>:read` scope; they carry live `scopes` that gateways enforce per event.
    */
@@ -70,11 +80,16 @@ export class SocketAuthService {
     tenantId?: string,
     options?: SocketAuthOptions,
   ): Promise<SocketUserInfo | null> {
+    const authMethod = getAuthenticationMethod();
+
+    // mtls: a TLS client certificate needs no Authorization value, so check before the header shortcut.
+    if (authMethod === 'mtls') {
+      return this.validateClientCertificate(authHeader, options?.transportSocket);
+    }
+
     if (!authHeader) {
       return null;
     }
-
-    const authMethod = getAuthenticationMethod();
 
     if (authMethod === 'api-key') {
       return this.validateApiKey(authHeader);
@@ -115,11 +130,38 @@ export class SocketAuthService {
     if ((scheme === 'Bearer' || scheme === 'ApiKey') && secretsEqual(providedKey, staticApiKey)) {
       return {
         isApiKeyAuth: true,
-        user: { id: 'api-key-user', roles: ['admin', 'user'] },
+        user: { id: API_KEY_PRINCIPAL_ID, roles: ['admin', 'user'] },
       };
     }
 
     return null;
+  }
+
+  /** Same rules as `HybridAuthGuard` in mtls mode: a trusted client certificate grants full access (like the API key). */
+  private validateClientCertificate(authHeader: string | undefined, transportSocket: unknown): SocketUserInfo | null {
+    let result: ReturnType<typeof authenticateMtls>;
+
+    try {
+      result = authenticateMtls({ authorization: authHeader, transportSocket });
+    } catch (error) {
+      this.logger.error(`mTLS socket authentication unavailable: ${error instanceof Error ? error.message : error}`);
+
+      return null;
+    }
+
+    if ('reason' in result) {
+      if (result.presented) {
+        this.logger.warn(`Socket client certificate rejected: ${result.reason}`);
+      }
+
+      return null;
+    }
+
+    return {
+      isApiKeyAuth: true,
+      user: { id: MTLS_PRINCIPAL_ID, roles: ['admin', 'user'] },
+      clientCertificate: result.principal,
+    };
   }
 
   private async validateOidcToken(

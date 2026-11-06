@@ -4,9 +4,10 @@ Authentication system supporting multiple authentication methods with configurab
 
 ## Overview
 
-Agenstra supports four authentication methods:
+Agenstra supports five authentication methods:
 
 - **API Key Authentication** Static API key for simple authentication
+- **mTLS Authentication** Client certificates of a CA you control; full access like the API key
 - **OIDC Authentication** Any OpenID Connect provider (for example Keycloak)
 - **SAML Authentication** SAML 2.0 single sign-on (controller only)
 - **Users Authentication** Built-in user registration with JWT
@@ -32,6 +33,98 @@ STATIC_API_KEY=your-secure-api-key-here
 - API key authentication always grants admin rights
 - No user management required
 - Simple setup for development environments
+
+### mTLS (Client Certificate) Authentication
+
+Like API key authentication, but the credential is an X.509 client certificate issued by a CA you control instead of a shared secret. A trusted certificate grants **full admin access to every endpoint and websocket**, exactly like `STATIC_API_KEY`: there are no user accounts, roles, personal access tokens or apps. Use it when certificates are already your credential of choice (PKI, smart cards, short-lived CI certificates) or when a leaked bearer secret is an unacceptable risk.
+
+**Configuration**:
+
+```bash
+AUTHENTICATION_METHOD=mtls
+# PEM bundle of the CA(s) that issue API client certificates (inline with \n escapes, or a file)
+MTLS_CA_CERT_FILE=/run/secrets/api-client-ca.pem
+# Optional: native TLS listener that requests client certificates (see "Presenting the certificate")
+MTLS_SERVER_CERT_FILE=/run/secrets/server.crt
+MTLS_SERVER_KEY_FILE=/run/secrets/server.key
+```
+
+| Variable                                            | Required | Description                                                                                                                                         |
+| --------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MTLS_CA_CERT` / `MTLS_CA_CERT_FILE`                | yes      | Trusted client CA bundle (PEM). A self-signed client certificate without the CA flag can be listed to pin exactly that certificate.                 |
+| `MTLS_ALLOWED_FINGERPRINTS`                         | no       | Comma-separated SHA-256 fingerprints (hex, colons optional). When this or `MTLS_ALLOWED_SUBJECTS` is set, a certificate must match one of the lists |
+| `MTLS_ALLOWED_SUBJECTS`                             | no       | Comma-separated subject common names (`CN`)                                                                                                         |
+| `MTLS_REVOKED_FINGERPRINTS`                         | no       | Comma-separated SHA-256 fingerprints that are always rejected (revocation without a CRL)                                                            |
+| `MTLS_ASSERTION_MAX_LIFETIME`                       | no       | Maximum lifetime of a certificate assertion in seconds (default `300`, max `3600`)                                                                  |
+| `MTLS_ASSERTION_AUDIENCE`                           | no       | When set, certificate assertions must carry this `aud`                                                                                              |
+| `MTLS_SERVER_CERT[_FILE]`, `MTLS_SERVER_KEY[_FILE]` | no       | Serve HTTPS and request client certificates in the TLS handshake. Unset: plain HTTP (TLS terminated by a reverse proxy)                             |
+
+The API refuses to start when `MTLS_CA_CERT` is missing or invalid. `mtls` is never inferred: it must be selected explicitly.
+
+**Certificate requirements** (checked for both ways of presenting a certificate):
+
+- currently valid (`notBefore` / `notAfter`), not a CA certificate, chains to a trusted CA through valid CA intermediates (signatures verified; at most 5 certificates)
+- `clientAuth` extended key usage when the certificate restricts extended key usage
+- RSA ≥ 2048 bits, ECDSA P-256 / P-384 / P-521, or Ed25519
+- not listed in `MTLS_REVOKED_FINGERPRINTS`, and matching the allowlists when configured
+
+**Presenting the certificate**: the API accepts either of the following; both prove possession of the private key.
+
+1. **TLS handshake (native mTLS)**: with `MTLS_SERVER_CERT` / `MTLS_SERVER_KEY` set the API serves HTTPS and requests a client certificate. Unknown or missing certificates do not abort the handshake (health checks and assertion clients must still connect); every protected route then rejects the request. Best for CLIs and services that reach the API directly:
+
+   ```bash
+   curl --cacert server-ca.pem --cert client.pem --key client.key https://api.example.com/api/clients
+   ```
+
+2. **Certificate assertion** (`Authorization: Certificate <assertion>`): a short-lived JWS signed with the certificate's private key that carries the certificate chain (`x5c`). Use it when TLS is terminated by a reverse proxy, or from browsers (the consoles do this automatically). Format:
+   - header `{ "alg": "ES256" | "ES384" | "ES512" | "RS256" | "EdDSA", "typ": "cert-assertion+jwt", "x5c": ["<leaf DER, base64>", "<intermediate>", …] }`; `alg` must match the certificate key
+   - payload `{ "iat", "exp", "jti", "aud"? }` with `exp - iat ≤ MTLS_ASSERTION_MAX_LIFETIME` (30 s clock skew tolerated)
+
+   Node clients can use the shared helper:
+
+   ```ts
+   import { createMtlsAssertion } from '@forepath/identity/backend';
+
+   const assertion = createMtlsAssertion({ certificateChain: certificatePem, privateKey: privateKeyPem, lifetimeSeconds: 120 });
+   await fetch(`${apiUrl}/clients`, { headers: { Authorization: `Certificate ${assertion}` } });
+   ```
+
+**Console login**: with `authentication: { type: 'mtls' }` in the console's runtime configuration, the login page asks for a **certificate file** instead of an API key: a PEM file with the client certificate (and intermediates), plus the PKCS#8 private key in the same file or in a second, optional file. The console imports the key as a **non-extractable** WebCrypto key into IndexedDB (scripts can sign with it but never read it back), then signs a fresh assertion every ~90 seconds (lifetime 120 s, `assertionLifetimeSeconds` / `audience` configurable). HTTP requests and Socket.IO handshakes carry it like any other credential. Logout, an expired certificate or a 401 removes the stored key. Encrypted keys and PKCS#12 files are not read directly; convert them first:
+
+```bash
+openssl pkcs12 -in client.p12 -nodes -out client.pem          # PKCS#12 → PEM (certificate + key)
+openssl pkcs8 -topk8 -nocrypt -in client.key -out client.pk8   # PKCS#1 / SEC1 / encrypted → PKCS#8
+```
+
+**Issuing client certificates** (example with a dedicated CA):
+
+```bash
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes -days 3650 \
+  -subj "/CN=API Client CA" -keyout ca.key -out ca.pem \
+  -addext basicConstraints=critical,CA:TRUE -addext keyUsage=critical,keyCertSign,cRLSign
+openssl req -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes -subj "/CN=ci-runner" -keyout client.key -out client.csr
+openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial -days 90 -out client.pem \
+  -extfile <(printf "basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature\nextendedKeyUsage=clientAuth")
+```
+
+**WebSockets**: every Socket.IO namespace accepts the same credentials as HTTP (TLS client certificate of the handshake connection, or `Certificate <assertion>` in the `Authorization` header / `auth.Authorization`) and grants the same full access as the API key. Like API-key and interactive sockets, the certificate is checked at the handshake; reconnects present a fresh assertion.
+
+#### Controller → agent-manager over mTLS
+
+Agent-managers can run `AUTHENTICATION_METHOD=mtls` as well. The controller then authenticates with a **client certificate per client**:
+
+1. Issue a client certificate for the controller from a CA the manager trusts (see _Issuing client certificates_ above) and configure the manager with `AUTHENTICATION_METHOD=mtls` and `MTLS_CA_CERT[_FILE]` (optionally `MTLS_ALLOWED_FINGERPRINTS` to pin exactly the controller's certificate, and `MTLS_SERVER_CERT` / `MTLS_SERVER_KEY` for a native TLS listener).
+2. In the console, add (or edit) the client with authentication type **mTLS (client certificate)** and select the certificate (PEM, leaf first) and its unencrypted private key (PEM). Via the API: `authenticationType: "mtls"`, `mtlsCertificate`, `mtlsPrivateKey`.
+
+The controller validates the pair (matching key, accepted key type, not expired), stores the key AES-256-GCM encrypted (`ENCRYPTION_KEY`) and never returns it (responses only include the certificate's fingerprint, CN and expiry). Every proxied HTTP request and every websocket (re)connect to the manager carries a **fresh** certificate assertion (`Authorization: Certificate …`, lifetime 60 s) whose `aud` is the manager endpoint's origin, so a manager can bind assertions to itself with `MTLS_ASSERTION_AUDIENCE=<its external origin>`. Rotate by uploading a new certificate and key together; switching the client to another authentication type deletes them. Provisioned servers keep using API key or OIDC (an mTLS manager needs an operator CA).
+
+**Security notes**:
+
+- Use a CA **dedicated to API clients**: every certificate it issues is an administrator. Restrict shared CAs with `MTLS_ALLOWED_FINGERPRINTS` / `MTLS_ALLOWED_SUBJECTS`.
+- Revocation is not fetched (no CRL / OCSP): prefer short-lived certificates, and list compromised ones in `MTLS_REVOKED_FINGERPRINTS`.
+- Never give a reverse proxy an upstream client certificate issued by the trusted CA: with the native listener every request forwarded over that connection would be authenticated as the proxy.
+- A certificate assertion is a bearer credential for its short lifetime (≤ `MTLS_ASSERTION_MAX_LIFETIME`); set `MTLS_ASSERTION_AUDIENCE` when several APIs trust the same CA. Unlike a static API key, it expires on its own and the private key never leaves the client.
+- Rejections answer `401 Missing client certificate` / `401 Invalid client certificate`; the reason (expired, untrusted, revoked, …) is only logged.
 
 ### OIDC Authentication
 
@@ -119,7 +212,7 @@ Multi-tenant APIs: the browser redirect to `GET /api/auth/saml/login` cannot car
 
 `GET /api/auth/saml/metadata` serves SP metadata for IdP configuration. Logout uses `POST /auth/logout` as in users mode. Password login, registration and local 2FA endpoints are not available. Identity mapping, roles, locking and tenants work as in OIDC mode (`external_provider = saml`, `external_subject` = NameID).
 
-The agent-manager accepts only `api-key` or `oidc` (it has no console). With `oidc` it only validates tokens (no user mapping); the controller authenticates against it with client credentials (see [Client Management](./client-management.md)). Provisioned managers additionally set `OIDC_AUTHORIZED_PARTIES=<clientId>` so only the controller's client can call them.
+The agent-manager accepts `api-key`, `oidc` or `mtls` (it has no console; see [Controller → agent-manager over mTLS](#controller--agent-manager-over-mtls)). With `oidc` it only validates tokens (no user mapping); the controller authenticates against it with client credentials (see [Client Management](./client-management.md)). Provisioned managers additionally set `OIDC_AUTHORIZED_PARTIES=<clientId>` so only the controller's client can call them.
 
 Provisioned managers validate tokens OFFLINE (JWKS) with `OIDC_AUTHORIZED_PARTIES=<controller client id>` and never receive the client secret, so a compromised manager host cannot mint tokens other managers or the controller would accept. Use one OIDC client per manager when you configure managers manually. The manager websocket (`/socket/agents`) requires the same service credentials on the handshake (static API key or OIDC access token); unauthenticated sockets are refused before they connect.
 
@@ -155,7 +248,7 @@ PRODUCT_NAME=Agenstra  # Issuer label on TOTP QR / authenticator entries (defaul
 
 ### Personal access tokens (users, oidc and saml modes)
 
-User-bound tokens for scripts and CI. They are **not** a console login password. **Not available** when `AUTHENTICATION_METHOD=api-key`.
+User-bound tokens for scripts and CI. They are **not** a console login password. **Not available** when `AUTHENTICATION_METHOD=api-key` or `mtls`.
 
 | Concern                  | Behavior                                                                                                                           |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -226,7 +319,7 @@ The per-event scope maps live in `agenstra-websocket.scopes.ts` (product) on top
 
 ### Apps (third-party authorization; users, oidc and saml modes)
 
-Admins can register **apps**: external applications that act on behalf of users after the user authorizes them (similar to GitHub OAuth apps). Apps reuse the [PAT scope catalog](#scope-model). **Not available** when `AUTHENTICATION_METHOD=api-key`.
+Admins can register **apps**: external applications that act on behalf of users after the user authorizes them (similar to GitHub OAuth apps). Apps reuse the [PAT scope catalog](#scope-model). **Not available** when `AUTHENTICATION_METHOD=api-key` or `mtls`.
 
 | Concern        | Behavior                                                                                                                                                                                                                                                   |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -479,6 +572,7 @@ flowchart TB
         direction TB
         AUTH_METHOD["AUTHENTICATION_METHOD env"]
         AUTH_METHOD --> API_KEY["api-key"]
+        AUTH_METHOD --> MTLS["mtls"]
         AUTH_METHOD --> OIDC["oidc"]
         AUTH_METHOD --> SAML["saml"]
         AUTH_METHOD --> USERS["users"]
@@ -488,6 +582,12 @@ flowchart TB
         API_KEY --> AK1["STATIC_API_KEY required"]
         AK1 --> AK2["Authorization: Bearer &lt;key&gt; or ApiKey &lt;key&gt;"]
         AK2 --> AK3["Always admin rights"]
+    end
+
+    subgraph MTLS_FLOW["mTLS Flow"]
+        MTLS --> MT1["MTLS_CA_CERT required"]
+        MT1 --> MT2["TLS client certificate or Authorization: Certificate &lt;assertion&gt;"]
+        MT2 --> AK3
     end
 
     subgraph OIDC_FLOW["OIDC Flow"]
@@ -549,7 +649,7 @@ sequenceDiagram
 
 ## Per-Client Permissions
 
-When using **users**, **oidc** or **saml** authentication, access to clients is controlled by per-client permissions. Users can be assigned to clients with roles (admin/user). In **api-key** mode, users do not play a role and all permission checks are bypassed.
+When using **users**, **oidc** or **saml** authentication, access to clients is controlled by per-client permissions. Users can be assigned to clients with roles (admin/user). In **api-key** and **mtls** mode, users do not play a role and all permission checks are bypassed.
 
 See **[Client Management](./client-management.md#per-client-permissions)** for details on access control rules and managing client users.
 

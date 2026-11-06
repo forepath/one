@@ -21,6 +21,7 @@ import { AgentHandoffRequestHandlerService } from './agent-handoff-request-handl
 import { AgentTaskRequestHandlerService } from './agent-task-request-handler.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 export interface RemoteChatSyncParams {
   clientId: string;
@@ -139,6 +140,10 @@ export class RemoteAgentsSessionService {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;
+    }
+
+    if (client.authenticationType === AuthenticationType.MTLS) {
+      return createClientMtlsAuthorizationHeader(client);
     }
 
     throw new BadRequestException('Unsupported authentication type');

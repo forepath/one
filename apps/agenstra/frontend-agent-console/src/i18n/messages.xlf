@@ -6093,6 +6093,21 @@
       <trans-unit id="featureLogin-apiKeyRequired" datatype="html">
         <source>API key is required.</source>
         </trans-unit>
+      <trans-unit id="featureLogin-clientCertificate" datatype="html">
+        <source>Client certificate</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-clientCertificateHint" datatype="html">
+        <source>PEM with your certificate; may also contain the PKCS#8 key.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-clientCertificateRequired" datatype="html">
+        <source>A client certificate is required.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-clientPrivateKey" datatype="html">
+        <source>Private key (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-clientPrivateKeyHint" datatype="html">
+        <source>Only for a separate key file. The key never leaves this browser.</source>
+        </trans-unit>
       <trans-unit id="featureLogin-emailLabel" datatype="html">
         <source>Email</source>
         </trans-unit>

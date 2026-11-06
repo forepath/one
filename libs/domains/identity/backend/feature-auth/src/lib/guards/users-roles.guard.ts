@@ -1,10 +1,10 @@
 import {
-  getAuthenticationMethod,
   getHttpRequestPath,
   isBullBoardRequestPath,
   IS_PUBLIC_KEY,
   USERS_ROLES_KEY,
   UserRole,
+  usesStaticCredential,
 } from '@forepath/identity/backend';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -23,7 +23,8 @@ export class UsersRolesGuard implements CanActivate {
       return true;
     }
 
-    if (getAuthenticationMethod() === 'api-key') {
+    // api-key / mtls: the single static credential is the admin; there are no user roles.
+    if (usesStaticCredential()) {
       return true;
     }
 

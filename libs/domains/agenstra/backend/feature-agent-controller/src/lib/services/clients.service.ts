@@ -7,9 +7,12 @@ import {
   checkClientAccess,
   ClientEntity,
   ClientUsersRepository,
-  getAuthenticationMethod,
+  describeMtlsClientCertificate,
+  MtlsClientCredentialError,
   OidcClientCredentialsService,
   UserRole,
+  usesStaticCredential,
+  validateMtlsClientCredential,
 } from '@forepath/identity/backend';
 import {
   BadRequestException,
@@ -102,7 +105,7 @@ export class ClientsService {
    */
   private isApiKeyMode(): boolean {
     // Same resolution as the guards (an empty AUTHENTICATION_METHOD from compose `${VAR:-}` counts as unset).
-    return getAuthenticationMethod() === 'api-key';
+    return usesStaticCredential();
   }
 
   /**
@@ -134,6 +137,10 @@ export class ClientsService {
       await this.assertOidcIssuerUsable(createClientDto.oidcIssuer);
     }
 
+    if (createClientDto.authenticationType === AuthenticationType.MTLS) {
+      this.assertMtlsCredential(createClientDto.mtlsCertificate, createClientDto.mtlsPrivateKey);
+    }
+
     // Use provided API key or generate one for API_KEY authentication type
     let apiKey: string | undefined;
 
@@ -152,6 +159,9 @@ export class ClientsService {
       oidcClientSecret: createClientDto.oidcClientSecret,
       oidcIssuer: createClientDto.oidcIssuer?.trim() || null,
       oidcScope: createClientDto.oidcScope?.trim() || null,
+      ...(createClientDto.authenticationType === AuthenticationType.MTLS
+        ? { mtlsCertificate: createClientDto.mtlsCertificate, mtlsPrivateKey: createClientDto.mtlsPrivateKey }
+        : {}),
       userId: userId ?? null,
     });
     const response = await this.mapToResponseDto(client, { userId, userRole, isApiKeyAuth });
@@ -433,6 +443,9 @@ export class ClientsService {
       }
     }
 
+    const effectiveType = updateClientDto.authenticationType ?? clientBeforeUpdate?.authenticationType;
+    const mtlsUpdate = this.resolveMtlsUpdate(updateClientDto, clientBeforeUpdate?.authenticationType, effectiveType);
+
     // Prepare update data (including API key and OIDC credentials if provided)
     const updateData: Partial<ClientEntity> = {
       name: updateClientDto.name,
@@ -444,6 +457,7 @@ export class ClientsService {
       oidcClientSecret: updateClientDto.oidcClientSecret,
       oidcIssuer: updateClientDto.oidcIssuer === undefined ? undefined : updateClientDto.oidcIssuer.trim() || null,
       oidcScope: updateClientDto.oidcScope === undefined ? undefined : updateClientDto.oidcScope.trim() || null,
+      ...mtlsUpdate,
     };
 
     // If OIDC credentials or provider settings change, drop cached tokens of the old configuration
@@ -669,11 +683,57 @@ export class ClientsService {
       description: client.description,
       endpoint: client.endpoint,
       authenticationType: client.authenticationType,
+      ...(client.authenticationType === AuthenticationType.MTLS
+        ? { mtlsCertificate: describeMtlsClientCertificate(client.mtlsCertificate) }
+        : {}),
       isAutoProvisioned,
       canManageWorkspaceConfiguration,
       createdAt: client.createdAt,
       updatedAt: client.updatedAt,
     };
+  }
+
+  /** mtls: certificate and key are required together and must form a usable pair. */
+  private assertMtlsCredential(certificate: string | undefined, privateKey: string | undefined): void {
+    if (!certificate || !privateKey) {
+      throw new BadRequestException('Client certificate and private key are required for the mtls authentication type');
+    }
+
+    try {
+      validateMtlsClientCredential(certificate, privateKey);
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof MtlsClientCredentialError ? error.message : 'Invalid client certificate or private key',
+      );
+    }
+  }
+
+  /**
+   * Certificate / key changes of an update: required when switching to mtls, replaced together while staying mtls,
+   * and removed when switching away (no stale private keys at rest).
+   */
+  private resolveMtlsUpdate(
+    dto: UpdateClientDto,
+    previousType: AuthenticationType | undefined,
+    effectiveType: AuthenticationType | undefined,
+  ): Partial<Pick<ClientEntity, 'mtlsCertificate' | 'mtlsPrivateKey'>> {
+    const credentialProvided = dto.mtlsCertificate !== undefined || dto.mtlsPrivateKey !== undefined;
+
+    if (effectiveType !== AuthenticationType.MTLS) {
+      if (credentialProvided) {
+        throw new BadRequestException('Client certificates are only used with the mtls authentication type');
+      }
+
+      return previousType === AuthenticationType.MTLS ? { mtlsCertificate: null, mtlsPrivateKey: null } : {};
+    }
+
+    if (previousType !== AuthenticationType.MTLS || credentialProvided) {
+      this.assertMtlsCredential(dto.mtlsCertificate, dto.mtlsPrivateKey);
+
+      return { mtlsCertificate: dto.mtlsCertificate, mtlsPrivateKey: dto.mtlsPrivateKey };
+    }
+
+    return {};
   }
 
   private async computeCanManageWorkspaceConfiguration(

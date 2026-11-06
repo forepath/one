@@ -100,7 +100,8 @@ RUN printf '%s\n' \
     > /usr/local/bin/docker-entrypoint.sh && \
     chmod 755 /usr/local/bin/docker-entrypoint.sh
 
+# The mTLS listener (MTLS_SERVER_CERT[_FILE]) serves HTTPS; /api/health needs no client certificate.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f "http://localhost:${PORT}/api/health" || exit 1
+  CMD if [ -n "${MTLS_SERVER_CERT}${MTLS_SERVER_CERT_FILE}" ]; then curl -fk "https://localhost:${PORT}/api/health"; else curl -f "http://localhost:${PORT}/api/health"; fi || exit 1
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

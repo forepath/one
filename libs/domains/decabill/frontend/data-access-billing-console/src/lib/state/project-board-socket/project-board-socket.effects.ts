@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import type { Environment } from '@forepath/decabill/frontend/util-configuration';
 import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend/util-configuration';
-import { OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
+import { createSocketAuthOption, OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { catchError, delay, EMPTY, fromEvent, map, merge, of, switchMap, tap, withLatestFrom } from 'rxjs';
@@ -99,10 +99,9 @@ export const connectProjectBoardSocket$ = createEffect(
               reconnectionAttempts: 5,
               reconnectionDelay: 1000,
               extraHeaders: { 'X-Tenant': resolveBillingTenantId(environment) },
-              auth: {
-                Authorization: authHeader,
+              auth: createSocketAuthOption(environment.authentication.config, authHeader, {
                 tenantId: resolveBillingTenantId(environment),
-              },
+              }),
             });
 
             const socket = projectBoardSocketInstance;

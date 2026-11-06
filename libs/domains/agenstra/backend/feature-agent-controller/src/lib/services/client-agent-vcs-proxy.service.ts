@@ -23,6 +23,7 @@ import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-he
 
 import { AgentConsoleStatusService } from './agent-console-status.service';
 import { ClientsService } from './clients.service';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 /**
  * Service for proxying agent VCS requests to client endpoints.
@@ -74,6 +75,8 @@ export class ClientAgentVcsProxyService {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;
+    } else if (clientEntity.authenticationType === AuthenticationType.MTLS) {
+      return createClientMtlsAuthorizationHeader(clientEntity);
     } else {
       throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);
     }

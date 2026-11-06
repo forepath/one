@@ -20,7 +20,8 @@ info:
     Recurring **agent tasks** emit `agentTaskRunChatUpsert` (run cards for the agent's main chat, also hydrated after
     login), `agentTaskUpsert` and `agentTaskRemoved` (task rows for the `/tasks` page) to the workspace room.
     For **socket/clients**, all connections require authentication via the `Authorization` header in the handshake
-    (same as HTTP API: `Bearer <jwt-token>` or `Bearer <api-key>` / `ApiKey <api-key>`).
+    (same as HTTP API: `Bearer <jwt-token>`, `Bearer <api-key>` / `ApiKey <api-key>`, or in mtls mode
+    `Certificate <certificate-assertion>` or a client certificate presented in the TLS handshake).
     Unauthenticated connections are rejected with connect_error "Unauthorized".
     The `setClient` operation enforces per-client authorization: only users with access to
     the requested client (global admin, client creator, or client_users entry) can set that

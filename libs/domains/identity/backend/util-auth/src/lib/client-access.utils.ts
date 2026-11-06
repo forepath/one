@@ -6,6 +6,7 @@ import { ClientUserRole } from './entities/client-user.entity';
 import type { ClientEntityLike } from './entities/client.entity.types';
 import { UserRole } from './entities/user.entity';
 import { getMissingPatScopes } from './identity-pat.scopes';
+import type { MtlsClientPrincipal } from './mtls/mtls-certificate';
 
 /** Minimal interface for client access check - findById */
 export interface ClientAccessClientsRepository {
@@ -26,7 +27,13 @@ export interface RequestWithUser extends Request {
     amr?: string[];
     scopes?: string[];
   };
+  /**
+   * Set when a static full-access credential authenticated the request: the static API key (`api-key`) or a trusted
+   * client certificate (`mtls`). Every access rule that exempts the API key applies to both.
+   */
   apiKeyAuthenticated?: boolean;
+  /** Authenticated client certificate (`mtls` mode), for audit logging. */
+  clientCertificate?: MtlsClientPrincipal;
   /** Set when an app-signed PAT / app access JWT authenticated the request (oidc mode: instead of an IdP token). */
   patAuthenticated?: boolean;
 }
@@ -35,7 +42,10 @@ export interface RequestWithUser extends Request {
 export interface SocketUserInfo {
   userId?: string;
   userRole?: UserRole;
+  /** Static full-access credential: the API key (`api-key`) or a trusted client certificate (`mtls`). */
   isApiKeyAuth: boolean;
+  /** Authenticated client certificate (`mtls` mode), for audit logging. */
+  clientCertificate?: MtlsClientPrincipal;
   /** Authentication method reference: `pwd` (users-mode console) or `pat` (PAT / app access token). */
   amr?: string[];
   /** Live capability scopes of machine sessions (`amr` includes `pat`); see `socket-scope.utils`. */

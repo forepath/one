@@ -37,6 +37,19 @@ export interface ApiKeyAuthenticationConfig {
   apiKey?: string;
 }
 
+/**
+ * Client certificate authentication (`AUTHENTICATION_METHOD=mtls`): the user selects a PEM certificate (+ private
+ * key) at login; the console signs short-lived certificate assertions with it (`Authorization: Certificate …`).
+ * Grants full access like the API key.
+ */
+export interface MtlsAuthenticationConfig {
+  type: 'mtls';
+  /** Assertion lifetime in seconds (default 120; must not exceed the API's `MTLS_ASSERTION_MAX_LIFETIME`). */
+  assertionLifetimeSeconds?: number;
+  /** Required when the API sets `MTLS_ASSERTION_AUDIENCE` (same value). */
+  audience?: string;
+}
+
 export interface UsersAuthenticationConfig {
   type: 'users';
   disableSignup?: boolean;
@@ -48,6 +61,7 @@ export type AuthenticationConfig =
   | OidcAuthenticationConfig
   | SamlAuthenticationConfig
   | ApiKeyAuthenticationConfig
+  | MtlsAuthenticationConfig
   | UsersAuthenticationConfig;
 
 /** Authentication method of the console (`authentication.type`). */
@@ -59,6 +73,14 @@ export type AuthenticationConfigType = AuthenticationConfig['type'];
  */
 export function usesAppSessionJwt(type: AuthenticationConfigType | null | undefined): boolean {
   return type === 'users' || type === 'saml';
+}
+
+/**
+ * Whether the console authenticates with a single static full-access credential (`api-key` or `mtls`): no user
+ * accounts, roles, personal access tokens or apps; the console user is always the admin.
+ */
+export function usesStaticCredential(type: AuthenticationConfigType | null | undefined): type is 'api-key' | 'mtls' {
+  return type === 'api-key' || type === 'mtls';
 }
 
 /** Whether interactive sign-in happens at an external identity provider (OIDC or SAML). */

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-06T14:36:39.120Z",
+  "generatedAt": "2026-11-06T23:14:01.607Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -27739,6 +27739,26 @@
       }
     },
     {
+      "id": "concept:agenstra-pem-bundle-of-the-ca-s-that-issue-api-client-certificates-inline-with-n-escapes-or-a-file",
+      "type": "concept",
+      "attrs": {
+        "title": "PEM bundle of the CA(s) that issue API client certificates (inline with \\n escapes, or a file)",
+        "docPath": "docs/agenstra/features/authentication.md",
+        "sectionAnchor": "pem-bundle-of-the-ca-s-that-issue-api-client-certificates-inline-with-n-escapes-or-a-file",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
+      "type": "concept",
+      "attrs": {
+        "title": "Optional: native TLS listener that requests client certificates (see \"Presenting the certificate\")",
+        "docPath": "docs/agenstra/features/authentication.md",
+        "sectionAnchor": "optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-access-token-token-type-bearer-expires-in-3600-refresh-token-fp-apr",
       "type": "concept",
       "attrs": {
@@ -29475,6 +29495,16 @@
         "title": "AR-005 (CI / local Trivy: unfixed vulnerabilities not gated)",
         "docPath": "docs/agenstra/security/accepted-risks.md",
         "sectionAnchor": "ar-005-ci-local-trivy-unfixed-vulnerabilities-not-gated",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-ar-006-mtls-no-online-revocation-short-lived-certificate-assertions",
+      "type": "concept",
+      "attrs": {
+        "title": "AR-006 (mTLS: no online revocation, short-lived certificate assertions)",
+        "docPath": "docs/agenstra/security/accepted-risks.md",
+        "sectionAnchor": "ar-006-mtls-no-online-revocation-short-lived-certificate-assertions",
         "domain": "agenstra"
       }
     },
@@ -32045,6 +32075,26 @@
         "title": "Authentication Methods",
         "docPath": "docs/decabill/features/authentication.md",
         "sectionAnchor": "authentication-methods",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-pem-bundle-of-the-ca-s-that-issue-api-client-certificates-inline-with-n-escapes-or-a-file",
+      "type": "concept",
+      "attrs": {
+        "title": "PEM bundle of the CA(s) that issue API client certificates (inline with \\n escapes, or a file)",
+        "docPath": "docs/decabill/features/authentication.md",
+        "sectionAnchor": "pem-bundle-of-the-ca-s-that-issue-api-client-certificates-inline-with-n-escapes-or-a-file",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
+      "type": "concept",
+      "attrs": {
+        "title": "Optional: native TLS listener that requests client certificates (see \"Presenting the certificate\")",
+        "docPath": "docs/decabill/features/authentication.md",
+        "sectionAnchor": "optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
         "domain": "decabill"
       }
     },
@@ -35069,6 +35119,16 @@
       }
     },
     {
+      "id": "concept:decabill-dr-006-mtls-no-online-revocation-short-lived-certificate-assertions",
+      "type": "concept",
+      "attrs": {
+        "title": "DR-006 (mTLS: no online revocation, short-lived certificate assertions)",
+        "docPath": "docs/decabill/security/accepted-risks.md",
+        "sectionAnchor": "dr-006-mtls-no-online-revocation-short-lived-certificate-assertions",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-hardening-paths-if-an-acceptance-is-withdrawn",
       "type": "concept",
       "attrs": {
@@ -36207,6 +36267,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "project:identity-backend-util-auth",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "project:agenstra-shared-util-opencode-mcp-servers",
       "type": "depends_on"
     },
@@ -36641,6 +36706,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:identity-frontend-data-access-auth",
+      "to": "project:identity-backend-util-auth",
+      "type": "depends_on"
+    },
+    {
       "from": "project:shared-backend-feature-monitoring",
       "to": "project:identity-backend-util-auth",
       "type": "depends_on"
@@ -36733,6 +36803,11 @@
     {
       "from": "project:identity-frontend-util-auth",
       "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:identity-frontend-util-auth",
+      "to": "project:identity-backend-util-auth",
       "type": "depends_on"
     },
     {
@@ -38288,6 +38363,11 @@
     {
       "from": "project:agenstra-backend-agent-manager",
       "to": "package:@nestjs/websockets",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-manager",
+      "to": "package:@node-saml/node-saml",
       "type": "depends_on"
     },
     {
@@ -51977,6 +52057,16 @@
     },
     {
       "from": "file:docs/agenstra/features/authentication.md",
+      "to": "concept:agenstra-pem-bundle-of-the-ca-s-that-issue-api-client-certificates-inline-with-n-escapes-or-a-file",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/authentication.md",
+      "to": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/authentication.md",
       "to": "concept:agenstra-access-token-token-type-bearer-expires-in-3600-refresh-token-fp-apr",
       "type": "contains"
     },
@@ -53283,6 +53373,11 @@
     {
       "from": "file:docs/agenstra/security/accepted-risks.md",
       "to": "concept:agenstra-ar-005-ci-local-trivy-unfixed-vulnerabilities-not-gated",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/security/accepted-risks.md",
+      "to": "concept:agenstra-ar-006-mtls-no-online-revocation-short-lived-certificate-assertions",
       "type": "contains"
     },
     {
@@ -54913,6 +55008,16 @@
     {
       "from": "file:docs/decabill/features/authentication.md",
       "to": "concept:decabill-authentication-methods",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/authentication.md",
+      "to": "concept:decabill-pem-bundle-of-the-ca-s-that-issue-api-client-certificates-inline-with-n-escapes-or-a-file",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/authentication.md",
+      "to": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "type": "contains"
     },
     {
@@ -56968,6 +57073,11 @@
     {
       "from": "file:docs/decabill/security/accepted-risks.md",
       "to": "concept:decabill-dr-005-ci-local-trivy-unfixed-vulnerabilities-not-gated",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/security/accepted-risks.md",
+      "to": "concept:decabill-dr-006-mtls-no-online-revocation-short-lived-certificate-assertions",
       "type": "contains"
     },
     {
@@ -78321,92 +78431,92 @@
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/token",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/logout",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/auth/saml/login",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/saml/acs",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/saml/token",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/auth/saml/metadata",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/apps/token",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/tickets",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/tickets",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/clients",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/clients",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/admin/opencode/config",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:PUT:/admin/opencode/config",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-authentication-methods",
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/config",
       "type": "documents"
     },
@@ -79433,6 +79543,11 @@
     {
       "from": "concept:agenstra-accepted-risks-register",
       "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-ar-006-mtls-no-online-revocation-short-lived-certificate-assertions",
+      "to": "api:HTTP:POST:/auth/logout",
       "type": "documents"
     },
     {
@@ -80611,62 +80726,72 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/token",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/logout",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/auth/saml/login",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/saml/acs",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/saml/token",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/auth/saml/metadata",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/auth/apps/token",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/meters",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:POST:/meters",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-authentication-methods",
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/projects",
       "type": "documents"
     },
@@ -83908,6 +84033,11 @@
     {
       "from": "concept:decabill-dr-003-web-frontends-csp-unsafe-inline-unsafe-eval-monaco",
       "to": "project:decabill-frontend-docs",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-dr-006-mtls-no-online-revocation-short-lived-certificate-assertions",
+      "to": "api:HTTP:POST:/auth/logout",
       "type": "documents"
     },
     {
@@ -87321,6 +87451,16 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-pem-bundle-of-the-ca-s-that-issue-api-client-certificates-inline-with-n-escapes-or-a-file",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-access-token-token-type-bearer-expires-in-3600-refresh-token-fp-apr",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -88187,6 +88327,11 @@
     },
     {
       "from": "concept:agenstra-ar-005-ci-local-trivy-unfixed-vulnerabilities-not-gated",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-ar-006-mtls-no-online-revocation-short-lived-certificate-assertions",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -89472,6 +89617,16 @@
     },
     {
       "from": "concept:decabill-authentication-methods",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-pem-bundle-of-the-ca-s-that-issue-api-client-certificates-inline-with-n-escapes-or-a-file",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -90982,6 +91137,11 @@
     },
     {
       "from": "concept:decabill-dr-005-ci-local-trivy-unfixed-vulnerabilities-not-gated",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-dr-006-mtls-no-online-revocation-short-lived-certificate-assertions",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

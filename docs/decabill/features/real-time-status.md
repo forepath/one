@@ -40,7 +40,7 @@ Pass the same credentials as HTTP in the Socket.IO handshake:
 
 - **OIDC:** `Bearer <oidc-access-token>` in `auth.Authorization` or handshake headers
 - **Users:** `Bearer <jwt>` in `auth.Authorization` or handshake headers
-- **API key:** **Not supported** for dashboard status. `subscribeDashboardStatus` emits `error` with message "User not authenticated". This mirrors REST behavior for API-key-only requests.
+- **API key / mTLS client certificate:** **Not supported** for dashboard status. `subscribeDashboardStatus` emits `error` with message "User not authenticated". This mirrors REST behavior for API-key-only requests.
 
 ### Multi-tenancy
 

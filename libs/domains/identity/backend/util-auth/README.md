@@ -4,7 +4,7 @@ Backend authentication utilities for NestJS applications: authentication method 
 
 ## Overview
 
-`AUTHENTICATION_METHOD` selects one of `api-key`, `users`, `oidc` or `saml` (see `getAuthenticationMethod`). When unset, `api-key` is used if `STATIC_API_KEY` is set, otherwise `oidc`. Any other value (including the removed `keycloak`) throws at boot.
+`AUTHENTICATION_METHOD` selects one of `api-key`, `mtls`, `users`, `oidc` or `saml` (see `getAuthenticationMethod`). When unset, `api-key` is used if `STATIC_API_KEY` is set, otherwise `oidc` (`mtls` is never inferred). Any other value (including the removed `keycloak`) throws at boot. `usesStaticCredential()` is true for `api-key` and `mtls`: a single full-access credential, no user accounts.
 
 This library contains the parts that do not need the users table:
 
@@ -64,6 +64,7 @@ Apps with a users table use `OidcAuthModule` + `PatAuthModule.register(...)` and
 ### HybridAuthGuard
 
 - `api-key` mode: validates `Authorization: Bearer <key>` / `ApiKey <key>` against `STATIC_API_KEY` (no fallback, no anonymous access)
+- `mtls` mode: authenticates a trusted client certificate (no fallback, no anonymous access) and marks the request `apiKeyAuthenticated` (full access, like the API key) with `request.clientCertificate` for audit. See [mTLS](#mtls-client-certificates)
 - other modes: passes through to the method's guards
 - health, Bull Board and OTEL metrics paths and `@Public()` routes are skipped
 
@@ -80,3 +81,17 @@ Use the [platform authentication](../../../../../apps/shared/platform-authentica
 - **[Environment Configuration](../../../../../docs/agenstra/deployment/environment-configuration.md)** - Complete environment variable reference
 - **[Backend Agent Controller README](../../../../../apps/agenstra/backend-agent-controller/README.md)** - Application-specific usage
 - **[Backend Agent Manager README](../../../../../apps/agenstra/backend-agent-manager/README.md)** - Application-specific usage
+
+## mTLS (client certificates)
+
+`src/lib/mtls/` implements `AUTHENTICATION_METHOD=mtls`, shared by every app that uses `HybridAuthGuard` / `getIdentityAuthGuards()` and `SocketAuthService`:
+
+| Module                  | Purpose                                                                                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mtls.config.ts`        | `getMtlsConfig()` / `loadMtlsConfig(env)`: trust anchors (`MTLS_CA_CERT[_FILE]`), allow/deny lists, assertion lifetime / audience. Throws `MtlsConfigurationError` |
+| `mtls-certificate.ts`   | `verifyClientCertificateChain()`: validity, CA flag, `clientAuth` EKU, key strength, revocation list, chain to a trust anchor, allowlists                          |
+| `mtls-assertion.ts`     | `verifyMtlsAssertion()` / `createMtlsAssertion()`: `Authorization: Certificate <jws>` (JWS with `x5c`, `typ: cert-assertion+jwt`, short-lived)                     |
+| `mtls-transport.ts`     | `getTlsPeerCertificateChain(socket)` and `getMtlsHttpsOptions()` (opt-in HTTPS listener with `requestCert`, used by the app bootstraps)                            |
+| `mtls-authenticator.ts` | `authenticateMtls({ authorization, transportSocket })`: TLS client certificate or assertion; returns the principal or a log-only rejection reason                  |
+
+The browser counterpart (non-extractable WebCrypto key in IndexedDB, assertion signing) is `mtls-credential.ts` in `@forepath/identity/frontend`. Specs build certificates at runtime with `src/lib/mtls/testing/mtls-test-pki.ts` (test-only, not exported) so no private keys are committed.

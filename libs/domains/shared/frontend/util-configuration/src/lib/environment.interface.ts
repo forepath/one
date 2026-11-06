@@ -1,6 +1,7 @@
 import type {
   ApiKeyAuthenticationConfig,
   AuthenticationConfig,
+  MtlsAuthenticationConfig,
   OidcAuthenticationConfig,
   SamlAuthenticationConfig,
   UsersAuthenticationConfig,
@@ -12,6 +13,7 @@ import type { AuthMarketing } from './auth-marketing.interface';
 export type {
   ApiKeyAuthenticationConfig,
   AuthenticationConfig,
+  MtlsAuthenticationConfig,
   OidcAuthenticationConfig,
   SamlAuthenticationConfig,
   UsersAuthenticationConfig,
@@ -35,7 +37,7 @@ export interface ApplicationEnvironment {
 
 /** Former top-level authentication + authMarketing + authLayout. */
 export interface AuthenticationEnvironment {
-  /** Provider/method config (users | oidc | saml | api-key) — former top-level `authentication`. */
+  /** Provider/method config (users | oidc | saml | api-key | mtls) — former top-level `authentication`. */
   config: AuthenticationConfig;
   /** Brand copy for login/register screens — former `authMarketing`. */
   marketing: AuthMarketing;

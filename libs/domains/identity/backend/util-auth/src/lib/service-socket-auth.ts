@@ -1,4 +1,5 @@
 import { getAuthenticationMethod } from './authentication-method';
+import { authenticateMtls } from './mtls/mtls-authenticator';
 import type { OidcTokenVerifier } from './oidc/oidc-token-verifier.service';
 import { secretsEqual } from './secret-compare';
 
@@ -8,6 +9,8 @@ export interface ServiceSocketHandshake {
     headers?: Record<string, unknown>;
     auth?: Record<string, unknown>;
   };
+  /** Handshake request; its `socket` carries the TLS client certificate (mtls with the native listener). */
+  request?: { socket?: unknown };
 }
 
 function readAuthorization(socket: ServiceSocketHandshake): string | undefined {
@@ -20,7 +23,8 @@ function readAuthorization(socket: ServiceSocketHandshake): string | undefined {
 
 /**
  * Authenticates a service-to-service Socket.IO handshake with the same credentials as the HTTP API of apps without
- * user accounts (agent-manager): `Bearer|ApiKey <STATIC_API_KEY>` in api-key mode, or an OIDC access token (verified
+ * user accounts (agent-manager): `Bearer|ApiKey <STATIC_API_KEY>` in api-key mode, a trusted client certificate (TLS
+ * handshake or `Certificate <assertion>`, like `HybridAuthGuard`) in mtls mode, or an OIDC access token (verified
  * like `OidcAuthGuard`, incl. audience / authorized-party rules) in oidc mode. Any other mode is rejected.
  * Returns `true` only for an authenticated handshake (fail-closed).
  */
@@ -29,6 +33,22 @@ export async function authenticateServiceSocket(
   oidcVerifier?: Pick<OidcTokenVerifier, 'verifyAccessToken'> | null,
 ): Promise<boolean> {
   const authorization = readAuthorization(socket);
+  let method: string;
+
+  try {
+    method = getAuthenticationMethod();
+  } catch {
+    return false;
+  }
+
+  // mtls: a TLS client certificate needs no Authorization value.
+  if (method === 'mtls') {
+    try {
+      return authenticateMtls({ authorization, transportSocket: socket.request?.socket }).ok;
+    } catch {
+      return false;
+    }
+  }
 
   if (!authorization) {
     return false;
@@ -37,14 +57,6 @@ export async function authenticateServiceSocket(
   const [scheme, credential, ...rest] = authorization.split(' ');
 
   if (!credential || rest.length > 0) {
-    return false;
-  }
-
-  let method: string;
-
-  try {
-    method = getAuthenticationMethod();
-  } catch {
     return false;
   }
 

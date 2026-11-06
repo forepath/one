@@ -20,7 +20,7 @@ When using users, oidc or saml authentication, Agenstra supports **per-client pe
 3. Fill in the client details:
    - **Name**: A descriptive name for this client
    - **Endpoint**: The HTTP API endpoint of your agent-manager (e.g., `http://localhost:3000`). Socket.IO and VNC use the same origin (`/socket/agents`, `/socket/vnc`).
-   - **Authentication Type**: Choose `api_key` or `oidc`
+   - **Authentication Type**: Choose `api_key`, `oidc` or `mtls` (client certificate; manual clients only)
    - **API Key** (if using API key): The API key for authentication
    - **OIDC client credentials** (if using OIDC): client ID, secret, optional issuer and scope
 4. Click "Create"
@@ -132,6 +132,14 @@ Users are added to clients by their email address. This applies to users, oidc a
 - **Usage**: OAuth 2.0 client credentials grant against the issuer's discovered token endpoint, with token caching
 - **SSRF policy**: a per-client issuer other than `OIDC_ISSUER` (and its token endpoint) must pass the same checks as client endpoints (`CLIENT_ENDPOINT_ALLOWED_HOSTS`, no private addresses)
 - **Token Management**: Tokens are automatically cached and refreshed
+
+### mTLS (Client Certificate) Authentication
+
+- **Type**: `mtls` (the agent-manager runs `AUTHENTICATION_METHOD=mtls` and trusts the certificate's CA via `MTLS_CA_CERT`)
+- **Configuration**: `mtlsCertificate` (PEM chain, leaf first) and `mtlsPrivateKey` (unencrypted PEM, write only); in the console select both files. They are validated as a pair and replaced together
+- **Usage**: every HTTP request and websocket handshake to the manager carries a fresh certificate assertion (`Authorization: Certificate …`, 60 s, `aud` = manager origin)
+- **Storage**: the private key is stored AES-256-GCM encrypted and never returned; responses include the certificate fingerprint, CN and expiry. Switching to another type deletes the pair
+- **Not available** for provisioned servers. See [Authentication - controller → agent-manager over mTLS](./authentication.md#controller--agent-manager-over-mtls)
 
 ## API Endpoints
 

@@ -21,6 +21,7 @@ import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
 import { ClientsService } from './clients.service';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 /**
  * Proxied binary file read result from a client's agent-manager.
@@ -158,6 +159,8 @@ export class ClientAgentFileSystemProxyService {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;
+    } else if (clientEntity.authenticationType === AuthenticationType.MTLS) {
+      return createClientMtlsAuthorizationHeader(clientEntity);
     } else {
       throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);
     }

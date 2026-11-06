@@ -102,6 +102,89 @@ describe('IdentityLoginComponent', () => {
     });
   });
 
+  describe('when authentication type is mtls', () => {
+    let loginWithCertificate: jest.Mock;
+
+    beforeEach(async () => {
+      loginWithCertificate = jest.fn();
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [
+          IdentityLoginComponent,
+          ReactiveFormsModule,
+          RouterModule.forRoot([{ path: 'login', component: IdentityLoginComponent }]),
+        ],
+        providers: [
+          FormBuilder,
+          { provide: AuthenticationFacade, useValue: { ...mockAuthFacade, loginWithCertificate } },
+          {
+            provide: IDENTITY_AUTH_ENVIRONMENT,
+            useValue: { ...mockEnvironment, authentication: { type: 'mtls' } },
+          },
+          { provide: Actions, useValue: of() },
+        ],
+      }).compileComponents();
+
+      fixture = TestBed.createComponent(IdentityLoginComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    const selectFile = (inputId: string, file: File | null) => {
+      const input = fixture.nativeElement.querySelector(`#${inputId}`) as HTMLInputElement;
+
+      Object.defineProperty(input, 'files', { value: file ? [file] : [], configurable: true });
+      input.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+    };
+
+    it('asks for a certificate file (and an optional key file) instead of an API key', () => {
+      const element: HTMLElement = fixture.nativeElement;
+
+      expect(component.isMtlsAuth).toBe(true);
+      expect(component.isApiKeyAuth).toBe(false);
+      expect(component.loginForm.contains('apiKey')).toBe(false);
+      expect(element.querySelector('#apiKey')).toBeNull();
+      expect(element.querySelector('#clientCertificate')?.getAttribute('type')).toBe('file');
+      expect(element.querySelector('#clientPrivateKey')?.getAttribute('type')).toBe('file');
+      expect(element.querySelector('#clientCertificate-hint')).not.toBeNull();
+      expect(component.showApiBaseHostname).toBe(true);
+    });
+
+    it('requires a certificate before submitting', () => {
+      component.onSubmit();
+      fixture.detectChanges();
+
+      expect(loginWithCertificate).not.toHaveBeenCalled();
+      expect(component.loginForm.get('certificate')?.touched).toBe(true);
+      expect(fixture.nativeElement.querySelector('#clientCertificate').classList).toContain('is-invalid');
+    });
+
+    it('submits the selected certificate and private key files', () => {
+      const certificate = new File(['cert'], 'client.pem');
+      const privateKey = new File(['key'], 'client.key');
+
+      selectFile('clientCertificate', certificate);
+      component.onSubmit();
+
+      expect(loginWithCertificate).toHaveBeenLastCalledWith(certificate, undefined);
+
+      selectFile('clientPrivateKey', privateKey);
+      component.onSubmit();
+
+      expect(loginWithCertificate).toHaveBeenLastCalledWith(certificate, privateKey);
+      expect(mockAuthFacade.login).not.toHaveBeenCalled();
+    });
+
+    it('clears the selection when the file dialog is cancelled', () => {
+      selectFile('clientCertificate', new File(['cert'], 'client.pem'));
+      selectFile('clientCertificate', null);
+
+      expect(component.loginForm.get('certificate')?.value).toBeNull();
+      expect(component.loginForm.valid).toBe(false);
+    });
+  });
+
   describe('when authentication type is users', () => {
     beforeEach(async () => {
       TestBed.resetTestingModule();

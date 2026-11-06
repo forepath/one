@@ -11,6 +11,9 @@ import { BadRequestException, ConflictException, NotFoundException } from '@nest
 import { Test, TestingModule } from '@nestjs/testing';
 import axios, { AxiosError } from 'axios';
 
+// Test-only PKI builder of the identity domain.
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { createTestPki } from '../../../../../../identity/backend/util-auth/src/lib/mtls/testing/mtls-test-pki';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
@@ -633,6 +636,51 @@ describe('ClientAgentProxyService', () => {
       await expect(service.getClientAgents('client-uuid', 10, 0)).rejects.toThrow(BadRequestException);
       await expect(service.getClientAgents('client-uuid', 10, 0)).rejects.toThrow(
         'API key is not configured for this client',
+      );
+    });
+
+    it('should send a certificate assertion bound to the manager origin for mtls clients', async () => {
+      const pki = createTestPki();
+
+      clientsRepository.findByIdOrThrow.mockResolvedValue({
+        ...mockClientEntity,
+        endpoint: 'https://manager.example.com:8443/base',
+        authenticationType: AuthenticationType.MTLS,
+        apiKey: undefined,
+        mtlsCertificate: pki.client.pem,
+        mtlsPrivateKey: pki.client.privateKeyPem,
+      } as ClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: [],
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
+      });
+
+      await service.getClientAgents('client-uuid', 10, 0);
+
+      const authorization = (mockedAxios.request.mock.calls.at(-1)?.[0].headers as Record<string, string>)[
+        'Authorization'
+      ];
+      const [scheme, token] = authorization.split(' ');
+      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+
+      expect(scheme).toBe('Certificate');
+      expect(payload.aud).toBe('https://manager.example.com:8443');
+      expect(payload.exp - payload.iat).toBe(60);
+    });
+
+    it('should throw if the client certificate is missing for an mtls client', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue({
+        ...mockClientEntity,
+        authenticationType: AuthenticationType.MTLS,
+        mtlsCertificate: null,
+        mtlsPrivateKey: null,
+      } as ClientEntity);
+
+      await expect(service.getClientAgents('client-uuid', 10, 0)).rejects.toThrow(
+        'Client certificate is not configured for this client',
       );
     });
 

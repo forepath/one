@@ -1,3 +1,5 @@
+import { createMtlsAssertion } from './mtls/mtls-assertion';
+import { createTestPki } from './mtls/testing/mtls-test-pki';
 import { authenticateServiceSocket } from './service-socket-auth';
 
 const socket = (authorization?: string, viaAuth = false) => ({
@@ -57,6 +59,44 @@ describe('authenticateServiceSocket', () => {
       await expect(authenticateServiceSocket(socket('Bearer tok'), verifier)).resolves.toBe(false);
       await expect(authenticateServiceSocket(socket('ApiKey tok'), verifier)).resolves.toBe(false);
       await expect(authenticateServiceSocket(socket('Bearer tok'), null)).resolves.toBe(false);
+    });
+  });
+
+  describe('mtls mode', () => {
+    const pki = createTestPki();
+    const assertion = (certificate = pki.client) =>
+      createMtlsAssertion({ certificateChain: [certificate.certificate], privateKey: certificate.privateKey });
+    const tlsSocket = (der: Buffer) => ({ encrypted: true, getPeerCertificate: () => ({ raw: der }) });
+
+    beforeEach(() => {
+      process.env.AUTHENTICATION_METHOD = 'mtls';
+      process.env.MTLS_CA_CERT = pki.rootCa.pem;
+      process.env.STATIC_API_KEY = 'secret-key';
+    });
+
+    it('accepts certificate assertions (header or handshake auth) and TLS client certificates', async () => {
+      await expect(authenticateServiceSocket(socket(`Certificate ${assertion()}`))).resolves.toBe(true);
+      await expect(authenticateServiceSocket(socket(`Certificate ${assertion()}`, true))).resolves.toBe(true);
+      await expect(
+        authenticateServiceSocket({ ...socket(), request: { socket: tlsSocket(pki.client.der) } }),
+      ).resolves.toBe(true);
+    });
+
+    it('rejects untrusted certificates, the API key and missing credentials', async () => {
+      await expect(authenticateServiceSocket(socket(`Certificate ${assertion(pki.foreignClient)}`))).resolves.toBe(
+        false,
+      );
+      await expect(
+        authenticateServiceSocket({ ...socket(), request: { socket: tlsSocket(pki.foreignClient.der) } }),
+      ).resolves.toBe(false);
+      await expect(authenticateServiceSocket(socket('Bearer secret-key'))).resolves.toBe(false);
+      await expect(authenticateServiceSocket(socket())).resolves.toBe(false);
+    });
+
+    it('fails closed without MTLS_CA_CERT', async () => {
+      delete process.env.MTLS_CA_CERT;
+
+      await expect(authenticateServiceSocket(socket(`Certificate ${assertion()}`))).resolves.toBe(false);
     });
   });
 

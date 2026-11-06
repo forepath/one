@@ -84,7 +84,8 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     server.use(async (socket, next) => {
       const rawAuthHeader = socket.handshake?.headers?.authorization ?? socket.handshake?.auth?.Authorization;
       const authHeader = typeof rawAuthHeader === 'string' ? rawAuthHeader : undefined;
-      const authOptions = { websocket: AGENSTRA_WEBSOCKETS.status };
+      // mtls: the handshake connection carries the TLS client certificate, if one was presented.
+      const authOptions = { websocket: AGENSTRA_WEBSOCKETS.status, transportSocket: socket.request?.socket };
       const userInfo = await this.socketAuthService.validateAndGetUser(authHeader, undefined, authOptions);
 
       if (!userInfo) {

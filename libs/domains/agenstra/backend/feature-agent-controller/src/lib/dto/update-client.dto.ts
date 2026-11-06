@@ -20,7 +20,7 @@ export class UpdateClientDto {
   endpoint?: string;
 
   @IsOptional()
-  @IsEnum(AuthenticationType, { message: 'Authentication type must be either api_key or oidc' })
+  @IsEnum(AuthenticationType, { message: 'Authentication type must be api_key, oidc or mtls' })
   authenticationType?: AuthenticationType;
 
   @IsOptional()
@@ -51,4 +51,16 @@ export class UpdateClientDto {
   @IsString({ message: 'OIDC scope must be a string' })
   @MaxLength(1024)
   oidcScope?: string;
+
+  /** Client certificate chain (PEM, leaf first) for authentication type `mtls`. */
+  @IsOptional()
+  @IsString({ message: 'Client certificate must be a PEM string' })
+  @MaxLength(32768)
+  mtlsCertificate?: string;
+
+  /** Unencrypted PEM private key of the client certificate (authentication type `mtls`); never returned. */
+  @IsOptional()
+  @IsString({ message: 'Client private key must be a PEM string' })
+  @MaxLength(32768)
+  mtlsPrivateKey?: string;
 }

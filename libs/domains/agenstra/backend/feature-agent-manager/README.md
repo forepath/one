@@ -378,7 +378,7 @@ Authorization: ApiKey <static-api-key>
 
 #### OIDC Authentication (when `STATIC_API_KEY` is not set)
 
-When `STATIC_API_KEY` is not set (`AUTHENTICATION_METHOD=oidc`), all HTTP endpoints are protected by the global `OidcAuthGuard` from `@forepath/identity/backend` (signature via JWKS, exact issuer, expiry, optional `aud` / `azp` allowlists, and RFC 7662 introspection with `OIDC_TOKEN_VALIDATION=ONLINE`). The agent-manager accepts only `api-key` and `oidc`; any other method fails at boot.
+When `STATIC_API_KEY` is not set (`AUTHENTICATION_METHOD=oidc`), all HTTP endpoints are protected by the global `OidcAuthGuard` from `@forepath/identity/backend` (signature via JWKS, exact issuer, expiry, optional `aud` / `azp` allowlists, and RFC 7662 introspection with `OIDC_TOKEN_VALIDATION=ONLINE`). The agent-manager accepts `api-key`, `oidc` and `mtls` (client certificates of `MTLS_CA_CERT`, sent as `Authorization: Certificate <assertion>` or in the TLS handshake); any other method fails at boot.
 
 Clients (normally the agent controller using client credentials) must include a valid access token in the `Authorization` header:
 
@@ -698,7 +698,7 @@ nx test agenstra-backend-feature-agent-manager --coverage
 ### Backend API Environment Variables
 
 - `WEBSOCKET_NAMESPACE` - Agents namespace (default: `socket/agents`)
-- `AUTHENTICATION_METHOD` - `api-key` or `oidc` (default: api-key when `STATIC_API_KEY` is set, else oidc)
+- `AUTHENTICATION_METHOD` - `api-key`, `oidc` or `mtls` (default: api-key when `STATIC_API_KEY` is set, else oidc; mtls requires `MTLS_CA_CERT[_FILE]`, see the shared `MTLS_*` settings)
 - `OIDC_ISSUER` - OIDC issuer (required for HTTP authentication when `STATIC_API_KEY` is not set)
 - `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` - Client used for token introspection (required with `OIDC_TOKEN_VALIDATION=ONLINE`, the default)
 - `OIDC_TOKEN_VALIDATION` - `ONLINE` (default) or `OFFLINE`

@@ -128,7 +128,7 @@ authentication: {
 },
 ```
 
-Production uses `environment.billing-console.production.ts`. Align `authentication.config.type` with backend `AUTHENTICATION_METHOD`.
+Production uses `environment.billing-console.production.ts`. Align `authentication.config.type` with backend `AUTHENTICATION_METHOD`. For `mtls` use `config: { type: 'mtls' }` (optional `assertionLifetimeSeconds`, `audience`): the login page then asks for a PEM client certificate file instead of an API key (see [Authentication](../features/authentication.md#mtls-client-certificate-authentication)).
 
 When `billing.urls.websocket.projects` is omitted, the console derives it from the primary websocket URL via `resolveApiWebsocketUrl` (swapping `/socket/billing` for `/socket/projects`).
 

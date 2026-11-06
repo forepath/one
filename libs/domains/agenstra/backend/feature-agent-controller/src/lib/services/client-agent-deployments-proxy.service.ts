@@ -15,6 +15,7 @@ import {
 } from '../search/agenstra-search-list.util';
 
 import { ClientsService } from './clients.service';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 /**
  * Service for proxying deployment and CI/CD pipeline requests to client endpoints.
@@ -50,6 +51,8 @@ export class ClientAgentDeploymentsProxyService {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;
+    } else if (clientEntity.authenticationType === AuthenticationType.MTLS) {
+      return createClientMtlsAuthorizationHeader(clientEntity);
     } else {
       throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);
     }

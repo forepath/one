@@ -7,6 +7,8 @@ import {
   createMockIdentityAuthEnvironment,
   IDENTITY_AUTH_ENVIRONMENT,
   OidcAuthService,
+  resetMtlsCredentialStateForTests,
+  saveMtlsCredential,
 } from '@forepath/identity/frontend';
 
 import { loginGuard } from './login.guard';
@@ -349,6 +351,48 @@ describe('loginGuard', () => {
         } as IdentityAuthEnvironment['authentication'],
       });
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
+
+      expect(result).toBe(true);
+      expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when authentication type is mtls', () => {
+    beforeEach(() => {
+      resetMtlsCredentialStateForTests();
+    });
+
+    const storeCertificate = (notAfter = Date.now() + 60_000) =>
+      saveMtlsCredential({
+        privateKey: { type: 'private', usages: ['sign'] } as unknown as CryptoKey,
+        certificateChain: ['AAAA'],
+        algorithm: 'ES256',
+        notBefore: Date.now() - 1000,
+        notAfter,
+      });
+
+    it('redirects signed-in users (valid client certificate) to /clients', async () => {
+      const tree = {} as UrlTree;
+
+      mockRouter.createUrlTree.mockReturnValue(tree);
+      await storeCertificate();
+
+      const injector = setupTestBed({ authentication: { type: 'mtls' } });
+      const result = await runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
+
+      expect(result).toBe(tree);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
+      expect(window.localStorage.getItem).not.toHaveBeenCalled();
+    });
+
+    it('shows the login page when no valid client certificate is stored', async () => {
+      const tree = {} as UrlTree;
+
+      mockRouter.createUrlTree.mockReturnValue(tree);
+      await storeCertificate(Date.now() - 1000);
+
+      const injector = setupTestBed({ authentication: { type: 'mtls' } });
+      const result = await runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(true);
       expect(mockRouter.createUrlTree).not.toHaveBeenCalled();

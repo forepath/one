@@ -43,6 +43,7 @@ import {
 import { ClientAgentMembershipService } from './client-agent-membership.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 /**
  * Service for proxying agent management requests to client endpoints.
@@ -87,6 +88,8 @@ export class ClientAgentProxyService {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;
+    } else if (clientEntity.authenticationType === AuthenticationType.MTLS) {
+      return createClientMtlsAuthorizationHeader(clientEntity);
     } else {
       throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);
     }

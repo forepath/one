@@ -53,6 +53,16 @@ describe('UsersRolesGuard', () => {
     ).toBe(true);
   });
 
+  it.each(['api-key', 'mtls'])('skips role checks for the %s static credential (full access)', (method) => {
+    process.env.AUTHENTICATION_METHOD = method;
+
+    expect(guard.canActivate(createExecutionContext({ originalUrl: '/api/admin', headers: {} }))).toBe(true);
+  });
+
+  it('enforces roles for users mode without a resolved role', () => {
+    expect(guard.canActivate(createExecutionContext({ originalUrl: '/api/admin', headers: {} }))).toBe(false);
+  });
+
   it('under oidc denies unsynced IdP claims (IdP role claims are never trusted)', () => {
     process.env.AUTHENTICATION_METHOD = 'oidc';
 

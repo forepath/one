@@ -247,6 +247,7 @@ Connect with full namespace paths (e.g. `io('http://localhost:3100/socket/client
 WebSocket connections require authentication via the `Authorization` header (polling) or `handshake.auth.Authorization` (WebSocket transport). The same authentication methods as HTTP apply:
 
 - **API key**: `Bearer <static-api-key>` or `ApiKey <static-api-key>`
+- **mTLS**: `Certificate <certificate-assertion>` or the TLS client certificate of the handshake
 - **OIDC**: `Bearer <oidc-access-token>`
 - **Users / SAML**: `Bearer <session-jwt>`
 - **Users**: `Bearer <jwt-token>`
@@ -313,6 +314,11 @@ All HTTP endpoints require authentication. The method depends on configuration:
 
 - Include the API key: `Authorization: Bearer <static-api-key>` or `ApiKey <static-api-key>`
 - All permission checks are bypassed
+
+**mTLS** (`AUTHENTICATION_METHOD=mtls`):
+
+- Present a client certificate of a CA in `MTLS_CA_CERT` in the TLS handshake (native listener, `MTLS_SERVER_CERT` / `MTLS_SERVER_KEY`) or send `Authorization: Certificate <certificate-assertion>`
+- All permission checks are bypassed (same as the API key); see [Authentication](../features/authentication.md#mtls-client-certificate-authentication)
 
 **OIDC** (`AUTHENTICATION_METHOD=oidc`):
 
@@ -413,7 +419,7 @@ See the application docs and environment configuration for complete environment 
 - `CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST` - Allow private/loopback targets and skip DNS rebinding check when `true` (same pattern as `CONFIG_*`: no separate skip-DNS flag)
 - `CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED` - TLS verify outbound HTTPS (set `false` only outside production)
 
-**Authentication:** `AUTHENTICATION_METHOD` - Authentication method: `api-key`, `users`, `oidc`, or `saml` (default: inferred from `STATIC_API_KEY`: api-key if set, else oidc)
+**Authentication:** `AUTHENTICATION_METHOD` - Authentication method: `api-key`, `mtls`, `users`, `oidc`, or `saml` (default: inferred from `STATIC_API_KEY`: api-key if set, else oidc; `mtls` requires `MTLS_CA_CERT`)
 
 - `STATIC_API_KEY` - Static API key (required when `AUTHENTICATION_METHOD=api-key`)
 - `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_TOKEN_VALIDATION` (`ONLINE` default / `OFFLINE`), `OIDC_AUDIENCE`, `OIDC_AUTHORIZED_PARTIES` - OIDC mode (`OIDC_ISSUER` is also the default issuer for `oidc` clients)

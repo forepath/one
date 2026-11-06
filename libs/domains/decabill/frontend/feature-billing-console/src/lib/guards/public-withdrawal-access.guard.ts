@@ -3,6 +3,7 @@ import { Router, type CanActivateFn } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import {
   API_KEY_STORAGE_KEY,
+  hasMtlsCredential,
   IDENTITY_AUTH_ENVIRONMENT,
   isUsersConsoleJwtValid,
   OidcAuthService,
@@ -31,6 +32,10 @@ export const publicWithdrawalAccessGuard: CanActivateFn = () => {
     }
 
     return true;
+  }
+
+  if (type === 'mtls') {
+    return hasMtlsCredential().then((hasCredential) => (hasCredential ? subscriptionsUrl : true));
   }
 
   if (usesAppSessionJwt(type)) {

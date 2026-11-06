@@ -9,7 +9,7 @@ import {
   createCorrelationIdMiddleware,
   registerAxiosCorrelationIdPropagation,
 } from '@forepath/shared/backend/util-http-context';
-import { configureTrustProxy, createOriginAllowlistMiddleware } from '@forepath/identity/backend';
+import { configureTrustProxy, createOriginAllowlistMiddleware, getMtlsHttpsOptions } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import {
   getOtelMetricsGlobalPrefixExcludes,
@@ -102,10 +102,14 @@ export async function bootstrap(): Promise<void> {
 
   await preloadWorkspaceConfigurationOverrides();
 
+  // Opt-in native TLS listener requesting client certificates (AUTHENTICATION_METHOD=mtls + MTLS_SERVER_CERT/KEY).
+  const httpsOptions = getMtlsHttpsOptions();
   const app = await NestFactory.create(AppModule, {
     logger: appLogger,
     bodyParser: false,
+    httpsOptions,
   });
+  const scheme = httpsOptions ? 'https' : 'http';
   const httpLogger = new Logger('HTTP');
 
   app.use(
@@ -199,7 +203,7 @@ export async function bootstrap(): Promise<void> {
   const port = parseInt(process.env.PORT || '3000', 10);
 
   await app.listen(port);
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
-  Logger.log(`🔌 Socket.IO WebSocket gateway is running on: http://localhost:${port}/socket/agents`);
-  Logger.log(`🖥️  VNC WebSocket gateway is running on: ws://localhost:${port}/socket/vnc`);
+  Logger.log(`🚀 Application is running on: ${scheme}://localhost:${port}/${globalPrefix}`);
+  Logger.log(`🔌 Socket.IO WebSocket gateway is running on: ${scheme}://localhost:${port}/socket/agents`);
+  Logger.log(`🖥️  VNC WebSocket gateway is running on: ${httpsOptions ? 'wss' : 'ws'}://localhost:${port}/socket/vnc`);
 }

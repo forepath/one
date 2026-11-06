@@ -14,6 +14,8 @@ servers:
     description: Root (OpenTelemetry metrics; outside /api prefix)
 security:
   - bearerAuth: []
+  - mutualTLS: []
+  - certificateAssertion: []
 paths:
   /auth/login:
     post:
@@ -2438,7 +2440,7 @@ paths:
     get:
       summary: List clients
       description: |
-        Returns all clients the user has access to. In api-key mode, returns all clients.
+        Returns all clients the user has access to. In api-key and mtls mode, returns all clients.
         For regular users, only returns clients where:
         - The user is the creator (user_id matches)
         - The user is in the client_users relationship table
@@ -2539,7 +2541,7 @@ paths:
         - The user is a global admin
         - The user is the creator (user_id matches)
         - The user is in the client_users relationship table
-        In api-key mode, access is always granted.
+        In api-key and mtls mode, access is always granted.
       operationId: getClient
       security:
         - bearerAuth: [clients:read]
@@ -8023,6 +8025,21 @@ components:
     basicAuth:
       type: http
       scheme: basic
+    mutualTLS:
+      type: mutualTLS
+      description: |
+        `AUTHENTICATION_METHOD=mtls` with the native TLS listener (`MTLS_SERVER_CERT` / `MTLS_SERVER_KEY`): a client
+        certificate of a CA in `MTLS_CA_CERT` presented in the TLS handshake. Grants full admin access, like the
+        static API key.
+    certificateAssertion:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        `AUTHENTICATION_METHOD=mtls`: `Certificate <assertion>`, a short-lived compact JWS signed with the client
+        certificate's private key (`typ: cert-assertion+jwt`, certificate chain in `x5c`, `exp - iat` at most
+        `MTLS_ASSERTION_MAX_LIFETIME`). Used by browsers and behind TLS-terminating proxies. Grants full admin
+        access, like the static API key.
   parameters:
     fileManagerContext:
       name: context
@@ -8276,17 +8293,20 @@ components:
           description: OpenCode session the question belongs to (optional)
     AuthenticationType:
       type: string
+      description: Controller → agent-manager authentication (`mtls` is not available for provisioned servers)
       enum:
         - api_key
         - oidc
+        - mtls
     AuthenticationMethod:
       type: string
       enum:
         - api-key
+        - mtls
         - users
         - oidc
         - saml
-      description: Server authentication method (api-key, users, oidc, or saml)
+      description: Server authentication method (api-key, mtls, users, oidc, or saml)
     SamlTokenExchangeDto:
       type: object
       required: [code, codeVerifier]
@@ -8642,6 +8662,18 @@ components:
           format: uri
         authenticationType:
           $ref: '#/components/schemas/AuthenticationType'
+        mtlsCertificate:
+          type: object
+          description: Stored client certificate (mtls authentication type only; the private key is never returned)
+          properties:
+            fingerprint256:
+              type: string
+              description: SHA-256 fingerprint of the leaf certificate (lowercase hex)
+            commonName:
+              type: string
+            validTo:
+              type: string
+              format: date-time
         config:
           $ref: '#/components/schemas/ConfigResponseDto'
           description: Configuration from the agent-manager instance (optional, may be undefined if agent-manager is unreachable)
@@ -8695,6 +8727,15 @@ components:
         oidcScope:
           type: string
           description: Optional space separated scopes for the client credentials grant
+        mtlsCertificate:
+          type: string
+          maxLength: 32768
+          description: Client certificate chain (PEM, leaf first) for the mtls authentication type; its CA must be trusted by the agent-manager (MTLS_CA_CERT)
+        mtlsPrivateKey:
+          type: string
+          writeOnly: true
+          maxLength: 32768
+          description: Unencrypted PEM private key of the client certificate (mtls; stored encrypted, never returned). Certificate and key are replaced together
     UpdateClientDto:
       type: object
       properties:
@@ -8724,6 +8765,15 @@ components:
         oidcScope:
           type: string
           description: Optional space separated scopes for the client credentials grant
+        mtlsCertificate:
+          type: string
+          maxLength: 32768
+          description: Client certificate chain (PEM, leaf first) for the mtls authentication type; its CA must be trusted by the agent-manager (MTLS_CA_CERT)
+        mtlsPrivateKey:
+          type: string
+          writeOnly: true
+          maxLength: 32768
+          description: Unencrypted PEM private key of the client certificate (mtls; stored encrypted, never returned). Certificate and key are replaced together
     CreateClientResponseDto:
       allOf:
         - $ref: '#/components/schemas/ClientResponseDto'
