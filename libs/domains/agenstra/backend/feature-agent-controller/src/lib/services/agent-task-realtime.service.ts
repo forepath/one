@@ -1,6 +1,8 @@
+import { emitToSocketIfPermitted, socketBroadcastRooms } from '@forepath/identity/backend';
 import { Injectable, Logger } from '@nestjs/common';
 import type { Server, Socket } from 'socket.io';
 
+import { CLIENTS_SOCKET_OUTBOUND_SCOPES } from '../auth/agenstra-websocket.scopes';
 import { AGENT_TASK_SOCKET_EVENTS } from '../constants/agent-tasks.constants';
 import type { AgentTaskRemovedEventDto, AgentTaskResponseDto, AgentTaskRunChatEventDto } from '../dto/agent-tasks';
 
@@ -29,7 +31,7 @@ export class AgentTaskRealtimeService {
     }
 
     try {
-      socket.emit(AGENT_TASK_SOCKET_EVENTS.runChatUpsert, payload);
+      emitToSocketIfPermitted(socket, AGENT_TASK_SOCKET_EVENTS.runChatUpsert, CLIENTS_SOCKET_OUTBOUND_SCOPES, payload);
     } catch (err) {
       this.logger.warn(`emitRunChatUpsertToSocket failed: ${err}`);
     }
@@ -50,6 +52,6 @@ export class AgentTaskRealtimeService {
       return;
     }
 
-    this.server.to(TicketBoardRealtimeService.clientRoom(clientId)).emit(event, payload);
+    this.server.to(socketBroadcastRooms(TicketBoardRealtimeService.clientRoom(clientId), event)).emit(event, payload);
   }
 }

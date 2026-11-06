@@ -50,7 +50,7 @@ describe('BillingMeterRealtimeService', () => {
 
     await service.emitMeterSummaryUpdate('sub-1');
 
-    expect(mockServer.to).toHaveBeenCalledWith('subscription:sub-1');
+    expect(mockServer.to).toHaveBeenCalledWith(['subscription:sub-1', 'subscription:sub-1#event:meterSummaryUpdate']);
     const emit = mockServer.to.mock.results[0].value.emit as jest.Mock;
 
     expect(emit).toHaveBeenCalledWith(

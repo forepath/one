@@ -1,3 +1,4 @@
+import { socketBroadcastRooms } from '@forepath/identity/backend';
 import { Injectable, Logger } from '@nestjs/common';
 import type { Server } from 'socket.io';
 
@@ -72,6 +73,7 @@ export class BillingMeterRealtimeService {
 
     const room = BillingMeterRealtimeService.subscriptionRoom(subscriptionId);
 
-    this.server.to(room).emit('meterSummaryUpdate', payload);
+    // Per-event room reaches PAT / app token sockets permitted to receive meter updates.
+    this.server.to(socketBroadcastRooms(room, 'meterSummaryUpdate')).emit('meterSummaryUpdate', payload);
   }
 }

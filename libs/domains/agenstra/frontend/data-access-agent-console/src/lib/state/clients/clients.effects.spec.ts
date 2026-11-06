@@ -7,6 +7,8 @@ import { of, Subject, throwError } from 'rxjs';
 
 import { ClientsService } from '../../services/clients.service';
 
+import { clientsReducer, initialClientsState } from './clients.reducer';
+
 import {
   addClientUser,
   addClientUserFailure,
@@ -234,6 +236,37 @@ describe('ClientsEffects', () => {
   });
 
   describe('loadMoreClients$', () => {
+    it('requests the next page with the state the reducer produced (appendLoading already true)', (done) => {
+      const newClients: ClientResponseDto[] = [{ ...mockClient, id: 'client-2' }];
+      const action = loadMoreClients();
+      const afterReducer = clientsReducer(
+        { ...initialClientsState, entities: [mockClient], hasMore: true, nextOffset: 10 },
+        action,
+      );
+
+      expect(afterReducer.appendLoading).toBe(true);
+      actions$ = of(action);
+      store.select.mockReturnValue(of(afterReducer));
+      clientsService.listClients.mockReturnValue(of(newClients));
+
+      loadMoreClients$(actions$, clientsService, store).subscribe((result) => {
+        expect(result).toEqual(loadMoreClientsSuccess({ clients: newClients, hasMore: false, nextOffset: 11 }));
+        expect(clientsService.listClients).toHaveBeenCalledWith({ limit: 10, offset: 10, search: undefined });
+        done();
+      });
+    });
+
+    it('does not request when there are no more pages', () => {
+      actions$ = of(loadMoreClients());
+      store.select.mockReturnValue(of({ ...initialClientsState, hasMore: false }));
+      const emitted: unknown[] = [];
+
+      loadMoreClients$(actions$, clientsService, store).subscribe((result) => emitted.push(result));
+
+      expect(emitted).toEqual([]);
+      expect(clientsService.listClients).not.toHaveBeenCalled();
+    });
+
     it('should append next page and update hasMore', (done) => {
       const newClients: ClientResponseDto[] = [{ ...mockClient, id: 'client-2' }];
       const action = loadMoreClients();

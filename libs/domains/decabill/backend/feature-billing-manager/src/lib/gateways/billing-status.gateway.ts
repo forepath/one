@@ -1,4 +1,12 @@
-import { SocketAuthService, UserRole, type SocketUserInfo } from '@forepath/identity/backend';
+import {
+  attachMachineSocketSession,
+  getMissingPatScopes,
+  isMachineSocketUser,
+  SocketAuthService,
+  socketRoomsForUser,
+  UserRole,
+  type SocketUserInfo,
+} from '@forepath/identity/backend';
 import { UsersRepository } from '@forepath/identity/backend';
 import { getOrInitSocketTenantId, readIncomingTenantIdFromHandshake, runWithTenantId } from '@forepath/shared/backend';
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
@@ -15,6 +23,12 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
+import {
+  BILLING_SOCKET_ADMIN_METERS_SCOPE,
+  BILLING_SOCKET_INBOUND_SCOPES,
+  BILLING_SOCKET_OUTBOUND_SCOPES,
+  BILLING_WEBSOCKETS,
+} from '../auth/billing-websocket.scopes';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { SubscriptionItemServerService } from '../services/subscription-item-server.service';
 import { SubscriptionService } from '../services/subscription.service';
@@ -132,10 +146,9 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
         return;
       }
 
-      const userInfo = await this.socketAuthService.validateAndGetUser(
-        typeof authHeader === 'string' ? authHeader : undefined,
-        tenantId,
-      );
+      const header = typeof authHeader === 'string' ? authHeader : undefined;
+      const authOptions = { websocket: BILLING_WEBSOCKETS.billing };
+      const userInfo = await this.socketAuthService.validateAndGetUser(header, tenantId, authOptions);
 
       if (!userInfo) {
         this.logger.warn(`Billing WebSocket rejected: invalid authorization for socket ${socket.id}`);
@@ -145,6 +158,12 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
       }
 
       (socket as BillingSocket).data = { userInfo, tenantId };
+      // PAT / app tokens: per-event scopes and live session re-checks (no-op for interactive sessions).
+      attachMachineSocketSession(socket, userInfo, {
+        inboundEvents: BILLING_SOCKET_INBOUND_SCOPES,
+        revalidate: () => this.socketAuthService.validateAndGetUser(header, tenantId, authOptions),
+        logger: this.logger,
+      });
       next();
     });
   }
@@ -243,7 +262,7 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
       }
 
       try {
-        if (userInfo?.userRole === UserRole.ADMIN) {
+        if (this.mayWatchAnySubscription(userInfo)) {
           // Admins may watch any subscription in their handshake tenant without ownership.
           await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
         } else {
@@ -257,8 +276,11 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
 
       const room = BillingMeterRealtimeService.subscriptionRoom(subscriptionId);
 
-      await socket.join(room);
-      this.trackMeterRoom(billingSocket, room);
+      // PAT / app token sockets join only the per-event rooms they may receive.
+      for (const target of socketRoomsForUser(userInfo, room, BILLING_SOCKET_OUTBOUND_SCOPES)) {
+        await socket.join(target);
+        this.trackMeterRoom(billingSocket, target);
+      }
 
       const payload = await this.billingMeterRealtime.buildMeterSummaryPayload(subscriptionId);
 
@@ -280,9 +302,28 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
     }
 
     const room = BillingMeterRealtimeService.subscriptionRoom(subscriptionId);
+    const billingSocket = socket as BillingSocket;
 
-    await socket.leave(room);
-    this.untrackMeterRoom(socket as BillingSocket, room);
+    for (const target of socketRoomsForUser(billingSocket.data?.userInfo, room, BILLING_SOCKET_OUTBOUND_SCOPES)) {
+      await socket.leave(target);
+      this.untrackMeterRoom(billingSocket, target);
+    }
+  }
+
+  /**
+   * Interactive admins may watch any subscription; PAT / app tokens of admins only with the admin meters scope
+   * (same as the admin meters REST API). Everyone else is limited to owned subscriptions.
+   */
+  private mayWatchAnySubscription(userInfo: SocketUserInfo | undefined): boolean {
+    if (userInfo?.userRole !== UserRole.ADMIN) {
+      return false;
+    }
+
+    if (!isMachineSocketUser(userInfo)) {
+      return true;
+    }
+
+    return getMissingPatScopes(userInfo.scopes ?? [], [BILLING_SOCKET_ADMIN_METERS_SCOPE]).length === 0;
   }
 
   private clearPollTimer(socketId: string): void {

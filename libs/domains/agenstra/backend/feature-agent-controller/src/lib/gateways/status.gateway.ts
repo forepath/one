@@ -1,4 +1,10 @@
-import { SocketAuthService, UserRole, type SocketUserInfo } from '@forepath/identity/backend';
+import {
+  attachMachineSocketSession,
+  isMachineSocketUser,
+  SocketAuthService,
+  UserRole,
+  type SocketUserInfo,
+} from '@forepath/identity/backend';
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { Logger } from '@nestjs/common';
 import {
@@ -13,6 +19,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
+import { AGENSTRA_WEBSOCKETS, STATUS_SOCKET_INBOUND_SCOPES } from '../auth/agenstra-websocket.scopes';
 import {
   MarkChatSessionReadPayload,
   MarkEnvironmentReadPayload,
@@ -75,10 +82,10 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   afterInit(server: Server): void {
     this.statusRealtime.attachServer(server);
     server.use(async (socket, next) => {
-      const authHeader = socket.handshake?.headers?.authorization ?? socket.handshake?.auth?.Authorization;
-      const userInfo = await this.socketAuthService.validateAndGetUser(
-        typeof authHeader === 'string' ? authHeader : undefined,
-      );
+      const rawAuthHeader = socket.handshake?.headers?.authorization ?? socket.handshake?.auth?.Authorization;
+      const authHeader = typeof rawAuthHeader === 'string' ? rawAuthHeader : undefined;
+      const authOptions = { websocket: AGENSTRA_WEBSOCKETS.status };
+      const userInfo = await this.socketAuthService.validateAndGetUser(authHeader, undefined, authOptions);
 
       if (!userInfo) {
         this.logger.warn(`Status WS rejected: invalid authorization for socket ${socket.id}`);
@@ -88,6 +95,12 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       }
 
       (socket as StatusSocket).data = { userInfo };
+      // PAT / app tokens: per-event scopes and live session re-checks (no-op for interactive sessions).
+      attachMachineSocketSession(socket, userInfo, {
+        inboundEvents: STATUS_SOCKET_INBOUND_SCOPES,
+        revalidate: () => this.socketAuthService.validateAndGetUser(authHeader, undefined, authOptions),
+        logger: this.logger,
+      });
       next();
     });
   }
@@ -103,7 +116,12 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       return;
     }
 
-    this.statusRealtime.registerSocket(userId, socket.id, userInfo.userRole ?? UserRole.USER);
+    this.statusRealtime.registerSocket(
+      userId,
+      socket.id,
+      userInfo.userRole ?? UserRole.USER,
+      isMachineSocketUser(userInfo) ? userInfo : undefined,
+    );
     this.logger.debug(`Status client connected: ${socket.id} (user ${userId})`);
 
     await this.statusService.emitSnapshotToSocket(socket.id, userInfo);

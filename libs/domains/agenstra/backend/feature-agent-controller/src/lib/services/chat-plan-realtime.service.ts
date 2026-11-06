@@ -1,5 +1,8 @@
+import { emitToSocketIfPermitted, socketBroadcastRooms } from '@forepath/identity/backend';
 import { Injectable, Logger } from '@nestjs/common';
 import type { Server, Socket } from 'socket.io';
+
+import { CLIENTS_SOCKET_OUTBOUND_SCOPES } from '../auth/agenstra-websocket.scopes';
 
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { CLIENT_CHAT_PLAN_EVENTS } from './client-chat-plan.constants';
@@ -26,7 +29,7 @@ export class ChatPlanRealtimeService {
 
     const room = TicketBoardRealtimeService.clientRoom(clientId);
 
-    this.server.to(room).emit(event, payload);
+    this.server.to(socketBroadcastRooms(room, event)).emit(event, payload);
   }
 
   emitToClient(clientId: string, payload: unknown): void {
@@ -39,7 +42,7 @@ export class ChatPlanRealtimeService {
     }
 
     try {
-      socket.emit(CLIENT_CHAT_PLAN_EVENTS.chatPlanUpsert, payload);
+      emitToSocketIfPermitted(socket, CLIENT_CHAT_PLAN_EVENTS.chatPlanUpsert, CLIENTS_SOCKET_OUTBOUND_SCOPES, payload);
     } catch (err) {
       this.logger.warn(`emitToSocket failed: ${err}`);
     }

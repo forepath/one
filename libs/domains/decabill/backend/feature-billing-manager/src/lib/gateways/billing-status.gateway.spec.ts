@@ -127,7 +127,7 @@ describe('BillingStatusGateway', () => {
       gateway.afterInit(server as never);
       await useCallbacks[0](mockSocket, next);
       expect(next).toHaveBeenCalledWith();
-      expect(socketAuth.validateAndGetUser).toHaveBeenCalledWith('Bearer x', 'default');
+      expect(socketAuth.validateAndGetUser).toHaveBeenCalledWith('Bearer x', 'default', { websocket: 'billing' });
       expect((mockSocket as unknown as { data: { userInfo: unknown; tenantId: string } }).data.userInfo).toEqual(
         userSocketInfo,
       );
@@ -442,6 +442,66 @@ describe('BillingStatusGateway', () => {
       expect(socket.leave).toHaveBeenCalledWith('subscription:sub-a');
       expect(socket.leave).toHaveBeenCalledWith('subscription:sub-b');
       expect((socket as { data: { meterSubscriptionRooms?: string[] } }).data.meterSubscriptionRooms).toEqual([]);
+    });
+  });
+  describe('machine tokens (PAT / app access tokens)', () => {
+    const machineAdmin = (scopes: string[]) => ({
+      isApiKeyAuth: false,
+      userId: 'admin-1',
+      userRole: UserRole.ADMIN,
+      amr: ['pat'],
+      scopes,
+      user: { id: 'admin-1', roles: ['admin'], amr: ['pat'], scopes },
+    });
+
+    it('limits admin tokens without usage:admin to their own subscriptions', async () => {
+      const socket = createMockSocket({
+        data: { userInfo: machineAdmin(['websocket:billing:read', 'subscriptions:read']) },
+      });
+
+      subscriptionService.getSubscription.mockRejectedValue(new Error('not owner'));
+
+      await gateway.handleSubscribeMeters({ subscriptionId: 'sub-other' }, socket);
+
+      expect(subscriptionsRepository.findByIdOrThrow).not.toHaveBeenCalled();
+      expect(subscriptionService.getSubscription).toHaveBeenCalledWith('sub-other', 'admin-1');
+      expect(socket.join).not.toHaveBeenCalled();
+      expect(socket.emit).toHaveBeenCalledWith('error', { message: 'Access denied' });
+    });
+
+    it('lets admin tokens with usage:admin watch any subscription via the per-event room only', async () => {
+      const socket = createMockSocket({
+        data: { userInfo: machineAdmin(['websocket:billing:read', 'subscriptions:read', 'usage:admin']) },
+      });
+
+      subscriptionsRepository.findByIdOrThrow.mockResolvedValue({ id: 'sub-other' } as never);
+      billingMeterRealtime.buildMeterSummaryPayload.mockResolvedValue(null as never);
+
+      await gateway.handleSubscribeMeters({ subscriptionId: 'sub-other' }, socket);
+
+      expect(subscriptionService.getSubscription).not.toHaveBeenCalled();
+      expect(socket.join).toHaveBeenCalledWith('subscription:sub-other#event:meterSummaryUpdate');
+      expect(socket.join).not.toHaveBeenCalledWith('subscription:sub-other');
+
+      await gateway.handleUnsubscribeMeters({ subscriptionId: 'sub-other' }, socket);
+
+      expect(socket.leave).toHaveBeenCalledWith('subscription:sub-other#event:meterSummaryUpdate');
+      expect((socket as { data: { meterSubscriptionRooms?: string[] } }).data.meterSubscriptionRooms).toEqual([]);
+    });
+
+    it('authenticates with the billing websocket scope', async () => {
+      const use = jest.fn();
+
+      socketAuth.validateAndGetUser.mockResolvedValue(null);
+      gateway.afterInit({ use } as never);
+      await use.mock.calls[0][0](
+        { id: 's', handshake: { headers: { authorization: 'Bearer t', 'x-tenant': 'default' } } },
+        jest.fn(),
+      );
+
+      expect(socketAuth.validateAndGetUser).toHaveBeenCalledWith('Bearer t', expect.any(String), {
+        websocket: 'billing',
+      });
     });
   });
 });

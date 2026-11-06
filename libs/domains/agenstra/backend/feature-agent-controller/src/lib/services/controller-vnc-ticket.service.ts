@@ -12,6 +12,8 @@ export interface ControllerVncTicketRecord {
   subject: string;
   isApiKeyAuth: boolean;
   userRole?: UserRole;
+  /** `amr` of the minting session; `pat` keeps PAT / app tokens without console-admin bypass on connect. */
+  amr?: string[];
   managerTicket: string;
   managerWsUrl: string;
   clientAuthHeader: string;
@@ -38,6 +40,7 @@ export class ControllerVncTicketService {
     subject: string;
     isApiKeyAuth: boolean;
     userRole?: UserRole;
+    amr?: string[];
     managerTicket: string;
     managerWsUrl: string;
     clientAuthHeader: string;
@@ -55,6 +58,7 @@ export class ControllerVncTicketService {
       subject: input.subject,
       isApiKeyAuth: input.isApiKeyAuth,
       userRole: input.userRole,
+      ...(input.amr ? { amr: [...input.amr] } : {}),
       managerTicket: input.managerTicket,
       managerWsUrl: input.managerWsUrl,
       clientAuthHeader: input.clientAuthHeader,

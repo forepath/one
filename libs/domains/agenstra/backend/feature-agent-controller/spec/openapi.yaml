@@ -6051,7 +6051,7 @@ paths:
         (do not put the ticket in the URL). Upstream manager/worker addresses are never returned to the browser.
       operationId: createClientAgentVncSession
       security:
-        - bearerAuth: [agent_vnc:write]
+        - bearerAuth: [agent_vnc:write, websocket:vnc:write]
       parameters:
         - in: path
           name: id

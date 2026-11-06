@@ -1,8 +1,11 @@
 import {
   ClientUsersRepository,
   SocketAuthService,
+  attachMachineSocketSession,
   buildRequestFromSocketUser,
   ensureClientAccess,
+  socketRoomsForUser,
+  type SocketUserInfo,
 } from '@forepath/identity/backend';
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { ForbiddenException, Logger } from '@nestjs/common';
@@ -18,6 +21,11 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
+import {
+  AGENSTRA_WEBSOCKETS,
+  PAGES_SOCKET_INBOUND_SCOPES,
+  PAGES_SOCKET_OUTBOUND_SCOPES,
+} from '../auth/agenstra-websocket.scopes';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { KnowledgeBoardRealtimeService } from '../services/knowledge-board-realtime.service';
 
@@ -50,7 +58,8 @@ export class KnowledgeBoardGateway implements OnGatewayInit, OnGatewayConnection
     this.knowledgeBoardRealtime.attachServer(server);
     server.use(async (socket, next) => {
       const authHeader = socket.handshake?.headers?.authorization ?? socket.handshake?.auth?.Authorization;
-      const userInfo = await this.socketAuthService.validateAndGetUser(authHeader);
+      const authOptions = { websocket: AGENSTRA_WEBSOCKETS.pages };
+      const userInfo = await this.socketAuthService.validateAndGetUser(authHeader, undefined, authOptions);
 
       if (!userInfo) {
         this.logger.warn(`Pages WS rejected: missing or invalid authorization for socket ${socket.id}`);
@@ -60,6 +69,12 @@ export class KnowledgeBoardGateway implements OnGatewayInit, OnGatewayConnection
       }
 
       (socket as Socket & { data: { userInfo: typeof userInfo } }).data = { userInfo };
+      // PAT / app tokens: per-event scopes and live session re-checks (no-op for interactive sessions).
+      attachMachineSocketSession(socket, userInfo, {
+        inboundEvents: PAGES_SOCKET_INBOUND_SCOPES,
+        revalidate: () => this.socketAuthService.validateAndGetUser(authHeader, undefined, authOptions),
+        logger: this.logger,
+      });
       next();
     });
   }
@@ -72,7 +87,7 @@ export class KnowledgeBoardGateway implements OnGatewayInit, OnGatewayConnection
     const prev = this.selectedClientBySocket.get(socket.id);
 
     if (prev) {
-      void socket.leave(KnowledgeBoardRealtimeService.clientRoom(prev));
+      this.leaveClientRooms(socket, prev);
     }
 
     this.selectedClientBySocket.delete(socket.id);
@@ -125,10 +140,12 @@ export class KnowledgeBoardGateway implements OnGatewayInit, OnGatewayConnection
       );
 
       if (currentSelected && currentSelected !== clientId) {
-        await socket.leave(KnowledgeBoardRealtimeService.clientRoom(currentSelected));
+        this.leaveClientRooms(socket, currentSelected);
       }
 
-      await socket.join(KnowledgeBoardRealtimeService.clientRoom(clientId));
+      for (const room of this.clientRooms(socket, clientId)) {
+        await socket.join(room);
+      }
       this.selectedClientBySocket.set(socket.id, clientId);
       socket.emit('setClientSuccess', { message: 'Client context set', clientId });
     } catch (error: unknown) {
@@ -143,6 +160,23 @@ export class KnowledgeBoardGateway implements OnGatewayInit, OnGatewayConnection
       });
     } finally {
       this.settingClientBySocket.delete(socket.id);
+    }
+  }
+
+  /** Workspace room for interactive sockets; scope-permitted per-event rooms for PAT / app token sockets. */
+  private clientRooms(socket: Socket, clientId: string): string[] {
+    const userInfo = (socket as Socket & { data?: { userInfo?: SocketUserInfo } }).data?.userInfo;
+
+    return socketRoomsForUser(
+      userInfo,
+      KnowledgeBoardRealtimeService.clientRoom(clientId),
+      PAGES_SOCKET_OUTBOUND_SCOPES,
+    );
+  }
+
+  private leaveClientRooms(socket: Socket, clientId: string): void {
+    for (const room of this.clientRooms(socket, clientId)) {
+      void socket.leave(room);
     }
   }
 }

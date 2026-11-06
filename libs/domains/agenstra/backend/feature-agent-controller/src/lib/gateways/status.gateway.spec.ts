@@ -106,7 +106,8 @@ describe('StatusGateway', () => {
     const socket = createMockSocket();
 
     await gateway.handleConnection(socket);
-    expect(mockRealtime.registerSocket).toHaveBeenCalledWith('api-key-user', 'socket-1', UserRole.USER);
+    // Interactive / API-key sockets register without machine identity (they keep the per-user fan-out).
+    expect(mockRealtime.registerSocket).toHaveBeenCalledWith('api-key-user', 'socket-1', UserRole.USER, undefined);
     expect(mockStatusService.emitSnapshotToSocket).toHaveBeenCalled();
 
     await jest.advanceTimersByTimeAsync(30_000);

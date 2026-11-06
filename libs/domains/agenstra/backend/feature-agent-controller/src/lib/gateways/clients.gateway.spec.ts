@@ -1745,4 +1745,241 @@ describe('ClientsGateway', () => {
       expect(remote.emit).toHaveBeenCalledWith('login', { agentId: 'agent-2', password: 'password-agent-2' });
     }, 10000);
   });
+  describe('machine tokens (PAT / app access tokens)', () => {
+    const machineUser = (scopes: string[]) => ({
+      userId: 'user-1',
+      // Admin role on purpose: PAT / app tokens never get the console-admin bypass.
+      userRole: UserRole.ADMIN,
+      isApiKeyAuth: false,
+      amr: ['pat'],
+      scopes,
+      user: { id: 'user-1', roles: ['admin'], amr: ['pat'], scopes },
+    });
+    const createMachineSocket = (scopes: string[]) => {
+      const socket = createMockSocket('machine-socket');
+
+      socket.data = { userInfo: machineUser(scopes) };
+
+      return socket;
+    };
+    const selectWorkspace = async (socket: ReturnType<typeof createMockSocket>) => {
+      mockClientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'someone-else' });
+      mockClientUsersRepository.findUserClientAccess.mockResolvedValue({ role: 'user' });
+      mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'client-uuid',
+        endpoint: 'http://localhost:3100/api',
+        authenticationType: 'api_key',
+        apiKey: 'x',
+      } as any);
+      await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+      await new Promise((resolve) => setImmediate(resolve));
+    };
+    const remoteMock = () => (jest.requireMock('socket.io-client') as { io: jest.Mock }).io() as any;
+
+    it('opens the namespace to machine tokens only via the clients websocket scope', async () => {
+      const use = jest.fn();
+
+      gateway.afterInit({ use } as any);
+      const middleware = use.mock.calls[0][0];
+      const socket = {
+        id: 's1',
+        handshake: { headers: { authorization: 'Bearer pat.jwt' } },
+        use: jest.fn(),
+        on: jest.fn(),
+      } as any;
+      const next = jest.fn();
+
+      mockSocketAuthService.validateAndGetUser.mockResolvedValueOnce(machineUser(['websocket:clients:read']));
+      await middleware(socket, next);
+
+      expect(mockSocketAuthService.validateAndGetUser).toHaveBeenCalledWith('Bearer pat.jwt', undefined, {
+        websocket: 'clients',
+      });
+      expect(next).toHaveBeenCalledWith();
+      // Machine session guard installed (inbound event scopes + live re-validation).
+      expect(socket.use).toHaveBeenCalledTimes(1);
+    });
+
+    it('denies workspaces the token user is not a member of (no admin bypass)', async () => {
+      const socket = createMachineSocket(['websocket:clients:read', 'clients:read']);
+
+      mockClientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'someone-else' });
+      mockClientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+      await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+
+      expect(socket.emit).toHaveBeenCalledWith('error', expect.anything());
+      expect(socket.emit).not.toHaveBeenCalledWith('setClientSuccess', expect.anything());
+      expect(socket.join).not.toHaveBeenCalled();
+    });
+
+    it('joins only the per-event workspace rooms its scopes permit (never the shared room)', async () => {
+      const socket = createMachineSocket(['websocket:clients:read', 'clients:read', 'agent_chats:read']);
+
+      await selectWorkspace(socket);
+
+      const joined = (socket.join as jest.Mock).mock.calls.map((call) => call[0]);
+
+      expect(joined).not.toContain('client:client-uuid');
+      expect(joined).toContain('client:client-uuid#event:chatPlanUpsert');
+      expect(joined).toContain('client:client-uuid#event:agentTaskUpsert');
+      // ticket automation chat cards also need tickets:read
+      expect(joined).not.toContain('client:client-uuid#event:ticketAutomationRunChatUpsert');
+      expect(joined).not.toContain('client:client-uuid#event:ticketChatTicketUpsert');
+    });
+
+    it('never relays terminal events, whatever the scopes', async () => {
+      const socket = createMachineSocket([
+        'websocket:clients:write',
+        'clients:admin',
+        'agents:write',
+        'agent_chats:write',
+        'agent_files:write',
+        'agent_environment:write',
+      ]);
+      const remote = remoteMock();
+
+      await selectWorkspace(socket);
+      remote.emit.mockClear();
+
+      for (const event of ['createTerminal', 'terminalInput', 'terminalResize', 'closeTerminal']) {
+        await gateway.handleForward({ event, payload: {}, agentId: 'agent-uuid' }, socket);
+        expect(socket.emit).toHaveBeenCalledWith('error', {
+          message: `Insufficient token scope for event: ${event}`,
+        });
+      }
+
+      expect(remote.emit).not.toHaveBeenCalled();
+    });
+
+    it('requires the websocket write scope and agent_chats:write to send chat messages', async () => {
+      const readOnly = createMachineSocket(['websocket:clients:read', 'clients:read', 'agent_chats:read']);
+      const remote = remoteMock();
+
+      await selectWorkspace(readOnly);
+      remote.emit.mockClear();
+      await gateway.handleForward({ event: 'chat', payload: { message: 'hi' }, agentId: 'agent-uuid' }, readOnly);
+      expect(remote.emit).not.toHaveBeenCalled();
+      expect(readOnly.emit).toHaveBeenCalledWith('error', { message: 'Insufficient token scope for event: chat' });
+
+      const writer = createMachineSocket(['websocket:clients:write', 'clients:read', 'agent_chats:write']);
+
+      writer.id = 'machine-writer';
+      await selectWorkspace(writer);
+      remote.emit.mockClear();
+      await gateway.handleForward({ event: 'chat', payload: { message: 'hi' }, agentId: 'agent-uuid' }, writer);
+      expect(remote.emit).toHaveBeenCalledWith('chat', expect.objectContaining({ message: 'hi' }));
+    });
+
+    it('drops ticket, knowledge and attachment context the token cannot read', async () => {
+      const socket = createMachineSocket(['websocket:clients:write', 'clients:read', 'agent_chats:write']);
+      const remote = remoteMock();
+
+      await selectWorkspace(socket);
+      remote.emit.mockClear();
+      await gateway.handleForward(
+        {
+          event: 'chat',
+          agentId: 'agent-uuid',
+          payload: {
+            message: 'hi',
+            contextInjection: {
+              ticketShas: ['abc1234'],
+              knowledgeShas: ['def5678'],
+              attachmentIds: ['att-1'],
+              knowledgeContexts: ['smuggled'],
+            },
+          },
+        },
+        socket,
+      );
+
+      expect(mockTicketsService.getPrototypePromptWithRefByClientSha).not.toHaveBeenCalled();
+      expect(mockKnowledgeTreeService.collectPromptContextsByHashes).not.toHaveBeenCalled();
+      expect(mockAttachmentsService.resolveContextAttachments).not.toHaveBeenCalled();
+
+      const forwarded = remote.emit.mock.calls.find((call: unknown[]) => call[0] === 'chat')?.[1];
+
+      expect(forwarded.contextInjection.ticketShas ?? []).toEqual([]);
+      expect(forwarded.contextInjection.knowledgeShas ?? []).toEqual([]);
+      expect(forwarded.contextInjection.attachmentIds ?? []).toEqual([]);
+      expect(forwarded.contextInjection.knowledgeContexts ?? []).toEqual([]);
+    });
+
+    it('caps auto-enriched context to the token scopes', async () => {
+      const socket = createMachineSocket([
+        'websocket:clients:write',
+        'clients:read',
+        'agent_chats:write',
+        'tickets:read',
+      ]);
+      const remote = remoteMock();
+
+      mockAutoContextResolverService.resolve.mockResolvedValueOnce({
+        ticketShas: ['abc1234'],
+        knowledgeShas: ['def5678'],
+      });
+      mockTicketsService.getPrototypePromptWithRefByClientSha.mockResolvedValueOnce({
+        prompt: 'ticket prompt',
+        longSha: 'abc1234',
+        title: 'Ticket',
+      });
+      await selectWorkspace(socket);
+      remote.emit.mockClear();
+      await gateway.handleForward(
+        {
+          event: 'chat',
+          agentId: 'agent-uuid',
+          payload: { message: 'hi', contextInjection: { autoEnrichmentEnabled: true } },
+        },
+        socket,
+      );
+
+      expect(mockTicketsService.getPrototypePromptWithRefByClientSha).toHaveBeenCalledWith('client-uuid', 'abc1234');
+      expect(mockKnowledgeTreeService.collectPromptContextsByHashes).not.toHaveBeenCalled();
+    });
+
+    it('relays only agent-manager events the token scopes permit', async () => {
+      const socket = createMachineSocket(['websocket:clients:read', 'clients:read', 'agent_chats:read']);
+      const remote = remoteMock();
+
+      remote.onAny.mockClear();
+      await selectWorkspace(socket);
+      (socket.emit as jest.Mock).mockClear();
+
+      const onAnyHandler = remote.onAny.mock.calls[0][0];
+
+      onAnyHandler('chatMessage', { success: true, data: { from: 'user', text: 'x' } });
+      onAnyHandler('fileUpdateNotification', { success: true, data: { path: 'secret.env' } });
+      onAnyHandler('gitStateChanged', { success: true, data: {} });
+      onAnyHandler('terminalOutput', { success: true, data: { output: 'x' } });
+      onAnyHandler('someFutureEvent', { success: true, data: {} });
+      await new Promise((resolve) => setImmediate(resolve));
+
+      const relayed = (socket.emit as jest.Mock).mock.calls.map((call) => call[0]);
+
+      expect(relayed).toEqual(['chatMessage']);
+    });
+
+    it('keeps relaying every event to interactive sockets', async () => {
+      const socket = createMockSocket('interactive-socket');
+      const remote = remoteMock();
+
+      socket.data = { userInfo: { userId: 'user-1', userRole: UserRole.USER, isApiKeyAuth: false, amr: ['pwd'] } };
+      remote.onAny.mockClear();
+      await selectWorkspace(socket);
+      (socket.emit as jest.Mock).mockClear();
+
+      const onAnyHandler = remote.onAny.mock.calls[0][0];
+
+      onAnyHandler('fileUpdateNotification', { success: true, data: { path: 'a' } });
+      onAnyHandler('someFutureEvent', { success: true, data: {} });
+      await new Promise((resolve) => setImmediate(resolve));
+
+      expect((socket.emit as jest.Mock).mock.calls.map((call) => call[0])).toEqual([
+        'fileUpdateNotification',
+        'someFutureEvent',
+      ]);
+      expect(socket.join).toHaveBeenCalledWith('client:client-uuid');
+    });
+  });
 });

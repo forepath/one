@@ -36,9 +36,13 @@ export interface SocketUserInfo {
   userId?: string;
   userRole?: UserRole;
   isApiKeyAuth: boolean;
-  /** Present for users-mode JWT sockets (`pwd`; PAT sessions are rejected). */
+  /** Authentication method reference: `pwd` (users-mode console) or `pat` (PAT / app access token). */
   amr?: string[];
-  user?: { id: string; email?: string; roles?: string[]; amr?: string[] };
+  /** Live capability scopes of machine sessions (`amr` includes `pat`); see `socket-scope.utils`. */
+  scopes?: string[];
+  /** Machine session expiry (seconds since epoch); the socket is closed when it passes. */
+  exp?: number;
+  user?: { id: string; email?: string; roles?: string[]; amr?: string[]; scopes?: string[] };
 }
 
 /**
@@ -54,6 +58,7 @@ export function buildRequestFromSocketUser(socketUser: SocketUserInfo): RequestW
       ? {
           ...user,
           amr: user.amr ?? socketUser.amr,
+          scopes: user.scopes ?? socketUser.scopes,
         }
       : undefined,
     apiKeyAuthenticated: socketUser.isApiKeyAuth,

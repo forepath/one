@@ -165,6 +165,7 @@ export class VncGateway implements OnApplicationBootstrap, OnModuleDestroy {
     subject: string;
     isApiKeyAuth: boolean;
     userRole?: UserRole;
+    amr?: string[];
   }): RequestWithUser {
     if (record.isApiKeyAuth) {
       return { apiKeyAuthenticated: true } as RequestWithUser;
@@ -174,6 +175,8 @@ export class VncGateway implements OnApplicationBootstrap, OnModuleDestroy {
       user: {
         id: record.subject,
         roles: record.userRole === UserRole.ADMIN ? [UserRole.ADMIN] : [UserRole.USER],
+        // Keeps PAT / app token tickets on membership checks (no console-admin bypass).
+        ...(record.amr ? { amr: record.amr } : {}),
       },
     } as RequestWithUser;
   }

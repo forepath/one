@@ -144,4 +144,65 @@ describe('TicketsBoardGateway', () => {
     gateway.handleDisconnect(socket as any);
     expect(socket.leave).toHaveBeenCalledWith(TicketBoardRealtimeService.clientRoom('to-leave'));
   });
+  describe('machine tokens (PAT / app access tokens)', () => {
+    const machineSocket = (scopes: string[]) => {
+      const socket = createMockSocket('machine-socket');
+
+      socket.data = {
+        userInfo: { userId: 'u1', isApiKeyAuth: false, amr: ['pat'], scopes, user: { id: 'u1', amr: ['pat'], scopes } },
+      };
+
+      return socket;
+    };
+
+    it('authenticates with the tickets websocket scope', async () => {
+      const use = jest.fn();
+
+      gateway.afterInit({ use } as any);
+      await use.mock.calls[0][0]({ id: 's', handshake: { headers: { authorization: 'Bearer t' } } }, jest.fn());
+
+      expect(mockSocketAuthService.validateAndGetUser).toHaveBeenCalledWith('Bearer t', undefined, {
+        websocket: 'tickets',
+      });
+    });
+
+    it('joins only the per-event rooms its scopes permit', async () => {
+      const socket = machineSocket(['websocket:tickets:read', 'tickets:read']);
+
+      await gateway.handleSetClient({ clientId: 'c1' }, socket);
+
+      const joined = (socket.join as jest.Mock).mock.calls.map((call) => call[0]);
+
+      expect(joined).not.toContain('client:c1');
+      expect(joined).toContain('client:c1#event:ticketUpsert');
+      expect(joined).toContain('client:c1#event:ticketAutomationRunStepAppended');
+      // Relation changes reveal knowledge pages too.
+      expect(joined).not.toContain('client:c1#event:knowledgeRelationChanged');
+      expect(socket.emit).toHaveBeenCalledWith('setClientSuccess', expect.objectContaining({ clientId: 'c1' }));
+    });
+
+    it('passes amr and scopes to the workspace access check', async () => {
+      const socket = machineSocket(['websocket:tickets:read', 'tickets:read']);
+
+      await gateway.handleSetClient({ clientId: 'c1' }, socket);
+
+      expect(identityBackend.ensureClientAccess).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        'c1',
+        expect.objectContaining({ user: expect.objectContaining({ amr: ['pat'] }) }),
+      );
+    });
+
+    it('leaves the per-event rooms on disconnect', async () => {
+      const socket = machineSocket(['websocket:tickets:read', 'tickets:read', 'knowledge:read']);
+
+      await gateway.handleSetClient({ clientId: 'c1' }, socket);
+      const joined = (socket.join as jest.Mock).mock.calls.map((call) => call[0]);
+
+      gateway.handleDisconnect(socket as any);
+
+      expect((socket.leave as jest.Mock).mock.calls.map((call) => call[0])).toEqual(joined);
+    });
+  });
 });

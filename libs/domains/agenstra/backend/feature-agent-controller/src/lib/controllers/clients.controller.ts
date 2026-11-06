@@ -531,7 +531,8 @@ export class ClientsController {
    */
   @Post(':id/agents/:agentId/vnc/sessions')
   @HttpCode(HttpStatus.CREATED)
-  @RequireScopes('agent_vnc:write')
+  // PAT / app tokens additionally need the VNC websocket scope (the ticket only opens that socket).
+  @RequireScopes('agent_vnc:write', 'websocket:vnc:write')
   async createClientAgentVncSession(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -550,6 +551,7 @@ export class ClientsController {
       subject,
       isApiKeyAuth: userInfo.isApiKeyAuth,
       userRole: userInfo.userRole,
+      ...(userInfo.amr ? { amr: userInfo.amr } : {}),
     });
   }
 

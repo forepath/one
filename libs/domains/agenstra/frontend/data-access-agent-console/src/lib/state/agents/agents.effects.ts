@@ -251,30 +251,35 @@ export const loadMoreClientAgents$ = createEffect(
     return actions$.pipe(
       ofType(loadMoreClientAgents),
       withLatestFrom(store.select(selectAgentsState)),
-      filter(
-        ([{ clientId }, state]) =>
-          Boolean(state.hasMore[clientId]) && !state.loading[clientId] && !state.appendLoading[clientId],
-      ),
-      exhaustMap(([{ clientId }, state]) => {
-        const offset = state.nextOffset[clientId] ?? 0;
-        const batchParams = {
-          limit: BATCH_SIZE,
-          offset,
-          search: state.search?.[clientId] ?? undefined,
-        };
+      // Reducers run before effects: `appendLoading` is already true for an accepted request, so it must not
+      // gate here (that dropped every request and left the loading state stuck). The reducer only accepts a
+      // request when a batch can start; `exhaustMap` (per workspace) ignores requests while one is in flight.
+      filter(([{ clientId }, state]) => Boolean(state.hasMore[clientId]) && !state.loading[clientId]),
+      groupBy(([{ clientId }]) => clientId),
+      mergeMap((perClient$) =>
+        perClient$.pipe(
+          exhaustMap(([{ clientId }, state]) => {
+            const offset = state.nextOffset[clientId] ?? 0;
+            const batchParams = {
+              limit: BATCH_SIZE,
+              offset,
+              search: state.search?.[clientId] ?? undefined,
+            };
 
-        return agentsService.listClientAgents(clientId, batchParams).pipe(
-          map((agents) =>
-            loadMoreClientAgentsSuccess({
-              clientId,
-              agents,
-              hasMore: agents.length === BATCH_SIZE,
-              nextOffset: offset + agents.length,
-            }),
-          ),
-          catchError((error) => of(loadMoreClientAgentsFailure({ clientId, error: normalizeError(error) }))),
-        );
-      }),
+            return agentsService.listClientAgents(clientId, batchParams).pipe(
+              map((agents) =>
+                loadMoreClientAgentsSuccess({
+                  clientId,
+                  agents,
+                  hasMore: agents.length === BATCH_SIZE,
+                  nextOffset: offset + agents.length,
+                }),
+              ),
+              catchError((error) => of(loadMoreClientAgentsFailure({ clientId, error: normalizeError(error) }))),
+            );
+          }),
+        ),
+      ),
     );
   },
   { functional: true },

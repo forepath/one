@@ -7,6 +7,8 @@ import { provideMockStore } from '@ngrx/store/testing';
 import { firstValueFrom, of, Subject, throwError, toArray } from 'rxjs';
 
 import { AgentsService } from '../../services/agents.service';
+
+import { agentsReducer, initialAgentsState } from './agents.reducer';
 import { OpencodeConfigService, type OpencodeCommandsListDto } from '../../services/opencode-config.service';
 import { refreshClientIsolation } from '../clients/clients.actions';
 import {
@@ -317,6 +319,51 @@ describe('AgentsEffects', () => {
   });
 
   describe('loadMoreClientAgents$', () => {
+    it('requests the next page with the state the reducer produced (appendLoading already true)', (done) => {
+      const agents: AgentResponseDto[] = [mockAgent2];
+      const action = loadMoreClientAgents({ clientId });
+      const afterReducer = agentsReducer(
+        { ...initialAgentsState, hasMore: { [clientId]: true }, nextOffset: { [clientId]: 10 } },
+        action,
+      );
+
+      expect(afterReducer.appendLoading[clientId]).toBe(true);
+      actions$ = of(action);
+      store.select.mockReturnValue(of(afterReducer));
+      agentsService.listClientAgents.mockReturnValue(of(agents));
+
+      loadMoreClientAgents$(actions$, agentsService, store).subscribe((result) => {
+        expect(result).toEqual(loadMoreClientAgentsSuccess({ clientId, agents, hasMore: false, nextOffset: 11 }));
+        done();
+      });
+    });
+
+    it('keeps loads of different workspaces independent', async () => {
+      const other = 'client-2';
+      const pending = new Subject<AgentResponseDto[]>();
+
+      actions$ = of(loadMoreClientAgents({ clientId }), loadMoreClientAgents({ clientId: other }));
+      store.select.mockReturnValue(
+        of({
+          ...initialAgentsState,
+          hasMore: { [clientId]: true, [other]: true },
+          nextOffset: { [clientId]: 10, [other]: 10 },
+        }),
+      );
+      agentsService.listClientAgents.mockImplementation((id: string) =>
+        id === clientId ? pending.asObservable() : of([mockAgent2]),
+      );
+      const emitted: unknown[] = [];
+
+      loadMoreClientAgents$(actions$, agentsService, store).subscribe((result) => emitted.push(result));
+
+      // client-1 is still in flight; client-2 must not be swallowed by it.
+      expect(agentsService.listClientAgents).toHaveBeenCalledWith(other, expect.anything());
+      expect(emitted).toEqual([
+        loadMoreClientAgentsSuccess({ clientId: other, agents: [mockAgent2], hasMore: false, nextOffset: 11 }),
+      ]);
+    });
+
     it('should append next page', (done) => {
       const agents: AgentResponseDto[] = [mockAgent2];
       const action = loadMoreClientAgents({ clientId });

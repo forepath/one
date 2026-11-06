@@ -76,3 +76,32 @@ describe('getMissingPatScopes', () => {
     expect(getMissingPatScopes(['tickets:write'], ['tickets:read', 'attachments:read'])).toEqual(['attachments:read']);
   });
 });
+
+describe('namespaced resources (`<namespace>:<name>:<level>`)', () => {
+  it('parses one namespace segment as part of the resource', () => {
+    expect(parsePatScope('websocket:clients:read')).toEqual({ resource: 'websocket:clients', level: 'read' });
+    expect(parsePatScope('websocket:status:write')).toEqual({ resource: 'websocket:status', level: 'write' });
+  });
+
+  it('rejects malformed namespaced scopes', () => {
+    expect(parsePatScope('websocket:a:b:read')).toBeUndefined();
+    expect(parsePatScope('websocket::read')).toBeUndefined();
+    expect(parsePatScope(':clients:read')).toBeUndefined();
+    expect(parsePatScope('websocket:Clients:read')).toBeUndefined();
+    expect(parsePatScope('websocket:clients:delete')).toBeUndefined();
+  });
+
+  it('applies the level hierarchy within the namespaced resource only', () => {
+    expect(patScopeSatisfied(['websocket:clients:write'], 'websocket:clients:read')).toBe(true);
+    expect(patScopeSatisfied(['websocket:clients:read'], 'websocket:clients:write')).toBe(false);
+    expect(patScopeSatisfied(['websocket:status:write'], 'websocket:clients:read')).toBe(false);
+    // A plain resource of the same name is a different resource.
+    expect(patScopeSatisfied(['clients:admin'], 'websocket:clients:read')).toBe(false);
+    expect(patScopeSatisfied(['websocket:clients:write'], 'clients:read')).toBe(false);
+  });
+
+  it('treats namespaced :admin scopes as admin scopes', () => {
+    expect(isAdminPatScope('websocket:clients:admin')).toBe(true);
+    expect(isAdminPatScope('websocket:clients:write')).toBe(false);
+  });
+});

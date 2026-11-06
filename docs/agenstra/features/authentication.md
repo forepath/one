@@ -88,13 +88,14 @@ PRODUCT_NAME=Agenstra  # Issuer label on TOTP QR / authenticator entries (defaul
 
 User-bound tokens for scripts and CI. They are **not** a console login password. **Not available** when `AUTHENTICATION_METHOD=api-key`.
 
-| Concern                  | Behavior                                                                                                                       |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| Create / update / revoke | Console **Personal Access Tokens** page (`/settings/tokens`); interactive console session only (password JWT or Keycloak OIDC) |
-| Exchange                 | `POST /auth/token` with `{ "token": "fp_pat_…" }` only (no email) → JWT with `amr: ["pat"]` and `scopes`                       |
-| Console                  | Login rejects `fp_pat_` secrets; SPA rejects JWTs whose `amr` includes `pat`; WebSockets reject PAT JWTs                       |
-| Keycloak                 | Local `users` row is synced on first authenticated request (`keycloakSub`); PAT CRUD and exchange require `JWT_SECRET`         |
-| Scopes                   | `AGENSTRA_PAT_SCOPES` (see [Scope model](#scope-model)); each enforced via `@RequireScopes`                                    |
+| Concern                  | Behavior                                                                                                                           |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Create / update / revoke | Console **Personal Access Tokens** page (`/settings/tokens`); interactive console session only (password JWT or Keycloak OIDC)     |
+| Exchange                 | `POST /auth/token` with `{ "token": "fp_pat_…" }` only (no email) → JWT with `amr: ["pat"]` and `scopes`                           |
+| Console                  | Login rejects `fp_pat_` secrets; SPA rejects JWTs whose `amr` includes `pat`                                                       |
+| WebSockets               | Only with the socket's `websocket:<socket>:read` scope; every event is capped by its domain scopes (see [WebSockets](#websockets)) |
+| Keycloak                 | Local `users` row is synced on first authenticated request (`keycloakSub`); PAT CRUD and exchange require `JWT_SECRET`             |
+| Scopes                   | `AGENSTRA_PAT_SCOPES` (see [Scope model](#scope-model)); each enforced via `@RequireScopes`                                        |
 
 Compared to `STATIC_API_KEY`, PATs are per-user, scoped, rotatable, and do not grant cross-tenant admin by default.
 
@@ -121,11 +122,16 @@ Scopes follow `<resource>:<level>` with three hierarchical levels per resource (
 | `agent_chats`       | read / write         | Chat sessions and messages, chat plans, scheduled agent tasks                                                                                                                                       |
 | `agent_vcs`         | read / write         | Git status/branches/diff; write: stage, commit, push, pull, rebase, branches, automation command checks                                                                                             |
 | `agent_deployments` | read / write         | CI/CD configuration, repositories, workflows, runs and logs; write: configure, trigger, cancel                                                                                                      |
-| `agent_vnc`         | write                | Remote desktop session tickets                                                                                                                                                                      |
+| `agent_vnc`         | write                | Remote desktop session tickets (machine tokens also need `websocket:vnc:write`)                                                                                                                     |
 | `tickets`           | read / write         | Tickets, comments, activity, ticket automation                                                                                                                                                      |
 | `knowledge`         | read / write         | Knowledge tree, pages, relations                                                                                                                                                                    |
 | `attachments`       | read / write         | Ticket, knowledge and chat attachments                                                                                                                                                              |
 | `statistics`        | read                 | Workspace and aggregate statistics                                                                                                                                                                  |
+| `websocket:clients` | read / write         | `socket/clients` (chat, agent relay, plans); write: send chat / enhance / ticket body / file updates, plan actions                                                                                  |
+| `websocket:status`  | read / write         | `socket/status` (environment status); write: mark environments / chats read, set the active environment (auto-marks it read)                                                                        |
+| `websocket:tickets` | read                 | `socket/tickets` (ticket board events)                                                                                                                                                              |
+| `websocket:pages`   | read                 | `socket/pages` (knowledge board events)                                                                                                                                                             |
+| `websocket:vnc`     | write                | Remote desktop websocket (required to mint a VNC ticket with a machine token)                                                                                                                       |
 | `imports`           | admin                | Atlassian context import                                                                                                                                                                            |
 | `users`             | admin                | User management                                                                                                                                                                                     |
 | `webhooks`          | admin                | Webhook endpoints                                                                                                                                                                                   |
@@ -133,25 +139,41 @@ Scopes follow `<resource>:<level>` with three hierarchical levels per resource (
 
 Stored tokens were migrated to this model (`RefactorPersonalAccessTokenScopes1793600000000`); legacy scopes that could only be mapped by granting additional writes were dropped, so affected tokens must be re-issued.
 
+#### WebSockets
+
+PAT JWTs and app access tokens (machine tokens) may use the Socket.IO namespaces like console sessions, within the same constraints as the REST API. Interactive sessions and `STATIC_API_KEY` are unaffected.
+
+| Concern          | Behavior                                                                                                                                                                                                                                                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Connect          | `Authorization: Bearer <JWT>` (header or `auth.Authorization`) plus `websocket:<socket>:read` for that namespace; otherwise the handshake is rejected                                                                                                                                                                |
+| Inbound events   | Each event needs its socket scope (`:write` for state-changing events) **and** the domain scopes of its REST equivalent (e.g. `chat` → `websocket:clients:write` + `agent_chats:write`). Unlisted events are rejected (`error`)                                                                                      |
+| Outbound events  | Each event needs the domain scopes of its REST equivalent (e.g. `fileUpdateNotification` → `agent_files:read`); events the token may not read are never delivered, unknown events are dropped                                                                                                                        |
+| User limitations | Workspace membership applies as on REST; admin users' tokens get no console-admin bypass. The status socket only sends a token its own snapshot / patches                                                                                                                                                            |
+| Context          | Ticket, knowledge and attachment context in chat / plan payloads (explicit or auto-enriched) is dropped unless the token has `tickets:read`, `knowledge:read` or `attachments:read`                                                                                                                                  |
+| Never allowed    | Agent terminal events (`createTerminal`, `terminalInput`, …): shell access stays interactive-only                                                                                                                                                                                                                    |
+| Live checks      | Every inbound event re-validates the token like a REST request (revoke, scope change, lock, demotion, app authorization); listen-only sockets are re-checked every `SOCKET_MACHINE_SESSION_REVALIDATE_MS` (default 60 s). The socket is closed when the check fails or the JWT expires; reconnect with a fresh token |
+
+The per-event scope maps live in `agenstra-websocket.scopes.ts` (product) on top of the shared helpers in `@forepath/identity/backend` (`websocketScope`, `socketRoomsForUser`, `attachMachineSocketSession`).
+
 ### Apps (third-party authorization; users and keycloak modes)
 
 Admins can register **apps**: external applications that act on behalf of users after the user authorizes them (similar to GitHub OAuth apps). Apps reuse the [PAT scope catalog](#scope-model). **Not available** when `AUTHENTICATION_METHOD=api-key`.
 
-| Concern        | Behavior                                                                                                                                                                                                        |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Management     | Console **Apps** page (`/apps`, admin, interactive session only): name, description, return URL, scopes. The app id is the row UUID; the app secret (`fp_aps_…`) is shown once and stored as a bcrypt hash only |
-| Return URL     | Absolute `https` URL (`http` only for `localhost` / `127.0.0.1`), no credentials, no fragment. Redirects only ever go to the registered URL (no caller-supplied redirect URI)                                   |
-| Grant page     | `/authorize?app_id=<uuid>&state=<opaque>[&code_challenge=<S256>&code_challenge_method=S256]`; shows the login mask first when needed, then app name, description and scopes                                     |
-| Scope cap      | A user only grants the requested scopes their own role may grant (`:admin` scopes only for admins); the rest is shown as "not granted". The cap is re-applied on every request                                  |
-| Second factor  | Approving a new (or changed) authorization requires the user's 2FA: authenticator code, or an emailed code when email 2FA is enabled or forced. Keycloak accounts rely on Keycloak MFA                          |
-| Skip consent   | An existing, up-to-date authorization redirects back immediately with a new code (no consent, no 2FA)                                                                                                           |
-| Redirect       | Approved: `status=approved&app_id&code&state`. Denied: `status=denied&error=access_denied&error_description&state`. No grantable scope: `status=error&error=invalid_scope`                                      |
-| Token exchange | `POST /auth/apps/token` (public, rate-limited, server-to-server) with `app_id`, `app_secret` and either the `code` (+ `code_verifier`) or a `refresh_token`; returns an access JWT (1 h) and a refresh token    |
-| Lifetime       | Authorizations never expire. Codes are single-use (10 min); refresh tokens rotate on every use. Replaying a code or an old refresh token revokes the affected session                                           |
-| Access tokens  | JWT with `amr: ["pat", "app"]`, `scopes`, `appId`, `appSessionId`. Treated exactly like PAT JWTs: fail-closed `@RequireScopes`, no interactive-only routes (token/app management, 2FA, password), no WebSockets |
-| Live checks    | Every request re-checks session, authorization, app, user (locked, unconfirmed, tenant, token version) and the effective scopes; any drift rejects the token so the app refreshes                               |
-| Re-auth        | When the app gains a scope (or the user can now grant more), tokens keep the previously consented scopes and the token response sets `reauthorization_required: true`; the grant page asks again                |
-| Revocation     | Admins revoke one or all authorizations of an app; users revoke their own under **Authorized apps** (`/settings/apps`). Revoking ends all sessions and forces the full consent flow next time                   |
+| Concern        | Behavior                                                                                                                                                                                                                                                   |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Management     | Console **Apps** page (`/apps`, admin, interactive session only): name, description, return URL, scopes. The app id is the row UUID; the app secret (`fp_aps_…`) is shown once and stored as a bcrypt hash only                                            |
+| Return URL     | Absolute `https` URL (`http` only for `localhost` / `127.0.0.1`), no credentials, no fragment. Redirects only ever go to the registered URL (no caller-supplied redirect URI)                                                                              |
+| Grant page     | `/authorize?app_id=<uuid>&state=<opaque>[&code_challenge=<S256>&code_challenge_method=S256]`; shows the login mask first when needed, then app name, description and scopes                                                                                |
+| Scope cap      | A user only grants the requested scopes their own role may grant (`:admin` scopes only for admins); the rest is shown as "not granted". The cap is re-applied on every request                                                                             |
+| Second factor  | Approving a new (or changed) authorization requires the user's 2FA: authenticator code, or an emailed code when email 2FA is enabled or forced. Keycloak accounts rely on Keycloak MFA                                                                     |
+| Skip consent   | An existing, up-to-date authorization redirects back immediately with a new code (no consent, no 2FA)                                                                                                                                                      |
+| Redirect       | Approved: `status=approved&app_id&code&state`. Denied: `status=denied&error=access_denied&error_description&state`. No grantable scope: `status=error&error=invalid_scope`                                                                                 |
+| Token exchange | `POST /auth/apps/token` (public, rate-limited, server-to-server) with `app_id`, `app_secret` and either the `code` (+ `code_verifier`) or a `refresh_token`; returns an access JWT (1 h) and a refresh token                                               |
+| Lifetime       | Authorizations never expire. Codes are single-use (10 min); refresh tokens rotate on every use. Replaying a code or an old refresh token revokes the affected session                                                                                      |
+| Access tokens  | JWT with `amr: ["pat", "app"]`, `scopes`, `appId`, `appSessionId`. Treated exactly like PAT JWTs: fail-closed `@RequireScopes`, no interactive-only routes (token/app management, 2FA, password), [WebSockets](#websockets) only with `websocket:*` scopes |
+| Live checks    | Every request re-checks session, authorization, app, user (locked, unconfirmed, tenant, token version) and the effective scopes; any drift rejects the token so the app refreshes                                                                          |
+| Re-auth        | When the app gains a scope (or the user can now grant more), tokens keep the previously consented scopes and the token response sets `reauthorization_required: true`; the grant page asks again                                                           |
+| Revocation     | Admins revoke one or all authorizations of an app; users revoke their own under **Authorized apps** (`/settings/apps`). Revoking ends all sessions and forces the full consent flow next time                                                              |
 
 Effective scopes of an app token = consented scopes ∩ current app scopes ∩ scopes the user's current role may grant. Removing a scope from the app or demoting the user takes effect immediately; adding a scope requires re-authorization.
 

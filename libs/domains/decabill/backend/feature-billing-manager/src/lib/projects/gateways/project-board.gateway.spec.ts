@@ -245,4 +245,82 @@ describe('ProjectBoardGateway', () => {
 
     expect(leave).toHaveBeenCalled();
   });
+  describe('machine tokens (PAT / app access tokens)', () => {
+    const machineSocket = (userId: string, role: UserRole, scopes: string[]) =>
+      ({
+        id: 'machine-socket',
+        join: jest.fn(),
+        leave: jest.fn(),
+        emit: jest.fn(),
+        data: {
+          userInfo: {
+            isApiKeyAuth: false,
+            userId,
+            userRole: role,
+            amr: ['pat'],
+            scopes,
+            user: { id: userId, roles: [role], amr: ['pat'], scopes },
+          },
+          tenantId: 'decabill',
+        },
+      }) as unknown as Socket & { join: jest.Mock; leave: jest.Mock; emit: jest.Mock };
+
+    it('denies admin tokens on other users projects without projects:admin', async () => {
+      const socket = machineSocket('admin-1', UserRole.ADMIN, ['websocket:projects:read', 'projects:read']);
+
+      projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'other-user' } as never);
+      await gateway.handleSetProject({ projectId: 'p1' }, socket);
+
+      expect(socket.join).not.toHaveBeenCalled();
+      expect(socket.emit).toHaveBeenCalledWith('error', { message: 'Access denied' });
+    });
+
+    it('lets owners receive only events of resources their token can read', async () => {
+      const socket = machineSocket('user-1', UserRole.USER, [
+        'websocket:projects:read',
+        'projects:read',
+        'tickets:read',
+      ]);
+
+      projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'user-1' } as never);
+      await gateway.handleSetProject({ projectId: 'p1' }, socket);
+
+      const joined = socket.join.mock.calls.map((call) => call[0]).sort();
+
+      expect(joined).toEqual(
+        [
+          'project:p1#event:error',
+          'project:p1#event:projectSummaryChanged',
+          'project:p1#event:setProjectSuccess',
+          'project:p1#event:ticketActivityCreated',
+          'project:p1#event:ticketCommentCreated',
+          'project:p1#event:ticketRemoved',
+          'project:p1#event:ticketUpsert',
+        ].sort(),
+      );
+    });
+
+    it('requires resource admin scopes for events of other users projects', async () => {
+      const socket = machineSocket('admin-1', UserRole.ADMIN, [
+        'websocket:projects:read',
+        'projects:admin',
+        'tickets:read',
+        'milestones:admin',
+      ]);
+
+      projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'other-user' } as never);
+      await gateway.handleSetProject({ projectId: 'p1' }, socket);
+
+      const joined = socket.join.mock.calls.map((call) => call[0]);
+
+      expect(joined).toContain('project:p1#event:milestoneUpsert');
+      expect(joined).toContain('project:p1#event:projectSummaryChanged');
+      // tickets:read is not enough for another user's project (REST needs tickets:admin).
+      expect(joined).not.toContain('project:p1#event:ticketUpsert');
+      expect(joined).not.toContain('project:p1');
+
+      gateway.handleDisconnect(socket);
+      expect(socket.leave.mock.calls.map((call) => call[0])).toEqual(joined);
+    });
+  });
 });

@@ -1,4 +1,10 @@
-import { SocketAuthService, type SocketUserInfo, UserRole } from '@forepath/identity/backend';
+import {
+  attachMachineSocketSession,
+  SocketAuthService,
+  socketRoomsForUser,
+  type SocketUserInfo,
+  UserRole,
+} from '@forepath/identity/backend';
 import { getOrInitSocketTenantId, readIncomingTenantIdFromHandshake, runWithTenantId } from '@forepath/shared/backend';
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { ForbiddenException, Logger } from '@nestjs/common';
@@ -14,6 +20,11 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
+import {
+  BILLING_WEBSOCKETS,
+  PROJECTS_SOCKET_INBOUND_SCOPES,
+  projectsSocketOutboundScopes,
+} from '../../auth/billing-websocket.scopes';
 import { getBillingUserIdFromSocketUser } from '../../utils/billing-socket-user.utils';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectBoardRealtimeService } from '../services/project-board-realtime.service';
@@ -38,6 +49,8 @@ export class ProjectBoardGateway implements OnGatewayInit, OnGatewayConnection, 
   private readonly logger = new Logger(ProjectBoardGateway.name);
   private readonly selectedProjectBySocket = new Map<string, string>();
   private readonly settingProjectBySocket = new Map<string, string>();
+  /** Rooms joined for the selected project (per-event rooms for PAT / app token sockets). */
+  private readonly projectRoomsBySocket = new Map<string, string[]>();
 
   constructor(
     private readonly socketAuthService: SocketAuthService,
@@ -61,10 +74,9 @@ export class ProjectBoardGateway implements OnGatewayInit, OnGatewayConnection, 
         return;
       }
 
-      const userInfo = await this.socketAuthService.validateAndGetUser(
-        typeof authHeader === 'string' ? authHeader : undefined,
-        tenantId,
-      );
+      const header = typeof authHeader === 'string' ? authHeader : undefined;
+      const authOptions = { websocket: BILLING_WEBSOCKETS.projects };
+      const userInfo = await this.socketAuthService.validateAndGetUser(header, tenantId, authOptions);
 
       if (!userInfo) {
         this.logger.warn(`Projects WebSocket rejected: invalid authorization for socket ${socket.id}`);
@@ -74,6 +86,12 @@ export class ProjectBoardGateway implements OnGatewayInit, OnGatewayConnection, 
       }
 
       (socket as ProjectSocket).data = { userInfo, tenantId };
+      // PAT / app tokens: per-event scopes and live session re-checks (no-op for interactive sessions).
+      attachMachineSocketSession(socket, userInfo, {
+        inboundEvents: PROJECTS_SOCKET_INBOUND_SCOPES,
+        revalidate: () => this.socketAuthService.validateAndGetUser(header, tenantId, authOptions),
+        logger: this.logger,
+      });
       next();
     });
   }
@@ -86,10 +104,11 @@ export class ProjectBoardGateway implements OnGatewayInit, OnGatewayConnection, 
     const prev = this.selectedProjectBySocket.get(socket.id);
 
     if (prev) {
-      void socket.leave(ProjectBoardRealtimeService.projectRoom(prev));
+      this.leaveProjectRooms(socket, prev);
     }
 
     this.selectedProjectBySocket.delete(socket.id);
+    this.projectRoomsBySocket.delete(socket.id);
     this.settingProjectBySocket.delete(socket.id);
   }
 
@@ -147,20 +166,34 @@ export class ProjectBoardGateway implements OnGatewayInit, OnGatewayConnection, 
 
         const project = await this.projectsRepository.findByIdOrThrow(projectId);
 
+        // Same rule as REST: PAT / app tokens of admins need `projects:admin` for other users' projects.
         ensureProjectReadable(
           {
             userId,
             userRole: userInfo.userRole ?? UserRole.USER,
             isApiKeyAuth: false,
+            amr: userInfo.amr,
+            scopes: userInfo.scopes,
           },
           project,
+          'projects:admin',
         );
 
         if (currentSelected && currentSelected !== projectId) {
-          await socket.leave(ProjectBoardRealtimeService.projectRoom(currentSelected));
+          this.leaveProjectRooms(socket, currentSelected);
         }
 
-        await socket.join(ProjectBoardRealtimeService.projectRoom(projectId));
+        const rooms = socketRoomsForUser(
+          userInfo,
+          ProjectBoardRealtimeService.projectRoom(projectId),
+          projectsSocketOutboundScopes(project.userId !== userId),
+        );
+
+        for (const room of rooms) {
+          await socket.join(room);
+        }
+
+        this.projectRoomsBySocket.set(socket.id, rooms);
         this.selectedProjectBySocket.set(socket.id, projectId);
         socket.emit('setProjectSuccess', { message: 'Project context set', projectId });
       });
@@ -174,5 +207,15 @@ export class ProjectBoardGateway implements OnGatewayInit, OnGatewayConnection, 
     } finally {
       this.settingProjectBySocket.delete(socket.id);
     }
+  }
+
+  private leaveProjectRooms(socket: Socket, projectId: string): void {
+    const rooms = this.projectRoomsBySocket.get(socket.id) ?? [ProjectBoardRealtimeService.projectRoom(projectId)];
+
+    for (const room of rooms) {
+      void socket.leave(room);
+    }
+
+    this.projectRoomsBySocket.delete(socket.id);
   }
 }

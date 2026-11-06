@@ -150,6 +150,16 @@ describe('clientsReducer', () => {
   });
 
   describe('loadMoreClients', () => {
+    it('leaves the state untouched when no batch can start (no more pages / already loading)', () => {
+      const noMore: ClientsState = { ...initialClientsState, hasMore: false };
+      const loading: ClientsState = { ...initialClientsState, hasMore: true, loading: true };
+      const appending: ClientsState = { ...initialClientsState, hasMore: true, appendLoading: true, appendError: null };
+
+      expect(clientsReducer(noMore, loadMoreClients())).toBe(noMore);
+      expect(clientsReducer(loading, loadMoreClients())).toBe(loading);
+      expect(clientsReducer(appending, loadMoreClients())).toBe(appending);
+    });
+
     it('should set appendLoading and clear appendError', () => {
       const state: ClientsState = {
         ...initialClientsState,

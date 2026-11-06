@@ -156,7 +156,10 @@ export const loadMoreClients$ = createEffect(
     return actions$.pipe(
       ofType(loadMoreClients),
       withLatestFrom(store.select(selectClientsState)),
-      filter(([, state]) => state.hasMore && !state.loading && !state.appendLoading),
+      // Reducers run before effects: `appendLoading` is already true for an accepted request, so it must not
+      // gate here (that dropped every request and left the loading state stuck). The reducer only accepts a
+      // request when a batch can start; `exhaustMap` ignores requests while one is in flight.
+      filter(([, state]) => state.hasMore && !state.loading),
       exhaustMap(([, state]) => {
         const batchParams = {
           limit: BATCH_SIZE,

@@ -1,6 +1,8 @@
-import { UserRole } from '@forepath/identity/backend';
+import { isSocketEventPermitted, UserRole, type SocketUserInfo } from '@forepath/identity/backend';
 import { Injectable, Logger } from '@nestjs/common';
 import { Server } from 'socket.io';
+
+import { STATUS_SOCKET_OUTBOUND_SCOPES } from '../auth/agenstra-websocket.scopes';
 
 @Injectable()
 export class AgentConsoleStatusRealtimeService {
@@ -9,12 +11,30 @@ export class AgentConsoleStatusRealtimeService {
   private readonly socketsByUserId = new Map<string, Set<string>>();
   private readonly socketIdToUserId = new Map<string, string>();
   private readonly userRoleByUserId = new Map<string, UserRole>();
+  /**
+   * PAT / app token sockets. Kept out of the per-user fan-out: user pushes are computed with the interactive
+   * session's access (e.g. console admin bypass), which machine tokens never get. They only receive their own,
+   * per-socket snapshots / patches, and only with the scopes for the event.
+   */
+  private readonly machineSocketUserInfo = new Map<string, SocketUserInfo>();
 
   attachServer(server: Server): void {
     this.server = server;
   }
 
-  registerSocket(userId: string, socketId: string, userRole: UserRole = UserRole.USER): void {
+  registerSocket(
+    userId: string,
+    socketId: string,
+    userRole: UserRole = UserRole.USER,
+    machineUserInfo?: SocketUserInfo,
+  ): void {
+    if (machineUserInfo) {
+      this.machineSocketUserInfo.set(socketId, machineUserInfo);
+      this.socketIdToUserId.set(socketId, userId);
+
+      return;
+    }
+
     let set = this.socketsByUserId.get(userId);
 
     if (!set) {
@@ -40,6 +60,12 @@ export class AgentConsoleStatusRealtimeService {
   }
 
   unregisterSocket(socketId: string): void {
+    if (this.machineSocketUserInfo.delete(socketId)) {
+      this.socketIdToUserId.delete(socketId);
+
+      return;
+    }
+
     const userId = this.socketIdToUserId.get(socketId);
 
     if (!userId) {
@@ -74,6 +100,23 @@ export class AgentConsoleStatusRealtimeService {
     for (const socketId of socketIds) {
       this.server.to(socketId).emit(event, payload);
     }
+  }
+
+  /**
+   * Emit to one socket: interactive sockets always, PAT / app token sockets only with the event's scopes.
+   */
+  emitToSocket(socketId: string, event: string, payload: unknown): void {
+    if (!this.server) {
+      return;
+    }
+
+    const machineUserInfo = this.machineSocketUserInfo.get(socketId);
+
+    if (machineUserInfo && !isSocketEventPermitted(machineUserInfo, event, STATUS_SOCKET_OUTBOUND_SCOPES)) {
+      return;
+    }
+
+    this.server.to(socketId).emit(event, payload);
   }
 
   emitToUsers(userIds: string[], event: string, payload: unknown): void {
