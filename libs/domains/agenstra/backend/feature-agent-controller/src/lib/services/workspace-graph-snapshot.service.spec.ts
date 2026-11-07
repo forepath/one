@@ -4,11 +4,18 @@ import type {
   AgentGraphStatus,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { ClientAgentCredentialEntity, UserRole } from '@forepath/identity/backend';
+import { buildJobId } from '@forepath/shared/backend/util-queue';
+import { getQueueToken } from '@nestjs/bullmq';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
+import {
+  WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_ID_NAMESPACE,
+  WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME,
+} from '../constants/workspace-graph-snapshot.constants';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
+import { AGENSTRA_CONTROLLER_QUEUE_NAME } from '../modules/agenstra-notifications.module';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
@@ -832,6 +839,124 @@ describe('WorkspaceGraphSnapshotService', () => {
       changes.notify(CLIENT_A, 'ticketUpsert');
       await jest.advanceTimersByTimeAsync(10 * 60_000);
       expect(build).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('change-driven rebuilds on the controller queue', () => {
+    const queued = new Map<
+      string,
+      { state: string; data: { clientId: string; since: number }; changeDelay: jest.Mock }
+    >();
+    const queue = {
+      getJob: jest.fn(async (id: string) => {
+        const job = queued.get(id);
+
+        return job ? { ...job, getState: async () => job.state, remove: jest.fn() } : undefined;
+      }),
+      add: jest.fn(async () => undefined),
+    };
+    let queuedService: WorkspaceGraphSnapshotService;
+    let queuedChanges: WorkspaceGraphChangeNotifierService;
+    const mainId = buildJobId(WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_ID_NAMESPACE, CLIENT_A);
+    const followUpId = buildJobId(WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_ID_NAMESPACE, CLIENT_A, 'next');
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+    beforeEach(async () => {
+      queued.clear();
+      queue.getJob.mockClear();
+      queue.add.mockClear();
+
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          WorkspaceGraphSnapshotService,
+          WorkspaceGraphChangeNotifierService,
+          { provide: getQueueToken(AGENSTRA_CONTROLLER_QUEUE_NAME), useValue: queue },
+          { provide: WorkspaceGraphSnapshotsRepository, useValue: snapshots },
+          { provide: ClientsRepository, useValue: clientsRepository },
+          { provide: ClientAgentGraphProxyService, useValue: graphProxy },
+          { provide: ClientAgentProxyService, useValue: agentProxy },
+          { provide: getRepositoryToken(ClientAgentCredentialEntity), useValue: credentialsRepo },
+          { provide: getRepositoryToken(KnowledgeNodeEntity), useValue: knowledgeRepo },
+          { provide: getRepositoryToken(KnowledgeRelationEntity), useValue: relationsRepo },
+          { provide: getRepositoryToken(TicketEntity), useValue: ticketsRepo },
+          { provide: getRepositoryToken(ChatPlanEntity), useValue: plansRepo },
+        ],
+      }).compile();
+
+      queuedService = module.get(WorkspaceGraphSnapshotService);
+      queuedChanges = module.get(WorkspaceGraphChangeNotifierService);
+      queuedService.onModuleInit();
+      snapshots.findStatusesByClientIds.mockResolvedValue([
+        { clientId: CLIENT_A, status: 'ready', builtAt: new Date(Date.now() - 10 * 60_000) },
+      ]);
+    });
+
+    afterEach(() => queuedService.onModuleDestroy());
+
+    it('enqueues a delayed job per workspace instead of a local timer', async () => {
+      const build = jest.spyOn(queuedService, 'build').mockResolvedValue({} as never);
+
+      queuedChanges.notify(CLIENT_A, 'ticketUpsert');
+      await settle();
+
+      expect(queue.add).toHaveBeenCalledWith(
+        WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME,
+        { clientId: CLIENT_A, since: expect.any(Number) },
+        expect.objectContaining({ jobId: mainId, delay: WORKSPACE_GRAPH_DIRTY_DEBOUNCE_MS, attempts: 1 }),
+      );
+      expect(build).not.toHaveBeenCalled();
+    });
+
+    it('pushes a delayed job back, keeping its first change for the maximum wait', async () => {
+      const changeDelay = jest.fn();
+      const since = Date.now() - (WORKSPACE_GRAPH_DIRTY_MAX_WAIT_MS - 4_000);
+
+      queued.set(mainId, { state: 'delayed', data: { clientId: CLIENT_A, since }, changeDelay });
+      queuedChanges.notify(CLIENT_A, 'knowledgeTreeChanged');
+      await settle();
+
+      expect(queue.add).not.toHaveBeenCalled();
+      expect(changeDelay).toHaveBeenCalledTimes(1);
+
+      const delay = changeDelay.mock.calls[0][0] as number;
+
+      // Capped by the maximum wait (about 4 s left), not a fresh 10 s quiet period.
+      expect(delay).toBeGreaterThan(3_000);
+      expect(delay).toBeLessThanOrEqual(4_000);
+    });
+
+    it('adds a follow-up job while one runs and leaves waiting jobs alone', async () => {
+      queued.set(mainId, { state: 'active', data: { clientId: CLIENT_A, since: Date.now() }, changeDelay: jest.fn() });
+      queuedChanges.notify(CLIENT_A, 'ticketUpsert');
+      await settle();
+      expect(queue.add).toHaveBeenCalledWith(
+        WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME,
+        expect.anything(),
+        expect.objectContaining({ jobId: followUpId }),
+      );
+
+      queue.add.mockClear();
+      queued.set(mainId, { state: 'waiting', data: { clientId: CLIENT_A, since: Date.now() }, changeDelay: jest.fn() });
+      queuedChanges.notify(CLIENT_A, 'ticketUpsert');
+      await settle();
+      expect(queue.add).not.toHaveBeenCalled();
+    });
+
+    it('does not schedule anything for workspaces without a snapshot', async () => {
+      snapshots.findStatusesByClientIds.mockResolvedValue([]);
+      queuedChanges.notify(CLIENT_B, 'ticketUpsert');
+      await settle();
+      expect(queue.getJob).not.toHaveBeenCalled();
+    });
+
+    it('runs the job: awaits a running build, rebuilds and only logs failures', async () => {
+      const build = jest.spyOn(queuedService, 'build').mockResolvedValue({} as never);
+
+      await queuedService.runDirtyRebuild(CLIENT_A);
+      expect(build).toHaveBeenCalledWith(CLIENT_A);
+
+      build.mockRejectedValueOnce(new Error('manager down'));
+      await expect(queuedService.runDirtyRebuild(CLIENT_A)).resolves.toBeUndefined();
     });
   });
 });

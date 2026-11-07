@@ -31,6 +31,8 @@ describe('controller job-registry', () => {
     // Must match AGENT_HANDOFF_*_JOB_NAME in feature-agent-controller (units are enqueued from the library).
     expect(ControllerJobName.AGENT_HANDOFF_COORDINATOR).toBe('agent-handoff.coordinator');
     expect(ControllerJobName.AGENT_HANDOFF_UNIT).toBe('agent-handoff.unit');
+    // Must match WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME in feature-agent-controller (enqueued from the library).
+    expect(ControllerJobName.WORKSPACE_GRAPH_SNAPSHOT_UNIT).toBe('workspace-graph-snapshot.unit');
     expect(job?.everyMs).toBe(60_000);
   });
 

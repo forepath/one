@@ -5,7 +5,8 @@ import {
   type AgentGraphWorkspaceSnapshotStatus,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { ClientAgentCredentialEntity } from '@forepath/identity/backend';
-import { shouldRunApiHttp } from '@forepath/shared/backend/util-queue';
+import { buildJobId, enqueueUnitJob, shouldRunApiHttp } from '@forepath/shared/backend/util-queue';
+import { InjectQueue } from '@nestjs/bullmq';
 import {
   Injectable,
   Logger,
@@ -16,13 +17,19 @@ import {
   Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import type { Queue } from 'bullmq';
 import { In, Repository } from 'typeorm';
 
+import {
+  WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_ID_NAMESPACE,
+  WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME,
+} from '../constants/workspace-graph-snapshot.constants';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { WorkspaceGraphSnapshotEntity } from '../entities/workspace-graph-snapshot.entity';
+import { AGENSTRA_CONTROLLER_QUEUE_NAME } from '../modules/agenstra-notifications.module';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { WorkspaceGraphSnapshotsRepository } from '../repositories/workspace-graph-snapshots.repository';
 import {
@@ -94,6 +101,7 @@ export class WorkspaceGraphSnapshotService implements OnModuleInit, OnApplicatio
     private readonly plansRepo: Repository<ChatPlanEntity>,
     @Optional() private readonly agentProxy?: ClientAgentProxyService,
     @Optional() private readonly graphChanges?: WorkspaceGraphChangeNotifierService,
+    @Optional() @InjectQueue(AGENSTRA_CONTROLLER_QUEUE_NAME) private readonly controllerQueue?: Queue,
   ) {}
 
   onModuleInit(): void {
@@ -186,6 +194,16 @@ export class WorkspaceGraphSnapshotService implements OnModuleInit, OnApplicatio
         return;
       }
 
+      const builtAt = new Date(row.builtAt).getTime();
+
+      // With the controller queue the rebuild is a delayed BullMQ job (one per workspace across all controller
+      // processes, survives restarts, runs in the worker role); without one (tests, queue-less setups) a local timer.
+      if (this.controllerQueue) {
+        await this.scheduleDirtyJob(this.controllerQueue, clientId, builtAt);
+
+        return;
+      }
+
       const existing = this.dirtyTimers.get(clientId);
 
       if (existing) {
@@ -194,26 +212,14 @@ export class WorkspaceGraphSnapshotService implements OnModuleInit, OnApplicatio
 
       const now = Date.now();
       const since = this.dirtySince.get(clientId) ?? now;
-      const sinceLastBuild = now - new Date(row.builtAt).getTime();
-      const wanted = Math.max(
-        WORKSPACE_GRAPH_DIRTY_DEBOUNCE_MS,
-        WORKSPACE_GRAPH_MIN_REBUILD_INTERVAL_MS - sinceLastBuild,
-      );
-      const delay = Math.max(0, Math.min(wanted, since + WORKSPACE_GRAPH_DIRTY_MAX_WAIT_MS - now));
+      const delay = this.dirtyDelay(now, since, builtAt);
 
       this.dirtySince.set(clientId, since);
 
       const timer = setTimeout(() => {
         this.dirtyTimers.delete(clientId);
         this.dirtySince.delete(clientId);
-        void (async () => {
-          await this.inflight.get(clientId)?.catch(() => undefined);
-          await this.build(clientId);
-        })().catch((error: unknown) =>
-          this.logger.warn(
-            `Change-driven graph snapshot build of workspace ${clientId} failed: ${truncateGraphError(error)}`,
-          ),
-        );
+        void this.runDirtyRebuild(clientId);
       }, delay);
 
       timer.unref?.();
@@ -221,6 +227,73 @@ export class WorkspaceGraphSnapshotService implements OnModuleInit, OnApplicatio
     })().catch((error: unknown) => {
       this.logger.debug(`Graph snapshot dirty mark for workspace ${clientId} failed: ${String(error)}`);
     });
+  }
+
+  /**
+   * Change-driven rebuild (the delayed job's work, or the local timer's): a build running at that time is awaited
+   * first, so its result never hides the change. Failures are logged, not retried (the next change, the stale window
+   * or a manual refresh rebuild again).
+   */
+  async runDirtyRebuild(clientId: string): Promise<void> {
+    try {
+      await this.inflight.get(clientId)?.catch(() => undefined);
+      await this.build(clientId);
+    } catch (error) {
+      this.logger.warn(
+        `Change-driven graph snapshot build of workspace ${clientId} failed: ${truncateGraphError(error)}`,
+      );
+    }
+  }
+
+  /** Quiet period after the latest change, the minimum interval after the last build, capped by the maximum wait. */
+  private dirtyDelay(now: number, since: number, builtAt: number): number {
+    const wanted = Math.max(
+      WORKSPACE_GRAPH_DIRTY_DEBOUNCE_MS,
+      WORKSPACE_GRAPH_MIN_REBUILD_INTERVAL_MS - (now - builtAt),
+    );
+
+    return Math.max(0, Math.min(wanted, since + WORKSPACE_GRAPH_DIRTY_MAX_WAIT_MS - now));
+  }
+
+  /**
+   * Debounce on the queue: a delayed job of the workspace is pushed back (its first-change time travels in the job
+   * data, so the maximum wait holds across processes); a waiting one is about to read the latest state anyway; while
+   * one runs, the change goes into a follow-up job.
+   */
+  private async scheduleDirtyJob(queue: Queue, clientId: string, builtAt: number): Promise<void> {
+    for (const followUp of [undefined, 'next'] as const) {
+      const jobId = buildJobId(WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_ID_NAMESPACE, clientId, followUp);
+      const existing = await queue.getJob(jobId);
+      const state = existing ? await existing.getState() : undefined;
+      const now = Date.now();
+
+      if (state === 'active') {
+        continue;
+      }
+
+      if (existing && state === 'delayed') {
+        const since = Number((existing.data as { since?: unknown } | undefined)?.since) || now;
+
+        await existing.changeDelay(this.dirtyDelay(now, since, builtAt));
+
+        return;
+      }
+
+      if (state === 'waiting' || state === 'prioritized' || state === 'waiting-children') {
+        return;
+      }
+
+      await enqueueUnitJob({
+        queue,
+        jobName: WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME,
+        payload: { clientId, since: now },
+        jobIdNamespace: WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_ID_NAMESPACE,
+        jobIdParts: [clientId, followUp],
+        opts: { delay: this.dirtyDelay(now, now, builtAt), attempts: 1 },
+      });
+
+      return;
+    }
   }
 
   /** Rebuild the snapshots of all workspaces (bounded by the build concurrency). */

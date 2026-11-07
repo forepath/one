@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-07T19:29:32.122Z",
+  "generatedAt": "2026-11-07T20:32:29.815Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -37675,11 +37675,6 @@
       "type": "depends_on"
     },
     {
-      "from": "project:shared-shared-util-release-keys",
-      "to": "project:shared-shared-util-release-signing",
-      "type": "depends_on"
-    },
-    {
       "from": "project:identity-frontend-feature-auth",
       "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
@@ -37985,16 +37980,6 @@
       "type": "depends_on"
     },
     {
-      "from": "project:decabill-native-billing-console",
-      "to": "project:shared-shared-util-release-signing",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-native-billing-console",
-      "to": "project:shared-shared-util-release-keys",
-      "type": "depends_on"
-    },
-    {
       "from": "project:agenstra-backend-agent-manager",
       "to": "project:shared-platform-authentication",
       "type": "depends_on"
@@ -38085,16 +38070,6 @@
       "type": "depends_on"
     },
     {
-      "from": "project:agenstra-native-agent-console",
-      "to": "project:shared-shared-util-release-signing",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-native-agent-console",
-      "to": "project:shared-shared-util-release-keys",
-      "type": "depends_on"
-    },
-    {
       "from": "project:decabill-frontend-landingpage",
       "to": "project:decabill-frontend-util-configuration",
       "type": "depends_on"
@@ -38180,28 +38155,8 @@
       "type": "depends_on"
     },
     {
-      "from": "project:release-integrity",
-      "to": "project:shared-shared-util-release-keys",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:release-integrity",
-      "to": "project:shared-shared-util-release-signing",
-      "type": "depends_on"
-    },
-    {
       "from": "project:shared-mcp-devkit",
       "to": "project:code",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:desktop-release",
-      "to": "project:shared-shared-util-release-keys",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:desktop-release",
-      "to": "project:shared-shared-util-release-signing",
       "type": "depends_on"
     },
     {
@@ -39290,11 +39245,6 @@
       "type": "depends_on"
     },
     {
-      "from": "project:decabill-native-billing-console",
-      "to": "package:zod",
-      "type": "depends_on"
-    },
-    {
       "from": "project:agenstra-backend-agent-manager",
       "to": "package:@aws-sdk/client-s3",
       "type": "depends_on"
@@ -39817,11 +39767,6 @@
     {
       "from": "project:agenstra-native-agent-console",
       "to": "package:tslib",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-native-agent-console",
-      "to": "package:zod",
       "type": "depends_on"
     },
     {
@@ -73977,6 +73922,11 @@
     {
       "from": "file:apps/agenstra/backend-agent-controller/src/queue/processors/controller-jobs.processor.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-runner.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:apps/agenstra/backend-agent-controller/src/queue/processors/controller-jobs.processor.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
       "type": "injects"
     },
     {

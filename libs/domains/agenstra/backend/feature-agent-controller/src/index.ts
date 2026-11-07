@@ -200,6 +200,7 @@ export * from './lib/controllers/client-agent-egress.controller';
 export * from './lib/controllers/client-isolation.controller';
 export * from './lib/controllers/clients-graph.controller';
 export * from './lib/services/client-agent-graph-proxy.service';
+export * from './lib/constants/workspace-graph-snapshot.constants';
 export * from './lib/services/workspace-graph-snapshot.service';
 export * from './lib/services/workspace-graph-view.service';
 export * from './lib/repositories/workspace-graph-snapshots.repository';

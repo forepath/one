@@ -26,6 +26,9 @@ const AGENT_TASK_UNIT_JOB_NAME = 'agent-task.unit';
 const AGENT_HANDOFF_COORDINATOR_JOB_NAME = 'agent-handoff.coordinator';
 const AGENT_HANDOFF_UNIT_JOB_NAME = 'agent-handoff.unit';
 
+/** Keep in sync with WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME in feature-agent-controller. */
+const WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME = 'workspace-graph-snapshot.unit';
+
 export const ControllerJobName = {
   CONTEXT_IMPORT_COORDINATOR: 'context-import.coordinator',
   CONTEXT_IMPORT_UNIT: 'context-import.unit',
@@ -45,6 +48,7 @@ export const ControllerJobName = {
   AGENT_TASK_UNIT: AGENT_TASK_UNIT_JOB_NAME,
   AGENT_HANDOFF_COORDINATOR: AGENT_HANDOFF_COORDINATOR_JOB_NAME,
   AGENT_HANDOFF_UNIT: AGENT_HANDOFF_UNIT_JOB_NAME,
+  WORKSPACE_GRAPH_SNAPSHOT_UNIT: WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME,
   SEARCH_REINDEX_COORDINATOR: 'search-reindex.coordinator',
   SEARCH_REINDEX_UNIT: 'search-reindex.unit',
   SEARCH_INDEX_SYNC_UNIT: 'search-index-sync.unit',
