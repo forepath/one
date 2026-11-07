@@ -10,7 +10,7 @@ describe('AgentContextMcpService', () => {
   const agent = { id: '11111111-1111-4111-8111-111111111111', hashedPassword: 'hash' };
   let agentsRepository: { findById: jest.Mock };
   let dockerService: { inspectContainerSummary: jest.Mock };
-  let clientFactory: { resolveConnection: jest.Mock };
+  let clientFactory: { resolveConnection: jest.Mock; ensureInstanceReady: jest.Mock };
   let fetchMock: jest.Mock;
   let service: AgentContextMcpService;
 
@@ -27,6 +27,7 @@ describe('AgentContextMcpService', () => {
     };
     clientFactory = {
       resolveConnection: jest.fn().mockResolvedValue({ baseUrl: 'http://worker:4096/', authorization: 'Basic x' }),
+      ensureInstanceReady: jest.fn().mockResolvedValue(true),
     };
     fetchMock = jest.fn();
     global.fetch = fetchMock as unknown as typeof fetch;
@@ -121,6 +122,25 @@ describe('AgentContextMcpService', () => {
         'http://worker:4096/mcp',
         expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Basic x' }) }),
       );
+    });
+
+    it('lets the directory instance finish (or repair) its bootstrap before the short probe', async () => {
+      const order: string[] = [];
+
+      clientFactory.ensureInstanceReady.mockImplementation(async () => {
+        order.push('ensure');
+
+        return true;
+      });
+      fetchMock.mockImplementation(async () => {
+        order.push('probe');
+
+        return statusResponse('connected');
+      });
+
+      await expect(service.isAvailable(agent.id, 'container-1')).resolves.toBe(true);
+      expect(clientFactory.ensureInstanceReady).toHaveBeenCalledWith(agent.id, 'container-1');
+      expect(order).toEqual(['ensure', 'probe']);
     });
 
     it('falls back when the server failed, the probe errors, or after invalidation', async () => {

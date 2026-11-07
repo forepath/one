@@ -126,6 +126,10 @@ export class AgentContextMcpService {
     let connected = false;
 
     try {
+      // The short probe must not be what bootstraps the directory instance: cut short mid-bootstrap, OpenCode keeps
+      // the instance broken (every prompt aborts). Wait for (or repair) the bootstrap first.
+      await this.clientFactory.ensureInstanceReady(agentId, containerId);
+
       const { baseUrl, authorization } = await this.clientFactory.resolveConnection(agentId, containerId);
       const response = await fetch(`${baseUrl.replace(/\/$/, '')}/mcp`, {
         method: 'GET',
