@@ -435,6 +435,9 @@ export class OpenCodeRuntimeService {
     message: string,
     options?: AgentProviderOptions,
   ): AsyncIterable<AgentResponseObject> {
+    // A stuck directory instance (interrupted bootstrap) would end the turn at once in `MessageAbortedError`.
+    await this.clientFactory.ensureInstanceReady(key.agentId, key.containerId);
+
     const sessionId = await this.sessionService.getOrCreateSessionId(key, options);
 
     const client = await this.clientFactory.getClient(key.agentId, key.containerId);
