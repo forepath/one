@@ -3,7 +3,7 @@
  * platform-managed `agenstra` MCP server. Prompts only carry hints plus a context ticket; this server
  * reads the referenced tickets / knowledge from the agent-manager on demand, changes them (approved by the user or
  * allowed for the run), lets the agent manage its own recurring tasks and hand tasks over to other agents of its
- * workspace.
+ * workspace, and explore structural graphs of its own and other mounted environments.
  *
  * Stdout is reserved for MCP JSON-RPC — diagnostics go to stderr only.
  */
@@ -14,6 +14,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { callContentTool, CONTENT_TOOL_DEFINITIONS, isContentToolName } from './lib/content-tools';
 import { ContextApiClient, readContextApiConfig } from './lib/context-api.client';
 import { callContextTool, CONTEXT_TOOL_DEFINITIONS } from './lib/context-tools';
+import { callGraphTool, GRAPH_TOOL_DEFINITIONS, isGraphToolName } from './lib/graph-tools';
 import { callHandoffTool, HANDOFF_TOOL_DEFINITIONS, isHandoffToolName } from './lib/handoff-tools';
 import { waitForContextApi } from './lib/startup';
 import { callTaskTool, isTaskToolName, TASK_TOOL_DEFINITIONS } from './lib/task-tools';
@@ -33,6 +34,7 @@ async function main(): Promise<void> {
       ...CONTENT_TOOL_DEFINITIONS,
       ...TASK_TOOL_DEFINITIONS,
       ...HANDOFF_TOOL_DEFINITIONS,
+      ...GRAPH_TOOL_DEFINITIONS,
     ],
   }));
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -48,6 +50,10 @@ async function main(): Promise<void> {
 
     if (isHandoffToolName(name)) {
       return callHandoffTool(client, name, args);
+    }
+
+    if (isGraphToolName(name)) {
+      return callGraphTool(client, name, args);
     }
 
     return callContextTool(client, name, args);

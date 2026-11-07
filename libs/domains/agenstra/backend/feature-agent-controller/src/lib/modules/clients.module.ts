@@ -34,6 +34,7 @@ import { ClientsConfigurationOverridesController } from '../controllers/clients-
 import { ClientsDeploymentsController } from '../controllers/clients-deployments.controller';
 import { ClientsVcsController } from '../controllers/clients-vcs.controller';
 import { ClientsController } from '../controllers/clients.controller';
+import { ClientsGraphController } from '../controllers/clients-graph.controller';
 import { ClientsWorkspaceSearchController } from '../controllers/clients-workspace-search.controller';
 import { AdminOpencodeConfigController } from '../controllers/admin-opencode-config.controller';
 import { AdminOpencodeLayerFilesController } from '../controllers/admin-opencode-layer-files.controller';
@@ -81,6 +82,7 @@ import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { UserChatSessionReadStateEntity } from '../entities/user-chat-session-read-state.entity';
 import { UserEnvironmentReadStateEntity } from '../entities/user-environment-read-state.entity';
+import { WorkspaceGraphSnapshotEntity } from '../entities/workspace-graph-snapshot.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
 import { KnowledgeBoardGateway } from '../gateways/knowledge-board.gateway';
 import { StatusGateway } from '../gateways/status.gateway';
@@ -95,6 +97,7 @@ import { ProvisioningReferencesRepository } from '../repositories/provisioning-r
 import { TicketAutomationRunsStatusRepository } from '../repositories/ticket-automation-runs-status.repository';
 import { UserChatSessionReadStateRepository } from '../repositories/user-chat-session-read-state.repository';
 import { UserEnvironmentReadStateRepository } from '../repositories/user-environment-read-state.repository';
+import { WorkspaceGraphSnapshotsRepository } from '../repositories/workspace-graph-snapshots.repository';
 import { AgentConsoleStatusRealtimeService } from '../services/agent-console-status-realtime.service';
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
@@ -109,6 +112,7 @@ import { ClientAgentChatsProxyService } from '../services/client-agent-chats-pro
 import { ClientAgentDeploymentsProxyService } from '../services/client-agent-deployments-proxy.service';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
+import { ClientAgentGraphProxyService } from '../services/client-agent-graph-proxy.service';
 import { ClientAgentMessagesProxyService } from '../services/client-agent-messages-proxy.service';
 import { ClientAgentOpencodeConfigProxyService } from '../services/client-agent-opencode-config-proxy.service';
 import { ClientAgentMembershipService } from '../services/client-agent-membership.service';
@@ -153,6 +157,9 @@ import { ChatPlanRealtimeService } from '../services/chat-plan-realtime.service'
 import { ChatPlanService } from '../services/chat-plan.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
+import { WorkspaceGraphSnapshotService } from '../services/workspace-graph-snapshot.service';
+import { WorkspaceGraphChangeNotifierService } from '../services/workspace-graph-change-notifier.service';
+import { WorkspaceGraphViewService } from '../services/workspace-graph-view.service';
 
 import { AgenstraSearchModule } from '../search/agenstra-search.module';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
@@ -206,6 +213,7 @@ import { StatisticsModule } from './statistics.module';
       OpencodeConfigSyncTargetEntity,
       EgressEventIngestCursorEntity,
       ClientIsolationSnapshotEntity,
+      WorkspaceGraphSnapshotEntity,
     ]),
     BullModule.registerQueue({ name: AGENSTRA_CONTROLLER_QUEUE_NAME }),
     RedisCacheModule,
@@ -233,6 +241,7 @@ import { StatisticsModule } from './statistics.module';
     ClientAgentAutonomyDirectoryController,
     ClientsAgentAutomationProxyController,
     ClientsWorkspaceSearchController,
+    ClientsGraphController,
     AdminOpencodeConfigController,
     AdminOpencodeLayerFilesController,
     ClientOpencodeConfigController,
@@ -289,6 +298,11 @@ import { StatisticsModule } from './statistics.module';
     ControllerVncTicketService,
     ClientWorkspaceConfigurationOverridesProxyService,
     ClientAgentOpencodeConfigProxyService,
+    ClientAgentGraphProxyService,
+    WorkspaceGraphSnapshotsRepository,
+    WorkspaceGraphChangeNotifierService,
+    WorkspaceGraphSnapshotService,
+    WorkspaceGraphViewService,
     OpencodeConfigService,
     OpencodeProvidersCatalogService,
     OpencodeProvidersBootstrapService,
@@ -363,6 +377,8 @@ import { StatisticsModule } from './statistics.module';
     ClientAgentEnvironmentVariablesProxyService,
     ClientAgentChatsProxyService,
     ClientWorkspaceConfigurationOverridesProxyService,
+    ClientAgentGraphProxyService,
+    WorkspaceGraphSnapshotService,
     ClientAgentCredentialsRepository,
     ClientAgentCredentialsService,
     ClientsGateway,

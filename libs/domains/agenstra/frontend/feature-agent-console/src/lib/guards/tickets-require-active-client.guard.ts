@@ -6,7 +6,7 @@ import { ClientsFacade } from '@forepath/agenstra/frontend/data-access-agent-con
 import { map, take } from 'rxjs';
 
 /**
- * Workspace-scoped page routing (tickets, knowledge, plans, tasks):
+ * Workspace-scoped page routing (tickets, knowledge, plans, tasks, graphs):
  * - `/<page>/:clientId` - activates that workspace and shows its page (deep link / bookmark).
  * - `/<page>` - redirects to `/<page>/{activeClientId}` when a workspace is already selected;
  *   otherwise allows activation so the page can open the workspace picker (locale prefix via `relativeTo`).

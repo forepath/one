@@ -33,7 +33,8 @@ export interface FpcCrumb {
  * The padded, tinted head block (crumbs + title row) is one group; the tab slot sits below it
  * full-bleed (no inset), like `fpc-page-header` followed by a sibling `fpc-tab-group`.
  *
- * Slots: `[fpcObjectHeaderBadges]` (status / role badges after the name), `[fpcObjectHeaderActions]`
+ * Slots: `[fpcObjectHeaderBadges]` (status / role badges after the name), `[fpcObjectHeaderMeta]` (a meta line under
+ * the name inside the head block, e.g. the object's kind), `[fpcObjectHeaderActions]`
  * (primary `fpc-button`s, icon-only with `ariaLabel` + `title`), default (tabs below the head).
  */
 @Component({
@@ -137,6 +138,7 @@ export interface FpcCrumb {
           }
         </div>
       </div>
+      <div class="fpc-object-header__meta"><ng-content select="[fpcObjectHeaderMeta]" /></div>
     </div>
     <div class="fpc-object-header__tabs"><ng-content /></div>
   `,

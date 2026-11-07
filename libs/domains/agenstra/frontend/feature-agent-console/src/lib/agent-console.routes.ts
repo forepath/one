@@ -1,5 +1,20 @@
 import { Route } from '@angular/router';
 import {
+  AgentGraphsFacade,
+  agentGraphsReducer,
+  expandAgentGraphNeighbors$,
+  loadAgentGraphDocument$,
+  loadAgentGraphNodeDetail$,
+  loadAgentGraphOverview$,
+  loadAgentGraphReferences$,
+  loadAgentGraphStatus$,
+  loadGlobalAgentGraph$,
+  loadGlobalAgentGraphStatus$,
+  loadWorkspaceAgentGraph$,
+  pollAgentGraphStatusAfterRefresh$,
+  refreshAgentGraph$,
+  refreshWorkspaceGraphSnapshot$,
+  searchAgentGraph$,
   AgentTasksFacade,
   agentTasksReducer,
   ChatPlansFacade,
@@ -245,6 +260,7 @@ import { ChatPlansBoardComponent } from './chat-plans/chat-plans-board.component
 import { AuditComponent } from './audit/audit.component';
 import { AgentConsoleChatComponent } from './chat/chat.component';
 import { AgentConsoleContainerComponent } from './container/container.component';
+import { AgentGraphsPageComponent } from './graphs/agent-graphs-page.component';
 import { ticketsRequireActiveClientGuard } from './guards/tickets-require-active-client.guard';
 import { KnowledgeBoardComponent } from './knowledge/knowledge-board.component';
 import { AgentConfigAdminComponent } from './opencode-config/opencode-config-admin.component';
@@ -337,6 +353,18 @@ export const agentConsoleRoutes: Route[] = [
         title: $localize`:@@featureAgentConsole-tasksTitle:Tasks :: Agenstra`,
       },
       {
+        path: 'graphs/:clientId',
+        canActivate: [authGuard, ticketsRequireActiveClientGuard],
+        component: AgentGraphsPageComponent,
+        title: $localize`:@@featureAgentConsole-graphsTitle:Graphs :: Agenstra`,
+      },
+      {
+        path: 'graphs',
+        canActivate: [authGuard, ticketsRequireActiveClientGuard],
+        component: AgentGraphsPageComponent,
+        title: $localize`:@@featureAgentConsole-graphsTitle:Graphs :: Agenstra`,
+      },
+      {
         path: 'clients',
         canActivate: [authGuard],
         title: $localize`:@@featureAgentConsole-managerTitle:Manager :: Agenstra`,
@@ -404,6 +432,7 @@ export const agentConsoleRoutes: Route[] = [
       KnowledgeFacade,
       ClientAgentAutonomyFacade,
       AgentTasksFacade,
+      AgentGraphsFacade,
       ChatPlansFacade,
       AtlassianContextImportFacade,
       WorkspaceConfigFacade,
@@ -430,6 +459,7 @@ export const agentConsoleRoutes: Route[] = [
       provideState('knowledge', knowledgeReducer),
       provideState('clientAgentAutonomy', clientAgentAutonomyReducer),
       provideState('agentTasks', agentTasksReducer),
+      provideState('agentGraphs', agentGraphsReducer),
       provideState('chatPlans', chatPlansReducer),
       provideState('atlassianContextImport', atlassianContextImportReducer),
       provideState('workspaceConfig', workspaceConfigReducer),
@@ -594,6 +624,19 @@ export const agentConsoleRoutes: Route[] = [
         runAgentTaskNow$,
         loadAgentTaskRuns$,
         loadMoreAgentTaskRuns$,
+        loadAgentGraphDocument$,
+        loadWorkspaceAgentGraph$,
+        loadGlobalAgentGraph$,
+        expandAgentGraphNeighbors$,
+        loadAgentGraphStatus$,
+        loadAgentGraphOverview$,
+        refreshAgentGraph$,
+        pollAgentGraphStatusAfterRefresh$,
+        loadAgentGraphNodeDetail$,
+        searchAgentGraph$,
+        loadAgentGraphReferences$,
+        refreshWorkspaceGraphSnapshot$,
+        loadGlobalAgentGraphStatus$,
         loadChatPlans$,
         loadChatPlan$,
         updateChatPlan$,

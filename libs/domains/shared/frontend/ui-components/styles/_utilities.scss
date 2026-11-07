@@ -1,3 +1,5 @@
+@use 'quiet-close';
+
 // Layout helpers Bootstrap does not ship. Flex and grid items default to `min-*: auto`, which
 // stops them from shrinking below their content and breaks nested scroll areas.
 .min-h-0 {
@@ -187,4 +189,10 @@ body {
 
 :is(code, pre, kbd, samp, .font-monospace, .monaco-editor, .xterm, .cm-editor, .milkdown-code-block) {
   word-spacing: normal;
+}
+
+// Quiet close outside modals (side panels, sheets): the same X as the `fpc-modal` header close.
+// Usage: `<button type="button" class="btn-close fpc-quiet-close" aria-label="Close"></button>`.
+.btn-close.fpc-quiet-close {
+  @include quiet-close.quiet-close-button();
 }

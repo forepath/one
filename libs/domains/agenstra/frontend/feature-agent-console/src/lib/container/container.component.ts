@@ -150,6 +150,11 @@ export class AgentConsoleContainerComponent implements OnInit {
     { initialValue: ['/tasks'] },
   );
 
+  readonly graphsSidebarLink = toSignal(
+    this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/graphs', id] : ['/graphs']))),
+    { initialValue: ['/graphs'] },
+  );
+
   /**
    * True when the user can access the user manager (admin with users, oidc or saml auth).
    */
@@ -328,6 +333,7 @@ export class AgentConsoleContainerComponent implements OnInit {
       path.includes('/knowledge') ||
       path.includes('/plans') ||
       path.includes('/tasks') ||
+      path.includes('/graphs') ||
       path.includes('/agent-config') ||
       path.includes('/settings/tokens') ||
       path.includes('/settings/apps') ||

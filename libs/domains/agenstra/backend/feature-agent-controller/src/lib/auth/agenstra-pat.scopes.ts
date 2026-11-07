@@ -38,6 +38,10 @@ export const AGENSTRA_PAT_SCOPES = [
   'knowledge:write',
   'attachments:read',
   'attachments:write',
+  // Environment / workspace / global graphs (write: rebuild). Mirrored data stays capped by the domain scopes above
+  // (files: code / paths graphs, chats: prompt references, tickets / knowledge / chats: snapshot nodes).
+  'graph:read',
+  'graph:write',
   // Atlassian context import (admin console)
   'imports:admin',
   'statistics:read',

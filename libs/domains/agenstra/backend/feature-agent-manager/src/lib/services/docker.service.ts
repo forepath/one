@@ -2380,6 +2380,161 @@ export class DockerService {
   }
 
   /**
+   * Run a read-only command in a container and collect its stdout (bounded), e.g. a `find` listing or a `tar` stream
+   * of workspace files. Nothing is written into the container. Exit codes outside `acceptExitCodes` fail with stderr.
+   * Output beyond `maxBytes` is cut off (`truncated: true`) instead of failing, so callers can work with a prefix.
+   */
+  async collectExecStdout(
+    containerId: string,
+    command: string[],
+    options: { user: string; maxBytes: number; timeoutMs: number; acceptExitCodes?: number[] },
+  ): Promise<{ stdout: Buffer; truncated: boolean; exitCode: number | null }> {
+    const container = this.docker.getContainer(containerId);
+
+    try {
+      await container.inspect();
+    } catch (error: unknown) {
+      if ((error as { statusCode?: number }).statusCode === 404) {
+        throw new NotFoundException(`Container with ID '${containerId}' not found`);
+      }
+
+      throw error;
+    }
+
+    const exec = await this.createExec(container, {
+      ...(await this.getExecEnvironmentOptions(containerId, options.user)),
+      Cmd: command,
+      AttachStdin: false,
+      AttachStdout: true,
+      AttachStderr: true,
+      Tty: false,
+      User: options.user,
+    });
+    const stream = (await exec.start({ hijack: true, stdin: false })) as NodeJS.ReadWriteStream;
+    const stdoutStream = new PassThrough();
+    const stderrStream = new PassThrough();
+    const stdoutChunks: Buffer[] = [];
+    let stdoutBytes = 0;
+    let stderrData = '';
+    let truncated = false;
+    const destroy = () => (stream as NodeJS.ReadWriteStream & { destroy?: () => void }).destroy?.();
+
+    container.modem.demuxStream(stream, stdoutStream, stderrStream);
+
+    await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      let pendingStreams = 2;
+      const settle = (error?: unknown) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        clearTimeout(timeout);
+
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      };
+      const finishSource = () => {
+        stdoutStream.end();
+        stderrStream.end();
+      };
+      const onDemuxedEnd = () => {
+        pendingStreams -= 1;
+
+        if (pendingStreams === 0) {
+          settle();
+        }
+      };
+      const timeout = setTimeout(() => {
+        destroy();
+        settle(new Error(`Timed out running command in container ${containerId}`));
+      }, options.timeoutMs);
+
+      stdoutStream.on('data', (chunk: Buffer) => {
+        if (settled || truncated) {
+          return;
+        }
+
+        const room = options.maxBytes - stdoutBytes;
+
+        if (chunk.length > room) {
+          if (room > 0) {
+            stdoutChunks.push(chunk.subarray(0, room));
+            stdoutBytes += room;
+          }
+
+          truncated = true;
+          destroy();
+          finishSource();
+
+          return;
+        }
+
+        stdoutBytes += chunk.length;
+        stdoutChunks.push(chunk);
+      });
+      stderrStream.on('data', (chunk: Buffer) => {
+        if (stderrData.length < 64 * 1024) {
+          stderrData += chunk.toString('utf8');
+        }
+      });
+      stdoutStream.on('end', onDemuxedEnd);
+      stderrStream.on('end', onDemuxedEnd);
+      stream.on('end', finishSource);
+      stream.on('close', finishSource);
+      stream.on('error', (error: unknown) => {
+        const err = error as { code?: string };
+
+        if (truncated || err.code === 'EPIPE' || err.code === 'ECONNRESET') {
+          finishSource();
+        } else {
+          settle(error);
+        }
+      });
+    });
+
+    const stdout = Buffer.concat(stdoutChunks, stdoutBytes);
+
+    if (truncated) {
+      // The command was cut off on purpose; its exit code is meaningless.
+      return { stdout, truncated, exitCode: null };
+    }
+
+    const { ExitCode: exitCode } = await this.inspectExecUntilExited(exec);
+    const accepted = options.acceptExitCodes ?? [0];
+
+    if (exitCode === null || exitCode === undefined || !accepted.includes(exitCode)) {
+      throw new Error(stderrData.trim().slice(0, 500) || `Command failed with exit code ${exitCode}`);
+    }
+
+    return { stdout, truncated, exitCode };
+  }
+
+  /** True when the container has the read-only `/opt/agents` → `/opt/workspace` bind (all environments of the host). */
+  async hasWorkspaceContextMount(containerId: string): Promise<boolean> {
+    try {
+      const info = await this.docker.getContainer(containerId).inspect();
+
+      return (info.Mounts ?? []).some(
+        (mount) =>
+          mount.Source === DockerService.WORKSPACE_CONTEXT_BIND_SOURCE &&
+          typeof mount.Destination === 'string' &&
+          mount.Destination.endsWith(DockerService.WORKSPACE_CONTEXT_BIND_TARGET),
+      );
+    } catch (error: unknown) {
+      if ((error as { statusCode?: number }).statusCode === 404) {
+        return false;
+      }
+
+      throw error;
+    }
+  }
+
+  /**
    * Resolve the container user's home directory (for tilde expansion in provider config paths).
    * @param containerId - Docker container ID
    * @returns Trimmed HOME path, or `/home/agenstra` when empty

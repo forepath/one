@@ -7987,6 +7987,422 @@ paths:
           description: Missing code or auth completion failed
         '403':
           description: Invalid or expired signature
+  /clients/{id}/agents/{agentId}/graph/status:
+    get:
+      summary: Environment graph build status (proxied)
+      description: Requires workspace access; the agent must belong to the workspace.
+      operationId: getClientAgentGraphStatus
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+        - $ref: '#/components/parameters/graphAgentId'
+      responses:
+        '200':
+          description: Graph status of the environment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphStatus'
+        '403':
+          description: No access to this client or insufficient token scope
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/graph/overview:
+    get:
+      summary: Environment graph overview (proxied)
+      description: |
+        Modules, hubs, communities and instruction files. PATs also need `agent_files:read`; `recentPrompts` is
+        omitted without `agent_chats:read`. Builds the graph lazily when missing.
+      operationId: getClientAgentGraphOverview
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read, agent_files:read]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+        - $ref: '#/components/parameters/graphAgentId'
+      responses:
+        '200':
+          description: Graph overview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphOverview'
+        '403':
+          description: No access to this client or insufficient token scope
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/graph:
+    get:
+      summary: Environment graph document of one layer (proxied)
+      description: |
+        PATs also need `agent_files:read`, and `agent_chats:read` for `layer=references`.
+        Paginated by `offset` / `limit` (see `nextOffset`).
+      operationId: getClientAgentGraph
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read, agent_files:read]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+        - $ref: '#/components/parameters/graphAgentId'
+        - $ref: '#/components/parameters/graphLayer'
+        - $ref: '#/components/parameters/graphDocumentLimit'
+        - $ref: '#/components/parameters/graphNodeTypes'
+        - $ref: '#/components/parameters/graphOffset'
+      responses:
+        '200':
+          description: Graph document (scope `environment`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphDocument'
+        '400':
+          description: Invalid query parameters
+        '403':
+          description: No access to this client or insufficient token scope
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/graph/search:
+    get:
+      summary: Search an environment graph (proxied)
+      description: PATs also need `agent_files:read`, and `agent_chats:read` for `layer=references`.
+      operationId: searchClientAgentGraph
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read, agent_files:read]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+        - $ref: '#/components/parameters/graphAgentId'
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+            maxLength: 256
+          description: Search text (trimmed, capped at 256 characters)
+        - $ref: '#/components/parameters/graphLayer'
+        - $ref: '#/components/parameters/graphNodeTypes'
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Search hits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphSearchResponse'
+        '400':
+          description: Missing or invalid query parameters
+        '403':
+          description: No access to this client or insufficient token scope
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/graph/nodes:
+    get:
+      summary: Graph node with its relations (proxied)
+      description: PATs also need `agent_files:read`, and `agent_chats:read` for `layer=references`.
+      operationId: getClientAgentGraphNode
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read, agent_files:read]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+        - $ref: '#/components/parameters/graphAgentId'
+        - $ref: '#/components/parameters/graphNodeId'
+        - $ref: '#/components/parameters/graphLayer'
+      responses:
+        '200':
+          description: Node detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphNodeDetail'
+        '400':
+          description: Missing or invalid node id
+        '403':
+          description: No access to this client or insufficient token scope
+        '404':
+          description: Client, agent or node not found
+  /clients/{id}/agents/{agentId}/graph/neighbors:
+    get:
+      summary: Neighborhood of a graph node (proxied)
+      description: PATs also need `agent_files:read`, and `agent_chats:read` for `layer=references`.
+      operationId: getClientAgentGraphNeighbors
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read, agent_files:read]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+        - $ref: '#/components/parameters/graphAgentId'
+        - $ref: '#/components/parameters/graphNodeId'
+        - $ref: '#/components/parameters/graphLayer'
+        - in: query
+          name: depth
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 3
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 400
+      responses:
+        '200':
+          description: Graph document of the neighborhood
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphDocument'
+        '400':
+          description: Missing or invalid node id
+        '403':
+          description: No access to this client or insufficient token scope
+        '404':
+          description: Client, agent or node not found
+  /clients/{id}/agents/{agentId}/graph/path:
+    get:
+      summary: Shortest path between two graph nodes (proxied)
+      description: PATs also need `agent_files:read`, and `agent_chats:read` for `layer=references`.
+      operationId: getClientAgentGraphPath
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read, agent_files:read]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+        - $ref: '#/components/parameters/graphAgentId'
+        - in: query
+          name: from
+          required: true
+          schema:
+            type: string
+            maxLength: 1024
+        - in: query
+          name: to
+          required: true
+          schema:
+            type: string
+            maxLength: 1024
+        - $ref: '#/components/parameters/graphLayer'
+      responses:
+        '200':
+          description: Path (empty when not found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphPathResponse'
+        '400':
+          description: Missing or invalid node ids
+        '403':
+          description: No access to this client or insufficient token scope
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/graph/file:
+    get:
+      summary: Graph view of one file (proxied)
+      description: PATs also need `agent_files:read`; `prompts` is empty without `agent_chats:read`.
+      operationId: getClientAgentGraphFile
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read, agent_files:read]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+        - $ref: '#/components/parameters/graphAgentId'
+        - in: query
+          name: path
+          required: true
+          schema:
+            type: string
+            maxLength: 1024
+          description: Path relative to the working directory or absolute (`/app/...`)
+      responses:
+        '200':
+          description: File symbols, imports and prompts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphFileResponse'
+        '400':
+          description: Missing or invalid path
+        '403':
+          description: No access to this client or insufficient token scope
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/graph/references:
+    get:
+      summary: Prompt reference graph (proxied)
+      description: Which context each prompt was given, used and changed. PATs also need `agent_chats:read`.
+      operationId: getClientAgentGraphReferences
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read, agent_chats:read]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+        - $ref: '#/components/parameters/graphAgentId'
+        - in: query
+          name: promptId
+          required: false
+          schema:
+            type: string
+            maxLength: 1024
+          description: Include the reference detail of this prompt
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 50
+          description: Number of prompts listed
+      responses:
+        '200':
+          description: Prompt summaries (and the requested prompt's references)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphReferencesResponse'
+        '403':
+          description: No access to this client or insufficient token scope
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/graph/refresh:
+    post:
+      summary: Rebuild an environment graph (proxied)
+      operationId: refreshClientAgentGraph
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:write]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+        - $ref: '#/components/parameters/graphAgentId'
+      responses:
+        '202':
+          description: Rebuild queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphRefreshResponse'
+        '403':
+          description: No access to this client or insufficient token scope
+        '404':
+          description: Client or agent not found
+  /clients/{id}/graph:
+    get:
+      summary: Workspace graph per layer
+      description: |
+        The controller resolves the workspace's environments itself and lets the agent-manager compose their graphs
+        (node ids `<environmentId>::<nodeId>`, one `environment:<id>` node per environment, cross-environment
+        `references` edges) and adds a `workspace:<clientId>` node; `knowledge` serves the metadata snapshot and `all`
+        both. Paginated by `offset` / `limit`.
+      operationId: getClientWorkspaceGraph
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read, agent_files:read]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+        - $ref: '#/components/parameters/graphViewLayer'
+        - $ref: '#/components/parameters/graphDocumentLimit'
+        - $ref: '#/components/parameters/graphOffset'
+      responses:
+        '200':
+          description: Graph document (scope `workspace`, `clientId` set)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphDocument'
+        '400':
+          description: Invalid query parameters
+        '403':
+          description: No access to this client or insufficient token scope
+  /clients/{id}/graph/snapshot:
+    get:
+      summary: Workspace metadata graph snapshot
+      description: |
+        Persisted metadata graph of the workspace (environments, modules, languages, knowledge, tickets, plans; titles
+        and ids only). Built when missing and refreshed in the background when older than 15 minutes. PAT callers
+        only see nodes their scopes cover (`tickets:read`, `knowledge:read`, `agent_chats:read` for plans,
+        `agent_files:read` for modules and languages).
+      operationId: getClientWorkspaceGraphSnapshot
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+      responses:
+        '200':
+          description: Graph document (scope and layer `global`, `clientId` set)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphDocument'
+        '403':
+          description: No access to this client
+  /clients/{id}/graph/snapshot/refresh:
+    post:
+      summary: Rebuild the workspace metadata graph snapshot now
+      operationId: refreshClientWorkspaceGraphSnapshot
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:write]
+      parameters:
+        - $ref: '#/components/parameters/graphClientId'
+      responses:
+        '200':
+          description: Snapshot status after the build
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphWorkspaceSnapshotStatus'
+        '403':
+          description: No access to this client
+  /graph/global:
+    get:
+      summary: Global graph over every accessible workspace, per layer
+      description: |
+        The graph of every workspace the caller may access (API key and console admins: all workspaces) for the given
+        layer, with cross-workspace environment references. Knowledge nodes are filtered by PAT scopes like the
+        snapshot route. Paginated by `offset` / `limit`.
+      operationId: getGlobalGraph
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read]
+      parameters:
+        - $ref: '#/components/parameters/graphViewLayer'
+        - $ref: '#/components/parameters/graphDocumentLimit'
+        - $ref: '#/components/parameters/graphOffset'
+      responses:
+        '200':
+          description: Graph document (scope `global`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphDocument'
+  /graph/global/status:
+    get:
+      summary: Snapshot status of every accessible workspace
+      operationId: getGlobalGraphStatus
+      tags: [Graphs]
+      security:
+        - bearerAuth: [graph:read]
+      responses:
+        '200':
+          description: One status per accessible workspace
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentGraphWorkspaceSnapshotStatus'
   /otel/metrics:
     get:
       summary: Prometheus metrics scrape
@@ -8050,6 +8466,81 @@ components:
         enum: [app]
         default: app
       description: Proxied to agent-manager. `app` (default) is the workspace root under `/app`.
+    graphClientId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The UUID of the client (workspace)
+    graphAgentId:
+      name: agentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The UUID of the agent (environment); must belong to the workspace
+    graphLayer:
+      name: layer
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [all, code, paths, references]
+        default: code
+      description: >-
+        Environment graph layer; `all` merges code, paths and prompt references. `references` and `all` additionally
+        require `agent_chats:read` for PATs.
+    graphViewLayer:
+      name: layer
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [all, code, paths, references, knowledge]
+        default: all
+      description: >-
+        Workspace / global graph layer. `knowledge` = the persisted metadata snapshots (filtered by PAT scopes);
+        `all` = the composed environment graphs plus the knowledge metadata. PATs need `agent_files:read` for `code` /
+        `paths`, plus `agent_chats:read` for `references` / `all`.
+    graphOffset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: >-
+        Page start: documents are paginated in a stable rank order (anchors first, then by degree). Request the next
+        page with the response's `nextOffset` until it is `null`.
+    graphDocumentLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 6000
+        default: 1500
+      description: Nodes per page (highest ranked first)
+    graphNodeTypes:
+      name: types
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated node types to include (unknown types are ignored)
+    graphNodeId:
+      name: id
+      in: query
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+      description: Graph node id (e.g. `file:src/a.ts`, `symbol:src/a.ts#Foo`)
   schemas:
     AppTokenRequestDto:
       type: object
@@ -12714,3 +13205,485 @@ components:
           type: integer
           minimum: 1
           description: Ticket lifetime in seconds
+    AgentGraphNode:
+      type: object
+      required: [id, type, label]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - environment
+            - module
+            - file
+            - symbol
+            - package
+            - doc
+            - concept
+            - instruction
+            - language
+            - directory
+            - mount
+            - prompt
+            - session
+            - ticket
+            - knowledge
+            - plan
+            - attachment
+            - skill
+            - mcp-server
+            - command
+            - agent-profile
+            - plugin
+            - tool
+            - workspace
+            - knowledge-folder
+        label:
+          type: string
+        path:
+          type: string
+        community:
+          type: integer
+        attrs:
+          type: object
+          additionalProperties: true
+    AgentGraphEdge:
+      type: object
+      required: [from, to, type]
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        type:
+          type: string
+          enum:
+            - contains
+            - imports
+            - depends_on
+            - defines
+            - links_to
+            - documents
+            - written_in
+            - mounted_at
+            - attached
+            - available
+            - used
+            - modified
+            - relates_to
+            - member_of
+            - references
+        confidence:
+          type: string
+          enum: [extracted, inferred]
+        attrs:
+          type: object
+          additionalProperties: true
+    AgentGraphBuildStatus:
+      type: string
+      enum: [missing, building, ready, stale, failed]
+    AgentGraphStatus:
+      type: object
+      required:
+        [
+          environmentId,
+          status,
+          builtAt,
+          buildDurationMs,
+          truncated,
+          error,
+          layers,
+          languages,
+          fileCount,
+        ]
+      properties:
+        environmentId:
+          type: string
+        status:
+          $ref: '#/components/schemas/AgentGraphBuildStatus'
+        builtAt:
+          type: string
+          format: date-time
+          nullable: true
+        buildDurationMs:
+          type: integer
+          nullable: true
+        truncated:
+          type: boolean
+        error:
+          type: string
+          nullable: true
+        layers:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              nodes:
+                type: integer
+              edges:
+                type: integer
+              nodesByType:
+                type: object
+                additionalProperties:
+                  type: integer
+        languages:
+          type: object
+          additionalProperties:
+            type: integer
+        fileCount:
+          type: integer
+    AgentGraphHub:
+      type: object
+      required: [id, type, label, degree]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        label:
+          type: string
+        path:
+          type: string
+        degree:
+          type: integer
+    AgentGraphPromptSummary:
+      type: object
+      required:
+        [
+          id,
+          environmentId,
+          chatSessionId,
+          messageId,
+          origin,
+          startedAt,
+          finishedAt,
+          counts,
+        ]
+      properties:
+        id:
+          type: string
+        environmentId:
+          type: string
+        chatSessionId:
+          type: string
+          nullable: true
+        messageId:
+          type: string
+          nullable: true
+        origin:
+          type: string
+          enum: [chat, hidden, ephemeral]
+        excerpt:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        counts:
+          type: object
+          additionalProperties:
+            type: integer
+    AgentGraphOverview:
+      type: object
+      required: [scope, status, modules, hubs, communities, instructions]
+      properties:
+        scope:
+          type: string
+          enum: [environment, workspace, global]
+        environmentId:
+          type: string
+        status:
+          $ref: '#/components/schemas/AgentGraphStatus'
+        workingDirectory:
+          type: string
+        mountPath:
+          type: string
+        modules:
+          type: array
+          items:
+            type: object
+            required: [id, label, files]
+            properties:
+              id:
+                type: string
+              label:
+                type: string
+              path:
+                type: string
+              files:
+                type: integer
+        hubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphHub'
+        communities:
+          type: array
+          items:
+            type: object
+            required: [id, size, label]
+            properties:
+              id:
+                type: integer
+              size:
+                type: integer
+              label:
+                type: string
+              directory:
+                type: string
+        instructions:
+          type: array
+          items:
+            type: object
+            required: [id, label]
+            properties:
+              id:
+                type: string
+              label:
+                type: string
+              path:
+                type: string
+        recentPrompts:
+          type: array
+          description: Omitted for PATs without `agent_chats:read`
+          items:
+            $ref: '#/components/schemas/AgentGraphPromptSummary'
+    AgentGraphDocument:
+      type: object
+      required:
+        [
+          version,
+          scope,
+          layer,
+          generatedAt,
+          nodes,
+          edges,
+          truncated,
+          totalNodes,
+          totalEdges,
+        ]
+      properties:
+        version:
+          type: integer
+          enum: [1]
+        scope:
+          type: string
+          enum: [environment, workspace, global]
+        layer:
+          type: string
+          enum: [all, code, paths, references, knowledge, global]
+        offset:
+          type: integer
+        nextOffset:
+          type: integer
+          nullable: true
+        environmentId:
+          type: string
+        clientId:
+          type: string
+          format: uuid
+        generatedAt:
+          type: string
+          format: date-time
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphNode'
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphEdge'
+        truncated:
+          type: boolean
+          description: True when the document was cut to `limit` nodes (highest degree kept first)
+        totalNodes:
+          type: integer
+        totalEdges:
+          type: integer
+    AgentGraphNodeRelation:
+      type: object
+      required: [edge, node]
+      properties:
+        edge:
+          $ref: '#/components/schemas/AgentGraphEdge'
+        node:
+          $ref: '#/components/schemas/AgentGraphNode'
+    AgentGraphNodeDetail:
+      type: object
+      required: [node, outgoing, incoming, truncated]
+      properties:
+        node:
+          $ref: '#/components/schemas/AgentGraphNode'
+        outgoing:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphNodeRelation'
+        incoming:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphNodeRelation'
+        truncated:
+          type: boolean
+        absolutePath:
+          type: string
+    AgentGraphSearchResponse:
+      type: object
+      required: [query, hits, byType]
+      properties:
+        query:
+          type: string
+        hits:
+          type: array
+          items:
+            type: object
+            required: [environmentId, node, score]
+            properties:
+              environmentId:
+                type: string
+              node:
+                $ref: '#/components/schemas/AgentGraphNode'
+              score:
+                type: number
+              absolutePath:
+                type: string
+        byType:
+          type: object
+          additionalProperties:
+            type: integer
+    AgentGraphPathResponse:
+      type: object
+      required: [from, to, found, nodes, edges]
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        found:
+          type: boolean
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphNode'
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphEdge'
+    AgentGraphFileResponse:
+      type: object
+      required:
+        [
+          environmentId,
+          path,
+          file,
+          symbols,
+          imports,
+          importedBy,
+          documentedBy,
+          prompts,
+        ]
+      properties:
+        environmentId:
+          type: string
+        path:
+          type: string
+        absolutePath:
+          type: string
+        file:
+          allOf:
+            - $ref: '#/components/schemas/AgentGraphNode'
+          nullable: true
+        language:
+          type: string
+        symbols:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphNode'
+        imports:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphNode'
+        importedBy:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphNode'
+        documentedBy:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphNode'
+        prompts:
+          type: array
+          description: Empty for PATs without `agent_chats:read`
+          items:
+            $ref: '#/components/schemas/AgentGraphPromptSummary'
+    AgentGraphPromptReference:
+      type: object
+      required: [kind, type, ref, label]
+      properties:
+        kind:
+          type: string
+          enum: [attached, available, used, modified]
+        type:
+          type: string
+        ref:
+          type: string
+        label:
+          type: string
+        path:
+          type: string
+        tool:
+          type: string
+        count:
+          type: integer
+    AgentGraphReferencesResponse:
+      type: object
+      required: [environmentId, prompts]
+      properties:
+        environmentId:
+          type: string
+        prompts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentGraphPromptSummary'
+        prompt:
+          allOf:
+            - $ref: '#/components/schemas/AgentGraphPromptSummary'
+            - type: object
+              required: [references]
+              properties:
+                references:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/AgentGraphPromptReference'
+    AgentGraphRefreshResponse:
+      type: object
+      required: [environmentId, queued, status]
+      properties:
+        environmentId:
+          type: string
+        queued:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/AgentGraphBuildStatus'
+    AgentGraphWorkspaceSnapshotStatus:
+      type: object
+      required: [clientId, status, builtAt, error, nodes, edges]
+      properties:
+        clientId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/AgentGraphBuildStatus'
+        builtAt:
+          type: string
+          format: date-time
+          nullable: true
+        error:
+          type: string
+          nullable: true
+        nodes:
+          type: integer
+        edges:
+          type: integer

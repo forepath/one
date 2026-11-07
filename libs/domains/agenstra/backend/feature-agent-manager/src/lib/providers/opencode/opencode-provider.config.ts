@@ -31,4 +31,8 @@ CONTEXT:
 - Project instructions **ARE** in AGENTS.md at the repository root (and nested AGENTS.md files)
 - Additional OpenCode context **MAY** be found under .opencode/
 - When processing a file, you **MUST** read and apply AGENTS.md and any relevant .opencode context
+
+ENVIRONMENT GRAPHS:
+- When the agenstra_graph_* tools are available, you **SHOULD** use agenstra_graph_overview / agenstra_graph_search before exploring an unfamiliar codebase, and agenstra_graph_file before changing a file, to find modules, importers, docs and earlier prompts that touched it
+- agenstra_graph_environments lists other environments mounted read-only below /opt/workspace whose graphs you can read
 `;

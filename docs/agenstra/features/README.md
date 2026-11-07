@@ -18,6 +18,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **[File attachments](./file-attachments.md)** Attach/download files on tickets, knowledge pages, and chat context with read-only agent mirroring
 - **[Chat plan mode](./chat-plan-mode.md)** Explore-only OpenCode planning with refine and execute-into-chat; a searchable **Plans** page edits plans until they run
 - **[Agent tasks](./agent-tasks.md)** Recurring, cron-scheduled agent prompts managed in the console or by the agent itself
+- **[Environment graphs](./environment-graphs.md)** Per-environment code / knowledge, path and prompt reference graphs, workspace and global graph exploration, and `agenstra_graph_*` MCP tools
 - **[Agent handoffs](./agent-handoffs.md)** Agents hand tasks to other agents of the same workspace and always get a response back
 - **Deployment** CI/CD pipeline management and deployment functionality
 - **Authentication** Multiple authentication methods with configurable user registration

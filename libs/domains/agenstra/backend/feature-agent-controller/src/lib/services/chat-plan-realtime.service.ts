@@ -1,11 +1,12 @@
 import { emitToSocketIfPermitted, socketBroadcastRooms } from '@forepath/identity/backend';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import type { Server, Socket } from 'socket.io';
 
 import { CLIENTS_SOCKET_OUTBOUND_SCOPES } from '../auth/agenstra-websocket.scopes';
 
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { CLIENT_CHAT_PLAN_EVENTS } from './client-chat-plan.constants';
+import { WorkspaceGraphChangeNotifierService } from './workspace-graph-change-notifier.service';
 
 /**
  * Emits chat-plan timeline events on the **clients** Socket.IO namespace.
@@ -14,6 +15,8 @@ import { CLIENT_CHAT_PLAN_EVENTS } from './client-chat-plan.constants';
 export class ChatPlanRealtimeService {
   private readonly logger = new Logger(ChatPlanRealtimeService.name);
   private server: Server | null = null;
+
+  constructor(@Optional() private readonly graphChanges?: WorkspaceGraphChangeNotifierService) {}
 
   attachServer(server: Server): void {
     this.server = server;
@@ -33,6 +36,8 @@ export class ChatPlanRealtimeService {
   }
 
   emitToClient(clientId: string, payload: unknown): void {
+    // Plan upserts are part of the workspace graph (also when emitted by worker processes).
+    this.graphChanges?.notify(clientId, CLIENT_CHAT_PLAN_EVENTS.chatPlanUpsert);
     this.emitToClientRoom(clientId, CLIENT_CHAT_PLAN_EVENTS.chatPlanUpsert, payload);
   }
 

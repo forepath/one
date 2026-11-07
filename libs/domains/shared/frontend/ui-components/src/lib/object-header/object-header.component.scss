@@ -87,6 +87,20 @@
   }
 }
 
+.fpc-object-header__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.75rem;
+  min-width: 0;
+  font-size: 0.875rem;
+
+  &:empty,
+  &:not(:has(> *)) {
+    display: none;
+  }
+}
+
 .fpc-object-header__subtitle {
   font-size: 0.875rem;
   min-width: 0;

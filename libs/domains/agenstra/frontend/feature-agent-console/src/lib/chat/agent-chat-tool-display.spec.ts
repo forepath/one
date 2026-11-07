@@ -81,4 +81,14 @@ describe('resolveAgentChatToolDisplay', () => {
     });
     expect(resolveAgentChatToolDisplay(undefined)).toEqual({ label: 'Tool', icon: 'wrench' });
   });
+
+  it('maps the platform graph tools (with and without the server prefix)', () => {
+    expect(resolveAgentChatToolDisplay('agenstra_graph_environments')).toEqual({
+      label: 'List environment graphs',
+      icon: 'diagram-3',
+    });
+    expect(resolveAgentChatToolDisplay('graph_search').label).toBe('Search graph');
+    expect(resolveAgentChatToolDisplay('agenstra_graph_path').label).toBe('Find graph connection');
+    expect(resolveAgentChatToolDisplay('agenstra_graph_refresh').icon).toBe('arrow-repeat');
+  });
 });
