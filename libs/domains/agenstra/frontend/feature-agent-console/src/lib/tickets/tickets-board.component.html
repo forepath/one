@@ -1927,6 +1927,7 @@
   i18n-title="@@featureTicketsBoard-workspaceSwitcherTitle"
   title="Switch workspace"
   [scrollable]="true"
+  [bodyScroll]="false"
   (closed)="onCloseWorkspaceSwitchModal()"
 >
   @if (clientsLoading$ | async) {
@@ -1959,6 +1960,10 @@
           [clients]="clientList"
           [currentId]="effectiveClientId()"
           [(query)]="workspaceSwitchSearch"
+          [hasMore]="workspaceSwitchHasMore()"
+          [appendLoading]="workspaceSwitchAppendLoading()"
+          [appendError]="workspaceSwitchAppendError()"
+          (loadMore)="onLoadMoreWorkspaces()"
           (selectWorkspace)="onSelectWorkspaceForTickets($event)"
         />
       }

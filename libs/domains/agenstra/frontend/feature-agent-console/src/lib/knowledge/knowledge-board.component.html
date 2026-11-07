@@ -362,6 +362,7 @@
   i18n-title="@@featureKnowledgeBoard-switchWorkspaceModalTitle"
   title="Switch workspace"
   [scrollable]="true"
+  [bodyScroll]="false"
   (closed)="onCloseWorkspaceSwitchModal()"
 >
   @if (clients().length === 0 && !workspaceSwitchSearch().trim()) {
@@ -380,6 +381,10 @@
       [clients]="clients()"
       [currentId]="activeClientId()"
       [(query)]="workspaceSwitchSearch"
+      [hasMore]="workspaceSwitchHasMore()"
+      [appendLoading]="workspaceSwitchAppendLoading()"
+      [appendError]="workspaceSwitchAppendError()"
+      (loadMore)="onLoadMoreWorkspaces()"
       (selectWorkspace)="onSelectWorkspaceForKnowledge($event)"
     />
   }

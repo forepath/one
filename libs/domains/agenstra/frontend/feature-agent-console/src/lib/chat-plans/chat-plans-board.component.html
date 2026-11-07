@@ -402,6 +402,7 @@
   i18n-title="@@featureChatPlans-switchWorkspaceModalTitle"
   title="Switch workspace"
   [scrollable]="true"
+  [bodyScroll]="false"
 >
   @if (clients().length === 0 && !workspaceSwitchSearch().trim()) {
     <fpc-empty-state size="sm" message="No workspaces yet" i18n-message="@@featureChatPlans-noWorkspaces">
@@ -419,6 +420,10 @@
       [clients]="clients()"
       [currentId]="activeClientId()"
       [(query)]="workspaceSwitchSearch"
+      [hasMore]="workspaceSwitchHasMore()"
+      [appendLoading]="workspaceSwitchAppendLoading()"
+      [appendError]="workspaceSwitchAppendError()"
+      (loadMore)="onLoadMoreWorkspaces()"
       (selectWorkspace)="onSelectWorkspace($event)"
     />
   }
