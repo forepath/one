@@ -1,0 +1,767 @@
+<div class="section__content-wrapper d-flex flex-column border-top">
+  <!-- No workspace chip: the scope switch (environment / workspace / global) and the environment select set the focus. -->
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (effectiveClientId() === null && scope() !== 'global') {
+    @if (clients().length === 0) {
+      <fpc-empty-state class="flex-grow-1" message="No workspaces yet" i18n-message="@@featureAgentGraphs-noWorkspaces">
+        <fpc-button fpcEmptyStateActions variant="primary" routerLink="/clients" i18n="@@featureAgentGraphs-goToSpaces"
+          >Go to workspaces</fpc-button
+        >
+      </fpc-empty-state>
+    } @else {
+      <fpc-empty-state
+        class="flex-grow-1"
+        message="No workspace selected yet"
+        i18n-message="@@featureAgentGraphs-noWorkspaceSelected"
+      >
+        <fpc-button
+          fpcEmptyStateActions
+          variant="primary"
+          (clicked)="openWorkspaceSwitchModal()"
+          i18n="@@featureAgentGraphs-chooseWorkspace"
+          >Choose workspace...</fpc-button
+        >
+      </fpc-empty-state>
+    }
+  } @else {
+    @if (error()) {
+      <fpc-alert variant="danger" [flush]="true" [dismissible]="true" [message]="error()" (closed)="onDismissError()" />
+    }
+
+    <!-- Scope + view controls -->
+    <div class="graphs-toolbar border-bottom" data-testid="agent-graphs-toolbar">
+      <div class="btn-group btn-group-sm graphs-toolbar__scopes" role="group" [attr.aria-label]="scopeLabel">
+        @for (option of scopes; track option.id) {
+          <button
+            type="button"
+            class="btn"
+            [class.btn-primary]="scope() === option.id"
+            [class.btn-outline-secondary]="scope() !== option.id"
+            [attr.aria-pressed]="scope() === option.id"
+            [attr.data-testid]="'agent-graphs-scope-' + option.id"
+            (click)="onScopeChange(option.id)"
+          >
+            {{ option.label }}
+          </button>
+        }
+      </div>
+
+      @if (scope() === 'environment') {
+        <fpc-form-field class="graphs-toolbar__field" forId="agentGraphsEnvironment" [label]="environmentLabel">
+          <fpc-form-control
+            controlId="agentGraphsEnvironment"
+            controlType="select"
+            size="sm"
+            [ngModel]="agentId() ?? ''"
+            (ngModelChange)="onAgentChange($event)"
+          >
+            @for (agent of agents(); track agent.id) {
+              <option [value]="agent.id">{{ workspaceDisplayName(agent.name) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      }
+
+      <fpc-form-field class="graphs-toolbar__field" forId="agentGraphsLayer" [label]="layerLabel">
+        <fpc-form-control
+          controlId="agentGraphsLayer"
+          controlType="select"
+          size="sm"
+          [ngModel]="layer()"
+          (ngModelChange)="onLayerChange($event)"
+        >
+          @for (option of layers(); track option.id) {
+            <option [value]="option.id">{{ option.label }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+
+      <fpc-form-field
+        class="graphs-toolbar__field graphs-toolbar__field--narrow"
+        forId="agentGraphsLimit"
+        [label]="limitLabel"
+      >
+        <fpc-form-control
+          controlId="agentGraphsLimit"
+          controlType="select"
+          size="sm"
+          [ngModel]="limitValue()"
+          (ngModelChange)="onLimitChange($event)"
+        >
+          @for (option of limitOptions; track option) {
+            <option [value]="'' + option">{{ limitOptionLabel(option) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+
+      <fpc-form-field
+        class="graphs-toolbar__field graphs-toolbar__field--narrow"
+        forId="agentGraphsHops"
+        [label]="hopsLabel"
+      >
+        <fpc-form-control
+          controlId="agentGraphsHops"
+          controlType="select"
+          size="sm"
+          [ngModel]="'' + hops()"
+          (ngModelChange)="onHopsChange($event)"
+        >
+          @for (option of hopsOptions; track option) {
+            <option [value]="'' + option">{{ option }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+
+      <fpc-form-check
+        class="graphs-toolbar__check"
+        checkId="agentGraphsLabels"
+        [label]="labelsLabel"
+        [checked]="showLabels()"
+        (checkedChange)="showLabels.set($event)"
+        data-testid="agent-graphs-labels"
+      />
+
+      <div class="graphs-toolbar__status d-flex flex-wrap align-items-center gap-2">
+        @if (scope() === 'environment') {
+          @if (environmentStatus(); as st) {
+            <fpc-badge [tone]="statusTone(st.status)" size="sm" data-testid="agent-graphs-status">{{
+              statusLabel(st.status)
+            }}</fpc-badge>
+            @if (st.builtAt) {
+              <span class="small text-body-secondary" i18n="@@featureAgentGraphs-builtAt"
+                >Built {{ formatDate(st.builtAt) }}</span
+              >
+            }
+            <fpc-badge tone="neutral" size="sm" i18n="@@featureAgentGraphs-fileCount"
+              >{{ st.fileCount }} files</fpc-badge
+            >
+            @if (st.truncated) {
+              <fpc-badge tone="warning" size="sm" i18n="@@featureAgentGraphs-truncatedBuild">Limits reached</fpc-badge>
+            }
+            @if (st.status === 'failed' && st.error) {
+              <span class="small text-danger text-truncate graphs-toolbar__error" [title]="st.error">{{
+                st.error
+              }}</span>
+            }
+          } @else if (statusLoading()) {
+            <fpc-spinner size="sm" />
+          }
+          <fpc-button
+            variant="dark"
+            size="sm"
+            [disabled]="!agentId() || refreshing()"
+            [loading]="refreshing()"
+            [ariaLabel]="refreshTitle"
+            [title]="refreshTitle"
+            (clicked)="onRefresh()"
+            data-testid="agent-graphs-refresh"
+          >
+            <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>
+            <span i18n="@@featureAgentGraphs-rebuild">Rebuild</span>
+          </fpc-button>
+        }
+
+        @if (showsKnowledge()) {
+          @if (snapshotStatus(); as st) {
+            <fpc-badge [tone]="statusTone(st.status)" size="sm">{{ statusLabel(st.status) }}</fpc-badge>
+            @if (st.builtAt) {
+              <span class="small text-body-secondary" i18n="@@featureAgentGraphs-builtAt"
+                >Built {{ formatDate(st.builtAt) }}</span
+              >
+            }
+          }
+          <fpc-button
+            variant="dark"
+            size="sm"
+            [disabled]="snapshotRefreshing()"
+            [loading]="snapshotRefreshing()"
+            [ariaLabel]="refreshSnapshotTitle"
+            [title]="refreshSnapshotTitle"
+            (clicked)="onRefreshSnapshot()"
+          >
+            <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>
+            <span i18n="@@featureAgentGraphs-refreshSnapshot">Refresh snapshot</span>
+          </fpc-button>
+        }
+
+        @if (scope() === 'global') {
+          <span
+            class="small text-body-secondary"
+            data-testid="agent-graphs-global-summary"
+            i18n="@@featureAgentGraphs-globalSummary"
+            >{{ globalSummary().ready }} of {{ globalSummary().workspaces }} workspace snapshots ready</span
+          >
+        }
+
+        <fpc-button
+          variant="outline-secondary"
+          size="sm"
+          iconOnly
+          [ariaLabel]="reloadTitle"
+          [title]="reloadTitle"
+          [disabled]="documentLoading()"
+          (clicked)="onReload()"
+        >
+          <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+        </fpc-button>
+      </div>
+    </div>
+
+    <div class="graphs-body">
+      <!-- Graph -->
+      <section class="graphs-main" [attr.aria-label]="pageTitle">
+        @if (document(); as doc) {
+          @if (doc.nodes.length > 0) {
+            <fpc-list-toolbar class="graphs-filters" [filterable]="false">
+              <fpc-search-field
+                fpcListToolbarLead
+                inputId="agentGraphsFilter"
+                name="agentGraphsFilter"
+                [bordered]="false"
+                [placeholder]="filterPlaceholder"
+                [ariaLabel]="filterLabel"
+                [value]="filterQuery()"
+                (valueChange)="onFilterChange($event)"
+                (keydown.enter)="onFilterEnter($event)"
+                data-testid="agent-graphs-filter"
+              />
+              <span fpcListToolbarActions class="graphs-filters__actions">
+                @if (filterQuery().trim()) {
+                  <span
+                    class="small text-body-secondary text-nowrap"
+                    aria-live="polite"
+                    i18n="@@featureAgentGraphs-matchCount"
+                    >{{ filterMatches().length }} matches</span
+                  >
+                }
+                @if (documentLoadingMore()) {
+                  <span
+                    class="small text-body-secondary text-nowrap d-inline-flex align-items-center gap-1"
+                    aria-live="polite"
+                  >
+                    <fpc-spinner size="sm" />
+                    <span i18n="@@featureAgentGraphs-loadingMore"
+                      >Loading {{ doc.nodes.length }} of {{ doc.totalNodes }} nodes</span
+                    >
+                  </span>
+                } @else if (doc.truncated) {
+                  <span class="small text-body-secondary text-nowrap" i18n="@@featureAgentGraphs-truncatedDocument"
+                    >Showing {{ doc.nodes.length }} of {{ doc.totalNodes }} nodes</span
+                  >
+                }
+                <fpc-button
+                  variant="outline-secondary"
+                  size="sm"
+                  iconOnly
+                  [ariaLabel]="zoomToFitTitle"
+                  [title]="zoomToFitTitle"
+                  (clicked)="onZoomToFit()"
+                  data-testid="agent-graphs-zoom-fit"
+                >
+                  <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
+                </fpc-button>
+              </span>
+            </fpc-list-toolbar>
+
+            <div class="graphs-types border-bottom" role="group" [attr.aria-label]="typeFilterLabel">
+              @for (entry of documentNodeTypes(); track entry.type) {
+                <button
+                  type="button"
+                  class="graphs-types__chip"
+                  [class.graphs-types__chip--off]="isTypeHidden(entry.type)"
+                  [attr.aria-pressed]="!isTypeHidden(entry.type)"
+                  (click)="onToggleType(entry.type)"
+                >
+                  <span
+                    class="graphs-types__swatch"
+                    [style.background]="typeColor(entry.type)"
+                    aria-hidden="true"
+                  ></span>
+                  {{ typeLabel(entry.type) }}
+                  <span class="graphs-types__count">{{ entry.count }}</span>
+                </button>
+              }
+              @if (hiddenTypes().size > 0) {
+                <button
+                  type="button"
+                  class="graphs-types__reset"
+                  (click)="onShowAllTypes()"
+                  i18n="@@featureAgentGraphs-showAllTypes"
+                >
+                  Show all
+                </button>
+              }
+            </div>
+
+            <framework-agent-graph-canvas
+              class="graphs-canvas"
+              [document]="doc"
+              [selectedId]="selectedId()"
+              [hiddenTypes]="hiddenTypes()"
+              [highlightIds]="filterMatches()"
+              [hops]="hops()"
+              [showLabels]="showLabels()"
+              [ariaLabel]="canvasLabel"
+              (nodeSelected)="onSelectNode($event)"
+            />
+          } @else if (buildMissing()) {
+            <ng-container *ngTemplateOutlet="buildCta" />
+          } @else {
+            <fpc-empty-state
+              class="flex-grow-1"
+              icon="diagram-3"
+              message="This graph has no nodes yet."
+              i18n-message="@@featureAgentGraphs-emptyGraph"
+            />
+          }
+        } @else if (documentLoading()) {
+          <fpc-empty-state
+            class="flex-grow-1"
+            [loading]="true"
+            message="Loading graph…"
+            i18n-message="@@featureAgentGraphs-loading"
+          />
+        } @else if (buildMissing()) {
+          <ng-container *ngTemplateOutlet="buildCta" />
+        } @else if (documentError()) {
+          <fpc-empty-state class="flex-grow-1" icon="exclamation-triangle" [message]="documentError()">
+            <fpc-button fpcEmptyStateActions variant="primary" (clicked)="onReload()" i18n="@@featureAgentGraphs-retry"
+              >Try again</fpc-button
+            >
+          </fpc-empty-state>
+        } @else if (scope() === 'environment' && agents().length === 0) {
+          <fpc-empty-state
+            class="flex-grow-1"
+            icon="cpu"
+            message="This workspace has no environments yet."
+            i18n-message="@@featureAgentGraphs-noEnvironments"
+          />
+        } @else {
+          <fpc-empty-state
+            class="flex-grow-1"
+            icon="diagram-3"
+            message="This graph has no nodes yet."
+            i18n-message="@@featureAgentGraphs-emptyGraph"
+          />
+        }
+      </section>
+
+      <!-- Details -->
+      @if (panelVisible()) {
+        <aside class="graphs-panel border-start" data-testid="agent-graphs-panel">
+          @if (showSearchResults()) {
+            @if (searchResult(); as result) {
+              <fpc-list-header class="graphs-panel__subheader" [title]="searchResultsLabel" />
+              @if (result.hits.length === 0) {
+                <p
+                  class="graphs-panel__section small text-body-secondary mb-0"
+                  i18n="@@featureAgentGraphs-noSearchHits"
+                >
+                  No nodes found.
+                </p>
+              } @else {
+                <fpc-list
+                  [flush]="true"
+                  role="listbox"
+                  [ariaLabel]="searchResultsLabel"
+                  data-testid="agent-graphs-search-hits"
+                >
+                  @for (hit of result.hits; track hit.environmentId + hit.node.id) {
+                    <fpc-list-item
+                      variant="condensed"
+                      role="option"
+                      [clickable]="true"
+                      [active]="selectedId() === hit.node.id"
+                      (selected)="onSelectSearchHit(hit.node.id)"
+                    >
+                      <span fpcListItemTitle class="d-flex align-items-center gap-2 min-w-0">
+                        <i
+                          class="bi bi-{{ typeIcon(hit.node.type) }}"
+                          [style.color]="typeColor(hit.node.type)"
+                          aria-hidden="true"
+                        ></i>
+                        <span class="text-truncate min-w-0">{{ nodeLabel(hit.node) }}</span>
+                      </span>
+                      <span fpcListItemMeta class="graphs-panel__meta"
+                        ><span class="graphs-panel__meta-text">{{
+                          hit.node.path || typeLabel(hit.node.type)
+                        }}</span></span
+                      >
+                    </fpc-list-item>
+                  }
+                </fpc-list>
+              }
+            }
+          }
+
+          @if (selectedId(); as id) {
+            <!-- Header: the node (name, type, state), fixed while the details below scroll. -->
+            <fpc-object-header
+              #nodeHeader
+              class="graphs-panel__header"
+              density="compact"
+              [title]="selectedNode()?.label ?? id"
+              data-testid="agent-graphs-node-header"
+            >
+              @if (selectedNode()?.attrs?.['missing']) {
+                <fpc-badge
+                  fpcObjectHeaderBadges
+                  tone="warning"
+                  size="sm"
+                  [title]="missingHint"
+                  data-testid="agent-graphs-missing"
+                  i18n="@@featureAgentGraphs-missing"
+                  >No longer exists</fpc-badge
+                >
+              }
+              @if (selectedNode(); as node) {
+                <span fpcObjectHeaderMeta class="d-inline-flex align-items-center gap-1">
+                  <span
+                    class="graphs-types__swatch"
+                    [style.background]="typeColor(node.type)"
+                    aria-hidden="true"
+                  ></span>
+                  {{ typeLabel(node.type) }}
+                </span>
+              }
+              @if (canExpandNeighbors()) {
+                <fpc-button
+                  fpcObjectHeaderActions
+                  variant="link"
+                  size="sm"
+                  iconOnly
+                  [ariaLabel]="expandNeighborsTitle"
+                  [title]="expandNeighborsTitle"
+                  [loading]="neighborsLoading()"
+                  [disabled]="neighborsLoading()"
+                  (clicked)="onExpandNeighbors()"
+                  data-testid="agent-graphs-expand"
+                >
+                  <i class="bi bi-node-plus" aria-hidden="true"></i>
+                </fpc-button>
+              }
+              <!-- Same quiet close as the fpc-modal header. -->
+              <button
+                fpcObjectHeaderActions
+                type="button"
+                class="btn-close fpc-quiet-close"
+                [attr.aria-label]="clearSelectionTitle"
+                [title]="clearSelectionTitle"
+                (click)="onSelectNode(null)"
+                data-testid="agent-graphs-close"
+              ></button>
+            </fpc-object-header>
+
+            <div class="graphs-panel__detail" data-testid="agent-graphs-node-detail" aria-live="polite">
+              @if (hasDetailContent()) {
+                <section class="graphs-panel__section">
+                  @if (selectedNode()?.path; as path) {
+                    <div class="small">
+                      <span class="text-body-secondary" i18n="@@featureAgentGraphs-path">Path</span>
+                      <div class="text-break font-monospace">{{ path }}</div>
+                    </div>
+                  }
+                  @if (matchingDetail()?.absolutePath; as absolutePath) {
+                    <div class="small mt-2 d-flex align-items-start gap-1">
+                      <div class="flex-grow-1 min-w-0">
+                        <span class="text-body-secondary" i18n="@@featureAgentGraphs-absolutePath">Absolute path</span>
+                        <div class="text-break font-monospace">{{ absolutePath }}</div>
+                      </div>
+                      <fpc-button
+                        variant="link"
+                        size="sm"
+                        iconOnly
+                        [ariaLabel]="copyPathTitle"
+                        [title]="copyPathTitle"
+                        (clicked)="onCopyPath(absolutePath)"
+                      >
+                        <i class="bi bi-clipboard" aria-hidden="true"></i>
+                      </fpc-button>
+                    </div>
+                  }
+
+                  @if (selectedAttrs().length > 0) {
+                    <fpc-data-table
+                      class="graphs-panel__table"
+                      nested
+                      [searchable]="false"
+                      [showColumnChooser]="false"
+                      [ariaLabel]="attributesLabel"
+                      [columns]="attrColumns"
+                      [rows]="selectedAttrs()"
+                      [rowId]="attrRowId"
+                      persistKey="agenstra-graph-attributes"
+                      data-testid="agent-graphs-attributes"
+                    />
+                  }
+
+                  @if (nodeDetailLoading()) {
+                    <div class="mt-3"><fpc-spinner size="sm" /></div>
+                  } @else if (nodeDetailError()) {
+                    <p class="small text-danger mt-2 mb-0">{{ nodeDetailError() }}</p>
+                  }
+                </section>
+              }
+
+              @if (outgoingTotal() > 0) {
+                <div class="graphs-panel__stuck">
+                  <fpc-list-header
+                    [sticky]="false"
+                    [title]="outgoingLabel"
+                    data-testid="agent-graphs-outgoing-header"
+                  />
+                  <fpc-list-toolbar [filterable]="false">
+                    <fpc-search-field
+                      fpcListToolbarLead
+                      inputId="agentGraphsOutgoingSearch"
+                      name="agentGraphsOutgoingSearch"
+                      [bordered]="false"
+                      [placeholder]="relationSearchPlaceholder"
+                      [ariaLabel]="relationSearchPlaceholder + ': ' + outgoingLabel"
+                      [value]="outgoingQuery()"
+                      (valueChange)="outgoingQuery.set($event)"
+                      data-testid="agent-graphs-outgoing-search"
+                    />
+                  </fpc-list-toolbar>
+                </div>
+                <ng-container
+                  *ngTemplateOutlet="relationTable; context: { $implicit: outgoingRelations(), outgoing: true }"
+                />
+              }
+              @if (incomingTotal() > 0) {
+                <div class="graphs-panel__stuck">
+                  <fpc-list-header
+                    [sticky]="false"
+                    [title]="incomingLabel"
+                    data-testid="agent-graphs-incoming-header"
+                  />
+                  <fpc-list-toolbar [filterable]="false">
+                    <fpc-search-field
+                      fpcListToolbarLead
+                      inputId="agentGraphsIncomingSearch"
+                      name="agentGraphsIncomingSearch"
+                      [bordered]="false"
+                      [placeholder]="relationSearchPlaceholder"
+                      [ariaLabel]="relationSearchPlaceholder + ': ' + incomingLabel"
+                      [value]="incomingQuery()"
+                      (valueChange)="incomingQuery.set($event)"
+                      data-testid="agent-graphs-incoming-search"
+                    />
+                  </fpc-list-toolbar>
+                </div>
+                <ng-container
+                  *ngTemplateOutlet="relationTable; context: { $implicit: incomingRelations(), outgoing: false }"
+                />
+              }
+              @if (matchingDetail()?.truncated) {
+                <p
+                  class="graphs-panel__section small text-body-secondary mb-0"
+                  i18n="@@featureAgentGraphs-relationsTruncated"
+                >
+                  Only the first relations are listed.
+                </p>
+              }
+            </div>
+          }
+
+          <!-- Like every other subsection, Prompts only shows when there is something to list. -->
+          @if (showReferences() && prompts().length > 0) {
+            <div data-testid="agent-graphs-prompts">
+              <div class="graphs-panel__stuck">
+                <fpc-list-header [sticky]="false" [title]="promptsLabel" />
+                <fpc-list-toolbar [filterable]="false">
+                  <fpc-search-field
+                    fpcListToolbarLead
+                    inputId="agentGraphsPromptSearch"
+                    name="agentGraphsPromptSearch"
+                    [bordered]="false"
+                    [placeholder]="promptSearchPlaceholder"
+                    [ariaLabel]="promptSearchPlaceholder"
+                    [value]="promptQuery()"
+                    (valueChange)="promptQuery.set($event)"
+                    data-testid="agent-graphs-prompt-search"
+                  />
+                </fpc-list-toolbar>
+              </div>
+              @if (filteredPrompts().length === 0) {
+                <p class="graphs-panel__section small text-body-secondary mb-0" i18n="@@featureAgentGraphs-noMatches">
+                  No matches.
+                </p>
+              }
+              <fpc-list [flush]="true" role="listbox" [ariaLabel]="promptsLabel">
+                @for (prompt of filteredPrompts(); track prompt.id) {
+                  <fpc-list-item
+                    variant="condensed"
+                    role="option"
+                    [clickable]="true"
+                    [active]="selectedPromptId() === prompt.id"
+                    (selected)="onSelectPrompt(prompt.id)"
+                  >
+                    <span fpcListItemTitle class="d-flex align-items-center gap-2 min-w-0">
+                      <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+                      <span class="text-truncate min-w-0">{{ prompt.excerpt || formatDate(prompt.startedAt) }}</span>
+                    </span>
+                    <span fpcListItemMeta class="graphs-panel__meta">
+                      <span class="graphs-panel__meta-text">{{ formatDate(prompt.startedAt) }}</span>
+                      @for (kind of referenceKinds; track kind) {
+                        @if (referenceCount(kind, prompt.counts) > 0) {
+                          <fpc-badge tone="neutral" size="sm" [title]="kindLabel(kind)"
+                            >{{ kindLabel(kind) }} {{ referenceCount(kind, prompt.counts) }}</fpc-badge
+                          >
+                        }
+                      }
+                    </span>
+                  </fpc-list-item>
+                }
+              </fpc-list>
+
+              @if (selectedPromptId()) {
+                @if (selectedPrompt(); as prompt) {
+                  @for (group of promptReferenceGroups(); track group.kind) {
+                    <div class="graphs-panel__stuck">
+                      <fpc-list-header [sticky]="false" [title]="kindLabel(group.kind)" />
+                      <fpc-list-toolbar [filterable]="false">
+                        <fpc-search-field
+                          fpcListToolbarLead
+                          [inputId]="'agentGraphsReferenceSearch-' + group.kind"
+                          [name]="'agentGraphsReferenceSearch-' + group.kind"
+                          [bordered]="false"
+                          [placeholder]="referenceSearchPlaceholder"
+                          [ariaLabel]="referenceSearchPlaceholder + ': ' + kindLabel(group.kind)"
+                          [value]="group.query"
+                          (valueChange)="onReferenceQueryChange(group.kind, $event)"
+                        />
+                      </fpc-list-toolbar>
+                    </div>
+                    @if (group.items.length === 0) {
+                      <p
+                        class="graphs-panel__section small text-body-secondary mb-0"
+                        i18n="@@featureAgentGraphs-noMatches"
+                      >
+                        No matches.
+                      </p>
+                    }
+                    <fpc-list [flush]="true" [ariaLabel]="kindLabel(group.kind)">
+                      @for (reference of group.items; track reference.ref + reference.kind) {
+                        <fpc-list-item
+                          variant="condensed"
+                          [clickable]="referenceInDocument(reference)"
+                          [disabled]="!referenceInDocument(reference)"
+                          (selected)="onSelectReference(reference)"
+                        >
+                          <span fpcListItemTitle class="d-flex align-items-center gap-2 min-w-0">
+                            <i
+                              class="bi bi-{{ typeIcon(reference.type) }}"
+                              [style.color]="typeColor(reference.type)"
+                              aria-hidden="true"
+                            ></i>
+                            <span class="text-truncate min-w-0">{{ referenceLabel(reference) }}</span>
+                          </span>
+                          <span fpcListItemMeta class="graphs-panel__meta"
+                            ><span class="graphs-panel__meta-text">{{
+                              reference.path || typeLabel(reference.type)
+                            }}</span>
+                            @if (reference.tool && reference.type !== 'tool') {
+                              <fpc-badge tone="neutral" size="sm">{{ toolLabel(reference.tool) }}</fpc-badge>
+                            }
+                            @if (reference.count && reference.count > 1) {
+                              <fpc-badge tone="neutral" size="sm" [title]="timesLabel">{{ reference.count }}</fpc-badge>
+                            }
+                          </span>
+                        </fpc-list-item>
+                      }
+                    </fpc-list>
+                  } @empty {
+                    <p
+                      class="graphs-panel__section small text-body-secondary mb-0"
+                      i18n="@@featureAgentGraphs-noReferences"
+                    >
+                      This prompt has no recorded references.
+                    </p>
+                  }
+                } @else if (referencesLoading()) {
+                  <div class="graphs-panel__section"><fpc-spinner size="sm" /></div>
+                }
+              }
+            </div>
+          }
+        </aside>
+      }
+    </div>
+  }
+</div>
+
+<ng-template #buildCta>
+  <fpc-empty-state
+    class="flex-grow-1"
+    icon="diagram-3"
+    message="The graph of this environment has not been built yet."
+    i18n-message="@@featureAgentGraphs-missingMessage"
+  >
+    <fpc-button
+      fpcEmptyStateActions
+      variant="primary"
+      (clicked)="onRefresh()"
+      data-testid="agent-graphs-build"
+      i18n="@@featureAgentGraphs-buildGraph"
+      >Build graph</fpc-button
+    >
+  </fpc-empty-state>
+</ng-template>
+
+<ng-template #relationTable let-relations let-outgoing="outgoing">
+  <fpc-data-table
+    class="graphs-panel__relations"
+    nested
+    [showColumnChooser]="false"
+    [ariaLabel]="outgoing ? outgoingLabel : incomingLabel"
+    [columns]="relationColumns"
+    [rows]="relations"
+    [rowId]="relationRowId"
+    [searchable]="false"
+    [query]="outgoing ? outgoingQuery() : incomingQuery()"
+    paging="client"
+    [persistKey]="outgoing ? 'agenstra-graph-outgoing' : 'agenstra-graph-incoming'"
+    (rowActivate)="onSelectRelation($event)"
+    [attr.data-testid]="outgoing ? 'agent-graphs-outgoing' : 'agent-graphs-incoming'"
+  >
+    <ng-template fpcTableCell="node" let-row>
+      <span class="d-inline-flex align-items-center gap-2 min-width-0" [title]="row.path || row.label">
+        <i class="bi bi-{{ typeIcon(row.type) }}" [style.color]="typeColor(row.type)" aria-hidden="true"></i>
+        <span class="text-truncate">{{ row.label }}</span>
+      </span>
+    </ng-template>
+  </fpc-data-table>
+</ng-template>
+
+<fpc-modal
+  [(open)]="workspaceSwitchModalOpen"
+  i18n-title="@@featureAgentGraphs-switchWorkspaceModalTitle"
+  title="Switch workspace"
+  [scrollable]="true"
+  [bodyScroll]="false"
+>
+  @if (clients().length === 0 && !workspaceSwitchSearch().trim()) {
+    <fpc-empty-state size="sm" message="No workspaces yet" i18n-message="@@featureAgentGraphs-noWorkspaces">
+      <fpc-button
+        fpcEmptyStateActions
+        variant="primary"
+        i18n="@@featureAgentGraphs-goToSpaces"
+        (clicked)="goToSpaces($event)"
+        >Go to workspaces</fpc-button
+      >
+    </fpc-empty-state>
+  } @else {
+    <framework-workspace-switch-table
+      [clients]="clients()"
+      [currentId]="activeClientId()"
+      [(query)]="workspaceSwitchSearch"
+      [hasMore]="workspaceSwitchHasMore()"
+      [appendLoading]="workspaceSwitchAppendLoading()"
+      [appendError]="workspaceSwitchAppendError()"
+      (loadMore)="onLoadMoreWorkspaces()"
+      (selectWorkspace)="onSelectWorkspace($event)"
+    />
+  }
+</fpc-modal>

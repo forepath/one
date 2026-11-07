@@ -48,6 +48,11 @@ same agent token, forwarded to the controller as `agentTaskRequest`). See [Agent
 `agenstra_handoff_*` tools hand tasks over to other agents of the same workspace (`/api/agent-context/handoffs`,
 forwarded as `agentHandoffRequest`). See [Agent handoffs](../features/agent-handoffs.md).
 
+`agenstra_graph_*` tools read environment graphs: the structure (modules, files, symbols, imports, docs, instruction
+files), the path tree and the prompt reference history of the own environment and of every environment mounted below
+`/opt/workspace` (`/api/agent-context/graphs`, same agent token, answered by the manager itself). See
+[Environment graphs](../features/environment-graphs.md).
+
 ### Workspace mounts
 
 Every worker mounts the host's agent directories read-only at `/opt/workspace` (see

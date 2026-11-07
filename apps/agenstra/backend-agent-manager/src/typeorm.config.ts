@@ -4,6 +4,8 @@ import {
   AgentEntity,
   AgentDirectoryIndexEntity,
   AgentEnvironmentVariableEntity,
+  AgentGraphEntity,
+  AgentGraphPromptEntity,
   AgentMessageEntity,
   AgentMessageEventEntity,
   DeploymentConfigurationEntity,
@@ -44,6 +46,8 @@ export const typeormConfig: DataSourceOptions = {
   entities: [
     AgentEntity,
     AgentDirectoryIndexEntity,
+    AgentGraphEntity,
+    AgentGraphPromptEntity,
     AgentChatSessionEntity,
     AgentEgressEventEntity,
     AgentEnvironmentVariableEntity,

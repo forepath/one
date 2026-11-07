@@ -104,6 +104,7 @@ export {
 } from '@forepath/identity/frontend';
 
 export * from './lib/utils/ticket-automation-chat-run-mapper';
+export * from './lib/services/agent-graphs.service';
 export * from './lib/services/agent-tasks.service';
 export * from './lib/services/chat-plans.service';
 export * from './lib/services/agents.service';
@@ -121,6 +122,12 @@ export * from './lib/services/opencode-layer-files.service';
 export * from './lib/services/tickets.service';
 export * from './lib/services/vcs.service';
 export * from './lib/services/workspace-config.service';
+export * from './lib/state/agent-graphs/agent-graphs.actions';
+export * from './lib/state/agent-graphs/agent-graphs.effects';
+export * from './lib/state/agent-graphs/agent-graphs.facade';
+export * from './lib/state/agent-graphs/agent-graphs.reducer';
+export * from './lib/state/agent-graphs/agent-graphs.selectors';
+export * from './lib/state/agent-graphs/agent-graphs.types';
 export * from './lib/state/agent-tasks/agent-tasks.actions';
 export * from './lib/state/agent-tasks/agent-tasks.effects';
 export * from './lib/state/agent-tasks/agent-tasks.facade';

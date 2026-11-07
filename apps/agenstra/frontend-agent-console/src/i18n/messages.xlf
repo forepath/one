@@ -7381,6 +7381,678 @@
       <trans-unit id="featureChat-oidcIssuerPlaceholder" datatype="html">
         <source>https://idp.example.com/realms/agenstra</source>
       </trans-unit>
+      <trans-unit id="featureAgentConsole-graphsTitle" datatype="html">
+        <source>Graphs :: Agenstra</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-graphsTitle" datatype="html">
+        <source>Graphs</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-graphs" datatype="html">
+        <source>Graphs</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-title" datatype="html">
+        <source>Graphs</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-scopeLabel" datatype="html">
+        <source>Graph scope</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-environmentLabel" datatype="html">
+        <source>Environment</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-layerLabel" datatype="html">
+        <source>Layer</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-limitLabel" datatype="html">
+        <source>Nodes</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-refreshTitle" datatype="html">
+        <source>Rebuild graph</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-refreshSnapshotTitle" datatype="html">
+        <source>Refresh snapshot</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-reloadTitle" datatype="html">
+        <source>Reload</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-filterLabel" datatype="html">
+        <source>Find in graph</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-filterPlaceholder" datatype="html">
+        <source>Search nodes (Enter to focus)</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-hopsLabel" datatype="html">
+        <source>Neighborhood</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-zoomToFit" datatype="html">
+        <source>Zoom to fit</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeFilterLabel" datatype="html">
+        <source>Node types</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-canvasAriaLabel" datatype="html">
+        <source>Graph of the selected scope. Select nodes to see their details.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-copyPath" datatype="html">
+        <source>Copy absolute path</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-expandNeighbors" datatype="html">
+        <source>Expand neighbors</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-clearSelection" datatype="html">
+        <source>Clear selection</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-promptsLabel" datatype="html">
+        <source>Prompts</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-scopeEnvironment" datatype="html">
+        <source>Environment</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-scopeWorkspace" datatype="html">
+        <source>Workspace</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-scopeGlobal" datatype="html">
+        <source>Global</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-canvasLabel" datatype="html">
+        <source>Graph</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-legend" datatype="html">
+        <source>Legend</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-canvasKeyboardHint" datatype="html">
+        <source>Arrow keys pan, plus and minus zoom, 0 fits the graph, Escape clears the selection. Use the search and the details panel to pick nodes with the keyboard.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-arranging" datatype="html">
+        <source>Arranging graph…</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-noWorkspaces" datatype="html">
+        <source>No workspaces yet</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-goToSpaces" datatype="html">
+        <source>Go to workspaces</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-noWorkspaceSelected" datatype="html">
+        <source>No workspace selected yet</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-chooseWorkspace" datatype="html">
+        <source>Choose workspace...</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-switchWorkspaceModalTitle" datatype="html">
+        <source>Switch workspace</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-builtAt" datatype="html">
+        <source>Built <x id="INTERPOLATION" equiv-text="{{ formatDate(st.builtAt) }}"/></source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-fileCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ st.fileCount }}"/> files</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-truncatedBuild" datatype="html">
+        <source>Limits reached</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-rebuild" datatype="html">
+        <source>Rebuild</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-refreshSnapshot" datatype="html">
+        <source>Refresh snapshot</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-globalSummary" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ globalSummary().ready }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ globalSummary().workspaces }}"/> workspace snapshots ready</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-matchCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ filterMatches().length }}"/> matches</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-truncatedDocument" datatype="html">
+        <source>Showing <x id="INTERPOLATION" equiv-text="{{ doc.nodes.length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ doc.totalNodes }}"/> nodes</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-showAllTypes" datatype="html">
+        <source>Show all</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-emptyGraph" datatype="html">
+        <source>This graph has no nodes yet.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-loading" datatype="html">
+        <source>Loading graph…</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-retry" datatype="html">
+        <source>Try again</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-noEnvironments" datatype="html">
+        <source>This workspace has no environments yet.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-noSearchHits" datatype="html">
+        <source>No nodes found.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-path" datatype="html">
+        <source>Path</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-absolutePath" datatype="html">
+        <source>Absolute path</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attributes" datatype="html">
+        <source>Attributes</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relationsTruncated" datatype="html">
+        <source>Only the first relations are listed.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-noReferences" datatype="html">
+        <source>This prompt has no recorded references.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-missingMessage" datatype="html">
+        <source>The graph of this environment has not been built yet.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-buildGraph" datatype="html">
+        <source>Build graph</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-outgoing" datatype="html">
+        <source>Outgoing</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-incoming" datatype="html">
+        <source>Incoming</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeEnvironment" datatype="html">
+        <source>Environment</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeWorkspace" datatype="html">
+        <source>Workspace</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeModule" datatype="html">
+        <source>Module</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeFile" datatype="html">
+        <source>File</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeSymbol" datatype="html">
+        <source>Symbol</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typePackage" datatype="html">
+        <source>Package</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeDoc" datatype="html">
+        <source>Document</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeConcept" datatype="html">
+        <source>Concept</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeInstruction" datatype="html">
+        <source>Instruction</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeLanguage" datatype="html">
+        <source>Language</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeDirectory" datatype="html">
+        <source>Directory</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeMount" datatype="html">
+        <source>Mount</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typePrompt" datatype="html">
+        <source>Prompt</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeSession" datatype="html">
+        <source>Session</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeTicket" datatype="html">
+        <source>Ticket</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeKnowledge" datatype="html">
+        <source>Knowledge page</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeKnowledgeFolder" datatype="html">
+        <source>Knowledge folder</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typePlan" datatype="html">
+        <source>Plan</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeAttachment" datatype="html">
+        <source>Attachment</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeSkill" datatype="html">
+        <source>Skill</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeMcpServer" datatype="html">
+        <source>MCP server</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeCommand" datatype="html">
+        <source>Command</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeAgentProfile" datatype="html">
+        <source>Agent profile</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typePlugin" datatype="html">
+        <source>Plugin</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeTool" datatype="html">
+        <source>Tool</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-layerCode" datatype="html">
+        <source>Code</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-layerPaths" datatype="html">
+        <source>Paths</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-layerReferences" datatype="html">
+        <source>Prompt references</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-statusMissing" datatype="html">
+        <source>Not built</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-statusBuilding" datatype="html">
+        <source>Building</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-statusReady" datatype="html">
+        <source>Ready</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-statusStale" datatype="html">
+        <source>Outdated</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-statusFailed" datatype="html">
+        <source>Failed</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindAttached" datatype="html">
+        <source>Attached</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindAvailable" datatype="html">
+        <source>Available</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindUsed" datatype="html">
+        <source>Used</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindModified" datatype="html">
+        <source>Modified</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-columnAttribute" datatype="html">
+        <source>Attribute</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-columnNode" datatype="html">
+        <source>Node</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-columnRelation" datatype="html">
+        <source>Relation</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-columnValue" datatype="html">
+        <source>Value</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-layerAll" datatype="html">
+        <source>All</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-layerKnowledge" datatype="html">
+        <source>Knowledge</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-limitAll" datatype="html">
+        <source>All</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relationSearch" datatype="html">
+        <source>Filter relations</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-loadingMore" datatype="html">
+        <source>Loading <x id="INTERPOLATION" equiv-text="{{ doc.nodes.length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ doc.totalNodes }}"/> nodes</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-missing" datatype="html">
+        <source>No longer exists</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-missingHint" datatype="html">
+        <source>Prompts referenced this path, but it is no longer in the environment.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relContainsOut" datatype="html">
+        <source>Contains</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relContainsIn" datatype="html">
+        <source>Part of</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relImportsOut" datatype="html">
+        <source>Imports</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relImportsIn" datatype="html">
+        <source>Imported by</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relDependsOnOut" datatype="html">
+        <source>Depends on</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relDependsOnIn" datatype="html">
+        <source>Required by</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relDefinesOut" datatype="html">
+        <source>Defines</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relDefinesIn" datatype="html">
+        <source>Defined in</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relLinksToOut" datatype="html">
+        <source>Links to</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relLinksToIn" datatype="html">
+        <source>Linked from</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relDocumentsOut" datatype="html">
+        <source>Describes</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relDocumentsIn" datatype="html">
+        <source>Described in</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relWrittenInOut" datatype="html">
+        <source>Written in</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relWrittenInIn" datatype="html">
+        <source>Language of</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relMountedAtOut" datatype="html">
+        <source>Shared with other environments at</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relMountedAtIn" datatype="html">
+        <source>Shared folder of</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relAttachedOut" datatype="html">
+        <source>Given as context</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relAttachedIn" datatype="html">
+        <source>Given as context to</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relAvailableOut" datatype="html">
+        <source>Had available</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relAvailableIn" datatype="html">
+        <source>Available to</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relUsedOut" datatype="html">
+        <source>Used</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relUsedIn" datatype="html">
+        <source>Used by</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relModifiedOut" datatype="html">
+        <source>Changed</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relModifiedIn" datatype="html">
+        <source>Changed by</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relRelatesToOut" datatype="html">
+        <source>Related to</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relRelatesToIn" datatype="html">
+        <source>Related to</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relMemberOfOut" datatype="html">
+        <source>Member of</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relMemberOfIn" datatype="html">
+        <source>Has member</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relReferencesOut" datatype="html">
+        <source>Uses files of</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-relReferencesIn" datatype="html">
+        <source>Files used by</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrLanguage" datatype="html">
+        <source>Language</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrSize" datatype="html">
+        <source>Size</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrBytes" datatype="html">
+        <source>Size</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrKind" datatype="html">
+        <source>Kind</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrTitle" datatype="html">
+        <source>Title</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrManifest" datatype="html">
+        <source>Project file</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrEcosystems" datatype="html">
+        <source>Build system</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrFiles" datatype="html">
+        <source>Files</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrFilecount" datatype="html">
+        <source>Files</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrExported" datatype="html">
+        <source>Exported</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrLine" datatype="html">
+        <source>Line</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrLevel" datatype="html">
+        <source>Heading level</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrWorkingdirectory" datatype="html">
+        <source>Working directory</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrMountpath" datatype="html">
+        <source>Shared at</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrMountid" datatype="html">
+        <source>Shared folder</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrStatus" datatype="html">
+        <source>Status</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrRoot" datatype="html">
+        <source>Root folder</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrExcluded" datatype="html">
+        <source>Not indexed</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrReadonly" datatype="html">
+        <source>Read-only</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrOrigin" datatype="html">
+        <source>Started from</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrStartedat" datatype="html">
+        <source>Started</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrBuiltat" datatype="html">
+        <source>Graph built</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrPriority" datatype="html">
+        <source>Priority</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrCount" datatype="html">
+        <source>Times</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrEcosystem" datatype="html">
+        <source>Build system</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindClass" datatype="html">
+        <source>Class</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindInterface" datatype="html">
+        <source>Interface</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindType" datatype="html">
+        <source>Type</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindEnum" datatype="html">
+        <source>Enumeration</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindFunction" datatype="html">
+        <source>Function</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindConst" datatype="html">
+        <source>Constant</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindStruct" datatype="html">
+        <source>Structure</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindTrait" datatype="html">
+        <source>Trait</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindModule" datatype="html">
+        <source>Module</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindComponent" datatype="html">
+        <source>Component</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindInstructions" datatype="html">
+        <source>Instructions</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindRule" datatype="html">
+        <source>Rule</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindSkill" datatype="html">
+        <source>Skill</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-kindCommand" datatype="html">
+        <source>Command</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemNpm" datatype="html">
+        <source>npm package</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemNx" datatype="html">
+        <source>Nx project</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemGo" datatype="html">
+        <source>Go module</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemCargo" datatype="html">
+        <source>Rust crate</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemPython" datatype="html">
+        <source>Python package</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemComposer" datatype="html">
+        <source>PHP package</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemRuby" datatype="html">
+        <source>Ruby gem</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemMaven" datatype="html">
+        <source>Maven project</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemGradle" datatype="html">
+        <source>Gradle project</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemDotnet" datatype="html">
+        <source>.NET project</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemDart" datatype="html">
+        <source>Dart package</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemElixir" datatype="html">
+        <source>Elixir project</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-ecosystemTsconfig" datatype="html">
+        <source>TypeScript configuration</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-originChat" datatype="html">
+        <source>Chat</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-originHidden" datatype="html">
+        <source>Background run (task, handoff, plan)</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-originEphemeral" datatype="html">
+        <source>One-off prompt</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-yes" datatype="html">
+        <source>Yes</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-no" datatype="html">
+        <source>No</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolRead" datatype="html">
+        <source>Read file</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolView" datatype="html">
+        <source>Read file</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolWrite" datatype="html">
+        <source>Write file</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolEdit" datatype="html">
+        <source>Edit file</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolMultiedit" datatype="html">
+        <source>Edit file</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolPatch" datatype="html">
+        <source>Apply changes</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolApplyPatch" datatype="html">
+        <source>Apply changes</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolGrep" datatype="html">
+        <source>Search file contents</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolGlob" datatype="html">
+        <source>Find files</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolList" datatype="html">
+        <source>List folder</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolLs" datatype="html">
+        <source>List folder</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolBash" datatype="html">
+        <source>Run command</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolTask" datatype="html">
+        <source>Delegate to an agent</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolSkill" datatype="html">
+        <source>Use skill</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolWebfetch" datatype="html">
+        <source>Fetch web page</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-toolTodowrite" datatype="html">
+        <source>Update to-dos</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeInstance" datatype="html">
+        <source>Platform</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-allWorkspaces" datatype="html">
+        <source>All workspaces</source>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayGraphEnvironments" datatype="html">
+        <source>List environment graphs</source>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayGraphOverview" datatype="html">
+        <source>Read graph overview</source>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayGraphSearch" datatype="html">
+        <source>Search graph</source>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayGraphNode" datatype="html">
+        <source>Read graph node</source>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayGraphNeighbors" datatype="html">
+        <source>Read graph neighbors</source>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayGraphPath" datatype="html">
+        <source>Find graph connection</source>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayGraphFile" datatype="html">
+        <source>Read file in graph</source>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayGraphReferences" datatype="html">
+        <source>Read prompt references</source>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayGraphRefresh" datatype="html">
+        <source>Rebuild graph</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-searchResults" datatype="html">
+        <source>Search results</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-times" datatype="html">
+        <source>Times</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-promptSearch" datatype="html">
+        <source>Filter prompts</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-referenceSearch" datatype="html">
+        <source>Filter references</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-noMatches" datatype="html">
+        <source>No matches.</source>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-labelsLabel" datatype="html">
+        <source>Labels</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -35,6 +35,8 @@ describe('AGENSTRA_PAT_SCOPES', () => {
       'knowledge:write',
       'attachments:read',
       'attachments:write',
+      'graph:read',
+      'graph:write',
       'imports:admin',
       'statistics:read',
       'websocket:clients:read',

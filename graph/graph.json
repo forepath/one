@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-07T14:54:55.965Z",
+  "generatedAt": "2026-11-07T19:29:32.122Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -4037,6 +4037,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-graphs.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-graphs.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-tasks.service.ts",
       "type": "service",
       "attrs": {
@@ -4205,6 +4214,24 @@
         "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-search.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-frontend-data-access-agent-console"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agent-graphs",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agent-graphs",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "agent-graphs",
+        "memberFiles": [
+          "agent-graphs.actions.ts",
+          "agent-graphs.effects.ts",
+          "agent-graphs.facade.ts",
+          "agent-graphs.reducer.ts",
+          "agent-graphs.selectors.ts",
+          "agent-graphs.types.ts"
+        ]
       }
     },
     {
@@ -5076,6 +5103,15 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-deployments.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6089,6 +6125,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/workspace-graph-snapshot.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/workspace-graph-snapshot.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
       "type": "gateway",
       "attrs": {
@@ -6300,6 +6345,15 @@
       "type": "repository",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/user-environment-read-state.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/workspace-graph-snapshots.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/workspace-graph-snapshots.repository.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6579,6 +6633,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-file-system-proxy.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-graph-proxy.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-graph-proxy.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6921,6 +6984,33 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-change-notifier.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-change-notifier.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-view.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-view.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -11179,6 +11269,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph-context.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph-context.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-handoffs.controller.ts",
       "type": "controller",
       "attrs": {
@@ -11336,6 +11444,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-egress.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-graph.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-graph.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -11737,6 +11854,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-graph-prompt.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-graph-prompt.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-graph.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-graph.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-message-event.entity.ts",
       "type": "entity",
       "attrs": {
@@ -11917,6 +12052,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-graph-prompts.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-graph-prompts.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-graphs.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-graphs.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-message-events.repository.ts",
       "type": "repository",
       "attrs": {
@@ -12092,6 +12245,42 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-git-state-broadcast.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-access.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-access.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-collector.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-collector.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-references.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-references.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -15008,6 +15197,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/agenstra/features/email-notifications.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/agenstra/features/environment-graphs.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/environment-graphs.md",
         "languageOrKind": "md"
       }
     },
@@ -19128,6 +19325,171 @@
         "pathOrChannel": "/clients/{clientId}/agents/{agentId}/opencode/mcp/{name}/oauth/callback",
         "operationId": "publicClientAgentOpencodeMcpOAuthCallback",
         "summary": "Public MCP OAuth redirect callback (no /api prefix)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/status",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/graph/status",
+        "operationId": "getClientAgentGraphStatus",
+        "summary": "Environment graph build status (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/overview",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/graph/overview",
+        "operationId": "getClientAgentGraphOverview",
+        "summary": "Environment graph overview (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/graph",
+        "operationId": "getClientAgentGraph",
+        "summary": "Environment graph document of one layer (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/search",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/graph/search",
+        "operationId": "searchClientAgentGraph",
+        "summary": "Search an environment graph (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/nodes",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/graph/nodes",
+        "operationId": "getClientAgentGraphNode",
+        "summary": "Graph node with its relations (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/neighbors",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/graph/neighbors",
+        "operationId": "getClientAgentGraphNeighbors",
+        "summary": "Neighborhood of a graph node (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/path",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/graph/path",
+        "operationId": "getClientAgentGraphPath",
+        "summary": "Shortest path between two graph nodes (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/file",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/graph/file",
+        "operationId": "getClientAgentGraphFile",
+        "summary": "Graph view of one file (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/references",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/graph/references",
+        "operationId": "getClientAgentGraphReferences",
+        "summary": "Prompt reference graph (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/graph/refresh",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/graph/refresh",
+        "operationId": "refreshClientAgentGraph",
+        "summary": "Rebuild an environment graph (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/graph",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/graph",
+        "operationId": "getClientWorkspaceGraph",
+        "summary": "Workspace graph per layer",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/graph/snapshot",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/graph/snapshot",
+        "operationId": "getClientWorkspaceGraphSnapshot",
+        "summary": "Workspace metadata graph snapshot",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/graph/snapshot/refresh",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/graph/snapshot/refresh",
+        "operationId": "refreshClientWorkspaceGraphSnapshot",
+        "summary": "Rebuild the workspace metadata graph snapshot now",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/graph/global",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/graph/global",
+        "operationId": "getGlobalGraph",
+        "summary": "Global graph over every accessible workspace, per layer",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/graph/global/status",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/graph/global/status",
+        "operationId": "getGlobalGraphStatus",
+        "summary": "Snapshot status of every accessible workspace",
         "specKind": "openapi"
       }
     },
@@ -25116,6 +25478,248 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/agents/{agentId}/graph",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{agentId}/graph",
+        "operationId": "getAgentGraph",
+        "summary": "Environment graph document (bounded slice, highest degree first)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{agentId}/graph/status",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{agentId}/graph/status",
+        "operationId": "getAgentGraphStatus",
+        "summary": "Environment graph build status",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{agentId}/graph/overview",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{agentId}/graph/overview",
+        "operationId": "getAgentGraphOverview",
+        "summary": "Modules, hubs, communities, instruction files and recent prompts (builds lazily)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{agentId}/graph/digest",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{agentId}/graph/digest",
+        "operationId": "getAgentGraphDigest",
+        "summary": "Compact summary for the controller workspace snapshot",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{agentId}/graph/search",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{agentId}/graph/search",
+        "operationId": "searchAgentGraph",
+        "summary": "Search nodes by name or path",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{agentId}/graph/nodes",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{agentId}/graph/nodes",
+        "operationId": "getAgentGraphNode",
+        "summary": "One node with its relations",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{agentId}/graph/neighbors",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{agentId}/graph/neighbors",
+        "operationId": "getAgentGraphNeighbors",
+        "summary": "Neighbourhood of a node",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{agentId}/graph/path",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{agentId}/graph/path",
+        "operationId": "getAgentGraphPath",
+        "summary": "Shortest path between two nodes",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{agentId}/graph/file",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{agentId}/graph/file",
+        "operationId": "getAgentGraphFile",
+        "summary": "Structure and prompts around one file",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{agentId}/graph/references",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{agentId}/graph/references",
+        "operationId": "getAgentGraphReferences",
+        "summary": "Prompt reference records (latest first) and optionally one prompt in detail",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agents/{agentId}/graph/refresh",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agents/{agentId}/graph/refresh",
+        "operationId": "refreshAgentGraph",
+        "summary": "Queue a rebuild of the environment graph",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/graphs/compose",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/graphs/compose",
+        "operationId": "composeAgentGraph",
+        "summary": "Compose a workspace graph from controller-verified environments",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/graphs/environments",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/graphs/environments",
+        "operationId": "listAgentContextGraphEnvironments",
+        "summary": "Environments whose graphs the calling agent can read",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/graphs/overview",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/graphs/overview",
+        "operationId": "getAgentContextGraphOverview",
+        "summary": "Overview of a reachable environment",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/graphs/document",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/graphs/document",
+        "operationId": "getAgentContextGraphDocument",
+        "summary": "Bounded graph document of a reachable environment",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/graphs/search",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/graphs/search",
+        "operationId": "searchAgentContextGraph",
+        "summary": "Search one or all (`environment=*`) reachable environments",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/graphs/nodes",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/graphs/nodes",
+        "operationId": "getAgentContextGraphNode",
+        "summary": "One node with relations",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/graphs/neighbors",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/graphs/neighbors",
+        "operationId": "getAgentContextGraphNeighbors",
+        "summary": "Neighbourhood of a node",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/graphs/path",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/graphs/path",
+        "operationId": "getAgentContextGraphPath",
+        "summary": "Shortest path between two nodes",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/graphs/file",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/graphs/file",
+        "operationId": "getAgentContextGraphFile",
+        "summary": "Structure and prompts around one file (absolute or relative path)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/graphs/references",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/graphs/references",
+        "operationId": "getAgentContextGraphReferences",
+        "summary": "Prompt references of the own environment or a workspace peer",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agent-context/graphs/refresh",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agent-context/graphs/refresh",
+        "operationId": "refreshAgentContextGraph",
+        "summary": "Rebuild the calling agent's own graph",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "webhook-event:shared-backend-util-opensearch:search.document.sync_failed",
       "type": "webhook-event",
       "attrs": {
@@ -28725,6 +29329,56 @@
         "title": "Events",
         "docPath": "docs/agenstra/features/email-notifications.md",
         "sectionAnchor": "events",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-environment-graphs",
+      "type": "concept",
+      "attrs": {
+        "title": "Environment graphs",
+        "docPath": "docs/agenstra/features/environment-graphs.md",
+        "sectionAnchor": "environment-graphs",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-building-environment-graphs",
+      "type": "concept",
+      "attrs": {
+        "title": "Building environment graphs",
+        "docPath": "docs/agenstra/features/environment-graphs.md",
+        "sectionAnchor": "building-environment-graphs",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-layers-and-paging",
+      "type": "concept",
+      "attrs": {
+        "title": "Layers and paging",
+        "docPath": "docs/agenstra/features/environment-graphs.md",
+        "sectionAnchor": "layers-and-paging",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-console",
+      "type": "concept",
+      "attrs": {
+        "title": "Console",
+        "docPath": "docs/agenstra/features/environment-graphs.md",
+        "sectionAnchor": "console",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-agent-tools-agenstra-graph",
+      "type": "concept",
+      "attrs": {
+        "title": "Agent tools (`agenstra_graph_*`)",
+        "docPath": "docs/agenstra/features/environment-graphs.md",
+        "sectionAnchor": "agent-tools-agenstra-graph",
         "domain": "agenstra"
       }
     },
@@ -40137,6 +40791,11 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-graphs.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-tasks.service.ts",
       "type": "contains"
     },
@@ -40228,6 +40887,11 @@
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-search.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agent-graphs",
       "type": "contains"
     },
     {
@@ -40583,6 +41247,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-deployments.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
       "type": "contains"
     },
     {
@@ -41147,6 +41816,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/workspace-graph-snapshot.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
       "type": "contains"
     },
@@ -41263,6 +41937,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/user-environment-read-state.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/workspace-graph-snapshots.repository.ts",
       "type": "contains"
     },
     {
@@ -41418,6 +42097,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-file-system-proxy.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-graph-proxy.service.ts",
       "type": "contains"
     },
     {
@@ -41608,6 +42292,21 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-change-notifier.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-view.service.ts",
       "type": "contains"
     },
     {
@@ -43957,6 +44656,16 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph-context.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-handoffs.controller.ts",
       "type": "contains"
     },
@@ -44043,6 +44752,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-egress.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-graph.dto.ts",
       "type": "contains"
     },
     {
@@ -44267,6 +44981,16 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-graph-prompt.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-graph.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-message-event.entity.ts",
       "type": "contains"
     },
@@ -44367,6 +45091,16 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-graph-prompts.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-graphs.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-message-events.repository.ts",
       "type": "contains"
     },
@@ -44463,6 +45197,26 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-git-state-broadcast.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-access.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-collector.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-references.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
       "type": "contains"
     },
     {
@@ -47313,6 +48067,81 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/opencode/mcp/{name}/oauth/callback",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/status",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/search",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/nodes",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/neighbors",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/path",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/file",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/references",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/graph/refresh",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/graph",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/graph/snapshot",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/graph/snapshot/refresh",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/graph/global",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/graph/global/status",
       "type": "contains"
     },
     {
@@ -50486,6 +51315,116 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/status",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/digest",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/search",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/nodes",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/neighbors",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/path",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/file",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/references",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agents/{agentId}/graph/refresh",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/graphs/compose",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/graphs/environments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/graphs/overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/graphs/document",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/graphs/search",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/graphs/nodes",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/graphs/neighbors",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/graphs/path",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/graphs/file",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/graphs/references",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agent-context/graphs/refresh",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-backend-util-opensearch",
       "to": "webhook-event:shared-backend-util-opensearch:search.document.sync_failed",
       "type": "contains"
@@ -53003,6 +53942,36 @@
     {
       "from": "file:docs/agenstra/features/email-notifications.md",
       "to": "concept:agenstra-events",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/environment-graphs.md",
+      "to": "concept:agenstra-environment-graphs",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/environment-graphs.md",
+      "to": "concept:agenstra-building-environment-graphs",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/environment-graphs.md",
+      "to": "concept:agenstra-layers-and-paging",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/environment-graphs.md",
+      "to": "concept:agenstra-console",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/environment-graphs.md",
+      "to": "concept:agenstra-agent-tools-agenstra-graph",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/environment-graphs.md",
+      "to": "concept:agenstra-security",
       "type": "contains"
     },
     {
@@ -59456,6 +60425,136 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/status",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/status",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/overview",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/overview",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/search",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/search",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/nodes",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/nodes",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/neighbors",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/neighbors",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/path",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/path",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/file",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/file",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/references",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/graph/references",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/graph/refresh",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/graph/refresh",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/graph",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/graph",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/graph/snapshot",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/graph/snapshot",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/graph/snapshot/refresh",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/graph/snapshot/refresh",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
       "to": "api:HTTP:GET:/imports/atlassian/connections",
       "type": "implements"
@@ -63871,6 +64970,16 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph.controller.ts",
+      "to": "api:HTTP:POST:/graphs/compose",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:POST:/graphs/compose",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
       "to": "api:HTTP:GET:/agents",
       "type": "implements"
@@ -64641,6 +65750,116 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/status",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/status",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/overview",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/overview",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/digest",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/digest",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/search",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/search",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/nodes",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/nodes",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/neighbors",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/neighbors",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/path",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/path",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/file",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/file",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/references",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/references",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/graph/refresh",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:POST:/agents/{agentId}/graph/refresh",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
       "to": "api:HTTP:GET:/agents",
       "type": "implements"
@@ -65026,6 +66245,61 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/status",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/overview",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/digest",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/search",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/nodes",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/neighbors",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/path",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/file",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/references",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/graph/refresh",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "to": "api:HTTP:GET:/agents",
       "type": "implements"
@@ -65408,6 +66682,61 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "to": "api:HTTP:POST:/agents/{agentId}/vnc/sessions",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/status",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/overview",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/digest",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/search",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/nodes",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/neighbors",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/path",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/file",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/graph/references",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/graph/refresh",
       "type": "implements"
     },
     {
@@ -66521,6 +67850,36 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-graph-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-view.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-vcs.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-vcs-proxy.service.ts",
       "type": "injects"
@@ -67221,6 +68580,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-realtime.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-change-notifier.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "injects"
@@ -67296,6 +68660,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-graph-proxy.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-graph-proxy.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-messages-proxy.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
       "type": "injects"
@@ -67338,6 +68712,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-membership.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-change-notifier.service.ts",
       "type": "injects"
     },
     {
@@ -67468,6 +68847,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/external-import-config.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-board-realtime.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-change-notifier.service.ts",
       "type": "injects"
     },
     {
@@ -67731,6 +69115,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/ticket-board-realtime.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-change-notifier.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "injects"
@@ -67773,6 +69162,46 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/workspace-graph-snapshots.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-graph-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-change-notifier.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-view.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-view.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-graph-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-view.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "injects"
     },
     {
@@ -71416,6 +72845,46 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph-context.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph-context.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-access.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph-context.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph-context.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-references.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-references.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-collector.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-handoffs.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
       "type": "injects"
@@ -71641,6 +73110,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-references.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "type": "injects"
@@ -71693,6 +73167,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-references.service.ts",
       "type": "injects"
     },
     {
@@ -71863,6 +73342,71 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-file-system.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-directory-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-access.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-access.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-access.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-handoffs-api.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-access.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-access.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-collector.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-collector.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-references.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-graph-prompts.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-references.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-graphs.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-graphs.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-collector.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-references.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
       "type": "injects"
     },
     {
@@ -72702,6 +74246,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
       "type": "provides"
     },
@@ -72953,6 +74502,31 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-opencode-config-proxy.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-graph-proxy.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/workspace-graph-snapshots.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-change-notifier.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-snapshot.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/workspace-graph-view.service.ts",
       "type": "provides"
     },
     {
@@ -74652,6 +76226,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-graph-context.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-egress.controller.ts",
       "type": "provides"
     },
@@ -74758,6 +76342,36 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-workspace-mounts.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-collector.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-references.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-graph-access.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-graphs.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-graph-prompts.repository.ts",
       "type": "provides"
     },
     {
@@ -76041,6 +77655,26 @@
       "type": "calls"
     },
     {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-graphs.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/graph",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-graphs.service.ts",
+      "to": "api:HTTP:POST:/clients/{id}/graph/snapshot/refresh",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-graphs.service.ts",
+      "to": "api:HTTP:GET:/graph/global",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-graphs.service.ts",
+      "to": "api:HTTP:GET:/graph/global/status",
+      "type": "calls"
+    },
+    {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-tasks.service.ts",
       "to": "api:HTTP:GET:/clients/{clientId}/agent-tasks",
       "type": "calls"
@@ -77168,6 +78802,11 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/subscriptions",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/subscriptions.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agent-graphs",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-graphs.service.ts",
       "type": "contains"
     },
     {
@@ -79668,6 +81307,26 @@
     {
       "from": "concept:agenstra-events",
       "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/plans/{planId}/cancel",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-building-environment-graphs",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-building-environment-graphs",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-building-environment-graphs",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-building-environment-graphs",
+      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -86156,6 +87815,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/environment-graphs.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/features/file-attachments.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -88422,6 +90086,31 @@
     },
     {
       "from": "concept:agenstra-events",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-environment-graphs",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-building-environment-graphs",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-layers-and-paging",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-console",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-agent-tools-agenstra-graph",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

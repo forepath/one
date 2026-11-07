@@ -1,3 +1,4 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
@@ -115,5 +116,29 @@ describe('FpcObjectHeaderComponent', () => {
     expect(more.getAttribute('aria-expanded')).toBe('true');
     expect(menuId).toBeTruthy();
     expect(host.querySelector('[role="menu"]')?.id).toBe(menuId);
+  });
+
+  it('renders the meta slot under the name inside the head block', () => {
+    @Component({
+      standalone: true,
+      imports: [FpcObjectHeaderComponent],
+      template: `<fpc-object-header title="web-1"
+        ><span fpcObjectHeaderMeta class="kind">Virtual machine</span></fpc-object-header
+      >`,
+    })
+    class MetaHostComponent {}
+
+    const metaFixture = TestBed.createComponent(MetaHostComponent);
+
+    metaFixture.detectChanges();
+
+    const meta = (metaFixture.nativeElement as HTMLElement).querySelector(
+      '.fpc-object-header__head > .fpc-object-header__meta',
+    );
+
+    expect(meta?.querySelector('.kind')?.textContent).toBe('Virtual machine');
+    // Without meta content the line is empty (hidden by CSS).
+    fixture.detectChanges();
+    expect(host.querySelector('.fpc-object-header__meta')?.children).toHaveLength(0);
   });
 });

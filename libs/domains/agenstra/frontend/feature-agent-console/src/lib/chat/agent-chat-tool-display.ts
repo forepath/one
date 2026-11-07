@@ -264,6 +264,61 @@ export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined):
         label: $localize`:@@featureChat-toolDisplayHandoffRespond:Answer handoff`,
         icon: 'reply',
       };
+    // Platform graph tools (`agenstra_graph_*`): structure, paths and prompt references of environments.
+    case 'agenstra_graph_environments':
+    case 'graph_environments':
+      return {
+        label: $localize`:@@featureChat-toolDisplayGraphEnvironments:List environment graphs`,
+        icon: 'diagram-3',
+      };
+    case 'agenstra_graph_overview':
+    case 'graph_overview':
+      return {
+        label: $localize`:@@featureChat-toolDisplayGraphOverview:Read graph overview`,
+        icon: 'diagram-3',
+      };
+    case 'agenstra_graph_search':
+    case 'graph_search':
+      return {
+        label: $localize`:@@featureChat-toolDisplayGraphSearch:Search graph`,
+        icon: 'search',
+      };
+    case 'agenstra_graph_node':
+    case 'graph_node':
+      return {
+        label: $localize`:@@featureChat-toolDisplayGraphNode:Read graph node`,
+        icon: 'bullseye',
+      };
+    case 'agenstra_graph_neighbors':
+    case 'graph_neighbors':
+      return {
+        label: $localize`:@@featureChat-toolDisplayGraphNeighbors:Read graph neighbors`,
+        icon: 'share',
+      };
+    case 'agenstra_graph_path':
+    case 'graph_path':
+      return {
+        label: $localize`:@@featureChat-toolDisplayGraphPath:Find graph connection`,
+        icon: 'signpost-split',
+      };
+    case 'agenstra_graph_file':
+    case 'graph_file':
+      return {
+        label: $localize`:@@featureChat-toolDisplayGraphFile:Read file in graph`,
+        icon: 'file-earmark-code',
+      };
+    case 'agenstra_graph_references':
+    case 'graph_references':
+      return {
+        label: $localize`:@@featureChat-toolDisplayGraphReferences:Read prompt references`,
+        icon: 'chat-left-quote',
+      };
+    case 'agenstra_graph_refresh':
+    case 'graph_refresh':
+      return {
+        label: $localize`:@@featureChat-toolDisplayGraphRefresh:Rebuild graph`,
+        icon: 'arrow-repeat',
+      };
     default:
       if (!name) {
         return {

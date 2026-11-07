@@ -1,0 +1,291 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.section__content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.graphs-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 1rem;
+}
+
+.graphs-toolbar__field {
+  min-width: 10rem;
+  max-width: 16rem;
+  // Inline toolbar fields: no stacked-form spacing (keeps the selects aligned with the scope buttons).
+  margin-bottom: 0;
+}
+
+.graphs-toolbar__field--narrow {
+  min-width: 6rem;
+}
+
+// Checkbox in the toolbar: as tall as the small selects, so it lines up with them on the bottom edge.
+.graphs-toolbar__check {
+  display: flex;
+  align-items: center;
+  min-height: calc(1.5em + 0.5rem + 2 * var(--bs-border-width));
+
+  ::ng-deep .form-check {
+    margin-bottom: 0;
+  }
+}
+
+.graphs-toolbar__switch {
+  align-self: center;
+}
+
+.graphs-toolbar__status {
+  margin-left: auto;
+  min-height: 2rem;
+}
+
+.graphs-toolbar__error {
+  max-width: 20rem;
+}
+
+.graphs-body {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.graphs-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.graphs-canvas {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.graphs-filters {
+  flex-shrink: 0;
+}
+
+.graphs-filters__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.graphs-types {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  max-height: 5.5rem;
+  overflow-y: auto;
+  padding: 0.375rem 1rem;
+}
+
+.graphs-types__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-pill);
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+
+  &:hover {
+    border-color: var(--bs-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 1px;
+  }
+}
+
+.graphs-types__chip--off {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.graphs-types__count {
+  color: var(--bs-secondary-color);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+// Quiet reset next to the chips (only shown while types are hidden): small muted text, no link styling.
+.graphs-types__reset {
+  padding: 0.125rem 0.25rem;
+  border: 0;
+  background: none;
+  color: var(--bs-secondary-color);
+  font-size: 0.75rem;
+  line-height: 1.4;
+
+  &:hover {
+    color: var(--bs-body-color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-focus-ring-color, rgba(13, 110, 253, 0.25));
+    outline-offset: 1px;
+    border-radius: var(--bs-border-radius-sm);
+  }
+}
+
+.graphs-types__swatch {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+}
+
+.graphs-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 22rem;
+  max-width: 40%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// The panel is the scroll container: its blocks (lists, tables, sections) and list rows keep their natural height.
+// Without this, long lists (e.g. many search results) are squeezed into the panel height and rows overlap.
+.graphs-panel > *,
+.graphs-panel > * > *,
+.graphs-panel fpc-list,
+.graphs-panel fpc-list-item {
+  flex-shrink: 0;
+}
+
+.graphs-panel__section {
+  padding: 0.75rem 1rem;
+  // Tables bleed over the section padding to the panel edges (same as tables in modal bodies).
+  --fpc-flush-bleed: 1rem;
+
+  & + & {
+    border-top: 1px solid var(--bs-border-color);
+  }
+}
+
+.graphs-panel__table {
+  margin-top: 0.5rem;
+  // The attributes table follows the path block (no list header above it to draw the line).
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.graphs-panel__detail + .graphs-panel__section {
+  border-top: 1px solid var(--bs-border-color);
+}
+
+// The selected node's header stays at the top of the scrolling panel (above the sticky-local list headers).
+.graphs-panel__header {
+  position: sticky;
+  top: 0;
+  z-index: calc(var(--fpc-z-sticky-local, 2) + 1);
+  flex-shrink: 0;
+
+  // The panel is narrow: keep name and actions (expand, close) on one row, the name truncates instead of pushing the
+  // actions onto a second line.
+  ::ng-deep .fpc-object-header__row {
+    flex-wrap: nowrap;
+  }
+
+  ::ng-deep .fpc-object-header__titles {
+    flex: 1 1 0;
+  }
+}
+
+// Subheaders stick right under the pinned node header (its height: `--graphs-panel-header-height`, measured by the
+// page) together with their search strip, and stay below the node header in the stacking order.
+.graphs-panel .graphs-panel__subheader.fpc-list-header--sticky,
+.graphs-panel__stuck {
+  top: var(--graphs-panel-header-height, 0px);
+}
+
+.graphs-panel__stuck {
+  position: sticky;
+  z-index: var(--fpc-z-sticky-local, 2);
+  background-color: var(--bs-body-bg);
+}
+
+// A section ending in a full-width table needs no bottom padding: the next subheader sits right under the table.
+.graphs-panel__section:has(> fpc-data-table:last-child) {
+  padding-bottom: 0;
+}
+
+// A section starting with the table (no path block above it) starts flush under the node header, whose bottom border
+// already draws the line above the table.
+.graphs-panel__section:has(> fpc-data-table:first-child) {
+  padding-top: 0;
+
+  > fpc-data-table:first-child {
+    margin-top: 0;
+    border-top: 0;
+  }
+}
+
+// Relation tables sit directly under their list header, edge to edge (no section padding around them).
+.graphs-panel__relations {
+  flex-shrink: 0;
+}
+
+// Phones: the details panel goes below the graph.
+@media (max-width: 767.98px) {
+  .graphs-body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .graphs-main {
+    flex: 0 0 60vh;
+  }
+
+  .graphs-panel {
+    flex: 0 0 auto;
+    max-width: none;
+    border-left: 0 !important;
+    border-top: 1px solid var(--bs-border-color);
+  }
+}
+
+// Meta line of a list row: date / path first (truncates), then small badges (counts, tool, repetitions) that wrap
+// only when the panel is too narrow. Keeps rows at two lines: title, meta.
+.graphs-panel__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.125rem 0.375rem;
+  min-width: 0;
+}
+
+.graphs-panel__meta-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -15,6 +15,8 @@ import { AgentEntity } from '../entities/agent.entity';
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { AgentEgressEventEntity } from '../entities/agent-egress-event.entity';
+import { AgentGraphPromptEntity } from '../entities/agent-graph-prompt.entity';
+import { AgentGraphEntity } from '../entities/agent-graph.entity';
 import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
@@ -98,6 +100,10 @@ describe('AgentsModule', () => {
       .overrideProvider(getRepositoryToken(AgentEgressEventEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(WorkspaceConfigurationOverrideEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(AgentGraphEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(AgentGraphPromptEntity))
       .useValue(mockRepository)
       .overrideProvider(InstanceStatusService)
       .useValue(mockInstanceStatusService)

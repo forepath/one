@@ -2926,6 +2926,827 @@ paths:
                 type: string
         '401':
           description: Missing or invalid Basic auth credentials
+  /agents/{agentId}/graph:
+    get:
+      summary: Environment graph document (bounded slice, highest degree first)
+      operationId: getAgentGraph
+      tags: [Environment graphs]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: layer
+          required: false
+          schema:
+            type: string
+          description: code (default) | paths | references | all (merged)
+        - in: query
+          name: limit
+          required: true
+          schema:
+            type: integer
+          description: Max nodes
+        - in: query
+          name: types
+          required: false
+          schema:
+            type: string
+          description: Comma-separated node types
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+          description: Page start (stable rank order); follow `nextOffset` until it is null
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphDocument'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /agents/{agentId}/graph/status:
+    get:
+      summary: Environment graph build status
+      operationId: getAgentGraphStatus
+      tags: [Environment graphs]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphStatus'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /agents/{agentId}/graph/overview:
+    get:
+      summary: Modules, hubs, communities, instruction files and recent prompts (builds lazily)
+      operationId: getAgentGraphOverview
+      tags: [Environment graphs]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /agents/{agentId}/graph/digest:
+    get:
+      summary: Compact summary for the controller workspace snapshot
+      operationId: getAgentGraphDigest
+      tags: [Environment graphs]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /agents/{agentId}/graph/search:
+    get:
+      summary: Search nodes by name or path
+      operationId: searchAgentGraph
+      tags: [Environment graphs]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+          description: Search text
+        - in: query
+          name: layer
+          required: false
+          schema:
+            type: string
+          description: code (default) | paths | references | all (merged)
+        - in: query
+          name: types
+          required: false
+          schema:
+            type: string
+          description: Comma-separated node types
+        - in: query
+          name: limit
+          required: true
+          schema:
+            type: integer
+          description: Max hits
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /agents/{agentId}/graph/nodes:
+    get:
+      summary: One node with its relations
+      operationId: getAgentGraphNode
+      tags: [Environment graphs]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Node id
+        - in: query
+          name: layer
+          required: false
+          schema:
+            type: string
+          description: code (default) | paths | references | all (merged)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /agents/{agentId}/graph/neighbors:
+    get:
+      summary: Neighbourhood of a node
+      operationId: getAgentGraphNeighbors
+      tags: [Environment graphs]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Node id
+        - in: query
+          name: layer
+          required: false
+          schema:
+            type: string
+          description: code (default) | paths | references | all (merged)
+        - in: query
+          name: depth
+          required: true
+          schema:
+            type: integer
+          description: 1-3
+        - in: query
+          name: limit
+          required: true
+          schema:
+            type: integer
+          description: Max nodes
+        - in: query
+          name: edgeTypes
+          required: false
+          schema:
+            type: string
+          description: Comma-separated edge types
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphDocument'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /agents/{agentId}/graph/path:
+    get:
+      summary: Shortest path between two nodes
+      operationId: getAgentGraphPath
+      tags: [Environment graphs]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: from
+          required: true
+          schema:
+            type: string
+          description: Node id
+        - in: query
+          name: to
+          required: true
+          schema:
+            type: string
+          description: Node id
+        - in: query
+          name: layer
+          required: false
+          schema:
+            type: string
+          description: code (default) | paths | references | all (merged)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /agents/{agentId}/graph/file:
+    get:
+      summary: Structure and prompts around one file
+      operationId: getAgentGraphFile
+      tags: [Environment graphs]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: path
+          required: true
+          schema:
+            type: string
+          description: Path relative to the working directory
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /agents/{agentId}/graph/references:
+    get:
+      summary: Prompt reference records (latest first) and optionally one prompt in detail
+      operationId: getAgentGraphReferences
+      tags: [Environment graphs]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: promptId
+          required: false
+          schema:
+            type: string
+          description: Prompt (correlation) id
+        - in: query
+          name: limit
+          required: true
+          schema:
+            type: integer
+          description: Prompts
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /agents/{agentId}/graph/refresh:
+    post:
+      summary: Queue a rebuild of the environment graph
+      operationId: refreshAgentGraph
+      tags: [Environment graphs]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /graphs/compose:
+    post:
+      summary: Compose a workspace graph from controller-verified environments
+      description: |
+        Node ids are prefixed with their environment id (`<environmentId>::<nodeId>`); each environment is an
+        `environment:<id>` node; environments that used each other's `/opt/workspace` mounts are linked.
+      operationId: composeAgentGraph
+      tags: [Environment graphs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentGraphComposeRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphDocument'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+  /agent-context/graphs/environments:
+    get:
+      summary: Environments whose graphs the calling agent can read
+      description: |
+        Agent-facing graph API of the worker `agenstra` MCP server (`agenstra_graph_*`). Code / paths layers: own
+        environment and every environment mounted below /opt/workspace; references: own environment and workspace peers.
+      operationId: listAgentContextGraphEnvironments
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+        '401':
+          description: Invalid agent context credentials
+        '403':
+          description: Prompt references of environments outside the caller's workspace
+  /agent-context/graphs/overview:
+    get:
+      summary: Overview of a reachable environment
+      operationId: getAgentContextGraphOverview
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: query
+          name: environment
+          required: false
+          schema:
+            type: string
+          description: Own environment by default; environment id, mount id, workspace peer name or /opt/workspace path
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+        '401':
+          description: Invalid agent context credentials
+        '403':
+          description: Prompt references of environments outside the caller's workspace
+  /agent-context/graphs/document:
+    get:
+      summary: Bounded graph document of a reachable environment
+      operationId: getAgentContextGraphDocument
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: query
+          name: environment
+          required: false
+          schema:
+            type: string
+          description: Own environment by default; environment id, mount id, workspace peer name or /opt/workspace path
+        - in: query
+          name: layer
+          required: false
+          schema:
+            type: string
+          description: code (default) | paths | references | all (merged)
+        - in: query
+          name: limit
+          required: true
+          schema:
+            type: integer
+          description: Max nodes
+        - in: query
+          name: types
+          required: false
+          schema:
+            type: string
+          description: Comma-separated node types
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+          description: Page start (stable rank order); follow `nextOffset` until it is null
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphDocument'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+        '401':
+          description: Invalid agent context credentials
+        '403':
+          description: Prompt references of environments outside the caller's workspace
+  /agent-context/graphs/search:
+    get:
+      summary: Search one or all (`environment=*`) reachable environments
+      operationId: searchAgentContextGraph
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+          description: Search text
+        - in: query
+          name: environment
+          required: false
+          schema:
+            type: string
+          description: Own environment by default; environment id, mount id, workspace peer name or /opt/workspace path
+        - in: query
+          name: layer
+          required: false
+          schema:
+            type: string
+          description: code (default) | paths | references | all (merged)
+        - in: query
+          name: types
+          required: false
+          schema:
+            type: string
+          description: Comma-separated node types
+        - in: query
+          name: limit
+          required: true
+          schema:
+            type: integer
+          description: Max hits
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+        '401':
+          description: Invalid agent context credentials
+        '403':
+          description: Prompt references of environments outside the caller's workspace
+  /agent-context/graphs/nodes:
+    get:
+      summary: One node with relations
+      operationId: getAgentContextGraphNode
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Node id
+        - in: query
+          name: environment
+          required: false
+          schema:
+            type: string
+          description: Own environment by default; environment id, mount id, workspace peer name or /opt/workspace path
+        - in: query
+          name: layer
+          required: false
+          schema:
+            type: string
+          description: code (default) | paths | references | all (merged)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+        '401':
+          description: Invalid agent context credentials
+        '403':
+          description: Prompt references of environments outside the caller's workspace
+  /agent-context/graphs/neighbors:
+    get:
+      summary: Neighbourhood of a node
+      operationId: getAgentContextGraphNeighbors
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Node id
+        - in: query
+          name: environment
+          required: false
+          schema:
+            type: string
+          description: Own environment by default; environment id, mount id, workspace peer name or /opt/workspace path
+        - in: query
+          name: layer
+          required: false
+          schema:
+            type: string
+          description: code (default) | paths | references | all (merged)
+        - in: query
+          name: depth
+          required: true
+          schema:
+            type: integer
+          description: 1-3
+        - in: query
+          name: limit
+          required: true
+          schema:
+            type: integer
+          description: Max nodes
+        - in: query
+          name: edgeTypes
+          required: false
+          schema:
+            type: string
+          description: Comma-separated edge types
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphDocument'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+        '401':
+          description: Invalid agent context credentials
+        '403':
+          description: Prompt references of environments outside the caller's workspace
+  /agent-context/graphs/path:
+    get:
+      summary: Shortest path between two nodes
+      operationId: getAgentContextGraphPath
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: query
+          name: from
+          required: true
+          schema:
+            type: string
+          description: Node id
+        - in: query
+          name: to
+          required: true
+          schema:
+            type: string
+          description: Node id
+        - in: query
+          name: environment
+          required: false
+          schema:
+            type: string
+          description: Own environment by default; environment id, mount id, workspace peer name or /opt/workspace path
+        - in: query
+          name: layer
+          required: false
+          schema:
+            type: string
+          description: code (default) | paths | references | all (merged)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+        '401':
+          description: Invalid agent context credentials
+        '403':
+          description: Prompt references of environments outside the caller's workspace
+  /agent-context/graphs/file:
+    get:
+      summary: Structure and prompts around one file (absolute or relative path)
+      operationId: getAgentContextGraphFile
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: query
+          name: path
+          required: true
+          schema:
+            type: string
+          description: File path
+        - in: query
+          name: environment
+          required: false
+          schema:
+            type: string
+          description: Own environment by default; environment id, mount id, workspace peer name or /opt/workspace path
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+        '401':
+          description: Invalid agent context credentials
+        '403':
+          description: Prompt references of environments outside the caller's workspace
+  /agent-context/graphs/references:
+    get:
+      summary: Prompt references of the own environment or a workspace peer
+      operationId: getAgentContextGraphReferences
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: query
+          name: environment
+          required: false
+          schema:
+            type: string
+          description: Own environment by default; environment id, mount id, workspace peer name or /opt/workspace path
+        - in: query
+          name: promptId
+          required: false
+          schema:
+            type: string
+          description: Prompt id
+        - in: query
+          name: limit
+          required: true
+          schema:
+            type: integer
+          description: Prompts
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+        '401':
+          description: Invalid agent context credentials
+        '403':
+          description: Prompt references of environments outside the caller's workspace
+  /agent-context/graphs/refresh:
+    post:
+      summary: Rebuild the calling agent's own graph
+      operationId: refreshAgentContextGraph
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+      responses:
+        '202':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentGraphObject'
+        '400':
+          description: Invalid query parameters
+        '404':
+          description: Unknown environment or node
+        '401':
+          description: Invalid agent context credentials
+        '403':
+          description: Prompt references of environments outside the caller's workspace
 components:
   securitySchemes:
     bearerAuth:
@@ -2964,6 +3785,96 @@ components:
         default: app
       description: Filesystem root for relative paths. `app` (default) uses the provider workspace root (e.g. /app).
   schemas:
+    AgentGraphNode:
+      type: object
+      required: [id, type, label]
+      properties:
+        id: { type: string }
+        type: { type: string }
+        label: { type: string }
+        path: { type: string }
+        community: { type: integer }
+        attrs: { type: object, additionalProperties: true }
+    AgentGraphEdge:
+      type: object
+      required: [from, to, type]
+      properties:
+        from: { type: string }
+        to: { type: string }
+        type: { type: string }
+        confidence: { type: string, enum: [extracted, inferred] }
+        attrs: { type: object, additionalProperties: true }
+    AgentGraphDocument:
+      type: object
+      required:
+        [
+          version,
+          scope,
+          layer,
+          generatedAt,
+          nodes,
+          edges,
+          truncated,
+          totalNodes,
+          totalEdges,
+        ]
+      properties:
+        version: { type: integer, enum: [1] }
+        scope: { type: string, enum: [environment, workspace, global] }
+        layer:
+          {
+            type: string,
+            enum: [all, code, paths, references, knowledge, global],
+          }
+        environmentId: { type: string }
+        clientId: { type: string }
+        generatedAt: { type: string, format: date-time }
+        nodes:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/AgentGraphNode' },
+          }
+        edges:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/AgentGraphEdge' },
+          }
+        truncated: { type: boolean }
+        totalNodes: { type: integer }
+        totalEdges: { type: integer }
+        offset: { type: integer }
+        nextOffset: { type: integer, nullable: true }
+    AgentGraphStatus:
+      type: object
+      required: [environmentId, status, builtAt, truncated, fileCount]
+      properties:
+        environmentId: { type: string }
+        status:
+          { type: string, enum: [missing, building, ready, stale, failed] }
+        builtAt: { type: string, format: date-time, nullable: true }
+        buildDurationMs: { type: integer, nullable: true }
+        truncated: { type: boolean }
+        error: { type: string, nullable: true }
+        layers: { type: object, additionalProperties: true }
+        languages: { type: object, additionalProperties: { type: integer } }
+        fileCount: { type: integer }
+    AgentGraphComposeRequest:
+      type: object
+      required: [environmentIds, layer]
+      properties:
+        environmentIds:
+          { type: array, maxItems: 200, items: { type: string, format: uuid } }
+        layer: { type: string, enum: [all, code, paths, references] }
+        limit:
+          {
+            type: integer,
+            description: Nodes per environment; omitted for every node,
+          }
+        names: { type: object, additionalProperties: { type: string } }
+    AgentGraphObject:
+      type: object
+      description: Graph response object (see `graph-platform.ts` in `@forepath/agenstra/shared/util-opencode-config` for the exact shape).
+      additionalProperties: true
     AgentContextItemSummary:
       type: object
       required: [ref, kind, title, granted]

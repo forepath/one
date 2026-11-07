@@ -3,6 +3,7 @@ import {
   AGENSTRA_CONTEXT_API_ROUTE,
   AGENSTRA_CONTEXT_MCP_ENV,
   AGENSTRA_CONTENT_CHANGES_API_SEGMENT,
+  AGENSTRA_GRAPH_API_SEGMENT,
   AGENSTRA_HANDOFFS_API_SEGMENT,
   AGENSTRA_TASKS_API_SEGMENT,
   type AgentContextAccessResponse,
@@ -38,6 +39,11 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 const ACCESS_REQUEST_TIMEOUT_MS = 150_000;
 /** Missing peer profiles are generated on request (the manager answers within 150 s). */
 const PROFILE_REQUEST_TIMEOUT_MS = 170_000;
+/** The first graph query of an environment builds its graph (streams the workspace), which can take a while. */
+const GRAPH_REQUEST_TIMEOUT_MS = 170_000;
+
+/** Query parameters of graph requests (undefined / empty values are omitted). */
+export type GraphQuery = Record<string, string | number | undefined>;
 
 export class ContextApiError extends Error {
   constructor(
@@ -199,6 +205,30 @@ export class ContextApiClient {
 
   respondToHandoff(handoffId: string, input: AgentHandoffRespondInput): Promise<AgentHandoffResponse> {
     return this.request('POST', `${AGENSTRA_HANDOFFS_API_SEGMENT}/${encodeURIComponent(handoffId)}/response`, input);
+  }
+
+  /** Read-only graph endpoints (`/agent-context/graphs/<path>?<query>`). */
+  graph<T>(path: string, query: GraphQuery = {}): Promise<T> {
+    const params = new URLSearchParams();
+
+    for (const [key, value] of Object.entries(query)) {
+      if (value !== undefined && value !== '') {
+        params.set(key, String(value));
+      }
+    }
+
+    const search = params.toString();
+
+    return this.request(
+      'GET',
+      `${AGENSTRA_GRAPH_API_SEGMENT}/${path}${search ? `?${search}` : ''}`,
+      undefined,
+      GRAPH_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  refreshGraph<T>(): Promise<T> {
+    return this.request('POST', `${AGENSTRA_GRAPH_API_SEGMENT}/refresh`, {});
   }
 
   private async request<T>(

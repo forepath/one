@@ -46,6 +46,7 @@ import {
   type AgentEgressApplyResult,
 } from '../../services/agent-egress.service';
 import { AgentContextMcpService } from '../../services/agent-context-mcp.service';
+import { AgentGraphReferencesService } from '../../services/agent-graph-references.service';
 import { AgentMessageFiltersService } from '../../services/agent-message-filters.service';
 import { AgentRuntimeRefreshService } from '../../services/agent-runtime-refresh.service';
 import { DockerService } from '../../services/docker.service';
@@ -274,6 +275,8 @@ export class OpenCodeConfigSyncService {
     private readonly messageFilters?: AgentMessageFiltersService,
     @Optional()
     private readonly contextMcp?: AgentContextMcpService,
+    @Optional()
+    private readonly graphReferences?: AgentGraphReferencesService,
   ) {}
 
   registerConfigSyncedBroadcaster(broadcaster: (agentId: string) => void): void {
@@ -377,6 +380,8 @@ export class OpenCodeConfigSyncService {
       if (result.ok) {
         progressRef.tracker?.complete();
         this.configSyncedBroadcaster?.(agentId);
+        // Names of instructions / skills / MCP servers / commands: implicit context of the environment's prompts.
+        void this.graphReferences?.captureImplicitContext(agentId, effective);
       } else {
         progressRef.tracker?.fail(result.error ?? 'OpenCode config sync failed');
       }

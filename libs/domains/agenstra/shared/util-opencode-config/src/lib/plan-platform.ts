@@ -1,4 +1,5 @@
 import { AGENSTRA_CONTEXT_MCP_TOOL_PERMISSION, isAgenstraContextToolPermission } from './context-platform';
+import { AGENSTRA_GRAPH_MCP_TOOL_PERMISSION } from './graph-platform';
 import type { JsonObject } from './types';
 
 /** OpenCode primary agent used exclusively for Agenstra chat plan-mode sessions. */
@@ -49,6 +50,8 @@ export const AGENSTRA_PLAN_SESSION_PERMISSION_RULESET = [
   })),
   // Read-only platform context tools (tickets / knowledge served by the agenstra MCP server).
   { permission: AGENSTRA_CONTEXT_MCP_TOOL_PERMISSION, pattern: '*', action: 'allow' as const },
+  // Read-only environment graphs (structure / paths / prompt references served by the agenstra MCP server).
+  { permission: AGENSTRA_GRAPH_MCP_TOOL_PERMISSION, pattern: '*', action: 'allow' as const },
 ];
 
 /** Structured turn-status schema for OpenCode `format: json_schema` on plan prompts. */

@@ -8,6 +8,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AgentsChatSessionsController } from '../controllers/agents-chat-sessions.controller';
 import { AgentsContextController } from '../controllers/agents-context.controller';
+import { AgentGraphsComposeController, AgentsGraphController } from '../controllers/agents-graph.controller';
+import { AgentsGraphContextController } from '../controllers/agents-graph-context.controller';
 import { AgentsTasksController } from '../controllers/agents-tasks.controller';
 import { AgentsHandoffsController } from '../controllers/agents-handoffs.controller';
 import { AgentsDeploymentsController } from '../controllers/agents-deployments.controller';
@@ -34,6 +36,8 @@ import { AgentMessageEventEntity } from '../entities/agent-message-event.entity'
 import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentEntity } from '../entities/agent.entity';
 import { AgentDirectoryIndexEntity } from '../entities/agent-directory-index.entity';
+import { AgentGraphPromptEntity } from '../entities/agent-graph-prompt.entity';
+import { AgentGraphEntity } from '../entities/agent-graph.entity';
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { AgentEgressEventEntity } from '../entities/agent-egress-event.entity';
@@ -84,6 +88,12 @@ import { AgentContextTicketsService } from '../services/agent-context-tickets.se
 import { AgentTasksApiService } from '../services/agent-tasks-api.service';
 import { AgentHandoffsApiService } from '../services/agent-handoffs-api.service';
 import { AgentWorkspaceMountsService } from '../services/agent-workspace-mounts.service';
+import { AgentGraphAccessService } from '../services/agent-graph-access.service';
+import { AgentGraphCollectorService } from '../services/agent-graph-collector.service';
+import { AgentGraphReferencesService } from '../services/agent-graph-references.service';
+import { AgentGraphService } from '../services/agent-graph.service';
+import { AgentGraphPromptsRepository } from '../repositories/agent-graph-prompts.repository';
+import { AgentGraphsRepository } from '../repositories/agent-graphs.repository';
 import { AgentActiveTurnsService } from '../services/agent-active-turns.service';
 import { AgentToolCallsService } from '../services/agent-tool-calls.service';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
@@ -124,6 +134,8 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     TypeOrmModule.forFeature([
       AgentEntity,
       AgentDirectoryIndexEntity,
+      AgentGraphEntity,
+      AgentGraphPromptEntity,
       AgentMessageEntity,
       AgentMessageEventEntity,
       AgentChatSessionEntity,
@@ -152,6 +164,9 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentsContextController,
     AgentsTasksController,
     AgentsHandoffsController,
+    AgentsGraphController,
+    AgentGraphsComposeController,
+    AgentsGraphContextController,
     AgentsEgressController,
     ConfigController,
     IsolationController,
@@ -176,6 +191,12 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentTasksApiService,
     AgentHandoffsApiService,
     AgentWorkspaceMountsService,
+    AgentGraphService,
+    AgentGraphCollectorService,
+    AgentGraphReferencesService,
+    AgentGraphAccessService,
+    AgentGraphsRepository,
+    AgentGraphPromptsRepository,
     AgentActiveTurnsService,
     AgentToolCallsService,
     AgentMessageEventsService,

@@ -52,6 +52,7 @@ import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentEgressService } from '../services/agent-egress.service';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
+import { AgentGraphReferencesService } from '../services/agent-graph-references.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
@@ -75,6 +76,7 @@ import type {
   AgentContextTicketRecord,
 } from '../types/agent-context.types';
 import { ContextInjectionPayload } from '../types/context-injection.types';
+import { DEFAULT_AGENT_WORKSPACE_ROOT, normalizeWorkspaceRoot } from '../utils/agent-file-path.utils';
 import { deriveAgentContextItems } from '../utils/agent-context-items.utils';
 import { PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX } from '../utils/chat-enhancement-prompt.utils';
 import { finalizeStreamingTranscriptParts } from '../utils/materialize-streaming-deltas-for-transcript';
@@ -389,6 +391,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @Optional() private readonly agentTasksApi?: AgentTasksApiService,
     @Optional() private readonly agentHandoffsApi?: AgentHandoffsApiService,
     @Optional() private readonly oidcVerifier?: OidcTokenVerifier,
+    @Optional() private readonly graphReferences?: AgentGraphReferencesService,
   ) {}
 
   /**
@@ -934,7 +937,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       filtered?: boolean;
       attachments?: AgentMessageAttachmentJson[];
     },
-  ): Promise<void> {
+  ): Promise<string | undefined> {
     let messageId: string | undefined;
 
     if (!ephemeral) {
@@ -976,6 +979,8 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
       }),
     );
+
+    return messageId;
   }
 
   private emitOrPersistChatEvent(
@@ -987,6 +992,8 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     chatId?: string,
   ): void {
     const event: AgentEventEnvelope = chatId ? { ...envelope, chatId } : envelope;
+
+    this.graphReferences?.recordEvent(agentUuid, event);
 
     if (ephemeral) {
       requestSocket.emit('chatEvent', createSuccessResponse<AgentEventEnvelope>(event));
@@ -2101,6 +2108,13 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     );
     const enrichmentTranscriptParts = this.buildEnrichmentTranscriptParts(contextInjection, correlationId);
 
+    this.beginGraphTurn(agentUuid, correlationId, {
+      chatSessionId,
+      origin: data.ephemeral === true ? 'ephemeral' : chatContext.hidden ? 'hidden' : 'chat',
+      prompt: filteredMessage,
+      contextInjection,
+    });
+
     // Run first-message init before persisting so getChatHistory still sees an empty transcript.
     if (!ephemeral && !this.agentsWithFirstMessageSent.has(agentUuid)) {
       const existingHistory = await this.agentMessagesService.getChatHistory(agentUuid, 1, 0);
@@ -2127,12 +2141,21 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
 
     if (!suppressUserMessage) {
-      await this.emitUserChatMessage(agentUuid, ephemeral, socket, filteredMessage, chatTimestamp, {
-        chatSessionId,
-        chatIdFields,
-        filtered: incomingFilterResult.status === 'filtered',
-        attachments: chatAttachments,
-      });
+      const userMessageId = await this.emitUserChatMessage(
+        agentUuid,
+        ephemeral,
+        socket,
+        filteredMessage,
+        chatTimestamp,
+        {
+          chatSessionId,
+          chatIdFields,
+          filtered: incomingFilterResult.status === 'filtered',
+          attachments: chatAttachments,
+        },
+      );
+
+      this.graphReferences?.setMessageId(agentUuid, correlationId, userMessageId);
 
       this.emitOrPersistChatEvent(
         agentUuid,
@@ -2562,7 +2585,46 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       if (contextTicket) {
         this.contextTickets?.revoke(contextTicket.ticket);
       }
+
+      void this.graphReferences?.endTurn(agentUuid, correlationId);
     }
+  }
+
+  /** Start the prompt reference record of a turn (environment graphs); never blocks or fails the chat. */
+  private beginGraphTurn(
+    agentUuid: string,
+    correlationId: string,
+    turn: {
+      chatSessionId?: string;
+      origin: 'chat' | 'hidden' | 'ephemeral';
+      prompt: string;
+      contextInjection?: ContextInjectionPayload;
+    },
+  ): void {
+    if (!this.graphReferences) {
+      return;
+    }
+
+    let workingDirectory = DEFAULT_AGENT_WORKSPACE_ROOT;
+
+    try {
+      // OpenCode is the only harness; its working directory does not depend on the agent row.
+      workingDirectory = normalizeWorkspaceRoot(
+        this.agentProviderFactory.getProvider('opencode').getBasePath?.() || workingDirectory,
+      );
+    } catch {
+      // Provider not registered (tests): default working directory.
+    }
+
+    this.graphReferences.beginTurn({
+      agentId: agentUuid,
+      correlationId,
+      chatSessionId: turn.chatSessionId ?? null,
+      origin: turn.origin,
+      prompt: turn.prompt,
+      workingDirectory,
+      contextInjection: turn.contextInjection,
+    });
   }
 
   /**

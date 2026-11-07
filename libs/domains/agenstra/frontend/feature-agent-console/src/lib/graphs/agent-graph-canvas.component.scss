@@ -1,0 +1,81 @@
+:host {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+}
+
+.graph-canvas__wrap {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bs-body-bg);
+}
+
+.graph-canvas__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: -2px;
+  }
+}
+
+.graph-canvas__tooltip {
+  position: absolute;
+  z-index: 2;
+  max-width: 260px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  font-size: 0.8125rem;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.graph-canvas__swatch {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 0.625rem;
+  height: 0.625rem;
+  margin-right: 0.25rem;
+  border-radius: 50%;
+}
+
+.graph-canvas__progress {
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-pill);
+  background: var(--bs-body-bg);
+}
+
+.graph-canvas__legend {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  max-height: 40%;
+  overflow: auto;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: rgba(var(--bs-body-bg-rgb), 0.9);
+}

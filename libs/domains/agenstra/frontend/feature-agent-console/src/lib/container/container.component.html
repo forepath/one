@@ -114,6 +114,17 @@
         <span class="small" i18n="@@featureContainer-tasks">Tasks</span>
       </a>
       <a
+        [routerLink]="graphsSidebarLink()"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="sidebar__item"
+        i18n-title="@@featureContainer-graphsTitle"
+        title="Graphs"
+      >
+        <i class="bi bi-diagram-3 me-1"></i>
+        <span class="small" i18n="@@featureContainer-graphs">Graphs</span>
+      </a>
+      <a
         routerLink="/audit"
         routerLinkActive="active"
         class="sidebar__item"

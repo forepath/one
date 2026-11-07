@@ -43,6 +43,7 @@ import {
 import { ClientAgentMembershipService } from './client-agent-membership.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
+import { WorkspaceGraphChangeNotifierService } from './workspace-graph-change-notifier.service';
 import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 /**
@@ -62,6 +63,7 @@ export class ClientAgentProxyService {
     private readonly searchIndex: AgenstraSearchIndexService,
     @Optional() private readonly membership?: ClientAgentMembershipService,
     @Optional() private readonly notificationPublisher?: AgenstraNotificationPublisher,
+    @Optional() private readonly graphChanges?: WorkspaceGraphChangeNotifierService,
   ) {}
 
   /** Agents of the workspace only: the manager behind it may serve other workspaces too. */
@@ -497,6 +499,8 @@ export class ClientAgentProxyService {
       this.notificationPublisher?.publishAgent('agent.created', clientId, result);
     }
 
+    this.graphChanges?.notify(clientId, 'agent.created');
+
     return result;
   }
 
@@ -533,6 +537,7 @@ export class ClientAgentProxyService {
       )
       .catch(() => undefined);
     this.notificationPublisher?.publishAgent('agent.updated', clientId, result);
+    this.graphChanges?.notify(clientId, 'agent.updated');
 
     return result;
   }
@@ -552,6 +557,7 @@ export class ClientAgentProxyService {
     await this.clientAgentCredentialsService.deleteCredentials(clientId, agentId);
     this.membership?.forget(clientId, agentId);
     this.notificationPublisher?.publishAgent('agent.deleted', clientId, { id: agentId, clientId });
+    this.graphChanges?.notify(clientId, 'agent.deleted');
   }
 
   /**
