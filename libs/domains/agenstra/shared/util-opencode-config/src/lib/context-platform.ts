@@ -19,7 +19,14 @@ export const AGENSTRA_CONTEXT_MCP_TOOL_NAMES = {
   search: 'context_search',
   get: 'context_get',
   requestAccess: 'context_request_access',
+  mounts: 'context_mounts',
 } as const;
+
+/**
+ * Read-only mount of the manager host's agent directories inside every worker. Each environment's working directory
+ * (host `/opt/agents/<mount id>`) appears as `/opt/workspace/<mount id>`; mount ids are not environment ids.
+ */
+export const AGENSTRA_WORKSPACE_MOUNT_ROOT = '/opt/workspace';
 
 /** Environment passed to the MCP process through the OpenCode `mcp.<key>.environment` block. */
 export const AGENSTRA_CONTEXT_MCP_ENV = {
@@ -79,9 +86,56 @@ export interface AgentContextListResponse {
   items: AgentContextItemSummary[];
   attachments: AgentContextAttachmentSummary[];
   workspace?: { mountPath: string };
-  environments: Array<{ id: string }>;
+  /** Environments selected as context; name / mount path are added when they belong to the agent's workspace. */
+  environments: AgentContextEnvironmentSummary[];
   /** True when the agent may ask the user (or the platform) for additional refs. */
   canRequestAccess: boolean;
+}
+
+export interface AgentContextEnvironmentSummary {
+  id: string;
+  name?: string;
+  /** Read-only path of the environment's working directory (below {@link AGENSTRA_WORKSPACE_MOUNT_ROOT}). */
+  mountPath?: string;
+}
+
+/** One environment of the agent's workspace and where its working directory is mounted. */
+export interface AgentContextMountSummary {
+  /** Environment (agent) id. */
+  environmentId: string;
+  name: string;
+  description?: string;
+  repositoryUrl?: string;
+  /** Directory name below {@link AGENSTRA_WORKSPACE_MOUNT_ROOT} (differs from the environment id). */
+  mountId?: string;
+  /** Read-only path of the environment's working directory; absent when it has none on this host. */
+  mountPath?: string;
+  /** The calling environment itself. */
+  self?: boolean;
+  /** Writable working directory of the calling environment (its own repository). */
+  workingDirectory?: string;
+  /** Selected as context for this request. */
+  selected?: boolean;
+}
+
+/** Result of resolving an environment id, mount id or path (`context_mounts` with `resolve`). */
+export interface AgentContextMountResolution {
+  input: string;
+  environmentId: string;
+  /** Path of the input below the environment's directory (`""` for the directory itself), when a path was given. */
+  relativePath?: string;
+  /** Absolute read-only path of the input (mount path + relative path). */
+  mountedPath?: string;
+}
+
+export interface AgentContextMountsResponse {
+  root: string;
+  readOnly: true;
+  /** Environments of the workspace (only the resolved one when `resolve` matched). */
+  mounts: AgentContextMountSummary[];
+  resolved?: AgentContextMountResolution;
+  /** Why the list is incomplete or a lookup failed. */
+  note?: string;
 }
 
 export interface AgentContextSearchResponse {

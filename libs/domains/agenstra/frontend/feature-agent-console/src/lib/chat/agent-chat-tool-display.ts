@@ -126,6 +126,12 @@ export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined):
         label: $localize`:@@featureChat-toolDisplayContextRequestAccess:Request context access`,
         icon: 'key',
       };
+    case 'agenstra_context_mounts':
+    case 'context_mounts':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContextMounts:Workspace mounts`,
+        icon: 'hdd-stack',
+      };
     // Platform content tools (`agenstra_content_*`): ticket / knowledge changes approved per change or run.
     case 'agenstra_content_ticket_create':
     case 'content_ticket_create':

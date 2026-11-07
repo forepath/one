@@ -83,6 +83,7 @@ import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
 import { AgentTasksApiService } from '../services/agent-tasks-api.service';
 import { AgentHandoffsApiService } from '../services/agent-handoffs-api.service';
+import { AgentWorkspaceMountsService } from '../services/agent-workspace-mounts.service';
 import { AgentActiveTurnsService } from '../services/agent-active-turns.service';
 import { AgentToolCallsService } from '../services/agent-tool-calls.service';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
@@ -174,6 +175,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentContextChangesService,
     AgentTasksApiService,
     AgentHandoffsApiService,
+    AgentWorkspaceMountsService,
     AgentActiveTurnsService,
     AgentToolCallsService,
     AgentMessageEventsService,

@@ -2216,6 +2216,9 @@
       <trans-unit id="featureChat-toolDisplayContextRequestAccess" datatype="html">
         <source>Request context access</source>
         </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContextMounts" datatype="html">
+        <source>Workspace mounts</source>
+        </trans-unit>
       <trans-unit id="featureChat-toolDisplayContentTicketCreate" datatype="html">
         <source>Create ticket</source>
         </trans-unit>

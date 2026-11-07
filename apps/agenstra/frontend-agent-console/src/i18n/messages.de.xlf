@@ -734,6 +734,10 @@
         <source>Request context access</source>
         <target>Kontextzugriff anfordern</target>
       </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContextMounts" datatype="html">
+        <source>Workspace mounts</source>
+        <target>Workspace-Mounts</target>
+      </trans-unit>
       <trans-unit id="featureChat-toolDisplayContentTicketCreate" datatype="html">
         <source>Create ticket</source>
         <target>Ticket erstellen</target>

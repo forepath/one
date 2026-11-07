@@ -115,6 +115,16 @@ export class AgentHandoffsApiService {
     };
   }
 
+  /**
+   * Other agents of the calling agent's workspace as the controller reports them (the controller's agent list is the
+   * workspace check). Throws when no controller connection can answer.
+   */
+  async peers(agentId: string): Promise<AgentHandoffAgentSummary[]> {
+    const response = await this.call({ op: 'agents', agentId });
+
+    return response.agents ?? [];
+  }
+
   /** The agent maintains its own handoff profile (what peers read about it); empty clears it. */
   async updateProfile(agentId: string, input: AgentHandoffProfileInput): Promise<AgentHandoffAgentsResponse['self']> {
     const profile = input.profile.trim();

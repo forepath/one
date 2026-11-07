@@ -22,6 +22,11 @@ When the agent manager creates an agent, it bind-mounts host paths into child co
 | `/opt/agents/{uuid}` | Provider **`basePath`** (see below) | Read/write    | Primary worker   |
 | `/opt/agents`        | `/opt/workspace`                    | **Read-only** | All of the above |
 
+Inside a worker, each environment's working directory therefore appears as `/opt/workspace/<mount id>` (the host
+directory name, not the environment id). Agents map mount ids to environments of their workspace with the
+`agenstra_context_mounts` tool ([Agent Context MCP](../ai-agents/context-mcp.md#workspace-mounts)); directories of
+agents outside the workspace are never described.
+
 **Provider `basePath`:**
 
 | Agent type | Primary image             | `basePath` | Git clone target |

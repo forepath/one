@@ -10,6 +10,7 @@ import {
   type AgentContextAccessResponse,
   type AgentContextGetResponse,
   type AgentContextListResponse,
+  type AgentContextMountsResponse,
   type AgentContextSearchResponse,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { Public } from '@forepath/identity/backend';
@@ -29,7 +30,9 @@ import {
 
 import {
   parseAgentContextAccessRequest,
+  parseAgentContextMountsQuery,
   parseAgentContextSearchQuery,
+  type AgentContextMountsQueryDto,
   type AgentContextSearchQueryDto,
 } from '../dto/agent-context.dto';
 import { AgentContextApiService } from '../services/agent-context-api.service';
@@ -37,6 +40,7 @@ import { AgentContextChangesService } from '../services/agent-context-changes.se
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
 import { AgentToolCallsService } from '../services/agent-tool-calls.service';
+import { AgentWorkspaceMountsService } from '../services/agent-workspace-mounts.service';
 import type { AgentContextTicketRecord } from '../types/agent-context.types';
 import { authenticateAgentContextCall } from '../utils/agent-context-auth.utils';
 
@@ -94,6 +98,7 @@ export class AgentsContextController {
     private readonly api: AgentContextApiService,
     private readonly changes: AgentContextChangesService,
     @Optional() private readonly toolCalls?: AgentToolCallsService,
+    @Optional() private readonly mounts?: AgentWorkspaceMountsService,
   ) {}
 
   /** MCP server startup probe: verifies reachability and the agent token. */
@@ -116,7 +121,33 @@ export class AgentsContextController {
 
     await this.requireToolCall(record, AGENSTRA_CONTEXT_MCP_TOOL_NAMES.list, () => true);
 
-    return this.api.list(record);
+    const response = this.api.list(record);
+
+    return this.mounts ? this.mounts.withEnvironmentMounts(record, response) : response;
+  }
+
+  /** Environments of the workspace mounted read-only below `/opt/workspace`, or the one `resolve` names. */
+  @Get('tickets/:ticket/mounts')
+  async mountsOf(
+    @Param('ticket') ticket: string,
+    @Query() query: AgentContextMountsQueryDto,
+    @Headers(AGENSTRA_CONTEXT_API_HEADERS.agentId) agentId: string | undefined,
+    @Headers('authorization') authorization: string | undefined,
+  ): Promise<AgentContextMountsResponse> {
+    const record = await this.resolveTicket(agentId, authorization, ticket);
+    const { resolve } = parseAgentContextMountsQuery(query);
+
+    await this.requireToolCall(
+      record,
+      AGENSTRA_CONTEXT_MCP_TOOL_NAMES.mounts,
+      (input) => (typeof input['resolve'] === 'string' ? input['resolve'].trim() || undefined : undefined) === resolve,
+    );
+
+    if (!this.mounts) {
+      throw new NotFoundException('Workspace mounts are unavailable');
+    }
+
+    return this.mounts.mounts(record, resolve);
   }
 
   @Get('tickets/:ticket/search')

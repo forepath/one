@@ -30,12 +30,13 @@ sequenceDiagram
 
 ## Tools
 
-| Tool                              | Purpose                                                                         |
-| --------------------------------- | ------------------------------------------------------------------------------- |
-| `agenstra_context_list`           | Items granted for this prompt, attachments, workspace and environment mounts    |
-| `agenstra_context_search`         | Metadata of workspace tickets / knowledge and of the agent's own plans          |
-| `agenstra_context_get`            | Full content of `item:<n>` or a granted `ticket:` / `knowledge:` / `plan:<sha>` |
-| `agenstra_context_request_access` | Ask for refs that are not granted yet (returns `granted`, `denied`, `pending`)  |
+| Tool                              | Purpose                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| `agenstra_context_list`           | Items granted for this prompt, attachments, workspace mount and selected environments |
+| `agenstra_context_mounts`         | Environments of the workspace and their read-only mounts below `/opt/workspace`       |
+| `agenstra_context_search`         | Metadata of workspace tickets / knowledge and of the agent's own plans                |
+| `agenstra_context_get`            | Full content of `item:<n>` or a granted `ticket:` / `knowledge:` / `plan:<sha>`       |
+| `agenstra_context_request_access` | Ask for refs that are not granted yet (returns `granted`, `denied`, `pending`)        |
 
 Metadata is always searchable; content of elements that were not part of the prompt requires an access request.
 `agenstra_context_get` also returns the element's full `sha` and its `revision` (version), which content changes pass
@@ -46,6 +47,28 @@ same agent token, forwarded to the controller as `agentTaskRequest`). See [Agent
 
 `agenstra_handoff_*` tools hand tasks over to other agents of the same workspace (`/api/agent-context/handoffs`,
 forwarded as `agentHandoffRequest`). See [Agent handoffs](../features/agent-handoffs.md).
+
+### Workspace mounts
+
+Every worker mounts the host's agent directories read-only at `/opt/workspace` (see
+[Container image security](../security/container-images.md)): the working directory of each environment appears as
+`/opt/workspace/<mount id>`, where the mount id is the host directory name (`/opt/agents/<mount id>`), **not** the
+environment id. Context hints always name this mount and the tool that maps it.
+
+`agenstra_context_mounts` (route `GET /api/agent-context/tickets/:ticket/mounts`) lists the calling environment first
+(with its writable working directory, e.g. `/app`) and then the other environments of the workspace with environment
+id, name, description, repository, mount id and mount path; environments selected as context for the request are
+marked `selected`. With `resolve` it looks up a single environment by environment id, mount id, unique name or an
+absolute path below a mount (or below the own working directory) and returns the path relative to that environment.
+`agenstra_context_list` adds name and mount path to the selected environments.
+
+- **Workspace scope.** Metadata is only returned for environments the controller reports for the workspace bound to
+  the connection (the same `agentHandoffRequest` `agents` list handoffs use, without handoff profiles). Directories of
+  agents outside the workspace stay anonymous; the manager only reads their mount location locally.
+- **No file access.** The tool is a lookup in that list: it never reads, lists or stats files. Files are read with the
+  agent's own (permission-checked) file tools; the mount itself is read-only.
+- **Degraded mode.** Without a controller connection only the calling environment is listed (with a `note`), and
+  `agenstra_context_list` returns plain environment ids.
 
 ### Plans as context
 

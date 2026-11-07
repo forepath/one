@@ -126,6 +126,15 @@ describe('agent-context-items.utils', () => {
     ]);
   });
 
+  it('names the read-only workspace mount and its lookup tool in every access mode', () => {
+    for (const accessMode of ['ask', 'auto', 'deny'] as const) {
+      const text = buildAgentContextHintLines(record({ accessMode })).join('\n');
+
+      expect(text).toContain('mounted read-only at /opt/workspace/<mount id>');
+      expect(text).toContain('agenstra_context_mounts');
+    }
+  });
+
   it('mentions plans in the access and change hints of interactive chats', () => {
     const lines = buildAgentContextHintLines(record()).join('\n');
 
