@@ -5,6 +5,7 @@ import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import {
   API_KEY_STORAGE_KEY,
   consumePostLoginReturnUrl,
+  hasMtlsCredential,
   IDENTITY_AUTH_ENVIRONMENT,
   OidcAuthService,
   SSO_ERROR_QUERY_PARAM,
@@ -19,6 +20,7 @@ import { hasValidConsoleSessionJwt } from './auth.guard';
  * - 'oidc' / 'saml': signed-in users go to /clients; otherwise sign-in starts at the identity provider right away
  *   (unless the previous attempt failed: `?sso_error=…` keeps the login page with a retry button)
  * - 'api-key': redirects to /clients when an API key exists in environment or localStorage
+ * - 'mtls': redirects to /clients when a valid client certificate is stored
  * - 'users': redirects to /clients when a valid password-session JWT exists in localStorage
  * - Personal access token JWTs are cleared so the login form remains reachable
  * - Otherwise, allows access to login route
@@ -57,6 +59,14 @@ export const loginGuard: CanActivateFn = (route) => {
     }
 
     return true;
+  }
+
+  if (type === 'mtls') {
+    if (isPlatformServer(platformId)) {
+      return true;
+    }
+
+    return hasMtlsCredential().then((hasCredential) => (hasCredential ? router.createUrlTree(['/clients']) : true));
   }
 
   if (usesAppSessionJwt(type)) {

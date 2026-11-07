@@ -2,6 +2,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { resolveAuthorizationHeader$ } from './auth-header.utils';
 import { API_KEY_STORAGE_KEY, USERS_JWT_STORAGE_KEY } from './auth-storage';
+import * as mtlsCredential from './mtls-credential';
 
 describe('resolveAuthorizationHeader$', () => {
   beforeEach(() => {
@@ -24,6 +25,27 @@ describe('resolveAuthorizationHeader$', () => {
     localStorage.setItem(USERS_JWT_STORAGE_KEY, 'jwt');
 
     await expect(firstValueFrom(resolveAuthorizationHeader$({ type }))).resolves.toBe('Bearer jwt');
+  });
+
+  it('uses a certificate assertion for mtls (null without a stored certificate)', async () => {
+    const spy = jest.spyOn(mtlsCredential, 'getMtlsAuthorizationHeader');
+
+    spy.mockResolvedValueOnce('Certificate a.b.c');
+
+    await expect(
+      firstValueFrom(resolveAuthorizationHeader$({ type: 'mtls', assertionLifetimeSeconds: 60, audience: 'api' })),
+    ).resolves.toBe('Certificate a.b.c');
+    expect(spy).toHaveBeenCalledWith({ lifetimeSeconds: 60, audience: 'api' });
+
+    spy.mockResolvedValueOnce(null);
+
+    await expect(firstValueFrom(resolveAuthorizationHeader$({ type: 'mtls' }))).resolves.toBeNull();
+
+    spy.mockRejectedValueOnce(new Error('sign failed'));
+
+    await expect(firstValueFrom(resolveAuthorizationHeader$({ type: 'mtls' }))).resolves.toBeNull();
+
+    spy.mockRestore();
   });
 
   it('uses the OIDC access token', async () => {

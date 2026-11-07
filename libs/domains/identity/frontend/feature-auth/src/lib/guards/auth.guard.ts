@@ -7,6 +7,7 @@ import { Router, type CanActivateFn } from '@angular/router';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   API_KEY_STORAGE_KEY,
+  hasMtlsCredential,
   IDENTITY_AUTH_ENVIRONMENT,
   isUsersConsoleJwtValid,
   jwtPayloadHasPatAmr,
@@ -40,6 +41,7 @@ export function hasValidConsoleSessionJwt(): boolean {
  * - 'oidc': requires an OIDC session; otherwise redirects to the identity provider (returning to the requested URL)
  * - 'saml': requires a valid session JWT; otherwise starts SAML sign-in at the API (returning to the requested URL)
  * - 'api-key': allows access if an API key exists in environment or localStorage
+ * - 'mtls': allows access if a valid client certificate was selected at login (IndexedDB)
  * - 'users': allows access if a valid password-session JWT exists in localStorage
  * - Personal access token JWTs (`amr` includes `pat`) are cleared and treated as logged out
  * - Otherwise, redirects to /login
@@ -73,6 +75,15 @@ export const authGuard: CanActivateFn = (_route, state) => {
     }
 
     return router.createUrlTree(['/login']);
+  }
+
+  if (type === 'mtls') {
+    // The credential lives in browser storage; the server render cannot decide.
+    if (isPlatformServer(platformId)) {
+      return true;
+    }
+
+    return hasMtlsCredential().then((hasCredential) => hasCredential || router.createUrlTree(['/login']));
   }
 
   if (usesAppSessionJwt(type)) {

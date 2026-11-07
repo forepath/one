@@ -26,11 +26,21 @@ Complete reference for all environment variables used in Agenstra.
 
 ### Authentication
 
-- `AUTHENTICATION_METHOD` - Explicit choice: `api-key`, `users`, `oidc`, or `saml`. If not set, inferred from `STATIC_API_KEY` (api-key if set, else oidc). Any other value (including the removed `keycloak`) fails at boot.
+- `AUTHENTICATION_METHOD` - Explicit choice: `api-key`, `mtls`, `users`, `oidc`, or `saml`. If not set, inferred from `STATIC_API_KEY` (api-key if set, else oidc; `mtls` is never inferred). Any other value (including the removed `keycloak`) fails at boot.
 
 **Option 1: API Key Authentication** (`AUTHENTICATION_METHOD=api-key`)
 
 - `STATIC_API_KEY` - Static API key for authentication (required)
+
+**Option 1b: mTLS / Client Certificate Authentication** (`AUTHENTICATION_METHOD=mtls`, controller and agent-manager; full access like the API key; see [Authentication](../features/authentication.md#mtls-client-certificate-authentication))
+
+- `MTLS_CA_CERT` / `MTLS_CA_CERT_FILE` - PEM bundle of the CA(s) issuing API client certificates (required; boot fails without it)
+- `MTLS_ALLOWED_FINGERPRINTS` - Optional comma-separated SHA-256 fingerprints allowed to authenticate
+- `MTLS_ALLOWED_SUBJECTS` - Optional comma-separated subject common names allowed to authenticate (a certificate must match one of the allowlists when either is set)
+- `MTLS_REVOKED_FINGERPRINTS` - Optional comma-separated SHA-256 fingerprints that are always rejected
+- `MTLS_ASSERTION_MAX_LIFETIME` - Maximum certificate assertion lifetime in seconds (default `300`, max `3600`)
+- `MTLS_ASSERTION_AUDIENCE` - Optional required `aud` of certificate assertions
+- `MTLS_SERVER_CERT` / `MTLS_SERVER_CERT_FILE`, `MTLS_SERVER_KEY` / `MTLS_SERVER_KEY_FILE` - Optional: serve HTTPS and request client certificates in the TLS handshake (otherwise plain HTTP behind a TLS-terminating proxy; clients send certificate assertions). The image health check switches to HTTPS automatically
 
 **Option 2: OIDC Authentication** (`AUTHENTICATION_METHOD=oidc`)
 

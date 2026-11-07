@@ -28,7 +28,10 @@ export class ProvisionServerDto {
   location?: string;
 
   @IsNotEmpty({ message: 'Authentication type is required' })
-  @IsEnum(AuthenticationType, { message: 'Authentication type must be either api_key or oidc' })
+  // Provisioned managers are configured with an API key or OIDC; client certificates (mtls) need an operator CA.
+  @IsIn([AuthenticationType.API_KEY, AuthenticationType.OIDC], {
+    message: 'Authentication type must be either api_key or oidc',
+  })
   authenticationType!: AuthenticationType;
 
   @IsOptional()

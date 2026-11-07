@@ -8,7 +8,7 @@ import {
   createCorrelationIdMiddleware,
   registerAxiosCorrelationIdPropagation,
 } from '@forepath/shared/backend/util-http-context';
-import { configureTrustProxy, createOriginAllowlistMiddleware } from '@forepath/identity/backend';
+import { configureTrustProxy, createOriginAllowlistMiddleware, getMtlsHttpsOptions } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import { assertProductionWebhookEscapeHatchesDisabled } from '@forepath/shared/backend/util-webhook';
 import {
@@ -86,7 +86,10 @@ export async function bootstrap(): Promise<void> {
     return;
   }
 
-  const app = await NestFactory.create(AppModule, { logger: appLogger, bodyParser: false });
+  // Opt-in native TLS listener requesting client certificates (AUTHENTICATION_METHOD=mtls + MTLS_SERVER_CERT/KEY).
+  const httpsOptions = getMtlsHttpsOptions();
+  const app = await NestFactory.create(AppModule, { logger: appLogger, bodyParser: false, httpsOptions });
+  const scheme = httpsOptions ? 'https' : 'http';
   const httpLogger = new Logger('HTTP');
 
   app.use(
@@ -171,13 +174,13 @@ export async function bootstrap(): Promise<void> {
   const port = parseInt(process.env.PORT || '3100', 10);
 
   await app.listen(port);
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix} (QUEUE_ROLE=${role})`);
-  Logger.log(`🔌 Socket.IO WebSocket gateways are running on: http://localhost:${port}/socket/*`);
-  Logger.log(`🖥️  VNC WebSocket gateway is running on: ws://localhost:${port}/socket/vnc`);
+  Logger.log(`🚀 Application is running on: ${scheme}://localhost:${port}/${globalPrefix} (QUEUE_ROLE=${role})`);
+  Logger.log(`🔌 Socket.IO WebSocket gateways are running on: ${scheme}://localhost:${port}/socket/*`);
+  Logger.log(`🖥️  VNC WebSocket gateway is running on: ${httpsOptions ? 'wss' : 'ws'}://localhost:${port}/socket/vnc`);
 
   if (shouldEnableBullBoard(role)) {
     const { username } = readBullBoardAuthConfig();
 
-    Logger.log(`📊 Bull Board: http://localhost:${port}${readBullBoardPath()} (HTTP Basic, user ${username})`);
+    Logger.log(`📊 Bull Board: ${scheme}://localhost:${port}${readBullBoardPath()} (HTTP Basic, user ${username})`);
   }
 }

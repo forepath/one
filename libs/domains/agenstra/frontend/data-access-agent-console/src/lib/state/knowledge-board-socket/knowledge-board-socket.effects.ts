@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
 import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/agenstra/frontend/util-configuration';
-import { OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
+import { createSocketAuthOption, OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { catchError, delay, EMPTY, filter, fromEvent, map, merge, of, switchMap, tap, withLatestFrom } from 'rxjs';
@@ -97,7 +97,7 @@ export const connectKnowledgeBoardSocket$ = createEffect(
               reconnectionDelay: 1000,
               reconnectionDelayMax: 5000,
               randomizationFactor: 0.5,
-              ...(authHeader && { auth: { Authorization: authHeader } }),
+              ...(authHeader && { auth: createSocketAuthOption(environment.authentication.config, authHeader) }),
             });
 
             const connectSuccess$ = fromEvent(knowledgeBoardSocketInstance, 'connect').pipe(

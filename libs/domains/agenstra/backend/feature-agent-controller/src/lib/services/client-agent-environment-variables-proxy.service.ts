@@ -14,6 +14,7 @@ import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-he
 
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsService } from './clients.service';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 /**
  * Service for proxying agent environment variable requests to client endpoints.
@@ -48,6 +49,8 @@ export class ClientAgentEnvironmentVariablesProxyService {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;
+    } else if (clientEntity.authenticationType === AuthenticationType.MTLS) {
+      return createClientMtlsAuthorizationHeader(clientEntity);
     } else {
       throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);
     }

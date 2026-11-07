@@ -17,9 +17,9 @@ const authMethod = getAuthenticationMethod();
 
 // The agent-manager has no users table / console: only service authentication is supported.
 // Anything else would leave the API without an authenticating guard, so refuse to start.
-if (authMethod !== 'api-key' && authMethod !== 'oidc') {
+if (authMethod !== 'api-key' && authMethod !== 'oidc' && authMethod !== 'mtls') {
   throw new Error(
-    `AUTHENTICATION_METHOD=${authMethod} is not supported by the agent-manager. Use api-key (STATIC_API_KEY) or oidc (OIDC_* settings).`,
+    `AUTHENTICATION_METHOD=${authMethod} is not supported by the agent-manager. Use api-key (STATIC_API_KEY), oidc (OIDC_* settings) or mtls (MTLS_CA_CERT).`,
   );
 }
 
@@ -33,7 +33,7 @@ if (authMethod !== 'api-key' && authMethod !== 'oidc') {
     MonitoringModule,
   ],
   providers: [
-    // api-key: static API key guard; oidc: API key guard (pass-through) + OIDC access token guard
+    // api-key: static API key guard; mtls: client certificate guard; oidc: API key guard (pass-through) + OIDC guard
     ...getHybridAuthGuards(),
     // Apply rate limiting globally to all routes
     {

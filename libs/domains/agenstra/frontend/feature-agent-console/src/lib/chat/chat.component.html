@@ -2152,8 +2152,41 @@
         <option value="">Select authentication type</option>
         <option value="api_key">API Key</option>
         <option value="oidc">OIDC (client credentials)</option>
+        @if (!useProvisioning()) {
+          <option value="mtls">mTLS (client certificate)</option>
+        }
       </fpc-form-control>
     </fpc-form-field>
+
+    <!-- mTLS fields (shown when authenticationType is 'mtls'): client certificate for the agent-manager -->
+    @if (newClient().authenticationType === 'mtls') {
+      <fpc-form-field forId="clientMtlsCertificate" label="Client certificate (PEM)" required>
+        <input
+          id="clientMtlsCertificate"
+          type="file"
+          class="form-control"
+          accept=".pem,.crt,.cer"
+          required
+          [disabled]="(clientsCreating$ | async) === true"
+          (change)="onClientMtlsFileSelected($event, 'mtlsCertificate', 'new')"
+        />
+        <span fpcFormFieldHint
+          >Leaf certificate first, intermediates may follow. Its CA must be trusted by the manager.</span
+        >
+      </fpc-form-field>
+      <fpc-form-field forId="clientMtlsPrivateKey" label="Private key (PEM)" required>
+        <input
+          id="clientMtlsPrivateKey"
+          type="file"
+          class="form-control"
+          accept=".pem,.key"
+          required
+          [disabled]="(clientsCreating$ | async) === true"
+          (change)="onClientMtlsFileSelected($event, 'mtlsPrivateKey', 'new')"
+        />
+        <span fpcFormFieldHint>Unencrypted key; stored encrypted by the controller and never shown again.</span>
+      </fpc-form-field>
+    }
 
     <!-- API Key fields (shown when authenticationType is 'api_key') -->
     @if (newClient().authenticationType === 'api_key') {
@@ -2650,8 +2683,36 @@
         <option value="">Select authentication type</option>
         <option value="api_key">API Key</option>
         <option value="oidc">OIDC (client credentials)</option>
+        <option value="mtls">mTLS (client certificate)</option>
       </fpc-form-control>
     </fpc-form-field>
+
+    <!-- mTLS fields (shown when authenticationType is 'mtls'): select both files to replace the certificate -->
+    @if (editingClient().authenticationType === 'mtls') {
+      <fpc-form-field forId="updateClientMtlsCertificate" label="Client certificate (PEM)">
+        <input
+          id="updateClientMtlsCertificate"
+          type="file"
+          class="form-control"
+          accept=".pem,.crt,.cer"
+          [disabled]="(clientsUpdating$ | async) === true"
+          (change)="onClientMtlsFileSelected($event, 'mtlsCertificate', 'edit')"
+        />
+        <span fpcFormFieldHint
+          >Select certificate and key to replace the stored pair; leave both empty to keep it.</span
+        >
+      </fpc-form-field>
+      <fpc-form-field forId="updateClientMtlsPrivateKey" label="Private key (PEM)">
+        <input
+          id="updateClientMtlsPrivateKey"
+          type="file"
+          class="form-control"
+          accept=".pem,.key"
+          [disabled]="(clientsUpdating$ | async) === true"
+          (change)="onClientMtlsFileSelected($event, 'mtlsPrivateKey', 'edit')"
+        />
+      </fpc-form-field>
+    }
 
     <!-- API Key fields (shown when authenticationType is 'api_key') -->
     @if (editingClient().authenticationType === 'api_key') {

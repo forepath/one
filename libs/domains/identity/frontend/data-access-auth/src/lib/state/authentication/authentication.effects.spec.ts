@@ -1,16 +1,26 @@
+import { webcrypto } from 'node:crypto';
+
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import {
   createMockIdentityAuthEnvironment,
+  hasMtlsCredential,
   IDENTITY_AUTH_ENVIRONMENT,
   OidcAuthService,
+  resetMtlsCredentialStateForTests,
 } from '@forepath/identity/frontend';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
-import { of, throwError } from 'rxjs';
+import { firstValueFrom, of, throwError } from 'rxjs';
 
+// Test-only PKI builder of the identity domain.
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import {
+  createTestCertificate,
+  createTestPki,
+} from '../../../../../../backend/util-auth/src/lib/mtls/testing/mtls-test-pki';
 import { LOGIN_SUCCESS_REDIRECT_TARGET } from '../../services/auth.service';
 
 import {
@@ -1314,6 +1324,117 @@ describe('AuthenticationEffects', () => {
         expect(result).toEqual(outcome);
         done();
       });
+    });
+  });
+  describe('client certificate (mtls)', () => {
+    const pki = createTestPki();
+    const mtlsEnvironment = () => createMockIdentityAuthEnvironment({ authentication: { type: 'mtls' } });
+    const originalCrypto = (globalThis as { crypto?: Crypto }).crypto;
+    const run = <T>(effect$: import('rxjs').Observable<T>) => firstValueFrom(effect$);
+
+    beforeAll(() => {
+      Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true });
+    });
+
+    afterAll(() => {
+      Object.defineProperty(globalThis, 'crypto', { value: originalCrypto, configurable: true });
+    });
+
+    beforeEach(() => {
+      resetMtlsCredentialStateForTests();
+    });
+
+    it('imports a combined PEM file and signs in without touching localStorage', async () => {
+      const certificate = new Blob([`${pki.client.pem}${pki.client.privateKeyPem}`]);
+
+      await expect(
+        run(login$(of(login({ certificate })), mtlsEnvironment(), mockOidcAuthService as any, null)),
+      ).resolves.toEqual(loginSuccess({ authenticationType: 'mtls' }));
+      await expect(hasMtlsCredential()).resolves.toBe(true);
+      expect(window.localStorage.setItem).not.toHaveBeenCalled();
+    });
+
+    it('accepts the private key as a separate file', async () => {
+      const certificate = new Blob([pki.client.pem]);
+      const privateKey = new Blob([pki.client.privateKeyPem]);
+
+      await expect(
+        run(login$(of(login({ certificate, privateKey })), mtlsEnvironment(), mockOidcAuthService as any, null)),
+      ).resolves.toEqual(loginSuccess({ authenticationType: 'mtls' }));
+    });
+
+    it.each([
+      ['no certificate', () => ({}), 'A client certificate is required for authentication'],
+      [
+        'a key of another certificate',
+        () => ({ certificate: new Blob([pki.client.pem]), privateKey: new Blob([pki.foreignClient.privateKeyPem]) }),
+        'The private key does not belong to the certificate.',
+      ],
+      [
+        'an expired certificate',
+        () => {
+          const expired = createTestCertificate({
+            commonName: 'expired',
+            issuer: { certificate: pki.rootCa },
+            notBefore: new Date(Date.now() - 2 * 86_400_000),
+            notAfter: new Date(Date.now() - 86_400_000),
+          });
+
+          return { certificate: new Blob([`${expired.pem}${expired.privateKeyPem}`]) };
+        },
+        'The certificate has expired.',
+      ],
+      [
+        'an oversized file',
+        () => ({ certificate: new Blob(['x'.repeat(256 * 1024 + 1)]) }),
+        'The selected file is too large to be a PEM certificate or key.',
+      ],
+      [
+        'an unreadable file',
+        () => ({ certificate: { size: 10, text: () => Promise.reject(new Error('io')) } as unknown as Blob }),
+        'The certificate could not be read. Select a PEM certificate and its private key.',
+      ],
+    ])('fails for %s', async (_label, payload, error) => {
+      await expect(
+        run(login$(of(login(payload())), mtlsEnvironment(), mockOidcAuthService as any, null)),
+      ).resolves.toEqual(loginFailure({ error }));
+      await expect(hasMtlsCredential()).resolves.toBe(false);
+    });
+
+    it('checkAuthentication reflects the stored certificate', async () => {
+      await expect(
+        run(checkAuthentication$(of(checkAuthentication()), mtlsEnvironment(), mockOidcAuthService as any, null)),
+      ).resolves.toEqual(checkAuthenticationSuccess({ isAuthenticated: false, authenticationType: undefined }));
+
+      await run(
+        login$(
+          of(login({ certificate: new Blob([`${pki.client.pem}${pki.client.privateKeyPem}`]) })),
+          mtlsEnvironment(),
+          mockOidcAuthService as any,
+          null,
+        ),
+      );
+
+      await expect(
+        run(checkAuthentication$(of(checkAuthentication()), mtlsEnvironment(), mockOidcAuthService as any, null)),
+      ).resolves.toEqual(checkAuthenticationSuccess({ isAuthenticated: true, authenticationType: 'mtls' }));
+    });
+
+    it('logout removes the stored certificate', async () => {
+      await run(
+        login$(
+          of(login({ certificate: new Blob([`${pki.client.pem}${pki.client.privateKeyPem}`]) })),
+          mtlsEnvironment(),
+          mockOidcAuthService as any,
+          null,
+        ),
+      );
+
+      await expect(run(logout$(of(logout({})), mtlsEnvironment(), mockOidcAuthService as any, null))).resolves.toEqual(
+        logoutSuccess(),
+      );
+      await expect(hasMtlsCredential()).resolves.toBe(false);
+      expect(mockOidcAuthService.logout).not.toHaveBeenCalled();
     });
   });
 });

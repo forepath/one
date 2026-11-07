@@ -2,7 +2,17 @@ import type { AgentTypeCapabilities } from '../agents/agents.types';
 
 // Types based on OpenAPI spec
 /** How the controller authenticates against the workspace's agent-manager. */
-export type ClientAuthenticationType = 'api_key' | 'oidc';
+export type ClientAuthenticationType = 'api_key' | 'oidc' | 'mtls';
+
+/** Authentication types auto-provisioned managers can be configured with (mtls needs an operator CA). */
+export type ProvisionableClientAuthenticationType = Exclude<ClientAuthenticationType, 'mtls'>;
+
+/** Stored client certificate of an mtls client (the private key is never returned). */
+export interface ClientMtlsCertificateSummary {
+  fingerprint256: string;
+  commonName?: string;
+  validTo: string;
+}
 
 export interface AgentTypeInfo {
   type: string;
@@ -96,6 +106,8 @@ export interface ClientResponseDto {
   description?: string;
   endpoint: string;
   authenticationType: ClientAuthenticationType;
+  /** Present for authentication type `mtls`. */
+  mtlsCertificate?: ClientMtlsCertificateSummary;
   config?: ConfigResponseDto;
   isAutoProvisioned: boolean;
   /** True if the current user may change autonomy, env vars, agents, and workspace settings. */
@@ -131,6 +143,10 @@ export interface CreateClientDto {
   autoEnrichEnabledGlobal?: string;
   /** 0–2; written as AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE on the new server (optional). */
   autoEnrichVectorMaxCosineDistance?: number;
+  /** Client certificate chain (PEM, leaf first) for authentication type `mtls`. */
+  mtlsCertificate?: string;
+  /** Unencrypted PEM private key of the client certificate (sent once, never returned). */
+  mtlsPrivateKey?: string;
 }
 
 export interface UpdateClientDto {
@@ -143,6 +159,10 @@ export interface UpdateClientDto {
   oidcClientSecret?: string;
   oidcIssuer?: string;
   oidcScope?: string;
+  /** Client certificate chain (PEM, leaf first) for authentication type `mtls`. */
+  mtlsCertificate?: string;
+  /** Unencrypted PEM private key of the client certificate (sent once, never returned). */
+  mtlsPrivateKey?: string;
 }
 
 export interface CreateClientResponseDto extends ClientResponseDto {
@@ -185,7 +205,7 @@ export interface ProvisionServerDto {
   name: string;
   description?: string;
   location?: string;
-  authenticationType: ClientAuthenticationType;
+  authenticationType: ProvisionableClientAuthenticationType;
   apiKey?: string;
   /** OIDC client (client credentials grant) the controller uses for the agent-manager. */
   oidcClientId?: string;

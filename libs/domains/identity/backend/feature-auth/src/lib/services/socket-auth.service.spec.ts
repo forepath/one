@@ -1,6 +1,9 @@
-import { UserRole } from '@forepath/identity/backend';
+import { createMtlsAssertion, UserRole } from '@forepath/identity/backend';
 import { JwtService } from '@nestjs/jwt';
 
+// Test-only PKI builder of the identity domain (not part of the public util-auth API).
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { createTestPki } from '../../../../util-auth/src/lib/mtls/testing/mtls-test-pki';
 import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
 
@@ -117,6 +120,90 @@ describe('SocketAuthService', () => {
 
     expect(result).toBeNull();
     expect(oidcVerifier.verifyAccessToken).not.toHaveBeenCalled();
+  });
+
+  describe('static credentials (api-key / mtls): full access, like HTTP', () => {
+    const pki = createTestPki();
+    const originalEnv = { ...process.env };
+    const assertion = (certificate = pki.client) =>
+      createMtlsAssertion({ certificateChain: [certificate.certificate], privateKey: certificate.privateKey });
+    const tlsSocket = (der: Buffer) => ({ encrypted: true, getPeerCertificate: () => ({ raw: der }) });
+
+    afterEach(() => {
+      process.env = { ...originalEnv };
+    });
+
+    describe('api-key', () => {
+      beforeEach(() => {
+        process.env.AUTHENTICATION_METHOD = 'api-key';
+        process.env.STATIC_API_KEY = 'socket-key';
+      });
+
+      it.each(['Bearer socket-key', 'ApiKey socket-key'])('accepts %s as the admin principal', async (header) => {
+        await expect(service.validateAndGetUser(header, undefined, { websocket: 'clients' })).resolves.toEqual({
+          isApiKeyAuth: true,
+          user: { id: 'api-key-user', roles: ['admin', 'user'] },
+        });
+      });
+
+      it('rejects wrong keys, missing headers and certificate assertions', async () => {
+        await expect(service.validateAndGetUser('Bearer wrong')).resolves.toBeNull();
+        await expect(service.validateAndGetUser(undefined)).resolves.toBeNull();
+        await expect(
+          service.validateAndGetUser(`Certificate ${assertion()}`, undefined, {
+            transportSocket: tlsSocket(pki.client.der),
+          }),
+        ).resolves.toBeNull();
+      });
+    });
+
+    describe('mtls', () => {
+      beforeEach(() => {
+        process.env.AUTHENTICATION_METHOD = 'mtls';
+        process.env.MTLS_CA_CERT = pki.rootCa.pem;
+        process.env.STATIC_API_KEY = 'socket-key';
+      });
+
+      it('accepts a certificate assertion as the admin principal', async () => {
+        const result = await service.validateAndGetUser(`Certificate ${assertion()}`, undefined, {
+          websocket: 'clients',
+        });
+
+        expect(result).toEqual({
+          isApiKeyAuth: true,
+          user: { id: 'mtls-user', roles: ['admin', 'user'] },
+          clientCertificate: expect.objectContaining({ source: 'assertion', commonName: 'api-client' }),
+        });
+        expect(jwtService.verifyAsync).not.toHaveBeenCalled();
+      });
+
+      it('accepts a TLS client certificate without an Authorization value', async () => {
+        const result = await service.validateAndGetUser(undefined, undefined, {
+          websocket: 'clients',
+          transportSocket: tlsSocket(pki.client.der),
+        });
+
+        expect(result?.isApiKeyAuth).toBe(true);
+        expect(result?.clientCertificate?.source).toBe('tls');
+      });
+
+      it('rejects untrusted certificates, the API key, JWTs and missing credentials', async () => {
+        await expect(service.validateAndGetUser(`Certificate ${assertion(pki.foreignClient)}`)).resolves.toBeNull();
+        await expect(
+          service.validateAndGetUser(undefined, undefined, { transportSocket: tlsSocket(pki.foreignClient.der) }),
+        ).resolves.toBeNull();
+        await expect(service.validateAndGetUser('Bearer socket-key')).resolves.toBeNull();
+        await expect(service.validateAndGetUser('Bearer valid.jwt.token')).resolves.toBeNull();
+        await expect(service.validateAndGetUser(undefined)).resolves.toBeNull();
+        expect(jwtService.verifyAsync).not.toHaveBeenCalled();
+      });
+
+      it('fails closed when the mTLS configuration is missing', async () => {
+        delete process.env.MTLS_CA_CERT;
+
+        await expect(service.validateAndGetUser(`Certificate ${assertion()}`)).resolves.toBeNull();
+      });
+    });
   });
 
   describe('oidc mode', () => {

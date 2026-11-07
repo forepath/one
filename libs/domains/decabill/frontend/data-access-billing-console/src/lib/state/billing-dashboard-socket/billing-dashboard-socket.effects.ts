@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import type { Environment } from '@forepath/decabill/frontend/util-configuration';
 import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend/util-configuration';
-import { OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
+import { createSocketAuthOption, OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, filter, from, fromEvent, map, merge, mergeMap, of, switchMap, take, takeUntil, tap } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
@@ -69,10 +69,9 @@ export const connectBillingDashboardSocket$ = createEffect(
               extraHeaders: {
                 'X-Tenant': resolveBillingTenantId(environment),
               },
-              auth: {
-                Authorization: authHeader,
+              auth: createSocketAuthOption(environment.authentication.config, authHeader, {
                 tenantId: resolveBillingTenantId(environment),
-              },
+              }),
             });
 
             const socket = billingDashboardSocketInstance;

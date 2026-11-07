@@ -61,6 +61,14 @@ export class ClientEntity {
   @Column({ type: 'varchar', length: 1024, nullable: true, name: 'oidc_scope' })
   oidcScope?: string | null;
 
+  /** Client certificate chain (PEM, leaf first) for authenticationType `mtls`. Public data. */
+  @Column({ type: 'text', nullable: true, name: 'mtls_certificate' })
+  mtlsCertificate?: string | null;
+
+  /** PKCS#8 / PKCS#1 / SEC1 private key (PEM) of {@link mtlsCertificate}; encrypted at rest. */
+  @Column({ type: 'text', nullable: true, name: 'mtls_private_key', transformer: createAes256GcmTransformer() })
+  mtlsPrivateKey?: string | null;
+
   @Column({ type: 'uuid', nullable: true, name: 'user_id' })
   userId?: string;
 

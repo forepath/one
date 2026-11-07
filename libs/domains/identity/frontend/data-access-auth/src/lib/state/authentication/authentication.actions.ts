@@ -1,6 +1,7 @@
 import { createAction, props } from '@ngrx/store';
 
 import type {
+  AuthenticationType,
   CreateUserDto,
   Login2faMethod,
   TotpSetup,
@@ -12,18 +13,27 @@ import type {
 /**
  * Unified login action - works for every authentication type
  * For API key: pass the apiKey in the payload
+ * For mtls: pass the selected certificate file (and the private key file when separate). Files, not their text, are
+ *   dispatched so key material never appears in action logs / devtools.
  * For OIDC / SAML: payload ignored; redirects to the identity provider (the post-login return URL is honored)
  * For users: pass email and password (optional code for login 2FA)
  */
 export const login = createAction(
   '[Authentication] Login',
-  props<{ apiKey?: string; email?: string; password?: string; code?: string }>(),
+  props<{
+    apiKey?: string;
+    email?: string;
+    password?: string;
+    code?: string;
+    certificate?: Blob;
+    privateKey?: Blob;
+  }>(),
 );
 
 export const loginSuccess = createAction(
   '[Authentication] Login Success',
   props<{
-    authenticationType: 'api-key' | 'users' | 'oidc' | 'saml';
+    authenticationType: AuthenticationType;
     user?: { id: string; email: string; role: string };
   }>(),
 );
@@ -57,7 +67,7 @@ export const checkAuthenticationSuccess = createAction(
   '[Authentication] Check Authentication Success',
   props<{
     isAuthenticated: boolean;
-    authenticationType?: 'api-key' | 'users' | 'oidc' | 'saml';
+    authenticationType?: AuthenticationType;
     user?: { id: string; email: string; role: string };
   }>(),
 );

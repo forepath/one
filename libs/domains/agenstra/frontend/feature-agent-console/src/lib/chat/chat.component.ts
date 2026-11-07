@@ -1887,6 +1887,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     oidcClientSecret: undefined,
     oidcIssuer: undefined,
     oidcScope: undefined,
+    mtlsCertificate: undefined,
+    mtlsPrivateKey: undefined,
   });
 
   // Provisioning state
@@ -1954,6 +1956,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     oidcClientSecret: undefined,
     oidcIssuer: undefined,
     oidcScope: undefined,
+    mtlsCertificate: undefined,
+    mtlsPrivateKey: undefined,
   });
   readonly editingAgentId = signal<string | null>(null);
   readonly editingAgent = signal<Partial<UpdateAgentDto>>({
@@ -4947,6 +4951,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       oidcClientSecret: undefined,
       oidcIssuer: undefined,
       oidcScope: undefined,
+      mtlsCertificate: undefined,
+      mtlsPrivateKey: undefined,
     });
   }
 
@@ -5043,6 +5049,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           oidcClientSecret: undefined,
           oidcIssuer: undefined,
           oidcScope: undefined,
+          mtlsCertificate: undefined,
+          mtlsPrivateKey: undefined,
         });
       },
     });
@@ -5201,11 +5209,38 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       oidcClientSecret: undefined,
       oidcIssuer: undefined,
       oidcScope: undefined,
+      mtlsCertificate: undefined,
+      mtlsPrivateKey: undefined,
     });
+  }
+
+  /**
+   * mtls: reads a selected PEM file (client certificate or private key) into the add / edit client form.
+   * The private key is only sent to the controller, which stores it encrypted and never returns it.
+   */
+  async onClientMtlsFileSelected(
+    event: Event,
+    field: 'mtlsCertificate' | 'mtlsPrivateKey',
+    form: 'new' | 'edit',
+  ): Promise<void> {
+    const file = (event.target as HTMLInputElement | null)?.files?.[0];
+    // PEM certificates / keys are a few KB; anything far larger is the wrong file.
+    const text = file && file.size <= 64 * 1024 ? await file.text() : undefined;
+
+    if (form === 'new') {
+      this.newClient.update((current) => ({ ...current, [field]: text }));
+    } else {
+      this.editingClient.update((current) => ({ ...current, [field]: text }));
+    }
   }
 
   onProvisioningToggle(enabled: boolean): void {
     this.useProvisioning.set(enabled);
+
+    if (enabled && this.newClient().authenticationType === 'mtls') {
+      this.newClient.update((current) => ({ ...current, authenticationType: undefined }));
+      this.onClientAuthTypeChange();
+    }
 
     if (enabled) {
       // Auto-fill name when provisioning is enabled
@@ -5267,10 +5302,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         }
       }
 
-      // Provisioning flow
+      // Provisioning flow (provisioned managers use an API key or OIDC; mtls needs an operator CA)
       if (
         !clientData.name ||
         !clientData.authenticationType ||
+        clientData.authenticationType === 'mtls' ||
         !this.selectedProvider() ||
         !this.selectedServerType()
       ) {
@@ -5395,6 +5431,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         if (clientData.oidcScope) {
           createDto.oidcScope = clientData.oidcScope;
         }
+      }
+
+      if (clientData.authenticationType === 'mtls') {
+        if (!clientData.mtlsCertificate || !clientData.mtlsPrivateKey) {
+          return;
+        }
+
+        createDto.mtlsCertificate = clientData.mtlsCertificate;
+        createDto.mtlsPrivateKey = clientData.mtlsPrivateKey;
       }
 
       this.clientsFacade.createClient(createDto);
@@ -5589,6 +5634,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       oidcClientSecret: undefined,
       oidcIssuer: undefined,
       oidcScope: undefined,
+      mtlsCertificate: undefined,
+      mtlsPrivateKey: undefined,
     });
     this.clientsFacade.refreshClientIsolation(client.id);
     showAgentModal(this.updateClientModalOpen);
@@ -5637,6 +5684,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       oidcClientSecret: undefined,
       oidcIssuer: undefined,
       oidcScope: undefined,
+      mtlsCertificate: undefined,
+      mtlsPrivateKey: undefined,
     });
   }
 
@@ -5687,6 +5736,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (clientData.oidcScope !== undefined) {
         updateDto.oidcScope = clientData.oidcScope;
       }
+    }
+
+    if (clientData.authenticationType === 'mtls' && (clientData.mtlsCertificate || clientData.mtlsPrivateKey)) {
+      // Rotating the certificate replaces certificate and key together (the API validates the pair).
+      updateDto.mtlsCertificate = clientData.mtlsCertificate;
+      updateDto.mtlsPrivateKey = clientData.mtlsPrivateKey;
     }
 
     this.clientsFacade.updateClient(clientId, updateDto);

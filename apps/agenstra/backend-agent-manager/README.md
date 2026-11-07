@@ -79,7 +79,7 @@ For complete WebSocket event specifications, authentication flow, and usage exam
 
 ### HTTP Endpoints
 
-All HTTP endpoints are protected by OIDC access token validation (`AUTHENTICATION_METHOD=oidc`, default when `STATIC_API_KEY` is unset) or the static API key. Other methods (`users`, `saml`) are rejected at boot.
+All HTTP endpoints are protected by OIDC access token validation (`AUTHENTICATION_METHOD=oidc`, default when `STATIC_API_KEY` is unset) the static API key, or client certificates (`AUTHENTICATION_METHOD=mtls`, `MTLS_CA_CERT[_FILE]`; the controller uses a per-client certificate). Other methods (`users`, `saml`) are rejected at boot.
 
 ⚠️ **Note**: Set `OIDC_AUTHORIZED_PARTIES` (or `OIDC_AUDIENCE`) so only the controller's client credentials tokens are accepted; provisioned managers set `OIDC_AUTHORIZED_PARTIES=<clientId>` automatically.
 

@@ -147,7 +147,8 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
       }
 
       const header = typeof authHeader === 'string' ? authHeader : undefined;
-      const authOptions = { websocket: BILLING_WEBSOCKETS.billing };
+      // mtls: the handshake connection carries the TLS client certificate, if one was presented.
+      const authOptions = { websocket: BILLING_WEBSOCKETS.billing, transportSocket: socket.request?.socket };
       const userInfo = await this.socketAuthService.validateAndGetUser(header, tenantId, authOptions);
 
       if (!userInfo) {

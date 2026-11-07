@@ -11,6 +11,7 @@ import { buildRemoteVncWsUrl } from '../utils/remote-manager-url.utils';
 
 import { ClientsService } from './clients.service';
 import { ControllerVncTicketService } from './controller-vnc-ticket.service';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 @Injectable()
 export class ClientAgentVncProxyService {
@@ -126,6 +127,10 @@ export class ClientAgentVncProxyService {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;
+    }
+
+    if (clientEntity.authenticationType === AuthenticationType.MTLS) {
+      return createClientMtlsAuthorizationHeader(clientEntity);
     }
 
     throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);

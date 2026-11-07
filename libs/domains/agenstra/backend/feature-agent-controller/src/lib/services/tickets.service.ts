@@ -4,10 +4,10 @@ import {
   ClientUsersRepository,
   ensureClientAccess,
   ensureWorkspaceManagementAccess,
-  getAuthenticationMethod,
   getUserFromRequest,
   type RequestWithUser,
   UsersRepository,
+  usesStaticCredential,
 } from '@forepath/identity/backend';
 import {
   BadRequestException,
@@ -187,7 +187,7 @@ export class TicketsService {
 
   private isApiKeyMode(): boolean {
     // Same resolution as the guards (an empty AUTHENTICATION_METHOD from compose `${VAR:-}` counts as unset).
-    return getAuthenticationMethod() === 'api-key';
+    return usesStaticCredential();
   }
 
   private resolveActor(req?: ContentPrincipal): { actorType: TicketActorType; actorUserId?: string } {

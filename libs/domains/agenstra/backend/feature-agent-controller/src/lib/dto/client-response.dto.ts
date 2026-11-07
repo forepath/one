@@ -13,6 +13,8 @@ export class ClientResponseDto {
   description?: string;
   endpoint!: string;
   authenticationType!: AuthenticationType;
+  /** Stored client certificate (authentication type `mtls`); the private key is never returned. */
+  mtlsCertificate?: { fingerprint256: string; commonName?: string; validTo: string };
   config?: ConfigResponseDto;
   /** Container isolation levels of the workspace host (recommendation, ready levels, revision). */
   isolation?: ClientIsolationSummaryDto;

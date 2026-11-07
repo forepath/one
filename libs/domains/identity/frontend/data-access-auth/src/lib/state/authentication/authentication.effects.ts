@@ -3,10 +3,15 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import {
+  clearMtlsCredential,
+  hasMtlsCredential,
   IDENTITY_AUTH_ENVIRONMENT,
+  importMtlsCredential,
   jwtPayloadHasPatAmr,
+  MtlsCredentialError,
   OidcAuthService,
   parseJwtPayload,
+  saveMtlsCredential,
   startSamlLogin,
   usesAppSessionJwt,
 } from '@forepath/identity/frontend';
@@ -142,6 +147,39 @@ function getLogin2faMethod(error: unknown): Login2faMethod | null {
   return null;
 }
 
+/** Reads a selected file; certificate files are small text (PEM). */
+function readBlobText(blob: Blob): Promise<string> {
+  if (typeof blob.text === 'function') {
+    return blob.text();
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(String(reader.result ?? ''));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(blob);
+  });
+}
+
+/** Max accepted size of a selected certificate / key file (PEM bundles are a few KB). */
+const MAX_CERTIFICATE_FILE_BYTES = 256 * 1024;
+
+/** mtls: import the selected certificate (+ key) as a non-extractable signing credential and store it. */
+async function importCertificateFiles(certificate: Blob, privateKey?: Blob): Promise<void> {
+  if (certificate.size > MAX_CERTIFICATE_FILE_BYTES || (privateKey?.size ?? 0) > MAX_CERTIFICATE_FILE_BYTES) {
+    throw new MtlsCredentialError('The selected file is too large to be a PEM certificate or key.');
+  }
+
+  const [certificateText, privateKeyText] = await Promise.all([
+    readBlobText(certificate),
+    privateKey ? readBlobText(privateKey) : Promise.resolve(undefined),
+  ]);
+  const credential = await importMtlsCredential(certificateText, privateKeyText);
+
+  await saveMtlsCredential(credential);
+}
+
 export const login$ = createEffect(
   (
     actions$ = inject(Actions),
@@ -151,7 +189,27 @@ export const login$ = createEffect(
   ) => {
     return actions$.pipe(
       ofType(login),
-      switchMap(({ apiKey, email, password, code }) => {
+      switchMap(({ apiKey, email, password, code, certificate, privateKey }) => {
+        if (authEnvironment.authentication.type === 'mtls') {
+          if (!certificate) {
+            return of(loginFailure({ error: 'A client certificate is required for authentication' }));
+          }
+
+          return from(importCertificateFiles(certificate, privateKey)).pipe(
+            map(() => loginSuccess({ authenticationType: 'mtls' })),
+            catchError((error) =>
+              of(
+                loginFailure({
+                  error:
+                    error instanceof MtlsCredentialError
+                      ? error.message
+                      : 'The certificate could not be read. Select a PEM certificate and its private key.',
+                }),
+              ),
+            ),
+          );
+        }
+
         if (authEnvironment.authentication.type === 'api-key') {
           const keyToStore = apiKey || authEnvironment.authentication.apiKey;
 
@@ -297,6 +355,13 @@ export const logout$ = createEffect(
           return of(logoutSuccess());
         }
 
+        if (authEnvironment.authentication.type === 'mtls') {
+          return from(clearMtlsCredential()).pipe(
+            map(() => logoutSuccess()),
+            catchError(() => of(logoutSuccess())),
+          );
+        }
+
         if (authEnvironment.authentication.type === 'oidc') {
           return from(oidcAuthService.logout()).pipe(
             map(() => logoutSuccess()),
@@ -365,6 +430,18 @@ export const checkAuthentication$ = createEffect(
               isAuthenticated,
               authenticationType: isAuthenticated ? 'api-key' : undefined,
             }),
+          );
+        }
+
+        if (authEnvironment.authentication.type === 'mtls') {
+          return from(hasMtlsCredential()).pipe(
+            map((isAuthenticated) =>
+              checkAuthenticationSuccess({
+                isAuthenticated,
+                authenticationType: isAuthenticated ? 'mtls' : undefined,
+              }),
+            ),
+            catchError(() => of(checkAuthenticationSuccess({ isAuthenticated: false }))),
           );
         }
 

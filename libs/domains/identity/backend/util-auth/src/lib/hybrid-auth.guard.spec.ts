@@ -1,8 +1,15 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 
-import { getAuthenticationMethod } from './authentication-method';
+import {
+  getAuthenticationMethod,
+  getStaticCredentialPrincipalId,
+  MTLS_PRINCIPAL_ID,
+  usesStaticCredential,
+} from './authentication-method';
 import { getHybridAuthGuards, HybridAuthGuard } from './hybrid-auth.guard';
+import { createMtlsAssertion } from './mtls/mtls-assertion';
+import { createTestPki } from './mtls/testing/mtls-test-pki';
 import { OidcAuthGuard } from './oidc/oidc-auth.guard';
 
 describe('HybridAuthGuard', () => {
@@ -372,6 +379,111 @@ describe('HybridAuthGuard', () => {
   });
 });
 
+describe('HybridAuthGuard (AUTHENTICATION_METHOD=mtls)', () => {
+  const pki = createTestPki();
+  const originalEnv = { ...process.env };
+  let guard: HybridAuthGuard;
+  let reflector: Reflector;
+  const contextFor = (request: Record<string, unknown>) =>
+    ({
+      switchToHttp: () => ({ getRequest: () => request }),
+      getClass: () => ({}),
+      getHandler: () => ({}),
+    }) as unknown as ExecutionContext;
+  const assertion = (certificate = pki.client) =>
+    createMtlsAssertion({ certificateChain: [certificate.certificate], privateKey: certificate.privateKey });
+
+  beforeEach(() => {
+    process.env.AUTHENTICATION_METHOD = 'mtls';
+    process.env.MTLS_CA_CERT = pki.rootCa.pem;
+    process.env.STATIC_API_KEY = 'static-key-must-not-work';
+    reflector = new Reflector();
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
+    guard = new HybridAuthGuard(reflector);
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+    jest.restoreAllMocks();
+  });
+
+  it('grants full admin access for a certificate assertion (like the API key)', () => {
+    const request: Record<string, unknown> = {
+      url: '/api/clients',
+      headers: { authorization: `Certificate ${assertion()}` },
+    };
+
+    expect(guard.canActivate(contextFor(request))).toBe(true);
+    expect(request['apiKeyAuthenticated']).toBe(true);
+    expect(request['user']).toEqual({ id: MTLS_PRINCIPAL_ID, username: 'api-client', roles: ['admin', 'user'] });
+    expect(request['clientCertificate']).toEqual(
+      expect.objectContaining({
+        source: 'assertion',
+        commonName: 'api-client',
+        fingerprint256: pki.client.fingerprint256,
+      }),
+    );
+  });
+
+  it('grants access for a client certificate presented in the TLS handshake', () => {
+    const request: Record<string, unknown> = {
+      url: '/api/clients',
+      headers: {},
+      socket: { encrypted: true, getPeerCertificate: () => ({ raw: pki.client.der }) },
+    };
+
+    expect(guard.canActivate(contextFor(request))).toBe(true);
+    expect(request['apiKeyAuthenticated']).toBe(true);
+    expect((request['clientCertificate'] as { source: string }).source).toBe('tls');
+  });
+
+  it('rejects requests without a client certificate', () => {
+    const request = { url: '/api/clients', headers: {} };
+
+    expect(() => guard.canActivate(contextFor(request))).toThrow(UnauthorizedException);
+    expect(() => guard.canActivate(contextFor(request))).toThrow('Missing client certificate');
+  });
+
+  it('rejects the static API key and other bearer tokens in mtls mode', () => {
+    for (const authorization of ['Bearer static-key-must-not-work', 'ApiKey static-key-must-not-work']) {
+      const request = { url: '/api/clients', headers: { authorization } };
+
+      expect(() => guard.canActivate(contextFor(request))).toThrow('Missing client certificate');
+    }
+  });
+
+  it('rejects certificates of an untrusted CA without leaking the reason', () => {
+    const request = {
+      url: '/api/clients',
+      headers: { authorization: `Certificate ${assertion(pki.foreignClient)}` },
+      socket: { encrypted: true, getPeerCertificate: () => ({ raw: pki.foreignClient.der }) },
+    };
+
+    expect(() => guard.canActivate(contextFor(request))).toThrow(
+      new UnauthorizedException('Invalid client certificate'),
+    );
+    expect(request).not.toHaveProperty('apiKeyAuthenticated');
+    expect(request).not.toHaveProperty('user');
+  });
+
+  it('rejects every request when MTLS_CA_CERT is missing (fail-closed)', () => {
+    delete process.env.MTLS_CA_CERT;
+
+    const request = { url: '/api/clients', headers: { authorization: `Certificate ${assertion()}` } };
+
+    expect(() => guard.canActivate(contextFor(request))).toThrow(UnauthorizedException);
+    expect(() => guard.canActivate(contextFor(request))).toThrow(/MTLS_CA_CERT/);
+  });
+
+  it('keeps health, public and ops routes reachable without a certificate', () => {
+    expect(guard.canActivate(contextFor({ url: '/api/health', headers: {} }))).toBe(true);
+
+    (reflector.getAllAndOverride as jest.Mock).mockReturnValue(true);
+
+    expect(guard.canActivate(contextFor({ url: '/api/public-thing', headers: {} }))).toBe(true);
+  });
+});
+
 describe('getAuthenticationMethod', () => {
   let originalStaticApiKey: string | undefined;
   let originalAuthMethod: string | undefined;
@@ -413,6 +525,28 @@ describe('getAuthenticationMethod', () => {
     process.env.AUTHENTICATION_METHOD = 'none';
     process.env.STATIC_API_KEY = 'k';
     expect(() => getAuthenticationMethod()).toThrow(/Unsupported AUTHENTICATION_METHOD/);
+  });
+
+  it('should return mtls when AUTHENTICATION_METHOD=mtls (never inferred)', () => {
+    process.env.AUTHENTICATION_METHOD = 'MTLS';
+    expect(getAuthenticationMethod()).toBe('mtls');
+
+    delete process.env.AUTHENTICATION_METHOD;
+    process.env.MTLS_CA_CERT = 'x';
+    delete process.env.STATIC_API_KEY;
+    expect(getAuthenticationMethod()).toBe('oidc');
+    delete process.env.MTLS_CA_CERT;
+  });
+
+  it('should treat api-key and mtls as static full-access credentials', () => {
+    expect(usesStaticCredential('api-key')).toBe(true);
+    expect(usesStaticCredential('mtls')).toBe(true);
+    expect(usesStaticCredential('users')).toBe(false);
+    expect(usesStaticCredential('oidc')).toBe(false);
+    expect(usesStaticCredential('saml')).toBe(false);
+    expect(getStaticCredentialPrincipalId('api-key')).toBe('api-key-user');
+    expect(getStaticCredentialPrincipalId('mtls')).toBe('mtls-user');
+    expect(getStaticCredentialPrincipalId('oidc')).toBeUndefined();
   });
 
   it('should return users when AUTHENTICATION_METHOD=users', () => {
@@ -491,6 +625,33 @@ describe('getHybridAuthGuards', () => {
         provide: APP_GUARD,
         useClass: HybridAuthGuard,
       });
+    });
+  });
+
+  describe('when AUTHENTICATION_METHOD is mtls', () => {
+    const pki = createTestPki();
+
+    beforeEach(() => {
+      process.env.AUTHENTICATION_METHOD = 'mtls';
+      delete process.env.STATIC_API_KEY;
+    });
+
+    afterEach(() => {
+      delete process.env.MTLS_CA_CERT;
+    });
+
+    it('should return only HybridAuthGuard (client certificate guard)', () => {
+      process.env.MTLS_CA_CERT = pki.rootCa.pem;
+
+      expect(getHybridAuthGuards()).toEqual([{ provide: APP_GUARD, useClass: HybridAuthGuard }]);
+    });
+
+    it('should fail at boot when MTLS_CA_CERT is missing or invalid', () => {
+      delete process.env.MTLS_CA_CERT;
+      expect(() => getHybridAuthGuards()).toThrow(/MTLS_CA_CERT/);
+
+      process.env.MTLS_CA_CERT = 'garbage';
+      expect(() => getHybridAuthGuards()).toThrow(/MTLS_CA_CERT/);
     });
   });
 

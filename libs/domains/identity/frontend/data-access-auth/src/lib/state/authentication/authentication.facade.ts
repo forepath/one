@@ -57,7 +57,14 @@ import {
   selectUsersError,
   selectUsersLoading,
 } from './authentication.selectors';
-import type { CreateUserDto, TotpSetup, TwoFactorStatus, UpdateUserDto, UserResponseDto } from './authentication.types';
+import type {
+  AuthenticationType,
+  CreateUserDto,
+  TotpSetup,
+  TwoFactorStatus,
+  UpdateUserDto,
+  UserResponseDto,
+} from './authentication.types';
 
 @Injectable({
   providedIn: 'root',
@@ -67,8 +74,7 @@ export class AuthenticationFacade {
 
   readonly isAuthenticated$: Observable<boolean> = this.store.select(selectIsAuthenticated);
   readonly isNotAuthenticated$: Observable<boolean> = this.store.select(selectIsNotAuthenticated);
-  readonly authenticationType$: Observable<'api-key' | 'users' | 'oidc' | 'saml' | null> =
-    this.store.select(selectAuthenticationType);
+  readonly authenticationType$: Observable<AuthenticationType | null> = this.store.select(selectAuthenticationType);
   readonly user$: Observable<{ id: string; email: string; role: string } | null> = this.store.select(selectUser);
   readonly isAdmin$: Observable<boolean> = this.store.select(selectIsAdmin);
   readonly canAccessUserManager$: Observable<boolean> = this.store.select(selectCanAccessUserManager);
@@ -100,6 +106,11 @@ export class AuthenticationFacade {
 
   login(apiKey?: string, email?: string, password?: string, code?: string): void {
     this.store.dispatch(login({ apiKey, email, password, code }));
+  }
+
+  /** mtls: sign in with a PEM certificate file (and the PKCS#8 private key file when it is separate). */
+  loginWithCertificate(certificate: Blob, privateKey?: Blob): void {
+    this.store.dispatch(login({ certificate, privateKey }));
   }
 
   logout(invalidateAllSessions = false): void {

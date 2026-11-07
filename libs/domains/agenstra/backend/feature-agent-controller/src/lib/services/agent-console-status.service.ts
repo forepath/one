@@ -4,7 +4,7 @@ import {
   checkClientAccess,
   ClientUsersRepository,
   ensureClientAccess,
-  getAuthenticationMethod,
+  getStaticCredentialPrincipalId,
   type SocketUserInfo,
   UserRole,
 } from '@forepath/identity/backend';
@@ -703,8 +703,10 @@ export class AgentConsoleStatusService {
       userIds.add(member.userId);
     }
 
-    if (userIds.size === 0 && getAuthenticationMethod() === 'api-key') {
-      userIds.add('api-key-user');
+    const staticCredentialPrincipalId = getStaticCredentialPrincipalId();
+
+    if (userIds.size === 0 && staticCredentialPrincipalId) {
+      userIds.add(staticCredentialPrincipalId);
     }
 
     return [...userIds];

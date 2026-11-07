@@ -10,6 +10,7 @@ import {
   isAuthMarketingPanelVisible,
   SSO_ERROR_QUERY_PARAM,
   usesExternalSignIn,
+  usesStaticCredential,
 } from '@forepath/identity/frontend';
 import {
   FpcAlertComponent,
@@ -83,6 +84,13 @@ export class IdentityLoginComponent implements OnInit {
     return this.environment.authentication.type === 'api-key';
   }
 
+  /**
+   * Whether the current authentication type is client certificate (mtls): the user selects a certificate file.
+   */
+  get isMtlsAuth(): boolean {
+    return this.environment.authentication.type === 'mtls';
+  }
+
   protected readonly productName = this.environment.productName;
   protected readonly authMarketing = this.environment.authMarketing;
   protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authLayout);
@@ -98,11 +106,11 @@ export class IdentityLoginComponent implements OnInit {
   }
 
   /**
-   * Whether the controller API hostname should be displayed.
+   * Whether the controller API hostname should be displayed (api-key / mtls).
    * Only shown when controllerApiUrl is provided in the environment.
    */
   get showApiBaseHostname(): boolean {
-    return this.environment.authentication.type === 'api-key' && !!this.environment.controllerApiUrl;
+    return usesStaticCredential(this.environment.authentication.type) && !!this.environment.controllerApiUrl;
   }
 
   /**
@@ -138,6 +146,11 @@ export class IdentityLoginComponent implements OnInit {
       });
     } else if (this.isExternalAuth) {
       this.loginForm = this.fb.group({});
+    } else if (this.isMtlsAuth) {
+      this.loginForm = this.fb.group({
+        certificate: [null as File | null, [Validators.required]],
+        privateKey: [null as File | null],
+      });
     } else {
       this.loginForm = this.fb.group({
         apiKey: ['', [Validators.required]],
@@ -152,6 +165,15 @@ export class IdentityLoginComponent implements OnInit {
         tap(() => this.loginForm.reset()),
       )
       .subscribe();
+  }
+
+  /** Stores the file selected in a certificate / private key input (mtls). */
+  onCertificateFileSelected(event: Event, controlName: 'certificate' | 'privateKey'): void {
+    const input = event.target as HTMLInputElement | null;
+    const control = this.loginForm.get(controlName);
+
+    control?.setValue(input?.files?.[0] ?? null);
+    control?.markAsTouched();
   }
 
   onSubmit(): void {
@@ -176,6 +198,11 @@ export class IdentityLoginComponent implements OnInit {
 
         this.patRejectedError = null;
         this.authFacade.login(undefined, email, password);
+      } else if (this.isMtlsAuth) {
+        const certificate = this.loginForm.get('certificate')?.value as File;
+        const privateKey = (this.loginForm.get('privateKey')?.value as File | null) ?? undefined;
+
+        this.authFacade.loginWithCertificate(certificate, privateKey);
       } else {
         this.patRejectedError = null;
         const apiKey = this.loginForm.get('apiKey')?.value;

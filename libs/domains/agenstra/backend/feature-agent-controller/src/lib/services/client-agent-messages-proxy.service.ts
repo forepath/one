@@ -8,6 +8,7 @@ import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
 import { ClientsService } from './clients.service';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 @Injectable()
 export class ClientAgentMessagesProxyService {
@@ -33,6 +34,10 @@ export class ClientAgentMessagesProxyService {
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;
+    }
+
+    if (clientEntity.authenticationType === AuthenticationType.MTLS) {
+      return createClientMtlsAuthorizationHeader(clientEntity);
     }
 
     throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);

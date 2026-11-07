@@ -80,6 +80,7 @@ For complete WebSocket event specifications, authentication flow, and usage exam
 Authentication is configured via `AUTHENTICATION_METHOD`:
 
 - **`api-key`**: Static API key (requires `STATIC_API_KEY`). Use `Authorization: Bearer <key>`.
+- **`mtls`**: Client certificates of a trusted CA (requires `MTLS_CA_CERT[_FILE]`); full access like the API key. Present the certificate in the TLS handshake (`MTLS_SERVER_CERT` / `MTLS_SERVER_KEY`) or as `Authorization: Certificate <assertion>`. The console asks for a certificate file at login.
 - **`oidc`**: Any OpenID Connect provider (requires `OIDC_*` and `JWT_SECRET`). Bearer access tokens are verified; identities are linked to the users table.
 - **`saml`**: SAML 2.0 single sign-on (requires `SAML_*` and `JWT_SECRET`). The API is the service provider and issues session JWTs.
 - **`users`**: Built-in user registration with JWT (requires `JWT_SECRET`). Register, confirm email, login.
@@ -223,8 +224,9 @@ See the [library documentation](../../libs/domains/agenstra/backend/feature-agen
 
 **Authentication:**
 
-- `AUTHENTICATION_METHOD` - `api-key`, `users`, `oidc`, or `saml` (default: api-key when STATIC_API_KEY set, else oidc; other values fail at boot)
+- `AUTHENTICATION_METHOD` - `api-key`, `mtls`, `users`, `oidc`, or `saml` (default: api-key when STATIC_API_KEY set, else oidc; other values fail at boot)
 - `STATIC_API_KEY` - Static API key (required when AUTHENTICATION_METHOD=api-key)
+- `MTLS_CA_CERT` / `MTLS_CA_CERT_FILE` - Trusted client CA bundle (required when AUTHENTICATION_METHOD=mtls); optional `MTLS_ALLOWED_FINGERPRINTS`, `MTLS_ALLOWED_SUBJECTS`, `MTLS_REVOKED_FINGERPRINTS`, `MTLS_ASSERTION_MAX_LIFETIME`, `MTLS_ASSERTION_AUDIENCE`, `MTLS_SERVER_CERT[_FILE]` / `MTLS_SERVER_KEY[_FILE]`
 - `JWT_SECRET` - JWT signing secret (required when `AUTHENTICATION_METHOD=users`, `oidc` or `saml`; used for sessions and PAT exchange)
 - `OIDC_ISSUER` - OIDC issuer (required for oidc; also the default issuer for `oidc` workspace clients)
 - `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` - API client for token introspection (required for `OIDC_TOKEN_VALIDATION=ONLINE`, the default)

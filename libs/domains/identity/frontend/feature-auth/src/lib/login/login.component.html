@@ -35,28 +35,28 @@
           <fpc-alert variant="danger" [message]="error" />
         }
 
-        @if (isApiKeyAuth) {
-          <!-- API Base Hostname Input (only shown when controllerApiUrl is provided) -->
-          @if (showApiBaseHostname) {
-            <fpc-form-field
-              forId="apiBaseHostname"
-              i18n-label="@@featureLogin-controllerApiHost"
-              label="Controller API host"
-            >
-              <fpc-input-group>
-                <span fpcInputGroupPrefix class="input-group-text">
-                  <i class="bi bi-globe" aria-hidden="true"></i>
-                </span>
-                <fpc-form-control
-                  controlId="apiBaseHostname"
-                  [value]="apiBaseHostname"
-                  [readOnly]="true"
-                  [disabled]="true"
-                />
-              </fpc-input-group>
-            </fpc-form-field>
-          }
+        <!-- API Base Hostname (api-key / mtls; only shown when controllerApiUrl is provided) -->
+        @if (showApiBaseHostname) {
+          <fpc-form-field
+            forId="apiBaseHostname"
+            i18n-label="@@featureLogin-controllerApiHost"
+            label="Controller API host"
+          >
+            <fpc-input-group>
+              <span fpcInputGroupPrefix class="input-group-text">
+                <i class="bi bi-globe" aria-hidden="true"></i>
+              </span>
+              <fpc-form-control
+                controlId="apiBaseHostname"
+                [value]="apiBaseHostname"
+                [readOnly]="true"
+                [disabled]="true"
+              />
+            </fpc-input-group>
+          </fpc-form-field>
+        }
 
+        @if (isApiKeyAuth) {
           <!-- API Key Input -->
           <fpc-form-field forId="apiKey" i18n-label="@@featureLogin-controllerApiKey" label="Controller API key">
             <fpc-input-group>
@@ -76,6 +76,61 @@
             @if (loginForm.get('apiKey')?.invalid && loginForm.get('apiKey')?.touched) {
               <div fpcFormFieldError i18n="@@featureLogin-apiKeyRequired">API key is required.</div>
             }
+          </fpc-form-field>
+        }
+
+        @if (isMtlsAuth) {
+          <!-- Client certificate (mtls): signs short-lived assertions; the private key never leaves this browser -->
+          <fpc-form-field
+            forId="clientCertificate"
+            i18n-label="@@featureLogin-clientCertificate"
+            label="Client certificate"
+            i18n-hint="@@featureLogin-clientCertificateHint"
+            hint="PEM with your certificate; may also contain the PKCS#8 key."
+          >
+            <fpc-input-group>
+              <span fpcInputGroupPrefix class="input-group-text">
+                <i class="bi bi-file-earmark-lock2-fill" aria-hidden="true"></i>
+              </span>
+              <input
+                id="clientCertificate"
+                type="file"
+                class="form-control"
+                accept=".pem,.crt,.cer,application/x-pem-file,application/x-x509-ca-cert"
+                aria-describedby="clientCertificate-hint"
+                [class.is-invalid]="!!(loginForm.get('certificate')?.invalid && loginForm.get('certificate')?.touched)"
+                [disabled]="(loading$ | async) ?? false"
+                (change)="onCertificateFileSelected($event, 'certificate')"
+              />
+            </fpc-input-group>
+            @if (loginForm.get('certificate')?.invalid && loginForm.get('certificate')?.touched) {
+              <div fpcFormFieldError i18n="@@featureLogin-clientCertificateRequired">
+                A client certificate is required.
+              </div>
+            }
+          </fpc-form-field>
+
+          <fpc-form-field
+            forId="clientPrivateKey"
+            i18n-label="@@featureLogin-clientPrivateKey"
+            label="Private key (optional)"
+            i18n-hint="@@featureLogin-clientPrivateKeyHint"
+            hint="Only for a separate key file. The key never leaves this browser."
+          >
+            <fpc-input-group>
+              <span fpcInputGroupPrefix class="input-group-text">
+                <i class="bi bi-key-fill" aria-hidden="true"></i>
+              </span>
+              <input
+                id="clientPrivateKey"
+                type="file"
+                class="form-control"
+                accept=".pem,.key,application/x-pem-file"
+                aria-describedby="clientPrivateKey-hint"
+                [disabled]="(loading$ | async) ?? false"
+                (change)="onCertificateFileSelected($event, 'privateKey')"
+              />
+            </fpc-input-group>
           </fpc-form-field>
         }
 

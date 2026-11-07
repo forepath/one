@@ -14,7 +14,7 @@ import { authGuard, hasValidConsoleSessionJwt } from './auth.guard';
  * - users / saml mode: without a valid console session, remember the grant URL and send the user to sign in;
  *   sign-in resumes the grant page afterwards.
  * - oidc mode: the provider login redirects back to the requested URL.
- * - api-key mode: apps are not available.
+ * - api-key / mtls mode: apps are not available.
  */
 export const appAuthorizeGuard: CanActivateFn = (route, state) => {
   const environment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT);

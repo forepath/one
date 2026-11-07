@@ -1,22 +1,28 @@
 import { recordSharedCounter } from '@forepath/shared/backend/util-otel/metrics';
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 
-import { getAuthenticationMethod } from './authentication-method';
+import { API_KEY_PRINCIPAL_ID, getAuthenticationMethod, MTLS_PRINCIPAL_ID } from './authentication-method';
 import { isBullBoardRequestPath } from './bull-board-request-path';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
+import { authenticateMtls } from './mtls/mtls-authenticator';
+import { getMtlsConfig, MtlsConfigurationError } from './mtls/mtls.config';
 import { OidcAuthGuard } from './oidc/oidc-auth.guard';
 import { isOtelMetricsRequestPath } from './otel-metrics-request-path';
 import { secretsEqual } from './secret-compare';
 
 /**
- * Guard that validates static API key authentication.
- * When AUTHENTICATION_METHOD is 'api-key' (or STATIC_API_KEY is set for backward compatibility),
- * only API key authentication is used (no IdP fallback, no anonymous access).
+ * Guard that validates the static credential methods.
+ * - AUTHENTICATION_METHOD 'api-key' (or STATIC_API_KEY set for backward compatibility): only the static API key
+ * - AUTHENTICATION_METHOD 'mtls': only a trusted client certificate (TLS handshake or certificate assertion)
+ *
+ * Both grant full admin access (no IdP fallback, no anonymous access) and mark the request `apiKeyAuthenticated`.
  * When 'users', 'oidc' or 'saml', this guard allows requests to proceed to the respective auth guards.
  */
 @Injectable()
 export class HybridAuthGuard implements CanActivate {
+  private readonly logger = new Logger(HybridAuthGuard.name);
+
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -45,6 +51,11 @@ export class HybridAuthGuard implements CanActivate {
     }
 
     const authMethod = getAuthenticationMethod();
+
+    if (authMethod === 'mtls') {
+      return this.authenticateClientCertificate(request);
+    }
+
     const staticApiKey = process.env.STATIC_API_KEY;
     // api-key: require STATIC_API_KEY to be set and validate it
     const useApiKey = authMethod === 'api-key' && staticApiKey;
@@ -76,7 +87,7 @@ export class HybridAuthGuard implements CanActivate {
       if ((scheme === 'Bearer' || scheme === 'ApiKey') && secretsEqual(providedKey, staticApiKey)) {
         // Attach user object: API key auth always implicates admin rights
         request.user = {
-          id: 'api-key-user',
+          id: API_KEY_PRINCIPAL_ID,
           username: 'api-key',
           roles: ['admin', 'user'],
         };
@@ -94,6 +105,46 @@ export class HybridAuthGuard implements CanActivate {
     return true;
   }
 
+  /** mtls: client certificate from the TLS handshake or an `Authorization: Certificate <assertion>` header. */
+  private authenticateClientCertificate(request: {
+    headers: Record<string, unknown>;
+    socket?: unknown;
+    user?: unknown;
+    apiKeyAuthenticated?: boolean;
+    clientCertificate?: unknown;
+  }): boolean {
+    let result: ReturnType<typeof authenticateMtls>;
+
+    try {
+      result = authenticateMtls({ authorization: request.headers['authorization'], transportSocket: request.socket });
+    } catch (error) {
+      if (error instanceof MtlsConfigurationError) {
+        this.rejectUnauthorized(error.message);
+      }
+
+      throw error;
+    }
+
+    if ('reason' in result) {
+      if (result.presented) {
+        this.logger.warn(`Client certificate rejected: ${result.reason}`);
+      }
+
+      this.rejectUnauthorized(result.presented ? 'Invalid client certificate' : 'Missing client certificate');
+    }
+
+    // A trusted client certificate implicates admin rights, exactly like the static API key.
+    request.user = {
+      id: MTLS_PRINCIPAL_ID,
+      username: result.principal.commonName ?? 'mtls',
+      roles: ['admin', 'user'],
+    };
+    request.apiKeyAuthenticated = true;
+    request.clientCertificate = result.principal;
+
+    return true;
+  }
+
   private rejectUnauthorized(message: string): never {
     recordSharedCounter('auth.requests.total', { outcome: 'unauthorized' });
     throw new UnauthorizedException(message);
@@ -101,13 +152,20 @@ export class HybridAuthGuard implements CanActivate {
 }
 
 /**
- * Guard providers for apps without a local users table (e.g. agent-manager) and the api-key mode:
+ * Guard providers for apps without a local users table (e.g. agent-manager) and the static credential modes:
  * - AUTHENTICATION_METHOD=api-key (and STATIC_API_KEY set): only the API key guard
+ * - AUTHENTICATION_METHOD=mtls: only the client certificate guard (the mTLS configuration is validated here, so a
+ *   missing or invalid MTLS_CA_CERT fails at boot)
  * - AUTHENTICATION_METHOD=oidc: API key guard (pass-through) + {@link OidcAuthGuard} (bearer token validation)
  * - AUTHENTICATION_METHOD=users / saml: JWT guards are registered by UsersAuthModule / SamlAuthModule
  */
 export function getHybridAuthGuards() {
   const authMethod = getAuthenticationMethod();
+
+  if (authMethod === 'mtls') {
+    getMtlsConfig();
+  }
+
   const guards: Array<{ provide: typeof APP_GUARD; useClass: new (...args: never[]) => CanActivate }> = [];
 
   // Always add HybridAuthGuard (checks AUTHENTICATION_METHOD and STATIC_API_KEY)

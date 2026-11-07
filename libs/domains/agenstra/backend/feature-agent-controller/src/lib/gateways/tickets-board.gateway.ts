@@ -58,7 +58,8 @@ export class TicketsBoardGateway implements OnGatewayInit, OnGatewayConnection, 
     this.ticketBoardRealtime.attachServer(server);
     server.use(async (socket, next) => {
       const authHeader = socket.handshake?.headers?.authorization ?? socket.handshake?.auth?.Authorization;
-      const authOptions = { websocket: AGENSTRA_WEBSOCKETS.tickets };
+      // mtls: the handshake connection carries the TLS client certificate, if one was presented.
+      const authOptions = { websocket: AGENSTRA_WEBSOCKETS.tickets, transportSocket: socket.request?.socket };
       const userInfo = await this.socketAuthService.validateAndGetUser(authHeader, undefined, authOptions);
 
       if (!userInfo) {

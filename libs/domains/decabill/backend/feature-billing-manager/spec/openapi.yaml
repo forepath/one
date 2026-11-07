@@ -29,6 +29,8 @@ servers:
     description: Root (OpenTelemetry metrics; outside /api prefix)
 security:
   - bearerAuth: []
+  - mutualTLS: []
+  - certificateAssertion: []
 paths:
   /public/service-plan-offerings:
     get:
@@ -8391,6 +8393,21 @@ components:
     basicAuth:
       type: http
       scheme: basic
+    mutualTLS:
+      type: mutualTLS
+      description: |
+        `AUTHENTICATION_METHOD=mtls` with the native TLS listener (`MTLS_SERVER_CERT` / `MTLS_SERVER_KEY`): a client
+        certificate of a CA in `MTLS_CA_CERT` presented in the TLS handshake. Grants full admin access, like the
+        static API key.
+    certificateAssertion:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        `AUTHENTICATION_METHOD=mtls`: `Certificate <assertion>`, a short-lived compact JWS signed with the client
+        certificate's private key (`typ: cert-assertion+jwt`, certificate chain in `x5c`, `exp - iat` at most
+        `MTLS_ASSERTION_MAX_LIFETIME`). Used by browsers and behind TLS-terminating proxies. Grants full admin
+        access, like the static API key.
   parameters:
     Limit:
       in: query

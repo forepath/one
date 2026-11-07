@@ -7,7 +7,11 @@ import {
   ClientsFacade,
   NotificationsFacade,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
-import { IdentityLogoutConfirmModalComponent, IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+import {
+  IDENTITY_AUTH_ENVIRONMENT,
+  IdentityLogoutConfirmModalComponent,
+  usesStaticCredential,
+} from '@forepath/identity/frontend';
 import { AdminUpdatesFacade } from '@forepath/shared/frontend/data-access-updates';
 import {
   FpcButtonComponent,
@@ -89,8 +93,8 @@ export class AgentConsoleContainerComponent implements OnInit {
   /** True when console uses users (email/password) authentication. */
   readonly isUsersAuth = this.authEnvironment.authentication.type === 'users';
 
-  /** True when Personal Access Tokens UI is available (users, oidc or saml; not api-key). */
-  readonly isPatUiEnabled = this.authEnvironment.authentication.type !== 'api-key';
+  /** True when Personal Access Tokens UI is available (users, oidc or saml; not api-key / mtls). */
+  readonly isPatUiEnabled = !usesStaticCredential(this.authEnvironment.authentication.type);
 
   /**
    * True when on the main clients mask (not editor, deployments, etc.)
@@ -271,7 +275,7 @@ export class AgentConsoleContainerComponent implements OnInit {
   private logoutConfirmModal?: IdentityLogoutConfirmModalComponent;
 
   /**
-   * Display label for the current user's role. Admin for api-key auth, otherwise user.role capitalized.
+   * Display label for the current user's role. Admin for api-key / mtls auth, otherwise user.role capitalized.
    */
   readonly userRoleDisplay$ = combineLatest([
     this.authenticationFacade.isAuthenticated$,
@@ -281,7 +285,7 @@ export class AgentConsoleContainerComponent implements OnInit {
     map(([isAuthenticated, authType, user]) => {
       if (!isAuthenticated) return null;
 
-      if (authType === 'api-key') return 'Admin';
+      if (usesStaticCredential(authType)) return 'Admin';
 
       const role = user?.role;
 

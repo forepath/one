@@ -5,7 +5,13 @@ import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@a
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import type { IdentityAuthEnvironment } from '../../../../util-auth/src';
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { IDENTITY_AUTH_ENVIRONMENT, OidcAuthService, startSamlLogin } from '../../../../util-auth/src';
+import {
+  IDENTITY_AUTH_ENVIRONMENT,
+  OidcAuthService,
+  resetMtlsCredentialStateForTests,
+  saveMtlsCredential,
+  startSamlLogin,
+} from '../../../../util-auth/src';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { createMockIdentityAuthEnvironment } from '../../../../util-auth/src/lib/auth-environment.test-fixtures';
 
@@ -346,6 +352,48 @@ describe('authGuard', () => {
       const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
 
       expect(result).toBe(mockUrlTree);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/login']);
+    });
+  });
+
+  describe('when authentication type is mtls', () => {
+    beforeEach(() => {
+      resetMtlsCredentialStateForTests();
+    });
+
+    const storeCertificate = (notAfter = Date.now() + 60_000) =>
+      saveMtlsCredential({
+        privateKey: { type: 'private', usages: ['sign'] } as unknown as CryptoKey,
+        certificateChain: ['AAAA'],
+        algorithm: 'ES256',
+        notBefore: Date.now() - 1000,
+        notAfter,
+      });
+
+    it('allows access when a valid client certificate is stored', async () => {
+      const tree = {} as UrlTree;
+
+      mockRouter.createUrlTree.mockReturnValue(tree);
+      await storeCertificate();
+
+      const injector = setupTestBed({ authentication: { type: 'mtls' } });
+      const result = await runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
+
+      expect(result).toBe(true);
+      expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
+      expect(window.localStorage.getItem).not.toHaveBeenCalled();
+    });
+
+    it('redirects to /login when no valid client certificate is stored', async () => {
+      const tree = {} as UrlTree;
+
+      mockRouter.createUrlTree.mockReturnValue(tree);
+      await storeCertificate(Date.now() - 1000);
+
+      const injector = setupTestBed({ authentication: { type: 'mtls' } });
+      const result = await runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
+
+      expect(result).toBe(tree);
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/login']);
     });
   });

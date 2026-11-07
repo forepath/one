@@ -79,6 +79,7 @@ import {
   validateClientEndpointWithDnsOrThrow,
 } from '../utils/client-endpoint-security';
 import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 type ChatOutputUsage = {
   inputTokens?: number;
@@ -252,7 +253,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     server.use(async (socket, next) => {
       // Auth from headers (polling) or handshake.auth (WebSocket - browser cannot send custom headers)
       const authHeader = socket.handshake?.headers?.authorization ?? socket.handshake?.auth?.Authorization;
-      const authOptions = { websocket: AGENSTRA_WEBSOCKETS.clients };
+      // mtls: the handshake connection carries the TLS client certificate, if one was presented.
+      const authOptions = { websocket: AGENSTRA_WEBSOCKETS.clients, transportSocket: socket.request?.socket };
       const userInfo = await this.socketAuthService.validateAndGetUser(authHeader, undefined, authOptions);
 
       if (!userInfo) {
@@ -2159,6 +2161,10 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       const token = await this.clientsService.getAccessToken(clientId);
 
       return `Bearer ${token}`;
+    }
+
+    if (client.authenticationType === AuthenticationType.MTLS) {
+      return createClientMtlsAuthorizationHeader(client);
     }
 
     throw new BadRequestException(`Unsupported authentication type`);

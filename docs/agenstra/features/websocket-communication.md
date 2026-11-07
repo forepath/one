@@ -19,6 +19,7 @@ On the controller, Socket.IO namespaces **`socket/clients`**, **`socket/tickets`
 WebSocket connections to the controller require authentication. Pass the `Authorization` header in the handshake (same as HTTP):
 
 - **API key**: `Bearer <static-api-key>` or `ApiKey <static-api-key>`
+- **mTLS**: `Certificate <certificate-assertion>`, or no header when the client certificate was presented in the TLS handshake of the native listener (full access, like the API key; see [Authentication](./authentication.md#mtls-client-certificate-authentication))
 - **OIDC**: `Bearer <oidc-access-token>`
 - **Users / SAML**: `Bearer <session-jwt>`
 - **Users**: `Bearer <jwt-token>`
@@ -49,7 +50,7 @@ sequenceDiagram
     participant AC as Agent Controller
 
     F->>AC: WebSocket Connect (with Authorization header)
-    AC->>AC: Validate auth (api-key, oidc, users or saml)
+    AC->>AC: Validate auth (api-key, mtls, oidc, users or saml)
     AC->>F: Connected
     F->>AC: setClient (clientId)
     AC->>AC: Check client access
