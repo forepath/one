@@ -18,12 +18,7 @@
   "targets": {
     "stage-monaco-assets": {
       "executor": "nx:run-commands",
-      "cache": true,
-      "inputs": [
-        "{workspaceRoot}/package-lock.json",
-        "{workspaceRoot}/node_modules/monaco-editor/**/*"
-      ],
-      "outputs": ["{workspaceRoot}/.cache/monaco-editor"],
+      "cache": false,
       "options": {
         "command": "node tools/ci/stage-monaco-assets.mjs"
       }
@@ -228,7 +223,7 @@
         "release": {
           "push": true,
           "tags": [
-            "ghcr.io/forepath/decabill-billing-console-server:latest",
+            "ghcr.io/forepath/decabill-billing-console-server:$RELEASE_CHANNEL_TAG",
             "ghcr.io/forepath/decabill-billing-console-server:$VERSION"
           ]
         }

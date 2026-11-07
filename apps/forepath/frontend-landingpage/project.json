@@ -192,7 +192,7 @@
         "release": {
           "push": true,
           "tags": [
-            "ghcr.io/forepath/forepath-landingpage-server:latest",
+            "ghcr.io/forepath/forepath-landingpage-server:$RELEASE_CHANNEL_TAG",
             "ghcr.io/forepath/forepath-landingpage-server:$VERSION"
           ]
         }

@@ -27,6 +27,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openConfigDialog: () => {
     return ipcRenderer.invoke('open-config-dialog');
   },
+  getUpdateChannel: () => {
+    return ipcRenderer.invoke('get-update-channel');
+  },
+  setUpdateChannel: (channel: 'stable' | 'beta') => {
+    return ipcRenderer.invoke('set-update-channel', channel);
+  },
+  checkForUpdates: () => {
+    return ipcRenderer.invoke('check-for-updates');
+  },
 });
 
 console.log('[Electron Preload] Preload script loaded, electronAPI exposed');

@@ -13,6 +13,10 @@ import { ChildProcess, spawn } from 'node:child_process';
 import * as net from 'node:net';
 import * as path from 'node:path';
 
+import { appOrigin, ipcSenderAllowed, type IpcScope } from './ipc-sender';
+import { effectiveUpdateChannel, isUpdateChannel } from './update/update-config';
+import { DesktopUpdater } from './update/updater';
+
 const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
 /** Resolved in whenReady: from PORT env or a free port. */
 let ssrPort = 0;
@@ -71,12 +75,34 @@ function getFreePort(): Promise<number> {
 }
 let ssrProcess: ChildProcess | UtilityProcess | null = null;
 let mainWindow: BrowserWindow | null = null;
+let configDialog: BrowserWindow | null = null;
+
+/** Only the app's own pages (and the config dialog) may use the IPC bridge; see `ipc-sender.ts`. */
+function trustedSender(event: Electron.IpcMainInvokeEvent, scope: IpcScope): boolean {
+  const frame = event.senderFrame;
+  const allowed = ipcSenderAllowed(
+    scope,
+    {
+      url: frame?.url,
+      isTopFrame: !!frame && frame.parent === null,
+      isMainWindow: !!mainWindow && !mainWindow.isDestroyed() && event.sender === mainWindow.webContents,
+      isConfigDialog: !!configDialog && !configDialog.isDestroyed() && event.sender === configDialog.webContents,
+    },
+    appOrigin(ssrPort),
+  );
+
+  if (!allowed) debugLog('Refused IPC from an untrusted sender:', frame?.url ?? '(no frame)');
+
+  return allowed;
+}
 
 // Config file path
 const configFilePath = path.join(app.getPath('userData'), 'config.json');
 
 interface AppConfig {
   configUrl?: string;
+  /** In-app update channel (`stable` / `beta`); unset: the channel of the installed version. */
+  updateChannel?: 'stable' | 'beta';
 }
 
 // Read config from file
@@ -105,6 +131,29 @@ function writeConfig(config: AppConfig): void {
 function getConfigUrl(): string | undefined {
   const config = readConfig();
   return config.configUrl;
+}
+
+function getUpdateChannel(): 'stable' | 'beta' {
+  return effectiveUpdateChannel(readConfig().updateChannel, app.getVersion());
+}
+
+const updater = new DesktopUpdater({
+  channel: getUpdateChannel,
+  window: () => mainWindow,
+  log: debugLog,
+});
+
+function setUpdateChannel(channel: unknown): 'stable' | 'beta' {
+  if (!isUpdateChannel(channel)) return getUpdateChannel();
+
+  const config = readConfig();
+
+  config.updateChannel = channel;
+  writeConfig(config);
+  debugLog('Update channel set to:', channel);
+  createMenu();
+
+  return channel;
 }
 
 function startSSRServer(): Promise<void> {
@@ -272,7 +321,9 @@ app.on('browser-window-created', (_event, window) => {
 });
 
 // IPC handlers for window controls
-ipcMain.handle('window-minimize', (event: any) => {
+ipcMain.handle('window-minimize', (event: Electron.IpcMainInvokeEvent) => {
+  if (!trustedSender(event, 'window')) return false;
+
   console.log('[Main Process] window-minimize IPC received');
   const window = BrowserWindow.fromWebContents(event.sender);
   if (window) {
@@ -284,7 +335,9 @@ ipcMain.handle('window-minimize', (event: any) => {
   return false;
 });
 
-ipcMain.handle('window-maximize', (event: any) => {
+ipcMain.handle('window-maximize', (event: Electron.IpcMainInvokeEvent) => {
+  if (!trustedSender(event, 'window')) return false;
+
   console.log('[Main Process] window-maximize IPC received');
   const window = BrowserWindow.fromWebContents(event.sender);
   if (window) {
@@ -301,7 +354,9 @@ ipcMain.handle('window-maximize', (event: any) => {
   return false;
 });
 
-ipcMain.handle('window-close', (event: any) => {
+ipcMain.handle('window-close', (event: Electron.IpcMainInvokeEvent) => {
+  if (!trustedSender(event, 'window')) return false;
+
   console.log('[Main Process] window-close IPC received');
   const window = BrowserWindow.fromWebContents(event.sender);
   if (window) {
@@ -313,20 +368,29 @@ ipcMain.handle('window-close', (event: any) => {
   return false;
 });
 
-ipcMain.handle('window-is-maximized', (event: any) => {
+ipcMain.handle('window-is-maximized', (event: Electron.IpcMainInvokeEvent) => {
+  if (!trustedSender(event, 'window')) return false;
+
   const window = BrowserWindow.fromWebContents(event.sender);
   return window?.isMaximized() ?? false;
 });
 
 // IPC handlers for config management
-ipcMain.handle('get-config-url', () => {
+ipcMain.handle('get-config-url', (event: Electron.IpcMainInvokeEvent) => {
+  if (!trustedSender(event, 'privileged')) return undefined;
+
   return getConfigUrl();
 });
 
-ipcMain.handle('set-config-url', async (event: any, url: string | null) => {
+ipcMain.handle('set-config-url', async (event: Electron.IpcMainInvokeEvent, url: unknown) => {
+  if (!trustedSender(event, 'privileged')) return false;
+
+  if (url !== null && url !== undefined && typeof url !== 'string') return false;
+
+  const value = typeof url === 'string' ? url.trim() : '';
   const config = readConfig();
-  if (url && url.trim()) {
-    config.configUrl = url.trim();
+  if (value) {
+    config.configUrl = value;
     writeConfig(config);
     console.log('[Main Process] Config URL set to:', config.configUrl);
   } else {
@@ -355,7 +419,26 @@ ipcMain.handle('set-config-url', async (event: any, url: string | null) => {
   return true;
 });
 
-ipcMain.handle('open-config-dialog', async () => {
+// IPC handlers for in-app updates
+ipcMain.handle('get-update-channel', (event: Electron.IpcMainInvokeEvent) =>
+  trustedSender(event, 'privileged') ? getUpdateChannel() : undefined,
+);
+
+ipcMain.handle('set-update-channel', (event: Electron.IpcMainInvokeEvent, channel: unknown) =>
+  trustedSender(event, 'privileged') ? setUpdateChannel(channel) : getUpdateChannel(),
+);
+
+ipcMain.handle('check-for-updates', async (event: Electron.IpcMainInvokeEvent) => {
+  if (!trustedSender(event, 'privileged')) return false;
+
+  await updater.check(true);
+
+  return true;
+});
+
+ipcMain.handle('open-config-dialog', async (event: Electron.IpcMainInvokeEvent) => {
+  if (!trustedSender(event, 'privileged')) return false;
+
   console.log('[Main Process] Opening config dialog');
   await showConfigUrlDialog();
   return true;
@@ -371,7 +454,7 @@ async function showConfigUrlDialog(): Promise<void> {
   const dialogWindow = new BrowserWindow({
     parent: mainWindow,
     width: 500,
-    height: 252,
+    height: 372,
     modal: true,
     resizable: false,
     frame: false,
@@ -415,6 +498,21 @@ async function showConfigUrlDialog(): Promise<void> {
         input {
           width: calc(100% - 20px);
           padding: 10px;
+          background: #2d2d2d;
+          border: 1px solid #444;
+          border-radius: 4px;
+          color: #ffffff;
+          font-size: 14px;
+        }
+        .row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 13px;
+        }
+        select {
+          flex: 1;
+          padding: 8px;
           background: #2d2d2d;
           border: 1px solid #444;
           border-radius: 4px;
@@ -466,6 +564,15 @@ async function showConfigUrlDialog(): Promise<void> {
       <div class="title">Configure Server URL</div>
       ${currentUrl ? `<div class="current">Current: ${currentUrl}</div>` : '<div class="current">No URL currently set</div>'}
       <input type="text" id="urlInput" placeholder="https://example.com/config.json" value="${currentUrl || ''}" autofocus>
+      <div class="title">Updates</div>
+      <div class="row">
+        <label for="channelSelect">Update channel</label>
+        <select id="channelSelect">
+          <option value="stable">Stable</option>
+          <option value="beta">Beta</option>
+        </select>
+        <button class="btn-secondary" id="checkBtn">Check for updates</button>
+      </div>
       <div class="buttons">
         <button class="btn-danger" id="resetBtn">Reset</button>
         <button class="btn-secondary" id="cancelBtn">Cancel</button>
@@ -508,12 +615,29 @@ async function showConfigUrlDialog(): Promise<void> {
             input.value = '';
             input.focus();
           });
+
+          const channelSelect = document.getElementById('channelSelect');
+          const checkBtn = document.getElementById('checkBtn');
+
+          window.electronAPI.getUpdateChannel().then((channel) => {
+            channelSelect.value = channel;
+          });
+          channelSelect.addEventListener('change', () => {
+            window.electronAPI.setUpdateChannel(channelSelect.value);
+          });
+          checkBtn.addEventListener('click', () => {
+            window.electronAPI.checkForUpdates();
+          });
         });
       </script>
     </body>
     </html>
   `;
 
+  configDialog = dialogWindow;
+  dialogWindow.on('closed', () => {
+    if (configDialog === dialogWindow) configDialog = null;
+  });
   dialogWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(dialogHTML)}`);
 
   // Dialog will close automatically when app restarts after config is set
@@ -531,6 +655,20 @@ function createMenu(): void {
           click: async () => {
             await showConfigUrlDialog();
           },
+        },
+        { type: 'separator' },
+        {
+          label: 'Check for Updates...',
+          click: () => void updater.check(true),
+        },
+        {
+          label: 'Update Channel',
+          submenu: (['stable', 'beta'] as const).map((channel) => ({
+            label: channel === 'stable' ? 'Stable' : 'Beta',
+            type: 'radio' as const,
+            checked: getUpdateChannel() === channel,
+            click: () => setUpdateChannel(channel),
+          })),
         },
         { type: 'separator' },
         {
@@ -569,6 +707,7 @@ app.whenReady().then(async () => {
     debugLog('SSR server ready, creating window');
     createWindow();
     debugLog('Window created');
+    updater.start();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     debugLog('Startup failed:', message, err);
@@ -581,6 +720,7 @@ app.whenReady().then(async () => {
 
 app.on('before-quit', () => {
   debugLog('before-quit');
+  updater.stop();
   ssrProcess?.kill();
 });
 app.on('window-all-closed', () => {

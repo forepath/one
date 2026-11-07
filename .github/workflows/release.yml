@@ -14,6 +14,10 @@ jobs:
     outputs:
       new_release_published: ${{ steps.semantic-release.outputs.new_release_published }}
       new_release_version: ${{ steps.semantic-release.outputs.new_release_version }}
+      # Release candidates (branch `rc`, versions `<x.y.z>-rc.<n>`) never touch what stable consumers follow: moving
+      # image tags and npm dist-tags use `rc` instead of `latest`, desktop feeds / repositories their beta channel.
+      prerelease: ${{ steps.release-channel.outputs.prerelease }}
+      release_channel_tag: ${{ steps.release-channel.outputs.tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -45,6 +49,19 @@ jobs:
             conventional-changelog-conventionalcommits@7.0.2
         env:
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+
+      - name: Determine the release channel
+        id: release-channel
+        if: steps.semantic-release.outputs.new_release_published == 'true'
+        env:
+          VERSION: ${{ steps.semantic-release.outputs.new_release_version }}
+        run: |
+          set -euo pipefail
+          case "${VERSION}" in
+            *-rc.*) echo "prerelease=true" >> "$GITHUB_OUTPUT"; echo "tag=rc" >> "$GITHUB_OUTPUT" ;;
+            *-*) echo "::error::Unexpected prerelease version ${VERSION}; only rc prereleases are configured." && exit 1 ;;
+            *) echo "prerelease=false" >> "$GITHUB_OUTPUT"; echo "tag=latest" >> "$GITHUB_OUTPUT" ;;
+          esac
 
       - name: Run build
         if: steps.semantic-release.outputs.new_release_published == 'true'
@@ -120,6 +137,8 @@ jobs:
       - name: Publish API container images
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
+          # Moving tag of the release configurations: `latest` (stable) or `rc` (release candidate).
+          RELEASE_CHANNEL_TAG: ${{ needs.publish.outputs.release_channel_tag }}
         run: |
           npx nx run-many --target=api-container-image --configuration=release --parallel=3
 
@@ -167,6 +186,8 @@ jobs:
       - name: Publish Worker container images
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
+          # Moving tag of the release configurations: `latest` (stable) or `rc` (release candidate).
+          RELEASE_CHANNEL_TAG: ${{ needs.publish.outputs.release_channel_tag }}
         run: |
           npx nx run-many --target=worker-container-image --configuration=release --parallel=3
           npx nx run-many --target=worker-microvm-container-image --configuration=release --parallel=1
@@ -216,6 +237,8 @@ jobs:
       - name: Publish Server container images
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
+          # Moving tag of the release configurations: `latest` (stable) or `rc` (release candidate).
+          RELEASE_CHANNEL_TAG: ${{ needs.publish.outputs.release_channel_tag }}
         run: |
           npx nx run-many --target=server-container-image --configuration=release --parallel=3
 
@@ -266,11 +289,15 @@ jobs:
       - name: Publish JavaScript/TypeScript clients
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
+          # Moving tag of the release configurations: `latest` (stable) or `rc` (release candidate).
+          RELEASE_CHANNEL_TAG: ${{ needs.publish.outputs.release_channel_tag }}
         run: |
           npx nx run-many --target=openapi-client-js --configuration=release --parallel=3
 
+  # Desktop apps on the shared desktop release pipeline (tools/desktop-release; `--app` names an entry of its apps.ts).
+  # macOS is not built yet: it needs the Apple Developer ID / notarization secrets (tools/desktop-release/README.md).
   build-native-applications-linux:
-    name: Publish Linux Applications
+    name: Publish Linux Applications (${{ matrix.app }})
     runs-on: ubuntu-latest
     needs: publish
     if: needs.publish.outputs.new_release_published == 'true'
@@ -278,6 +305,16 @@ jobs:
       contents: read
       actions: read
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: agenstra
+            project: agenstra-native-agent-console
+            dist: dist/apps/agenstra/native-agent-console
+          - app: decabill
+            project: decabill-native-billing-console
+            dist: dist/apps/decabill/native-billing-console
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -302,21 +339,33 @@ jobs:
           ELECTRON_FORGE_PLATFORM: linux
           RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          xvfb-run -a npx nx run-many --target=package --configuration=production-linux --parallel=3
+          xvfb-run -a npx nx run ${{ matrix.project }}:package --configuration=production-linux
+
+      # The rpm is built from Forge's packaged Linux app by the shared desktop release pipeline (tools/desktop-release);
+      # it is GPG-signed together with the repositories in "Publish Native Applications".
+      - name: Build the rpm packages
+        env:
+          RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y rpm
+          npx nx run desktop-release:bundle
+          node tmp/desktop-release/desktop-release.cjs linux-rpm --app ${{ matrix.app }} --version "${RELEASE_VERSION}"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: binary-artifacts-linux
+          name: binary-artifacts-${{ matrix.app }}-linux
           path: |
-            dist/**/out/make/**/*.zip
-            dist/**/out/make/**/*.deb
-            dist/**/out/make/**/*.rpm
+            ${{ matrix.dist }}/out/make/**/*.zip
+            ${{ matrix.dist }}/out/make/**/*.deb
+            ${{ matrix.dist }}/out/make/**/*.rpm
           retention-days: 1
           compression-level: 6
 
   build-native-applications-windows:
-    name: Publish Windows Applications
+    name: Publish Windows Applications (${{ matrix.app }})
     runs-on: ubuntu-latest
     needs: publish
     if: needs.publish.outputs.new_release_published == 'true'
@@ -324,8 +373,18 @@ jobs:
       contents: read
       actions: read
       packages: write
-    outputs:
-      has_windows_bundle: ${{ steps.detect-windows-bundle.outputs.exists }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: agenstra
+            project: agenstra-native-agent-console
+            dist: dist/apps/agenstra/native-agent-console
+            exe: native-agent-console
+          - app: decabill
+            project: decabill-native-billing-console
+            dist: dist/apps/decabill/native-billing-console
+            exe: native-billing-console
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -353,45 +412,38 @@ jobs:
           ELECTRON_FORGE_PLATFORM: win32
           RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          xvfb-run -a npx nx run-many --target=package --configuration=production-windows --parallel=3
+          xvfb-run -a npx nx run ${{ matrix.project }}:package --configuration=production-windows
 
+      # The Windows zip is made from this bundle after Authenticode signing (Build Windows Installer).
       - name: Upload Windows Electron bundle
         uses: actions/upload-artifact@v7
         with:
-          name: windows-electron-bundle
-          path: dist/apps/agenstra/native-agent-console/out/native-agent-console-win32-x64
+          name: windows-electron-bundle-${{ matrix.app }}
+          path: ${{ matrix.dist }}/out/${{ matrix.exe }}-win32-x64
           if-no-files-found: error
           retention-days: 1
 
-      - name: Upload Windows zip artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: binary-artifacts-windows
-          path: dist/**/out/make/**/win32/**/*.zip
-          if-no-files-found: ignore
-          retention-days: 1
-          compression-level: 6
-
-      - name: Detect Windows Electron bundle
-        id: detect-windows-bundle
-        if: ${{ !cancelled() }}
-        run: |
-          bundle_path="dist/apps/agenstra/native-agent-console/out/native-agent-console-win32-x64"
-          if [ -d "$bundle_path" ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
   build-native-applications-windows-installer:
-    name: Build Windows Installer
+    name: Build Windows Installer (${{ matrix.app }})
     runs-on: windows-latest
     needs:
       - publish
       - build-native-applications-windows
-    if: >-
-      needs.publish.outputs.new_release_published == 'true' &&
-      needs.build-native-applications-windows.outputs.has_windows_bundle == 'true'
+    if: needs.publish.outputs.new_release_published == 'true'
+    # Authenticode certificate (tools/desktop-release/README.md); only the two signing steps receive it.
+    environment: production
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: agenstra
+            root: apps/agenstra/native-agent-console
+            exe: native-agent-console
+            install_name: Agenstra
+          - app: decabill
+            root: apps/decabill/native-billing-console
+            exe: native-billing-console
+            install_name: Decabill
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -405,27 +457,78 @@ jobs:
       - name: Download Windows Electron bundle
         uses: actions/download-artifact@v8
         with:
-          name: windows-electron-bundle
+          name: windows-electron-bundle-${{ matrix.app }}
           path: windows-electron-bundle
+
+      # Built before any key is in the environment; the signing steps run this bundle only (no nx, no npm).
+      - name: Bundle the desktop release CLI
+        shell: bash
+        run: npx nx run desktop-release:bundle
+
+      - name: Check the Authenticode certificate
+        id: authenticode
+        shell: bash
+        env:
+          DESKTOP_WINDOWS_CERTIFICATE_PFX: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PFX }}
+          DESKTOP_WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -n "${DESKTOP_WINDOWS_CERTIFICATE_PFX}" ] && [ -n "${DESKTOP_WINDOWS_CERTIFICATE_PASSWORD}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Windows app not signed (${{ matrix.app }})::DESKTOP_WINDOWS_CERTIFICATE_PFX / DESKTOP_WINDOWS_CERTIFICATE_PASSWORD are not set; the Windows app and installer are published without Authenticode signature."
+          fi
+
+      - name: Sign the app binaries (Authenticode)
+        if: steps.authenticode.outputs.present == 'true'
+        shell: bash
+        env:
+          DESKTOP_WINDOWS_CERTIFICATE_PFX: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PFX }}
+          DESKTOP_WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PASSWORD }}
+        run: node tmp/desktop-release/desktop-release.cjs sign-windows --app ${{ matrix.app }} --path windows-electron-bundle
 
       - name: Build NSIS installer from prepackaged bundle
         shell: pwsh
         env:
           RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
           REQUIRE_INSTALLER_BUNDLE: '1'
+          NATIVE_APP_DIR: ${{ matrix.root }}
+          NATIVE_EXECUTABLE_NAME: ${{ matrix.exe }}
+          NATIVE_INSTALL_NAME: ${{ matrix.install_name }}
         run: ./tools/ci/build-windows-installer.ps1
+
+      - name: Sign the installer (Authenticode)
+        if: steps.authenticode.outputs.present == 'true'
+        shell: bash
+        env:
+          DESKTOP_WINDOWS_CERTIFICATE_PFX: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PFX }}
+          DESKTOP_WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.DESKTOP_WINDOWS_CERTIFICATE_PASSWORD }}
+        run: node tmp/desktop-release/desktop-release.cjs sign-windows --app ${{ matrix.app }} --path ${{ matrix.root }}/installer-out --top-level
+
+      # Same name and layout as Forge's zip maker, but from the (signed) bundle.
+      - name: Zip the Windows app
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
+        run: |
+          $name = '${{ matrix.exe }}-win32-x64'
+          Rename-Item -LiteralPath 'windows-electron-bundle' -NewName $name
+          New-Item -ItemType Directory -Force -Path 'windows-zip' | Out-Null
+          Compress-Archive -Path $name -DestinationPath "windows-zip/$name-$($env:RELEASE_VERSION).zip"
 
       - name: Upload Windows installer artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: binary-artifacts-windows-installer
-          path: apps/agenstra/native-agent-console/installer-out/*.exe
-          if-no-files-found: ignore
+          name: binary-artifacts-${{ matrix.app }}-windows-installer
+          path: |
+            ${{ matrix.root }}/installer-out/*.exe
+            windows-zip/*.zip
+          if-no-files-found: error
           retention-days: 1
           compression-level: 6
 
   publish-native-applications:
-    name: Publish Native Applications
+    name: Publish Native Applications (${{ matrix.app }})
     runs-on: ubuntu-latest
     needs:
       - publish
@@ -434,6 +537,18 @@ jobs:
       - build-native-applications-windows-installer
     if: needs.publish.outputs.new_release_published == 'true'
     environment: production
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: agenstra
+            bucket_secret: AGENSTRA_AWS_BUCKET
+            endpoint_secret: AGENSTRA_CLOUDFLARE_R2_ENDPOINT
+          - app: decabill
+            bucket_secret: DECABILL_AWS_BUCKET
+            endpoint_secret: DECABILL_CLOUDFLARE_R2_ENDPOINT
+    env:
+      VERSION: ${{ needs.publish.outputs.new_release_version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -451,7 +566,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: artifacts
-          pattern: binary-artifacts-*
+          pattern: binary-artifacts-${{ matrix.app }}-*
           merge-multiple: true
 
       - name: Consolidate binaries
@@ -464,6 +579,38 @@ jobs:
           find artifacts -type f -name '*.exe' -exec cp {} release/ \;
           find artifacts -type f -name '*.msi' -exec cp {} release/ \;
           find artifacts -type f -name '*.msix' -exec cp {} release/ \;
+
+      # Linux packages through signed apt / rpm repositories (tools/desktop-release): channels this release goes to,
+      # then rpm signing + repository metadata in the one step that has the GPG key. Without the key: plain downloads.
+      - name: Prepare the Linux repository tools
+        id: channels
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y rpm createrepo-c apt-utils
+          npx nx run desktop-release:bundle
+          node tmp/desktop-release/desktop-release.cjs channels --app ${{ matrix.app }} --version "${VERSION}"
+
+      - name: Check the GPG key
+        id: gpg
+        env:
+          DESKTOP_LINUX_GPG_PRIVATE_KEY: ${{ secrets.DESKTOP_LINUX_GPG_PRIVATE_KEY }}
+        run: |
+          if [ -n "${DESKTOP_LINUX_GPG_PRIVATE_KEY}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Linux packages not signed (${{ matrix.app }})::DESKTOP_LINUX_GPG_PRIVATE_KEY is not set; rpms stay unsigned and no apt / rpm repository is published."
+          fi
+
+      - name: Sign the Linux packages and build the repositories
+        if: steps.gpg.outputs.present == 'true' && steps.channels.outputs.channels != ''
+        env:
+          DESKTOP_LINUX_GPG_PRIVATE_KEY: ${{ secrets.DESKTOP_LINUX_GPG_PRIVATE_KEY }}
+          DESKTOP_LINUX_GPG_PASSPHRASE: ${{ secrets.DESKTOP_LINUX_GPG_PASSPHRASE }}
+        run: |
+          node tmp/desktop-release/desktop-release.cjs linux-repo --app ${{ matrix.app }} \
+            --channels "${{ steps.channels.outputs.channels }}" --packages release --out dist/desktop-repo
 
       - name: Generate desktop integrity manifests (SHA256SUMS + integrity-manifest.json)
         run: |
@@ -482,8 +629,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.AGENSTRA_CLOUDFLARE_R2_ENDPOINT }}
-          AGENSTRA_AWS_BUCKET: ${{ secrets.AGENSTRA_AWS_BUCKET }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets[matrix.endpoint_secret] }}
+          BUCKET: ${{ secrets[matrix.bucket_secret] }}
         run: |
           shopt -s nullglob
           files=(release/*)
@@ -491,11 +638,41 @@ jobs:
             echo "::error::No desktop binaries in release/ — aborting R2 upload"
             exit 1
           fi
-          if [ -z "${AGENSTRA_AWS_BUCKET}" ]; then
-            echo "::error::AGENSTRA_AWS_BUCKET must be configured"
+          if [ -z "${BUCKET}" ]; then
+            echo "::error::${{ matrix.bucket_secret }} must be configured"
             exit 1
           fi
-          aws s3 cp release/ "s3://${AGENSTRA_AWS_BUCKET}/releases/${{ needs.publish.outputs.new_release_version }}/desktop/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}"
+          aws s3 cp release/ "s3://${BUCKET}/releases/${VERSION}/desktop/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}"
+
+      - name: Upload the package repositories to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets[matrix.endpoint_secret] }}
+          BUCKET: ${{ secrets[matrix.bucket_secret] }}
+        run: |
+          set -euo pipefail
+          if [ ! -d dist/desktop-repo ]; then
+            echo "No package repositories were built; skipping."
+            exit 0
+          fi
+          # Packages first, metadata last: clients never see an index naming a file that is not uploaded yet.
+          aws s3 cp dist/desktop-repo/ "s3://${BUCKET}/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}" \
+            --exclude '*' --include '*.deb' --include '*.rpm'
+          aws s3 cp dist/desktop-repo/ "s3://${BUCKET}/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}" \
+            --exclude '*.deb' --exclude '*.rpm' --cache-control 'no-cache'
+
+      # Exactly the files published above (signed rpms, Windows zip from the signed bundle, ...) for the signed release
+      # manifest.
+      - name: Keep the published desktop files for the release manifest
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-release-files-${{ matrix.app }}
+          path: release/
+          if-no-files-found: ignore
+          retention-days: 1
+          compression-level: 0
 
   publish-agentctx:
     name: Publish agentctx to Cloudflare R2
@@ -523,7 +700,216 @@ jobs:
             exit 1
           fi
           aws s3 cp dist/tools/ai/bin/ "s3://${AGENSTRA_AWS_BUCKET}/releases/${{ needs.publish.outputs.new_release_version }}/agentctx/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}"
-          aws s3 cp dist/tools/ai/bin/ "s3://${AGENSTRA_AWS_BUCKET}/agentctx/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}"
+          # The unversioned path is the current stable agentctx; release candidates are only published under their version.
+          if [ "${{ needs.publish.outputs.prerelease }}" != "true" ]; then
+            aws s3 cp dist/tools/ai/bin/ "s3://${AGENSTRA_AWS_BUCKET}/agentctx/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}"
+          fi
+
+  sign-release-manifests:
+    name: Sign Release Manifest (${{ matrix.product }})
+    runs-on: ubuntu-latest
+    needs:
+      - publish
+      - build-api-container-images
+      - build-worker-container-images
+      - build-server-container-images
+      - publish-native-applications
+    if: needs.publish.outputs.new_release_published == 'true'
+    environment: production
+    permissions:
+      contents: write
+      actions: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - product: agenstra
+            secret: AGENSTRA_RELEASE_SIGNING_KEY
+            desktop: true
+          - product: decabill
+            secret: DECABILL_RELEASE_SIGNING_KEY
+            desktop: true
+          - product: forepath
+            secret: FOREPATH_RELEASE_SIGNING_KEY
+            desktop: false
+    env:
+      VERSION: ${{ needs.publish.outputs.new_release_version }}
+    steps:
+      # A signed manifest per product (image digests, download checksums, source commit; tools/release-integrity/README.md).
+      # Until the product's key exists (`nx run release-integrity:generate-release-key`, public key in
+      # libs/domains/shared/shared/util-release-keys, private key in this secret), it is skipped with a warning.
+      - name: Check the release signing key
+        id: signing-key
+        env:
+          RELEASE_SIGNING_KEY: ${{ secrets[matrix.secret] }}
+        run: |
+          if [ -n "${RELEASE_SIGNING_KEY}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=${{ matrix.product }} release manifest skipped::${{ matrix.secret }} is not set; no signed release manifest is published."
+          fi
+
+      - name: Checkout code
+        if: steps.signing-key.outputs.present == 'true'
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Download build artifacts (agentctx)
+        if: steps.signing-key.outputs.present == 'true' && matrix.product == 'agenstra'
+        uses: actions/download-artifact@v8
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Download desktop binaries
+        if: steps.signing-key.outputs.present == 'true' && matrix.desktop
+        uses: actions/download-artifact@v8
+        with:
+          name: desktop-release-files-${{ matrix.product }}
+          path: artifacts
+
+      - name: Setup environment
+        if: steps.signing-key.outputs.present == 'true'
+        uses: ./.github/actions/setup-env
+
+      - name: 'Login to container registry'
+        if: steps.signing-key.outputs.present == 'true'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Built without the key; the key only reaches the separate signing step below.
+      - name: Build the release manifest
+        if: steps.signing-key.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          FILES=()
+          if [ "${{ matrix.desktop }}" = "true" ]; then
+            # The files published to R2 under releases/<version>/desktop/.
+            mkdir -p release artifacts
+            find artifacts -type f \( -name '*.zip' -o -name '*.deb' -o -name '*.rpm' -o -name '*.exe' -o -name '*.msi' -o -name '*.msix' \) -exec cp {} release/ \;
+            FILES+=(--files desktop=release)
+          fi
+          if [ "${{ matrix.product }}" = "agenstra" ]; then
+            # The files published to R2 under releases/<version>/agentctx/.
+            FILES+=(--files agentctx=dist/tools/ai/bin)
+          fi
+          npx nx run release-integrity:release-manifest create --product "${{ matrix.product }}" --release "${VERSION}" \
+            --commit "${GITHUB_SHA}" --repository "${GITHUB_REPOSITORY}" --images-from-projects "${FILES[@]}" \
+            --out dist/release-manifests
+
+      - name: Sign the release manifest
+        if: steps.signing-key.outputs.present == 'true'
+        env:
+          # Release signing key (ECDSA P-256 PEM) of this product only; only this step has it. It runs the CLI the
+          # build step compiled (no nx, no network). Never printed.
+          AGENSTRA_RELEASE_SIGNING_KEY: ${{ matrix.product == 'agenstra' && secrets.AGENSTRA_RELEASE_SIGNING_KEY || '' }}
+          DECABILL_RELEASE_SIGNING_KEY: ${{ matrix.product == 'decabill' && secrets.DECABILL_RELEASE_SIGNING_KEY || '' }}
+          FOREPATH_RELEASE_SIGNING_KEY: ${{ matrix.product == 'forepath' && secrets.FOREPATH_RELEASE_SIGNING_KEY || '' }}
+        run: |
+          node tmp/release-integrity/release-manifest.cjs sign --product "${{ matrix.product }}" \
+            --manifest "dist/release-manifests/${{ matrix.product }}-release-manifest-${VERSION}.json"
+
+      - name: Attach the release manifest to the GitHub release
+        if: steps.signing-key.outputs.present == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release upload "v${VERSION}" dist/release-manifests/${{ matrix.product }}-release-manifest-"${VERSION}".json* --clobber
+
+  # In-app update feeds of the desktop apps (tools/desktop-release): `updates/desktop/<channel>.json` points at the
+  # signed release manifest, which the apps verify with their compiled-in keys before they install anything. Only
+  # published once that manifest exists (and verifies here with the same keys); otherwise skipped with a warning.
+  publish-desktop-update-feeds:
+    name: Publish Desktop Update Feeds (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    needs:
+      - publish
+      - publish-native-applications
+      - sign-release-manifests
+    if: needs.publish.outputs.new_release_published == 'true'
+    environment: production
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: agenstra
+            product: agenstra
+            bucket_secret: AGENSTRA_AWS_BUCKET
+            endpoint_secret: AGENSTRA_CLOUDFLARE_R2_ENDPOINT
+          - app: decabill
+            product: decabill
+            bucket_secret: DECABILL_AWS_BUCKET
+            endpoint_secret: DECABILL_CLOUDFLARE_R2_ENDPOINT
+    env:
+      VERSION: ${{ needs.publish.outputs.new_release_version }}
+      MANIFEST: ${{ matrix.product }}-release-manifest-${{ needs.publish.outputs.new_release_version }}.json
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Download the signed release manifest
+        id: manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p dist/desktop-feed
+          if gh release download "v${VERSION}" --repo "${GITHUB_REPOSITORY}" --dir dist/desktop-feed \
+              --pattern "${MANIFEST}" --pattern "${MANIFEST}.sig"; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=${{ matrix.app }} update feeds unchanged::No signed release manifest on v${VERSION}; desktop apps are not offered this release in-app."
+          fi
+
+      - name: Setup environment
+        if: steps.manifest.outputs.present == 'true'
+        uses: ./.github/actions/setup-env
+
+      # Verifies the manifest with the compiled-in keys (as the apps do) before any feed is written; feeds only for the
+      # channels that announce an older version (never backwards).
+      - name: Write the update feeds
+        if: steps.manifest.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          npx nx run desktop-release:bundle
+          CHANNELS="$(node tmp/desktop-release/desktop-release.cjs channels --app "${{ matrix.app }}" --version "${VERSION}")"
+          if [ -z "${CHANNELS}" ]; then
+            echo "Every channel already announces ${VERSION} or newer; feeds unchanged."
+            exit 0
+          fi
+          node tmp/desktop-release/desktop-release.cjs feed --app "${{ matrix.app }}" --version "${VERSION}" \
+            --channels "${CHANNELS}" --manifest "dist/desktop-feed/${MANIFEST}" --out dist/desktop-feed/updates
+
+      - name: Upload the manifest and feeds to Cloudflare R2
+        if: steps.manifest.outputs.present == 'true'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets[matrix.endpoint_secret] }}
+          BUCKET: ${{ secrets[matrix.bucket_secret] }}
+        run: |
+          set -euo pipefail
+          for f in "${MANIFEST}" "${MANIFEST}.sig"; do
+            aws s3 cp "dist/desktop-feed/${f}" "s3://${BUCKET}/releases/${VERSION}/${f}" --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}"
+          done
+          # Feeds last: they only ever point at a manifest that is already published.
+          if [ -d dist/desktop-feed/updates ]; then
+            aws s3 cp dist/desktop-feed/updates/ "s3://${BUCKET}/updates/desktop/" --recursive \
+              --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}" --cache-control 'no-cache' --content-type 'application/json'
+          fi
 
   publish-sboms:
     name: Publish SBOMs to DependencyTrack
@@ -638,6 +1024,19 @@ jobs:
           autocreate: true
           bomfilename: 'dist/sboms/agenstra-native-agent-console.cdx.json'
 
+      - name: Upload decabill-native-billing-console SBOM
+        id: upload-sbom-decabill-native-billing-console
+        uses: forepath/gh-upload-sbom@v2
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: '3dd3b1cd-c07f-4355-baaf-e391de4293d2'
+          projectname: 'decabill-native-billing-console'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/decabill-native-billing-console.cdx.json'
+
       - name: Upload agenstra-frontend-docs SBOM
         id: upload-sbom-agenstra-frontend-docs
         uses: forepath/gh-upload-sbom@v2
@@ -743,6 +1142,7 @@ jobs:
             echo "| decabill-frontend-billing-console | ${{ steps.upload-sbom-decabill-frontend-billing-console.outcome }} |"
             echo "| decabill-backend-billing-manager | ${{ steps.upload-sbom-decabill-backend-billing-manager.outcome }} |"
             echo "| agenstra-native-agent-console | ${{ steps.upload-sbom-agenstra-native-agent-console.outcome }} |"
+            echo "| decabill-native-billing-console | ${{ steps.upload-sbom-decabill-native-billing-console.outcome }} |"
             echo "| agenstra-frontend-docs | ${{ steps.upload-sbom-agenstra-frontend-docs.outcome }} |"
             echo "| decabill-frontend-docs | ${{ steps.upload-sbom-decabill-frontend-docs.outcome }} |"
             echo "| shared-mcp-devkit | ${{ steps.upload-sbom-shared-mcp-devkit.outcome }} |"
@@ -759,6 +1159,7 @@ jobs:
             "${{ steps.upload-sbom-decabill-frontend-billing-console.outcome }}" \
             "${{ steps.upload-sbom-decabill-backend-billing-manager.outcome }}" \
             "${{ steps.upload-sbom-agenstra-native-agent-console.outcome }}" \
+            "${{ steps.upload-sbom-decabill-native-billing-console.outcome }}" \
             "${{ steps.upload-sbom-agenstra-frontend-docs.outcome }}" \
             "${{ steps.upload-sbom-decabill-frontend-docs.outcome }}" \
             "${{ steps.upload-sbom-shared-mcp-devkit.outcome }}" \

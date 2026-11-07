@@ -95,6 +95,19 @@ docker exec <worker> id -u                           # expect: 0 only for the en
 - Debian-based images (`Dockerfile.api`, worker) run `apt-get upgrade` after `apt-get update` so OS packages such as `perl-base` pick up Debian security fixes newer than the published base tag.
 - Ownership in images prefers **`APP_UID` / `APP_GID`** for `COPY --chown` and build-time `chown`; the login name remains **`agenstra`**.
 
+## Image tags
+
+Every release pushes each image under two tags:
+
+| Tag               | Points to                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `:<x.y.z>`        | That stable release (immutable)                                                          |
+| `:latest`         | The newest **stable** release                                                            |
+| `:<x.y.z>-rc.<n>` | That release candidate (immutable)                                                       |
+| `:rc`             | The newest **release candidate** (published from the `rc` branch; never moves `:latest`) |
+
+Release candidates are GitHub prereleases (`v<x.y.z>-rc.<n>`), so the in-product update check never offers them to stable installs. Pin production deployments to `:<x.y.z>` (or its digest from the signed release manifest) rather than `:latest`.
+
 ## Coordinated upgrades
 
 Deploy **manager API and worker** images from the **same release tag** when user IDs, home paths, or mount layouts change. Mismatched tags can break shared volumes.

@@ -238,6 +238,12 @@
       "@forepath/agenstra/backend/feature-isolation-lab": [
         "libs/domains/agenstra/backend/feature-isolation-lab/src/index.ts"
       ],
+      "@forepath/shared/shared/util-release-signing": [
+        "libs/domains/shared/shared/util-release-signing/src/index.ts"
+      ],
+      "@forepath/shared/shared/util-release-keys": [
+        "libs/domains/shared/shared/util-release-keys/src/index.ts"
+      ],
       "@forepath/agenstra/backend/util-microvm-bridge": [
         "libs/domains/agenstra/backend/util-microvm-bridge/src/index.ts"
       ]

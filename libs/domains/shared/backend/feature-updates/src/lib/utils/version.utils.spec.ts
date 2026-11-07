@@ -18,11 +18,15 @@ describe('version.utils', () => {
     expect(compareVersions('v1.0.0', '1.1.0')).toBe(-1);
     expect(compareVersions('2.0.0', '2.0.0')).toBe(0);
     expect(compareVersions('not-a-version', '1.0.0')).toBeNull();
+    expect(compareVersions('4.3.0-rc.1', '4.3.0')).toBe(-1);
+    expect(compareVersions('v4.3.0-rc.2', '4.3.0-rc.1')).toBe(1);
+    expect(compareVersions('4.3.0-rc.1', '4.2.1')).toBe(1);
   });
 
   it('resolveUpdateState compares installed and latest versions', () => {
     expect(resolveUpdateState('1.0.0', '1.1.0')).toBe('update_available');
     expect(resolveUpdateState('2.0.0', '2.0.0')).toBe('up_to_date');
+    expect(resolveUpdateState('2.0.0-rc.1', '2.0.0')).toBe('update_available');
     expect(resolveUpdateState('1.0.0', null)).toBe('unknown');
     expect(resolveUpdateState('broken', '1.0.0')).toBe('unknown');
   });

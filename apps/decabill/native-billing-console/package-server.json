@@ -1,0 +1,10 @@
+{
+  "name": "native-billing-console-server",
+  "version": "0.0.0",
+  "license": "BUSL-1.1-or-later",
+  "description": "Forepath Billing Console Server",
+  "private": true,
+  "dependencies": {
+    "express": "4.21.2"
+  }
+}
