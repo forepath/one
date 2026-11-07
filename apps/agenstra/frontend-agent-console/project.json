@@ -18,12 +18,7 @@
   "targets": {
     "stage-monaco-assets": {
       "executor": "nx:run-commands",
-      "cache": true,
-      "inputs": [
-        "{workspaceRoot}/package-lock.json",
-        "{workspaceRoot}/node_modules/monaco-editor/**/*"
-      ],
-      "outputs": ["{workspaceRoot}/.cache/monaco-editor"],
+      "cache": false,
       "options": {
         "command": "node tools/ci/stage-monaco-assets.mjs"
       }

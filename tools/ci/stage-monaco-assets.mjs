@@ -1,4 +1,11 @@
-import { cpSync, existsSync, mkdirSync, renameSync, rmSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,6 +21,23 @@ const sentinelStaging = join(
   stagingRoot,
   'esm/vs/base/browser/ui/actionbar/actionViewItems.js',
 );
+
+function readVersion(root) {
+  try {
+    return JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
+  } catch {
+    return undefined;
+  }
+}
+
+const sourceVersion = readVersion(sourceRoot);
+
+// Staged copy is current when its sentinel exists and its version matches node_modules.
+function isStaged() {
+  return (
+    existsSync(sentinelStaging) && readVersion(stagingRoot) === sourceVersion
+  );
+}
 
 function sleep(ms) {
   const end = Date.now() + ms;
@@ -46,7 +70,7 @@ if (!existsSync(sentinelSource)) {
   process.exit(1);
 }
 
-if (existsSync(sentinelStaging)) {
+if (isStaged()) {
   console.log(`Monaco editor already staged at ${stagingRoot}`);
   process.exit(0);
 }
@@ -55,7 +79,7 @@ mkdirSync(dirname(lockDir), { recursive: true });
 
 let locked = false;
 for (let attempt = 0; attempt < 120; attempt++) {
-  if (existsSync(sentinelStaging)) {
+  if (isStaged()) {
     console.log(`Monaco editor already staged at ${stagingRoot}`);
     process.exit(0);
   }
@@ -79,7 +103,7 @@ if (!locked) {
 }
 
 try {
-  if (existsSync(sentinelStaging)) {
+  if (isStaged()) {
     exitWithCode(0, `Monaco editor already staged at ${stagingRoot}`);
   }
 

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-07T12:26:57.221Z",
+  "generatedAt": "2026-11-07T14:54:55.965Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -904,6 +904,29 @@
       }
     },
     {
+      "id": "project:shared-shared-util-release-signing",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-shared-util-release-signing",
+        "root": "libs/domains/shared/shared/util-release-signing",
+        "tags": [
+          "npm:private",
+          "domain:shared",
+          "scope:shared",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "build",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "shared",
+        "featureGroup": "util"
+      }
+    },
+    {
       "id": "project:shared-backend-feature-monitoring",
       "type": "lib",
       "attrs": {
@@ -1029,6 +1052,29 @@
         "domain": "shared",
         "context": "frontend",
         "featureGroup": "feature"
+      }
+    },
+    {
+      "id": "project:shared-shared-util-release-keys",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-shared-util-release-keys",
+        "root": "libs/domains/shared/shared/util-release-keys",
+        "tags": [
+          "npm:private",
+          "domain:shared",
+          "scope:shared",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "build",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "shared",
+        "featureGroup": "util"
       }
     },
     {
@@ -1532,6 +1578,34 @@
       }
     },
     {
+      "id": "project:decabill-native-billing-console",
+      "type": "app",
+      "attrs": {
+        "name": "decabill-native-billing-console",
+        "root": "apps/decabill/native-billing-console",
+        "tags": [
+          "npm:private",
+          "domain:decabill",
+          "type:app",
+          "scope:native"
+        ],
+        "type": "app",
+        "targets": [
+          "start",
+          "electron",
+          "make",
+          "build",
+          "serve",
+          "package",
+          "test",
+          "sbom"
+        ],
+        "domain": "decabill",
+        "context": "native",
+        "featureGroup": "app"
+      }
+    },
+    {
       "id": "project:agenstra-backend-agent-manager",
       "type": "app",
       "attrs": {
@@ -1672,6 +1746,7 @@
           "build",
           "serve",
           "package",
+          "test",
           "sbom"
         ],
         "domain": "agenstra",
@@ -1865,7 +1940,9 @@
         "targets": [
           "lint",
           "build",
-          "test"
+          "test",
+          "release-manifest",
+          "generate-release-key"
         ]
       }
     },
@@ -1894,6 +1971,27 @@
         "domain": "shared",
         "context": "backend",
         "featureGroup": "app"
+      }
+    },
+    {
+      "id": "project:desktop-release",
+      "type": "tool",
+      "attrs": {
+        "name": "desktop-release",
+        "root": "tools/desktop-release",
+        "tags": [
+          "npm:private",
+          "type:tool",
+          "scope:repo"
+        ],
+        "type": "tool",
+        "targets": [
+          "lint",
+          "test",
+          "typecheck",
+          "bundle",
+          "desktop-release"
+        ]
       }
     },
     {
@@ -2722,6 +2820,14 @@
       }
     },
     {
+      "id": "package:tslib",
+      "type": "package",
+      "attrs": {
+        "name": "tslib",
+        "version": "2.8.1"
+      }
+    },
+    {
       "id": "package:nest-cloudflare-turnstile",
       "type": "package",
       "attrs": {
@@ -2735,14 +2841,6 @@
       "attrs": {
         "name": "ngx-turnstile",
         "version": "0.2.5"
-      }
-    },
-    {
-      "id": "package:tslib",
-      "type": "package",
-      "attrs": {
-        "name": "tslib",
-        "version": "2.8.1"
       }
     },
     {
@@ -12750,6 +12848,15 @@
       }
     },
     {
+      "id": "file:libs/domains/shared/shared/util-release-signing/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/shared/shared/util-release-signing/README.md",
+        "languageOrKind": "md",
+        "projectName": "shared-shared-util-release-signing"
+      }
+    },
+    {
       "id": "file:libs/domains/shared/backend/feature-monitoring/README.md",
       "type": "readme",
       "attrs": {
@@ -12927,6 +13034,15 @@
         "path": "libs/domains/shared/frontend/feature-updates/README.md",
         "languageOrKind": "md",
         "projectName": "shared-frontend-feature-updates"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/shared/util-release-keys/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/shared/shared/util-release-keys/README.md",
+        "languageOrKind": "md",
+        "projectName": "shared-shared-util-release-keys"
       }
     },
     {
@@ -14109,6 +14225,15 @@
       }
     },
     {
+      "id": "file:tools/desktop-release/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "tools/desktop-release/README.md",
+        "languageOrKind": "md",
+        "projectName": "desktop-release"
+      }
+    },
+    {
       "id": "file:tools/graph/README.md",
       "type": "readme",
       "attrs": {
@@ -14655,6 +14780,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/applications/native-agent-console.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/applications/native-agent-console.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/architecture/README.md",
       "type": "doc",
       "attrs": {
@@ -15115,6 +15248,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/applications/frontend-billing-console.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/applications/native-billing-console.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/applications/native-billing-console.md",
         "languageOrKind": "md"
       }
     },
@@ -26088,6 +26229,46 @@
       }
     },
     {
+      "id": "concept:agenstra-agenstra-desktop-native-agent-console",
+      "type": "concept",
+      "attrs": {
+        "title": "Agenstra Desktop (native agent console)",
+        "docPath": "docs/agenstra/applications/native-agent-console.md",
+        "sectionAnchor": "agenstra-desktop-native-agent-console",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-downloads",
+      "type": "concept",
+      "attrs": {
+        "title": "Downloads",
+        "docPath": "docs/agenstra/applications/native-agent-console.md",
+        "sectionAnchor": "downloads",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-install-on-linux-from-the-package-repository",
+      "type": "concept",
+      "attrs": {
+        "title": "Install on Linux from the package repository",
+        "docPath": "docs/agenstra/applications/native-agent-console.md",
+        "sectionAnchor": "install-on-linux-from-the-package-repository",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-in-app-updates",
+      "type": "concept",
+      "attrs": {
+        "title": "In-app updates",
+        "docPath": "docs/agenstra/applications/native-agent-console.md",
+        "sectionAnchor": "in-app-updates",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-architecture-documentation",
       "type": "concept",
       "attrs": {
@@ -29708,6 +29889,16 @@
       }
     },
     {
+      "id": "concept:agenstra-image-tags",
+      "type": "concept",
+      "attrs": {
+        "title": "Image tags",
+        "docPath": "docs/agenstra/security/container-images.md",
+        "sectionAnchor": "image-tags",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-coordinated-upgrades",
       "type": "concept",
       "attrs": {
@@ -29934,6 +30125,16 @@
         "title": "Desktop release integrity",
         "docPath": "docs/agenstra/security/vulnerability-reporting-and-artifacts.md",
         "sectionAnchor": "desktop-release-integrity",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-signed-release-manifests",
+      "type": "concept",
+      "attrs": {
+        "title": "Signed release manifests",
+        "docPath": "docs/agenstra/security/vulnerability-reporting-and-artifacts.md",
+        "sectionAnchor": "signed-release-manifests",
         "domain": "agenstra"
       }
     },
@@ -30734,6 +30935,46 @@
         "title": "Docker Compose",
         "docPath": "docs/decabill/applications/frontend-billing-console.md",
         "sectionAnchor": "docker-compose",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-decabill-desktop-native-billing-console",
+      "type": "concept",
+      "attrs": {
+        "title": "Decabill Desktop (native billing console)",
+        "docPath": "docs/decabill/applications/native-billing-console.md",
+        "sectionAnchor": "decabill-desktop-native-billing-console",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-downloads",
+      "type": "concept",
+      "attrs": {
+        "title": "Downloads",
+        "docPath": "docs/decabill/applications/native-billing-console.md",
+        "sectionAnchor": "downloads",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-install-on-linux-from-the-package-repository",
+      "type": "concept",
+      "attrs": {
+        "title": "Install on Linux from the package repository",
+        "docPath": "docs/decabill/applications/native-billing-console.md",
+        "sectionAnchor": "install-on-linux-from-the-package-repository",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-in-app-updates",
+      "type": "concept",
+      "attrs": {
+        "title": "In-app updates",
+        "docPath": "docs/decabill/applications/native-billing-console.md",
+        "sectionAnchor": "in-app-updates",
         "domain": "decabill"
       }
     },
@@ -35138,6 +35379,16 @@
       }
     },
     {
+      "id": "concept:decabill-dr-007-desktop-app-no-os-trusted-code-signing-yet",
+      "type": "concept",
+      "attrs": {
+        "title": "DR-007 (Desktop app: no OS-trusted code signing yet)",
+        "docPath": "docs/decabill/security/accepted-risks.md",
+        "sectionAnchor": "dr-007-desktop-app-no-os-trusted-code-signing-yet",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-hardening-paths-if-an-acceptance-is-withdrawn",
       "type": "concept",
       "attrs": {
@@ -35534,6 +35785,26 @@
         "title": "Software Bill of Materials (SBOM)",
         "docPath": "docs/decabill/security/vulnerability-reporting-and-artifacts.md",
         "sectionAnchor": "software-bill-of-materials-sbom",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-desktop-release-integrity",
+      "type": "concept",
+      "attrs": {
+        "title": "Desktop release integrity",
+        "docPath": "docs/decabill/security/vulnerability-reporting-and-artifacts.md",
+        "sectionAnchor": "desktop-release-integrity",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-signed-release-manifests",
+      "type": "concept",
+      "attrs": {
+        "title": "Signed release manifests",
+        "docPath": "docs/decabill/security/vulnerability-reporting-and-artifacts.md",
+        "sectionAnchor": "signed-release-manifests",
         "domain": "decabill"
       }
     },
@@ -36750,6 +37021,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:shared-shared-util-release-keys",
+      "to": "project:shared-shared-util-release-signing",
+      "type": "depends_on"
+    },
+    {
       "from": "project:identity-frontend-feature-auth",
       "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
@@ -37050,6 +37326,21 @@
       "type": "depends_on"
     },
     {
+      "from": "project:decabill-native-billing-console",
+      "to": "project:decabill-frontend-billing-console",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-native-billing-console",
+      "to": "project:shared-shared-util-release-signing",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-native-billing-console",
+      "to": "project:shared-shared-util-release-keys",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-backend-agent-manager",
       "to": "project:shared-platform-authentication",
       "type": "depends_on"
@@ -37140,6 +37431,16 @@
       "type": "depends_on"
     },
     {
+      "from": "project:agenstra-native-agent-console",
+      "to": "project:shared-shared-util-release-signing",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-native-agent-console",
+      "to": "project:shared-shared-util-release-keys",
+      "type": "depends_on"
+    },
+    {
       "from": "project:decabill-frontend-landingpage",
       "to": "project:decabill-frontend-util-configuration",
       "type": "depends_on"
@@ -37225,8 +37526,28 @@
       "type": "depends_on"
     },
     {
+      "from": "project:release-integrity",
+      "to": "project:shared-shared-util-release-keys",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:release-integrity",
+      "to": "project:shared-shared-util-release-signing",
+      "type": "depends_on"
+    },
+    {
       "from": "project:shared-mcp-devkit",
       "to": "project:code",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:desktop-release",
+      "to": "project:shared-shared-util-release-keys",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:desktop-release",
+      "to": "project:shared-shared-util-release-signing",
       "type": "depends_on"
     },
     {
@@ -38305,6 +38626,21 @@
       "type": "depends_on"
     },
     {
+      "from": "project:decabill-native-billing-console",
+      "to": "package:express",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-native-billing-console",
+      "to": "package:tslib",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-native-billing-console",
+      "to": "package:zod",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-backend-agent-manager",
       "to": "package:@aws-sdk/client-s3",
       "type": "depends_on"
@@ -38830,6 +39166,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:agenstra-native-agent-console",
+      "to": "package:zod",
+      "type": "depends_on"
+    },
+    {
       "from": "project:decabill-frontend-landingpage",
       "to": "package:@angular/animations",
       "type": "depends_on"
@@ -39247,6 +39588,11 @@
     {
       "from": "project:agenstra-frontend-agent-console",
       "to": "tool:ci",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-native-billing-console",
+      "to": "project:sbom",
       "type": "depends_on"
     },
     {
@@ -44510,6 +44856,11 @@
       "type": "contains"
     },
     {
+      "from": "project:shared-shared-util-release-signing",
+      "to": "file:libs/domains/shared/shared/util-release-signing/README.md",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-backend-feature-monitoring",
       "to": "file:libs/domains/shared/backend/feature-monitoring/README.md",
       "type": "contains"
@@ -44607,6 +44958,11 @@
     {
       "from": "project:shared-frontend-feature-updates",
       "to": "file:libs/domains/shared/frontend/feature-updates/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-shared-util-release-keys",
+      "to": "file:libs/domains/shared/shared/util-release-keys/README.md",
       "type": "contains"
     },
     {
@@ -45262,6 +45618,11 @@
     {
       "from": "project:release-integrity",
       "to": "file:tools/release-integrity/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:desktop-release",
+      "to": "file:tools/desktop-release/README.md",
       "type": "contains"
     },
     {
@@ -50950,6 +51311,31 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/agenstra/applications/native-agent-console.md",
+      "to": "concept:agenstra-agenstra-desktop-native-agent-console",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/applications/native-agent-console.md",
+      "to": "concept:agenstra-downloads",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/applications/native-agent-console.md",
+      "to": "concept:agenstra-install-on-linux-from-the-package-repository",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/applications/native-agent-console.md",
+      "to": "concept:agenstra-in-app-updates",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/applications/native-agent-console.md",
+      "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/agenstra/architecture/README.md",
       "to": "concept:agenstra-architecture-documentation",
       "type": "contains"
@@ -53506,6 +53892,11 @@
     },
     {
       "from": "file:docs/agenstra/security/container-images.md",
+      "to": "concept:agenstra-image-tags",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/security/container-images.md",
       "to": "concept:agenstra-coordinated-upgrades",
       "type": "contains"
     },
@@ -53627,6 +54018,11 @@
     {
       "from": "file:docs/agenstra/security/vulnerability-reporting-and-artifacts.md",
       "to": "concept:agenstra-desktop-release-integrity",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/security/vulnerability-reporting-and-artifacts.md",
+      "to": "concept:agenstra-signed-release-manifests",
       "type": "contains"
     },
     {
@@ -54122,6 +54518,31 @@
     {
       "from": "file:docs/decabill/applications/frontend-billing-console.md",
       "to": "concept:decabill-license",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/applications/native-billing-console.md",
+      "to": "concept:decabill-decabill-desktop-native-billing-console",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/applications/native-billing-console.md",
+      "to": "concept:decabill-downloads",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/applications/native-billing-console.md",
+      "to": "concept:decabill-install-on-linux-from-the-package-repository",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/applications/native-billing-console.md",
+      "to": "concept:decabill-in-app-updates",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/applications/native-billing-console.md",
+      "to": "concept:decabill-related-documentation",
       "type": "contains"
     },
     {
@@ -57096,6 +57517,11 @@
     },
     {
       "from": "file:docs/decabill/security/accepted-risks.md",
+      "to": "concept:decabill-dr-007-desktop-app-no-os-trusted-code-signing-yet",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/security/accepted-risks.md",
       "to": "concept:decabill-hardening-paths-if-an-acceptance-is-withdrawn",
       "type": "contains"
     },
@@ -57322,6 +57748,16 @@
     {
       "from": "file:docs/decabill/security/vulnerability-reporting-and-artifacts.md",
       "to": "concept:decabill-software-bill-of-materials-sbom",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/security/vulnerability-reporting-and-artifacts.md",
+      "to": "concept:decabill-desktop-release-integrity",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/security/vulnerability-reporting-and-artifacts.md",
+      "to": "concept:decabill-signed-release-manifests",
       "type": "contains"
     },
     {
@@ -79600,6 +80036,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-ar-001-desktop-app-no-os-trusted-code-signing-no-in-app-auto-update",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-ar-006-mtls-no-online-revocation-short-lived-certificate-assertions",
       "to": "api:HTTP:POST:/auth/logout",
       "type": "documents"
@@ -84155,6 +84596,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-desktop-release-integrity",
+      "to": "project:decabill-native-billing-console",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-connection-issues",
       "to": "project:decabill-backend-billing-manager",
       "type": "documents"
@@ -84855,6 +85301,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:shared-shared-util-release-signing",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-shared-util-release-signing",
+      "to": "context:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-shared-util-release-signing",
+      "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:shared-backend-feature-monitoring",
       "to": "domain:shared",
       "type": "belongs_to"
@@ -84942,6 +85403,21 @@
     {
       "from": "project:shared-frontend-feature-updates",
       "to": "feature-group:feature",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-shared-util-release-keys",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-shared-util-release-keys",
+      "to": "context:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-shared-util-release-keys",
+      "to": "feature-group:util",
       "type": "belongs_to"
     },
     {
@@ -85245,6 +85721,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:decabill-native-billing-console",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:decabill-native-billing-console",
+      "to": "context:native",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:decabill-native-billing-console",
+      "to": "feature-group:app",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:agenstra-backend-agent-manager",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -85516,6 +86007,11 @@
     },
     {
       "from": "file:docs/agenstra/applications/frontend-agent-console.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/agenstra/applications/native-agent-console.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -85806,6 +86302,11 @@
     },
     {
       "from": "file:docs/decabill/applications/frontend-billing-console.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/applications/native-billing-console.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -86671,6 +87172,26 @@
     },
     {
       "from": "concept:agenstra-production-deployment",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-agenstra-desktop-native-agent-console",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-downloads",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-install-on-linux-from-the-package-repository",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-in-app-updates",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -88485,6 +89006,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-image-tags",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-coordinated-upgrades",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -88596,6 +89122,11 @@
     },
     {
       "from": "concept:agenstra-desktop-release-integrity",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-signed-release-manifests",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -88996,6 +89527,26 @@
     },
     {
       "from": "concept:decabill-docker-compose",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-decabill-desktop-native-billing-console",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-downloads",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-install-on-linux-from-the-package-repository",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-in-app-updates",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -91200,6 +91751,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-dr-007-desktop-app-no-os-trusted-code-signing-yet",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-hardening-paths-if-an-acceptance-is-withdrawn",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -91396,6 +91952,16 @@
     },
     {
       "from": "concept:decabill-software-bill-of-materials-sbom",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-desktop-release-integrity",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-signed-release-manifests",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
