@@ -3074,9 +3074,6 @@
       <trans-unit id="featureProjectBoard-empty" datatype="html">
         <source>No tickets yet</source>
         </trans-unit>
-      <trans-unit id="featureProjectBoard-emptyCreate" datatype="html">
-        <source>New ticket</source>
-        </trans-unit>
       <trans-unit id="featureProjectBoard-modalLoadingTitle" datatype="html">
         <source>Ticket</source>
         </trans-unit>
