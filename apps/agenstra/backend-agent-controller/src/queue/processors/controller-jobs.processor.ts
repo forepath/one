@@ -19,6 +19,7 @@ import {
   OpencodeLayerFilesService,
   OpencodeProvidersCatalogService,
   OpencodeMcpServersCatalogService,
+  WorkspaceGraphSnapshotService,
 } from '@forepath/agenstra/backend/feature-agent-controller';
 import {
   EMAIL_DELIVER_JOB_NAME,
@@ -81,6 +82,7 @@ export class ControllerJobsProcessor extends WorkerHost {
     private readonly clientIsolation: ClientIsolationService,
     private readonly agentTaskRunner: AgentTaskRunnerService,
     private readonly agentHandoffRunner: AgentHandoffRunnerService,
+    private readonly workspaceGraphSnapshots: WorkspaceGraphSnapshotService,
   ) {
     super();
   }
@@ -152,6 +154,9 @@ export class ControllerJobsProcessor extends WorkerHost {
         break;
       case ControllerJobName.AGENT_HANDOFF_UNIT:
         await this.agentHandoffRunner.executeHandoff(job.data as AgentHandoffJob);
+        break;
+      case ControllerJobName.WORKSPACE_GRAPH_SNAPSHOT_UNIT:
+        await this.workspaceGraphSnapshots.runDirtyRebuild((job.data as { clientId: string }).clientId);
         break;
       case ControllerJobName.SEARCH_REINDEX_COORDINATOR:
         await this.runSearchReindexCoordinator();
