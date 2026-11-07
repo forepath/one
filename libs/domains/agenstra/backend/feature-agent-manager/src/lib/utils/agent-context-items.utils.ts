@@ -1,4 +1,7 @@
-import { AGENSTRA_CONTEXT_MCP_SERVER_KEY } from '@forepath/agenstra/shared/util-opencode-config';
+import {
+  AGENSTRA_CONTEXT_MCP_SERVER_KEY,
+  AGENSTRA_WORKSPACE_MOUNT_ROOT,
+} from '@forepath/agenstra/shared/util-opencode-config';
 
 import { isUnattendedAutomationResumeSessionSuffix } from '../constants/chat-session.constants';
 import type { AgentContextStoredItem, AgentContextTicketRecord } from '../types/agent-context.types';
@@ -148,6 +151,11 @@ export function buildAgentContextHintLines(record: AgentContextTicketRecord): st
       : `Other tickets / knowledge pages / plans of this environment: find metadata with ${tool('search')}; ask for their content with ${tool('request_access')}.`;
 
   lines.push(`- ${access}`);
+  lines.push(
+    `- The working directories of the environments of your workspace are mounted read-only at ` +
+      `${AGENSTRA_WORKSPACE_MOUNT_ROOT}/<mount id> (mount ids are not environment ids): ${tool('mounts')} lists ` +
+      `each environment with its id, name and mount path, and resolves an environment id, mount id, name or path.`,
+  );
 
   const content = `${AGENSTRA_CONTEXT_MCP_SERVER_KEY}_content_*`;
   const suffix = record.sessionKey.startsWith('suffix:') ? record.sessionKey.slice('suffix:'.length) : undefined;

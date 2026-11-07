@@ -1,4 +1,5 @@
 import {
+  AGENSTRA_WORKSPACE_MOUNT_ROOT,
   AGENT_HANDOFF_REQUEST_EVENT,
   AGENT_TASK_REQUEST_EVENT,
   type AgentHandoffControllerRequest,
@@ -632,7 +633,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
             byteSize: attachment.byteSize,
             agentPath: attachment.agentPath as string,
           })),
-        ...(contextInjection.includeWorkspace ? { workspace: { mountPath: '/opt/workspace' } } : {}),
+        ...(contextInjection.includeWorkspace ? { workspace: { mountPath: AGENSTRA_WORKSPACE_MOUNT_ROOT } } : {}),
         environments: (contextInjection.environmentIds ?? []).map((id) => ({ id })),
       });
     } catch (error) {

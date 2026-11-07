@@ -4,6 +4,8 @@ import {
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { BadRequestException } from '@nestjs/common';
 
+import { AGENT_CONTEXT_MAX_MOUNT_LOOKUP_LENGTH } from '../constants/agent-context.constants';
+
 /** Query of GET /agent-context/tickets/:ticket/search (raw strings; normalized by {@link parseAgentContextSearchQuery}). */
 export interface AgentContextSearchQueryDto {
   query?: string;
@@ -66,4 +68,29 @@ export function parseAgentContextAccessRequest(raw: unknown): AgentContextAccess
   const reason = typeof body['reason'] === 'string' ? body['reason'].slice(0, MAX_REASON_LENGTH) : undefined;
 
   return { refs: refs as string[], ...(reason ? { reason } : {}) };
+}
+
+/** Query of GET /agent-context/tickets/:ticket/mounts. */
+export interface AgentContextMountsQueryDto {
+  resolve?: string | string[];
+}
+
+export function parseAgentContextMountsQuery(raw: AgentContextMountsQueryDto | undefined): { resolve?: string } {
+  const value = raw?.resolve;
+
+  if (value === undefined) {
+    return {};
+  }
+
+  if (typeof value !== 'string') {
+    throw new BadRequestException('resolve must be a single string');
+  }
+
+  const resolve = value.trim();
+
+  if (resolve.length > AGENT_CONTEXT_MAX_MOUNT_LOOKUP_LENGTH) {
+    throw new BadRequestException(`resolve must be at most ${AGENT_CONTEXT_MAX_MOUNT_LOOKUP_LENGTH} characters`);
+  }
+
+  return resolve ? { resolve } : {};
 }

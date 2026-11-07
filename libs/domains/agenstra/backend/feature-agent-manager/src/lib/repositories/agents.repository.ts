@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Not, Repository } from 'typeorm';
+import { In, IsNull, Not, Repository } from 'typeorm';
 
 import { AgentEntity } from '../entities/agent.entity';
 
@@ -38,6 +38,19 @@ export class AgentsRepository {
    */
   async findById(id: string): Promise<AgentEntity | null> {
     return await this.repository.findOne({ where: { id } });
+  }
+
+  /**
+   * Find agents by ID (unknown ids are skipped; order is not guaranteed).
+   * @param ids - UUIDs of the agents
+   * @returns The agent entities found
+   */
+  async findByIds(ids: string[]): Promise<AgentEntity[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    return await this.repository.find({ where: { id: In(ids) } });
   }
 
   /**

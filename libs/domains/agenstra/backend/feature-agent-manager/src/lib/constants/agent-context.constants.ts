@@ -51,3 +51,9 @@ export const AGENT_CONTEXT_CHANGE_QUESTION_SUBTYPE = 'context_change';
 
 /** Characters of new content / comments shown in a change prompt. */
 export const AGENT_CONTEXT_CHANGE_PREVIEW_LENGTH = 600;
+
+/** Host directory holding every agent's working directory (`<root>/<mount id>`), mounted read-only into workers. */
+export const AGENT_VOLUME_HOST_ROOT = '/opt/agents';
+
+/** Max length of a `context_mounts` lookup (environment id, mount id, name or path). */
+export const AGENT_CONTEXT_MAX_MOUNT_LOOKUP_LENGTH = 1024;

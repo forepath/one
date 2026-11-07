@@ -3,13 +3,14 @@ import { callContextTool, CONTEXT_TOOL_DEFINITIONS } from './context-tools';
 
 describe('context tools', () => {
   let client: jest.Mocked<
-    Pick<ContextApiClient, 'list' | 'search' | 'get' | 'requestAccess' | 'accessStatus' | 'health'>
+    Pick<ContextApiClient, 'list' | 'mounts' | 'search' | 'get' | 'requestAccess' | 'accessStatus' | 'health'>
   >;
 
   beforeEach(() => {
     client = {
       health: jest.fn(),
       list: jest.fn(),
+      mounts: jest.fn(),
       search: jest.fn(),
       get: jest.fn(),
       requestAccess: jest.fn(),
@@ -19,9 +20,10 @@ describe('context tools', () => {
 
   const call = (name: string, args: unknown) => callContextTool(client as unknown as ContextApiClient, name, args);
 
-  it('exposes the four context tools, each requiring a ticket', () => {
+  it('exposes the five context tools, each requiring a ticket', () => {
     expect(CONTEXT_TOOL_DEFINITIONS.map((tool) => tool.name)).toEqual([
       'context_list',
+      'context_mounts',
       'context_search',
       'context_get',
       'context_request_access',
@@ -51,6 +53,22 @@ describe('context tools', () => {
     const result = await call('context_list', { ticket: 'ctx-1' });
 
     expect(JSON.parse(result.content[0].text)).toMatchObject({ ticket: 'ctx-1', canRequestAccess: true });
+  });
+
+  it('lists and resolves workspace mounts', async () => {
+    client.mounts.mockResolvedValue({ root: '/opt/workspace', readOnly: true, mounts: [] });
+
+    const listed = await call('context_mounts', { ticket: 'ctx-1' });
+
+    await call('context_mounts', { ticket: 'ctx-1', resolve: ' /opt/workspace/abc/src ' });
+    await call('context_mounts', { ticket: 'ctx-1', resolve: '   ' });
+
+    expect(JSON.parse(listed.content[0].text)).toMatchObject({ root: '/opt/workspace', readOnly: true });
+    expect(client.mounts.mock.calls).toEqual([
+      ['ctx-1', undefined],
+      ['ctx-1', '/opt/workspace/abc/src'],
+      ['ctx-1', undefined],
+    ]);
   });
 
   it('passes search filters through', async () => {

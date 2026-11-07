@@ -30,10 +30,34 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
     name: AGENSTRA_CONTEXT_MCP_TOOL_NAMES.list,
     description:
       'List the context granted for this request: context items (tickets, knowledge pages, plans, excerpts) with titles and ' +
-      'sizes, mounted attachments, workspace and environment mounts. Content is read with context_get.',
+      'sizes, mounted attachments, the workspace mount and the selected environments (name and mount path). Content ' +
+      'is read with context_get; all environment mounts are listed by context_mounts.',
     inputSchema: {
       type: 'object',
       properties: { ticket: TICKET_PROPERTY },
+      required: ['ticket'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: AGENSTRA_CONTEXT_MCP_TOOL_NAMES.mounts,
+    description:
+      'The working directories of the environments of your workspace are mounted read-only at ' +
+      '/opt/workspace/<mount id>; mount ids are not environment ids. Lists each environment (environment id, name, ' +
+      'description, repository, mount id and mount path; your own one with its writable working directory, ' +
+      'environments selected for this request marked). Pass "resolve" to look up one environment by environment id, ' +
+      'mount id, unique name or a path below a mount (returns the path relative to that environment). Read the files ' +
+      'with your file tools; never write below /opt/workspace.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ticket: TICKET_PROPERTY,
+        resolve: {
+          type: 'string',
+          maxLength: 1024,
+          description: 'Environment id, mount id, environment name or an absolute path (e.g. /opt/workspace/<id>/src).',
+        },
+      },
       required: ['ticket'],
       additionalProperties: false,
     },
@@ -138,6 +162,8 @@ export async function callContextTool(
     switch (name) {
       case AGENSTRA_CONTEXT_MCP_TOOL_NAMES.list:
         return json(await client.list(ticket));
+      case AGENSTRA_CONTEXT_MCP_TOOL_NAMES.mounts:
+        return json(await client.mounts(ticket, stringArg(args, 'resolve')));
       case AGENSTRA_CONTEXT_MCP_TOOL_NAMES.search: {
         const limit = typeof args['limit'] === 'number' ? args['limit'] : undefined;
 

@@ -6,6 +6,7 @@ import { AgentContextChangesService } from '../services/agent-context-changes.se
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
 import { AgentToolCallsService } from '../services/agent-tool-calls.service';
+import { AgentWorkspaceMountsService } from '../services/agent-workspace-mounts.service';
 
 import { AgentsContextController } from './agents-context.controller';
 
@@ -125,6 +126,60 @@ describe('AgentsContextController', () => {
     expect(changes.requestChange).not.toHaveBeenCalled();
   });
 
+  describe('workspace mounts', () => {
+    let mounts: { mounts: jest.Mock; withEnvironmentMounts: jest.Mock };
+    let withMounts: AgentsContextController;
+
+    beforeEach(() => {
+      mounts = {
+        mounts: jest.fn().mockResolvedValue({ root: '/opt/workspace', readOnly: true, mounts: [] }),
+        withEnvironmentMounts: jest.fn(async (_record: unknown, response: unknown) => ({
+          ...(response as object),
+          enriched: true,
+        })),
+      };
+      withMounts = new AgentsContextController(
+        contextMcp as unknown as AgentContextMcpService,
+        tickets,
+        api as unknown as AgentContextApiService,
+        changes as unknown as AgentContextChangesService,
+        undefined,
+        mounts as unknown as AgentWorkspaceMountsService,
+      );
+    });
+
+    it('serves mounts for the resolved ticket and normalizes the lookup', async () => {
+      await withMounts.mountsOf(ticket, {}, agentId, auth);
+      await withMounts.mountsOf(ticket, { resolve: '  /opt/workspace/abc/src ' }, agentId, auth);
+
+      expect(mounts.mounts).toHaveBeenNthCalledWith(1, expect.objectContaining({ ticket, agentId }), undefined);
+      expect(mounts.mounts).toHaveBeenNthCalledWith(2, expect.objectContaining({ ticket }), '/opt/workspace/abc/src');
+    });
+
+    it('rejects unknown tickets, wrong tokens and malformed lookups', async () => {
+      await expect(withMounts.mountsOf('ctx-unknown', {}, agentId, auth)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(withMounts.mountsOf(ticket, {}, agentId, 'Bearer wrong')).rejects.toBeInstanceOf(
+        UnauthorizedException,
+      );
+      await expect(withMounts.mountsOf(ticket, { resolve: ['a', 'b'] }, agentId, auth)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      await expect(withMounts.mountsOf(ticket, { resolve: 'x'.repeat(1025) }, agentId, auth)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(mounts.mounts).not.toHaveBeenCalled();
+    });
+
+    it('adds environment mounts to the context list', async () => {
+      await expect(withMounts.list(ticket, agentId, auth)).resolves.toEqual({ items: [], enriched: true });
+      expect(mounts.withEnvironmentMounts).toHaveBeenCalledWith(expect.objectContaining({ ticket }), { items: [] });
+    });
+
+    it('reports mounts as unavailable without the mounts service', async () => {
+      await expect(controller.mountsOf(ticket, {}, agentId, auth)).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
   it('rejects malformed access request bodies', async () => {
     await expect(controller.requestAccess(ticket, { refs: 'ticket:abcd' }, agentId, auth)).rejects.toBeInstanceOf(
       BadRequestException,
@@ -233,6 +288,31 @@ describe('AgentsContextController', () => {
       await expect(guarded.requestChange(autoTicket, body, agentId, auth)).resolves.toEqual({ decision: 'applied' });
       await expect(guarded.requestChange(autoTicket, body, agentId, auth)).rejects.toBeInstanceOf(NotFoundException);
       expect(changes.requestChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('only serves mount lookups issued as matching tool calls answering the platform prompt', async () => {
+      const mounts = { mounts: jest.fn().mockResolvedValue({ mounts: [] }), withEnvironmentMounts: jest.fn() };
+      const withMounts = new AgentsContextController(
+        contextMcp as unknown as AgentContextMcpService,
+        tickets,
+        api as unknown as AgentContextApiService,
+        changes as unknown as AgentContextChangesService,
+        toolCalls,
+        mounts as unknown as AgentWorkspaceMountsService,
+      );
+
+      await expect(withMounts.mountsOf(autoTicket, {}, agentId, auth)).rejects.toBeInstanceOf(NotFoundException);
+
+      platformTurn();
+      toolCalls.observe(agentId, toolCall('c3', 'agenstra_context_mounts', { ticket: autoTicket, resolve: 'docs' }));
+
+      await expect(withMounts.mountsOf(autoTicket, { resolve: 'other' }, agentId, auth)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      await expect(withMounts.mountsOf(autoTicket, { resolve: 'docs' }, agentId, auth)).resolves.toEqual({
+        mounts: [],
+      });
+      expect(mounts.mounts).toHaveBeenCalledTimes(1);
     });
 
     it('keeps ask tickets unaffected', async () => {

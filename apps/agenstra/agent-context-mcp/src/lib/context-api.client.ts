@@ -8,6 +8,7 @@ import {
   type AgentContextAccessResponse,
   type AgentContextGetResponse,
   type AgentContextListResponse,
+  type AgentContextMountsResponse,
   type AgentContextSearchResponse,
   type AgentContentChangeRequest,
   type AgentContentChangeResponse,
@@ -84,6 +85,12 @@ export class ContextApiClient {
 
   list(ticket: string): Promise<AgentContextListResponse> {
     return this.request('GET', `tickets/${encodeURIComponent(ticket)}`);
+  }
+
+  mounts(ticket: string, resolve?: string): Promise<AgentContextMountsResponse> {
+    const query = resolve ? `?${new URLSearchParams({ resolve }).toString()}` : '';
+
+    return this.request('GET', `tickets/${encodeURIComponent(ticket)}/mounts${query}`);
   }
 
   search(
