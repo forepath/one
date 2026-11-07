@@ -29,6 +29,7 @@ import {
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
+  FpcBackLinkComponent,
   FpcButtonComponent,
   FpcDataTableComponent,
   FpcDatePipe,
@@ -92,6 +93,7 @@ const ACTIVITY_RELOAD_DEBOUNCE_MS = 1000;
     RouterModule,
     FpcAlertComponent,
     FpcBadgeComponent,
+    FpcBackLinkComponent,
     FpcButtonComponent,
     FpcDataTableComponent,
     FpcDatePipe,

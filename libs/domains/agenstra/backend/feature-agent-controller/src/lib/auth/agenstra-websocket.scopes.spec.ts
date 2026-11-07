@@ -3,6 +3,7 @@ import { parsePatScope, type SocketEventScopes, websocketScope } from '@forepath
 import { AGENT_TASK_SOCKET_EVENTS } from '../constants/agent-tasks.constants';
 import { CLIENT_CHAT_AUTOMATION_EVENTS } from '../services/client-chat-automation.constants';
 import { CLIENT_CHAT_PLAN_EVENTS } from '../services/client-chat-plan.constants';
+import { INITIATIVES_BOARD_EVENTS } from '../services/initiative-board-realtime.constants';
 import { KNOWLEDGE_BOARD_EVENTS } from '../services/knowledge-board-realtime.constants';
 import { TICKETS_BOARD_EVENTS } from '../services/ticket-board-realtime.constants';
 
@@ -13,6 +14,8 @@ import {
   CLIENTS_SOCKET_FORWARD_SCOPES,
   CLIENTS_SOCKET_INBOUND_SCOPES,
   CLIENTS_SOCKET_OUTBOUND_SCOPES,
+  INITIATIVES_SOCKET_INBOUND_SCOPES,
+  INITIATIVES_SOCKET_OUTBOUND_SCOPES,
   PAGES_SOCKET_INBOUND_SCOPES,
   PAGES_SOCKET_OUTBOUND_SCOPES,
   STATUS_SOCKET_INBOUND_SCOPES,
@@ -31,6 +34,8 @@ const ALL_MAPS: Record<string, SocketEventScopes> = {
   TICKETS_SOCKET_OUTBOUND_SCOPES,
   PAGES_SOCKET_INBOUND_SCOPES,
   PAGES_SOCKET_OUTBOUND_SCOPES,
+  INITIATIVES_SOCKET_INBOUND_SCOPES,
+  INITIATIVES_SOCKET_OUTBOUND_SCOPES,
 };
 const INBOUND_MAPS: Record<string, { socket: string; map: SocketEventScopes }> = {
   CLIENTS_SOCKET_INBOUND_SCOPES: { socket: 'clients', map: CLIENTS_SOCKET_INBOUND_SCOPES },
@@ -38,6 +43,7 @@ const INBOUND_MAPS: Record<string, { socket: string; map: SocketEventScopes }> =
   STATUS_SOCKET_INBOUND_SCOPES: { socket: 'status', map: STATUS_SOCKET_INBOUND_SCOPES },
   TICKETS_SOCKET_INBOUND_SCOPES: { socket: 'tickets', map: TICKETS_SOCKET_INBOUND_SCOPES },
   PAGES_SOCKET_INBOUND_SCOPES: { socket: 'pages', map: PAGES_SOCKET_INBOUND_SCOPES },
+  INITIATIVES_SOCKET_INBOUND_SCOPES: { socket: 'initiatives', map: INITIATIVES_SOCKET_INBOUND_SCOPES },
 };
 
 describe('Agenstra websocket scopes', () => {
@@ -77,7 +83,14 @@ describe('Agenstra websocket scopes', () => {
     );
 
     expect([...used].sort()).toEqual(AGENSTRA_PAT_SCOPES.filter((scope) => scope.startsWith('websocket:')).sort());
-    expect(Object.values(AGENSTRA_WEBSOCKETS).sort()).toEqual(['clients', 'pages', 'status', 'tickets', 'vnc']);
+    expect(Object.values(AGENSTRA_WEBSOCKETS).sort()).toEqual([
+      'clients',
+      'initiatives',
+      'pages',
+      'status',
+      'tickets',
+      'vnc',
+    ]);
   });
 
   it('requires the socket scope on every inbound event (never admin scopes)', () => {
@@ -132,6 +145,7 @@ describe('Agenstra websocket scopes', () => {
 
     expectMapped(TICKETS_SOCKET_OUTBOUND_SCOPES, Object.values(TICKETS_BOARD_EVENTS));
     expectMapped(PAGES_SOCKET_OUTBOUND_SCOPES, Object.values(KNOWLEDGE_BOARD_EVENTS));
+    expectMapped(INITIATIVES_SOCKET_OUTBOUND_SCOPES, Object.values(INITIATIVES_BOARD_EVENTS));
     expectMapped(CLIENTS_SOCKET_OUTBOUND_SCOPES, [
       CLIENT_CHAT_PLAN_EVENTS.chatPlanUpsert,
       ...Object.values(CLIENT_CHAT_AUTOMATION_EVENTS),

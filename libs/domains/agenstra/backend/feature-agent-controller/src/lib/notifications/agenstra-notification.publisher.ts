@@ -221,6 +221,15 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
     this.publish(type, this.toKnowledgeNodePayload(node), node.clientId);
   }
 
+  /** Initiative events: the payload carries ids, titles, statuses and versions only (never document content). */
+  publishInitiative(
+    type: Extract<AgenstraNotificationEventType, `initiative.${string}`>,
+    clientId: string,
+    payload: Record<string, unknown>,
+  ): void {
+    this.publish(type, payload, clientId);
+  }
+
   publishTicket(type: 'ticket.created' | 'ticket.updated' | 'ticket.deleted', ticket: TicketResponseDto): void {
     this.publish(type, this.toTicketPayload(ticket), ticket.clientId);
   }

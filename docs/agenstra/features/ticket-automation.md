@@ -18,6 +18,21 @@ Automation only starts when **all** of the following hold:
 
 The controller picks candidates with a SQL query that joins `tickets`, `ticket_automation`, and `client_agent_autonomy` (`enabled = true`). If several agents have autonomy enabled and `allowed_agent_ids` is empty, the same ticket can appear as multiple candidates (one per agent); narrowing `allowed_agent_ids` pins the workload to specific agents.
 
+## Initiatives
+
+Tickets created from an [initiative](./initiatives.md) story keep their build order:
+
+- **Prerequisites:** a ticket whose story waits for prerequisites (or was dropped) is never picked. The candidate query only
+  excludes tickets linked to such a story (`initiative_work_items.automation_blocked`, recomputed with the shared readiness
+  rules whenever the initiative or one of its tickets changes); the run start re-checks it with the same rules. Tickets that
+  are not linked to an initiative are unaffected.
+- **Context:** runs of a linked story get the initiative overview and its accepted documents as pre-granted, read-only
+  context (`initiative:<sha>` / `artifact:<sha>`).
+- **Findings:** the opt-in `initiative.finding` (`allowedContentWrites`, default off, approval-relevant) lets a run record
+  findings on **its own story** (deferred work, defects, lessons). Proposals are never allowed for automation.
+- A plan checkpoint on the story turns on `requires_approval` when the initiative transfers it. Releasing a story (`draft` →
+  `todo`) is a status change and therefore voids an earlier approval: approve after release.
+
 ## Background jobs (BullMQ)
 
 The **backend agent controller** registers a repeatable **coordinator** job on Valkey (BullMQ). Each coordinator tick enqueues at most **N** **unit** jobs (one per ticket candidate). Workers process unit jobs in parallel; BullMQ `jobId` deduplication and DB leases prevent double-starts.

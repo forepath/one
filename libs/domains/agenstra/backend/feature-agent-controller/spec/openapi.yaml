@@ -8008,6 +8008,1805 @@ paths:
                 type: string
         '401':
           description: Missing or invalid Basic auth credentials
+  /initiatives:
+    get:
+      summary: List the initiatives of a workspace
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: listInitiatives
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: query
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: search
+          required: false
+          schema:
+            type: string
+            maxLength: 200
+        - in: query
+          name: state
+          required: false
+          schema:
+            type: string
+            enum:
+              - active
+              - paused
+              - completed
+              - archived
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeListResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+    post:
+      summary: Create an initiative
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: createInitiative
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInitiativeDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiatives/{id}:
+    get:
+      summary: Get an initiative
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: getInitiative
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+    patch:
+      summary: 'Update an initiative (conditional on `expectedVersion`, 409 when stale)'
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: updateInitiative
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInitiativeDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+    delete:
+      summary: 'Delete an initiative (documents, work items, runs, proposals cascade; tickets are kept)'
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: deleteInitiative
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Done
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiatives/{id}/iterations:
+    post:
+      summary: Start the next iteration (conditional)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: startInitiativeIteration
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpectedVersionDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiatives/{id}/overview:
+    get:
+      summary: "What's next, step availability and counts"
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: getInitiativeOverview
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeOverviewResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+  /initiatives/{id}/activity:
+    get:
+      summary: Activity log (newest first)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: listInitiativeActivity
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InitiativeActivityResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+  /initiatives/{id}/artifacts:
+    get:
+      summary: List documents (metadata)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: listInitiativeArtifacts
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InitiativeArtifactResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+    post:
+      summary: Create a document (from the template of its type unless content is given)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: createInitiativeArtifact
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInitiativeArtifactDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeArtifactResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-artifacts/{artifactId}:
+    get:
+      summary: Get a document incl. content
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: getInitiativeArtifact
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: artifactId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeArtifactResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+    patch:
+      summary: 'Save a new version (conditional on `expectedVersion`)'
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: updateInitiativeArtifact
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: artifactId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInitiativeArtifactDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeArtifactResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+    delete:
+      summary: Delete a document and its versions
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: deleteInitiativeArtifact
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: artifactId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Done
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-artifacts/{artifactId}/accept:
+    post:
+      summary: Accept the current version as the shared contract (people only)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: acceptInitiativeArtifact
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: artifactId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpectedVersionDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeArtifactResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-artifacts/{artifactId}/versions:
+    get:
+      summary: List the versions of a document
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: listInitiativeArtifactVersions
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: artifactId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InitiativeArtifactVersionResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+  /initiative-artifacts/{artifactId}/versions/{version}:
+    get:
+      summary: Get one version incl. content
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: getInitiativeArtifactVersion
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: artifactId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: version
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeArtifactVersionResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+  /initiative-artifacts/{artifactId}/publish:
+    post:
+      summary: Copy the current version into a knowledge page
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`, `knowledge:write`.'
+      operationId: publishInitiativeArtifact
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+            - 'knowledge:write'
+      parameters:
+        - in: path
+          name: artifactId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishInitiativeArtifactDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeArtifactResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiatives/{id}/work-items:
+    get:
+      summary: Work items with effective statuses and readiness
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: listInitiativeWorkItems
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeWorkItemsResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+    post:
+      summary: Create an epic or an item below an epic
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: createInitiativeWorkItem
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInitiativeWorkItemDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeWorkItemsResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-work-items/{itemId}:
+    patch:
+      summary: Update a work item (content of built / done items is never rewritten)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: updateInitiativeWorkItem
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInitiativeWorkItemDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeWorkItemsResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+    delete:
+      summary: Delete a work item that was not transferred
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: deleteInitiativeWorkItem
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeWorkItemsResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-work-items/{itemId}/reorder:
+    post:
+      summary: Move an item before a sibling (conditional on the initiative version)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: reorderInitiativeWorkItem
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderInitiativeWorkItemDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeWorkItemsResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-work-items/{itemId}/dependencies:
+    put:
+      summary: 'Replace the `after` dependencies (no cycles; conditional)'
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: setInitiativeWorkItemDependencies
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetInitiativeWorkItemDependenciesDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeWorkItemsResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-work-items/{itemId}/status:
+    post:
+      summary: Mark done / dropped / blocked / draft (changes the linked ticket)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`, `tickets:write`.'
+      operationId: setInitiativeWorkItemStatus
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+            - 'tickets:write'
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetInitiativeWorkItemStatusDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeWorkItemsResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-work-items/{itemId}/retrospective-verdict:
+    post:
+      summary: Override the retrospective verdict of an epic (people only)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: overrideInitiativeRetrospective
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OverrideRetrospectiveDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeWorkItemsResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-work-items/{itemId}/plan:
+    post:
+      summary: Plan a transferred story as a chat plan
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`, `agent_chats:write`, `tickets:read`.'
+      operationId: planInitiativeStory
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+            - 'agent_chats:write'
+            - 'tickets:read'
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanInitiativeStoryDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeBuildActionResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiatives/{id}/unknowns:
+    post:
+      summary: Record an open question
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: createInitiativeUnknown
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInitiativeUnknownDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeUnknownResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-unknowns/{unknownId}/resolve:
+    post:
+      summary: Settle an open question
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: resolveInitiativeUnknown
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: unknownId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveInitiativeUnknownDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeUnknownResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-unknowns/{unknownId}:
+    delete:
+      summary: Remove an open question
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: deleteInitiativeUnknown
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: unknownId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Done
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiatives/{id}/transfer:
+    post:
+      summary: Transfer epics and their items to tickets (idempotent)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`, `tickets:write`.'
+      operationId: transferInitiative
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+            - 'tickets:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferInitiativeDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeBuildActionResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiatives/{id}/release:
+    post:
+      summary: Release ready stories (draft → todo)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`, `tickets:write`.'
+      operationId: releaseInitiative
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+            - 'tickets:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseInitiativeDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeBuildActionResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiatives/{id}/runs:
+    get:
+      summary: List guided step runs
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: listInitiativeRuns
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InitiativeRunResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+    post:
+      summary: Start a guided step (hidden read-only session of an environment of the workspace)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`, `agent_chats:write`.'
+      operationId: startInitiativeRun
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+            - 'agent_chats:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartInitiativeRunDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeRunResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-runs/{runId}:
+    get:
+      summary: Get a run incl. its conversation
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: getInitiativeRun
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeRunResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+  /initiative-runs/{runId}/messages:
+    post:
+      summary: Answer the agent (one turn at a time; 409 while it answers)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`, `agent_chats:write`.'
+      operationId: messageInitiativeRun
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+            - 'agent_chats:write'
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitiativeRunMessageDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeRunResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-runs/{runId}/retry:
+    post:
+      summary: Retry a failed run
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`, `agent_chats:write`.'
+      operationId: retryInitiativeRun
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+            - 'agent_chats:write'
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeRunResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-runs/{runId}/accept:
+    post:
+      summary: "Apply the run's result (people only; a moved-on document becomes a proposal)"
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: acceptInitiativeRun
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpectedVersionDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeRunResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-runs/{runId}/discard:
+    post:
+      summary: Discard a run
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: discardInitiativeRun
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpectedVersionDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeRunResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-runs/{runId}/cancel:
+    post:
+      summary: Cancel a run
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: cancelInitiativeRun
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpectedVersionDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeRunResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiatives/{id}/findings:
+    get:
+      summary: List findings
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: listInitiativeFindings
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+            enum:
+              - open
+              - converted
+              - dismissed
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InitiativeFindingResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+    post:
+      summary: Record a finding
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: createInitiativeFinding
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInitiativeFindingDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeFindingResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-findings/{findingId}:
+    patch:
+      summary: Dismiss or reopen a finding (people only)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: updateInitiativeFinding
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: findingId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInitiativeFindingDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeFindingResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-findings/{findingId}/convert:
+    post:
+      summary: Turn a finding into a new work item below an epic
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: convertInitiativeFinding
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: findingId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConvertInitiativeFindingDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeFindingResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiatives/{id}/proposals:
+    get:
+      summary: List change proposals
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: listInitiativeProposals
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+            enum:
+              - open
+              - accepted
+              - rejected
+              - stale
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InitiativeProposalResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+    post:
+      summary: Create a change proposal
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: createInitiativeProposal
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInitiativeProposalDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeProposalResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-proposals/{proposalId}:
+    get:
+      summary: Get a change proposal
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: getInitiativeProposal
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeProposalResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+  /initiative-proposals/{proposalId}/accept:
+    post:
+      summary: Apply a proposal atomically (people only; stale when a changed document moved on)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`, `tickets:write`.'
+      operationId: acceptInitiativeProposal
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+            - 'tickets:write'
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecideInitiativeProposalDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeProposalResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-proposals/{proposalId}/reject:
+    post:
+      summary: Reject a proposal (people only)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: rejectInitiativeProposal
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecideInitiativeProposalDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeProposalResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiatives/{id}/decisions:
+    get:
+      summary: List decisions
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:read`.'
+      operationId: listInitiativeDecisions
+      security:
+        - bearerAuth:
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InitiativeDecisionResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+    post:
+      summary: Record an accepted decision
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: createInitiativeDecision
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInitiativeDecisionDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeDecisionResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /initiative-decisions/{decisionId}/decide:
+    post:
+      summary: Accept or reject a proposed decision (people only)
+      description: 'Workspace access like tickets and knowledge. Requires scopes: `initiatives:write`.'
+      operationId: decideInitiativeDecision
+      security:
+        - bearerAuth:
+            - 'initiatives:write'
+      parameters:
+        - in: path
+          name: decisionId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecideInitiativeDecisionDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiativeDecisionResponseDto'
+        '400':
+          description: Invalid input or a missing step need
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
+        '409':
+          description: Changed meanwhile (conditional write refused) or decided already
+  /tickets/{ticketId}/initiative-link:
+    get:
+      summary: Initiative story of a ticket (ticket board chip)
+      description: 'Workspace access of the ticket. Requires scopes: `tickets:read`, `initiatives:read`. `link` is null when the ticket was not transferred from an initiative.'
+      operationId: getTicketInitiativeLink
+      security:
+        - bearerAuth:
+            - 'tickets:read'
+            - 'initiatives:read'
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  link:
+                    type: object
+                    nullable: true
+                    properties:
+                      initiativeId:
+                        type: string
+                        format: uuid
+                      initiativeTitle:
+                        type: string
+                      workItemId:
+                        type: string
+                        format: uuid
+                      key:
+                        type: string
+                      status:
+                        type: string
+                      ready:
+                        type: boolean
+                      blockedBy:
+                        type: array
+                        items:
+                          type: string
+                      automationBlocked:
+                        type: boolean
+        '403':
+          description: No access to the workspace or missing scope
+        '404':
+          description: Not found
 components:
   securitySchemes:
     bearerAuth:
@@ -12714,3 +14513,1013 @@ components:
           type: integer
           minimum: 1
           description: Ticket lifetime in seconds
+    InitiativeShasDto:
+      type: object
+      required: [short, long]
+      properties:
+        short:
+          type: string
+        long:
+          type: string
+          description: sha1 of the id (context refs `initiative:<sha>` / `artifact:<sha>`)
+    ExpectedVersionDto:
+      type: object
+      required: [expectedVersion]
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+          description: Version the user saw; a changed element is refused with 409
+    CreateInitiativeDto:
+      type: object
+      required: [clientId, title, path]
+      properties:
+        clientId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 500
+        intent:
+          type: string
+          maxLength: 50000
+        path:
+          type: string
+          enum: [session, epic, project]
+    UpdateInitiativeDto:
+      type: object
+      required: [expectedVersion]
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+        title:
+          type: string
+          maxLength: 500
+        intent:
+          type: string
+          maxLength: 50000
+        path:
+          type: string
+          enum: [session, epic, project]
+        phase:
+          type: string
+          enum: [clarify, plan, build, learn]
+        state:
+          type: string
+          enum: [active, paused, completed, archived]
+        defaultAgentId:
+          type: string
+          format: uuid
+          nullable: true
+        defaultModel:
+          type: string
+          maxLength: 256
+          nullable: true
+        prerequisiteSatisfiedAt:
+          type: string
+          enum: [built, done]
+        autoRelease:
+          type: boolean
+    InitiativeResponseDto:
+      type: object
+      required:
+        [
+          id,
+          clientId,
+          title,
+          intent,
+          path,
+          phase,
+          state,
+          iteration,
+          version,
+          shas,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        intent:
+          type: string
+        path:
+          type: string
+          enum: [session, epic, project]
+        phase:
+          type: string
+          enum: [clarify, plan, build, learn]
+        state:
+          type: string
+          enum: [active, paused, completed, archived]
+        iteration:
+          type: integer
+        defaultAgentId:
+          type: string
+          format: uuid
+          nullable: true
+        defaultModel:
+          type: string
+          nullable: true
+        prerequisiteSatisfiedAt:
+          type: string
+          enum: [built, done]
+        autoRelease:
+          type: boolean
+        version:
+          type: integer
+        shas:
+          $ref: '#/components/schemas/InitiativeShasDto'
+        createdByUserId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    InitiativeListResponseDto:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InitiativeResponseDto'
+        total:
+          type: integer
+    InitiativeOverviewResponseDto:
+      type: object
+      required: [initiative, nextActions, steps, counts]
+      properties:
+        initiative:
+          $ref: '#/components/schemas/InitiativeResponseDto'
+        nextActions:
+          type: array
+          items:
+            type: object
+            properties:
+              kind:
+                type: string
+                enum: [step, transfer, build, proposals, findings]
+              step:
+                type: string
+              epicId:
+                type: string
+                format: uuid
+              title:
+                type: string
+              reason:
+                type: string
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              step:
+                type: string
+              available:
+                type: boolean
+              missing:
+                type: array
+                items:
+                  type: string
+              warnings:
+                type: array
+                items:
+                  type: string
+              missingNeeds:
+                type: array
+                description: Structured form of `missing` (render own labels).
+                items:
+                  $ref: '#/components/schemas/InitiativeStepNeedDto'
+              warningNeeds:
+                type: array
+                description: Structured form of `warnings` (render own labels).
+                items:
+                  $ref: '#/components/schemas/InitiativeStepNeedDto'
+        counts:
+          type: object
+          additionalProperties: true
+    InitiativeStepNeedDto:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          enum:
+            [
+              intent,
+              artifact,
+              target-epic,
+              refined-epic,
+              epic-with-stories,
+              epics,
+            ]
+        artifactTypes:
+          type: array
+          description: Document types of an `artifact` need (any one of them satisfies it).
+          items:
+            type: string
+    InitiativeActivityResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        initiativeId:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        actorType:
+          type: string
+          enum: [human, ai, system]
+        actorUserId:
+          type: string
+          format: uuid
+          nullable: true
+        actorEmail:
+          type: string
+          nullable: true
+        agentId:
+          type: string
+          format: uuid
+          nullable: true
+        actionType:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+    CreateInitiativeArtifactDto:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum:
+            [
+              brainstorm,
+              forge-report,
+              research,
+              product-brief,
+              prfaq,
+              prd,
+              ux,
+              architecture,
+              project-context,
+              retrospective,
+              note,
+            ]
+        title:
+          type: string
+          maxLength: 500
+        workItemId:
+          type: string
+          format: uuid
+          description: Epic the document belongs to
+        content:
+          type: string
+          maxLength: 200000
+    UpdateInitiativeArtifactDto:
+      type: object
+      required: [expectedVersion]
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+        title:
+          type: string
+          maxLength: 500
+        content:
+          type: string
+          maxLength: 200000
+    PublishInitiativeArtifactDto:
+      type: object
+      properties:
+        parentNodeId:
+          type: string
+          format: uuid
+    InitiativeArtifactResponseDto:
+      type: object
+      required:
+        [id, initiativeId, type, title, status, currentVersion, version, shas]
+      properties:
+        id:
+          type: string
+          format: uuid
+        initiativeId:
+          type: string
+          format: uuid
+        type:
+          type: string
+        workItemId:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+        status:
+          type: string
+          enum: [draft, accepted]
+        currentVersion:
+          type: integer
+        acceptedVersion:
+          type: integer
+          nullable: true
+        acceptedAt:
+          type: string
+          format: date-time
+          nullable: true
+        acceptedByUserId:
+          type: string
+          format: uuid
+          nullable: true
+        publishedNodeId:
+          type: string
+          format: uuid
+          nullable: true
+        version:
+          type: integer
+        size:
+          type: integer
+        shas:
+          $ref: '#/components/schemas/InitiativeShasDto'
+        content:
+          type: string
+          description: Only on single-document reads
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    InitiativeArtifactVersionResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        iteration:
+          type: integer
+        source:
+          type: string
+          enum: [human, run, proposal]
+        runId:
+          type: string
+          format: uuid
+          nullable: true
+        proposalId:
+          type: string
+          format: uuid
+          nullable: true
+        createdByUserId:
+          type: string
+          format: uuid
+          nullable: true
+        agentId:
+          type: string
+          format: uuid
+          nullable: true
+        accepted:
+          type: boolean
+        content:
+          type: string
+          description: Only on single-version reads
+        createdAt:
+          type: string
+          format: date-time
+    InitiativeUnknownResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workItemId:
+          type: string
+          format: uuid
+          nullable: true
+        question:
+          type: string
+        resolution:
+          type: string
+          enum: [settle_now, spike, leave_to_stories]
+        answer:
+          type: string
+          nullable: true
+        resolvedAt:
+          type: string
+          format: date-time
+          nullable: true
+        resolvedByUserId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    CreateInitiativeWorkItemDto:
+      type: object
+      required: [kind, title]
+      properties:
+        kind:
+          type: string
+          enum: [epic, story, spike, bug]
+        parentId:
+          type: string
+          format: uuid
+          description: Epic of a story / spike / bug
+        title:
+          type: string
+          maxLength: 500
+        requirements:
+          type: string
+          maxLength: 50000
+        verify:
+          type: string
+          maxLength: 4000
+        doneWhen:
+          type: string
+          maxLength: 4000
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+    UpdateInitiativeWorkItemDto:
+      type: object
+      required: [expectedVersion]
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+        title:
+          type: string
+          maxLength: 500
+        requirements:
+          type: string
+          maxLength: 50000
+        verify:
+          type: string
+          maxLength: 4000
+        doneWhen:
+          type: string
+          maxLength: 4000
+        refined:
+          type: boolean
+        planCheckpoint:
+          type: boolean
+        doneCheckpoint:
+          type: boolean
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+    ReorderInitiativeWorkItemDto:
+      type: object
+      required: [expectedInitiativeVersion]
+      properties:
+        expectedInitiativeVersion:
+          type: integer
+          minimum: 1
+        beforeId:
+          type: string
+          format: uuid
+    SetInitiativeWorkItemDependenciesDto:
+      type: object
+      required: [expectedInitiativeVersion, prerequisiteIds]
+      properties:
+        expectedInitiativeVersion:
+          type: integer
+          minimum: 1
+        prerequisiteIds:
+          type: array
+          maxItems: 50
+          items:
+            type: string
+            format: uuid
+    SetInitiativeWorkItemStatusDto:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [done, dropped, blocked, draft]
+    OverrideRetrospectiveDto:
+      type: object
+      required: [verdict]
+      properties:
+        verdict:
+          type: string
+          enum: [accepted, accepted-with-open-items, rejected]
+    CreateInitiativeUnknownDto:
+      type: object
+      required: [question, resolution]
+      properties:
+        workItemId:
+          type: string
+          format: uuid
+        question:
+          type: string
+          maxLength: 4000
+        resolution:
+          type: string
+          enum: [settle_now, spike, leave_to_stories]
+    ResolveInitiativeUnknownDto:
+      type: object
+      required: [answer]
+      properties:
+        answer:
+          type: string
+          maxLength: 4000
+    InitiativeWorkItemResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        initiativeId:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        kind:
+          type: string
+          enum: [epic, story, spike, bug]
+        key:
+          type: string
+          example: E1.S2
+        title:
+          type: string
+        requirements:
+          type: string
+        verify:
+          type: string
+        doneWhen:
+          type: string
+        refined:
+          type: boolean
+        planCheckpoint:
+          type: boolean
+        doneCheckpoint:
+          type: boolean
+        priority:
+          type: string
+        sortOrder:
+          type: integer
+        status:
+          type: string
+          enum:
+            [draft, ready-for-dev, in-progress, built, done, blocked, dropped]
+          description: Effective status (from the linked ticket once transferred)
+        locked:
+          type: boolean
+        ticketId:
+          type: string
+          format: uuid
+          nullable: true
+        ticketStatus:
+          type: string
+          nullable: true
+        prerequisiteIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        ready:
+          type: boolean
+        blockedBy:
+          type: array
+          items:
+            type: string
+        retrospectiveVerdict:
+          type: string
+          nullable: true
+        retrospectiveOverridden:
+          type: boolean
+        iterationCreated:
+          type: integer
+        version:
+          type: integer
+        unknowns:
+          type: array
+          items:
+            $ref: '#/components/schemas/InitiativeUnknownResponseDto'
+    InitiativeWorkItemsResponseDto:
+      type: object
+      required: [initiativeId, items, initiativeVersion, unknowns]
+      properties:
+        initiativeId:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InitiativeWorkItemResponseDto'
+        initiativeVersion:
+          type: integer
+        unknowns:
+          type: array
+          items:
+            $ref: '#/components/schemas/InitiativeUnknownResponseDto'
+    TransferInitiativeDto:
+      type: object
+      properties:
+        epicIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        automation:
+          type: object
+          required: [eligible]
+          properties:
+            eligible:
+              type: boolean
+            preferredModel:
+              type: string
+              maxLength: 256
+            allowedAgentIds:
+              type: array
+              items:
+                type: string
+                format: uuid
+    ReleaseInitiativeDto:
+      type: object
+      properties:
+        workItemIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    PlanInitiativeStoryDto:
+      type: object
+      required: [agentId, chatId]
+      properties:
+        agentId:
+          type: string
+          format: uuid
+        chatId:
+          type: string
+          format: uuid
+        model:
+          type: string
+          maxLength: 256
+        instructions:
+          type: string
+          maxLength: 32000
+    InitiativeBuildActionResponseDto:
+      type: object
+      properties:
+        workItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/InitiativeWorkItemResponseDto'
+        ticketIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        skipped:
+          type: array
+          items:
+            type: object
+            properties:
+              workItemId:
+                type: string
+                format: uuid
+              reason:
+                type: string
+        planId:
+          type: string
+          format: uuid
+    StartInitiativeRunDto:
+      type: object
+      required: [step]
+      properties:
+        step:
+          type: string
+          enum:
+            [
+              brainstorm,
+              forge-idea,
+              research,
+              product-brief,
+              prfaq,
+              prd,
+              ux,
+              architecture,
+              project-context,
+              slice-epics,
+              refine-epic,
+              incept-stories,
+              readiness-review,
+              retrospective,
+              correct-course,
+            ]
+        mode:
+          type: string
+          enum: [create, update, validate]
+        style:
+          type: string
+          enum: [coaching, fast]
+        agentId:
+          type: string
+          format: uuid
+        model:
+          type: string
+          maxLength: 256
+        workItemId:
+          type: string
+          format: uuid
+          description: Target epic of epic steps
+        message:
+          type: string
+          maxLength: 32000
+        findingIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    InitiativeRunMessageDto:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          maxLength: 32000
+    InitiativeRunResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        initiativeId:
+          type: string
+          format: uuid
+        step:
+          type: string
+        mode:
+          type: string
+        style:
+          type: string
+        targetWorkItemId:
+          type: string
+          format: uuid
+          nullable: true
+        targetArtifactId:
+          type: string
+          format: uuid
+          nullable: true
+        agentId:
+          type: string
+          format: uuid
+        model:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+            [
+              pending,
+              working,
+              needs_input,
+              ready,
+              accepted,
+              discarded,
+              failed,
+              cancelled,
+            ]
+        result:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: Latest normalized status block (draft, work items, epic refinement, findings, decisions, verdict, proposal)
+        streamingText:
+          type: string
+          nullable: true
+        failureCode:
+          type: string
+          nullable: true
+        failureMessage:
+          type: string
+          nullable: true
+        version:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        turns:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              seq:
+                type: integer
+              role:
+                type: string
+                enum: [user, agent, system]
+              content:
+                type: string
+              actorUserId:
+                type: string
+                format: uuid
+                nullable: true
+              createdAt:
+                type: string
+                format: date-time
+    CreateInitiativeFindingDto:
+      type: object
+      required: [severity, body]
+      properties:
+        workItemId:
+          type: string
+          format: uuid
+        severity:
+          type: string
+          enum: [info, minor, major, critical]
+        body:
+          type: string
+          maxLength: 8000
+        evidence:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            maxLength: 500
+    UpdateInitiativeFindingDto:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [open, dismissed]
+    ConvertInitiativeFindingDto:
+      type: object
+      required: [epicId]
+      properties:
+        epicId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 500
+    InitiativeFindingResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        initiativeId:
+          type: string
+          format: uuid
+        workItemId:
+          type: string
+          format: uuid
+          nullable: true
+        source:
+          type: string
+          enum: [run, retrospective, automation, chat, task, human]
+        severity:
+          type: string
+          enum: [info, minor, major, critical]
+        body:
+          type: string
+        evidence:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [open, converted, dismissed]
+        proposalId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    CreateInitiativeProposalDto:
+      type: object
+      required: [title, changes]
+      properties:
+        title:
+          type: string
+          maxLength: 500
+        rationale:
+          type: string
+          maxLength: 4000
+        changes:
+          type: object
+          description: '`{ artifacts: [{ type, title?, content }], workItems: [{ op: add | update | drop | move, … }], decisions: [{ title, body }] }`'
+          additionalProperties: true
+        bumpsIteration:
+          type: boolean
+    DecideInitiativeProposalDto:
+      type: object
+      properties:
+        note:
+          type: string
+          maxLength: 4000
+        closeDroppedTickets:
+          type: boolean
+          description: Also close the tickets of dropped stories (explicit confirmation)
+    InitiativeProposalResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        initiativeId:
+          type: string
+          format: uuid
+        origin:
+          type: string
+          enum: [human, run, chat, task, automation]
+        title:
+          type: string
+        rationale:
+          type: string
+        changes:
+          type: object
+          additionalProperties: true
+        baseVersions:
+          type: object
+          additionalProperties:
+            type: integer
+        status:
+          type: string
+          enum: [open, accepted, rejected, stale]
+        bumpsIteration:
+          type: boolean
+        decidedAt:
+          type: string
+          format: date-time
+          nullable: true
+        decisionNote:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    CreateInitiativeDecisionDto:
+      type: object
+      required: [title]
+      properties:
+        workItemId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 500
+        body:
+          type: string
+          maxLength: 4000
+    DecideInitiativeDecisionDto:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [accepted, rejected]
+    InitiativeDecisionResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        initiativeId:
+          type: string
+          format: uuid
+        workItemId:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+        body:
+          type: string
+        status:
+          type: string
+          enum: [proposed, accepted, rejected]
+        iteration:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time

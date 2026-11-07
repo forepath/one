@@ -20,5 +20,11 @@ export interface ContextInjectionPayload {
   planShas?: string[];
   planContexts?: string[];
   planContextRefs?: Array<{ sha: string; title?: string }>;
+  /**
+   * Initiatives / initiative documents of the workspace (controller-resolved, same order as `initiativeContextRefs`).
+   * Pre-granted to initiative step runs, ticket automation of linked stories and plans created from a story.
+   */
+  initiativeContexts?: string[];
+  initiativeContextRefs?: Array<{ kind: 'initiative' | 'artifact'; sha: string; title?: string }>;
   autoEnrichmentEnabled?: boolean;
 }

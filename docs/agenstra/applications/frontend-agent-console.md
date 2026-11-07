@@ -11,6 +11,7 @@ This application provides a comprehensive user interface for managing clients, a
 This application provides:
 
 - **Chat Interface** Real-time bidirectional communication with AI agents via WebSocket
+- **Initiatives** `/initiatives/:clientId?initiativeId=&tab=` (sidebar above Tickets): workspace planning that follows the BMad Method — a sidebar with intent, "What's next", progress and the work items next to every tab, guided steps, versioned documents, work items in build order (transfer to tickets, release, story plans), guided steps with agents (live conversation, accept result), Learn & adjust (findings, change proposals, decisions, retrospectives) and activity; live over `socket/initiatives` ([Initiatives](../features/initiatives.md))
 - **Chat plan mode** Composer-driven explore/refine/execute planning flow with chat-scoped timeline cards and modal refinement UI ([Chat plan mode](../features/chat-plan-mode.md))
 - **Plans** `/plans/:clientId` (sidebar between Knowledge and Tasks): searchable plans of an environment, markdown editing until a plan is executed, refine with the agent, activity log, context reference (`plan:<sha>`); chat plan cards link here and **Select context** links plans of the environment as chat context ([Chat plan mode](../features/chat-plan-mode.md#plans-page))
 - **Monaco Editor** Integrated code editor with syntax highlighting and code completion
@@ -304,6 +305,7 @@ Before deploying to production:
 ## Related documentation
 
 - **[Chat Interface Feature](../features/chat-interface.md)** Chat functionality guide
+- **[Initiatives](../features/initiatives.md)** Planning that follows the BMad Method, live for the workspace
 - **[Chat plan mode](../features/chat-plan-mode.md)** Explore-only plan cards, refine, and execute
 - **[Web IDE Feature](../features/web-ide.md)** Code editor guide
 - **[File Management Feature](../features/file-management.md)** File operations guide

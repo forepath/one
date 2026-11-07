@@ -26,6 +26,8 @@ export enum StatisticsInteractionKind {
   AGENT_TASK_RUN = 'agent_task_run',
   /** Turns driven by an agent handoff: the target's work in its handoff chat and the response delivery. */
   AGENT_HANDOFF = 'agent_handoff',
+  /** Turn of an initiative step run (hidden, read-only `-initiative-{id}` sessions). */
+  INITIATIVE_RUN_TURN = 'initiative_run_turn',
 }
 
 /**

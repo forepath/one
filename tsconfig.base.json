@@ -240,6 +240,9 @@
       ],
       "@forepath/agenstra/backend/util-microvm-bridge": [
         "libs/domains/agenstra/backend/util-microvm-bridge/src/index.ts"
+      ],
+      "@forepath/agenstra/shared/util-initiative-method": [
+        "libs/domains/agenstra/shared/util-initiative-method/src/index.ts"
       ]
     }
   },

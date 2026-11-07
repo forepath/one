@@ -488,4 +488,60 @@ describe('TicketsService', () => {
       );
     });
   });
+
+  describe('applySystemStatusChange', () => {
+    function withConditionalUpdate(affected: number) {
+      const qb = {
+        update: jest.fn().mockReturnThis(),
+        set: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockResolvedValue({ affected }),
+      };
+
+      ticketRepo.manager.transaction.mockImplementationOnce(async (fn: (em: unknown) => Promise<unknown>) =>
+        fn({
+          createQueryBuilder: () => qb,
+          getRepository: (entity: unknown) => (entity === TicketActivityEntity ? activityRepo : {}),
+        }),
+      );
+
+      return qb;
+    }
+
+    it('changes the status only from the expected status of the same workspace and records a system activity', async () => {
+      const qb = withConditionalUpdate(1);
+
+      await expect(
+        service.applySystemStatusChange(ticketId, clientId, [TicketStatus.DRAFT], TicketStatus.TODO, {
+          source: 'initiative_auto_release',
+        }),
+      ).resolves.toBe(true);
+
+      expect(qb.where).toHaveBeenCalledWith('id = :ticketId AND client_id = :clientId AND status IN (:...from)', {
+        ticketId,
+        clientId,
+        from: [TicketStatus.DRAFT],
+      });
+      expect(activityRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorType: 'system',
+          actionType: 'STATUS_CHANGED',
+          payload: {
+            fields: { status: { old: TicketStatus.DRAFT, new: TicketStatus.TODO } },
+            source: 'initiative_auto_release',
+          },
+        }),
+      );
+      expect(ticketAutomationService.invalidateAfterTicketFieldChanges).toHaveBeenCalledWith(ticketId, ['status']);
+    });
+
+    it('does nothing when the ticket changed meanwhile', async () => {
+      withConditionalUpdate(0);
+
+      await expect(
+        service.applySystemStatusChange(ticketId, clientId, [TicketStatus.DRAFT], TicketStatus.TODO),
+      ).resolves.toBe(false);
+      expect(ticketAutomationService.invalidateAfterTicketFieldChanges).not.toHaveBeenCalled();
+    });
+  });
 });

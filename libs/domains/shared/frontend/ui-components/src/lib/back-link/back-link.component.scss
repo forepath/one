@@ -1,0 +1,44 @@
+// A quiet arrow, not a button: no fill, no border; muted ink that turns into the link colour on hover. Square at the
+// control height of its row, so it lines up with the header's icon actions (`--fpc-control-height-sm` resolves to the
+// header tier inside `fpc-page-header`, to the regular `sm` tier elsewhere).
+:host {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.fpc-back-link__control {
+  --fpc-back-link-size: var(--fpc-control-height-sm, 2.025rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--fpc-back-link-size);
+  height: var(--fpc-back-link-size);
+  // The glyph sits on the row's start edge like a title would; the hit area stays square.
+  margin-inline-start: calc(-0.25 * var(--fpc-back-link-size));
+  padding: 0;
+  border: 0;
+  border-radius: var(--bs-border-radius);
+  background: transparent;
+  color: var(--bs-secondary-color);
+  font-size: 1.125rem;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease-in-out;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-link-hover-color);
+  }
+
+  &:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+  }
+
+  &:disabled {
+    color: var(--bs-tertiary-color);
+    cursor: default;
+  }
+}

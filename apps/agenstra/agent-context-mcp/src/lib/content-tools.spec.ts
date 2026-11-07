@@ -75,4 +75,42 @@ describe('content tools', () => {
     });
     expect(client.changeStatus).not.toHaveBeenCalled();
   });
+
+  it('forwards initiative proposals and findings with their structured fields', async () => {
+    await call('content_initiative_propose', {
+      ticket: 'ctx-1',
+      ref: 'initiative:abcd1234',
+      title: 'Add SSO story',
+      rationale: 'Retro',
+      workItems: [{ op: 'add', parentKey: 'E1', item: { key: 'N1', title: 'SSO' } }],
+      decisions: 'not a list',
+      operation: 'ticket.delete',
+    });
+
+    expect(client.requestChange).toHaveBeenCalledWith('ctx-1', {
+      operation: 'initiative.propose',
+      ref: 'initiative:abcd1234',
+      title: 'Add SSO story',
+      rationale: 'Retro',
+      workItems: [{ op: 'add', parentKey: 'E1', item: { key: 'N1', title: 'SSO' } }],
+    });
+
+    await call('content_initiative_finding', {
+      ticket: 'ctx-1',
+      ref: 'initiative:abcd1234',
+      body: 'Deferred: rate limiting',
+      severity: 'major',
+      itemKey: 'E1.S2',
+      evidence: ['ticket:ffff'],
+    });
+
+    expect(client.requestChange).toHaveBeenLastCalledWith('ctx-1', {
+      operation: 'initiative.finding',
+      ref: 'initiative:abcd1234',
+      body: 'Deferred: rate limiting',
+      severity: 'major',
+      itemKey: 'E1.S2',
+      evidence: ['ticket:ffff'],
+    });
+  });
 });

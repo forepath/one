@@ -38,6 +38,7 @@ import {
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
   FpcBadgeComponent,
+  FpcBackLinkComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
@@ -79,6 +80,7 @@ import { WorkspaceSearchPanelComponent } from './workspace-search-panel/workspac
     GitSidebarStatusBarComponent,
     ContainerStatsStatusBarComponent,
     FpcBadgeComponent,
+    FpcBackLinkComponent,
     FpcButtonComponent,
     FpcButtonGroupComponent,
     FpcConfirmDialogComponent,

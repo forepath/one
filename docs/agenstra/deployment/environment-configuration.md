@@ -10,6 +10,8 @@ Complete reference for all environment variables used in Agenstra.
 - `WEBSOCKET_NAMESPACE` - Clients gateway namespace (default: `socket/clients`)
 - `TICKETS_WEBSOCKET_NAMESPACE` - Tickets board namespace (default: `socket/tickets`)
 - `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge board namespace (default: `socket/pages`)
+- `INITIATIVES_WEBSOCKET_NAMESPACE` - Initiatives board namespace (default: `socket/initiatives`)
+- `INITIATIVE_MAX_ACTIVE_RUNS_PER_CLIENT` - Active guided step runs (initiatives) per workspace (default: `3`)
 - `STATUS_WEBSOCKET_NAMESPACE` - Status notifications namespace (default: `socket/status`)
 - `STATUS_PROVISIONING_POLL_INTERVAL_MS` - Fast `socket/status` poll interval while environment create / update operations are running (default: `3000`, clamped to 1000–30000)
 - `WEBSOCKET_CORS_ORIGIN` - Socket.IO CORS origins (comma-separated). Falls back to `CORS_ORIGIN`, then `*` when unset.

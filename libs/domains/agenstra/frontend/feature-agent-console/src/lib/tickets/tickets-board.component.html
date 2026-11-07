@@ -503,6 +503,23 @@
             ></i>
           </small>
         }
+        @if (detailInitiativeLink(); as link) {
+          <a
+            class="badge text-bg-light text-decoration-none flex-shrink-0"
+            [routerLink]="['/initiatives', det.clientId]"
+            [queryParams]="{ initiativeId: link.initiativeId, tab: 'work' }"
+            [title]="link.initiativeTitle"
+            data-testid="ticket-initiative-link"
+          >
+            <i class="bi bi-signpost-split me-1" aria-hidden="true"></i>{{ link.key }}
+            @if (link.blockedBy.length) {
+              <span class="text-warning-emphasis ms-1"
+                ><span i18n="@@featureTicketsBoard-initiativeWaitingFor">waiting for</span>
+                {{ link.blockedBy.join(', ') }}</span
+              >
+            }
+          </a>
+        }
       } @else {
         <span i18n="@@featureTicketsBoard-modalLoadingTitle">Ticket</span>
       }

@@ -26,4 +26,37 @@ describe('TicketBoardRealtimeService', () => {
     expect(to).toHaveBeenCalledWith(['client:client-1', 'client:client-1#event:ticketRemoved']);
     expect(emit).toHaveBeenCalledWith(TICKETS_BOARD_EVENTS.ticketRemoved, { id: 't1', clientId: 'client-1' });
   });
+
+  it('notifies ticket change listeners of upserts and removals (also without an attached server)', () => {
+    const service = new TicketBoardRealtimeService();
+    const listener = jest.fn();
+    const unsubscribe = service.onTicketChange(listener);
+
+    service.emitToClient('c1', TICKETS_BOARD_EVENTS.ticketUpsert, { id: 't1' });
+    service.emitToClient('c1', TICKETS_BOARD_EVENTS.ticketRemoved, { id: 't2', clientId: 'c1' });
+    service.emitToClient('c1', TICKETS_BOARD_EVENTS.ticketCommentCreated, { id: 'comment' });
+
+    expect(listener.mock.calls).toEqual([
+      [{ clientId: 'c1', ticketId: 't1', removed: false }],
+      [{ clientId: 'c1', ticketId: 't2', removed: true }],
+    ]);
+
+    unsubscribe();
+    service.emitToClient('c1', TICKETS_BOARD_EVENTS.ticketUpsert, { id: 't3' });
+    expect(listener).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps emitting when a listener throws', () => {
+    const service = new TicketBoardRealtimeService();
+    const emit = jest.fn();
+    const server = { to: jest.fn(() => ({ emit })) };
+
+    service.attachServer(server as never);
+    service.onTicketChange(() => {
+      throw new Error('boom');
+    });
+    service.emitToClient('c1', TICKETS_BOARD_EVENTS.ticketUpsert, { id: 't1' });
+
+    expect(emit).toHaveBeenCalled();
+  });
 });

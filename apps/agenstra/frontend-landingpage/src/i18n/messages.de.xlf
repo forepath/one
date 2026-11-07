@@ -3439,16 +3439,16 @@
         <target>Konsole und Desktop-App</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-componentConsoleDesc" datatype="html">
-        <source> Where people work with agents: chat, files, Git, a terminal, tickets, deployments and the audit log, in the browser or as a desktop app. </source>
-        <target>Hier arbeiten Menschen mit Agenten: Chat, Dateien, Git, ein Terminal, Tickets, Deployments und das Audit-Log, im Browser oder als Desktop-App.</target>
+        <source> Where people work with agents: chat, files, Git, a terminal, initiatives, tickets, deployments and the audit log, in the browser or as a desktop app. </source>
+        <target>Hier arbeiten Menschen mit Agenten: Chat, Dateien, Git, ein Terminal, Initiativen, Tickets, Deployments und das Audit-Log, im Browser oder als Desktop-App.</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-componentControllerTitle" datatype="html">
         <source> Agent controller </source>
         <target>Agent Controller</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-componentControllerDesc" datatype="html">
-        <source> The control plane. It authenticates people, resolves policy, keeps tickets, knowledge and audit events, and routes every request to the host that runs the workspace. </source>
-        <target>Die Steuerungsebene. Sie authentifiziert Personen, löst Richtlinien auf, verwaltet Tickets, Wissen und Audit-Ereignisse und leitet jede Anfrage an den Host weiter, auf dem der Workspace läuft.</target>
+        <source> The control plane. It authenticates people, resolves policy, keeps initiatives, tickets, knowledge and audit events, and routes every request to the host that runs the workspace. </source>
+        <target>Die Steuerungsebene. Sie authentifiziert Personen, löst Richtlinien auf, verwaltet Initiativen, Tickets, Wissen und Audit-Ereignisse und leitet jede Anfrage an den Host weiter, auf dem der Workspace läuft.</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-componentManagerTitle" datatype="html">
         <source>Agent manager</source>

@@ -1,0 +1,450 @@
+@if (openRun(); as run) {
+  <!-- An open run replaces the table inside the tab; the page sidebar (What's next, work items) stays next to it. -->
+  <div class="run-view" data-testid="initiative-run-view">
+    <div class="d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom">
+      <fpc-back-link [label]="backTitle" (activate)="close()" data-testid="initiative-run-back" />
+      <fpc-badge [color]="statusTone(run.status)">{{ statusLabel(run.status) }}</fpc-badge>
+      <h3 class="h6 mb-0 text-truncate">{{ stepLabel(run.step) }}</h3>
+      <fpc-badge color="light">{{ roleLabel(stepRole(run.step)) }}</fpc-badge>
+      @if (targetLabel(run); as target) {
+        <fpc-badge color="light" [title]="target">{{ target }}</fpc-badge>
+      }
+      @if (agentName(run.agentId); as environment) {
+        <small class="text-body-secondary d-inline-flex align-items-center gap-1"
+          ><i class="bi bi-hdd-network" aria-hidden="true"></i>{{ environment }}</small
+        >
+      }
+      <small class="text-body-secondary">{{ modeLabel(run.mode) }}</small>
+      <small class="text-body-secondary">{{ styleLabel(run.style) }}</small>
+      <span class="flex-grow-1"></span>
+      @if (acceptable()) {
+        <fpc-button
+          variant="success"
+          size="sm"
+          [disabled]="pending()"
+          (clicked)="accept(run)"
+          data-testid="initiative-run-accept"
+        >
+          <i class="bi bi-check2 me-1" aria-hidden="true"></i
+          ><span i18n="@@featureInitiatives-acceptResult">Accept result</span>
+        </fpc-button>
+      }
+      @if (run.status === 'failed') {
+        <fpc-button variant="primary" size="sm" (clicked)="retry(run)" i18n="@@featureInitiatives-retry"
+          >Retry</fpc-button
+        >
+      }
+      @if (run.status === 'working' || run.status === 'pending') {
+        <fpc-button variant="outline-danger" size="sm" (clicked)="cancel(run)" i18n="@@featureInitiatives-runCancelMenu"
+          >Cancel run</fpc-button
+        >
+      } @else if (active() || run.status === 'failed') {
+        <fpc-button
+          variant="outline-secondary"
+          size="sm"
+          (clicked)="discard(run)"
+          i18n="@@featureInitiatives-discardRun"
+          >Discard</fpc-button
+        >
+      }
+    </div>
+
+    <div class="run-view__body p-3">
+      @if (run.failureMessage) {
+        <fpc-alert variant="danger" [message]="run.failureMessage" class="mb-3" />
+      }
+
+      <section class="d-flex flex-column gap-3 mb-4" data-testid="initiative-run-transcript">
+        @for (turn of run.turns ?? []; track turn.id) {
+          <article class="run-turn border rounded p-3" [class.run-turn--agent]="turn.role === 'agent'">
+            <header class="run-turn__header d-flex flex-wrap align-items-center justify-content-between gap-2 small">
+              <span class="fw-semibold d-inline-flex align-items-center gap-2">
+                @if (turn.role === 'agent') {
+                  <i class="bi bi-robot" aria-hidden="true"></i>{{ roleLabel(stepRole(run.step)) }}
+                } @else {
+                  <i class="bi bi-person" aria-hidden="true"></i
+                  ><span i18n="@@featureInitiatives-you">Workspace member</span>
+                }
+              </span>
+              <time class="text-body-secondary" [attr.datetime]="turn.createdAt">{{
+                turn.createdAt | fpcDate: 'datetime'
+              }}</time>
+            </header>
+            @if (turn.role === 'agent' && markdown.render(turn.content); as html) {
+              <div class="markdown-content" [innerHTML]="html"></div>
+            } @else {
+              <div class="run-turn__text">{{ turn.content }}</div>
+            }
+          </article>
+        }
+        @if (run.status === 'working' || run.status === 'pending') {
+          <article class="run-turn run-turn--agent border rounded p-3">
+            <header class="run-turn__header small text-body-secondary d-flex align-items-center gap-2">
+              <span class="spinner-border spinner-border-sm" aria-hidden="true"></span
+              ><span i18n="@@featureInitiatives-agentWorking">The agent is working…</span>
+            </header>
+            @if (run.streamingText) {
+              <div class="run-turn__text small">{{ run.streamingText }}</div>
+            }
+          </article>
+        }
+      </section>
+
+      @if (answerable()) {
+        <div class="d-flex align-items-end gap-2 mb-3">
+          <fpc-form-control
+            class="flex-grow-1"
+            controlType="textarea"
+            controlId="runAnswer"
+            [rows]="3"
+            placeholder="Answer the agent or ask for changes… (Ctrl+Enter sends)"
+            i18n-placeholder="@@featureInitiatives-answerPlaceholder"
+            [ngModel]="message()"
+            (ngModelChange)="message.set($event)"
+            (keydown)="onComposerKeydown($event)"
+            data-testid="initiative-run-answer"
+          />
+          <fpc-button
+            variant="primary"
+            [disabled]="!message().trim() || pending()"
+            (clicked)="send()"
+            i18n="@@featureInitiatives-send"
+            >Send</fpc-button
+          >
+        </div>
+      }
+
+      @if (result(); as result) {
+        <section class="d-flex flex-column gap-4" data-testid="initiative-run-result">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div>
+              <h3 class="h6 mb-1" i18n="@@featureInitiatives-runResultHeading">Result</h3>
+              <small class="text-body-secondary" i18n="@@featureInitiatives-runResultHint"
+                >Nothing is applied until a workspace member accepts the result.</small
+              >
+            </div>
+            @if (acceptable()) {
+              <fpc-button variant="success" size="sm" [disabled]="pending()" (clicked)="accept(run)">
+                <i class="bi bi-check2 me-1" aria-hidden="true"></i
+                ><span i18n="@@featureInitiatives-acceptResult">Accept result</span>
+              </fpc-button>
+            }
+          </div>
+
+          @if (resultFacts().length > 0) {
+            <fpc-key-value-list class="d-block border rounded p-3" [items]="resultFacts()">
+              <ng-template fpcKeyValue="verdict">
+                @if (result.verdict) {
+                  <fpc-badge [color]="verdictTone(result.verdict)">{{ verdictLabel(result.verdict) }}</fpc-badge>
+                }
+              </ng-template>
+              <ng-template fpcKeyValue="epicRequirements">
+                <div class="run-turn__text">{{ result.epic?.requirements }}</div>
+              </ng-template>
+              <ng-template fpcKeyValue="epicDoneWhen">
+                <div class="run-turn__text">{{ result.epic?.doneWhen }}</div>
+              </ng-template>
+            </fpc-key-value-list>
+          }
+
+          @if (result.draftMarkdown) {
+            <div>
+              <h4 class="h6 mb-2" i18n="@@featureInitiatives-runDraftHeading">Draft</h4>
+              <div class="run-result__draft border rounded p-3 bg-body-tertiary">
+                @if (markdown.render(result.draftMarkdown); as html) {
+                  <div class="markdown-content" [innerHTML]="html"></div>
+                } @else {
+                  <div class="run-turn__text">{{ result.draftMarkdown }}</div>
+                }
+              </div>
+            </div>
+          }
+
+          @if (resultUnknowns().length > 0) {
+            <div>
+              <h4 class="h6 mb-2" i18n="@@featureInitiatives-runUnknownsHeading">Open questions of the epic</h4>
+              <fpc-data-table
+                nested
+                [ariaLabel]="unknownsLabel"
+                [columns]="resultUnknownColumns"
+                [rows]="resultUnknowns()"
+                [searchable]="false"
+                [showColumnChooser]="false"
+              />
+            </div>
+          }
+
+          @if (result.workItems.length > 0) {
+            <div>
+              <h4 class="h6 mb-2" i18n="@@featureInitiatives-runItemsHeading">Proposed work items</h4>
+              <fpc-data-table
+                nested
+                [ariaLabel]="itemsLabel"
+                [columns]="resultItemColumns"
+                [rows]="result.workItems"
+                [rowId]="workItemRowId"
+                [searchable]="false"
+              />
+            </div>
+          }
+
+          @if (resultFindings().length > 0) {
+            <div>
+              <h4 class="h6 mb-2" i18n="@@featureInitiatives-runFindingsHeading">Findings</h4>
+              <fpc-data-table
+                nested
+                [ariaLabel]="findingsLabel"
+                [columns]="resultFindingColumns"
+                [rows]="resultFindings()"
+                [searchable]="false"
+              />
+            </div>
+          }
+
+          @if (result.proposal; as proposal) {
+            <div>
+              <h4 class="h6 mb-2" i18n="@@featureInitiatives-runProposalHeading">Change proposal</h4>
+              <div class="border rounded p-3 d-flex flex-column gap-3">
+                <div>
+                  <div class="fw-semibold">{{ proposal.title }}</div>
+                  @if (proposal.rationale) {
+                    <div class="text-body-secondary run-turn__text">{{ proposal.rationale }}</div>
+                  }
+                </div>
+                <fpc-key-value-list [items]="proposalFacts(proposal)" [columns]="2" />
+              </div>
+            </div>
+          }
+
+          @if (resultDecisions().length > 0) {
+            <div>
+              <h4 class="h6 mb-2" i18n="@@featureInitiatives-runDecisionsHeading">Decisions</h4>
+              <fpc-data-table
+                nested
+                [ariaLabel]="decisionsLabel"
+                [columns]="resultDecisionColumns"
+                [rows]="resultDecisions()"
+                [searchable]="false"
+              />
+            </div>
+          }
+        </section>
+      }
+    </div>
+  </div>
+} @else {
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="tableLabel"
+    [columns]="columns"
+    [rows]="visibleRuns()"
+    [activeRowId]="selectedRunId()"
+    paging="client"
+    persistKey="agenstra-initiative-runs"
+    [(query)]="query"
+    [searchPlaceholder]="searchPlaceholder"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    (rowActivate)="select($event)"
+    emptyIcon="chat-square-dots"
+    data-testid="initiative-runs-table"
+  >
+    <span fpcDataTableToolbar class="d-inline-flex gap-2">
+      <fpc-button
+        variant="primary"
+        iconOnly
+        [ariaLabel]="startTitle"
+        [title]="startTitle"
+        (clicked)="openForm()"
+        data-testid="initiative-run-new"
+      >
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+      </fpc-button>
+    </span>
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        size="sm"
+        icon="chat-square-dots"
+        message="Start a guided step: a role of the method works through it with you."
+        i18n-message="@@featureInitiatives-runsEmpty"
+      />
+    </span>
+    <ng-template fpcTableCell="started" let-row>{{ row.createdAt | fpcDate: 'datetime' }}</ng-template>
+  </fpc-data-table>
+}
+
+<!-- Start a guided step: the step catalogue of the method grouped by phase, then the run settings. -->
+<fpc-modal [(open)]="formOpen" [title]="startTitle" size="lg" [scrollable]="true">
+  <div class="d-flex flex-column gap-4">
+    <!-- Step catalogue as radio cards (like the report type choice of the ForePath report pages): one radio group,
+         grouped by phase; unavailable steps stay visible but cannot be chosen (their reasons are the tooltip). -->
+    <section class="d-flex flex-column gap-3" role="radiogroup" aria-labelledby="runStepCatalogLabel">
+      <div class="form-label mb-0" id="runStepCatalogLabel" i18n="@@featureInitiatives-fieldStep">Step</div>
+      @for (phase of phases; track phase) {
+        <div>
+          <div class="small text-uppercase text-body-secondary fw-semibold mb-2">{{ phaseLabel(phase) }}</div>
+          <div class="row g-2">
+            @for (step of stepsOf(phase); track step.key) {
+              @let unavailable = availability(step.key)?.available === false;
+              <div class="col-sm-6">
+                <label
+                  class="run-step-option h-100"
+                  [class.run-step-option--disabled]="unavailable"
+                  [title]="stepHint(step.key)"
+                  [attr.data-testid]="'initiative-step-' + step.key"
+                >
+                  <input
+                    class="form-check-input mt-1 flex-shrink-0"
+                    type="radio"
+                    name="initiativeRunStep"
+                    [value]="step.key"
+                    [checked]="formStep() === step.key"
+                    [disabled]="unavailable"
+                    (change)="chooseStep(step.key)"
+                  />
+                  <span class="run-step-option__copy">
+                    <span class="run-step-option__title d-block">{{ stepLabel(step.key) }}</span>
+                    <span class="run-step-option__help small d-block">{{ roleLabel(step.role) }}</span>
+                    @if (availability(step.key); as state) {
+                      @if (!state.available) {
+                        <span class="run-step-option__help small d-block" i18n="@@featureInitiatives-runStepUnavailable"
+                          >Not available yet</span
+                        >
+                      } @else if (state.warnings.length > 0) {
+                        <span class="run-step-option__hint small d-block" i18n="@@featureInitiatives-runStepWarnings"
+                          >Available, with hints</span
+                        >
+                      }
+                    }
+                  </span>
+                </label>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </section>
+
+    @if (formDefinition(); as definition) {
+      <section class="d-flex flex-column gap-3">
+        <div>
+          <h3 class="h6 mb-1">{{ stepLabel(definition.key) }}</h3>
+          <small class="text-body-secondary d-block">{{ definition.summary }}</small>
+        </div>
+        @if (formAvailability(); as state) {
+          @if (state.missing.length > 0) {
+            <fpc-alert variant="warning" [message]="missingTexts(state).join(' ')" />
+          } @else if (state.warnings.length > 0) {
+            <fpc-alert variant="info" [message]="warningTexts(state).join(' ')" />
+          }
+        }
+        <div class="row g-3">
+          @if (definition.target === 'epic') {
+            <div class="col-md-6">
+              <fpc-form-field forId="runEpic" label="Epic" i18n-label="@@featureInitiatives-fieldEpic">
+                <fpc-form-control
+                  controlId="runEpic"
+                  controlType="select"
+                  [ngModel]="formEpicId()"
+                  (ngModelChange)="formEpicId.set($event)"
+                >
+                  <option value="" disabled i18n="@@featureInitiatives-chooseEpic">Choose an epic</option>
+                  @for (epic of epics(); track epic.id) {
+                    <option [value]="epic.id">{{ epic.key }} {{ epic.title }}</option>
+                  }
+                </fpc-form-control>
+              </fpc-form-field>
+            </div>
+          }
+          @if (definition.modes.length > 1) {
+            <div class="col-md-6">
+              <fpc-form-field forId="runMode" label="Mode" i18n-label="@@featureInitiatives-fieldMode">
+                <fpc-form-control
+                  controlId="runMode"
+                  controlType="select"
+                  [ngModel]="formMode()"
+                  (ngModelChange)="formMode.set($event)"
+                >
+                  <option value="" i18n="@@featureInitiatives-modeAuto">Automatic (create or update)</option>
+                  @for (mode of definition.modes; track mode) {
+                    <option [value]="mode">{{ modeLabel(mode) }}</option>
+                  }
+                </fpc-form-control>
+              </fpc-form-field>
+            </div>
+          }
+          <div class="col-md-6">
+            <fpc-form-field forId="runStyle" label="Style" i18n-label="@@featureInitiatives-fieldStyle">
+              <fpc-form-control
+                controlId="runStyle"
+                controlType="select"
+                [ngModel]="formStyle()"
+                (ngModelChange)="formStyle.set($event)"
+              >
+                <option value="coaching" i18n="@@featureInitiatives-styleCoaching">
+                  Coaching (section by section)
+                </option>
+                <option value="fast" i18n="@@featureInitiatives-styleFast">Fast path (draft at once)</option>
+              </fpc-form-control>
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6">
+            <fpc-form-field forId="runAgent" label="Environment" i18n-label="@@featureInitiatives-fieldEnvironment">
+              <fpc-form-control
+                controlId="runAgent"
+                controlType="select"
+                [ngModel]="formAgentId()"
+                (ngModelChange)="formAgentId.set($event)"
+              >
+                @for (agent of agents(); track agent.id) {
+                  <option [value]="agent.id">{{ agentName(agent.id) }}</option>
+                }
+              </fpc-form-control>
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6">
+            <fpc-form-field forId="runModel" label="Model" i18n-label="@@featureInitiatives-fieldModelChoice">
+              <framework-initiative-model-select
+                controlId="runModel"
+                [clientId]="initiative().clientId"
+                [agentId]="formAgentId() || null"
+                [value]="formModel()"
+                (valueChange)="formModel.set($event)"
+              />
+            </fpc-form-field>
+          </div>
+        </div>
+        @if (formFindingIds().length > 0) {
+          <fpc-alert
+            variant="info"
+            i18n-message="@@featureInitiatives-findingsSelected"
+            message="The selected findings are given to the agent as the starting point."
+          />
+        }
+        <fpc-form-field
+          forId="runMessage"
+          label="Instructions (optional)"
+          i18n-label="@@featureInitiatives-fieldInstructions"
+        >
+          <fpc-form-control
+            controlId="runMessage"
+            controlType="textarea"
+            [rows]="4"
+            [ngModel]="formMessage()"
+            (ngModelChange)="formMessage.set($event)"
+          />
+        </fpc-form-field>
+      </section>
+    }
+  </div>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      [disabled]="!formValid() || pending()"
+      (clicked)="submitForm()"
+      data-testid="initiative-run-start"
+      i18n="@@featureInitiatives-startSubmit"
+      >Start</fpc-button
+    >
+  </div>
+</fpc-modal>

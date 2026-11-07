@@ -36,6 +36,9 @@ export const AGENSTRA_PAT_SCOPES = [
   'tickets:write',
   'knowledge:read',
   'knowledge:write',
+  // Initiatives: planning context (documents, work items, runs, proposals, findings, decisions)
+  'initiatives:read',
+  'initiatives:write',
   'attachments:read',
   'attachments:write',
   // Atlassian context import (admin console)
@@ -49,6 +52,7 @@ export const AGENSTRA_PAT_SCOPES = [
   'websocket:status:write',
   'websocket:tickets:read',
   'websocket:pages:read',
+  'websocket:initiatives:read',
   'websocket:vnc:write',
   ...IDENTITY_PAT_SCOPES,
 ] as const;

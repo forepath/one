@@ -56,6 +56,7 @@ import { AgentTaskEntity } from '../entities/agent-task.entity';
 import { AgentHandoffEntity } from '../entities/agent-handoff.entity';
 import { ChatPlanActivityEntity } from '../entities/chat-plan-activity.entity';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
+import { INITIATIVE_ENTITIES } from '../entities/initiative.entities';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
@@ -272,6 +273,10 @@ describe('ClientsModule', () => {
       .useValue(mockRepository)
       .overrideProvider(UsersRepository)
       .useValue(mockRepository);
+
+    for (const entity of INITIATIVE_ENTITIES) {
+      moduleBuilder.overrideProvider(getRepositoryToken(entity)).useValue(mockRepository);
+    }
 
     module = await moduleBuilder.compile();
   });

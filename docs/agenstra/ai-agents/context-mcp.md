@@ -56,6 +56,20 @@ authenticated `agentId` with every request) — plans of other environments are 
 Plan content states the status and whether execution started (then read-only), the original request and the plan
 markdown. Plans are never auto-enriched.
 
+### Initiatives as context
+
+[Initiatives](../features/initiatives.md) are two more context kinds, workspace wide like tickets and knowledge:
+
+- `initiative:<sha>`: the overview (intent, documents with status and version, work items in build order with keys,
+  statuses, dependencies, open questions and linked `ticket:` refs, accepted decisions). The revision is the initiative
+  version.
+- `artifact:<sha>`: one document (current version; the overview marks drafts and accepted versions).
+
+They are searchable and readable like tickets (`agenstra_context_search` kinds `initiative` / `artifact`, access requests
+in visible chats). Step runs (`-initiative-*`), ticket automation of a linked story, and plans created from a story get the
+initiative overview and its accepted documents **pre-granted** (`initiativeContexts` / `initiativeContextRefs` of the
+context injection); nothing beyond that is granted automatically.
+
 ## Content changes
 
 `agenstra_content_*` tools create, change, comment on and delete tickets and knowledge pages, and update plans of the
@@ -63,17 +77,19 @@ agent's environment that were not executed yet. They take the same
 context ticket and are routed `POST /api/agent-context/tickets/:ticket/changes` (manager) → `agentContextRequest`
 with `op: 'change'` (controller).
 
-| Tool                              | Change                                                        |
-| --------------------------------- | ------------------------------------------------------------- |
-| `agenstra_content_ticket_create`  | New ticket, optionally below a readable ticket (`parentRef`)  |
-| `agenstra_content_ticket_update`  | Title, content, priority and / or status (`ref`, `revision`)  |
-| `agenstra_content_ticket_comment` | Comment on a readable ticket                                  |
-| `agenstra_content_ticket_delete`  | Delete a readable ticket without subtasks (`revision`)        |
-| `agenstra_content_page_create`    | New knowledge page or folder, optionally in a readable folder |
-| `agenstra_content_page_update`    | Title and / or content of a readable page (`revision`)        |
-| `agenstra_content_page_delete`    | Delete a readable page or empty folder (`revision`)           |
-| `agenstra_content_plan_update`    | Title and / or markdown of a readable, not executed plan      |
-| `agenstra_content_change_status`  | Keep waiting on a `pending` change (`requestId`)              |
+| Tool                                  | Change                                                                                                                             |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `agenstra_content_ticket_create`      | New ticket, optionally below a readable ticket (`parentRef`)                                                                       |
+| `agenstra_content_ticket_update`      | Title, content, priority and / or status (`ref`, `revision`)                                                                       |
+| `agenstra_content_ticket_comment`     | Comment on a readable ticket                                                                                                       |
+| `agenstra_content_ticket_delete`      | Delete a readable ticket without subtasks (`revision`)                                                                             |
+| `agenstra_content_page_create`        | New knowledge page or folder, optionally in a readable folder                                                                      |
+| `agenstra_content_page_update`        | Title and / or content of a readable page (`revision`)                                                                             |
+| `agenstra_content_page_delete`        | Delete a readable page or empty folder (`revision`)                                                                                |
+| `agenstra_content_plan_update`        | Title and / or markdown of a readable, not executed plan                                                                           |
+| `agenstra_content_initiative_propose` | Change proposal on a readable initiative (documents, work-item operations, decisions); a person accepts it on the Initiatives page |
+| `agenstra_content_initiative_finding` | Finding on a readable initiative or one of its work items (`itemKey`), with evidence                                               |
+| `agenstra_content_change_status`      | Keep waiting on a `pending` change (`requestId`)                                                                                   |
 
 The tools deliberately do not share the `agenstra_context_*` prefix: plan sessions allow (and auto-answer) that prefix
 as read-only explore tools, so content tools stay denied there.
@@ -92,6 +108,7 @@ as read-only explore tools, so content tools stay denied there.
 | Recurring task runs (`-task-*`, unattended)         | Only the operations a user approved for the task (`allowedContentWrites`, default none)   |
 | Ticket automation (`-ticket-auto-*`, unattended)    | Only the operations allowed for the ticket's automation (default none), in its tree       |
 | Chat plan explore / refine (`-plan-*`, read-only)   | Never                                                                                     |
+| Initiative step runs (`-initiative-*`, read-only)   | Never (the result is the run's status block, accepted by a person)                        |
 | Prompt enhancement, ticket body generation (hidden) | Never                                                                                     |
 
 - _Allow for this chat_ covers further changes of the **same operation on the same element** (creates: below the same
@@ -103,6 +120,10 @@ as read-only explore tools, so content tools stay denied there.
   working) or the automation (exactly one working run of the agent, operation allowed, target in the tree) when it
   applies the change. The manager only forwards the session's source, never agent input.
 - At most 50 changes per context ticket (turn).
+- **Initiative changes are never applied by the agent.** `initiative.propose` stores an open change proposal (documents,
+  work-item operations, decisions) that a person accepts or rejects on the Initiatives page; `initiative.finding` records
+  an inert finding. Ticket automation may only be allowed `initiative.finding`, and only on the story its ticket is linked
+  to (the controller resolves the running ticket's story; agent input never selects it). Tasks need the explicit opt-in.
 - **Plans keep the plans-page rules.** `plan.update` only applies to plans of the agent's own environment that never
   entered execution and are not being drafted (`ready`, `failed`, `cancelled`), conditional on `revision` — the same
   conditional write as a user edit, so an execution always runs exactly the latest saved version and executed plans
@@ -111,13 +132,14 @@ as read-only explore tools, so content tools stay denied there.
 
 ## Access decisions
 
-| Session                                             | Additional access                                                    |
-| --------------------------------------------------- | -------------------------------------------------------------------- |
-| Visible chat                                        | Permission-style prompt: _Allow once_, _Allow for this chat_, _Deny_ |
-| Ticket automation (`-ticket-auto-*`, unattended)    | Granted without asking within the ticket's tree, otherwise denied    |
-| Chat plan explore / refine (`-plan-*`, read-only)   | Only the pre-granted context (the source chat's refs)                |
-| Recurring task runs (`-task-*`, unattended)         | Only the pre-granted context                                         |
-| Prompt enhancement, ticket body generation (hidden) | Denied (only the items from the prompt are available)                |
+| Session                                             | Additional access                                                     |
+| --------------------------------------------------- | --------------------------------------------------------------------- |
+| Visible chat                                        | Permission-style prompt: _Allow once_, _Allow for this chat_, _Deny_  |
+| Ticket automation (`-ticket-auto-*`, unattended)    | Granted without asking within the ticket's tree, otherwise denied     |
+| Chat plan explore / refine (`-plan-*`, read-only)   | Only the pre-granted context (the source chat's refs)                 |
+| Initiative step runs (`-initiative-*`, read-only)   | Only the pre-granted context (initiative, accepted documents, target) |
+| Recurring task runs (`-task-*`, unattended)         | Only the pre-granted context                                          |
+| Prompt enhancement, ticket body generation (hidden) | Denied (only the items from the prompt are available)                 |
 
 Replies use the existing permission reply endpoint (`POST .../permissions/:id/reply`, ids start with `ctx_`).
 

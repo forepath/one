@@ -15,6 +15,7 @@ import {
   stableAutomationBranchNameForTicket,
 } from '../utils/ticket-automation-branch.constants';
 
+import { InitiativeAutomationHooks } from './initiative-automation-hooks';
 import { AutonomousRunOrchestratorService } from './autonomous-run-orchestrator.service';
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
 import { KnowledgeTreeService } from './knowledge-tree.service';
@@ -1734,5 +1735,76 @@ describe('AutonomousRunOrchestratorService', () => {
       baseBranch: 'main',
     });
     await module.close();
+  });
+
+  describe('initiative prerequisites', () => {
+    async function moduleWith(hooks: { isTicketBlocked: jest.Mock; automationContext: jest.Mock } | undefined) {
+      const ticketRepo = {
+        manager: {
+          query: jest.fn().mockResolvedValue([{ ticket_id: ticketId, client_id: clientId, agent_id: agentId }]),
+        },
+        findOne: jest.fn().mockResolvedValue({ id: ticketId, clientId, title: 'Story', status: 'todo' }),
+      };
+      const runRepo = { manager: { transaction: jest.fn().mockResolvedValue(null) } };
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          AutonomousRunOrchestratorService,
+          ...realtimeSideProviders(ticketId),
+          { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
+          {
+            provide: getRepositoryToken(TicketAutomationEntity),
+            useValue: {
+              findOne: jest.fn().mockResolvedValue({ ticketId, preferredModel: 'openai/gpt-5', allowedAgentIds: [] }),
+            },
+          },
+          { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
+          { provide: getRepositoryToken(TicketAutomationLeaseEntity), useValue: {} },
+          { provide: getRepositoryToken(TicketAutomationRunStepEntity), useValue: {} },
+          { provide: getRepositoryToken(TicketActivityEntity), useValue: {} },
+          {
+            provide: getRepositoryToken(ClientAgentAutonomyEntity),
+            useValue: { findOne: jest.fn().mockResolvedValue({ clientId, agentId }) },
+          },
+          { provide: RemoteAgentsSessionService, useValue: { sendChatSync: jest.fn() } },
+          { provide: ClientAgentVcsProxyService, useValue: {} },
+          ...(hooks ? [{ provide: InitiativeAutomationHooks, useValue: hooks }] : []),
+        ],
+      }).compile();
+
+      return { module, ticketRepo, runRepo };
+    }
+
+    it('only removes candidates whose linked work item is flagged (unlinked tickets are unaffected)', async () => {
+      const { module, ticketRepo } = await moduleWith(undefined);
+
+      await module.get(AutonomousRunOrchestratorService).findCandidateIds(5);
+
+      const sql = ticketRepo.manager.query.mock.calls[0][0] as string;
+
+      expect(sql).toContain('AND NOT EXISTS (\n          SELECT 1 FROM initiative_work_items wi');
+      expect(sql).toContain('wi.ticket_id = t.id AND wi.automation_blocked = true');
+      await module.close();
+    });
+
+    it('never starts a run for a ticket whose prerequisites are not satisfied', async () => {
+      const hooks = { isTicketBlocked: jest.fn().mockResolvedValue(true), automationContext: jest.fn() };
+      const { module, runRepo } = await moduleWith(hooks);
+
+      await module.get(AutonomousRunOrchestratorService).processBatch(1);
+
+      expect(hooks.isTicketBlocked).toHaveBeenCalledWith(ticketId, clientId);
+      expect(runRepo.manager.transaction).not.toHaveBeenCalled();
+      await module.close();
+    });
+
+    it('starts as before when the ticket is not blocked', async () => {
+      const hooks = { isTicketBlocked: jest.fn().mockResolvedValue(false), automationContext: jest.fn() };
+      const { module, runRepo } = await moduleWith(hooks);
+
+      await module.get(AutonomousRunOrchestratorService).processBatch(1);
+
+      expect(runRepo.manager.transaction).toHaveBeenCalled();
+      await module.close();
+    });
   });
 });

@@ -1,5 +1,6 @@
 import {
   AGENSTRA_CONTENT_MCP_TOOL_NAMES,
+  AGENT_CONTENT_FINDING_SEVERITIES,
   AGENT_CONTENT_LIMITS,
   AGENT_CONTENT_TICKET_PRIORITIES,
   AGENT_CONTENT_TICKET_STATUSES,
@@ -135,6 +136,68 @@ export const CONTENT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
     { ref: { type: 'string', description: 'knowledge:<sha>.' }, revision: REVISION_PROPERTY },
     ['ref', 'revision'],
   ),
+  tool(
+    AGENSTRA_CONTENT_MCP_TOOL_NAMES.initiativePropose,
+    'Propose a change to an initiative you may read (ref "initiative:<sha>"): new versions of its documents, ' +
+      'work-item operations and decisions. Nothing changes until a user accepts the proposal on the Initiatives ' +
+      'page. Items that are built or done cannot be updated, moved or dropped; add new items instead.',
+    {
+      ref: { type: 'string', description: 'initiative:<sha>.' },
+      title: TITLE_PROPERTY,
+      rationale: { type: 'string', maxLength: AGENT_CONTENT_LIMITS.commentMaxLength, description: 'Why (markdown).' },
+      artifacts: {
+        type: 'array',
+        maxItems: 20,
+        description: 'New document versions (complete content, never a diff).',
+        items: {
+          type: 'object',
+          properties: {
+            type: {
+              type: 'string',
+              description: 'prd, architecture, ux, product-brief, prfaq, research, project-context, note, …',
+            },
+            title: { type: 'string' },
+            content: { type: 'string' },
+          },
+          required: ['type', 'content'],
+        },
+      },
+      workItems: {
+        type: 'array',
+        maxItems: AGENT_CONTENT_LIMITS.initiativeProposalItemsMax,
+        description:
+          'Operations: { "op": "add", "parentKey": "E1", "item": { "key": "N1", "kind": "story", "title": "…", ' +
+          '"requirements": "…", "verify": "…", "doneWhen": "…", "after": ["E1.S2"] } } (an epic: kind "epic" without ' +
+          'parentKey), { "op": "update", "key": "E1.S3", "title"?, "requirements"?, "verify"?, "doneWhen"?, ' +
+          '"after"? }, { "op": "drop", "key": "E1.S4" }, { "op": "move", "key": "E1.S5", "beforeKey": "E1.S2" }.',
+        items: { type: 'object' },
+      },
+      decisions: {
+        type: 'array',
+        maxItems: 50,
+        description: 'Decision records: { "title": "…", "body": "…" }.',
+        items: { type: 'object', properties: { title: { type: 'string' }, body: { type: 'string' } } },
+      },
+    },
+    ['ref', 'title'],
+  ),
+  tool(
+    AGENSTRA_CONTENT_MCP_TOOL_NAMES.initiativeFinding,
+    'Record a finding on an initiative you may read (ref "initiative:<sha>"), optionally on one work item ' +
+      '(itemKey like "E1.S2"): a defect, a gap, deferred work or a lesson, with evidence (refs, paths, commits).',
+    {
+      ref: { type: 'string', description: 'initiative:<sha>.' },
+      body: {
+        type: 'string',
+        maxLength: AGENT_CONTENT_LIMITS.initiativeFindingMaxLength,
+        description: 'The finding (markdown).',
+      },
+      severity: { type: 'string', enum: [...AGENT_CONTENT_FINDING_SEVERITIES] },
+      itemKey: { type: 'string', description: 'Work item key (E1 or E1.S2).' },
+      evidence: { type: 'array', maxItems: 20, items: { type: 'string', maxLength: 500 } },
+    },
+    ['ref', 'body'],
+  ),
   {
     name: AGENSTRA_CONTENT_MCP_TOOL_NAMES.changeStatus,
     description: 'Keep waiting on a pending content change (requestId from a content_* result).',
@@ -164,14 +227,35 @@ function json(value: unknown): ContextToolResult {
   return text(JSON.stringify(value, null, 2));
 }
 
-const CHANGE_FIELDS = ['ref', 'parentRef', 'revision', 'title', 'content', 'body', 'priority', 'status', 'nodeType'];
+const CHANGE_FIELDS = [
+  'ref',
+  'parentRef',
+  'revision',
+  'title',
+  'content',
+  'body',
+  'priority',
+  'status',
+  'nodeType',
+  'rationale',
+  'severity',
+  'itemKey',
+];
+/** Structured fields of initiative changes (arrays; shapes are validated by the manager and the controller). */
+const CHANGE_LIST_FIELDS = ['artifacts', 'workItems', 'decisions', 'evidence'];
 
-/** Copy the known string fields of a change; semantic validation happens in the manager. */
+/** Copy the known fields of a change; semantic validation happens in the manager. */
 function changeRequest(operation: string, args: Record<string, unknown>): AgentContentChangeRequest {
   const change: Record<string, unknown> = { operation };
 
   for (const key of [...CHANGE_FIELDS, 'reason']) {
     if (typeof args[key] === 'string') {
+      change[key] = args[key];
+    }
+  }
+
+  for (const key of CHANGE_LIST_FIELDS) {
+    if (Array.isArray(args[key])) {
       change[key] = args[key];
     }
   }

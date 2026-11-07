@@ -1,5 +1,5 @@
 import type { AgentContentChangeResult } from '@forepath/agenstra/shared/util-opencode-config';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Socket as ClientSocket } from 'socket.io-client';
 import { In, Repository } from 'typeorm';
@@ -12,6 +12,7 @@ import { buildChatPlanContextSection, chatPlanContextTitle } from '../utils/chat
 
 import { AgentContentChangesService } from './agent-content-changes.service';
 import { ChatPlanService } from './chat-plan.service';
+import { InitiativeContextService, type InitiativeContextKind } from './initiative-context.service';
 import { KnowledgeTreeService } from './knowledge-tree.service';
 import { TicketsService } from './tickets.service';
 
@@ -26,10 +27,16 @@ const MAX_SCOPE_ANCHORS = 50;
 const MAX_TICKET_DEPTH = 50;
 const SHA_PATTERN = /^[0-9a-f]{4,40}$/;
 
-/** Plans are agent specific: an agent only reaches the plans of its own environment. */
-type ContextKind = 'ticket' | 'knowledge' | 'plan';
+/**
+ * Plans are agent specific: an agent only reaches the plans of its own environment. Initiatives (overview) and their
+ * documents (`artifact`) are workspace wide like tickets and knowledge.
+ */
+type ContextKind = 'ticket' | 'knowledge' | 'plan' | InitiativeContextKind;
 
-const CONTEXT_KINDS: readonly ContextKind[] = ['ticket', 'knowledge', 'plan'];
+const CONTEXT_KINDS: readonly ContextKind[] = ['ticket', 'knowledge', 'plan', 'initiative', 'artifact'];
+
+const isInitiativeKind = (kind: ContextKind): kind is InitiativeContextKind =>
+  kind === 'initiative' || kind === 'artifact';
 
 interface ContextRef {
   kind: ContextKind;
@@ -85,6 +92,7 @@ export class AgentContextRequestHandlerService {
     private readonly knowledgeTreeService: KnowledgeTreeService,
     private readonly contentChanges: AgentContentChangesService,
     private readonly chatPlanService: ChatPlanService,
+    @Optional() private readonly initiativeContext?: InitiativeContextService,
   ) {}
 
   /** Register the ack handler on a controller → manager socket for one workspace. */
@@ -208,6 +216,12 @@ export class AgentContextRequestHandlerService {
       results.push(...this.mapPlans(await qb.orderBy('p.updated_at', 'DESC').take(bounded).getMany()));
     }
 
+    const initiativeKinds = kinds.filter(isInitiativeKind);
+
+    if (initiativeKinds.length > 0 && this.initiativeContext) {
+      results.push(...(await this.initiativeContext.search(clientId, term, initiativeKinds, bounded)));
+    }
+
     return results.slice(0, bounded);
   }
 
@@ -248,10 +262,17 @@ export class AgentContextRequestHandlerService {
       }
     }
 
+    const initiativeRefs = refs.filter((ref): ref is { kind: InitiativeContextKind; sha: string } =>
+      isInitiativeKind(ref.kind),
+    );
+
     return [
       ...(await this.mapTickets(clientId, tickets)),
       ...(await this.mapKnowledge(clientId, nodes)),
       ...this.mapPlans(plans),
+      ...(initiativeRefs.length && this.initiativeContext
+        ? await this.initiativeContext.describe(clientId, initiativeRefs)
+        : []),
     ];
   }
 
@@ -321,6 +342,14 @@ export class AgentContextRequestHandlerService {
     const contents: AgentContextContent[] = [];
 
     for (const ref of refs) {
+      if (isInitiativeKind(ref.kind)) {
+        if (this.initiativeContext) {
+          contents.push(...(await this.initiativeContext.content(clientId, [{ kind: ref.kind, sha: ref.sha }])));
+        }
+
+        continue;
+      }
+
       if (ref.kind === 'plan') {
         const plan = agentId ? await this.chatPlanService.findForAgentBySha(clientId, agentId, ref.sha) : null;
 

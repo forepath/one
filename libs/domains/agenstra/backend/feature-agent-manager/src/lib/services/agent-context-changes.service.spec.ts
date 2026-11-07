@@ -357,4 +357,82 @@ describe('AgentContextChangesService', () => {
       });
     });
   });
+
+  describe('initiative changes', () => {
+    const INITIATIVE_SHA = 'e'.repeat(40);
+    const propose = {
+      operation: 'initiative.propose',
+      ref: `initiative:${INITIATIVE_SHA}`,
+      title: 'Add SSO',
+      workItems: [{ op: 'add', parentKey: 'E1', item: { key: 'N1', title: 'SSO' } }],
+    };
+
+    it('validates proposals and findings', () => {
+      expect(service.parse(propose).target).toEqual({ kind: 'initiative', sha: INITIATIVE_SHA });
+      expect(() => service.parse({ ...propose, workItems: undefined })).toThrow(BadRequestException);
+      expect(() => service.parse({ ...propose, workItems: ['x'] })).toThrow(BadRequestException);
+      expect(() => service.parse({ ...propose, ref: `ticket:${TICKET_SHA}` })).toThrow(BadRequestException);
+      expect(() =>
+        service.parse({
+          operation: 'initiative.finding',
+          ref: `initiative:${INITIATIVE_SHA}`,
+          body: 'x',
+          itemKey: '../x',
+        }),
+      ).toThrow(BadRequestException);
+      expect(
+        service.parse({
+          operation: 'initiative.finding',
+          ref: `initiative:${INITIATIVE_SHA}`,
+          body: ' Deferred ',
+          severity: 'major',
+          itemKey: 'E1.S2',
+          evidence: ['ticket:abcd'],
+        }).request,
+      ).toEqual({
+        operation: 'initiative.finding',
+        ref: `initiative:${INITIATIVE_SHA}`,
+        body: 'Deferred',
+        severity: 'major',
+        itemKey: 'E1.S2',
+        evidence: ['ticket:abcd'],
+      });
+    });
+
+    it('denies changes of initiatives that are not readable', async () => {
+      const result = await service.requestChange(mint(), service.parse(propose));
+
+      expect(result.decision).toBe('denied');
+      expect(changeCalls()).toHaveLength(0);
+    });
+
+    it('never lets initiative step sessions change content (they return their result in the status block)', async () => {
+      const record = mint({
+        accessMode: 'auto',
+        sessionKey: 'suffix:-initiative-11111111-1111-4111-8111-111111111111',
+        items: [{ kind: 'initiative', title: 'Checkout', sha: INITIATIVE_SHA, content: 'OVERVIEW' }],
+      });
+      const result = await service.requestChange(record, service.parse(propose));
+
+      expect(result.decision).toBe('denied');
+      expect(changeCalls()).toHaveLength(0);
+    });
+
+    it('asks the user in chats before forwarding a proposal of a readable initiative', async () => {
+      const record = mint({
+        items: [{ kind: 'initiative', title: 'Checkout', sha: INITIATIVE_SHA, content: 'OVERVIEW' }],
+      });
+      const pending = service.requestChange(record, service.parse(propose));
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(bridge.publishContextChangeQuestion.mock.calls.at(-1)?.[2]).toContain(
+        'Nothing changes until a user accepts',
+      );
+
+      await service.decide('agent-1', questionId(), 'once');
+      await pending;
+
+      expect(changeCalls().at(-1)?.change).toMatchObject({ operation: 'initiative.propose', sha: INITIATIVE_SHA });
+    });
+  });
 });
