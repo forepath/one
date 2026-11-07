@@ -193,6 +193,16 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
   private titleEditSyncNodeId: string | null = null;
   private skipSelectionClearForOpenNodeCleanup = false;
   readonly workspaceSwitchSearch = signal('');
+  /** Workspace switcher paging over the append-style clients store (further batches load per page). */
+  readonly workspaceSwitchHasMore = toSignal(this.clientsFacade.hasMore$, { initialValue: false });
+  readonly workspaceSwitchAppendLoading = toSignal(this.clientsFacade.appendLoading$, { initialValue: false });
+  readonly workspaceSwitchAppendError = toSignal(this.clientsFacade.appendError$, {
+    initialValue: null as string | null,
+  });
+
+  onLoadMoreWorkspaces(): void {
+    this.clientsFacade.loadMoreClients();
+  }
   readonly workspaceSwitchSearch$ = toObservable(this.workspaceSwitchSearch);
   /** Tree toolbar search: the server returns the matches with their ancestor folders. */
   readonly treeSearch = signal('');

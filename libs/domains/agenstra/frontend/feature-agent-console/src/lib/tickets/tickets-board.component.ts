@@ -605,6 +605,16 @@ export class TicketsBoardComponent implements OnInit {
 
   /** Filter text for the workspace switcher modal (same idea as the workspace list on /clients). */
   workspaceSwitchSearch = signal('');
+  /** Workspace switcher paging over the append-style clients store (further batches load per page). */
+  readonly workspaceSwitchHasMore = toSignal(this.clientsFacade.hasMore$, { initialValue: false });
+  readonly workspaceSwitchAppendLoading = toSignal(this.clientsFacade.appendLoading$, { initialValue: false });
+  readonly workspaceSwitchAppendError = toSignal(this.clientsFacade.appendError$, {
+    initialValue: null as string | null,
+  });
+
+  onLoadMoreWorkspaces(): void {
+    this.clientsFacade.loadMoreClients();
+  }
 
   readonly detailLoading$ = this.ticketsFacade.loadingDetail$;
   readonly comments$ = this.ticketsFacade.comments$.pipe(map((comments) => [...comments].reverse()));
