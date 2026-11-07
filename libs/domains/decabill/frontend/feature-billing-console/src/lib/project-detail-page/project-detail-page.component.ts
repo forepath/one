@@ -22,6 +22,7 @@ import {
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
   FpcAlertComponent,
+  FpcBackLinkComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
@@ -120,6 +121,7 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
     FpcSummaryCardValueDirective,
     FpcTabComponent,
     FpcTabGroupComponent,
+    FpcBackLinkComponent,
     FpcButtonComponent,
     FpcEmptyStateComponent,
     FpcFormCheckComponent,

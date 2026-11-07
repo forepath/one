@@ -1,4 +1,7 @@
-import { AGENSTRA_CONTEXT_MCP_TOOL_NAMES } from '@forepath/agenstra/shared/util-opencode-config';
+import {
+  AGENSTRA_CONTEXT_MCP_TOOL_NAMES,
+  AGENT_CONTEXT_ELEMENT_KINDS,
+} from '@forepath/agenstra/shared/util-opencode-config';
 
 import { ContextApiClient, ContextApiError } from './context-api.client';
 
@@ -41,8 +44,9 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
   {
     name: AGENSTRA_CONTEXT_MCP_TOOL_NAMES.search,
     description:
-      'Search workspace tickets and knowledge pages, and the chat plans of your own environment, by title or SHA ' +
-      '(plans also by request / plan text). Returns metadata only (ref, title, status, parent, size, granted). ' +
+      'Search workspace tickets, knowledge pages, initiatives and initiative documents, and the chat plans of your ' +
+      'own environment, by title or SHA (plans also by request / plan text). Returns metadata only (ref, title, ' +
+      'status, parent, size, granted). ' +
       'Read granted refs with context_get; request others with context_request_access.',
     inputSchema: {
       type: 'object',
@@ -51,8 +55,9 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
         query: { type: 'string', description: 'Title fragment or SHA prefix. Omit to list recent elements.' },
         kinds: {
           type: 'array',
-          items: { type: 'string', enum: ['ticket', 'knowledge', 'plan'] },
-          description: 'Restrict to tickets, knowledge pages and/or plans.',
+          items: { type: 'string', enum: [...AGENT_CONTEXT_ELEMENT_KINDS] },
+          description:
+            'Restrict to tickets, knowledge pages, plans, initiatives and/or initiative documents (artifact).',
         },
         limit: { type: 'integer', minimum: 1, maximum: 50, description: 'Max results (default 20).' },
       },
@@ -64,13 +69,17 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
     name: AGENSTRA_CONTEXT_MCP_TOOL_NAMES.get,
     description:
       'Read the full content of a context element: "item:<n>" from the prompt hint / context_list, or a granted ' +
-      '"ticket:<sha>" / "knowledge:<sha>" / "plan:<sha>". Reading by SHA also returns the revision that ' +
-      'agenstra_content_* updates and deletes need. Plans state whether they were executed (read-only).',
+      '"ticket:<sha>" / "knowledge:<sha>" / "plan:<sha>" / "initiative:<sha>" / "artifact:<sha>". Reading by SHA ' +
+      'also returns the revision that agenstra_content_* updates and deletes need. Plans state whether they were ' +
+      'executed (read-only). Initiatives return their overview incl. work items (keys like E1.S2) and documents.',
     inputSchema: {
       type: 'object',
       properties: {
         ticket: TICKET_PROPERTY,
-        ref: { type: 'string', description: 'item:<n>, ticket:<sha>, knowledge:<sha> or plan:<sha>.' },
+        ref: {
+          type: 'string',
+          description: 'item:<n>, ticket:<sha>, knowledge:<sha>, plan:<sha>, initiative:<sha> or artifact:<sha>.',
+        },
       },
       required: ['ticket', 'ref'],
       additionalProperties: false,
@@ -79,7 +88,8 @@ export const CONTEXT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
   {
     name: AGENSTRA_CONTEXT_MCP_TOOL_NAMES.requestAccess,
     description:
-      'Ask for access to tickets / knowledge pages / plans that are not granted yet (refs from context_search). The user ' +
+      'Ask for access to tickets / knowledge pages / plans / initiatives / initiative documents that are not granted ' +
+      'yet (refs from context_search). The user ' +
       'may be asked to approve; unattended sessions decide automatically. If the result is "pending", call again ' +
       'with the returned requestId to keep waiting.',
     inputSchema: {
@@ -149,7 +159,10 @@ export async function callContextTool(
         const ref = stringArg(args, 'ref');
 
         if (!ref) {
-          return text('Missing "ref" (item:<n>, ticket:<sha>, knowledge:<sha> or plan:<sha>).', true);
+          return text(
+            'Missing "ref" (item:<n>, ticket:<sha>, knowledge:<sha>, plan:<sha>, initiative:<sha> or artifact:<sha>).',
+            true,
+          );
         }
 
         const item = await client.get(ticket, ref);

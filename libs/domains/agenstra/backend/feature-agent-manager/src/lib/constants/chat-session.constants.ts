@@ -1,6 +1,7 @@
 import {
   AGENT_HANDOFF_CHAT_SESSION_KIND,
   isAgentTaskResumeSessionSuffix,
+  isInitiativeResumeSessionSuffix,
 } from '@forepath/agenstra/shared/util-opencode-config';
 
 /**
@@ -35,8 +36,8 @@ export const CHAT_PLAN_RESUME_SESSION_SUFFIX_PREFIX = '-plan-';
 /**
  * Reserved resumeSessionSuffix values used by background/hidden flows.
  * These must never collide with user-visible chat session suffixes.
- * Dynamic `-plan-{uuid}` and `-task-{uuid}` suffixes are also reserved via {@link isChatPlanResumeSessionSuffix}
- * and `isAgentTaskResumeSessionSuffix`.
+ * Dynamic `-plan-{uuid}`, `-task-{uuid}` and `-initiative-{uuid}` suffixes are also reserved via
+ * {@link isChatPlanResumeSessionSuffix}, `isAgentTaskResumeSessionSuffix` and `isInitiativeResumeSessionSuffix`.
  */
 export const RESERVED_CHAT_RESUME_SESSION_SUFFIXES = [
   '-prompt-enhance',
@@ -74,7 +75,11 @@ export function isReservedChatResumeSessionSuffix(suffix: string | undefined): b
     return false;
   }
 
-  if (isChatPlanResumeSessionSuffix(suffix) || isAgentTaskResumeSessionSuffix(suffix)) {
+  if (
+    isChatPlanResumeSessionSuffix(suffix) ||
+    isAgentTaskResumeSessionSuffix(suffix) ||
+    isInitiativeResumeSessionSuffix(suffix)
+  ) {
     return true;
   }
 
@@ -99,11 +104,16 @@ export function isUnattendedAutomationResumeSessionSuffix(suffix: string | undef
 }
 
 /**
- * Read-only hidden sessions (plan explore / refine, handoff profile generation): session ruleset with explore tools
- * only; residual permission asks are answered automatically (explore allowed, everything else rejected).
+ * Read-only hidden sessions (plan explore / refine, initiative step runs, handoff profile generation): session ruleset
+ * with explore tools only; residual permission asks are answered automatically (explore allowed, everything else
+ * rejected).
  */
 export function isReadOnlyExploreResumeSessionSuffix(suffix: string | undefined): boolean {
-  return isChatPlanResumeSessionSuffix(suffix) || suffix === HANDOFF_PROFILE_RESUME_SESSION_SUFFIX;
+  return (
+    isChatPlanResumeSessionSuffix(suffix) ||
+    isInitiativeResumeSessionSuffix(suffix) ||
+    suffix === HANDOFF_PROFILE_RESUME_SESSION_SUFFIX
+  );
 }
 
 /** Implementation-loop sessions request structured continue/complete turn status. */

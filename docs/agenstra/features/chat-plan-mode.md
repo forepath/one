@@ -45,6 +45,13 @@ Plans can be linked as context like tickets and knowledge pages (see [Agent Cont
 - **Agents**: `agenstra_context_search` / `_get` / `_request_access` accept `plan` / `plan:<sha>`, limited to the agent's own environment; `agenstra_content_plan_update` changes a plan that was not executed yet (asked in visible chats, opt-in for tasks, never for ticket automation).
 - Plan responses carry `shas: { short, long }` (`chat_plan.long_sha`).
 
+### Plans from initiative stories
+
+**Plan** on a transferred story of an [initiative](./initiatives.md) (`POST /initiative-work-items/{id}/plan` with
+`agentId`, `chatId`, optional `model` / `instructions`) creates a plan on that environment and chat. Its context snapshot
+pre-grants the story ticket plus the initiative overview and accepted documents (`initiativeContexts` /
+`initiativeContextRefs`), read-only like all plan context. Explore, refine and execute work as for every plan.
+
 ### Edited plans and execution
 
 User edits replace `chat_plan.plan_markdown`, the single source the orchestrator reads. Execute and refine read the plan **after** their conditional status transition, and edits are only accepted in editable statuses. So an execution always runs exactly the latest saved version; an edit saved a moment before execution starts is included, and one arriving after is refused. Execution runs in the plan's **visible chat** (`chatId`, not persisted as a user message via `suppressUserMessage`) with the chat's normal interactive permissions. The hidden `-plan-{id}` session stays explore-only and is used for explore / refine turns only. The execute prompt states that the plan below is the final version and supersedes every earlier draft. When a user edited the plan, the execute and refine prompts also state explicitly that earlier drafts must not be reintroduced or acted on.

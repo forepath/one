@@ -12,7 +12,7 @@ Agenstra uses WebSocket (Socket.IO) for real-time bidirectional communication. T
 - **Controller ↔ Manager**: Event forwarding to remote agent-managers
 - **Manager ↔ Agent Containers**: Real-time chat and container communication
 
-On the controller, Socket.IO namespaces **`socket/clients`**, **`socket/tickets`**, **`socket/pages`** (knowledge), and **`socket/status`** share the HTTP **`PORT`** (default 3100) with REST (`/api/`) and VNC (`/socket/vnc`). Engine.IO path is `/socket.io/`.
+On the controller, Socket.IO namespaces **`socket/clients`**, **`socket/tickets`**, **`socket/pages`** (knowledge), **`socket/initiatives`**, and **`socket/status`** share the HTTP **`PORT`** (default 3100) with REST (`/api/`) and VNC (`/socket/vnc`). Engine.IO path is `/socket.io/`.
 
 ## Authentication
 
@@ -225,6 +225,28 @@ See **[Tickets and Workspaces](./tickets-and-workspaces.md)** for product contex
 Use namespace **`socket/pages`** on the same controller origin. After `setClient`, room broadcasts include `knowledgeTreeChanged`, `knowledgeRelationChanged`, and `knowledgePageActivityCreated`. Errors use `error`.
 
 REST source of truth: OpenAPI `/knowledge/*` on the agent-controller.
+
+## Initiatives board realtime (`initiatives` namespace)
+
+Use namespace **`socket/initiatives`** (override with `INITIATIVES_WEBSOCKET_NAMESPACE`) on the same controller origin. The
+namespace is listen-only: the only client event is `setClient` (workspace access checked like REST; machine tokens need
+`websocket:initiatives:read` and `initiatives:read`). Every command is a REST call. Room broadcasts after `setClient`:
+
+| Event                        | Payload                                                                                |
+| ---------------------------- | -------------------------------------------------------------------------------------- |
+| `initiativeUpsert`           | Initiative (incl. `version`)                                                           |
+| `initiativeRemoved`          | `{ id, clientId }`                                                                     |
+| `initiativeArtifactUpsert`   | Document metadata incl. `version` / `currentVersion` (content is fetched over REST)    |
+| `initiativeArtifactRemoved`  | `{ id, initiativeId }`                                                                 |
+| `initiativeWorkItemsChanged` | `{ initiativeId, items, initiativeVersion, unknowns }` (effective statuses, readiness) |
+| `initiativeRunUpsert`        | Step run (status, result, throttled `streamingText`)                                   |
+| `initiativeRunTurnAppended`  | `{ initiativeId, …turn }`                                                              |
+| `initiativeProposalUpsert`   | Change proposal                                                                        |
+| `initiativeFindingUpsert`    | Finding                                                                                |
+| `initiativeDecisionUpsert`   | Decision                                                                               |
+| `initiativeActivityCreated`  | Activity row                                                                           |
+
+Clients apply payloads only when they are newer (`version`) than what they show. See [Initiatives](./initiatives.md#live-collaboration).
 
 ## Reconnection Handling
 

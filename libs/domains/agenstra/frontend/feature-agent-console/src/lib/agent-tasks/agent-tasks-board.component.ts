@@ -34,6 +34,7 @@ import {
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
+  FpcBackLinkComponent,
   FpcButtonComponent,
   FpcConfirmDialogComponent,
   FpcDataTableComponent,
@@ -121,6 +122,7 @@ const RUNNING_HISTORY_REFRESH_MS = 10_000;
     AgentChatEventRowComponent,
     FpcAlertComponent,
     FpcBadgeComponent,
+    FpcBackLinkComponent,
     FpcButtonComponent,
     FpcConfirmDialogComponent,
     FpcDataTableComponent,

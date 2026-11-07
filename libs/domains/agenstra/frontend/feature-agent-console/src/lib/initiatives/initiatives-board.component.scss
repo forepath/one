@@ -1,0 +1,223 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.section__content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.section__row {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.section__column {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.initiatives-sidebar {
+  flex: 0 0 320px;
+  max-width: 40%;
+}
+
+.initiatives-detail {
+  min-width: 0;
+  flex-direction: column;
+}
+
+// Phones: one view at a time; an open initiative replaces the list.
+@media (max-width: 767.98px) {
+  .initiatives-row {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  .initiatives-sidebar {
+    flex: 1 1 0;
+    max-width: none;
+    width: 100%;
+  }
+
+  .initiatives-detail {
+    flex: 1 1 0;
+    width: 100%;
+  }
+
+  .initiatives-row:not(.initiatives-row--detail-open) .initiatives-detail,
+  .initiatives-row--detail-open .initiatives-sidebar {
+    display: none !important;
+  }
+}
+
+// Phase strip: the billing console's order stepper (numbered circles, label beside them), one row scrolled sideways
+// by `fpcStepStrip`. Done phases are filled, the current one outlined; every phase is a button (moves the initiative).
+// Same strip fill as the lane headers (subsection headers) of the sidebar.
+.initiative-phases {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.initiative-phases__steps {
+  display: flex;
+  gap: 0.5rem 1rem;
+  list-style: none;
+  // Block padding keeps focus rings inside the clipped strip; the negative margin keeps the layout.
+  margin: -0.25rem 0;
+  padding: 0.25rem 0;
+}
+
+.initiative-phases__step {
+  flex: 1 0 auto;
+}
+
+.initiative-phases__step-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--bs-border-radius);
+  background: transparent;
+  color: var(--bs-secondary-color);
+  text-align: left;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    color: var(--bs-body-color);
+
+    .initiative-phases__step-indicator {
+      border-color: var(--bs-primary);
+    }
+  }
+
+  &:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.initiative-phases__step-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: 50%;
+  font-size: 0.875rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out;
+}
+
+.initiative-phases__step-button--active {
+  color: var(--bs-body-color);
+  font-weight: 600;
+
+  .initiative-phases__step-indicator {
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.05);
+    border-color: var(--bs-primary);
+  }
+}
+
+.initiative-phases__step-button--complete {
+  .initiative-phases__step-indicator {
+    color: var(--bs-white);
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+  }
+}
+
+.initiative-phases__step-label {
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+// Content left, sidebar right (ticket / page / plan details pattern); both scroll on their own.
+.initiative-detail__columns {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.initiative-detail__main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.initiative-detail__sidebar {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  @media (min-width: 1200px) {
+    border-left: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}
+
+// The tab owns the remaining height; its list fills it edge to edge (no outer padding, like the main lists).
+.initiative-tab {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+
+  > * {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+}
+
+.initiative-detail__activity-detail {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+  word-break: break-word;
+}
+
+@media (max-width: 1199.98px) {
+  .initiative-detail__columns {
+    overflow-y: auto;
+  }
+
+  .initiative-detail__main {
+    height: auto;
+    min-height: 70vh;
+  }
+
+  .initiative-detail__sidebar {
+    height: auto;
+    overflow: visible;
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}

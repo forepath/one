@@ -44,6 +44,10 @@ export interface AgentContextGrants {
   knowledge: string[];
   /** Plans of the agent's own environment (the controller never serves other environments' plans). */
   plan: string[];
+  /** Initiatives of the workspace (overview incl. work items). */
+  initiative: string[];
+  /** Initiative documents. */
+  artifact: string[];
 }
 
 export interface AgentContextTicketBinding {

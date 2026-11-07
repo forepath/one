@@ -233,4 +233,36 @@ describe('ChatPlanOrchestratorService', () => {
       { instructions: 'Add tests' },
     );
   });
+
+  it('keeps the platform-resolved initiative context of a story plan when the chat refines it', async () => {
+    const initiativeContext = {
+      initiativeContexts: ['## Initiative'],
+      initiativeContextRefs: [{ kind: 'initiative' as const, sha: 'a'.repeat(40) }],
+    };
+    const before = {
+      ...plan,
+      status: ChatPlanStatus.READY,
+      phase: ChatPlanPhase.READY,
+      planMarkdown: '# v1',
+      contextInjection: { ticketShas: ['t'], ...initiativeContext },
+    };
+
+    chatPlanService.getEntityOrThrow.mockResolvedValue(before as unknown as ChatPlanEntity);
+    remoteAgents.sendChatStreaming.mockResolvedValue({
+      text: '',
+      planTurnStatus: { status: 'ready', planMarkdown: '# v2', summary: 's' },
+    });
+
+    await (
+      service as unknown as {
+        runRefine(planId: string, message: string, ctx?: unknown, actorUserId?: string | null): Promise<void>;
+      }
+    ).runRefine(plan.id, 'Shorter', { includeWorkspace: true }, 'user-1');
+
+    expect(chatPlanService.updateIfStatus).toHaveBeenCalledWith(
+      plan.id,
+      [ChatPlanStatus.READY],
+      expect.objectContaining({ contextInjection: { includeWorkspace: true, ...initiativeContext } }),
+    );
+  });
 });

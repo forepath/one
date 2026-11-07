@@ -17,3 +17,4 @@ export * from './context-platform';
 export * from './task-platform';
 export * from './handoff-platform';
 export * from './content-platform';
+export * from './initiative-platform';

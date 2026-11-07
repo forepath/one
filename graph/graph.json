@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-06T23:14:01.607Z",
+  "generatedAt": "2026-11-07T11:50:13.948Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -435,6 +435,29 @@
         "domain": "agenstra",
         "context": "frontend",
         "featureGroup": "feature"
+      }
+    },
+    {
+      "id": "project:agenstra-shared-util-initiative-method",
+      "type": "lib",
+      "attrs": {
+        "name": "agenstra-shared-util-initiative-method",
+        "root": "libs/domains/agenstra/shared/util-initiative-method",
+        "tags": [
+          "npm:private",
+          "domain:agenstra",
+          "scope:shared",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "build",
+          "test"
+        ],
+        "domain": "agenstra",
+        "context": "shared",
+        "featureGroup": "util"
       }
     },
     {
@@ -4029,6 +4052,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/knowledge.service.ts",
       "type": "service",
       "attrs": {
@@ -4344,6 +4376,42 @@
           "files.reducer.ts",
           "files.selectors.ts",
           "files.types.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/initiatives",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/initiatives",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "initiatives",
+        "memberFiles": [
+          "initiatives.actions.ts",
+          "initiatives.effects.ts",
+          "initiatives.facade.ts",
+          "initiatives.reducer.ts",
+          "initiatives.selectors.ts",
+          "initiatives.types.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/initiatives-board-socket",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/initiatives-board-socket",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "initiatives-board-socket",
+        "memberFiles": [
+          "initiatives-board-socket.actions.ts",
+          "initiatives-board-socket.constants.ts",
+          "initiatives-board-socket.effects.ts",
+          "initiatives-board-socket.facade.ts",
+          "initiatives-board-socket.reducer.ts",
+          "initiatives-board-socket.selectors.ts"
         ]
       }
     },
@@ -5019,6 +5087,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/initiatives.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/initiatives.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
       "type": "controller",
       "attrs": {
@@ -5284,6 +5361,60 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/create-client.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-artifact.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-artifact.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-learn.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-learn.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-response.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-run.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-run.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-work-item.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-work-item.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5721,6 +5852,114 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-activity.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-activity.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-artifact-version.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-artifact-version.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-artifact.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-artifact.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-change-proposal.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-change-proposal.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-decision.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-decision.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-finding.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-finding.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-run-turn.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-run-turn.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-run.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-run.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-unknown.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-unknown.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-work-item-dependency.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-work-item-dependency.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-work-item.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-work-item.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/knowledge-node-embedding.entity.ts",
       "type": "entity",
       "attrs": {
@@ -5995,6 +6234,15 @@
       "type": "gateway",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/initiatives-board.gateway.ts",
+      "type": "gateway",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/initiatives-board.gateway.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6634,6 +6882,87 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/external-import-sync-marker.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-artifacts.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-artifacts.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-board-realtime.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-board-realtime.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-context.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-context.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-learn.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-learn.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-run-orchestrator.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-run-orchestrator.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-runs.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-runs.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-work-items.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-work-items.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -12233,6 +12562,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/shared/util-initiative-method/NOTICE.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/agenstra/shared/util-initiative-method/NOTICE.md",
+        "languageOrKind": "md",
+        "projectName": "agenstra-shared-util-initiative-method"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/shared/util-initiative-method/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/agenstra/shared/util-initiative-method/README.md",
+        "languageOrKind": "md",
+        "projectName": "agenstra-shared-util-initiative-method"
+      }
+    },
+    {
       "id": "file:libs/domains/shared/frontend/util-loading-indicator/README.md",
       "type": "readme",
       "attrs": {
@@ -14886,6 +15233,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/features/initiatives.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/initiatives.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/features/message-filters.md",
       "type": "doc",
       "attrs": {
@@ -16086,6 +16441,132 @@
       "attrs": {
         "pathOrChannel": "pages/knowledgePageActivityCreated",
         "summary": "Incremental page activity row for currently open page details.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/setClient",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/setClient",
+        "summary": "Select workspace for the Initiatives board (Socket.IO namespace \"initiatives\", INITIATIVES_WEBSOCKET_NAMESPACE,\ndefault \"socket/initiatives\"). Same auth and `ensureClientAccess` rules as `clients/setClient`; machine tokens need\n`websocket:initiatives:read` + `initiatives:read`. Listen-only namespace: every command is REST.\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/setClientSuccess",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/setClientSuccess",
+        "summary": "Acknowledgement after initiatives namespace setClient",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/error",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/error",
+        "summary": "Errors for the initiatives namespace (missing clientId, Unauthorized, forbidden client).",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/initiativeUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/initiativeUpsert",
+        "summary": "Initiative created or changed (full initiative incl. `version`; apply only newer versions).",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/initiativeRemoved",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/initiativeRemoved",
+        "summary": "Initiative deleted (`{ id, clientId }`).",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/initiativeArtifactUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/initiativeArtifactUpsert",
+        "summary": "Document metadata incl. `version` / `currentVersion`; the content is fetched over REST when the document is open and not being edited.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/initiativeArtifactRemoved",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/initiativeArtifactRemoved",
+        "summary": "Document deleted (`{ id, initiativeId }`).",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/initiativeWorkItemsChanged",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/initiativeWorkItemsChanged",
+        "summary": "Work item tree of an initiative with effective statuses (incl. linked ticket changes), readiness and `initiativeVersion`.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/initiativeRunUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/initiativeRunUpsert",
+        "summary": "Guided step run (status, result, throttled `streamingText`).",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/initiativeRunTurnAppended",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/initiativeRunTurnAppended",
+        "summary": "Conversation turn of a run (`{ initiativeId, …turn }`).",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/initiativeProposalUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/initiativeProposalUpsert",
+        "summary": "Change proposal created or decided.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/initiativeFindingUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/initiativeFindingUpsert",
+        "summary": "Finding recorded or updated.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/initiativeDecisionUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/initiativeDecisionUpsert",
+        "summary": "Decision recorded or decided.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:initiatives/initiativeActivityCreated",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "initiatives/initiativeActivityCreated",
+        "summary": "Activity row of an initiative.",
         "specKind": "asyncapi"
       }
     },
@@ -18982,6 +19463,578 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/initiatives",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiatives",
+        "operationId": "listInitiatives",
+        "summary": "List the initiatives of a workspace",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiatives",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiatives",
+        "operationId": "createInitiative",
+        "summary": "Create an initiative",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiatives/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiatives/{id}",
+        "operationId": "getInitiative",
+        "summary": "Get an initiative",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PATCH:/initiatives/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PATCH",
+        "pathOrChannel": "/initiatives/{id}",
+        "operationId": "updateInitiative",
+        "summary": "Update an initiative (conditional on `expectedVersion`, 409 when stale)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/initiatives/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/initiatives/{id}",
+        "operationId": "deleteInitiative",
+        "summary": "Delete an initiative (documents, work items, runs, proposals cascade; tickets are kept)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiatives/{id}/iterations",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiatives/{id}/iterations",
+        "operationId": "startInitiativeIteration",
+        "summary": "Start the next iteration (conditional)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiatives/{id}/overview",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiatives/{id}/overview",
+        "operationId": "getInitiativeOverview",
+        "summary": "What's next, step availability and counts",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiatives/{id}/activity",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiatives/{id}/activity",
+        "operationId": "listInitiativeActivity",
+        "summary": "Activity log (newest first)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiatives/{id}/artifacts",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiatives/{id}/artifacts",
+        "operationId": "listInitiativeArtifacts",
+        "summary": "List documents (metadata)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiatives/{id}/artifacts",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiatives/{id}/artifacts",
+        "operationId": "createInitiativeArtifact",
+        "summary": "Create a document (from the template of its type unless content is given)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiative-artifacts/{artifactId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiative-artifacts/{artifactId}",
+        "operationId": "getInitiativeArtifact",
+        "summary": "Get a document incl. content",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PATCH:/initiative-artifacts/{artifactId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PATCH",
+        "pathOrChannel": "/initiative-artifacts/{artifactId}",
+        "operationId": "updateInitiativeArtifact",
+        "summary": "Save a new version (conditional on `expectedVersion`)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/initiative-artifacts/{artifactId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/initiative-artifacts/{artifactId}",
+        "operationId": "deleteInitiativeArtifact",
+        "summary": "Delete a document and its versions",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-artifacts/{artifactId}/accept",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-artifacts/{artifactId}/accept",
+        "operationId": "acceptInitiativeArtifact",
+        "summary": "Accept the current version as the shared contract (people only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiative-artifacts/{artifactId}/versions",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiative-artifacts/{artifactId}/versions",
+        "operationId": "listInitiativeArtifactVersions",
+        "summary": "List the versions of a document",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiative-artifacts/{artifactId}/versions/{version}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiative-artifacts/{artifactId}/versions/{version}",
+        "operationId": "getInitiativeArtifactVersion",
+        "summary": "Get one version incl. content",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-artifacts/{artifactId}/publish",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-artifacts/{artifactId}/publish",
+        "operationId": "publishInitiativeArtifact",
+        "summary": "Copy the current version into a knowledge page",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiatives/{id}/work-items",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiatives/{id}/work-items",
+        "operationId": "listInitiativeWorkItems",
+        "summary": "Work items with effective statuses and readiness",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiatives/{id}/work-items",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiatives/{id}/work-items",
+        "operationId": "createInitiativeWorkItem",
+        "summary": "Create an epic or an item below an epic",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PATCH:/initiative-work-items/{itemId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PATCH",
+        "pathOrChannel": "/initiative-work-items/{itemId}",
+        "operationId": "updateInitiativeWorkItem",
+        "summary": "Update a work item (content of built / done items is never rewritten)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/initiative-work-items/{itemId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/initiative-work-items/{itemId}",
+        "operationId": "deleteInitiativeWorkItem",
+        "summary": "Delete a work item that was not transferred",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-work-items/{itemId}/reorder",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-work-items/{itemId}/reorder",
+        "operationId": "reorderInitiativeWorkItem",
+        "summary": "Move an item before a sibling (conditional on the initiative version)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/initiative-work-items/{itemId}/dependencies",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/initiative-work-items/{itemId}/dependencies",
+        "operationId": "setInitiativeWorkItemDependencies",
+        "summary": "Replace the `after` dependencies (no cycles; conditional)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-work-items/{itemId}/status",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-work-items/{itemId}/status",
+        "operationId": "setInitiativeWorkItemStatus",
+        "summary": "Mark done / dropped / blocked / draft (changes the linked ticket)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-work-items/{itemId}/retrospective-verdict",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-work-items/{itemId}/retrospective-verdict",
+        "operationId": "overrideInitiativeRetrospective",
+        "summary": "Override the retrospective verdict of an epic (people only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-work-items/{itemId}/plan",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-work-items/{itemId}/plan",
+        "operationId": "planInitiativeStory",
+        "summary": "Plan a transferred story as a chat plan",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiatives/{id}/unknowns",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiatives/{id}/unknowns",
+        "operationId": "createInitiativeUnknown",
+        "summary": "Record an open question",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-unknowns/{unknownId}/resolve",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-unknowns/{unknownId}/resolve",
+        "operationId": "resolveInitiativeUnknown",
+        "summary": "Settle an open question",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/initiative-unknowns/{unknownId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/initiative-unknowns/{unknownId}",
+        "operationId": "deleteInitiativeUnknown",
+        "summary": "Remove an open question",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiatives/{id}/transfer",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiatives/{id}/transfer",
+        "operationId": "transferInitiative",
+        "summary": "Transfer epics and their items to tickets (idempotent)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiatives/{id}/release",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiatives/{id}/release",
+        "operationId": "releaseInitiative",
+        "summary": "Release ready stories (draft → todo)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiatives/{id}/runs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiatives/{id}/runs",
+        "operationId": "listInitiativeRuns",
+        "summary": "List guided step runs",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiatives/{id}/runs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiatives/{id}/runs",
+        "operationId": "startInitiativeRun",
+        "summary": "Start a guided step (hidden read-only session of an environment of the workspace)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiative-runs/{runId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiative-runs/{runId}",
+        "operationId": "getInitiativeRun",
+        "summary": "Get a run incl. its conversation",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-runs/{runId}/messages",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-runs/{runId}/messages",
+        "operationId": "messageInitiativeRun",
+        "summary": "Answer the agent (one turn at a time; 409 while it answers)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-runs/{runId}/retry",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-runs/{runId}/retry",
+        "operationId": "retryInitiativeRun",
+        "summary": "Retry a failed run",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-runs/{runId}/accept",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-runs/{runId}/accept",
+        "operationId": "acceptInitiativeRun",
+        "summary": "Apply the run's result (people only; a moved-on document becomes a proposal)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-runs/{runId}/discard",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-runs/{runId}/discard",
+        "operationId": "discardInitiativeRun",
+        "summary": "Discard a run",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-runs/{runId}/cancel",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-runs/{runId}/cancel",
+        "operationId": "cancelInitiativeRun",
+        "summary": "Cancel a run",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiatives/{id}/findings",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiatives/{id}/findings",
+        "operationId": "listInitiativeFindings",
+        "summary": "List findings",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiatives/{id}/findings",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiatives/{id}/findings",
+        "operationId": "createInitiativeFinding",
+        "summary": "Record a finding",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PATCH:/initiative-findings/{findingId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PATCH",
+        "pathOrChannel": "/initiative-findings/{findingId}",
+        "operationId": "updateInitiativeFinding",
+        "summary": "Dismiss or reopen a finding (people only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-findings/{findingId}/convert",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-findings/{findingId}/convert",
+        "operationId": "convertInitiativeFinding",
+        "summary": "Turn a finding into a new work item below an epic",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiatives/{id}/proposals",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiatives/{id}/proposals",
+        "operationId": "listInitiativeProposals",
+        "summary": "List change proposals",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiatives/{id}/proposals",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiatives/{id}/proposals",
+        "operationId": "createInitiativeProposal",
+        "summary": "Create a change proposal",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiative-proposals/{proposalId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiative-proposals/{proposalId}",
+        "operationId": "getInitiativeProposal",
+        "summary": "Get a change proposal",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-proposals/{proposalId}/accept",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-proposals/{proposalId}/accept",
+        "operationId": "acceptInitiativeProposal",
+        "summary": "Apply a proposal atomically (people only; stale when a changed document moved on)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-proposals/{proposalId}/reject",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-proposals/{proposalId}/reject",
+        "operationId": "rejectInitiativeProposal",
+        "summary": "Reject a proposal (people only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/initiatives/{id}/decisions",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/initiatives/{id}/decisions",
+        "operationId": "listInitiativeDecisions",
+        "summary": "List decisions",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiatives/{id}/decisions",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiatives/{id}/decisions",
+        "operationId": "createInitiativeDecision",
+        "summary": "Record an accepted decision",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/initiative-decisions/{decisionId}/decide",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/initiative-decisions/{decisionId}/decide",
+        "operationId": "decideInitiativeDecision",
+        "summary": "Accept or reject a proposed decision (people only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/tickets/{ticketId}/initiative-link",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/tickets/{ticketId}/initiative-link",
+        "operationId": "getTicketInitiativeLink",
+        "summary": "Initiative story of a ticket (ticket board chip)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "webhook-event:agenstra-backend-feature-agent-controller:agent_config.updated",
       "type": "webhook-event",
       "attrs": {
@@ -19229,6 +20282,114 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "environment_variable.updated",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.artifact.accepted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.artifact.accepted",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.created",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.deleted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.deleted",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.proposal.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.proposal.created",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.proposal.decided",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.proposal.decided",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.retrospective.completed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.retrospective.completed",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.run.failed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.run.failed",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.run.needs_input",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.run.needs_input",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.run.ready",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.run.ready",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.updated",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.work_items.released",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.work_items.released",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:initiative.work_items.transferred",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "initiative.work_items.transferred",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
@@ -28619,6 +29780,106 @@
       }
     },
     {
+      "id": "concept:agenstra-initiatives",
+      "type": "concept",
+      "attrs": {
+        "title": "Initiatives",
+        "docPath": "docs/agenstra/features/initiatives.md",
+        "sectionAnchor": "initiatives",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-the-loop",
+      "type": "concept",
+      "attrs": {
+        "title": "The loop",
+        "docPath": "docs/agenstra/features/initiatives.md",
+        "sectionAnchor": "the-loop",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-guided-steps-step-runs",
+      "type": "concept",
+      "attrs": {
+        "title": "Guided steps (step runs)",
+        "docPath": "docs/agenstra/features/initiatives.md",
+        "sectionAnchor": "guided-steps-step-runs",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-documents",
+      "type": "concept",
+      "attrs": {
+        "title": "Documents",
+        "docPath": "docs/agenstra/features/initiatives.md",
+        "sectionAnchor": "documents",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-work-items-and-the-build",
+      "type": "concept",
+      "attrs": {
+        "title": "Work items and the build",
+        "docPath": "docs/agenstra/features/initiatives.md",
+        "sectionAnchor": "work-items-and-the-build",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-learn-adjust",
+      "type": "concept",
+      "attrs": {
+        "title": "Learn & adjust",
+        "docPath": "docs/agenstra/features/initiatives.md",
+        "sectionAnchor": "learn-adjust",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-agents-context-mcp",
+      "type": "concept",
+      "attrs": {
+        "title": "Agents (context MCP)",
+        "docPath": "docs/agenstra/features/initiatives.md",
+        "sectionAnchor": "agents-context-mcp",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-live-collaboration",
+      "type": "concept",
+      "attrs": {
+        "title": "Live collaboration",
+        "docPath": "docs/agenstra/features/initiatives.md",
+        "sectionAnchor": "live-collaboration",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-http",
+      "type": "concept",
+      "attrs": {
+        "title": "HTTP",
+        "docPath": "docs/agenstra/features/initiatives.md",
+        "sectionAnchor": "http",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-webhooks",
+      "type": "concept",
+      "attrs": {
+        "title": "Webhooks",
+        "docPath": "docs/agenstra/features/initiatives.md",
+        "sectionAnchor": "webhooks",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-message-filters",
       "type": "concept",
       "attrs": {
@@ -29105,6 +30366,16 @@
         "title": "Knowledge board realtime (`pages` namespace)",
         "docPath": "docs/agenstra/features/websocket-communication.md",
         "sectionAnchor": "knowledge-board-realtime-pages-namespace",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-initiatives-board-realtime-initiatives-namespace",
+      "type": "concept",
+      "attrs": {
+        "title": "Initiatives board realtime (`initiatives` namespace)",
+        "docPath": "docs/agenstra/features/websocket-communication.md",
+        "sectionAnchor": "initiatives-board-realtime-initiatives-namespace",
         "domain": "agenstra"
       }
     },
@@ -36196,6 +37467,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "project:agenstra-shared-util-initiative-method",
+      "type": "depends_on"
+    },
+    {
       "from": "project:shared-backend-util-provisioning-geography",
       "to": "project:shared-backend-util-otel",
       "type": "depends_on"
@@ -36233,6 +37509,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "project:agenstra-shared-util-opencode-config",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "project:agenstra-shared-util-initiative-method",
       "type": "depends_on"
     },
     {
@@ -36428,6 +37709,11 @@
     {
       "from": "project:agenstra-frontend-feature-agent-console",
       "to": "project:shared-frontend-data-access-updates",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "project:agenstra-shared-util-initiative-method",
       "type": "depends_on"
     },
     {
@@ -39832,6 +41118,11 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/knowledge.service.ts",
       "type": "contains"
     },
@@ -39938,6 +41229,16 @@
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/files",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/initiatives",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/initiatives-board-socket",
       "type": "contains"
     },
     {
@@ -40252,6 +41553,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/initiatives.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
       "type": "contains"
     },
@@ -40398,6 +41704,36 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/create-client.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-artifact.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-learn.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-run.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative-work-item.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/initiatives/initiative.dto.ts",
       "type": "contains"
     },
     {
@@ -40642,6 +41978,66 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-activity.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-artifact-version.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-artifact.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-change-proposal.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-decision.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-finding.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-run-turn.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-run.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-unknown.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-work-item-dependency.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative-work-item.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/initiative.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/knowledge-node-embedding.entity.ts",
       "type": "contains"
     },
@@ -40793,6 +42189,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/initiatives-board.gateway.ts",
       "type": "contains"
     },
     {
@@ -41148,6 +42549,51 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/external-import-sync-marker.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-artifacts.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-board-realtime.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-context.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-learn.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-run-orchestrator.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-runs.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-work-items.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
       "type": "contains"
     },
     {
@@ -44241,6 +45687,16 @@
       "type": "contains"
     },
     {
+      "from": "project:agenstra-shared-util-initiative-method",
+      "to": "file:libs/domains/agenstra/shared/util-initiative-method/NOTICE.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-shared-util-initiative-method",
+      "to": "file:libs/domains/agenstra/shared/util-initiative-method/README.md",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-frontend-util-loading-indicator",
       "to": "file:libs/domains/shared/frontend/util-loading-indicator/README.md",
       "type": "contains"
@@ -45622,6 +47078,76 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/setClient",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/setClientSuccess",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/error",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/initiativeUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/initiativeRemoved",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/initiativeArtifactUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/initiativeArtifactRemoved",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/initiativeWorkItemsChanged",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/initiativeRunUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/initiativeRunTurnAppended",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/initiativeProposalUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/initiativeFindingUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/initiativeDecisionUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:initiatives/initiativeActivityCreated",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
       "to": "api:channel:status/statusSnapshot",
       "type": "contains"
     },
@@ -46946,6 +48472,266 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiatives/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PATCH:/initiatives/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/initiatives/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiatives/{id}/iterations",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiatives/{id}/overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiatives/{id}/activity",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiatives/{id}/artifacts",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiatives/{id}/artifacts",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiative-artifacts/{artifactId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PATCH:/initiative-artifacts/{artifactId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/initiative-artifacts/{artifactId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-artifacts/{artifactId}/accept",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiative-artifacts/{artifactId}/versions",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiative-artifacts/{artifactId}/versions/{version}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-artifacts/{artifactId}/publish",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiatives/{id}/work-items",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiatives/{id}/work-items",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PATCH:/initiative-work-items/{itemId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/initiative-work-items/{itemId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-work-items/{itemId}/reorder",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/initiative-work-items/{itemId}/dependencies",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-work-items/{itemId}/status",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-work-items/{itemId}/retrospective-verdict",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-work-items/{itemId}/plan",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiatives/{id}/unknowns",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-unknowns/{unknownId}/resolve",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/initiative-unknowns/{unknownId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiatives/{id}/transfer",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiatives/{id}/release",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiatives/{id}/runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiatives/{id}/runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiative-runs/{runId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-runs/{runId}/messages",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-runs/{runId}/retry",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-runs/{runId}/accept",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-runs/{runId}/discard",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-runs/{runId}/cancel",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiatives/{id}/findings",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiatives/{id}/findings",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PATCH:/initiative-findings/{findingId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-findings/{findingId}/convert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiatives/{id}/proposals",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiatives/{id}/proposals",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiative-proposals/{proposalId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-proposals/{proposalId}/accept",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-proposals/{proposalId}/reject",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/initiatives/{id}/decisions",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiatives/{id}/decisions",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/initiative-decisions/{decisionId}/decide",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/tickets/{ticketId}/initiative-link",
+      "type": "contains"
+    },
+    {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "webhook-event:agenstra-backend-feature-agent-controller:agent_config.updated",
       "type": "contains"
@@ -47083,6 +48869,66 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "webhook-event:agenstra-backend-feature-agent-controller:environment_variable.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.artifact.accepted",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.deleted",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.proposal.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.proposal.decided",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.retrospective.completed",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.run.failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.run.needs_input",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.run.ready",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.work_items.released",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:initiative.work_items.transferred",
       "type": "contains"
     },
     {
@@ -52666,6 +54512,71 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-initiatives",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-the-loop",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-guided-steps-step-runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-documents",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-work-items-and-the-build",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-learn-adjust",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-agents-context-mcp",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-live-collaboration",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-security",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-http",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-webhooks",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
+      "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/agenstra/features/message-filters.md",
       "to": "concept:agenstra-message-filters",
       "type": "contains"
@@ -52838,6 +54749,11 @@
     {
       "from": "file:docs/agenstra/features/ticket-automation.md",
       "to": "concept:agenstra-prerequisites",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/ticket-automation.md",
+      "to": "concept:agenstra-initiatives",
       "type": "contains"
     },
     {
@@ -53088,6 +55004,11 @@
     {
       "from": "file:docs/agenstra/features/websocket-communication.md",
       "to": "concept:agenstra-knowledge-board-realtime-pages-namespace",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/websocket-communication.md",
+      "to": "concept:agenstra-initiatives-board-realtime-initiatives-namespace",
       "type": "contains"
     },
     {
@@ -59633,6 +61554,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:POST:/tickets/{ticketId}/automation/runs/{runId}/cancel",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/tickets.controller.ts",
+      "to": "api:HTTP:GET:/tickets/{ticketId}/initiative-link",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/tickets/{ticketId}/initiative-link",
       "type": "implements"
     },
     {
@@ -66206,6 +68137,36 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/initiatives.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/initiatives.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-artifacts.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/initiatives.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-work-items.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/initiatives.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/initiatives.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-runs.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/initiatives.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-learn.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
       "type": "injects"
@@ -66363,6 +68324,26 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-membership.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/initiatives-board.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/initiatives-board.gateway.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/initiatives-board.gateway.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/socket-auth.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/initiatives-board.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-board-realtime.service.ts",
       "type": "injects"
     },
     {
@@ -66576,6 +68557,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-content-changes.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-context.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
       "type": "injects"
@@ -66593,6 +68579,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-context.service.ts",
       "type": "injects"
     },
     {
@@ -67018,6 +69009,161 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/external-import-config.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-artifacts.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-artifacts.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-work-items.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-context.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/ticket-automation.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/ticket-board-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-orchestrator.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-context.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-context.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-work-items.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-context.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-learn.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-learn.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-learn.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-work-items.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-learn.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-artifacts.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-learn.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-run-orchestrator.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-runs.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-run-orchestrator.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-run-orchestrator.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-context.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-run-orchestrator.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-runs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-runs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-work-items.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-runs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-artifacts.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-runs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-learn.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-work-items.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-work-items.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-board-realtime.service.ts",
       "type": "injects"
     },
     {
@@ -72282,6 +74428,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/initiatives.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-metrics-collector.service.ts",
       "type": "provides"
     },
@@ -72623,6 +74774,56 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/initiatives-board.gateway.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-board-realtime.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiatives.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-artifacts.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-work-items.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-learn.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-context.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-build.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-runs.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/initiative-run-orchestrator.service.ts",
       "type": "provides"
     },
     {
@@ -75871,6 +78072,116 @@
       "type": "calls"
     },
     {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiatives/{id}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiatives/{id}/overview",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiatives/{id}/artifacts",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiative-artifacts/{artifactId}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiative-artifacts/{artifactId}/versions",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiative-artifacts/{artifactId}/versions/{version}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiatives/{id}/work-items",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiatives/{id}/runs",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiative-runs/{runId}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiatives/{id}/proposals",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiatives/{id}/findings",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiatives/{id}/decisions",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/initiatives/{id}/activity",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:GET:/tickets/{ticketId}/initiative-link",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:POST:/initiatives/{id}/work-items",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:PATCH:/initiative-work-items/{itemId}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:DELETE:/initiative-work-items/{itemId}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:POST:/initiative-work-items/{itemId}/reorder",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:PUT:/initiative-work-items/{itemId}/dependencies",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:POST:/initiative-work-items/{itemId}/status",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "to": "api:HTTP:POST:/initiative-work-items/{itemId}/retrospective-verdict",
+      "type": "calls"
+    },
+    {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/knowledge.service.ts",
       "to": "api:HTTP:GET:/knowledge",
       "type": "calls"
@@ -76746,6 +79057,11 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/initiatives",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/initiatives.service.ts",
+      "type": "contains"
+    },
+    {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/knowledge",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/knowledge.service.ts",
       "type": "contains"
@@ -76908,6 +79224,16 @@
     {
       "from": "concept:agenstra-flow",
       "to": "api:HTTP:POST:/agent-context/tasks",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-tools",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-tools",
+      "to": "api:HTTP:POST:/initiatives",
       "type": "documents"
     },
     {
@@ -78146,6 +80472,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-runs",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-runs",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-rest-api-controller",
       "to": "api:HTTP:GET:/clients",
       "type": "documents"
@@ -78507,6 +80843,16 @@
     },
     {
       "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
     },
@@ -78688,6 +81034,16 @@
     {
       "from": "concept:agenstra-chat-sessions",
       "to": "api:HTTP:POST:/agents/{agentId}/chats",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-plans-page",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-plans-page",
+      "to": "api:HTTP:POST:/initiatives",
       "type": "documents"
     },
     {
@@ -79181,6 +81537,196 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-initiatives",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-initiatives",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-the-loop",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-the-loop",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-guided-steps-step-runs",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-guided-steps-step-runs",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-documents",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-documents",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-work-items-and-the-build",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-work-items-and-the-build",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-learn-adjust",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-learn-adjust",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agents-context-mcp",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agents-context-mcp",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-live-collaboration",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-live-collaboration",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:GET:/initiatives/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:PATCH:/initiatives/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:DELETE:/initiatives/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:POST:/initiatives/{id}/iterations",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:GET:/initiatives/{id}/overview",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:GET:/initiatives/{id}/activity",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:GET:/initiatives/{id}/artifacts",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:POST:/initiatives/{id}/artifacts",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:GET:/initiatives/{id}/work-items",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:POST:/initiatives/{id}/work-items",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:POST:/initiatives/{id}/unknowns",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:POST:/initiatives/{id}/transfer",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:POST:/initiatives/{id}/release",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:GET:/initiatives/{id}/runs",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:POST:/initiatives/{id}/runs",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "api:HTTP:GET:/tickets/{ticketId}/initiative-link",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-webhooks",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-webhooks",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-kill-switch",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
@@ -79381,6 +81927,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-event-catalog",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-event-catalog",
+      "to": "api:HTTP:POST:/initiatives",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-connection-flow",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
@@ -79403,6 +81959,16 @@
     {
       "from": "concept:agenstra-knowledge-board-realtime-pages-namespace",
       "to": "api:HTTP:POST:/knowledge",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-initiatives-board-realtime-initiatives-namespace",
+      "to": "api:HTTP:GET:/initiatives",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-initiatives-board-realtime-initiatives-namespace",
+      "to": "api:HTTP:POST:/initiatives",
       "type": "documents"
     },
     {
@@ -84471,6 +87037,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:agenstra-shared-util-initiative-method",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-shared-util-initiative-method",
+      "to": "context:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-shared-util-initiative-method",
+      "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:shared-frontend-util-loading-indicator",
       "to": "domain:shared",
       "type": "belongs_to"
@@ -85612,6 +88193,11 @@
     },
     {
       "from": "file:docs/agenstra/features/file-management.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/agenstra/features/initiatives.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -87891,6 +90477,56 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-initiatives",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-the-loop",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-guided-steps-step-runs",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-documents",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-work-items-and-the-build",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-learn-adjust",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-agents-context-mcp",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-live-collaboration",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-http",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-webhooks",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-message-filters",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -88132,6 +90768,11 @@
     },
     {
       "from": "concept:agenstra-knowledge-board-realtime-pages-namespace",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-initiatives-board-realtime-initiatives-namespace",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

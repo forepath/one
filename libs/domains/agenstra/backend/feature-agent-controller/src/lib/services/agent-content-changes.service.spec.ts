@@ -357,4 +357,85 @@ describe('AgentContentChangesService', () => {
       ).resolves.toMatchObject({ ok: false, status: 403 });
     });
   });
+
+  describe('initiative changes', () => {
+    const initiativeSha = 'e'.repeat(40);
+    let initiativeContext: { applyAgentChange: jest.Mock; assertAutomationFinding: jest.Mock };
+
+    beforeEach(() => {
+      initiativeContext = {
+        applyAgentChange: jest.fn(async () => ({
+          kind: 'initiative',
+          sha: initiativeSha,
+          title: 'Checkout',
+          revision: '3',
+        })),
+        assertAutomationFinding: jest.fn(async () => undefined),
+      };
+      service = new AgentContentChangesService(
+        ticketRepo,
+        knowledgeRepo,
+        taskRepo,
+        taskRunRepo,
+        automationRepo,
+        automationRunRepo,
+        credentials,
+        ticketsService,
+        knowledgeTreeService,
+        chatPlanService,
+        initiativeContext as never,
+      );
+    });
+
+    const propose = {
+      operation: 'initiative.propose',
+      sha: initiativeSha,
+      title: 'Add SSO',
+      workItems: [{ op: 'add', parentKey: 'E1', item: { key: 'N1', title: 'SSO' } }],
+    };
+
+    it('forwards approved chat proposals to the initiative services as the agent of this workspace', async () => {
+      await expect(handle(propose)).resolves.toEqual({
+        ok: true,
+        changed: { kind: 'initiative', sha: initiativeSha, title: 'Checkout', revision: '3' },
+      });
+      expect(initiativeContext.applyAgentChange).toHaveBeenCalledWith(
+        expect.objectContaining({ clientId, agentId, source: 'chat' }),
+        expect.objectContaining({ operation: 'initiative.propose', title: 'Add SSO' }),
+      );
+    });
+
+    it('validates the structured parts', async () => {
+      await expect(handle({ ...propose, workItems: 'nope' })).resolves.toMatchObject({ ok: false, status: 400 });
+      await expect(handle({ ...propose, title: undefined })).resolves.toMatchObject({ ok: false, status: 400 });
+      await expect(handle({ operation: 'initiative.finding', sha: initiativeSha })).resolves.toMatchObject({
+        ok: false,
+        status: 400,
+      });
+      await expect(
+        handle({ operation: 'initiative.finding', sha: initiativeSha, body: 'x', severity: 'fatal' }),
+      ).resolves.toMatchObject({ ok: false, status: 400 });
+    });
+
+    it('needs the task opt-in for scheduled task runs', async () => {
+      await expect(handle(propose, { kind: 'task', taskId })).resolves.toMatchObject({ ok: false, status: 403 });
+      expect(initiativeContext.applyAgentChange).not.toHaveBeenCalled();
+    });
+
+    it('lets ticket automation only record findings on its own story when allowed', async () => {
+      const finding = { operation: 'initiative.finding', sha: initiativeSha, body: 'Deferred: rate limiting' };
+
+      await expect(handle(finding, { kind: 'automation' })).resolves.toMatchObject({ ok: false, status: 403 });
+
+      automationRepo.findOne.mockResolvedValue({ ticketId: 'root', allowedContentWrites: ['initiative.finding'] });
+      await expect(handle(finding, { kind: 'automation' })).resolves.toMatchObject({ ok: true });
+      expect(initiativeContext.assertAutomationFinding).toHaveBeenCalledWith(
+        clientId,
+        'root',
+        expect.objectContaining({ operation: 'initiative.finding' }),
+      );
+      // Proposals are never allowed for automation (not part of the automation catalog).
+      await expect(handle(propose, { kind: 'automation' })).resolves.toMatchObject({ ok: false, status: 403 });
+    });
+  });
 });

@@ -40,10 +40,13 @@ export const AGENSTRA_CONTEXT_API_ROUTE = 'agent-context';
 /** Tool calls may long-poll while a user decides on an access request. */
 export const AGENSTRA_CONTEXT_MCP_TIMEOUT_MS = 180_000;
 
-export type AgentContextItemKind = 'ticket' | 'knowledge' | 'plan' | 'context';
+export type AgentContextItemKind = 'ticket' | 'knowledge' | 'plan' | 'initiative' | 'artifact' | 'context';
 
-/** Element kinds addressable by SHA (`<kind>:<sha>` refs, grants, search). Plans are scoped to the agent's environment. */
-export const AGENT_CONTEXT_ELEMENT_KINDS = ['ticket', 'knowledge', 'plan'] as const;
+/**
+ * Element kinds addressable by SHA (`<kind>:<sha>` refs, grants, search). Plans are scoped to the agent's environment;
+ * initiatives (overview incl. work items) and their documents (`artifact`) to the workspace.
+ */
+export const AGENT_CONTEXT_ELEMENT_KINDS = ['ticket', 'knowledge', 'plan', 'initiative', 'artifact'] as const;
 
 export type AgentContextElementKind = (typeof AGENT_CONTEXT_ELEMENT_KINDS)[number];
 
@@ -53,7 +56,10 @@ export function isAgentContextElementKind(value: unknown): value is AgentContext
 
 /** Metadata about one context element. Content is only served for granted refs. */
 export interface AgentContextItemSummary {
-  /** Stable ref usable with `context_get`: `ticket:<sha>`, `knowledge:<sha>`, `plan:<sha>` or `item:<n>`. */
+  /**
+   * Stable ref usable with `context_get`: `ticket:<sha>`, `knowledge:<sha>`, `plan:<sha>`, `initiative:<sha>`,
+   * `artifact:<sha>` or `item:<n>`.
+   */
   ref: string;
   kind: AgentContextItemKind;
   title: string;
@@ -92,7 +98,7 @@ export interface AgentContextGetResponse {
   ref: string;
   kind: AgentContextItemKind;
   title: string;
-  /** Full SHA of tickets / knowledge elements / plans (target of `agenstra_content_*` changes). */
+  /** Full SHA of tickets / knowledge elements / plans / initiatives (target of `agenstra_content_*` changes). */
   sha?: string;
   /** Version of a ticket / knowledge element / plan; content changes pass it back (`revision`). */
   revision?: string;
@@ -108,7 +114,7 @@ export interface AgentContextAccessResponse {
   message?: string;
 }
 
-const REF_PATTERN = /^(ticket|knowledge|plan):([0-9a-f]{4,40})$|^item:(\d{1,4})$/i;
+const REF_PATTERN = /^(ticket|knowledge|plan|initiative|artifact):([0-9a-f]{4,40})$|^item:(\d{1,4})$/i;
 
 /** Parse a context ref. SHAs are normalized to lower case; unknown shapes return null. */
 export function parseAgentContextRef(

@@ -350,4 +350,56 @@ describe('AgentContextRequestHandlerService', () => {
       ).resolves.toEqual({ ok: true, contents: [] });
     });
   });
+
+  describe('initiatives', () => {
+    const initiativeSha = 'e'.repeat(40);
+    let initiativeContext: { search: jest.Mock; describe: jest.Mock; content: jest.Mock };
+
+    beforeEach(() => {
+      initiativeContext = {
+        search: jest.fn(async () => [{ kind: 'initiative', sha: initiativeSha, title: 'Checkout' }]),
+        describe: jest.fn(async () => [{ kind: 'artifact', sha: initiativeSha, title: 'PRD' }]),
+        content: jest.fn(async () => [
+          { kind: 'initiative', sha: initiativeSha, title: 'Checkout', revision: '2', content: 'OVERVIEW' },
+        ]),
+      };
+      service = new AgentContextRequestHandlerService(
+        ticketRepo,
+        knowledgeRepo,
+        planRepo,
+        ticketsService,
+        knowledgeTreeService,
+        contentChanges,
+        chatPlanService,
+        initiativeContext as never,
+      );
+    });
+
+    it('delegates initiative kinds to the initiative context of the same workspace', async () => {
+      await expect(service.handle(clientId, { op: 'search', query: 'check', kinds: ['initiative'] })).resolves.toEqual({
+        ok: true,
+        items: [{ kind: 'initiative', sha: initiativeSha, title: 'Checkout' }],
+      });
+      expect(initiativeContext.search).toHaveBeenCalledWith(clientId, 'check', ['initiative'], 20);
+
+      await service.handle(clientId, { op: 'describe', refs: [{ kind: 'artifact', sha: initiativeSha }] });
+      expect(initiativeContext.describe).toHaveBeenCalledWith(clientId, [{ kind: 'artifact', sha: initiativeSha }]);
+
+      await expect(
+        service.handle(clientId, { op: 'content', refs: [{ kind: 'initiative', sha: initiativeSha }] }),
+      ).resolves.toMatchObject({ ok: true, contents: [expect.objectContaining({ content: 'OVERVIEW' })] });
+    });
+
+    it('drops unknown kinds and malformed refs', async () => {
+      await service.handle(clientId, {
+        op: 'content',
+        refs: [
+          { kind: 'workitem', sha: initiativeSha },
+          { kind: 'artifact', sha: 'zz' },
+        ],
+      });
+
+      expect(initiativeContext.content).not.toHaveBeenCalled();
+    });
+  });
 });

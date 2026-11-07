@@ -86,7 +86,8 @@ user approved what it does — its title, prompt, model, schedule, allowed hando
 - Runs only get their pre-granted context (workspace and environment); additional ticket / knowledge requests are
   denied, because nobody can approve them during a run.
 - Runs change tickets / knowledge pages (`agenstra_content_*`) only with the operations listed in **Allowed ticket /
-  knowledge changes** (`allowedContentWrites`, default none; e.g. `ticket.create`, `ticket.comment`). They are
+  knowledge changes** (`allowedContentWrites`, default none; e.g. `ticket.create`, `ticket.comment`; also
+  `initiative.propose` / `initiative.finding` for [initiatives](./initiatives.md)). They are
   approved content like the prompt (the approval alert names them), the run prompt lists them, and the controller
   checks them again — approved task, operation allowed, run working — for every change. Existing elements must also
   be readable by the run. See [Agent Context MCP](../ai-agents/context-mcp.md#content-changes).

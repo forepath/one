@@ -19,7 +19,7 @@ flowchart TB
   Communication(["Forepath communication API (:3300)<br/>contact form, Turnstile"])
 
   subgraph Frontends["Frontends (Angular SSR, Express)"]
-    Console["Agent console (:4100)<br/>chat, tool + permission embeds, editor (Monaco),<br/>terminal, VNC desktop, Git, tickets board,<br/>knowledge tree, chat plans, agent tasks (/tasks),<br/>handoff cards + chats, statistics, config layers"]
+    Console["Agent console (:4100)<br/>chat, tool + permission embeds, editor (Monaco),<br/>terminal, VNC desktop, Git, tickets board,<br/>knowledge tree, initiatives (/initiatives),<br/>chat plans, agent tasks (/tasks),<br/>handoff cards + chats, statistics, config layers"]
     Native["Native agent console<br/>Electron, bundled SSR server"]
     Landing["Landing page (:4101)"]
     Docs["Docs (:4102)<br/>markdown + OpenAPI / AsyncAPI renderers"]
@@ -40,14 +40,15 @@ flowchart TB
   subgraph Controller["Agent controller (NestJS :3100, one image, QUEUE_ROLE = api | worker | scheduler)"]
     CAuth["Authentication<br/>api-key, oidc, saml, users, PAT scopes"]
     CApi["REST API /api<br/>clients (workspaces), agents proxy, files, VCS,<br/>deployments, env vars, isolation, statistics"]
-    CGw["Socket.IO gateways<br/>socket/clients (forward to managers),<br/>socket/tickets, socket/pages, socket/status, WS /socket/vnc"]
+    CGw["Socket.IO gateways<br/>socket/clients (forward to managers),<br/>socket/tickets, socket/pages, socket/initiatives,<br/>socket/status, WS /socket/vnc"]
     Tickets["Tickets + ticket automation<br/>autonomous run orchestrator, leases, verifier, commit + push"]
     Knowledge["Knowledge tree + relations<br/>local hash embeddings (pgvector), auto-enrichment"]
     Plans["Chat plan mode<br/>explore / refine / execute orchestrator"]
+    Initiatives["Initiatives (BMad Method)<br/>documents + versions, work items in build order,<br/>hidden read-only -initiative-{id} step runs,<br/>transfer / release to tickets, proposals, findings,<br/>automation gate (prerequisites), live board"]
     AgentTasks["Agent tasks<br/>cron schedules, coordinator + unit jobs,<br/>hidden -task-{id} runs, main chat run cards,<br/>approved handoff agents, awaiting_handoff runs"]
     Handoffs["Agent handoffs<br/>same workspace only, handoff chat on target,<br/>respond repair turns, delivery to requesting chat<br/>or into the waiting task run's session"]
     Attachments["Attachments<br/>mirrored read-only into workers"]
-    CtxHandler["Agent request handlers (ack, workspace of the connection)<br/>agentContextRequest: search, describe, content<br/>agentTaskRequest: own tasks / agentHandoffRequest"]
+    CtxHandler["Agent request handlers (ack, workspace of the connection)<br/>agentContextRequest: search, describe, content<br/>(tickets, knowledge, plans, initiatives, documents)<br/>agentTaskRequest: own tasks / agentHandoffRequest"]
     OcConfig["OpenCode config layering<br/>global / workspace / agent overlays, layer files,<br/>MCP + provider catalogs, platform security policy"]
     Provisioning["Server provisioning<br/>manager hosts with Docker + gVisor<br/>(+ KVM modules / runsc-kvm when /dev/kvm is available)"]
     Import["Context import<br/>Jira / Confluence to tickets + knowledge"]
@@ -55,7 +56,7 @@ flowchart TB
     Search["Search<br/>entity indexes, workspace full-text index"]
     Queue["BullMQ queue agent-controller<br/>config / layer sync, embeddings, imports, egress ingest,<br/>isolation probes, automation, reindex, catalogs, deliveries"]
     CStatus["Instance scrape + console status<br/>manager /api/instance-status"]
-    CPg[("Postgres + pgvector<br/>clients, tickets, knowledge, embeddings, plans,<br/>automation runs, agent tasks + runs, handoffs,<br/>statistics, config layers")]
+    CPg[("Postgres + pgvector<br/>clients, tickets, knowledge, embeddings, plans,<br/>initiatives (documents, work items, runs, proposals),<br/>automation runs, agent tasks + runs, handoffs,<br/>statistics, config layers")]
     Valkey[("Valkey<br/>BullMQ, VNC tickets, caches, updates")]
     OpenSearch[("OpenSearch<br/>agenstra-* indexes, workspace-files")]
     Files[("File storage<br/>local or S3: attachments")]
@@ -66,11 +67,14 @@ flowchart TB
   CApi --> CAuth
   CGw --> CAuth
   CAuth -.OIDC / SAML.-> IdP
-  CApi --> Tickets & Knowledge & Plans & AgentTasks & Attachments & OcConfig & Provisioning & Import & Search
+  CApi --> Initiatives & Tickets & Knowledge & Plans & AgentTasks & Attachments & OcConfig & Provisioning & Import & Search
   CGw -.enrich prompts: refs, auto-context, granted bodies.-> Knowledge
   CGw -.ticket prototype prompts.-> Tickets
-  CtxHandler --> Tickets & Knowledge & AgentTasks & Handoffs
-  Tickets & Knowledge & Plans & AgentTasks & Handoffs & OcConfig --> CPg
+  CtxHandler --> Tickets & Knowledge & AgentTasks & Handoffs & Initiatives
+  Tickets & Knowledge & Plans & AgentTasks & Handoffs & OcConfig & Initiatives --> CPg
+  Initiatives -.transfer, release, story plans.-> Tickets & Plans
+  Tickets -.ticket changes (board events): statuses, auto release.-> Initiatives
+  Tickets -.automation candidates skip stories with unsatisfied prerequisites.-> Initiatives
   Handoffs -.task run handoffs: checks approval + targets,<br/>continues the waiting run.-> AgentTasks
   Attachments --> Files
   Queue --> Valkey
@@ -91,7 +95,7 @@ flowchart TB
       MGw["Socket.IO socket/agents<br/>chat, enhance, ticket body, terminals, events;<br/>WS /socket/vnc bridge"]
       Composer["Prompt context composer<br/>MCP mode: hints + context ticket<br/>fallback: inline hidden context"]
       CtxTickets["Context tickets<br/>bound to agent + chat session, 2 h idle TTL,<br/>granted refs, session grants"]
-      CtxAccess["Context access requests<br/>ask (chat) / auto (automation, plans) / deny (hidden)"]
+      CtxAccess["Context access requests<br/>ask (chat) / auto (automation, plans, initiative step runs) / deny (hidden)"]
       CtxApi["Agent context API /api/agent-context<br/>tickets: list, search, get, access-requests<br/>tasks (own), handoffs (agents, create, get, response)<br/>per-agent HMAC token, no user auth"]
       ActiveTurns["Active turns<br/>running OpenCode turns per agent:<br/>handoffs only from one working visible chat<br/>or one task run (-task-{id}), prompts of one session serialized"]
       Profiles["Handoff profiles<br/>own profile updates, peer profiles generated<br/>on request in read-only -handoff-profile sessions"]
@@ -109,7 +113,7 @@ flowchart TB
       subgraph Worker["Worker container (agenstra-manager-worker, io.agenstra.context-mcp=1)<br/>runtime per isolation level: runc / runsc-systrap(-hostnet) / runsc-kvm(-hostnet);<br/>microvm: agenstra-manager-worker-microvm on runc + /dev/kvm, worker below /guest as KVM guest"]
         Launcher["MicroVM launcher (microvm only, container root)<br/>libvirt session + QEMU/KVM + virtiofsd as agenstra-vmm,<br/>bridge daemon: vm-exec, ports 4096 / 6080, loopback relay :3128,<br/>user networking = sockets in the container netns"]
         OpenCode["OpenCode serve :4096<br/>agents: build, agenstra-automation, agenstra-plan"]
-        CtxMcp["agenstra MCP server (stdio)<br/>/opt/agenstra/mcp, root-owned<br/>context_* (list, search, get, request_access),<br/>tasks_* (own recurring tasks),<br/>handoff_* (agents, profile_get, profile_update,<br/>create, get, respond)"]
+        CtxMcp["agenstra MCP server (stdio)<br/>/opt/agenstra/mcp, root-owned<br/>context_* (list, search, get, request_access),<br/>content_* (tickets, pages, plans, initiative proposals / findings),<br/>tasks_* (own recurring tasks),<br/>handoff_* (agents, profile_get, profile_update,<br/>create, get, respond)"]
         Desktop["XFCE + TigerVNC + websockify :6080<br/>Chromium, vnc-auth-proxy"]
         AppVol[("/app workspace volume<br/>+ read-only /opt/workspace, attachments")]
       end

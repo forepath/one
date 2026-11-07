@@ -16,6 +16,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Web IDE** Monaco Editor integration for code editing
 - **Chat Interface** AI chat functionality with real-time responses
 - **[File attachments](./file-attachments.md)** Attach/download files on tickets, knowledge pages, and chat context with read-only agent mirroring
+- **[Initiatives](./initiatives.md)** Workspace planning that follows the BMad Method: guided steps with agents, versioned documents, work items in build order, transfer to tickets with dependency-aware automation, retrospectives and change proposals; live for everybody in the workspace
 - **[Chat plan mode](./chat-plan-mode.md)** Explore-only OpenCode planning with refine and execute-into-chat; a searchable **Plans** page edits plans until they run
 - **[Agent tasks](./agent-tasks.md)** Recurring, cron-scheduled agent prompts managed in the console or by the agent itself
 - **[Agent handoffs](./agent-handoffs.md)** Agents hand tasks to other agents of the same workspace and always get a response back
@@ -136,6 +137,19 @@ AI chat functionality with real-time responses. Send messages to agents and rece
 - View chat history
 - Markdown rendering
 - Automatic history restoration
+
+### [Initiatives](./initiatives.md)
+
+Plan bigger work step by step (Clarify → Plan → Build & verify → Learn & adjust) and hand it to the build tools.
+
+**Key Capabilities**:
+
+- Guided steps (Analyst, Product Manager, UX Designer, Architect, Product Owner, Developer) in read-only agent sessions
+- Versioned documents (PRD, UX, architecture, …) accepted as shared contracts
+- Epics and stories in build order with dependencies, transfer to tickets, release of ready stories
+- Ticket automation never starts a story whose prerequisites are not satisfied
+- Retrospectives, findings and change proposals that open the next iteration
+- Live board (`socket/initiatives`) with conditional writes
 
 ### [Chat plan mode](./chat-plan-mode.md)
 

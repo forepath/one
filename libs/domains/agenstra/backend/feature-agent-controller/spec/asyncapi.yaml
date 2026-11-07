@@ -1,6 +1,6 @@
 asyncapi: 3.0.0
 info:
-  title: Agent controller WebSocket (clients + tickets + pages)
+  title: Agent controller WebSocket (clients + tickets + pages + initiatives)
   version: 1.0.0
   description: |
     Socket.IO events for the agent-controller on the shared HTTP `PORT` (default 3100). Engine.IO path is
@@ -349,6 +349,93 @@ channels:
       pagesKnowledgePageActivityCreatedEvent:
         $ref: '#/components/messages/KnowledgePageActivityCreatedPayload'
     description: Incremental page activity row for currently open page details.
+  initiatives/setClient:
+    address: initiatives/setClient
+    messages:
+      initiativesSetClientCommand:
+        $ref: '#/components/messages/SetClient'
+    description: |
+      Select workspace for the Initiatives board (Socket.IO namespace "initiatives", INITIATIVES_WEBSOCKET_NAMESPACE,
+      default "socket/initiatives"). Same auth and `ensureClientAccess` rules as `clients/setClient`; machine tokens need
+      `websocket:initiatives:read` + `initiatives:read`. Listen-only namespace: every command is REST.
+  initiatives/setClientSuccess:
+    address: initiatives/setClientSuccess
+    messages:
+      initiativesSetClientSuccessEvent:
+        $ref: '#/components/messages/SetClientSuccess'
+    description: Acknowledgement after initiatives namespace setClient
+  initiatives/error:
+    address: initiatives/error
+    messages:
+      initiativesErrorEvent:
+        $ref: '#/components/messages/TicketsBoardError'
+    description: Errors for the initiatives namespace (missing clientId, Unauthorized, forbidden client).
+  initiatives/initiativeUpsert:
+    address: initiatives/initiativeUpsert
+    messages:
+      initiativesInitiativeUpsertEvent:
+        $ref: '#/components/messages/InitiativeUpsertPayload'
+    description: Initiative created or changed (full initiative incl. `version`; apply only newer versions).
+  initiatives/initiativeRemoved:
+    address: initiatives/initiativeRemoved
+    messages:
+      initiativesInitiativeRemovedEvent:
+        $ref: '#/components/messages/InitiativeRemovedPayload'
+    description: Initiative deleted (`{ id, clientId }`).
+  initiatives/initiativeArtifactUpsert:
+    address: initiatives/initiativeArtifactUpsert
+    messages:
+      initiativesInitiativeArtifactUpsertEvent:
+        $ref: '#/components/messages/InitiativeArtifactUpsertPayload'
+    description: Document metadata incl. `version` / `currentVersion`; the content is fetched over REST when the document is open and not being edited.
+  initiatives/initiativeArtifactRemoved:
+    address: initiatives/initiativeArtifactRemoved
+    messages:
+      initiativesInitiativeArtifactRemovedEvent:
+        $ref: '#/components/messages/InitiativeArtifactRemovedPayload'
+    description: Document deleted (`{ id, initiativeId }`).
+  initiatives/initiativeWorkItemsChanged:
+    address: initiatives/initiativeWorkItemsChanged
+    messages:
+      initiativesInitiativeWorkItemsChangedEvent:
+        $ref: '#/components/messages/InitiativeWorkItemsChangedPayload'
+    description: Work item tree of an initiative with effective statuses (incl. linked ticket changes), readiness and `initiativeVersion`.
+  initiatives/initiativeRunUpsert:
+    address: initiatives/initiativeRunUpsert
+    messages:
+      initiativesInitiativeRunUpsertEvent:
+        $ref: '#/components/messages/InitiativeRunUpsertPayload'
+    description: Guided step run (status, result, throttled `streamingText`).
+  initiatives/initiativeRunTurnAppended:
+    address: initiatives/initiativeRunTurnAppended
+    messages:
+      initiativesInitiativeRunTurnAppendedEvent:
+        $ref: '#/components/messages/InitiativeRunTurnAppendedPayload'
+    description: Conversation turn of a run (`{ initiativeId, …turn }`).
+  initiatives/initiativeProposalUpsert:
+    address: initiatives/initiativeProposalUpsert
+    messages:
+      initiativesInitiativeProposalUpsertEvent:
+        $ref: '#/components/messages/InitiativeProposalUpsertPayload'
+    description: Change proposal created or decided.
+  initiatives/initiativeFindingUpsert:
+    address: initiatives/initiativeFindingUpsert
+    messages:
+      initiativesInitiativeFindingUpsertEvent:
+        $ref: '#/components/messages/InitiativeFindingUpsertPayload'
+    description: Finding recorded or updated.
+  initiatives/initiativeDecisionUpsert:
+    address: initiatives/initiativeDecisionUpsert
+    messages:
+      initiativesInitiativeDecisionUpsertEvent:
+        $ref: '#/components/messages/InitiativeDecisionUpsertPayload'
+    description: Decision recorded or decided.
+  initiatives/initiativeActivityCreated:
+    address: initiatives/initiativeActivityCreated
+    messages:
+      initiativesInitiativeActivityCreatedEvent:
+        $ref: '#/components/messages/InitiativeActivityCreatedPayload'
+    description: Activity row of an initiative.
   status/statusSnapshot:
     address: status/statusSnapshot
     description: |
@@ -614,8 +701,174 @@ operations:
       $ref: '#/channels/status~1error'
     messages:
       - $ref: '#/channels/status~1error/messages/statusErrorEvent'
+  initiativesClientSendsSetClient:
+    action: send
+    channel:
+      $ref: '#/channels/initiatives~1setClient'
+    messages:
+      - $ref: '#/channels/initiatives~1setClient/messages/initiativesSetClientCommand'
+  initiativesServerEmitsSetClientSuccess:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1setClientSuccess'
+    messages:
+      - $ref: '#/channels/initiatives~1setClientSuccess/messages/initiativesSetClientSuccessEvent'
+  initiativesServerEmitsInitiativeUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1initiativeUpsert'
+    messages:
+      - $ref: '#/channels/initiatives~1initiativeUpsert/messages/initiativesInitiativeUpsertEvent'
+  initiativesServerEmitsInitiativeRemoved:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1initiativeRemoved'
+    messages:
+      - $ref: '#/channels/initiatives~1initiativeRemoved/messages/initiativesInitiativeRemovedEvent'
+  initiativesServerEmitsInitiativeArtifactUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1initiativeArtifactUpsert'
+    messages:
+      - $ref: '#/channels/initiatives~1initiativeArtifactUpsert/messages/initiativesInitiativeArtifactUpsertEvent'
+  initiativesServerEmitsInitiativeArtifactRemoved:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1initiativeArtifactRemoved'
+    messages:
+      - $ref: '#/channels/initiatives~1initiativeArtifactRemoved/messages/initiativesInitiativeArtifactRemovedEvent'
+  initiativesServerEmitsInitiativeWorkItemsChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1initiativeWorkItemsChanged'
+    messages:
+      - $ref: '#/channels/initiatives~1initiativeWorkItemsChanged/messages/initiativesInitiativeWorkItemsChangedEvent'
+  initiativesServerEmitsInitiativeRunUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1initiativeRunUpsert'
+    messages:
+      - $ref: '#/channels/initiatives~1initiativeRunUpsert/messages/initiativesInitiativeRunUpsertEvent'
+  initiativesServerEmitsInitiativeRunTurnAppended:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1initiativeRunTurnAppended'
+    messages:
+      - $ref: '#/channels/initiatives~1initiativeRunTurnAppended/messages/initiativesInitiativeRunTurnAppendedEvent'
+  initiativesServerEmitsInitiativeProposalUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1initiativeProposalUpsert'
+    messages:
+      - $ref: '#/channels/initiatives~1initiativeProposalUpsert/messages/initiativesInitiativeProposalUpsertEvent'
+  initiativesServerEmitsInitiativeFindingUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1initiativeFindingUpsert'
+    messages:
+      - $ref: '#/channels/initiatives~1initiativeFindingUpsert/messages/initiativesInitiativeFindingUpsertEvent'
+  initiativesServerEmitsInitiativeDecisionUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1initiativeDecisionUpsert'
+    messages:
+      - $ref: '#/channels/initiatives~1initiativeDecisionUpsert/messages/initiativesInitiativeDecisionUpsertEvent'
+  initiativesServerEmitsInitiativeActivityCreated:
+    action: receive
+    channel:
+      $ref: '#/channels/initiatives~1initiativeActivityCreated'
+    messages:
+      - $ref: '#/channels/initiatives~1initiativeActivityCreated/messages/initiativesInitiativeActivityCreatedEvent'
 components:
   messages:
+    InitiativeUpsertPayload:
+      name: InitiativeUpsertPayload
+      title: initiativeUpsert
+      contentType: application/json
+      payload:
+        type: object
+        description: Same shape as the matching REST response DTO of the agent-controller OpenAPI (Initiatives).
+        additionalProperties: true
+    InitiativeRemovedPayload:
+      name: InitiativeRemovedPayload
+      title: initiativeRemoved
+      contentType: application/json
+      payload:
+        type: object
+        description: Same shape as the matching REST response DTO of the agent-controller OpenAPI (Initiatives).
+        additionalProperties: true
+    InitiativeArtifactUpsertPayload:
+      name: InitiativeArtifactUpsertPayload
+      title: initiativeArtifactUpsert
+      contentType: application/json
+      payload:
+        type: object
+        description: Same shape as the matching REST response DTO of the agent-controller OpenAPI (Initiatives).
+        additionalProperties: true
+    InitiativeArtifactRemovedPayload:
+      name: InitiativeArtifactRemovedPayload
+      title: initiativeArtifactRemoved
+      contentType: application/json
+      payload:
+        type: object
+        description: Same shape as the matching REST response DTO of the agent-controller OpenAPI (Initiatives).
+        additionalProperties: true
+    InitiativeWorkItemsChangedPayload:
+      name: InitiativeWorkItemsChangedPayload
+      title: initiativeWorkItemsChanged
+      contentType: application/json
+      payload:
+        type: object
+        description: Same shape as the matching REST response DTO of the agent-controller OpenAPI (Initiatives).
+        additionalProperties: true
+    InitiativeRunUpsertPayload:
+      name: InitiativeRunUpsertPayload
+      title: initiativeRunUpsert
+      contentType: application/json
+      payload:
+        type: object
+        description: Same shape as the matching REST response DTO of the agent-controller OpenAPI (Initiatives).
+        additionalProperties: true
+    InitiativeRunTurnAppendedPayload:
+      name: InitiativeRunTurnAppendedPayload
+      title: initiativeRunTurnAppended
+      contentType: application/json
+      payload:
+        type: object
+        description: Same shape as the matching REST response DTO of the agent-controller OpenAPI (Initiatives).
+        additionalProperties: true
+    InitiativeProposalUpsertPayload:
+      name: InitiativeProposalUpsertPayload
+      title: initiativeProposalUpsert
+      contentType: application/json
+      payload:
+        type: object
+        description: Same shape as the matching REST response DTO of the agent-controller OpenAPI (Initiatives).
+        additionalProperties: true
+    InitiativeFindingUpsertPayload:
+      name: InitiativeFindingUpsertPayload
+      title: initiativeFindingUpsert
+      contentType: application/json
+      payload:
+        type: object
+        description: Same shape as the matching REST response DTO of the agent-controller OpenAPI (Initiatives).
+        additionalProperties: true
+    InitiativeDecisionUpsertPayload:
+      name: InitiativeDecisionUpsertPayload
+      title: initiativeDecisionUpsert
+      contentType: application/json
+      payload:
+        type: object
+        description: Same shape as the matching REST response DTO of the agent-controller OpenAPI (Initiatives).
+        additionalProperties: true
+    InitiativeActivityCreatedPayload:
+      name: InitiativeActivityCreatedPayload
+      title: initiativeActivityCreated
+      contentType: application/json
+      payload:
+        type: object
+        description: Same shape as the matching REST response DTO of the agent-controller OpenAPI (Initiatives).
+        additionalProperties: true
     SetClient:
       name: SetClient
       title: Set client context

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -50,6 +50,7 @@ import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.s
 import { TicketAutomationService } from './ticket-automation.service';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
+import { InitiativeAutomationHooks } from './initiative-automation-hooks';
 import { TicketsService } from './tickets.service';
 
 interface RunnableCandidate {
@@ -86,6 +87,7 @@ export class AutonomousRunOrchestratorService {
     private readonly ticketsService: TicketsService,
     private readonly ticketAutomationService: TicketAutomationService,
     private readonly knowledgeTreeService: KnowledgeTreeService,
+    @Optional() private readonly initiativeHooks?: InitiativeAutomationHooks,
   ) {}
 
   /**
@@ -157,6 +159,11 @@ export class AutonomousRunOrchestratorService {
           )
         )
         AND (ta.next_retry_at IS NULL OR ta.next_retry_at <= NOW())
+        -- Initiatives: stories wait for their prerequisites (only removes candidates; unlinked tickets unaffected).
+        AND NOT EXISTS (
+          SELECT 1 FROM initiative_work_items wi
+          WHERE wi.ticket_id = t.id AND wi.automation_blocked = true
+        )
         AND NOT EXISTS (
           SELECT 1 FROM ticket_automation_run r
           WHERE r.ticket_id = t.id AND r.status = 'running'
@@ -196,6 +203,13 @@ export class AutonomousRunOrchestratorService {
     const allowedAgentIds = automation.allowedAgentIds ?? [];
 
     if (allowedAgentIds.length > 0 && !allowedAgentIds.includes(c.agent_id)) {
+      return;
+    }
+
+    // Authoritative re-check of initiative prerequisites (the query flag may lag behind a just-changed tree).
+    if (this.initiativeHooks && (await this.initiativeHooks.isTicketBlocked(ticket.id, ticket.clientId))) {
+      this.logger.debug(`Orchestrator skip ticket ${c.ticket_id}: initiative prerequisites are not satisfied`);
+
       return;
     }
 
@@ -332,11 +346,16 @@ export class AutonomousRunOrchestratorService {
     });
     await this.runRepo.update(run.id, { branchName, baseBranch });
     await this.emitRunSummaryNow(ticket.clientId, run.id);
+    // Stories of an initiative also read their planning context (documents, epic, decisions), read-only.
+    const initiativeContext = this.initiativeHooks
+      ? await this.initiativeHooks.automationContext(ticket.id, ticket.clientId).catch(() => null)
+      : null;
     const contextInjection = {
       includeWorkspace: automation.includeWorkspaceContext !== false,
       environmentIds: [...new Set([agentId, ...(automation.contextEnvironmentIds ?? [])])],
       autoEnrichmentEnabled: automation.autoEnrichmentEnabled !== false,
       ...(ticket.longSha ? { ticketShas: [ticket.longSha] } : {}),
+      ...(initiativeContext?.initiativeContexts.length ? initiativeContext : {}),
     };
 
     if (autonomy.preImproveTicket) {

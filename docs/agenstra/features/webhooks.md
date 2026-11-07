@@ -66,6 +66,17 @@ Events are published from the **agent-controller** service after proxied operati
 
 **Comments:** Adding a comment publishes `ticket.comment.created`. Comments cannot be updated or deleted via the API, so there are no update/delete comment events.
 
+### Initiatives
+
+Metadata only (ids, titles, statuses, versions; never document content). See [Initiatives](./initiatives.md).
+
+- `initiative.created`, `initiative.updated` (`fields`), `initiative.deleted`
+- `initiative.artifact.accepted`: a document version became the accepted contract
+- `initiative.run.needs_input`, `initiative.run.ready`, `initiative.run.failed`: a guided step needs an answer, has a result to review, or failed
+- `initiative.proposal.created`, `initiative.proposal.decided` (`status`)
+- `initiative.work_items.transferred` (`ticketIds`), `initiative.work_items.released` (`keys`, `ticketIds`, `automatic`)
+- `initiative.retrospective.completed` (`epicId`, `verdict`, `overridden`)
+
 ### Agents (environments)
 
 - `agent.created`, `agent.updated`, `agent.deleted`: an agent environment was created, updated or deleted through the controller

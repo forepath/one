@@ -9,6 +9,7 @@ import {
   type Workflow,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
+  FpcBackLinkComponent,
   FpcButtonComponent,
   FpcEmptyStateComponent,
   FpcPageHeaderComponent,
@@ -25,6 +26,7 @@ import { DeploymentRunsListComponent } from './deployment-runs-list/deployment-r
   selector: 'framework-deployment-manager',
   imports: [
     CommonModule,
+    FpcBackLinkComponent,
     FpcButtonComponent,
     FpcEmptyStateComponent,
     FpcPageHeaderComponent,

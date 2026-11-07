@@ -5,6 +5,7 @@ import {
   type AgentHandoffControllerResponse,
   type AgentTaskControllerRequest,
   type AgentTaskControllerResponse,
+  isInitiativeResumeSessionSuffix,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { authenticateServiceSocket, OidcTokenVerifier } from '@forepath/identity/backend';
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
@@ -657,7 +658,8 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       return 'auto';
     }
 
-    if (isChatPlanResumeSessionSuffix(resumeSessionSuffix)) {
+    // Read-only plan sessions and initiative step runs: only their pre-granted context (no scope beyond it).
+    if (isChatPlanResumeSessionSuffix(resumeSessionSuffix) || isInitiativeResumeSessionSuffix(resumeSessionSuffix)) {
       return 'auto';
     }
 
@@ -1410,6 +1412,26 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         ...(typeof ref?.title === 'string' ? { title: ref.title } : {}),
       });
     });
+    // Initiatives / documents (controller-resolved for the workspace): contexts and refs stay index-aligned.
+    const initiativeContexts: string[] = [];
+    const initiativeContextRefs: NonNullable<ContextInjectionPayload['initiativeContextRefs']> = [];
+    const rawInitiativeContextRefs = Array.isArray(contextInjection.initiativeContextRefs)
+      ? contextInjection.initiativeContextRefs
+      : [];
+
+    (contextInjection.initiativeContexts ?? []).forEach((ctx, index) => {
+      const trimmed = typeof ctx === 'string' ? ctx.trim() : '';
+      const ref = rawInitiativeContextRefs[index];
+      const kind = ref?.kind === 'artifact' ? 'artifact' : ref?.kind === 'initiative' ? 'initiative' : undefined;
+      const sha = typeof ref?.sha === 'string' ? ref.sha.trim().toLowerCase() : '';
+
+      if (!trimmed || !kind || !/^[0-9a-f]{40}$/.test(sha) || initiativeContextRefs.some((r) => r.sha === sha)) {
+        return;
+      }
+
+      initiativeContexts.push(trimmed);
+      initiativeContextRefs.push({ kind, sha, ...(typeof ref?.title === 'string' ? { title: ref.title } : {}) });
+    });
     const attachmentIds = Array.from(
       new Set((contextInjection.attachmentIds ?? []).map((id) => id.trim()).filter((id) => id.length > 0)),
     );
@@ -1432,6 +1454,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       knowledgeContexts.length === 0 &&
       planShas.length === 0 &&
       planContexts.length === 0 &&
+      initiativeContexts.length === 0 &&
       attachmentIds.length === 0 &&
       attachmentContexts.length === 0
     ) {
@@ -1450,6 +1473,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       ...(planShas.length ? { planShas } : {}),
       ...(planContexts.length ? { planContexts } : {}),
       ...(planContextRefs.some((ref) => ref.sha.length > 0) ? { planContextRefs } : {}),
+      ...(initiativeContexts.length ? { initiativeContexts, initiativeContextRefs } : {}),
       ...(attachmentIds.length ? { attachmentIds } : {}),
       ...(attachmentContexts.length ? { attachmentContexts } : {}),
     };

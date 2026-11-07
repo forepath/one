@@ -19,5 +19,9 @@ export function agentContentWriteLabel(operation: AgentContentWriteOperation): s
       return $localize`:@@featureContentWrites-pageDelete:Delete knowledge pages`;
     case 'plan.update':
       return $localize`:@@featureContentWrites-planUpdate:Update plans that were not executed yet`;
+    case 'initiative.propose':
+      return $localize`:@@featureContentWrites-initiativePropose:Propose initiative changes (a user accepts them)`;
+    case 'initiative.finding':
+      return $localize`:@@featureContentWrites-initiativeFinding:Record findings on initiatives`;
   }
 }

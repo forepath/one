@@ -130,7 +130,9 @@ export class AgentContextApiService {
     const ref = parseAgentContextRef(rawRef);
 
     if (!ref) {
-      throw new BadRequestException('ref must be item:<n>, ticket:<sha>, knowledge:<sha> or plan:<sha>');
+      throw new BadRequestException(
+        'ref must be item:<n>, ticket:<sha>, knowledge:<sha>, plan:<sha>, initiative:<sha> or artifact:<sha>',
+      );
     }
 
     if (ref.kind === 'item') {
@@ -332,7 +334,9 @@ export class AgentContextApiService {
 
   private parseContentRefs(rawRefs: string[]): ContentRef[] {
     if (!Array.isArray(rawRefs) || rawRefs.length === 0) {
-      throw new BadRequestException('refs must contain at least one ticket:<sha>, knowledge:<sha> or plan:<sha>');
+      throw new BadRequestException(
+        'refs must contain at least one ticket:<sha>, knowledge:<sha>, plan:<sha>, initiative:<sha> or artifact:<sha>',
+      );
     }
 
     if (rawRefs.length > AGENT_CONTEXT_MAX_REFS_PER_REQUEST) {
@@ -346,7 +350,7 @@ export class AgentContextApiService {
 
       if (!parsed || parsed.kind === 'item') {
         throw new BadRequestException(
-          `Invalid ref '${String(raw)}' (expected ticket:<sha>, knowledge:<sha> or plan:<sha>)`,
+          `Invalid ref '${String(raw)}' (expected ticket:<sha>, knowledge:<sha>, plan:<sha>, initiative:<sha> or artifact:<sha>)`,
         );
       }
 

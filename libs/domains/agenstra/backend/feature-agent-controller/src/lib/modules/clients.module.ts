@@ -34,6 +34,19 @@ import { ClientsConfigurationOverridesController } from '../controllers/clients-
 import { ClientsDeploymentsController } from '../controllers/clients-deployments.controller';
 import { ClientsVcsController } from '../controllers/clients-vcs.controller';
 import { ClientsController } from '../controllers/clients.controller';
+import { InitiativesController } from '../controllers/initiatives.controller';
+import { INITIATIVE_ENTITIES } from '../entities/initiative.entities';
+import { InitiativesBoardGateway } from '../gateways/initiatives-board.gateway';
+import { InitiativeArtifactsService } from '../services/initiative-artifacts.service';
+import { InitiativeAutomationHooks } from '../services/initiative-automation-hooks';
+import { InitiativeBoardRealtimeService } from '../services/initiative-board-realtime.service';
+import { InitiativeBuildService } from '../services/initiative-build.service';
+import { InitiativeContextService } from '../services/initiative-context.service';
+import { InitiativeLearnService } from '../services/initiative-learn.service';
+import { InitiativeRunOrchestratorService } from '../services/initiative-run-orchestrator.service';
+import { InitiativeRunsService } from '../services/initiative-runs.service';
+import { InitiativeWorkItemsService } from '../services/initiative-work-items.service';
+import { InitiativesService } from '../services/initiatives.service';
 import { ClientsWorkspaceSearchController } from '../controllers/clients-workspace-search.controller';
 import { AdminOpencodeConfigController } from '../controllers/admin-opencode-config.controller';
 import { AdminOpencodeLayerFilesController } from '../controllers/admin-opencode-layer-files.controller';
@@ -206,6 +219,7 @@ import { StatisticsModule } from './statistics.module';
       OpencodeConfigSyncTargetEntity,
       EgressEventIngestCursorEntity,
       ClientIsolationSnapshotEntity,
+      ...INITIATIVE_ENTITIES,
     ]),
     BullModule.registerQueue({ name: AGENSTRA_CONTROLLER_QUEUE_NAME }),
     RedisCacheModule,
@@ -242,6 +256,7 @@ import { StatisticsModule } from './statistics.module';
     ClientOpencodeLayerFilesController,
     OpencodeProvidersController,
     OpencodeMcpServersController,
+    InitiativesController,
   ],
   providers: [
     AgenstraMetricsCollectorService,
@@ -318,6 +333,18 @@ import { StatisticsModule } from './statistics.module';
     ChatPlanChatSyncService,
     TicketsBoardGateway,
     KnowledgeBoardGateway,
+    InitiativesBoardGateway,
+    InitiativeBoardRealtimeService,
+    InitiativesService,
+    InitiativeArtifactsService,
+    InitiativeWorkItemsService,
+    InitiativeLearnService,
+    InitiativeContextService,
+    InitiativeBuildService,
+    // Ticket automation asks Initiatives about prerequisites and planning context (optional dependency).
+    { provide: InitiativeAutomationHooks, useExisting: InitiativeBuildService },
+    InitiativeRunsService,
+    InitiativeRunOrchestratorService,
     StatusGateway,
     ProvisioningService,
     ProvisioningProviderFactory,

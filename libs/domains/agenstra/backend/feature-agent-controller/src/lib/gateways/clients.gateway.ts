@@ -2,6 +2,7 @@ import {
   AGENT_HANDOFF_REQUEST_EVENT,
   AGENT_TASK_REQUEST_EVENT,
   isAgentTaskResumeSessionSuffix,
+  isInitiativeResumeSessionSuffix,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { createCorrelationAwareSocketIoClient } from '@forepath/shared/backend/util-http-context';
 import {
@@ -1689,7 +1690,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
   /**
    * Interactive console forwards must never carry the orchestrator trust marker or address platform-owned hidden
-   * sessions (ticket automation, plans, task runs, handoff profiles).
+   * sessions (ticket automation, plans, task runs, initiative step runs, handoff profiles).
    */
   private sanitizeForwardedChatPayload(payload: unknown): unknown {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -1707,7 +1708,10 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
     if (
       suffix &&
-      (platformSuffixes.has(suffix) || suffix.startsWith('-plan-') || isAgentTaskResumeSessionSuffix(suffix))
+      (platformSuffixes.has(suffix) ||
+        suffix.startsWith('-plan-') ||
+        isAgentTaskResumeSessionSuffix(suffix) ||
+        isInitiativeResumeSessionSuffix(suffix))
     ) {
       delete next['resumeSessionSuffix'];
     }
@@ -1813,12 +1817,26 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
   /**
    * Drop context categories a PAT / app token cannot read over REST (tickets, knowledge pages, attachments).
-   * Interactive and API-key callers are returned unchanged.
+   * Initiative context is platform-resolved only (step runs, ticket automation, plans from stories) and never accepted
+   * from a client payload, whoever sends it. Other categories pass unchanged for interactive and API-key callers.
    */
   private capContextInjectionToScopes(
     contextInjection: ContextInjectionPayload,
     req: RequestWithUser | undefined,
   ): ContextInjectionPayload {
+    const platformOnly = contextInjection as ContextInjectionPayload & {
+      initiativeContexts?: unknown;
+      initiativeContextRefs?: unknown;
+    };
+
+    if (platformOnly.initiativeContexts !== undefined || platformOnly.initiativeContextRefs !== undefined) {
+      const rest = { ...platformOnly };
+
+      delete rest.initiativeContexts;
+      delete rest.initiativeContextRefs;
+      contextInjection = rest;
+    }
+
     if (req?.apiKeyAuthenticated || !(req?.user?.amr ?? []).includes('pat')) {
       return contextInjection;
     }
