@@ -1,0 +1,21 @@
+# CI-only: build NSIS installer from a pre-packaged Electron app (see tools/ci/build-windows-installer.ps1).
+# Artifact naming matches Linux .deb from @electron-forge/maker-deb (name: decabill) → decabill_<version>_amd64.deb
+appId: io.forepath.decabill.native-billing-console
+productName: Decabill Billing Console
+extraMetadata:
+  name: Decabill
+directories:
+  output: installer-out
+  buildResources: public/assets/images
+win:
+  target:
+    - nsis
+  artifactName: 'decabill_${version}_amd64.${ext}'
+  executableName: native-billing-console
+  icon: icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: Decabill Billing Console
+  installerIcon: icon.ico
+  uninstallerIcon: icon.ico

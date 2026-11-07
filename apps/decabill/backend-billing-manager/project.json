@@ -168,7 +168,7 @@
         "release": {
           "push": true,
           "tags": [
-            "ghcr.io/forepath/decabill-billing-api:latest",
+            "ghcr.io/forepath/decabill-billing-api:$RELEASE_CHANNEL_TAG",
             "ghcr.io/forepath/decabill-billing-api:$VERSION"
           ]
         }
@@ -194,7 +194,7 @@
       "configurations": {
         "test": {},
         "release": {
-          "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml -g typescript-axios -o dist/clients/billing-manager/js --additional-properties=npmName=@forepath/decabill-billing-manager-client,npmVersion=$VERSION,withInterfaces=true,axiosVersion=1.18.1 && cd dist/clients/billing-manager/js && node -e \"const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json'));pkg.publishConfig={registry:'https://npm.pkg.github.com'};fs.writeFileSync('package.json',JSON.stringify(pkg,null,2));\" && npm install && npm run build && npm publish"
+          "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml -g typescript-axios -o dist/clients/billing-manager/js --additional-properties=npmName=@forepath/decabill-billing-manager-client,npmVersion=$VERSION,withInterfaces=true,axiosVersion=1.18.1 && cd dist/clients/billing-manager/js && node -e \"const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json'));pkg.publishConfig={registry:'https://npm.pkg.github.com'};fs.writeFileSync('package.json',JSON.stringify(pkg,null,2));\" && npm install && npm run build && npm publish --tag \"${RELEASE_CHANNEL_TAG:?RELEASE_CHANNEL_TAG must be set}\""
         }
       },
       "defaultConfiguration": "test"

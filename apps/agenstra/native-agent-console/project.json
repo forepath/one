@@ -22,6 +22,8 @@
             "nx run agenstra-frontend-agent-console:prebuild-server --configuration=development",
             "nx run agenstra-frontend-agent-console:server",
             "tsc -p apps/agenstra/native-agent-console/tsconfig.json",
+            "rm -rf dist/apps/agenstra/native-agent-console",
+            "npx esbuild apps/agenstra/native-agent-console/src/main.ts apps/agenstra/native-agent-console/src/preload.ts --bundle --platform=node --target=node22 --format=cjs --external:electron --log-level=warning --outdir=dist/apps/agenstra/native-agent-console",
             "node -e \"require('fs').writeFileSync('dist/apps/agenstra/native-agent-console/package.json', JSON.stringify({type:'commonjs'}, null, 2))\"",
             "cp -r dist/apps/agenstra/frontend-agent-console/server dist/apps/agenstra/native-agent-console/server",
             "cp apps/agenstra/native-agent-console/package-server.json dist/apps/agenstra/native-agent-console/server/package.json",
@@ -39,6 +41,8 @@
             "nx run agenstra-frontend-agent-console:prebuild-server --configuration=production",
             "nx run agenstra-frontend-agent-console:server",
             "tsc -p apps/agenstra/native-agent-console/tsconfig.json",
+            "rm -rf dist/apps/agenstra/native-agent-console",
+            "npx esbuild apps/agenstra/native-agent-console/src/main.ts apps/agenstra/native-agent-console/src/preload.ts --bundle --platform=node --target=node22 --format=cjs --external:electron --log-level=warning --outdir=dist/apps/agenstra/native-agent-console",
             "node -e \"require('fs').writeFileSync('dist/apps/agenstra/native-agent-console/package.json', JSON.stringify({type:'commonjs'}, null, 2))\"",
             "cp -r dist/apps/agenstra/frontend-agent-console/server dist/apps/agenstra/native-agent-console/server",
             "cp apps/agenstra/native-agent-console/package-server.json dist/apps/agenstra/native-agent-console/server/package.json",
@@ -100,6 +104,13 @@
             "cd dist/apps/agenstra/native-agent-console && npx electron-forge make --platform linux"
           ]
         },
+        "production-macos": {
+          "commands": [
+            "nx build agenstra-native-agent-console --configuration=production",
+            "node -e \"const f=require('fs');for(const p of process.argv.slice(1)){const j=JSON.parse(f.readFileSync(p,'utf8'));j.version=process.env.RELEASE_VERSION;f.writeFileSync(p,JSON.stringify(j,null,2));}\" dist/apps/agenstra/native-agent-console/package.json dist/apps/agenstra/native-agent-console/server/package.json",
+            "cd dist/apps/agenstra/native-agent-console && npx electron-forge package --platform darwin --arch ${ELECTRON_FORGE_ARCH:-arm64}"
+          ]
+        },
         "production-windows": {
           "commands": [
             "nx build agenstra-native-agent-console --configuration=production",
@@ -110,6 +121,13 @@
         }
       },
       "defaultConfiguration": "development"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/agenstra/native-agent-console/jest.config.ts"
+      }
     },
     "sbom": {
       "executor": "@forepath/sbom:sbom",

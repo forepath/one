@@ -143,7 +143,7 @@
         "release": {
           "push": true,
           "tags": [
-            "ghcr.io/forepath/agenstra-manager-api:latest",
+            "ghcr.io/forepath/agenstra-manager-api:$RELEASE_CHANNEL_TAG",
             "ghcr.io/forepath/agenstra-manager-api:$VERSION"
           ]
         }
@@ -213,7 +213,7 @@
         "release": {
           "push": true,
           "tags": [
-            "ghcr.io/forepath/agenstra-manager-worker:latest",
+            "ghcr.io/forepath/agenstra-manager-worker:$RELEASE_CHANNEL_TAG",
             "ghcr.io/forepath/agenstra-manager-worker:$VERSION"
           ]
         }
@@ -247,7 +247,7 @@
         "release": {
           "push": true,
           "tags": [
-            "ghcr.io/forepath/agenstra-manager-worker-microvm:latest",
+            "ghcr.io/forepath/agenstra-manager-worker-microvm:$RELEASE_CHANNEL_TAG",
             "ghcr.io/forepath/agenstra-manager-worker-microvm:$VERSION"
           ]
         }
@@ -276,7 +276,7 @@
         "release": {
           "push": true,
           "tags": [
-            "ghcr.io/forepath/agenstra-manager-egress-guard:latest",
+            "ghcr.io/forepath/agenstra-manager-egress-guard:$RELEASE_CHANNEL_TAG",
             "ghcr.io/forepath/agenstra-manager-egress-guard:$VERSION"
           ]
         }
@@ -307,7 +307,7 @@
       "configurations": {
         "test": {},
         "release": {
-          "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml -g typescript-axios -o dist/clients/agent-manager/js --additional-properties=npmName=@forepath/agenstra-agent-manager-client,npmVersion=$VERSION,withInterfaces=true,axiosVersion=1.18.1 && cd dist/clients/agent-manager/js && node -e \"const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json'));pkg.publishConfig={registry:'https://npm.pkg.github.com'};fs.writeFileSync('package.json',JSON.stringify(pkg,null,2));\" && npm install && npm run build && npm publish"
+          "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml -g typescript-axios -o dist/clients/agent-manager/js --additional-properties=npmName=@forepath/agenstra-agent-manager-client,npmVersion=$VERSION,withInterfaces=true,axiosVersion=1.18.1 && cd dist/clients/agent-manager/js && node -e \"const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json'));pkg.publishConfig={registry:'https://npm.pkg.github.com'};fs.writeFileSync('package.json',JSON.stringify(pkg,null,2));\" && npm install && npm run build && npm publish --tag \"${RELEASE_CHANNEL_TAG:?RELEASE_CHANNEL_TAG must be set}\""
         }
       },
       "defaultConfiguration": "test"

@@ -190,7 +190,7 @@
         "release": {
           "push": true,
           "tags": [
-            "ghcr.io/forepath/decabill-landingpage-server:latest",
+            "ghcr.io/forepath/decabill-landingpage-server:$RELEASE_CHANNEL_TAG",
             "ghcr.io/forepath/decabill-landingpage-server:$VERSION"
           ]
         }

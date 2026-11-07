@@ -95,12 +95,13 @@ Decabill is one platform for agencies and digital product teams. Bill client ser
   </tr>
 </table>
 
-| Component                                                    | Description                                            |
-| ------------------------------------------------------------ | ------------------------------------------------------ |
-| [Billing manager](./apps/decabill/backend-billing-manager/)  | Subscriptions, invoicing, provisioning, and Stripe API |
-| [Billing console](./apps/decabill/frontend-billing-console/) | Admin and customer self-service billing UI             |
-| [Docs](./apps/decabill/frontend-docs/)                       | Documentation site served at docs.decabill.com         |
-| [Landing page](./apps/decabill/frontend-landingpage/)        | Marketing and pricing site served at decabill.com      |
+| Component                                                         | Description                                            |
+| ----------------------------------------------------------------- | ------------------------------------------------------ |
+| [Billing manager](./apps/decabill/backend-billing-manager/)       | Subscriptions, invoicing, provisioning, and Stripe API |
+| [Billing console](./apps/decabill/frontend-billing-console/)      | Admin and customer self-service billing UI             |
+| [Native billing console](./apps/decabill/native-billing-console/) | Electron desktop client around the billing console     |
+| [Docs](./apps/decabill/frontend-docs/)                            | Documentation site served at docs.decabill.com         |
+| [Landing page](./apps/decabill/frontend-landingpage/)             | Marketing and pricing site served at decabill.com      |
 
 ### <img src="./apps/forepath/frontend-landingpage/public/assets/images/icon_colorful.svg" width="22" height="22" alt=""> ForePath
 
