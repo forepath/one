@@ -7858,10 +7858,6 @@
         <source>No tickets yet</source>
         <target>Noch keine Tickets</target>
       </trans-unit>
-      <trans-unit id="featureTicketsBoard-emptyCreate" datatype="html">
-        <source>Create ticket</source>
-        <target>Ticket anlegen</target>
-      </trans-unit>
       <trans-unit id="featureTicketsBoard-colRunStatus" datatype="html">
         <source>Status</source>
         <target>Status</target>

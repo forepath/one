@@ -407,15 +407,12 @@
         </fpc-button>
 
         <span fpcDataTableEmpty>
-          <fpc-empty-state icon="kanban" size="sm" i18n-message="@@featureTicketsBoard-empty" message="No tickets yet">
-            <fpc-button
-              fpcEmptyStateActions
-              variant="primary"
-              (clicked)="showCreateTicketModal()"
-              i18n="@@featureTicketsBoard-emptyCreate"
-              >Create ticket</fpc-button
-            >
-          </fpc-empty-state>
+          <fpc-empty-state
+            icon="kanban"
+            size="sm"
+            i18n-message="@@featureTicketsBoard-empty"
+            message="No tickets yet"
+          />
         </span>
 
         <ng-template fpcTableCell="ticket" let-row>

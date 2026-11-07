@@ -8270,10 +8270,6 @@
         <source>No tickets yet</source>
         <target>Noch keine Tickets</target>
       </trans-unit>
-      <trans-unit id="featureProjectBoard-emptyCreate" datatype="html">
-        <source>New ticket</source>
-        <target>Neues Ticket</target>
-      </trans-unit>
       <trans-unit id="featureProjectBoard-moreMatchesOne" datatype="html">
         <source>and 1 more</source>
         <target>und 1 weiteres</target>

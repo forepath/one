@@ -5018,9 +5018,6 @@
       <trans-unit id="featureTicketsBoard-empty" datatype="html">
         <source>No tickets yet</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-emptyCreate" datatype="html">
-        <source>Create ticket</source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-detailTitleAria" datatype="html">
         <source>Title</source>
         </trans-unit>
